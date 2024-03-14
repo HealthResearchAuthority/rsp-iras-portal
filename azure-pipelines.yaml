@@ -1,0 +1,40 @@
+name: $(Build.DefinitionName)_$(Build.SourceBranchName)_$(date:yyyyMMdd)$(rev:.r)
+
+pool:
+  vmImage: "Ubuntu-latest"
+
+trigger:
+  - main
+  - feature*
+  - bug*
+
+parameters:
+  - name: env
+    type: string
+    default: dev
+    values:
+      - dev
+      - systemtest_manual
+      - systemtest_auto
+      - system_integration_test
+      - uat
+      - pre_prod
+      - production
+
+variables:
+  - name: solution
+    value: "**/*.sln"
+  - name: project
+    value: "**/*.csproj"
+  - name: buildConfiguration
+    value: "Release"
+
+resources:
+  repositories:
+    - repository: library
+      type: git
+      name: DevOps/rsp-azure-devops-library
+      ref: main
+
+stages:
+  - template: jobs/build.yaml@library
