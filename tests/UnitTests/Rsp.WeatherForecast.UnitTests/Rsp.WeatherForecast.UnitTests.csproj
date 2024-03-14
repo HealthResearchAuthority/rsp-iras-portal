@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageReference Include="xunit" Version="2.5.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Domain\Rsp.WeatherForecast.Domain\Rsp.WeatherForecast.Domain.csproj" />
+    <ProjectReference Include="..\..\..\src\Application\Rsp.WeatherForecast.Application\Rsp.WeatherForecast.Application.csproj" />
+    <ProjectReference Include="..\..\..\src\Services\Rsp.WeatherForecast.Services\Rsp.WeatherForecast.Services.csproj" />
+    <ProjectReference Include="..\..\..\src\Infrastructure\Rsp.WeatherForecast.Infrastructure\Rsp.WeatherForecast.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\src\Web\Rsp.WeatherForecast.Web\Rsp.WeatherForecast.Web.csproj" />
+  </ItemGroup>
+
+</Project>
