@@ -34,7 +34,7 @@ resources:
     - repository: library
       type: git
       name: DevOps/rsp-azure-devops-library
-      ref: main
+      ref: feature/rsp-283-build-pipeline
 
 stages:
   - template: jobs/build.yaml@library
