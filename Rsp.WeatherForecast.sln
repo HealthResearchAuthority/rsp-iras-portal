@@ -7,41 +7,45 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{486623D9-17F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web", "Web", "{D6CDCCC0-12E3-499F-B711-7FBFFC5A57C0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsp.WeatherForecast.Web", "src\Web\Rsp.WeatherForecast.Web\Rsp.WeatherForecast.Web.csproj", "{16232F65-3D77-4FFD-BC51-4AC0FFD9DAEE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsp.WeatherForecast.Web", "src\Web\Rsp.WeatherForecast.Web\Rsp.WeatherForecast.Web.csproj", "{16232F65-3D77-4FFD-BC51-4AC0FFD9DAEE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Domain", "Domain", "{9361B42C-F733-4032-9E77-BD8453CCB750}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsp.WeatherForecast.Domain", "src\Domain\Rsp.WeatherForecast.Domain\Rsp.WeatherForecast.Domain.csproj", "{34A64270-AC4E-429A-A4D2-8395018BA1FC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsp.WeatherForecast.Domain", "src\Domain\Rsp.WeatherForecast.Domain\Rsp.WeatherForecast.Domain.csproj", "{34A64270-AC4E-429A-A4D2-8395018BA1FC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Application", "Application", "{27EB43FE-9ED0-4B83-BD38-A0F14B26DFC2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsp.WeatherForecast.Application", "src\Application\Rsp.WeatherForecast.Application\Rsp.WeatherForecast.Application.csproj", "{8B8C3F86-5D33-4B8A-BAF8-927D5B5A691C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsp.WeatherForecast.Application", "src\Application\Rsp.WeatherForecast.Application\Rsp.WeatherForecast.Application.csproj", "{8B8C3F86-5D33-4B8A-BAF8-927D5B5A691C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{F0BDE409-1397-47E1-8443-AF20575363FB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsp.WeatherForecast.Infrastructure", "src\Infrastructure\Rsp.WeatherForecast.Infrastructure\Rsp.WeatherForecast.Infrastructure.csproj", "{D4766920-1B14-4BF6-9C95-5F391D76EDAC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsp.WeatherForecast.Infrastructure", "src\Infrastructure\Rsp.WeatherForecast.Infrastructure\Rsp.WeatherForecast.Infrastructure.csproj", "{D4766920-1B14-4BF6-9C95-5F391D76EDAC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{60AE7A26-3C16-41FB-ABE6-38F589C58DC5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsp.WeatherForecast.Services", "src\Services\Rsp.WeatherForecast.Services\Rsp.WeatherForecast.Services.csproj", "{D834828F-0F86-4E05-B6A5-0F0C3BA58F82}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsp.WeatherForecast.Services", "src\Services\Rsp.WeatherForecast.Services\Rsp.WeatherForecast.Services.csproj", "{D834828F-0F86-4E05-B6A5-0F0C3BA58F82}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{076A9217-81EA-489C-8D4B-5792A8CB7801}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{0106BD4E-99B7-42C3-9287-69CF99988C59}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsp.WeatherForecast.UnitTests", "tests\UnitTests\Rsp.WeatherForecast.UnitTests\Rsp.WeatherForecast.UnitTests.csproj", "{4D42B299-4EA3-469E-ABD4-4816E3E698AF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsp.WeatherForecast.UnitTests", "tests\UnitTests\Rsp.WeatherForecast.UnitTests\Rsp.WeatherForecast.UnitTests.csproj", "{4D42B299-4EA3-469E-ABD4-4816E3E698AF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IntegrationTests", "IntegrationTests", "{D6B72412-F379-4ACC-ADFD-31EA8C3AF213}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsp.WeatherForecast.IntegrationTests", "tests\IntegrationTests\Rsp.WeatherForecast.IntegrationTests\Rsp.WeatherForecast.IntegrationTests.csproj", "{5B1057F8-6F7A-4ECF-AC2F-5D22ED22E84B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsp.WeatherForecast.IntegrationTests", "tests\IntegrationTests\Rsp.WeatherForecast.IntegrationTests\Rsp.WeatherForecast.IntegrationTests.csproj", "{5B1057F8-6F7A-4ECF-AC2F-5D22ED22E84B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{150BB886-A262-4641-9F72-6BFA86554D33}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		azure-pipelines.yaml = azure-pipelines.yaml
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{16232F65-3D77-4FFD-BC51-4AC0FFD9DAEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -73,6 +77,9 @@ Global
 		{5B1057F8-6F7A-4ECF-AC2F-5D22ED22E84B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5B1057F8-6F7A-4ECF-AC2F-5D22ED22E84B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{D6CDCCC0-12E3-499F-B711-7FBFFC5A57C0} = {486623D9-17F4-4AD6-ADCB-89E224FEC9D3}
 		{16232F65-3D77-4FFD-BC51-4AC0FFD9DAEE} = {D6CDCCC0-12E3-499F-B711-7FBFFC5A57C0}
@@ -88,5 +95,8 @@ Global
 		{4D42B299-4EA3-469E-ABD4-4816E3E698AF} = {0106BD4E-99B7-42C3-9287-69CF99988C59}
 		{D6B72412-F379-4ACC-ADFD-31EA8C3AF213} = {076A9217-81EA-489C-8D4B-5792A8CB7801}
 		{5B1057F8-6F7A-4ECF-AC2F-5D22ED22E84B} = {D6B72412-F379-4ACC-ADFD-31EA8C3AF213}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6D948298-5F96-490D-9438-7D203E7327F3}
 	EndGlobalSection
 EndGlobal
