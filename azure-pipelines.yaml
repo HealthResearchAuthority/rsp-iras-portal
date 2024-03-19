@@ -10,6 +10,7 @@ trigger:
 
 parameters:
   - name: env
+    displayName: Environment
     type: string
     default: dev
     values:
@@ -20,6 +21,10 @@ parameters:
       - uat
       - pre_prod
       - production
+  - name: devops_library_branch
+    displayName: DevOps Library Branch
+    type: string
+    default: main
 
 variables:
   - name: solution
@@ -34,7 +39,7 @@ resources:
     - repository: library
       type: git
       name: DevOps/rsp-azure-devops-library
-      ref: feature/rsp-283-build-pipeline
+      ref: ${{ parameters.devops_library_branch }}
 
 stages:
   - template: jobs/build.yaml@library
