@@ -2,11 +2,11 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq.AutoMock;
-using Rsp.WeatherForecast.Web.Controllers;
-using Rsp.WeatherForecast.Web.Models;
+using Rsp.IrasPortal.Web.Controllers;
+using Rsp.IrasPortal.Web.Models;
 using Shouldly;
 
-namespace Rsp.WeatherForecast.UnitTests;
+namespace Rsp.IrasPortal.IntegrationTests;
 
 public class HomeControllerTests
 {

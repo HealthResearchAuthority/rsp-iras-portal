@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.WeatherForecast.Web.Models;
+using Rsp.IrasPortal.Web.Models;
 
-namespace Rsp.WeatherForecast.Web.Controllers;
+namespace Rsp.IrasPortal.Web.Controllers;
 
 public class HomeController : Controller
 {

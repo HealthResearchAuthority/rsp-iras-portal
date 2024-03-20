@@ -25,6 +25,10 @@ parameters:
     displayName: DevOps Library Branch
     type: string
     default: main
+  - name: run_github_security_scan
+    displayName: Run GitHub Advanced Security Scan
+    type: boolean
+    default: true
 
 variables:
   - name: solution
@@ -43,3 +47,5 @@ resources:
 
 stages:
   - template: jobs/build.yaml@library
+    parameters:
+      run_github_security_scan: ${{ parameters.run_github_security_scan }}

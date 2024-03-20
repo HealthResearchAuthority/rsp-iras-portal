@@ -32,11 +32,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Domain\Rsp.WeatherForecast.Domain\Rsp.WeatherForecast.Domain.csproj" />
-    <ProjectReference Include="..\..\..\src\Application\Rsp.WeatherForecast.Application\Rsp.WeatherForecast.Application.csproj" />
-    <ProjectReference Include="..\..\..\src\Services\Rsp.WeatherForecast.Services\Rsp.WeatherForecast.Services.csproj" />
-    <ProjectReference Include="..\..\..\src\Infrastructure\Rsp.WeatherForecast.Infrastructure\Rsp.WeatherForecast.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\..\src\Web\Rsp.WeatherForecast.Web\Rsp.WeatherForecast.Web.csproj" />
+    <ProjectReference Include="..\..\..\src\Domain\Rsp.IrasPortal.Domain\Rsp.IrasPortal.Domain.csproj" />
+    <ProjectReference Include="..\..\..\src\Application\Rsp.IrasPortal.Application\Rsp.IrasPortal.Application.csproj" />
+    <ProjectReference Include="..\..\..\src\Services\Rsp.IrasPortal.Services\Rsp.IrasPortal.Services.csproj" />
+    <ProjectReference Include="..\..\..\src\Infrastructure\Rsp.IrasPortal.Infrastructure\Rsp.IrasPortal.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\src\Web\Rsp.IrasPortal.Web\Rsp.IrasPortal.Web.csproj" />
   </ItemGroup>
 
 </Project>

@@ -32,7 +32,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\..\src\Web\Rsp.WeatherForecast.Web\Rsp.WeatherForecast.Web.csproj" />
+		<ProjectReference Include="..\..\..\src\Web\Rsp.IrasPortal.Web\Rsp.IrasPortal.Web.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -1,4 +1,4 @@
-namespace Rsp.WeatherForecast.Web.Models;
+namespace Rsp.IrasPortal.Web.Models;
 
 public class ErrorViewModel
 {

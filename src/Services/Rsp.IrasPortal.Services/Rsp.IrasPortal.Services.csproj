@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Application\Rsp.WeatherForecast.Application\Rsp.WeatherForecast.Application.csproj" />
+    <ProjectReference Include="..\..\Application\Rsp.IrasPortal.Application\Rsp.IrasPortal.Application.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

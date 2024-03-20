@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Domain\Rsp.WeatherForecast.Domain\Rsp.WeatherForecast.Domain.csproj" />
+    <ProjectReference Include="..\..\Domain\Rsp.IrasPortal.Domain\Rsp.IrasPortal.Domain.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
