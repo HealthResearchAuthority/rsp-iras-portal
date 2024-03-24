@@ -3,15 +3,10 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - IRAS Web Portal</title>
+    <title>@ViewData["Title"] - Rsp.IrasPortal.Web</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <environment exclude="Production">
-        <link rel="stylesheet" href="~/Rsp.IrasPortal.Web.styles.css" asp-append-version="true" />
-    </environment>
-    <environment include="Production">
-        <link rel="stylesheet" href="~/Rsp.IrasPortal.styles.css" asp-append-version="false" />
-    </environment>
+    <link rel="stylesheet" href="~/Rsp.IrasPortal.Web.styles.css" asp-append-version="true" />
 </head>
 <body>
     <header>
