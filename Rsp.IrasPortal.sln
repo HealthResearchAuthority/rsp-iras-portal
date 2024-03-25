@@ -37,10 +37,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsp.IrasPortal.IntegrationT
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{150BB886-A262-4641-9F72-6BFA86554D33}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		.gitignore = .gitignore
 		azure-pipelines.yaml = azure-pipelines.yaml
 		README.md = README.md
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AppHost", "AppHost", "{185666CC-E783-4DCD-A8CB-C9ABA2EC3BEB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsp.IrasPortal", "src\AppHost\Rsp.IrasPortal\Rsp.IrasPortal.csproj", "{E2F1C2D5-9224-4A6F-A6C1-CC2EB64171DC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -76,6 +81,10 @@ Global
 		{5B1057F8-6F7A-4ECF-AC2F-5D22ED22E84B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5B1057F8-6F7A-4ECF-AC2F-5D22ED22E84B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5B1057F8-6F7A-4ECF-AC2F-5D22ED22E84B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2F1C2D5-9224-4A6F-A6C1-CC2EB64171DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2F1C2D5-9224-4A6F-A6C1-CC2EB64171DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2F1C2D5-9224-4A6F-A6C1-CC2EB64171DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2F1C2D5-9224-4A6F-A6C1-CC2EB64171DC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -95,6 +104,8 @@ Global
 		{4D42B299-4EA3-469E-ABD4-4816E3E698AF} = {0106BD4E-99B7-42C3-9287-69CF99988C59}
 		{D6B72412-F379-4ACC-ADFD-31EA8C3AF213} = {076A9217-81EA-489C-8D4B-5792A8CB7801}
 		{5B1057F8-6F7A-4ECF-AC2F-5D22ED22E84B} = {D6B72412-F379-4ACC-ADFD-31EA8C3AF213}
+		{185666CC-E783-4DCD-A8CB-C9ABA2EC3BEB} = {486623D9-17F4-4AD6-ADCB-89E224FEC9D3}
+		{E2F1C2D5-9224-4A6F-A6C1-CC2EB64171DC} = {185666CC-E783-4DCD-A8CB-C9ABA2EC3BEB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6D948298-5F96-490D-9438-7D203E7327F3}

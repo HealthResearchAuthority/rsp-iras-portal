@@ -1,0 +1,41 @@
+{
+  "Serilog": {
+    "Using": [ "Serilog.Sinks.Console" ],
+    "MinimumLevel": {
+      "Default": "Verbose",
+      "Override": {
+        "Microsoft": "Warning",
+        "Microsoft.Hosting.Lifetime": "Information"
+      }
+    },
+    "WriteTo": [
+      {
+        "Name": "Logger",
+        "Args": {
+          "configureLogger": {
+            "WriteTo": [
+              {
+                "Name": "Async",
+                "Args": {
+                  "configure": [
+                    {
+                      "Name": "Console",
+                      "Args": {
+                        "outputTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3} {SourceContext} :> {Message}{NewLine}{Exception}",
+                        "restrictedToMinimumLevel": "Information"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "Enrich": [ "FromLogContext", "WithExceptionDetails" ],
+    "Properties": {
+      "ApplicationName": "IRAS Web Portal"
+    }
+  }
+}
