@@ -1,28 +1,316 @@
-﻿@model IEnumerable<string>
-
-@{
-    ViewData["Title"] = "Home Page";
+﻿@{
+    ViewData["Title"] = "IRASHome Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
 
-<div>
-    <h3>Application Categories</h3>
+		<div class="govuk-width-container app-width-container">
+			<a
+				href="#"
+				class="govuk-back-link"
+				onclick="displaySection(--sectionIdx)"
+				id="back_link"
+				style="display: none"
+			>
+				Back
+			</a>
+			<main class="govuk-main-wrapper">
+				<div class="govuk-grid-row">
+					<div class="govuk-grid-column-two-thirds">
+						<span class="govuk-caption-xl" id="title_caption">Welcome to the</span>
+						<h1 class="govuk-heading-xl" id="title">Integrated Research Application System</h1>
+					</div>
+				</div>
 
-    @{
-        <table>
-        <thead>Category</thead>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@item</td>
-            </tr>
-        }
-        </table>
-    }
+				<section id="section_0">
+					<div class="govuk-grid-row">
+						<div class="govuk-grid-column-two-thirds">
+							<p class="govuk-body">
+								The integrated dataset required for your project will be created from the answers you
+								give to the following questions. The system will generate only those questions and
+								sections which (a) apply to your study type and (b) are required by the bodies reviewing
+								your study. Please ensure you answer all the questions before proceeding with your
+								applications.
+								<br />
+								<br />
+								Please complete the questions in order. If you change the response to a question, please
+								select 'Save' and review all the questions as your change may have affected subsequent
+								questions.
+								<br />
+								<br />
+								On-line guidance is available wherever you see a hyperlinked word or this symbol
+								displayed. Please read this guidance carefully.
+								<br />
+								<br />
+								For help with your application, click <a href="#">here</a>.
+							</p>
+							<button
+								onclick="displaySection(++sectionIdx)"
+								class="govuk-button"
+								data-module="govuk-button"
+							>
+								Proceed with application
+							</button>
+						</div>
 
-    
-</div>
+						<div class="govuk-grid-column-one-third" style="border-top: 2px solid #5d235d; padding: 0%">
+							<h3 class="govuk-heading-m" style="margin-top: 15px">Project Details</h3>
+							<p class="govuk-body">
+								IRAS Project ID: <strong>337728</strong><br />
+								Project Title: <strong>Not named yet</strong> <br />
+								Section:<br />
+								Application to:<br />
+							</p>
+						</div>
+					</div>
+				</section>
+				<section id="section_1">
+					<div class="govuk-form-group">
+						<input
+							class="govuk-input govuk-input--width-30"
+							id="postcode"
+							name="postcode"
+							type="text"
+							autocomplete="postal-code"
+						/>
+					</div>
+					<button onclick="displaySection(++sectionIdx)" class="govuk-button" data-module="govuk-button">
+						Continue
+					</button>
+				</section>
+				<section id="section_2">
+					<div class="govuk-form-group">
+						<fieldset class="govuk-fieldset">
+							<div class="govuk-radios" data-module="govuk-radios">
+								<div class="govuk-radios__item">
+									<input
+										class="govuk-radios__input"
+										id="whereDoYouLive"
+										name="whereDoYouLive"
+										type="radio"
+										value="england"
+									/>
+									<label class="govuk-label govuk-radios__label" for="whereDoYouLive">
+										England
+									</label>
+								</div>
+								<div class="govuk-radios__item">
+									<input
+										class="govuk-radios__input"
+										id="whereDoYouLive-2"
+										name="whereDoYouLive"
+										type="radio"
+										value="scotland"
+									/>
+									<label class="govuk-label govuk-radios__label" for="whereDoYouLive-2">
+										Scotland
+									</label>
+								</div>
+								<div class="govuk-radios__item">
+									<input
+										class="govuk-radios__input"
+										id="whereDoYouLive-3"
+										name="whereDoYouLive"
+										type="radio"
+										value="wales"
+									/>
+									<label class="govuk-label govuk-radios__label" for="whereDoYouLive-3">
+										Wales
+									</label>
+								</div>
+								<div class="govuk-radios__item">
+									<input
+										class="govuk-radios__input"
+										id="whereDoYouLive-4"
+										name="whereDoYouLive"
+										type="radio"
+										value="northern-ireland"
+									/>
+									<label class="govuk-label govuk-radios__label" for="whereDoYouLive-4">
+										Northern Ireland
+									</label>
+								</div>
+							</div>
+						</fieldset>
+					</div>
+					<button onclick="displaySection(++sectionIdx)" class="govuk-button" data-module="govuk-button">
+						Continue
+					</button>
+				</section>
+				<section id="section_3">
+					<div class="govuk-form-group">
+						<fieldset class="govuk-fieldset" aria-describedby="waste-hint">
+							<div class="govuk-checkboxes" data-module="govuk-checkboxes">
+								<div class="govuk-checkboxes__item">
+									<input
+										class="govuk-checkboxes__input"
+										id="waste"
+										name="waste"
+										type="checkbox"
+										value="carcasses"
+									/>
+									<label class="govuk-label govuk-checkboxes__label" for="waste"> IRAS Form </label>
+								</div>
+								<div class="govuk-checkboxes__item">
+									<input
+										class="govuk-checkboxes__input"
+										id="waste-2"
+										name="waste"
+										type="checkbox"
+										value="mines"
+									/>
+									<label class="govuk-label govuk-checkboxes__label" for="waste-2">
+										Confidentiality Advisory Group (CAG)
+									</label>
+								</div>
+								<div class="govuk-checkboxes__item">
+									<input
+										class="govuk-checkboxes__input"
+										id="waste-3"
+										name="waste"
+										type="checkbox"
+										value="farm"
+									/>
+									<label class="govuk-label govuk-checkboxes__label" for="waste-3">
+										HM Prison and Probation Services (HMPPS)
+									</label>
+								</div>
+							</div>
+						</fieldset>
+					</div>
+					<button onclick="displaySection(++sectionIdx)" class="govuk-button" data-module="govuk-button">
+						Continue
+					</button>
+				</section>
+				<section id="section_4">
+					<div class="govuk-form-group">
+						<select class="govuk-select" id="sort" name="sort">
+							<option value="default" selected disabled>Select...</option>
+							<option value="Ionising radiation">Ionising radiation</option>
+							<option value="Clinical investigation">Clinical investigation</option>
+							<option value="Basic science study">
+								Basic science study involving human participants
+							</option>
+							<option value="Research tissue bank">Research tissue bank</option>
+							<option value="Research database">Research database</option>
+							<option value="Other study">Other study</option>
+						</select>
+					</div>
+					<button onclick="displaySection(++sectionIdx)" class="govuk-button" data-module="govuk-button">
+						Continue
+					</button>
+				</section>
+				<section id="section_5">
+					<div class="govuk-form-group">
+						<fieldset class="govuk-fieldset" role="group" aria-describedby="passport-issued-hint">
+							<div id="passport-issued-hint" class="govuk-hint">For example, 27 3 2007</div>
+							<div class="govuk-date-input" id="passport-issued">
+								<div class="govuk-date-input__item">
+									<div class="govuk-form-group">
+										<label class="govuk-label govuk-date-input__label" for="passport-issued-day">
+											Day
+										</label>
+										<input
+											class="govuk-input govuk-date-input__input govuk-input--width-2"
+											id="passport-issued-day"
+											name="passport-issued-day"
+											type="text"
+											inputmode="numeric"
+										/>
+									</div>
+								</div>
+								<div class="govuk-date-input__item">
+									<div class="govuk-form-group">
+										<label class="govuk-label govuk-date-input__label" for="passport-issued-month">
+											Month
+										</label>
+										<input
+											class="govuk-input govuk-date-input__input govuk-input--width-2"
+											id="passport-issued-month"
+											name="passport-issued-month"
+											type="text"
+											inputmode="numeric"
+										/>
+									</div>
+								</div>
+								<div class="govuk-date-input__item">
+									<div class="govuk-form-group">
+										<label class="govuk-label govuk-date-input__label" for="passport-issued-year">
+											Year
+										</label>
+										<input
+											class="govuk-input govuk-date-input__input govuk-input--width-4"
+											id="passport-issued-year"
+											name="passport-issued-year"
+											type="text"
+											inputmode="numeric"
+										/>
+									</div>
+								</div>
+							</div>
+						</fieldset>
+					</div>
+					<button onclick="displaySection(++sectionIdx)" class="govuk-button" data-module="govuk-button">
+						Continue
+					</button>
+				</section>
+				<section id="section_6">
+					<div class="govuk-form-group">
+						<input class="govuk-file-upload" id="file-upload-1" name="fileUpload1" type="file" />
+					</div>
+					<button onclick="displaySection(++sectionIdx)" class="govuk-button" data-module="govuk-button">
+						Review your answers
+					</button>
+				</section>
+				<section id="section_7">
+					<dl class="govuk-summary-list">
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Project title</dt>
+							<dd class="govuk-summary-list__value" id="review_title">Example title</dd>
+							<dd class="govuk-summary-list__actions">
+								<a class="govuk-link" href="#" onclick="displaySection(1)">Change</a>
+							</dd>
+						</div>
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Lead NHS R&D office location</dt>
+							<dd class="govuk-summary-list__value" id="review_location">England</dd>
+							<dd class="govuk-summary-list__actions">
+								<a class="govuk-link" href="#" onclick="displaySection(2)">Change</a>
+							</dd>
+						</div>
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Required application</dt>
+							<dd class="govuk-summary-list__value" id="review_applications">
+								IRAS Form<br />Confidentiality Advisory Group (CAG)
+							</dd>
+							<dd class="govuk-summary-list__actions">
+								<a class="govuk-link" href="#" onclick="displaySection(3)">Change</a>
+							</dd>
+						</div>
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Project category</dt>
+							<dd class="govuk-summary-list__value" id="review_category">Clinical investigation</dd>
+							<dd class="govuk-summary-list__actions">
+								<a class="govuk-link" href="#" onclick="displaySection(4)">Change</a>
+							</dd>
+						</div>
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Project start date</dt>
+							<dd class="govuk-summary-list__value" id="review_start_date">12 10 2023</dd>
+							<dd class="govuk-summary-list__actions">
+								<a class="govuk-link" href="#" onclick="displaySection(5)">Change</a>
+							</dd>
+						</div>
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Uploaded documents</dt>
+							<dd class="govuk-summary-list__value" id="review_documents">example.pdf</dd>
+							<dd class="govuk-summary-list__actions">
+								<a class="govuk-link" href="#" onclick="displaySection(6)">Change</a>
+							</dd>
+						</div>
+					</dl>
+					<button onclick="displaySection(++sectionIdx)" class="govuk-button" data-module="govuk-button">
+						Finish and submit
+					</button>
+				</section>
+			</main>
+		</div>
