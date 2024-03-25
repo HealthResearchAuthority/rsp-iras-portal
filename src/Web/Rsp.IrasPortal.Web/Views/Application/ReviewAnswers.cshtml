@@ -1,0 +1,67 @@
+﻿@{
+    ViewData["Title"] = "Application";
+}
+
+<div class="govuk-width-container app-width-container">
+    <a class="govuk-back-link"
+       asp-action="DocumentUpload">
+        Back
+    </a>
+    <main class="govuk-main-wrapper">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <h1 class="govuk-heading-xl" id="title">Review your answers</h1>
+            </div>
+        </div>
+
+        <dl class="govuk-summary-list">
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Project title</dt>
+                <dd class="govuk-summary-list__value" id="review_title">Example title</dd>
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" href="#" onclick="displaySection(1)">Change</a>
+                </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Lead NHS R&D office location</dt>
+                <dd class="govuk-summary-list__value" id="review_location">England</dd>
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" href="#" onclick="displaySection(2)">Change</a>
+                </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Required application</dt>
+                <dd class="govuk-summary-list__value" id="review_applications">
+                    IRAS Form<br />Confidentiality Advisory Group (CAG)
+                </dd>
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" href="#" onclick="displaySection(3)">Change</a>
+                </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Project category</dt>
+                <dd class="govuk-summary-list__value" id="review_category">Clinical investigation</dd>
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" href="#" onclick="displaySection(4)">Change</a>
+                </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Project start date</dt>
+                <dd class="govuk-summary-list__value" id="review_start_date">12 10 2023</dd>
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" href="#" onclick="displaySection(5)">Change</a>
+                </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Uploaded documents</dt>
+                <dd class="govuk-summary-list__value" id="review_documents">example.pdf</dd>
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" href="#" onclick="displaySection(6)">Change</a>
+                </dd>
+            </div>
+        </dl>
+        <button class="govuk-button" data-module="govuk-button">
+            Finish and submit
+        </button>
+    </main>
+</div>

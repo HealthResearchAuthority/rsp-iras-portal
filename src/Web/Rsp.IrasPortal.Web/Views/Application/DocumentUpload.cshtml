@@ -1,0 +1,26 @@
+﻿@{
+    ViewData["Title"] = "Application";
+}
+
+<div class="govuk-width-container app-width-container">
+    <a class="govuk-back-link"
+       asp-action="ProjectStartDate">
+        Back
+    </a>
+    <main class="govuk-main-wrapper">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <h1 class="govuk-heading-xl" id="title">Upload any supporting documents</h1>
+            </div>
+        </div>
+        <form asp-action="SaveDocumentUpload">
+            <div class="govuk-form-group">
+                <input class="govuk-file-upload" id="supportingDocument" name="supportingDocument" type="file" />
+            </div>
+            <button class="govuk-button" data-module="govuk-button">
+                Review your answers
+            </button>
+        </form>
+
+    </main>
+</div>

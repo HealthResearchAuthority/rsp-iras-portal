@@ -1,0 +1,65 @@
+﻿@{
+    ViewData["Title"] = "Application";
+}
+
+<div class="govuk-width-container app-width-container">
+    <a class="govuk-back-link"
+       asp-action="ProjectCategory">
+        Back
+    </a>
+    <main class="govuk-main-wrapper">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <h1 class="govuk-heading-xl" id="title">When was the project start date?</h1>
+            </div>
+        </div>
+        <form asp-action="SaveProjectStartDate">
+            <div class="govuk-form-group">
+                <fieldset class="govuk-fieldset" role="group">
+                    <div id="date-format-hint" class="govuk-hint">For example, 27 3 2007</div>
+                    <div class="govuk-date-input" id="start-date">
+                        <div class="govuk-date-input__item">
+                            <div class="govuk-form-group">
+                                <label class="govuk-label govuk-date-input__label" for="start-date-day">
+                                    Day
+                                </label>
+                                <input class="govuk-input govuk-date-input__input govuk-input--width-2"
+                                       id="start-date-day"
+                                       name="start-date-day"
+                                       type="text"
+                                       inputmode="numeric" />
+                            </div>
+                        </div>
+                        <div class="govuk-date-input__item">
+                            <div class="govuk-form-group">
+                                <label class="govuk-label govuk-date-input__label" for="start-date-month">
+                                    Month
+                                </label>
+                                <input class="govuk-input govuk-date-input__input govuk-input--width-2"
+                                       id="start-date-month"
+                                       name="start-date-month"
+                                       type="text"
+                                       inputmode="numeric" />
+                            </div>
+                        </div>
+                        <div class="govuk-date-input__item">
+                            <div class="govuk-form-group">
+                                <label class="govuk-label govuk-date-input__label" for="start-date-year">
+                                    Year
+                                </label>
+                                <input class="govuk-input govuk-date-input__input govuk-input--width-4"
+                                       id="start-date-year"
+                                       name="start-date-year"
+                                       type="text"
+                                       inputmode="numeric" />
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+            <button class="govuk-button" data-module="govuk-button">
+                Continue
+            </button>
+        </form>
+    </main>
+</div>

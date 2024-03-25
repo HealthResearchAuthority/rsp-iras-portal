@@ -1,0 +1,44 @@
+﻿@model IEnumerable<string>
+
+@{
+    ViewData["Title"] = "Application";
+}
+
+<div class="govuk-width-container app-width-container">
+    <a class="govuk-back-link"
+       asp-action="Country">
+        Back
+    </a>
+    <main class="govuk-main-wrapper">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <h1 class="govuk-heading-xl" id="title">Which applications do you require?</h1>
+            </div>
+        </div>
+
+        <form asp-action="SaveApplicationType">
+            <div class="govuk-form-group">
+                <fieldset class="govuk-fieldset">
+                    <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                        @{
+                            @foreach (var item in Model)
+                            {
+                                <div class="govuk-checkboxes__item">
+                                    <input class="govuk-checkboxes__input"
+                                           id="irasForm"
+                                           name="applicationType"
+                                           type="checkbox"
+                                           value="irasForm" />
+                                    <label class="govuk-label govuk-checkboxes__label" for="irasForm">@item</label>
+                                </div>
+                            }
+                        }
+                    </div>
+                </fieldset>
+            </div>
+            <button class="govuk-button" data-module="govuk-button">
+                Continue
+            </button>
+        </form>
+    </main>
+</div>

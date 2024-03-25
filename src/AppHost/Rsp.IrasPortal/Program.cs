@@ -1,6 +1,4 @@
-﻿using HealthChecks.UI.Client;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
+﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Rsp.IrasPortal.Application.Configuration;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Application.Services;
@@ -47,7 +45,7 @@ services.AddHealthChecksUI(opt =>
     opt.SetEvaluationTimeInSeconds(10); //time in seconds between check
     opt.MaximumHistoryEntriesPerEndpoint(60); //maximum history of checks
     opt.SetApiMaxActiveRequests(1); //api requests concurrency
-    //opt.AddHealthCheckEndpoint("Categories API", $"{settings.CategoriesServiceUri}/health"); //map health check api
+    //opt.AddHealthCheckEndpoint("Categories API", $"{settings.CategoriesServiceUri}health"); //map health check api
 }).AddInMemoryStorage();
 
 var app = builder.Build();
@@ -61,18 +59,18 @@ var app = builder.Build();
 //    });
 //});
 app.UseRouting();
-app.UseHealthChecksUI();
+app.UseHealthChecks("/health");
 
-app.UseHealthChecks("/health",
-    new HealthCheckOptions
-    {
-        ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-    });
+//app.MapHealthChecks("/health", new HealthCheckOptions
+//{
+//    Predicate = _ => true,
+//    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+//});
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseExceptionHandler("/Application/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
@@ -86,6 +84,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Application}/{action=Welcome}/{id?}");
 
 app.Run();

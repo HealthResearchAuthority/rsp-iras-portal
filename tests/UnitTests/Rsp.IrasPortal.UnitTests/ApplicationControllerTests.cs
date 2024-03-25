@@ -8,15 +8,15 @@ using Shouldly;
 
 namespace Rsp.IrasPortal.UnitTests;
 
-public class HomeControllerTests
+public class ApplicationControllerTests
 {
     private readonly AutoMocker _mocker;
-    private readonly HomeController _controller;
+    private readonly ApplicationController _controller;
 
-    public HomeControllerTests()
+    public ApplicationControllerTests()
     {
         _mocker = new AutoMocker();
-        _controller = _mocker.CreateInstance<HomeController>();
+        _controller = _mocker.CreateInstance<ApplicationController>();
     }
 
     [Fact]
@@ -24,16 +24,6 @@ public class HomeControllerTests
     {
         // Act
         var result = _controller.Index();
-
-        // Assert
-        result.ShouldBeOfType<ViewResult>();
-    }
-
-    [Fact]
-    public void Privacy_ReturnsViewResult()
-    {
-        // Act
-        var result = _controller.Privacy();
 
         // Assert
         result.ShouldBeOfType<ViewResult>();
