@@ -43,11 +43,18 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
 
     public async Task<IActionResult> ApplicationType()
     {
-        var categories = await categoriesService.GetApplicationCategories();
-        return View(categories);
+        try
+        {
+            var categories = await categoriesService.GetApplicationCategories();
+            return View(categories);
+        }
+        catch
+        {
+            return RedirectToAction(nameof(Error));
+        }
     }
 
-    [HttpPost()]
+    [HttpPost]
     public IActionResult SaveApplicationType(string applicationType)
     {
         ViewData["ApplicationType"] = applicationType;
@@ -56,11 +63,18 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
 
     public async Task<IActionResult> ProjectCategory()
     {
-        var categories = await categoriesService.GetProjectCategories();
-        return View(categories);
+        try
+        {
+            var categories = await categoriesService.GetProjectCategories();
+            return View(categories);
+        }
+        catch
+        {
+            return RedirectToAction(nameof(Error));
+        }
     }
 
-    [HttpPost()]
+    [HttpPost]
     public IActionResult SaveProjectCategory(string projectCategory)
     {
         ViewData["ProjectCategory"] = projectCategory;

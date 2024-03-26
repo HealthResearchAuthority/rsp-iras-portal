@@ -1,20 +1,15 @@
-﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
+﻿using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Rsp.IrasPortal.Application.Configuration;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.HttpClients;
-using Rsp.IrasPortal.Infrastructure.HealthChecks;
 using Rsp.IrasPortal.Infrastructure.ServiceClients;
 using Rsp.IrasPortal.Services;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
-
-var services = builder.Services;
-
-services
-    .AddHealthChecks()
-    .AddCheck<ServiceHealthCheck>("Categories Service Health Check", failureStatus: HealthStatus.Unhealthy);
 
 //Add logger
 builder
@@ -28,6 +23,7 @@ builder
 var settings = builder.Configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
 
 // Add services to the container.
+var services = builder.Services;
 
 // add application services
 services.AddTransient<ICategoriesService, CategoriesService>();
@@ -40,32 +36,39 @@ services.AddHttpClients(settings!);
 // add controllers and views
 services.AddControllersWithViews();
 
-services.AddHealthChecksUI(opt =>
-{
-    opt.SetEvaluationTimeInSeconds(10); //time in seconds between check
-    opt.MaximumHistoryEntriesPerEndpoint(60); //maximum history of checks
-    opt.SetApiMaxActiveRequests(1); //api requests concurrency
-    //opt.AddHealthCheckEndpoint("Categories API", $"{settings.CategoriesServiceUri}health"); //map health check api
-}).AddInMemoryStorage();
+// configure health checks to monitor
+// microservice health
+var uri = new Uri(settings.CategoriesServiceUri!, "/health");
+
+services
+    .AddHealthChecks()
+    .AddUrlGroup(uri, "Categories API", HealthStatus.Unhealthy);
+
+services
+    .AddHealthChecksUI(opt =>
+    {
+        opt.SetEvaluationTimeInSeconds(10); //time in seconds between check
+        opt.MaximumHistoryEntriesPerEndpoint(60); //maximum history of checks
+        opt.SetApiMaxActiveRequests(1); //api requests concurrency
+        opt.AddHealthCheckEndpoint("Health Status", "/health"); //map health check api
+    }).AddInMemoryStorage();
 
 var app = builder.Build();
 
-//app.UseEndpoints(config =>
-//{
-//    _ = config.MapHealthChecks("/healthz", new HealthCheckOptions
-//    {
-//        Predicate = _ => true,
-//        ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-//    });
-//});
-app.UseRouting();
-app.UseHealthChecks("/health");
+app.UseStaticFiles(); // this will serve the static files from wwwroot folder
 
-//app.MapHealthChecks("/health", new HealthCheckOptions
-//{
-//    Predicate = _ => true,
-//    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-//});
+app
+    .UseRouting()
+    .UseEndpoints(config =>
+    {
+        config.MapHealthChecks("/health",
+        new HealthCheckOptions()
+        {
+            Predicate = _ => true,
+            ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+        });
+        config.MapHealthChecksUI();
+    });
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -76,7 +79,6 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
 
 //app.UseRouting();
 

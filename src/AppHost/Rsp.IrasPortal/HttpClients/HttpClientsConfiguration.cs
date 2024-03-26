@@ -20,10 +20,6 @@ public static class HttpClientsConfiguration
             .AddRestClient<ICategoriesHttpClient>()
             .ConfigureHttpClient(client => client.BaseAddress = appSettings.CategoriesServiceUri);
 
-        services
-            .AddRestClient<IHealthCheckClient>()
-            .ConfigureHttpClient(client => client.BaseAddress = appSettings.CategoriesServiceUri);
-
         return services;
     }
 
