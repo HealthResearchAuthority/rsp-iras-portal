@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Models;
@@ -12,6 +13,7 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
         return View();
     }
 
+    [Authorize]
     public IActionResult Welcome()
     {
         return RedirectToAction(nameof(Index));
