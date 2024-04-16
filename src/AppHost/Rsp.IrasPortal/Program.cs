@@ -61,9 +61,9 @@ builder.Services.AddAuthentication(options =>
 .AddCookie()
 .AddOpenIdConnect(options =>
 {
-    options.Authority = "https://dev.id.nihr.ac.uk:443";
-    options.ClientId = "[clientId]";
-    options.ClientSecret = "[clientSecret]";
+    options.Authority = "https://dev.id.nihr.ac.uk/oauth2/token";
+    options.ClientId = "[ClientID]";
+    options.ClientSecret = "[ClientSecret]";
     options.ResponseType = OpenIdConnectResponseType.Code;
     options.SaveTokens = true;
     options.Scope.Add("openid");
