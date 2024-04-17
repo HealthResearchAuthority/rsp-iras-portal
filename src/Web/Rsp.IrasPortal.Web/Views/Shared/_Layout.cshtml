@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Http;
+@inject IHttpContextAccessor HttpContextAccessor;
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -75,6 +78,19 @@
 					Contact Us
 				</a>
 			</li>
+            @{
+                if (HttpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+                {
+                    <li class="app-navigation__list-item">
+                        <a class="govuk-link govuk-link--no-visited-state govuk-link--no-underline app-navigation__link js-app-navigation__link"
+                           href="#">
+                            Logout
+                        </a>
+                    </li>
+                }
+            }
+            
+            
 		</ul>
 	</nav>
     <div class="container">

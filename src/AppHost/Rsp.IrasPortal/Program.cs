@@ -33,6 +33,8 @@ services.AddTransient<ICategoriesServiceClient, CategoriesServiceClient>();
 
 services.AddHttpClients(settings!);
 
+services.AddHttpContextAccessor();
+
 // add controllers and views
 services.AddControllersWithViews();
 
@@ -58,12 +60,16 @@ builder.Services.AddAuthentication(options =>
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
 })
-.AddCookie()
+.AddCookie(options =>
+{
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(15);
+    options.SlidingExpiration = true;
+})
 .AddOpenIdConnect(options =>
 {
     options.Authority = "https://dev.id.nihr.ac.uk/oauth2/token";
-    options.ClientId = "[ClientID]";
-    options.ClientSecret = "[ClientSecret]";
+    options.ClientId = "aqHE90z281Yff2vf_OTCdlpNSasa";
+    options.ClientSecret = "4OgtPQJC9vknVGAyN_mdrMTw5PQa";
     options.ResponseType = OpenIdConnectResponseType.Code;
     options.SaveTokens = true;
     options.Scope.Add("openid");
