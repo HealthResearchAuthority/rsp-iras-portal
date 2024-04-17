@@ -68,8 +68,7 @@ builder.Services.AddAuthentication(options =>
     options.SaveTokens = true;
     options.Scope.Add("openid");
     options.Scope.Add("profile");
-    options.CallbackPath = "/issuer-test.hra.nhs.uk"; // Default callback path
-    //options.CallbackPath = "/signin-oidc"; // Default callback path
+    options.CallbackPath = "/signin-oidc"; // Default callback path
 });
 
 var app = builder.Build();
