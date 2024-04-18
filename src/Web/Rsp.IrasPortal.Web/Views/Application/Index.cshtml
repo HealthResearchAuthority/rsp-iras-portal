@@ -1,5 +1,7 @@
 ﻿@{
     ViewData["Title"] = "Application";
+    @using Microsoft.AspNetCore.Http;
+    @inject IHttpContextAccessor HttpContextAccessor;
 }
 
 <div class="govuk-width-container app-width-container">
@@ -39,7 +41,12 @@
                     <br />
                     For help with your application, click <a href="#">here</a>.
                 </p>
-                <a class="govuk-button" asp-controller="Application" asp-action="ProjectName">Proceed with application</a>
+                @{
+                    if (HttpContextAccessor.HttpContext.User.HasClaim(x => x.Equals("admin")))
+                    {
+                        <a class="govuk-button" asp-controller="Application" asp-action="ProjectName">Proceed with application</a>
+                    }
+                }
             </div>
             <div class="govuk-grid-column-one-third" style="border-top: 2px solid #5d235d; padding: 0%">
                 <h3 class="govuk-heading-m" style="margin-top: 15px">Project Details</h3>
