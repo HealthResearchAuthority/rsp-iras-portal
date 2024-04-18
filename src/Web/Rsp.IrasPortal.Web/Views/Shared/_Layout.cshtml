@@ -84,6 +84,12 @@
                     <li class="app-navigation__list-item">
                         <a class="govuk-link govuk-link--no-visited-state govuk-link--no-underline app-navigation__link js-app-navigation__link"
                            href="#">
+                            @HttpContextAccessor.HttpContext.User.Claims.ToList()[5].Value
+                        </a>
+                    </li>
+                    <li class="app-navigation__list-item">
+                        <a class="govuk-link govuk-link--no-visited-state govuk-link--no-underline app-navigation__link js-app-navigation__link"
+                           href="#">
                             Logout
                         </a>
                     </li>
