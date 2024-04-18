@@ -1,5 +1,7 @@
 using System.Diagnostics;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Services;
@@ -7,17 +9,17 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
+[Route("[controller]/[action]")]
 public class ApplicationController(ILogger<ApplicationController> logger, ICategoriesService categoriesService) : Controller
 {
-    public IActionResult Index()
+    public IActionResult SignIn()
     {
-        return View();
+        return new ChallengeResult([CookieAuthenticationDefaults.AuthenticationScheme, "OpenIdConnect"]);
     }
 
-    [Authorize]
     public IActionResult Welcome()
     {
-        return RedirectToAction(nameof(Index));
+        return View("Index");
     }
 
     [Authorize(Policy = "administrator")]
@@ -26,7 +28,18 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
         return View();
     }
 
-    [HttpPost()]
+    public IActionResult Signout()
+    {
+        // await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        // await HttpContext.SignOutAsync("OpenIdConnect", new AuthenticationProperties
+        // {
+        //     RedirectUri = Url.Action(nameof(Welcome))
+        // });
+
+        return new SignOutResult([CookieAuthenticationDefaults.AuthenticationScheme, "OpenIdConnect"]);
+    }
+
+    [HttpPost]
     public IActionResult SaveProjectName(string projectName)
     {
         ViewData["ProjectName"] = projectName;
@@ -38,7 +51,7 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
         return View();
     }
 
-    [HttpPost()]
+    [HttpPost]
     public IActionResult SaveCountry(string officeLocation)
     {
         ViewData["Country"] = officeLocation;
@@ -90,7 +103,7 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
         return View();
     }
 
-    [HttpPost()]
+    [HttpPost]
     public IActionResult SaveProjectStartDate(string projectStartDate)
     {
         ViewData["ProjectStartDate"] = projectStartDate;
@@ -102,7 +115,7 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
         return View();
     }
 
-    [HttpPost()]
+    [HttpPost]
     public IActionResult SaveDocumentUpload(string supportingDocument)
     {
         ViewData["SupportingDocument"] = supportingDocument;

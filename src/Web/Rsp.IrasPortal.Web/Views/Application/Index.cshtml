@@ -1,7 +1,5 @@
 ﻿@{
     ViewData["Title"] = "Application";
-    @using Microsoft.AspNetCore.Http;
-    @inject IHttpContextAccessor HttpContextAccessor;
 }
 
 <div class="govuk-width-container app-width-container">
@@ -42,7 +40,7 @@
                     For help with your application, click <a href="#">here</a>.
                 </p>
                 @{
-                    if (HttpContextAccessor.HttpContext.User.HasClaim(x => x.Equals("admin")))
+                    if (User.IsInRole("admin"))
                     {
                         <a class="govuk-button" asp-controller="Application" asp-action="ProjectName">Proceed with application</a>
                     }

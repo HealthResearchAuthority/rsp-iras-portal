@@ -36,17 +36,12 @@ public class ApplicationControllerTests
         var bogusRequestId = new Faker().Random.AlphaNumeric(10);
         var expectedModel = new ErrorViewModel { RequestId = bogusRequestId };
 
-        var httpContext = _mocker.GetMock<IHttpContextAccessor>();
-        httpContext
-            .SetupGet(x => x.HttpContext)
-            .Returns(new DefaultHttpContext
+        _controller.ControllerContext = new()
+        {
+            HttpContext = new DefaultHttpContext
             {
                 TraceIdentifier = bogusRequestId
-            });
-
-        _controller.ControllerContext = new ControllerContext
-        {
-            HttpContext = httpContext.Object.HttpContext!
+            }
         };
 
         // Act

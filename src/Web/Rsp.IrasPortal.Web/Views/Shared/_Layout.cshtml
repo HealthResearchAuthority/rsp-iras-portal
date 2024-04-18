@@ -1,6 +1,4 @@
-﻿@using Microsoft.AspNetCore.Http;
-@inject IHttpContextAccessor HttpContextAccessor;
-
+﻿@using System.Security.Claims
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,6 +20,7 @@
 					<img style="background-color: hsl(0, 0%, 90%)"
 						 src="https://www.myresearchproject.org.uk/images/IRAS.gif" />
 				</a>
+    using System.Security.Claims;
 			</div>
 		</div>
 	</header>
@@ -78,25 +77,27 @@
 					Contact Us
 				</a>
 			</li>
+			
             @{
-                if (HttpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+                if (User.Identity?.IsAuthenticated is true)
                 {
                     <li class="app-navigation__list-item">
                         <a class="govuk-link govuk-link--no-visited-state govuk-link--no-underline app-navigation__link js-app-navigation__link"
                            href="#">
-                            @HttpContextAccessor.HttpContext.User.Claims.ToList()[5].Value
+                            @User.Identity.Name
                         </a>
                     </li>
                     <li class="app-navigation__list-item">
-                        <a class="govuk-link govuk-link--no-visited-state govuk-link--no-underline app-navigation__link js-app-navigation__link"
-                           href="#">
-                            Logout
-                        </a>
+                        <a class="govuk-button" asp-controller="Application" asp-action="Signout">Logout</a>
                     </li>
                 }
+				else
+				{
+					<li class="app-navigation__list-item">
+                        <a class="govuk-button" asp-controller="Application" asp-action="signin">SignIn</a>
+                    </li>
+				}
             }
-            
-            
 		</ul>
 	</nav>
     <div class="container">
