@@ -77,6 +77,12 @@ builder.Services.AddAuthentication(options =>
     options.CallbackPath = "/signin-oidc"; // Default callback path
 });
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("administrator", policy => policy.RequireClaim("admin"));
+    options.AddPolicy("user", policy => policy.RequireClaim("user"));
+});
+
 var app = builder.Build();
 
 app.UseStaticFiles(); // this will serve the static files from wwwroot folder

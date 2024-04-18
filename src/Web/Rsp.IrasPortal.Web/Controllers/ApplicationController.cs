@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Services;
@@ -19,6 +20,7 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
         return RedirectToAction(nameof(Index));
     }
 
+    [Authorize(Policy = "administrator")]
     public IActionResult ProjectName()
     {
         return View();
