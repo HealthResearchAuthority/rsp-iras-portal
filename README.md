@@ -9,25 +9,54 @@ This project is for Web Application Development.
 ## Prerequisites
 
 - .NET 8 SDK
-- Visual Studio 2019 or later
+- VsCode or Visual Studio 2022 or later
+- Configure secrets (sensitive data) using Secret Manager tool
 
+## User Secrets
+
+The applicaition is integrated with the IDG (Identity Gateway) and requiers ClientId and ClientSecret. These are senstive values and shouldn't be committed to the source code. A more secure approach to store secrets in your development environment is to use the Secret Manager. For other environments, the secrets will be stored in the Azure KeyVault. It can also be configured for Dev.
+
+Secret Manager tool is available as a CLI command. It is also integrated into Visual Studio: you can right-click the project in the Solution Explorer and select the Manage User Secrets item from the context menu.
+
+If this is a brand new project, The first step you need to do is to enable your project to use the Secret Manager. You can do so by running the following command in the root folder of your project:
+
+```
+dotnet user-secrets init --project "<project path>"
+```
+### Note: You only needed the above if you created a new project.
+
+After the initialization or if it's an existing project, you can store your application secrets by using the dotnet user-secrets set command. For example, to store the ClientId and ClientSecret, you can run the following commands:
+
+```
+dotnet user-secrets set "AppSettings:ClientId" "<YOUR-CLIENTID>"
+dotnet user-secrets set "AppSettings:ClientSecret" "<YOUR-CLIENT-SECRET>"
+```
+If you don't want to use the CLI command, you can use the Visual Studio's built-in option and directly add the secrets to the file. You can right-click the project in the Solution Explorer and select the Manage User Secrets item from the context menu. It will open the json file where you can add the secrets like below. Please note that it's a flat json file, so Key/Value needs to be on separate lines separated by :
+
+```json
+{
+  "AppSettings:ClientId": "<client id>"
+  "AppSettings:ClientSecret": "<client secret>"
+}
+```
 ## Installation
 
 1. Clone the repository
 
-```
-git clone https://FutureIRAS@dev.azure.com/FutureIRAS/Research%20Systems%20Programme/_git/rsp-iras-portal
-```
+    ```
+    git clone https://FutureIRAS@dev.azure.com/FutureIRAS/Research%20Systems%20Programme/_git/rsp-iras-portal
+    ```
 2. Navigate to the project directory
 
-```
-cd rsp-iras-portal
-```
+    ```
+    cd rsp-iras-portal
+    ```
 
 3. Restore the packages
-```
-dotnet restore
-```
+
+    ```
+    dotnet restore
+    ```
 # Build and Test
 
 1. To build the project, navigate to the project directory and run the following command:
@@ -47,5 +76,5 @@ dotnet build
 3. To run the application, use the following command:
 
 ```
-dotnet run --project .\src\Web\Rsp.IrasPortal.Web\
+dotnet run --project .\src\AppHost\Rsp.IrasPortal\
 ```

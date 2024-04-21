@@ -49,8 +49,8 @@ public class CustomClaimsTransformation : IClaimsTransformation
     {
         return email switch
         {
-            "shahzad.hassan@gmail.com" => "user",
-            "nikhil.bharathesh_PA_test@hra.nhs.uk" => "admin",
+            "shahzad.hassan@paconsulting.com" => "admin",
+            "nikhil.bharathesh_PA_test@hra.nhs.uk" => "user",
             _ => string.Empty
         };
     }

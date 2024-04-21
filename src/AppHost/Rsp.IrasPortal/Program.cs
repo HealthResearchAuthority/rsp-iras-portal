@@ -1,4 +1,5 @@
-﻿using HealthChecks.UI.Client;
+﻿using System.Security.Claims;
+using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -78,6 +79,7 @@ services
         {
             options.ExpireTimeSpan = TimeSpan.FromMinutes(15);
             options.SlidingExpiration = true;
+            options.AccessDeniedPath = "/Forbidden";
         }
     )
     .AddOpenIdConnect
@@ -91,10 +93,11 @@ services
             options.SaveTokens = true;
             options.Scope.Add("openid");
             options.Scope.Add("profile");
+            options.Scope.Add("email");
             options.CallbackPath = "/signin-oidc"; // Default callback path
-            //options.SignedOutCallbackPath = "/";
-            options.SignedOutRedirectUri = "https://localhost:56901/application/welcome";
-            //options.AccessDeniedPath = "/Forbidden";
+            options.SignedOutCallbackPath = "/oidc/logout";
+            options.GetClaimsFromUserInfoEndpoint = true;
+            options.ClaimActions.MapUniqueJsonKey(ClaimTypes.Name, "given_name");
         }
     );
 

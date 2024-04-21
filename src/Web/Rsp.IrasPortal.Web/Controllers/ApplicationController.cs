@@ -14,29 +14,33 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
 {
     public IActionResult SignIn()
     {
-        return new ChallengeResult([CookieAuthenticationDefaults.AuthenticationScheme, "OpenIdConnect"]);
+        return new ChallengeResult("OpenIdConnect", new()
+        {
+            RedirectUri = Url.Action(nameof(Welcome))
+        });
     }
 
+    [Route("/")]
     public IActionResult Welcome()
     {
         return View("Index");
     }
 
-    [Authorize(Policy = "administrator")]
+    [Authorize(Policy = "IsAdmin")]
     public IActionResult ProjectName()
     {
         return View();
     }
 
-    public IActionResult Signout()
+    public async Task<IActionResult> Signout()
     {
-        // await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        // await HttpContext.SignOutAsync("OpenIdConnect", new AuthenticationProperties
-        // {
-        //     RedirectUri = Url.Action(nameof(Welcome))
-        // });
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        await HttpContext.SignOutAsync("OpenIdConnect");
 
-        return new SignOutResult([CookieAuthenticationDefaults.AuthenticationScheme, "OpenIdConnect"]);
+        return new SignOutResult([CookieAuthenticationDefaults.AuthenticationScheme, "OpenIdConnect"], new()
+        {
+            RedirectUri = Url.Action(nameof(Welcome))
+        });
     }
 
     [HttpPost]

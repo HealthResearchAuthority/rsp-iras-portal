@@ -363,3 +363,6 @@ FodyWeavers.xsd
 
 # Live Testing
 *.lutconfig
+
+# VsCode cache/options directory
+.vscode/

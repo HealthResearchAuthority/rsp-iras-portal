@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Rsp.IrasPortal.Web</title>
+    <title>@ViewData["Title"] - Future Iras Portal</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Rsp.IrasPortal.Web.styles.css" asp-append-version="true" />
@@ -20,7 +20,6 @@
 					<img style="background-color: hsl(0, 0%, 90%)"
 						 src="https://www.myresearchproject.org.uk/images/IRAS.gif" />
 				</a>
-    using System.Security.Claims;
 			</div>
 		</div>
 	</header>
@@ -82,9 +81,8 @@
                 if (User.Identity?.IsAuthenticated is true)
                 {
                     <li class="app-navigation__list-item">
-                        <a class="govuk-link govuk-link--no-visited-state govuk-link--no-underline app-navigation__link js-app-navigation__link"
-                           href="#">
-                            @User.Identity.Name
+                        <a class="govuk-link govuk-link--no-visited-state govuk-link--no-underline app-navigation__link js-app-navigation__link" href="#">
+							@User.Identity.Name
                         </a>
                     </li>
                     <li class="app-navigation__list-item">

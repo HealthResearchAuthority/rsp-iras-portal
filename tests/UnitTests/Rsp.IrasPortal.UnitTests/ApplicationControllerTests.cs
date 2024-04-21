@@ -23,7 +23,7 @@ public class ApplicationControllerTests
     public void Index_ReturnsViewResult()
     {
         // Act
-        var result = _controller.Index();
+        var result = _controller.Welcome();
 
         // Assert
         result.ShouldBeOfType<ViewResult>();
