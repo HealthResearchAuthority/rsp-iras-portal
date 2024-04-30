@@ -27,6 +27,14 @@ parameters:
     displayName: Run GitHub Advanced Security Scan
     type: boolean
     default: true
+  - name: browser
+    displayName: Select a Browser
+    type: string
+    default: chromium
+    values:
+      - chromium
+      - safari
+      - firefox
 
 variables:
   - name: solution
@@ -47,3 +55,4 @@ stages:
   - template: jobs/build.yaml@library
     parameters:
       run_github_security_scan: ${{ parameters.run_github_security_scan }}
+      browser: ${{ parameters.browser }}
