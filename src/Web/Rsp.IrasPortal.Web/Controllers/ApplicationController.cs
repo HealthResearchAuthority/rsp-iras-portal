@@ -1,11 +1,11 @@
 using System.Diagnostics;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Models;
+using Rsp.Logging.Extensions;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
@@ -58,21 +58,16 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
     [HttpPost]
     public IActionResult SaveCountry(string officeLocation)
     {
+        logger.LogMethodStarted(LogLevel.Information);
+
         ViewData["Country"] = officeLocation;
         return RedirectToAction(nameof(ApplicationType));
     }
 
     public async Task<IActionResult> ApplicationType()
     {
-        try
-        {
-            var categories = await categoriesService.GetApplicationCategories();
-            return View(categories);
-        }
-        catch
-        {
-            return RedirectToAction(nameof(Error));
-        }
+        var categories = await categoriesService.GetApplicationCategories();
+        return View(categories);
     }
 
     [HttpPost]

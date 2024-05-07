@@ -3,7 +3,6 @@ using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Rsp.IrasPortal.Application.Configuration;
@@ -13,6 +12,7 @@ using Rsp.IrasPortal.HttpClients;
 using Rsp.IrasPortal.Infrastructure;
 using Rsp.IrasPortal.Infrastructure.ServiceClients;
 using Rsp.IrasPortal.Services;
+using Rsp.Logging.Middlewares.RequestTracing;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,12 +24,21 @@ builder
 
 builder
     .Host
-    .UseSerilog((host, logger) => logger.ReadFrom.Configuration(host.Configuration));
+    .UseSerilog
+    (
+        (host, logger) =>
+            logger
+                .ReadFrom.Configuration(host.Configuration)
+                .Enrich.WithCorrelationId()
+                .Enrich.WithCorrelationIdHeader("X-Correlation-ID")
+    );
 
 var settings = builder.Configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
 
 // Add services to the container.
 var services = builder.Services;
+
+services.AddHttpContextAccessor();
 
 // add application services
 services.AddTransient<ICategoriesService, CategoriesService>();
@@ -61,8 +70,7 @@ services
             opt.SetApiMaxActiveRequests(1); //api requests concurrency
             opt.AddHealthCheckEndpoint("Health Status", "/health"); //map health check api
         }
-    )
-    .AddInMemoryStorage();
+    ).AddInMemoryStorage();
 
 services
     .AddAuthentication
@@ -120,22 +128,33 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// uses the SerilogRequestLogging middleware
+// see the overloads to provide options for
+// message template for request
+app.UseRequestTracing();
+
+app.MapShortCircuit(404, "robots.txt", "favicon.ico", "*.css");
+
 app
     .UseRouting()
     .UseAuthentication()
     .UseAuthorization()
-    .UseEndpoints(config =>
-    {
-        config.MapHealthChecks("/health", new()
+    .UseEndpoints
+    (
+        endpoints =>
         {
-            Predicate = _ => true,
-            ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-        });
+            endpoints.MapHealthChecks("/health", new()
+            {
+                Predicate = _ => true,
+                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+            });
 
-        config.MapHealthChecksUI();
-    });
+            endpoints.MapHealthChecksUI();
+            endpoints.MapControllers();
+        }
+    );
 
-app.MapControllers();
+//app.MapControllers();
 //app.MapDefaultControllerRoute();
 // app.MapControllerRoute(
 //     name: "default",

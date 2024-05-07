@@ -1,6 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
-using System.Security.Claims;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Rsp.IrasPortal.Infrastructure;
 
@@ -17,7 +16,7 @@ public class CustomClaimsTransformation : IClaimsTransformation
         }
 
         var claim = principal.Claims.First(c => c.Type == claimType);
-        
+
         var claimsIdentity = new ClaimsIdentity();
 
         // if the email is shahzad.hassan then add user claim
@@ -26,7 +25,7 @@ public class CustomClaimsTransformation : IClaimsTransformation
             claimsIdentity.AddClaim(new Claim(ClaimTypes.Role, "user"));
         }
 
-        // if the email is nikhil.bharathesh then add admin claim    
+        // if the email is nikhil.bharathesh then add admin claim
         if (ValidateEmail(claim.Value) is "admin")
         {
             claimsIdentity.AddClaim(new Claim(ClaimTypes.Role, "admin"));
