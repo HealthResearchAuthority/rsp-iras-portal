@@ -4,14 +4,17 @@
 }
 
 <div class="govuk-width-container app-width-container">
-    <a class="govuk-back-link"
-       asp-action="ProjectCategory">
+    <a href="#"
+       class="govuk-back-link"
+       onclick="displaySection(--sectionIdx)"
+       id="back_link"
+       style="display: none">
         Back
     </a>
     <main class="govuk-main-wrapper">
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
-                <h1 class="govuk-heading-xl" id="title">Review your answers</h1>
+                <h1 class="govuk-heading-xl" id="title">Your draft application has been saved</h1>
             </div>
         </div>
 
@@ -19,41 +22,26 @@
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key">Project title</dt>
                 <dd class="govuk-summary-list__value" id="review_title">@Model.Title</dd>
-                <dd class="govuk-summary-list__actions">
-                    <a class="govuk-link" asp-action="ProjectName">Change</a>
-                </dd>
             </div>
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key">Lead NHS R&D office location</dt>
                 <dd class="govuk-summary-list__value" id="review_location">@Model.Location.ToString()</dd>
-                <dd class="govuk-summary-list__actions">
-                    <a class="govuk-link" asp-action="Country">Change</a>
-                </dd>
             </div>
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key">Required application</dt>
                 <dd class="govuk-summary-list__value" id="review_applications">
-                    @foreach (var item in Model.ApplicationCategories) {
+                    @foreach (var item in Model.ApplicationCategories)
+                    {
                         <p>@item</p>
                     }
-                </dd>
-                <dd class="govuk-summary-list__actions">
-                    <a class="govuk-link" asp-action="ApplicationType">Change</a>
                 </dd>
             </div>
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key">Project category</dt>
                 <dd class="govuk-summary-list__value" id="review_category">@Model.ProjectCategory</dd>
-                <dd class="govuk-summary-list__actions">
-                    <a class="govuk-link" asp-action="ProjectCategory">Change</a>
-                </dd>
             </div>
         </dl>
-        <form asp-action="SaveDocumentUpload">
-            <button class="govuk-button" data-module="govuk-button">
-                Finish and submit
-            </button>
-            <button class="ms-3 govuk-button govuk-button--secondary" asp-controller="Application" asp-action="SaveDraftApplication">Save draft</button>
-        </form>
+
+        <a class="govuk-button" asp-controller="Application" asp-action="Welcome">Return home</a>
     </main>
 </div>

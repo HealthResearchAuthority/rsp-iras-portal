@@ -4,13 +4,15 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Domain.Entities;
+using Rsp.IrasPortal.Domain.Enums;
 using Rsp.IrasPortal.Web.Models;
 using Rsp.Logging.Extensions;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]")]
-public class ApplicationController(ILogger<ApplicationController> logger, ICategoriesService categoriesService) : Controller
+public class ApplicationController(ILogger<ApplicationController> logger, ICategoriesService categoriesService, IApplicationsService applicationsService) : Controller
 {
     public IActionResult SignIn()
     {
@@ -21,15 +23,39 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
     }
 
     [Route("/")]
-    public IActionResult Welcome()
+    public async Task<IActionResult> Welcome()
     {
-        return View("Index");
+        var applications = await applicationsService.GetApplications();
+        return View(nameof(Index), applications);
+    }
+
+    public async Task<IActionResult> LoadApplication(int id)
+    {
+        var application = await applicationsService.GetApplication(5);
+        if (application != null)
+        {
+            HttpContext.Session.SetString("Id", id.ToString());
+            HttpContext.Session.SetString("ProjectName", application.Title);
+            logger.LogInformation(application.Title);
+            HttpContext.Session.SetString("OfficeLocation", ((int)application.Location).ToString());
+            logger.LogInformation(application.Location.ToString());
+            HttpContext.Session.SetString("ApplicationType", application.ApplicationCategories.ToString());
+            logger.LogInformation(application.ApplicationCategories.ToString());
+            HttpContext.Session.SetString("ProjectCategory", application.ProjectCategory);
+            logger.LogInformation(application.ProjectCategory);
+
+            return RedirectToAction(nameof(ProjectName));
+        }
+
+        var applications = await applicationsService.GetApplications();
+
+        return RedirectToAction(nameof(Welcome));
     }
 
     [Authorize(Policy = "IsAdmin")]
     public IActionResult ProjectName()
     {
-        return View();
+        return View(nameof(ProjectName), HttpContext.Session.GetString("ProjectName") ?? "");
     }
 
     public async Task<IActionResult> Signout()
@@ -46,34 +72,33 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
     [HttpPost]
     public IActionResult SaveProjectName(string projectName)
     {
-        ViewData["ProjectName"] = projectName;
+        HttpContext.Session.SetString("ProjectName", projectName ?? "");
         return RedirectToAction(nameof(Country));
     }
 
     public IActionResult Country()
     {
-        return View();
+        return View(nameof(Country), HttpContext.Session.GetString("OfficeLocation") ?? "");
     }
 
     [HttpPost]
     public IActionResult SaveCountry(string officeLocation)
     {
-        logger.LogMethodStarted(LogLevel.Information);
-
-        ViewData["Country"] = officeLocation;
+        HttpContext.Session.SetString("OfficeLocation", officeLocation ?? "0");
         return RedirectToAction(nameof(ApplicationType));
     }
 
     public async Task<IActionResult> ApplicationType()
     {
         var categories = await categoriesService.GetApplicationCategories();
+        ViewData["ApplicationType"] = HttpContext.Session.GetString("ApplicationType") ?? "";
         return View(categories);
     }
 
     [HttpPost]
     public IActionResult SaveApplicationType(string applicationType)
     {
-        ViewData["ApplicationType"] = applicationType;
+        HttpContext.Session.SetString("ApplicationType", applicationType ?? "");
         return RedirectToAction(nameof(ProjectCategory));
     }
 
@@ -82,6 +107,7 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
         try
         {
             var categories = await categoriesService.GetProjectCategories();
+            ViewData["ProjectCategory"] = HttpContext.Session.GetString("ProjectCategory") ?? "";
             return View(categories);
         }
         catch
@@ -93,8 +119,8 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
     [HttpPost]
     public IActionResult SaveProjectCategory(string projectCategory)
     {
-        ViewData["ProjectCategory"] = projectCategory;
-        return RedirectToAction(nameof(ProjectStartDate));
+        HttpContext.Session.SetString("ProjectCategory", projectCategory ?? "");
+        return RedirectToAction(nameof(ReviewAnswers));
     }
 
     public IActionResult ProjectStartDate()
@@ -123,7 +149,38 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
 
     public IActionResult ReviewAnswers()
     {
-        return View();
+        var application = new IrasApplication
+        {
+            Title = HttpContext.Session.GetString("ProjectName"),
+            Location = (Location)Int32.Parse(HttpContext.Session.GetString("OfficeLocation") ?? "0"),
+            ApplicationCategories = [HttpContext.Session.GetString("ApplicationType") ?? ""],
+            ProjectCategory = HttpContext.Session.GetString("ProjectCategory") ?? "",
+            StartDate = DateTime.Parse(HttpContext.Session.GetString("ProjectStartDate") ?? DateTime.Now.ToString()),
+        };
+
+        return View(application);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> SaveDraftApplication()
+    {
+        var application = new IrasApplication
+        {
+            Title = HttpContext.Session.GetString("ProjectName"),
+            Location = (Location)Int32.Parse(HttpContext.Session.GetString("OfficeLocation") ?? "0"),
+            ApplicationCategories = [HttpContext.Session.GetString("ApplicationType") ?? ""],
+            ProjectCategory = HttpContext.Session.GetString("ProjectCategory") ?? "",
+            StartDate = DateTime.Parse(HttpContext.Session.GetString("ProjectStartDate") ?? DateTime.Now.ToString()),
+        };
+
+        var createdApplication = await applicationsService.CreateApplication(application);
+
+        return RedirectToAction(nameof(DraftSaved), createdApplication);
+    }
+
+    public IActionResult DraftSaved(IrasApplication application)
+    {
+        return View(application);
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

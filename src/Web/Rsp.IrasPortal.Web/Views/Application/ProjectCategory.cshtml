@@ -20,7 +20,7 @@
                     <option value="default" selected disabled>Select...</option>
                     @foreach (var item in Model)
                     {
-                        <option value="@item">@item</option>
+                        <!option value=@item @(ViewBag.ProjectCategory == item.Split(" ")[0] ? "selected" : "")>@item</!option>
                     }
                 </select>
             </div>
