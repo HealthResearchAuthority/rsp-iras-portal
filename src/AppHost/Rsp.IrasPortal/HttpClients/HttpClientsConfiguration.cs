@@ -20,6 +20,10 @@ public static class HttpClientsConfiguration
             .AddRestClient<ICategoriesHttpClient>()
             .ConfigureHttpClient(client => client.BaseAddress = appSettings.CategoriesServiceUri);
 
+        services
+           .AddRestClient<IApplicationsHttpClient>()
+           .ConfigureHttpClient(client => client.BaseAddress = appSettings.CategoriesServiceUri);
+
         return services;
     }
 

@@ -1,4 +1,5 @@
-﻿@{
+﻿@model string
+@{
     ViewData["Title"] = "Application";
 }
 
@@ -23,7 +24,8 @@
                                    id="radioEngland"
                                    name="officeLocation"
                                    type="radio"
-                                   value="england" />
+                                   value="0"
+                                   checked=@(Model == "0") />
                             <label class="govuk-label govuk-radios__label" for="radioEngland">
                                 England
                             </label>
@@ -33,7 +35,8 @@
                                    id="radioScotland"
                                    name="officeLocation"
                                    type="radio"
-                                   value="scotland" />
+                                   value="1"
+                                   checked=@(Model == "1") />
                             <label class="govuk-label govuk-radios__label" for="radioScotland">
                                 Scotland
                             </label>
@@ -43,7 +46,8 @@
                                    id="radioWales"
                                    name="officeLocation"
                                    type="radio"
-                                   value="wales" />
+                                   value="2"
+                                   checked=@(Model == "2") />
                             <label class="govuk-label govuk-radios__label" for="radioWales">
                                 Wales
                             </label>
@@ -53,7 +57,8 @@
                                    id="radioNorthernIreland"
                                    name="officeLocation"
                                    type="radio"
-                                   value="northern-ireland" />
+                                   value="3"
+                                   checked=@(Model == "3") />
                             <label class="govuk-label govuk-radios__label" for="radioNorthernIreland">
                                 Northern Ireland
                             </label>

@@ -25,11 +25,13 @@
                             {
                                 <div class="govuk-checkboxes__item">
                                     <input class="govuk-checkboxes__input"
-                                           id="irasForm"
+                                           id=@item
                                            name="applicationType"
                                            type="checkbox"
-                                           value="irasForm" />
-                                    <label class="govuk-label govuk-checkboxes__label" for="irasForm">@item</label>
+                                           value=@item
+                                           @(ViewBag.ApplicationType == item.Split(" ")[0] ? "checked" : "")
+                                           />
+                                    <label class="govuk-label govuk-checkboxes__label" for=@item>@item</label>
                                 </div>
                             }
                         }
@@ -38,7 +40,7 @@
             </div>
             <button class="govuk-button" data-module="govuk-button">
                 Continue
-            </button>
+            </button
         </form>
     </main>
 </div>

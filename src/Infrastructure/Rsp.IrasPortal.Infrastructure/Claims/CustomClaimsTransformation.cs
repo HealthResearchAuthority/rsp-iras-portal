@@ -51,6 +51,7 @@ public class CustomClaimsTransformation : IClaimsTransformation
         {
             "shahzad.hassan@paconsulting.com" => "admin",
             "nikhil.bharathesh_PA_test@hra.nhs.uk" => "user",
+            "haris.amin@paconsulting.com" => "admin",
             _ => string.Empty
         };
     }

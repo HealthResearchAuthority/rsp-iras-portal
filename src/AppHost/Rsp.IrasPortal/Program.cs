@@ -33,12 +33,21 @@ var services = builder.Services;
 
 // add application services
 services.AddTransient<ICategoriesService, CategoriesService>();
+services.AddTransient<IApplicationsService, ApplicationsService>();
 services.AddTransient<IClaimsTransformation, CustomClaimsTransformation>();
 
 // add microservice clients
 services.AddTransient<ICategoriesServiceClient, CategoriesServiceClient>();
+services.AddTransient<IApplicationsServiceClient, ApplicationsServiceClient>();
 
 services.AddHttpClients(settings!);
+
+services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(15);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 // add controllers and views
 services.AddControllersWithViews();
@@ -87,8 +96,8 @@ services
         options =>
         {
             options.Authority = settings.Authority;
-            options.ClientId = settings.ClientId;
-            options.ClientSecret = settings.ClientSecret;
+            options.ClientId = "aqHE90z281Yff2vf_OTCdlpNSasa"; // settings.clientId
+            options.ClientSecret = "4OgtPQJC9vknVGAyN_mdrMTw5PQa"; // settings.clientSecret
             options.ResponseType = OpenIdConnectResponseType.Code;
             options.SaveTokens = true;
             options.Scope.Add("openid");
@@ -124,6 +133,7 @@ app
     .UseRouting()
     .UseAuthentication()
     .UseAuthorization()
+    .UseSession()
     .UseEndpoints(config =>
     {
         config.MapHealthChecks("/health", new()
