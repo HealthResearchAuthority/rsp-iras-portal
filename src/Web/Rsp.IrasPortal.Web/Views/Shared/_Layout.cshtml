@@ -16,7 +16,7 @@
 			style="background-color: #e6e5e5">
 		<div class="govuk-header__container app-width-container">
 			<div class="govuk-header__logo">
-				<a href="#" class="govuk-header__link govuk-header__link--homepage">
+				<a asp-action="Welcome" class="govuk-header__link govuk-header__link--homepage">
 					<img style="background-color: hsl(0, 0%, 90%)"
 						 src="https://www.myresearchproject.org.uk/images/IRAS.gif" />
 				</a>
@@ -30,7 +30,7 @@
 		<ul class="app-navigation__list app-width-container">
 			<li class="app-navigation__list-item">
 				<a class="govuk-link govuk-link--no-visited-state govuk-link--no-underline app-navigation__link js-app-navigation__link"
-				   href="#">
+				   asp-action="Welcome">
 					Home
 				</a>
 			</li>

@@ -43,15 +43,17 @@
                 @{
                     if (User.IsInRole("admin"))
                     {
-                        <a class="govuk-button" asp-controller="Application" asp-action="ProjectName">Proceed with new application</a>
-                        <a class="govuk-button" asp-controller="Application" asp-action="LoadApplication">Edit existing application</a>
-                        <select class="govuk-select" id="applicationSelect" name="applicationSelect">
-                            <option value="default" selected disabled>Select...</option>
-                            @foreach (var item in Model)
-                            {
-                                <option value="@item.Id">@item.Title</option>
-                            }
-                        </select>
+                        <a class="govuk-button" asp-controller="Application" asp-action="StartNewApplication">Proceed with new application</a>
+                        <form asp-controller="Application" asp-action="LoadExistingApplication" style="display: inline">
+                            <button class="govuk-button">Edit existing application</button>
+                            <select class="govuk-select" id="applicationIdSelect" name="applicationIdSelect">
+                                <option value="default" selected disabled>Select...</option>
+                                @foreach (var item in Model)
+                                {
+                                    <option value="@item.Id">@item.Title</option>
+                                }
+                            </select>
+                        </form>
                     }
                 }
             </div>

@@ -28,8 +28,8 @@
                                            id=@item
                                            name="applicationType"
                                            type="checkbox"
-                                           value=@item
-                                           @(ViewBag.ApplicationType == item.Split(" ")[0] ? "checked" : "")
+                                           value="@item"
+                                           @(ViewBag.ApplicationType.Contains(item) ? "checked" : "")
                                            />
                                     <label class="govuk-label govuk-checkboxes__label" for=@item>@item</label>
                                 </div>
