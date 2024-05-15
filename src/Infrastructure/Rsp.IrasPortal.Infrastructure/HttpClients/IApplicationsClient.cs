@@ -15,5 +15,5 @@ public interface IApplicationsHttpClient
     public Task<IrasApplication> CreateApplication(IrasApplication irasApplication);
 
     [Post("/applications/update")]
-    public Task UpdateApplication(int id, IrasApplication irasApplication);
+    public Task<IrasApplication> UpdateApplication(int id, IrasApplication irasApplication);
 }

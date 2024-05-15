@@ -18,15 +18,11 @@ public class ApplicationsServiceClient(IApplicationsHttpClient client) : IApplic
 
     public async Task<IrasApplication> CreateApplication(IrasApplication irasApplication)
     {
-        var application = await client.CreateApplication(irasApplication);
-
-        return await GetApplication(application.Id);
+        return await client.CreateApplication(irasApplication);
     }
 
     public async Task<IrasApplication> UpdateApplication(int id, IrasApplication irasApplication)
     {
-        await client.UpdateApplication(id, irasApplication);
-
-        return await GetApplication(id);
+        return await client.UpdateApplication(id, irasApplication);
     }
 }

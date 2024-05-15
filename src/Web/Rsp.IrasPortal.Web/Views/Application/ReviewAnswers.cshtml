@@ -25,7 +25,7 @@
             </div>
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key">Lead NHS R&D office location</dt>
-                <dd class="govuk-summary-list__value" id="review_location">@Model.Location.ToString()</dd>
+                <dd class="govuk-summary-list__value" id="review_location">@Model.Location?.ToString()</dd>
                 <dd class="govuk-summary-list__actions">
                     <a class="govuk-link" asp-action="Country">Change</a>
                 </dd>

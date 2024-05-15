@@ -1,5 +1,3 @@
-using System.Diagnostics;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -8,6 +6,7 @@ using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Entities;
 using Rsp.IrasPortal.Domain.Enums;
 using Rsp.IrasPortal.Web.Models;
+using System.Diagnostics;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
@@ -22,6 +21,17 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
         });
     }
 
+    public async Task<IActionResult> Signout()
+    {
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        await HttpContext.SignOutAsync("OpenIdConnect");
+
+        return new SignOutResult([CookieAuthenticationDefaults.AuthenticationScheme, "OpenIdConnect"], new()
+        {
+            RedirectUri = Url.Action(nameof(Welcome))
+        });
+    }
+
     [Route("/")]
     public async Task<IActionResult> Welcome()
     {
@@ -29,20 +39,30 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
         return View(nameof(Index), applications);
     }
 
-    public async Task<IActionResult> LoadApplication(int id)
+    public IActionResult StartNewApplication()
     {
-        var application = await applicationsService.GetApplication(5);
+        HttpContext.Session.Remove("Id");
+        HttpContext.Session.Remove("ProjectName");
+        HttpContext.Session.Remove("OfficeLocation");
+        HttpContext.Session.Remove("ApplicationType");
+        HttpContext.Session.Remove("ProjectCategory");
+
+        return RedirectToAction(nameof(ProjectName));
+    }
+
+    public async Task<IActionResult> LoadExistingApplication(string applicationIdSelect)
+    {
+        logger.LogInformation(applicationIdSelect);
+        if (applicationIdSelect == null) return RedirectToAction(nameof(Welcome));
+
+        var application = await applicationsService.GetApplication(Int32.Parse(applicationIdSelect));
         if (application != null)
         {
-            HttpContext.Session.SetString("Id", id.ToString());
-            HttpContext.Session.SetString("ProjectName", application.Title);
-            logger.LogInformation(application.Title);
-            HttpContext.Session.SetString("OfficeLocation", ((int)application.Location).ToString());
-            logger.LogInformation(application.Location.ToString());
-            HttpContext.Session.SetString("ApplicationType", application.ApplicationCategories.ToString());
-            logger.LogInformation(application.ApplicationCategories.ToString());
-            HttpContext.Session.SetString("ProjectCategory", application.ProjectCategory);
-            logger.LogInformation(application.ProjectCategory);
+            HttpContext.Session.SetString("Id", applicationIdSelect.ToString());
+            HttpContext.Session.SetString("ProjectName", application.Title ?? "");
+            HttpContext.Session.SetString("OfficeLocation", ((int)application.Location).ToString() ?? "");
+            HttpContext.Session.SetString("ApplicationType", String.Join(",", application.ApplicationCategories ?? []));
+            HttpContext.Session.SetString("ProjectCategory", application.ProjectCategory ?? "");
 
             return RedirectToAction(nameof(ProjectName));
         }
@@ -56,17 +76,6 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
     public IActionResult ProjectName()
     {
         return View(nameof(ProjectName), HttpContext.Session.GetString("ProjectName") ?? "");
-    }
-
-    public async Task<IActionResult> Signout()
-    {
-        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        await HttpContext.SignOutAsync("OpenIdConnect");
-
-        return new SignOutResult([CookieAuthenticationDefaults.AuthenticationScheme, "OpenIdConnect"], new()
-        {
-            RedirectUri = Url.Action(nameof(Welcome))
-        });
     }
 
     [HttpPost]
@@ -84,7 +93,7 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
     [HttpPost]
     public IActionResult SaveCountry(string officeLocation)
     {
-        HttpContext.Session.SetString("OfficeLocation", officeLocation ?? "0");
+        HttpContext.Session.SetString("OfficeLocation", officeLocation ?? "");
         return RedirectToAction(nameof(ApplicationType));
     }
 
@@ -93,7 +102,7 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
         try
         {
             var categories = await categoriesService.GetApplicationCategories();
-            ViewData["ApplicationType"] = HttpContext.Session.GetString("ApplicationType") ?? "";
+            ViewData["ApplicationType"] = HttpContext.Session.GetString("ApplicationType")?.Split(",").ToList() ?? [];
             return View(categories);
         }
         catch
@@ -156,31 +165,20 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
 
     public IActionResult ReviewAnswers()
     {
-        var application = new IrasApplication
-        {
-            Title = HttpContext.Session.GetString("ProjectName"),
-            Location = (Location)Int32.Parse(HttpContext.Session.GetString("OfficeLocation") ?? "0"),
-            ApplicationCategories = [HttpContext.Session.GetString("ApplicationType") ?? ""],
-            ProjectCategory = HttpContext.Session.GetString("ProjectCategory") ?? "",
-            StartDate = DateTime.Parse(HttpContext.Session.GetString("ProjectStartDate") ?? DateTime.Now.ToString()),
-        };
-
-        return View(application);
+        return View(GetApplicationFromSession());
     }
 
     [HttpPost]
     public async Task<IActionResult> SaveDraftApplication()
     {
-        var application = new IrasApplication
-        {
-            Title = HttpContext.Session.GetString("ProjectName"),
-            Location = (Location)Int32.Parse(HttpContext.Session.GetString("OfficeLocation") ?? "0"),
-            ApplicationCategories = [HttpContext.Session.GetString("ApplicationType") ?? ""],
-            ProjectCategory = HttpContext.Session.GetString("ProjectCategory") ?? "",
-            StartDate = DateTime.Parse(HttpContext.Session.GetString("ProjectStartDate") ?? DateTime.Now.ToString()),
-        };
+        IrasApplication createdApplication;
 
-        var createdApplication = await applicationsService.CreateApplication(application);
+        var id = HttpContext.Session.GetString("Id");
+        var application = GetApplicationFromSession();
+
+        createdApplication = id == null ?
+            await applicationsService.CreateApplication(application) :
+            await applicationsService.UpdateApplication(Int32.Parse(id), application);
 
         return RedirectToAction(nameof(DraftSaved), createdApplication);
     }
@@ -194,5 +192,20 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
     public IActionResult Error()
     {
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+    }
+
+    private IrasApplication GetApplicationFromSession()
+    {
+        Location? location = null;
+        if (int.TryParse(HttpContext.Session.GetString("OfficeLocation"), out int parsedLocation)) location = (Location?)parsedLocation;
+
+        return new IrasApplication
+        {
+            Title = HttpContext.Session.GetString("ProjectName"),
+            Location = location,
+            ApplicationCategories = HttpContext.Session.GetString("ApplicationType")?.Split(",").ToList() ?? [],
+            ProjectCategory = HttpContext.Session.GetString("ProjectCategory") ?? "",
+            StartDate = DateTime.Parse(HttpContext.Session.GetString("ProjectStartDate") ?? DateTime.Now.ToString()),
+        };
     }
 }
