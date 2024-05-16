@@ -53,7 +53,6 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
 
     public async Task<IActionResult> LoadExistingApplication(string applicationIdSelect)
     {
-        logger.LogInformation(applicationIdSelect);
         if (applicationIdSelect == null) return RedirectToAction(nameof(Welcome));
 
         var application = await applicationsService.GetApplication(Int32.Parse(applicationIdSelect));
