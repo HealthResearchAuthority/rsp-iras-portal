@@ -8,20 +8,10 @@ public struct AppSettings
     /// <summary>
     /// Gets or sets the URI of the categories microservice.
     /// </summary>
-    public Uri? CategoriesServiceUri { get; set; }
+    public Uri? ApplicationsServiceUri { get; set; }
 
     /// <summary>
-    /// Authority URL configured for OpenId
+    /// Authentication settings for the application
     /// </summary>
-    public string Authority { get; set; }
-
-    /// <summary>
-    /// ClientId for OpenId Auth Configuration
-    /// </summary>
-    public string ClientId { get; set; }
-
-    /// <summary>
-    /// ClientSecret for OpenId Auth Configuration
-    /// </summary>
-    public string ClientSecret { get; set; }
+    public AuthSettings AuthSettings { get; set; }
 }

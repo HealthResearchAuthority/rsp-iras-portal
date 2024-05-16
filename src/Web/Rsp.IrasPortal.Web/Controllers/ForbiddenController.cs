@@ -2,7 +2,7 @@
 using Rsp.Logging.Domain;
 using Rsp.Logging.Extensions;
 
-namespace Rsp.IrasPortal.Web;
+namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]")]
 public class ForbiddenController(ILogger<ForbiddenController> logger) : Controller

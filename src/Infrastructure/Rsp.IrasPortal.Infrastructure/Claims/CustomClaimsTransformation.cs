@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 
-namespace Rsp.IrasPortal.Infrastructure;
+namespace Rsp.IrasPortal.Infrastructure.Claims;
 
 public class CustomClaimsTransformation : IClaimsTransformation
 {

@@ -9,14 +9,17 @@ using Rsp.IrasPortal.Domain.Entities;
 using Rsp.IrasPortal.Domain.Enums;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
+using Rsp.Logging.Extensions;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]")]
-public class ApplicationController(ILogger<ApplicationController> logger, ICategoriesService categoriesService, IApplicationsService applicationsService) : Controller
+public class ApplicationController(ILogger<ApplicationController> logger, IApplicationsService applicationsService) : Controller
 {
     public IActionResult SignIn()
     {
+        logger.LogMethodStarted();
+
         return new ChallengeResult("OpenIdConnect", new()
         {
             RedirectUri = Url.Action(nameof(Welcome))
@@ -25,6 +28,8 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
 
     public async Task<IActionResult> Signout()
     {
+        logger.LogMethodStarted();
+
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         await HttpContext.SignOutAsync("OpenIdConnect");
 
@@ -37,12 +42,16 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
     [Route("/")]
     public async Task<IActionResult> Welcome()
     {
+        logger.LogMethodStarted();
+
         var applications = await applicationsService.GetApplications();
         return View(nameof(Index), applications);
     }
 
     public IActionResult StartNewApplication()
     {
+        logger.LogMethodStarted();
+
         HttpContext.Session.RemoveAllSessionValues();
 
         return RedirectToAction(nameof(ProjectName));
@@ -50,6 +59,8 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
 
     public async Task<IActionResult> LoadExistingApplication(string applicationIdSelect)
     {
+        logger.LogMethodStarted();
+
         if (applicationIdSelect == null)
         {
             return RedirectToAction(nameof(Welcome));
@@ -77,91 +88,130 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
     [Authorize(Policy = "IsAdmin")]
     public IActionResult ProjectName()
     {
+        logger.LogMethodStarted();
+
         return View(nameof(ProjectName), HttpContext.Session.GetString(SessionConstants.Title) ?? "");
     }
 
     [HttpPost]
     public IActionResult SaveProjectName(string projectName)
     {
+        logger.LogMethodStarted();
+
         HttpContext.Session.SetString(SessionConstants.Title, projectName ?? "");
+
         return RedirectToAction(nameof(Country));
     }
 
     public IActionResult Country()
     {
+        logger.LogMethodStarted();
+
         return View(nameof(Country), HttpContext.Session.GetInt32(SessionConstants.Country));
     }
 
     [HttpPost]
     public IActionResult SaveCountry(string officeLocation)
     {
+        logger.LogMethodStarted();
+
         HttpContext.Session.SetInt32(SessionConstants.Country, Int32.Parse(officeLocation));
+
         return RedirectToAction(nameof(ApplicationType));
     }
 
     public async Task<IActionResult> ApplicationType()
     {
-        var categories = await categoriesService.GetApplicationCategories();
+        logger.LogMethodStarted();
+
+        var categories = await applicationsService.GetApplicationCategories();
+
         ViewData[SessionConstants.ApplicationType] = HttpContext.Session.GetString(SessionConstants.ApplicationType)?.Split(",").ToList() ?? [];
+
         return View(categories);
     }
 
     [HttpPost]
     public IActionResult SaveApplicationType(string applicationType)
     {
+        logger.LogMethodStarted();
+
         HttpContext.Session.SetString(SessionConstants.ApplicationType, applicationType ?? "");
+
         return RedirectToAction(nameof(ProjectCategory));
     }
 
     public async Task<IActionResult> ProjectCategory()
     {
-        var categories = await categoriesService.GetProjectCategories();
+        logger.LogMethodStarted();
+
+        var categories = await applicationsService.GetProjectCategories();
+
         ViewData[SessionConstants.ProjectCategory] = HttpContext.Session.GetString(SessionConstants.ProjectCategory) ?? "";
+
         return View(categories);
     }
 
     [HttpPost]
     public IActionResult SaveProjectCategory(string projectCategory)
     {
+        logger.LogMethodStarted();
+
         HttpContext.Session.SetString(SessionConstants.ProjectCategory, projectCategory ?? "");
+
         return RedirectToAction(nameof(ReviewAnswers));
     }
 
     public IActionResult ProjectStartDate()
     {
+        logger.LogMethodStarted();
+
         return View();
     }
 
     [HttpPost]
     public IActionResult SaveProjectStartDate(string projectStartDate)
     {
+        logger.LogMethodStarted();
+
         ViewData[SessionConstants.StartDate] = projectStartDate;
+
         return RedirectToAction(nameof(DocumentUpload));
     }
 
     public IActionResult DocumentUpload()
     {
+        logger.LogMethodStarted();
+
         return View();
     }
 
     [HttpPost]
     public IActionResult SaveDocumentUpload(string supportingDocument)
     {
+        logger.LogMethodStarted();
+
         ViewData["SupportingDocument"] = supportingDocument;
+
         return RedirectToAction(nameof(ReviewAnswers));
     }
 
     public IActionResult ReviewAnswers()
     {
+        logger.LogMethodStarted();
+
         return View(GetApplicationFromSession());
     }
 
     [HttpPost]
     public async Task<IActionResult> SaveDraftApplication()
     {
+        logger.LogMethodStarted();
+
         IrasApplication createdApplication;
 
         var id = HttpContext.Session.GetInt32(SessionConstants.Id);
+
         var application = GetApplicationFromSession();
 
         createdApplication = id == null ?
@@ -173,17 +223,23 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
 
     public IActionResult DraftSaved(IrasApplication application)
     {
+        logger.LogMethodStarted();
+
         return View(application);
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {
+        logger.LogMethodStarted();
+
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
 
     private IrasApplication GetApplicationFromSession()
     {
+        logger.LogMethodStarted();
+
         return new IrasApplication
         {
             Title = HttpContext.Session.GetString(SessionConstants.Title),

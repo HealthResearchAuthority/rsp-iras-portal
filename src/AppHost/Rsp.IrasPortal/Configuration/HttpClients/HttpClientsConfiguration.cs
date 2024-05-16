@@ -2,9 +2,11 @@
 using System.Text.Json;
 using Refit;
 using Rsp.IrasPortal.Application.Configuration;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Infrastructure.HttpClients;
+using Rsp.IrasPortal.Infrastructure.HttpMessageHandlers;
 
-namespace Rsp.IrasPortal.HttpClients;
+namespace Rsp.IrasPortal.Configuration.HttpClients;
 
 [ExcludeFromCodeCoverage]
 public static class HttpClientsConfiguration
@@ -17,12 +19,10 @@ public static class HttpClientsConfiguration
     public static IServiceCollection AddHttpClients(this IServiceCollection services, AppSettings appSettings)
     {
         services
-            .AddRestClient<ICategoriesHttpClient>()
-            .ConfigureHttpClient(client => client.BaseAddress = appSettings.CategoriesServiceUri);
-
-        services
-           .AddRestClient<IApplicationsHttpClient>()
-           .ConfigureHttpClient(client => client.BaseAddress = appSettings.CategoriesServiceUri);
+            .AddRestClient<IApplicationsHttpClient>()
+            .ConfigureHttpClient(client => client.BaseAddress = appSettings.ApplicationsServiceUri)
+            .AddHttpMessageHandler<AuthHeadersHandler>()
+            .AddHeaderPropagation(options => options.Headers.Add(CustomRequestHeaders.CorrelationId));
 
         return services;
     }

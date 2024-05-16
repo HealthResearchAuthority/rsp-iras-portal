@@ -1,17 +1,12 @@
-﻿using System.Security.Claims;
-using HealthChecks.UI.Client;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+﻿using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.HeaderPropagation;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Rsp.IrasPortal.Application.Configuration;
-using Rsp.IrasPortal.Application.ServiceClients;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.HttpClients;
-using Rsp.IrasPortal.Infrastructure;
-using Rsp.IrasPortal.Infrastructure.ServiceClients;
-using Rsp.IrasPortal.Services;
+using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Configuration.Auth;
+using Rsp.IrasPortal.Configuration.Dependencies;
+using Rsp.IrasPortal.Configuration.HttpClients;
+using Rsp.Logging.Middlewares.CorrelationId;
 using Rsp.Logging.Middlewares.RequestTracing;
 using Serilog;
 
@@ -29,27 +24,27 @@ builder
         (host, logger) =>
             logger
                 .ReadFrom.Configuration(host.Configuration)
-                .Enrich.WithCorrelationId()
-                .Enrich.WithCorrelationIdHeader("X-Correlation-ID")
+                .Enrich.WithCorrelationIdHeader()
     );
-
-var settings = builder.Configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
 
 // Add services to the container.
 var services = builder.Services;
+var configuration = builder.Configuration;
+
+var appSettingsSection = configuration.GetSection(nameof(AppSettings));
+var appSettings = appSettingsSection.Get<AppSettings>();
+
+// Add services to IoC container
+services.AddServices();
 
 services.AddHttpContextAccessor();
 
-// add application services
-services.AddTransient<ICategoriesService, CategoriesService>();
-services.AddTransient<IApplicationsService, ApplicationsService>();
-services.AddTransient<IClaimsTransformation, CustomClaimsTransformation>();
+services.AddHttpClients(appSettings!);
 
-// add microservice clients
-services.AddTransient<ICategoriesServiceClient, CategoriesServiceClient>();
-services.AddTransient<IApplicationsServiceClient, ApplicationsServiceClient>();
+// routing configuration
+services.AddRouting(options => options.LowercaseUrls = true);
 
-services.AddHttpClients(settings!);
+services.AddAuthenticationAndAuthorization(appSettings);
 
 services.AddSession(options =>
 {
@@ -63,11 +58,23 @@ services.AddControllersWithViews();
 
 // configure health checks to monitor
 // microservice health
-var uri = new Uri(settings.CategoriesServiceUri!, "/health");
+var uri = new Uri(appSettings.ApplicationsServiceUri!, "/health");
 
 services
    .AddHealthChecks()
-   .AddUrlGroup(uri, "Categories API", HealthStatus.Unhealthy);
+   .AddUrlGroup(uri, "Categories API", HealthStatus.Unhealthy, configurePrimaryHttpMessageHandler: _ =>
+    {
+        // the following setup was done to propgate the
+        // correlationId header to the the health check call as well
+        var options = new HeaderPropagationMessageHandlerOptions();
+
+        options.Headers.Add(CustomRequestHeaders.CorrelationId);
+
+        return new HeaderPropagationMessageHandler(options, new())
+        {
+            InnerHandler = new HttpClientHandler()
+        };
+    });
 
 services
    .AddHealthChecksUI
@@ -81,47 +88,9 @@ services
         }
     ).AddInMemoryStorage();
 
-services
-    .AddAuthentication
-    (
-        options =>
-        {
-            options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-        }
-    )
-    .AddCookie
-    (
-        options =>
-        {
-            options.ExpireTimeSpan = TimeSpan.FromMinutes(15);
-            options.SlidingExpiration = true;
-            options.AccessDeniedPath = "/Forbidden";
-        }
-    )
-    .AddOpenIdConnect
-    (
-        options =>
-        {
-            options.Authority = settings.Authority;
-            options.ClientId = settings.ClientId;
-            options.ClientSecret = settings.ClientSecret;
-            options.ResponseType = OpenIdConnectResponseType.Code;
-            options.SaveTokens = true;
-            options.Scope.Add("openid");
-            options.Scope.Add("profile");
-            options.Scope.Add("email");
-            options.CallbackPath = "/signin-oidc"; // Default callback path
-            options.SignedOutCallbackPath = "/oidc/logout";
-            options.GetClaimsFromUserInfoEndpoint = true;
-            options.ClaimActions.MapUniqueJsonKey(ClaimTypes.Name, "given_name");
-        }
-    );
-
-services
-    .AddAuthorizationBuilder()
-    .AddPolicy("IsAdmin", policy => policy.RequireRole("admin"))
-    .AddPolicy("IsUser", policy => policy.RequireRole("user"));
+// header to be propagated to the httpclient
+// to be sent in the request for external api calls
+services.AddHeaderPropagation(options => options.Headers.Add(CustomRequestHeaders.CorrelationId));
 
 var app = builder.Build();
 
@@ -134,8 +103,16 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+else
+{
+    app.UseDeveloperExceptionPage();
+}
 
 app.UseHttpsRedirection();
+
+app.UseCorrelationId();
+
+app.UseHeaderPropagation();
 
 // uses the SerilogRequestLogging middleware
 // see the overloads to provide options for
@@ -163,11 +140,5 @@ app
             endpoints.MapControllers();
         }
     );
-
-//app.MapControllers();
-//app.MapDefaultControllerRoute();
-// app.MapControllerRoute(
-//     name: "default",
-//     pattern: "{controller=[controller]}/{action=[action]}/{id?}");
 
 app.Run();
