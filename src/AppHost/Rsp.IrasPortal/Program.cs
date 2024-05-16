@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using HealthChecks.UI.Client;
+﻿using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -14,6 +13,7 @@ using Rsp.IrasPortal.Infrastructure.ServiceClients;
 using Rsp.IrasPortal.Services;
 using Rsp.Logging.Middlewares.RequestTracing;
 using Serilog;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -104,8 +104,8 @@ services
         options =>
         {
             options.Authority = settings.Authority;
-            options.ClientId = "aqHE90z281Yff2vf_OTCdlpNSasa"; // settings.clientId
-            options.ClientSecret = "4OgtPQJC9vknVGAyN_mdrMTw5PQa"; // settings.clientSecret
+            options.ClientId = settings.ClientId;
+            options.ClientSecret = settings.ClientSecret;
             options.ResponseType = OpenIdConnectResponseType.Code;
             options.SaveTokens = true;
             options.Scope.Add("openid");
