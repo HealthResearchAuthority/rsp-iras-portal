@@ -20,10 +20,10 @@ public class ApplicationControllerTests
     }
 
     [Fact]
-    public void Index_ReturnsViewResult()
+    public async Task Index_ReturnsViewResult()
     {
         // Act
-        var result = _controller.Welcome();
+        var result = await _controller.Welcome();
 
         // Assert
         result.ShouldBeOfType<ViewResult>();

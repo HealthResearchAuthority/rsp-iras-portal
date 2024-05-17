@@ -3,11 +3,12 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Rsp.IrasPortal.Application;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Entities;
 using Rsp.IrasPortal.Domain.Enums;
+using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
-using Rsp.Logging.Extensions;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
@@ -42,27 +43,28 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
 
     public IActionResult StartNewApplication()
     {
-        HttpContext.Session.Remove("Id");
-        HttpContext.Session.Remove("ProjectName");
-        HttpContext.Session.Remove("OfficeLocation");
-        HttpContext.Session.Remove("ApplicationType");
-        HttpContext.Session.Remove("ProjectCategory");
+        HttpContext.Session.RemoveAllSessionValues();
 
         return RedirectToAction(nameof(ProjectName));
     }
 
     public async Task<IActionResult> LoadExistingApplication(string applicationIdSelect)
     {
-        if (applicationIdSelect == null) return RedirectToAction(nameof(Welcome));
+        if (applicationIdSelect == null)
+        {
+            return RedirectToAction(nameof(Welcome));
+        }
 
-        var application = await applicationsService.GetApplication(Int32.Parse(applicationIdSelect));
+        var applicationId = Int32.Parse(applicationIdSelect);
+        var application = await applicationsService.GetApplication(applicationId);
+
         if (application != null)
         {
-            HttpContext.Session.SetString("Id", applicationIdSelect.ToString());
-            HttpContext.Session.SetString("ProjectName", application.Title ?? "");
-            HttpContext.Session.SetString("OfficeLocation", ((int)application.Location).ToString() ?? "");
-            HttpContext.Session.SetString("ApplicationType", String.Join(",", application.ApplicationCategories ?? []));
-            HttpContext.Session.SetString("ProjectCategory", application.ProjectCategory ?? "");
+            HttpContext.Session.SetInt32(SessionConstants.Id, applicationId);
+            HttpContext.Session.SetString(SessionConstants.Title, application.Title ?? "");
+            HttpContext.Session.SetInt32(SessionConstants.Country, application.Location != null ? (int)application.Location : -1);
+            HttpContext.Session.SetString(SessionConstants.ApplicationType, String.Join(",", application.ApplicationCategories ?? []));
+            HttpContext.Session.SetString(SessionConstants.ProjectCategory, application.ProjectCategory ?? "");
 
             return RedirectToAction(nameof(ProjectName));
         }
@@ -75,60 +77,53 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
     [Authorize(Policy = "IsAdmin")]
     public IActionResult ProjectName()
     {
-        return View(nameof(ProjectName), HttpContext.Session.GetString("ProjectName") ?? "");
+        return View(nameof(ProjectName), HttpContext.Session.GetString(SessionConstants.Title) ?? "");
     }
 
     [HttpPost]
     public IActionResult SaveProjectName(string projectName)
     {
-        HttpContext.Session.SetString("ProjectName", projectName ?? "");
+        HttpContext.Session.SetString(SessionConstants.Title, projectName ?? "");
         return RedirectToAction(nameof(Country));
     }
 
     public IActionResult Country()
     {
-        return View(nameof(Country), HttpContext.Session.GetString("OfficeLocation") ?? "");
+        return View(nameof(Country), HttpContext.Session.GetInt32(SessionConstants.Country));
     }
 
     [HttpPost]
     public IActionResult SaveCountry(string officeLocation)
     {
-        HttpContext.Session.SetString("OfficeLocation", officeLocation ?? "");
+        HttpContext.Session.SetInt32(SessionConstants.Country, Int32.Parse(officeLocation));
         return RedirectToAction(nameof(ApplicationType));
     }
 
     public async Task<IActionResult> ApplicationType()
     {
         var categories = await categoriesService.GetApplicationCategories();
-        ViewData["ApplicationType"] = HttpContext.Session.GetString("ApplicationType")?.Split(",").ToList() ?? [];
+        ViewData[SessionConstants.ApplicationType] = HttpContext.Session.GetString(SessionConstants.ApplicationType)?.Split(",").ToList() ?? [];
         return View(categories);
     }
 
     [HttpPost]
     public IActionResult SaveApplicationType(string applicationType)
     {
-        HttpContext.Session.SetString("ApplicationType", applicationType ?? "");
+        HttpContext.Session.SetString(SessionConstants.ApplicationType, applicationType ?? "");
         return RedirectToAction(nameof(ProjectCategory));
     }
 
     public async Task<IActionResult> ProjectCategory()
     {
-        try
-        {
-            var categories = await categoriesService.GetProjectCategories();
-            ViewData["ProjectCategory"] = HttpContext.Session.GetString("ProjectCategory") ?? "";
-            return View(categories);
-        }
-        catch
-        {
-            return RedirectToAction(nameof(Error));
-        }
+        var categories = await categoriesService.GetProjectCategories();
+        ViewData[SessionConstants.ProjectCategory] = HttpContext.Session.GetString(SessionConstants.ProjectCategory) ?? "";
+        return View(categories);
     }
 
     [HttpPost]
     public IActionResult SaveProjectCategory(string projectCategory)
     {
-        HttpContext.Session.SetString("ProjectCategory", projectCategory ?? "");
+        HttpContext.Session.SetString(SessionConstants.ProjectCategory, projectCategory ?? "");
         return RedirectToAction(nameof(ReviewAnswers));
     }
 
@@ -140,7 +135,7 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
     [HttpPost]
     public IActionResult SaveProjectStartDate(string projectStartDate)
     {
-        ViewData["ProjectStartDate"] = projectStartDate;
+        ViewData[SessionConstants.StartDate] = projectStartDate;
         return RedirectToAction(nameof(DocumentUpload));
     }
 
@@ -166,12 +161,12 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
     {
         IrasApplication createdApplication;
 
-        var id = HttpContext.Session.GetString("Id");
+        var id = HttpContext.Session.GetInt32(SessionConstants.Id);
         var application = GetApplicationFromSession();
 
         createdApplication = id == null ?
             await applicationsService.CreateApplication(application) :
-            await applicationsService.UpdateApplication(Int32.Parse(id), application);
+            await applicationsService.UpdateApplication((int)id, application);
 
         return RedirectToAction(nameof(DraftSaved), createdApplication);
     }
@@ -189,16 +184,13 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
 
     private IrasApplication GetApplicationFromSession()
     {
-        Location? location = null;
-        if (int.TryParse(HttpContext.Session.GetString("OfficeLocation"), out int parsedLocation)) location = (Location?)parsedLocation;
-
         return new IrasApplication
         {
-            Title = HttpContext.Session.GetString("ProjectName"),
-            Location = location,
-            ApplicationCategories = HttpContext.Session.GetString("ApplicationType")?.Split(",").ToList() ?? [],
-            ProjectCategory = HttpContext.Session.GetString("ProjectCategory") ?? "",
-            StartDate = DateTime.Parse(HttpContext.Session.GetString("ProjectStartDate") ?? DateTime.Now.ToString()),
+            Title = HttpContext.Session.GetString(SessionConstants.Title),
+            Location = (Location?)HttpContext.Session.GetInt32(SessionConstants.Country),
+            ApplicationCategories = HttpContext.Session.GetString(SessionConstants.ApplicationType)?.Split(",").ToList() ?? [],
+            ProjectCategory = HttpContext.Session.GetString(SessionConstants.ProjectCategory) ?? "",
+            StartDate = DateTime.Parse(HttpContext.Session.GetString(SessionConstants.StartDate) ?? DateTime.Now.ToString()),
         };
     }
 }

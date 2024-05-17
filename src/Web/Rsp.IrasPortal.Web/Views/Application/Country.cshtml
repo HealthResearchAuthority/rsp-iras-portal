@@ -1,4 +1,4 @@
-﻿@model string
+﻿@model int
 @{
     ViewData["Title"] = "Application";
 }
@@ -25,7 +25,7 @@
                                    name="officeLocation"
                                    type="radio"
                                    value="0"
-                                   checked=@(Model == "0") />
+                                   checked=@(Model == 0) />
                             <label class="govuk-label govuk-radios__label" for="radioEngland">
                                 England
                             </label>
@@ -36,7 +36,7 @@
                                    name="officeLocation"
                                    type="radio"
                                    value="1"
-                                   checked=@(Model == "1") />
+                                   checked=@(Model == 1) />
                             <label class="govuk-label govuk-radios__label" for="radioScotland">
                                 Scotland
                             </label>
@@ -47,7 +47,7 @@
                                    name="officeLocation"
                                    type="radio"
                                    value="2"
-                                   checked=@(Model == "2") />
+                                   checked=@(Model == 2) />
                             <label class="govuk-label govuk-radios__label" for="radioWales">
                                 Wales
                             </label>
@@ -58,7 +58,7 @@
                                    name="officeLocation"
                                    type="radio"
                                    value="3"
-                                   checked=@(Model == "3") />
+                                   checked=@(Model == 3) />
                             <label class="govuk-label govuk-radios__label" for="radioNorthernIreland">
                                 Northern Ireland
                             </label>
