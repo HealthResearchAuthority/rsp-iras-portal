@@ -166,7 +166,7 @@ public class ApplicationController(ILogger<ApplicationController> logger, ICateg
 
         createdApplication = id == null ?
             await applicationsService.CreateApplication(application) :
-            await applicationsService.UpdateApplication((int)id, application);
+            await applicationsService.UpdateApplication(id.Value, application);
 
         return RedirectToAction(nameof(DraftSaved), createdApplication);
     }

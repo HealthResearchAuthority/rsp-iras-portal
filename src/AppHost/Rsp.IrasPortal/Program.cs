@@ -1,4 +1,5 @@
-﻿using HealthChecks.UI.Client;
+﻿using System.Security.Claims;
+using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -13,7 +14,6 @@ using Rsp.IrasPortal.Infrastructure.ServiceClients;
 using Rsp.IrasPortal.Services;
 using Rsp.Logging.Middlewares.RequestTracing;
 using Serilog;
-using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
