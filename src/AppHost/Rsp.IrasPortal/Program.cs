@@ -81,7 +81,7 @@ services
    (
         opt =>
         {
-            opt.SetEvaluationTimeInSeconds(300); //time in seconds between check
+            opt.SetEvaluationTimeInSeconds(10); //time in seconds between check
             opt.MaximumHistoryEntriesPerEndpoint(60); //maximum history of checks
             opt.SetApiMaxActiveRequests(1); //api requests concurrency
             opt.AddHealthCheckEndpoint("Health Status", "/health"); //map health check api
