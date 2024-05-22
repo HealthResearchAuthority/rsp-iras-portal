@@ -7,7 +7,7 @@ using Rsp.IrasPortal.Configuration.Health;
 using Rsp.IrasPortal.Configuration.HttpClients;
 using Rsp.Logging.Middlewares.CorrelationId;
 using Rsp.Logging.Middlewares.RequestTracing;
-using Serilog;
+using Rsp.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,15 +16,10 @@ builder
     .Configuration
     .AddJsonFile("logsettings.json");
 
-builder
-    .Host
-    .UseSerilog
-    (
-        (host, logger) =>
-            logger
-                .ReadFrom.Configuration(host.Configuration)
-                .Enrich.WithCorrelationIdHeader()
-    );
+// this method is called by multiple projects
+// serilog settings has been moved here, as all projects
+// would need it
+builder.AddServiceDefaults();
 
 // Add services to the container.
 var services = builder.Services;
@@ -71,6 +66,8 @@ services
 
 var app = builder.Build();
 
+app.MapDefaultEndpoints();
+
 app.UseStaticFiles(); // this will serve the static files from wwwroot folder
 
 // Configure the HTTP request pipeline.
@@ -106,7 +103,7 @@ else
         (
             endpoints =>
             {
-                endpoints.MapHealthChecks("/health", new()
+            endpoints.MapHealthChecks("/portal-health", new()
                 {
                     Predicate = _ => true,
                     ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
@@ -119,5 +116,5 @@ else
 
     app.UseJwksDiscovery();
 
-    app.Run();
+await app.RunAsync();
 }

@@ -17,17 +17,19 @@
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.4" />
 		<PackageReference Include="Microsoft.AspNetCore.HeaderPropagation" Version="8.0.5" />
 		<PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="7.5.1" />
-		<PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
+		<!--<PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
 		<PackageReference Include="Serilog.Enrichers.CorrelationId" Version="3.0.1" />
 		<PackageReference Include="Serilog.Expressions" Version="4.0.0" />
 		<PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0" />
 		<PackageReference Include="Serilog.Settings.Configuration" Version="8.0.0" />
 		<PackageReference Include="Serilog.Sinks.Async" Version="1.5.0" />
 		<PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
-		<PackageReference Include="Serilog.Sinks.Seq" Version="7.0.0" />
+		<PackageReference Include="Serilog.Sinks.OpenTelemetry" Version="2.0.0" />
+		<PackageReference Include="Serilog.Sinks.Seq" Version="7.0.0" />-->
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\..\..\rsp-service-defaults\src\Rsp.ServiceDefaults\Rsp.ServiceDefaults.csproj" />
 		<ProjectReference Include="..\..\Infrastructure\Rsp.IrasPortal.Infrastructure\Rsp.IrasPortal.Infrastructure.csproj" />
 		<ProjectReference Include="..\..\Services\Rsp.IrasPortal.Services\Rsp.IrasPortal.Services.csproj" />
 		<ProjectReference Include="..\..\Web\Rsp.IrasPortal.Web\Rsp.IrasPortal.Web.csproj" />

@@ -65,6 +65,10 @@ resources:
       type: git
       name: 'Research Systems Programme/rsp-iras-api-tests'
       ref: main
+    - repository: service_defaults
+      type: git
+      name: 'Research Systems Programme/rsp-service-defaults'
+      ref: main
 
 stages:
   - stage: dev
@@ -74,6 +78,8 @@ stages:
           run_github_security_scan: ${{ parameters.run_github_security_scan }}
           sonar_project_key: FutureIRAS_rsp-iras-portal
           sonar_project_name: rsp-iras-portal
+          install_aspire: true
+          service_defaults_repo: service_defaults
 
       #- template: jobs/deploy.yaml@library
       - job:
