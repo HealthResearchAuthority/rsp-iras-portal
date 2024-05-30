@@ -21,6 +21,22 @@ public interface IApplicationsHttpClient
     public Task<IEnumerable<IrasApplication>> GetApplications();
 
     /// <summary>
+    /// Gets the saved application by Id and status
+    /// </summary>
+    /// <param name="id">Application Id</param>
+    /// <param name="status">Application Status</param>
+    /// <returns>An asynchronous operation that returns a saved application.</returns>
+    [Get("/applications/{status}")]
+    public Task<ApiResponse<IrasApplication>> GetApplicationByStatus(int id, string status);
+
+    /// <summary>
+    /// Gets all the saved applications
+    /// </summary>
+    /// <returns>An asynchronous operation that returns all the saved application.</returns>
+    [Get("/applications/{status}/all")]
+    public Task<ApiResponse<IEnumerable<IrasApplication>>> GetApplicationsByStatus(string status);
+
+    /// <summary>
     /// Creates a new application
     /// </summary>
     /// <returns>An asynchronous operation that returns the newly created application.</returns>

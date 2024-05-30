@@ -4,17 +4,16 @@
 }
 
 <div class="govuk-width-container app-width-container">
-    <a class="govuk-back-link"
-       asp-action="ApplicationType">
-        Back
-    </a>
+
+    <partial name="_BackNavigation" model="@("app:applicationtype","Back")" />
+
     <main class="govuk-main-wrapper">
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
                 <h1 class="govuk-heading-xl" id="title">Select the project category</h1>
             </div>
         </div>
-        <form asp-action="SaveProjectCategory">
+        <form method="post">
             <div class="govuk-form-group">
                 <select class="govuk-select" id="projectCategory" name="projectCategory">
                     <option value="default" selected disabled>Select...</option>
@@ -24,9 +23,8 @@
                     }
                 </select>
             </div>
-            <button class="govuk-button" data-module="govuk-button">
-                Continue
-            </button>
+
+            <partial name="_SubmitButton" model="@("app:saveprojectcategory","Continue")" />
         </form>
     </main>
 </div>

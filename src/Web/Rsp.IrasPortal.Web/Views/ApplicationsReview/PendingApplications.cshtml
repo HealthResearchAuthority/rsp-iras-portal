@@ -1,0 +1,47 @@
+﻿@using Rsp.IrasPortal.Domain.Entities;
+@model IEnumerable<IrasApplication>
+@{
+    ViewData["Title"] = "Applications Review";
+}
+
+<div class="govuk-width-container app-width-container">
+
+    <main class="govuk-main-wrapper">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <h1 class="govuk-heading-xl" id="title">Review applications</h1>
+            </div>
+        </div>
+
+        @if (Model is null)
+        {
+            <partial name="_NoData" />
+
+            return;
+        }
+
+        <table class="govuk-table">
+            <thead class="govuk-table__head">
+                <tr class="govuk-table__row">
+                    <th class="govuk-table__header">Title</th>
+                    <th class="govuk-table__header">Location</th>
+                    <th class="govuk-table__header">View</th>
+                </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+
+                @foreach (var app in Model)
+                {
+                    <tr class="govuk-table__row">
+                        <td class="govuk-table__cell">@app.Title</td>
+                        <td class="govuk-table__cell">@app.Location</td>
+                        <td class="govuk-table__cell">
+                            <a asp-route="arc:getapplication" asp-route-id="@app.Id" class="govuk-link">View</a>
+                        </td>
+                    </tr>
+                }
+
+            </tbody>
+        </table>
+    </main>
+</div>

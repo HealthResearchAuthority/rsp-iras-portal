@@ -1,7 +1,6 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
+using Rsp.IrasPortal.Application.Constants;
 
 namespace Rsp.IrasPortal.Infrastructure.HttpMessageHandlers;
 
@@ -21,9 +20,12 @@ public class AuthHeadersHandler(IHttpContextAccessor httpContextAccessor) : Dele
         // do not create a private field for HttpContext
         var context = httpContextAccessor.HttpContext!;
 
-        var bearerToken = await context.GetTokenAsync(CookieAuthenticationDefaults.AuthenticationScheme, "access_token");
+        context.Items.TryGetValue(TokenKeys.AcessToken, out var bearerToken);
 
-        request.Headers.Add(HeaderNames.Authorization, $"Bearer {bearerToken}");
+        if (bearerToken != null)
+        {
+            request.Headers.Add(HeaderNames.Authorization, $"Bearer {bearerToken}");
+        }
 
         // Use the token to make the call.
         return await base.SendAsync(request, cancellationToken);

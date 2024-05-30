@@ -1,6 +1,6 @@
 ﻿namespace Rsp.IrasPortal.Application.Constants;
 
-public static class CustomRequestHeaders
+public struct CustomRequestHeaders
 {
     /// <summary>
     /// Header name for unique identifier assigned to a particular request

@@ -1,10 +1,9 @@
 ﻿using HealthChecks.UI.Client;
-using Microsoft.AspNetCore.HeaderPropagation;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Rsp.IrasPortal.Application.Configuration;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Configuration.Auth;
 using Rsp.IrasPortal.Configuration.Dependencies;
+using Rsp.IrasPortal.Configuration.Health;
 using Rsp.IrasPortal.Configuration.HttpClients;
 using Rsp.Logging.Middlewares.CorrelationId;
 using Rsp.Logging.Middlewares.RequestTracing;
@@ -32,7 +31,9 @@ var services = builder.Services;
 var configuration = builder.Configuration;
 
 var appSettingsSection = configuration.GetSection(nameof(AppSettings));
-var appSettings = appSettingsSection.Get<AppSettings>();
+var appSettings = appSettingsSection.Get<AppSettings>()!;
+
+services.AddSingleton(appSettings);
 
 // Add services to IoC container
 services.AddServices();
@@ -58,39 +59,15 @@ services.AddControllersWithViews();
 
 // configure health checks to monitor
 // microservice health
-var uri = new Uri(appSettings.ApplicationsServiceUri!, "/health");
-
-services
-   .AddHealthChecks()
-   .AddUrlGroup(uri, "Categories API", HealthStatus.Unhealthy, configurePrimaryHttpMessageHandler: _ =>
-    {
-        // the following setup was done to propgate the
-        // correlationId header to the the health check call as well
-        var options = new HeaderPropagationMessageHandlerOptions();
-
-        options.Headers.Add(CustomRequestHeaders.CorrelationId);
-
-        return new HeaderPropagationMessageHandler(options, new())
-        {
-            InnerHandler = new HttpClientHandler()
-        };
-    });
-
-services
-   .AddHealthChecksUI
-   (
-        opt =>
-        {
-            opt.SetEvaluationTimeInSeconds(10); //time in seconds between check
-            opt.MaximumHistoryEntriesPerEndpoint(60); //maximum history of checks
-            opt.SetApiMaxActiveRequests(1); //api requests concurrency
-            opt.AddHealthCheckEndpoint("Health Status", "/health"); //map health check api
-        }
-    ).AddInMemoryStorage();
+services.AddCustomHealthChecks(appSettings);
 
 // header to be propagated to the httpclient
 // to be sent in the request for external api calls
 services.AddHeaderPropagation(options => options.Headers.Add(CustomRequestHeaders.CorrelationId));
+
+services
+    .AddJwksManager()
+    .UseJwtValidation();
 
 var app = builder.Build();
 
@@ -106,39 +83,41 @@ if (!app.Environment.IsDevelopment())
 else
 {
     app.UseDeveloperExceptionPage();
-}
 
-app.UseHttpsRedirection();
+    app.UseHttpsRedirection();
 
-app.UseCorrelationId();
+    app.UseCorrelationId();
 
-app.UseHeaderPropagation();
+    app.UseHeaderPropagation();
 
-// uses the SerilogRequestLogging middleware
-// see the overloads to provide options for
-// message template for request
-app.UseRequestTracing();
+    // uses the SerilogRequestLogging middleware
+    // see the overloads to provide options for
+    // message template for request
+    app.UseRequestTracing();
 
-app.MapShortCircuit(404, "robots.txt", "favicon.ico", "*.css");
+    app.MapShortCircuit(404, "robots.txt", "favicon.ico", "*.css");
 
-app
-    .UseRouting()
-    .UseAuthentication()
-    .UseAuthorization()
-    .UseSession()
-    .UseEndpoints
-    (
-        endpoints =>
-        {
-            endpoints.MapHealthChecks("/health", new()
+    app
+        .UseRouting()
+        .UseAuthentication()
+        .UseAuthorization()
+        .UseSession()
+        .UseEndpoints
+        (
+            endpoints =>
             {
-                Predicate = _ => true,
-                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-            });
+                endpoints.MapHealthChecks("/health", new()
+                {
+                    Predicate = _ => true,
+                    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+                });
 
-            endpoints.MapHealthChecksUI();
-            endpoints.MapControllers();
-        }
-    );
+                endpoints.MapHealthChecksUI();
+                endpoints.MapControllers();
+            }
+        );
 
-app.Run();
+    app.UseJwksDiscovery();
+
+    app.Run();
+}

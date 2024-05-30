@@ -1,4 +1,5 @@
-﻿using Rsp.IrasPortal.Domain.Entities;
+﻿using Rsp.IrasPortal.Application.Responses;
+using Rsp.IrasPortal.Domain.Entities;
 
 namespace Rsp.IrasPortal.Application.ServiceClients;
 
@@ -19,6 +20,21 @@ public interface IApplicationsServiceClient
     /// </summary>
     /// <returns>An asynchronous operation that returns all the saved application.</returns>
     public Task<IEnumerable<IrasApplication>> GetApplications();
+
+    /// <summary>
+    /// Gets the saved application by Id
+    /// </summary>
+    /// <param name="id">Application Id</param>
+    /// <param name="status">Status of the application</param>
+    /// <returns>An asynchronous operation that returns a saved application.</returns>
+    public Task<ServiceResponse<IrasApplication>> GetApplicationByStatus(int id, string status);
+
+    /// <summary>
+    /// Gets all the saved applications
+    /// </summary>
+    /// <param name="status">Status of the application</param>
+    /// <returns>An asynchronous operation that returns all the saved application.</returns>
+    public Task<ServiceResponse<IEnumerable<IrasApplication>>> GetApplicationsByStatus(string status);
 
     /// <summary>
     /// Creates a new application

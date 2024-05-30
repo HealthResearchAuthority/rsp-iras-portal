@@ -3,24 +3,27 @@
 }
 
 <div class="govuk-width-container app-width-container">
-    <a class="govuk-back-link"
-       asp-action="ProjectStartDate">
-        Back
-    </a>
+
+    <partial name="_BackNavigation" model="@("app:projectstartdate","Back")" />
+
     <main class="govuk-main-wrapper">
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
                 <h1 class="govuk-heading-xl" id="title">Upload any supporting documents</h1>
             </div>
         </div>
-        <form asp-action="SaveDocumentUpload">
+        <form method="post">
             <div class="govuk-form-group">
                 <input class="govuk-file-upload" id="supportingDocument" name="supportingDocument" type="file" />
             </div>
-            <button class="govuk-button" data-module="govuk-button">
-                Review your answers
-            </button>
-            <button class="ms-3 govuk-button govuk-button--secondary" asp-controller="Application" asp-action="SaveDraftApplication">Save draft</button>
+
+            <partial name="_SubmitButton" model="@("app:savedocumentupload","Review your answers")" />
+
+            @{
+                ViewBag.Style = "ms-3 govuk-button govuk-button--secondary";
+            }
+
+            <partial name="_SubmitButton" model="@("app:savedraftapplication","Save draft")" />
         </form>
     </main>
 </div>

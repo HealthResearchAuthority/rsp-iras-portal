@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using System.Text.Json;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("")]
-public class AccessTokenController : Controller
+public class AccessTokenController() : Controller
 {
     [Route("token")]
     public async Task<IActionResult> Token(string tokenName)
@@ -13,7 +14,14 @@ public class AccessTokenController : Controller
         {
             return new ContentResult
             {
-                Content = await HttpContext.GetTokenAsync(tokenName)
+                Content = JsonSerializer.Serialize
+                (
+                    new
+                    {
+                        token = await HttpContext.GetTokenAsync(tokenName),
+                        updatedToken = HttpContext.Items[tokenName]
+                    }
+                )
             };
         }
 

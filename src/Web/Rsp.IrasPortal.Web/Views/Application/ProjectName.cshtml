@@ -10,18 +10,16 @@
                 <h1 class="govuk-heading-xl" id="title">Enter a short title for this project</h1>
             </div>
         </div>
-        <form asp-controller="Application" asp-action="SaveProjectName">
+        <form method="post">
             <div class="govuk-form-group">
                 <input class="govuk-input govuk-input--width-30"
                        id="projectName"
                        name="projectName"
                        type="text"
-                       value="@Model"
-                >
+                       value="@Model">
             </div>
-            <button class="govuk-button" data-module="govuk-button">
-                Continue
-            </button>
+
+            <partial name="_SubmitButton" model="@("app:saveprojectname","Continue")" />
         </form>
     </main>
 </div>

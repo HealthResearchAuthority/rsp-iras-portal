@@ -5,10 +5,9 @@
 }
 
 <div class="govuk-width-container app-width-container">
-    <a class="govuk-back-link"
-       asp-action="Country">
-        Back
-    </a>
+
+    <partial name="_BackNavigation" model="@("app:country", "Back")" />
+
     <main class="govuk-main-wrapper">
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
@@ -16,7 +15,7 @@
             </div>
         </div>
 
-        <form asp-action="SaveApplicationType">
+        <form method="post">
             <div class="govuk-form-group">
                 <fieldset class="govuk-fieldset">
                     <div class="govuk-checkboxes" data-module="govuk-checkboxes">
@@ -29,8 +28,7 @@
                                            name="applicationType"
                                            type="checkbox"
                                            value="@item"
-                                           @(ViewBag.ApplicationType.Contains(item) ? "checked" : "")
-                                           />
+                                    @(ViewBag.ApplicationType.Contains(item) ? "checked" : "") />
                                     <label class="govuk-label govuk-checkboxes__label" for=@item>@item</label>
                                 </div>
                             }
@@ -38,9 +36,8 @@
                     </div>
                 </fieldset>
             </div>
-            <button class="govuk-button" data-module="govuk-button">
-                Continue
-            </button
+
+            <partial name="_SubmitButton" model="@("app:saveapplicationtype","Continue")" />
         </form>
     </main>
 </div>

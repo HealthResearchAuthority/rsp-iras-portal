@@ -4,13 +4,7 @@
 }
 
 <div class="govuk-width-container app-width-container">
-    <a href="#"
-       class="govuk-back-link"
-       onclick="displaySection(--sectionIdx)"
-       id="back_link"
-       style="display: none">
-        Back
-    </a>
+
     <main class="govuk-main-wrapper">
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
@@ -40,22 +34,28 @@
                     <br />
                     For help with your application, click <a href="#">here</a>.
                 </p>
-                @{
-                    if (User.IsInRole("admin"))
-                    {
-                        <a class="govuk-button" asp-controller="Application" asp-action="StartNewApplication">Proceed with new application</a>
-                        <form asp-controller="Application" asp-action="LoadExistingApplication" style="display: inline">
-                            <button class="govuk-button">Edit existing application</button>
+
+                    <authorized auth-params="@new(Roles:"user")">
+
+                        <a class="govuk-button" asp-route="app:startnewapplication">Proceed with new application</a>
+
+                        <form method="post" style="display: inline">
+
+                            <partial name="_SubmitButton" model="@("app:loadexistingapplication","Edit existing application")" />
+
                             <select class="govuk-select" id="applicationIdSelect" name="applicationIdSelect">
+
                                 <option value="default" selected disabled>Select...</option>
+
                                 @foreach (var item in Model)
                                 {
                                     <option value="@item.Id">@item.Title</option>
                                 }
+
                             </select>
                         </form>
-                    }
-                }
+                    </authorized>
+
             </div>
             <div class="govuk-grid-column-one-third" style="border-top: 2px solid #5d235d; padding: 0%">
                 <h3 class="govuk-heading-m" style="margin-top: 15px">Project Details</h3>
@@ -67,8 +67,5 @@
                 </p>
             </div>
         </div>
-        @{
-            
-        }
     </main>
 </div>

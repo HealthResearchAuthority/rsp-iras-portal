@@ -3,8 +3,10 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Rsp.IrasPortal.Application.Configuration;
+using Rsp.IrasPortal.Application.Constants;
 
 namespace Rsp.IrasPortal.Configuration.Auth;
 
@@ -14,6 +16,13 @@ namespace Rsp.IrasPortal.Configuration.Auth;
 [ExcludeFromCodeCoverage]
 public static class AuthConfiguration
 {
+    private struct Roles
+    {
+        public const string admin = nameof(admin);
+        public const string user = nameof(user);
+        public const string reviewer = nameof(reviewer);
+    };
+
     /// <summary>
     /// Adds the Authentication and Authorization to the service
     /// </summary>
@@ -34,6 +43,20 @@ public static class AuthConfiguration
             (
                 options =>
                 {
+                    options.Events = new CookieAuthenticationEvents
+                    {
+                        // this event is called on each request
+                        // to validate that the current principal is still valid
+                        OnValidatePrincipal = context =>
+                        {
+                            // save the original access_token in the memory, this will be needed
+                            // to regenerate the JwtToken with additional claims
+                            context.HttpContext.Items[TokenKeys.AcessToken] = context.Properties.GetTokenValue(TokenKeys.AcessToken);
+
+                            return Task.CompletedTask;
+                        }
+                    };
+
                     options.ExpireTimeSpan = TimeSpan.FromMinutes(15);
                     options.SlidingExpiration = true;
                     options.AccessDeniedPath = "/Forbidden";
@@ -60,16 +83,23 @@ public static class AuthConfiguration
                 }
             );
 
-        ConfigureAuthorization(services, []);
+        ConfigureAuthorization(services);
 
         return services;
     }
 
-    private static void ConfigureAuthorization(IServiceCollection services, List<string> roles)
+    private static void ConfigureAuthorization(IServiceCollection services)
     {
+        var policy = new AuthorizationPolicyBuilder()
+           .RequireAuthenticatedUser()
+           .RequireClaim(ClaimTypes.Email)
+           .Build();
+
         services
             .AddAuthorizationBuilder()
-            .AddPolicy("IsAdmin", policy => policy.RequireRole("admin"))
-            .AddPolicy("IsUser", policy => policy.RequireRole("user"));
+            .AddPolicy("IsReviewer", policy => policy.RequireRole(Roles.reviewer))
+            .AddPolicy("IsAdmin", policy => policy.RequireRole(Roles.admin))
+            .AddPolicy("IsUser", policy => policy.RequireRole(Roles.user))
+            .SetDefaultPolicy(policy);
     }
 }

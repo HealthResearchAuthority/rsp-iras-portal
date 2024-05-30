@@ -13,7 +13,7 @@ using Rsp.Logging.Extensions;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
-[Route("[controller]/[action]")]
+[Route("[controller]/[action]", Name = "app:[action]")]
 public class ApplicationController(ILogger<ApplicationController> logger, IApplicationsService applicationsService) : Controller
 {
     public IActionResult SignIn()
@@ -39,12 +39,13 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
         });
     }
 
-    [Route("/")]
+    [Route("/", Name = "app:welcome")]
     public async Task<IActionResult> Welcome()
     {
         logger.LogMethodStarted();
 
         var applications = await applicationsService.GetApplications();
+
         return View(nameof(Index), applications);
     }
 
@@ -79,8 +80,6 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
 
             return RedirectToAction(nameof(ProjectName));
         }
-
-        var applications = await applicationsService.GetApplications();
 
         return RedirectToAction(nameof(Welcome));
     }
@@ -218,12 +217,17 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
             await applicationsService.CreateApplication(application) :
             await applicationsService.UpdateApplication(id.Value, application);
 
-        return RedirectToAction(nameof(DraftSaved), createdApplication);
+        // save in TempData to retreive again in DraftSaved
+        TempData.TryAdd("td:draft-application", createdApplication, true);
+
+        return RedirectToAction(nameof(DraftSaved));
     }
 
-    public IActionResult DraftSaved(IrasApplication application)
+    public IActionResult DraftSaved()
     {
         logger.LogMethodStarted();
+
+        TempData.TryGetValue<IrasApplication>("td:draft-application", out var application, true);
 
         return View(application);
     }

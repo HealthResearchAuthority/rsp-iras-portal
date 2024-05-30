@@ -1,0 +1,13 @@
+﻿@using Rsp.IrasPortal.Domain.Entities;
+@model IrasApplication
+@{
+    ViewData["Title"] = ViewBag.Title = "Application Review";
+}
+
+<div class="govuk-width-container app-width-container">
+
+    <partial name="_BackNavigation" model="@("arc:pendingapplications","Back")" />
+
+    @Html.DisplayForModel("Application")
+
+</div>

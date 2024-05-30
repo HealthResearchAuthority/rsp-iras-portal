@@ -3,17 +3,16 @@
 }
 
 <div class="govuk-width-container app-width-container">
-    <a class="govuk-back-link"
-       asp-action="ProjectCategory">
-        Back
-    </a>
+
+    <partial name="_BackNavigation" model="@("app:projectcategory","Back")" />
+
     <main class="govuk-main-wrapper">
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
                 <h1 class="govuk-heading-xl" id="title">When was the project start date?</h1>
             </div>
         </div>
-        <form asp-action="SaveProjectStartDate">
+        <form method="post">
             <div class="govuk-form-group">
                 <fieldset class="govuk-fieldset" role="group">
                     <div id="date-format-hint" class="govuk-hint">For example, 27 3 2007</div>
@@ -57,10 +56,15 @@
                     </div>
                 </fieldset>
             </div>
-            <button class="govuk-button" data-module="govuk-button">
-                Continue
-            </button>
-            <button class="ms-3 govuk-button govuk-button--secondary" asp-controller="Application" asp-action="SaveDraftApplication">Save draft</button>
+
+            <partial name="_SubmitButton" model="@("app:saveprojectstartdate","Continue")" />
+
+            @{
+                ViewBag.Style = "ms-3 govuk-button govuk-button--secondary";
+            }
+
+            <partial name="_SubmitButton" model="@("app:savedraftapplication","Save draft")" />
+
         </form>
     </main>
 </div>

@@ -1,0 +1,9 @@
+﻿@model (string RouteName, string DisplayText)
+
+@{
+    var style = ViewBag.Style ?? "govuk-button";
+}
+
+<button class="@style" data-module="govuk-button" type="submit" asp-route="@Model.RouteName">
+    @Model.DisplayText
+</button>

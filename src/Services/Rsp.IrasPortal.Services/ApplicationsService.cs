@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Entities;
@@ -18,6 +19,18 @@ public class ApplicationsService(ILogger<ApplicationsService> logger, IApplicati
     public Task<IEnumerable<IrasApplication>> GetApplications()
     {
         return applicationsClient.GetApplications();
+    }
+
+    /// <inheritdoc/>
+    public Task<ServiceResponse<IrasApplication>> GetApplicationByStatus(int id, string status)
+    {
+        return applicationsClient.GetApplicationByStatus(id, status);
+    }
+
+    /// <inheritdoc/>
+    public Task<ServiceResponse<IEnumerable<IrasApplication>>> GetApplicationsByStatus(string status)
+    {
+        return applicationsClient.GetApplicationsByStatus(status);
     }
 
     /// <inheritdoc/>
