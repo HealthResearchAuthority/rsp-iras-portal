@@ -182,7 +182,31 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
     {
         logger.LogMethodStarted();
 
-        return View();
+        TempData.TryGetValue<List<Document>>("td:uploaded-documents", out var documents, true);
+
+        return View(documents);
+    }
+
+    [HttpPost]
+    public IActionResult Upload(IFormFileCollection formFiles)
+    {
+        logger.LogMethodStarted();
+
+        List<Document> documents = [];
+
+        foreach (var file in formFiles)
+        {
+            documents.Add(new Document
+            {
+                Name = file.FileName,
+                Size = file.Length,
+                Type = Path.GetExtension(file.FileName)
+            });
+        }
+
+        TempData.TryAdd("td:uploaded-documents", documents, true);
+
+        return RedirectToAction(nameof(DocumentUpload));
     }
 
     [HttpPost]

@@ -8,4 +8,5 @@ public static class SessionConstants
     public const string ApplicationType = "ApplicationType";
     public const string ProjectCategory = "ProjectCategory";
     public const string StartDate = "StartDate";
+    public const string DocumentUpload = "DocumentUpload";
 }
