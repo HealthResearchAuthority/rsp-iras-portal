@@ -7,7 +7,6 @@
     <title>@ViewData["Title"] - Future Iras Portal</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Rsp.IrasPortal.Web.styles.css" asp-append-version="true" />
 </head>
 <body class="govuk-template__body js-enabled govuk-frontend-supported">
     <header class="govuk-header app-header"
@@ -17,8 +16,8 @@
         <div class="govuk-header__container app-width-container">
             <div class="govuk-header__logo">
                 <a asp-route="app:welcome" class="govuk-header__link govuk-header__link--homepage">
-                    <img style="background-color: hsl(0, 0%, 90%)"
-                         src="https://www.myresearchproject.org.uk/images/IRAS.gif" />
+                    <img style="background-color: hsl(0, 0%, 90%); display:block; width: 100%; margin:0 auto"
+                         src="~/images/iras-header.jpg" />
                 </a>
             </div>
         </div>
@@ -34,17 +33,6 @@
                     Home
                 </a>
             </li>
-
-            <authorized auth-params="@new(Roles:"user,reviewer")">
-
-                <li class="app-navigation__list-item">
-                    <a class="govuk-link govuk-link--no-visited-state govuk-link--no-underline app-navigation__link js-app-navigation__link"
-                       asp-route="arc:pendingapplications">
-                        Review Applications
-                    </a>
-                </li>
-
-            </authorized>
 
             <li class="app-navigation__list-item">
                 <a class="govuk-link govuk-link--no-visited-state govuk-link--no-underline app-navigation__link js-app-navigation__link"
@@ -89,6 +77,26 @@
                 </a>
             </li>
 
+            <authorized auth-params="@new(Roles:"reviewer")">
+
+                <li class="app-navigation__list-item">
+                    <a class="govuk-link govuk-link--no-visited-state govuk-link--no-underline app-navigation__link js-app-navigation__link"
+                       asp-route="arc:pendingapplications">
+                        Review Applications
+                    </a>
+                </li>
+
+            </authorized>
+
+            <authorized auth-params="@new(Roles:"admin")">
+                <li class="app-navigation__list-item">
+                    <a class="govuk-link govuk-link--no-visited-state govuk-link--no-underline app-navigation__link js-app-navigation__link"
+                       asp-route="admin:home">
+                        Admin
+                    </a>
+                </li>
+            </authorized>
+
             <authorized auth-params="@new()">
 
                 <li class="app-navigation__list-item">
@@ -110,8 +118,8 @@
 
         </ul>
     </nav>
-    <div class="container">
-        <main role="main" class="pb-3">
+    <div class="govuk-width-container app-width-container">
+        <main class="govuk-main-wrapper">
             @RenderBody()
         </main>
     </div>

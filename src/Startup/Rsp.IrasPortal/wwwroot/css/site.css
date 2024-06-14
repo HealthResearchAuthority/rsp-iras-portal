@@ -1247,8 +1247,8 @@
 
 @media (min-width: 40.0625em) {
     .govuk-main-wrapper {
-        padding-top: 40px;
-        padding-bottom: 40px;
+        padding-top: 20px;
+        padding-bottom: 15px;
     }
 }
 
@@ -2717,6 +2717,10 @@
     margin: 0;
     font-size: inherit;
     font-weight: inherit;
+}
+
+.govuk-checkboxes {
+    margin-bottom: 30px;
 }
 
 .govuk-checkboxes__item {
@@ -9890,4 +9894,12 @@ pre .language-plaintext {
 
 .app-prose-scope .app-tag {
     font-weight: normal;
+}
+
+.hra-tab .active {
+    border: solid 1px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    background-color: beige;
+    color: black;
 }

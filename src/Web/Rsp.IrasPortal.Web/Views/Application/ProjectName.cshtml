@@ -3,23 +3,19 @@
     ViewData["Title"] = "Application";
 }
 
-<div class="govuk-width-container app-width-container">
-    <main class="govuk-main-wrapper">
-        <div class="govuk-grid-row">
-            <div class="govuk-grid-column-two-thirds">
-                <h1 class="govuk-heading-xl" id="title">Enter a short title for this project</h1>
-            </div>
-        </div>
-        <form method="post">
-            <div class="govuk-form-group">
-                <input class="govuk-input govuk-input--width-30"
-                       id="projectName"
-                       name="projectName"
-                       type="text"
-                       value="@Model">
-            </div>
-
-            <partial name="_SubmitButton" model="@("app:saveprojectname","Continue")" />
-        </form>
-    </main>
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-xl" id="title">Enter a short title for this project</h1>
+    </div>
 </div>
+<form method="post">
+    <div class="govuk-form-group">
+        <input class="govuk-input govuk-input--width-30"
+               id="projectName"
+               name="projectName"
+               type="text"
+               value="@Model">
+    </div>
+
+    <partial name="_SubmitButton" model="@("app:saveprojectname","Continue")" />
+</form>

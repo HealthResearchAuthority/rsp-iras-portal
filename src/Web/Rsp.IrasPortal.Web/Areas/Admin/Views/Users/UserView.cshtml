@@ -1,0 +1,43 @@
+﻿@using Rsp.IrasPortal.Web.Areas.Admin.Models
+@model UserViewModel
+
+@{
+    var buttonText = ViewBag.Mode == "edit" ? "Save Changes" : "Create";
+    var heading = ViewBag.Mode == "edit" ? "Edit User" : "Create a new user";
+}
+
+<h2 class="govuk-heading-l">@heading</h2>
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <form method="post">
+            <input name="Id" asp-for="Id" value="@(Model.Id ?? string.Empty)" />
+            <input name="OriginalEmail" asp-for="OriginalEmail" value="@(Model.Email ?? string.Empty)" />
+            <div class="govuk-form-group">
+                <label class="govuk-label" for="FirstName">First Name</label>
+                <input class="govuk-input" id="FirstName" name="FirstName" type="text" asp-for="FirstName" value="@(Model.FirstName ?? string.Empty)" />
+                <span class="govuk-error-message" asp-validation-for="FirstName"></span>
+            </div>
+
+            <div class="govuk-form-group">
+                <label class="govuk-label" for="LastName">Last Name</label>
+                <input class="govuk-input" id="LastName" name="LastName" type="text" asp-for="LastName" value="@(Model.LastName ?? string.Empty)">
+                <span class="govuk-error-message" asp-validation-for="LastName"></span>
+            </div>
+
+            <div class="govuk-form-group">
+                <label class="govuk-label" for="Email">Email</label>
+                <input class="govuk-input" id="Email" name="Email" type="email" asp-for="Email" value="@(Model.Email ?? string.Empty)">
+                <span class="govuk-error-message" asp-validation-for="Email"></span>
+            </div>
+
+            <partial name="_SubmitButton" model="@("admin:submituser", buttonText)" />
+
+            @{
+                ViewBag.Style = "ms-3 govuk-button govuk-button--secondary";
+            }
+
+            <partial name="_SubmitButton" model="@("admin:users", "Cancel")" />
+        </form>
+    </div>
+</div>

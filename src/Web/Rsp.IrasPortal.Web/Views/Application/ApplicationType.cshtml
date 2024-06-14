@@ -4,40 +4,35 @@
     ViewData["Title"] = "Application";
 }
 
-<div class="govuk-width-container app-width-container">
+<partial name="_BackNavigation" model="@("app:country", "Back")" />
 
-    <partial name="_BackNavigation" model="@("app:country", "Back")" />
-
-    <main class="govuk-main-wrapper">
-        <div class="govuk-grid-row">
-            <div class="govuk-grid-column-two-thirds">
-                <h1 class="govuk-heading-xl" id="title">Which applications do you require?</h1>
-            </div>
-        </div>
-
-        <form method="post">
-            <div class="govuk-form-group">
-                <fieldset class="govuk-fieldset">
-                    <div class="govuk-checkboxes" data-module="govuk-checkboxes">
-                        @{
-                            @foreach (var item in Model)
-                            {
-                                <div class="govuk-checkboxes__item">
-                                    <input class="govuk-checkboxes__input"
-                                           id=@item
-                                           name="applicationType"
-                                           type="checkbox"
-                                           value="@item"
-                                    @(ViewBag.ApplicationType.Contains(item) ? "checked" : "") />
-                                    <label class="govuk-label govuk-checkboxes__label" for=@item>@item</label>
-                                </div>
-                            }
-                        }
-                    </div>
-                </fieldset>
-            </div>
-
-            <partial name="_SubmitButton" model="@("app:saveapplicationtype","Continue")" />
-        </form>
-    </main>
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-xl" id="title">Which applications do you require?</h1>
+    </div>
 </div>
+
+<form method="post">
+    <div class="govuk-form-group">
+        <fieldset class="govuk-fieldset">
+            <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                @{
+                    @foreach (var item in Model)
+                    {
+                        <div class="govuk-checkboxes__item">
+                            <input class="govuk-checkboxes__input"
+                                   id=@item
+                                   name="applicationType"
+                                   type="checkbox"
+                                   value="@item"
+                            @(ViewBag.ApplicationType.Contains(item) ? "checked" : "") />
+                            <label class="govuk-label govuk-checkboxes__label" for=@item>@item</label>
+                        </div>
+                    }
+                }
+            </div>
+        </fieldset>
+    </div>
+
+    <partial name="_SubmitButton" model="@("app:saveapplicationtype","Continue")" />
+</form>

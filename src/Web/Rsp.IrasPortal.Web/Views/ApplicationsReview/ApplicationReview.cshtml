@@ -4,10 +4,6 @@
     ViewData["Title"] = ViewBag.Title = "Application Review";
 }
 
-<div class="govuk-width-container app-width-container">
+<partial name="_BackNavigation" model="@("arc:pendingapplications","Back")" />
 
-    <partial name="_BackNavigation" model="@("arc:pendingapplications","Back")" />
-
-    @Html.DisplayForModel("Application")
-
-</div>
+@Html.DisplayForModel("Application")

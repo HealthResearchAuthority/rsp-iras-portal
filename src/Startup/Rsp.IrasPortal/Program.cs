@@ -103,7 +103,7 @@ else
         (
             endpoints =>
             {
-            endpoints.MapHealthChecks("/portal-health", new()
+                endpoints.MapHealthChecks("/portal-health", new()
                 {
                     Predicate = _ => true,
                     ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
@@ -116,5 +116,5 @@ else
 
     app.UseJwksDiscovery();
 
-await app.RunAsync();
+    await app.RunAsync();
 }

@@ -9,19 +9,14 @@ public static class ControllerExtensions
     /// Transforms the ServiceResponse to the desired ActionResult{<typeparam name="T">}</typeparam>
     /// </summary>
     /// <param name="response">The response.</param>
-    public static ObjectResult ServiceResult<T>(this ControllerBase _, ServiceResponse<T> response)
+    public static ObjectResult ServiceResult<T>(this ControllerBase controller, ServiceResponse<T> response)
     {
         if (response.IsSuccessStatusCode)
         {
             return new ObjectResult(response.Content) { StatusCode = (int)response.StatusCode };
         }
 
-        var result = new ProblemDetails
-        {
-            Title = response.ReasonPhrase,
-            Detail = response.Error,
-            Status = (int)response.StatusCode
-        };
+        var result = ProblemResult(controller, response);
 
         return new ObjectResult(result) { StatusCode = (int)response.StatusCode };
     }
@@ -39,5 +34,16 @@ public static class ControllerExtensions
         }
 
         return controller.StatusCode((int)response.StatusCode, response);
+    }
+
+    public static ProblemDetails ProblemResult(this ControllerBase controller, ServiceResponse response)
+    {
+        return new ProblemDetails
+        {
+            Title = response.ReasonPhrase,
+            Detail = response.Error,
+            Status = (int)response.StatusCode,
+            Instance = controller.Request.Path
+        };
     }
 }
