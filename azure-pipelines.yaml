@@ -81,12 +81,10 @@ stages:
           install_aspire: true
           service_defaults_repo: service_defaults
 
-      #- template: jobs/deploy.yaml@library
-      - job:
-        displayName: Deploy to Dev
-        steps:
-        - script: |
-            echo 'deploying to dev'
+      - template: jobs/deployPortal.yaml@library
+        parameters:
+          install_aspire: true
+          service_defaults_repo: service_defaults
 
   - stage: systemtest_auto
     jobs:
