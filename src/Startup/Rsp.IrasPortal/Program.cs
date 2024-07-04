@@ -8,6 +8,7 @@ using Rsp.IrasPortal.Configuration.HttpClients;
 using Rsp.Logging.Middlewares.CorrelationId;
 using Rsp.Logging.Middlewares.RequestTracing;
 using Rsp.ServiceDefaults;
+using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +28,15 @@ var configuration = builder.Configuration;
 
 var appSettingsSection = configuration.GetSection(nameof(AppSettings));
 var appSettings = appSettingsSection.Get<AppSettings>()!;
+
+if (!builder.Environment.IsDevelopment())
+{
+    // Load configuration from Azure App Configuration
+    builder.Configuration.AddAzureAppConfiguration(options =>
+        options.Connect(
+            new Uri(appSettings!.AzureAppConfiguration.Endpoint),
+            new ManagedIdentityCredential(appSettings.AzureAppConfiguration.IdentityClientID)));
+}
 
 services.AddSingleton(appSettings);
 

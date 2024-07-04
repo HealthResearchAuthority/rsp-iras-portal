@@ -19,4 +19,6 @@ public class AppSettings
     /// Authentication settings for the application
     /// </summary>
     public AuthSettings AuthSettings { get; set; } = null!;
+
+    public AzureAppConfigurations AzureAppConfiguration { get; set; } = null!;
 }
