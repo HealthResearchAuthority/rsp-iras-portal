@@ -81,7 +81,10 @@ stages:
           install_aspire: true
           service_defaults_repo: service_defaults
 
-      #- template: jobs/deploy.yaml@library
+      - template: jobs/deployPortal.yaml@library
+        parameters:
+          install_aspire: true
+          service_defaults_repo: service_defaults
 
   - stage: systemtest_auto
     jobs:
@@ -106,10 +109,10 @@ stages:
 
   - stage: systemtest_manual
     jobs:
-      - template: jobs/deployPortal.yaml@library
-        parameters:
-          install_aspire: true
-          service_defaults_repo: service_defaults
+    - job:
+      steps:
+      - script: |
+          echo 'env: system manual test'  
 
   - stage: system_integration_test
     jobs:
