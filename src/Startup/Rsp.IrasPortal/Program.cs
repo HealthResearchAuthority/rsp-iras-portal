@@ -64,7 +64,7 @@ services.AddControllersWithViews();
 
 // configure health checks to monitor
 // microservice health
-services.AddCustomHealthChecks(appSettings);
+//services.AddCustomHealthChecks(appSettings);
 
 // header to be propagated to the httpclient
 // to be sent in the request for external api calls
