@@ -87,44 +87,44 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-else
-{
-    app.UseDeveloperExceptionPage();
+//else
+//{
+//    app.UseDeveloperExceptionPage();
 
-    app.UseHttpsRedirection();
+//    app.UseHttpsRedirection();
 
-    app.UseCorrelationId();
+//    app.UseCorrelationId();
 
-    app.UseHeaderPropagation();
+//    app.UseHeaderPropagation();
 
-    // uses the SerilogRequestLogging middleware
-    // see the overloads to provide options for
-    // message template for request
-    app.UseRequestTracing();
+//    // uses the SerilogRequestLogging middleware
+//    // see the overloads to provide options for
+//    // message template for request
+//    app.UseRequestTracing();
 
-    app.MapShortCircuit(404, "robots.txt", "favicon.ico", "*.css");
+//    app.MapShortCircuit(404, "robots.txt", "favicon.ico", "*.css");
 
-    app
-        .UseRouting()
-        .UseAuthentication()
-        .UseAuthorization()
-        .UseSession()
-        .UseEndpoints
-        (
-            endpoints =>
-            {
-                endpoints.MapHealthChecks("/portal-health", new()
-                {
-                    Predicate = _ => true,
-                    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-                });
+//    app
+//        .UseRouting()
+//        .UseAuthentication()
+//        .UseAuthorization()
+//        .UseSession()
+//        .UseEndpoints
+//        (
+//            endpoints =>
+//            {
+//                endpoints.MapHealthChecks("/portal-health", new()
+//                {
+//                    Predicate = _ => true,
+//                    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+//                });
 
-                endpoints.MapHealthChecksUI();
-                endpoints.MapControllers();
-            }
-        );
+//                endpoints.MapHealthChecksUI();
+//                endpoints.MapControllers();
+//            }
+//        );
 
-    app.UseJwksDiscovery();
+//    app.UseJwksDiscovery();
 
-    await app.RunAsync();
-}
+//    await app.RunAsync();
+//}
