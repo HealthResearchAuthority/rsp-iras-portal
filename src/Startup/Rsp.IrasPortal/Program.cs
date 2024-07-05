@@ -15,7 +15,8 @@ var builder = WebApplication.CreateBuilder(args);
 //Add logger
 builder
     .Configuration
-    .AddJsonFile("logsettings.json");
+    .AddJsonFile("logsettings.json")
+    .AddEnvironmentVariables();
 
 // this method is called by multiple projects
 // serilog settings has been moved here, as all projects
@@ -26,17 +27,22 @@ builder.AddServiceDefaults();
 var services = builder.Services;
 var configuration = builder.Configuration;
 
-var appSettingsSection = configuration.GetSection(nameof(AppSettings));
-var appSettings = appSettingsSection.Get<AppSettings>()!;
-
 if (!builder.Environment.IsDevelopment())
 {
+    var azureAppSettingsSection = configuration.GetSection(nameof(AppSettings));
+    var azureAppSettings = azureAppSettingsSection.Get<AppSettings>()!;
+
     // Load configuration from Azure App Configuration
     builder.Configuration.AddAzureAppConfiguration(options =>
         options.Connect(
-            new Uri(appSettings!.AzureAppConfiguration.Endpoint),
-            new ManagedIdentityCredential(appSettings.AzureAppConfiguration.IdentityClientID)));
+            new Uri(azureAppSettings!.AzureAppConfiguration.Endpoint),
+            new ManagedIdentityCredential(azureAppSettings.AzureAppConfiguration.IdentityClientID)));
+
+    builder.Services.Configure<AppSettings>(builder.Configuration.GetSection(nameof(AppSettings)));
 }
+
+var appSettingsSection = configuration.GetSection(nameof(AppSettings));
+var appSettings = appSettingsSection.Get<AppSettings>()!;
 
 services.AddSingleton(appSettings);
 
@@ -86,45 +92,45 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Application/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
+    app.UseHttpsRedirection();
 }
-//else
-//{
-//    app.UseDeveloperExceptionPage();
+else
+{
+    app.UseDeveloperExceptionPage();
+}
+    
 
-//    app.UseHttpsRedirection();
+    app.UseCorrelationId();
 
-//    app.UseCorrelationId();
+    app.UseHeaderPropagation();
 
-//    app.UseHeaderPropagation();
+    // uses the SerilogRequestLogging middleware
+    // see the overloads to provide options for
+    // message template for request
+    app.UseRequestTracing();
 
-//    // uses the SerilogRequestLogging middleware
-//    // see the overloads to provide options for
-//    // message template for request
-//    app.UseRequestTracing();
+    app.MapShortCircuit(404, "robots.txt", "favicon.ico", "*.css");
 
-//    app.MapShortCircuit(404, "robots.txt", "favicon.ico", "*.css");
+    app
+        .UseRouting()
+        .UseAuthentication()
+        .UseAuthorization()
+        .UseSession()
+        .UseEndpoints
+        (
+            endpoints =>
+            {
+                endpoints.MapHealthChecks("/portal-health", new()
+                {
+                    Predicate = _ => true,
+                    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+                });
 
-//    app
-//        .UseRouting()
-//        .UseAuthentication()
-//        .UseAuthorization()
-//        .UseSession()
-//        .UseEndpoints
-//        (
-//            endpoints =>
-//            {
-//                endpoints.MapHealthChecks("/portal-health", new()
-//                {
-//                    Predicate = _ => true,
-//                    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-//                });
+                endpoints.MapHealthChecksUI();
+                endpoints.MapControllers();
+            }
+        );
 
-//                endpoints.MapHealthChecksUI();
-//                endpoints.MapControllers();
-//            }
-//        );
+    app.UseJwksDiscovery();
 
-//    app.UseJwksDiscovery();
-
-//    await app.RunAsync();
-//}
+    await app.RunAsync();
