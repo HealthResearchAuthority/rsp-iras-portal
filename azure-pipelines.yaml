@@ -22,7 +22,11 @@ parameters:
   - name: devops_library_branch
     displayName: DevOps Library Branch
     type: string
-    default: main
+    default: deployportal
+  - name: servicedefaults_library_branch
+    displayName: Service Defaults Library Branch
+    type: string
+    default: deployportal
   - name: run_github_security_scan
     displayName: Run GitHub Advanced Security Scan
     type: boolean
@@ -68,7 +72,7 @@ resources:
     - repository: service_defaults
       type: git
       name: 'Research Systems Programme/rsp-service-defaults'
-      ref: main
+      ref: ${{ parameters.servicedefaults_library_branch }}
 
 stages:
   - stage: dev
