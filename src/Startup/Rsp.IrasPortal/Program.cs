@@ -64,7 +64,7 @@ services.AddControllersWithViews();
 
 // configure health checks to monitor
 // microservice health
-//services.AddCustomHealthChecks(appSettings);
+services.AddCustomHealthChecks(appSettings);
 
 // header to be propagated to the httpclient
 // to be sent in the request for external api calls
@@ -76,7 +76,7 @@ services
 
 var app = builder.Build();
 
-app.MapDefaultEndpoints();
+//app.MapDefaultEndpoints();
 
 app.UseStaticFiles(); // this will serve the static files from wwwroot folder
 

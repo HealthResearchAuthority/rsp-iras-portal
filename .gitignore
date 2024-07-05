@@ -366,3 +366,8 @@ FodyWeavers.xsd
 
 # VsCode cache/options directory
 .vscode/
+/src/Startup/Rsp.IrasPortal/Properties/ServiceDependencies/irasportal-manualtest - Web Deploy/profile.arm.json
+/src/Startup/Rsp.IrasPortal/Properties/ServiceDependencies/irasportal-manualtest - Web Deploy1/profile.arm.json
+/src/Startup/Rsp.IrasPortal/Properties/ServiceDependencies/irasportal-manualtest - Zip Deploy/profile.arm.json
+/src/Startup/Rsp.IrasPortal/Properties/ServiceDependencies/nikhiltestapprsp - Web Deploy/profile.arm.json
+/src/Startup/Rsp.IrasPortal/.config/dotnet-tools.json
