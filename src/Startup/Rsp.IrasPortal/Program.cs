@@ -1,4 +1,5 @@
-﻿using HealthChecks.UI.Client;
+﻿using GovUk.Frontend.AspNetCore;
+using HealthChecks.UI.Client;
 using Rsp.IrasPortal.Application.Configuration;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Configuration.Auth;
@@ -63,6 +64,8 @@ services.AddHeaderPropagation(options => options.Headers.Add(CustomRequestHeader
 services
     .AddJwksManager()
     .UseJwtValidation();
+
+services.AddGovUkFrontend();
 
 var app = builder.Build();
 
