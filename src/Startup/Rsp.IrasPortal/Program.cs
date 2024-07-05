@@ -1,4 +1,5 @@
-﻿using HealthChecks.UI.Client;
+﻿using Azure.Identity;
+using HealthChecks.UI.Client;
 using Rsp.IrasPortal.Application.Configuration;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Configuration.Auth;
@@ -8,7 +9,6 @@ using Rsp.IrasPortal.Configuration.HttpClients;
 using Rsp.Logging.Middlewares.CorrelationId;
 using Rsp.Logging.Middlewares.RequestTracing;
 using Rsp.ServiceDefaults;
-using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -76,7 +76,7 @@ services
 
 var app = builder.Build();
 
-//app.MapDefaultEndpoints();
+app.MapDefaultEndpoints();
 
 app.UseStaticFiles(); // this will serve the static files from wwwroot folder
 
@@ -86,45 +86,45 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Application/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
+
+    app.UseHttpsRedirection();
 }
-//else
-//{
-//    app.UseDeveloperExceptionPage();
+else
+{
+    app.UseDeveloperExceptionPage();
+}
 
-//    app.UseHttpsRedirection();
+app.UseCorrelationId();
 
-//    app.UseCorrelationId();
+app.UseHeaderPropagation();
 
-//    app.UseHeaderPropagation();
+// uses the SerilogRequestLogging middleware
+// see the overloads to provide options for
+// message template for request
+app.UseRequestTracing();
 
-//    // uses the SerilogRequestLogging middleware
-//    // see the overloads to provide options for
-//    // message template for request
-//    app.UseRequestTracing();
+app.MapShortCircuit(404, "robots.txt", "favicon.ico", "*.css");
 
-//    app.MapShortCircuit(404, "robots.txt", "favicon.ico", "*.css");
+app
+    .UseRouting()
+    .UseAuthentication()
+    .UseAuthorization()
+    .UseSession()
+    .UseEndpoints
+    (
+        endpoints =>
+        {
+            endpoints.MapHealthChecks("/portal-health", new()
+            {
+                Predicate = _ => true,
+                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+            });
 
-//    app
-//        .UseRouting()
-//        .UseAuthentication()
-//        .UseAuthorization()
-//        .UseSession()
-//        .UseEndpoints
-//        (
-//            endpoints =>
-//            {
-//                endpoints.MapHealthChecks("/portal-health", new()
-//                {
-//                    Predicate = _ => true,
-//                    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-//                });
+            endpoints.MapHealthChecksUI();
+            endpoints.MapControllers();
+        }
+    );
 
-//                endpoints.MapHealthChecksUI();
-//                endpoints.MapControllers();
-//            }
-//        );
+app.UseJwksDiscovery();
 
-//    app.UseJwksDiscovery();
-
-//    await app.RunAsync();
-//}
+await app.RunAsync();
