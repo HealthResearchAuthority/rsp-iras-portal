@@ -1,4 +1,5 @@
-﻿using HealthChecks.UI.Client;
+﻿using Azure.Identity;
+using HealthChecks.UI.Client;
 using Rsp.IrasPortal.Application.Configuration;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Configuration.Auth;
@@ -8,7 +9,6 @@ using Rsp.IrasPortal.Configuration.HttpClients;
 using Rsp.Logging.Middlewares.CorrelationId;
 using Rsp.Logging.Middlewares.RequestTracing;
 using Rsp.ServiceDefaults;
-using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -82,7 +82,7 @@ services
 
 var app = builder.Build();
 
-//app.MapDefaultEndpoints();
+app.MapDefaultEndpoints();
 
 app.UseStaticFiles(); // this will serve the static files from wwwroot folder
 
@@ -92,13 +92,13 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Application/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
-    app.UseHttpsRedirection();
 }
 else
 {
     app.UseDeveloperExceptionPage();
 }
-    
+
+    app.UseHttpsRedirection();
 
     app.UseCorrelationId();
 
