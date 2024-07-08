@@ -21,8 +21,8 @@ var usersService = builder.AddProject(usersServiceSettings.ProjectName, usersSer
 // irasService
 builder
     .AddProject<Projects.Rsp_IrasPortal>("iras-portal")
-    .WithReference(irasService);
-    //.WithReference(usersService);
+    .WithReference(irasService)
+    .WithReference(usersService);
 
 // run the host app
 await builder.Build().RunAsync();
