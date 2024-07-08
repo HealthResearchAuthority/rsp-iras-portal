@@ -6,6 +6,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <OutputType>Library</OutputType>
         <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+        <UserSecretsId>7bed0746-6fc6-4d2e-9775-f1ca3821eb06</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>

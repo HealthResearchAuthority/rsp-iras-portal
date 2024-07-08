@@ -82,7 +82,7 @@ services
 
 var app = builder.Build();
 
-//app.MapDefaultEndpoints();
+app.MapDefaultEndpoints();
 
 app.UseStaticFiles(); // this will serve the static files from wwwroot folder
 
