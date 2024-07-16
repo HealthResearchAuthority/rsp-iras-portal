@@ -24,6 +24,7 @@ public class AuthHeadersHandler(IHttpContextAccessor httpContextAccessor) : Dele
 
         if (bearerToken != null)
         {
+            request.Headers.Remove(HeaderNames.Authorization);
             request.Headers.Add(HeaderNames.Authorization, $"Bearer {bearerToken}");
         }
 
