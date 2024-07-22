@@ -22,11 +22,11 @@ parameters:
   - name: devops_library_branch
     displayName: DevOps Library Branch
     type: string
-    default: deployportal
+    default: main
   - name: servicedefaults_library_branch
     displayName: Service Defaults Library Branch
     type: string
-    default: deployportal
+    default: main
   - name: run_github_security_scan
     displayName: Run GitHub Advanced Security Scan
     type: boolean

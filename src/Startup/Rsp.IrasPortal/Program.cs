@@ -82,8 +82,6 @@ services
 
 var app = builder.Build();
 
-app.MapHealthChecks("/probes/liveness");
-
 app.MapDefaultEndpoints();
 
 app.UseStaticFiles(); // this will serve the static files from wwwroot folder
@@ -127,6 +125,8 @@ else
                     Predicate = _ => true,
                     ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
                 });
+
+                endpoints.MapHealthChecks("/probes/liveness");
 
                 endpoints.MapHealthChecksUI();
                 endpoints.MapControllers();
