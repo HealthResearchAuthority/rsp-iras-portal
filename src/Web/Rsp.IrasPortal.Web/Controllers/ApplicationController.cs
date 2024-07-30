@@ -244,6 +244,14 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
     }
 
     [AllowAnonymous]
+    public IActionResult ValidationTesting()
+    {
+        logger.LogMethodStarted();
+
+        return View();
+    }
+
+    [AllowAnonymous]
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {

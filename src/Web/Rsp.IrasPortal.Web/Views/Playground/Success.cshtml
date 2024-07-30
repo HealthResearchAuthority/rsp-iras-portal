@@ -1,0 +1,13 @@
+﻿@using Rsp.IrasPortal.Domain.Entities;
+@model PlaygroundModel
+@{
+    ViewData["Title"] = "Playground - Success";
+}
+
+<govuk-panel heading-level="2">
+    <govuk-panel-title>Validation success</govuk-panel-title>
+    <govuk-panel-body>
+        Name: @Model.Username<br />
+        Email: @Model.Email
+    </govuk-panel-body>
+</govuk-panel>

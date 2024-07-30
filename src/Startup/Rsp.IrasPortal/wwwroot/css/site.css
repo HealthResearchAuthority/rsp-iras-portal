@@ -41,7 +41,7 @@
 
 .app-prose-scope a:link,
 .govuk-link:link {
-    color: #5d235d;
+    color: #1d70b8;
 }
 
 .app-prose-scope a:visited,
@@ -133,11 +133,11 @@
 }
 
 .govuk-link--no-visited-state:link {
-    color: #5d235d;
+    color: #1d70b8;
 }
 
 .govuk-link--no-visited-state:visited {
-    color: #5d235d;
+    color: #1d70b8;
 }
 
 .govuk-link--no-visited-state:hover {
@@ -1445,7 +1445,7 @@
     margin-bottom: 9px;
     padding: 5px 2px 5px 0;
     border-width: 0;
-    color: #5d235d;
+    color: #1d70b8;
     background: none;
     cursor: pointer;
     appearance: none;
@@ -1674,7 +1674,7 @@
     font-size: 1rem;
     line-height: 1.25;
     font-weight: 400;
-    color: #5d235d;
+    color: #1d70b8;
 }
 
 @media (min-width: 40.0625em) {
@@ -1723,7 +1723,7 @@
 @media (hover: none) {
     .govuk-frontend-supported .govuk-accordion__section-header:hover {
         border-top-color: #b1b4b6;
-        box-shadow: inset 0 3px 0 0 #5d235d;
+        box-shadow: inset 0 3px 0 0 #1d70b8;
     }
 
         .govuk-frontend-supported .govuk-accordion__section-header:hover .govuk-accordion__section-button {
@@ -2236,7 +2236,7 @@
     .govuk-button--inverse:visited,
     .govuk-button--inverse:active,
     .govuk-button--inverse:hover {
-        color: #5d235d;
+        color: #1d70b8;
     }
 
         .govuk-button--inverse:hover {
@@ -3338,7 +3338,7 @@
     .govuk-details__summary {
         position: relative;
         padding-left: 25px;
-        color: #5d235d;
+        color: #1d70b8;
         cursor: pointer;
     }
 
@@ -3997,7 +3997,7 @@
 
 .govuk-header__container--full-width {
     padding: 0 15px;
-    border-color: #5d235d;
+    border-color: #1d70b8;
 }
 
     .govuk-header__container--full-width .govuk-header__menu-button {
@@ -4008,7 +4008,7 @@
     position: relative;
     margin-bottom: -10px;
     padding-top: 10px;
-    border-bottom: 10px solid #5d235d;
+    border-bottom: 10px solid #1d70b8;
 }
 
     .govuk-header__container::after {
@@ -4361,7 +4361,7 @@
 
 @media print {
     .govuk-header__navigation-item--active a {
-        color: #5d235d;
+        color: #1d70b8;
     }
 }
 
@@ -4461,8 +4461,8 @@
     font-size: 1rem;
     line-height: 1.25;
     margin-bottom: 30px;
-    border: 5px solid #5d235d;
-    background-color: #5d235d;
+    border: 5px solid #1d70b8;
+    background-color: #1d70b8;
 }
 
 @media print {
@@ -4612,11 +4612,11 @@
 }
 
 .govuk-notification-banner__link:link {
-    color: #5d235d;
+    color: #1d70b8;
 }
 
 .govuk-notification-banner__link:visited {
-    color: #5d235d;
+    color: #1d70b8;
 }
 
 .govuk-notification-banner__link:hover {
@@ -4769,11 +4769,11 @@
 .govuk-pagination__item--current {
     font-weight: 700;
     outline: 1px solid rgba(0, 0, 0, 0);
-    background-color: #5d235d;
+    background-color: #1d70b8;
 }
 
     .govuk-pagination__item--current:hover {
-        background-color: #5d235d;
+        background-color: #1d70b8;
     }
 
     .govuk-pagination__item--current .govuk-pagination__link:link,
@@ -5494,7 +5494,7 @@
 .govuk-select option:checked,
 .govuk-select:focus::-ms-value {
     color: #fff;
-    background-color: #5d235d;
+    background-color: #1d70b8;
 }
 
 .govuk-select--error {
@@ -6267,7 +6267,7 @@
 }
 
 .govuk-tabs__tab:link {
-    color: #5d235d;
+    color: #1d70b8;
 }
 
 .govuk-tabs__tab:visited {
@@ -8138,7 +8138,7 @@
 .app-contact-panel {
     margin-top: 40px;
     padding-top: 15px;
-    border-top: 2px solid #5d235d;
+    border-top: 2px solid #1d70b8;
 }
 
 @media (min-width: 40.0625em) {
@@ -8312,7 +8312,7 @@
 }
 
 .app-header {
-    border-bottom: 10px solid #5d235d;
+    border-bottom: 10px solid #1d70b8;
 }
 
 .app-header__container {
@@ -8435,9 +8435,9 @@
 .app-masthead {
     padding-top: 20px;
     padding-bottom: 20px;
-    border-bottom: 1px solid #5d235d;
+    border-bottom: 1px solid #1d70b8;
     color: #fff;
-    background-color: #5d235d;
+    background-color: #1d70b8;
 }
 
 @media (min-width: 40.0625em) {
@@ -8511,7 +8511,6 @@
 }
 
 .app-navigation__list {
-    margin: 0;
     padding: 0;
     list-style: none;
 }
@@ -8567,7 +8566,7 @@
 
 @media (min-width: 40.0625em) {
     .app-navigation__list-item--current {
-        border-bottom: 4px solid #5d235d;
+        border-bottom: 4px solid #1d70b8;
     }
 }
 
@@ -8608,7 +8607,7 @@
     text-decoration-thickness: max(1px, 0.0625rem);
     text-underline-offset: 0.1578em;
     border: 0;
-    color: #5d235d;
+    color: #1d70b8;
     background-color: rgba(0, 0, 0, 0);
 }
 
@@ -8641,11 +8640,11 @@
 }
 
 .app-navigation__button:link {
-    color: #5d235d;
+    color: #1d70b8;
 }
 
 .app-navigation__button:visited {
-    color: #5d235d;
+    color: #1d70b8;
 }
 
 .app-navigation__button:hover {
@@ -8686,7 +8685,7 @@
 
 .app-navigation__subnav-item--current {
     padding-left: 16px;
-    border-left: 4px solid #5d235d;
+    border-left: 4px solid #1d70b8;
 }
 
 .app-navigation__theme {
@@ -8961,11 +8960,11 @@
 
 .app-site-search__option--focused,
 .app-site-search__option:hover {
-    border-color: #5d235d;
+    border-color: #1d70b8;
     outline: 3px solid rgba(0, 0, 0, 0);
     outline-offset: -3px;
     color: #fff;
-    background-color: #5d235d;
+    background-color: #1d70b8;
 }
 
     .app-site-search__option--focused .app-site-search--section,
@@ -9184,7 +9183,7 @@
 .app-subnav__section-item--current {
     margin-left: -14px;
     padding-left: 10px;
-    border-left: 4px solid #5d235d;
+    border-left: 4px solid #1d70b8;
     background-color: #fff;
 }
 
@@ -9298,7 +9297,7 @@
 }
 
 .app-prose-scope .app-tabs__item a:visited {
-    color: #5d235d;
+    color: #1d70b8;
 }
 
 .app-prose-scope .app-tabs__item a:focus {
@@ -9375,7 +9374,7 @@
     text-underline-offset: 0.1578em;
     border: 0;
     outline: 0;
-    color: #5d235d;
+    color: #1d70b8;
     background: none;
 }
 
@@ -9435,7 +9434,7 @@
 
 .app-prose-scope .app-tabs__heading .app-tabs__heading-link:visited,
 .app-prose-scope .app-tabs__heading .app-tabs__heading-button:visited {
-    color: #5d235d;
+    color: #1d70b8;
 }
 
 .app-prose-scope .app-tabs__heading .app-tabs__heading-link:focus,
@@ -9879,12 +9878,12 @@ pre .language-plaintext {
 }
 
     .app-wcag-22:target {
-        outline: 4px solid #5d235d;
+        outline: 4px solid #1d70b8;
         outline-offset: 6px;
     }
 
 .app-inset-text {
-    border-left-color: #5d235d;
+    border-left-color: #1d70b8;
 }
 
 .app-tag {

@@ -12,15 +12,12 @@
 </head>
 
 @section Header {
-    <header class="govuk-header app-header"
-            role="banner"
-            data-module="govuk-header"
-            style="background-color: #fff">
-        <div class="govuk-header__container app-width-container">
+    <header class="govuk-header " role="banner" data-module="govuk-header">
+        <div class="govuk-header__container govuk-width-container">
             <div class="govuk-header__logo">
-                <a asp-route="app:welcome" class="govuk-header__link govuk-header__link--homepage">
-                    <img style="background-color: hsl(0, 0%, 90%); display:block; width: 100%; margin:0 auto"
-                         src="~/images/iras-header.jpg" />
+                <a href="/" class="govuk-header__link govuk-header__link--homepage">
+                    <img style="background-color: black; width:250px;"
+                         src="~/images/iras-header.png" />
                 </a>
             </div>
         </div>
@@ -29,7 +26,7 @@
          class="app-navigation js-app-navigation govuk-clearfix"
          role="navigation"
          aria-labelledby="app-navigation-heading">
-        <ul class="app-navigation__list app-width-container">
+        <ul class="app-navigation__list govuk-width-container">
             <li class="app-navigation__list-item">
                 <a class="govuk-link govuk-link--no-visited-state govuk-link--no-underline app-navigation__link js-app-navigation__link"
                    asp-route="app:welcome">

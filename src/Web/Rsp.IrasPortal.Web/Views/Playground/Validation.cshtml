@@ -1,0 +1,32 @@
+﻿@using Rsp.IrasPortal.Domain.Entities;
+@model PlaygroundModel
+@{
+    ViewData["Title"] = "Playground - Validation";
+}
+
+<h1 class="govuk-heading-xl">Validation Testing</h1>
+<form method="post" asp-controller="playground" asp-action="Validation">
+    <input type="hidden" asp-for="Id" />
+    <govuk-input name="username" input-class="govuk-input--width-10" asp-for="Username">
+        <govuk-input-label class="govuk-label--l">Username</govuk-input-label>
+        <govuk-input-hint>Required, minimum length 3, maximum length 20.</govuk-input-hint>
+    </govuk-input>
+
+    <govuk-input name="email" input-class="govuk-input--width-20" asp-for="Email">
+        <govuk-input-label class="govuk-label--l">Email</govuk-input-label>
+        <govuk-input-hint>Required, must follow a valid email format.</govuk-input-hint>
+    </govuk-input>
+
+    <govuk-input name="password" input-class="govuk-input--width-10" asp-for="Password" type="password">
+        <govuk-input-label class="govuk-label--l">Password</govuk-input-label>
+        <govuk-input-hint>Required, minimum length 6.</govuk-input-hint>
+    </govuk-input>
+
+    <govuk-input name="confirmPassword" input-class="govuk-input--width-10" asp-for="ConfirmPassword" type="password">
+        <govuk-input-label class="govuk-label--l">Confirm Password</govuk-input-label>
+        <govuk-input-hint>Required, must match the Password field.</govuk-input-hint>
+    </govuk-input>
+    <govuk-button type="submit">Submit</govuk-button>
+</form>
+
+
