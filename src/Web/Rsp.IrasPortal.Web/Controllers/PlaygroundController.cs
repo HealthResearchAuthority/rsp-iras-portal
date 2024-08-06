@@ -27,12 +27,12 @@ public class PlaygroundController(ILogger<PlaygroundController> logger) : Contro
     {
         logger.LogMethodStarted();
 
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            return RedirectToAction(nameof(Success), model);
+            return View(model);
         }
 
-        return View(model);
+        return RedirectToAction(nameof(Success), model);
     }
 
     public IActionResult Success(PlaygroundModel model)

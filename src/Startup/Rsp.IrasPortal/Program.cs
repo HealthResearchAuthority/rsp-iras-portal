@@ -1,4 +1,6 @@
-﻿using GovUk.Frontend.AspNetCore;
+﻿using FluentValidation;
+using FluentValidation.AspNetCore;
+using GovUk.Frontend.AspNetCore;
 using HealthChecks.UI.Client;
 using Rsp.IrasPortal.Application.Configuration;
 using Rsp.IrasPortal.Application.Constants;
@@ -6,6 +8,8 @@ using Rsp.IrasPortal.Configuration.Auth;
 using Rsp.IrasPortal.Configuration.Dependencies;
 using Rsp.IrasPortal.Configuration.Health;
 using Rsp.IrasPortal.Configuration.HttpClients;
+using Rsp.IrasPortal.Domain.Entities;
+using Rsp.IrasPortal.Domain.Validators;
 using Rsp.Logging.Middlewares.CorrelationId;
 using Rsp.Logging.Middlewares.RequestTracing;
 using Rsp.ServiceDefaults;
@@ -66,6 +70,10 @@ services
     .UseJwtValidation();
 
 services.AddGovUkFrontend();
+
+services.AddFluentValidationAutoValidation();
+
+services.AddScoped<IValidator<PlaygroundModel>, PlaygroundModelValidator>();
 
 var app = builder.Build();
 

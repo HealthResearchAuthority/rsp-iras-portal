@@ -9,6 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
       <PackageReference Include="GovUk.Frontend.AspNetCore" Version="2.0.1" />
     </ItemGroup>
 
