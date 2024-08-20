@@ -366,5 +366,6 @@ FodyWeavers.xsd
 
 # VsCode cache/options directory
 .vscode/
-/src/Startup/Rsp.IrasPortal/Properties/ServiceDependencies/
-/src/Startup/Rsp.IrasPortal/.config/
+.config/
+.vshistory
+ServiceDependencies

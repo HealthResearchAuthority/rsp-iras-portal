@@ -1,0 +1,80 @@
+﻿@model (string currentStage, string completedStage)
+
+@{
+    var progressBarStyle = string.Empty;
+
+    string GetState(string stage, out string style)
+    {
+        var state = Model.currentStage == stage ? " active" : Model.completedStage == stage ? " completed" : string.Empty;
+        style = state == string.Empty ? "display: none" : "";
+
+        return state;
+    };
+
+}
+
+<div class="govuk-grid-row">
+    <div class="progress-container">
+
+        <div class="stage@(GetState("Initiate", out progressBarStyle))">
+            <div class="progress-line" style="@progressBarStyle"></div>
+            <div class="stage-circle"></div>
+            <div class="stage-label">Initiate</div>
+        </div>
+        <div class="stage@(GetState("Project Filter", out progressBarStyle))">
+            <div class="progress-line" style="@progressBarStyle"></div>
+            <div class="stage-circle"></div>
+            <div class="stage-label">Project Filter</div>
+        </div>
+        <div class="stage@(GetState("Project Details", out progressBarStyle))">
+            <div class="progress-line" style="@progressBarStyle"></div>
+            <div class="stage-circle"></div>
+            <div class="stage-label">Project Details</div>
+        </div>
+        <div class="stage@(GetState("Student", out progressBarStyle))">
+            <div class="progress-line" style="@progressBarStyle"></div>
+            <div class="stage-circle"></div>
+            <div class="stage-label">Student</div>
+        </div>
+        <div class="stage@(GetState("Research Bioresources", out progressBarStyle))">
+            <div class="progress-line" style="@progressBarStyle"></div>
+            <div class="stage-circle"></div>
+            <div class="stage-label">Research Bioresources</div>
+        </div>
+        <div class="stage@(GetState("CTIMP", out progressBarStyle))">
+            <div class="progress-line" style="@progressBarStyle"></div>
+            <div class="stage-circle"></div>
+            <div class="stage-label">CTIMP</div>
+        </div>
+        <div class="stage@(GetState("Devices", out progressBarStyle))">
+            <div class="progress-line" style="@progressBarStyle"></div>
+            <div class="stage-circle"></div>
+            <div class="stage-label">Devices</div>
+        </div>
+        <div class="stage@(GetState("Ionizing Radiation", out progressBarStyle))">
+            <div class="progress-line" style="@progressBarStyle"></div>
+            <div class="stage-circle"></div>
+            <div class="stage-label">Ionizing Radiation</div>
+        </div>
+        <div class="stage@(GetState("Tissue", out progressBarStyle))">
+            <div class="progress-line" style="@progressBarStyle"></div>
+            <div class="stage-circle"></div>
+            <div class="stage-label">Tissue</div>
+        </div>
+        <div class="stage@(GetState("Adults Lacking Capacity", out progressBarStyle))">
+            <div class="progress-line" style="@progressBarStyle"></div>
+            <div class="stage-circle"></div>
+            <div class="stage-label">Adults Lacking Capacity</div>
+        </div>
+        <div class="stage@(GetState("Children", out progressBarStyle))">
+            <div class="progress-line" style="@progressBarStyle"></div>
+            <div class="stage-circle"></div>
+            <div class="stage-label">Children</div>
+        </div>
+        <div class="stage@(GetState("Booking", out progressBarStyle))">
+            <div class="progress-line" style="@progressBarStyle"></div>
+            <div class="stage-circle"></div>
+            <div class="stage-label">Booking</div>
+        </div>
+    </div>
+</div>

@@ -2,7 +2,7 @@
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Domain.Identity;
 
-namespace Rsp.IrasPortal.Infrastructure.HttpClients;
+namespace Rsp.IrasPortal.Application.ServiceClients;
 
 public interface IUserManagementServiceClient
 {
