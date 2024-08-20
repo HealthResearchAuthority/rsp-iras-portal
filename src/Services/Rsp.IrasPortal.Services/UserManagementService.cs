@@ -1,8 +1,8 @@
 ﻿using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.Responses;
+using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Identity;
-using Rsp.IrasPortal.Infrastructure.HttpClients;
 using Rsp.IrasPortal.Services.Extensions;
 
 namespace Rsp.IrasPortal.Services;

@@ -1,4 +1,6 @@
-﻿:root {
+﻿@charset "UTF-8";
+
+:root {
     --govuk-frontend-version: "5.0.0";
 }
 
@@ -1271,7 +1273,7 @@
     text-size-adjust: 100%;
 }
 
-@supports ((position: -webkit-sticky) or (position: sticky)) {
+@supports (position: -webkit-sticky) or (position: sticky) {
     .govuk-template {
         scroll-padding-top: 60px;
     }
@@ -1300,8 +1302,8 @@
 
 @supports (margin: max(calc(0px))) {
     .govuk-width-container {
-        margin-right: max(15px, calc(15px + env(safe-area-inset-right)));
-        margin-left: max(15px, calc(15px + env(safe-area-inset-left)));
+        margin-right: max(15px, 15px + env(safe-area-inset-right));
+        margin-left: max(15px, 15px + env(safe-area-inset-left));
     }
 }
 
@@ -1313,8 +1315,8 @@
 
     @supports (margin: max(calc(0px))) {
         .govuk-width-container {
-            margin-right: max(30px, calc(15px + env(safe-area-inset-right)));
-            margin-left: max(30px, calc(15px + env(safe-area-inset-left)));
+            margin-right: max(30px, 15px + env(safe-area-inset-right));
+            margin-left: max(30px, 15px + env(safe-area-inset-left));
         }
     }
 }
@@ -1598,9 +1600,7 @@
     outline: 0;
 }
 
-    .govuk-frontend-supported
-    .govuk-accordion__section-button:focus
-    .govuk-accordion__section-heading-text-focus,
+    .govuk-frontend-supported .govuk-accordion__section-button:focus .govuk-accordion__section-heading-text-focus,
     .govuk-frontend-supported .govuk-accordion__section-button:focus .govuk-accordion__section-summary-focus,
     .govuk-frontend-supported .govuk-accordion__section-button:focus .govuk-accordion__section-toggle-focus {
         outline: 3px solid rgba(0, 0, 0, 0);
@@ -1642,9 +1642,7 @@
 }
 
 @media (min-width: 48.0625em) {
-    .govuk-frontend-supported
-    .govuk-accordion__section-button:focus
-    .govuk-accordion__section-toggle-focus {
+    .govuk-frontend-supported .govuk-accordion__section-button:focus .govuk-accordion__section-toggle-focus {
         padding-bottom: 2px;
     }
 }
@@ -1659,9 +1657,7 @@
     .govuk-frontend-supported .govuk-accordion__section-toggle .govuk-accordion__section-heading-text-focus,
     .govuk-frontend-supported .govuk-accordion__section-toggle .govuk-accordion__section-summary-focus,
     .govuk-frontend-supported .govuk-accordion__section-toggle .govuk-accordion__section-toggle-focus,
-    .govuk-frontend-supported
-    .govuk-accordion__section-heading-text
-    .govuk-accordion__section-heading-text-focus,
+    .govuk-frontend-supported .govuk-accordion__section-heading-text .govuk-accordion__section-heading-text-focus,
     .govuk-frontend-supported .govuk-accordion__section-heading-text .govuk-accordion__section-summary-focus,
     .govuk-frontend-supported .govuk-accordion__section-heading-text .govuk-accordion__section-toggle-focus,
     .govuk-frontend-supported .govuk-accordion__section-summary .govuk-accordion__section-heading-text-focus,
@@ -1707,12 +1703,8 @@
     .govuk-frontend-supported .govuk-accordion__show-all:focus .govuk-accordion__section-summary-focus,
     .govuk-frontend-supported .govuk-accordion__show-all:focus .govuk-accordion__section-toggle-focus,
     .govuk-frontend-supported .govuk-accordion__show-all:focus .govuk-accordion-nav__chevron,
-    .govuk-frontend-supported
-    .govuk-accordion__section-button:focus
-    .govuk-accordion__section-heading-text-focus,
-    .govuk-frontend-supported
-    .govuk-accordion__section-button:focus
-    .govuk-accordion__section-summary-focus,
+    .govuk-frontend-supported .govuk-accordion__section-button:focus .govuk-accordion__section-heading-text-focus,
+    .govuk-frontend-supported .govuk-accordion__section-button:focus .govuk-accordion__section-summary-focus,
     .govuk-frontend-supported .govuk-accordion__section-button:focus .govuk-accordion__section-toggle-focus,
     .govuk-frontend-supported .govuk-accordion__section-button:focus .govuk-accordion-nav__chevron {
         background: rgba(0, 0, 0, 0);
@@ -2353,7 +2345,7 @@
     margin-bottom: 10px;
 }
 
-.govuk-fieldset__legend:not(.govuk-fieldset__legend--m):not(.govuk-fieldset__legend--l):not( .govuk-fieldset__legend--xl ) + .govuk-hint {
+.govuk-fieldset__legend:not(.govuk-fieldset__legend--m):not(.govuk-fieldset__legend--l):not(.govuk-fieldset__legend--xl) + .govuk-hint {
     margin-bottom: 10px;
 }
 
@@ -2932,38 +2924,28 @@
     clear: both;
 }
 
-.govuk-checkboxes--small
-.govuk-checkboxes__item:hover
-.govuk-checkboxes__input:not(:disabled) + .govuk-checkboxes__label::before {
+.govuk-checkboxes--small .govuk-checkboxes__item:hover .govuk-checkboxes__input:not(:disabled) + .govuk-checkboxes__label::before {
     outline: 3px dashed rgba(0, 0, 0, 0);
     outline-offset: 1px;
     box-shadow: 0 0 0 10px #b1b4b6;
 }
 
-.govuk-checkboxes--small
-.govuk-checkboxes__item:hover
-.govuk-checkboxes__input:focus + .govuk-checkboxes__label::before {
+.govuk-checkboxes--small .govuk-checkboxes__item:hover .govuk-checkboxes__input:focus + .govuk-checkboxes__label::before {
     box-shadow: 0 0 0 3px #fd0, 0 0 0 10px #b1b4b6;
 }
 
 @media screen and (forced-colors: active), (-ms-high-contrast: active) {
-    .govuk-checkboxes--small
-    .govuk-checkboxes__item:hover
-    .govuk-checkboxes__input:focus + .govuk-checkboxes__label::before {
+    .govuk-checkboxes--small .govuk-checkboxes__item:hover .govuk-checkboxes__input:focus + .govuk-checkboxes__label::before {
         outline-color: Highlight;
     }
 }
 
 @media (hover: none), (pointer: coarse) {
-    .govuk-checkboxes--small
-    .govuk-checkboxes__item:hover
-    .govuk-checkboxes__input:not(:disabled) + .govuk-checkboxes__label::before {
+    .govuk-checkboxes--small .govuk-checkboxes__item:hover .govuk-checkboxes__input:not(:disabled) + .govuk-checkboxes__label::before {
         box-shadow: initial;
     }
 
-    .govuk-checkboxes--small
-    .govuk-checkboxes__item:hover
-    .govuk-checkboxes__input:focus + .govuk-checkboxes__label::before {
+    .govuk-checkboxes--small .govuk-checkboxes__item:hover .govuk-checkboxes__input:focus + .govuk-checkboxes__label::before {
         box-shadow: 0 0 0 3px #fd0;
     }
 }
@@ -3047,7 +3029,7 @@
     -webkit-appearance: none;
 }
 
-.govuk-input[type="number"] {
+.govuk-input[type=number] {
     appearance: textfield;
 }
 
@@ -3327,13 +3309,11 @@
         padding-left: 20px;
     }
 }
-
 /* @media screen\0 and (min-width: 40.0625em) {
-				.govuk-details__summary-text {
-					margin-bottom: 20px;
-				}
-			} */
-
+                .govuk-details__summary-text {
+                    margin-bottom: 20px;
+                }
+            } */
 @supports not (-ms-ime-align: auto) {
     .govuk-details__summary {
         position: relative;
@@ -4267,7 +4247,7 @@
     margin-left: 5px;
 }
 
-.govuk-header__menu-button[aria-expanded="true"]::after {
+.govuk-header__menu-button[aria-expanded=true]::after {
     display: inline-block;
     width: 0;
     height: 0;
@@ -5407,9 +5387,7 @@
     margin-bottom: 5px;
 }
 
-.govuk-radios--small
-.govuk-radios__item:hover
-.govuk-radios__input:not(:disabled) + .govuk-radios__label::before {
+.govuk-radios--small .govuk-radios__item:hover .govuk-radios__input:not(:disabled) + .govuk-radios__label::before {
     outline: 4px dashed rgba(0, 0, 0, 0);
     outline-offset: 1px;
     box-shadow: 0 0 0 10px #b1b4b6;
@@ -5420,23 +5398,17 @@
 }
 
 @media screen and (forced-colors: active), (-ms-high-contrast: active) {
-    .govuk-radios--small
-    .govuk-radios__item:hover
-    .govuk-radios__input:focus + .govuk-radios__label::before {
+    .govuk-radios--small .govuk-radios__item:hover .govuk-radios__input:focus + .govuk-radios__label::before {
         outline-color: Highlight;
     }
 }
 
 @media (hover: none), (pointer: coarse) {
-    .govuk-radios--small
-    .govuk-radios__item:hover
-    .govuk-radios__input:not(:disabled) + .govuk-radios__label::before {
+    .govuk-radios--small .govuk-radios__item:hover .govuk-radios__input:not(:disabled) + .govuk-radios__label::before {
         box-shadow: initial;
     }
 
-    .govuk-radios--small
-    .govuk-radios__item:hover
-    .govuk-radios__input:focus + .govuk-radios__label::before {
+    .govuk-radios--small .govuk-radios__item:hover .govuk-radios__input:focus + .govuk-radios__label::before {
         box-shadow: 0 0 0 4px #fd0;
     }
 }
@@ -5596,8 +5568,8 @@
 
 @supports (padding: max(calc(0px))) {
     .govuk-skip-link {
-        padding-right: max(15px, calc(15px + env(safe-area-inset-right)));
-        padding-left: max(15px, calc(15px + env(safe-area-inset-left)));
+        padding-right: max(15px, 15px + env(safe-area-inset-right));
+        padding-left: max(15px, 15px + env(safe-area-inset-left));
     }
 }
 
@@ -9481,8 +9453,8 @@
 
 @supports (margin: max(calc(0px))) {
     .app-width-container {
-        margin-right: max(15px, calc(15px + env(safe-area-inset-right)));
-        margin-left: max(15px, calc(15px + env(safe-area-inset-left)));
+        margin-right: max(15px, 15px + env(safe-area-inset-right));
+        margin-left: max(15px, 15px + env(safe-area-inset-left));
     }
 }
 
@@ -9494,8 +9466,8 @@
 
     @supports (margin: max(calc(0px))) {
         .app-width-container {
-            margin-right: max(30px, calc(15px + env(safe-area-inset-right)));
-            margin-left: max(30px, calc(15px + env(safe-area-inset-left)));
+            margin-right: max(30px, 15px + env(safe-area-inset-right));
+            margin-left: max(30px, 15px + env(safe-area-inset-left));
         }
     }
 }
@@ -9837,7 +9809,7 @@ pre code:focus {
     outline: 3px solid #fd0;
 }
 
-.govuk-frontend-supported [data-module="app-copy"] pre code {
+.govuk-frontend-supported [data-module=app-copy] pre code {
     padding-top: 45px;
 }
 
@@ -9894,12 +9866,4 @@ pre .language-plaintext {
 
 .app-prose-scope .app-tag {
     font-weight: normal;
-}
-
-.hra-tab .active {
-    border: solid 1px;
-    padding: 10px 20px;
-    border-radius: 8px;
-    background-color: beige;
-    color: black;
 }

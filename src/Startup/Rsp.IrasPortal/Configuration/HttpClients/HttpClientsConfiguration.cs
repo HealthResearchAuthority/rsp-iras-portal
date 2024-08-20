@@ -3,6 +3,7 @@ using System.Text.Json;
 using Refit;
 using Rsp.IrasPortal.Application.Configuration;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Infrastructure.HttpClients;
 using Rsp.IrasPortal.Infrastructure.HttpMessageHandlers;
 
@@ -29,6 +30,12 @@ public static class HttpClientsConfiguration
             .ConfigureHttpClient(client => client.BaseAddress = appSettings.UsersServiceUri)
             .AddHttpMessageHandler<AuthHeadersHandler>()
             .AddHeaderPropagation(options => options.Headers.Add(CustomRequestHeaders.CorrelationId));
+
+        services
+           .AddRestClient<IQuestionSetServiceClient>()
+           .ConfigureHttpClient(client => client.BaseAddress = appSettings.QuestionSetServiceUri)
+           .AddHttpMessageHandler<AuthHeadersHandler>()
+           .AddHeaderPropagation(options => options.Headers.Add(CustomRequestHeaders.CorrelationId));
 
         return services;
     }

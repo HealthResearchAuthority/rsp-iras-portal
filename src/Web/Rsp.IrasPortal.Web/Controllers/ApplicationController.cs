@@ -1,21 +1,26 @@
 using System.Diagnostics;
+using System.Text.Json;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application;
+using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Entities;
 using Rsp.IrasPortal.Domain.Enums;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
 using Rsp.Logging.Extensions;
+using static Rsp.IrasPortal.Application.Constants.ApplicationStages;
+using static Rsp.IrasPortal.Application.Constants.QuestionCategories;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "app:[action]")]
 [Authorize(Policy = "IsUser")]
-public class ApplicationController(ILogger<ApplicationController> logger, IApplicationsService applicationsService) : Controller
+public class ApplicationController(ILogger<ApplicationController> logger, IValidator<QuestionnaireViewModel> validator, IApplicationsService applicationsService, IQuestionSetService questionSetService) : Controller
 {
     [AllowAnonymous]
     public IActionResult SignIn()
@@ -59,7 +64,172 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
 
         HttpContext.Session.RemoveAllSessionValues();
 
-        return RedirectToAction(nameof(ProjectName));
+        //return RedirectToAction(nameof(ProjectName));
+
+        TempData["td:app_previousstage"] = Initiate;
+        TempData["td:app_currentstage"] = ProjectFilter;
+        //TempData["td:questions_category"] = A;
+
+        return RedirectToAction(nameof(DisplayQuestionnaire));
+    }
+
+    public async Task<IActionResult> DisplayQuestionnaire(string categoryId = A)
+    {
+        logger.LogMethodStarted();
+
+        HttpContext.Session.RemoveAllSessionValues();
+
+        ServiceResponse<IEnumerable<Application.DTOs.QuestionsResponse>> response;
+
+        if (categoryId == A)
+        {
+            response = await questionSetService.GetInitialQuestions();
+        }
+        else
+        {
+            response = await questionSetService.GetNextQuestions(categoryId);
+        }
+
+        logger.LogMethodStarted(LogLevel.Information);
+
+        // return the view if successfull
+        if (response.IsSuccessStatusCode)
+        {
+            var questions = response.Content!;
+
+            var questionnaire = new QuestionnaireViewModel
+            {
+                Answers = new List<QuestionResponse>(questions.Count())
+            };
+
+            foreach (var question in questions)
+            {
+                if (question.DataType is "n/a" or "Date" or "Email")
+                {
+                    continue;
+                }
+
+                questionnaire.Questions.Add(new QuestionViewModel
+                {
+                    QuestionId = question.QuestionId,
+                    Category = question.Category,
+                    SectionId = question.SectionId,
+                    Section = question.Section,
+                    Heading = question.Heading,
+                    QuestionText = question.QuestionText,
+                    QuestionType = question.QuestionType,
+                    DataType = question.DataType,
+                    IsMandatory = question.IsMandatory,
+                    IsOptional = question.IsOptional,
+                    Answers = question.Answers.Select(ans => new AnswerViewModel
+                    {
+                        AnswerId = ans.AnswerId,
+                        AnswerText = ans.AnswerText
+                    }).ToList()
+                });
+            }
+
+            //questionnaire.Sections = questionnaire.Questions.ToLookup(q => q.Section);
+
+            //foreach (var section in questionnaire.Sections)
+            //{
+            //    var orderedQs = section.OrderBy(q => q.SectionId).ThenBy(h => h.Heading);
+
+            //    foreach (var (question, index) in orderedQs.Select((question, index) => (question, index)))
+            //    {
+            //        questionnaire.Answers.Insert(index, new QuestionResponse
+            //        {
+            //            QuestionId = question.QuestionId,
+            //            DataType = question.DataType,
+            //            Heading = question.Heading,
+            //            IsMandatory = question.IsMandatory,
+            //            QuestionType = question.QuestionType,
+            //            Section = question.Section,
+            //            SelectedAnswers = question.Answers.Select(ans => new Answer
+            //            {
+            //                Text = ans.AnswerText,
+            //                AnswerId = ans.AnswerId,
+            //                Value = null
+            //            }).ToList()
+            //        });
+            //    }
+            //}
+
+            HttpContext.Session.SetString(SessionConstants.Questionnaire, JsonSerializer.Serialize(questionnaire.Questions));
+
+            return View("Questionnaire", questionnaire);
+        }
+
+        // convert the service response to ObjectResult
+        var result = this.ServiceResult(response);
+
+        // if status is forbidden or not found
+        // return the appropriate response otherwise
+        // return the generic error page
+        return result.StatusCode switch
+        {
+            StatusCodes.Status403Forbidden => Forbid(),
+            StatusCodes.Status404NotFound => NotFound(),
+            _ => View("Error", result.Value)
+        };
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> SubmitAnswers(QuestionnaireViewModel model)
+    {
+        (string? PreviousStage, string? CurrentStage) appStage = (model.PreviousStage, model.CurrentStage);
+
+        var result = await validator.ValidateAsync(model);
+
+        if (!result.IsValid)
+        {
+            // Copy the validation results into ModelState.
+            // ASP.NET uses the ModelState collection to populate
+            // error messages in the View.
+
+            model.Questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(HttpContext.Session.GetString(SessionConstants.Questionnaire)!)!;
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
+
+            TempData["td:app_previousstage"] = appStage.PreviousStage;
+            TempData["td:app_currentstage"] = appStage.CurrentStage;
+
+            // re-render the view when validation failed.
+            return View("Questionnaire", model);
+        }
+
+        //if (!ModelState.IsValid)
+        //{
+        //    model.Questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(HttpContext.Session.GetString(SessionConstants.Questionnaire)!)!;
+
+        //    TempData["td:app_previousstage"] = appStage.PreviousStage;
+        //    TempData["td:app_currentstage"] = appStage.CurrentStage;
+
+        //    return View("Questionnaire", model);
+        //}
+
+        (string? PreviousStage, string? CurrentStage, string Category) newStage = appStage switch
+        {
+            { CurrentStage: ProjectFilter } => (ProjectFilter, ProjectDetails, B),
+            { CurrentStage: ProjectDetails } => (ProjectFilter, Student, C1),
+            { CurrentStage: Student } => (ProjectDetails, ResearchBioresouces, C2),
+            { CurrentStage: ResearchBioresouces } => (Student, Ctimp, C3),
+            { CurrentStage: Ctimp } => (ResearchBioresouces, Devices, C4),
+            { CurrentStage: Devices } => (Ctimp, IonisingRadiation, C5),
+            { CurrentStage: IonisingRadiation } => (Devices, Tissue, C6),
+            { CurrentStage: Tissue } => (IonisingRadiation, AdultLackingCapacity, C7),
+            { CurrentStage: AdultLackingCapacity } => (Booking, "", C8),
+            _ => (Initiate, ProjectFilter, A)
+        };
+
+        TempData["td:app_previousstage"] = newStage.PreviousStage;
+        TempData["td:app_currentstage"] = newStage.CurrentStage;
+        //TempData["td:questions_category"] = newStage.Category;
+
+        return RedirectToAction(nameof(DisplayQuestionnaire), new { categoryId = newStage.Category });
     }
 
     public async Task<IActionResult> LoadExistingApplication(string applicationIdSelect)
@@ -71,7 +241,7 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
             return RedirectToAction(nameof(Welcome));
         }
 
-        var applicationId = Int32.Parse(applicationIdSelect);
+        var applicationId = int.Parse(applicationIdSelect);
         var application = await applicationsService.GetApplication(applicationId);
 
         if (application != null)
@@ -79,7 +249,7 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
             HttpContext.Session.SetInt32(SessionConstants.Id, applicationId);
             HttpContext.Session.SetString(SessionConstants.Title, application.Title ?? "");
             HttpContext.Session.SetInt32(SessionConstants.Country, application.Location != null ? (int)application.Location : -1);
-            HttpContext.Session.SetString(SessionConstants.ApplicationType, String.Join(",", application.ApplicationCategories ?? []));
+            HttpContext.Session.SetString(SessionConstants.ApplicationType, string.Join(",", application.ApplicationCategories ?? []));
             HttpContext.Session.SetString(SessionConstants.ProjectCategory, application.ProjectCategory ?? "");
 
             return RedirectToAction(nameof(ProjectName));

@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Rsp.IrasPortal.Web.Areas.Admin.Models;
+﻿namespace Rsp.IrasPortal.Web.Areas.Admin.Models;
 
 public class UserRoleViewModel : RoleViewModel
 {

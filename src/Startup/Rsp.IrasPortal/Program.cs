@@ -1,4 +1,5 @@
 ﻿using Azure.Identity;
+using FluentValidation;
 using GovUk.Frontend.AspNetCore;
 using HealthChecks.UI.Client;
 using Rsp.IrasPortal.Application.Configuration;
@@ -7,6 +8,7 @@ using Rsp.IrasPortal.Configuration.Auth;
 using Rsp.IrasPortal.Configuration.Dependencies;
 using Rsp.IrasPortal.Configuration.Health;
 using Rsp.IrasPortal.Configuration.HttpClients;
+using Rsp.IrasPortal.Web;
 using Rsp.Logging.Middlewares.CorrelationId;
 using Rsp.Logging.Middlewares.RequestTracing;
 using Rsp.ServiceDefaults;
@@ -83,6 +85,8 @@ services
 
 services.AddGovUkFrontend();
 
+services.AddValidatorsFromAssemblyContaining<IWebApp>();
+
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
@@ -101,41 +105,41 @@ else
     app.UseDeveloperExceptionPage();
 }
 
-    app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 
-    app.UseCorrelationId();
+app.UseCorrelationId();
 
-    app.UseHeaderPropagation();
+app.UseHeaderPropagation();
 
-    // uses the SerilogRequestLogging middleware
-    // see the overloads to provide options for
-    // message template for request
-    app.UseRequestTracing();
+// uses the SerilogRequestLogging middleware
+// see the overloads to provide options for
+// message template for request
+app.UseRequestTracing();
 
-    app.MapShortCircuit(404, "robots.txt", "favicon.ico", "*.css");
+app.MapShortCircuit(404, "robots.txt", "favicon.ico", "*.css");
 
-    app
-        .UseRouting()
-        .UseAuthentication()
-        .UseAuthorization()
-        .UseSession()
-        .UseEndpoints
-        (
-            endpoints =>
+app
+    .UseRouting()
+    .UseAuthentication()
+    .UseAuthorization()
+    .UseSession()
+    .UseEndpoints
+    (
+        endpoints =>
+        {
+            endpoints.MapHealthChecks("/portal-health", new()
             {
-                endpoints.MapHealthChecks("/portal-health", new()
-                {
-                    Predicate = _ => true,
-                    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-                });
+                Predicate = _ => true,
+                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+            });
 
-                endpoints.MapHealthChecks("/probes/liveness");
+            endpoints.MapHealthChecks("/probes/liveness");
 
-                endpoints.MapHealthChecksUI();
-                endpoints.MapControllers();
-            }
-        );
+            endpoints.MapHealthChecksUI();
+            endpoints.MapControllers();
+        }
+    );
 
-    app.UseJwksDiscovery();
+app.UseJwksDiscovery();
 
-    await app.RunAsync();
+await app.RunAsync();

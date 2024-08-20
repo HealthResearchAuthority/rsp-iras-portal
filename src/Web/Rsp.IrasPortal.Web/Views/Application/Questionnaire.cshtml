@@ -1,0 +1,154 @@
+﻿@model QuestionnaireViewModel
+@using Rsp.IrasPortal.Application.DTOs
+
+@{
+    ViewData["Title"] = "Questionnaire";
+    var sections = Model.Questions.ToLookup(q => q.Section);
+    var previousStage = TempData["td:app_previousstage"] as string;
+    var currentStage = TempData["td:app_currentstage"] as string;
+    var category = TempData["td:questions_category"] as string;
+    var errorSummaryTitle = "Please address the following issues:";
+}
+
+<partial name="_BackNavigation" model="@("app:displayquestionnaire","Back")" />
+
+<partial name="_Progress" model="@(currentStage, previousStage)" />
+
+<form method="post">
+
+    <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
+
+    <div class="govuk-form-group questions">
+
+        <input hidden asp-for="PreviousStage" value="@previousStage" />
+        <input hidden asp-for="CurrentStage" value="@currentStage" />
+
+        @{
+            var index = 0;
+            var errorKey = string.Empty;
+            var validationMessage = string.Empty;
+            var fieldHasErrors = false;
+        }
+
+        @foreach (var section in sections)
+        {
+            <govuk-fieldset class="sections">
+                <govuk-fieldset-legend class="govuk-fieldset__legend--l">
+                    @(section.Key)
+                </govuk-fieldset-legend>
+
+                <hr class="govuk-section-break govuk-section-break--visible" />
+
+                @{
+                    var questions = section.OrderBy(s => s.SectionId).ThenBy(x => x.Heading);
+                }
+
+                @foreach (var question in questions)
+                {
+                    <input type="hidden" name="Answers[@index].QuestionId" value="@question.QuestionId" />
+                    <input type="checkbox" hidden="hidden" name="Answers[index].IsMandatory" checked="@question.IsMandatory" />
+                    <input type="hidden" name="Answers[@index].QuestionType" value="@question.QuestionType" />
+                    <input type="hidden" name="Answers[@index].DataType" value="@question.DataType" />
+                    <input type="hidden" name="Answers[@index].Section" value="@question.Section" />
+                    <input type="hidden" name="Answers[@index].Heading" value="@question.Heading" />
+
+                    @if (!question.IsMandatory)
+                    {
+                        <govuk-inset-text>
+                            This question is conditional:
+                        </govuk-inset-text>
+                    }
+
+                    @if (question.QuestionType == "Text")
+                    {
+                        errorKey = $"Answers[{index}].AnswerText";
+                        validationMessage = "Please provide an answer for this question";
+                        fieldHasErrors = ViewData.ModelState.ContainsKey(errorKey);
+
+                        <div id="Answers[@index].AnswerText" class="govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")">
+
+                            <h1 class="govuk-label-wrapper">
+                                <label class="govuk-label govuk-label--s" for="@(question.QuestionId)_Text">
+                                    @question.Heading. @question.QuestionText
+                                </label>
+                            </h1>
+
+                            @if (fieldHasErrors)
+                            {
+                                @Html.ValidationMessage(errorKey, validationMessage, new { @class = "govuk-error-message" })
+                            }
+
+                            <input class="govuk-input" id="@(question.QuestionId)_Text" name="Answers[@index].AnswerText" type="text" value="@Model.Answers[index]?.AnswerText ?? @Model.Answers[index].AnswerText">
+                        </div>
+                    }
+
+                    if (question.QuestionType == "Look-up list" && question.DataType == "Checkbox")
+                    {
+                        errorKey = $"Answers[{index}].SelectedAnswers";
+                        validationMessage = "Please select at least one option";
+                        fieldHasErrors = ViewData.ModelState.ContainsKey(errorKey);
+
+                        <div id="Answers[@index].SelectedAnswers" class="govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")">
+                            <govuk-fieldset>
+                                <govuk-fieldset-legend class="govuk-fieldset__legend--s">
+                                    @question.Heading. @question.QuestionText
+                                </govuk-fieldset-legend>
+
+                                @if (fieldHasErrors)
+                                {
+                                    @Html.ValidationMessage(errorKey, validationMessage, new { @class = "govuk-error-message" })
+                                }
+
+                                <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                                    @foreach (var (answer, ansIndex) in question.Answers.Select((answer, ansIndex) => (answer, ansIndex)))
+                                    {
+                                        <div class="govuk-checkboxes__item">
+                                            <input type="hidden" name="Answers[@index].SelectedAnswers[@ansIndex].AnswerId" value="@answer.AnswerId" />
+                                            <input class="govuk-checkboxes__input" type="checkbox" name="Answers[@index].SelectedAnswers[@ansIndex].Value" id="@(question.QuestionId)_@(answer.AnswerId)" value="@answer.AnswerText" />
+                                            <label class="govuk-checkboxes__label govuk-label" for="@(question.QuestionId)_@(answer.AnswerId)">@answer.AnswerText</label>
+                                        </div>
+                                    }
+                                </div>
+                            </govuk-fieldset>
+                        </div>
+                    }
+
+                    if (question is { QuestionType: "Look-up list", DataType: "Radio button" } or { DataType: "Boolean" })
+                    {
+                        errorKey = $"Answers[{index}].SelectedAnswers";
+                        validationMessage = "Please select one option";
+                        fieldHasErrors = ViewData.ModelState.ContainsKey(errorKey);
+
+                        <div id="Answers[@index].SelectedAnswers" class="govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")">
+                            <govuk-fieldset>
+                                <govuk-fieldset-legend class="govuk-fieldset__legend--s">
+                                    @question.Heading.@question.QuestionText
+                                </govuk-fieldset-legend>
+
+                                @if (fieldHasErrors)
+                                {
+                                    @Html.ValidationMessage(errorKey, validationMessage, new { @class = "govuk-error-message" })
+                                }
+
+                                <div class="govuk-radios" data-module="govuk-radios">
+                                    @foreach (var (answer, ansIndex) in question.Answers.Select((answer, ansIndex) => (answer, ansIndex)))
+                                    {
+                                        <div class="govuk-radios__item">
+                                            <input type="hidden" name="Answers[@index].SelectedAnswers[@ansIndex].AnswerId" value="@answer.AnswerId" />
+                                            <input class="govuk-radios__input" type="radio" name="Answers[@index].SelectedAnswers[0].Value" id="@(question.QuestionId)_@(answer.AnswerId)" value="@answer.AnswerText" />
+                                            <label class="govuk-radios__label govuk-label" for="@(question.QuestionId)_@(answer.AnswerId)">@answer.AnswerText</label>
+                                        </div>
+                                    }
+                                </div>
+                            </govuk-fieldset>
+                        </div>
+                    }
+
+                    index++;
+                }
+            </govuk-fieldset>
+        }
+    </div>
+
+    <partial name="_SubmitButton" model="@("app:submitanswers","Continue")" />
+</form>
