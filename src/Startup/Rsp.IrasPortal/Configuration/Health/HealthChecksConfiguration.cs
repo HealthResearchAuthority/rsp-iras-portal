@@ -19,27 +19,27 @@ public static class HealthChecksConfiguration
     /// <param name="appSettings">Application Settings</param>
     public static IServiceCollection AddCustomHealthChecks(this IServiceCollection services, AppSettings appSettings)
     {
-    static HeaderPropagationMessageHandler AddHeaderPropagation()
-    {
-        // the following setup was done to propgate the
-        // correlationId header to the the health check call as well
-        var options = new HeaderPropagationMessageHandlerOptions();
-
-        options.Headers.Add(CustomRequestHeaders.CorrelationId);
-
-        return new HeaderPropagationMessageHandler(options, new())
+        static HeaderPropagationMessageHandler AddHeaderPropagation()
         {
-            InnerHandler = new HttpClientHandler()
-        };
-    }
+            // the following setup was done to propgate the
+            // correlationId header to the the health check call as well
+            var options = new HeaderPropagationMessageHandlerOptions();
 
-    var applicationserviceuri = new Uri(appSettings.ApplicationsServiceUri!, "/probes/liveness");
-    var userserviceuri = new Uri(appSettings.UsersServiceUri!, "/probes/liveness");
+            options.Headers.Add(CustomRequestHeaders.CorrelationId);
 
-    services
-       .AddHealthChecks()
-       .AddUrlGroup(applicationserviceuri, "Iras Applications API", HealthStatus.Unhealthy, configurePrimaryHttpMessageHandler: _ => AddHeaderPropagation())
-       .AddUrlGroup(userserviceuri, "User Service API", HealthStatus.Unhealthy, configurePrimaryHttpMessageHandler: _ => AddHeaderPropagation());
+            return new HeaderPropagationMessageHandler(options, new())
+            {
+                InnerHandler = new HttpClientHandler()
+            };
+        }
+
+        var applicationserviceuri = new Uri(appSettings.ApplicationsServiceUri!, "/probes/liveness");
+        var userserviceuri = new Uri(appSettings.UsersServiceUri!, "/probes/liveness");
+
+        services
+           .AddHealthChecks()
+           .AddUrlGroup(applicationserviceuri, "Iras Applications API", HealthStatus.Unhealthy, configurePrimaryHttpMessageHandler: _ => AddHeaderPropagation())
+           .AddUrlGroup(userserviceuri, "User Service API", HealthStatus.Unhealthy, configurePrimaryHttpMessageHandler: _ => AddHeaderPropagation());
 
         services
            .AddHealthChecksUI
