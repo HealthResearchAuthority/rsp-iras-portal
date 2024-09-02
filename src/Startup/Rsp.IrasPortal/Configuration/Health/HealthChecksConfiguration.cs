@@ -19,7 +19,7 @@ public static class HealthChecksConfiguration
     /// <param name="appSettings">Application Settings</param>
     public static IServiceCollection AddCustomHealthChecks(this IServiceCollection services, AppSettings appSettings)
     {
-        var applicationserviceuri = new Uri(appSettings.ApplicationsServiceUri!, "/probes-liveness");
+        var applicationserviceuri = new Uri(appSettings.ApplicationsServiceUri!, "/probes/liveness");
 
         services
            .AddHealthChecks()
@@ -37,7 +37,7 @@ public static class HealthChecksConfiguration
                };
            });
 
-        var userserviceuri = new Uri(appSettings.ApplicationsServiceUri!, "/probes-liveness");
+        var userserviceuri = new Uri(appSettings.ApplicationsServiceUri!, "/probes/liveness");
 
         services
            .AddHealthChecks()
