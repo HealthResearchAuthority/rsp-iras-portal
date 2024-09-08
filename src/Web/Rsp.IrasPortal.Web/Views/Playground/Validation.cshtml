@@ -4,29 +4,58 @@
     ViewData["Title"] = "Playground - Validation";
 }
 
-<h1 class="govuk-heading-xl">Validation Testing</h1>
+<h1 class="govuk-heading-xl">Make changes to a study</h1>
+<p class="govuk-body">Tell us about the study you want to change so we can identify it.</p>
 <form method="post" asp-controller="playground" asp-action="Validation">
     <input type="hidden" asp-for="Id" />
-    <govuk-input name="username" input-class="govuk-input--width-10" asp-for="Username">
-        <govuk-input-label class="govuk-label--l">Username</govuk-input-label>
+    <govuk-input name="shortProjectTitle" input-class="govuk-input--width-20" asp-for="ShortProjectTitle">
+        <govuk-input-label class="govuk-label--l">Short project title</govuk-input-label>
         <govuk-input-hint>Required, minimum length 3, maximum length 20.</govuk-input-hint>
     </govuk-input>
 
-    <govuk-input name="email" input-class="govuk-input--width-20" asp-for="Email">
-        <govuk-input-label class="govuk-label--l">Email</govuk-input-label>
-        <govuk-input-hint>Required, must follow a valid email format.</govuk-input-hint>
+    <govuk-input name="irasProjectId" input-class="govuk-input--width-10" asp-for="IrasProjectId">
+        <govuk-input-label class="govuk-label--l">IRAS project ID</govuk-input-label>
+        <govuk-input-hint>Required, must be 6 digits. For example: 123456.</govuk-input-hint>
     </govuk-input>
 
-    <govuk-input name="password" input-class="govuk-input--width-10" asp-for="Password" type="password">
-        <govuk-input-label class="govuk-label--l">Password</govuk-input-label>
-        <govuk-input-hint>Required, minimum length 6.</govuk-input-hint>
+    <govuk-input name="chiefInvestigator" input-class="govuk-input--width-20" asp-for="ChiefInvestigator" type="password">
+        <govuk-input-label class="govuk-label--l">What is the name of the Chief Investigator (CI)?</govuk-input-label>
+        <govuk-input-hint>Required.</govuk-input-hint>
     </govuk-input>
 
-    <govuk-input name="confirmPassword" input-class="govuk-input--width-10" asp-for="ConfirmPassword" type="password">
-        <govuk-input-label class="govuk-label--l">Confirm Password</govuk-input-label>
-        <govuk-input-hint>Required, must match the Password field.</govuk-input-hint>
-    </govuk-input>
-    <govuk-button type="submit">Submit</govuk-button>
+    <govuk-radios name="reviewedByRec" asp-for="ReviewedByRec">
+        <govuk-radios-fieldset>
+            <govuk-radios-fieldset-legend class="govuk-fieldset__legend--l">
+                Has the study been reviewed by a Research Ethics Committee (REC)?
+            </govuk-radios-fieldset-legend>
+            <govuk-radios-hint>
+                Select one option.
+            </govuk-radios-hint>
+            <govuk-radios-item value="yes">
+                Yes
+                <govuk-radios-item-conditional>
+                    <govuk-radios name="recStudyLocation" asp-for="RecStudyLocation">
+                        <govuk-radios-fieldset>
+                            <govuk-radios-fieldset-legend class="govuk-fieldset__legend--m">
+                               ​Where is the Research Ethics Committee (REC) the study based?
+                            </govuk-radios-fieldset-legend>
+                            <govuk-radios-hint>
+                                Select one option.
+                            </govuk-radios-hint>
+                            <govuk-radios-item value="england">England</govuk-radios-item>
+                            <govuk-radios-item value="scotland">Scotland</govuk-radios-item>
+                            <govuk-radios-item value="wales">Wales</govuk-radios-item>
+                            <govuk-radios-item value="northern-ireland">Northern Ireland</govuk-radios-item>
+                        </govuk-radios-fieldset>
+                    </govuk-radios>
+                </govuk-radios-item-conditional>
+            </govuk-radios-item>
+            <govuk-radios-item value="no">No</govuk-radios-item>
+            <govuk-radios-divider>or</govuk-radios-divider>
+            <govuk-radios-item value="unsure">Not sure</govuk-radios-item>
+        </govuk-radios-fieldset>
+    </govuk-radios>
+    <govuk-button type="submit">Continue</govuk-button>
 </form>
 
 

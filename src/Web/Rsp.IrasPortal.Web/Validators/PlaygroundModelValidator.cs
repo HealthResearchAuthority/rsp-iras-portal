@@ -7,9 +7,9 @@ public class PlaygroundModelValidator : AbstractValidator<PlaygroundModel>
 {
     public PlaygroundModelValidator()
     {
-        RuleFor(x => x.Username).NotEmpty().Length(3, 20);
-        RuleFor(x => x.Email).NotEmpty().EmailAddress();
-        RuleFor(x => x.Password).NotEmpty().MinimumLength(6);
-        RuleFor(x => x.ConfirmPassword).Equal(x => x.Password);
+        RuleFor(x => x.ShortProjectTitle).NotEmpty().Length(3, 20);
+        RuleFor(x => x.IrasProjectId).NotEmpty().Matches(@"^[0-9]{6}$");
+        RuleFor(x => x.ChiefInvestigator).NotEmpty();
+        RuleFor(x => x.ReviewedByRec).NotEmpty();
     }
 }
