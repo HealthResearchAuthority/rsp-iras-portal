@@ -29,25 +29,35 @@ builder.AddServiceDefaults();
 var services = builder.Services;
 var configuration = builder.Configuration;
 
+var azureAppSettingsSection = configuration.GetSection(nameof(AppSettings));
+var azureAppSettings = azureAppSettingsSection.Get<AppSettings>()!;
+
+// Load configuration from Azure App Configuration
 if (!builder.Environment.IsDevelopment())
 {
-    var azureAppSettingsSection = configuration.GetSection(nameof(AppSettings));
-    var azureAppSettings = azureAppSettingsSection.Get<AppSettings>()!;
-
-    // Load configuration from Azure App Configuration
     builder.Configuration.AddAzureAppConfiguration(options =>
         options.Connect(
             new Uri(azureAppSettings!.AzureAppConfiguration.Endpoint),
             new ManagedIdentityCredential(azureAppSettings.AzureAppConfiguration.IdentityClientID))
         .Select("AppSettings:*", LabelFilter.Null)
         .ConfigureRefresh(refreshOptions =>
-            refreshOptions.Register("AppSettings:Sentinel", refreshAll: true)
-            .SetCacheExpiration(TimeSpan.FromSeconds(30))));
-
-    builder.Services.AddAzureAppConfiguration();
-
-    builder.Services.Configure<AppSettings>(builder.Configuration.GetSection(nameof(AppSettings)));
+            refreshOptions.Register("AppSettings:Sentinel", refreshAll: true)));
 }
+else
+{
+    // Only load specific values when running locally
+    builder.Configuration.AddAzureAppConfiguration(options =>
+        options.Connect(
+            new Uri(azureAppSettings!.AzureAppConfiguration.Endpoint),
+            new DefaultAzureCredential())
+        .Select("AppSettings:IrasFullForm,AppSettings:BigBanner", LabelFilter.Null)
+        .ConfigureRefresh(refreshOptions =>
+            refreshOptions.Register("AppSettings:Sentinel", refreshAll: true)));
+}
+
+builder.Services.AddAzureAppConfiguration();
+
+builder.Services.Configure<AppSettings>(builder.Configuration.GetSection(nameof(AppSettings)));
 
 var appSettingsSection = configuration.GetSection(nameof(AppSettings));
 var appSettings = appSettingsSection.Get<AppSettings>()!;
@@ -102,12 +112,13 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Application/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
-    app.UseAzureAppConfiguration();
 }
 else
 {
     app.UseDeveloperExceptionPage();
 }
+
+app.UseAzureAppConfiguration();
 
 app.UseHttpsRedirection();
 

@@ -22,5 +22,7 @@ public class AppSettings
 
     public AzureAppConfigurations AzureAppConfiguration { get; set; } = null!;
 
-    public String IrasFullForm { get; set; } = null!;
+    public string IrasFullForm { get; set; } = null!;
+
+    public int BigBanner { get; set; }
 }
