@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Rsp.IrasPortal.Application;
+using Rsp.IrasPortal.Application.Configuration;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Entities;
 using Rsp.IrasPortal.Domain.Enums;
@@ -15,7 +17,7 @@ namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "app:[action]")]
 [Authorize(Policy = "IsUser")]
-public class ApplicationController(ILogger<ApplicationController> logger, IApplicationsService applicationsService) : Controller
+public class ApplicationController(ILogger<ApplicationController> logger, IApplicationsService applicationsService, IOptionsSnapshot<AppSettings> appSettings) : Controller
 {
     [AllowAnonymous]
     public IActionResult SignIn()
@@ -49,6 +51,8 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
         logger.LogMethodStarted();
 
         var applications = await applicationsService.GetApplications();
+
+        ViewData["IrasFullForm"] = appSettings.Value.IrasFullForm;
 
         return View(nameof(Index), applications);
     }

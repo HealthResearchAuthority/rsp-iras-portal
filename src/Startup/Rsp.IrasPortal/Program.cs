@@ -1,6 +1,7 @@
 ﻿using Azure.Identity;
 using GovUk.Frontend.AspNetCore;
 using HealthChecks.UI.Client;
+using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Rsp.IrasPortal.Application.Configuration;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Configuration.Auth;
@@ -37,7 +38,13 @@ if (!builder.Environment.IsDevelopment())
     builder.Configuration.AddAzureAppConfiguration(options =>
         options.Connect(
             new Uri(azureAppSettings!.AzureAppConfiguration.Endpoint),
-            new ManagedIdentityCredential(azureAppSettings.AzureAppConfiguration.IdentityClientID)));
+            new ManagedIdentityCredential(azureAppSettings.AzureAppConfiguration.IdentityClientID))
+        .Select("AppSettings:*", LabelFilter.Null)
+        .ConfigureRefresh(refreshOptions =>
+            refreshOptions.Register("AppSettings:Sentinel", refreshAll: true)
+            .SetCacheExpiration(TimeSpan.FromSeconds(30))));
+
+    builder.Services.AddAzureAppConfiguration();
 
     builder.Services.Configure<AppSettings>(builder.Configuration.GetSection(nameof(AppSettings)));
 }
@@ -95,47 +102,48 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Application/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
+    app.UseAzureAppConfiguration();
 }
 else
 {
     app.UseDeveloperExceptionPage();
 }
 
-    app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 
-    app.UseCorrelationId();
+app.UseCorrelationId();
 
-    app.UseHeaderPropagation();
+app.UseHeaderPropagation();
 
-    // uses the SerilogRequestLogging middleware
-    // see the overloads to provide options for
-    // message template for request
-    app.UseRequestTracing();
+// uses the SerilogRequestLogging middleware
+// see the overloads to provide options for
+// message template for request
+app.UseRequestTracing();
 
-    app.MapShortCircuit(404, "robots.txt", "favicon.ico", "*.css");
+app.MapShortCircuit(404, "robots.txt", "favicon.ico", "*.css");
 
-    app
-        .UseRouting()
-        .UseAuthentication()
-        .UseAuthorization()
-        .UseSession()
-        .UseEndpoints
-        (
-            endpoints =>
+app
+    .UseRouting()
+    .UseAuthentication()
+    .UseAuthorization()
+    .UseSession()
+    .UseEndpoints
+    (
+        endpoints =>
+        {
+            endpoints.MapHealthChecks("/portal-health", new()
             {
-                endpoints.MapHealthChecks("/portal-health", new()
-                {
-                    Predicate = _ => true,
-                    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-                });
+                Predicate = _ => true,
+                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+            });
 
-                endpoints.MapHealthChecks("/probes/liveness");
+            endpoints.MapHealthChecks("/probes/liveness");
 
-                endpoints.MapHealthChecksUI();
-                endpoints.MapControllers();
-            }
-        );
+            endpoints.MapHealthChecksUI();
+            endpoints.MapControllers();
+        }
+    );
 
-    app.UseJwksDiscovery();
+app.UseJwksDiscovery();
 
-    await app.RunAsync();
+await app.RunAsync();
