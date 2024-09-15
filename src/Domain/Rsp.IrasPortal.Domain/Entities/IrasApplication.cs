@@ -27,7 +27,7 @@ namespace Rsp.IrasPortal.Domain.Entities
         /// <summary>
         /// A list of applications required for the project
         /// </summary>
-        public List<string>? ApplicationCategories { get; set; }
+        public List<string> ApplicationCategories { get; set; } = [];
 
         /// <summary>
         /// The project category

@@ -3,7 +3,7 @@
 public class QuestionResponse
 {
     public string Section { get; set; } = null!;
-    public string? Heading { get; set; } = null!;
+    public string? Heading { get; set; }
     public bool IsMandatory { get; set; }
     public string QuestionType { get; set; } = null!;
     public string DataType { get; set; } = null!;

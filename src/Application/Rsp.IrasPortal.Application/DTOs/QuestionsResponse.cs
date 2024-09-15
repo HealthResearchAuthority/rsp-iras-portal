@@ -6,6 +6,7 @@ public record QuestionsResponse
     public string Category { get; set; } = null!;
     public string SectionId { get; set; } = null!;
     public string Section { get; set; } = null!;
+    public int Sequence { get; set; }
     public string Heading { get; set; } = null!;
     public string QuestionText { get; set; } = null!;
     public string QuestionType { get; set; } = null!;
@@ -13,6 +14,7 @@ public record QuestionsResponse
     public bool IsMandatory { get; set; }
     public bool IsOptional { get; set; }
     public IList<AnswerDto> Answers { get; set; } = [];
+    public IList<RuleDto> Rules { get; set; } = [];
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     public string? Version { get; set; }
