@@ -6,14 +6,12 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application;
-using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Entities;
 using Rsp.IrasPortal.Domain.Enums;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
 using Rsp.Logging.Extensions;
-using static Rsp.IrasPortal.Application.Constants.ApplicationStages;
 using static Rsp.IrasPortal.Application.Constants.QuestionCategories;
 
 namespace Rsp.IrasPortal.Web.Controllers;
@@ -64,13 +62,7 @@ public class ApplicationController(ILogger<ApplicationController> logger, IValid
 
         HttpContext.Session.RemoveAllSessionValues();
 
-        //return RedirectToAction(nameof(ProjectName));
-
-        TempData["td:app_previousstage"] = Initiate;
-        TempData["td:app_currentstage"] = ProjectFilter;
-        //TempData["td:questions_category"] = A;
-
-        return RedirectToAction(nameof(DisplayQuestionnaire));
+        return RedirectToAction(nameof(DisplayQuestionnaire), new { categoryId = "A" });
     }
 
     public async Task<IActionResult> DisplayQuestionnaire(string categoryId = A)
@@ -79,48 +71,49 @@ public class ApplicationController(ILogger<ApplicationController> logger, IValid
 
         HttpContext.Session.RemoveAllSessionValues();
 
-        ServiceResponse<IEnumerable<Application.DTOs.QuestionsResponse>> response;
-
-        if (categoryId == A)
-        {
-            response = await questionSetService.GetInitialQuestions();
-        }
-        else
-        {
-            response = await questionSetService.GetNextQuestions(categoryId);
-        }
+        // get the initial questions for project filter if categoryId = A
+        // otherwise get the questions for the other category
+        var response = categoryId == A ?
+            await questionSetService.GetInitialQuestions() :
+            await questionSetService.GetNextQuestions(categoryId);
 
         logger.LogMethodStarted(LogLevel.Information);
 
         // return the view if successfull
         if (response.IsSuccessStatusCode)
         {
-            var questions = response.Content!;
+            // set the active stage for the category
+            SetStage(categoryId);
 
-            var questionnaire = new QuestionnaireViewModel
+            var questions = response
+                .Content!
+                .OrderBy(q => q.SectionId)
+                .ThenBy(q => q.Sequence)
+                .Select((question, index) => (question, index));
+
+            var questionnaire = new QuestionnaireViewModel();
+
+            // build the questionnaire view model
+            // we need to order the questions by section and sequence
+            // and also need to assign the index to the question so the multiple choice
+            // answsers can be linked back to the question
+            foreach (var (question, index) in questions)
             {
-                Answers = new List<QuestionResponse>(questions.Count())
-            };
-
-            foreach (var question in questions)
-            {
-                if (question.DataType is "n/a" or "Date" or "Email")
-                {
-                    continue;
-                }
-
                 questionnaire.Questions.Add(new QuestionViewModel
                 {
+                    Index = index,
                     QuestionId = question.QuestionId,
                     Category = question.Category,
                     SectionId = question.SectionId,
                     Section = question.Section,
+                    Sequence = question.Sequence,
                     Heading = question.Heading,
                     QuestionText = question.QuestionText,
                     QuestionType = question.QuestionType,
                     DataType = question.DataType,
                     IsMandatory = question.IsMandatory,
                     IsOptional = question.IsOptional,
+                    Rules = question.Rules,
                     Answers = question.Answers.Select(ans => new AnswerViewModel
                     {
                         AnswerId = ans.AnswerId,
@@ -129,32 +122,7 @@ public class ApplicationController(ILogger<ApplicationController> logger, IValid
                 });
             }
 
-            //questionnaire.Sections = questionnaire.Questions.ToLookup(q => q.Section);
-
-            //foreach (var section in questionnaire.Sections)
-            //{
-            //    var orderedQs = section.OrderBy(q => q.SectionId).ThenBy(h => h.Heading);
-
-            //    foreach (var (question, index) in orderedQs.Select((question, index) => (question, index)))
-            //    {
-            //        questionnaire.Answers.Insert(index, new QuestionResponse
-            //        {
-            //            QuestionId = question.QuestionId,
-            //            DataType = question.DataType,
-            //            Heading = question.Heading,
-            //            IsMandatory = question.IsMandatory,
-            //            QuestionType = question.QuestionType,
-            //            Section = question.Section,
-            //            SelectedAnswers = question.Answers.Select(ans => new Answer
-            //            {
-            //                Text = ans.AnswerText,
-            //                AnswerId = ans.AnswerId,
-            //                Value = null
-            //            }).ToList()
-            //        });
-            //    }
-            //}
-
+            // store the questions to load again if there are validation errors on the page
             HttpContext.Session.SetString(SessionConstants.Questionnaire, JsonSerializer.Serialize(questionnaire.Questions));
 
             return View("Questionnaire", questionnaire);
@@ -174,12 +142,30 @@ public class ApplicationController(ILogger<ApplicationController> logger, IValid
         };
     }
 
+    [RequestFormLimits(ValueCountLimit = int.MaxValue)]
     [HttpPost]
     public async Task<IActionResult> SubmitAnswers(QuestionnaireViewModel model)
     {
-        (string? PreviousStage, string? CurrentStage) appStage = (model.PreviousStage, model.CurrentStage);
+        var questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(HttpContext.Session.GetString(SessionConstants.Questionnaire)!)!;
 
-        var result = await validator.ValidateAsync(model);
+        foreach (var question in questions)
+        {
+            var response = model.Questions.Find(q => q.Index == question.Index);
+
+            question.SelectedOption = response?.SelectedOption;
+            question.Answers = response?.Answers ?? [];
+            question.AnswerText = response?.AnswerText;
+        }
+
+        model.Questions = questions;
+
+        var context = new ValidationContext<QuestionnaireViewModel>(model);
+
+        context.RootContextData["questions"] = model.Questions;
+
+        var result = await validator.ValidateAsync(context);
+
+        var stage = SetStage(model.CurrentStage!);
 
         if (!result.IsValid)
         {
@@ -187,49 +173,16 @@ public class ApplicationController(ILogger<ApplicationController> logger, IValid
             // ASP.NET uses the ModelState collection to populate
             // error messages in the View.
 
-            model.Questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(HttpContext.Session.GetString(SessionConstants.Questionnaire)!)!;
-
             foreach (var error in result.Errors)
             {
                 ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
             }
 
-            TempData["td:app_previousstage"] = appStage.PreviousStage;
-            TempData["td:app_currentstage"] = appStage.CurrentStage;
-
             // re-render the view when validation failed.
             return View("Questionnaire", model);
         }
 
-        //if (!ModelState.IsValid)
-        //{
-        //    model.Questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(HttpContext.Session.GetString(SessionConstants.Questionnaire)!)!;
-
-        //    TempData["td:app_previousstage"] = appStage.PreviousStage;
-        //    TempData["td:app_currentstage"] = appStage.CurrentStage;
-
-        //    return View("Questionnaire", model);
-        //}
-
-        (string? PreviousStage, string? CurrentStage, string Category) newStage = appStage switch
-        {
-            { CurrentStage: ProjectFilter } => (ProjectFilter, ProjectDetails, B),
-            { CurrentStage: ProjectDetails } => (ProjectFilter, Student, C1),
-            { CurrentStage: Student } => (ProjectDetails, ResearchBioresouces, C2),
-            { CurrentStage: ResearchBioresouces } => (Student, Ctimp, C3),
-            { CurrentStage: Ctimp } => (ResearchBioresouces, Devices, C4),
-            { CurrentStage: Devices } => (Ctimp, IonisingRadiation, C5),
-            { CurrentStage: IonisingRadiation } => (Devices, Tissue, C6),
-            { CurrentStage: Tissue } => (IonisingRadiation, AdultLackingCapacity, C7),
-            { CurrentStage: AdultLackingCapacity } => (Booking, "", C8),
-            _ => (Initiate, ProjectFilter, A)
-        };
-
-        TempData["td:app_previousstage"] = newStage.PreviousStage;
-        TempData["td:app_currentstage"] = newStage.CurrentStage;
-        //TempData["td:questions_category"] = newStage.Category;
-
-        return RedirectToAction(nameof(DisplayQuestionnaire), new { categoryId = newStage.Category });
+        return RedirectToAction(nameof(DisplayQuestionnaire), new { categoryId = stage.NextStage });
     }
 
     public async Task<IActionResult> LoadExistingApplication(string applicationIdSelect)
@@ -458,5 +411,29 @@ public class ApplicationController(ILogger<ApplicationController> logger, IValid
             ProjectCategory = HttpContext.Session.GetString(SessionConstants.ProjectCategory) ?? "",
             StartDate = DateTime.Parse(HttpContext.Session.GetString(SessionConstants.StartDate) ?? DateTime.Now.ToString()),
         };
+    }
+
+    private (string PreviousStage, string CurrentStage, string NextStage) SetStage(string category)
+    {
+        (string? PreviousStage, string? CurrentStage, string NextStage) = category switch
+        {
+            A => ("", A, B),
+            B => (A, B, C1),
+            C1 => (B, C1, C2),
+            C2 => (C1, C2, C3),
+            C3 => (C2, C3, C4),
+            C4 => (C3, C4, C5),
+            C5 => (C4, C5, C6),
+            C6 => (C5, C6, C7),
+            C7 => (C6, C7, C8),
+            C8 => (C7, C8, D),
+            D => (C8, D, ""),
+            _ => ("", A, B)
+        };
+
+        TempData["td:app_previousstage"] = PreviousStage;
+        TempData["td:app_currentstage"] = CurrentStage;
+
+        return (PreviousStage, CurrentStage, NextStage);
     }
 }

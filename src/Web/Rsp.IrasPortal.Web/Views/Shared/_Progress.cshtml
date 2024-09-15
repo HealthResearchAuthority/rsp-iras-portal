@@ -1,4 +1,5 @@
-﻿@model (string currentStage, string completedStage)
+﻿@using static Rsp.IrasPortal.Application.Constants.QuestionCategories;
+@model (string currentStage, string completedStage)
 
 @{
     var progressBarStyle = string.Empty;
@@ -6,7 +7,8 @@
     string GetState(string stage, out string style)
     {
         var state = Model.currentStage == stage ? " active" : Model.completedStage == stage ? " completed" : string.Empty;
-        style = state == string.Empty ? "display: none" : "";
+        //style = state == string.Empty ? "display: none" : "";
+        style = "";
 
         return state;
     };
@@ -16,65 +18,89 @@
 <div class="govuk-grid-row">
     <div class="progress-container">
 
-        <div class="stage@(GetState("Initiate", out progressBarStyle))">
+        <div class="stage completed">
             <div class="progress-line" style="@progressBarStyle"></div>
             <div class="stage-circle"></div>
             <div class="stage-label">Initiate</div>
         </div>
-        <div class="stage@(GetState("Project Filter", out progressBarStyle))">
+
+        <div class="stage@(GetState(A, out progressBarStyle))">
+
             <div class="progress-line" style="@progressBarStyle"></div>
             <div class="stage-circle"></div>
-            <div class="stage-label">Project Filter</div>
+            <div class="stage-label">
+                <a asp-route="app:displayquestionnaire" asp-route-categoryId="A">Project Filter</a>
+            </div>
         </div>
-        <div class="stage@(GetState("Project Details", out progressBarStyle))">
+        <div class="stage@(GetState(B, out progressBarStyle))">
             <div class="progress-line" style="@progressBarStyle"></div>
             <div class="stage-circle"></div>
-            <div class="stage-label">Project Details</div>
+            <div class="stage-label">
+                <a asp-route="app:displayquestionnaire" asp-route-categoryId="B">Project Details</a>
+            </div>
         </div>
-        <div class="stage@(GetState("Student", out progressBarStyle))">
+        <div class="stage@(GetState(C1, out progressBarStyle))">
             <div class="progress-line" style="@progressBarStyle"></div>
             <div class="stage-circle"></div>
-            <div class="stage-label">Student</div>
+            <div class="stage-label">
+                <a asp-route="app:displayquestionnaire" asp-route-categoryId="C1">Student</a>
+            </div>
         </div>
-        <div class="stage@(GetState("Research Bioresources", out progressBarStyle))">
+        <div class="stage@(GetState(C2, out progressBarStyle))">
             <div class="progress-line" style="@progressBarStyle"></div>
             <div class="stage-circle"></div>
-            <div class="stage-label">Research Bioresources</div>
+            <div class="stage-label">
+                <a asp-route="app:displayquestionnaire" asp-route-categoryId="C2">Research Bioresources</a>
+            </div>
         </div>
-        <div class="stage@(GetState("CTIMP", out progressBarStyle))">
+        <div class="stage@(GetState(C3, out progressBarStyle))">
             <div class="progress-line" style="@progressBarStyle"></div>
             <div class="stage-circle"></div>
-            <div class="stage-label">CTIMP</div>
+            <div class="stage-label">
+                <a asp-route="app:displayquestionnaire" asp-route-categoryId="C3">CTIMP</a>
+            </div>
         </div>
-        <div class="stage@(GetState("Devices", out progressBarStyle))">
+        <div class="stage@(GetState(C4, out progressBarStyle))">
             <div class="progress-line" style="@progressBarStyle"></div>
             <div class="stage-circle"></div>
-            <div class="stage-label">Devices</div>
+            <div class="stage-label">
+                <a asp-route="app:displayquestionnaire" asp-route-categoryId="C4">Devices</a>
+            </div>
         </div>
-        <div class="stage@(GetState("Ionizing Radiation", out progressBarStyle))">
+        <div class="stage@(GetState(C5, out progressBarStyle))">
             <div class="progress-line" style="@progressBarStyle"></div>
             <div class="stage-circle"></div>
-            <div class="stage-label">Ionizing Radiation</div>
+            <div class="stage-label">
+                <a asp-route="app:displayquestionnaire" asp-route-categoryId="C5">Ionizing Radiation</a>
+            </div>
         </div>
-        <div class="stage@(GetState("Tissue", out progressBarStyle))">
+        <div class="stage@(GetState(C6, out progressBarStyle))">
             <div class="progress-line" style="@progressBarStyle"></div>
             <div class="stage-circle"></div>
-            <div class="stage-label">Tissue</div>
+            <div class="stage-label">
+                <a asp-route="app:displayquestionnaire" asp-route-categoryId="C6">Tissue</a>
+            </div>
         </div>
-        <div class="stage@(GetState("Adults Lacking Capacity", out progressBarStyle))">
+        <div class="stage@(GetState(C7, out progressBarStyle))">
             <div class="progress-line" style="@progressBarStyle"></div>
             <div class="stage-circle"></div>
-            <div class="stage-label">Adults Lacking Capacity</div>
+            <div class="stage-label">
+                <a asp-route="app:displayquestionnaire" asp-route-categoryId="C7">Adults Lacking Capacity</a>
+            </div>
         </div>
-        <div class="stage@(GetState("Children", out progressBarStyle))">
+        <div class="stage@(GetState(C8, out progressBarStyle))">
             <div class="progress-line" style="@progressBarStyle"></div>
             <div class="stage-circle"></div>
-            <div class="stage-label">Children</div>
+            <div class="stage-label">
+                <a asp-route="app:displayquestionnaire" asp-route-categoryId="C8">Children</a>
+            </div>
         </div>
-        <div class="stage@(GetState("Booking", out progressBarStyle))">
+        <div class="stage@(GetState(D, out progressBarStyle))">
             <div class="progress-line" style="@progressBarStyle"></div>
             <div class="stage-circle"></div>
-            <div class="stage-label">Booking</div>
+            <div class="stage-label">
+                <a asp-route="app:displayquestionnaire" asp-route-categoryId="D">Booking</a>
+            </div>
         </div>
     </div>
 </div>

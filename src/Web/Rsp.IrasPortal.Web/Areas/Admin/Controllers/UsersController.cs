@@ -55,7 +55,7 @@ public class UsersController(IUserManagementService userManagementService, ILogg
     /// Displays the empty UserView to create a user
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> CreateUser()
+    public IActionResult CreateUser()
     {
         logger.LogMethodStarted(LogLevel.Information);
 
@@ -148,7 +148,7 @@ public class UsersController(IUserManagementService userManagementService, ILogg
     /// <param name="userId">User Id</param>
     /// <param name="email">Email</param>
     [HttpGet]
-    public async Task<IActionResult> DeleteUser(string userId, string email)
+    public IActionResult DeleteUser(string userId, string email)
     {
         logger.LogMethodStarted(LogLevel.Information);
 
