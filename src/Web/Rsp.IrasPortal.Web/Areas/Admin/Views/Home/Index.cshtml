@@ -1,0 +1,37 @@
+﻿@model (int UserCount, int RoleCount)
+
+@{
+    ViewBag.Active = "summary";
+}
+
+<h2 class="govuk-heading-l">Manage User and Roles</h2>
+
+<partial name="_AdminMenu" />
+
+<table class="govuk-table">
+    <thead>
+        <tr>
+            <th class="govuk-table__header" colspan="2">Summary</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        <tr class="govuk-table__row">
+            <td class="govuk-table__cell">
+                Number of Users: @Model.UserCount
+            </td>
+            <td class="govuk-table__cell">
+                <a class="govuk-link" asp-route="admin:users">Manage Users</a>
+            </td>
+        </tr>
+        <tr>
+            <td class="govuk-table__cell">
+                Number of Roles: @Model.RoleCount
+            </td>
+            <td class="govuk-table__cell">
+                <a class="govuk-link" asp-route="admin:roles">Manage Roles</a>
+            </td>
+        </tr>
+
+    </tbody>
+</table>

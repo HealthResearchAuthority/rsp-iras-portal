@@ -3,9 +3,7 @@
     ViewData["Title"] = "Application";
 }
 
-<div class="govuk-width-container app-width-container">
-
-    <partial name="_BackNavigation" model="@("app:projectstartdate","Back")" />
+<partial name="_BackNavigation" model="@("app:projectstartdate","Back")" />
 
     <main class="govuk-main-wrapper">
         <div class="govuk-grid-row">
@@ -20,7 +18,7 @@
                           ViewBag.Style = "govuk-button govuk-button--secondary";
                       }
                       
-                      <partial name="_SubmitButton" model="@("app:upload","Upload documents(s)" />
+                      <partial name="_SubmitButton" model="@("app:upload","Upload documents(s)")" />
                     <dl class="govuk-summary-list govuk-summary-list--long-key">
                         @if (Model != null)
                         {
@@ -45,7 +43,7 @@
                     ViewBag.Style = "govuk-button govuk-button--secondary";
                 }
 
-                <partial name="_SubmitButton" model="@("app:upload","Continue" />
+                <partial name="_SubmitButton" model="@("app:upload","Continue")" />
             </div>
         </div>
     </main>

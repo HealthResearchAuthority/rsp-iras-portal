@@ -3,4 +3,5 @@
 internal struct ProjectsSettings
 {
     public IrasServiceSettings IrasServiceSettings { get; set; }
+    public UsersServiceSettings UsersServiceSettings { get; set; }
 }

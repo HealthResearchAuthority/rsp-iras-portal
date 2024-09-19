@@ -1,24 +1,26 @@
 ﻿@using System.Security.Claims
-<!DOCTYPE html>
-<html lang="en">
+
+@{
+    Layout = "_GovUkPageTemplate";
+}
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Future Iras Portal</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Rsp.IrasPortal.Web.styles.css" asp-append-version="true" />
 </head>
-<body class="govuk-template__body js-enabled govuk-frontend-supported">
+
+@section Header {
     <header class="govuk-header app-header"
             role="banner"
             data-module="govuk-header"
-            style="background-color: #e6e5e5">
+            style="background-color: #fff">
         <div class="govuk-header__container app-width-container">
             <div class="govuk-header__logo">
                 <a asp-route="app:welcome" class="govuk-header__link govuk-header__link--homepage">
-                    <img style="background-color: hsl(0, 0%, 90%)"
-                         src="https://www.myresearchproject.org.uk/images/IRAS.gif" />
+                    <img style="background-color: hsl(0, 0%, 90%); display:block; width: 100%; margin:0 auto"
+                         src="~/images/iras-header.jpg" />
                 </a>
             </div>
         </div>
@@ -34,17 +36,6 @@
                     Home
                 </a>
             </li>
-
-            <authorized auth-params="@new(Roles:"user,reviewer")">
-
-                <li class="app-navigation__list-item">
-                    <a class="govuk-link govuk-link--no-visited-state govuk-link--no-underline app-navigation__link js-app-navigation__link"
-                       asp-route="arc:pendingapplications">
-                        Review Applications
-                    </a>
-                </li>
-
-            </authorized>
 
             <li class="app-navigation__list-item">
                 <a class="govuk-link govuk-link--no-visited-state govuk-link--no-underline app-navigation__link js-app-navigation__link"
@@ -89,6 +80,26 @@
                 </a>
             </li>
 
+            <authorized auth-params="@new(Roles:"reviewer")">
+
+                <li class="app-navigation__list-item">
+                    <a class="govuk-link govuk-link--no-visited-state govuk-link--no-underline app-navigation__link js-app-navigation__link"
+                       asp-route="arc:pendingapplications">
+                        Review Applications
+                    </a>
+                </li>
+
+            </authorized>
+
+            <authorized auth-params="@new(Roles:"admin")">
+                <li class="app-navigation__list-item">
+                    <a class="govuk-link govuk-link--no-visited-state govuk-link--no-underline app-navigation__link js-app-navigation__link"
+                       asp-route="admin:home">
+                        Admin
+                    </a>
+                </li>
+            </authorized>
+
             <authorized auth-params="@new()">
 
                 <li class="app-navigation__list-item">
@@ -110,43 +121,28 @@
 
         </ul>
     </nav>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+}
 
-    <footer class="govuk-footer" role="contentinfo">
-        <div class="govuk-width-container">
+@RenderBody()
+
+@section Footer {
+    <footer class="govuk-footer " role="contentinfo">
+        <div class="govuk-width-container ">
             <div class="govuk-footer__meta">
                 <div class="govuk-footer__meta-item govuk-footer__meta-item--grow">
-                    <svg aria-hidden="true"
-                         focusable="false"
-                         class="govuk-footer__licence-logo"
-                         xmlns="http://www.w3.org/2000/svg"
-                         viewBox="0 0 483.2 195.7"
-                         height="17"
-                         width="41">
-                        <path fill="currentColor"
-                              d="M421.5 142.8V.1l-50.7 32.3v161.1h112.4v-50.7zm-122.3-9.6A47.12 47.12 0 0 1 221 97.8c0-26 21.1-47.1 47.1-47.1 16.7 0 31.4 8.7 39.7 21.8l42.7-27.2A97.63 97.63 0 0 0 268.1 0c-36.5 0-68.3 20.1-85.1 49.7A98 98 0 0 0 97.8 0C43.9 0 0 43.9 0 97.8s43.9 97.8 97.8 97.8c36.5 0 68.3-20.1 85.1-49.7a97.76 97.76 0 0 0 149.6 25.4l19.4 22.2h3v-87.8h-80l24.3 27.5zM97.8 145c-26 0-47.1-21.1-47.1-47.1s21.1-47.1 47.1-47.1 47.2 21 47.2 47S123.8 145 97.8 145" />
+
+                    <svg aria-hidden="true" focusable="false" class="govuk-footer__licence-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 483.2 195.7" height="17" width="41">
+                        <path fill="currentColor" d="M421.5 142.8V.1l-50.7 32.3v161.1h112.4v-50.7zm-122.3-9.6A47.12 47.12 0 0 1 221 97.8c0-26 21.1-47.1 47.1-47.1 16.7 0 31.4 8.7 39.7 21.8l42.7-27.2A97.63 97.63 0 0 0 268.1 0c-36.5 0-68.3 20.1-85.1 49.7A98 98 0 0 0 97.8 0C43.9 0 0 43.9 0 97.8s43.9 97.8 97.8 97.8c36.5 0 68.3-20.1 85.1-49.7a97.76 97.76 0 0 0 149.6 25.4l19.4 22.2h3v-87.8h-80l24.3 27.5zM97.8 145c-26 0-47.1-21.1-47.1-47.1s21.1-47.1 47.1-47.1 47.2 21 47.2 47S123.8 145 97.8 145" />
                     </svg>
                     <span class="govuk-footer__licence-description">
                         All content is available under the
-                        <a class="govuk-footer__link"
-                           href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
-                           rel="license">Open Government Licence v3.0</a>, except where otherwise stated
+                        <a class="govuk-footer__link" href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/" rel="license">Open Government Licence v3.0</a>, except where otherwise stated
                     </span>
                 </div>
                 <div class="govuk-footer__meta-item">
-                    <a class="govuk-footer__link govuk-footer__copyright-logo"
-                       href="https://www.nationalarchives.gov.uk/information-management/re-using-public-sector-information/uk-government-licensing-framework/crown-copyright/">© Crown copyright</a>
+                    <a class="govuk-footer__link govuk-footer__copyright-logo" href="https://www.nationalarchives.gov.uk/information-management/re-using-public-sector-information/uk-government-licensing-framework/crown-copyright/">© Crown copyright</a>
                 </div>
             </div>
         </div>
     </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
-</body>
-</html>
+}

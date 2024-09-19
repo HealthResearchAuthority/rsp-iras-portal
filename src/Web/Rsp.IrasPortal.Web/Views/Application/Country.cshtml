@@ -3,70 +3,65 @@
     ViewData["Title"] = "Application";
 }
 
-<div class="govuk-width-container app-width-container">
+<partial name="_BackNavigation" model="@("app:projectname", "Back")" />
 
-    <partial name="_BackNavigation" model="@("app:projectname", "Back")" />
-
-    <main class="govuk-main-wrapper">
-        <div class="govuk-grid-row">
-            <div class="govuk-grid-column-two-thirds">
-                <h1 class="govuk-heading-xl" id="title">In which country of the UK will the lead NHS R&D office be located?</h1>
-            </div>
-        </div>
-
-        <form method="post">
-            <div class="govuk-form-group">
-                <fieldset class="govuk-fieldset">
-                    <div class="govuk-radios" data-module="govuk-radios">
-                        <div class="govuk-radios__item">
-                            <input class="govuk-radios__input"
-                                   id="radioEngland"
-                                   name="officeLocation"
-                                   type="radio"
-                                   value="0"
-                                   checked=@(Model == 0) />
-                            <label class="govuk-label govuk-radios__label" for="radioEngland">
-                                England
-                            </label>
-                        </div>
-                        <div class="govuk-radios__item">
-                            <input class="govuk-radios__input"
-                                   id="radioScotland"
-                                   name="officeLocation"
-                                   type="radio"
-                                   value="1"
-                                   checked=@(Model == 1) />
-                            <label class="govuk-label govuk-radios__label" for="radioScotland">
-                                Scotland
-                            </label>
-                        </div>
-                        <div class="govuk-radios__item">
-                            <input class="govuk-radios__input"
-                                   id="radioWales"
-                                   name="officeLocation"
-                                   type="radio"
-                                   value="2"
-                                   checked=@(Model == 2) />
-                            <label class="govuk-label govuk-radios__label" for="radioWales">
-                                Wales
-                            </label>
-                        </div>
-                        <div class="govuk-radios__item">
-                            <input class="govuk-radios__input"
-                                   id="radioNorthernIreland"
-                                   name="officeLocation"
-                                   type="radio"
-                                   value="3"
-                                   checked=@(Model == 3) />
-                            <label class="govuk-label govuk-radios__label" for="radioNorthernIreland">
-                                Northern Ireland
-                            </label>
-                        </div>
-                    </div>
-                </fieldset>
-            </div>
-
-            <partial name="_SubmitButton" model="@("app:savecountry","Continue")" />
-        </form>
-    </main>
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-xl" id="title">In which country of the UK will the lead NHS R&D office be located?</h1>
+    </div>
 </div>
+
+<form method="post">
+    <div class="govuk-form-group">
+        <fieldset class="govuk-fieldset">
+            <div class="govuk-radios" data-module="govuk-radios">
+                <div class="govuk-radios__item">
+                    <input class="govuk-radios__input"
+                           id="radioEngland"
+                           name="officeLocation"
+                           type="radio"
+                           value="0"
+                           checked=@(Model == 0) />
+                    <label class="govuk-label govuk-radios__label" for="radioEngland">
+                        England
+                    </label>
+                </div>
+                <div class="govuk-radios__item">
+                    <input class="govuk-radios__input"
+                           id="radioScotland"
+                           name="officeLocation"
+                           type="radio"
+                           value="1"
+                           checked=@(Model == 1) />
+                    <label class="govuk-label govuk-radios__label" for="radioScotland">
+                        Scotland
+                    </label>
+                </div>
+                <div class="govuk-radios__item">
+                    <input class="govuk-radios__input"
+                           id="radioWales"
+                           name="officeLocation"
+                           type="radio"
+                           value="2"
+                           checked=@(Model == 2) />
+                    <label class="govuk-label govuk-radios__label" for="radioWales">
+                        Wales
+                    </label>
+                </div>
+                <div class="govuk-radios__item">
+                    <input class="govuk-radios__input"
+                           id="radioNorthernIreland"
+                           name="officeLocation"
+                           type="radio"
+                           value="3"
+                           checked=@(Model == 3) />
+                    <label class="govuk-label govuk-radios__label" for="radioNorthernIreland">
+                        Northern Ireland
+                    </label>
+                </div>
+            </div>
+        </fieldset>
+    </div>
+
+    <partial name="_SubmitButton" model="@("app:savecountry","Continue")" />
+</form>

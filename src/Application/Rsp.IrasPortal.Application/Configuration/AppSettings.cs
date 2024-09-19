@@ -11,7 +11,14 @@ public class AppSettings
     public Uri ApplicationsServiceUri { get; set; } = null!;
 
     /// <summary>
+    /// Gets or sets the URI of the users management microservice
+    /// </summary>
+    public Uri UsersServiceUri { get; set; } = null!;
+
+    /// <summary>
     /// Authentication settings for the application
     /// </summary>
     public AuthSettings AuthSettings { get; set; } = null!;
+
+    public AzureAppConfigurations AzureAppConfiguration { get; set; } = null!;
 }

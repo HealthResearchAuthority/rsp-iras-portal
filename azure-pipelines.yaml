@@ -23,6 +23,10 @@ parameters:
     displayName: DevOps Library Branch
     type: string
     default: main
+  - name: servicedefaults_library_branch
+    displayName: Service Defaults Library Branch
+    type: string
+    default: main
   - name: run_github_security_scan
     displayName: Run GitHub Advanced Security Scan
     type: boolean
@@ -68,7 +72,7 @@ resources:
     - repository: service_defaults
       type: git
       name: 'Research Systems Programme/rsp-service-defaults'
-      ref: main
+      ref: ${{ parameters.servicedefaults_library_branch }}
 
 stages:
   - stage: dev
@@ -81,12 +85,10 @@ stages:
           install_aspire: true
           service_defaults_repo: service_defaults
 
-      #- template: jobs/deploy.yaml@library
-      - job:
-        displayName: Deploy to Dev
-        steps:
-        - script: |
-            echo 'deploying to dev'
+      - template: jobs/deployPortal.yaml@library
+        parameters:
+          install_aspire: true
+          service_defaults_repo: service_defaults
 
   - stage: systemtest_auto
     jobs:
@@ -114,7 +116,7 @@ stages:
     - job:
       steps:
       - script: |
-          echo 'env: system test manual'
+          echo 'env: system manual test'  
 
   - stage: system_integration_test
     jobs:

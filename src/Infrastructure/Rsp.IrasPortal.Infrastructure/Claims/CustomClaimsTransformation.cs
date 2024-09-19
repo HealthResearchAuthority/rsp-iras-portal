@@ -6,10 +6,17 @@ using Microsoft.IdentityModel.Tokens;
 using NetDevPack.Security.Jwt.Core.Interfaces;
 using Rsp.IrasPortal.Application.Configuration;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.Services;
 
 namespace Rsp.IrasPortal.Infrastructure.Claims;
 
-public class CustomClaimsTransformation(IHttpContextAccessor httpContextAccessor, IJwtService jwtService, AppSettings appSettings) : IClaimsTransformation
+public class CustomClaimsTransformation
+(
+    IHttpContextAccessor httpContextAccessor,
+    IJwtService jwtService,
+    IUserManagementService userManagementService,
+    AppSettings appSettings
+) : IClaimsTransformation
 {
     private struct Roles
     {
@@ -38,43 +45,32 @@ public class CustomClaimsTransformation(IHttpContextAccessor httpContextAccessor
 
         const string roleClaim = ClaimTypes.Role;
 
-        var roleClaims = claimsIdentity.Claims.Where(c => c.Type == roleClaim);
+        // all users will get iras_portal_user and by default
+        // this is to allow application to call the usermanagement
+        // microservice to get the roles from the database
+        claimsIdentity.AddClaim(new Claim(roleClaim, "iras_portal_user"));
 
-        var claimValue = ValidateEmail(email);
-
-        // if the email is nikhil.bharathesh then add user claim
-        // if the email is shahzad.hassan or haris.amin then add admin claim
-        if (claimValue is Roles.user or Roles.admin &&
-            roleClaims.FirstOrDefault(claim => claim.Value == claimValue) == null)
-        {
-            claimsIdentity.AddClaim(new Claim(roleClaim, claimValue));
-        }
-
-        // if the email is shahzad.hassan then add admin claim
-        if (claimValue == Roles.admin &&
-            roleClaims.FirstOrDefault(claim => claim.Value == Roles.reviewer) == null)
-        {
-            claimsIdentity.AddClaim(new Claim(roleClaim, Roles.reviewer));
-        }
-
+        // at this point we need to generate a new token
         await UpdateAccessToken(principal);
 
-        return principal;
-    }
+        // now we can call the usermanagement api
+        var getUserResponse = await userManagementService.GetUser(null, email);
 
-    /// <summary>
-    /// This is a temporary code to add custom claims based on the email address
-    /// </summary>
-    /// <param name="email">email to validate</param>
-    public static string ValidateEmail(string email)
-    {
-        return email switch
+        if (getUserResponse.IsSuccessStatusCode && getUserResponse.Content != null)
         {
-            "shahzad.hassan@paconsulting.com" => Roles.admin,
-            "nikhil.bharathesh_PA_test@hra.nhs.uk" => Roles.user,
-            "haris.amin@paconsulting.com" => Roles.admin,
-            _ => string.Empty
-        };
+            var user = getUserResponse.Content;
+
+            // add the roles to claimsIdentity
+            foreach (var role in user.Roles)
+            {
+                claimsIdentity.AddClaim(new Claim(roleClaim, role));
+            }
+
+            // as the claims are now updated, we need to generate a new token
+            await UpdateAccessToken(principal);
+        }
+
+        return principal;
     }
 
     /// <summary>

@@ -6,72 +6,70 @@
     var authParams = new AuthTagHelperParams(Roles: "user");
 }
 
-<main class="govuk-main-wrapper">
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-two-thirds">
-            <h1 class="govuk-heading-xl" id="title">@ViewBag.Title</h1>
-        </div>
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-xl" id="title">@ViewBag.Title</h1>
     </div>
+</div>
 
-    @if (Model is null)
-    {
-        <partial name="_NoData" />
+@if (Model is null)
+{
+    <partial name="_NoData" />
 
-        return;
-    }
+    return;
+}
 
-    <dl class="govuk-summary-list">
-        <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">Project title</dt>
-            <dd class="govuk-summary-list__value" id="review_title">@Model.Title</dd>
-            <dd class="govuk-summary-list__actions">
-                <a class="govuk-link" auth-params="@authParams" asp-route="app:projectname">Change</a>
-            </dd>
-        </div>
-        <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">Lead NHS R&D office location</dt>
-            <dd class="govuk-summary-list__value" id="review_location">@Model.Location?.ToString()</dd>
-            <dd class="govuk-summary-list__actions">
-                <a class="govuk-link" auth-params="@authParams" asp-route="app:country">Change</a>
-            </dd>
-        </div>
-        <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">Required application</dt>
-            <dd class="govuk-summary-list__value" id="review_applications">
-                @{
-                    if (Model.ApplicationCategories != null)
+<dl class="govuk-summary-list">
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Project title</dt>
+        <dd class="govuk-summary-list__value" id="review_title">@Model.Title</dd>
+        <dd class="govuk-summary-list__actions">
+            <a class="govuk-link" auth-params="@authParams" asp-route="app:projectname">Change</a>
+        </dd>
+    </div>
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Lead NHS R&D office location</dt>
+        <dd class="govuk-summary-list__value" id="review_location">@Model.Location?.ToString()</dd>
+        <dd class="govuk-summary-list__actions">
+            <a class="govuk-link" auth-params="@authParams" asp-route="app:country">Change</a>
+        </dd>
+    </div>
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Required application</dt>
+        <dd class="govuk-summary-list__value" id="review_applications">
+            @{
+                if (Model.ApplicationCategories != null)
+                {
+                    foreach (var item in Model.ApplicationCategories)
                     {
-                        foreach (var item in Model.ApplicationCategories)
-                        {
-                            <p>@item</p>
-                        }
+                        <p>@item</p>
                     }
                 }
-            </dd>
-            <dd class="govuk-summary-list__actions">
-                <a class="govuk-link" auth-params="@authParams" asp-route="app:applicationtype">Change</a>
-            </dd>
-        </div>
-        <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">Project category</dt>
-            <dd class="govuk-summary-list__value" id="review_category">@Model.ProjectCategory</dd>
-            <dd class="govuk-summary-list__actions">
-                <a class="govuk-link" auth-params="@authParams" asp-route="app:projectcategory">Change</a>
-            </dd>
-        </div>
-    </dl>
-
-    <authorized auth-params="@authParams">
-        <form method="post">
-
-            <partial name="_SubmitButton" model="@("app:savedocumentupload","Finish and submit")" />
-
-            @{
-                ViewBag.Style = "ms-3 govuk-button govuk-button--secondary";
             }
+        </dd>
+        <dd class="govuk-summary-list__actions">
+            <a class="govuk-link" auth-params="@authParams" asp-route="app:applicationtype">Change</a>
+        </dd>
+    </div>
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Project category</dt>
+        <dd class="govuk-summary-list__value" id="review_category">@Model.ProjectCategory</dd>
+        <dd class="govuk-summary-list__actions">
+            <a class="govuk-link" auth-params="@authParams" asp-route="app:projectcategory">Change</a>
+        </dd>
+    </div>
+</dl>
 
-            <partial name="_SubmitButton" model="@("app:savedraftapplication","Save draft")" />
+<authorized auth-params="@authParams">
+    <form method="post">
 
-        </form>
-    </authorized>
-</main>
+        <partial name="_SubmitButton" model="@("app:savedocumentupload","Finish and submit")" />
+
+        @{
+            ViewBag.Style = "ms-3 govuk-button govuk-button--secondary";
+        }
+
+        <partial name="_SubmitButton" model="@("app:savedraftapplication","Save draft")" />
+
+    </form>
+</authorized>

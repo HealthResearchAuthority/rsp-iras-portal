@@ -1,4 +1,6 @@
-﻿using HealthChecks.UI.Client;
+﻿using Azure.Identity;
+using GovUk.Frontend.AspNetCore;
+using HealthChecks.UI.Client;
 using Rsp.IrasPortal.Application.Configuration;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Configuration.Auth;
@@ -14,7 +16,8 @@ var builder = WebApplication.CreateBuilder(args);
 //Add logger
 builder
     .Configuration
-    .AddJsonFile("logsettings.json");
+    .AddJsonFile("logsettings.json")
+    .AddEnvironmentVariables();
 
 // this method is called by multiple projects
 // serilog settings has been moved here, as all projects
@@ -24,6 +27,20 @@ builder.AddServiceDefaults();
 // Add services to the container.
 var services = builder.Services;
 var configuration = builder.Configuration;
+
+if (!builder.Environment.IsDevelopment())
+{
+    var azureAppSettingsSection = configuration.GetSection(nameof(AppSettings));
+    var azureAppSettings = azureAppSettingsSection.Get<AppSettings>()!;
+
+    // Load configuration from Azure App Configuration
+    builder.Configuration.AddAzureAppConfiguration(options =>
+        options.Connect(
+            new Uri(azureAppSettings!.AzureAppConfiguration.Endpoint),
+            new ManagedIdentityCredential(azureAppSettings.AzureAppConfiguration.IdentityClientID)));
+
+    builder.Services.Configure<AppSettings>(builder.Configuration.GetSection(nameof(AppSettings)));
+}
 
 var appSettingsSection = configuration.GetSection(nameof(AppSettings));
 var appSettings = appSettingsSection.Get<AppSettings>()!;
@@ -64,6 +81,8 @@ services
     .AddJwksManager()
     .UseJwtValidation();
 
+services.AddGovUkFrontend();
+
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
@@ -80,6 +99,7 @@ if (!app.Environment.IsDevelopment())
 else
 {
     app.UseDeveloperExceptionPage();
+}
 
     app.UseHttpsRedirection();
 
@@ -103,11 +123,13 @@ else
         (
             endpoints =>
             {
-            endpoints.MapHealthChecks("/portal-health", new()
+                endpoints.MapHealthChecks("/portal-health", new()
                 {
                     Predicate = _ => true,
                     ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
                 });
+
+                endpoints.MapHealthChecks("/probes/liveness");
 
                 endpoints.MapHealthChecksUI();
                 endpoints.MapControllers();
@@ -116,5 +138,4 @@ else
 
     app.UseJwksDiscovery();
 
-await app.RunAsync();
-}
+    await app.RunAsync();

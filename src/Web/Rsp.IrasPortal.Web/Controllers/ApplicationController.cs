@@ -14,8 +14,10 @@ using Rsp.Logging.Extensions;
 namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "app:[action]")]
+[Authorize(Policy = "IsUser")]
 public class ApplicationController(ILogger<ApplicationController> logger, IApplicationsService applicationsService) : Controller
 {
+    [AllowAnonymous]
     public IActionResult SignIn()
     {
         logger.LogMethodStarted();
@@ -26,6 +28,7 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
         });
     }
 
+    [AllowAnonymous]
     public async Task<IActionResult> Signout()
     {
         logger.LogMethodStarted();
@@ -39,6 +42,7 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
         });
     }
 
+    [AllowAnonymous]
     [Route("/", Name = "app:welcome")]
     public async Task<IActionResult> Welcome()
     {
@@ -84,7 +88,6 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
         return RedirectToAction(nameof(Welcome));
     }
 
-    [Authorize(Policy = "IsAdmin")]
     public IActionResult ProjectName()
     {
         logger.LogMethodStarted();
@@ -256,6 +259,15 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
         return View(application);
     }
 
+    [AllowAnonymous]
+    public IActionResult ViewportTesting()
+    {
+        logger.LogMethodStarted();
+
+        return View();
+    }
+
+    [AllowAnonymous]
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {

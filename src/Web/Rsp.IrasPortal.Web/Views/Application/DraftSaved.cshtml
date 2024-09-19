@@ -3,39 +3,34 @@
     ViewData["Title"] = "Application";
 }
 
-<div class="govuk-width-container app-width-container">
-
-    <main class="govuk-main-wrapper">
-        <div class="govuk-grid-row">
-            <div class="govuk-grid-column-two-thirds">
-                <h1 class="govuk-heading-xl" id="title">Your draft application has been saved</h1>
-            </div>
-        </div>
-
-        <dl class="govuk-summary-list">
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key">Project title</dt>
-                <dd class="govuk-summary-list__value" id="review_title">@Model.Title</dd>
-            </div>
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key">Lead NHS R&D office location</dt>
-                <dd class="govuk-summary-list__value" id="review_location">@Model.Location.ToString()</dd>
-            </div>
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key">Required application</dt>
-                <dd class="govuk-summary-list__value" id="review_applications">
-                    @foreach (var item in Model.ApplicationCategories)
-                    {
-                        <p>@item</p>
-                    }
-                </dd>
-            </div>
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key">Project category</dt>
-                <dd class="govuk-summary-list__value" id="review_category">@Model.ProjectCategory</dd>
-            </div>
-        </dl>
-
-        <a class="govuk-button" asp-route="app:welcome">Return home</a>
-    </main>
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-xl" id="title">Your draft application has been saved</h1>
+    </div>
 </div>
+
+<dl class="govuk-summary-list">
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Project title</dt>
+        <dd class="govuk-summary-list__value" id="review_title">@Model.Title</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Lead NHS R&D office location</dt>
+        <dd class="govuk-summary-list__value" id="review_location">@Model.Location.ToString()</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Required application</dt>
+        <dd class="govuk-summary-list__value" id="review_applications">
+            @foreach (var item in Model.ApplicationCategories)
+            {
+                <p>@item</p>
+            }
+        </dd>
+    </div>
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Project category</dt>
+        <dd class="govuk-summary-list__value" id="review_category">@Model.ProjectCategory</dd>
+    </div>
+</dl>
+
+<a class="govuk-button" asp-route="app:welcome">Return home</a>
