@@ -1,7 +1,9 @@
 ﻿using Bogus;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Moq.AutoMock;
+using Rsp.IrasPortal.Application.Configuration;
 using Rsp.IrasPortal.Web.Controllers;
 using Rsp.IrasPortal.Web.Models;
 using Shouldly;
@@ -16,6 +18,14 @@ public class ApplicationControllerTests
     public ApplicationControllerTests()
     {
         _mocker = new AutoMocker();
+
+        var mockAppSettings = _mocker.GetMock<IOptionsSnapshot<AppSettings>>();
+        mockAppSettings.Setup(s => s.Value).Returns(new AppSettings
+        {
+            IrasFullForm = "TestValue",
+            BigBanner = 0,
+        });
+
         _controller = _mocker.CreateInstance<ApplicationController>();
     }
 
