@@ -49,8 +49,8 @@ public class QuestionViewModelValidator : AbstractValidator<QuestionViewModel>
                 .When(x => x.DataType is "Checkbox")
                 .WithMessage(x => $"Question {x.Heading} under {x.Section} section");
 
-            RuleFor(x => x)
-                .Must(x => !string.IsNullOrWhiteSpace(x.SelectedOption))
+            RuleFor(x => x.SelectedOption)
+                .Must(x => !string.IsNullOrWhiteSpace(x))
                 .When(x => x.DataType is "Boolean" or "Radio button")
                 .WithMessage(x => $"Question {x.Heading} under {x.Section} section");
         });
