@@ -118,22 +118,16 @@ app.UseRequestTracing();
 
 app.MapShortCircuit(404, "robots.txt", "favicon.ico", "*.css");
 
-app
-    .UseRouting()
-    .UseAuthentication()
-    .UseAuthorization()
-    .UseSession()
-    .UseEndpoints
-    (
-        endpoints =>
-        {
-            endpoints.MapHealthChecks("/portal-health", new()
+    app
+        .UseRouting()
+        .UseAuthentication()
+        .UseAuthorization()
+        .UseSession()
+        .UseEndpoints
+        (
+            endpoints =>
             {
-                Predicate = _ => true,
-                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-            });
-
-            endpoints.MapHealthChecks("/probes/liveness");
+                endpoints.MapHealthChecks("/probes/liveness");
 
             endpoints.MapHealthChecksUI();
             endpoints.MapControllers();

@@ -41,18 +41,6 @@ public static class HealthChecksConfiguration
            .AddUrlGroup(applicationserviceuri, "Iras Applications API", HealthStatus.Unhealthy, configurePrimaryHttpMessageHandler: _ => AddHeaderPropagation())
            .AddUrlGroup(userserviceuri, "User Service API", HealthStatus.Unhealthy, configurePrimaryHttpMessageHandler: _ => AddHeaderPropagation());
 
-        services
-           .AddHealthChecksUI
-           (
-                opt =>
-                {
-                    opt.SetEvaluationTimeInSeconds(300); //time in seconds between check
-                    opt.MaximumHistoryEntriesPerEndpoint(60); //maximum history of checks
-                    opt.SetApiMaxActiveRequests(1); //api requests concurrency
-                    opt.AddHealthCheckEndpoint("Health Status", "/portal-health"); //map health check api
-                }
-            ).AddInMemoryStorage();
-
         return services;
     }
 }
