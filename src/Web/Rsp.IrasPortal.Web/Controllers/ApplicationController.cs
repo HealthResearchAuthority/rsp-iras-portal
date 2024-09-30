@@ -13,8 +13,8 @@ using Rsp.Logging.Extensions;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
+//[Authorize(Policy = "IsUser")]
 [Route("[controller]/[action]", Name = "app:[action]")]
-[Authorize(Policy = "IsUser")]
 public class ApplicationController(ILogger<ApplicationController> logger, IApplicationsService applicationsService) : Controller
 {
     [AllowAnonymous]
