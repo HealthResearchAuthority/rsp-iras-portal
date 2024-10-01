@@ -6,7 +6,7 @@ using AutoFixture.Xunit2;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Moq;
-using Rsp.IrasPortal.Domain.Entities;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Web.Extensions;
 using Shouldly;
 using Xunit;
@@ -31,7 +31,7 @@ public class TryGetValue : TestServiceBase
     }
 
     [Theory, AutoData]
-    public void Should_ReturnDeserializedValue_When_DeserializeIsTrue(string key, Generator<IrasApplication> generator)
+    public void Should_ReturnDeserializedValue_When_DeserializeIsTrue(string key, Generator<IrasApplicationResponse> generator)
     {
         // Arrange
         var value = generator.First();
@@ -41,7 +41,7 @@ public class TryGetValue : TestServiceBase
         };
 
         // Act
-        var result = dictionary.TryGetValue<IrasApplication>(key, out var resultValue, true);
+        var result = dictionary.TryGetValue<IrasApplicationResponse>(key, out var resultValue, true);
 
         // Assert
         result.ShouldBeTrue();
@@ -49,7 +49,7 @@ public class TryGetValue : TestServiceBase
     }
 
     [Theory, AutoData]
-    public void Should_ReturnValue_When_DeserializeIsFalse(string key, Generator<IrasApplication> generator)
+    public void Should_ReturnValue_When_DeserializeIsFalse(string key, Generator<IrasApplicationResponse> generator)
     {
         // Arrange
         var value = generator.First();
@@ -59,7 +59,7 @@ public class TryGetValue : TestServiceBase
         };
 
         // Act
-        var result = dictionary.TryGetValue<IrasApplication>(key, out var resultValue, false);
+        var result = dictionary.TryGetValue<IrasApplicationResponse>(key, out var resultValue, false);
 
         // Assert
         result.ShouldBeTrue();

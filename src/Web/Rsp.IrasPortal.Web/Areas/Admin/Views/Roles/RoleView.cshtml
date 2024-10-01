@@ -20,13 +20,13 @@
                 <span class="govuk-error-message" asp-validation-for="Name"></span>
             </div>
 
-            <partial name="_SubmitButton" model="@("admin:submitrole", buttonText)" />
+            <partial name="_SubmitButton" model="@("admin:submitrole", buttonText, new Dictionary<string, string>())" />
 
             @{
                 ViewBag.Style = "ms-3 govuk-button govuk-button--secondary";
             }
 
-            <partial name="_SubmitButton" model="@("admin:roles", "Cancel")" />
+            <partial name="_SubmitButton" model="@("admin:roles", "Cancel", new Dictionary<string, string>())" />
         </form>
     </div>
 </div>

@@ -1,4 +1,7 @@
-﻿@model IEnumerable<Rsp.IrasPortal.Domain.Entities.IrasApplication>
+﻿@using Rsp.IrasPortal.Application.DTOs.Responses;
+
+@model IEnumerable<IrasApplicationResponse>
+
 @{
     ViewData["Title"] = "Application";
 }
@@ -38,7 +41,7 @@
 
             <form method="post" style="display: inline">
 
-                <partial name="_SubmitButton" model="@("app:loadexistingapplication","Edit existing application")" />
+                <partial name="_SubmitButton" model="@("app:loadexistingapplication","Edit existing application", new Dictionary<string, string>())" />
 
                 <select class="govuk-select" id="applicationIdSelect" name="applicationIdSelect">
 
@@ -46,7 +49,7 @@
 
                     @foreach (var item in Model)
                     {
-                        <option value="@item.Id">@item.Title</option>
+                        <option value="@item.ApplicationId">@item.Title</option>
                     }
 
                 </select>

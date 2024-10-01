@@ -3,12 +3,12 @@
 
 @model IEnumerable<IrasApplicationResponse>
 @{
-    ViewData["Title"] = "Applications Review";
+    ViewData["Title"] = "My Applications";
 }
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-        <h1 class="govuk-heading-xl" id="title">Review applications</h1>
+        <h1 class="govuk-heading-xl" id="title">My Research Applications</h1>
     </div>
 </div>
 
@@ -39,7 +39,7 @@
                 <td class="govuk-table__cell">@app.Status</td>
                 <td class="govuk-table__cell">@app.CreatedBy</td>
                 <td class="govuk-table__cell">
-                    <a asp-route="arc:getapplication" asp-route-applicationId="@app.ApplicationId" class="govuk-link">View</a>
+                    <a asp-route="app:viewapplication" asp-route-applicationId="@app.ApplicationId" class="govuk-link">View</a>
                 </td>
             </tr>
         }

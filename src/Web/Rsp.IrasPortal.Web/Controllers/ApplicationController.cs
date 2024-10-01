@@ -6,11 +6,12 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Entities;
-using Rsp.IrasPortal.Domain.Enums;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
+using Rsp.IrasService.Application.DTOS.Requests;
 using Rsp.Logging.Extensions;
 using static Rsp.IrasPortal.Application.Constants.QuestionCategories;
 
@@ -51,9 +52,12 @@ public class ApplicationController(ILogger<ApplicationController> logger, IValid
     {
         logger.LogMethodStarted();
 
-        var applications = await applicationsService.GetApplications();
+        var response = await applicationsService.GetApplications();
 
-        return View(nameof(Index), applications);
+        // convert the service response to ObjectResult
+        var applications = this.ServiceResult(response);
+
+        return View(nameof(Index), applications.Value);
     }
 
     public IActionResult StartNewApplication()
@@ -194,19 +198,19 @@ public class ApplicationController(ILogger<ApplicationController> logger, IValid
             return RedirectToAction(nameof(Welcome));
         }
 
-        var applicationId = int.Parse(applicationIdSelect);
-        var application = await applicationsService.GetApplication(applicationId);
+        var response = await applicationsService.GetApplication(applicationIdSelect);
+
+        // convert the service response to ObjectResult
+        var application = this.ServiceResult(response).Value;
 
         if (application != null)
         {
-            HttpContext.Session.SetInt32(SessionConstants.Id, applicationId);
-            HttpContext.Session.SetString(SessionConstants.Title, application.Title ?? "");
-            HttpContext.Session.SetInt32(SessionConstants.Country, application.Location != null ? (int)application.Location : -1);
-            HttpContext.Session.SetString(SessionConstants.ApplicationType, string.Join(",", application.ApplicationCategories ?? []));
-            HttpContext.Session.SetString(SessionConstants.ProjectCategory, application.ProjectCategory ?? "");
+            HttpContext.Session.SetString(SessionConstants.Application, JsonSerializer.Serialize(application));
 
             return RedirectToAction(nameof(ProjectName));
         }
+
+        HttpContext.Session.SetString(SessionConstants.Application, JsonSerializer.Serialize(new IrasApplicationResponse()));
 
         return RedirectToAction(nameof(Welcome));
     }
@@ -215,91 +219,26 @@ public class ApplicationController(ILogger<ApplicationController> logger, IValid
     {
         logger.LogMethodStarted();
 
-        return View(nameof(ProjectName), HttpContext.Session.GetString(SessionConstants.Title) ?? "");
+        var application = HttpContext.Session.GetString(SessionConstants.Application)!;
+
+        var irasApplication = JsonSerializer.Deserialize<IrasApplicationResponse>(application);
+
+        return View(nameof(ProjectName), (irasApplication?.Title ?? "", irasApplication?.Description ?? ""));
     }
 
     [HttpPost]
-    public IActionResult SaveProjectName(string projectName)
+    public IActionResult SaveProjectName(string projectName, string projectDescription)
     {
         logger.LogMethodStarted();
 
-        HttpContext.Session.SetString(SessionConstants.Title, projectName ?? "");
+        var application = HttpContext.Session.GetString(SessionConstants.Application)!;
 
-        return RedirectToAction(nameof(Country));
-    }
+        var irasApplication = JsonSerializer.Deserialize<IrasApplicationResponse>(application)!;
 
-    public IActionResult Country()
-    {
-        logger.LogMethodStarted();
+        irasApplication.Title = projectName;
+        irasApplication.Description = projectDescription;
 
-        return View(nameof(Country), HttpContext.Session.GetInt32(SessionConstants.Country));
-    }
-
-    [HttpPost]
-    public IActionResult SaveCountry(string officeLocation)
-    {
-        logger.LogMethodStarted();
-
-        HttpContext.Session.SetInt32(SessionConstants.Country, Int32.Parse(officeLocation));
-
-        return RedirectToAction(nameof(ApplicationType));
-    }
-
-    public async Task<IActionResult> ApplicationType()
-    {
-        logger.LogMethodStarted();
-
-        var categories = await applicationsService.GetApplicationCategories();
-
-        ViewData[SessionConstants.ApplicationType] = HttpContext.Session.GetString(SessionConstants.ApplicationType)?.Split(",").ToList() ?? [];
-
-        return View(categories);
-    }
-
-    [HttpPost]
-    public IActionResult SaveApplicationType(string applicationType)
-    {
-        logger.LogMethodStarted();
-
-        HttpContext.Session.SetString(SessionConstants.ApplicationType, applicationType ?? "");
-
-        return RedirectToAction(nameof(ProjectCategory));
-    }
-
-    public async Task<IActionResult> ProjectCategory()
-    {
-        logger.LogMethodStarted();
-
-        var categories = await applicationsService.GetProjectCategories();
-
-        ViewData[SessionConstants.ProjectCategory] = HttpContext.Session.GetString(SessionConstants.ProjectCategory) ?? "";
-
-        return View(categories);
-    }
-
-    [HttpPost]
-    public IActionResult SaveProjectCategory(string projectCategory)
-    {
-        logger.LogMethodStarted();
-
-        HttpContext.Session.SetString(SessionConstants.ProjectCategory, projectCategory ?? "");
-
-        return RedirectToAction(nameof(ReviewAnswers));
-    }
-
-    public IActionResult ProjectStartDate()
-    {
-        logger.LogMethodStarted();
-
-        return View();
-    }
-
-    [HttpPost]
-    public IActionResult SaveProjectStartDate(string projectStartDate)
-    {
-        logger.LogMethodStarted();
-
-        ViewData[SessionConstants.StartDate] = projectStartDate;
+        HttpContext.Session.SetString(SessionConstants.Application, JsonSerializer.Serialize(irasApplication));
 
         return RedirectToAction(nameof(DocumentUpload));
     }
@@ -335,14 +274,68 @@ public class ApplicationController(ILogger<ApplicationController> logger, IValid
         return RedirectToAction(nameof(DocumentUpload));
     }
 
-    [HttpPost]
-    public IActionResult SaveDocumentUpload(string supportingDocument)
+    [HttpGet]
+    public async Task<IActionResult> MyApplications()
     {
-        logger.LogMethodStarted();
+        logger.LogMethodStarted(LogLevel.Information);
 
-        ViewData["SupportingDocument"] = supportingDocument;
+        // get the pending applications
+        var response = await applicationsService.GetApplications();
 
-        return RedirectToAction(nameof(ReviewAnswers));
+        // convert the service response to ObjectResult
+        var result = this.ServiceResult(response);
+
+        // return the view if successfull
+        if (response.IsSuccessStatusCode)
+        {
+            return View(result.Value);
+        }
+
+        // if status is forbidden or not found
+        // return the appropriate response otherwise
+        // return the generic error page
+        return result.StatusCode switch
+        {
+            StatusCodes.Status403Forbidden => Forbid(),
+            StatusCodes.Status404NotFound => NotFound(),
+            _ => View("Error", result.Value)
+        };
+    }
+
+    [Route("{applicationId}", Name = "app:ViewApplication")]
+    public async Task<IActionResult> ViewApplication(string applicationId)
+    {
+        logger.LogMethodStarted(LogLevel.Information);
+
+        // if the ModelState is invalid, return the view
+        // with the null model. The view shouldn't display any
+        // data as model is null
+        if (!ModelState.IsValid)
+        {
+            return View("ApplicationView");
+        }
+
+        // get the pending application by id
+        var response = await applicationsService.GetApplication(applicationId);
+
+        // convert the service response to ObjectResult
+        var result = this.ServiceResult(response);
+
+        // return the view if successfull
+        if (response.IsSuccessStatusCode)
+        {
+            return View("ApplicationView", result.Value);
+        }
+
+        // if status is forbidden or not found
+        // return the appropriate response otherwise
+        // return the generic error page
+        return result.StatusCode switch
+        {
+            StatusCodes.Status403Forbidden => Forbid(),
+            StatusCodes.Status404NotFound => NotFound(),
+            _ => View("Error", result.Value)
+        };
     }
 
     public IActionResult ReviewAnswers()
@@ -353,22 +346,52 @@ public class ApplicationController(ILogger<ApplicationController> logger, IValid
     }
 
     [HttpPost]
-    public async Task<IActionResult> SaveDraftApplication()
+    public async Task<IActionResult> SaveApplication(string status)
     {
         logger.LogMethodStarted();
 
-        IrasApplication createdApplication;
-
-        var id = HttpContext.Session.GetInt32(SessionConstants.Id);
+        var request = new IrasApplicationRequest();
 
         var application = GetApplicationFromSession();
 
-        createdApplication = id == null ?
-            await applicationsService.CreateApplication(application) :
-            await applicationsService.UpdateApplication(id.Value, application);
+        request.ApplicationId = application.ApplicationId;
+        request.Status = status;
+        request.Title = application.Title;
+        request.Description = application.Description;
+        request.StartDate = application.CreatedDate;
+        request.CreatedBy = application.CreatedBy;
+        request.UpdatedBy = application.UpdatedBy;
+
+        await applicationsService.UpdateApplication(request);
+
+        return RedirectToAction(nameof(MyApplications));
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> SaveDraftApplication(string status)
+    {
+        logger.LogMethodStarted();
+
+        var request = new IrasApplicationRequest();
+
+        var application = GetApplicationFromSession();
+
+        request.ApplicationId = application.ApplicationId;
+        request.Status = status;
+        request.Title = application.Title;
+        request.Description = application.Description;
+        request.StartDate = application.CreatedDate;
+        request.CreatedBy = application.CreatedBy;
+        request.UpdatedBy = application.UpdatedBy;
+
+        var response = request.ApplicationId == null ?
+            await applicationsService.CreateApplication(request) :
+            await applicationsService.UpdateApplication(request);
+
+        var irasApplication = (this.ServiceResult(response).Value as IrasApplicationResponse)!;
 
         // save in TempData to retreive again in DraftSaved
-        TempData.TryAdd("td:draft-application", createdApplication, true);
+        TempData.TryAdd("td:draft-application", irasApplication, true);
 
         return RedirectToAction(nameof(DraftSaved));
     }
@@ -377,7 +400,7 @@ public class ApplicationController(ILogger<ApplicationController> logger, IValid
     {
         logger.LogMethodStarted();
 
-        TempData.TryGetValue<IrasApplication>("td:draft-application", out var application, true);
+        TempData.TryGetValue<IrasApplicationResponse>("td:draft-application", out var application, true);
 
         return View(application);
     }
@@ -399,18 +422,18 @@ public class ApplicationController(ILogger<ApplicationController> logger, IValid
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
 
-    private IrasApplication GetApplicationFromSession()
+    private IrasApplicationResponse GetApplicationFromSession()
     {
         logger.LogMethodStarted();
 
-        return new IrasApplication
+        var application = HttpContext.Session.GetString(SessionConstants.Application);
+
+        if (application != null)
         {
-            Title = HttpContext.Session.GetString(SessionConstants.Title),
-            Location = (Location?)HttpContext.Session.GetInt32(SessionConstants.Country),
-            ApplicationCategories = HttpContext.Session.GetString(SessionConstants.ApplicationType)?.Split(",").ToList() ?? [],
-            ProjectCategory = HttpContext.Session.GetString(SessionConstants.ProjectCategory) ?? "",
-            StartDate = DateTime.Parse(HttpContext.Session.GetString(SessionConstants.StartDate) ?? DateTime.Now.ToString()),
-        };
+            return JsonSerializer.Deserialize<IrasApplicationResponse>(application)!;
+        }
+
+        return new IrasApplicationResponse();
     }
 
     private (string PreviousStage, string CurrentStage, string NextStage) SetStage(string category)

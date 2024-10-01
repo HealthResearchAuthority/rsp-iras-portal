@@ -37,8 +37,8 @@ public class ApplicationsReviewController(ILogger<ApplicationsReviewController> 
         };
     }
 
-    [Route("{id}", Name = "arc:GetApplication")]
-    public async Task<IActionResult> GetApplication(int id)
+    [Route("{applicationId}", Name = "arc:GetApplication")]
+    public async Task<IActionResult> GetApplication(string applicationId)
     {
         logger.LogMethodStarted(LogLevel.Information);
 
@@ -51,7 +51,7 @@ public class ApplicationsReviewController(ILogger<ApplicationsReviewController> 
         }
 
         // get the pending application by id
-        var response = await applicationsService.GetApplicationByStatus(id, "pending");
+        var response = await applicationsService.GetApplicationByStatus(applicationId, "pending");
 
         // convert the service response to ObjectResult
         var result = this.ServiceResult(response);

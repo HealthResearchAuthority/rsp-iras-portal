@@ -1,6 +1,8 @@
-﻿@model Rsp.IrasPortal.Domain.Entities.IrasApplication
+﻿@using Rsp.IrasPortal.Application.DTOs.Responses
 @using Rsp.IrasPortal.Web.TagHelpers.Models
 @using Rsp.IrasPortal.Web.Controllers
+
+@model IrasApplicationResponse
 
 @{
     var authParams = new AuthTagHelperParams(Roles: "user");
@@ -28,48 +30,32 @@
         </dd>
     </div>
     <div class="govuk-summary-list__row">
-        <dt class="govuk-summary-list__key">Lead NHS R&D office location</dt>
-        <dd class="govuk-summary-list__value" id="review_location">@Model.Location?.ToString()</dd>
+        <dt class="govuk-summary-list__key">Project description</dt>
+        <dd class="govuk-summary-list__value" id="review_description">@Model.Description</dd>
         <dd class="govuk-summary-list__actions">
-            <a class="govuk-link" auth-params="@authParams" asp-route="app:country">Change</a>
+            <a class="govuk-link" auth-params="@authParams" asp-route="app:projectname">Change</a>
         </dd>
     </div>
     <div class="govuk-summary-list__row">
-        <dt class="govuk-summary-list__key">Required application</dt>
-        <dd class="govuk-summary-list__value" id="review_applications">
-            @{
-                if (Model.ApplicationCategories != null)
-                {
-                    foreach (var item in Model.ApplicationCategories)
-                    {
-                        <p>@item</p>
-                    }
-                }
-            }
-        </dd>
-        <dd class="govuk-summary-list__actions">
-            <a class="govuk-link" auth-params="@authParams" asp-route="app:applicationtype">Change</a>
-        </dd>
+        <dt class="govuk-summary-list__key">Project Status</dt>
+        <dd class="govuk-summary-list__value" id="review_status">@Model.Status</dd>
     </div>
     <div class="govuk-summary-list__row">
-        <dt class="govuk-summary-list__key">Project category</dt>
-        <dd class="govuk-summary-list__value" id="review_category">@Model.ProjectCategory</dd>
-        <dd class="govuk-summary-list__actions">
-            <a class="govuk-link" auth-params="@authParams" asp-route="app:projectcategory">Change</a>
-        </dd>
+        <dt class="govuk-summary-list__key">Created By</dt>
+        <dd class="govuk-summary-list__value" id="review_status">@Model.CreatedBy</dd>
     </div>
 </dl>
 
 <authorized auth-params="@authParams">
     <form method="post">
 
-        <partial name="_SubmitButton" model="@("app:savedocumentupload","Finish and submit")" />
+        <partial name="_SubmitButton" model="@("app:saveapplication","Finish and submit", new Dictionary<string, string> { { "status", "pending" } })" />
 
         @{
             ViewBag.Style = "ms-3 govuk-button govuk-button--secondary";
         }
 
-        <partial name="_SubmitButton" model="@("app:savedraftapplication","Save draft")" />
+        <partial name="_SubmitButton" model="@("app:savedraftapplication","Save draft", new Dictionary<string, string>() { { "status", "draft" } })" />
 
     </form>
 </authorized>

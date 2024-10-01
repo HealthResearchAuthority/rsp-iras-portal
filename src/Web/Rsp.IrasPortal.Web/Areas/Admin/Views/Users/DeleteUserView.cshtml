@@ -17,13 +17,13 @@
                 ViewBag.Style = "govuk-button govuk-button--warning";
             }
 
-            <partial name="_SubmitButton" model="@("admin:deleteuserconfirmed","Delete")" />
+            <partial name="_SubmitButton" model="@("admin:deleteuserconfirmed","Delete", new Dictionary<string, string>())" />
 
             @{
                 ViewBag.Style = "ms-3 govuk-button govuk-button--secondary";
             }
 
-            <partial name="_SubmitButton" model="@("admin:users", "Cancel")" />
+            <partial name="_SubmitButton" model="@("admin:users", "Cancel", new Dictionary<string, string>())" />
         </form>
     </div>
 </div>

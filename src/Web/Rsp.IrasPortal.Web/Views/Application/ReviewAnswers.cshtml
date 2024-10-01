@@ -1,8 +1,11 @@
-﻿@model Rsp.IrasPortal.Domain.Entities.IrasApplication
+﻿@using Rsp.IrasPortal.Application.DTOs.Responses;
+
+@model IrasApplicationResponse
+
 @{
     ViewData["Title"] = ViewBag.Title = "Review your answers";
 }
 
-<partial name="_BackNavigation" model="@("app:projectcategory","Back")" />
+<partial name="_BackNavigation" model="@("app:documentupload","Back", new Dictionary<string, string>())" />
 
 @Html.DisplayForModel("Application")

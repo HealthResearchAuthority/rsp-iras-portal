@@ -1,4 +1,7 @@
-﻿@model Rsp.IrasPortal.Domain.Entities.IrasApplication
+﻿@using Rsp.IrasPortal.Application.DTOs.Responses;
+
+@model IrasApplicationResponse
+
 @{
     ViewData["Title"] = "Application";
 }
@@ -11,25 +14,20 @@
 
 <dl class="govuk-summary-list">
     <div class="govuk-summary-list__row">
-        <dt class="govuk-summary-list__key">Project title</dt>
+        <dt class="govuk-summary-list__key">Title</dt>
         <dd class="govuk-summary-list__value" id="review_title">@Model.Title</dd>
     </div>
     <div class="govuk-summary-list__row">
-        <dt class="govuk-summary-list__key">Lead NHS R&D office location</dt>
-        <dd class="govuk-summary-list__value" id="review_location">@Model.Location.ToString()</dd>
+        <dt class="govuk-summary-list__key">Description</dt>
+        <dd class="govuk-summary-list__value" id="review_location">@Model.Description.ToString()</dd>
     </div>
     <div class="govuk-summary-list__row">
-        <dt class="govuk-summary-list__key">Required application</dt>
-        <dd class="govuk-summary-list__value" id="review_applications">
-            @foreach (var item in Model.ApplicationCategories)
-            {
-                <p>@item</p>
-            }
-        </dd>
+        <dt class="govuk-summary-list__key">Status</dt>
+        <dd class="govuk-summary-list__value" id="review_category">@Model.Description</dd>
     </div>
     <div class="govuk-summary-list__row">
-        <dt class="govuk-summary-list__key">Project category</dt>
-        <dd class="govuk-summary-list__value" id="review_category">@Model.ProjectCategory</dd>
+        <dt class="govuk-summary-list__key">Status</dt>
+        <dd class="govuk-summary-list__value" id="review_category">@Model.Status</dd>
     </div>
 </dl>
 

@@ -1,9 +1,12 @@
 ﻿@using Rsp.IrasPortal.Domain.Entities;
-@model IrasApplication
+@using Rsp.IrasPortal.Application.DTOs.Responses;
+
+@model IrasApplicationResponse
+
 @{
     ViewData["Title"] = ViewBag.Title = "Application Review";
 }
 
-<partial name="_BackNavigation" model="@("arc:pendingapplications","Back")" />
+<partial name="_BackNavigation" model="@("arc:pendingapplications","Back", new Dictionary<string, string>())" />
 
 @Html.DisplayForModel("Application")

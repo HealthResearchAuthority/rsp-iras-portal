@@ -1,5 +1,6 @@
 ﻿using Refit;
-using Rsp.IrasPortal.Domain.Entities;
+using Rsp.IrasPortal.Application.DTOs.Responses;
+using Rsp.IrasService.Application.DTOS.Requests;
 
 namespace Rsp.IrasPortal.Infrastructure.HttpClients;
 
@@ -8,40 +9,40 @@ public interface IApplicationsHttpClient
     /// <summary>
     /// Gets the saved application by Id
     /// </summary>
-    /// <param name="id">Application Id</param>
+    /// <param name="applicationId">Application Id</param>
     /// <returns>An asynchronous operation that returns a saved application.</returns>
     [Get("/applications")]
-    public Task<IrasApplication> GetApplication(int id);
+    public Task<ApiResponse<IrasApplicationResponse>> GetApplication(string applicationId);
 
     /// <summary>
     /// Gets all the saved applications
     /// </summary>
     /// <returns>An asynchronous operation that returns all the saved application.</returns>
     [Get("/applications/all")]
-    public Task<IEnumerable<IrasApplication>> GetApplications();
+    public Task<ApiResponse<IEnumerable<IrasApplicationResponse>>> GetApplications();
 
     /// <summary>
     /// Gets the saved application by Id and status
     /// </summary>
-    /// <param name="id">Application Id</param>
+    /// <param name="applicationId">Application Id</param>
     /// <param name="status">Application Status</param>
     /// <returns>An asynchronous operation that returns a saved application.</returns>
     [Get("/applications/{status}")]
-    public Task<ApiResponse<IrasApplication>> GetApplicationByStatus(int id, string status);
+    public Task<ApiResponse<IrasApplicationResponse>> GetApplicationByStatus(string applicationId, string status);
 
     /// <summary>
     /// Gets all the saved applications
     /// </summary>
     /// <returns>An asynchronous operation that returns all the saved application.</returns>
     [Get("/applications/{status}/all")]
-    public Task<ApiResponse<IEnumerable<IrasApplication>>> GetApplicationsByStatus(string status);
+    public Task<ApiResponse<IEnumerable<IrasApplicationResponse>>> GetApplicationsByStatus(string status);
 
     /// <summary>
     /// Creates a new application
     /// </summary>
     /// <returns>An asynchronous operation that returns the newly created application.</returns>
     [Post("/applications")]
-    public Task<IrasApplication> CreateApplication(IrasApplication irasApplication);
+    public Task<ApiResponse<IrasApplicationResponse>> CreateApplication(IrasApplicationRequest irasApplication);
 
     /// <summary>
     /// Updates the saved application by Id
@@ -49,35 +50,5 @@ public interface IApplicationsHttpClient
     /// <param name="id">Id of the application to be updated</param>
     /// <returns>An asynchronous operation that updates the existing application.</returns>
     [Post("/applications/update")]
-    public Task<IrasApplication> UpdateApplication(int id, IrasApplication irasApplication);
-
-    /// <summary>
-    /// Retrieves the list of application categories.
-    /// </summary>
-    /// <returns>An asynchronous operation that returns a collection of strings representing application categories.</returns>
-    [Get("/categories/apps")]
-    public Task<IEnumerable<string>> GetApplicationCategories();
-
-    /// <summary>
-    /// Retrieves the list of project categories.
-    /// </summary>
-    /// <returns>An asynchronous operation that returns a collection of strings representing project categories.</returns>
-    [Get("/categories/projects")]
-    public Task<IEnumerable<string>> GetProjectCategories();
-
-    /// <summary>
-    /// Adds a new application category.
-    /// </summary>
-    /// <param name="category">The name of the category to be added.</param>
-    /// <returns>An asynchronous operation.</returns>
-    [Post("/categories/apps")]
-    public Task AddApplicationCategory(string category);
-
-    /// <summary>
-    /// Adds a new project category.
-    /// </summary>
-    /// <param name="category">The name of the category to be added.</param>
-    /// <returns>An asynchronous operation.</returns>
-    [Post("/categories/projects")]
-    public Task AddProjectCategory(string category);
+    public Task<ApiResponse<IrasApplicationResponse>> UpdateApplication(IrasApplicationRequest irasApplication);
 }

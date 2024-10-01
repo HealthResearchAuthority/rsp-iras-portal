@@ -1,54 +1,65 @@
-﻿using Rsp.IrasPortal.Application.Responses;
+﻿using Refit;
+using Rsp.IrasPortal.Application.DTOs.Responses;
+using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
-using Rsp.IrasPortal.Domain.Entities;
 using Rsp.IrasPortal.Infrastructure.HttpClients;
+using Rsp.IrasService.Application.DTOS.Requests;
 
 namespace Rsp.IrasPortal.Infrastructure.ServiceClients;
 
 public class ApplicationsServiceClient(IApplicationsHttpClient client) : IApplicationsServiceClient
 {
     /// <inheritdoc/>
-    public async Task<IrasApplication> GetApplication(int id)
+    public async Task<ServiceResponse<IrasApplicationResponse>> GetApplication(string applicationId)
     {
-        return await client.GetApplication(id);
+        var apiResponse = await client.GetApplication(applicationId);
+
+        return GetServiceResponse(apiResponse);
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<IrasApplication>> GetApplications()
+    public async Task<ServiceResponse<IEnumerable<IrasApplicationResponse>>> GetApplications()
     {
-        return await client.GetApplications();
+        var apiResponse = await client.GetApplications();
+
+        return GetServiceResponse(apiResponse);
     }
 
     /// <inheritdoc/>
-    public async Task<ServiceResponse<IrasApplication>> GetApplicationByStatus(int id, string status)
+    public async Task<ServiceResponse<IrasApplicationResponse>> GetApplicationByStatus(string applicationId, string status)
     {
-        var apiResponse = await client.GetApplicationByStatus(id, status);
+        var apiResponse = await client.GetApplicationByStatus(applicationId, status);
 
-        var serviceResponse = new ServiceResponse<IrasApplication>();
-
-        return apiResponse.IsSuccessStatusCode switch
-        {
-            true =>
-                serviceResponse
-                    .WithStatus()
-                    .WithContent(apiResponse.Content),
-
-            _ => serviceResponse
-                    .WithError
-                    (
-                        apiResponse.Error?.Message,
-                        apiResponse.Error?.ReasonPhrase,
-                        apiResponse.StatusCode
-                    )
-        };
+        return GetServiceResponse(apiResponse);
     }
 
     /// <inheritdoc/>
-    public async Task<ServiceResponse<IEnumerable<IrasApplication>>> GetApplicationsByStatus(string status)
+    public async Task<ServiceResponse<IEnumerable<IrasApplicationResponse>>> GetApplicationsByStatus(string status)
     {
         var apiResponse = await client.GetApplicationsByStatus(status);
 
-        var serviceResponse = new ServiceResponse<IEnumerable<IrasApplication>>();
+        return GetServiceResponse(apiResponse);
+    }
+
+    /// <inheritdoc/>
+    public async Task<ServiceResponse<IrasApplicationResponse>> CreateApplication(IrasApplicationRequest irasApplication)
+    {
+        var apiResponse = await client.CreateApplication(irasApplication);
+
+        return GetServiceResponse(apiResponse);
+    }
+
+    /// <inheritdoc/>
+    public async Task<ServiceResponse<IrasApplicationResponse>> UpdateApplication(IrasApplicationRequest irasApplication)
+    {
+        var apiResponse = await client.UpdateApplication(irasApplication);
+
+        return GetServiceResponse(apiResponse);
+    }
+
+    private static ServiceResponse<T> GetServiceResponse<T>(ApiResponse<T> apiResponse)
+    {
+        var serviceResponse = new ServiceResponse<T>();
 
         return apiResponse.IsSuccessStatusCode switch
         {
@@ -59,51 +70,11 @@ public class ApplicationsServiceClient(IApplicationsHttpClient client) : IApplic
 
             _ => serviceResponse
                     .WithError
-                    (
+            (
                         apiResponse.Error?.Message,
                         apiResponse.Error?.ReasonPhrase,
                         apiResponse.StatusCode
                     )
         };
-    }
-
-    /// <inheritdoc/>
-    public async Task<IrasApplication> CreateApplication(IrasApplication irasApplication)
-    {
-        return await client.CreateApplication(irasApplication);
-    }
-
-    /// <inheritdoc/>
-    public async Task<IrasApplication> UpdateApplication(int id, IrasApplication irasApplication)
-    {
-        return await client.UpdateApplication(id, irasApplication);
-    }
-
-    /// <inheritdoc/>
-    public async Task<IEnumerable<string>> AddApplicationCategory(string categoryName)
-    {
-        await client.AddApplicationCategory(categoryName);
-
-        return await GetApplicationCategories();
-    }
-
-    /// <inheritdoc/>
-    public async Task<IEnumerable<string>> AddProjectCategory(string categoryName)
-    {
-        await client.AddProjectCategory(categoryName);
-
-        return await GetProjectCategories();
-    }
-
-    /// <inheritdoc/>
-    public Task<IEnumerable<string>> GetApplicationCategories()
-    {
-        return client.GetApplicationCategories();
-    }
-
-    /// <inheritdoc/>
-    public Task<IEnumerable<string>> GetProjectCategories()
-    {
-        return client.GetProjectCategories();
     }
 }

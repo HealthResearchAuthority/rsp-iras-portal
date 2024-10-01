@@ -10,7 +10,7 @@ public class QuestionViewModelValidator : AbstractValidator<QuestionViewModel>
 
     protected override bool PreValidate(ValidationContext<QuestionViewModel> context, ValidationResult result)
     {
-        _questions = context.RootContextData["questions"] as List<QuestionViewModel>;
+        _questions = (context.RootContextData["questions"] as List<QuestionViewModel>) ?? [];
 
         return base.PreValidate(context, result);
     }

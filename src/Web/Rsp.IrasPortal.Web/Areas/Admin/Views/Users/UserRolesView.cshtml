@@ -26,11 +26,11 @@
         }
     </div>
 
-    <partial name="_SubmitButton" model="@("admin:updateroles","Save")" />
+    <partial name="_SubmitButton" model="@("admin:updateroles","Save", new Dictionary<string, string>())" />
 
     @{
         ViewBag.Style = "ms-3 govuk-button govuk-button--secondary";
     }
 
-    <partial name="_SubmitButton" model="@("admin:users", "Cancel")" />
+    <partial name="_SubmitButton" model="@("admin:users", "Cancel", new Dictionary<string, string>())" />
 </form>

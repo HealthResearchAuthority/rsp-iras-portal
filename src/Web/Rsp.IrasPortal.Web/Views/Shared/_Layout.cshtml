@@ -58,6 +58,15 @@
                 </li>
             </authorized>
 
+            <authorized auth-params="@new(Roles:"user")">
+                <li class="app-navigation__list-item">
+                    <a class="govuk-link govuk-link--no-visited-state govuk-link--no-underline app-navigation__link js-app-navigation__link"
+                       asp-route="app:myapplications">
+                        My Applications
+                    </a>
+                </li>
+            </authorized>
+
             <authorized auth-params="@new()">
 
                 <li class="app-navigation__list-item">
@@ -71,7 +80,7 @@
 
             </authorized>
 
-            <authorized auth-params="@new(false)">
+            <authorized auth-params="@new(ShowWhenAuthenticated: false)">
                 <li class="app-navigation__list-item">
                     <a class="govuk-button" asp-route="app:signin">SignIn</a>
                 </li>

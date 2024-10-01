@@ -31,13 +31,13 @@
                 <span class="govuk-error-message" asp-validation-for="Email"></span>
             </div>
 
-            <partial name="_SubmitButton" model="@("admin:submituser", buttonText)" />
+            <partial name="_SubmitButton" model="@("admin:submituser", buttonText, new Dictionary<string, string>())" />
 
             @{
                 ViewBag.Style = "ms-3 govuk-button govuk-button--secondary";
             }
 
-            <partial name="_SubmitButton" model="@("admin:users", "Cancel")" />
+            <partial name="_SubmitButton" model="@("admin:users", "Cancel", new Dictionary<string, string>())" />
         </form>
     </div>
 </div>

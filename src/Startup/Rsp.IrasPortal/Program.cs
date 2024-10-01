@@ -69,7 +69,9 @@ services.AddSession(options =>
 });
 
 // add controllers and views
-services.AddControllersWithViews();
+services
+    .AddControllersWithViews()
+    .AddSessionStateTempDataProvider();
 
 // configure health checks to monitor
 // microservice health

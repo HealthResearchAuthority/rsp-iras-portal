@@ -6,7 +6,7 @@ using AutoFixture.Xunit2;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Moq;
-using Rsp.IrasPortal.Domain.Entities;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Web.Extensions;
 using Shouldly;
 using Xunit;
@@ -14,7 +14,7 @@ using Xunit;
 public class TryAdd : TestServiceBase
 {
     [Theory, AutoData]
-    public void Should_AddValue_When_SerializeIsFalse(string key, Generator<IrasApplication> generator)
+    public void Should_AddValue_When_SerializeIsFalse(string key, Generator<IrasApplicationResponse> generator)
     {
         // Arrange
         var dictionary = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
@@ -29,7 +29,7 @@ public class TryAdd : TestServiceBase
     }
 
     [Theory, AutoData]
-    public void Should_AddSerializedValue_When_SerializeIsTrue(Guid guid, Generator<IrasApplication> generator)
+    public void Should_AddSerializedValue_When_SerializeIsTrue(Guid guid, Generator<IrasApplicationResponse> generator)
     {
         // Arrange
         var key = guid.ToString();
@@ -43,7 +43,7 @@ public class TryAdd : TestServiceBase
 
         // Assert
         result.ShouldBeTrue();
-        var deserializedValue = JsonSerializer.Deserialize<IrasApplication>((string)dictionary[key]!);
+        var deserializedValue = JsonSerializer.Deserialize<IrasApplicationResponse>((string)dictionary[key]!);
         deserializedValue.ShouldBeEquivalentTo(value);
     }
 }
