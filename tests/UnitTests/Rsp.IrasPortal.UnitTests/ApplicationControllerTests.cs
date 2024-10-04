@@ -39,7 +39,7 @@ public class ApplicationControllerTests
             .ReturnsAsync(response);
 
         // Act
-        var result = await _controller.Welcome();
+        var result = await Task.FromResult(_controller.Welcome());
 
         // Assert
         result.ShouldBeOfType<ViewResult>();

@@ -1,8 +1,12 @@
-﻿namespace Rsp.IrasService.Application.DTOS.Requests;
+﻿namespace Rsp.IrasPortal.Application.DTOs.Requests;
 
 public record IrasApplicationRequest
 {
-    public string ApplicationId { get; set; } = null!;
+    /// <summary>
+    /// IRAS Project Id
+    /// </summary>
+    public string? ApplicationId { get; set; } = DateTime.Now.ToString("yyyyMMddHHmmss");
+
     /// <summary>
     /// The title of the project
     /// </summary>
@@ -32,4 +36,9 @@ public record IrasApplicationRequest
     /// User Id who updated the application
     /// </summary>
     public string UpdatedBy { get; set; } = null!;
+
+    /// <summary>
+    /// Respondent creating the application
+    /// </summary>
+    public RespondentDto Respondent { get; set; } = null!;
 }

@@ -8,7 +8,7 @@
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-        <h1 class="govuk-heading-xl" id="title">My Research Applications</h1>
+        <h2 class="govuk-heading-l" id="title">My Research Applications</h2>
     </div>
 </div>
 
@@ -22,11 +22,12 @@
 <table class="govuk-table">
     <thead class="govuk-table__head">
         <tr class="govuk-table__row">
+            <th class="govuk-table__header">Application Id</th>
             <th class="govuk-table__header">Title</th>
             <th class="govuk-table__header">Description</th>
             <th class="govuk-table__header">Status</th>
             <th class="govuk-table__header">Created By</th>
-            <th class="govuk-table__header">View</th>
+            <th colspan="2" class="govuk-table__header">Actions</th>
         </tr>
     </thead>
     <tbody class="govuk-table__body">
@@ -34,15 +35,25 @@
         @foreach (var app in Model)
         {
             <tr class="govuk-table__row">
+                <td class="govuk-table__cell">@app.ApplicationId</td>
                 <td class="govuk-table__cell">@app.Title</td>
                 <td class="govuk-table__cell">@app.Description</td>
                 <td class="govuk-table__cell">@app.Status</td>
                 <td class="govuk-table__cell">@app.CreatedBy</td>
                 <td class="govuk-table__cell">
-                    <a asp-route="app:viewapplication" asp-route-applicationId="@app.ApplicationId" class="govuk-link">View</a>
+                    <a asp-route="app:editapplication" asp-route-applicationId="@app.ApplicationId" class="govuk-link">Edit</a>
+                </td>
+                <td class="govuk-table__cell">
+                    <a asp-route="qnc:displayquestionnaire" asp-route-categoryId="A" class="govuk-link">Resume</a>
                 </td>
             </tr>
         }
 
     </tbody>
 </table>
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+        <a class="govuk-button" asp-route="app:startnewapplication">Create New Application</a>
+    </div>
+</div>

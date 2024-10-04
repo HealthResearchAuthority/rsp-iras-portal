@@ -58,6 +58,17 @@ public class CustomClaimsTransformation
 
         if (getUserResponse.IsSuccessStatusCode && getUserResponse.Content != null)
         {
+            var context = httpContextAccessor.HttpContext!;
+
+            var respondentId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var firstName = principal.FindFirst(ClaimTypes.GivenName)?.Value;
+            var surName = principal.FindFirst(ClaimTypes.Surname)?.Value;
+
+            context.Items.Add(ContextItems.RespondentId, respondentId);
+            context.Items.Add(ContextItems.Email, email);
+            context.Items.Add(ContextItems.FirstName, firstName);
+            context.Items.Add(ContextItems.LastName, surName);
+
             var user = getUserResponse.Content;
 
             // add the roles to claimsIdentity

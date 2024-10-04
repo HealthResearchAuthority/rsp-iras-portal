@@ -18,4 +18,11 @@
         <ProjectReference Include="..\..\Application\Rsp.IrasPortal.Application\Rsp.IrasPortal.Application.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Content Update="Views\Application\NewApplication.cshtml">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
+    </ItemGroup>
+
 </Project>

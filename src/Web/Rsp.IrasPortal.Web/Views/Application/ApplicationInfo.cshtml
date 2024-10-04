@@ -1,11 +1,11 @@
-﻿@model (string ProjectName, string Description)
+﻿@model (string ProjectName, string Description, string mode)
 @{
     ViewData["Title"] = "Application";
 }
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-        <h1 class="govuk-heading-xl" id="title">Enter project details</h1>
+        <h2 class="govuk-heading-l" id="title">Enter project details</h2>
     </div>
 </div>
 <form method="post">
@@ -40,5 +40,15 @@
                value="@Model.Description">
     </div>
 
-    <partial name="_SubmitButton" model="@("app:saveprojectname","Continue", new Dictionary<string, string>())" />
+    @{
+        (string Route, string Action) = Model.mode switch
+        {
+            "create" => ("app:createapplication", "Create"),
+            "edit" => ("app:saveapplication", "Save"),
+            _ => ("app:createapplication", "Create")
+        };
+    }
+
+    <partial name="_SubmitButton" model="@(Route, Action, new Dictionary<string, string>())" />
+
 </form>

@@ -1,6 +1,6 @@
 ﻿using Refit;
+using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasService.Application.DTOS.Requests;
 
 namespace Rsp.IrasPortal.Infrastructure.HttpClients;
 

@@ -10,7 +10,7 @@
     var errorSummaryTitle = "Please address the following issues:";
 }
 
-<partial name="_BackNavigation" model="@("app:displayquestionnaire","Back", new Dictionary<string, string> { { "categoryId", previousStage }})" />
+<partial name="_BackNavigation" model="@("qnc:displayquestionnaire","Back", new Dictionary<string, string> { { "categoryId", previousStage }})" />
 
 <partial name="_Progress" model="@(currentStage, "Initiate")" />
 
@@ -197,5 +197,5 @@
         }
     </div>
 
-    <partial name="_SubmitButton" model="@("app:submitanswers","Continue", new Dictionary<string, string>())" />
+    <partial name="_SubmitButton" model="@("qnc:submitanswers","Continue", new Dictionary<string, string>())" />
 </form>

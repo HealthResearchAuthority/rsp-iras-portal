@@ -67,6 +67,20 @@
                 </li>
             </authorized>
 
+            <li class="app-navigation__list-item">
+                <a class="govuk-link govuk-link--no-visited-state govuk-link--no-underline app-navigation__link js-app-navigation__link"
+                   asp-route="">
+                    Help
+                </a>
+            </li>
+
+            <li class="app-navigation__list-item">
+                <a class="govuk-link govuk-link--no-visited-state govuk-link--no-underline app-navigation__link js-app-navigation__link"
+                   asp-route="">
+                    Contact Us
+                </a>
+            </li>
+
             <authorized auth-params="@new()">
 
                 <li class="app-navigation__list-item">
@@ -75,14 +89,14 @@
                     </a>
                 </li>
                 <li class="app-navigation__list-item">
-                    <a class="govuk-button" asp-route="app:signout">Logout</a>
+                    <a class="govuk-button" asp-route="auth:signout">Logout</a>
                 </li>
 
             </authorized>
 
             <authorized auth-params="@new(ShowWhenAuthenticated: false)">
                 <li class="app-navigation__list-item">
-                    <a class="govuk-button" asp-route="app:signin">SignIn</a>
+                    <a class="govuk-button" asp-route="auth:signin">Sign In</a>
                 </li>
             </authorized>
 

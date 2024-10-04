@@ -1,59 +1,117 @@
 ﻿@using Rsp.IrasPortal.Application.DTOs.Responses;
 
-@model IEnumerable<IrasApplicationResponse>
-
 @{
-    ViewData["Title"] = "Application";
+    ViewData["Title"] = "Welcome";
 }
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-        <span class="govuk-caption-xl" id="title_caption">Welcome to the</span>
-        <h1 class="govuk-heading-xl" id="title">Integrated Research Application System</h1>
+    <div class="govuk-grid-column-full">
+        <h1 id="title" class="govuk-heading-l">
+            Integrated Research Application System
+        </h1>
     </div>
 </div>
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-        <p class="govuk-body">
-            The integrated dataset required for your project will be created from the answers you
-            give to the following questions. The system will generate only those questions and
-            sections which (a) apply to your study type and (b) are required by the bodies reviewing
-            your study. Please ensure you answer all the questions before proceeding with your
-            applications.
-            <br />
-            <br />
-            Please complete the questions in order. If you change the response to a question, please
-            select 'Save' and review all the questions as your change may have affected subsequent
-            questions.
-            <br />
-            <br />
-            On-line guidance is available wherever you see a hyperlinked word or this symbol
-            displayed. Please read this guidance carefully.
-            <br />
-            <br />
-            For help with your application, click <a href="#">here</a>.
-        </p>
+    <div class="govuk-grid-column-full">
+
+        <authorized auth-params="@new(ShowWhenAuthenticated: false)">
+
+            <h2 class="govuk-heading-m">
+                The Integrated Research Application System (IRAS):
+            </h2>
+
+            <ul class="govuk-list govuk-list--bullet">
+
+                <li>
+                    Is a single system for applying for the permissions and approvals for health and social care / community care research in the UK
+                </li>
+
+                <li>
+                    Generates the IRAS ID, which has been adopted by stakeholders across the UK as the common study identifier
+                </li>
+
+                <li>
+                    Enables you to enter the information about your project once instead of duplicating information in separate application forms
+                </li>
+
+                <li>
+                    Uses filters to ensure that the data collected and collated is appropriate to the type of study, and consequently the permissions and approvals required
+                </li>
+
+                <li>
+                    Helps you to meet regulatory and governance requirements
+                </li>
+            </ul>
+
+            <h2 class="govuk-heading-m">
+                IRAS captures the information needed for the relevant approvals from the following review bodies:
+            </h2>
+
+            <ul class="govuk-list govuk-list--bullet">
+
+                <li>
+                    Administration of Radioactive Substances Advisory Committee (ARSAC)
+                </li>
+
+                <li>
+                    Confidentiality Advisory Group (CAG)
+                </li>
+
+                <li>
+                    Gene Therapy Advisory Committee (GTAC)
+                </li>
+
+                <li>
+                    Health Research Authority (HRA) and Health and Care Research Wales (HCRW) for projects seeking HRA & HCRW Approval
+                </li>
+
+                <li>
+                    Medicines and Healthcare products Regulatory Agency (MHRA)
+                </li>
+
+                <li>
+                    NHS / HSC R&D offices
+                </li>
+
+                <li>
+                    NHS / HSC Research Ethics Committees
+                </li>
+
+                <li>
+                    HM Prison and Probation Service (HMPPS)
+                </li>
+
+                <li>
+                    Social Care Research Ethics Committee
+                </li>
+            </ul>
+
+            <h2 id="sigin-in-to-iras" class="govuk-heading-m">Sign in to Integrated Research Application System (IRAS)</h2>
+
+            <div class="govuk-body">
+                <p>
+                    To begin your application through IRAS, Sign In using the following link
+                </p>
+                <a class="gem-c-button govuk-button govuk-button--start" asp-route="auth:signin">
+                    Sign In
+                    <svg class="govuk-button__start-icon govuk-!-display-none-print" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19" viewBox="0 0 33 40" focusable="false" aria-hidden="true">
+                        <path fill="currentColor" d="M0 0h13l20 20-20 20H0l20-20z"></path>
+                    </svg>
+                </a>
+            </div>
+
+        </authorized>
 
         <authorized auth-params="@new(Roles:"user")">
 
-            <a class="govuk-button" asp-route="app:startnewapplication">Proceed with new application</a>
+            <p class="govuk-body">
+                To begin your new application, click on the "Create New Application" button to start your submission process or
+                navigate to <a asp-route="app:myapplications">My Applications</a> page to view/resume your existing applications.
+            </p>
 
-            <form method="post" style="display: inline">
+            <a class="govuk-button" asp-route="app:startnewapplication">Create New Application</a>
 
-                <partial name="_SubmitButton" model="@("app:loadexistingapplication","Edit existing application", new Dictionary<string, string>())" />
-
-                <select class="govuk-select" id="applicationIdSelect" name="applicationIdSelect">
-
-                    <option value="default" selected disabled>Select...</option>
-
-                    @foreach (var item in Model)
-                    {
-                        <option value="@item.ApplicationId">@item.Title</option>
-                    }
-
-                </select>
-            </form>
         </authorized>
     </div>
 </div>
