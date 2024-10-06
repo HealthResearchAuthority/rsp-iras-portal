@@ -1,5 +1,5 @@
 ﻿@using static Rsp.IrasPortal.Application.Constants.QuestionCategories;
-@model (string currentStage, string completedStage)
+@model (string currentStage, string completedStage, string applicationId)
 
 @{
     var progressBarStyle = string.Empty;
@@ -29,77 +29,77 @@
             <div class="progress-line" style="@progressBarStyle"></div>
             <div class="stage-circle"></div>
             <div class="stage-label">
-                <a asp-route="qnc:displayquestionnaire" asp-route-categoryId="A">Project Filter</a>
+                <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "A" }, { "applicationId", Model.applicationId }})">Project Filter</a>
             </div>
         </div>
         <div class="stage@(GetState(B, out progressBarStyle))">
             <div class="progress-line" style="@progressBarStyle"></div>
             <div class="stage-circle"></div>
             <div class="stage-label">
-                <a asp-route="qnc:displayquestionnaire" asp-route-categoryId="B">Project Details</a>
+                <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "B" }, { "applicationId", Model.applicationId }})">Project Details</a>
             </div>
         </div>
         <div class="stage@(GetState(C1, out progressBarStyle))">
             <div class="progress-line" style="@progressBarStyle"></div>
             <div class="stage-circle"></div>
             <div class="stage-label">
-                <a asp-route="qnc:displayquestionnaire" asp-route-categoryId="C1">Student</a>
+                <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C1" }, { "applicationId", Model.applicationId }})">Student</a>
             </div>
         </div>
         <div class="stage@(GetState(C2, out progressBarStyle))">
             <div class="progress-line" style="@progressBarStyle"></div>
             <div class="stage-circle"></div>
             <div class="stage-label">
-                <a asp-route="qnc:displayquestionnaire" asp-route-categoryId="C2">Research Bioresources</a>
+                <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C2" }, { "applicationId", Model.applicationId }})">Research Bioresources</a>
             </div>
         </div>
         <div class="stage@(GetState(C3, out progressBarStyle))">
             <div class="progress-line" style="@progressBarStyle"></div>
             <div class="stage-circle"></div>
             <div class="stage-label">
-                <a asp-route="qnc:displayquestionnaire" asp-route-categoryId="C3">CTIMP</a>
+                <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C3" }, { "applicationId", Model.applicationId }})">CTIMP</a>
             </div>
         </div>
         <div class="stage@(GetState(C4, out progressBarStyle))">
             <div class="progress-line" style="@progressBarStyle"></div>
             <div class="stage-circle"></div>
             <div class="stage-label">
-                <a asp-route="qnc:displayquestionnaire" asp-route-categoryId="C4">Devices</a>
+                <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C4" }, { "applicationId", Model.applicationId }})">Devices</a>
             </div>
         </div>
         <div class="stage@(GetState(C5, out progressBarStyle))">
             <div class="progress-line" style="@progressBarStyle"></div>
             <div class="stage-circle"></div>
             <div class="stage-label">
-                <a asp-route="qnc:displayquestionnaire" asp-route-categoryId="C5">Ionizing Radiation</a>
+                <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C5" }, { "applicationId", Model.applicationId }})">Ionizing Radiation</a>
             </div>
         </div>
         <div class="stage@(GetState(C6, out progressBarStyle))">
             <div class="progress-line" style="@progressBarStyle"></div>
             <div class="stage-circle"></div>
             <div class="stage-label">
-                <a asp-route="qnc:displayquestionnaire" asp-route-categoryId="C6">Tissue</a>
+                <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C6" }, { "applicationId", Model.applicationId }})">Tissue</a>
             </div>
         </div>
         <div class="stage@(GetState(C7, out progressBarStyle))">
             <div class="progress-line" style="@progressBarStyle"></div>
             <div class="stage-circle"></div>
             <div class="stage-label">
-                <a asp-route="qnc:displayquestionnaire" asp-route-categoryId="C7">Adults Lacking Capacity</a>
+                <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C7" }, { "applicationId", Model.applicationId }})">Adults Lacking Capacity</a>
             </div>
         </div>
         <div class="stage@(GetState(C8, out progressBarStyle))">
             <div class="progress-line" style="@progressBarStyle"></div>
             <div class="stage-circle"></div>
             <div class="stage-label">
-                <a asp-route="qnc:displayquestionnaire" asp-route-categoryId="C8">Children</a>
+                <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C8" }, { "applicationId", Model.applicationId }})">Children</a>
             </div>
         </div>
         <div class="stage@(GetState(D, out progressBarStyle))">
             <div class="progress-line" style="@progressBarStyle"></div>
             <div class="stage-circle"></div>
             <div class="stage-label">
-                <a asp-route="qnc:displayquestionnaire" asp-route-categoryId="D">Booking</a>
+                <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { " categoryId", "D" }, { "applicationId", Model.applicationId }})">Booking</a>
             </div>
         </div>
     </div>

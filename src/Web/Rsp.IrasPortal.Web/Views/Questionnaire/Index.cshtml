@@ -16,6 +16,15 @@
 
 <form method="post">
 
+    @if (ViewData["vd:isvalid"] is true)
+    {
+        <div class="govuk-panel govuk-panel--confirmation">
+            <div class="govuk-panel__body">
+                Validation Passed
+            </div>
+        </div>
+    }
+
     <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
 
     <div class="govuk-form-group questions">
@@ -197,5 +206,8 @@
         }
     </div>
 
-    <partial name="_SubmitButton" model="@("qnc:submitanswers","Continue", new Dictionary<string, string>())" />
+    <partial name="_SubmitButton" model="@("qnc:saveresponses","Save", new Dictionary<string, string>())" />
+    <partial name="_SubmitButton" model="@("qnc:validate","Validate", new Dictionary<string, string>())" />
 </form>
+
+<partial name="_SubmitButton" model="@("qnc:submitapplication","Proceed to Submit", new Dictionary<string, string>())" />

@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Text.Json;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application;
@@ -118,39 +117,11 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
 
         var irasApplication = (this.ServiceResult(response).Value as IrasApplicationResponse)!;
 
-        // save in TempData to retreive again in DraftSaved
-        //TempData.TryAdd("td:draft-application", irasApplication, true);
-
+        // save the application in session
         HttpContext.Session.SetString(SessionConstants.Application, JsonSerializer.Serialize(irasApplication));
 
         return View("NewApplication", irasApplication);
     }
-
-    //public async Task<IActionResult> LoadExistingApplication(string applicationIdSelect)
-    //{
-    //    logger.LogMethodStarted();
-
-    //    if (applicationIdSelect == null)
-    //    {
-    //        return RedirectToAction(nameof(Welcome));
-    //    }
-
-    //    var response = await applicationsService.GetApplication(applicationIdSelect);
-
-    //    // convert the service response to ObjectResult
-    //    var application = this.ServiceResult(response).Value;
-
-    //    if (application != null)
-    //    {
-    //        HttpContext.Session.SetString(SessionConstants.Application, JsonSerializer.Serialize(application));
-
-    //        return RedirectToAction(nameof(ProjectName));
-    //    }
-
-    //    HttpContext.Session.SetString(SessionConstants.Application, JsonSerializer.Serialize(new IrasApplicationResponse()));
-
-    //    return RedirectToAction(nameof(Welcome));
-    //}
 
     public IActionResult DocumentUpload()
     {
@@ -253,27 +224,39 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
     {
         logger.LogMethodStarted();
 
-        return View(GetApplicationFromSession());
+        return View(this.GetApplicationFromSession());
     }
 
     [HttpPost]
-    public async Task<IActionResult> SaveApplication()
+    public async Task<IActionResult> SaveApplication(string projectName, string projectDescription)
     {
         logger.LogMethodStarted();
 
-        var firstName = (HttpContext.Items[ContextItems.FirstName] as string)!;
-        var lastName = (HttpContext.Items[ContextItems.LastName] as string)!;
+        var respondent = new RespondentDto
+        {
+            RespondentId = (HttpContext.Items[ContextItems.RespondentId] as string)!,
+            EmailAddress = (HttpContext.Items[ContextItems.Email] as string)!,
+            FirstName = (HttpContext.Items[ContextItems.FirstName] as string)!,
+            LastName = (HttpContext.Items[ContextItems.LastName] as string)!,
+            Role = string.Join(',', User.Claims
+                       .Where(claim => claim.Type == ClaimTypes.Role)
+                       .Select(claim => claim.Value))
+        };
 
-        var name = $"{firstName} {lastName}";
+        var name = $"{respondent.FirstName} {respondent.LastName}";
 
-        var request = new IrasApplicationRequest();
+        var application = this.GetApplicationFromSession();
 
-        var application = GetApplicationFromSession();
-
-        request.ApplicationId = application.ApplicationId;
-        request.Title = application.Title;
-        request.Description = application.Description;
-        request.UpdatedBy = name;
+        var request = new IrasApplicationRequest
+        {
+            ApplicationId = application.ApplicationId,
+            Title = projectName,
+            Description = projectDescription,
+            CreatedBy = application.CreatedBy,
+            UpdatedBy = name,
+            StartDate = application.CreatedDate,
+            Respondent = respondent
+        };
 
         await applicationsService.UpdateApplication(request);
 
@@ -295,19 +278,5 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
         logger.LogMethodStarted();
 
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-    }
-
-    private IrasApplicationResponse GetApplicationFromSession()
-    {
-        logger.LogMethodStarted();
-
-        var application = HttpContext.Session.GetString(SessionConstants.Application);
-
-        if (application != null)
-        {
-            return JsonSerializer.Deserialize<IrasApplicationResponse>(application)!;
-        }
-
-        return new IrasApplicationResponse();
     }
 }

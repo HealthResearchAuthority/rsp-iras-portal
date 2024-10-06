@@ -37,6 +37,12 @@ public static class HttpClientsConfiguration
            .AddHttpMessageHandler<AuthHeadersHandler>()
            .AddHeaderPropagation(options => options.Headers.Add(CustomRequestHeaders.CorrelationId));
 
+        services
+           .AddRestClient<IRespondentServiceClient>()
+           .ConfigureHttpClient(client => client.BaseAddress = appSettings.ApplicationsServiceUri)
+           .AddHttpMessageHandler<AuthHeadersHandler>()
+           .AddHeaderPropagation(options => options.Headers.Add(CustomRequestHeaders.CorrelationId));
+
         return services;
     }
 

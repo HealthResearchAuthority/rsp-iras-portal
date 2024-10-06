@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
+using Rsp.IrasPortal.Application;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 
 namespace Rsp.IrasPortal.Web.Extensions;
@@ -45,5 +48,19 @@ public static class ControllerExtensions
             Status = (int)response.StatusCode,
             Instance = controller.Request.Path
         };
+    }
+
+    public static IrasApplicationResponse GetApplicationFromSession(this ControllerBase controller)
+    {
+        var context = controller.HttpContext;
+
+        var application = context.Session.GetString(SessionConstants.Application);
+
+        if (application != null)
+        {
+            return JsonSerializer.Deserialize<IrasApplicationResponse>(application)!;
+        }
+
+        return new IrasApplicationResponse();
     }
 }

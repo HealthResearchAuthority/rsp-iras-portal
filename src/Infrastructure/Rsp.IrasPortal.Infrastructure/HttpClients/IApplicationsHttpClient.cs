@@ -47,7 +47,6 @@ public interface IApplicationsHttpClient
     /// <summary>
     /// Updates the saved application by Id
     /// </summary>
-    /// <param name="id">Id of the application to be updated</param>
     /// <returns>An asynchronous operation that updates the existing application.</returns>
     [Post("/applications/update")]
     public Task<ApiResponse<IrasApplicationResponse>> UpdateApplication(IrasApplicationRequest irasApplication);

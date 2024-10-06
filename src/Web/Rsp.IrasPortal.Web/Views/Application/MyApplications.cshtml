@@ -27,7 +27,7 @@
             <th class="govuk-table__header">Description</th>
             <th class="govuk-table__header">Status</th>
             <th class="govuk-table__header">Created By</th>
-            <th colspan="2" class="govuk-table__header">Actions</th>
+            <th class="govuk-table__header">Actions</th>
         </tr>
     </thead>
     <tbody class="govuk-table__body">
@@ -43,8 +43,27 @@
                 <td class="govuk-table__cell">
                     <a asp-route="app:editapplication" asp-route-applicationId="@app.ApplicationId" class="govuk-link">Edit</a>
                 </td>
-                <td class="govuk-table__cell">
-                    <a asp-route="qnc:displayquestionnaire" asp-route-categoryId="A" class="govuk-link">Resume</a>
+            </tr>
+            <tr>
+                <td colspan="6">
+                    <p class="govuk-body">
+                        <b>Resume your application using the following links</b>
+                    </p>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="6" class="govuk-table__cell">
+                    | <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "A" }, { "applicationId", app.ApplicationId }})">Project Filter</a> |
+                    <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "B" }, { "applicationId", app.ApplicationId }})">Project Details</a> |
+                    <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C1" }, { "applicationId", app.ApplicationId }})">Student</a> |
+                    <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C2" }, { "applicationId", app.ApplicationId }})">Research Bioresources</a> |
+                    <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C3" }, { "applicationId", app.ApplicationId }})">CTIMP</a> |
+                    <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C4" }, { "applicationId", app.ApplicationId }})">Devices</a> |
+                    <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C5" }, { "applicationId", app.ApplicationId }})">Ionizing Radiation</a> |
+                    <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C6" }, { "applicationId", app.ApplicationId }})">Tissue</a> |
+                    <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C7" }, { "applicationId", app.ApplicationId }})">Adults Lacking Capacity</a> |
+                    <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C8" }, { "applicationId", app.ApplicationId }})">Children</a> |
+                    <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { " categoryId", "D" }, { "applicationId", app.ApplicationId }})">Booking</a> |
                 </td>
             </tr>
         }
