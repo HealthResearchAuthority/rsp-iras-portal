@@ -4,7 +4,7 @@ using Rsp.IrasPortal.Application.DTOs.Requests;
 namespace Rsp.IrasPortal.Application.ServiceClients;
 
 /// <summary>
-/// Interface to interact with Applications microservice
+/// Interface to interact with iras microservice for respondent relation operations
 /// </summary>
 public interface IRespondentServiceClient
 {

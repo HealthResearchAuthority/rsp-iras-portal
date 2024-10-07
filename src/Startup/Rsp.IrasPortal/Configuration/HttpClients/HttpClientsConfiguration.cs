@@ -23,25 +23,25 @@ public static class HttpClientsConfiguration
             .AddRestClient<IApplicationsHttpClient>()
             .ConfigureHttpClient(client => client.BaseAddress = appSettings.ApplicationsServiceUri)
             .AddHttpMessageHandler<AuthHeadersHandler>()
-            .AddHeaderPropagation(options => options.Headers.Add(CustomRequestHeaders.CorrelationId));
+            .AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
 
         services
             .AddRestClient<IUserManagementServiceClient>()
             .ConfigureHttpClient(client => client.BaseAddress = appSettings.UsersServiceUri)
             .AddHttpMessageHandler<AuthHeadersHandler>()
-            .AddHeaderPropagation(options => options.Headers.Add(CustomRequestHeaders.CorrelationId));
+            .AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
 
         services
            .AddRestClient<IQuestionSetServiceClient>()
            .ConfigureHttpClient(client => client.BaseAddress = appSettings.QuestionSetServiceUri)
            .AddHttpMessageHandler<AuthHeadersHandler>()
-           .AddHeaderPropagation(options => options.Headers.Add(CustomRequestHeaders.CorrelationId));
+           .AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
 
         services
            .AddRestClient<IRespondentServiceClient>()
            .ConfigureHttpClient(client => client.BaseAddress = appSettings.ApplicationsServiceUri)
            .AddHttpMessageHandler<AuthHeadersHandler>()
-           .AddHeaderPropagation(options => options.Headers.Add(CustomRequestHeaders.CorrelationId));
+           .AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
 
         return services;
     }

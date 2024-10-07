@@ -1,5 +1,9 @@
 ﻿namespace Rsp.IrasPortal.Application.DTOs.Requests;
 
+/// <summary>
+/// Represents an application request to create
+/// an application skeleton with title and description.
+/// </summary>
 public record IrasApplicationRequest
 {
     /// <summary>
@@ -28,12 +32,12 @@ public record IrasApplicationRequest
     public string? Status { get; set; } = "created";
 
     /// <summary>
-    /// User Id who initiated the application
+    /// Applicant's name who initiated the application
     /// </summary>
     public string CreatedBy { get; set; } = null!;
 
     /// <summary>
-    /// User Id who updated the application
+    /// User's name who updated the application
     /// </summary>
     public string UpdatedBy { get; set; } = null!;
 

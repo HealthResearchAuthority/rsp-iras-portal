@@ -1,5 +1,8 @@
 ﻿namespace Rsp.IrasPortal.Application.DTOs.Requests;
 
+/// <summary>
+/// Represents a respondent's answer to a question
+/// </summary>
 public class RespondentAnswerDto
 {
     /// <summary>

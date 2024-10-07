@@ -6,19 +6,26 @@ using Rsp.IrasPortal.Services.Extensions;
 
 namespace Rsp.IrasPortal.Services;
 
+/// <inheritdoc/>
 public class QuestionSetService(IQuestionSetServiceClient client) : IQuestionSetService
 {
-    public async Task<ServiceResponse<IEnumerable<QuestionsResponse>>> GetInitialQuestions()
+    /// <inheritdoc/>
+    public async Task<ServiceResponse<IEnumerable<QuestionsResponse>>> GetQuestions()
     {
-        var apiGetQuestionsResponse = await client.GetInitialQuestions();
+        // get all questions
+        var apiResponse = await client.GetQuestions();
 
-        return apiGetQuestionsResponse.ToServiceResponse();
+        // convert to service response
+        return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse<IEnumerable<QuestionsResponse>>> GetNextQuestions(string categoryId)
+    /// <inheritdoc/>
+    public async Task<ServiceResponse<IEnumerable<QuestionsResponse>>> GetQuestions(string categoryId)
     {
-        var apiGetQuestionsResponse = await client.GetNextQuestions(categoryId);
+        // get all questions for the category
+        var apiResponse = await client.GetQuestions(categoryId);
 
-        return apiGetQuestionsResponse.ToServiceResponse();
+        // convert to service response
+        return apiResponse.ToServiceResponse();
     }
 }

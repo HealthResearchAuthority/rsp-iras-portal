@@ -1,22 +1,23 @@
 ﻿@model QuestionnaireViewModel
 @using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.DTOs
 
 @{
-    ViewData["Title"] = "Questionnaire";
     var sections = Model.Questions.ToLookup(q => q.Section);
-    var previousStage = TempData["td:app_previousstage"] as string;
-    var currentStage = TempData["td:app_currentstage"] as string;
+    var previousStage = TempData[TempDataKeys.PreviousStage] as string;
+    var currentStage = TempData[TempDataKeys.CurrentStage] as string;
     var errorSummaryTitle = "Please address the following issues:";
+    var applicationId = TempData[TempDataKeys.ApplicationId] as string;
 }
 
 <partial name="_BackNavigation" model="@("qnc:displayquestionnaire","Back", new Dictionary<string, string> { { "categoryId", previousStage }})" />
 
-<partial name="_Progress" model="@(currentStage, "Initiate")" />
-
 <form method="post">
 
-    @if (ViewData["vd:isvalid"] is true)
+    <partial name="_Progress" model="@(currentStage, "Initiate", applicationId)" />
+
+    @if (ViewData[ViewDataKeys.IsQuestionnaireValid] is true)
     {
         <div class="govuk-panel govuk-panel--confirmation">
             <div class="govuk-panel__body">
@@ -207,7 +208,7 @@
     </div>
 
     <partial name="_SubmitButton" model="@("qnc:saveresponses","Save", new Dictionary<string, string>())" />
+    <partial name="_SubmitButton" model="@("qnc:saveresponses","Save and Continue", new Dictionary<string, string>() { { "saveAndContinue", bool.TrueString } })" />
     <partial name="_SubmitButton" model="@("qnc:validate","Validate", new Dictionary<string, string>())" />
+    <partial name="_SubmitButton" model="@("qnc:saveresponses","Proceed to Submit", new Dictionary<string, string>() { { "submit", bool.TrueString } })" />
 </form>
-
-<partial name="_SubmitButton" model="@("qnc:submitapplication","Proceed to Submit", new Dictionary<string, string>())" />

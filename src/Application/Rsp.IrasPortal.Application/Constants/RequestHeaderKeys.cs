@@ -1,6 +1,10 @@
 ﻿namespace Rsp.IrasPortal.Application.Constants;
 
-public struct CustomRequestHeaders
+/// <summary>
+/// RequestHeader Keys. These keys are used
+/// to lookup headers in HttpContext.Request.Headers
+/// </summary>
+public struct RequestHeadersKeys
 {
     /// <summary>
     /// Header name for unique identifier assigned to a particular request

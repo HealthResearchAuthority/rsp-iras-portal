@@ -1,6 +1,7 @@
-﻿using System.Text.Json;
+﻿using System.Net;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 
@@ -8,38 +9,35 @@ namespace Rsp.IrasPortal.Web.Extensions;
 
 public static class ControllerExtensions
 {
-    /// <summary>
-    /// Transforms the ServiceResponse to the desired ActionResult{<typeparam name="T">}</typeparam>
-    /// </summary>
-    /// <param name="response">The response.</param>
-    public static ObjectResult ServiceResult<T>(this ControllerBase controller, ServiceResponse<T> response)
+    public static IActionResult ServiceError<T>(this Controller controller, ServiceResponse<T> response)
     {
-        if (response.IsSuccessStatusCode)
+        // return the generic error page
+        // if status is forbidden or not found
+        // return the appropriate response otherwise
+        // return the generic error page
+        return response.StatusCode switch
         {
-            return new ObjectResult(response.Content) { StatusCode = (int)response.StatusCode };
-        }
-
-        var result = ProblemResult(controller, response);
-
-        return new ObjectResult(result) { StatusCode = (int)response.StatusCode };
+            HttpStatusCode.Forbidden => controller.Forbid(),
+            HttpStatusCode.NotFound => controller.NotFound(),
+            _ => controller.View("Error", ProblemResult(controller, response))
+        };
     }
 
-    /// <summary>
-    /// Transforms the non-generic ServiceResponse to IActionResult
-    /// </summary>
-    /// <param name="controller">Extended controller class</param>
-    /// <param name="response">service response</param>
-    public static ActionResult ServiceResult(this ControllerBase controller, ServiceResponse response)
+    public static IrasApplicationResponse GetApplicationFromSession(this Controller controller)
     {
-        if (response.IsSuccessStatusCode)
+        var context = controller.HttpContext;
+
+        var application = context.Session.GetString(SessionKeys.Application);
+
+        if (application != null)
         {
-            return controller.StatusCode((int)response.StatusCode);
+            return JsonSerializer.Deserialize<IrasApplicationResponse>(application)!;
         }
 
-        return controller.StatusCode((int)response.StatusCode, response);
+        return new IrasApplicationResponse();
     }
 
-    public static ProblemDetails ProblemResult(this ControllerBase controller, ServiceResponse response)
+    public static ProblemDetails ProblemResult(this Controller controller, ServiceResponse response)
     {
         return new ProblemDetails
         {
@@ -48,19 +46,5 @@ public static class ControllerExtensions
             Status = (int)response.StatusCode,
             Instance = controller.Request.Path
         };
-    }
-
-    public static IrasApplicationResponse GetApplicationFromSession(this ControllerBase controller)
-    {
-        var context = controller.HttpContext;
-
-        var application = context.Session.GetString(SessionConstants.Application);
-
-        if (application != null)
-        {
-            return JsonSerializer.Deserialize<IrasApplicationResponse>(application)!;
-        }
-
-        return new IrasApplicationResponse();
     }
 }

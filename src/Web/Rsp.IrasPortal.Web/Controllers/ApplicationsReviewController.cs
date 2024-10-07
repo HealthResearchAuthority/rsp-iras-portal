@@ -15,26 +15,16 @@ public class ApplicationsReviewController(ILogger<ApplicationsReviewController> 
         logger.LogMethodStarted(LogLevel.Information);
 
         // get the pending applications
-        var response = await applicationsService.GetApplicationsByStatus("pending");
-
-        // convert the service response to ObjectResult
-        var result = this.ServiceResult(response);
+        var applicationsServiceResponse = await applicationsService.GetApplicationsByStatus("pending");
 
         // return the view if successfull
-        if (response.IsSuccessStatusCode)
+        if (applicationsServiceResponse.IsSuccessStatusCode)
         {
-            return View(result.Value);
+            return View(applicationsServiceResponse.Content);
         }
 
-        // if status is forbidden or not found
-        // return the appropriate response otherwise
         // return the generic error page
-        return result.StatusCode switch
-        {
-            StatusCodes.Status403Forbidden => Forbid(),
-            StatusCodes.Status404NotFound => NotFound(),
-            _ => View("Error", result.Value)
-        };
+        return this.ServiceError(applicationsServiceResponse);
     }
 
     [Route("{applicationId}", Name = "arc:GetApplication")]
@@ -51,25 +41,15 @@ public class ApplicationsReviewController(ILogger<ApplicationsReviewController> 
         }
 
         // get the pending application by id
-        var response = await applicationsService.GetApplicationByStatus(applicationId, "pending");
-
-        // convert the service response to ObjectResult
-        var result = this.ServiceResult(response);
+        var applicationsServiceResponse = await applicationsService.GetApplicationByStatus(applicationId, "pending");
 
         // return the view if successfull
-        if (response.IsSuccessStatusCode)
+        if (applicationsServiceResponse.IsSuccessStatusCode)
         {
-            return View("ApplicationReview", result.Value);
+            return View("ApplicationReview", applicationsServiceResponse.Content);
         }
 
-        // if status is forbidden or not found
-        // return the appropriate response otherwise
         // return the generic error page
-        return result.StatusCode switch
-        {
-            StatusCodes.Status403Forbidden => Forbid(),
-            StatusCodes.Status404NotFound => NotFound(),
-            _ => View("Error", result.Value)
-        };
+        return this.ServiceError(applicationsServiceResponse);
     }
 }

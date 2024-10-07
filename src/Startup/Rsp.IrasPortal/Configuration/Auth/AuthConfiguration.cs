@@ -51,7 +51,7 @@ public static class AuthConfiguration
                         {
                             // save the original access_token in the memory, this will be needed
                             // to regenerate the JwtToken with additional claims
-                            context.HttpContext.Items[TokenKeys.AcessToken] = context.Properties.GetTokenValue(TokenKeys.AcessToken);
+                            context.HttpContext.Items[ContextItemKeys.AcessToken] = context.Properties.GetTokenValue(ContextItemKeys.AcessToken);
 
                             return Task.CompletedTask;
                         }

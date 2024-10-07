@@ -1,9 +1,12 @@
 ﻿namespace Rsp.IrasPortal.Application.DTOs.Requests;
 
+/// <summary>
+/// Represents a respondent (applicant)
+/// </summary>
 public record RespondentDto
 {
     /// <summary>
-    /// Respondent Id creating the application
+    /// Respondent Id creating/updating the application
     /// </summary>
     public string RespondentId { get; set; } = null!;
 

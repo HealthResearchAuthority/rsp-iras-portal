@@ -20,7 +20,7 @@ public class AuthHeadersHandler(IHttpContextAccessor httpContextAccessor) : Dele
         // do not create a private field for HttpContext
         var context = httpContextAccessor.HttpContext!;
 
-        context.Items.TryGetValue(TokenKeys.AcessToken, out var bearerToken);
+        context.Items.TryGetValue(ContextItemKeys.AcessToken, out var bearerToken);
 
         if (bearerToken != null)
         {

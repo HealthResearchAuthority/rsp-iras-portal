@@ -15,6 +15,11 @@ namespace Rsp.IrasPortal.Web.Areas.Admin.Controllers;
 [Authorize(Policy = "IsAdmin")]
 public class UsersController(IUserManagementService userManagementService, ILogger<UsersController> logger) : Controller
 {
+    private const string Error = nameof(Error);
+    private const string UserView = nameof(UserView);
+    private const string DeleteUserView = nameof(DeleteUserView);
+    private const string UserRolesView = nameof(UserRolesView);
+
     /// <summary>
     /// Users home page, where it displays available users
     /// with the options to edit/delete or manage roles
@@ -47,7 +52,7 @@ public class UsersController(IUserManagementService userManagementService, ILogg
         return response.StatusCode switch
         {
             HttpStatusCode.Forbidden => Forbid(),
-            _ => View("Error", this.ProblemResult(response))
+            _ => View(Error, this.ProblemResult(response))
         };
     }
 
@@ -61,7 +66,7 @@ public class UsersController(IUserManagementService userManagementService, ILogg
 
         ViewBag.Mode = "create";
 
-        return View("UserView", new UserViewModel());
+        return View(UserView, new UserViewModel());
     }
 
     /// <summary>
@@ -76,7 +81,7 @@ public class UsersController(IUserManagementService userManagementService, ILogg
 
         if (!ModelState.IsValid)
         {
-            return View("UserView", model);
+            return View(UserView, model);
         }
 
         // Creates a user if in "create" mode i.e. model.Id is null
@@ -97,7 +102,7 @@ public class UsersController(IUserManagementService userManagementService, ILogg
         return response.StatusCode switch
         {
             HttpStatusCode.Forbidden => Forbid(),
-            _ => View("Error", this.ProblemResult(response))
+            _ => View(Error, this.ProblemResult(response))
         };
     }
 
@@ -129,7 +134,7 @@ public class UsersController(IUserManagementService userManagementService, ILogg
                 Email = user.Email
             };
 
-            return View("UserView", model);
+            return View(UserView, model);
         }
 
         // if status is forbidden
@@ -138,7 +143,7 @@ public class UsersController(IUserManagementService userManagementService, ILogg
         return response.StatusCode switch
         {
             HttpStatusCode.Forbidden => Forbid(),
-            _ => View("Error", this.ProblemResult(response))
+            _ => View(Error, this.ProblemResult(response))
         };
     }
 
@@ -158,7 +163,7 @@ public class UsersController(IUserManagementService userManagementService, ILogg
             Email = email
         };
 
-        return View("DeleteUserView", model);
+        return View(DeleteUserView, model);
     }
 
     /// <summary>
@@ -186,7 +191,7 @@ public class UsersController(IUserManagementService userManagementService, ILogg
         return response.StatusCode switch
         {
             HttpStatusCode.Forbidden => Forbid(),
-            _ => View("Error", this.ProblemResult(response))
+            _ => View(Error, this.ProblemResult(response))
         };
     }
 
@@ -212,7 +217,7 @@ public class UsersController(IUserManagementService userManagementService, ILogg
 
             if (!roles.Any())
             {
-                View("UserRolesView");
+                View(UserRolesView);
             }
         }
         else
@@ -220,7 +225,7 @@ public class UsersController(IUserManagementService userManagementService, ILogg
             return getRolesResponse.StatusCode switch
             {
                 HttpStatusCode.Forbidden => Forbid(),
-                _ => View("Error", this.ProblemResult(getRolesResponse))
+                _ => View(Error, this.ProblemResult(getRolesResponse))
             };
         }
 
@@ -244,7 +249,7 @@ public class UsersController(IUserManagementService userManagementService, ILogg
                 }).ToList()
             };
 
-            return View("UserRolesView", model);
+            return View(UserRolesView, model);
         }
 
         // if status is forbidden
@@ -253,7 +258,7 @@ public class UsersController(IUserManagementService userManagementService, ILogg
         return response.StatusCode switch
         {
             HttpStatusCode.Forbidden => Forbid(),
-            _ => View("Error", this.ProblemResult(response))
+            _ => View(Error, this.ProblemResult(response))
         };
     }
 
@@ -268,7 +273,7 @@ public class UsersController(IUserManagementService userManagementService, ILogg
 
         if (!ModelState.IsValid)
         {
-            return View("UserRolesView", model);
+            return View(UserRolesView, model);
         }
 
         // get roles to delete
@@ -298,7 +303,7 @@ public class UsersController(IUserManagementService userManagementService, ILogg
         return response.StatusCode switch
         {
             HttpStatusCode.Forbidden => Forbid(),
-            _ => View("Error", this.ProblemResult(response))
+            _ => View(Error, this.ProblemResult(response))
         };
     }
 }

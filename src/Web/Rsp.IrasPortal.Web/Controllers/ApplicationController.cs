@@ -1,12 +1,11 @@
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Text.Json;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Entities;
 using Rsp.IrasPortal.Web.Extensions;
@@ -17,8 +16,11 @@ namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "app:[action]")]
 [Authorize(Policy = "IsUser")]
-public class ApplicationController(ILogger<ApplicationController> logger, IApplicationsService applicationsService) : Controller
+public class ApplicationController(ILogger<ApplicationController> logger, IApplicationsService applicationsService, IValidator<ApplicationInfoViewModel> validator) : Controller
 {
+    // ApplicationInfo view name
+    private const string ApplicationInfo = nameof(ApplicationInfo);
+
     [AllowAnonymous]
     [Route("/", Name = "app:welcome")]
     public IActionResult Welcome()
@@ -34,7 +36,7 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
 
         HttpContext.Session.RemoveAllSessionValues();
 
-        return View("ApplicationInfo", ("", "", "create"));
+        return View(ApplicationInfo, (new ApplicationInfoViewModel(), "create"));
     }
 
     public async Task<IActionResult> EditApplication(string applicationId)
@@ -42,43 +44,56 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
         logger.LogMethodStarted();
 
         // get the pending application by id
-        var response = await applicationsService.GetApplication(applicationId);
-
-        // convert the service response to ObjectResult
-        var result = this.ServiceResult(response);
+        var applicationsServiceResponse = await applicationsService.GetApplication(applicationId);
 
         // return the view if successfull
-        if (!response.IsSuccessStatusCode)
+        if (!applicationsServiceResponse.IsSuccessStatusCode)
         {
-            // if status is forbidden or not found
-            // return the appropriate response otherwise
             // return the generic error page
-            return result.StatusCode switch
-            {
-                StatusCodes.Status403Forbidden => Forbid(),
-                StatusCodes.Status404NotFound => NotFound(),
-                _ => View("Error", result.Value)
-            };
+            return this.ServiceError(applicationsServiceResponse);
         }
 
-        var irasApplication = (result.Value as IrasApplicationResponse)!;
+        var irasApplication = applicationsServiceResponse.Content!;
 
-        HttpContext.Session.SetString(SessionConstants.Application, JsonSerializer.Serialize(irasApplication));
+        HttpContext.Session.SetString(SessionKeys.Application, JsonSerializer.Serialize(irasApplication));
 
-        return View("ApplicationInfo", (irasApplication.Title, irasApplication.Description, "edit"));
+        var applicationInfo = new ApplicationInfoViewModel
+        {
+            Name = irasApplication.Title,
+            Description = irasApplication.Description
+        };
+
+        return View(ApplicationInfo, (applicationInfo, "edit"));
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateApplication(string projectName, string projectDescription)
+    public async Task<IActionResult> CreateApplication(ApplicationInfoViewModel model)
     {
         logger.LogMethodStarted();
 
+        var context = new ValidationContext<ApplicationInfoViewModel>(model);
+
+        var validationResult = await validator.ValidateAsync(context);
+
+        if (!validationResult.IsValid)
+        {
+            // Copy the validation results into ModelState.
+            // ASP.NET uses the ModelState collection to populate
+            // error messages in the View.
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
+
+            return View(ApplicationInfo, (model, "create"));
+        }
+
         var respondent = new RespondentDto
         {
-            RespondentId = (HttpContext.Items[ContextItems.RespondentId] as string)!,
-            EmailAddress = (HttpContext.Items[ContextItems.Email] as string)!,
-            FirstName = (HttpContext.Items[ContextItems.FirstName] as string)!,
-            LastName = (HttpContext.Items[ContextItems.LastName] as string)!,
+            RespondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!,
+            EmailAddress = (HttpContext.Items[ContextItemKeys.Email] as string)!,
+            FirstName = (HttpContext.Items[ContextItemKeys.FirstName] as string)!,
+            LastName = (HttpContext.Items[ContextItemKeys.LastName] as string)!,
             Role = string.Join(',', User.Claims
                        .Where(claim => claim.Type == ClaimTypes.Role)
                        .Select(claim => claim.Value))
@@ -88,37 +103,27 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
 
         var irasApplicationRequest = new IrasApplicationRequest
         {
-            Title = projectName,
-            Description = projectDescription,
+            Title = model.Name!,
+            Description = model.Description!,
             CreatedBy = name,
             UpdatedBy = name,
             StartDate = DateTime.Now,
             Respondent = respondent
         };
 
-        var response = await applicationsService.CreateApplication(irasApplicationRequest);
-
-        // convert the service response to ObjectResult
-        var result = this.ServiceResult(response);
+        var applicationsServiceResponse = await applicationsService.CreateApplication(irasApplicationRequest);
 
         // return the view if successfull
-        if (!response.IsSuccessStatusCode)
+        if (!applicationsServiceResponse.IsSuccessStatusCode)
         {
-            // if status is forbidden or not found
-            // return the appropriate response otherwise
             // return the generic error page
-            return result.StatusCode switch
-            {
-                StatusCodes.Status403Forbidden => Forbid(),
-                StatusCodes.Status404NotFound => NotFound(),
-                _ => result
-            };
+            return this.ServiceError(applicationsServiceResponse);
         }
 
-        var irasApplication = (this.ServiceResult(response).Value as IrasApplicationResponse)!;
+        var irasApplication = applicationsServiceResponse.Content!;
 
         // save the application in session
-        HttpContext.Session.SetString(SessionConstants.Application, JsonSerializer.Serialize(irasApplication));
+        HttpContext.Session.SetString(SessionKeys.Application, JsonSerializer.Serialize(irasApplication));
 
         return View("NewApplication", irasApplication);
     }
@@ -127,7 +132,7 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
     {
         logger.LogMethodStarted();
 
-        TempData.TryGetValue<List<Document>>("td:uploaded-documents", out var documents, true);
+        TempData.TryGetValue<List<Document>>(TempDataKeys.UploadedDocuments, out var documents, true);
 
         return View(documents);
     }
@@ -149,7 +154,7 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
             });
         }
 
-        TempData.TryAdd("td:uploaded-documents", documents, true);
+        TempData.TryAdd(TempDataKeys.UploadedDocuments, documents, true);
 
         return RedirectToAction(nameof(DocumentUpload));
     }
@@ -162,26 +167,16 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
         HttpContext.Session.RemoveAllSessionValues();
 
         // get the pending applications
-        var response = await applicationsService.GetApplications();
-
-        // convert the service response to ObjectResult
-        var result = this.ServiceResult(response);
+        var applicationServiceResponse = await applicationsService.GetApplications();
 
         // return the view if successfull
-        if (response.IsSuccessStatusCode)
+        if (applicationServiceResponse.IsSuccessStatusCode)
         {
-            return View(result.Value);
+            return View(applicationServiceResponse.Content);
         }
 
-        // if status is forbidden or not found
-        // return the appropriate response otherwise
         // return the generic error page
-        return result.StatusCode switch
-        {
-            StatusCodes.Status403Forbidden => Forbid(),
-            StatusCodes.Status404NotFound => NotFound(),
-            _ => View("Error", result.Value)
-        };
+        return this.ServiceError(applicationServiceResponse);
     }
 
     [Route("{applicationId}", Name = "app:ViewApplication")]
@@ -198,26 +193,16 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
         }
 
         // get the pending application by id
-        var response = await applicationsService.GetApplication(applicationId);
-
-        // convert the service response to ObjectResult
-        var result = this.ServiceResult(response);
+        var applicationServiceResponse = await applicationsService.GetApplication(applicationId);
 
         // return the view if successfull
-        if (response.IsSuccessStatusCode)
+        if (applicationServiceResponse.IsSuccessStatusCode)
         {
-            return View("ApplicationView", result.Value);
+            return View("ApplicationView", applicationServiceResponse.Content);
         }
 
-        // if status is forbidden or not found
-        // return the appropriate response otherwise
         // return the generic error page
-        return result.StatusCode switch
-        {
-            StatusCodes.Status403Forbidden => Forbid(),
-            StatusCodes.Status404NotFound => NotFound(),
-            _ => View("Error", result.Value)
-        };
+        return this.ServiceError(applicationServiceResponse);
     }
 
     public IActionResult ReviewAnswers()
@@ -228,16 +213,33 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
     }
 
     [HttpPost]
-    public async Task<IActionResult> SaveApplication(string projectName, string projectDescription)
+    public async Task<IActionResult> SaveApplication(ApplicationInfoViewModel model)
     {
         logger.LogMethodStarted();
 
+        var context = new ValidationContext<ApplicationInfoViewModel>(model);
+
+        var validationResult = await validator.ValidateAsync(context);
+
+        if (!validationResult.IsValid)
+        {
+            // Copy the validation results into ModelState.
+            // ASP.NET uses the ModelState collection to populate
+            // error messages in the View.
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
+
+            return View(ApplicationInfo, (model, "edit"));
+        }
+
         var respondent = new RespondentDto
         {
-            RespondentId = (HttpContext.Items[ContextItems.RespondentId] as string)!,
-            EmailAddress = (HttpContext.Items[ContextItems.Email] as string)!,
-            FirstName = (HttpContext.Items[ContextItems.FirstName] as string)!,
-            LastName = (HttpContext.Items[ContextItems.LastName] as string)!,
+            RespondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!,
+            EmailAddress = (HttpContext.Items[ContextItemKeys.Email] as string)!,
+            FirstName = (HttpContext.Items[ContextItemKeys.FirstName] as string)!,
+            LastName = (HttpContext.Items[ContextItemKeys.LastName] as string)!,
             Role = string.Join(',', User.Claims
                        .Where(claim => claim.Type == ClaimTypes.Role)
                        .Select(claim => claim.Value))
@@ -250,8 +252,8 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
         var request = new IrasApplicationRequest
         {
             ApplicationId = application.ApplicationId,
-            Title = projectName,
-            Description = projectDescription,
+            Title = model.Name!,
+            Description = model.Description!,
             CreatedBy = application.CreatedBy,
             UpdatedBy = name,
             StartDate = application.CreatedDate,
