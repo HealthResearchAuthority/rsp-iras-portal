@@ -59,12 +59,13 @@ public class AuthTagHelper(IHttpContextAccessor httpContextAccessor) : TagHelper
             (false, true, _, _) => false
         };
 
+        output.TagName = null;
+
         if (showOutput)
         {
             return;
         }
 
-        output.TagName = null;
         output.SuppressOutput();
     }
 
