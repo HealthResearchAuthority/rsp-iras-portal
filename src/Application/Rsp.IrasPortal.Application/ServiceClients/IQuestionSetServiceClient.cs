@@ -17,4 +17,10 @@ public interface IQuestionSetServiceClient
     /// </summary>
     [Get("/questions/next")]
     public Task<ApiResponse<IEnumerable<QuestionsResponse>>> GetNextQuestions(string category);
+
+    /// <summary>
+    /// Creates question records in the database
+    /// </summary>
+    [Post("/questions")]
+    public Task<IApiResponse> CreateQuestions(IEnumerable<QuestionDto> questions);
 }

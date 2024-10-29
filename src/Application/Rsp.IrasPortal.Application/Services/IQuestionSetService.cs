@@ -8,4 +8,6 @@ public interface IQuestionSetService
     Task<ServiceResponse<IEnumerable<QuestionsResponse>>> GetInitialQuestions();
 
     Task<ServiceResponse<IEnumerable<QuestionsResponse>>> GetNextQuestions(string categoryId);
+
+    Task<ServiceResponse> CreateQuestions(IEnumerable<QuestionDto> questions);
 }

@@ -21,4 +21,12 @@ public class QuestionSetService(IQuestionSetServiceClient client) : IQuestionSet
 
         return apiGetQuestionsResponse.ToServiceResponse();
     }
+
+    // create questions passing in QuestionDto
+    public async Task<ServiceResponse> CreateQuestions(IEnumerable<QuestionDto> questions)
+    {
+        var apiResponse = await client.CreateQuestions(questions);
+
+        return apiResponse.ToServiceResponse();
+    }
 }
