@@ -77,7 +77,7 @@ public class AuthTagHelperTests : TestServiceBase
         await tagHelper.ProcessAsync(context, output);
 
         // Assert
-        output.TagName.ShouldNotBeNull();
+        output.TagName.ShouldBeNull();
     }
 
     [Fact]
@@ -202,7 +202,7 @@ public class AuthTagHelperTests : TestServiceBase
         await tagHelper.ProcessAsync(context, output);
 
         // Assert
-        output.TagName.ShouldNotBeNull();
+        output.TagName.ShouldBeNull();
     }
 
     [Fact]
@@ -302,7 +302,7 @@ public class AuthTagHelperTests : TestServiceBase
         await tagHelper.ProcessAsync(context, output);
 
         // Assert
-        output.TagName.ShouldNotBeNull();
+        output.TagName.ShouldBeNull();
     }
 
     [Fact]
