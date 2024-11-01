@@ -73,11 +73,13 @@ public class AuthTagHelperTests : TestServiceBase
             (_, _) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent())
         );
 
+        output.Content.SetHtmlContent("test content");
+
         // Act
         await tagHelper.ProcessAsync(context, output);
 
         // Assert
-        output.TagName.ShouldBeNull();
+        output.Content.IsEmptyOrWhiteSpace.ShouldBeFalse();
     }
 
     [Fact]
@@ -136,11 +138,13 @@ public class AuthTagHelperTests : TestServiceBase
             (_, _) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent())
         );
 
+        output.Content.SetHtmlContent("test content");
+
         // Act
         await tagHelper.ProcessAsync(context, output);
 
         // Assert
-        output.TagName.ShouldBeNull();
+        output.Content.IsEmptyOrWhiteSpace.ShouldBeTrue();
     }
 
     [Fact]
@@ -198,11 +202,13 @@ public class AuthTagHelperTests : TestServiceBase
             (_, _) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent())
         );
 
+        output.Content.SetHtmlContent("test content");
+
         // Act
         await tagHelper.ProcessAsync(context, output);
 
         // Assert
-        output.TagName.ShouldBeNull();
+        output.Content.IsEmptyOrWhiteSpace.ShouldBeFalse();
     }
 
     [Fact]
@@ -248,11 +254,13 @@ public class AuthTagHelperTests : TestServiceBase
             (_, _) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent())
         );
 
+        output.Content.SetHtmlContent("test content");
+
         // Act
         await tagHelper.ProcessAsync(context, output);
 
         // Assert
-        output.TagName.ShouldBeNull();
+        output.Content.IsEmptyOrWhiteSpace.ShouldBeTrue();
     }
 
     [Fact]
@@ -298,11 +306,13 @@ public class AuthTagHelperTests : TestServiceBase
             (_, _) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent())
         );
 
+        output.Content.SetHtmlContent("test content");
+
         // Act
         await tagHelper.ProcessAsync(context, output);
 
         // Assert
-        output.TagName.ShouldBeNull();
+        output.Content.IsEmptyOrWhiteSpace.ShouldBeFalse();
     }
 
     [Fact]
@@ -348,10 +358,12 @@ public class AuthTagHelperTests : TestServiceBase
             (_, _) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent())
         );
 
+        output.Content.SetHtmlContent("test content");
+
         // Act
         await tagHelper.ProcessAsync(context, output);
 
         // Assert
-        output.TagName.ShouldBeNull();
+        output.Content.IsEmptyOrWhiteSpace.ShouldBeTrue();
     }
 }
