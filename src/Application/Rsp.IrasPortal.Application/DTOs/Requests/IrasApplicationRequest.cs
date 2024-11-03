@@ -1,8 +1,16 @@
-﻿namespace Rsp.IrasService.Application.DTOS.Requests;
+﻿namespace Rsp.IrasPortal.Application.DTOs.Requests;
 
+/// <summary>
+/// Represents an application request to create
+/// an application skeleton with title and description.
+/// </summary>
 public record IrasApplicationRequest
 {
-    public string ApplicationId { get; set; } = null!;
+    /// <summary>
+    /// IRAS Project Id
+    /// </summary>
+    public string? ApplicationId { get; set; } = DateTime.Now.ToString("yyyyMMddHHmmss");
+
     /// <summary>
     /// The title of the project
     /// </summary>
@@ -24,12 +32,17 @@ public record IrasApplicationRequest
     public string? Status { get; set; } = "created";
 
     /// <summary>
-    /// User Id who initiated the application
+    /// Applicant's name who initiated the application
     /// </summary>
     public string CreatedBy { get; set; } = null!;
 
     /// <summary>
-    /// User Id who updated the application
+    /// User's name who updated the application
     /// </summary>
     public string UpdatedBy { get; set; } = null!;
+
+    /// <summary>
+    /// Respondent creating the application
+    /// </summary>
+    public RespondentDto Respondent { get; set; } = null!;
 }

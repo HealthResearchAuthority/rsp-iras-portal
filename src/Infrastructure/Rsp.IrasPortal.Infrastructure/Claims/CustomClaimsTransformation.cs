@@ -18,13 +18,6 @@ public class CustomClaimsTransformation
     AppSettings appSettings
 ) : IClaimsTransformation
 {
-    private struct Roles
-    {
-        public const string admin = nameof(admin);
-        public const string user = nameof(user);
-        public const string reviewer = nameof(reviewer);
-    }
-
     public async Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
     {
         // To be able to assign additional roles based on the email we need to
@@ -58,6 +51,17 @@ public class CustomClaimsTransformation
 
         if (getUserResponse.IsSuccessStatusCode && getUserResponse.Content != null)
         {
+            var context = httpContextAccessor.HttpContext!;
+
+            var respondentId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var firstName = principal.FindFirst(ClaimTypes.GivenName)?.Value;
+            var surName = principal.FindFirst(ClaimTypes.Surname)?.Value;
+
+            context.Items.Add(ContextItemKeys.RespondentId, respondentId);
+            context.Items.Add(ContextItemKeys.Email, email);
+            context.Items.Add(ContextItemKeys.FirstName, firstName);
+            context.Items.Add(ContextItemKeys.LastName, surName);
+
             var user = getUserResponse.Content;
 
             // add the roles to claimsIdentity
@@ -90,7 +94,7 @@ public class CustomClaimsTransformation
         // getting the accessToken fails or
         // the accessToken value is null or empty then return
         if (context == null ||
-            !context.Items.TryGetValue(TokenKeys.AcessToken, out var accessToken) ||
+            !context.Items.TryGetValue(ContextItemKeys.AcessToken, out var accessToken) ||
             string.IsNullOrWhiteSpace(accessToken as string))
         {
             return;
@@ -120,6 +124,6 @@ public class CustomClaimsTransformation
 
         // write the JWT token to the context.Items to be utilised by
         // message handler when sending outgoing requests.
-        context.Items[TokenKeys.AcessToken] = handler.WriteToken(token);
+        context.Items[ContextItemKeys.AcessToken] = handler.WriteToken(token);
     }
 }

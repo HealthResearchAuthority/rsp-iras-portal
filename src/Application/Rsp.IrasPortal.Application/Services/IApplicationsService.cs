@@ -1,6 +1,6 @@
-﻿using Rsp.IrasPortal.Application.DTOs.Responses;
+﻿using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasService.Application.DTOS.Requests;
 
 namespace Rsp.IrasPortal.Application.Services;
 
@@ -40,13 +40,14 @@ public interface IApplicationsService
     /// <summary>
     /// Creates a new application
     /// </summary>
+    /// <param name="irasApplication">IrasApplication to be creadated</param>
     /// <returns>An asynchronous operation that returns the newly created application.</returns>
     public Task<ServiceResponse<IrasApplicationResponse>> CreateApplication(IrasApplicationRequest irasApplication);
 
     /// <summary>
     /// Updates the saved application by Id
     /// </summary>
-    /// <param name="id">Id of the application to be updated</param>
+    /// <param name="irasApplication">IrasApplication to be updated</param>
     /// <returns>An asynchronous operation that updates the existing application.</returns>
     public Task<ServiceResponse<IrasApplicationResponse>> UpdateApplication(IrasApplicationRequest irasApplication);
 }

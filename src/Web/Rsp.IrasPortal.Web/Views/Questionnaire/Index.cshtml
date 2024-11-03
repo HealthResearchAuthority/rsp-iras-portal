@@ -1,20 +1,76 @@
 ﻿@model QuestionnaireViewModel
+@using Microsoft.AspNetCore.Html
 @using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.DTOs
 
 @{
-    ViewData["Title"] = "Questionnaire";
     var sections = Model.Questions.ToLookup(q => q.Section);
-    var previousStage = TempData["td:app_previousstage"] as string;
-    var currentStage = TempData["td:app_currentstage"] as string;
-    var errorSummaryTitle = "Please address the following issues:";
+    var previousStage = TempData[TempDataKeys.PreviousStage] as string;
+    var currentStage = TempData[TempDataKeys.CurrentStage] as string;
+    var errorSummaryTitle = "Address the following issues:";
+    var applicationId = TempData[TempDataKeys.ApplicationId] as string;
+
+    void BuildValidationMessage(IList<RuleDto> rules, string errorKey, string validationMessage)
+    {
+        // local function to get distinct validations
+        // where the condition is applicable and Description is not null
+        IEnumerable<ConditionDto> GetConditions(RuleDto rule)
+        {
+            return rule.Conditions
+                    .Where(c => c.IsApplicable && c.Description != null)
+                    .DistinctBy(c => c.Description);
+        }
+
+        // get all the conditions for the rule
+        var conditions = rules.SelectMany(rule => GetConditions(rule));
+
+        var validationMessages = new List<string>();
+
+        // if there are not conditions
+        // use the validationMessage
+        if (!conditions.Any())
+        {
+            // if the same validationMessage is not present in the list
+            // build the validation message and add it, so that it doesn't
+            // get repeated
+            if (!validationMessages.Contains(validationMessage, StringComparer.OrdinalIgnoreCase))
+            {
+                @Html.ValidationMessage(errorKey, validationMessage, new { @class = "govuk-error-message" })
+
+                validationMessages.Add(validationMessage);
+            }
+        }
+
+        @foreach (var condition in conditions)
+        {
+            // if the same validationMessage is not present in the list
+            // build the validation message and add it, so that it doesn't
+            // get repeated
+            if (!validationMessages.Contains(condition.Description!, StringComparer.OrdinalIgnoreCase))
+            {
+                @Html.ValidationMessage(errorKey, condition.Description, new { @class = "govuk-error-message" })
+                
+                validationMessages.Add(condition.Description!);
+            }
+        }
+    }
 }
 
-<partial name="_BackNavigation" model="@("app:displayquestionnaire","Back", new Dictionary<string, string> { { "categoryId", previousStage }})" />
-
-<partial name="_Progress" model="@(currentStage, "Initiate")" />
+<partial name="_BackNavigation" model="@("qnc:displayquestionnaire","Back", new Dictionary<string, string> { { "categoryId", previousStage }})" />
 
 <form method="post">
+
+    <partial name="_Progress" model="@(currentStage, "Initiate", applicationId)" />
+
+    @if (ViewData[ViewDataKeys.IsQuestionnaireValid] is true)
+    {
+        <div class="govuk-panel govuk-panel--confirmation">
+            <div class="govuk-panel__body">
+                Validation Passed
+            </div>
+        </div>
+    }
 
     <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
 
@@ -53,29 +109,34 @@
                     <input type="hidden" asp-for="Questions[index].IsMandatory" checked="@question.IsMandatory" />
                     <input type="hidden" asp-for="Questions[index].IsOptional" checked="@question.IsOptional" />
 
-                    @if (!question.IsMandatory)
-                    {
-                        var rules = question.Rules;
+                    var rules = question.Rules;
 
+                    if (!question.IsMandatory)
+                    {
                         if (rules.Count == 0)
                         {
                             <govuk-inset-text>
                                 This question is conditional:
                             </govuk-inset-text>
                         }
-                        else
-                        {
-                            <govuk-inset-text>
-                                @rules.First().Description
-                            </govuk-inset-text>
-                        }
-
+                    }
+                   
+                    if (rules.Count !=0)
+                    {
+                        <govuk-inset-text>
+                            @foreach (var rule in rules)
+                            {
+                                <p>
+                                    @rule.Description;
+                                </p>
+                            }
+                        </govuk-inset-text>
                     }
 
                     @if (question.DataType is "Date")
                     {
                         errorKey = $"Questions[{index}].AnswerText";
-                        validationMessage = "Please provide an answer for this question";
+                        validationMessage = "Provide an answer for this question";
                         fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
 
                         <div id="Questions[@index].AnswerText" class="govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")">
@@ -88,7 +149,7 @@
 
                             @if (fieldHasErrors)
                             {
-                                @Html.ValidationMessage(errorKey, validationMessage, new { @class = "govuk-error-message" })
+                                BuildValidationMessage(question.Rules, errorKey, validationMessage);
                             }
 
                             <div class="govuk-date-input">
@@ -109,7 +170,7 @@
                     @if (question.DataType is "Text" or "Email")
                     {
                         errorKey = $"Questions[{index}].AnswerText";
-                        validationMessage = "Please provide an answer for this question";
+                        validationMessage = "Provide an answer for this question";
                         fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
 
                         <div id="Questions[@index].AnswerText" class="govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")">
@@ -122,7 +183,7 @@
 
                             @if (fieldHasErrors)
                             {
-                                @Html.ValidationMessage(errorKey, validationMessage, new { @class = "govuk-error-message" })
+                                BuildValidationMessage(question.Rules, errorKey, validationMessage);
                             }
 
                             @Html.TextBoxFor(model => model.Questions[index].AnswerText, new { id = question.QuestionId + "_Text", @class = "govuk-input" })
@@ -132,7 +193,7 @@
                     if (question.DataType is "Checkbox")
                     {
                         errorKey = $"Questions[{index}].Answers";
-                        validationMessage = "Please select at least one option";
+                        validationMessage = "Select at least one option";
                         fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
 
                         <div id="Questions[@index].Answers" class="govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")">
@@ -143,7 +204,7 @@
 
                                 @if (fieldHasErrors)
                                 {
-                                    @Html.ValidationMessage(errorKey, validationMessage, new { @class = "govuk-error-message" })
+                                    BuildValidationMessage(question.Rules, errorKey, validationMessage);
                                 }
 
                                 <div class="govuk-checkboxes" data-module="govuk-checkboxes">
@@ -164,7 +225,7 @@
                     if (question.DataType is "Radio button" or "Boolean")
                     {
                         errorKey = $"Questions[{index}].SelectedOption";
-                        validationMessage = "Please select one option";
+                        validationMessage = "Select one option";
                         fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
 
                         <div id="Questions[@index].SelectedOption" class="govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")">
@@ -175,7 +236,7 @@
 
                                 @if (fieldHasErrors)
                                 {
-                                    @Html.ValidationMessage(errorKey, validationMessage, new { @class = "govuk-error-message" })
+                                    BuildValidationMessage(question.Rules, errorKey, validationMessage);
                                 }
 
                                 <div class="govuk-radios" data-module="govuk-radios">
@@ -197,5 +258,8 @@
         }
     </div>
 
-    <partial name="_SubmitButton" model="@("app:submitanswers","Continue", new Dictionary<string, string>())" />
+    <partial name="_SubmitButton" model="@("qnc:saveresponses","Save", new Dictionary<string, string>())" />
+    <partial name="_SubmitButton" model="@("qnc:saveresponses","Save and Continue", new Dictionary<string, string>() { { "saveAndContinue", bool.TrueString } })" />
+    <partial name="_SubmitButton" model="@("qnc:validate","Validate", new Dictionary<string, string>())" />
+    <partial name="_SubmitButton" model="@("qnc:saveresponses","Proceed to Submit", new Dictionary<string, string>() { { "submit", bool.TrueString } })" />
 </form>

@@ -25,7 +25,7 @@ public static class HealthChecksConfiguration
             // correlationId header to the the health check call as well
             var options = new HeaderPropagationMessageHandlerOptions();
 
-            options.Headers.Add(CustomRequestHeaders.CorrelationId);
+            options.Headers.Add(RequestHeadersKeys.CorrelationId);
 
             return new HeaderPropagationMessageHandler(options, new())
             {

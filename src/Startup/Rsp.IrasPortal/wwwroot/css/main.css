@@ -84,3 +84,14 @@ fieldset.sections {
 .stage.completed .stage-label {
   font-weight: bold;
 }
+
+button.govuk-link {
+  font-family: "GDS Transport", arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-decoration: underline;
+  text-decoration-thickness: max(1px, 0.0625rem);
+  text-underline-offset: 0.1578em;
+  border: 0;
+  background-color: transparent;
+}

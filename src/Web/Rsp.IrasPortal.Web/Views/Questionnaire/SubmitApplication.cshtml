@@ -1,0 +1,214 @@
+﻿@using Rsp.IrasPortal.Application.Constants
+@using static Rsp.IrasPortal.Application.Constants.QuestionCategories;
+
+@model Dictionary<string, string>
+
+@{
+    var applicationState = (bool?)ViewData[ViewDataKeys.IsApplicationValid];
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+        <h2 class="govuk-heading-l" id="title">Review your application</h2>
+    </div>
+</div>
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+        @if (applicationState is true)
+        {
+            <p class="govuk-error-message">
+                Your application is valid, please click on the Submit button to submit your application for review
+            </p>
+        }
+        else
+        {
+            <p class="govuk-error-message">
+                Your application is invalid, not all of the mandatory questions were answered
+            </p>
+        }
+    </div>
+</div>
+
+@if (Model is null)
+{
+    <partial name="_NoData" />
+
+    return;
+}
+
+@{
+    (string Element, Dictionary<string, string> RouteParams) GetStatusElement(string category)
+    {
+        var status = Model.ContainsKey(category) ? Model[category] : "No Questions";
+
+        var tagcolor = status switch
+        {
+            "Completed" => "green",
+            "Incomplete" => "red",
+            "Not Entered" => "grey",
+            _ => "orange"
+        };
+
+        var applicationId = Context.Request.Query["applicationId"];
+        var routeParams = new Dictionary<string, string>
+        {
+            { "categoryId", category },
+            { "applicationId", applicationId },
+            { "validate", status == "Incomplete" ? bool.TrueString : bool.FalseString }
+        };
+
+        return ("<div class=\"govuk-task-list__status\" id=\"company-details-1-status\">" +
+                 "<strong class=\"govuk-tag govuk-tag--" + @tagcolor + "\">" +
+                    @status +
+                 "</strong>" +
+                "</div>", routeParams);
+    }
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+        <ul class="govuk-task-list">
+
+            @{
+                var categoryA = GetStatusElement(A);
+            }
+
+            <li class="govuk-task-list__item govuk-task-list__item--with-link">
+                <div class="govuk-task-list__name-and-hint">
+                    <a class="govuk-link govuk-task-list__link" asp-route="qnc:resume" asp-all-route-data="@categoryA.RouteParams">
+                        Project Filter
+                    </a>
+                </div>
+
+                @Html.Raw(categoryA.Element)
+
+            </li>
+
+            @{
+                var categoryB = GetStatusElement(B);
+            }
+            <li class="govuk-task-list__item govuk-task-list__item--with-link">
+                <div class="govuk-task-list__name-and-hint">
+                    <a class="govuk-link govuk-task-list__link" asp-route="qnc:resume" asp-all-route-data="@categoryB.RouteParams">
+                        Project Details
+                    </a>
+                </div>
+                @Html.Raw(categoryB.Element)
+            </li>
+
+            @{
+                var categoryC1 = GetStatusElement(C1);
+            }
+            <li class="govuk-task-list__item govuk-task-list__item--with-link">
+                <div class="govuk-task-list__name-and-hint">
+                    <a class="govuk-link govuk-task-list__link" asp-route="qnc:resume" asp-all-route-data="@categoryC1.RouteParams">
+                        Student
+                    </a>
+                </div>
+                @Html.Raw(categoryC1.Element)
+            </li>
+
+            @{
+                var categoryC2 = GetStatusElement(C2);
+            }
+            <li class="govuk-task-list__item govuk-task-list__item--with-link">
+                <div class="govuk-task-list__name-and-hint">
+                    <a class="govuk-link govuk-task-list__link" asp-route="qnc:resume" asp-all-route-data="@categoryC2.RouteParams">
+                        Research Bioresources
+                    </a>
+                </div>
+                @Html.Raw(categoryC2.Element)
+            </li>
+
+            @{
+                var categoryC3 = GetStatusElement(C3);
+            }
+            <li class="govuk-task-list__item govuk-task-list__item--with-link">
+                <div class="govuk-task-list__name-and-hint">
+                    <a class="govuk-link govuk-task-list__link" asp-route="qnc:resume" asp-all-route-data="@categoryC3.RouteParams">
+                        CTIMP
+                    </a>
+                </div>
+                @Html.Raw(categoryC3.Element)
+            </li>
+
+            @{
+                var categoryC4 = GetStatusElement(C4);
+            }
+            <li class="govuk-task-list__item govuk-task-list__item--with-link">
+                <div class="govuk-task-list__name-and-hint">
+                    <a class="govuk-link govuk-task-list__link" asp-route="qnc:resume" asp-all-route-data="@categoryC4.RouteParams">
+                        Devices
+                    </a>
+                </div>
+                @Html.Raw(categoryC4.Element)
+            </li>
+
+            @{
+                var categoryC5 = GetStatusElement(C5);
+            }
+            <li class="govuk-task-list__item govuk-task-list__item--with-link">
+                <div class="govuk-task-list__name-and-hint">
+                    <a class="govuk-link govuk-task-list__link" asp-route="qnc:resume" asp-all-route-data="@categoryC5.RouteParams">
+                        Ionizing Radiation
+                    </a>
+                </div>
+                @Html.Raw(categoryC5.Element)
+            </li>
+
+            @{
+                var categoryC6 = GetStatusElement(C6);
+            }
+            <li class="govuk-task-list__item govuk-task-list__item--with-link">
+                <div class="govuk-task-list__name-and-hint">
+                    <a class="govuk-link govuk-task-list__link" asp-route="qnc:resume" asp-all-route-data="@categoryC6.RouteParams">
+                        Tissue
+                    </a>
+                </div>
+                @Html.Raw(categoryC6.Element)
+            </li>
+
+            @{
+                var categoryC7 = GetStatusElement(C7);
+            }
+            <li class="govuk-task-list__item govuk-task-list__item--with-link">
+                <div class="govuk-task-list__name-and-hint">
+                    <a class="govuk-link govuk-task-list__link" asp-route="qnc:resume" asp-all-route-data="@categoryC7.RouteParams">
+                        Adults Lacking Capacity
+                    </a>
+                </div>
+                @Html.Raw(categoryC7.Element)
+            </li>
+
+            @{
+                var categoryC8 = GetStatusElement(C8);
+            }
+            <li class="govuk-task-list__item govuk-task-list__item--with-link">
+                <div class="govuk-task-list__name-and-hint">
+                    <a class="govuk-link govuk-task-list__link" asp-route="qnc:resume" asp-all-route-data="@categoryC8.RouteParams">
+                        Children
+                    </a>
+                </div>
+                @Html.Raw(categoryC8.Element)
+            </li>
+
+            @{
+                var categoryD = GetStatusElement(D);
+            }
+            <li class="govuk-task-list__item govuk-task-list__item--with-link">
+                <div class="govuk-task-list__name-and-hint">
+                    <a class="govuk-link govuk-task-list__link" asp-route="qnc:resume" asp-all-route-data="@categoryD.RouteParams">
+                        Booking
+                    </a>
+                </div>
+                @Html.Raw(categoryD.Element)
+            </li>
+        </ul>
+        <form method="post">
+
+            <partial name="_SubmitButton" model="@("","Submit Application", new Dictionary<string, string>() { { "submit", bool.TrueString } })" view-data="ViewData" />
+
+        </form>
+    </div>
+</div>

@@ -1,0 +1,76 @@
+﻿@using Rsp.IrasPortal.Application.DTOs.Responses;
+
+@model IrasApplicationResponse
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h2 class="govuk-heading-l" id="title">Welcome to the Integrated Research Application System</h2>
+    </div>
+</div>
+
+@if (Model is null)
+{
+    <partial name="_NoData" />
+
+    return;
+}
+
+<dl class="govuk-summary-list">
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">IRAS Id</dt>
+        <dd class="govuk-summary-list__value" id="review_title">@Model.ApplicationId</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Project title</dt>
+        <dd class="govuk-summary-list__value" id="review_title">@Model.Title</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Project description</dt>
+        <dd class="govuk-summary-list__value" id="review_description">@Model.Description</dd>
+    </div>
+</dl>
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <p class="govuk-body">
+            The integrated dataset required for your project will be created from the answers you
+            give to the questions on the next screens. The system will generate only those questions and
+            sections which (a) apply to your study type and (b) are required by the bodies reviewing
+            your study. Please ensure you answer all the questions before proceeding with your
+            applications.
+            <br />
+            <br />
+            Please complete the questions in order. If you change the response to a question, please
+            select 'Save' and review all the questions as your change may have affected subsequent
+            questions.
+            <br />
+            <br />
+            On-line guidance is available wherever you see a hyperlinked word or this symbol
+            displayed. Please read this guidance carefully.
+            <br />
+            <br />
+            For help with your application, click <a href="#">here</a>.
+        </p>
+
+        <authorized auth-params="@new(Roles:"user")">
+
+            <a class="govuk-button" asp-route="qnc:displayquestionnaire" asp-route-categoryId="A">Proceed with your application</a>
+
+            @* <form method="post" style="display: inline">
+
+            <partial name="_SubmitButton" model="@("app:loadexistingapplication","Edit existing application", new Dictionary<string, string>())" />
+
+            <select class="govuk-select" id="applicationIdSelect" name="applicationIdSelect">
+
+            <option value="default" selected disabled>Select...</option>
+
+            @foreach (var item in Model)
+            {
+            <option value="@item.ApplicationId">@item.Title</option>
+            }
+
+            </select>
+            </form> *@
+        </authorized>
+    </div>
+</div>

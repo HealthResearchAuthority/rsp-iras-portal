@@ -2,17 +2,30 @@
 @using Rsp.IrasPortal.Application.DTOs.Responses;
 
 @model IEnumerable<IrasApplicationResponse>
+
 @{
-    ViewData["Title"] = "My Applications";
+    var applications = Model?.OrderByDescending(m => m.CreatedDate);
 }
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-        <h1 class="govuk-heading-xl" id="title">My Research Applications</h1>
+        <h2 class="govuk-heading-l" id="title">My Research Applications</h2>
+    </div>
+</div>
+<hr class="govuk-section-break govuk-section-break--visible">
+
+<p class="govuk-body">
+    Create New Application or resume your application using the links under your application, or click "Proceed to Submit"
+    to submit your application.
+</p>
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-full" style="text-align:right">
+        <a class="govuk-button" asp-route="app:startnewapplication">Create New Application</a>
     </div>
 </div>
 
-@if (Model is null)
+@if (applications is null)
 {
     <partial name="_NoData" />
 
@@ -22,24 +35,51 @@
 <table class="govuk-table">
     <thead class="govuk-table__head">
         <tr class="govuk-table__row">
+            <th class="govuk-table__header">Application Id</th>
             <th class="govuk-table__header">Title</th>
             <th class="govuk-table__header">Description</th>
             <th class="govuk-table__header">Status</th>
             <th class="govuk-table__header">Created By</th>
-            <th class="govuk-table__header">View</th>
+            <th class="govuk-table__header">Actions</th>
         </tr>
     </thead>
     <tbody class="govuk-table__body">
 
-        @foreach (var app in Model)
+        @foreach (var app in applications)
         {
             <tr class="govuk-table__row">
+                <td class="govuk-table__cell">@app.ApplicationId</td>
                 <td class="govuk-table__cell">@app.Title</td>
                 <td class="govuk-table__cell">@app.Description</td>
                 <td class="govuk-table__cell">@app.Status</td>
                 <td class="govuk-table__cell">@app.CreatedBy</td>
                 <td class="govuk-table__cell">
-                    <a asp-route="app:viewapplication" asp-route-applicationId="@app.ApplicationId" class="govuk-link">View</a>
+                    <a asp-route="app:editapplication" asp-route-applicationId="@app.ApplicationId" class="govuk-link">Edit</a>
+                </td>
+            </tr>
+
+            <tr class="govuk-table__row">
+                <td colspan="5" class="govuk-table__cell">
+                    <p>
+                        | <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "A" }, { "applicationId", app.ApplicationId }})">Project Filter</a> |
+                        <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "B" }, { "applicationId", app.ApplicationId }})">Project Details</a> |
+                        <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C1" }, { "applicationId", app.ApplicationId }})">Student</a> |
+                        <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C2" }, { "applicationId", app.ApplicationId }})">Research Bioresources</a> |
+                        <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C3" }, { "applicationId", app.ApplicationId }})">CTIMP</a> |
+                        <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C4" }, { "applicationId", app.ApplicationId }})">Devices</a> |
+                    </p>
+                    <p>
+                        | <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C5" }, { "applicationId", app.ApplicationId }})">Ionizing Radiation</a> |
+                        <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C6" }, { "applicationId", app.ApplicationId }})">Tissue</a> |
+                        <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C7" }, { "applicationId", app.ApplicationId }})">Adults Lacking Capacity</a> |
+                        <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C8" }, { "applicationId", app.ApplicationId }})">Children</a> |
+                        <a class="govuk-link" asp-route="qnc:resume" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "D" }, { "applicationId", app.ApplicationId }})">Booking</a> |
+                    </p>
+                </td>
+                <td class="govuk-table__cell">
+                    <a class="govuk-button" asp-route="qnc:submitapplication" asp-route-applicationId="@app.ApplicationId">
+                        Proceed to Submit
+                    </a>
                 </td>
             </tr>
         }

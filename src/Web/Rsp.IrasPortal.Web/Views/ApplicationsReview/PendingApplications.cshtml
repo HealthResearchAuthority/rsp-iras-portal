@@ -2,13 +2,10 @@
 @using Rsp.IrasPortal.Application.DTOs.Responses;
 
 @model IEnumerable<IrasApplicationResponse>
-@{
-    ViewData["Title"] = "Applications Review";
-}
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-        <h1 class="govuk-heading-xl" id="title">Review applications</h1>
+        <h2 class="govuk-heading-l" id="title">Review applications</h2>
     </div>
 </div>
 
@@ -22,6 +19,7 @@
 <table class="govuk-table">
     <thead class="govuk-table__head">
         <tr class="govuk-table__row">
+            <th class="govuk-table__header">Application Id</th>
             <th class="govuk-table__header">Title</th>
             <th class="govuk-table__header">Description</th>
             <th class="govuk-table__header">Status</th>
@@ -34,6 +32,7 @@
         @foreach (var app in Model)
         {
             <tr class="govuk-table__row">
+                <td class="govuk-table__cell">@app.ApplicationId</td>
                 <td class="govuk-table__cell">@app.Title</td>
                 <td class="govuk-table__cell">@app.Description</td>
                 <td class="govuk-table__cell">@app.Status</td>

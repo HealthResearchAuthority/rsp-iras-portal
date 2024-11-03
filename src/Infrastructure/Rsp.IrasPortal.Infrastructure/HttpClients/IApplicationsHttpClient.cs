@@ -1,6 +1,6 @@
 ﻿using Refit;
+using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasService.Application.DTOS.Requests;
 
 namespace Rsp.IrasPortal.Infrastructure.HttpClients;
 
@@ -47,7 +47,6 @@ public interface IApplicationsHttpClient
     /// <summary>
     /// Updates the saved application by Id
     /// </summary>
-    /// <param name="id">Id of the application to be updated</param>
     /// <returns>An asynchronous operation that updates the existing application.</returns>
     [Post("/applications/update")]
     public Task<ApiResponse<IrasApplicationResponse>> UpdateApplication(IrasApplicationRequest irasApplication);

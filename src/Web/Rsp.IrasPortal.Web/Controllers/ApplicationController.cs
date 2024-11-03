@@ -1,68 +1,37 @@
 using System.Data;
 using System.Diagnostics;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using ExcelDataReader;
 using FluentValidation;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.Responses;
+using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Entities;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
-using Rsp.IrasService.Application.DTOS.Requests;
 using Rsp.Logging.Extensions;
-using static Rsp.IrasPortal.Application.Constants.QuestionCategories;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "app:[action]")]
 [Authorize(Policy = "IsUser")]
-public class ApplicationController(ILogger<ApplicationController> logger, IValidator<QuestionnaireViewModel> validator, IApplicationsService applicationsService, IQuestionSetService questionSetService) : Controller
+public class ApplicationController(ILogger<ApplicationController> logger, IApplicationsService applicationsService, IQuestionSetService questionSetService, IValidator<ApplicationInfoViewModel> validator) : Controller
 {
-    [AllowAnonymous]
-    public IActionResult SignIn()
-    {
-        logger.LogMethodStarted();
-
-        return new ChallengeResult("OpenIdConnect", new()
-        {
-            RedirectUri = Url.Action(nameof(Welcome))
-        });
-    }
-
-    [AllowAnonymous]
-    public async Task<IActionResult> Signout()
-    {
-        logger.LogMethodStarted();
-
-        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        await HttpContext.SignOutAsync("OpenIdConnect");
-
-        return new SignOutResult([CookieAuthenticationDefaults.AuthenticationScheme, "OpenIdConnect"], new()
-        {
-            RedirectUri = Url.Action(nameof(Welcome))
-        });
-    }
+    // ApplicationInfo view name
+    private const string ApplicationInfo = nameof(ApplicationInfo);
 
     [AllowAnonymous]
     [Route("/", Name = "app:welcome")]
-    public async Task<IActionResult> Welcome()
+    public IActionResult Welcome()
     {
         logger.LogMethodStarted();
 
-        var response = await applicationsService.GetApplications();
-
-        // convert the service response to ObjectResult
-        var applications = this.ServiceResult(response);
-
-        return View(nameof(Index), applications.Value);
+        return View(nameof(Index));
     }
 
     public IActionResult StartNewApplication()
@@ -71,188 +40,103 @@ public class ApplicationController(ILogger<ApplicationController> logger, IValid
 
         HttpContext.Session.RemoveAllSessionValues();
 
-        return RedirectToAction(nameof(DisplayQuestionnaire), new { categoryId = "A" });
+        return View(ApplicationInfo, (new ApplicationInfoViewModel(), "create"));
     }
 
-    public async Task<IActionResult> DisplayQuestionnaire(string categoryId = A)
+    public async Task<IActionResult> EditApplication(string applicationId)
     {
         logger.LogMethodStarted();
 
-        HttpContext.Session.RemoveAllSessionValues();
-
-        // get the initial questions for project filter if categoryId = A
-        // otherwise get the questions for the other category
-        var response = categoryId == A ?
-            await questionSetService.GetInitialQuestions() :
-            await questionSetService.GetNextQuestions(categoryId);
-
-        logger.LogMethodStarted(LogLevel.Information);
+        // get the pending application by id
+        var applicationsServiceResponse = await applicationsService.GetApplication(applicationId);
 
         // return the view if successfull
-        if (response.IsSuccessStatusCode)
+        if (!applicationsServiceResponse.IsSuccessStatusCode)
         {
-            // set the active stage for the category
-            SetStage(categoryId);
-
-            var questions = response
-                .Content!
-                .OrderBy(q => q.SectionId)
-                .ThenBy(q => q.Sequence)
-                .Select((question, index) => (question, index));
-
-            var questionnaire = new QuestionnaireViewModel();
-
-            // build the questionnaire view model
-            // we need to order the questions by section and sequence
-            // and also need to assign the index to the question so the multiple choice
-            // answsers can be linked back to the question
-            foreach (var (question, index) in questions)
-            {
-                questionnaire.Questions.Add(new QuestionViewModel
-                {
-                    Index = index,
-                    QuestionId = question.QuestionId,
-                    Category = question.Category,
-                    SectionId = question.SectionId,
-                    Section = question.Section,
-                    Sequence = question.Sequence,
-                    Heading = question.Heading,
-                    QuestionText = question.QuestionText,
-                    QuestionType = question.QuestionType,
-                    DataType = question.DataType,
-                    IsMandatory = question.IsMandatory,
-                    IsOptional = question.IsOptional,
-                    Rules = question.Rules,
-                    Answers = question.Answers.Select(ans => new AnswerViewModel
-                    {
-                        AnswerId = ans.AnswerId,
-                        AnswerText = ans.AnswerText
-                    }).ToList()
-                });
-            }
-
-            // store the questions to load again if there are validation errors on the page
-            HttpContext.Session.SetString(SessionConstants.Questionnaire, JsonSerializer.Serialize(questionnaire.Questions));
-
-            return View("Questionnaire", questionnaire);
+            // return the generic error page
+            return this.ServiceError(applicationsServiceResponse);
         }
 
-        // convert the service response to ObjectResult
-        var result = this.ServiceResult(response);
+        var irasApplication = applicationsServiceResponse.Content!;
 
-        // if status is forbidden or not found
-        // return the appropriate response otherwise
-        // return the generic error page
-        return result.StatusCode switch
+        HttpContext.Session.SetString(SessionKeys.Application, JsonSerializer.Serialize(irasApplication));
+
+        var applicationInfo = new ApplicationInfoViewModel
         {
-            StatusCodes.Status403Forbidden => Forbid(),
-            StatusCodes.Status404NotFound => NotFound(),
-            _ => View("Error", result.Value)
+            Name = irasApplication.Title,
+            Description = irasApplication.Description
         };
+
+        return View(ApplicationInfo, (applicationInfo, "edit"));
     }
 
-    [RequestFormLimits(ValueCountLimit = int.MaxValue)]
     [HttpPost]
-    public async Task<IActionResult> SubmitAnswers(QuestionnaireViewModel model)
+    public async Task<IActionResult> CreateApplication(ApplicationInfoViewModel model)
     {
-        var questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(HttpContext.Session.GetString(SessionConstants.Questionnaire)!)!;
+        logger.LogMethodStarted();
 
-        foreach (var question in questions)
-        {
-            var response = model.Questions.Find(q => q.Index == question.Index);
+        var context = new ValidationContext<ApplicationInfoViewModel>(model);
 
-            question.SelectedOption = response?.SelectedOption;
-            question.Answers = response?.Answers ?? [];
-            question.AnswerText = response?.AnswerText;
-        }
+        var validationResult = await validator.ValidateAsync(context);
 
-        model.Questions = questions;
-
-        var context = new ValidationContext<QuestionnaireViewModel>(model);
-
-        context.RootContextData["questions"] = model.Questions;
-
-        var result = await validator.ValidateAsync(context);
-
-        var stage = SetStage(model.CurrentStage!);
-
-        if (!result.IsValid)
+        if (!validationResult.IsValid)
         {
             // Copy the validation results into ModelState.
             // ASP.NET uses the ModelState collection to populate
             // error messages in the View.
-
-            foreach (var error in result.Errors)
+            foreach (var error in validationResult.Errors)
             {
                 ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
             }
 
-            // re-render the view when validation failed.
-            return View("Questionnaire", model);
+            return View(ApplicationInfo, (model, "create"));
         }
 
-        return RedirectToAction(nameof(DisplayQuestionnaire), new { categoryId = stage.NextStage });
-    }
-
-    public async Task<IActionResult> LoadExistingApplication(string applicationIdSelect)
-    {
-        logger.LogMethodStarted();
-
-        if (applicationIdSelect == null)
+        var respondent = new RespondentDto
         {
-            return RedirectToAction(nameof(Welcome));
-        }
+            RespondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!,
+            EmailAddress = (HttpContext.Items[ContextItemKeys.Email] as string)!,
+            FirstName = (HttpContext.Items[ContextItemKeys.FirstName] as string)!,
+            LastName = (HttpContext.Items[ContextItemKeys.LastName] as string)!,
+            Role = string.Join(',', User.Claims
+                       .Where(claim => claim.Type == ClaimTypes.Role)
+                       .Select(claim => claim.Value))
+        };
 
-        var response = await applicationsService.GetApplication(applicationIdSelect);
+        var name = $"{respondent.FirstName} {respondent.LastName}";
 
-        // convert the service response to ObjectResult
-        var application = this.ServiceResult(response).Value;
-
-        if (application != null)
+        var irasApplicationRequest = new IrasApplicationRequest
         {
-            HttpContext.Session.SetString(SessionConstants.Application, JsonSerializer.Serialize(application));
+            Title = model.Name!,
+            Description = model.Description!,
+            CreatedBy = name,
+            UpdatedBy = name,
+            StartDate = DateTime.Now,
+            Respondent = respondent
+        };
 
-            return RedirectToAction(nameof(ProjectName));
+        var applicationsServiceResponse = await applicationsService.CreateApplication(irasApplicationRequest);
+
+        // return the view if successfull
+        if (!applicationsServiceResponse.IsSuccessStatusCode)
+        {
+            // return the generic error page
+            return this.ServiceError(applicationsServiceResponse);
         }
 
-        HttpContext.Session.SetString(SessionConstants.Application, JsonSerializer.Serialize(new IrasApplicationResponse()));
+        var irasApplication = applicationsServiceResponse.Content!;
 
-        return RedirectToAction(nameof(Welcome));
-    }
+        // save the application in session
+        HttpContext.Session.SetString(SessionKeys.Application, JsonSerializer.Serialize(irasApplication));
 
-    public IActionResult ProjectName()
-    {
-        logger.LogMethodStarted();
-
-        var application = HttpContext.Session.GetString(SessionConstants.Application)!;
-
-        var irasApplication = JsonSerializer.Deserialize<IrasApplicationResponse>(application);
-
-        return View(nameof(ProjectName), (irasApplication?.Title ?? "", irasApplication?.Description ?? ""));
-    }
-
-    [HttpPost]
-    public IActionResult SaveProjectName(string projectName, string projectDescription)
-    {
-        logger.LogMethodStarted();
-
-        var application = HttpContext.Session.GetString(SessionConstants.Application)!;
-
-        var irasApplication = JsonSerializer.Deserialize<IrasApplicationResponse>(application)!;
-
-        irasApplication.Title = projectName;
-        irasApplication.Description = projectDescription;
-
-        HttpContext.Session.SetString(SessionConstants.Application, JsonSerializer.Serialize(irasApplication));
-
-        return RedirectToAction(nameof(DocumentUpload));
+        return View("NewApplication", irasApplication);
     }
 
     public IActionResult DocumentUpload()
     {
         logger.LogMethodStarted();
 
-        TempData.TryGetValue<List<Document>>("td:uploaded-documents", out var documents, true);
+        TempData.TryGetValue<List<Document>>(TempDataKeys.UploadedDocuments, out var documents, true);
 
         return View(documents);
     }
@@ -274,7 +158,7 @@ public class ApplicationController(ILogger<ApplicationController> logger, IValid
             });
         }
 
-        TempData.TryAdd("td:uploaded-documents", documents, true);
+        TempData.TryAdd(TempDataKeys.UploadedDocuments, documents, true);
 
         return RedirectToAction(nameof(DocumentUpload));
     }
@@ -284,27 +168,19 @@ public class ApplicationController(ILogger<ApplicationController> logger, IValid
     {
         logger.LogMethodStarted(LogLevel.Information);
 
-        // get the pending applications
-        var response = await applicationsService.GetApplications();
+        HttpContext.Session.RemoveAllSessionValues();
 
-        // convert the service response to ObjectResult
-        var result = this.ServiceResult(response);
+        // get the pending applications
+        var applicationServiceResponse = await applicationsService.GetApplications();
 
         // return the view if successfull
-        if (response.IsSuccessStatusCode)
+        if (applicationServiceResponse.IsSuccessStatusCode)
         {
-            return View(result.Value);
+            return View(applicationServiceResponse.Content);
         }
 
-        // if status is forbidden or not found
-        // return the appropriate response otherwise
         // return the generic error page
-        return result.StatusCode switch
-        {
-            StatusCodes.Status403Forbidden => Forbid(),
-            StatusCodes.Status404NotFound => NotFound(),
-            _ => View("Error", result.Value)
-        };
+        return this.ServiceError(applicationServiceResponse);
     }
 
     [Route("{applicationId}", Name = "app:ViewApplication")]
@@ -321,93 +197,76 @@ public class ApplicationController(ILogger<ApplicationController> logger, IValid
         }
 
         // get the pending application by id
-        var response = await applicationsService.GetApplication(applicationId);
-
-        // convert the service response to ObjectResult
-        var result = this.ServiceResult(response);
+        var applicationServiceResponse = await applicationsService.GetApplication(applicationId);
 
         // return the view if successfull
-        if (response.IsSuccessStatusCode)
+        if (applicationServiceResponse.IsSuccessStatusCode)
         {
-            return View("ApplicationView", result.Value);
+            return View("ApplicationView", applicationServiceResponse.Content);
         }
 
-        // if status is forbidden or not found
-        // return the appropriate response otherwise
         // return the generic error page
-        return result.StatusCode switch
-        {
-            StatusCodes.Status403Forbidden => Forbid(),
-            StatusCodes.Status404NotFound => NotFound(),
-            _ => View("Error", result.Value)
-        };
+        return this.ServiceError(applicationServiceResponse);
     }
 
     public IActionResult ReviewAnswers()
     {
         logger.LogMethodStarted();
 
-        return View(GetApplicationFromSession());
+        return View(this.GetApplicationFromSession());
     }
 
     [HttpPost]
-    public async Task<IActionResult> SaveApplication(string status)
+    public async Task<IActionResult> SaveApplication(ApplicationInfoViewModel model)
     {
         logger.LogMethodStarted();
 
-        var request = new IrasApplicationRequest();
+        var context = new ValidationContext<ApplicationInfoViewModel>(model);
 
-        var application = GetApplicationFromSession();
+        var validationResult = await validator.ValidateAsync(context);
 
-        request.ApplicationId = application.ApplicationId;
-        request.Status = status;
-        request.Title = application.Title;
-        request.Description = application.Description;
-        request.StartDate = application.CreatedDate;
-        request.CreatedBy = application.CreatedBy;
-        request.UpdatedBy = application.UpdatedBy;
+        if (!validationResult.IsValid)
+        {
+            // Copy the validation results into ModelState.
+            // ASP.NET uses the ModelState collection to populate
+            // error messages in the View.
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
+
+            return View(ApplicationInfo, (model, "edit"));
+        }
+
+        var respondent = new RespondentDto
+        {
+            RespondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!,
+            EmailAddress = (HttpContext.Items[ContextItemKeys.Email] as string)!,
+            FirstName = (HttpContext.Items[ContextItemKeys.FirstName] as string)!,
+            LastName = (HttpContext.Items[ContextItemKeys.LastName] as string)!,
+            Role = string.Join(',', User.Claims
+                       .Where(claim => claim.Type == ClaimTypes.Role)
+                       .Select(claim => claim.Value))
+        };
+
+        var name = $"{respondent.FirstName} {respondent.LastName}";
+
+        var application = this.GetApplicationFromSession();
+
+        var request = new IrasApplicationRequest
+        {
+            ApplicationId = application.ApplicationId,
+            Title = model.Name!,
+            Description = model.Description!,
+            CreatedBy = application.CreatedBy,
+            UpdatedBy = name,
+            StartDate = application.CreatedDate,
+            Respondent = respondent
+        };
 
         await applicationsService.UpdateApplication(request);
 
         return RedirectToAction(nameof(MyApplications));
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> SaveDraftApplication(string status)
-    {
-        logger.LogMethodStarted();
-
-        var request = new IrasApplicationRequest();
-
-        var application = GetApplicationFromSession();
-
-        request.ApplicationId = application.ApplicationId;
-        request.Status = status;
-        request.Title = application.Title;
-        request.Description = application.Description;
-        request.StartDate = application.CreatedDate;
-        request.CreatedBy = application.CreatedBy;
-        request.UpdatedBy = application.UpdatedBy;
-
-        var response = request.ApplicationId == null ?
-            await applicationsService.CreateApplication(request) :
-            await applicationsService.UpdateApplication(request);
-
-        var irasApplication = (this.ServiceResult(response).Value as IrasApplicationResponse)!;
-
-        // save in TempData to retreive again in DraftSaved
-        TempData.TryAdd("td:draft-application", irasApplication, true);
-
-        return RedirectToAction(nameof(DraftSaved));
-    }
-
-    public IActionResult DraftSaved()
-    {
-        logger.LogMethodStarted();
-
-        TempData.TryGetValue<IrasApplicationResponse>("td:draft-application", out var application, true);
-
-        return View(application);
     }
 
     [AllowAnonymous]
@@ -572,43 +431,5 @@ public class ApplicationController(ILogger<ApplicationController> logger, IValid
         logger.LogMethodStarted();
 
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-    }
-
-    private IrasApplicationResponse GetApplicationFromSession()
-    {
-        logger.LogMethodStarted();
-
-        var application = HttpContext.Session.GetString(SessionConstants.Application);
-
-        if (application != null)
-        {
-            return JsonSerializer.Deserialize<IrasApplicationResponse>(application)!;
-        }
-
-        return new IrasApplicationResponse();
-    }
-
-    private (string PreviousStage, string CurrentStage, string NextStage) SetStage(string category)
-    {
-        (string? PreviousStage, string? CurrentStage, string NextStage) = category switch
-        {
-            A => ("", A, B),
-            B => (A, B, C1),
-            C1 => (B, C1, C2),
-            C2 => (C1, C2, C3),
-            C3 => (C2, C3, C4),
-            C4 => (C3, C4, C5),
-            C5 => (C4, C5, C6),
-            C6 => (C5, C6, C7),
-            C7 => (C6, C7, C8),
-            C8 => (C7, C8, D),
-            D => (C8, D, ""),
-            _ => ("", A, B)
-        };
-
-        TempData["td:app_previousstage"] = PreviousStage;
-        TempData["td:app_currentstage"] = CurrentStage;
-
-        return (PreviousStage, CurrentStage, NextStage);
     }
 }

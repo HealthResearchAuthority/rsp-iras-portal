@@ -79,7 +79,7 @@ services.AddCustomHealthChecks(appSettings);
 
 // header to be propagated to the httpclient
 // to be sent in the request for external api calls
-services.AddHeaderPropagation(options => options.Headers.Add(CustomRequestHeaders.CorrelationId));
+services.AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
 
 services
     .AddJwksManager()

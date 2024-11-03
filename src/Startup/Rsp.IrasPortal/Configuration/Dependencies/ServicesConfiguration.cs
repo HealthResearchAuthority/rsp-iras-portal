@@ -23,8 +23,9 @@ public static class ServicesConfiguration
         services.AddTransient<IApplicationsService, ApplicationsService>();
         services.AddTransient<IUserManagementService, UserManagementService>();
         services.AddTransient<IQuestionSetService, QuestionSetService>();
-        services.AddTransient<IClaimsTransformation, CustomClaimsTransformation>();
+        services.AddTransient<IRespondentService, RespondentService>();
 
+        services.AddTransient<IClaimsTransformation, CustomClaimsTransformation>();
         // add microservice clients
         services.AddTransient<IApplicationsServiceClient, ApplicationsServiceClient>();
 

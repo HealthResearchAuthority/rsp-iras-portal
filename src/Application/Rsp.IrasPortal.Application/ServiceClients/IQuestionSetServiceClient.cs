@@ -6,17 +6,17 @@ namespace Rsp.IrasPortal.Application.ServiceClients;
 public interface IQuestionSetServiceClient
 {
     /// <summary>
-    /// Gets all the roles in the database
+    /// Gets all questions in the database
     /// </summary>
-    /// <returns>List of roles</returns>
+    /// <returns><see cref="IEnumerable{QuestionsResponse}"/></returns>
     [Get("/questions")]
-    public Task<ApiResponse<IEnumerable<QuestionsResponse>>> GetInitialQuestions();
+    public Task<ApiResponse<IEnumerable<QuestionsResponse>>> GetQuestions();
 
     /// <summary>
-    /// Creates a new role in the database
+    /// Gets all questions in the database for the category
     /// </summary>
-    [Get("/questions/next")]
-    public Task<ApiResponse<IEnumerable<QuestionsResponse>>> GetNextQuestions(string category);
+    [Get("/questions")]
+    public Task<ApiResponse<IEnumerable<QuestionsResponse>>> GetQuestions(string categoryId);
 
     /// <summary>
     /// Creates question records in the database
