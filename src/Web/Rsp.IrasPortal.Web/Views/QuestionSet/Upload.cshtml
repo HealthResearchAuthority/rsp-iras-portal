@@ -1,16 +1,16 @@
 ﻿@model Rsp.IrasPortal.Web.Models.QuestionSetFileModel
 
-@using Rsp.IrasPortal.Application.DTOs
 @{
-    ViewData["Title"] = "Application";
-    // var questionDtos = ViewBag.FileContent as List<QuestionDto>;
+    ViewData["Title"] = "Question Set";
 }
 
-<h1>Upload Question Set file</h1>
+<h2 class="govuk-heading-l">Upload a Question Set</h2>
+
+<partial name="_ValidationSummary" model="@(ViewData.ModelState, "Please address the following issues:")" />
 
 <form asp-action="QuestionSetUpload" method="post" enctype="multipart/form-data">
-    <govuk-file-upload asp-for="@Model.Upload" name="Upload"></govuk-file-upload>
-    <govuk-button type="submit">Upload</govuk-button>
+    <input type="file" class="govuk-file-upload" asp-for="@Model.Upload" name="Upload" />
+    <button type="submit" class="govuk-button">Upload</button>
 </form>
 
 @if (ViewBag.Success != null && ViewBag.Success)

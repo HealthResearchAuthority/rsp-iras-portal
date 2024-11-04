@@ -1,14 +1,11 @@
 using System.Data;
 using System.Diagnostics;
 using System.Security.Claims;
-using System.Text;
 using System.Text.Json;
-using ExcelDataReader;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Entities;
@@ -275,153 +272,6 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
         logger.LogMethodStarted();
 
         return View();
-    }
-
-    [AllowAnonymous]
-    public IActionResult QuestionSetUpload()
-    {
-        logger.LogMethodStarted();
-
-        return View();
-    }
-
-    [AllowAnonymous]
-    [HttpPost]
-    public async Task<IActionResult> QuestionSetUpload(QuestionSetFileModel model)
-    {
-        logger.LogMethodStarted();
-
-        var file = model.Upload;
-
-        //if (file == null || file.Length == 0)
-        //{
-        //    ModelState.AddModelError("Upload", "Please upload a file");
-        //}
-
-        //return View(model);
-
-        if (file != null && file.Length > 0)
-        {
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-
-            using var stream = file.OpenReadStream();
-            using var reader = ExcelReaderFactory.CreateReader(stream);
-            var result = reader.AsDataSet(new ExcelDataSetConfiguration()
-            {
-                ConfigureDataTable = (_) => new ExcelDataTableConfiguration()
-                {
-                    UseHeaderRow = true
-                }
-            });
-
-            List<DataTable> sheets = [
-                result.Tables["A"],
-                //result.Tables["B"],
-                result.Tables["C1"],
-                result.Tables["C4"],
-                result.Tables["C6"],
-                result.Tables["C7"],
-                result.Tables["C8"]
-            ];
-
-            var projectFilterDataTable = result.Tables["A"]!;
-            var rulesDataTable = result.Tables["App4 Rules"]!;
-            var questionDtos = new List<QuestionDto>();
-
-            foreach (var sheet in sheets)
-            {
-                foreach (DataRow question in sheet.Rows)
-                {
-                    var questionId = Convert.ToString(question[QuestionSetColumns.QuestionId]);
-
-                    if (questionId == null || Convert.IsDBNull(questionId))
-                    {
-                        continue;
-                    }
-
-                    if (questionId.StartsWith("IQT"))
-                    {
-                        // handle section row
-                        continue;
-                    }
-
-                    var conformance = Convert.ToString(question[QuestionSetColumns.Conformance]);
-
-                    var questionDto = new QuestionDto
-                    {
-                        QuestionId = questionId!,
-                        Category = Convert.ToString(question[QuestionSetColumns.Category])!,
-                        SectionId = Convert.ToString(question[QuestionSetColumns.Section])!,
-                        Section = Convert.ToString(question[QuestionSetColumns.Section])!,
-                        Sequence = Convert.ToInt32(question[QuestionSetColumns.Sequence]),
-                        Heading = Convert.ToString(question[QuestionSetColumns.Heading])!,
-                        QuestionText = Convert.ToString(question[QuestionSetColumns.QuestionText])!,
-                        QuestionType = Convert.ToString(question[QuestionSetColumns.QuestionType])!,
-                        DataType = Convert.ToString(question[QuestionSetColumns.DataType])!,
-                        IsMandatory = conformance == "Mandatory" || conformance == "Conditional mandatory",
-                        IsOptional = conformance == "Optional",
-                    };
-
-                    var answers = Convert.ToString(question[QuestionSetColumns.Answers])!.Split(',');
-
-                    //questionDto.Answers = answers.Select(answer => new AnswerDto
-                    //{
-                    //    AnswerId = answer,
-                    //    AnswerText = answer,
-                    //}).ToList();
-
-                    questionDto.Answers = [];
-
-                    //if (question[QuestionSetColumns.Rules] != null)
-                    //{
-                    //    var rulesDtos = new List<RuleDto>();
-                    //    foreach (DataRow rule in rulesDataTable.Rows)
-                    //    {
-                    //        var ruleQuestionId = Convert.ToString(rule[RulesColumns.QuestionId])!;
-                    //        if (ruleQuestionId != questionId) continue;
-
-                    //        var ruleDto = new RuleDto
-                    //        {
-                    //            Sequence = Convert.ToInt32(rule[RulesColumns.Sequence]),
-                    //            Operator = Convert.ToString(rule[RulesColumns.Operator])!,
-                    //            QuestionId = Convert.ToString(rule[RulesColumns.QuestionId])!,
-                    //            ParentQuestionId = Convert.ToString(rule[RulesColumns.ParentQuestionId])!,
-                    //            Description = Convert.ToString(rule[RulesColumns.Description])!,
-                    //        };
-
-                    //        var conditionParentOptions = Convert.ToString(rule[RulesColumns.ConditionParentOptions])!.Split(',').ToList();
-
-                    //        ruleDto.Condition = new ConditionDto
-                    //        {
-                    //            Comparison = Convert.ToString(rule[RulesColumns.ConditionComparison])!,
-                    //            OptionsCountOperator = Convert.ToString(rule[RulesColumns.ConditionComparison])!,
-                    //            ParentOptionsCount = conditionParentOptions.Count,
-                    //            ParentOptions = conditionParentOptions,
-                    //        };
-
-                    //        rulesDtos.Add(ruleDto);
-                    //    }
-
-                    //    questionDto.Rules = rulesDtos;
-                    //}
-
-                    questionDto.Rules = [];
-
-                    questionDtos.Add(questionDto);
-                }
-            }
-
-            ViewBag.FileContent = questionDtos;
-
-            var response = await questionSetService.CreateQuestions(questionDtos);
-        }
-
-        if (ModelState.IsValid)
-        {
-            ViewBag.Success = true;
-        }
-
-        return View(model);
     }
 
     [AllowAnonymous]

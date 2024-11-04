@@ -18,31 +18,3 @@ public struct ApplicationStages
     public const string Children = "Children";
     public const string Booking = "Booking";
 }
-
-public struct QuestionSetColumns
-{
-    public const string QuestionId = "Unique ID";
-    public const string Category = "Category";
-    public const string Section = "Section";
-    public const string Sequence = "UI display sequence";
-    public const string Heading = "Proposed Q#";
-    public const string QuestionText = "Field label";
-    public const string QuestionType = "Field type";
-    public const string Conformance = "Conformance";
-    public const string Rules = "Data and visibility rules";
-    public const string DataType = "Data type";
-    public const string Answers = "Values";
-}
-
-public struct RulesColumns
-{
-    public const string RuleId = "RuleId";
-    public const string Sequence = "Sequence";
-    public const string Operator = "Operator";
-    public const string QuestionId = "QuestionId";
-    public const string ParentQuestionId = "ParentQuestionId";
-    public const string Description = "Description";
-    public const string ConditionComparison = "Comparator";
-    public const string ConditionOptionsCountOperator = "ConditionOperator";
-    public const string ConditionParentOptions = "ParentOption";
-}
