@@ -7,7 +7,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Future Iras Portal</title>
+    @* <title>Future Iras Portal</title> *@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/main.css" asp-append-version="true" />
 </head>
@@ -36,11 +36,6 @@
              data-module="govuk-service-navigation">
         <div class="govuk-width-container">
             <div class="govuk-service-navigation__container">
-                <span class="govuk-service-navigation__service-name">
-                    <a asp-route="app:welcome" class="govuk-service-navigation__link">
-                        Future IRAS
-                    </a>
-                </span>
                 <nav aria-label="Menu" class="govuk-service-navigation__wrapper">
                     <button type="button" class="govuk-service-navigation__toggle govuk-js-service-navigation-toggle" aria-controls="navigation" hidden>
                         Menu
@@ -91,11 +86,6 @@
                         <authorized auth-params="@new()">
                             <li class="govuk-service-navigation__item">
                                 <govuk-button-link class="mb-0" asp-route="auth:signout">Logout</govuk-button-link>
-                            </li>
-                        </authorized>
-                        <authorized auth-params="@new(ShowWhenAuthenticated: false)">
-                            <li class="govuk-service-navigation__item">
-                                <govuk-button-link class="mb-0" asp-route="auth:signin">Sign In</govuk-button-link>
                             </li>
                         </authorized>
                     </ul>

@@ -2,92 +2,12 @@
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-        <h1 id="title" class="govuk-heading-l">
-            Integrated Research Application System
-        </h1>
-    </div>
-</div>
-
-<div class="govuk-grid-row">
-    <div class="govuk-grid-column-full">
 
         <authorized auth-params="@new(ShowWhenAuthenticated: false)">
 
-            <h2 class="govuk-heading-m">
-                The Integrated Research Application System (IRAS):
-            </h2>
-
-            <ul class="govuk-list govuk-list--bullet">
-
-                <li>
-                    Is a single system for applying for the permissions and approvals for health and social care / community care research in the UK
-                </li>
-
-                <li>
-                    Generates the IRAS ID, which has been adopted by stakeholders across the UK as the common study identifier
-                </li>
-
-                <li>
-                    Enables you to enter the information about your project once instead of duplicating information in separate application forms
-                </li>
-
-                <li>
-                    Uses filters to ensure that the data collected and collated is appropriate to the type of study, and consequently the permissions and approvals required
-                </li>
-
-                <li>
-                    Helps you to meet regulatory and governance requirements
-                </li>
-            </ul>
-
-            <h2 class="govuk-heading-m">
-                IRAS captures the information needed for the relevant approvals from the following review bodies:
-            </h2>
-
-            <ul class="govuk-list govuk-list--bullet">
-
-                <li>
-                    Administration of Radioactive Substances Advisory Committee (ARSAC)
-                </li>
-
-                <li>
-                    Confidentiality Advisory Group (CAG)
-                </li>
-
-                <li>
-                    Gene Therapy Advisory Committee (GTAC)
-                </li>
-
-                <li>
-                    Health Research Authority (HRA) and Health and Care Research Wales (HCRW) for projects seeking HRA & HCRW Approval
-                </li>
-
-                <li>
-                    Medicines and Healthcare products Regulatory Agency (MHRA)
-                </li>
-
-                <li>
-                    NHS / HSC R&D offices
-                </li>
-
-                <li>
-                    NHS / HSC Research Ethics Committees
-                </li>
-
-                <li>
-                    HM Prison and Probation Service (HMPPS)
-                </li>
-
-                <li>
-                    Social Care Research Ethics Committee
-                </li>
-            </ul>
-
-            <h2 id="sigin-in-to-iras" class="govuk-heading-m">Sign in to Integrated Research Application System (IRAS)</h2>
-
             <div class="govuk-body">
                 <p>
-                    To begin your application through IRAS, Sign In using the following link
+                    To begin making changes to your application, Sign In using the following link
                 </p>
                 <a class="gem-c-button govuk-button govuk-button--start" asp-route="auth:signin">
                     Sign In
@@ -102,11 +22,11 @@
         <authorized auth-params="@new(Roles:"user")">
 
             <p class="govuk-body">
-                To begin your new application, click on the "Create New Application" button to start your submission process or
+                To begin make changes to your application, click on the "Edit Application" button to start your submission process or
                 navigate to <a asp-route="app:myapplications">My Applications</a> page to view/resume your existing applications.
             </p>
 
-            <a class="govuk-button" asp-route="app:startnewapplication">Create New Application</a>
+            <a class="govuk-button" asp-route="app:startnewapplication">Create Make Changes to Application</a>
 
         </authorized>
     </div>
