@@ -38,6 +38,13 @@ public interface IApplicationsHttpClient
     public Task<ApiResponse<IEnumerable<IrasApplicationResponse>>> GetApplicationsByStatus(string status);
 
     /// <summary>
+    /// Gets all the saved applications by respondent
+    /// </summary>
+    /// <returns>An asynchronous operation that returns all the saved applications for a given respondent.</returns>
+    [Get("/applications/respondent/all")]
+    public Task<ApiResponse<IEnumerable<IrasApplicationResponse>>> GetApplicationsByRespondent(string respondentId);
+
+    /// <summary>
     /// Creates a new application
     /// </summary>
     /// <returns>An asynchronous operation that returns the newly created application.</returns>

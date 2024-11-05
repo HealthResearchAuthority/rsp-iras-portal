@@ -34,6 +34,12 @@ public class ApplicationsService(ILogger<ApplicationsService> logger, IApplicati
     }
 
     /// <inheritdoc/>
+    public Task<ServiceResponse<IEnumerable<IrasApplicationResponse>>> GetApplicationsByRespondent(string respondentId)
+    {
+        return applicationsClient.GetApplicationsByRespondent(respondentId);
+    }
+
+    /// <inheritdoc/>
     public Task<ServiceResponse<IrasApplicationResponse>> CreateApplication(IrasApplicationRequest irasApplication)
     {
         return applicationsClient.CreateApplication(irasApplication);
