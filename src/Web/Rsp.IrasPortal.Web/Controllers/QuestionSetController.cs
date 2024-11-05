@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using System.Text;
 using ExcelDataReader;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
@@ -13,7 +14,7 @@ namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "questionset:[action]")]
 [Authorize(Policy = "IsAdmin")]
-public class QuestionSetController(ILogger<QuestionSetController> logger, IQuestionSetService questionSetService) : Controller
+public class QuestionSetController(ILogger<QuestionSetController> logger, IQuestionSetService questionSetService, IValidator<QuestionSetFileModel> validator) : Controller
 {
     public IActionResult Upload()
     {
@@ -90,7 +91,7 @@ public class QuestionSetController(ILogger<QuestionSetController> logger, IQuest
             return View(model);
         }
 
-        var questionDtos = new List<QuestionDto>();
+        //var questionDtos = new List<QuestionDto>();
 
         foreach (var sheet in moduleSheets)
         {
@@ -135,18 +136,43 @@ public class QuestionSetController(ILogger<QuestionSetController> logger, IQuest
                 //    AnswerText = answer,
                 //}).ToList();
 
-                questionDtos.Add(questionDto);
+                model.QuestionDtos.Add(questionDto);
             }
         }
 
-        var response = await questionSetService.CreateQuestions(questionDtos);
+        var isValid = await ValidateQuestions(model);
 
-        if (response.IsSuccessStatusCode)
+        if (!isValid)
         {
-            ViewBag.Success = true;
+            return View(model);
         }
 
+        //var response = await questionSetService.CreateQuestions(model.QuestionDtos);
+
+        ViewBag.Success = true; // response.IsSuccessStatusCode;
+
         return View(model);
+    }
+
+    private async Task<bool> ValidateQuestions(QuestionSetFileModel model)
+    {
+        var context = new ValidationContext<QuestionSetFileModel>(model);
+
+        context.RootContextData["questionDtos"] = model.QuestionDtos;
+
+        var result = await validator.ValidateAsync(context);
+
+        if (!result.IsValid)
+        {
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError("Upload", error.ErrorMessage);
+            }
+
+            return false;
+        }
+
+        return true;
     }
 
     private bool HasValidColumns(string sheetName, DataTable sheet)
@@ -161,7 +187,7 @@ public class QuestionSetController(ILogger<QuestionSetController> logger, IQuest
 
         foreach (var missingColumn in missingColumns)
         {
-            ModelState.AddModelError("Upload", $"Sheet '{sheetName}' does not contain column {missingColumn}");
+            ModelState.AddModelError("Upload", $"Sheet '{sheetName}' does not contain column '{missingColumn}'");
         }
 
         return !missingColumns.Any();
