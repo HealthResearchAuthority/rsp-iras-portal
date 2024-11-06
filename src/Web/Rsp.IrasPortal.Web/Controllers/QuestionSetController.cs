@@ -147,9 +147,9 @@ public class QuestionSetController(ILogger<QuestionSetController> logger, IQuest
             return View(model);
         }
 
-        //var response = await questionSetService.CreateQuestions(model.QuestionDtos);
+        var response = await questionSetService.CreateQuestions(model.QuestionDtos);
 
-        ViewBag.Success = true; // response.IsSuccessStatusCode;
+        ViewBag.Success = response.IsSuccessStatusCode;
 
         return View(model);
     }

@@ -17,7 +17,7 @@ namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "app:[action]")]
 [Authorize(Policy = "IsUser")]
-public class ApplicationController(ILogger<ApplicationController> logger, IApplicationsService applicationsService, IQuestionSetService questionSetService, IValidator<ApplicationInfoViewModel> validator) : Controller
+public class ApplicationController(ILogger<ApplicationController> logger, IApplicationsService applicationsService, IValidator<ApplicationInfoViewModel> validator) : Controller
 {
     // ApplicationInfo view name
     private const string ApplicationInfo = nameof(ApplicationInfo);
