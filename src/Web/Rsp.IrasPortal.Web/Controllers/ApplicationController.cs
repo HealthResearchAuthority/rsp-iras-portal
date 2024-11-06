@@ -165,10 +165,12 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
     {
         logger.LogMethodStarted(LogLevel.Information);
 
+        var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
+
         HttpContext.Session.RemoveAllSessionValues();
 
         // get the pending applications
-        var applicationServiceResponse = await applicationsService.GetApplications();
+        var applicationServiceResponse = await applicationsService.GetApplicationsByRespondent(respondentId);
 
         // return the view if successfull
         if (applicationServiceResponse.IsSuccessStatusCode)

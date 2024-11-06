@@ -38,6 +38,13 @@ public interface IApplicationsServiceClient
     public Task<ServiceResponse<IEnumerable<IrasApplicationResponse>>> GetApplicationsByStatus(string status);
 
     /// <summary>
+    /// Gets all the saved applications for a respondent
+    /// </summary>
+    /// <param name="respondentId">Respondent Id associated with the application</param>
+    /// <returns>An asynchronous operation that returns all the saved applications for a given respondent.</returns>
+    public Task<ServiceResponse<IEnumerable<IrasApplicationResponse>>> GetApplicationsByRespondent(string respondentId);
+
+    /// <summary>
     /// Creates a new application
     /// </summary>
     /// <returns>An asynchronous operation that returns the newly created application.</returns>
