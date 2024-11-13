@@ -14,7 +14,7 @@ public class HomeController(IUserManagementService userManagementService, ILogge
     [Route("/admin", Name = "admin:home")]
     public async Task<IActionResult> Index()
     {
-        logger.LogMethodStarted(LogLevel.Information);
+        logger.LogInformationHp("called");
 
         // get the users
         var getUsersResponse = userManagementService.GetUsers();

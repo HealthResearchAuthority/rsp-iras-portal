@@ -26,14 +26,14 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
     [Route("/", Name = "app:welcome")]
     public IActionResult Welcome()
     {
-        logger.LogMethodStarted();
+        logger.LogInformationHp("called");
 
         return View(nameof(Index));
     }
 
     public IActionResult StartNewApplication()
     {
-        logger.LogMethodStarted();
+        logger.LogInformationHp("called");
 
         HttpContext.Session.RemoveAllSessionValues();
 
@@ -42,7 +42,7 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
 
     public async Task<IActionResult> EditApplication(string applicationId)
     {
-        logger.LogMethodStarted();
+        logger.LogInformationHp("called");
 
         // get the pending application by id
         var applicationsServiceResponse = await applicationsService.GetApplication(applicationId);
@@ -70,7 +70,7 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
     [HttpPost]
     public async Task<IActionResult> CreateApplication(ApplicationInfoViewModel model)
     {
-        logger.LogMethodStarted();
+        logger.LogInformationHp("called");
 
         var context = new ValidationContext<ApplicationInfoViewModel>(model);
 
@@ -131,7 +131,7 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
 
     public IActionResult DocumentUpload()
     {
-        logger.LogMethodStarted();
+        logger.LogInformationHp("called");
 
         TempData.TryGetValue<List<Document>>(TempDataKeys.UploadedDocuments, out var documents, true);
 
@@ -141,7 +141,7 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
     [HttpPost]
     public IActionResult Upload(IFormFileCollection formFiles)
     {
-        logger.LogMethodStarted();
+        logger.LogInformationHp("called");
 
         List<Document> documents = [];
 
@@ -210,7 +210,7 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
 
     public IActionResult ReviewAnswers()
     {
-        logger.LogMethodStarted();
+        logger.LogInformationHp("called");
 
         return View(this.GetApplicationFromSession());
     }
@@ -218,7 +218,7 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
     [HttpPost]
     public async Task<IActionResult> SaveApplication(ApplicationInfoViewModel model)
     {
-        logger.LogMethodStarted();
+        logger.LogInformationHp("called");
 
         var context = new ValidationContext<ApplicationInfoViewModel>(model);
 
@@ -271,7 +271,7 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
     [AllowAnonymous]
     public IActionResult ViewportTesting()
     {
-        logger.LogMethodStarted();
+        logger.LogInformationHp("called");
 
         return View();
     }
@@ -280,7 +280,7 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {
-        logger.LogMethodStarted();
+        logger.LogInformationHp("called");
 
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }

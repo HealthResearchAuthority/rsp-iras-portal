@@ -27,7 +27,7 @@ public class UsersController(IUserManagementService userManagementService, ILogg
     [Route("/admin/users", Name = "admin:users")]
     public async Task<IActionResult> Index()
     {
-        logger.LogMethodStarted(LogLevel.Information);
+        logger.LogInformationHp("called");
 
         // get the users
         var response = await userManagementService.GetUsers();
@@ -62,7 +62,7 @@ public class UsersController(IUserManagementService userManagementService, ILogg
     [HttpGet]
     public IActionResult CreateUser()
     {
-        logger.LogMethodStarted(LogLevel.Information);
+        logger.LogInformationHp("called");
 
         ViewBag.Mode = "create";
 
@@ -77,7 +77,7 @@ public class UsersController(IUserManagementService userManagementService, ILogg
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> SubmitUser(UserViewModel model)
     {
-        logger.LogMethodStarted(LogLevel.Information);
+        logger.LogInformationHp("called");
 
         if (!ModelState.IsValid)
         {
@@ -114,7 +114,7 @@ public class UsersController(IUserManagementService userManagementService, ILogg
     [HttpGet]
     public async Task<IActionResult> EditUser(string userId, string email)
     {
-        logger.LogMethodStarted(LogLevel.Information);
+        logger.LogInformationHp("called");
 
         ViewBag.Mode = "edit";
 
@@ -155,7 +155,7 @@ public class UsersController(IUserManagementService userManagementService, ILogg
     [HttpGet]
     public IActionResult DeleteUser(string userId, string email)
     {
-        logger.LogMethodStarted(LogLevel.Information);
+        logger.LogInformationHp("called");
 
         var model = new UserViewModel
         {
@@ -174,7 +174,7 @@ public class UsersController(IUserManagementService userManagementService, ILogg
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteUserConfirmed(UserViewModel model)
     {
-        logger.LogMethodStarted(LogLevel.Information);
+        logger.LogInformationHp("called");
 
         // deleting user
         var response = await userManagementService.DeleteUser(model.Id!, model.Email);
@@ -199,7 +199,7 @@ public class UsersController(IUserManagementService userManagementService, ILogg
     [HttpGet]
     public async Task<IActionResult> ManageRoles(string userId, string email)
     {
-        logger.LogMethodStarted(LogLevel.Information);
+        logger.LogInformationHp("called");
 
         // get all the roles
         var getRolesResponse = await userManagementService.GetRoles();
@@ -269,7 +269,7 @@ public class UsersController(IUserManagementService userManagementService, ILogg
     [HttpPost]
     public async Task<IActionResult> UpdateRoles(UserRolesViewModel model)
     {
-        logger.LogMethodStarted(LogLevel.Information);
+        logger.LogInformationHp("called");
 
         if (!ModelState.IsValid)
         {

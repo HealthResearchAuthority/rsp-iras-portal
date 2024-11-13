@@ -17,7 +17,7 @@ public class QuestionSetController(ILogger<QuestionSetController> logger, IQuest
 {
     public IActionResult Upload()
     {
-        logger.LogMethodStarted();
+        logger.LogInformationHp("called");
 
         return View();
     }
@@ -25,7 +25,7 @@ public class QuestionSetController(ILogger<QuestionSetController> logger, IQuest
     [HttpPost]
     public async Task<IActionResult> Upload(QuestionSetFileModel model)
     {
-        logger.LogMethodStarted();
+        logger.LogInformationHp("called");
 
         var file = model.Upload;
 

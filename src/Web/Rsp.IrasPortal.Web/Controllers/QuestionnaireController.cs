@@ -104,7 +104,7 @@ public class QuestionnaireController(ILogger<ApplicationController> logger, IApp
     /// <param name="categoryId">CategoryId of the questions to be rendered</param>
     public async Task<IActionResult> DisplayQuestionnaire(string categoryId = A)
     {
-        logger.LogMethodStarted();
+        logger.LogInformationHp("called");
 
         var questions = default(List<QuestionViewModel>);
 
@@ -123,7 +123,7 @@ public class QuestionnaireController(ILogger<ApplicationController> logger, IApp
             // get the questions for the category
             var response = await questionSetService.GetQuestions(categoryId);
 
-            logger.LogMethodStarted(LogLevel.Information);
+            logger.LogInformationHp("called");
 
             // return the view if successfull
             if (response.IsSuccessStatusCode)
