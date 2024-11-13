@@ -1,7 +1,7 @@
 ﻿using Azure.Identity;
 using FluentValidation;
 using GovUk.Frontend.AspNetCore;
-using HealthChecks.UI.Client;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Rsp.IrasPortal.Application.Configuration;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Configuration.Auth;
@@ -73,6 +73,8 @@ services
     .AddControllersWithViews()
     .AddSessionStateTempDataProvider();
 
+services.Configure<HealthCheckPublisherOptions>(options => options.Period = TimeSpan.FromSeconds(300));
+
 // configure health checks to monitor
 // microservice health
 services.AddCustomHealthChecks(appSettings);
@@ -120,21 +122,19 @@ app.UseRequestTracing();
 
 app.MapShortCircuit(404, "robots.txt", "favicon.ico", "*.css");
 
-    app
-        .UseRouting()
-        .UseAuthentication()
-        .UseAuthorization()
-        .UseSession()
-        .UseEndpoints
-        (
-            endpoints =>
-            {
-                endpoints.MapHealthChecks("/probes/liveness");
-
-            endpoints.MapHealthChecksUI();
+app
+    .UseRouting()
+    .UseAuthentication()
+    .UseAuthorization()
+    .UseSession()
+    .UseEndpoints
+    (
+        endpoints =>
+        {
+            endpoints.MapHealthChecks("/probes/liveness");
             endpoints.MapControllers();
         }
-    );
+);
 
 app.UseJwksDiscovery();
 

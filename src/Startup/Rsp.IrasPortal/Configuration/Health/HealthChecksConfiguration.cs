@@ -33,13 +33,15 @@ public static class HealthChecksConfiguration
             };
         }
 
-        var applicationserviceuri = new Uri(appSettings.ApplicationsServiceUri!, "/probes/liveness");
-        var userserviceuri = new Uri(appSettings.UsersServiceUri!, "/probes/liveness");
+        var applicationServiceUri = new Uri(appSettings.ApplicationsServiceUri!, "/probes/liveness");
+        var userServiceUri = new Uri(appSettings.UsersServiceUri!, "/probes/liveness");
+        var questionSetServiceUri = new Uri(appSettings.QuestionSetServiceUri!, "/probes/liveness");
 
         services
            .AddHealthChecks()
-           .AddUrlGroup(applicationserviceuri, "Iras Applications API", HealthStatus.Unhealthy, configurePrimaryHttpMessageHandler: _ => AddHeaderPropagation())
-           .AddUrlGroup(userserviceuri, "User Service API", HealthStatus.Unhealthy, configurePrimaryHttpMessageHandler: _ => AddHeaderPropagation());
+           .AddUrlGroup(applicationServiceUri, "Iras Applications API", HealthStatus.Unhealthy, configurePrimaryHttpMessageHandler: _ => AddHeaderPropagation())
+           .AddUrlGroup(userServiceUri, "User Service API", HealthStatus.Unhealthy, configurePrimaryHttpMessageHandler: _ => AddHeaderPropagation())
+           .AddUrlGroup(questionSetServiceUri, "Questionset Service API", HealthStatus.Unhealthy, configurePrimaryHttpMessageHandler: _ => AddHeaderPropagation());
 
         return services;
     }
