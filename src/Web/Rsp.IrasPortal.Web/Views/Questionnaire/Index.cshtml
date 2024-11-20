@@ -3,12 +3,13 @@
 @using Microsoft.AspNetCore.Mvc.ModelBinding
 @using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.DTOs
+@using System.Text.Json
 
 @{
     var sections = Model.Questions.ToLookup(q => q.Section);
     var previousStage = TempData[TempDataKeys.PreviousStage] as string;
     var currentStage = TempData[TempDataKeys.CurrentStage] as string;
-    var errorSummaryTitle = "Address the following issues:";
+    var errorSummaryTitle = "You need to complete these questions before you can continue::";
     var applicationId = TempData[TempDataKeys.ApplicationId] as string;
 
     void BuildValidationMessage(IList<RuleDto> rules, string errorKey, string validationMessage)
@@ -50,7 +51,7 @@
             if (!validationMessages.Contains(condition.Description!, StringComparer.OrdinalIgnoreCase))
             {
                 @Html.ValidationMessage(errorKey, condition.Description, new { @class = "govuk-error-message" })
-                
+
                 validationMessages.Add(condition.Description!);
             }
         }
@@ -120,14 +121,14 @@
                             </govuk-inset-text>
                         }
                     }
-                   
-                    if (rules.Count !=0)
+
+                    if (rules.Count != 0)
                     {
                         <govuk-inset-text>
                             @foreach (var rule in rules)
                             {
                                 <p>
-                                    @rule.Description;
+                                    @rule.Description
                                 </p>
                             }
                         </govuk-inset-text>
@@ -156,8 +157,8 @@
                                 <div class="govuk-date-input__item">
                                     <div class="govuk-form-group">
                                         @*                                         <label class="govuk-label govuk-date-input__label" for="@(question.QuestionId + "_Text")">
-                            Date
-                            </label> *@
+                                            Date
+                                            </label> *@
                                         <div class="govuk-date-input__item">
                                             <input class="govuk-input govuk-date-input__input govuk-input--width-10" type="date" asp-for="Questions[index].AnswerText" asp-format="{0:dd-MM-yyyy}" id="@(question.QuestionId + "_Text")" />
                                         </div>
@@ -261,5 +262,7 @@
     <partial name="_SubmitButton" model="@("qnc:saveresponses","Save", new Dictionary<string, string>())" />
     <partial name="_SubmitButton" model="@("qnc:saveresponses","Save and Continue", new Dictionary<string, string>() { { "saveAndContinue", bool.TrueString } })" />
     <partial name="_SubmitButton" model="@("qnc:validate","Validate", new Dictionary<string, string>())" />
-    <partial name="_SubmitButton" model="@("qnc:saveresponses","Proceed to Submit", new Dictionary<string, string>() { { "submit", bool.TrueString } })" />
+    <feature name="Action.ProceedToSubmit">
+        <partial name="_SubmitButton" model="@("qnc:saveresponses","Proceed to Submit", new Dictionary<string, string>() { { "submit", bool.TrueString } })" />
+    </feature>
 </form>

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.Logging.Extensions;
@@ -8,6 +9,7 @@ namespace Rsp.IrasPortal.Web.Controllers;
 
 [Authorize(Policy = "IsReviewer")]
 [Route("[controller]", Name = "arc:[action]")]
+[FeatureGate("Navigation.ReviewApplications")]
 public class ApplicationsReviewController(ILogger<ApplicationsReviewController> logger, IApplicationsService applicationsService) : Controller
 {
     public async Task<IActionResult> PendingApplications()

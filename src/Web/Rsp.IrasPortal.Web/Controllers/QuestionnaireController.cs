@@ -2,6 +2,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
@@ -322,6 +323,7 @@ public class QuestionnaireController(ILogger<ApplicationController> logger, IApp
     /// and display the progress of the application
     /// </summary>
     /// <param name="applicationId">ApplicationId to submit</param>
+    [FeatureGate("Action.ProceedToSubmit")]
     public async Task<IActionResult> SubmitApplication(string applicationId)
     {
         // get the responent answers for the category

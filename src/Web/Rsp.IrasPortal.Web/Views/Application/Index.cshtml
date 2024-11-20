@@ -7,7 +7,7 @@
 
             <div class="govuk-body">
                 <p>
-                    To begin making changes to your application, Sign In using the following link
+                    To make changes to an approved project, Sign In using the following link
                 </p>
                 <a class="gem-c-button govuk-button govuk-button--start" asp-route="auth:signin">
                     Sign In
@@ -22,11 +22,10 @@
         <authorized auth-params="@new(Roles:"user")">
 
             <p class="govuk-body">
-                To begin make changes to your application, click on the "Edit Application" button to start your submission process or
-                navigate to <a asp-route="app:myapplications">My Applications</a> page to view/resume your existing applications.
+                If you need to make changes to an approved project, click on the <strong>Make changes to an approved project</strong> button to start the process.
             </p>
 
-            <a class="govuk-button" asp-route="app:startnewapplication">Make changes to research</a>
+            <a class="govuk-button" asp-route="app:startnewapplication">Make changes to an approved project</a>
 
         </authorized>
     </div>

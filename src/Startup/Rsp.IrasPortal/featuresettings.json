@@ -1,0 +1,8 @@
+{
+  "FeatureManagement": {
+    "Navigation.ReviewApplications": true, // Feature flag set to off
+    "Navigation.MyApplications": true, // Feature flag set to off
+    "Navigation.Admin": true, // Feature flag set to off
+    "Action.ProceedToSubmit": true
+  }
+}

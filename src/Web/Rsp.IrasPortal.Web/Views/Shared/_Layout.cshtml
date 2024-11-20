@@ -47,21 +47,28 @@
                                 Home
                             </a>
                         </li>
-                        <authorized auth-params="@new(Roles:"reviewer")">
-                            <li class="govuk-service-navigation__item">
-                                <a class="govuk-service-navigation__link" asp-route="arc:pendingapplications">
-                                    Review Applications
-                                </a>
-                            </li>
-                        </authorized>
-                        <authorized auth-params="@new(Roles:"admin")">
-                            <li class="govuk-service-navigation__item">
-                                <a class="govuk-service-navigation__link"
-                                   asp-route="admin:home">
-                                    Admin
-                                </a>
-                            </li>
-                        </authorized>
+                        <feature name="Navigation.ReviewApplications">
+                            <authorized auth-params="@new(Roles:"reviewer")">
+
+                                <li class="govuk-service-navigation__item">
+                                    <a class="govuk-service-navigation__link" asp-route="arc:pendingapplications">
+                                        Review Applications
+                                    </a>
+                                </li>
+                            </authorized>
+                        </feature>
+
+                        <feature name="Navigation.Admin">
+                            <authorized auth-params="@new(Roles:"admin")">
+                                <li class="govuk-service-navigation__item">
+                                    <a class="govuk-service-navigation__link"
+                                       asp-route="admin:home">
+                                        Admin
+                                    </a>
+                                </li>
+                            </authorized>
+                        </feature>
+
                         <authorized auth-params="@new(Roles:"admin")">
                             <li class="govuk-service-navigation__item">
                                 <a class="govuk-service-navigation__link"
@@ -70,14 +77,18 @@
                                 </a>
                             </li>
                         </authorized>
-                        <authorized auth-params="@new(Roles:"user")">
-                            <li class="govuk-service-navigation__item">
-                                <a class="govuk-service-navigation__link"
-                                   asp-route="app:myapplications">
-                                    My Applications
-                                </a>
-                            </li>
-                        </authorized>
+
+                        <feature name="Navigation.MyApplications">
+                            <authorized auth-params="@new(Roles:"user")">
+                                <li class="govuk-service-navigation__item">
+                                    <a class="govuk-service-navigation__link"
+                                       asp-route="app:myapplications">
+                                        My Applications
+                                    </a>
+                                </li>
+                            </authorized>
+                        </feature>
+
                         <authorized auth-params="@new()">
                             <li class="govuk-service-navigation__item">
                                 <strong>@(User.Identity == null ? "No Identity" : User.Identity.Name)</strong>
@@ -96,14 +107,14 @@
     <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
         <div class="govuk-notification-banner__header">
             <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
-                DRAFT
+                TECHNICAL PROOF OF CONCEPT
             </h2>
         </div>
         @* <div class="govuk-notification-banner__content">
-            <p class="govuk-notification-banner__heading">
-                DRAFT
-            </p>
-        </div> *@
+                <p class="govuk-notification-banner__heading">
+                    DRAFT
+                </p>
+            </div> *@
     </div>
 }
 

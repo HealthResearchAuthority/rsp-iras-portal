@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using NetDevPack.Security.Jwt.Core.Interfaces;
 using Rsp.IrasPortal.Application.Configuration;
@@ -15,7 +16,7 @@ public class CustomClaimsTransformation
     IHttpContextAccessor httpContextAccessor,
     IJwtService jwtService,
     IUserManagementService userManagementService,
-    AppSettings appSettings
+    IOptionsSnapshot<AppSettings> appSettings
 ) : IClaimsTransformation
 {
     public async Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
@@ -111,7 +112,7 @@ public class CustomClaimsTransformation
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Issuer = jsonToken.Issuer, // Add this line
-            Audience = appSettings.AuthSettings.ClientId,
+            Audience = appSettings.Value.AuthSettings.ClientId,
             IssuedAt = jsonToken.IssuedAt,
             NotBefore = jsonToken.ValidFrom,
             Subject = (ClaimsIdentity)principal.Identity!,
