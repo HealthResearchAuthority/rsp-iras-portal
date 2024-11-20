@@ -20,7 +20,7 @@ public class RolesController(IUserManagementService userManagementService, ILogg
     [Route("/admin/roles", Name = "admin:roles")]
     public async Task<IActionResult> Index()
     {
-        logger.LogMethodStarted(LogLevel.Information);
+        logger.LogInformationHp("called");
 
         // get all roles
         var response = await userManagementService.GetRoles();
@@ -53,7 +53,7 @@ public class RolesController(IUserManagementService userManagementService, ILogg
     [HttpGet]
     public IActionResult CreateRole()
     {
-        logger.LogMethodStarted(LogLevel.Information);
+        logger.LogInformationHp("called");
 
         ViewBag.Mode = "create";
 
@@ -68,7 +68,7 @@ public class RolesController(IUserManagementService userManagementService, ILogg
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> SubmitRole(RoleViewModel model)
     {
-        logger.LogMethodStarted(LogLevel.Information);
+        logger.LogInformationHp("called");
 
         if (!ModelState.IsValid)
         {
@@ -105,7 +105,7 @@ public class RolesController(IUserManagementService userManagementService, ILogg
     [HttpGet]
     public IActionResult EditRole(string roleId, string roleName)
     {
-        logger.LogMethodStarted(LogLevel.Information);
+        logger.LogInformationHp("called");
 
         ViewBag.Mode = "edit";
 
@@ -127,7 +127,7 @@ public class RolesController(IUserManagementService userManagementService, ILogg
     [HttpGet]
     public IActionResult DeleteRole(string roleId, string roleName)
     {
-        logger.LogMethodStarted(LogLevel.Information);
+        logger.LogInformationHp("called");
 
         var model = new RoleViewModel
         {
@@ -146,7 +146,7 @@ public class RolesController(IUserManagementService userManagementService, ILogg
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteRoleConfirmed(RoleViewModel model)
     {
-        logger.LogMethodStarted(LogLevel.Information);
+        logger.LogInformationHp("called");
 
         // deleting user role
         var response = await userManagementService.DeleteRole(model.Name);

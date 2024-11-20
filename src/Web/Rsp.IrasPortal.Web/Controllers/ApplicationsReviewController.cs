@@ -12,7 +12,7 @@ public class ApplicationsReviewController(ILogger<ApplicationsReviewController> 
 {
     public async Task<IActionResult> PendingApplications()
     {
-        logger.LogMethodStarted(LogLevel.Information);
+        logger.LogInformationHp("called");
 
         // get the pending applications
         var applicationsServiceResponse = await applicationsService.GetApplicationsByStatus("pending");
@@ -30,7 +30,7 @@ public class ApplicationsReviewController(ILogger<ApplicationsReviewController> 
     [Route("{applicationId}", Name = "arc:GetApplication")]
     public async Task<IActionResult> GetApplication(string applicationId)
     {
-        logger.LogMethodStarted(LogLevel.Information);
+        logger.LogInformationHp("called");
 
         // if the ModelState is invalid, return the view
         // with the null model. The view shouldn't display any

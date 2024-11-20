@@ -6,8 +6,8 @@
 
   <ItemGroup>
     <PackageReference Include="NetDevPack.Security.Jwt.AspNetCore" Version="8.1.5" />
-    <PackageReference Include="Refit" Version="7.1.2" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.2" />
+    <PackageReference Include="Refit" Version="8.0.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.2.0" />
   </ItemGroup>
 
   <PropertyGroup>

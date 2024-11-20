@@ -18,7 +18,7 @@ public class QuestionSetController(ILogger<QuestionSetController> logger, IQuest
 {
     public IActionResult Upload()
     {
-        logger.LogMethodStarted();
+        logger.LogInformationHp("called");
 
         return View();
     }
@@ -26,7 +26,7 @@ public class QuestionSetController(ILogger<QuestionSetController> logger, IQuest
     [HttpPost]
     public async Task<IActionResult> Upload(QuestionSetFileModel model)
     {
-        logger.LogMethodStarted();
+        logger.LogInformationHp("called");
 
         var file = model.Upload;
 
@@ -124,17 +124,24 @@ public class QuestionSetController(ILogger<QuestionSetController> logger, IQuest
                     DataType = Convert.ToString(question[ModuleColumns.DataType])!,
                     IsMandatory = conformance == "Mandatory" || conformance == "Conditional mandatory",
                     IsOptional = conformance == "Optional",
-                    Answers = [],
                     Rules = []
                 };
 
-                //var answers = Convert.ToString(question[ModuleColumns.Answers])!.Split(',');
+                var answersString = Convert.ToString(question[ModuleColumns.Answers]);
 
-                //questionDto.Answers = answers.Select(answer => new AnswerDto
-                //{
-                //    AnswerId = answer,
-                //    AnswerText = answer,
-                //}).ToList();
+                if (answersString == null || Convert.IsDBNull(answersString) || answersString.Length < 3)
+                {
+                    questionDto.Answers = [];
+                }
+                else
+                {
+                    var answers = answersString.Split(',');
+                    questionDto.Answers = answers.Where(answer => answer.StartsWith("OPT")).Select(answer => new AnswerDto
+                    {
+                        AnswerId = answer,
+                        AnswerText = answer,
+                    }).ToList();
+                }
 
                 model.QuestionDtos.Add(questionDto);
             }

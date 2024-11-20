@@ -42,6 +42,14 @@ public class ApplicationsServiceClient(IApplicationsHttpClient client) : IApplic
     }
 
     /// <inheritdoc/>
+    public async Task<ServiceResponse<IEnumerable<IrasApplicationResponse>>> GetApplicationsByRespondent(string respondentId)
+    {
+        var apiResponse = await client.GetApplicationsByRespondent(respondentId);
+
+        return GetServiceResponse(apiResponse);
+    }
+
+    /// <inheritdoc/>
     public async Task<ServiceResponse<IrasApplicationResponse>> CreateApplication(IrasApplicationRequest irasApplication)
     {
         var apiResponse = await client.CreateApplication(irasApplication);

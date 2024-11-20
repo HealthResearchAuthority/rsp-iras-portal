@@ -11,14 +11,14 @@ public interface IApplicationsHttpClient
     /// </summary>
     /// <param name="applicationId">Application Id</param>
     /// <returns>An asynchronous operation that returns a saved application.</returns>
-    [Get("/applications")]
+    [Get("/applications/{applicationId}")]
     public Task<ApiResponse<IrasApplicationResponse>> GetApplication(string applicationId);
 
     /// <summary>
     /// Gets all the saved applications
     /// </summary>
     /// <returns>An asynchronous operation that returns all the saved application.</returns>
-    [Get("/applications/all")]
+    [Get("/applications")]
     public Task<ApiResponse<IEnumerable<IrasApplicationResponse>>> GetApplications();
 
     /// <summary>
@@ -27,15 +27,22 @@ public interface IApplicationsHttpClient
     /// <param name="applicationId">Application Id</param>
     /// <param name="status">Application Status</param>
     /// <returns>An asynchronous operation that returns a saved application.</returns>
-    [Get("/applications/{status}")]
+    [Get("/applications/{applicationId}/{status}")]
     public Task<ApiResponse<IrasApplicationResponse>> GetApplicationByStatus(string applicationId, string status);
 
     /// <summary>
     /// Gets all the saved applications
     /// </summary>
     /// <returns>An asynchronous operation that returns all the saved application.</returns>
-    [Get("/applications/{status}/all")]
+    [Get("/applications/status")]
     public Task<ApiResponse<IEnumerable<IrasApplicationResponse>>> GetApplicationsByStatus(string status);
+
+    /// <summary>
+    /// Gets all the saved applications by respondent
+    /// </summary>
+    /// <returns>An asynchronous operation that returns all the saved applications for a given respondent.</returns>
+    [Get("/applications/respondent")]
+    public Task<ApiResponse<IEnumerable<IrasApplicationResponse>>> GetApplicationsByRespondent(string respondentId);
 
     /// <summary>
     /// Creates a new application
@@ -48,6 +55,6 @@ public interface IApplicationsHttpClient
     /// Updates the saved application by Id
     /// </summary>
     /// <returns>An asynchronous operation that updates the existing application.</returns>
-    [Post("/applications/update")]
+    [Put("/applications")]
     public Task<ApiResponse<IrasApplicationResponse>> UpdateApplication(IrasApplicationRequest irasApplication);
 }

@@ -10,7 +10,7 @@ public class AuthController(ILogger<ApplicationController> logger) : Controller
 {
     public IActionResult SignIn()
     {
-        logger.LogMethodStarted();
+        logger.LogInformationHp("called");
 
         return new ChallengeResult("OpenIdConnect", new()
         {
@@ -20,7 +20,7 @@ public class AuthController(ILogger<ApplicationController> logger) : Controller
 
     public async Task<IActionResult> Signout()
     {
-        logger.LogMethodStarted();
+        logger.LogInformationHp("called");
 
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         await HttpContext.SignOutAsync("OpenIdConnect");
