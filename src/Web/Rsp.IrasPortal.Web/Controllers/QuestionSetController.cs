@@ -91,8 +91,6 @@ public class QuestionSetController(ILogger<QuestionSetController> logger, IQuest
             return View(model);
         }
 
-        //var questionDtos = new List<QuestionDto>();
-
         foreach (var sheet in moduleSheets)
         {
             foreach (DataRow question in sheet.Rows)
@@ -122,7 +120,7 @@ public class QuestionSetController(ILogger<QuestionSetController> logger, IQuest
                     QuestionText = Convert.ToString(question[ModuleColumns.QuestionText])!,
                     QuestionType = Convert.ToString(question[ModuleColumns.QuestionType])!,
                     DataType = Convert.ToString(question[ModuleColumns.DataType])!,
-                    IsMandatory = conformance == "Mandatory" || conformance == "Conditional mandatory",
+                    IsMandatory = conformance == "Mandatory",
                     IsOptional = conformance == "Optional",
                     Rules = []
                 };
