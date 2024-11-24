@@ -8,70 +8,52 @@
 
 $(function () {
     // Hide all conditional questions initially
-    $(".conditional").hide()
+    $(".conditional").hide();
 
-    // Show conditional questions based on parent question selection
-    $(".conditional").each(function (index, element) {
-        let data = $(this).data("parents");
+    $(".conditional").each(function (_, conditionalElement) {
+        const $conditionalElement = $(conditionalElement);
+        const questionId = $conditionalElement.data("questionid");
+        const parentQuestions = $conditionalElement.data("parents");
 
-        if (data === undefined) {
-            return;
-        }
+        // Skip processing if questionId or parentQuestions is missing
+        if (!questionId || !parentQuestions) return;
 
-        let parents = data.split(',');
-        let questionId = $(this).data("questionid");
+        const parentQuestionIds = parentQuestions.split(',');
 
-        parents.forEach(function (parent) {
-            $("input[id^=" + parent + "]").on("change", function () {
-                console.log("Evaluating rules for " + questionId);
+        // Set up event listeners for parent questions
+        parentQuestionIds.forEach(function (parentQuestionId) {
+            const $parentInputs = $(`input[id^=${parentQuestionId}]`);
 
-                let isRuleApplicable = true;
+            // Evaluate rules initially and set visibility
+            updateConditionalVisibility(questionId, $conditionalElement);
 
-                if (isRuleApplicable) {
-                    $(element).slideDown(500);
-                }
-            })
-        })
+            // Add event listener to update visibility on parent input changes
+            $parentInputs.on("change", function () {
+                console.log(`Evaluating rules for ${questionId}`);
+                updateConditionalVisibility(questionId, $conditionalElement);
+            });
+        });
     });
-
-    //$('input[type="radio"], input[type="checkbox"]').on("change", function () {
-    //    let parentQuestionId = $(this).data('parent-question-id');
-    //    let selectedValue = $(this).val();
-
-    //    // Hide all conditional questions related to this parent question
-    //    $('.conditional-question[data-parent-question-id="' + parentQuestionId + '"]').hide();
-
-    //    // Show the relevant conditional question
-    //    $('.conditional-question[data-parent-question-id="' + parentQuestionId + '"][data-parent-answer="' + selectedValue + '"]').show();
-    //});
 });
 
-//$(function () {
-//    // On load, check the initial state of each question to apply conditional visibility
-//    $('.conditional').each(function () {
-//        const parentSelector = $(this).data('parent');
-//        const showOnValue = $(this).data('show-on');
-//        const parentValue = $('#' + parentSelector).val();
+/**
+ * Updates the visibility of a conditional question based on rule evaluation.
+ * @param {string} questionId - The ID of the conditional question.
+ * @param {jQuery} $conditionalElement - The jQuery object for the conditional question element.
+ */
+function updateConditionalVisibility(questionId, $conditionalElement) {
+    const isApplicable = isRuleApplicable(questionId);
+    const scrollPosition = $(window).scrollTop();
 
-//        if (parentValue === showOnValue) {
-//            $(this).show();
-//        }
-//    });
+    if (isApplicable) {
+        $conditionalElement.slideDown();
+        $(`#${questionId}_guide`).slideDown();
+    } else {
+        $conditionalElement.slideUp().find(":text").val("");
+        $conditionalElement.slideUp().find(":radio", ":checkbox").prop("checked", false).trigger("change");
+        $(`#${questionId}_guide`).slideUp();
+    }
 
-//    // Add event listener for changes on each parent question
-//    $('[data-show-on]').each(function () {
-//        const parentSelector = $(this).data('parent');
-//        const showOnValue = $(this).data('show-on');
-//        const conditionalElement = $(this);
-
-//        $('#' + parentSelector).on('change', function () {
-//            const selectedValue = $(this).val();
-
-//            if (selectedValue === showOnValue) {
-//                conditionalElement.slideDown(); // Show with animation
-//            } else {
-//                conditionalElement.slideUp(); // Hide with animation
-//            }
-//        });
-//    });
-//});
+    // Maintain the current scroll position
+    $(window).scrollTop(scrollPosition);
+}

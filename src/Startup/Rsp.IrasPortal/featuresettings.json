@@ -1,5 +1,6 @@
 {
   "FeatureManagement": {
+    "UX.ProgressiveEnhancement": true, // Enhanced user experience when javascript is enabled
     "Navigation.ReviewApplications": true, // Feature flag set to off
     "Navigation.MyApplications": true, // Feature flag set to off
     "Navigation.Admin": true, // Feature flag set to off

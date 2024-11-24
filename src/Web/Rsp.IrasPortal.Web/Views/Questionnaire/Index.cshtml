@@ -1,10 +1,12 @@
 ﻿@model QuestionnaireViewModel
+@using System.Text.Json
+@using System.Web
 @using Microsoft.AspNetCore.Html
 @using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Microsoft.FeatureManagement
 @using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.DTOs
-@using System.Text.Json
-@using System.Web;
+@inject IFeatureManager featureManager
 
 @{
     var sections = Model.Questions.ToLookup(q => q.Section);
@@ -59,8 +61,33 @@
     }
 }
 
-<script src="~/lib/jquery/dist/jquery.js"></script>
-<script src="~/js/questionnaire.js"></script>
+@if (await featureManager.IsEnabledAsync("UX.ProgressiveEnhancement"))
+{
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+
+    // Collect all rules for conditional questions
+    var conditionalRules = Model.Questions
+        .Where(q => !q.IsMandatory && q.Rules.Any())
+        .Select(q => new
+        {
+            QuestionId = q.QuestionId,
+            Rules = q.Rules
+        }).ToList();
+
+    <script>
+        $(document).ready(function () {
+            const conditionalRules = @Html.Raw(JsonSerializer.Serialize(conditionalRules));
+
+            // Loop through each rule and store it individually by QuestionId
+            conditionalRules.forEach(rule => {
+                sessionStorage.setItem(rule.QuestionId, JSON.stringify(rule.Rules));
+            });
+        });
+    </script>
+
+    <script src="~/js/questionnaire.js"></script>
+    <script src="~/js/rules.js"></script>
+}
 
 <partial name="_BackNavigation" model="@("qnc:displayquestionnaire","Back", new Dictionary<string, string> { { "categoryId", previousStage }})" />
 
@@ -100,7 +127,7 @@
 
                 @foreach (var question in section)
                 {
-                    var index = question.Index; //Model.Questions.IndexOf(question);
+                    var index = question.Index;
 
                     <input type="hidden" asp-for="Questions[index].Index" />
                     <input type="hidden" asp-for="Questions[index].QuestionId" />
@@ -116,7 +143,6 @@
 
                     var rules = question.Rules;
                     var conditional = "";
-                    var conditionalRules = "";
 
                     if (!question.IsMandatory)
                     {
@@ -129,13 +155,12 @@
                         else
                         {
                             conditional = "conditional ";
-                            conditionalRules = JsonSerializer.Serialize(rules);
                         }
                     }
 
                     if (rules.Count != 0)
                     {
-                        <govuk-inset-text class="@conditional">
+                        <govuk-inset-text class="@conditional.Trim()" id="@(question.QuestionId)_guide">
                             @foreach (var rule in rules)
                             {
                                 <p>
@@ -143,15 +168,6 @@
                                 </p>
                             }
                         </govuk-inset-text>
-                    }
-
-                    @if (conditional.Length > 0)
-                    {
-                        <input id="@(question.QuestionId)_rules" type="hidden" value="@conditionalRules" />
-
-                        <script>
-                            localStorage.setItem("@question.QuestionId", $("#@(question.QuestionId)_rules").val());
-                        </script>
                     }
 
                     var parents = @conditional.Length > 0 ? "data-parents=" + string.Join(',', rules.Select(rule => rule.ParentQuestionId)) : "";
@@ -179,12 +195,13 @@
                             <div class="govuk-date-input">
                                 <div class="govuk-date-input__item">
                                     <div class="govuk-form-group">
-                                        @*                                         <label class="govuk-label govuk-date-input__label" for="@(question.QuestionId + "_Text")">
-                                            Date
-                                            </label> *@<label class="govuk-label govuk-date-input__label" for="@(question.QuestionId + " _Text")">
-                                        </label>
+                                        @*
+                                            <label class="govuk-label govuk-date-input__label" for="@(question.QuestionId + "_Text")">
+                                              Date
+                                            </label>
+                                        *@
                                         <div class="govuk-date-input__item">
-                                            <input class="govuk-input govuk-date-input__input govuk-input--width-10" type="date" asp-for="Questions[index].AnswerText" asp-format="{0:dd-MM-yyyy}" id="@(question.QuestionId + " _Text")" />
+                                            <input class="govuk-input govuk-date-input__input govuk-input--width-10" type="date" asp-for="Questions[index].AnswerText" asp-format="{0:dd-MM-yyyy}" id="@(question.QuestionId + "_Text")" />
                                         </div>
                                     </div>
                                 </div>
@@ -283,7 +300,7 @@
         }
     </div>
 
-    <partial name="_SubmitButton" model="@(" qnc:saveresponses","Save", new Dictionary<string, string>())" />
+    <partial name="_SubmitButton" model="@("qnc:saveresponses","Save", new Dictionary<string, string>())" />
     <partial name="_SubmitButton" model="@("qnc:saveresponses","Save and Continue", new Dictionary<string, string>() { { "saveAndContinue", bool.TrueString } })" />
     <partial name="_SubmitButton" model="@("qnc:validate","Validate", new Dictionary<string, string>())" />
     <feature name="Action.ProceedToSubmit">
