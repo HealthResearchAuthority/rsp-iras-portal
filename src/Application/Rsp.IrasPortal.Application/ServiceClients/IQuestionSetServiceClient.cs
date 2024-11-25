@@ -22,5 +22,5 @@ public interface IQuestionSetServiceClient
     /// Creates question records in the database
     /// </summary>
     [Post("/questions")]
-    public Task<IApiResponse> CreateQuestions(IEnumerable<QuestionDto> questions);
+    public Task<IApiResponse> CreateQuestions(QuestionSetDto questionSet);
 }

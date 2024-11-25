@@ -56,8 +56,9 @@ public class QuestionSetController(ILogger<QuestionSetController> logger, IQuest
         });
 
         List<DataTable> moduleSheets = [];
-        DataTable rulesSheet;
-        DataTable answerOptionsSheet;
+        DataTable rulesSheet = new();
+        DataTable answerOptionsSheet = new();
+        DataTable contentsSheet = new();
 
         foreach (var sheetName in SheetNames.All)
         {
@@ -79,6 +80,10 @@ public class QuestionSetController(ILogger<QuestionSetController> logger, IQuest
                 {
                     answerOptionsSheet = sheet;
                 }
+                else if (sheetName == SheetNames.Contents)
+                {
+                    contentsSheet = sheet;
+                }
                 else
                 {
                     moduleSheets.Add(sheet);
@@ -91,55 +96,98 @@ public class QuestionSetController(ILogger<QuestionSetController> logger, IQuest
             return View(model);
         }
 
+        foreach (DataRow category in contentsSheet.Rows)
+        {
+            var categoryId = category.Field<string>(ContentsColumns.Tab);
+
+            if (categoryId == null || !SheetNames.Modules.Contains(categoryId))
+            {
+                continue;
+            }
+
+            var categoryDto = new CategoryDto
+            {
+                CategoryId = categoryId,
+                CategoryName = category.Field<string>(ContentsColumns.Category) ?? "",
+            };
+
+            model.CategoryDtos.Add(categoryDto);
+        }
+
+        foreach (DataRow answerOption in answerOptionsSheet.Rows)
+        {
+            var answerOptionId = answerOption.Field<string>(AnswerOptionsColumns.OptionId);
+
+            if (answerOptionId == null)
+            {
+                continue;
+            }
+
+            var answerDto = new AnswerOptionDto
+            {
+                OptionId = answerOptionId,
+                OptionText = answerOption.Field<string>(AnswerOptionsColumns.OptionText) ?? ""
+            };
+
+            model.AnswerOptionDtos.Add(answerDto);
+        }
+
         foreach (var sheet in moduleSheets)
         {
             foreach (DataRow question in sheet.Rows)
             {
-                var questionId = Convert.ToString(question[ModuleColumns.QuestionId]);
+                var questionId = question.Field<string>(ModuleColumns.QuestionId);
 
-                if (questionId == null || Convert.IsDBNull(questionId))
+                if (questionId == null)
                 {
                     continue;
                 }
 
                 if (questionId.StartsWith("IQT"))
                 {
+                    var sectionDto = new SectionDto
+                    {
+                        SectionId = questionId,
+                        QuestionCategoryId = question.Field<string>(ModuleColumns.Category) ?? "",
+                        SectionName = question.Field<string>(ModuleColumns.QuestionText) ?? "",
+                    };
+
+                    model.SectionDtos.Add(sectionDto);
+
                     continue;
                 }
 
-                var conformance = Convert.ToString(question[ModuleColumns.Conformance]);
+                var conformance = question.Field<string>(ModuleColumns.Conformance);
 
                 var questionDto = new QuestionDto
                 {
-                    QuestionId = questionId!,
-                    Category = Convert.ToString(question[ModuleColumns.Category])!,
-                    SectionId = Convert.ToString(question[ModuleColumns.Section])!,
-                    Section = Convert.ToString(question[ModuleColumns.Section])!,
+                    QuestionId = questionId,
+                    Category = question.Field<string>(ModuleColumns.Category) ?? "",
+                    SectionId = question.Field<string>(ModuleColumns.Section) ?? "",
+                    Section = question.Field<string>(ModuleColumns.Section) ?? "",
                     Sequence = Convert.ToInt32(question[ModuleColumns.Sequence]),
-                    Heading = Convert.ToString(question[ModuleColumns.Heading])!,
-                    QuestionText = Convert.ToString(question[ModuleColumns.QuestionText])!,
-                    QuestionType = Convert.ToString(question[ModuleColumns.QuestionType])!,
-                    DataType = Convert.ToString(question[ModuleColumns.DataType])!,
+                    Heading = Convert.ToString(question[ModuleColumns.Heading]),
+                    QuestionText = question.Field<string>(ModuleColumns.QuestionText) ?? "",
+                    QuestionType = question.Field<string>(ModuleColumns.QuestionType) ?? "",
+                    DataType = question.Field<string>(ModuleColumns.DataType) ?? "",
                     IsMandatory = conformance == "Mandatory",
                     IsOptional = conformance == "Optional",
-                    Rules = []
                 };
 
-                var answersString = Convert.ToString(question[ModuleColumns.Answers]);
+                var answersString = question.Field<string>(ModuleColumns.Answers) ?? "";
 
-                if (answersString == null || Convert.IsDBNull(answersString) || answersString.Length < 3)
-                {
-                    questionDto.Answers = [];
-                }
-                else
-                {
-                    var answers = answersString.Split(',');
-                    questionDto.Answers = answers.Where(answer => answer.StartsWith("OPT")).Select(answer => new AnswerDto
+                questionDto.Answers =
+                    answersString
+                    .Split(',')
+                    .Where(answer => answer.StartsWith("OPT"))
+                    .Select(answer => new AnswerDto
                     {
                         AnswerId = answer,
-                        AnswerText = answer,
-                    }).ToList();
-                }
+                        AnswerText = "",
+                    })
+                    .ToList();
+
+                questionDto.Rules = GetRules(rulesSheet, questionId);
 
                 model.QuestionDtos.Add(questionDto);
             }
@@ -152,11 +200,52 @@ public class QuestionSetController(ILogger<QuestionSetController> logger, IQuest
             return View(model);
         }
 
-        var response = await questionSetService.CreateQuestions(model.QuestionDtos);
+        var response = await questionSetService.CreateQuestions(
+            new QuestionSetDto
+            {
+                Categories = model.CategoryDtos,
+                Sections = model.SectionDtos,
+                AnswerOptions = model.AnswerOptionDtos,
+                Questions = model.QuestionDtos
+            });
 
         ViewBag.Success = response.IsSuccessStatusCode;
 
         return View(model);
+    }
+
+    private static List<RuleDto> GetRules(DataTable rulesSheet, string questionId)
+    {
+        var groupedRules = rulesSheet
+            .AsEnumerable()
+            .Where(row => row.Field<string>(RulesColumns.QuestionId) == questionId)
+            .GroupBy(row => Convert.ToInt32(row[RulesColumns.RuleId]));
+
+        var rules = groupedRules
+            .Select(group => new RuleDto
+            {
+                QuestionId = group.First().Field<string>(RulesColumns.QuestionId) ?? "",
+                Sequence = Convert.ToInt32(group.First()[RulesColumns.Sequence]),
+                ParentQuestionId = group.First().Field<string>(RulesColumns.ParentQuestionId) ?? "",
+                Mode = group.First().Field<string>(RulesColumns.Mode) ?? "",
+                Description = group.First().Field<string>(RulesColumns.Description) ?? "",
+                Conditions = group
+                    .Select(condition => new ConditionDto
+                    {
+                        Mode = condition.Field<string>(RulesColumns.ConditionMode) ?? "",
+                        Operator = condition.Field<string>(RulesColumns.ConditionOperator) ?? "",
+                        Value = condition.Field<string>(RulesColumns.ConditionValue),
+                        Negate = condition.Field<bool>(RulesColumns.ConditionNegate),
+                        ParentOptions = condition.Field<string>(RulesColumns.ConditionParentOptions)?.Split(",").ToList() ?? [],
+                        OptionType = condition.Field<string>(RulesColumns.ConditionOptionType) ?? "",
+                        Description = condition.Field<string>(RulesColumns.ConditionDescription),
+                        IsApplicable = true,
+                    })
+                    .ToList()
+            })
+            .ToList();
+
+        return rules;
     }
 
     private async Task<bool> ValidateQuestions(QuestionSetFileModel model)
@@ -186,6 +275,7 @@ public class QuestionSetController(ILogger<QuestionSetController> logger, IQuest
         {
             SheetNames.AnswerOptions => AnswerOptionsColumns.All,
             SheetNames.Rules => RulesColumns.All,
+            SheetNames.Contents => ContentsColumns.All,
             _ => ModuleColumns.All,
         };
         var missingColumns = requiredColumns.Where(column => !sheet.Columns.Contains(column));

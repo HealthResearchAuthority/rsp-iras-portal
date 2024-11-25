@@ -19,5 +19,5 @@ public interface IQuestionSetService
     /// <param name="categoryId">CategoryId of the questions</param>
     Task<ServiceResponse<IEnumerable<QuestionsResponse>>> GetQuestions(string categoryId);
 
-    Task<ServiceResponse> CreateQuestions(IEnumerable<QuestionDto> questions);
+    Task<ServiceResponse> CreateQuestions(QuestionSetDto questionSet);
 }

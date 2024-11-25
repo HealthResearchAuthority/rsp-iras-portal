@@ -13,8 +13,13 @@ public class SheetNames
     public const string C7 = nameof(C7);
     public const string C8 = nameof(C8);
     public const string D = nameof(D);
+    public const string Contents = "contents";
     public const string AnswerOptions = "App2 AnswerOptions";
     public const string Rules = "App4 Rules";
+
+    public static readonly string[] Modules = [
+        A, B, C1, C2, C3, C4, C5, C6, C7, C8, D
+    ];
 
     public static readonly string[] All = [
         A,
@@ -28,6 +33,7 @@ public class SheetNames
         C7,
         C8,
         //D,
+        Contents,
         AnswerOptions,
         Rules
     ];
@@ -77,6 +83,7 @@ public class RulesColumns
     public const string ConditionParentOptions = "ConditionParentOptions";
     public const string ConditionOptionType = "ConditionOptionType";
     public const string ConditionDescription = "ConditionDescription";
+    public const string ConditionIsApplicable = "ConditionIsApplicable";
 
     public static readonly string[] All = [
         RuleId,
@@ -103,5 +110,16 @@ public class AnswerOptionsColumns
     public static readonly string[] All = [
         OptionId,
         OptionText
+    ];
+};
+
+public class ContentsColumns
+{
+    public const string Tab = "Tab";
+    public const string Category = "Category";
+
+    public static readonly string[] All = [
+        Tab,
+        Category,
     ];
 };

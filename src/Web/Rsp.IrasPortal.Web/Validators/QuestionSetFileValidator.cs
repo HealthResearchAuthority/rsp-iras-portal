@@ -9,5 +9,8 @@ public class QuestionSetFileValidator : AbstractValidator<QuestionSetFileModel>
     {
         RuleForEach(x => x.QuestionDtos)
             .SetValidator(new QuestionDtoValidator());
+
+        //RuleForEach(x => x.AnswerOptions)
+        //    .SetValidator(new AnswerDtoValidator());
     }
 }

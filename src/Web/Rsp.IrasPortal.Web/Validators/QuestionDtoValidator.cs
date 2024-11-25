@@ -56,6 +56,12 @@ public class QuestionDtoValidator : AbstractValidator<QuestionDto>
             RuleFor(x => x.DataType)
                 .NotEmpty()
                 .WithMessage(q => $"Question {q.QuestionId}: '{ModuleColumns.DataType}' column must contain a value");
+
+            //RuleForEach(x => x.Answers)
+            //.SetValidator(new AnswerDtoValidator());
+
+            //RuleForEach(x => x.Rules)
+            //.SetValidator(new RuleDtoValidator());
         });
 
         // Custom validation rules
