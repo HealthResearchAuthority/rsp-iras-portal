@@ -13,7 +13,7 @@ using Rsp.Logging.Extensions;
 namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "questionset:[action]")]
-[Authorize(Policy = "IsAdmin")]
+[Authorize(Policy = "IsQuestionSetAdmin")]
 public class QuestionSetController(ILogger<QuestionSetController> logger, IQuestionSetService questionSetService, IValidator<QuestionSetFileModel> validator) : Controller
 {
     public IActionResult Upload()

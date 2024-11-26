@@ -21,6 +21,7 @@ public static class AuthConfiguration
         public const string admin = nameof(admin);
         public const string user = nameof(user);
         public const string reviewer = nameof(reviewer);
+        public const string question_set_admin = nameof(question_set_admin);
     };
 
     /// <summary>
@@ -100,6 +101,7 @@ public static class AuthConfiguration
             .AddPolicy("IsReviewer", policy => policy.RequireRole(Roles.reviewer))
             .AddPolicy("IsAdmin", policy => policy.RequireRole(Roles.admin))
             .AddPolicy("IsUser", policy => policy.RequireRole(Roles.user))
+            .AddPolicy("IsQuestionSetAdmin", policy => policy.RequireRole(Roles.question_set_admin))
             .SetDefaultPolicy(policy);
     }
 }
