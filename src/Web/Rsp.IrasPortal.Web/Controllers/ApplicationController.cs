@@ -5,6 +5,7 @@ using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Services;
@@ -161,6 +162,7 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
     }
 
     [HttpGet]
+    [FeatureGate("Navigation.MyApplications")]
     public async Task<IActionResult> MyApplications()
     {
         logger.LogMethodStarted(LogLevel.Information);

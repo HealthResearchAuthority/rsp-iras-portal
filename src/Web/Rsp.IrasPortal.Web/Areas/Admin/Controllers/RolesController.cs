@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
@@ -11,6 +12,7 @@ namespace Rsp.IrasPortal.Web.Areas.Admin.Controllers;
 [Area("Admin")]
 [Route("[area]/[controller]/[action]", Name = "admin:[action]")]
 [Authorize(Policy = "IsAdmin")]
+[FeatureGate("Navigation.Admin")]
 public class RolesController(IUserManagementService userManagementService, ILogger<RolesController> logger) : Controller
 {
     /// <summary>

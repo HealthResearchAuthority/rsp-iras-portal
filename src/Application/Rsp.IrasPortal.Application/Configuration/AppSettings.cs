@@ -6,6 +6,11 @@
 public class AppSettings
 {
     /// <summary>
+    /// Label to use when reading App Configuration from AzureAppConfiguration
+    /// </summary>
+    public const string ServiceLabel = "portal";
+
+    /// <summary>
     /// Gets or sets the URI of the categories microservice.
     /// </summary>
     public Uri ApplicationsServiceUri { get; set; } = null!;
