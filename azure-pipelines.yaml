@@ -15,7 +15,6 @@ parameters:
       - dev
       - systemtest_manual
       - systemtest_auto
-      - system_integration_test
       - uat
       - pre_prod
       - production
@@ -54,6 +53,11 @@ variables:
     value: "**/*.csproj"
   - name: buildConfiguration
     value: "Release"
+  - name: service_connection
+    ${{ if in(parameters.env, 'dev') }}:
+      value: "ARM Dev Connection New"
+    ${{ if in(parameters.env, 'systemtest_auto') }}:
+      value: "ARM Automated Test Connection"  
 
 resources:
   repositories:
@@ -76,6 +80,9 @@ resources:
 
 stages:
   - stage: dev
+    variables: 
+    - group: 'DevelopmentEnvironment'
+    condition: eq('${{ parameters.env }}', 'dev') 
     jobs:
       - template: jobs/build.yaml@library
         parameters:
@@ -91,13 +98,14 @@ stages:
           service_defaults_repo: service_defaults
 
   - stage: systemtest_auto
+    variables: 
+    - group: 'STAutoEnvironment'
+    condition: eq('${{ parameters.env }}', 'systemtest_auto')
     jobs:
-      #- template: jobs/deploy.yaml@library
-      - job:
-        displayName: Deploy to SystemTest Auto
-        steps:
-        - script: |
-            echo 'deploying to systemtest_auto'
+      - template: jobs/deployPortal.yaml@library
+        parameters:
+          install_aspire: true
+          service_defaults_repo: service_defaults
 
       - ${{ if eq(variables.run_e2e_tests, 'true') }}:
         - template: jobs/e2e_tests.yaml@library
