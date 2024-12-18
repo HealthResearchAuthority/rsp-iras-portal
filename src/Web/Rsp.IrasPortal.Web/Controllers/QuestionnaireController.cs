@@ -10,14 +10,13 @@ using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
-using Rsp.Logging.Extensions;
 using static Rsp.IrasPortal.Application.Constants.QuestionCategories;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "qnc:[action]")]
 [Authorize(Policy = "IsUser")]
-public class QuestionnaireController(ILogger<ApplicationController> logger, IApplicationsService applicationsService, IRespondentService respondentService, IQuestionSetService questionSetService, IValidator<QuestionnaireViewModel> validator) : Controller
+public class QuestionnaireController(IApplicationsService applicationsService, IRespondentService respondentService, IQuestionSetService questionSetService, IValidator<QuestionnaireViewModel> validator) : Controller
 {
     // Index view name
     private const string Index = nameof(Index);
@@ -105,8 +104,6 @@ public class QuestionnaireController(ILogger<ApplicationController> logger, IApp
     /// <param name="categoryId">CategoryId of the questions to be rendered</param>
     public async Task<IActionResult> DisplayQuestionnaire(string categoryId = A)
     {
-        logger.LogInformationHp("called");
-
         var questions = default(List<QuestionViewModel>);
 
         // get the existing questionnaire for the category if exists in the session
@@ -123,8 +120,6 @@ public class QuestionnaireController(ILogger<ApplicationController> logger, IApp
         {
             // get the questions for the category
             var response = await questionSetService.GetQuestions(categoryId);
-
-            logger.LogInformationHp("called");
 
             // return the view if successfull
             if (response.IsSuccessStatusCode)

@@ -10,7 +10,7 @@ public class ForbiddenController(ILogger<ForbiddenController> logger) : Controll
     [Route("")]
     public IActionResult Index()
     {
-        logger.LogErrorHp(LogEvents.UnhandledException.Code, LogEvents.UnhandledException.Description);
+        logger.LogAsError(LogEvents.UnhandledException.Code, LogEvents.UnhandledException.Description);
 
         return View();
     }

@@ -1,13 +1,15 @@
 ﻿using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
+using Rsp.Logging.Interceptors;
 
 namespace Rsp.IrasPortal.Application.Services;
 
 /// <summary>
-/// Applications Service Interface
+/// Applications Service Interface. Marked as IInterceptable to enable
+/// the start/end logging for all methods.
 /// </summary>
-public interface IApplicationsService
+public interface IApplicationsService : IInterceptable
 {
     /// <summary>
     /// Gets the saved application by Id

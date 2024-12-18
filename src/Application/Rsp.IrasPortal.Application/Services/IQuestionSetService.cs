@@ -1,12 +1,14 @@
 ﻿using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.Responses;
+using Rsp.Logging.Interceptors;
 
 namespace Rsp.IrasPortal.Application.Services;
 
 /// <summary>
-/// Questionset Service Interface
+/// Questionset Service Interface. Marked as IInterceptable to enable
+/// the start/end logging for all methods.
 /// </summary>
-public interface IQuestionSetService
+public interface IQuestionSetService : IInterceptable
 {
     /// <summary>
     /// Gets all questions

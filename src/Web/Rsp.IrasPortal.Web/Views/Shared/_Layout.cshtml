@@ -1,5 +1,6 @@
 ﻿@using System.Security.Claims
 @using GovUk.Frontend.AspNetCore
+@using Rsp.IrasPortal.Application.Constants;
 
 @{
     Layout = "_GovUkPageTemplate";
@@ -47,7 +48,7 @@
                                 Home
                             </a>
                         </li>
-                        <feature name="Navigation.ReviewApplications">
+                        <feature name="@Features.ReviewApplications">
                             <authorized auth-params="@new(Roles:"reviewer")">
 
                                 <li class="govuk-service-navigation__item">
@@ -58,7 +59,7 @@
                             </authorized>
                         </feature>
 
-                        <feature name="Navigation.Admin">
+                        <feature name="@Features.Admin">
                             <authorized auth-params="@new(Roles:"admin")">
                                 <li class="govuk-service-navigation__item">
                                     <a class="govuk-service-navigation__link"
@@ -78,7 +79,7 @@
                             </li>
                         </authorized>
 
-                        <feature name="Navigation.MyApplications">
+                        <feature name="@Features.MyApplications">
                             <authorized auth-params="@new(Roles:"user")">
                                 <li class="govuk-service-navigation__item">
                                     <a class="govuk-service-navigation__link"

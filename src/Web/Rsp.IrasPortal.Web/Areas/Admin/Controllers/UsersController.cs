@@ -3,19 +3,19 @@ using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Identity;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
-using static Rsp.Logging.Extensions.LoggingExtensions;
 
 namespace Rsp.IrasPortal.Web.Areas.Admin.Controllers;
 
 [Area("Admin")]
 [Route("[area]/[controller]/[action]", Name = "admin:[action]")]
 [Authorize(Policy = "IsAdmin")]
-[FeatureGate("Navigation.Admin")]
-public class UsersController(IUserManagementService userManagementService, ILogger<UsersController> logger) : Controller
+[FeatureGate(Features.Admin)]
+public class UsersController(IUserManagementService userManagementService) : Controller
 {
     private const string Error = nameof(Error);
     private const string UserView = nameof(UserView);
@@ -29,8 +29,6 @@ public class UsersController(IUserManagementService userManagementService, ILogg
     [Route("/admin/users", Name = "admin:users")]
     public async Task<IActionResult> Index()
     {
-        logger.LogInformationHp("called");
-
         // get the users
         var response = await userManagementService.GetUsers();
 
@@ -64,8 +62,6 @@ public class UsersController(IUserManagementService userManagementService, ILogg
     [HttpGet]
     public IActionResult CreateUser()
     {
-        logger.LogInformationHp("called");
-
         ViewBag.Mode = "create";
 
         return View(UserView, new UserViewModel());
@@ -79,8 +75,6 @@ public class UsersController(IUserManagementService userManagementService, ILogg
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> SubmitUser(UserViewModel model)
     {
-        logger.LogInformationHp("called");
-
         if (!ModelState.IsValid)
         {
             return View(UserView, model);
@@ -116,8 +110,6 @@ public class UsersController(IUserManagementService userManagementService, ILogg
     [HttpGet]
     public async Task<IActionResult> EditUser(string userId, string email)
     {
-        logger.LogInformationHp("called");
-
         ViewBag.Mode = "edit";
 
         // get user by userId and email
@@ -157,8 +149,6 @@ public class UsersController(IUserManagementService userManagementService, ILogg
     [HttpGet]
     public IActionResult DeleteUser(string userId, string email)
     {
-        logger.LogInformationHp("called");
-
         var model = new UserViewModel
         {
             Id = userId,
@@ -176,8 +166,6 @@ public class UsersController(IUserManagementService userManagementService, ILogg
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteUserConfirmed(UserViewModel model)
     {
-        logger.LogInformationHp("called");
-
         // deleting user
         var response = await userManagementService.DeleteUser(model.Id!, model.Email);
 
@@ -201,8 +189,6 @@ public class UsersController(IUserManagementService userManagementService, ILogg
     [HttpGet]
     public async Task<IActionResult> ManageRoles(string userId, string email)
     {
-        logger.LogInformationHp("called");
-
         // get all the roles
         var getRolesResponse = await userManagementService.GetRoles();
 
@@ -271,8 +257,6 @@ public class UsersController(IUserManagementService userManagementService, ILogg
     [HttpPost]
     public async Task<IActionResult> UpdateRoles(UserRolesViewModel model)
     {
-        logger.LogInformationHp("called");
-
         if (!ModelState.IsValid)
         {
             return View(UserRolesView, model);

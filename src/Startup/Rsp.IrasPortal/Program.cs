@@ -11,6 +11,9 @@ using Rsp.IrasPortal.Configuration.Dependencies;
 using Rsp.IrasPortal.Configuration.Health;
 using Rsp.IrasPortal.Configuration.HttpClients;
 using Rsp.IrasPortal.Web;
+using Rsp.Logging.ActionFilters;
+using Rsp.Logging.Extensions;
+using Rsp.Logging.Interceptors;
 using Rsp.Logging.Middlewares.CorrelationId;
 using Rsp.Logging.Middlewares.RequestTracing;
 using Rsp.ServiceDefaults;
@@ -109,9 +112,22 @@ services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+// Creating a feature manager without the use of DI. Injecting IFeatureManager
+// via DI is appropriate in consturctor methods. At the startup, it's
+// not recommended to call services.BuildServiceProvider and retreive IFeatureManager
+// via provider. Instead, the follwing approach is recommended by creating FeatureManager
+// with ConfigurationFeatureDefinitionProvider using the existing configuration.
+var featureManager = new FeatureManager(new ConfigurationFeatureDefinitionProvider(configuration));
+
 // add controllers and views
 services
-    .AddControllersWithViews()
+    .AddControllersWithViews(async options =>
+    {
+        if (await featureManager.IsEnabledAsync(Features.InterceptedLogging))
+        {
+            options.Filters.Add<LogActionFilter>();
+        }
+    })
     .AddSessionStateTempDataProvider();
 
 services.Configure<HealthCheckPublisherOptions>(options => options.Period = TimeSpan.FromSeconds(300));
@@ -131,6 +147,11 @@ services
 services.AddGovUkFrontend();
 
 services.AddValidatorsFromAssemblyContaining<IWebApp>();
+
+if (await featureManager.IsEnabledAsync(Features.InterceptedLogging))
+{
+    services.AddLoggingInterceptor<LoggingInterceptor>();
+}
 
 var app = builder.Build();
 

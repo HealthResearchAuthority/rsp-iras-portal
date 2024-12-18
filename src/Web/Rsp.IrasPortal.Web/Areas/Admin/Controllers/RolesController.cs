@@ -2,18 +2,18 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
-using Rsp.Logging.Extensions;
 
 namespace Rsp.IrasPortal.Web.Areas.Admin.Controllers;
 
 [Area("Admin")]
 [Route("[area]/[controller]/[action]", Name = "admin:[action]")]
 [Authorize(Policy = "IsAdmin")]
-[FeatureGate("Navigation.Admin")]
-public class RolesController(IUserManagementService userManagementService, ILogger<RolesController> logger) : Controller
+[FeatureGate(Features.Admin)]
+public class RolesController(IUserManagementService userManagementService) : Controller
 {
     /// <summary>
     /// Roles home page, where it displays available roles
@@ -22,8 +22,6 @@ public class RolesController(IUserManagementService userManagementService, ILogg
     [Route("/admin/roles", Name = "admin:roles")]
     public async Task<IActionResult> Index()
     {
-        logger.LogInformationHp("called");
-
         // get all roles
         var response = await userManagementService.GetRoles();
 
@@ -55,8 +53,6 @@ public class RolesController(IUserManagementService userManagementService, ILogg
     [HttpGet]
     public IActionResult CreateRole()
     {
-        logger.LogInformationHp("called");
-
         ViewBag.Mode = "create";
 
         return View("RoleView", new RoleViewModel());
@@ -70,8 +66,6 @@ public class RolesController(IUserManagementService userManagementService, ILogg
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> SubmitRole(RoleViewModel model)
     {
-        logger.LogInformationHp("called");
-
         if (!ModelState.IsValid)
         {
             return View("RoleView", model);
@@ -107,8 +101,6 @@ public class RolesController(IUserManagementService userManagementService, ILogg
     [HttpGet]
     public IActionResult EditRole(string roleId, string roleName)
     {
-        logger.LogInformationHp("called");
-
         ViewBag.Mode = "edit";
 
         var model = new RoleViewModel
@@ -129,8 +121,6 @@ public class RolesController(IUserManagementService userManagementService, ILogg
     [HttpGet]
     public IActionResult DeleteRole(string roleId, string roleName)
     {
-        logger.LogInformationHp("called");
-
         var model = new RoleViewModel
         {
             Id = roleId,
@@ -148,8 +138,6 @@ public class RolesController(IUserManagementService userManagementService, ILogg
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteRoleConfirmed(RoleViewModel model)
     {
-        logger.LogInformationHp("called");
-
         // deleting user role
         var response = await userManagementService.DeleteRole(model.Name);
 

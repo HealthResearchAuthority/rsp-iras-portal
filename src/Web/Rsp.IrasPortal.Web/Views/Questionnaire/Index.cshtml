@@ -61,7 +61,7 @@
     }
 }
 
-@if (await featureManager.IsEnabledAsync("UX.ProgressiveEnhancement"))
+@if (await featureManager.IsEnabledAsync(Features.ProgressiveEnhancement))
 {
     <script src="~/lib/jquery/dist/jquery.js"></script>
 
@@ -303,7 +303,7 @@
     <partial name="_SubmitButton" model="@("qnc:saveresponses","Save", new Dictionary<string, string>())" />
     <partial name="_SubmitButton" model="@("qnc:saveresponses","Save and Continue", new Dictionary<string, string>() { { "saveAndContinue", bool.TrueString } })" />
     <partial name="_SubmitButton" model="@("qnc:validate","Validate", new Dictionary<string, string>())" />
-    <feature name="Action.ProceedToSubmit">
+    <feature name="@Features.ProceedToSubmit">
         <partial name="_SubmitButton" model="@("qnc:saveresponses","Proceed to Submit", new Dictionary<string, string>() { { "submit", bool.TrueString } })" />
     </feature>
 </form>

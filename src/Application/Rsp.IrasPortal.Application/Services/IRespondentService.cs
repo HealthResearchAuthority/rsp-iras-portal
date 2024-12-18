@@ -1,12 +1,14 @@
 ﻿using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Responses;
+using Rsp.Logging.Interceptors;
 
 namespace Rsp.IrasPortal.Application.Services;
 
 /// <summary>
-/// Respondent Service Interface
+/// Respondent Service Interface. Marked as IInterceptable to enable
+/// the start/end logging for all methods.
 /// </summary>
-public interface IRespondentService
+public interface IRespondentService : IInterceptable
 {
     /// <summary>
     /// Gets all the respondent's answers for the application

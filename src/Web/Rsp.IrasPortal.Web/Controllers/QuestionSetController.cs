@@ -14,20 +14,16 @@ namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "questionset:[action]")]
 [Authorize(Policy = "IsAdmin")]
-public class QuestionSetController(ILogger<QuestionSetController> logger, IQuestionSetService questionSetService, IValidator<QuestionSetFileModel> validator) : Controller
+public class QuestionSetController(IQuestionSetService questionSetService, IValidator<QuestionSetFileModel> validator) : Controller
 {
     public IActionResult Upload()
     {
-        logger.LogInformationHp("called");
-
         return View();
     }
 
     [HttpPost]
     public async Task<IActionResult> Upload(QuestionSetFileModel model)
     {
-        logger.LogInformationHp("called");
-
         var file = model.Upload;
 
         if (file == null || file.Length == 0)

@@ -2,22 +2,20 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.Services;
-using Rsp.Logging.Extensions;
 
 namespace Rsp.IrasPortal.Web.Areas.Admin.Controllers;
 
 [Area("Admin")]
 [Route("[area]/[controller]/[action]", Name = "admin:[action]")]
 [Authorize(Policy = "IsAdmin")]
-[FeatureGate("Navigation.Admin")]
-public class HomeController(IUserManagementService userManagementService, ILogger<HomeController> logger) : Controller
+[FeatureGate(Features.Admin)]
+public class HomeController(IUserManagementService userManagementService) : Controller
 {
     [Route("/admin", Name = "admin:home")]
     public async Task<IActionResult> Index()
     {
-        logger.LogInformationHp("called");
-
         // get the users
         var getUsersResponse = userManagementService.GetUsers();
         var getRolesResponse = userManagementService.GetRoles();
