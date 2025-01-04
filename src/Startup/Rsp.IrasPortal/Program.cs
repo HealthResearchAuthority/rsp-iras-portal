@@ -1,11 +1,10 @@
-﻿using Azure.Identity;
-using FluentValidation;
+﻿using FluentValidation;
 using GovUk.Frontend.AspNetCore;
-using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.FeatureManagement;
 using Rsp.IrasPortal.Application.Configuration;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Configuration.AppConfiguration;
 using Rsp.IrasPortal.Configuration.Auth;
 using Rsp.IrasPortal.Configuration.Dependencies;
 using Rsp.IrasPortal.Configuration.Health;
@@ -41,51 +40,7 @@ services.AddFeatureManagement();
 
 if (!builder.Environment.IsDevelopment())
 {
-    var azureAppSettingsSection = configuration.GetSection(nameof(AppSettings));
-    var azureAppSettings = azureAppSettingsSection.Get<AppSettings>()!;
-
-    // Load configuration from Azure App Configuration
-    builder.Configuration.AddAzureAppConfiguration
-    (
-        options =>
-        {
-            options.Connect
-            (
-                new Uri(azureAppSettings!.AzureAppConfiguration.Endpoint),
-                new ManagedIdentityCredential(azureAppSettings.AzureAppConfiguration.IdentityClientID)
-            )
-            .Select(KeyFilter.Any) // select all the settings without any label
-            .Select(KeyFilter.Any, AppSettings.ServiceLabel) // select all settings using the service name as label
-            .ConfigureRefresh
-            (
-                refreshOptions =>
-                {
-                    // Sentinel is a special key, that is registered to monitor the change
-                    // when this key is updated all of the keys will updated if refreshAll is true, after the cache is expired
-                    // this won't restart the application, instead uses the middleware i.e. UseAzureAppConfiguration to refresh the keys
-                    // IOptionsSnapshot<T> can be used to inject in the constructor, so that we get the latest values for T
-                    // without this key, we would need to register all the keys we would like to monitor
-                    refreshOptions
-                        .Register("AppSettings:Sentinel", AppSettings.ServiceLabel, refreshAll: true)
-                        .SetCacheExpiration(new TimeSpan(0, 0, 15));
-                }
-            );
-
-            // enable feature flags
-            options.UseFeatureFlags
-            (
-                featureFlagOptions =>
-                {
-                    featureFlagOptions
-                        .Select(KeyFilter.Any) // select all flags without any label
-                        .Select(KeyFilter.Any, AppSettings.ServiceLabel) // select all flags using the service name as label
-                        .CacheExpirationInterval = TimeSpan.FromSeconds(15);
-                }
-            );
-        }
-    );
-
-    builder.Services.AddAzureAppConfiguration();
+    services.AddAzureAppConfiguration(configuration);
 }
 
 builder.Services.Configure<AppSettings>(builder.Configuration.GetSection(nameof(AppSettings)));

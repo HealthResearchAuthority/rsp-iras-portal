@@ -14,6 +14,7 @@
     var currentStage = TempData[TempDataKeys.CurrentStage] as string;
     var errorSummaryTitle = "You need to complete these questions before you can continue::";
     var applicationId = TempData[TempDataKeys.ApplicationId] as string;
+    var validationMessages = new List<string>();
 
     void BuildValidationMessage(IList<RuleDto> rules, string errorKey, string validationMessage)
     {
@@ -29,33 +30,28 @@
         // get all the conditions for the rule
         var conditions = rules.SelectMany(rule => GetConditions(rule));
 
-        var validationMessages = new List<string>();
-
         // if there are not conditions
         // use the validationMessage
-        if (!conditions.Any())
+        if (!conditions.Any() && !validationMessages.Contains(validationMessage, StringComparer.OrdinalIgnoreCase))
         {
             // if the same validationMessage is not present in the list
             // build the validation message and add it, so that it doesn't
             // get repeated
-            if (!validationMessages.Contains(validationMessage, StringComparer.OrdinalIgnoreCase))
-            {
-                @Html.ValidationMessage(errorKey, validationMessage, new { @class = "govuk-error-message" })
+            @Html.ValidationMessage(errorKey, validationMessage, new { @class = "govuk-error-message" })
 
-                validationMessages.Add(validationMessage);
-            }
+            validationMessages.Add(validationMessage);
         }
 
-        @foreach (var condition in conditions)
+        @foreach (var description in conditions.Select(condition => condition.Description))
         {
             // if the same validationMessage is not present in the list
             // build the validation message and add it, so that it doesn't
             // get repeated
-            if (!validationMessages.Contains(condition.Description!, StringComparer.OrdinalIgnoreCase))
+            if (!validationMessages.Contains(description!, StringComparer.OrdinalIgnoreCase))
             {
-                @Html.ValidationMessage(errorKey, condition.Description, new { @class = "govuk-error-message" })
+                @Html.ValidationMessage(errorKey, description, new { @class = "govuk-error-message" })
 
-                validationMessages.Add(condition.Description!);
+                validationMessages.Add(description!);
             }
         }
     }
@@ -89,7 +85,7 @@
     <script src="~/js/rules.js"></script>
 }
 
-<partial name="_BackNavigation" model="@("qnc:displayquestionnaire","Back", new Dictionary<string, string> { { "categoryId", previousStage }})" />
+<partial name="_BackNavigation" model="@("qnc:displayquestionnaire","Back", new Dictionary<string, string> { { "categoryId", previousStage ?? QuestionCategories.A }})" />
 
 <form method="post">
 

@@ -69,7 +69,7 @@ public class AuthTagHelper(IHttpContextAccessor httpContextAccessor) : TagHelper
         output.SuppressOutput();
     }
 
-    private bool IsUserInRoles(IList<Claim> claims)
+    private bool IsUserInRoles(List<Claim> claims)
     {
         if (claims.Count == 0)
         {

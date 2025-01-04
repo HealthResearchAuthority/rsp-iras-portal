@@ -1,8 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿namespace Rsp.IrasPortal.Application.Configuration;
 
-namespace Rsp.IrasPortal.Application.Configuration;
-
-[ExcludeFromCodeCoverage]
 public class AzureAppConfigurations
 {
     /// <summary>

@@ -267,7 +267,7 @@ public class QuestionViewModelValidator : AbstractValidator<QuestionViewModel>
                     // if it's a format check using regex, condition should have a regex expression
                     // see if the answertext matches with the expression
 
-                    if (!Regex.IsMatch(answer ?? string.Empty, condition.Value ?? string.Empty))
+                    if (!Regex.IsMatch(answer ?? string.Empty, condition.Value ?? string.Empty, RegexOptions.Compiled, TimeSpan.FromSeconds(1)))
                     {
                         // by setting IsApplicable property
                         // it will display the Description of the condition
@@ -298,8 +298,10 @@ public class QuestionViewModelValidator : AbstractValidator<QuestionViewModel>
                     if (minmax?.Length == 2)
                     {
                         // get the minmax values
-                        int.TryParse(minmax[0], out var min);
-                        int.TryParse(minmax[1], out var max);
+                        if (!(int.TryParse(minmax[0], out var min) && int.TryParse(minmax[1], out var max)))
+                        {
+                            continue;
+                        }
 
                         if (min <= 0 || max <= min)
                         {
@@ -352,8 +354,9 @@ public class QuestionViewModelValidator : AbstractValidator<QuestionViewModel>
         // where there more than one AND conditions and one of
         // them was satisfied but none of the OR conditions
         // were satisfied, in that case rule/condition will apply
-        // TODO: We need to look into this later
 
+#pragma warning disable S1135
+        // TODO: We need to look into this later
 #pragma warning disable S125
         // if ((andGroupEvaluation.Count > 1 && andGroupEvaluation.Contains(true)) &&
         //    (orGroupEvaluation.Count > 0 && !orGroupEvaluation.Contains(true)))
@@ -361,6 +364,7 @@ public class QuestionViewModelValidator : AbstractValidator<QuestionViewModel>
         //    return true;
         // }
 #pragma warning restore S125
+#pragma warning restore S1135
 
         // one or more OR conditions were satisfied
         // rule/condition will apply

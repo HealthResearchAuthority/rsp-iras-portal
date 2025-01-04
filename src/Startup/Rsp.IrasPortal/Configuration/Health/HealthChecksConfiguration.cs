@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.HeaderPropagation;
+﻿using Microsoft.AspNetCore.HeaderPropagation;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Rsp.IrasPortal.Application.Configuration;
 using Rsp.IrasPortal.Application.Constants;
@@ -9,7 +8,6 @@ namespace Rsp.IrasPortal.Configuration.Health;
 /// <summary>
 /// Health Checks Configuration
 /// </summary>
-[ExcludeFromCodeCoverage]
 public static class HealthChecksConfiguration
 {
     /// <summary>

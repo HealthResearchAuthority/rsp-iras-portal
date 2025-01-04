@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -13,7 +12,6 @@ namespace Rsp.IrasPortal.Configuration.Auth;
 /// <summary>
 /// Authentication and Authorization configuration
 /// </summary>
-[ExcludeFromCodeCoverage]
 public static class AuthConfiguration
 {
     private struct Roles
