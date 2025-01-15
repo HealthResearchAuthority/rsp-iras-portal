@@ -58,6 +58,8 @@ variables:
       value: "ARM Dev Connection New"
     ${{ if in(parameters.env, 'systemtest_auto') }}:
       value: "ARM Automated Test Connection"  
+    ${{ if in(parameters.env, 'systemtest_manual') }}:
+      value: "ARM Manual Test Connection"
 
 resources:
   repositories:
@@ -120,11 +122,22 @@ stages:
             repo: api_tests
 
   - stage: systemtest_manual
+    variables: 
+    - group: 'STManualEnvironment'
+    condition: eq('${{ parameters.env }}', 'systemtest_manual') 
     jobs:
-    - job:
-      steps:
-      - script: |
-          echo 'env: system manual test'  
+      - template: jobs/build.yaml@library
+        parameters:
+          run_github_security_scan: ${{ parameters.run_github_security_scan }}
+          sonar_project_key: FutureIRAS_rsp-iras-portal
+          sonar_project_name: rsp-iras-portal
+          install_aspire: true
+          service_defaults_repo: service_defaults
+
+      - template: jobs/deployPortal.yaml@library
+        parameters:
+          install_aspire: true
+          service_defaults_repo: service_defaults
 
   - stage: system_integration_test
     jobs:
