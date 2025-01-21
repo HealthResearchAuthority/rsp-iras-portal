@@ -2,8 +2,7 @@
 
 public record QuestionSetDto
 {
+    public VersionDto Version { get; set; } = null!;
     public IEnumerable<CategoryDto> Categories { get; set; } = [];
-    public IEnumerable<SectionDto> Sections { get; set; } = [];
-    public IEnumerable<AnswerOptionDto> AnswerOptions { get; set; } = [];
     public IEnumerable<QuestionDto> Questions { get; set; } = [];
 }

@@ -50,4 +50,16 @@
     <ProjectReference Include="..\..\..\src\Web\Rsp.IrasPortal.Web\Rsp.IrasPortal.Web.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Data\InvalidQuestionSetMissingColumns.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\InvalidQuestionSetMissingSheets.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\ValidQuestionSet.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

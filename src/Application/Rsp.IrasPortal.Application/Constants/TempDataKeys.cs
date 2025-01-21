@@ -11,4 +11,8 @@ public struct TempDataKeys
     public const string PreviousCategory = "td:app_previouscategory";
     public const string CurrentStage = "td:app_currentstage";
     public const string UploadedDocuments = "td:uploaded_documents";
+    public const string VersionId = "td:version_id";
+    public const string QuestionSetPublishSuccess = "td:qset_publish_success";
+    public const string QuestionSetUploadSuccess = "td:qset_upload_success";
+    public const string QuestionSetPublishedVersionId = "td:qset_published_version_id";
 }

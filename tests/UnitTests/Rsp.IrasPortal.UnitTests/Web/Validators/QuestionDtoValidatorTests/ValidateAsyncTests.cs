@@ -2,7 +2,7 @@
 using FluentValidation.TestHelper;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Web.Validators;
+using Rsp.IrasPortal.Web.Validators.QuestionSet;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Validators.QuestionDtoValidatorTests;
 
@@ -140,7 +140,7 @@ public class ValidateAsyncTests : TestServiceBase<QuestionDtoValidator>
         // Assert
         result
             .ShouldHaveValidationErrorFor(x => x.QuestionId)
-            .WithErrorMessage("Question ID must start with 'IQT', 'IQA', or 'IQG'");
+            .WithErrorMessage("Question IDs must start with 'IQT', 'IQA', or 'IQG'");
     }
 
     [Theory]

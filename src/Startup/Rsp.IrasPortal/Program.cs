@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using GovUk.Frontend.AspNetCore;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.FeatureManagement;
 using Rsp.IrasPortal.Application.Configuration;
@@ -86,6 +87,13 @@ services
     .AddSessionStateTempDataProvider();
 
 services.Configure<HealthCheckPublisherOptions>(options => options.Period = TimeSpan.FromSeconds(300));
+
+// Increase the value count limit for FormOptions to allow
+// for submitting of large forms (e.g. question sets)
+services.Configure<FormOptions>(options =>
+{
+    options.ValueCountLimit = int.MaxValue;
+});
 
 // configure health checks to monitor
 // microservice health

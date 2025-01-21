@@ -1,0 +1,209 @@
+﻿@model QuestionnaireViewModel
+@using System.Text.Json
+@using System.Web
+@using Microsoft.AspNetCore.Html
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Microsoft.FeatureManagement
+@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Application.DTOs
+@inject IFeatureManager featureManager
+
+@{
+    var sections = Model.Questions.ToLookup(q => q.Section);
+    var currentStage = TempData[TempDataKeys.CurrentStage] as string;
+    var versionId = TempData[TempDataKeys.VersionId] as string;
+}
+
+@if (await featureManager.IsEnabledAsync("UX.ProgressiveEnhancement"))
+{
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+
+    // Collect all rules for conditional questions
+    var conditionalRules = Model.Questions
+        .Where(q => !q.IsMandatory && q.Rules.Any())
+        .Select(q => new
+        {
+            QuestionId = q.QuestionId,
+            Rules = q.Rules
+        }).ToList();
+
+    <script>
+        $(document).ready(function () {
+            const conditionalRules = @Html.Raw(JsonSerializer.Serialize(conditionalRules));
+
+            // Loop through each rule and store it individually by QuestionId
+            conditionalRules.forEach(rule => {
+                sessionStorage.setItem(rule.QuestionId, JSON.stringify(rule.Rules));
+            });
+        });
+    </script>
+
+    <script src="~/js/questionnaire.js"></script>
+    <script src="~/js/rules.js"></script>
+}
+
+<section class="govuk-notification-banner" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+    <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+            Preview
+        </h2>
+    </div>
+    <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">
+            You are previewing an application.
+            <a class="govuk-notification-banner__link" asp-route="qsc:index">Back to versions</a>.
+        </p>
+    </div>
+</section>
+
+<form method="post">
+
+    <partial name="_ProgressPreview" model="@(currentStage, "Initiate", versionId)" />
+
+    <div class="govuk-form-group questions">
+
+        <input hidden asp-for="CurrentStage" value="@currentStage" />
+
+        @foreach (var section in sections)
+        {
+            <govuk-fieldset class="sections">
+                <govuk-fieldset-legend class="govuk-fieldset__legend--l">
+                    @(section.Key)
+                </govuk-fieldset-legend>
+
+                <hr class="govuk-section-break govuk-section-break--visible" />
+
+                @foreach (var question in section)
+                {
+                    var index = question.Index;
+
+                    <input type="hidden" asp-for="Questions[index].Index" />
+                    <input type="hidden" asp-for="Questions[index].QuestionId" />
+                    <input type="hidden" asp-for="Questions[index].Category" />
+                    <input type="hidden" asp-for="Questions[index].SectionId" />
+                    <input type="hidden" asp-for="Questions[index].Section" />
+                    <input type="hidden" asp-for="Questions[index].Heading" />
+                    <input type="hidden" asp-for="Questions[index].QuestionText" />
+                    <input type="hidden" asp-for="Questions[index].QuestionType" />
+                    <input type="hidden" asp-for="Questions[index].DataType" />
+                    <input type="hidden" asp-for="Questions[index].IsMandatory" checked="@question.IsMandatory" />
+                    <input type="hidden" asp-for="Questions[index].IsOptional" checked="@question.IsOptional" />
+
+                    var rules = question.Rules;
+                    var conditional = "";
+
+                    if (!question.IsMandatory)
+                    {
+                        if (rules.Count == 0)
+                        {
+                            <govuk-inset-text>
+                                This question is conditional:
+                            </govuk-inset-text>
+                        }
+                        else
+                        {
+                            conditional = "conditional ";
+                        }
+                    }
+
+                    if (rules.Count != 0)
+                    {
+                        <govuk-inset-text class="@conditional.Trim()" id="@(question.QuestionId)_guide">
+                            @foreach (var rule in rules)
+                            {
+                                <p>
+                                    @rule.Description
+                                </p>
+                            }
+                        </govuk-inset-text>
+                    }
+
+                    var parents = @conditional.Length > 0 ? "data-parents=" + string.Join(',', rules.Select(rule => rule.ParentQuestionId)) : "";
+                    var questionId = @conditional.Length > 0 ? "data-questionId=" + question.QuestionId : "";
+
+                    @if (question.DataType is "Date")
+                    {
+                        <div id="Questions[@index].AnswerText" class="@(conditional)govuk-form-group" @parents @questionId>
+
+                            <h1 class="govuk-label-wrapper">
+                                <label class="govuk-label govuk-label--s" for="@(question.QuestionId)_Text">
+                                    @question.Heading. @question.QuestionText
+                                </label>
+                            </h1>
+
+                            <div class="govuk-date-input">
+                                <div class="govuk-date-input__item">
+                                    <div class="govuk-form-group">
+                                        <div class="govuk-date-input__item">
+                                            <input class="govuk-input govuk-date-input__input govuk-input--width-10" type="date" asp-for="Questions[index].AnswerText" asp-format="{0:dd-MM-yyyy}" id="@(question.QuestionId + "_Text")" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    @if (question.DataType is "Text" or "Email")
+                    {
+                        <div id="Questions[@index].AnswerText" class="@(conditional)govuk-form-group" @parents @questionId>
+
+                            <h1 class="govuk-label-wrapper">
+                                <label class="govuk-label govuk-label--s" for="@(question.QuestionId)_Text">
+                                    @question.Heading. @question.QuestionText
+                                </label>
+                            </h1>
+
+                            @Html.TextBoxFor(model => model.Questions[index].AnswerText, new { id = question.QuestionId + "_Text", @class = "govuk-input" })
+                        </div>
+                    }
+
+                    if (question.DataType is "Checkbox")
+                    {
+                        <div id="Questions[@index].Answers" class="@(conditional)govuk-form-group" @parents @questionId>
+                            <govuk-fieldset>
+                                <govuk-fieldset-legend class="govuk-fieldset__legend--s">
+                                    @question.Heading. @question.QuestionText
+                                </govuk-fieldset-legend>
+
+                                <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                                    @foreach (var (answer, ansIndex) in question.Answers.Select((answer, ansIndex) => (answer, ansIndex)))
+                                    {
+                                        <div class="govuk-checkboxes__item">
+                                            @Html.HiddenFor(model => model.Questions[index].Answers[ansIndex].AnswerId)
+                                            @Html.HiddenFor(model => model.Questions[index].Answers[ansIndex].AnswerText)
+                                            <input class="govuk-checkboxes__input" type="checkbox" asp-for="Questions[index].Answers[ansIndex].IsSelected" id="@(question.QuestionId)_@(answer.AnswerId)" />
+                                            @Html.Label(question.QuestionId + "_" + answer.AnswerId, answer.AnswerText, new { @class = "govuk-checkboxes__label govuk-label" })
+                                        </div>
+                                    }
+                                </div>
+                            </govuk-fieldset>
+                        </div>
+                    }
+
+                    if (question.DataType is "Radio button" or "Boolean")
+                    {
+                        <div id="Questions[@index].SelectedOption" class="@(conditional)govuk-form-group" @parents @questionId>
+                            <govuk-fieldset>
+                                <govuk-fieldset-legend class="govuk-fieldset__legend--s">
+                                    @question.Heading.@question.QuestionText
+                                </govuk-fieldset-legend>
+
+                                <div class="govuk-radios" data-module="govuk-radios">
+                                    @foreach (var (answer, ansIndex) in question.Answers.Select((answer, ansIndex) => (answer, ansIndex)))
+                                    {
+                                        <div class="govuk-radios__item">
+                                            @Html.HiddenFor(model => model.Questions[index].Answers[ansIndex].AnswerId)
+                                            @Html.HiddenFor(model => model.Questions[index].Answers[ansIndex].AnswerText)
+                                            @Html.RadioButtonFor(model => model.Questions[index].SelectedOption, answer.AnswerId, new { id = question.QuestionId + "_" + answer.AnswerId, @class = "govuk-radios__input" })
+                                            @Html.Label(question.QuestionId + "_" + answer.AnswerId, answer.AnswerText, new { @class = "govuk-radios__label govuk-label" })
+                                        </div>
+                                    }
+                                </div>
+                            </govuk-fieldset>
+                        </div>
+                    }
+                }
+            </govuk-fieldset>
+        }
+    </div>
+</form>
