@@ -29,10 +29,48 @@ public class QuestionSetService(IQuestionSetServiceClient client) : IQuestionSet
         return apiResponse.ToServiceResponse();
     }
 
+    /// <inheritdoc/>
+    public async Task<ServiceResponse<IEnumerable<QuestionsResponse>>> GetQuestionsByVersion(string versionId)
+    {
+        // get all questions
+        var apiResponse = await client.GetQuestionsByVersion(versionId);
+
+        // convert to service response
+        return apiResponse.ToServiceResponse();
+    }
+
+    /// <inheritdoc/>
+    public async Task<ServiceResponse<IEnumerable<QuestionsResponse>>> GetQuestionsByVersion(string versionId, string categoryId)
+    {
+        // get all questions for the category
+        var apiResponse = await client.GetQuestionsByVersion(versionId, categoryId);
+
+        // convert to service response
+        return apiResponse.ToServiceResponse();
+    }
+
     public async Task<ServiceResponse> CreateQuestions(QuestionSetDto questionSet)
     {
         var apiResponse = await client.CreateQuestions(questionSet);
 
+        return apiResponse.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse<IEnumerable<VersionDto>>> GetVersions()
+    {
+        // get all versions
+        var apiResponse = await client.GetVersions();
+
+        // convert to service response
+        return apiResponse.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse> PublishVersion(string versionId)
+    {
+        // publish version
+        var apiResponse = await client.PublishVersion(versionId);
+
+        // convert to service response
         return apiResponse.ToServiceResponse();
     }
 }

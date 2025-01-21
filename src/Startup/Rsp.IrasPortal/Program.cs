@@ -1,6 +1,7 @@
 ﻿using Azure.Identity;
 using FluentValidation;
 using GovUk.Frontend.AspNetCore;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.FeatureManagement;
@@ -115,6 +116,11 @@ services
     .AddSessionStateTempDataProvider();
 
 services.Configure<HealthCheckPublisherOptions>(options => options.Period = TimeSpan.FromSeconds(300));
+
+services.Configure<FormOptions>(options =>
+{
+    options.ValueCountLimit = int.MaxValue;
+});
 
 // configure health checks to monitor
 // microservice health
