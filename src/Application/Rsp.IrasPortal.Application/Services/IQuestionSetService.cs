@@ -19,5 +19,22 @@ public interface IQuestionSetService
     /// <param name="categoryId">CategoryId of the questions</param>
     Task<ServiceResponse<IEnumerable<QuestionsResponse>>> GetQuestions(string categoryId);
 
+    /// <summary>
+    /// Gets all questions by version
+    /// </summary>
+    /// <param name="versionId">Version of the questions</param>
+    Task<ServiceResponse<IEnumerable<QuestionsResponse>>> GetQuestionsByVersion(string versionId);
+
+    /// <summary>
+    /// Gets all questions for the category
+    /// </summary>
+    /// <param name="categoryId">CategoryId of the questions</param>
+    /// <param name="versionId">Version of the questions</param>
+    Task<ServiceResponse<IEnumerable<QuestionsResponse>>> GetQuestionsByVersion(string versionId, string categoryId);
+
     Task<ServiceResponse> CreateQuestions(QuestionSetDto questionSet);
+
+    Task<ServiceResponse<IEnumerable<VersionDto>>> GetVersions();
+
+    Task<ServiceResponse> PublishVersion(string versionId);
 }

@@ -10,4 +10,5 @@ public struct TempDataKeys
     public const string PreviousStage = "td:app_previousstage";
     public const string CurrentStage = "td:app_currentstage";
     public const string UploadedDocuments = "td:uploaded_documents";
+    public const string VersionId = "td:version_id";
 }

@@ -13,4 +13,6 @@ public class QuestionSetFileModel
     public List<SectionDto> SectionDtos { get; set; } = [];
 
     public List<AnswerOptionDto> AnswerOptionDtos { get; set; } = [];
+
+    public List<VersionDto> Versions { get; set; } = [];
 }

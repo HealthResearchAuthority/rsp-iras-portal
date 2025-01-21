@@ -22,3 +22,58 @@
         </govuk-panel-body>
     </govuk-panel>
 }
+
+@if (TempData["PublishSuccess"] != null)
+{
+    <govuk-panel heading-level="2">
+        <govuk-panel-title>Publish successful</govuk-panel-title>
+        <govuk-panel-body>
+            Published version <strong>@TempData["PublishedVersionId"]</strong>
+        </govuk-panel-body>
+    </govuk-panel>
+}
+
+<table class="govuk-table">
+    <thead>
+        <tr>
+            <th class="govuk-table__header">Version</th>
+            <th class="govuk-table__header">Date created</th>
+            <th class="govuk-table__header">Date published</th>
+            <th class="govuk-table__header">Status</th>
+            <th class="govuk-table__header">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            if (Model.Versions == null || Model.Versions.Count == 0)
+            {
+                <tr class="govuk-table__row">
+                    <td class="govuk-table__cell" colspan="5">No versions found</td>
+                </tr>
+            } else
+            {
+                foreach(var version in Model.Versions)
+                {
+                    <tr class="govuk-table__row">
+                        <td class="govuk-table__cell">@version.VersionId</td>
+                        <td class="govuk-table__cell">@version.CreatedAt</td>
+                        <td class="govuk-table__cell">@(version.PublishedAt?.ToString("dd MMM yyyy HH:mm:ss") ?? "N/A")</td>
+                        <td class="govuk-table__cell">@(version.IsPublished ? "Published" : version.IsDraft ? "Draft" : "Superseded")</td>
+                        <td class="govuk-table__cell">
+                            <form asp-action="PublishVersion" method="post" style="display:inline;">
+                                <input type="hidden" name="versionId" value="@version.VersionId" />
+                                <button style="margin-bottom:0"
+                                        class="govuk-button"
+                                        type="submit"
+                                @(version.IsPublished ? "disabled" : "")>
+                                    Publish
+                                </button>
+                            </form>
+                            <a asp-route="questionset:previewapplication" asp-all-route-data="@(new Dictionary<string, string> { { "versionId", @version.VersionId }})" style="margin-bottom:0" class="govuk-button">Preview</a>
+                        </td>
+                    </tr>
+                }
+            }
+        }
+    </tbody>
+</table>
