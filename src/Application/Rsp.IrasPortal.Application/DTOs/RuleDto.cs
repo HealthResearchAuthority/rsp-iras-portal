@@ -36,4 +36,9 @@ public record RuleDto
     /// List of one or more conditions to apply
     /// </summary>
     public IEnumerable<ConditionDto> Conditions { get; set; } = null!;
+
+    /// <summary>
+    /// The question set version this rule belongs to
+    /// </summary>
+    public string VersionId { get; set; } = null!;
 }

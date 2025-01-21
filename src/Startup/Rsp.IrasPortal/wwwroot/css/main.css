@@ -83,16 +83,6 @@ button.govuk-link {
   background-color: transparent;
 }
 
-.govuk-notification-banner {
-  background-color: firebrick;
-  border: 0;
-  margin: 0;
-}
-
-.govuk-notification-banner__title {
-  text-align: center;
-}
-
 .govuk-button-hyperlink {
   background: none;
   border: 0;
@@ -111,10 +101,28 @@ button.govuk-link {
   color: #1D70B8;
 }
 
+.govuk-pagination {
+  -webkit-justify-content: center;
+  justify-content: center;
+  margin-bottom: 0;
+}
+
 .float-right {
   float: right;
 }
 
 .text-capitalize {
   text-transform: capitalize;
+}
+
+.govuk-pagination__results {
+  font-family: GDS Transport, arial, sans-serif;
+  margin-top: 0;
+  padding: 5px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.25;
+  float: right;
 }
