@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using ExcelDataReader;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
@@ -14,8 +15,8 @@ using static Rsp.IrasPortal.Application.Constants.QuestionCategories;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
-//[Authorize(Policy = "IsAdmin")]
 [Route("[controller]/[action]", Name = "questionset:[action]")]
+[Authorize(Policy = "IsAdmin")]
 public class QuestionSetController(ILogger<QuestionSetController> logger, IQuestionSetService questionSetService, IValidator<QuestionSetFileModel> validator) : Controller
 {
     public async Task<IActionResult> Upload()
