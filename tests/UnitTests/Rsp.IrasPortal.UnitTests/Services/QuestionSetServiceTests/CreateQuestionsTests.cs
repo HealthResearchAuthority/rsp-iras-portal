@@ -14,11 +14,11 @@ public class CreateQuestionsTests : TestServiceBase<QuestionSetService>
 
         Mocker
             .GetMock<IQuestionSetServiceClient>()
-            .Setup(client => client.CreateQuestions(questionSet))
+            .Setup(client => client.AddQuestionSet(questionSet))
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.CreateQuestions(questionSet);
+        var result = await Sut.AddQuestionSet(questionSet);
 
         // Assert
         result.IsSuccessStatusCode.ShouldBeTrue();
@@ -32,11 +32,11 @@ public class CreateQuestionsTests : TestServiceBase<QuestionSetService>
 
         Mocker
             .GetMock<IQuestionSetServiceClient>()
-            .Setup(client => client.CreateQuestions(questionSet))
+            .Setup(client => client.AddQuestionSet(questionSet))
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.CreateQuestions(questionSet);
+        var result = await Sut.AddQuestionSet(questionSet);
 
         // Assert
         result.IsSuccessStatusCode.ShouldBeFalse();

@@ -49,4 +49,15 @@ public class ServiceResponse<T> : ServiceResponse
 
         return this;
     }
+
+    /// <summary>
+    /// Sets the reason phrase of the response
+    /// </summary>
+    /// <param name="reasonPhrase">Reason phrase for the error</param>
+    public override ServiceResponse<T> WithReason(string? reasonPhrase)
+    {
+        ReasonPhrase = reasonPhrase;
+
+        return this;
+    }
 }
