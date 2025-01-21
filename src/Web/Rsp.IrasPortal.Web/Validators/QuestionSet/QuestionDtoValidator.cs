@@ -3,7 +3,7 @@ using FluentValidation.Results;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 
-namespace Rsp.IrasPortal.Web.Validators;
+namespace Rsp.IrasPortal.Web.Validators.QuestionSet;
 
 public class QuestionDtoValidator : AbstractValidator<QuestionDto>
 {
@@ -11,7 +11,7 @@ public class QuestionDtoValidator : AbstractValidator<QuestionDto>
 
     protected override bool PreValidate(ValidationContext<QuestionDto> context, ValidationResult result)
     {
-        _questionDtos = (context.RootContextData["questionDtos"] as List<QuestionDto>) ?? [];
+        _questionDtos = context.RootContextData["questionDtos"] as List<QuestionDto> ?? [];
 
         return base.PreValidate(context, result);
     }
@@ -23,7 +23,7 @@ public class QuestionDtoValidator : AbstractValidator<QuestionDto>
             .NotEmpty()
             .WithMessage($"{ModuleColumns.QuestionId} column must contain a value")
             .Must(q => q.StartsWith("IQT") || q.StartsWith("IQA") || q.StartsWith("IQG"))
-            .WithMessage("Question ID must start with 'IQT', 'IQA', or 'IQG'");
+            .WithMessage("Question IDs must start with 'IQT', 'IQA', or 'IQG'");
 
         RuleFor(x => x.Category)
             .NotEmpty()

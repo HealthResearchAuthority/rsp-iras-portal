@@ -19,16 +19,18 @@ public interface IQuestionSetServiceClient
     public Task<ApiResponse<IEnumerable<QuestionsResponse>>> GetQuestions(string categoryId);
 
     /// <summary>
-    /// Gets all questions in the database for the category
+    /// Gets all questions in the database for a version
     /// </summary>
-    [Get("/questions")]
-    public Task<ApiResponse<IEnumerable<QuestionsResponse>>> GetQuestions(string categoryId, string sectionId);
+    /// <returns><see cref="IEnumerable{QuestionsResponse}"/></returns>
+    [Get("/questions/questionset")]
+    public Task<ApiResponse<IEnumerable<QuestionsResponse>>> GetQuestionsByVersion(string versionId);
 
     /// <summary>
-    /// Creates question records in the database
+    /// Gets all questions in the database for a version for the category
     /// </summary>
-    [Post("/questions")]
-    public Task<IApiResponse> CreateQuestions(QuestionSetDto questionSet);
+    /// <returns><see cref="IEnumerable{QuestionsResponse}"/></returns>
+    [Get("/questions/questionset")]
+    public Task<ApiResponse<IEnumerable<QuestionsResponse>>> GetQuestionsByVersion(string versionId, string categoryId);
 
     /// <summary>
     /// Gets all question sections in the database
@@ -57,4 +59,18 @@ public interface IQuestionSetServiceClient
     /// <returns><see cref="IEnumerable{QuestionsResponse}"/></returns>
     [Get("/questioncatagories/all")]
     public Task<ApiResponse<IEnumerable<CategoryDto>>> GetQuestionCategories();
+    [Post("/questions/questionset")]
+    public Task<IApiResponse> AddQuestionSet(QuestionSetDto questionSet);
+
+    /// <summary>
+    /// Gets all versions in the database
+    /// </summary>
+    [Get("/questions/version/all")]
+    public Task<ApiResponse<IEnumerable<VersionDto>>> GetVersions();
+
+    /// <summary>
+    /// Creates a version in the database
+    /// </summary>
+    [Post("/questions/version/publish")]
+    public Task<IApiResponse> PublishVersion(string versionId);
 }
