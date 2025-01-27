@@ -8,7 +8,7 @@
 
 <partial name="_ValidationSummary" model="@(ViewData.ModelState, "Please address the following issues:")" />
 
-<form asp-action="QuestionSetUpload" method="post" enctype="multipart/form-data">
+<form asp-action="Upload" method="post" enctype="multipart/form-data">
     <input type="file" class="govuk-file-upload" asp-for="@Model.Upload" name="Upload" />
     <button type="submit" class="govuk-button">Upload</button>
 </form>

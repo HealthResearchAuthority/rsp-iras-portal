@@ -19,23 +19,22 @@ namespace Rsp.IrasPortal.Web.Controllers;
 [Authorize(Policy = "IsAdmin")]
 public class QuestionSetController(ILogger<QuestionSetController> logger, IQuestionSetService questionSetService, IValidator<QuestionSetFileModel> validator) : Controller
 {
-    public async Task<IActionResult> Upload()
+    public async Task<IActionResult> Index(QuestionSetFileModel model)
     {
         logger.LogInformationHp("called");
 
-        var response = await questionSetService.GetVersions();
+        await PopulateVersions(model);
 
+        return View(model);
+    }
+
+    private async Task PopulateVersions(QuestionSetFileModel model)
+    {
+        var response = await questionSetService.GetVersions();
         if (response.IsSuccessStatusCode)
         {
-            QuestionSetFileModel model = new()
-            {
-                Versions = response.Content?.ToList() ?? []
-            };
-
-            return View(model);
+            model.Versions = response.Content?.ToList() ?? [];
         }
-
-        return View();
     }
 
     public async Task<IActionResult> PreviewApplication(string versionId, string categoryId = A)
@@ -156,7 +155,7 @@ public class QuestionSetController(ILogger<QuestionSetController> logger, IQuest
             TempData["PublishedVersionId"] = versionId;
         }
 
-        return RedirectToAction("Upload");
+        return RedirectToAction(nameof(Index));
     }
 
     [HttpPost]
@@ -169,7 +168,8 @@ public class QuestionSetController(ILogger<QuestionSetController> logger, IQuest
         if (file == null || file.Length == 0)
         {
             ModelState.AddModelError("Upload", "Please upload a file");
-            return View(model);
+            await PopulateVersions(model);
+            return View(nameof(Index), model);
         }
 
         string[] allowedExtensions = [".xlsx", ".xlsb", ".xls"];
@@ -177,7 +177,8 @@ public class QuestionSetController(ILogger<QuestionSetController> logger, IQuest
         if (!allowedExtensions.Contains(Path.GetExtension(file.FileName).ToLower()))
         {
             ModelState.AddModelError("Upload", $"Please upload a file of type: {string.Join(", ", allowedExtensions)}");
-            return View(model);
+            await PopulateVersions(model);
+            return View(nameof(Index), model);
         }
 
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
@@ -195,6 +196,8 @@ public class QuestionSetController(ILogger<QuestionSetController> logger, IQuest
         DataTable rulesSheet = new();
         DataTable answerOptionsSheet = new();
         DataTable contentsSheet = new();
+
+        var fileName = Path.GetFileNameWithoutExtension(file.FileName);
 
         foreach (var sheetName in SheetNames.All)
         {
@@ -229,7 +232,8 @@ public class QuestionSetController(ILogger<QuestionSetController> logger, IQuest
 
         if (ModelState.ErrorCount > 0)
         {
-            return View(model);
+            await PopulateVersions(model);
+            return View(nameof(Index), model);
         }
 
         foreach (DataRow category in contentsSheet.Rows)
@@ -245,6 +249,7 @@ public class QuestionSetController(ILogger<QuestionSetController> logger, IQuest
             {
                 CategoryId = categoryId,
                 CategoryName = category.Field<string>(ContentsColumns.Category) ?? "",
+                VersionId = fileName
             };
 
             model.CategoryDtos.Add(categoryDto);
@@ -262,7 +267,8 @@ public class QuestionSetController(ILogger<QuestionSetController> logger, IQuest
             var answerDto = new AnswerOptionDto
             {
                 OptionId = answerOptionId,
-                OptionText = answerOption.Field<string>(AnswerOptionsColumns.OptionText) ?? ""
+                OptionText = answerOption.Field<string>(AnswerOptionsColumns.OptionText) ?? "",
+                VersionId = fileName
             };
 
             model.AnswerOptionDtos.Add(answerDto);
@@ -286,6 +292,7 @@ public class QuestionSetController(ILogger<QuestionSetController> logger, IQuest
                         SectionId = questionId,
                         QuestionCategoryId = question.Field<string>(ModuleColumns.Category) ?? "",
                         SectionName = question.Field<string>(ModuleColumns.QuestionText) ?? "",
+                        VersionId = fileName
                     };
 
                     model.SectionDtos.Add(sectionDto);
@@ -308,6 +315,7 @@ public class QuestionSetController(ILogger<QuestionSetController> logger, IQuest
                     DataType = question.Field<string>(ModuleColumns.DataType) ?? "",
                     IsMandatory = conformance == "Mandatory",
                     IsOptional = conformance == "Optional",
+                    VersionId = fileName
                 };
 
                 var answersString = question.Field<string>(ModuleColumns.Answers) ?? "";
@@ -320,10 +328,11 @@ public class QuestionSetController(ILogger<QuestionSetController> logger, IQuest
                     {
                         AnswerId = answer,
                         AnswerText = "",
+                        VersionId = fileName
                     })
                     .ToList();
 
-                questionDto.Rules = GetRules(rulesSheet, questionId);
+                questionDto.Rules = GetRules(rulesSheet, questionId, fileName);
 
                 model.QuestionDtos.Add(questionDto);
             }
@@ -333,12 +342,24 @@ public class QuestionSetController(ILogger<QuestionSetController> logger, IQuest
 
         if (!isValid)
         {
-            return View(model);
+            await PopulateVersions(model);
+            return View(nameof(Index), model);
         }
+
+        VersionDto version = new VersionDto()
+        {
+            VersionId = fileName,
+            CreatedAt = DateTime.UtcNow,
+            PublishedBy = null,
+            PublishedAt = null,
+            IsDraft = true,
+            IsPublished = false,
+        };
 
         var response = await questionSetService.CreateQuestions(
             new QuestionSetDto
             {
+                Version = version,
                 Categories = model.CategoryDtos,
                 Sections = model.SectionDtos,
                 AnswerOptions = model.AnswerOptionDtos,
@@ -347,10 +368,11 @@ public class QuestionSetController(ILogger<QuestionSetController> logger, IQuest
 
         ViewBag.Success = response.IsSuccessStatusCode;
 
-        return View(model);
+        await PopulateVersions(model);
+        return View(nameof(Index), model);
     }
 
-    private static List<RuleDto> GetRules(DataTable rulesSheet, string questionId)
+    private static List<RuleDto> GetRules(DataTable rulesSheet, string questionId, string fileName)
     {
         var groupedRules = rulesSheet
             .AsEnumerable()
@@ -365,6 +387,7 @@ public class QuestionSetController(ILogger<QuestionSetController> logger, IQuest
                 ParentQuestionId = group.First().Field<string>(RulesColumns.ParentQuestionId) ?? "",
                 Mode = group.First().Field<string>(RulesColumns.Mode) ?? "",
                 Description = group.First().Field<string>(RulesColumns.Description) ?? "",
+                VersionId = fileName,
                 Conditions = group
                     .Select(condition => new ConditionDto
                     {
