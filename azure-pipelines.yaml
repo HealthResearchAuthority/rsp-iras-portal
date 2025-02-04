@@ -29,7 +29,7 @@ parameters:
   - name: run_github_security_scan
     displayName: Run GitHub Advanced Security Scan
     type: boolean
-    default: true
+    default: false
   - name: run_sonarcloud_analysis
     displayName: Run Sonar Cloud Analysis
     type: boolean
