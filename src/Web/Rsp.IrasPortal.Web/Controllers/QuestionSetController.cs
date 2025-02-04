@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using ExcelDataReader;
 using FluentValidation;
@@ -8,26 +9,22 @@ using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Models;
-using Rsp.Logging.Extensions;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
+[ExcludeFromCodeCoverage]
 [Route("[controller]/[action]", Name = "questionset:[action]")]
-[Authorize(Policy = "IsQuestionSetAdmin")]
-public class QuestionSetController(ILogger<QuestionSetController> logger, IQuestionSetService questionSetService, IValidator<QuestionSetFileModel> validator) : Controller
+[Authorize(Policy = "IsAdmin")]
+public class QuestionSetController(IQuestionSetService questionSetService, IValidator<QuestionSetFileModel> validator) : Controller
 {
     public IActionResult Upload()
     {
-        logger.LogInformationHp("called");
-
         return View();
     }
 
     [HttpPost]
     public async Task<IActionResult> Upload(QuestionSetFileModel model)
     {
-        logger.LogInformationHp("called");
-
         var file = model.Upload;
 
         if (file == null || file.Length == 0)

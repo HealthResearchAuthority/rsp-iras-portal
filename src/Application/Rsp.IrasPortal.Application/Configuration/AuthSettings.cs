@@ -1,8 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿namespace Rsp.IrasPortal.Application.Configuration;
 
-namespace Rsp.IrasPortal.Application.Configuration;
-
-[ExcludeFromCodeCoverage]
 public class AuthSettings
 {
     /// <summary>
@@ -16,7 +13,7 @@ public class AuthSettings
     public string ClientId { get; set; } = null!;
 
     /// <summary>
-    /// The client identifier.
+    /// The client secret.
     /// </summary>
     public string ClientSecret { get; set; } = null!;
 }

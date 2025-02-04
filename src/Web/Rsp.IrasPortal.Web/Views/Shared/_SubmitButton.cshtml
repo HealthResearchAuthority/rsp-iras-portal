@@ -3,7 +3,7 @@
 
 @{
     var style = ViewBag.Style ?? "govuk-button";
-    var disabled = ViewData[ViewDataKeys.IsApplicationValid] is true or null ? false : true;
+    var disabled = ViewData[ViewDataKeys.IsApplicationValid] is not (null or true);
 }
 
 <button class="@style" disabled="@disabled" data-module="govuk-button" type="submit" asp-route="@Model.RouteName" asp-all-route-data="@Model.Params">

@@ -30,7 +30,7 @@
     </div>
 </div>
 
-@if (Model is null)
+@if (Model == null || !Context.Request.Query.ContainsKey("applicationId"))
 {
     <partial name="_NoData" />
 
@@ -52,9 +52,9 @@
 
         var applicationId = Context.Request.Query["applicationId"];
         var routeParams = new Dictionary<string, string>
-        {
+{
             { "categoryId", category },
-            { "applicationId", applicationId },
+            { "applicationId", applicationId! },
             { "validate", status == "Incomplete" ? bool.TrueString : bool.FalseString }
         };
 
@@ -82,7 +82,6 @@
                 </div>
 
                 @Html.Raw(categoryA.Element)
-
             </li>
 
             @{
@@ -208,7 +207,6 @@
         <form method="post">
 
             <partial name="_SubmitButton" model="@("","Submit Application", new Dictionary<string, string>() { { "submit", bool.TrueString } })" view-data="ViewData" />
-
         </form>
     </div>
 </div>

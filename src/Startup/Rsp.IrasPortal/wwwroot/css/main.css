@@ -8,9 +8,6 @@ fieldset.sections {
   margin-bottom: 10px;
 }
 
-/*.govuk-fieldset {
-    margin-bottom: 15px;
-}*/
 .govuk-fieldset__legend.govuk-fieldset__legend--l {
   margin-bottom: 0;
   color: #8f358f;
@@ -41,16 +38,6 @@ fieldset.sections {
   font-size: 0.9em;
 }
 
-/*.progress-line {
-    height: 5px;
-    background-color: #f3f2f1;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 100%;
-    //transform: translateX(-50%);
-    z-index: -1;
-}*/
 .progress-line {
   height: 5px;
   background-color: gray;

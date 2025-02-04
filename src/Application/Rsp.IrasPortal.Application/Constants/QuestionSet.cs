@@ -1,6 +1,6 @@
 ﻿namespace Rsp.IrasPortal.Application.Constants;
 
-public class SheetNames
+public static class SheetNames
 {
     public const string A = nameof(A);
     public const string B = nameof(B);
@@ -39,7 +39,7 @@ public class SheetNames
     ];
 }
 
-public class ModuleColumns
+public static class ModuleColumns
 {
     public const string QuestionId = "Unique ID";
     public const string Category = "Category";
@@ -68,7 +68,7 @@ public class ModuleColumns
     ];
 }
 
-public class RulesColumns
+public static class RulesColumns
 {
     public const string RuleId = "RuleId";
     public const string Sequence = "Sequence";
@@ -102,7 +102,7 @@ public class RulesColumns
     ];
 }
 
-public class AnswerOptionsColumns
+public static class AnswerOptionsColumns
 {
     public const string OptionId = "OptionID";
     public const string OptionText = "OptionText";
@@ -113,7 +113,7 @@ public class AnswerOptionsColumns
     ];
 };
 
-public class ContentsColumns
+public static class ContentsColumns
 {
     public const string Tab = "Tab";
     public const string Category = "Category";

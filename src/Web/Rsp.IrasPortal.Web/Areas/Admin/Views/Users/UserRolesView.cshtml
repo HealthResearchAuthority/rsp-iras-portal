@@ -21,7 +21,7 @@
             <div class="govuk-checkboxes__item">
                 <input type="hidden" asp-for="UserRoles[index].Name" />
                 <input class="govuk-checkboxes__input" type="checkbox" asp-for="UserRoles[index].IsSelected" checked="@role.IsSelected">
-                <label class="govuk-label govuk-checkboxes__label">@role.Name</label>
+                @Html.LabelFor(m => m.UserRoles[index].IsSelected, role.Name, new { @class = "govuk-label govuk-checkboxes__label" })
             </div>
         }
     </div>

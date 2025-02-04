@@ -1,15 +1,12 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
+﻿using System.Text.Json;
 using Refit;
 using Rsp.IrasPortal.Application.Configuration;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.ServiceClients;
-using Rsp.IrasPortal.Infrastructure.HttpClients;
 using Rsp.IrasPortal.Infrastructure.HttpMessageHandlers;
 
 namespace Rsp.IrasPortal.Configuration.HttpClients;
 
-[ExcludeFromCodeCoverage]
 public static class HttpClientsConfiguration
 {
     /// <summary>
@@ -20,7 +17,7 @@ public static class HttpClientsConfiguration
     public static IServiceCollection AddHttpClients(this IServiceCollection services, AppSettings appSettings)
     {
         services
-            .AddRestClient<IApplicationsHttpClient>()
+            .AddRestClient<IApplicationsServiceClient>()
             .ConfigureHttpClient(client => client.BaseAddress = appSettings.ApplicationsServiceUri)
             .AddHttpMessageHandler<AuthHeadersHandler>()
             .AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));

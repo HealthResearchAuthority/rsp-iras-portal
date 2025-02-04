@@ -6,12 +6,10 @@ using Rsp.Logging.Extensions;
 namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "auth:[action]")]
-public class AuthController(ILogger<ApplicationController> logger) : Controller
+public class AuthController : Controller
 {
     public IActionResult SignIn()
     {
-        logger.LogInformationHp("called");
-
         return new ChallengeResult("OpenIdConnect", new()
         {
             RedirectUri = Url.RouteUrl("app:welcome")
@@ -20,8 +18,6 @@ public class AuthController(ILogger<ApplicationController> logger) : Controller
 
     public async Task<IActionResult> Signout()
     {
-        logger.LogInformationHp("called");
-
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         await HttpContext.SignOutAsync("OpenIdConnect");
 

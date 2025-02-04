@@ -6,12 +6,12 @@ using Rsp.IrasPortal.Web.TagHelpers;
 using Rsp.IrasPortal.Web.TagHelpers.Models;
 using Shouldly;
 
-namespace Rsp.IrasPortal.UnitTests.TagHelpersTests;
+namespace Rsp.IrasPortal.UnitTests.Web.TagHelpers.AuthTagHelpersTests;
 
-public class AuthTagHelperTests : TestServiceBase
+public class ProcessAsync : TestServiceBase
 {
     [Fact]
-    public async Task ProcessAsync_Should_ShowOutput_When_ShowWhenAuthenticated_And_UserIsAuthenticated_And_UserInRoles()
+    public async Task Should_ShowOutput_When_ShowWhenAuthenticated_And_UserIsAuthenticated_And_UserInRoles()
     {
         // Arrange
         var authParams = new AuthTagHelperParams
@@ -83,7 +83,7 @@ public class AuthTagHelperTests : TestServiceBase
     }
 
     [Fact]
-    public async Task ProcessAsync_Should_SuppressOutput_When_ShowWhenAuthenticated_And_UserIsAuthenticated_But_NotInRoles()
+    public async Task Should_SuppressOutput_When_ShowWhenAuthenticated_And_UserIsAuthenticated_But_NotInRoles()
 
     {
         // Arrange

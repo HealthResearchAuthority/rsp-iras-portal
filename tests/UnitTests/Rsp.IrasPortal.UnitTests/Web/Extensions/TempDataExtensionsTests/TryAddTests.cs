@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.UnitTests.TempDataExtensionsTests;
+﻿namespace Rsp.IrasPortal.UnitTests.Web.Extensions.TempDataExtensionsTests;
 
 using System.Text.Json;
 using AutoFixture;
@@ -11,7 +11,7 @@ using Rsp.IrasPortal.Web.Extensions;
 using Shouldly;
 using Xunit;
 
-public class TryAdd : TestServiceBase
+public class TryAddTests : TestServiceBase
 {
     [Theory, AutoData]
     public void Should_AddValue_When_SerializeIsFalse(string key, Generator<IrasApplicationResponse> generator)

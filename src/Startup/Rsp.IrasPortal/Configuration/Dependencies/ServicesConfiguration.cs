@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication;
-using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Infrastructure.Claims;
 using Rsp.IrasPortal.Infrastructure.HttpMessageHandlers;
-using Rsp.IrasPortal.Infrastructure.ServiceClients;
 using Rsp.IrasPortal.Services;
 
 namespace Rsp.IrasPortal.Configuration.Dependencies;
@@ -24,10 +22,7 @@ public static class ServicesConfiguration
         services.AddTransient<IUserManagementService, UserManagementService>();
         services.AddTransient<IQuestionSetService, QuestionSetService>();
         services.AddTransient<IRespondentService, RespondentService>();
-
         services.AddTransient<IClaimsTransformation, CustomClaimsTransformation>();
-        // add microservice clients
-        services.AddTransient<IApplicationsServiceClient, ApplicationsServiceClient>();
 
         // add message handlers
         services.AddTransient<AuthHeadersHandler>();

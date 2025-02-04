@@ -1,0 +1,13 @@
+<assemblies timestamp="01/23/2025 15:47:51">
+  <assembly name="C:\Dev\IRAS\rsp-iras-portal\tests\IntegrationTests\Rsp.IrasPortal.IntegrationTests\bin\Release\net9.0\Rsp.IrasPortal.IntegrationTests.dll" run-date="2025-01-23" run-time="15:47:51" total="2" passed="2" failed="0" skipped="0" time="2.144" errors="0">
+    <errors />
+    <collection total="2" passed="2" failed="0" skipped="0" name="Test collection for Rsp.IrasPortal.IntegrationTests._5.Infrastructure.AuthHeadersHandlerTests.SendAsyncTests" time="0.228">
+      <test name="Rsp.IrasPortal.IntegrationTests._5.Infrastructure.AuthHeadersHandlerTests.SendAsyncTests.SendAsync_Should_Add_Authorization_Header_When_BearerToken_Is_Present" type="Rsp.IrasPortal.IntegrationTests._5.Infrastructure.AuthHeadersHandlerTests.SendAsyncTests" method="SendAsync_Should_Add_Authorization_Header_When_BearerToken_Is_Present" time="0.2159457" result="Pass">
+        <traits />
+      </test>
+      <test name="Rsp.IrasPortal.IntegrationTests._5.Infrastructure.AuthHeadersHandlerTests.SendAsyncTests.SendAsync_Should_Not_Add_Authorization_Header_When_BearerToken_Is_Not_Present" type="Rsp.IrasPortal.IntegrationTests._5.Infrastructure.AuthHeadersHandlerTests.SendAsyncTests" method="SendAsync_Should_Not_Add_Authorization_Header_When_BearerToken_Is_Not_Present" time="0.0124083" result="Pass">
+        <traits />
+      </test>
+    </collection>
+  </assembly>
+</assemblies>

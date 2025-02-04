@@ -1,53 +1,67 @@
-﻿using Microsoft.Extensions.Logging;
-using Rsp.IrasPortal.Application.DTOs.Requests;
+﻿using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Services.Extensions;
 
 namespace Rsp.IrasPortal.Services;
 
-public class ApplicationsService(ILogger<ApplicationsService> logger, IApplicationsServiceClient applicationsClient) : IApplicationsService
+public class ApplicationsService(IApplicationsServiceClient applicationsClient) : IApplicationsService
 {
     /// <inheritdoc/>
-    public Task<ServiceResponse<IrasApplicationResponse>> GetApplication(string applicationId)
+    public async Task<ServiceResponse<IrasApplicationResponse>> GetApplication(string applicationId)
     {
-        return applicationsClient.GetApplication(applicationId);
+        var apiResponse = await applicationsClient.GetApplication(applicationId);
+
+        return apiResponse.ToServiceResponse();
     }
 
     /// <inheritdoc/>
-    public Task<ServiceResponse<IEnumerable<IrasApplicationResponse>>> GetApplications()
+    public async Task<ServiceResponse<IEnumerable<IrasApplicationResponse>>> GetApplications()
     {
-        return applicationsClient.GetApplications();
+        var apiResponse = await applicationsClient.GetApplications();
+
+        return apiResponse.ToServiceResponse();
     }
 
     /// <inheritdoc/>
-    public Task<ServiceResponse<IrasApplicationResponse>> GetApplicationByStatus(string applicationId, string status)
+    public async Task<ServiceResponse<IrasApplicationResponse>> GetApplicationByStatus(string applicationId, string status)
     {
-        return applicationsClient.GetApplicationByStatus(applicationId, status);
+        var apiResponse = await applicationsClient.GetApplicationByStatus(applicationId, status);
+
+        return apiResponse.ToServiceResponse();
     }
 
     /// <inheritdoc/>
-    public Task<ServiceResponse<IEnumerable<IrasApplicationResponse>>> GetApplicationsByStatus(string status)
+    public async Task<ServiceResponse<IEnumerable<IrasApplicationResponse>>> GetApplicationsByStatus(string status)
     {
-        return applicationsClient.GetApplicationsByStatus(status);
+        var apiResponse = await applicationsClient.GetApplicationsByStatus(status);
+
+        return apiResponse.ToServiceResponse();
     }
 
     /// <inheritdoc/>
-    public Task<ServiceResponse<IEnumerable<IrasApplicationResponse>>> GetApplicationsByRespondent(string respondentId)
+    public async Task<ServiceResponse<IEnumerable<IrasApplicationResponse>>> GetApplicationsByRespondent(string respondentId)
     {
-        return applicationsClient.GetApplicationsByRespondent(respondentId);
+        var apiResponse = await applicationsClient.GetApplicationsByRespondent(respondentId);
+
+        return apiResponse.ToServiceResponse();
     }
 
     /// <inheritdoc/>
-    public Task<ServiceResponse<IrasApplicationResponse>> CreateApplication(IrasApplicationRequest irasApplication)
+    public async Task<ServiceResponse<IrasApplicationResponse>> CreateApplication(IrasApplicationRequest irasApplication)
     {
-        return applicationsClient.CreateApplication(irasApplication);
+        var apiResponse = await applicationsClient.CreateApplication(irasApplication);
+
+        return apiResponse.ToServiceResponse();
     }
 
     /// <inheritdoc/>
-    public Task<ServiceResponse<IrasApplicationResponse>> UpdateApplication(IrasApplicationRequest irasApplication)
+    public async Task<ServiceResponse<IrasApplicationResponse>> UpdateApplication(IrasApplicationRequest irasApplication)
     {
-        return applicationsClient.UpdateApplication(irasApplication);
+        var apiResponse = await applicationsClient.UpdateApplication(irasApplication);
+
+        return apiResponse.ToServiceResponse();
     }
 }

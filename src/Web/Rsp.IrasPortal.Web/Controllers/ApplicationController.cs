@@ -12,13 +12,12 @@ using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Entities;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
-using Rsp.Logging.Extensions;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "app:[action]")]
 [Authorize(Policy = "IsUser")]
-public class ApplicationController(ILogger<ApplicationController> logger, IApplicationsService applicationsService, IValidator<ApplicationInfoViewModel> validator) : Controller
+public class ApplicationController(IApplicationsService applicationsService, IValidator<ApplicationInfoViewModel> validator) : Controller
 {
     // ApplicationInfo view name
     private const string ApplicationInfo = nameof(ApplicationInfo);
@@ -27,15 +26,11 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
     [Route("/", Name = "app:welcome")]
     public IActionResult Welcome()
     {
-        logger.LogInformationHp("called");
-
         return View(nameof(Index));
     }
 
     public IActionResult StartNewApplication()
     {
-        logger.LogInformationHp("called");
-
         HttpContext.Session.RemoveAllSessionValues();
 
         return View(ApplicationInfo, (new ApplicationInfoViewModel(), "create"));
@@ -43,8 +38,6 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
 
     public async Task<IActionResult> EditApplication(string applicationId)
     {
-        logger.LogInformationHp("called");
-
         // get the pending application by id
         var applicationsServiceResponse = await applicationsService.GetApplication(applicationId);
 
@@ -71,8 +64,6 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
     [HttpPost]
     public async Task<IActionResult> CreateApplication(ApplicationInfoViewModel model)
     {
-        logger.LogInformationHp("called");
-
         var context = new ValidationContext<ApplicationInfoViewModel>(model);
 
         var validationResult = await validator.ValidateAsync(context);
@@ -132,8 +123,6 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
 
     public IActionResult DocumentUpload()
     {
-        logger.LogInformationHp("called");
-
         TempData.TryGetValue<List<Document>>(TempDataKeys.UploadedDocuments, out var documents, true);
 
         return View(documents);
@@ -142,8 +131,6 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
     [HttpPost]
     public IActionResult Upload(IFormFileCollection formFiles)
     {
-        logger.LogInformationHp("called");
-
         List<Document> documents = [];
 
         foreach (var file in formFiles)
@@ -162,11 +149,9 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
     }
 
     [HttpGet]
-    [FeatureGate("Navigation.MyApplications")]
+    [FeatureGate(Features.MyApplications)]
     public async Task<IActionResult> MyApplications()
     {
-        logger.LogMethodStarted(LogLevel.Information);
-
         var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
 
         HttpContext.Session.RemoveAllSessionValues();
@@ -187,8 +172,6 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
     [Route("{applicationId}", Name = "app:ViewApplication")]
     public async Task<IActionResult> ViewApplication(string applicationId)
     {
-        logger.LogMethodStarted(LogLevel.Information);
-
         // if the ModelState is invalid, return the view
         // with the null model. The view shouldn't display any
         // data as model is null
@@ -212,16 +195,12 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
 
     public IActionResult ReviewAnswers()
     {
-        logger.LogInformationHp("called");
-
         return View(this.GetApplicationFromSession());
     }
 
     [HttpPost]
     public async Task<IActionResult> SaveApplication(ApplicationInfoViewModel model)
     {
-        logger.LogInformationHp("called");
-
         var context = new ValidationContext<ApplicationInfoViewModel>(model);
 
         var validationResult = await validator.ValidateAsync(context);
@@ -273,8 +252,6 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
     [AllowAnonymous]
     public IActionResult ViewportTesting()
     {
-        logger.LogInformationHp("called");
-
         return View();
     }
 
@@ -282,8 +259,6 @@ public class ApplicationController(ILogger<ApplicationController> logger, IAppli
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {
-        logger.LogInformationHp("called");
-
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
 }
