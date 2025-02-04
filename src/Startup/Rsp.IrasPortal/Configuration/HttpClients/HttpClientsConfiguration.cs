@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
+﻿using System.Text.Json;
 using Refit;
 using Rsp.IrasPortal.Application.Configuration;
 using Rsp.IrasPortal.Application.Constants;
@@ -8,7 +7,6 @@ using Rsp.IrasPortal.Infrastructure.HttpMessageHandlers;
 
 namespace Rsp.IrasPortal.Configuration.HttpClients;
 
-[ExcludeFromCodeCoverage]
 public static class HttpClientsConfiguration
 {
     /// <summary>

@@ -193,7 +193,7 @@ public class UsersController(IUserManagementService userManagementService) : Con
         var getRolesResponse = await userManagementService.GetRoles();
 
         // empty roles list
-        var roles = Enumerable.Empty<Role>();
+        IEnumerable<Role> roles;
 
         // build a list of roles
         if (getRolesResponse.IsSuccessStatusCode)
@@ -205,7 +205,7 @@ public class UsersController(IUserManagementService userManagementService) : Con
 
             if (!roles.Any())
             {
-                View(UserRolesView);
+                return View(UserRolesView);
             }
         }
         else

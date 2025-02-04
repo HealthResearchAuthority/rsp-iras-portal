@@ -1,49 +1,41 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-	<PropertyGroup>
-		<OutputType>Exe</OutputType>
-		<TargetFramework>net8.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-	  <UserSecretsId>1ea7a96d-65ff-44be-a9d0-4043a5e5d043</UserSecretsId>
-  </PropertyGroup>
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+		<TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <UserSecretsId>1ea7a96d-65ff-44be-a9d0-4043a5e5d043</UserSecretsId>
+    </PropertyGroup>
 
-	<ItemGroup>
-	  <Content Remove="compilerconfig.json" />
-	</ItemGroup>
+    <ItemGroup>
+    	<PackageReference Include="AspNetCore.HealthChecks.Uris" Version="9.0.0" />
+	<PackageReference Include="Azure.Identity" Version="1.13.2" />
+	<PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
+        <PackageReference Include="Mapster" Version="7.4.0" />
+	<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.1" />
+	<PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="9.0.1" />
+	<PackageReference Include="Microsoft.AspNetCore.HeaderPropagation" Version="9.0.1" />
+	<PackageReference Include="Microsoft.Azure.AppConfiguration.AspNetCore" Version="8.0.0" />
+	<PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.3.0" />
+    </ItemGroup>
 
-	<ItemGroup>
-	  <None Include="compilerconfig.json" />
-	</ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\..\rsp-service-defaults\src\Rsp.ServiceDefaults\Rsp.ServiceDefaults.csproj" />
+        <ProjectReference Include="..\..\Infrastructure\Rsp.IrasPortal.Infrastructure\Rsp.IrasPortal.Infrastructure.csproj" />
+        <ProjectReference Include="..\..\Services\Rsp.IrasPortal.Services\Rsp.IrasPortal.Services.csproj" />
+        <ProjectReference Include="..\..\Web\Rsp.IrasPortal.Web\Rsp.IrasPortal.Web.csproj" />
+    </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="AspNetCore.HealthChecks.Uris" Version="8.0.1" />
-		<PackageReference Include="Azure.Identity" Version="1.12.0" />
-		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.9.2" />
-		<PackageReference Include="Mapster" Version="7.4.0" />
-		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
-		<PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.8" />
-		<PackageReference Include="Microsoft.AspNetCore.HeaderPropagation" Version="8.0.8" />
-		<PackageReference Include="Microsoft.Azure.AppConfiguration.AspNetCore" Version="7.3.0" />
-		<PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.0.2" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<ProjectReference Include="..\..\..\..\rsp-service-defaults\src\Rsp.ServiceDefaults\Rsp.ServiceDefaults.csproj" />
-		<ProjectReference Include="..\..\Infrastructure\Rsp.IrasPortal.Infrastructure\Rsp.IrasPortal.Infrastructure.csproj" />
-		<ProjectReference Include="..\..\Services\Rsp.IrasPortal.Services\Rsp.IrasPortal.Services.csproj" />
-		<ProjectReference Include="..\..\Web\Rsp.IrasPortal.Web\Rsp.IrasPortal.Web.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Update="appsettings.Development.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="appsettings.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="logsettings.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-	</ItemGroup>
+    <ItemGroup>
+        <None Update="appsettings.Development.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="appsettings.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="logsettings.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
 </Project>

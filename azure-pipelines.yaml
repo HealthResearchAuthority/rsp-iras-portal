@@ -30,6 +30,14 @@ parameters:
     displayName: Run GitHub Advanced Security Scan
     type: boolean
     default: true
+  - name: run_sonarcloud_analysis
+    displayName: Run Sonar Cloud Analysis
+    type: boolean
+    default: true
+  - name: skip_deployment
+    displayName: Skip Deployment
+    type: boolean
+    default: false
   - name: browser
     displayName: Select a Browser
     type: string
@@ -91,32 +99,40 @@ stages:
           run_github_security_scan: ${{ parameters.run_github_security_scan }}
           sonar_project_key: FutureIRAS_rsp-iras-portal
           sonar_project_name: rsp-iras-portal
+          run_sonarcloud_analysis: ${{ parameters.run_sonarcloud_analysis }}
           install_aspire: true
           service_defaults_repo: service_defaults
-
-      - template: jobs/deployPortal.yaml@library
-        parameters:
-          install_aspire: true
-          service_defaults_repo: service_defaults
+      
+      - ${{ if eq(parameters.skip_deployment, false) }}:
+        - template: jobs/deployPortal.yaml@library
+          parameters:
+            depends_on: 'Build'
+            install_aspire: true
+            service_defaults_repo: service_defaults
 
   - stage: systemtest_auto
     variables: 
     - group: 'STAutoEnvironment'
     condition: eq('${{ parameters.env }}', 'systemtest_auto')
     jobs:
+      - job:
+        steps:
+        - script: |
+            echo 'env: system test auto'
+
       - template: jobs/deployPortal.yaml@library
         parameters:
           install_aspire: true
           service_defaults_repo: service_defaults
 
-      - ${{ if eq(variables.run_e2e_tests, 'true') }}:
+      - ${{ if eq(variables.run_e2e_tests, true) }}:
         - template: jobs/e2e_tests.yaml@library
           parameters:
             browser: ${{ parameters.browser }}
             repo: e2e_tests
             tests_run_timeout: ${{ parameters.tests_run_timeout }}
       
-      - ${{ if eq(variables.run_api_tests, 'true') }}:
+      - ${{ if eq(variables.run_api_tests, true) }}:
         - template: jobs/api_tests.yaml@library
           parameters:
             repo: api_tests

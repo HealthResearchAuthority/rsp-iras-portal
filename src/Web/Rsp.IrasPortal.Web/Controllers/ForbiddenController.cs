@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Mvc;
 using Rsp.Logging.Domain;
 using Rsp.Logging.Extensions;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
+[ExcludeFromCodeCoverage]
 [Route("[controller]")]
 public class ForbiddenController(ILogger<ForbiddenController> logger) : Controller
 {

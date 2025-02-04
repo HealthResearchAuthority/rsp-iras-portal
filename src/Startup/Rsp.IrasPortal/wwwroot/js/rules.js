@@ -143,7 +143,11 @@ function processEvaluations(evaluations) {
  */
 function groupBy(array, key) {
     return array.reduce((result, item) => {
-        (result[item[key]] = result[item[key]] || []).push(item);
+        const groupKey = item[key];
+        if (!result[groupKey]) {
+            result[groupKey] = [];
+        }
+        result[groupKey].push(item);
         return result;
     }, {});
 }

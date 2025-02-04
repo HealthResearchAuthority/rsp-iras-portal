@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using ExcelDataReader;
 using FluentValidation;
@@ -8,10 +9,10 @@ using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Models;
-using Rsp.Logging.Extensions;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
+[ExcludeFromCodeCoverage]
 [Route("[controller]/[action]", Name = "questionset:[action]")]
 [Authorize(Policy = "IsAdmin")]
 public class QuestionSetController(IQuestionSetService questionSetService, IValidator<QuestionSetFileModel> validator) : Controller

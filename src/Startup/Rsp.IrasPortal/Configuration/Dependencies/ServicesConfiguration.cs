@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Infrastructure.Claims;
 using Rsp.IrasPortal.Infrastructure.HttpMessageHandlers;
@@ -10,7 +9,6 @@ namespace Rsp.IrasPortal.Configuration.Dependencies;
 /// <summary>
 ///  User Defined Services Configuration
 /// </summary>
-[ExcludeFromCodeCoverage]
 public static class ServicesConfiguration
 {
     /// <summary>
