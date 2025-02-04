@@ -115,11 +115,6 @@ stages:
     - group: 'STAutoEnvironment'
     condition: eq('${{ parameters.env }}', 'systemtest_auto')
     jobs:
-      - job:
-        steps:
-        - script: |
-            echo 'env: system test auto'
-
       - template: jobs/deployPortal.yaml@library
         parameters:
           install_aspire: true
