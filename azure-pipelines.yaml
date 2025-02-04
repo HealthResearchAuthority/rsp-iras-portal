@@ -152,6 +152,7 @@ stages:
 
       - template: jobs/deployPortal.yaml@library
         parameters:
+          depends_on: 'Build'
           install_aspire: true
           service_defaults_repo: service_defaults
 
