@@ -2,12 +2,12 @@
 @model (ApplicationInfoViewModel Info, string mode)
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-        <h2 class="govuk-heading-l" id="title">Enter application details</h2>
-    </div>
+	<div class="govuk-grid-column-two-thirds">
+		<h2 class="govuk-heading-l" id="title">Enter application details</h2>
+	</div>
 </div>
-<form method="post">
 
+<form method="post">
     @{
         var errorKey = string.Empty;
         var validationMessage = string.Empty;
@@ -16,25 +16,21 @@
 
     <partial name="_ValidationSummary" model="@(ViewData.ModelState, "Please address the following issues:")" />
 
+    @* Project Name Field *@
     @{
-        errorKey = $"name";
+        errorKey = "name";
         validationMessage = "Provide an application name";
         fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
     }
 
     <div id="Name" class="govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")">
-
         <h1 class="govuk-label-wrapper">
-            <label class="govuk-label govuk-label--s" for="projectName">
-                Enter an application name
-            </label>
+            <label class="govuk-label govuk-label--s" for="app-name">Enter an application name</label>
         </h1>
-
         @if (fieldHasErrors)
         {
             @Html.ValidationMessage(errorKey, validationMessage, new { @class = "govuk-error-message" })
         }
-
         <input class="govuk-input govuk-input--width-30"
                id="app-name"
                name="name"
@@ -42,31 +38,44 @@
                value="@Model.Info.Name">
     </div>
 
+    @* Project Description Field *@
     @{
-        errorKey = $"description";
+        errorKey = "description";
         validationMessage = "Provide an application description";
         fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
     }
 
     <div id="Description" class="govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")">
-
         <h1 class="govuk-label-wrapper">
-            <label class="govuk-label govuk-label--s" for="projectDescription">
-                Enter application description
-            </label>
+            <label class="govuk-label govuk-label--s" for="app-description">Enter application description</label>
         </h1>
-
         @if (fieldHasErrors)
         {
             @Html.ValidationMessage(errorKey, validationMessage, new { @class = "govuk-error-message" })
         }
-
         <input class="govuk-input govuk-input--width-30"
                id="app-description"
                name="description"
                type="text"
                value="@Model.Info.Description">
     </div>
+
+
+
+
+    <div class="govuk-form-group">
+        <label class="govuk-label" for="sponsorSearch">
+            Sponsor organisation
+        </label>
+        <span class="govuk-hint">You can search by name, description, or sponsor.</span>
+
+        <div class="govuk-input__wrapper">
+            <input class="govuk-input" id="sponsorSearch" name="searchTerm" type="text" value="@Model.Info.Sponsor">
+            <button type="button" class="govuk-button" id="searchButton">Search</button>
+        </div>
+    </div>
+
+    <ul id="searchResults" class="govuk-list govuk-list--bullet"></ul>
 
     @{
         (string Route, string Action) = Model.mode switch
@@ -78,5 +87,45 @@
     }
 
     <partial name="_SubmitButton" model="@(Route, Action, new Dictionary<string, string>())" />
-
 </form>
+
+@section Scripts {
+	<script>
+		document.addEventListener("DOMContentLoaded", function () {
+			debugger;
+			const input = document.getElementById("sponsorSearch");
+			const button = document.getElementById("searchButton");
+			const resultsList = document.getElementById("searchResults");
+
+			button.addEventListener("click", function () {
+				const query = input.value.trim();
+				if (query.length < 2) {
+					resultsList.innerHTML = "<li>No results found</li>";
+					return;
+				}
+
+				fetch(`/Rts/SearchByName?searchTerm=${encodeURIComponent(query)}`)
+					.then(response => response.json())
+					.then(data => {
+						resultsList.innerHTML = "";
+						if (!data.success || data.data.length === 0) {
+							resultsList.innerHTML = "<li>No results found</li>";
+							return;
+						}
+
+						data.data.forEach(item => {
+							const li = document.createElement("li");
+							li.textContent = item;
+							resultsList.appendChild(li);
+						});
+					})
+					.catch(error => {
+						console.error("Error fetching data:", error);
+						resultsList.innerHTML = "<li>Error fetching results</li>";
+					});
+			});
+		});
+	</script>
+}
+
+

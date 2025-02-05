@@ -23,6 +23,7 @@ public static class ServicesConfiguration
         services.AddTransient<IQuestionSetService, QuestionSetService>();
         services.AddTransient<IRespondentService, RespondentService>();
         services.AddTransient<IClaimsTransformation, CustomClaimsTransformation>();
+        services.AddTransient<IRtsService, RtsService>();
 
         // add message handlers
         services.AddTransient<AuthHeadersHandler>();
