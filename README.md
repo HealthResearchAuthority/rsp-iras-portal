@@ -1,6 +1,6 @@
 # Introduction
 
-This project is a basic web application built with ASP.NET Core MVC using .NET 8. It follows the Model-View-Controller (MVC) architectural pattern, which is a standard design pattern that many developers are familiar with. It provides a clean and organized structure for your project, making it easier to maintain and scale.
+This project is a basic web application built with ASP.NET Core MVC using .NET 9. It follows the Model-View-Controller (MVC) architectural pattern, which is a standard design pattern that many developers are familiar with. It provides a clean and organized structure for your project, making it easier to maintain and scale.
 
 This project is for Web Application Development.
 
@@ -12,7 +12,7 @@ For detailed instructions on how to contribute to this project, please read [CON
 
 ## Prerequisites
 
-- .NET 8 SDK
+- .NET 9 SDK
 - VsCode or Visual Studio 2022 or later
 - Configure secrets (sensitive data) using Secret Manager tool
 
