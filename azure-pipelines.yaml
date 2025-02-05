@@ -84,7 +84,7 @@ resources:
       name: 'Research Systems Programme/rsp-iras-api-tests'
       ref: main
     - repository: service_defaults
-      type: git
+      type: github
       name: rsp-service-defaults
       ref: ${{ parameters.servicedefaults_library_branch }}
 
