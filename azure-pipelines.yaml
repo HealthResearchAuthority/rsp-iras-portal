@@ -77,15 +77,15 @@ resources:
       ref: ${{ parameters.devops_library_branch }}
     - repository: e2e_tests
       type: git
-      name: 'HealthResearchAuthority/rsp-iras-qa'
+      name: 'Research Systems Programme/rsp-iras-qa'
       ref: main
     - repository: api_tests
       type: git
-      name: 'HealthResearchAuthority/rsp-iras-api-tests'
+      name: 'Research Systems Programme/rsp-iras-api-tests'
       ref: main
     - repository: service_defaults
       type: git
-      name: 'HealthResearchAuthority/rsp-service-defaults'
+      name: 'rsp-service-defaults'
       ref: ${{ parameters.servicedefaults_library_branch }}
 
 stages:
