@@ -86,6 +86,7 @@ resources:
     - repository: service_defaults
       type: github
       name: rsp-service-defaults
+      endpoint: TriggerAzurePipelineFromGitHubAction
       ref: ${{ parameters.servicedefaults_library_branch }}
 
 stages:
