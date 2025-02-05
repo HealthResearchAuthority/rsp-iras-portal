@@ -85,7 +85,7 @@ resources:
       ref: main
     - repository: service_defaults
       type: git
-      name: 'HealthResearchAuthority/rsp-service-defaults'
+      name: rsp-service-defaults
       ref: ${{ parameters.servicedefaults_library_branch }}
 
 stages:
