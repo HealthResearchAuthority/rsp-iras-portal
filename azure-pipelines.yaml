@@ -86,7 +86,7 @@ resources:
     - repository: service_defaults
       type: github
       name: 'HealthResearchAuthority/rsp-service-defaults'
-      endpoint: TriggerAzurePipelineFromGitHubAction
+      endpoint: AzureDevOpsToGitHubConnection
       ref: ${{ parameters.servicedefaults_library_branch }}
 
 stages:
