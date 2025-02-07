@@ -76,12 +76,14 @@ resources:
       name: DevOps/rsp-azure-devops-library
       ref: ${{ parameters.devops_library_branch }}
     - repository: e2e_tests
-      type: git
-      name: 'Research Systems Programme/rsp-iras-qa'
+      type: github
+      name: 'HealthResearchAuthority/rsp-iras-qa'
+      endpoint: AzureDevOpsToGitHubConnection
       ref: main
     - repository: api_tests
-      type: git
-      name: 'Research Systems Programme/rsp-iras-api-tests'
+      type: github
+      name: 'HealthResearchAuthority/rsp-iras-api-tests'
+      endpoint: AzureDevOpsToGitHubConnection
       ref: main
     - repository: service_defaults
       type: github
