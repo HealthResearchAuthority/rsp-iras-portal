@@ -14,7 +14,6 @@
     var currentStage = TempData[TempDataKeys.CurrentStage] as string;
     var errorSummaryTitle = "You need to complete these questions before you can continue::";
     var applicationId = TempData[TempDataKeys.ApplicationId] as string;
-    var validationMessages = new List<string>();
 
     void BuildValidationMessage(IList<RuleDto> rules, string errorKey, string validationMessage)
     {
@@ -30,9 +29,11 @@
         // get all the conditions for the rule
         var conditions = rules.SelectMany(rule => GetConditions(rule));
 
+        var validationMessages = new List<string>();
+
         // if there are not conditions
         // use the validationMessage
-        if (!conditions.Any() && !validationMessages.Contains(validationMessage, StringComparer.OrdinalIgnoreCase))
+        if (!conditions.Any())
         {
             // if the same validationMessage is not present in the list
             // build the validation message and add it, so that it doesn't
