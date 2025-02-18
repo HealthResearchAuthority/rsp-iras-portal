@@ -5,7 +5,6 @@
 // for details on configuring this project to bundle and minify static web assets.
 
 // questionnaire.js
-
 $(function () {
     // Hide all conditional questions initially
     $(".conditional").hide();
@@ -22,7 +21,8 @@ $(function () {
 
         // Set up event listeners for parent questions
         parentQuestionIds.forEach(function (parentQuestionId) {
-            const $parentInputs = $(`input[id^=${parentQuestionId}]`);
+            // Select both radio button inputs and drop-down lists whose id starts with parentQuestionId
+            const $parentInputs = $(`input[id^="${parentQuestionId}"], select[id^="${parentQuestionId}"]`);
 
             // Evaluate rules initially and set visibility
             updateConditionalVisibility(questionId, $conditionalElement);
@@ -35,6 +35,7 @@ $(function () {
         });
     });
 });
+
 
 /**
  * Updates the visibility of a conditional question based on rule evaluation.
@@ -49,11 +50,17 @@ function updateConditionalVisibility(questionId, $conditionalElement) {
         $conditionalElement.slideDown();
         $(`#${questionId}_guide`).slideDown();
     } else {
-        $conditionalElement.slideUp().find(":text").val("");
-        $conditionalElement.slideUp().find(":radio", ":checkbox").prop("checked", false).trigger("change");
+        // Clear text inputs
+        $conditionalElement.find(":text").val("");
+        // Uncheck radio buttons and checkboxes
+        $conditionalElement.find(":radio, :checkbox").prop("checked", false).trigger("change");
+        // Reset drop-down lists to their default (first) option
+        $conditionalElement.find("select").prop("selectedIndex", 0).trigger("change");
+
+        $conditionalElement.slideUp();
         $(`#${questionId}_guide`).slideUp();
     }
 
-    // Maintain the current scroll position
+    // Restore the original scroll position
     $(window).scrollTop(scrollPosition);
 }

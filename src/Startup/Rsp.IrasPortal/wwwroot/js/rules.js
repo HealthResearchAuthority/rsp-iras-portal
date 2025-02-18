@@ -81,38 +81,53 @@ function evaluateCondition(condition, parentQuestionId) {
         return { EvaluationResult: false, NoSelection: false };
     }
 
-    // Handle the IN operator to evaluate based on selected options
+    // Gather radio/checkbox inputs whose IDs start with the parentQuestionId
+    const radioInputs = $(`input[id^="${parentQuestionId}"]`);
+    const selectedRadioAnswers = radioInputs.filter(":checked");
 
-    // Find all input elements with IDs starting with the parentQuestionId
-    const parentQuestionAnswers = $(`input[id^=${parentQuestionId}]`);
+    // Gather drop-down (select) elements whose IDs start with the parentQuestionId
+    const selectInputs = $(`select[id^="${parentQuestionId}"]`);
 
-    // get all the selected answers (radio or checkboxes)
-    const selectedAnswers = parentQuestionAnswers.filter(":checked");
+    let selectedIds = [];
 
-    // If no selection is made, the condition is not satisfied
-    if (selectedAnswers.length === 0) {
+    // Process radio/checkbox inputs: extract the answer part from their IDs (format: questionId_answerId)
+    selectedRadioAnswers.each(function () {
+        const idParts = this.id.split("_");
+        if (idParts.length > 1) {
+            selectedIds.push(idParts[1]);
+        }
+    });
+
+    // Process drop-down selections: get the selected value if it exists
+    selectInputs.each(function () {
+        const val = $(this).val();
+        if (val !== "" && val !== null) {
+            selectedIds.push(val);
+        }
+    });
+
+    // If no selection is made across both types, the condition is not satisfied
+    if (selectedIds.length === 0) {
         return { EvaluationResult: false, NoSelection: true };
     }
 
-    // Get the IDs of the selected options
-    const selectedIds = selectedAnswers.map((_, answer) => answer.id.split("_")[1]).get();
-
-    // get the matching options by checking if it matches with the paretnOptions
+    // Get the matching options by checking if they are included in the parent options specified in the condition
     const matchingOptions = condition.ParentOptions.filter(option => selectedIds.includes(option));
 
     // Evaluate based on the option type specified in the condition
     switch (condition.OptionType) {
         case "Single":
-            // Only one option must be selected, and it must match a parent option
+            // Only one option must be selected and it must match one of the parent options
             return { EvaluationResult: selectedIds.length === 1 && matchingOptions.length === 1, NoSelection: false };
         case "Exact":
-            // The count of selected options must match the specified options
+            // The count of selected options must match the count of matching parent options
             return { EvaluationResult: matchingOptions.length === selectedIds.length, NoSelection: false };
         default:
-            // At least one selected option must match the parent options
+            // At least one selected option must match one of the parent options
             return { EvaluationResult: matchingOptions.length > 0, NoSelection: false };
     }
 }
+
 
 /**
  * Processes evaluation results to determine rule applicability
