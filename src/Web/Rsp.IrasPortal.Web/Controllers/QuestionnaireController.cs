@@ -196,7 +196,7 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
             // or a single value
             var optionType = question.DataType switch
             {
-                "Boolean" or "Radio button" => "Single",
+                "Boolean" or "Radio button" or "Look-up list" => "Single",
                 "Checkbox" => "Multiple",
                 _ => null
             };
