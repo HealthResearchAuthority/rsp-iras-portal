@@ -340,45 +340,18 @@
 									BuildValidationMessage(question.Rules, errorKey, validationMessage);
 								}
 
-								@* Render a hidden field for the selected answer binding *@
-								@Html.HiddenFor(model => model.Questions[index].SelectedOption)
-
-								@* Build the drop-down list. Note that each option gets an id of the form:
-               question.QuestionId + "_" + answer.AnswerId *@
-								<select id="@question.QuestionId" name="Questions[@index].SelectedOption" class="govuk-select">
-									<option value="">-- Please select --</option>
-									@foreach (var answer in question.Answers)
-									{
-										<option id="@($"{question.QuestionId}_{answer.AnswerId}")" value="@answer.AnswerId">
-											@answer.AnswerText
-										</option>
-									}
-								</select>
-
-								@* Output hidden fields for each answer (if your view model still requires these) *@
-								@foreach (var (answer, ansIndex) in question.Answers.Select((answer, ansIndex) => (answer, ansIndex)))
-								{
-									@Html.HiddenFor(model => model.Questions[index].Answers[ansIndex].AnswerId)
-									@Html.HiddenFor(model => model.Questions[index].Answers[ansIndex].AnswerText)
-								}
+								<select id="@question.QuestionId" name="Questions[@index].SelectedOption" asp-for="Questions[@index].SelectedOption" class="govuk-select">
+                                    <option value="" selected disabled>Please select...</option>
+                                    @foreach (var answer in question.Answers)
+                                    {
+                                        <option id="@($"{question.QuestionId}_{answer.AnswerId}")" value="@answer.AnswerId">
+                                            @answer.AnswerText
+                                        </option>
+                                    }
+                                </select>
 							</govuk-fieldset>
 						</div>
 					}
-
-
-
-                    // ADD GUIDANCE TEXT HERE
-
-                    @*              <details class="govuk-details">
-                        <summary class="govuk-details__summary">
-                            <span class="govuk-details__summary-text">
-                                Help with nationality
-                            </span>
-                        </summary>
-                        <div class="govuk-details__text">
-                            We need to know your nationality so we can work out which elections you’re entitled to vote in. If you cannot provide your nationality, you’ll have to send copies of identity documents through the post.
-                        </div>
-                    </details> *@
                 }
             </govuk-fieldset>
         }
