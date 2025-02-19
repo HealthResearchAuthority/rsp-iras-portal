@@ -71,7 +71,7 @@
                         <authorized auth-params="@new(Roles:"admin")">
                             <li class="govuk-service-navigation__item">
                                 <a class="govuk-service-navigation__link"
-                                   asp-route="questionset:upload">
+                                   asp-route="questionset:index">
                                     Question Set
                                 </a>
                             </li>
@@ -103,9 +103,9 @@
             </div>
         </div>
     </section>
-    <section class="govuk-notification-banner" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+    <section class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner" style="background-color:firebrick;border:0;margin:0">
         <div class="govuk-notification-banner__header">
-            <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+            <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title" style="text-align:center">
                 TECHNICAL PROOF OF CONCEPT
             </h2>
         </div>

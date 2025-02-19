@@ -1,0 +1,106 @@
+﻿@using static Rsp.IrasPortal.Application.Constants.QuestionCategories;
+@model (string currentStage, string completedStage, string versionId)
+
+@{
+    var progressBarStyle = string.Empty;
+
+    string GetState(string stage, out string style)
+    {
+        var state = Model.currentStage == stage ? " active" : Model.completedStage == stage ? " completed" : string.Empty;
+        //style = state == string.Empty ? "display: none" : "";
+        style = "";
+
+        return state;
+    };
+
+}
+
+<div class="govuk-grid-row">
+    <div class="progress-container">
+
+        <div class="stage completed">
+            <div class="progress-line" style="@progressBarStyle"></div>
+            <div class="stage-circle"></div>
+            <div class="stage-label">Initiate</div>
+        </div>
+
+        <div class="stage@(GetState(A, out progressBarStyle))">
+
+            <div class="progress-line" style="@progressBarStyle"></div>
+            <div class="stage-circle"></div>
+            <div class="stage-label">
+                <button class="govuk-link" type="submit" asp-route="questionset:previewapplication" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "A" }, { "versionId", Model.versionId }})">Project Filter</button>
+            </div>
+        </div>
+        <div class="stage@(GetState(B, out progressBarStyle))">
+            <div class="progress-line" style="@progressBarStyle"></div>
+            <div class="stage-circle"></div>
+            <div class="stage-label">
+                <button class="govuk-link" type="submit" asp-route="questionset:previewapplication" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "B" }, { "versionId", Model.versionId }})">Project Details</button>
+            </div>
+        </div>
+        <div class="stage@(GetState(C1, out progressBarStyle))">
+            <div class="progress-line" style="@progressBarStyle"></div>
+            <div class="stage-circle"></div>
+            <div class="stage-label">
+                <button class="govuk-link" type="submit" asp-route="questionset:previewapplication" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C1" }, { "versionId", Model.versionId }})">Student</button>
+            </div>
+        </div>
+        <div class="stage@(GetState(C2, out progressBarStyle))">
+            <div class="progress-line" style="@progressBarStyle"></div>
+            <div class="stage-circle"></div>
+            <div class="stage-label">
+                <button class="govuk-link" type="submit" asp-route="questionset:previewapplication" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C2" }, { "versionId", Model.versionId }})">Research Bioresources</button>
+            </div>
+        </div>
+        <div class="stage@(GetState(C3, out progressBarStyle))">
+            <div class="progress-line" style="@progressBarStyle"></div>
+            <div class="stage-circle"></div>
+            <div class="stage-label">
+                <button class="govuk-link" type="submit" asp-route="questionset:previewapplication" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C3" }, { "versionId", Model.versionId }})">CTIMP</button>
+            </div>
+        </div>
+        <div class="stage@(GetState(C4, out progressBarStyle))">
+            <div class="progress-line" style="@progressBarStyle"></div>
+            <div class="stage-circle"></div>
+            <div class="stage-label">
+                <button class="govuk-link" type="submit" asp-route="questionset:previewapplication" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C4" }, { "versionId", Model.versionId }})">Devices</button>
+            </div>
+        </div>
+        <div class="stage@(GetState(C5, out progressBarStyle))">
+            <div class="progress-line" style="@progressBarStyle"></div>
+            <div class="stage-circle"></div>
+            <div class="stage-label">
+                <button class="govuk-link" type="submit" asp-route="questionset:previewapplication" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C5" }, { "versionId", Model.versionId }})">Ionising Radiation</button>
+            </div>
+        </div>
+        <div class="stage@(GetState(C6, out progressBarStyle))">
+            <div class="progress-line" style="@progressBarStyle"></div>
+            <div class="stage-circle"></div>
+            <div class="stage-label">
+                <button class="govuk-link" type="submit" asp-route="questionset:previewapplication" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C6" }, { "versionId", Model.versionId }})">Tissue</button>
+            </div>
+        </div>
+        <div class="stage@(GetState(C7, out progressBarStyle))">
+            <div class="progress-line" style="@progressBarStyle"></div>
+            <div class="stage-circle"></div>
+            <div class="stage-label">
+                <button class="govuk-link" type="submit" asp-route="questionset:previewapplication" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C7" }, { "versionId", Model.versionId }})">Adults Lacking Capacity</button>
+            </div>
+        </div>
+        <div class="stage@(GetState(C8, out progressBarStyle))">
+            <div class="progress-line" style="@progressBarStyle"></div>
+            <div class="stage-circle"></div>
+            <div class="stage-label">
+                <button class="govuk-link" type="submit" asp-route="questionset:previewapplication" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C8" }, { "versionId", Model.versionId }})">Children</button>
+            </div>
+        </div>
+        <div class="stage@(GetState(D, out progressBarStyle))">
+            <div class="progress-line" style="@progressBarStyle"></div>
+            <div class="stage-circle"></div>
+            <div class="stage-label">
+                <button class="govuk-link" type="submit" asp-route="questionset:previewapplication" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "D" }, { "versionId", Model.versionId }})">Booking</button>
+            </div>
+        </div>
+    </div>
+</div>
