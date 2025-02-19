@@ -160,7 +160,7 @@
                     @if (question.DataType is "Date")
                     {
                         errorKey = $"Questions[{index}].AnswerText";
-                        validationMessage = "Provide an answe4r for this question";
+                        validationMessage = "Provide an answer for this question";
                         fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
 
                         <div id="Questions[@index].AnswerText" class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")" @parents @questionId>
@@ -188,36 +188,54 @@
                                             }
                                         }
                                     </div>
+                                    @{
+                                        // Extract values from AnswerText if available
+                                        if (!string.IsNullOrWhiteSpace(Model.Questions[index].AnswerText) &&
+                                            DateTime.TryParse(Model.Questions[index].AnswerText, out var parsedDate))
+                                        {
+                                            Model.Questions[index].Day = parsedDate.Day.ToString();
+                                            Model.Questions[index].Month = parsedDate.Month.ToString();
+                                            Model.Questions[index].Year = parsedDate.Year.ToString();
+                                        }
+                                    }
+
                                     <div class="govuk-date-input" id="passport-issued">
                                         <div class="govuk-date-input__item">
                                             <div class="govuk-form-group">
-                                                <label class="govuk-label govuk-date-input__label" for="passport-issued-day">
-                                                    Day
-                                                </label>
-                                                <input class="govuk-input govuk-date-input__input govuk-input--width-2" id="passport-issued-day" name="passport-issued-day" type="text" inputmode="numeric">
+                                                <label class="govuk-label govuk-date-input__label" for="Questions_@(index)_Day">Day</label>
+                                                @Html.TextBoxFor(m => m.Questions[index].Day, new
+                                                {
+                                                    @class = "govuk-input govuk-date-input__input govuk-input--width-2",
+                                                    id = "Questions_" + index + "_Day",
+                                                    inputmode = "numeric"
+                                                })
                                             </div>
                                         </div>
                                         <div class="govuk-date-input__item">
                                             <div class="govuk-form-group">
-                                                <label class="govuk-label govuk-date-input__label" for="passport-issued-month">
-                                                    Month
-                                                </label>
-                                                <input class="govuk-input govuk-date-input__input govuk-input--width-2" id="passport-issued-month" name="passport-issued-month" type="text" inputmode="numeric">
+                                                <label class="govuk-label govuk-date-input__label" for="Questions_@(index)_Month">Month</label>
+                                                @Html.TextBoxFor(m => m.Questions[index].Month, new
+                                                {
+                                                    @class = "govuk-input govuk-date-input__input govuk-input--width-2",
+                                                    id = "Questions_" + index + "_Month",
+                                                    inputmode = "numeric"
+                                                })
                                             </div>
                                         </div>
                                         <div class="govuk-date-input__item">
                                             <div class="govuk-form-group">
-                                                <label class="govuk-label govuk-date-input__label" for="passport-issued-year">
-                                                    Year
-                                                </label>
-                                                <input class="govuk-input govuk-date-input__input govuk-input--width-4" id="passport-issued-year" name="passport-issued-year" type="text" inputmode="numeric">
+                                                <label class="govuk-label govuk-date-input__label" for="Questions_@(index)_Year">Year</label>
+                                                @Html.TextBoxFor(m => m.Questions[index].Year, new
+                                                {
+                                                    @class = "govuk-input govuk-date-input__input govuk-input--width-4",
+                                                    id = "Questions_" + index + "_Year",
+                                                    inputmode = "numeric"
+                                                })
                                             </div>
                                         </div>
                                     </div>
                                 </fieldset>
                             </div>
-
-
                         </div>
                     }
 
@@ -321,26 +339,26 @@
                         </div>
                     }
 
-					@if (question.DataType is "Look-up list")
-					{
-						errorKey = $"Questions[{index}].SelectedOption";
-						validationMessage = "Select one option";
-						fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
+                    @if (question.DataType is "Look-up list")
+                    {
+                        errorKey = $"Questions[{index}].SelectedOption";
+                        validationMessage = "Select one option";
+                        fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
 
-						<div id="Questions[@index].SelectedOption"
-							 class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")"
-						@parents @questionId>
-							<govuk-fieldset>
-								<govuk-fieldset-legend class="govuk-fieldset__legend--s">
-									@question.QuestionText
-								</govuk-fieldset-legend>
+                        <div id="Questions[@index].SelectedOption"
+                             class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")"
+                             @parents @questionId>
+                            <govuk-fieldset>
+                                <govuk-fieldset-legend class="govuk-fieldset__legend--s">
+                                    @question.QuestionText
+                                </govuk-fieldset-legend>
 
-								@if (fieldHasErrors)
-								{
-									BuildValidationMessage(question.Rules, errorKey, validationMessage);
-								}
+                                @if (fieldHasErrors)
+                                {
+                                    BuildValidationMessage(question.Rules, errorKey, validationMessage);
+                                }
 
-								<select id="@question.QuestionId" name="Questions[@index].SelectedOption" asp-for="Questions[@index].SelectedOption" class="govuk-select">
+                                <select id="@question.QuestionId" name="Questions[@ index].SelectedOption" asp-for="Questions[@index].SelectedOption" class="govuk-select">
                                     <option value="" selected disabled>Please select...</option>
                                     @foreach (var answer in question.Answers)
                                     {
@@ -349,9 +367,9 @@
                                         </option>
                                     }
                                 </select>
-							</govuk-fieldset>
-						</div>
-					}
+                            </govuk-fieldset>
+                        </div>
+                    }
                 }
             </govuk-fieldset>
         }
