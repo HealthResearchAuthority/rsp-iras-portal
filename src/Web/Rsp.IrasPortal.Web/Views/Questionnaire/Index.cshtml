@@ -358,7 +358,7 @@
                                     BuildValidationMessage(question.Rules, errorKey, validationMessage);
                                 }
 
-                                <select id="@question.QuestionId" name="Questions[@ index].SelectedOption" asp-for="Questions[@index].SelectedOption" class="govuk-select">
+                                <select id="@question.QuestionId" name="Questions[@index].SelectedOption" asp-for="Questions[@index].SelectedOption" class="govuk-select">
                                     <option value="" selected disabled>Please select...</option>
                                     @foreach (var answer in question.Answers)
                                     {
