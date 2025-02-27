@@ -10,6 +10,8 @@ using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
+using static System.Collections.Specialized.BitVector32;
+using static System.Net.Mime.MediaTypeNames;
 using static Rsp.IrasPortal.Application.Constants.QuestionCategories;
 
 namespace Rsp.IrasPortal.Web.Controllers;
@@ -27,7 +29,7 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
     /// <param name="applicationId">Application Id</param>
     /// <param name="categoryId">CategoryId to resume from</param>
     /// <param name="validate">Indicates whether to validate or not</param>
-    public async Task<IActionResult> Resume(string applicationId, string categoryId, string validate = "False")
+    public async Task<IActionResult> Resume(string applicationId, string categoryId, string validate = "False", string? sectionId = null)
     {
         // load existing application in session
         if (await LoadApplication(applicationId) == null)
@@ -38,15 +40,43 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
         // get the responent answers for the category
         var respondentServiceResponse = await respondentService.GetRespondentAnswers(applicationId, categoryId);
 
-        // get the questions for the category
-        var questionsSetServiceResponse = await questionSetService.GetQuestions(categoryId);
-
-        // return error page if unsuccessfull
         if (!respondentServiceResponse.IsSuccessStatusCode)
         {
             // return the generic error page
             return this.ServiceError(respondentServiceResponse);
         }
+
+        if(sectionId ==null)
+        {
+            // get the questions for the category
+            var questionSectionsResponse = await questionSetService.GetQuestionSections();
+
+
+            if (!questionSectionsResponse.IsSuccessStatusCode)
+            {
+                // return the generic error page
+                return this.ServiceError(questionSectionsResponse);
+            }
+
+
+
+            var questionSections = questionSectionsResponse.Content;
+            // Ensure questionSections is not null and has elements
+            if (questionSections != null && questionSections.Any())
+            {
+                // Get the first question section for the given categoryId
+                var firstSection = questionSections.FirstOrDefault(qs => qs.QuestionCategoryId == categoryId);
+
+                if (firstSection != null)
+                {
+                    sectionId = firstSection.SectionId;
+                }
+            }
+        }
+
+        // get the questions for the category
+        var questionsSetServiceResponse = await questionSetService.GetQuestions(categoryId, sectionId);
+
 
         // return error page if unsuccessfull
         if (!questionsSetServiceResponse.IsSuccessStatusCode)
@@ -69,17 +99,15 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
         }
 
         // save the list of QuestionViewModel in session to get it later
-        HttpContext.Session.SetString(SessionKeys.Questionnaire, JsonSerializer.Serialize(questionnaire.Questions));
+        HttpContext.Session.SetString($"{SessionKeys.Questionnaire}:{sectionId}", JsonSerializer.Serialize(questionnaire.Questions));
 
         // add the applicationId in the TempData to be retrieved in the view
         TempData.TryAdd(TempDataKeys.ApplicationId, applicationId);
 
-        // set the questionnaire current to the categoryId
         // this is where the questionnaire will resume
-        questionnaire.CurrentStage = categoryId;
+        var navigationDto = SetStage(sectionId);
 
-        // set the previous, current and next stages
-        SetStage(categoryId);
+        questionnaire.CurrentStage = navigationDto.CurrentStage;
 
         // validate the questionnaire. The
         // application is being resumed from the
@@ -94,58 +122,96 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
             return View(Index, questionnaire);
         }
 
-        // continue to resume for the category Id
-        return RedirectToAction(nameof(DisplayQuestionnaire), new { categoryId });
+        // continue to resume for the category Id & 
+        return RedirectToAction(nameof(DisplayQuestionnaire), new
+        {
+            categoryId,
+            sectionId
+
+        });
     }
 
     /// <summary>
     /// Renders all of the questions for the categoryId
     /// </summary>
     /// <param name="categoryId">CategoryId of the questions to be rendered</param>
-    public async Task<IActionResult> DisplayQuestionnaire(string categoryId = A)
+    public async Task<IActionResult> DisplayQuestionnaire(string? categoryId, string? sectionId = null)
     {
-        var questions = default(List<QuestionViewModel>);
-
-        // get the existing questionnaire for the category if exists in the session
-        if (HttpContext.Session.Keys.Contains(SessionKeys.Questionnaire))
+        if (categoryId == null && sectionId == null)
         {
-            var questionsJson = HttpContext.Session.GetString(SessionKeys.Questionnaire)!;
-
-            questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(questionsJson)!;
+            return RedirectToAction("MyApplications", "Application");
         }
 
-        // questionnaire doesn't exist in session so
-        // get questions from the database for the category
-        if (questions == null || questions.Count == 0)
+        // get the questions for the category
+        var questionSectionsResponse = await questionSetService.GetQuestionSections();
+
+        // return the view if successfull
+        if (questionSectionsResponse.IsSuccessStatusCode)
         {
-            // get the questions for the category
-            var response = await questionSetService.GetQuestions(categoryId);
+            var questions = default(List<QuestionViewModel>);
 
-            // return the view if successfull
-            if (response.IsSuccessStatusCode)
+            // get the existing questionnaire for the category if exists in the session
+            if (HttpContext.Session.Keys.Contains($"{SessionKeys.Questionnaire}:{sectionId}"))
             {
-                // set the active stage for the category
-                SetStage(categoryId);
+                var questionsJson = HttpContext.Session.GetString($"{SessionKeys.Questionnaire}:{sectionId}")!;
 
-                var questionnaire = BuildQuestionnaireViewModel(response.Content!);
-
-                // store the questions to load again if there are validation errors on the page
-                HttpContext.Session.SetString(SessionKeys.Questionnaire, JsonSerializer.Serialize(questionnaire.Questions));
-
-                return View(Index, questionnaire);
+                questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(questionsJson)!;
             }
 
-            // return error page as api wasn't successful
-            return this.ServiceError(response);
+            // questionnaire doesn't exist in session so
+            // get questions from the database for the category
+            if (questions == null || questions.Count == 0)
+            {
+                // If section id is null get the first section id
+
+                if (sectionId == null)
+                {
+                    var questionSections = questionSectionsResponse.Content;
+                    // Ensure questionSections is not null and has elements
+                    if (questionSections != null && questionSections.Any())
+                    {
+                        // Get the first question section for the given categoryId
+                        var firstSection = questionSections.FirstOrDefault(qs => qs.QuestionCategoryId == categoryId);
+
+                        if (firstSection != null)
+                        {
+                            sectionId = firstSection.SectionId;
+                        }
+                    }
+                }
+
+                // get the questions for the category
+                var response = await questionSetService.GetQuestions(categoryId, sectionId);
+
+                // return the view if successfull
+                if (response.IsSuccessStatusCode)
+                {
+                    // set the active stage for the category
+                    SetStage(sectionId);
+
+                    var questionnaire = BuildQuestionnaireViewModel(response.Content!);
+
+                    // store the questions to load again if there are validation errors on the page
+                    HttpContext.Session.SetString($"{SessionKeys.Questionnaire}:{sectionId}", JsonSerializer.Serialize(questionnaire.Questions));
+
+                    return View(Index, questionnaire);
+                }
+
+                // return error page as api wasn't successful
+                return this.ServiceError(response);
+            }
+
+            // if we have questions in the session
+            // then return the view with the model
+            return View(Index, new QuestionnaireViewModel
+            {
+                CurrentStage = sectionId,
+                Questions = questions
+            });
         }
 
-        // if we have questions in the session
-        // then return the view with the model
-        return View(Index, new QuestionnaireViewModel
-        {
-            CurrentStage = categoryId,
-            Questions = questions
-        });
+        // return error page as api wasn't successful
+        return this.ServiceError(questionSectionsResponse);
     }
 
     [RequestFormLimits(ValueCountLimit = int.MaxValue)]
@@ -154,7 +220,9 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
     {
         // get the questionnaire from the session
         // and deserialize it
-        var questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(HttpContext.Session.GetString(SessionKeys.Questionnaire)!)!;
+        var navigation = SetStage(model.CurrentStage ?? model.Questions.FirstOrDefault()?.SectionId);
+
+        var questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(HttpContext.Session.GetString($"{SessionKeys.Questionnaire}:{navigation.CurrentStage}")!)!;
 
         // update the model with the answeres
         // provided by the applicant
@@ -234,35 +302,50 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
         TempData.TryAdd(TempDataKeys.ApplicationId, application.ApplicationId);
 
         // set the previous, current and next stages
-        var (_, CurrentStage, NextStage) = SetStage(model.CurrentStage!);
+
+ 
+
 
         // user clicks on the SaveAndContinue button
         // so we need to resume from the next stage
         if (saveAndContinue == bool.TrueString)
         {
             // if the user is at the last stage and clicks on Save and Continue
-            if (string.IsNullOrWhiteSpace(NextStage))
+            if (string.IsNullOrWhiteSpace(navigation.NextStage))
             {
                 return RedirectToAction(nameof(SubmitApplication), new { applicationId = application.ApplicationId });
             }
 
             // otherwise resume from the NextStage in sequence
-            return RedirectToAction(nameof(Resume), new { applicationId = application.ApplicationId, categoryId = NextStage });
+            return RedirectToAction(nameof(Resume), new
+            {
+                applicationId = application.ApplicationId, categoryId = navigation.NextCategory, sectionId = navigation.NextStage
+
+            });
         }
 
         // user jumps to the next stage by clicking on the link
         // so we need to resume the application from there
-        if (!string.IsNullOrWhiteSpace(categoryId))
+        if (!string.IsNullOrWhiteSpace(navigation.NextStage))
         {
-            model.CurrentStage = categoryId;
-            return RedirectToAction(nameof(Resume), new { applicationId = application.ApplicationId, categoryId });
+            return RedirectToAction(nameof(Resume), new
+            {
+                applicationId = application.ApplicationId,
+                categoryId = navigation.NextCategory,
+                sectionId = navigation.NextStage
+
+            });
         }
 
         // save the questions in the session
-        HttpContext.Session.SetString(SessionKeys.Questionnaire, JsonSerializer.Serialize(questions));
+        HttpContext.Session.SetString($"{SessionKeys.Questionnaire}:{navigation.NextStage}", JsonSerializer.Serialize(questions));
 
         // continue rendering the questionnaire if the above conditions are not true
-        return RedirectToAction(nameof(DisplayQuestionnaire), new { categoryId = CurrentStage });
+        return RedirectToAction(nameof(DisplayQuestionnaire), new
+        {
+            navigation.NextCategory,
+            navigation.NextStage
+        });
     }
 
     /// <summary>
@@ -279,7 +362,7 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
     {
         // get the questionnaire from the session
         // and deserialize it
-        var questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(HttpContext.Session.GetString(SessionKeys.Questionnaire)!)!;
+        var questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(HttpContext.Session.GetString($"{SessionKeys.Questionnaire}:{model.CurrentStage}")!)!;
 
         // update the model with the answeres
         // provided by the applicant
@@ -547,32 +630,44 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
         return irasApplication;
     }
 
+
+
     /// <summary>
-    /// Sets the Previous, Current and Next stages requried for the navigation
+    /// Sets the Previous, Current, and Next stages required for navigation.
     /// </summary>
-    /// <param name="category">Category of the current stage</param>
-    private (string PreviousStage, string CurrentStage, string NextStage) SetStage(string category)
+    /// <param name="section">Section of the current stage</param>
+    private NavigationDto SetStage(string section)
     {
-        (string? PreviousStage, string? CurrentStage, string NextStage) = category switch
+        var previousResponse = questionSetService.GetPreviousQuestionSection(section).Result;
+        var currentResponse = questionSetService.GetQuestionSections().Result;
+        var nextResponse = questionSetService.GetNextQuestionSection(section).Result;
+
+        // Extracting previous stage and category
+        string previousStage = previousResponse.IsSuccessStatusCode ? previousResponse.Content?.SectionId ?? "" : "";
+        string previousCategory = previousResponse.IsSuccessStatusCode ? previousResponse.Content?.QuestionCategoryId ?? "" : "";
+
+        // Extracting current stage and category
+        var currentSection = currentResponse?.Content?.FirstOrDefault(s => s.SectionId == section);
+        string currentStage = currentSection?.SectionId ?? section;
+        string currentCategory = currentSection?.QuestionCategoryId ?? "";
+
+        // Extracting next stage and category
+        string nextStage = nextResponse.IsSuccessStatusCode ? nextResponse.Content?.SectionId ?? "" : "";
+        string nextCategory = nextResponse.IsSuccessStatusCode ? nextResponse.Content?.QuestionCategoryId ?? "" : "";
+
+        // Store in TempData
+        TempData[TempDataKeys.PreviousStage] = previousStage;
+        TempData[TempDataKeys.PreviousCategory] = previousCategory;
+        TempData[TempDataKeys.CurrentStage] = currentStage;
+
+        return new NavigationDto
         {
-            A => ("", A, B),
-            B => (A, B, C1),
-            C1 => (B, C1, C2),
-            C2 => (C1, C2, C3),
-            C3 => (C2, C3, C4),
-            C4 => (C3, C4, C5),
-            C5 => (C4, C5, C6),
-            C6 => (C5, C6, C7),
-            C7 => (C6, C7, C8),
-            C8 => (C7, C8, D),
-            D => (C8, D, ""),
-            _ => ("", A, B)
+            PreviousCategory = previousCategory,
+            PreviousStage = previousStage,
+            CurrentCategory = currentCategory,
+            CurrentStage = currentStage,
+            NextCategory = nextCategory,
+            NextStage = nextStage
         };
-
-        // store in temp data
-        TempData[TempDataKeys.PreviousStage] = PreviousStage;
-        TempData[TempDataKeys.CurrentStage] = CurrentStage;
-
-        return (PreviousStage, CurrentStage, NextStage);
     }
 }

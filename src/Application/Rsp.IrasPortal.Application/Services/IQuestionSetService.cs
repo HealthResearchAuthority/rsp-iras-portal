@@ -21,5 +21,34 @@ public interface IQuestionSetService : IInterceptable
     /// <param name="categoryId">CategoryId of the questions</param>
     Task<ServiceResponse<IEnumerable<QuestionsResponse>>> GetQuestions(string categoryId);
 
+    /// <summary>
+    /// Gets all questions for the category and section
+    /// </summary>
+    /// <param name="categoryId">Category Id of the questions</param>
+    /// <param name="sectionId">Section Id of the questions</param>
+    Task<ServiceResponse<IEnumerable<QuestionsResponse>>> GetQuestions(string categoryId, string sectionId);
+
+
     Task<ServiceResponse> CreateQuestions(QuestionSetDto questionSet);
+
+
+    /// <summary>
+    /// Gets previous question sections
+    /// </summary>
+    Task<ServiceResponse<IEnumerable<QuestionSectionsResponse>>> GetQuestionSections();
+
+    /// <summary>
+    /// Gets all question sections in the database
+    /// </summary>
+    Task<ServiceResponse<QuestionSectionsResponse>> GetPreviousQuestionSection(string sectionId);
+
+    /// <summary>
+    /// Gets next  question sections in the database
+    /// </summary>
+    Task<ServiceResponse<QuestionSectionsResponse>> GetNextQuestionSection(string sectionId);
+
+    /// <summary>
+    /// Gets all question sections
+    /// </summary>
+    Task<ServiceResponse<IEnumerable<CategoryDto>>> GetQuestionCategories();
 }

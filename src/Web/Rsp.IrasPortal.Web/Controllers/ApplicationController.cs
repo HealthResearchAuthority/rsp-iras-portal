@@ -17,7 +17,7 @@ namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "app:[action]")]
 [Authorize(Policy = "IsUser")]
-public class ApplicationController(IApplicationsService applicationsService, IValidator<ApplicationInfoViewModel> validator) : Controller
+public class ApplicationController(IApplicationsService applicationsService, IValidator<ApplicationInfoViewModel> validator, IQuestionSetService questionSetService) : Controller
 {
     // ApplicationInfo view name
     private const string ApplicationInfo = nameof(ApplicationInfo);
@@ -154,15 +154,34 @@ public class ApplicationController(IApplicationsService applicationsService, IVa
     {
         var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
 
+        var avm = new ApplicationsViewModel();
+
         HttpContext.Session.RemoveAllSessionValues();
 
         // get the pending applications
         var applicationServiceResponse = await applicationsService.GetApplicationsByRespondent(respondentId);
 
-        // return the view if successfull
+        // return the view if successful
         if (applicationServiceResponse.IsSuccessStatusCode)
         {
-            return View(applicationServiceResponse.Content);
+            if (applicationServiceResponse.Content != null)
+            {
+                avm.Applications = applicationServiceResponse.Content;
+
+                var questionSetServiceResponse = await questionSetService.GetQuestionCategories();
+
+                if (questionSetServiceResponse.IsSuccessStatusCode)
+                {
+                    if (questionSetServiceResponse.Content != null)
+                    {
+                        avm.Categories = questionSetServiceResponse.Content;
+                        return View(avm);
+                    }
+                }
+
+                // return the generic error page
+                return this.ServiceError(questionSetServiceResponse);
+            }
         }
 
         // return the generic error page
