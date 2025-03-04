@@ -1,48 +1,55 @@
-﻿@model (int pageNumber, int pageCount, string routeName)
+﻿@model (int pageNumber, int totalCount, string routeName)
 @{
-	var previousPage = Model.pageNumber - 1;
-	var nextPage = Model.pageNumber + 1;
-	if(previousPage <= 0)
-	{
-		previousPage = 0;
-	}
-	
+    var pageCount = (int)Math.Ceiling((double)Model.totalCount / 10);
 }
+
 @* <button class="govuk-link" type="submit" asp-route="qnc:saveresponses" asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", "C6" }, { "applicationId", Model.applicationId }})">Tissue</button> *@
 <nav class="govuk-pagination" aria-label="Pagination">
-	<div class="govuk-pagination__prev">
-		<a class="govuk-link govuk-pagination__link" asp-route="@Model.routeName" asp-route-pageNumber="@previousPage" rel="prev">
-			<svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
-				<path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path>
-			</svg>
-			<span class="govuk-pagination__link-title">
-				Previous<span class="govuk-visually-hidden"> page</span>
-			</span>
-		</a>
-	</div>
-	@for (var index = 1; index < Model.pageCount; index++)
-	{
-		<ul class="govuk-pagination__list">
-			<li class="govuk-pagination__item"> 
-				<a class="govuk-link govuk-pagination__link" aria-label="Page 1">
-					@index
-				</a>
-			</li>
-			<li class="govuk-pagination__item govuk-pagination__item--current">
-				<a class="govuk-link govuk-pagination__link" href="#" aria-label="Page 2" aria-current="page">
-					2
-				</a>
-			</li>
-		</ul>
-	}
-	<div class="govuk-pagination__next">
-		<a class="govuk-link govuk-pagination__link" asp-route="@Model.routeName" asp-route-pageNumber="@nextPage" rel="next">
-			<span class="govuk-pagination__link-title">
-				Next<span class="govuk-visually-hidden"> page</span>
-			</span>
-			<svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
-				<path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path>
-			</svg>
-		</a>
-	</div>
+
+    @if (Model.pageNumber > 1)
+    {
+        <div class="govuk-pagination__prev">
+            <a class="govuk-link govuk-pagination__link" asp-route="@Model.routeName" asp-route-pageNumber="@(Model.pageNumber - 1)" rel="prev">
+                <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+                    <path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path>
+                </svg>
+                <span class="govuk-pagination__link-title">
+                    Previous<span class="govuk-visually-hidden"> page</span>
+                </span>
+            </a>
+        </div>
+    }
+
+    @for (var index = 1; index < pageCount; index++)
+    {
+        var current = "";
+        var ariaCurrent = "";
+        if (index == Model.pageNumber)
+        {
+            current = "govuk-pagination__item--current";
+            ariaCurrent = "aria-current='page'";
+        }
+
+        <ul class="govuk-pagination__list">
+            <li class="govuk-pagination__item @current">
+                <a class="govuk-link govuk-pagination__link" aria-label="Page @index" @ariaCurrent>
+                    @index
+                </a>
+            </li>
+        </ul>
+    }
+
+    @if (Model.pageNumber < pageCount)
+    {
+        <div class="govuk-pagination__next">
+            <a class="govuk-link govuk-pagination__link" asp-route="@Model.routeName" asp-route-pageNumber="@(Model.pageNumber + 1)" rel="next">
+                <span class="govuk-pagination__link-title">
+                    Next<span class="govuk-visually-hidden"> page</span>
+                </span>
+                <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+                    <path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path>
+                </svg>
+            </a>
+        </div>
+    }
 </nav>

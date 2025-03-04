@@ -43,7 +43,7 @@ public class UsersController(IUserManagementService userManagementService) : Con
                 Email = user.Email
             }) ?? [];
 
-            return View(users);
+            return View((users, response.Content.TotalCount, pageNumber));
         }
 
         // if status is forbidden
@@ -60,7 +60,7 @@ public class UsersController(IUserManagementService userManagementService) : Con
     /// Displays the empty UserView to create a user
     /// </summary>
     [HttpGet]
-    public IActionResult CreateUser()
+    public IActionResult CreateUser() //admin:createuser
     {
         ViewBag.Mode = "create";
 
