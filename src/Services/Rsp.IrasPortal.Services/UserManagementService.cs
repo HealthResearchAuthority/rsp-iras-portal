@@ -37,9 +37,9 @@ public class UserManagementService(IUserManagementServiceClient client) : IUserM
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse<UsersResponse>> GetUsers()
+    public async Task<ServiceResponse<UsersResponse>> GetUsers(int pageNumber = 1, int pageSize = 10)
     {
-        var apiResponse = await client.GetUsers();
+        var apiResponse = await client.GetUsers(pageNumber, pageSize);
 
         return apiResponse.ToServiceResponse();
     }

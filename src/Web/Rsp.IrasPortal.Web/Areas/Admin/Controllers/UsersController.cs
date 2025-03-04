@@ -27,10 +27,10 @@ public class UsersController(IUserManagementService userManagementService) : Con
     /// with the options to edit/delete or manage roles
     /// </summary>
     [Route("/admin/users", Name = "admin:users")]
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(int pageNumber = 1, int pageSize = 10)
     {
         // get the users
-        var response = await userManagementService.GetUsers();
+        var response = await userManagementService.GetUsers(pageNumber, pageSize);
 
         // return the view if successfull
         if (response.IsSuccessStatusCode)
