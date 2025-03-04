@@ -18,7 +18,7 @@ public interface IUserManagementService : IInterceptable
 
     Task<ServiceResponse> UpdateRole(string originalName, string roleName);
 
-    Task<ServiceResponse<UsersResponse>> GetUsers();
+    Task<ServiceResponse<UsersResponse>> GetUsers(int pageNumber = 1, int pageSize = 10);
 
     Task<ServiceResponse<UserResponse>> GetUser(string? userId, string? email);
 
