@@ -1,21 +1,17 @@
-﻿@model QuestionnaireViewModel
-@using System.Text.Json
-@using System.Web
-@using Microsoft.AspNetCore.Html
+﻿@using System.Text.Json
 @using Microsoft.AspNetCore.Mvc.ModelBinding
 @using Microsoft.FeatureManagement
 @using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.DTOs
+@model QuestionnaireViewModel
 @inject IFeatureManager featureManager
 
 @{
-	var sections = Model.Questions.ToLookup(q => q.Section);
-	var previousStage = TempData[TempDataKeys.PreviousStage] as string;
-	var previousCategory = TempData[TempDataKeys.PreviousCategory] as string;
-	var currentStage = TempData[TempDataKeys.CurrentStage] as string;
-	var errorSummaryTitle = "You need to complete these questions before you can continue::";
-	var applicationId = TempData[TempDataKeys.ApplicationId] as string;
-	var validationMessages = new List<string>();
+    var previousStage = TempData[TempDataKeys.PreviousStage] as string;
+    var previousCategory = TempData[TempDataKeys.PreviousCategory] as string;
+    var currentStage = TempData[TempDataKeys.CurrentStage] as string;
+    var errorSummaryTitle = "You need to complete these questions before you can continue::";
+    var validationMessages = new List<string>();
 
     void BuildValidationMessage(IList<RuleDto> rules, string errorKey, string validationMessage)
     {
@@ -69,26 +65,26 @@
         .Where(q => !q.IsMandatory && q.Rules.Any())
         .Select(q => new
         {
-            QuestionId = q.QuestionId,
-            Rules = q.Rules
+            q.QuestionId, q.Rules
         }).ToList();
 
     <script>
-        $(document).ready(function () {
-            const conditionalRules = @Html.Raw(JsonSerializer.Serialize(conditionalRules));
+		$(document).ready(function () {
+		const conditionalRules = @Html.Raw(JsonSerializer.Serialize(conditionalRules));
 
-            // Loop through each rule and store it individually by QuestionId
-            conditionalRules.forEach(rule => {
-                sessionStorage.setItem(rule.QuestionId, JSON.stringify(rule.Rules));
-            });
-        });
-    </script>
+		// Loop through each rule and store it individually by QuestionId
+		conditionalRules.forEach(rule => {
+		sessionStorage.setItem(rule.QuestionId, JSON.stringify(rule.Rules));
+		});
+		});
+	</script>
 
     <script src="~/js/questionnaire.js"></script>
     <script src="~/js/rules.js"></script>
 }
 
-<partial name="_BackNavigation" model="@("qnc:displayquestionnaire", "Back", new Dictionary<string, string> { { "categoryId", previousCategory }, { "sectionId", previousStage} })"/>
+
+<partial name="_BackNavigation" model="@("qnc:displayquestionnaire", "Back", new Dictionary<string, string> { { "categoryId", previousCategory }, { "sectionId", previousStage } })"/>
 
 <form method="post">
 
@@ -113,53 +109,60 @@
             var fieldHasErrors = false;
         }
 
-        @foreach (var section in sections)
-        {
-            <govuk-fieldset class="sections">
-                <govuk-fieldset-legend class="govuk-fieldset__legend--l">
-                    @(section.Key)
-                </govuk-fieldset-legend>
 
-                <hr class="govuk-section-break govuk-section-break--visible"/>
+        <govuk-fieldset class="sections">
+            <govuk-fieldset-legend class="govuk-fieldset__legend--l">
+                <div class="govuk-grid-row">
+                    <div class="govuk-grid-column-two-thirds">
+                        <h2 class="govuk-heading-l" id="title">@(Model.Questions.FirstOrDefault()?.Section)</h2>
+                    </div>
+                </div>
+                <hr class="govuk-section-break govuk-section-break--visible">
+            </govuk-fieldset-legend>
+            
+            
+            @{ var questions = Model.Questions; }
 
-                @foreach (var question in section)
+
+            @foreach (var question in questions)
+            {
+                var index = question.Index;
+
+                <input type="hidden" asp-for="Questions[index].Index"/>
+                <input type="hidden" asp-for="Questions[index].QuestionId"/>
+                <input type="hidden" asp-for="Questions[index].Category"/>
+                <input type="hidden" asp-for="Questions[index].SectionId"/>
+                <input type="hidden" asp-for="Questions[index].Section"/>
+                <input type="hidden" asp-for="Questions[index].Heading"/>
+                <input type="hidden" asp-for="Questions[index].QuestionText"/>
+                <input type="hidden" asp-for="Questions[index].QuestionType"/>
+                <input type="hidden" asp-for="Questions[index].DataType"/>
+                <input type="hidden" asp-for="Questions[index].IsMandatory" checked="@question.IsMandatory"/>
+                <input type="hidden" asp-for="Questions[index].IsOptional" checked="@question.IsOptional"/>
+
+                var rules = question.Rules;
+                var conditional = "";
+
+                if (!question.IsMandatory)
                 {
-                    var index = question.Index;
-
-                    <input type="hidden" asp-for="Questions[index].Index"/>
-                    <input type="hidden" asp-for="Questions[index].QuestionId"/>
-                    <input type="hidden" asp-for="Questions[index].Category"/>
-                    <input type="hidden" asp-for="Questions[index].SectionId"/>
-                    <input type="hidden" asp-for="Questions[index].Section"/>
-                    <input type="hidden" asp-for="Questions[index].Heading"/>
-                    <input type="hidden" asp-for="Questions[index].QuestionText"/>
-                    <input type="hidden" asp-for="Questions[index].QuestionType"/>
-                    <input type="hidden" asp-for="Questions[index].DataType"/>
-                    <input type="hidden" asp-for="Questions[index].IsMandatory" checked="@question.IsMandatory"/>
-                    <input type="hidden" asp-for="Questions[index].IsOptional" checked="@question.IsOptional"/>
-
-                    var rules = question.Rules;
-                    var conditional = "";
-
-                    if (!question.IsMandatory)
+                    if (rules.Count == 0)
                     {
-                        if (rules.Count == 0)
-                        {
-                            <govuk-inset-text>
-                                This question is conditional:
-                            </govuk-inset-text>
-                        }
-                        else
-                        {
-                            conditional = "conditional ";
-                        }
+                        <govuk-inset-text>
+                            This question is conditional:
+                        </govuk-inset-text>
                     }
+                    else
+                    {
+                        conditional = "conditional ";
+                    }
+                }
 
+                var parents = conditional.Length > 0 ? "data-parents=" + string.Join(',', rules.Select(rule => rule.ParentQuestionId)) : "";
+                var questionId = conditional.Length > 0 ? "data-questionId=" + question.QuestionId : "";
 
-                    var parents = @conditional.Length > 0 ? "data-parents=" + string.Join(',', rules.Select(rule => rule.ParentQuestionId)) : "";
-                    var questionId = @conditional.Length > 0 ? "data-questionId=" + question.QuestionId : "";
-
-                    @if (question.DataType is "Date")
+                switch (question.DataType.ToLower())
+                {
+                    case "date":
                     {
                         errorKey = $"Questions[{index}].AnswerText";
                         validationMessage = "Provide an answer for this question";
@@ -240,8 +243,9 @@
                             </div>
                         </div>
                     }
-
-                    @if (question.DataType is "Text" or "Email")
+                        break;
+                    case "text":
+                    case "email":
                     {
                         errorKey = $"Questions[{index}].AnswerText";
                         validationMessage = "Provide an answer for this question";
@@ -276,8 +280,8 @@
                             @Html.TextBoxFor(model => model.Questions[index].AnswerText, new { id = question.QuestionId + "_Text", @class = "govuk-input" })
                         </div>
                     }
-
-                    if (question.DataType is "Checkbox")
+                        break;
+                    case "checkbox":
                     {
                         errorKey = $"Questions[{index}].Answers";
                         validationMessage = "Select at least one option";
@@ -308,8 +312,9 @@
                             </govuk-fieldset>
                         </div>
                     }
-
-                    if (question.DataType is "Radio button" or "Boolean")
+                        break;
+                    case "radio button":
+                    case "boolean":
                     {
                         errorKey = $"Questions[{index}].SelectedOption";
                         validationMessage = "Select one option";
@@ -340,8 +345,8 @@
                             </govuk-fieldset>
                         </div>
                     }
-
-                    @if (question.DataType is "Look-up list")
+                        break;
+                    case "look-up list":
                     {
                         errorKey = $"Questions[{index}].SelectedOption";
                         validationMessage = "Select one option";
@@ -372,15 +377,17 @@
                             </govuk-fieldset>
                         </div>
                     }
+                        break;
                 }
-            </govuk-fieldset>
-        }
+            }
+        </govuk-fieldset>
+
     </div>
 
-	<partial name="_SubmitButton" model="@("qnc:saveresponses", "Save", new Dictionary<string, string>())" />
-	<partial name="_SubmitButton" model="@("qnc:saveresponses", "Save and Continue", new Dictionary<string, string>() { { "saveAndContinue", bool.TrueString } })" />
-	<partial name="_SubmitButton" model="@("qnc:validate", "Validate", new Dictionary<string, string>())" />
-	<feature name="@Features.ProceedToSubmit">
-		<partial name="_SubmitButton" model="@("qnc:saveresponses", "Proceed to Submit", new Dictionary<string, string>() { { "submit", bool.TrueString } })" />
-	</feature>
+    <partial name="_SubmitButton" model="@("qnc:saveresponses", "Save", new Dictionary<string, string>())"/>
+    <partial name="_SubmitButton" model="@("qnc:saveresponses", "Save and Continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } })"/>
+    <partial name="_SubmitButton" model="@("qnc:validate", "Validate", new Dictionary<string, string>())"/>
+    <feature name="@Features.ProceedToSubmit">
+        <partial name="_SubmitButton" model="@("qnc:saveresponses", "Proceed to Submit", new Dictionary<string, string> { { "submit", bool.TrueString } })"/>
+    </feature>
 </form>
