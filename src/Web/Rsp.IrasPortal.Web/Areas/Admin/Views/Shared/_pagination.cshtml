@@ -1,6 +1,6 @@
 ﻿@model (int pageNumber, int totalCount, string routeName)
 @{
-    var pageCount = (int)Math.Ceiling((double)Model.totalCount / 2);
+    var pageCount = (int)Math.Ceiling((double)Model.totalCount / 10);
 }
 
 <nav class="govuk-pagination" aria-label="Pagination">

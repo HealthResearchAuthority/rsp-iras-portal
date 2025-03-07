@@ -14,4 +14,8 @@ public class RoleViewModel
     [Required]
     [Display(Name = "Role Name")]
     public string Name { get; set; } = null!;
+
+    public int TotalCount { get; set; }
+
+    public int PageNumber { get; set; }
 }

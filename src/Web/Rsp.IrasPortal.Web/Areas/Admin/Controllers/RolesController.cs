@@ -20,10 +20,10 @@ public class RolesController(IUserManagementService userManagementService) : Con
     /// with the options to edit or delete role
     /// </summary>
     [Route("/admin/roles", Name = "admin:roles")]
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(int pageNumber = 1, int pageSize = 10)
     {
         // get all roles
-        var response = await userManagementService.GetRoles();
+        var response = await userManagementService.GetRoles(pageNumber, pageSize);
 
         // return the view with the RoleViewModel if successfull
         if (response.IsSuccessStatusCode)
@@ -34,7 +34,7 @@ public class RolesController(IUserManagementService userManagementService) : Con
                 Name = role.Name
             }) ?? [];
 
-            return View(roles);
+            return View((roles, response.Content.TotalCount, pageNumber));
         }
 
         // if status is forbidden

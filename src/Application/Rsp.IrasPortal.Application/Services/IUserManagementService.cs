@@ -14,7 +14,7 @@ public interface IUserManagementService : IInterceptable
 
     Task<ServiceResponse> DeleteRole(string roleName);
 
-    Task<ServiceResponse<RolesResponse>> GetRoles();
+    Task<ServiceResponse<RolesResponse>> GetRoles(int pageNumber = 1, int pageSize = 10);
 
     Task<ServiceResponse> UpdateRole(string originalName, string roleName);
 
