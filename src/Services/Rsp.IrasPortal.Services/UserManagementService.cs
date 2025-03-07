@@ -23,9 +23,9 @@ public class UserManagementService(IUserManagementServiceClient client) : IUserM
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse<RolesResponse>> GetRoles()
+    public async Task<ServiceResponse<RolesResponse>> GetRoles(int pageNumber = 1, int pageSize = 10)
     {
-        var apiResponse = await client.GetRoles();
+        var apiResponse = await client.GetRoles(pageNumber, pageSize);
 
         return apiResponse.ToServiceResponse();
     }

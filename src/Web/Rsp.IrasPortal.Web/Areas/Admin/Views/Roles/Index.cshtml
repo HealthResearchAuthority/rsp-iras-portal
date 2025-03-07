@@ -1,6 +1,6 @@
 ﻿@using Rsp.IrasPortal.Web.Areas.Admin.Models
 
-@model IEnumerable<RoleViewModel>
+@model (IEnumerable<RoleViewModel> Roles, int TotalCount, int PageNumber)
 
 @{
     ViewBag.Active = "roles";
@@ -20,8 +20,7 @@
                 </tr>
             </thead>
             <tbody class="govuk-table__body">
-				<!-- add pagination here? -->
-                @foreach (var role in Model)
+                @foreach (var role in Model.Roles)
                 {
                     <tr class="govuk-table__row">
                         <td class="govuk-table__cell">@role.Name</td>
@@ -34,6 +33,8 @@
             </tbody>
         </table>
 		<partial name="_SubmitButton" model="@("admin:users", "Cancel", new Dictionary<string, string>())" />
+		<p class="">Total number of roles: @(Model.TotalCount)</p>
+		<partial name="_Pagination" model="@(Model.PageNumber, Model.TotalCount, "admin:users")" />
         <a class="govuk-button" asp-route="admin:createrole">Create New Role</a>
     </div>
 </div>
