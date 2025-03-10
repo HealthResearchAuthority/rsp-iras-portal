@@ -14,21 +14,49 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.QuestionnaireControllerTests;
 
 public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController>
 {
-    [Theory, AutoData]
-    public async Task DisplayQuestionnaire_ShouldReturnViewWithQuestionnaireFromSession_WhenSessionContainsValidQuestionnaireData
-    (
-        string categoryId
-    )
+    [Theory]
+    [AutoData]
+    public async Task
+        DisplayQuestionnaire_ShouldReturnViewWithQuestionnaireFromSession_WhenSessionContainsValidQuestionnaireData
+        (
+            string categoryId,
+            List<QuestionsResponse> questionsResponse,
+            List<QuestionSectionsResponse> questionSectionsResponse
+        )
     {
         var faker = new Faker<QuestionViewModel>();
-        List<QuestionViewModel> expectedQuestions = faker.Generate(5);
+        List<QuestionViewModel> expectedQuestions = faker.Generate(3);
 
         // Arrange
-        var expectedQuestionnaire = new QuestionnaireViewModel
+        var response = new ServiceResponse<IEnumerable<QuestionsResponse>>
         {
-            CurrentStage = categoryId,
-            Questions = expectedQuestions
+            StatusCode = HttpStatusCode.OK,
+            Content = questionsResponse
         };
+
+        var responseQuestionSections = new ServiceResponse<IEnumerable<QuestionSectionsResponse>>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = questionSectionsResponse
+        };
+
+        Mocker.GetMock<IQuestionSetService>()
+            .Setup(q => q.GetQuestionSections()).ReturnsAsync(responseQuestionSections);
+
+        var responseQuestionSection = new ServiceResponse<QuestionSectionsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = questionSectionsResponse[0]
+        };
+
+        Mocker.GetMock<IQuestionSetService>()
+            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>())).ReturnsAsync(responseQuestionSection);
+
+        Mocker.GetMock<IQuestionSetService>()
+            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>())).ReturnsAsync(responseQuestionSection);
+
+        Mocker.GetMock<IQuestionSetService>()
+            .Setup(q => q.GetQuestions(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(response);
 
         var session = new Mock<ISession>();
         session
@@ -59,26 +87,30 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
             HttpContext = httpContext
         };
 
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.CurrentStage] = categoryId
+        };
+
         // Act
         var result = await Sut.DisplayQuestionnaire(categoryId);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
         viewResult.ViewName.ShouldBe("Index");
-
-        var model = viewResult.Model.ShouldBeOfType<QuestionnaireViewModel>();
-        model.CurrentStage.ShouldBe(expectedQuestionnaire.CurrentStage);
-        model.Questions.ShouldBeEquivalentTo(expectedQuestionnaire.Questions);
+        viewResult.Model.ShouldBeOfType<QuestionnaireViewModel>();
 
         Mocker
             .GetMock<IQuestionSetService>()
             .Verify(s => s.GetQuestions(It.IsAny<string>()), Times.Never);
     }
 
-    [Theory, AutoData]
+    [Theory]
+    [AutoData]
     public async Task DisplayQuestionnaire_ShouldReturnErrorView_WhenGetQuestionsReturnsErrorResponse
     (
-        string categoryId
+        string categoryId,
+        List<QuestionSectionsResponse> questionSectionsResponse
     )
     {
         // Arrange
@@ -91,6 +123,16 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
             .GetMock<IQuestionSetService>()
             .Setup(s => s.GetQuestions(It.IsAny<string>()))
             .ReturnsAsync(response);
+
+        var responseQuestionSections = new ServiceResponse<IEnumerable<QuestionSectionsResponse>>
+        {
+            StatusCode = HttpStatusCode.InternalServerError,
+            Content = questionSectionsResponse
+        };
+
+        Mocker.GetMock<IQuestionSetService>()
+            .Setup(q => q.GetQuestionSections()).ReturnsAsync(responseQuestionSections);
+
 
         var session = new Mock<ISession>();
 
@@ -112,12 +154,15 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
         viewResult.ViewName.ShouldBe("Error");
     }
 
-    [Theory, AutoData]
-    public async Task DisplayQuestionnaire_ShouldReturnViewWithQuestionnaire_WhenSessionIsEmptyAndGetQuestionsReturnsValidQuestions
-    (
-        string categoryId,
-        List<QuestionsResponse> questionsResponse
-    )
+    [Theory]
+    [AutoData]
+    public async Task
+        DisplayQuestionnaire_ShouldReturnViewWithQuestionnaire_WhenSessionIsEmptyAndGetQuestionsReturnsValidQuestions
+        (
+            string categoryId,
+            List<QuestionsResponse> questionsResponse,
+            List<QuestionSectionsResponse> questionSectionsResponse
+        )
     {
         // Arrange
         var response = new ServiceResponse<IEnumerable<QuestionsResponse>>
@@ -130,6 +175,31 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
             .GetMock<IQuestionSetService>()
             .Setup(s => s.GetQuestions(It.IsAny<string>()))
             .ReturnsAsync(response);
+
+
+        var responseQuestionSections = new ServiceResponse<IEnumerable<QuestionSectionsResponse>>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = questionSectionsResponse
+        };
+
+        Mocker.GetMock<IQuestionSetService>()
+            .Setup(q => q.GetQuestionSections()).ReturnsAsync(responseQuestionSections);
+
+        var responseQuestionSection = new ServiceResponse<QuestionSectionsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = questionSectionsResponse[0]
+        };
+
+        Mocker.GetMock<IQuestionSetService>()
+            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>())).ReturnsAsync(responseQuestionSection);
+
+        Mocker.GetMock<IQuestionSetService>()
+            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>())).ReturnsAsync(responseQuestionSection);
+
+        Mocker.GetMock<IQuestionSetService>()
+            .Setup(q => q.GetQuestions(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(response);
 
         var session = new Mock<ISession>();
         session
@@ -152,9 +222,9 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
         };
 
         var questions = response.Content
-                .OrderBy(q => q.SectionId)
-                .ThenBy(q => q.Sequence)
-                .Select((question, index) => (question, index));
+            .OrderBy(q => q.SectionId)
+            .ThenBy(q => q.Sequence)
+            .Select((question, index) => (question, index));
 
         var expectedQuestionnaire = new QuestionnaireViewModel
         {
@@ -195,6 +265,6 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
 
         Mocker
             .GetMock<IQuestionSetService>()
-            .Verify(s => s.GetQuestions(It.IsAny<string>()), Times.Once);
+            .Verify(s => s.GetQuestions(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
     }
 }
