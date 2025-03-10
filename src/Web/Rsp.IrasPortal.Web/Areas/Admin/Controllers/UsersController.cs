@@ -43,7 +43,7 @@ public class UsersController(IUserManagementService userManagementService) : Con
                 Email = user.Email
             }) ?? [];
 
-            return View((users, response.Content.TotalCount, pageNumber));
+            return View((users, response.Content.TotalCount, pageNumber, pageSize));
         }
 
         // if status is forbidden

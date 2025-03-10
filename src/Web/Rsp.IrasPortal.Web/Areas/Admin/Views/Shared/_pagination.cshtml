@@ -1,14 +1,15 @@
-﻿@model (int pageNumber, int totalCount, string routeName)
+﻿@model (int pageNumber, int pageSize, int totalCount, string routeName)
 @{
-    var pageCount = (int)Math.Ceiling((double)Model.totalCount / 10);
-    //var batches = (int)Math.Floor((double)pageCount / 5);
+    var pageCount = (int)Math.Ceiling((double)Model.totalCount / Model.pageSize);
+    var batchSize = 5;
 }
 
 <nav class="govuk-pagination" aria-label="Pagination">
 
     <div class="govuk-pagination__prev">
         <a class="govuk-link govuk-pagination__link" asp-route="@Model.routeName"
-            asp-route-pageNumber="@(Model.pageNumber > 1 ? Model.pageNumber - 1 : 1)" rel="prev">
+            asp-route-pageNumber="@(Model.pageNumber > 1 ? Model.pageNumber - 1 : 1)"
+            asp-route-pageSize="@Model.pageSize" rel="prev">
             <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg"
                 height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
                 <path
@@ -24,9 +25,8 @@
     <ul class="govuk-pagination__list">
 
         @{
-            // 1,2,3,4,5
-            var start = (Model.pageNumber - 1 / 5) * 5 + 1;
-            var end = Math.Min(start + 4, Model.totalCount);
+            var start = (Model.pageNumber - 1) / batchSize * batchSize + 1;
+            var end = Math.Min(start + batchSize - 1, pageCount);
         }
 
         @for (var index = start; index <= end; index++)
@@ -41,7 +41,7 @@
 
             <li class="govuk-pagination__item @current">
                 <a class="govuk-link govuk-pagination__link @current" aria-label="Page @index" asp-route="@Model.routeName"
-                    asp-route-pageNumber="@index">
+                    asp-route-pageNumber="@index" asp-route-pageSize="@Model.pageSize">
                     @index
                 </a>
             </li>
@@ -50,7 +50,8 @@
 
     <div class="govuk-pagination__next">
         <a class="govuk-link govuk-pagination__link" asp-route="@Model.routeName"
-            asp-route-pageNumber="@(Model.pageNumber<pageCount? Model.pageNumber + 1 : Model.pageNumber)" rel="next">
+            asp-route-pageNumber="@(Model.pageNumber<pageCount? Model.pageNumber + 1 : Model.pageNumber)"
+            asp-route-pageSize="@Model.pageSize" rel="next">
             <span class="govuk-pagination__link-title">
                 Next<span class="govuk-visually-hidden"> page</span>
             </span>
