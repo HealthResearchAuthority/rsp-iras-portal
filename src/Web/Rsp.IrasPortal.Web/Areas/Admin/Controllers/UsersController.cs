@@ -60,7 +60,7 @@ public class UsersController(IUserManagementService userManagementService) : Con
     /// Displays the empty UserView to create a user
     /// </summary>
     [HttpGet]
-    public IActionResult CreateUser() //admin:createuser
+    public IActionResult CreateUser() 
     {
         ViewBag.Mode = "create";
 
