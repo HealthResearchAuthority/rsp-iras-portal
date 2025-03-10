@@ -17,6 +17,20 @@
 	</div>
 
 	<ul class="govuk-pagination__list">
+
+		@if (@Model.pageNumber != 1)
+		{
+			<li class="govuk-pagination__item">
+				<a class="govuk-link govuk-pagination__link" href="#" aria-label="Page 1">
+					1
+				</a>
+			</li>
+		}
+		
+		<li class="govuk-pagination__item govuk-pagination__item--ellipses">
+			&ctdot;
+		</li>
+
     @for (var index = 1; index <= pageCount; index++)
     {
         var current = "";
@@ -33,6 +47,20 @@
             </a>
         </li>
     }
+
+		<li class="govuk-pagination__item govuk-pagination__item--ellipses">
+			&ctdot;
+		</li>
+		
+		@if (@Model.pageNumber != pageCount)
+		{
+			<li class="govuk-pagination__item">
+				<a class="govuk-link govuk-pagination__link" asp-route="@Model.routeName" asp-route-pageNumber="@pageCount" aria-label="Page @pageCount">
+					@pageCount
+				</a>
+			</li>
+		}
+
 	</ul>
 
 	<div class="govuk-pagination__next">
