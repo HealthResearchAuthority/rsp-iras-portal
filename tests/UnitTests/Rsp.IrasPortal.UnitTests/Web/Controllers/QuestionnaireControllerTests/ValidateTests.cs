@@ -6,7 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Responses;
+using Rsp.IrasPortal.Application.Responses;
+using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Controllers;
 using Rsp.IrasPortal.Web.Models;
 
@@ -17,7 +20,8 @@ public class ValidateTests : TestServiceBase<QuestionnaireController>
     [Theory, AutoData]
     public async Task Should_ValidateQuestionnaire_And_SaveResultInViewData
     (
-        QuestionnaireViewModel model
+        QuestionnaireViewModel model,
+        List<QuestionSectionsResponse> questionSectionsResponse
     )
     {
         // Arrange
@@ -31,27 +35,39 @@ public class ValidateTests : TestServiceBase<QuestionnaireController>
         {
             ApplicationId = "App1"
         };
-
         var session = new Mock<ISession>();
+
+        var sessionData = new Dictionary<string, byte[]?>
+        {
+            { $"{SessionKeys.Application}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(application) },
+            { $"{SessionKeys.Questionnaire}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(questions) }
+        };
+
         session
             .Setup(s => s.TryGetValue(It.IsAny<string>(), out It.Ref<byte[]?>.IsAny))
             .Returns((string key, out byte[]? value) =>
             {
-                switch (key)
+                if (sessionData.ContainsKey(key))
                 {
-                    case SessionKeys.Application:
-                        value = JsonSerializer.SerializeToUtf8Bytes(application);
-                        return true;
-
-                    case SessionKeys.Questionnaire:
-                        value = JsonSerializer.SerializeToUtf8Bytes(questions);
-                        return true;
-
-                    default:
-                        value = null;
-                        return false;
+                    value = sessionData[key];
+                    return true;
                 }
+
+                value = null;
+                return false;
             });
+
+        var responseQuestionSection = new ServiceResponse<QuestionSectionsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = questionSectionsResponse[0]
+        };
+
+        Mocker.GetMock<IQuestionSetService>()
+            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>())).ReturnsAsync(responseQuestionSection);
+
+        Mocker.GetMock<IQuestionSetService>()
+            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>())).ReturnsAsync(responseQuestionSection);
 
         var context = new DefaultHttpContext
         {
@@ -79,7 +95,8 @@ public class ValidateTests : TestServiceBase<QuestionnaireController>
     [Theory, AutoData]
     public async Task Should_InvalidateQuestionnaire_And_AddErrorsToModelState
     (
-        QuestionnaireViewModel model
+        QuestionnaireViewModel model,
+        List<QuestionSectionsResponse> questionSectionsResponse
     )
     {
         // Arrange
@@ -95,25 +112,39 @@ public class ValidateTests : TestServiceBase<QuestionnaireController>
         };
 
         var session = new Mock<ISession>();
+
+        var sessionData = new Dictionary<string, byte[]?>
+        {
+            { $"{SessionKeys.Application}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(application) },
+            { $"{SessionKeys.Questionnaire}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(questions) }
+        };
+
         session
             .Setup(s => s.TryGetValue(It.IsAny<string>(), out It.Ref<byte[]?>.IsAny))
             .Returns((string key, out byte[]? value) =>
             {
-                switch (key)
+                if (sessionData.ContainsKey(key))
                 {
-                    case SessionKeys.Application:
-                        value = JsonSerializer.SerializeToUtf8Bytes(application);
-                        return true;
-
-                    case SessionKeys.Questionnaire:
-                        value = JsonSerializer.SerializeToUtf8Bytes(questions);
-                        return true;
-
-                    default:
-                        value = null;
-                        return false;
+                    value = sessionData[key];
+                    return true;
                 }
+
+                value = null;
+                return false;
             });
+
+        var responseQuestionSection = new ServiceResponse<QuestionSectionsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = questionSectionsResponse[0]
+        };
+
+        Mocker.GetMock<IQuestionSetService>()
+            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>())).ReturnsAsync(responseQuestionSection);
+
+        Mocker.GetMock<IQuestionSetService>()
+            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>())).ReturnsAsync(responseQuestionSection);
+
 
         var context = new DefaultHttpContext
         {

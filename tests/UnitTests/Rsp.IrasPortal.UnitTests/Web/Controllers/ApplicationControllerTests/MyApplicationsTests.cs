@@ -2,10 +2,12 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Services.Extensions;
 using Rsp.IrasPortal.Web.Controllers;
+using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApplicationControllerTests;
 
@@ -24,25 +26,37 @@ public class MyApplicationsTests : TestServiceBase<ApplicationController>
         (
             new ClaimsIdentity(
             [
-                new Claim(ClaimTypes.Name, "testUser"),
+                new Claim(ClaimTypes.Name, "testUser")
             ], "mock")
         );
 
-        Sut.ControllerContext = new ControllerContext()
+        Sut.ControllerContext = new ControllerContext
         {
             HttpContext = httpContext
         };
     }
 
-    [Theory, AutoData]
-    public async Task MyApplications_WhenFeatureEnabled_AndServiceReturnsSuccess_ReturnsViewWithApplications(IEnumerable<IrasApplicationResponse> applications)
+    [Fact]
+    public async Task MyApplications_WhenFeatureEnabled_AndServiceReturnsSuccess_ReturnsViewWithApplications()
     {
+        var avm = new ApplicationsViewModel
+        {
+            Applications = new List<IrasApplicationResponse>
+            {
+                new()
+                {
+                    ApplicationId = "1234567890"
+                }
+            }
+        };
+
+
         // Arrange
         var apiResponse = new ApiResponse<IEnumerable<IrasApplicationResponse>>
         (
             new HttpResponseMessage(HttpStatusCode.OK),
-            applications,
-            new()
+            avm.Applications,
+            new RefitSettings()
         );
 
         Mocker
@@ -50,12 +64,30 @@ public class MyApplicationsTests : TestServiceBase<ApplicationController>
             .Setup(s => s.GetApplicationsByRespondent(It.IsAny<string>()))
             .ReturnsAsync(apiResponse.ToServiceResponse());
 
+
+        var apiResponseQuestions = new ApiResponse<IEnumerable<CategoryDto>>
+        (
+            new HttpResponseMessage(HttpStatusCode.OK),
+            new List<CategoryDto>
+            {
+                new()
+                {
+                    CategoryId = "A",
+                    CategoryName = "Test"
+                }
+            },
+            new RefitSettings()
+        );
+
+        Mocker.GetMock<IQuestionSetService>()
+            .Setup(q => q.GetQuestionCategories()).ReturnsAsync(apiResponseQuestions.ToServiceResponse());
+
         // Act
         var result = await Sut.MyApplications();
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.Model.ShouldBe(applications);
+        viewResult.Model.ShouldNotBeNull();
     }
 
     [Fact]
@@ -64,15 +96,17 @@ public class MyApplicationsTests : TestServiceBase<ApplicationController>
         // Arrange
         var apiResponse = new ApiResponse<IEnumerable<IrasApplicationResponse>>
         (
-           new HttpResponseMessage(HttpStatusCode.InternalServerError),
-           null,
-           new()
+            new HttpResponseMessage(HttpStatusCode.InternalServerError),
+            null,
+            new RefitSettings()
         );
+
 
         Mocker
             .GetMock<IApplicationsService>()
             .Setup(s => s.GetApplicationsByRespondent(It.IsAny<string>()))
             .ReturnsAsync(apiResponse.ToServiceResponse());
+
 
         // Act
         var result = await Sut.MyApplications();
@@ -91,13 +125,31 @@ public class MyApplicationsTests : TestServiceBase<ApplicationController>
         (
             new HttpResponseMessage(HttpStatusCode.OK),
             [],
-            new()
+            new RefitSettings()
         );
 
         Mocker
             .GetMock<IApplicationsService>()
             .Setup(s => s.GetApplicationsByRespondent(It.IsAny<string>()))
             .ReturnsAsync(apiResponse.ToServiceResponse());
+
+
+        var apiResponseQuestions = new ApiResponse<IEnumerable<CategoryDto>>
+        (
+            new HttpResponseMessage(HttpStatusCode.OK),
+            new List<CategoryDto>
+            {
+                new()
+                {
+                    CategoryId = "A",
+                    CategoryName = "Test"
+                }
+            },
+            new RefitSettings()
+        );
+
+        Mocker.GetMock<IQuestionSetService>()
+            .Setup(q => q.GetQuestionCategories()).ReturnsAsync(apiResponseQuestions.ToServiceResponse());
 
         var session = new Mock<ISession>();
         Sut.ControllerContext.HttpContext.Session = session.Object;

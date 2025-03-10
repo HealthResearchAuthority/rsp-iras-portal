@@ -15,8 +15,10 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.QuestionnaireControllerTests;
 
 public class ResumeTests : TestServiceBase<QuestionnaireController>
 {
-    [Theory, AutoData]
-    public async Task Resume_ShouldReturnNotFound_WhenLoadApplicationReturnsNull(string applicationId, string categoryId)
+    [Theory]
+    [AutoData]
+    public async Task Resume_ShouldReturnNotFound_WhenLoadApplicationReturnsNull(string applicationId,
+        string categoryId)
     {
         // Arrange
         Mocker
@@ -36,8 +38,10 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
             .Verify(s => s.GetApplication(applicationId), Times.Once);
     }
 
-    [Theory, AutoData]
-    public async Task Resume_Should_Return_ServiceError_When_RespondentService_GetRespondentAnswers_Is_Unsuccessful(string applicationId, string categoryId)
+    [Theory]
+    [AutoData]
+    public async Task Resume_Should_Return_ServiceError_When_RespondentService_GetRespondentAnswers_Is_Unsuccessful(
+        string applicationId, string categoryId)
     {
         // Arrange
         var applicationResponse = new ServiceResponse<IrasApplicationResponse>
@@ -83,8 +87,10 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         viewResult!.ViewName.ShouldBe("Error");
     }
 
-    [Theory, AutoData]
-    public async Task Resume_Should_Return_ServiceError_When_QuestionSetService_GetQuestions_Is_Unsuccessful(string applicationId, string categoryId)
+    [Theory]
+    [AutoData]
+    public async Task Resume_Should_Return_ServiceError_When_QuestionSetService_GetQuestions_Is_Unsuccessful(
+        string applicationId, string categoryId)
     {
         // Arrange
         var respondentServiceResponse = new ServiceResponse<IEnumerable<RespondentAnswerDto>>
@@ -98,10 +104,24 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
             StatusCode = HttpStatusCode.InternalServerError
         };
 
+
+        var questionsSetServiceSectionResponse = new ServiceResponse<IEnumerable<QuestionSectionsResponse>>
+        {
+            StatusCode = HttpStatusCode.OK, Content = new List<QuestionSectionsResponse>
+            {
+                new()
+                {
+                    SectionName = "1",
+                    QuestionCategoryId = "A"
+                }
+            }
+        };
+
         Mocker
             .GetMock<IApplicationsService>()
             .Setup(x => x.GetApplication(applicationId))
-            .ReturnsAsync(new ServiceResponse<IrasApplicationResponse> { StatusCode = HttpStatusCode.OK, Content = new IrasApplicationResponse() });
+            .ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
+                { StatusCode = HttpStatusCode.OK, Content = new IrasApplicationResponse() });
 
         Mocker
             .GetMock<IRespondentService>()
@@ -110,8 +130,13 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<IQuestionSetService>()
-            .Setup(x => x.GetQuestions(categoryId))
+            .Setup(x => x.GetQuestions(categoryId, It.IsAny<string>()))
             .ReturnsAsync(questionsSetServiceResponse);
+
+        Mocker
+            .GetMock<IQuestionSetService>()
+            .Setup(x => x.GetQuestionSections())
+            .ReturnsAsync(questionsSetServiceSectionResponse);
 
         var session = new Mock<ISession>();
         var httpContext = new DefaultHttpContext
@@ -135,8 +160,10 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         viewResult.Model.ShouldBeOfType<Microsoft.AspNetCore.Mvc.ProblemDetails>();
     }
 
-    [Theory, AutoData]
-    public async Task Resume_Should_UpdateQuestionnaireWithExistingAnswers_WhenRespondentAnswersNotEmpty(string applicationId, string categoryId)
+    [Theory]
+    [AutoData]
+    public async Task Resume_Should_UpdateQuestionnaireWithExistingAnswers_WhenRespondentAnswersNotEmpty(
+        string applicationId, string categoryId, string sectionId)
     {
         // Arrange
         var applicationResponse = new ServiceResponse<IrasApplicationResponse>
@@ -156,6 +183,36 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
             StatusCode = HttpStatusCode.OK,
             Content = []
         };
+
+        var questionsSetServiceSectionResponse = new ServiceResponse<QuestionSectionsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new QuestionSectionsResponse
+            {
+                SectionName = "Test",
+                QuestionCategoryId = categoryId,
+                SectionId = sectionId
+            }
+        };
+
+        var questionsSetServiceSectionsResponse = new ServiceResponse<IEnumerable<QuestionSectionsResponse>>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new List<QuestionSectionsResponse>
+            {
+                new()
+                {
+                    SectionName = "1",
+                    QuestionCategoryId = "A"
+                }
+            }
+        };
+
+
+        Mocker
+            .GetMock<IQuestionSetService>()
+            .Setup(x => x.GetQuestionSections())
+            .ReturnsAsync(questionsSetServiceSectionsResponse);
 
         Mocker
             .GetMock<IApplicationsService>()
@@ -169,8 +226,15 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<IQuestionSetService>()
-            .Setup(x => x.GetQuestions(categoryId))
+            .Setup(x => x.GetQuestions(categoryId, It.IsAny<string>()))
             .ReturnsAsync(questions);
+
+        Mocker.GetMock<IQuestionSetService>()
+            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>()))
+            .ReturnsAsync(questionsSetServiceSectionResponse);
+
+        Mocker.GetMock<IQuestionSetService>()
+            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>())).ReturnsAsync(questionsSetServiceSectionResponse);
 
         var session = new Mock<ISession>();
         var httpContext = new DefaultHttpContext
@@ -183,7 +247,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
 
         // Act
-        var result = await Sut.Resume(applicationId, categoryId);
+        var result = await Sut.Resume(applicationId, categoryId, sectionId);
 
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
@@ -196,11 +260,13 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<IQuestionSetService>()
-            .Verify(x => x.GetQuestions(categoryId), Times.Once);
+            .Verify(x => x.GetQuestions(categoryId, It.IsAny<string>()), Times.Once);
     }
 
-    [Theory, AutoData]
-    public async Task Resume_Should_Return_View_With_Questionnaire_When_Validate_Is_True(string applicationId, string categoryId)
+    [Theory]
+    [AutoData]
+    public async Task Resume_Should_Return_View_With_Questionnaire_When_Validate_Is_True(string applicationId,
+        string categoryId, string sectionId)
     {
         // Arrange
         var applicationResponse = new ServiceResponse<IrasApplicationResponse>
@@ -221,6 +287,17 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
             Content = []
         };
 
+        var questionsSetServiceSectionResponse = new ServiceResponse<QuestionSectionsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new QuestionSectionsResponse
+            {
+                SectionName = "Test",
+                QuestionCategoryId = categoryId,
+                SectionId = sectionId
+            }
+        };
+
         Mocker.GetMock<IApplicationsService>()
             .Setup(x => x.GetApplication(applicationId))
             .ReturnsAsync(applicationResponse);
@@ -230,13 +307,22 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
             .ReturnsAsync(respondentAnswers);
 
         Mocker.GetMock<IQuestionSetService>()
-            .Setup(x => x.GetQuestions(categoryId))
+            .Setup(x => x.GetQuestions(categoryId, sectionId))
             .ReturnsAsync(questions);
 
         Mocker
             .GetMock<IValidator<QuestionnaireViewModel>>()
-            .Setup(x => x.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ValidationResult());
+
+
+        Mocker.GetMock<IQuestionSetService>()
+            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>()))
+            .ReturnsAsync(questionsSetServiceSectionResponse);
+
+        Mocker.GetMock<IQuestionSetService>()
+            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>())).ReturnsAsync(questionsSetServiceSectionResponse);
 
         var session = new Mock<ISession>();
         var httpContext = new DefaultHttpContext
@@ -252,7 +338,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         };
 
         // Act
-        var result = await Sut.Resume(applicationId, categoryId, "True");
+        var result = await Sut.Resume(applicationId, categoryId, "True", sectionId);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -261,11 +347,15 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<IValidator<QuestionnaireViewModel>>()
-            .Verify(x => x.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), It.IsAny<CancellationToken>()), Times.Once);
+            .Verify(
+                x => x.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(),
+                    It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    [Theory, AutoData]
-    public async Task Resume_Should_RedirectToDisplayQuestionnaire_When_ValidateIsFalse(string applicationId, string categoryId)
+    [Theory]
+    [AutoData]
+    public async Task Resume_Should_RedirectToDisplayQuestionnaire_When_ValidateIsFalse(string applicationId,
+        string categoryId, string sectionId)
     {
         // Arrange
         var applicationResponse = new ServiceResponse<IrasApplicationResponse>
@@ -284,6 +374,31 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         {
             StatusCode = HttpStatusCode.OK,
             Content = []
+        };
+
+        var questionsSetServiceSectionResponse = new ServiceResponse<QuestionSectionsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new QuestionSectionsResponse
+            {
+                SectionName = "Test",
+                QuestionCategoryId = categoryId,
+                SectionId = sectionId
+            }
+        };
+
+        var questionsSetServiceSectionsResponse = new ServiceResponse<IEnumerable<QuestionSectionsResponse>>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new List<QuestionSectionsResponse>
+            {
+                new()
+                {
+                    SectionName = "Test",
+                    QuestionCategoryId = categoryId,
+                    SectionId = sectionId
+                }
+            }
         };
 
         Mocker
@@ -297,8 +412,20 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
             .ReturnsAsync(respondentAnswers);
 
         Mocker.GetMock<IQuestionSetService>()
-            .Setup(s => s.GetQuestions(categoryId))
+            .Setup(s => s.GetQuestions(categoryId, sectionId))
             .ReturnsAsync(questions);
+
+        Mocker
+            .GetMock<IQuestionSetService>()
+            .Setup(x => x.GetQuestionSections())
+            .ReturnsAsync(questionsSetServiceSectionsResponse);
+
+        Mocker.GetMock<IQuestionSetService>()
+            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>()))
+            .ReturnsAsync(questionsSetServiceSectionResponse);
+
+        Mocker.GetMock<IQuestionSetService>()
+            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>())).ReturnsAsync(questionsSetServiceSectionResponse);
 
         var session = new Mock<ISession>();
         var httpContext = new DefaultHttpContext
@@ -314,7 +441,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         };
 
         // Act
-        var result = await Sut.Resume(applicationId, categoryId);
+        var result = await Sut.Resume(applicationId, categoryId, sectionId);
 
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
