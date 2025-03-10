@@ -1,5 +1,5 @@
 ﻿@using Rsp.IrasPortal.Web.Areas.Admin.Models
-@model (IEnumerable<UserViewModel> Users, int TotalCount, int PageNumber)
+@model (IEnumerable<UserViewModel> Users, int TotalCount, int PageNumber, int PageSize)
 
 @{
     ViewBag.Active = "users";
@@ -34,5 +34,5 @@
     </tbody>
 </table>
 <p class="">Total number of users: @(Model.TotalCount)</p>
-<partial name="_Pagination" model="@(Model.PageNumber, Model.TotalCount, "admin:users")" />
+<partial name="_Pagination" model="@(Model.PageNumber, Model.PageSize, Model.TotalCount, "admin:users")" />
 <a class="govuk-button" asp-route="admin:createuser">Create New User</a>

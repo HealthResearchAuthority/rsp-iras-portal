@@ -34,7 +34,7 @@ public class RolesController(IUserManagementService userManagementService) : Con
                 Name = role.Name
             }) ?? [];
 
-            return View((roles, response.Content.TotalCount, pageNumber));
+            return View((roles, response.Content.TotalCount, pageNumber, pageSize));
         }
 
         // if status is forbidden
