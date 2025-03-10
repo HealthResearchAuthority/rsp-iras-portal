@@ -11,7 +11,7 @@ public interface IUserManagementServiceClient
     /// </summary>
     /// <returns>List of roles</returns>
     [Get("/roles")]
-    public Task<ApiResponse<RolesResponse>> GetRoles(int pageIndex = 1, int pageSize = 10);
+    public Task<ApiResponse<RolesResponse>> GetRoles(int pageIndex = 1, int pageSize = 100);
 
     /// <summary>
     /// Creates a new role in the database
@@ -36,7 +36,7 @@ public interface IUserManagementServiceClient
     /// </summary>
     /// <returns>List of users</returns>
     [Get("/users/all")]
-    public Task<ApiResponse<UsersResponse>> GetUsers(int pageIndex = 1, int pageSize = 10);
+    public Task<ApiResponse<UsersResponse>> GetUsers(int pageIndex = 1, int pageSize = 100);
 
     /// <summary>
     /// Gets a user by id or email
