@@ -20,6 +20,7 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
         DisplayQuestionnaire_ShouldReturnViewWithQuestionnaireFromSession_WhenSessionContainsValidQuestionnaireData
         (
             string categoryId,
+            string sectionId,
             List<QuestionsResponse> questionsResponse,
             List<QuestionSectionsResponse> questionSectionsResponse
         )
@@ -93,7 +94,7 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
         };
 
         // Act
-        var result = await Sut.DisplayQuestionnaire(categoryId);
+        var result = await Sut.DisplayQuestionnaire(categoryId, sectionId);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -110,6 +111,7 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
     public async Task DisplayQuestionnaire_ShouldReturnErrorView_WhenGetQuestionsReturnsErrorResponse
     (
         string categoryId,
+        string sectionId,
         List<QuestionSectionsResponse> questionSectionsResponse
     )
     {
@@ -147,7 +149,7 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
         };
 
         // Act
-        var result = await Sut.DisplayQuestionnaire(categoryId);
+        var result = await Sut.DisplayQuestionnaire(categoryId,sectionId);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -160,6 +162,7 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
         DisplayQuestionnaire_ShouldReturnViewWithQuestionnaire_WhenSessionIsEmptyAndGetQuestionsReturnsValidQuestions
         (
             string categoryId,
+            string sectionId,
             List<QuestionsResponse> questionsResponse,
             List<QuestionSectionsResponse> questionSectionsResponse
         )
@@ -253,7 +256,7 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
         };
 
         // Act
-        var result = await Sut.DisplayQuestionnaire(categoryId);
+        var result = await Sut.DisplayQuestionnaire(categoryId,sectionId);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
