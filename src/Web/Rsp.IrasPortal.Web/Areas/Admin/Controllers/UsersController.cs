@@ -91,6 +91,10 @@ public class UsersController(IUserManagementService userManagementService) : Con
         {
             return RedirectToAction(nameof(Index));
         }
+        else 
+        {
+            ModelState.AddModelError(nameof(UserViewModel.Email), response.Content?.Error);
+        }
 
         // if status is forbidden
         // return the appropriate response otherwise
