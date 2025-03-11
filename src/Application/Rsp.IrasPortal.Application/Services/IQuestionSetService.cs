@@ -35,12 +35,28 @@ public interface IQuestionSetService : IInterceptable
     /// <param name="versionId">Version of the questions</param>
     Task<ServiceResponse<IEnumerable<QuestionsResponse>>> GetQuestionsByVersion(string versionId, string categoryId);
 
+    /// <summary>
+    /// Parse an uploaded question set file and return a QuestionSetDto
+    /// </summary>
+    /// <param name="file"></param>
     ServiceResponse<QuestionSetDto> ProcessQuestionSetFile(IFormFile file);
 
+    /// <summary>
+    /// Creates questions, sections, categories, answer options,
+    /// rules, and version records in the database for a question set
+    /// </summary>
+    /// <param name="questionSet">The question set data</param>
     Task<ServiceResponse> AddQuestionSet(QuestionSetDto questionSet);
 
+    /// <summary>
+    /// Gets all question set versions
+    /// </summary>
     Task<ServiceResponse<IEnumerable<VersionDto>>> GetVersions();
 
+    /// <summary>
+    /// Publishes a question set version
+    /// </summary>
+    /// <param name="versionId">The versionId of the question set to publish</param>
     Task<ServiceResponse> PublishVersion(string versionId);
     /// <summary>
     /// Gets all questions for the category and section

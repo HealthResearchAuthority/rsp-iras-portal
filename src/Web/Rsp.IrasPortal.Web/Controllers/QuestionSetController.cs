@@ -38,11 +38,18 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
     public async Task<IActionResult> Upload(QuestionSetViewModel model)
     {
         var file = model.Upload;
+        await GetVersions(model);
 
         if (file == null || file.Length == 0)
         {
             ModelState.AddModelError("Upload", "Please upload a file");
-            await GetVersions(model);
+            return View(nameof(Index), model);
+        }
+
+        if (model.Versions.Any(v => v.VersionId
+                .Equals(Path.GetFileNameWithoutExtension(file.FileName), StringComparison.CurrentCultureIgnoreCase)))
+        {
+            ModelState.AddModelError("Upload", "Version name already exists");
             return View(nameof(Index), model);
         }
 
@@ -51,14 +58,12 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         if (fileProcessResponse.Error != null)
         {
             ModelState.AddModelError("Upload", fileProcessResponse.ReasonPhrase!);
-            await GetVersions(model);
             return View(nameof(Index), model);
         }
 
         if (!fileProcessResponse.IsSuccessStatusCode)
         {
             ModelState.AddModelError("Upload", "An unknown error occured");
-            await GetVersions(model);
             return View(nameof(Index), model);
         }
 
@@ -66,7 +71,6 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
 
         if (!await ValidateQuestions(model))
         {
-            await GetVersions(model);
             return View(nameof(Index), model);
         }
 
@@ -75,7 +79,6 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         if (!fileUploadResponse.IsSuccessStatusCode)
         {
             ModelState.AddModelError("Upload", "Internal server error");
-            await GetVersions(model);
             return View(nameof(Index), model);
         }
 

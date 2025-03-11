@@ -88,6 +88,8 @@ services
 
 services.Configure<HealthCheckPublisherOptions>(options => options.Period = TimeSpan.FromSeconds(300));
 
+// Increase the value count limit for FormOptions to allow
+// for submitting of large forms (e.g. question sets)
 services.Configure<FormOptions>(options =>
 {
     options.ValueCountLimit = int.MaxValue;
