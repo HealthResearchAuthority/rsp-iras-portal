@@ -8,6 +8,7 @@ public struct TempDataKeys
 {
     public const string ApplicationId = "td:application_id";
     public const string PreviousStage = "td:app_previousstage";
+    public const string PreviousCategory = "td:app_previouscategory";
     public const string CurrentStage = "td:app_currentstage";
     public const string UploadedDocuments = "td:uploaded_documents";
 }

@@ -9,11 +9,13 @@
 @inject IFeatureManager featureManager
 
 @{
-    var sections = Model.Questions.ToLookup(q => q.Section);
-    var previousStage = TempData[TempDataKeys.PreviousStage] as string;
-    var currentStage = TempData[TempDataKeys.CurrentStage] as string;
-    var errorSummaryTitle = "You need to complete these questions before you can continue::";
-    var applicationId = TempData[TempDataKeys.ApplicationId] as string;
+	var sections = Model.Questions.ToLookup(q => q.Section);
+	var previousStage = TempData[TempDataKeys.PreviousStage] as string;
+	var previousCategory = TempData[TempDataKeys.PreviousCategory] as string;
+	var currentStage = TempData[TempDataKeys.CurrentStage] as string;
+	var errorSummaryTitle = "You need to complete these questions before you can continue::";
+	var applicationId = TempData[TempDataKeys.ApplicationId] as string;
+	var validationMessages = new List<string>();
 
     void BuildValidationMessage(IList<RuleDto> rules, string errorKey, string validationMessage)
     {
@@ -86,7 +88,7 @@
     <script src="~/js/rules.js"></script>
 }
 
-<partial name="_BackNavigation" model="@("qnc:displayquestionnaire", "Back", new Dictionary<string, string> { { "categoryId", previousStage ?? QuestionCategories.A } })"/>
+<partial name="_BackNavigation" model="@("qnc:displayquestionnaire", "Back", new Dictionary<string, string> { { "categoryId", previousCategory }, { "sectionId", previousStage} })"/>
 
 <form method="post">
 
@@ -375,10 +377,10 @@
         }
     </div>
 
-    <partial name="_SubmitButton" model="@("qnc:saveresponses", "Save", new Dictionary<string, string>())"/>
-    <partial name="_SubmitButton" model="@("qnc:saveresponses", "Save and Continue", new Dictionary<string, string>() { { "saveAndContinue", bool.TrueString } })"/>
-    <partial name="_SubmitButton" model="@("qnc:validate", "Validate", new Dictionary<string, string>())"/>
-    <feature name="@Features.ProceedToSubmit">
-        <partial name="_SubmitButton" model="@("qnc:saveresponses", "Proceed to Submit", new Dictionary<string, string>() { { "submit", bool.TrueString } })"/>
-    </feature>
+	<partial name="_SubmitButton" model="@("qnc:saveresponses", "Save", new Dictionary<string, string>())" />
+	<partial name="_SubmitButton" model="@("qnc:saveresponses", "Save and Continue", new Dictionary<string, string>() { { "saveAndContinue", bool.TrueString } })" />
+	<partial name="_SubmitButton" model="@("qnc:validate", "Validate", new Dictionary<string, string>())" />
+	<feature name="@Features.ProceedToSubmit">
+		<partial name="_SubmitButton" model="@("qnc:saveresponses", "Proceed to Submit", new Dictionary<string, string>() { { "submit", bool.TrueString } })" />
+	</feature>
 </form>
