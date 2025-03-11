@@ -366,7 +366,7 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
     {
         // get the questionnaire from the session
         // and deserialize it
-        var questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(HttpContext.Session.GetString($"{SessionKeys.Questionnaire}:{model.Questions.FirstOrDefault().SectionId}")!)!;
+        var questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(HttpContext.Session.GetString($"{SessionKeys.Questionnaire}:{model.CurrentStage}")!)!;
 
         // update the model with the answeres
         // provided by the applicant
