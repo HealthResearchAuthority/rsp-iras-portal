@@ -379,6 +379,39 @@
                         </div>
                     }
                         break;
+                    case "search":
+                    {
+                        errorKey = $"Questions[{index}].SelectedOption";
+                        validationMessage = "Select one option";
+                        fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
+
+                        <div id="Questions[@index].SelectedOption"
+                             class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")"
+                             @parents @questionId>
+                            <govuk-fieldset>
+                                <govuk-fieldset-legend class="govuk-fieldset__legend--s">
+                                    @question.QuestionText
+                                </govuk-fieldset-legend>
+
+                                @if (fieldHasErrors)
+                                {
+                                    BuildValidationMessage(question.Rules, errorKey, validationMessage);
+                                }
+
+                                <div style="display: flex; gap: 10px;">
+                                    @Html.TextBoxFor(model => model.Questions[index].AnswerText, 
+                                        new { id = question.QuestionId + "_Text", name = "query", @class = "govuk-input", style = "width: auto; flex: 1;" })
+
+                                    @Html.Hidden("questionId", question.QuestionId)
+
+                                    <button type="submit" class="govuk-button" data-module="govuk-button">
+                                        Search
+                                    </button>
+                                </div>
+                            </govuk-fieldset>
+                        </div>
+                    }
+                        break;
                 }
             }
         </govuk-fieldset>
