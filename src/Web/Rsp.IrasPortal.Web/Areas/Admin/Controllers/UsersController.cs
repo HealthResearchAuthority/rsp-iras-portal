@@ -43,7 +43,15 @@ public class UsersController(IUserManagementService userManagementService) : Con
                 Email = user.Email
             }) ?? [];
 
-            return View((users, response.Content.TotalCount, pageNumber, pageSize));
+            var paginationModel = new PaginationViewModel
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                RouteName = "admin:users",
+                TotalCount = response.Content?.TotalCount ?? 0
+            };
+
+            return View((users, paginationModel));
         }
 
         // if status is forbidden
@@ -60,7 +68,7 @@ public class UsersController(IUserManagementService userManagementService) : Con
     /// Displays the empty UserView to create a user
     /// </summary>
     [HttpGet]
-    public IActionResult CreateUser() 
+    public IActionResult CreateUser()
     {
         ViewBag.Mode = "create";
 
@@ -90,10 +98,6 @@ public class UsersController(IUserManagementService userManagementService) : Con
         if (response.IsSuccessStatusCode)
         {
             return RedirectToAction(nameof(Index));
-        }
-        else 
-        {
-            ModelState.AddModelError(nameof(UserViewModel.Email), response.Content?.Error);
         }
 
         // if status is forbidden

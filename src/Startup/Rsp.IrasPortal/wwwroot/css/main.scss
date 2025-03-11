@@ -101,3 +101,21 @@ button.govuk-link {
 .govuk-notification-banner__title {
     text-align: center;
 }
+
+.govuk-pagination {
+    -webkit-justify-content: center;
+    justify-content: center;
+    margin-bottom: 0;
+}
+
+.govuk-pagination__results {
+    font-family: GDS Transport,arial,sans-serif;
+    margin-top: 0;
+    padding: 5px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.25;
+    float: right;
+}
