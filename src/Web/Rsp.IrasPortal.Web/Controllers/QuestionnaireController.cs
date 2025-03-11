@@ -74,9 +74,8 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
             }
         }
 
-        // get the questions for the category
-        var questionsSetServiceResponse = await questionSetService.GetQuestions(categoryId, sectionId);
-
+        var sectionIdOrDefault = sectionId ?? string.Empty;
+        var questionsSetServiceResponse = await questionSetService.GetQuestions(categoryId, sectionIdOrDefault);
 
         // return error page if unsuccessfull
         if (!questionsSetServiceResponse.IsSuccessStatusCode)
@@ -135,7 +134,8 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
     /// Renders all of the questions for the categoryId
     /// </summary>
     /// <param name="categoryId">CategoryId of the questions to be rendered</param>
-    public async Task<IActionResult> DisplayQuestionnaire(string? categoryId, string? sectionId = null)
+    ///<param name="sectionId">sectionId of the questions to be rendered</param>
+    public async Task<IActionResult> DisplayQuestionnaire(string? categoryId, string? sectionId)
     {
         if (categoryId == null && sectionId == null)
         {
@@ -181,7 +181,11 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
                 }
 
                 // get the questions for the category
-                var response = await questionSetService.GetQuestions(categoryId, sectionId);
+                var categoryIdOrDefault = categoryId ?? string.Empty; // Default to an empty string if categoryId is null
+                var sectionIdOrDefault = sectionId ?? string.Empty;   // Default to an empty string if sectionId is null
+
+                var response = await questionSetService.GetQuestions(categoryIdOrDefault, sectionIdOrDefault);
+
 
                 // return the view if successfull
                 if (response.IsSuccessStatusCode)
@@ -362,7 +366,7 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
     {
         // get the questionnaire from the session
         // and deserialize it
-        var questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(HttpContext.Session.GetString($"{SessionKeys.Questionnaire}:{model.CurrentStage}")!)!;
+        var questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(HttpContext.Session.GetString($"{SessionKeys.Questionnaire}:{model.Questions.FirstOrDefault().SectionId}")!)!;
 
         // update the model with the answeres
         // provided by the applicant
