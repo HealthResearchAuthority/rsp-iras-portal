@@ -224,7 +224,7 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
     {
         // get the questionnaire from the session
         // and deserialize it
-        var navigation = SetStage(model.CurrentStage ?? model.Questions.FirstOrDefault()?.SectionId);
+        var navigation = SetStage(model.CurrentStage);
 
         var questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(HttpContext.Session.GetString($"{SessionKeys.Questionnaire}:{navigation.CurrentStage}")!)!;
 
