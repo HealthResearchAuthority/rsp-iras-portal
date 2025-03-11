@@ -162,26 +162,20 @@ public class ApplicationController(IApplicationsService applicationsService, IVa
         var applicationServiceResponse = await applicationsService.GetApplicationsByRespondent(respondentId);
 
         // return the view if successful
-        if (applicationServiceResponse.IsSuccessStatusCode)
+        if (applicationServiceResponse is { IsSuccessStatusCode: true, Content: not null })
         {
-            if (applicationServiceResponse.Content != null)
+            avm.Applications = applicationServiceResponse.Content;
+
+            var questionSetServiceResponse = await questionSetService.GetQuestionCategories();
+
+            if (questionSetServiceResponse is { IsSuccessStatusCode: true, Content: not null })
             {
-                avm.Applications = applicationServiceResponse.Content;
-
-                var questionSetServiceResponse = await questionSetService.GetQuestionCategories();
-
-                if (questionSetServiceResponse.IsSuccessStatusCode)
-                {
-                    if (questionSetServiceResponse.Content != null)
-                    {
-                        avm.Categories = questionSetServiceResponse.Content;
-                        return View(avm);
-                    }
-                }
-
-                // return the generic error page
-                return this.ServiceError(questionSetServiceResponse);
+                avm.Categories = questionSetServiceResponse.Content;
+                return View(avm);
             }
+
+            // return the generic error page
+            return this.ServiceError(questionSetServiceResponse);
         }
 
         // return the generic error page
