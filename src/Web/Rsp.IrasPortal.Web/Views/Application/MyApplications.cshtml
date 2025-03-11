@@ -63,7 +63,7 @@
 
         <tr class="govuk-table__row">
             <td colspan="5" class="govuk-table__cell">
-                @if (Model.Categories != null && Model.Categories.Any())
+                @if (Model is not null && Model.Categories.Any())
                 {
                     var count = 0;
 
