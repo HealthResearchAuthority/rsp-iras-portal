@@ -11,7 +11,8 @@
     var previousCategory = TempData[TempDataKeys.PreviousCategory] as string;
     var currentStage = TempData[TempDataKeys.CurrentStage] as string;
     var errorSummaryTitle = "You need to complete these questions before you can continue::";
-    var validationMessages = new List<string>();
+
+    Model.CurrentStage = currentStage;
 
     void BuildValidationMessage(IList<RuleDto> rules, string errorKey, string validationMessage)
     {
@@ -119,7 +120,8 @@
                 </div>
                 <hr class="govuk-section-break govuk-section-break--visible">
             </govuk-fieldset-legend>
-            
+            <br/>
+            <br/>
             
             @{ var questions = Model.Questions; }
 
