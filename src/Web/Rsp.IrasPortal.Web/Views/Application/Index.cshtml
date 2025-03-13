@@ -19,13 +19,14 @@
 
         </authorized>
 
-        <authorized auth-params="@new(Roles:"user")">
+        <authorized auth-params="@new(Roles:"user,admin,reviewer")">
 
-            <p class="govuk-body">
-                If you need to make changes to an approved project, click on the <strong>Make changes to an approved project</strong> button to start the process.
-            </p>
+            <h1 style="margin-top:60px;margin-bottom:50px" class="govuk-heading-l">System administration</h1>
 
-            <a class="govuk-button" asp-route="app:startnewapplication">Make changes to an approved project</a>
+            <h2 class="govuk-heading-m">Actions</h2>
+
+            <partial name="_ActionItem" model="@("Manage review bodies","View, add, disable or edit review body records.", "")" />
+            <partial name="_ActionItem" model="@("Manage users","View, add, disable or edit review individual user records.", "")" />
 
         </authorized>
     </div>

@@ -1,0 +1,14 @@
+﻿@model (string Heading, string Description, string RouteName)
+
+<hr class="govuk-section-break--m govuk-section-break--dark" />
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <a class="govuk-heading-s govuk-link" asp-route="@Model.RouteName">@Model.Heading</a>
+    </div>
+    <div class="govuk-grid-column-one-third">
+        <svg style="float:right" width="16" height="16" viewBox="0 0 8 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0.292787 13.3644C0.105316 13.1769 0 12.9226 0 12.6574C0 12.3923 0.105316 12.138 0.292787 11.9504L5.24279 7.00044L0.292787 2.05044C0.110629 1.86184 0.00983372 1.60923 0.0121121 1.34704C0.0143906 1.08484 0.11956 0.834028 0.304968 0.648621C0.490376 0.463213 0.741188 0.358045 1.00339 0.355766C1.26558 0.353488 1.51818 0.454282 1.70679 0.63644L7.36379 6.29344C7.55126 6.48097 7.65657 6.73528 7.65657 7.00044C7.65657 7.2656 7.55126 7.51991 7.36379 7.70744L1.70679 13.3644C1.51926 13.5519 1.26495 13.6572 0.999786 13.6572C0.734622 13.6572 0.480314 13.5519 0.292787 13.3644Z" fill="black" />
+        </svg>
+    </div>
+</div>
+<p class="govuk-body">@Model.Description</p>
