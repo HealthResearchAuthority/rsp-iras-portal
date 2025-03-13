@@ -12,53 +12,7 @@
     var sections = Model.Questions.ToLookup(q => q.Section);
     var previousStage = TempData[TempDataKeys.PreviousStage] as string;
     var currentStage = TempData[TempDataKeys.CurrentStage] as string;
-    var errorSummaryTitle = "You need to complete these questions before you can continue::";
     var versionId = TempData[TempDataKeys.VersionId] as string;
-
-    void BuildValidationMessage(IList<RuleDto> rules, string errorKey, string validationMessage)
-    {
-        // local function to get distinct validations
-        // where the condition is applicable and Description is not null
-        IEnumerable<ConditionDto> GetConditions(RuleDto rule)
-        {
-            return rule.Conditions
-                    .Where(c => c.IsApplicable && c.Description != null)
-                    .DistinctBy(c => c.Description);
-        }
-
-        // get all the conditions for the rule
-        var conditions = rules.SelectMany(rule => GetConditions(rule));
-
-        var validationMessages = new List<string>();
-
-        // if there are not conditions
-        // use the validationMessage
-        if (!conditions.Any())
-        {
-            // if the same validationMessage is not present in the list
-            // build the validation message and add it, so that it doesn't
-            // get repeated
-            if (!validationMessages.Contains(validationMessage, StringComparer.OrdinalIgnoreCase))
-            {
-                @Html.ValidationMessage(errorKey, validationMessage, new { @class = "govuk-error-message" })
-
-                validationMessages.Add(validationMessage);
-            }
-        }
-
-        @foreach (var condition in conditions)
-        {
-            // if the same validationMessage is not present in the list
-            // build the validation message and add it, so that it doesn't
-            // get repeated
-            if (!validationMessages.Contains(condition.Description!, StringComparer.OrdinalIgnoreCase))
-            {
-                @Html.ValidationMessage(errorKey, condition.Description, new { @class = "govuk-error-message" })
-
-                validationMessages.Add(condition.Description!);
-            }
-        }
-    }
 }
 
 @if (await featureManager.IsEnabledAsync("UX.ProgressiveEnhancement"))
@@ -107,26 +61,9 @@
 
     <partial name="_ProgressPreview" model="@(currentStage, "Initiate", versionId)" />
 
-    @if (ViewData[ViewDataKeys.IsQuestionnaireValid] is true)
-    {
-        <div class="govuk-panel govuk-panel--confirmation">
-            <div class="govuk-panel__body">
-                Validation Passed
-            </div>
-        </div>
-    }
-
-    <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
-
     <div class="govuk-form-group questions">
 
         <input hidden asp-for="CurrentStage" value="@currentStage" />
-
-        @{
-            var errorKey = string.Empty;
-            var validationMessage = string.Empty;
-            var fieldHasErrors = false;
-        }
 
         @foreach (var section in sections)
         {
@@ -187,11 +124,7 @@
 
                     @if (question.DataType is "Date")
                     {
-                        errorKey = $"Questions[{index}].AnswerText";
-                        validationMessage = "Provide an answer for this question";
-                        fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
-
-                        <div id="Questions[@index].AnswerText" class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")" @parents @questionId>
+                        <div id="Questions[@index].AnswerText" class="@(conditional)govuk-form-group" @parents @questionId>
 
                             <h1 class="govuk-label-wrapper">
                                 <label class="govuk-label govuk-label--s" for="@(question.QuestionId)_Text">
@@ -199,19 +132,9 @@
                                 </label>
                             </h1>
 
-                            @if (fieldHasErrors)
-                            {
-                                BuildValidationMessage(question.Rules, errorKey, validationMessage);
-                            }
-
                             <div class="govuk-date-input">
                                 <div class="govuk-date-input__item">
                                     <div class="govuk-form-group">
-                                        @*
-                                            <label class="govuk-label govuk-date-input__label" for="@(question.QuestionId + "_Text")">
-                                              Date
-                                            </label>
-                                        *@
                                         <div class="govuk-date-input__item">
                                             <input class="govuk-input govuk-date-input__input govuk-input--width-10" type="date" asp-for="Questions[index].AnswerText" asp-format="{0:dd-MM-yyyy}" id="@(question.QuestionId + "_Text")" />
                                         </div>
@@ -223,11 +146,7 @@
 
                     @if (question.DataType is "Text" or "Email")
                     {
-                        errorKey = $"Questions[{index}].AnswerText";
-                        validationMessage = "Provide an answer for this question";
-                        fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
-
-                        <div id="Questions[@index].AnswerText" class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "" )" @parents @questionId>
+                        <div id="Questions[@index].AnswerText" class="@(conditional)govuk-form-group" @parents @questionId>
 
                             <h1 class="govuk-label-wrapper">
                                 <label class="govuk-label govuk-label--s" for="@(question.QuestionId)_Text">
@@ -235,31 +154,17 @@
                                 </label>
                             </h1>
 
-                            @if (fieldHasErrors)
-                            {
-                                BuildValidationMessage(question.Rules, errorKey, validationMessage);
-                            }
-
                             @Html.TextBoxFor(model => model.Questions[index].AnswerText, new { id = question.QuestionId + "_Text", @class = "govuk-input" })
                         </div>
                     }
 
                     if (question.DataType is "Checkbox")
                     {
-                        errorKey = $"Questions[{index}].Answers";
-                        validationMessage = "Select at least one option";
-                        fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
-
-                        <div id="Questions[@index].Answers" class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "" )" @parents @questionId>
+                        <div id="Questions[@index].Answers" class="@(conditional)govuk-form-group" @parents @questionId>
                             <govuk-fieldset>
                                 <govuk-fieldset-legend class="govuk-fieldset__legend--s">
                                     @question.Heading. @question.QuestionText
                                 </govuk-fieldset-legend>
-
-                                @if (fieldHasErrors)
-                                {
-                                    BuildValidationMessage(question.Rules, errorKey, validationMessage);
-                                }
 
                                 <div class="govuk-checkboxes" data-module="govuk-checkboxes">
                                     @foreach (var (answer, ansIndex) in question.Answers.Select((answer, ansIndex) => (answer, ansIndex)))
@@ -278,20 +183,11 @@
 
                     if (question.DataType is "Radio button" or "Boolean")
                     {
-                        errorKey = $"Questions[{index}].SelectedOption";
-                        validationMessage = "Select one option";
-                        fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
-
-                        <div id="Questions[@index].SelectedOption" class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "" )" @parents @questionId>
+                        <div id="Questions[@index].SelectedOption" class="@(conditional)govuk-form-group" @parents @questionId>
                             <govuk-fieldset>
                                 <govuk-fieldset-legend class="govuk-fieldset__legend--s">
                                     @question.Heading.@question.QuestionText
                                 </govuk-fieldset-legend>
-
-                                @if (fieldHasErrors)
-                                {
-                                    BuildValidationMessage(question.Rules, errorKey, validationMessage);
-                                }
 
                                 <div class="govuk-radios" data-module="govuk-radios">
                                     @foreach (var (answer, ansIndex) in question.Answers.Select((answer, ansIndex) => (answer, ansIndex)))

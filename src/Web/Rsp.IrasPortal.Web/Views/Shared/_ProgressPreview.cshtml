@@ -7,7 +7,6 @@
     string GetState(string stage, out string style)
     {
         var state = Model.currentStage == stage ? " active" : Model.completedStage == stage ? " completed" : string.Empty;
-        //style = state == string.Empty ? "display: none" : "";
         style = "";
 
         return state;

@@ -23,6 +23,13 @@ public interface IQuestionSetService : IInterceptable
     Task<ServiceResponse<IEnumerable<QuestionsResponse>>> GetQuestions(string categoryId);
 
     /// <summary>
+    /// Gets all questions for the category and section
+    /// </summary>
+    /// <param name="categoryId">Category Id of the questions</param>
+    /// <param name="sectionId">Section Id of the questions</param>
+    Task<ServiceResponse<IEnumerable<QuestionsResponse>>> GetQuestions(string categoryId, string sectionId);
+
+    /// <summary>
     /// Gets all questions by version
     /// </summary>
     /// <param name="versionId">Version of the questions</param>
@@ -36,36 +43,12 @@ public interface IQuestionSetService : IInterceptable
     Task<ServiceResponse<IEnumerable<QuestionsResponse>>> GetQuestionsByVersion(string versionId, string categoryId);
 
     /// <summary>
-    /// Parse an uploaded question set file and return a QuestionSetDto
+    /// Gets all questions for the category
     /// </summary>
-    /// <param name="file"></param>
-    ServiceResponse<QuestionSetDto> ProcessQuestionSetFile(IFormFile file);
-
-    /// <summary>
-    /// Creates questions, sections, categories, answer options,
-    /// rules, and version records in the database for a question set
-    /// </summary>
-    /// <param name="questionSet">The question set data</param>
-    Task<ServiceResponse> AddQuestionSet(QuestionSetDto questionSet);
-
-    /// <summary>
-    /// Gets all question set versions
-    /// </summary>
-    Task<ServiceResponse<IEnumerable<VersionDto>>> GetVersions();
-
-    /// <summary>
-    /// Publishes a question set version
-    /// </summary>
-    /// <param name="versionId">The versionId of the question set to publish</param>
-    Task<ServiceResponse> PublishVersion(string versionId);
-    /// <summary>
-    /// Gets all questions for the category and section
-    /// </summary>
-    /// <param name="categoryId">Category Id of the questions</param>
-    /// <param name="sectionId">Section Id of the questions</param>
-    Task<ServiceResponse<IEnumerable<QuestionsResponse>>> GetQuestions(string categoryId, string sectionId);
-
-    Task<ServiceResponse> CreateQuestions(QuestionSetDto questionSet);
+    /// <param name="categoryId">CategoryId of the questions</param>
+    /// <param name="sectionId">SectionId of the questions</param>
+    /// <param name="versionId">Version of the questions</param>
+    Task<ServiceResponse<IEnumerable<QuestionsResponse>>> GetQuestionsByVersion(string versionId, string categoryId, string sectionId);
 
     /// <summary>
     /// Gets previous question sections
@@ -86,4 +69,28 @@ public interface IQuestionSetService : IInterceptable
     /// Gets all question sections
     /// </summary>
     Task<ServiceResponse<IEnumerable<CategoryDto>>> GetQuestionCategories();
+
+    /// <summary>
+    /// Parses an uploaded question set file and return a QuestionSetDto
+    /// </summary>
+    /// <param name="file">A question set file</param>
+    ServiceResponse<QuestionSetDto> ProcessQuestionSetFile(IFormFile file);
+
+    /// <summary>
+    /// Creates questions, sections, categories, answer options,
+    /// rules, and version records in the database for a question set
+    /// </summary>
+    /// <param name="questionSet">The question set data</param>
+    Task<ServiceResponse> AddQuestionSet(QuestionSetDto questionSet);
+
+    /// <summary>
+    /// Gets all question set versions
+    /// </summary>
+    Task<ServiceResponse<IEnumerable<VersionDto>>> GetVersions();
+
+    /// <summary>
+    /// Publishes a question set version
+    /// </summary>
+    /// <param name="versionId">The versionId of the question set to publish</param>
+    Task<ServiceResponse> PublishVersion(string versionId);
 }
