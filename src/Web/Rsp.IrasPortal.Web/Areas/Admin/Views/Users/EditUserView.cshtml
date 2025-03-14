@@ -8,13 +8,14 @@
 	var buttonText = ViewBag.Mode == "edit" ? "Save" : "Continue";
 	var heading = ViewBag.Mode == "edit" ? "Edit user profile record" : "Add a new user profile record";
 	var submitActionName = ViewBag.Mode == "edit" ? "admin:submituser" : "admin:confirmusersubmission";
+	ViewBag.Active = "manageUsers";
 }
 
-<a href="/admin/users" class="govuk-back-link">Back</a>
+<a asp-route="admin:users" class="govuk-back-link">Back</a>
 
 <div class="govuk-grid-row">
 	<div class="govuk-grid-column-two-thirds">
-		<h2 class="govuk-heading-l">@heading</h2>
+		<h1 class="govuk-heading-l">@heading</h1>
 		<form method="post">
 			<input name="Id" asp-for="Id" value="@(Model.Id ?? string.Empty)" />
 			<input name="OriginalEmail" asp-for="OriginalEmail" value="@(Model.Email ?? string.Empty)" />
@@ -67,11 +68,15 @@
 				<span class="govuk-error-message" asp-validation-for="Role"></span>
 				<select onchange="changeRoleSelection(this.value)" class="role-list-dropdown govuk-select govuk-!-width-three-quarters @(ViewData.ModelState["Role"]?.Errors.Count > 0 ? "govuk-select--error" : "")" id="Role" name="Role">
 					<option></option>
-					@foreach (var role in Model.AvailableUserRoles)
+					@if (Model.AvailableUserRoles != null)
 					{
-						var userFiendleyName = role.Name.Replace("_", " ");
-						<option selected=@(Model.Role == role.Name ? "selected" : null) value="@role.Name">@userFiendleyName</option>
+						foreach (var role in Model.AvailableUserRoles)
+						{
+							var userFiendleyName = role.Name.Replace("_", " ");
+							<option selected=@(Model.Role == role.Name ? "selected" : null) value="@role.Name">@userFiendleyName</option>
+						}
 					}
+
 				</select>
 			</div>
 
@@ -88,7 +93,7 @@
 						{
 							<div class="govuk-checkboxes__item">
 								<input @(Model.Country != null && Model.Country.Contains(country) ? "checked" : null) class="govuk-checkboxes__input" id="@country" name="Country" type="checkbox" value="@country">
-								<label class="govuk-label govuk-checkboxes__label" for="Country">
+								<label class="govuk-label govuk-checkboxes__label" for="@country">
 									@country
 								</label>
 							</div>
@@ -110,7 +115,7 @@
 						{
 							<div class="govuk-checkboxes__item">
 								<input @(Model.AccessRequired != null && Model.AccessRequired.Contains(option) ? "checked" : null) class="govuk-checkboxes__input" id="@option" name="AccessRequired" type="checkbox" value="@option">
-								<label class="govuk-label govuk-checkboxes__label" for="AccessRequired">
+								<label class="govuk-label govuk-checkboxes__label" for="@option">
 									@option
 								</label>
 							</div>

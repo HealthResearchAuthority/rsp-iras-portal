@@ -59,6 +59,12 @@ public class UserViewModel
     [Display(Name = "Last updated")]
     public DateTime? LastUpdated { get; set; } = null;
 
+    [Display(Name = "Status")]
+    public string? Status { get; set; } = null;
+
+    [Display(Name = "Last logged in")]
+    public DateTime? LastLogin { get; set; } = null;
+
     public IList<Role> AvailableUserRoles { get; set; } = new List<Role>();
 
     public void Deconstruct(out string firstName, out string lastName, out string email)

@@ -1,30 +1,15 @@
-﻿@using Microsoft.FeatureManagement
-@using Rsp.IrasPortal.Application.Constants
+﻿@using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Web.Areas.Admin.Models
 @model UserViewModel
-@inject IFeatureManager featureManager
-
 @{
-	var buttonText = ViewBag.Mode == "edit" ? "Save Changes" : "Create Profile";
-	var heading = ViewBag.Mode == "edit" ? "Edit User" : "Add a new user profile record";
-	var editUserUrl = ViewBag.Mode == "edit" ? "" : "/admin/users/editnewuser";
 	ViewBag.Active = "manageUsers";
 }
 
-@if (await featureManager.IsEnabledAsync(Features.ProgressiveEnhancement))
-{
-	@section FooterResources {
-	<script src="~/lib/jquery/dist/jquery.js"></script>
-	<script src="~/js/manageUsers.js"></script>
-	}
-
-	<a href="javascript:;" onclick="submitFormWithAction('submit-user-form', '@editUserUrl')" class="govuk-back-link">Back</a>
-}
+<a asp-route="admin:users" class="govuk-back-link">Back</a>
 
 <div class="govuk-grid-row">
 	<div class="govuk-grid-column-full">
-		<h2 class="govuk-heading-l">@heading</h2>
-		<p>Check the information here is correct before creating the profile</p>
+		<h1 class="govuk-heading-l">User profile: @Model.FirstName @Model.LastName</h1>
 		<form method="post" id="submit-user-form">
 			<table class="govuk-table">
 				<thead>
@@ -41,7 +26,10 @@
 							@Model.Title
 							<input type="hidden" asp-for="Title" name="Title" value="@Model.Title" />
 						</td>
-						<td class="govuk-table__cell govuk-table__cell--numeric"><button class="govuk-button-hyperlink" type="submit" formaction="@editUserUrl">Change</button></td>
+						<td class="govuk-table__cell govuk-table__cell--numeric">
+							<a class="govuk-link" asp-route="admin:edituser" asp-route-userId="@Model.Id"
+							   asp-route-email="@Model.Email">Change</a>
+						</td>
 					</tr>
 
 					<tr class="govuk-table__row">
@@ -50,7 +38,10 @@
 							@Model.FirstName
 							<input type="hidden" asp-for="FirstName" name="FirstName" value="@Model.FirstName" />
 						</td>
-						<td class="govuk-table__cell govuk-table__cell--numeric"><button class="govuk-button-hyperlink" type="submit" formaction="@editUserUrl">Change</button></td>
+						<td class="govuk-table__cell govuk-table__cell--numeric">
+							<a class="govuk-link" asp-route="admin:edituser" asp-route-userId="@Model.Id"
+							   asp-route-email="@Model.Email">Change</a>
+						</td>
 					</tr>
 
 					<tr class="govuk-table__row">
@@ -59,7 +50,10 @@
 							@Model.LastName
 							<input type="hidden" asp-for="LastName" name="LastName" value="@Model.LastName" />
 						</td>
-						<td class="govuk-table__cell govuk-table__cell--numeric"><button class="govuk-button-hyperlink" type="submit" formaction="@editUserUrl">Change</button></td>
+						<td class="govuk-table__cell govuk-table__cell--numeric">
+							<a class="govuk-link" asp-route="admin:edituser" asp-route-userId="@Model.Id"
+							   asp-route-email="@Model.Email">Change</a>
+						</td>
 					</tr>
 
 					<tr class="govuk-table__row">
@@ -68,7 +62,10 @@
 							@Model.Email
 							<input type="hidden" asp-for="Email" name="Email" value="@Model.Email" />
 						</td>
-						<td class="govuk-table__cell govuk-table__cell--numeric"><button class="govuk-button-hyperlink" type="submit" formaction="@editUserUrl">Change</button></td>
+						<td class="govuk-table__cell govuk-table__cell--numeric">
+							<a class="govuk-link" asp-route="admin:edituser" asp-route-userId="@Model.Id"
+							   asp-route-email="@Model.Email">Change</a>
+						</td>
 					</tr>
 
 					<tr class="govuk-table__row">
@@ -77,7 +74,10 @@
 							@Model.Telephone
 							<input type="hidden" asp-for="Telephone" name="Telephone" value="@Model.Telephone" />
 						</td>
-						<td class="govuk-table__cell govuk-table__cell--numeric"><button class="govuk-button-hyperlink" type="submit" formaction="@editUserUrl">Change</button></td>
+						<td class="govuk-table__cell govuk-table__cell--numeric">
+							<a class="govuk-link" asp-route="admin:edituser" asp-route-userId="@Model.Id"
+							   asp-route-email="@Model.Email">Change</a>
+						</td>
 					</tr>
 
 					<tr class="govuk-table__row">
@@ -86,7 +86,10 @@
 							@Model.Organisation
 							<input type="hidden" asp-for="Organisation" name="Organisation" value="@Model.Organisation" />
 						</td>
-						<td class="govuk-table__cell govuk-table__cell--numeric"><button class="govuk-button-hyperlink" type="submit" formaction="@editUserUrl">Change</button></td>
+						<td class="govuk-table__cell govuk-table__cell--numeric">
+							<a class="govuk-link" asp-route="admin:edituser" asp-route-userId="@Model.Id"
+							   asp-route-email="@Model.Email">Change</a>
+						</td>
 					</tr>
 
 					<tr class="govuk-table__row">
@@ -95,7 +98,10 @@
 							@Model.JobTitle
 							<input type="hidden" asp-for="JobTitle" name="JobTitle" value="@Model.JobTitle" />
 						</td>
-						<td class="govuk-table__cell govuk-table__cell--numeric"><button class="govuk-button-hyperlink" type="submit" formaction="@editUserUrl">Change</button></td>
+						<td class="govuk-table__cell govuk-table__cell--numeric">
+							<a class="govuk-link" asp-route="admin:edituser" asp-route-userId="@Model.Id"
+							   asp-route-email="@Model.Email">Change</a>
+						</td>
 					</tr>
 
 					<tr class="govuk-table__row">
@@ -104,7 +110,10 @@
 							@Model.Role
 							<input type="hidden" asp-for="Role" name="Role" value="@Model.Role" />
 						</td>
-						<td class="govuk-table__cell govuk-table__cell--numeric"><button class="govuk-button-hyperlink" type="submit" formaction="@editUserUrl">Change</button></td>
+						<td class="govuk-table__cell govuk-table__cell--numeric">
+							<a class="govuk-link" asp-route="admin:edituser" asp-route-userId="@Model.Id"
+							   asp-route-email="@Model.Email">Change</a>
+						</td>
 					</tr>
 
 					@if (Model.Role == "operations" && Model.Country != null && Model.Country.Any())
@@ -118,7 +127,10 @@
 									<input type="hidden" asp-for="Country[@i]" name="Country[@i]" value="@Model.Country[i]" />
 								}
 							</td>
-							<td class="govuk-table__cell govuk-table__cell--numeric"><button class="govuk-button-hyperlink" type="submit" formaction="@editUserUrl">Change</button></td>
+							<td class="govuk-table__cell govuk-table__cell--numeric">
+								<a class="govuk-link" asp-route="admin:edituser" asp-route-userId="@Model.Id"
+								   asp-route-email="@Model.Email">Change</a>
+							</td>
 						</tr>
 					}
 
@@ -133,13 +145,46 @@
 									<input type="hidden" asp-for="AccessRequired[@i]" name="AccessRequired[@i]" value="@Model.AccessRequired[i]" />
 								}
 							</td>
-							<td class="govuk-table__cell govuk-table__cell--numeric"><button class="govuk-button-hyperlink" type="submit" formaction="@editUserUrl">Change</button></td>
+							<td class="govuk-table__cell govuk-table__cell--numeric">
+								<a class="govuk-link" asp-route="admin:edituser" asp-route-userId="@Model.Id"
+								   asp-route-email="@Model.Email">Change</a>
+							</td>
 						</tr>
 					}
 
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell"><b>Audit</b></td>
+						<td class="govuk-table__cell">
+							<a class="govuk-link govuk-link" href="">View this user's audit trail'</a>
+						</td>
+						<td class="govuk-table__cell govuk-table__cell--numeric"></td>
+					</tr>
+
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell"><b>Last updated</b></td>
+						<td class="govuk-table__cell">
+							@(Model.LastUpdated.HasValue ? Model.LastUpdated.Value.ToString("dd MMMM yyyy HH:mm") : string.Empty)
+						</td>
+						<td class="govuk-table__cell govuk-table__cell--numeric"></td>
+					</tr>
+
 				</tbody>
 			</table>
-			<partial name="_SubmitButton" model="@("admin:submituser", buttonText, new Dictionary<string, string>())" />
+		</form>			
+	</div>
+</div>
+
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-two-thirds">
+		<h2 class="govuk-heading-m">Do you want to disable this user record?</h2>
+		<div class="govuk-hint">
+			Disabling a user record will prevent the  administrator from accessing their account.
+			This can be reversed once requested.
+		</div>
+		<form method="post">
+			<button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+				Disable user record
+			</button>
 		</form>
 	</div>
 </div>
