@@ -76,17 +76,20 @@ public class UserViewModel
         var user = identityUserResponse?.User;
         var roles = identityUserResponse?.Roles;
 
-        Id = user.Id;
-        FirstName = user.FirstName;
-        LastName = user.LastName;
-        Email = user.Email;
-        Telephone = user.Telephone;
-        Country = !string.IsNullOrEmpty(user.Country) ? user.Country.Split(',') : null;
-        Title = user.Title;
-        JobTitle = user.JobTitle;
-        Organisation = user.Organisation;
-        Role = roles != null ? roles.FirstOrDefault() : null;
-        LastUpdated = user.LastUpdated;
+        if (user != null)
+        {
+            Id = user.Id;
+            FirstName = user.FirstName;
+            LastName = user.LastName;
+            Email = user.Email;
+            Telephone = user.Telephone;
+            Country = !string.IsNullOrEmpty(user.Country) ? user.Country.Split(',') : null;
+            Title = user.Title;
+            JobTitle = user.JobTitle;
+            Organisation = user.Organisation;
+            Role = roles != null ? roles.FirstOrDefault() : null;
+            LastUpdated = user.LastUpdated;
+        }
     }
 
     public void Deconstruct(out string firstName, out string lastName, out string email)
