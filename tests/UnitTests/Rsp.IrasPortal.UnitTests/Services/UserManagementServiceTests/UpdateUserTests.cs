@@ -1,19 +1,24 @@
-﻿using System.Net;
-using AutoFixture.Xunit2;
-using Moq;
-using Refit;
-using Rsp.IrasPortal.Application.Responses;
+﻿using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Domain.Identity;
 using Rsp.IrasPortal.Services;
-using Shouldly;
 
 namespace Rsp.IrasPortal.UnitTests.Services.UserManagementServiceTests;
 
 public class UpdateUserTests : TestServiceBase<UserManagementService>
 {
     [Theory, AutoData]
-    public async Task UpdateUser_Should_Return_Success_Response_When_Client_Returns_Success(string originalEmail, string firstName, string lastName, string email)
+    public async Task UpdateUser_Should_Return_Success_Response_When_Client_Returns_Success(string originalEmail,
+        string title,
+        string firstName,
+        string lastName,
+        string email,
+        string? jobTitle,
+        string? organisation,
+        string? telephone,
+        string? country,
+        string status,
+        DateTime? lastUpdated)
     {
         // Arrange
         var apiResponse = Mock.Of<IApiResponse>
@@ -29,7 +34,7 @@ public class UpdateUserTests : TestServiceBase<UserManagementService>
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.UpdateUser(originalEmail, firstName, lastName, email);
+        var result = await Sut.UpdateUser(originalEmail, title, firstName, lastName, email, jobTitle, organisation, telephone, country, status, lastUpdated);
 
         // Assert
         result.ShouldBeOfType<ServiceResponse>();
@@ -41,7 +46,17 @@ public class UpdateUserTests : TestServiceBase<UserManagementService>
     }
 
     [Theory, AutoData]
-    public async Task UpdateUser_Should_Return_Failure_Response_When_Client_Returns_Failure(string originalEmail, string firstName, string lastName, string email)
+    public async Task UpdateUser_Should_Return_Failure_Response_When_Client_Returns_Failure(string originalEmail,
+        string title,
+        string firstName,
+        string lastName,
+        string email,
+        string? jobTitle,
+        string? organisation,
+        string? telephone,
+        string? country,
+        string status,
+        DateTime? lastUpdated)
     {
         // Arrange
         var apiResponse = Mock.Of<IApiResponse>
@@ -56,7 +71,7 @@ public class UpdateUserTests : TestServiceBase<UserManagementService>
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.UpdateUser(originalEmail, firstName, lastName, email);
+        var result = await Sut.UpdateUser(originalEmail, title, firstName, lastName, email, jobTitle, organisation, telephone, country, status, lastUpdated);
 
         // Assert
         result.ShouldBeOfType<ServiceResponse>();
