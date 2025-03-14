@@ -10,4 +10,5 @@ public record User(string? Id,
     string? Telephone,
     string? Country,
     string Status,
-    DateTime? lastUpdated);
+    DateTime? LastUpdated,
+    DateTime? LastLogin = null);

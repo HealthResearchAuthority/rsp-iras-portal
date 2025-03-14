@@ -1,37 +1,66 @@
-﻿@using Rsp.IrasPortal.Web.Areas.Admin.Models
+﻿@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Web.Areas.Admin.Models
 @model (IEnumerable<UserViewModel> Users, int TotalCount, int PageNumber, int PageSize)
 
 @{
-	ViewBag.Active = "users";
+	ViewBag.Active = "manageUsers";
 }
-<h2 class="govuk-heading-l">Manage Users</h2>
 
-<partial name="_AdminMenu" />
+<a href="/" class="govuk-back-link">Back</a>
 
-<table class="govuk-table">
-	<thead>
-		<tr>
-			<th class="govuk-table__header">Email</th>
-			<th class="govuk-table__header">Actions</th>
-		</tr>
-	</thead>
-	<tbody>
-		@foreach (var user in Model.Users)
-		{
-			<tr class="govuk-table__row">
-				<td class="govuk-table__cell">@user.Email</td>
-				<td class="govuk-table__cell">
-					<a class="govuk-link" asp-route="admin:edituser" asp-route-userId="@user.Id"
-					   asp-route-email="@user.Email">Edit</a> |
-					<a class="govuk-link" asp-route="admin:manageroles" asp-route-userId="@user.Id"
-					   asp-route-email="@user.Email">Manage Roles</a> |
-					<a class="govuk-link" asp-route="admin:deleteuser" asp-route-userId="@user.Id"
-					   asp-route-email="@user.Email">Delete</a>
-				</td>
-			</tr>
-		}
-	</tbody>
-</table>
-<p class="">Total number of users: @(Model.TotalCount)</p>
-<partial name="_Pagination" model="@(Model.PageNumber, Model.PageSize, Model.TotalCount, "admin:users")" />
-<a class="govuk-button" asp-route="admin:createuser">Create New User</a>
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-one-half">
+		<h1 class="govuk-heading-l">Manage Users</h1>
+	</div>
+
+	<div class="govuk-grid-column-one-half">
+		<a class="govuk-link float-right" asp-route="admin:createuser">Add new user profile record</a>
+	</div>
+</div>
+
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-full">
+
+		<form method="post">
+			<label class="govuk-label" for="SearchUser"><b>Find a user</b></label>
+			<input class="govuk-input govuk-!-width-two-thirds" id="SearchUser" name="SearchUser" type="text">
+			<partial name="_SubmitButton" model="@("", "Search", new Dictionary<string, string>())" />
+		</form>
+
+		<table class="govuk-table">
+			<thead>
+				<tr>
+					<th class="govuk-table__header govuk-table__header-sortable">First name</th>
+					<th class="govuk-table__header govuk-table__header-sortable">Last name</th>
+					<th class="govuk-table__header govuk-table__header-sortable">Email address</th>
+					<th class="govuk-table__header govuk-table__header-sortable">Status</th>
+					<th class="govuk-table__header govuk-table__header-sortable">Last logged in</th>
+					<th class="govuk-table__header govuk-table__header-sortable">Action</th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var user in Model.Users)
+				{
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell">@user.FirstName</td>
+						<td class="govuk-table__cell">@user.LastName</td>
+						<td class="govuk-table__cell">@user.Email</td>
+						<td class="govuk-table__cell">
+							@if (!string.IsNullOrEmpty(user.Status))
+							{
+								var statusClass = string.Equals(user.Status, IrasUserStatus.Active, StringComparison.InvariantCultureIgnoreCase) ? "govuk-tag--green" : "govuk-tag--red";
+
+								<strong class="govuk-tag @statusClass"><b>@user.Status.ToUpperInvariant()</b></strong>
+							}
+						</td>
+						<td class="govuk-table__cell">@(user.LastLogin.HasValue ? user.LastLogin.Value.ToString("dd MMM yyyy") : string.Empty)</td>
+						<td class="govuk-table__cell">
+							<a class="govuk-link" asp-route="admin:viewuser" asp-route-userId="@user.Id"
+							   asp-route-email="@user.Email">View/Edit</a>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+</div>
