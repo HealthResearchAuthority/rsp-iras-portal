@@ -70,10 +70,10 @@
 					<option></option>
 					@if (Model.AvailableUserRoles != null)
 					{
-						foreach (var role in Model.AvailableUserRoles)
+						foreach (var role in Model.AvailableUserRoles.Select(r => r.Name))
 						{
-							var userFiendleyName = role.Name.Replace("_", " ");
-							<option selected=@(Model.Role == role.Name ? "selected" : null) value="@role.Name">@userFiendleyName</option>
+							var userFiendleyName = role.Replace("_", " ");
+							<option selected=@(Model.Role == role ? "selected" : null) value="@role">@userFiendleyName</option>
 						}
 					}
 
