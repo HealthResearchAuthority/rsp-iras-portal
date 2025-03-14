@@ -18,8 +18,9 @@ namespace Rsp.IrasPortal.Web.Areas.Admin.Controllers;
 public class UsersController(IUserManagementService userManagementService) : Controller
 {
     private const string Error = nameof(Error);
-    private const string UserView = nameof(UserView);
+    private const string EditUserView = nameof(EditUserView);
     private const string ConfirmUser = nameof(ConfirmUser);
+    private const string ViewUserView = nameof(ViewUserView);
     private const string DeleteUserView = nameof(DeleteUserView);
     private const string UserRolesView = nameof(UserRolesView);
     private const string CreateUserSuccessMessage = nameof(CreateUserSuccessMessage);
@@ -37,12 +38,14 @@ public class UsersController(IUserManagementService userManagementService) : Con
         // return the view if successfull
         if (response.IsSuccessStatusCode)
         {
-            var users = response.Content?.Users.Select(user => new UserViewModel
+            var users = response.Content?.Users.OrderBy(x => x.LastName).Select(user => new UserViewModel
             {
                 Id = user.Id,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                Email = user.Email
+                Email = user.Email,
+                Status = user.Status,
+                LastLogin = user.LastLogin
             }) ?? [];
 
             return View((users, response.Content.TotalCount, pageNumber, pageSize));
@@ -74,7 +77,7 @@ public class UsersController(IUserManagementService userManagementService) : Con
             model.AvailableUserRoles = availableRoles.Content.Roles.ToList();
         }
 
-        return View(UserView, model);
+        return View(EditUserView, model);
     }
 
     /// <summary>
@@ -94,7 +97,7 @@ public class UsersController(IUserManagementService userManagementService) : Con
             model.AvailableUserRoles = availableRoles.Content.Roles.ToList();
         }
 
-        return View(UserView, model);
+        return View(EditUserView, model);
     }
 
     /// <summary>
@@ -115,10 +118,50 @@ public class UsersController(IUserManagementService userManagementService) : Con
                 model.AvailableUserRoles = availableRoles.Content.Roles.ToList();
             }
 
-            return View(UserView, model);
+            return View(EditUserView, model);
         }
 
         return View(ConfirmUser, model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ViewUser(string userId, string email)
+    {
+        // get user by userId and email
+        var response = await userManagementService.GetUser(userId, email);
+
+        // return the view if successfull
+        if (response.IsSuccessStatusCode)
+        {
+            var user = response.Content!.User;
+            var roles = response.Content!.Roles;
+
+            var model = new UserViewModel
+            {
+                Id = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                Telephone = user.Telephone,
+                Country = !string.IsNullOrEmpty(user.Country) ? user.Country.Split(',') : null,
+                Title = user.Title,
+                JobTitle = user.JobTitle,
+                Organisation = user.Organisation,
+                Role = roles != null ? roles.FirstOrDefault() : null,
+                LastUpdated = user.LastUpdated
+            };
+
+            return View(ViewUserView, model);
+        }
+
+        // if status is forbidden
+        // return the appropriate response otherwise
+        // return the generic error page
+        return response.StatusCode switch
+        {
+            HttpStatusCode.Forbidden => Forbid(),
+            _ => View(Error, this.ProblemResult(response))
+        };
     }
 
     /// <summary>
@@ -129,6 +172,24 @@ public class UsersController(IUserManagementService userManagementService) : Con
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> SubmitUser(UserViewModel model)
     {
+        ViewBag.Mode = string.IsNullOrEmpty(model.Id) ? "create" : "edit";
+        // check if modelstate is valid if in edit mode
+        if (!string.IsNullOrEmpty(model.Id))
+        {
+            if (!ModelState.IsValid)
+            {
+                // get all available roles to be presented on the FE if model is invalid
+                var availableRoles = await userManagementService.GetRoles();
+
+                if (availableRoles.IsSuccessStatusCode && availableRoles?.Content?.Roles != null)
+                {
+                    model.AvailableUserRoles = availableRoles.Content.Roles.ToList();
+                }
+
+                return View(EditUserView, model);
+            }
+        }
+
         // convert country from array to comma seperated string to be stored in the database
         var country = model.Country != null ? string.Join(',', model.Country) : null;
 
@@ -238,7 +299,7 @@ public class UsersController(IUserManagementService userManagementService) : Con
                 JobTitle = user.JobTitle,
                 Organisation = user.Organisation,
                 Role = roles != null ? roles.FirstOrDefault() : null,
-                LastUpdated = user.lastUpdated
+                LastUpdated = user.LastUpdated
             };
 
             var availableRoles = await userManagementService.GetRoles();
@@ -248,7 +309,7 @@ public class UsersController(IUserManagementService userManagementService) : Con
                 model.AvailableUserRoles = availableRoles.Content.Roles.ToList();
             }
 
-            return View(UserView, model);
+            return View(EditUserView, model);
         }
 
         // if status is forbidden
