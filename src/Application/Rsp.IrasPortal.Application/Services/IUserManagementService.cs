@@ -22,11 +22,30 @@ public interface IUserManagementService : IInterceptable
 
     Task<ServiceResponse<UserResponse>> GetUser(string? userId, string? email);
 
-    Task<ServiceResponse> CreateUser(string firstName, string lastName, string email);
+    Task<ServiceResponse> CreateUser(string? title,
+        string firstName,
+        string lastName,
+        string email,
+        string? jobTitle,
+        string? organisation,
+        string? telephone,
+        string? country,
+        string status,
+        DateTime? lastUpdated);
 
-    Task<ServiceResponse> UpdateUser(string originalEmail, string firstName, string lastName, string email);
+    Task<ServiceResponse> UpdateUser(string originalEmail,
+        string? title,
+        string firstName,
+        string lastName,
+        string email,
+        string? jobTitle,
+        string? organisation,
+        string? telephone,
+        string? country,
+        string status,
+        DateTime? lastUpdated);
 
     Task<ServiceResponse> DeleteUser(string userId, string email);
 
-    Task<ServiceResponse> UpdateRoles(string email, string rolesToRemove, string rolesToAdd);
+    Task<ServiceResponse> UpdateRoles(string email, string? rolesToRemove, string rolesToAdd);
 }

@@ -40,7 +40,7 @@ public static class ApiResponseExtensions
             _ => serviceResponse
                     .WithError
                     (
-                        apiResponse.Error?.Message,
+                        apiResponse.Error?.Content,
                         apiResponse.Error?.ReasonPhrase,
                         apiResponse.StatusCode
                     )
