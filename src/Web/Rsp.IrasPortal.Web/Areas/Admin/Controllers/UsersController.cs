@@ -73,12 +73,7 @@ public class UsersController(IUserManagementService userManagementService) : Con
         ViewBag.Mode = CreateMode;
 
         var model = new UserViewModel();
-        var availableRoles = await userManagementService.GetRoles();
-
-        if (availableRoles.IsSuccessStatusCode && availableRoles.Content?.Roles != null)
-        {
-            model.AvailableUserRoles = availableRoles.Content.Roles.ToList();
-        }
+        model.AvailableUserRoles = await GetAlluserRoles();
 
         return View(EditUserView, model);
     }
@@ -93,12 +88,7 @@ public class UsersController(IUserManagementService userManagementService) : Con
         ViewBag.Mode = CreateMode;
 
         // get all available roles to be presented on the FE
-        var availableRoles = await userManagementService.GetRoles();
-
-        if (availableRoles.IsSuccessStatusCode && availableRoles.Content?.Roles != null)
-        {
-            model.AvailableUserRoles = availableRoles.Content.Roles.ToList();
-        }
+        model.AvailableUserRoles = await GetAlluserRoles();
 
         return View(EditUserView, model);
     }
@@ -114,12 +104,7 @@ public class UsersController(IUserManagementService userManagementService) : Con
         if (!ModelState.IsValid)
         {
             // get all available roles to be presented on the FE if model is invalid
-            var availableRoles = await userManagementService.GetRoles();
-
-            if (availableRoles.IsSuccessStatusCode && availableRoles.Content?.Roles != null)
-            {
-                model.AvailableUserRoles = availableRoles.Content.Roles.ToList();
-            }
+            model.AvailableUserRoles = await GetAlluserRoles();
 
             return View(EditUserView, model);
         }
@@ -180,12 +165,7 @@ public class UsersController(IUserManagementService userManagementService) : Con
         if (!string.IsNullOrEmpty(model.Id) && !ModelState.IsValid)
         {
             // get all available roles to be presented on the FE if model is invalid
-            var availableRoles = await userManagementService.GetRoles();
-
-            if (availableRoles.IsSuccessStatusCode && availableRoles.Content?.Roles != null)
-            {
-                model.AvailableUserRoles = availableRoles.Content.Roles.ToList();
-            }
+            model.AvailableUserRoles = await GetAlluserRoles();
 
             return View(EditUserView, model);
         }
@@ -302,12 +282,7 @@ public class UsersController(IUserManagementService userManagementService) : Con
                 LastUpdated = user.LastUpdated
             };
 
-            var availableRoles = await userManagementService.GetRoles();
-
-            if (availableRoles.IsSuccessStatusCode && availableRoles.Content?.Roles != null)
-            {
-                model.AvailableUserRoles = availableRoles.Content.Roles.ToList();
-            }
+            model.AvailableUserRoles = await GetAlluserRoles();
 
             return View(EditUserView, model);
         }
@@ -472,5 +447,17 @@ public class UsersController(IUserManagementService userManagementService) : Con
             HttpStatusCode.Forbidden => Forbid(),
             _ => View(Error, this.ProblemResult(response))
         };
+    }
+
+    private async Task<IList<Role>> GetAlluserRoles()
+    {
+        var availableRoles = await userManagementService.GetRoles();
+
+        if (availableRoles.IsSuccessStatusCode && availableRoles.Content?.Roles != null)
+        {
+            return availableRoles.Content.Roles.ToList();
+        }
+
+        return new List<Role>();
     }
 }
