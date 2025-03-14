@@ -18,9 +18,15 @@ namespace Rsp.IrasPortal.Web.Areas.Admin.Controllers;
 public class UsersController(IUserManagementService userManagementService) : Controller
 {
     private const string Error = nameof(Error);
-    private const string UserView = nameof(UserView);
+    private const string EditUserView = nameof(EditUserView);
+    private const string ConfirmUser = nameof(ConfirmUser);
+    private const string ViewUserView = nameof(ViewUserView);
     private const string DeleteUserView = nameof(DeleteUserView);
     private const string UserRolesView = nameof(UserRolesView);
+    private const string CreateUserSuccessMessage = nameof(CreateUserSuccessMessage);
+
+    private const string EditMode = "edit";
+    private const string CreateMode = "create";
 
     /// <summary>
     /// Users home page, where it displays available users
@@ -35,12 +41,14 @@ public class UsersController(IUserManagementService userManagementService) : Con
         // return the view if successfull
         if (response.IsSuccessStatusCode)
         {
-            var users = response.Content?.Users.Select(user => new UserViewModel
+            var users = response.Content?.Users.OrderBy(x => x.LastName).Select(user => new UserViewModel
             {
                 Id = user.Id,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                Email = user.Email
+                Email = user.Email,
+                Status = user.Status,
+                LastLogin = user.LastLogin
             }) ?? [];
 
             var paginationModel = new PaginationViewModel
@@ -68,36 +76,62 @@ public class UsersController(IUserManagementService userManagementService) : Con
     /// Displays the empty UserView to create a user
     /// </summary>
     [HttpGet]
-    public IActionResult CreateUser()
+    public async Task<IActionResult> CreateUser()
     {
-        ViewBag.Mode = "create";
+        ViewBag.Mode = CreateMode;
 
-        return View(UserView, new UserViewModel());
+        var model = new UserViewModel();
+        model.AvailableUserRoles = await GetAlluserRoles();
+
+        return View(EditUserView, model);
     }
 
     /// <summary>
-    /// Creates or Edits a user in the database
+    /// Displays the edit UserView when creating a user
     /// </summary>
-    /// <param name="model"><see cref="UserViewModel"> that holds user data</param>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> SubmitUser(UserViewModel model)
+    public async Task<IActionResult> EditNewUser(UserViewModel model)
     {
+        ViewBag.Mode = CreateMode;
+
+        // get all available roles to be presented on the FE
+        model.AvailableUserRoles = await GetAlluserRoles();
+
+        return View(EditUserView, model);
+    }
+
+    /// <summary>
+    /// Returns a ConfirUser view that displays user details for confirmation
+    /// </summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ConfirmUserSubmission(UserViewModel model)
+    {
+        ViewBag.Mode = string.IsNullOrEmpty(model.Id) ? CreateMode : EditMode;
         if (!ModelState.IsValid)
         {
-            return View(UserView, model);
+            // get all available roles to be presented on the FE if model is invalid
+            model.AvailableUserRoles = await GetAlluserRoles();
+
+            return View(EditUserView, model);
         }
 
-        // Creates a user if in "create" mode i.e. model.Id is null
-        // Updates the user if in "edit" mode i.e. model.Id has a value
-        var response = string.IsNullOrWhiteSpace(model.Id) ?
-                            await userManagementService.CreateUser(model.FirstName, model.LastName, model.Email) :
-                            await userManagementService.UpdateUser(model.OriginalEmail!, model.FirstName, model.LastName, model.Email);
+        return View(ConfirmUser, model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ViewUser(string userId, string email)
+    {
+        // get user by userId and email
+        var response = await userManagementService.GetUser(userId, email);
 
         // return the view if successfull
         if (response.IsSuccessStatusCode)
         {
-            return RedirectToAction(nameof(Index));
+            var model = new UserViewModel(response.Content!);
+
+            return View(ViewUserView, model);
         }
 
         // if status is forbidden
@@ -111,6 +145,102 @@ public class UsersController(IUserManagementService userManagementService) : Con
     }
 
     /// <summary>
+    /// Creates or Edits a user in the database
+    /// </summary>
+    /// <param name="model"><see cref="UserViewModel"> that holds user data</param>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SubmitUser(UserViewModel model)
+    {
+        ViewBag.Mode = string.IsNullOrEmpty(model.Id) ? CreateMode : EditMode;
+        // check if modelstate is valid if in edit mode
+        if (!string.IsNullOrEmpty(model.Id) && !ModelState.IsValid)
+        {
+            // get all available roles to be presented on the FE if model is invalid
+            model.AvailableUserRoles = await GetAlluserRoles();
+
+            return View(EditUserView, model);
+        }
+
+        // convert country from array to comma seperated string to be stored in the database
+        var country = model.Country != null ? string.Join(',', model.Country) : null;
+
+        // Creates a user if in "create" mode i.e. model.Id is null
+        // Updates the user if in "edit" mode i.e. model.Id has a value
+        var submitUserResponse = string.IsNullOrWhiteSpace(model.Id) ?
+                            await userManagementService.CreateUser(model.Title,
+                            model.FirstName,
+                            model.LastName,
+                            model.Email,
+                            model.JobTitle,
+                            model.Organisation,
+                            model.Telephone,
+                            country,
+                            IrasUserStatus.Active,
+                            DateTime.UtcNow) :
+                            await userManagementService.UpdateUser(model.OriginalEmail!,
+                            model.Title,
+                            model.FirstName,
+                            model.LastName,
+                            model.Email,
+                            model.JobTitle,
+                            model.Organisation,
+                            model.Telephone,
+                            country,
+                            IrasUserStatus.Active,
+                            DateTime.UtcNow);
+
+        // if status is forbidden
+        // return the appropriate response otherwise
+        // return the generic error page
+        if (!submitUserResponse.IsSuccessStatusCode)
+        {
+            return submitUserResponse.StatusCode switch
+            {
+                HttpStatusCode.Forbidden => Forbid(),
+                _ => View(Error, this.ProblemResult(submitUserResponse))
+            };
+        }
+
+        // assign role
+        if (!string.IsNullOrEmpty(model.Role))
+        {
+            string? rolesToRemove = null;
+
+            // if editing user, remove from existing roles before adding to newly selected role
+            if (!string.IsNullOrEmpty(model.Id))
+            {
+                var existingUser = await userManagementService.GetUser(model.Id, model.Email);
+                rolesToRemove = existingUser?.Content?.Roles != null ? string.Join(',', existingUser.Content.Roles) : null;
+            }
+
+            var roleResponse = await userManagementService.UpdateRoles(model.Email, rolesToRemove, model.Role);
+
+            // if status is forbidden
+            // return the appropriate response otherwise
+            // return the generic error page
+            if (!roleResponse.IsSuccessStatusCode)
+            {
+                return roleResponse.StatusCode switch
+                {
+                    HttpStatusCode.Forbidden => Forbid(),
+                    _ => View(Error, this.ProblemResult(roleResponse))
+                };
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(model.Id))
+        {
+            // for successful creation of new user, present a success message view
+            return View(CreateUserSuccessMessage, model);
+        }
+        else
+        {
+            return RedirectToAction(nameof(Index));
+        }
+    }
+
+    /// <summary>
     /// Displays the UserView in Edit mode
     /// </summary>
     /// <param name="userId">User Id</param>
@@ -118,7 +248,7 @@ public class UsersController(IUserManagementService userManagementService) : Con
     [HttpGet]
     public async Task<IActionResult> EditUser(string userId, string email)
     {
-        ViewBag.Mode = "edit";
+        ViewBag.Mode = EditMode;
 
         // get user by userId and email
         var response = await userManagementService.GetUser(userId, email);
@@ -126,17 +256,10 @@ public class UsersController(IUserManagementService userManagementService) : Con
         // return the view if successfull
         if (response.IsSuccessStatusCode)
         {
-            var user = response.Content!.User;
+            var model = new UserViewModel(response.Content!);
+            model.AvailableUserRoles = await GetAlluserRoles();
 
-            var model = new UserViewModel
-            {
-                Id = user.Id,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email
-            };
-
-            return View(UserView, model);
+            return View(EditUserView, model);
         }
 
         // if status is forbidden
@@ -299,5 +422,17 @@ public class UsersController(IUserManagementService userManagementService) : Con
             HttpStatusCode.Forbidden => Forbid(),
             _ => View(Error, this.ProblemResult(response))
         };
+    }
+
+    private async Task<IList<Role>> GetAlluserRoles()
+    {
+        var availableRoles = await userManagementService.GetRoles();
+
+        if (availableRoles.IsSuccessStatusCode && availableRoles.Content?.Roles != null)
+        {
+            return availableRoles.Content.Roles.ToList();
+        }
+
+        return new List<Role>();
     }
 }
