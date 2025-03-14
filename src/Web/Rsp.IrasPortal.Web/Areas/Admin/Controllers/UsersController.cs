@@ -25,6 +25,9 @@ public class UsersController(IUserManagementService userManagementService) : Con
     private const string UserRolesView = nameof(UserRolesView);
     private const string CreateUserSuccessMessage = nameof(CreateUserSuccessMessage);
 
+    private const string EditMode = "edit";
+    private const string CreateMode = "create";
+
     /// <summary>
     /// Users home page, where it displays available users
     /// with the options to edit/delete or manage roles
@@ -67,12 +70,12 @@ public class UsersController(IUserManagementService userManagementService) : Con
     [HttpGet]
     public async Task<IActionResult> CreateUser()
     {
-        ViewBag.Mode = "create";
+        ViewBag.Mode = CreateMode;
 
         var model = new UserViewModel();
         var availableRoles = await userManagementService.GetRoles();
 
-        if (availableRoles.IsSuccessStatusCode && availableRoles?.Content?.Roles != null)
+        if (availableRoles.IsSuccessStatusCode && availableRoles.Content?.Roles != null)
         {
             model.AvailableUserRoles = availableRoles.Content.Roles.ToList();
         }
@@ -87,12 +90,12 @@ public class UsersController(IUserManagementService userManagementService) : Con
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EditNewUser(UserViewModel model)
     {
-        ViewBag.Mode = "create";
+        ViewBag.Mode = CreateMode;
 
         // get all available roles to be presented on the FE
         var availableRoles = await userManagementService.GetRoles();
 
-        if (availableRoles.IsSuccessStatusCode && availableRoles?.Content?.Roles != null)
+        if (availableRoles.IsSuccessStatusCode && availableRoles.Content?.Roles != null)
         {
             model.AvailableUserRoles = availableRoles.Content.Roles.ToList();
         }
@@ -107,13 +110,13 @@ public class UsersController(IUserManagementService userManagementService) : Con
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ConfirmUserSubmission(UserViewModel model)
     {
-        ViewBag.Mode = string.IsNullOrEmpty(model.Id) ? "create" : "edit";
+        ViewBag.Mode = string.IsNullOrEmpty(model.Id) ? CreateMode : EditMode;
         if (!ModelState.IsValid)
         {
             // get all available roles to be presented on the FE if model is invalid
             var availableRoles = await userManagementService.GetRoles();
 
-            if (availableRoles.IsSuccessStatusCode && availableRoles?.Content?.Roles != null)
+            if (availableRoles.IsSuccessStatusCode && availableRoles.Content?.Roles != null)
             {
                 model.AvailableUserRoles = availableRoles.Content.Roles.ToList();
             }
@@ -172,22 +175,19 @@ public class UsersController(IUserManagementService userManagementService) : Con
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> SubmitUser(UserViewModel model)
     {
-        ViewBag.Mode = string.IsNullOrEmpty(model.Id) ? "create" : "edit";
+        ViewBag.Mode = string.IsNullOrEmpty(model.Id) ? CreateMode : EditMode;
         // check if modelstate is valid if in edit mode
-        if (!string.IsNullOrEmpty(model.Id))
+        if (!string.IsNullOrEmpty(model.Id) && !ModelState.IsValid)
         {
-            if (!ModelState.IsValid)
+            // get all available roles to be presented on the FE if model is invalid
+            var availableRoles = await userManagementService.GetRoles();
+
+            if (availableRoles.IsSuccessStatusCode && availableRoles.Content?.Roles != null)
             {
-                // get all available roles to be presented on the FE if model is invalid
-                var availableRoles = await userManagementService.GetRoles();
-
-                if (availableRoles.IsSuccessStatusCode && availableRoles?.Content?.Roles != null)
-                {
-                    model.AvailableUserRoles = availableRoles.Content.Roles.ToList();
-                }
-
-                return View(EditUserView, model);
+                model.AvailableUserRoles = availableRoles.Content.Roles.ToList();
             }
+
+            return View(EditUserView, model);
         }
 
         // convert country from array to comma seperated string to be stored in the database
@@ -276,7 +276,7 @@ public class UsersController(IUserManagementService userManagementService) : Con
     [HttpGet]
     public async Task<IActionResult> EditUser(string userId, string email)
     {
-        ViewBag.Mode = "edit";
+        ViewBag.Mode = EditMode;
 
         // get user by userId and email
         var response = await userManagementService.GetUser(userId, email);
@@ -304,7 +304,7 @@ public class UsersController(IUserManagementService userManagementService) : Con
 
             var availableRoles = await userManagementService.GetRoles();
 
-            if (availableRoles.IsSuccessStatusCode && availableRoles?.Content?.Roles != null)
+            if (availableRoles.IsSuccessStatusCode && availableRoles.Content?.Roles != null)
             {
                 model.AvailableUserRoles = availableRoles.Content.Roles.ToList();
             }

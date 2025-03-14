@@ -26,13 +26,9 @@ public class RequiredIfTrueAttribute : ValidationAttribute
 
         var conditionalValue = conditionalProperty.GetValue(validationContext.ObjectInstance, null)?.ToString();
         // check if the actial value of the conditional field equals the conditional value
-        if (conditionalValue == _conditionalPropertyValue)
+        if (conditionalValue == _conditionalPropertyValue && (value == null || string.IsNullOrEmpty(value.ToString())))
         {
-            // If the condition is true, validate the current field
-            if (value == null || string.IsNullOrEmpty(value.ToString()))
-            {
-                return new ValidationResult($"The field is required when {_conditionalProperty} is true.");
-            }
+            return new ValidationResult($"The field is required when {_conditionalProperty} is true.");
         }
 
         return ValidationResult.Success!;
