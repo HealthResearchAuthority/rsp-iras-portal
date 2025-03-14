@@ -34,7 +34,15 @@ public class RolesController(IUserManagementService userManagementService) : Con
                 Name = role.Name
             }) ?? [];
 
-            return View((roles, response.Content.TotalCount, pageNumber, pageSize));
+            var paginationModel = new PaginationViewModel
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                RouteName = "admin:roles",
+                TotalCount = response.Content?.TotalCount ?? 0
+            };
+
+            return View((roles, paginationModel));
         }
 
         // if status is forbidden

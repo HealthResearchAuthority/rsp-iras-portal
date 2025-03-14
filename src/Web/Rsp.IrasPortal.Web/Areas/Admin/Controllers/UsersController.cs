@@ -48,7 +48,15 @@ public class UsersController(IUserManagementService userManagementService) : Con
                 LastLogin = user.LastLogin
             }) ?? [];
 
-            return View((users, response.Content.TotalCount, pageNumber, pageSize));
+            var paginationModel = new PaginationViewModel
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                RouteName = "admin:users",
+                TotalCount = response.Content?.TotalCount ?? 0
+            };
+
+            return View((users, paginationModel));
         }
 
         // if status is forbidden
