@@ -44,22 +44,41 @@ public class UserManagementService(IUserManagementServiceClient client) : IUserM
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse> CreateUser(string firstName, string lastName, string email)
+    public async Task<ServiceResponse> CreateUser(string? title,
+        string firstName,
+        string lastName,
+        string email,
+        string? jobTitle,
+        string? organisation,
+        string? telephone,
+        string? country,
+        string status,
+        DateTime? lastUpdated)
     {
         var apiResponse = await client.CreateUser
         (
-            new User(null, firstName, lastName, email)
+            new User(null, title, firstName, lastName, email, jobTitle, organisation, telephone, country, status, lastUpdated)
         );
 
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse> UpdateUser(string originalEmail, string firstName, string lastName, string email)
+    public async Task<ServiceResponse> UpdateUser(string originalEmail,
+        string? title,
+        string firstName,
+        string lastName,
+        string email,
+        string? jobTitle,
+        string? organisation,
+        string? telephone,
+        string? country,
+        string status,
+        DateTime? lastUpdated)
     {
         var apiResponse = await client.UpdateUser
         (
             originalEmail,
-            new User(null, firstName, lastName, email)
+            new User(null, title, firstName, lastName, email, jobTitle, organisation, telephone, country, status, lastUpdated)
         );
 
         return apiResponse.ToServiceResponse();
@@ -79,15 +98,17 @@ public class UserManagementService(IUserManagementServiceClient client) : IUserM
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse> UpdateRoles(string email, string rolesToRemove, string rolesToAdd)
+    public async Task<ServiceResponse> UpdateRoles(string email, string? rolesToRemove, string rolesToAdd)
     {
-        var apiRemoveUsersResponse = await client.RemoveUsersFromRoles(email, rolesToRemove);
-
-        if (!apiRemoveUsersResponse.IsSuccessStatusCode)
+        if (!string.IsNullOrEmpty(rolesToRemove))
         {
-            return apiRemoveUsersResponse.ToServiceResponse();
-        }
+            var apiRemoveUsersResponse = await client.RemoveUsersFromRoles(email, rolesToRemove);
 
+            if (!apiRemoveUsersResponse.IsSuccessStatusCode)
+            {
+                return apiRemoveUsersResponse.ToServiceResponse();
+            }
+        }
         var apiAddUserToRolesRespoinse = await client.AddUserToRoles(email, rolesToAdd);
 
         return apiAddUserToRolesRespoinse.ToServiceResponse();
