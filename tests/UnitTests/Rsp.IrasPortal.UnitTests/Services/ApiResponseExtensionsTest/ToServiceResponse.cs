@@ -1,9 +1,4 @@
-﻿using System.Net;
-using AutoFixture.Xunit2;
-using Moq;
-using Refit;
-using Rsp.IrasPortal.Services.Extensions;
-using Shouldly;
+﻿using Rsp.IrasPortal.Services.Extensions;
 
 namespace Rsp.IrasPortal.UnitTests.Services.ApiResponseExtensionsTest;
 
@@ -152,7 +147,7 @@ public class ToServiceResponse : TestServiceBase
         // Assert
         result.ShouldNotBeNull();
         result.IsSuccessStatusCode.ShouldBeFalse();
-        result.Error!.ShouldContain(reasonPhrase);
+        result.Error!.ShouldContain(errorMessage);
         result.ReasonPhrase.ShouldBe(reasonPhrase);
         result.StatusCode.ShouldBe(statusCode);
     }
