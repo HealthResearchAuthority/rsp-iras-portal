@@ -1,43 +1,137 @@
-﻿@using Rsp.IrasPortal.Web.Areas.Admin.Models
+﻿@using Microsoft.FeatureManagement
+@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Web.Areas.Admin.Models
 @model UserViewModel
+@inject IFeatureManager featureManager
 
 @{
-    var buttonText = ViewBag.Mode == "edit" ? "Save Changes" : "Create";
-    var heading = ViewBag.Mode == "edit" ? "Edit User" : "Create a new user";
+	var buttonText = ViewBag.Mode == "edit" ? "Save" : "Continue";
+	var heading = ViewBag.Mode == "edit" ? "Edit user profile record" : "Add a new user profile record";
+	var submitActionName = ViewBag.Mode == "edit" ? "admin:submituser" : "admin:confirmusersubmission";
 }
 
-<h2 class="govuk-heading-l">@heading</h2>
+<a href="/admin/users" class="govuk-back-link">Back</a>
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-        <form method="post">
-            <input name="Id" asp-for="Id" value="@(Model.Id ?? string.Empty)" />
-            <input name="OriginalEmail" asp-for="OriginalEmail" value="@(Model.Email ?? string.Empty)" />
-            <div class="govuk-form-group">
-                <label class="govuk-label" for="FirstName">First Name</label>
-                <input class="govuk-input" id="FirstName" name="FirstName" type="text" asp-for="FirstName" value="@(Model.FirstName ?? string.Empty)" />
-                <span class="govuk-error-message" asp-validation-for="FirstName"></span>
-            </div>
+	<div class="govuk-grid-column-two-thirds">
+		<h2 class="govuk-heading-l">@heading</h2>
+		<form method="post">
+			<input name="Id" asp-for="Id" value="@(Model.Id ?? string.Empty)" />
+			<input name="OriginalEmail" asp-for="OriginalEmail" value="@(Model.Email ?? string.Empty)" />
+			<div class="govuk-form-group @(ViewData.ModelState["Title"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+				<label class="govuk-label" for="Title"><b>Title</b></label>
+				<input class="govuk-input govuk-!-width-one-quarter" id="Title" name="Title" type="text" asp-for="Title" value="@(Model.Title ?? string.Empty)" />
+				<span class="govuk-error-message" asp-validation-for="Title"></span>
+			</div>
 
-            <div class="govuk-form-group">
-                <label class="govuk-label" for="LastName">Last Name</label>
-                <input class="govuk-input" id="LastName" name="LastName" type="text" asp-for="LastName" value="@(Model.LastName ?? string.Empty)">
-                <span class="govuk-error-message" asp-validation-for="LastName"></span>
-            </div>
+			<div class="govuk-form-group @(ViewData.ModelState["FirstName"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+				<label class="govuk-label" for="FirstName"><b>First Name</b></label>
+				<input class="govuk-input govuk-!-width-one-half" id="FirstName" name="FirstName" type="text" asp-for="FirstName" value="@(Model.FirstName ?? string.Empty)" />
+				<span class="govuk-error-message" asp-validation-for="FirstName"></span>
+			</div>
 
-            <div class="govuk-form-group">
-                <label class="govuk-label" for="Email">Email</label>
-                <input class="govuk-input" id="Email" name="Email" type="email" asp-for="Email" value="@(Model.Email ?? string.Empty)">
-                <span class="govuk-error-message" asp-validation-for="Email"></span>
-            </div>
+			<div class="govuk-form-group @(ViewData.ModelState["LastName"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+				<label class="govuk-label" for="LastName"><b>Last Name</b></label>
+				<input class="govuk-input govuk-!-width-one-half" id="LastName" name="LastName" type="text" asp-for="LastName" value="@(Model.LastName ?? string.Empty)">
+				<span class="govuk-error-message" asp-validation-for="LastName"></span>
+			</div>
 
-            <partial name="_SubmitButton" model="@("admin:submituser", buttonText, new Dictionary<string, string>())" />
+			<div class="govuk-form-group @(ViewData.ModelState["Email"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+				<label class="govuk-label" for="Email"><b>Email</b></label>
+				<input class="govuk-input govuk-!-width-two-thirds" id="Email" name="Email" type="email" asp-for="Email" value="@(Model.Email ?? string.Empty)">
+				<span class="govuk-error-message" asp-validation-for="Email"></span>
+			</div>
 
-            @{
-                ViewBag.Style = "ms-3 govuk-button govuk-button--secondary";
-            }
+			<div class="govuk-form-group @(ViewData.ModelState["Telephone"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+				<label class="govuk-label" for="Telephone"><b>Telephone</b></label>
+				<input class="govuk-input govuk-!-width-two-thirds" id="Telephone" name="Telephone" type="tel" asp-for="Telephone" value="@(Model.Telephone ?? string.Empty)">
+				<span class="govuk-error-message" asp-validation-for="Telephone"></span>
+			</div>
 
-            <partial name="_SubmitButton" model="@("admin:users", "Cancel", new Dictionary<string, string>())" />
-        </form>
-    </div>
+			<div class="govuk-form-group @(ViewData.ModelState["Organisation"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+				<label class="govuk-label" for="Organisation"><b>Organisation</b></label>
+				<input class="govuk-input govuk-!-width-three-quarters" id="Organisation" name="Organisation" type="text" asp-for="Organisation" value="@(Model.Organisation ?? string.Empty)">
+				<span class="govuk-error-message" asp-validation-for="Organisation"></span>
+			</div>
+
+			<div class="govuk-form-group @(ViewData.ModelState["JobTitle"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+				<label class="govuk-label" for="JobTitle"><b>Job title</b></label>
+				<input class="govuk-input govuk-!-width-three-quarters" id="JobTitle" name="JobTitle" type="text" asp-for="JobTitle" value="@(Model.JobTitle ?? string.Empty)">
+				<span class="govuk-error-message" asp-validation-for="JobTitle"></span>
+			</div>
+
+			<div class="govuk-form-group @(ViewData.ModelState["Role"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+				<label class="govuk-label" for="Role">
+					<b>Role</b>
+				</label>
+				<span class="govuk-error-message" asp-validation-for="Role"></span>
+				<select onchange="changeRoleSelection(this.value)" class="role-list-dropdown govuk-select govuk-!-width-three-quarters @(ViewData.ModelState["Role"]?.Errors.Count > 0 ? "govuk-select--error" : "")" id="Role" name="Role">
+					<option></option>
+					@foreach (var role in Model.AvailableUserRoles)
+					{
+						var userFiendleyName = role.Name.Replace("_", " ");
+						<option selected=@(Model.Role == role.Name ? "selected" : null) value="@role.Name">@userFiendleyName</option>
+					}
+				</select>
+			</div>
+
+			<div class="govuk-form-group conditional-field @(ViewData.ModelState["Country"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+				<fieldset class="govuk-fieldset">
+					<legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+						<label class="govuk-label" for="Country">
+							<b>Country</b>
+						</label>
+					</legend>
+					<span class="govuk-error-message" asp-validation-for="Country"></span>
+					<div class="govuk-checkboxes" data-module="govuk-checkboxes">
+						@foreach (var country in UkCountryNames.Countries)
+						{
+							<div class="govuk-checkboxes__item">
+								<input @(Model.Country != null && Model.Country.Contains(country) ? "checked" : null) class="govuk-checkboxes__input" id="@country" name="Country" type="checkbox" value="@country">
+								<label class="govuk-label govuk-checkboxes__label" for="Country">
+									@country
+								</label>
+							</div>
+						}
+					</div>
+				</fieldset>
+			</div>
+
+			<div class="govuk-form-group conditional-field @(ViewData.ModelState["AccessRequired"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+				<fieldset class="govuk-fieldset">
+					<legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+						<label class="govuk-label" for="Country">
+							<b>Access Required</b>
+						</label>
+					</legend>
+					<span class="govuk-error-message" asp-validation-for="Country"></span>
+					<div class="govuk-checkboxes" data-module="govuk-checkboxes">
+						@foreach (var option in AccessRequiredOptions.Options)
+						{
+							<div class="govuk-checkboxes__item">
+								<input @(Model.AccessRequired != null && Model.AccessRequired.Contains(option) ? "checked" : null) class="govuk-checkboxes__input" id="@option" name="AccessRequired" type="checkbox" value="@option">
+								<label class="govuk-label govuk-checkboxes__label" for="AccessRequired">
+									@option
+								</label>
+							</div>
+						}
+					</div>
+				</fieldset>
+			</div>
+
+			<partial name="_SubmitButton" model="@(submitActionName, buttonText, new Dictionary<string, string>())" />
+			@{
+				ViewBag.Style = "ms-3 govuk-button govuk-button--secondary";
+			}
+		</form>
+	</div>
 </div>
+
+<!--Use javascript only when progressive enhancement feature is enabled-->
+@if (await featureManager.IsEnabledAsync(Features.ProgressiveEnhancement))
+{
+	@section FooterResources {
+	<script src="~/lib/jquery/dist/jquery.js"></script>
+	<script src="~/js/manageUsers.js"></script>
+	}
+}

@@ -1,0 +1,18 @@
+﻿@using Rsp.IrasPortal.Web.Areas.Admin.Models
+@model UserViewModel
+
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-two-thirds">
+		<div class="govuk-panel govuk-panel--confirmation">
+			<h1 class="govuk-panel__title">
+				User has been successfully added
+			</h1>
+		</div>
+		<p>
+			<span>@Model.FirstName @Model.LastName</span>
+			has been sent an email confirming their account details. Their status is now active.
+		</p>
+		<p><a href="@Url.Action("CreateUser", "Users")">Add another user</a></p>
+		<p><a href="@Url.Action("Index", "Users")">Back to Manage users</a></p>
+	</div>
+</div>
