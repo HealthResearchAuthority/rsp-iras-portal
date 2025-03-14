@@ -125,38 +125,27 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
 
     public async Task<IActionResult> PreviewApplication(string versionId, string categoryId = A)
     {
-        var questions = default(List<QuestionViewModel>);
+        // get the questions for the category
+        var response = await questionSetService.GetQuestionsByVersion(versionId, categoryId);
 
-        if (questions == null || questions.Count == 0)
+        // return the view if successfull
+        if (response.IsSuccessStatusCode)
         {
-            // get the questions for the category
-            var response = await questionSetService.GetQuestionsByVersion(versionId, categoryId);
+            TempData.TryAdd(TempDataKeys.VersionId, versionId);
 
-            // return the view if successfull
-            if (response.IsSuccessStatusCode)
-            {
-                TempData.TryAdd(TempDataKeys.VersionId, versionId);
+            // set the active stage for the category
+            SetStage(categoryId);
 
-                // set the active stage for the category
-                SetStage(categoryId);
+            var questionnaire = BuildQuestionnaireViewModel(response.Content!);
 
-                var questionnaire = BuildQuestionnaireViewModel(response.Content!);
+            // store the questions to load again if there are validation errors on the page
+            HttpContext.Session.SetString(SessionKeys.Questionnaire, JsonSerializer.Serialize(questionnaire.Questions));
 
-                // store the questions to load again if there are validation errors on the page
-                HttpContext.Session.SetString(SessionKeys.Questionnaire, JsonSerializer.Serialize(questionnaire.Questions));
-
-                return View(nameof(PreviewApplication), questionnaire);
-            }
-
-            // return error page as api wasn't successful
-            return this.ServiceError(response);
+            return View(nameof(PreviewApplication), questionnaire);
         }
 
-        return View(nameof(PreviewApplication), new QuestionnaireViewModel
-        {
-            CurrentStage = categoryId,
-            Questions = questions
-        });
+        // return error page as api wasn't successful
+        return this.ServiceError(response);
     }
 
     private static QuestionnaireViewModel BuildQuestionnaireViewModel(IEnumerable<QuestionsResponse> response)
@@ -201,7 +190,7 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         return questionnaire;
     }
 
-    private (string PreviousStage, string CurrentStage, string NextStage) SetStage(string category)
+    private void SetStage(string category)
     {
         (string? PreviousStage, string? CurrentStage, string NextStage) = category switch
         {
@@ -222,7 +211,5 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         // store in temp data
         TempData[TempDataKeys.PreviousStage] = PreviousStage;
         TempData[TempDataKeys.CurrentStage] = CurrentStage;
-
-        return (PreviousStage, CurrentStage, NextStage);
     }
 }

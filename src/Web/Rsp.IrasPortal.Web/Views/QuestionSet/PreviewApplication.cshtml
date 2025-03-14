@@ -10,7 +10,6 @@
 
 @{
     var sections = Model.Questions.ToLookup(q => q.Section);
-    var previousStage = TempData[TempDataKeys.PreviousStage] as string;
     var currentStage = TempData[TempDataKeys.CurrentStage] as string;
     var versionId = TempData[TempDataKeys.VersionId] as string;
 }
@@ -43,7 +42,7 @@
     <script src="~/js/rules.js"></script>
 }
 
-<div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+<section class="govuk-notification-banner" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
     <div class="govuk-notification-banner__header">
         <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
             Preview
@@ -55,7 +54,7 @@
             <a class="govuk-notification-banner__link" asp-route="questionset:index">Back to versions</a>.
         </p>
     </div>
-</div>
+</section>
 
 <form method="post">
 
