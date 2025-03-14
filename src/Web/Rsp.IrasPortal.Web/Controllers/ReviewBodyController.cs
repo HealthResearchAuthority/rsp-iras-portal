@@ -33,12 +33,12 @@ public class ReviewBodyController : Controller
         }
 
         TempData["ReviewBody"] = JsonSerializer.Serialize(model);
-        return RedirectToAction("ConfirmReviewBody", model);
+        return RedirectToAction("ReviewAmendments", model);
     }
 
 
     [HttpGet]
-    public IActionResult ConfirmReviewBody()
+    public IActionResult ReviewAmendments()
     {
         var model = JsonSerializer.Deserialize<AddUpdateReviewBodyModel>(TempData["ReviewBody"].ToString());
         return View(model);
@@ -46,14 +46,14 @@ public class ReviewBodyController : Controller
 
 
     [HttpPost]
-    public IActionResult ConfirmReviewBody(AddUpdateReviewBodyModel model)
+    public IActionResult ReviewAmendments(AddUpdateReviewBodyModel model)
     {
         TempData["ReviewBody"] = JsonSerializer.Serialize(model);
-        return RedirectToAction("Success", model);
+        return RedirectToAction("ConfirmChanges", model);
     }
 
     [HttpGet]
-    public IActionResult Success(AddUpdateReviewBodyModel model)
+    public IActionResult ConfirmChanges(AddUpdateReviewBodyModel model)
     {
         TempData["ReviewBody"] = null;
         return View(model);
