@@ -1,0 +1,51 @@
+﻿@model AddUpdateReviewBodyModel
+
+@{
+    ViewData["Title"] = "Add a new review body";
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">Add a new review body</h1>
+
+        <form method="post" asp-action="AddReviewBody">
+            <input type="hidden" asp-for="Id" />
+
+            <div class="govuk-form-group">
+                <label class="govuk-label" asp-for="OrganisationName">Organisation name</label>
+                <input class="govuk-input" asp-for="OrganisationName" type="text">
+                <span class="govuk-error-message" asp-validation-for="OrganisationName"></span>
+            </div>
+
+            <div class="govuk-form-group">
+                <fieldset class="govuk-fieldset">
+                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">Country</legend>
+                    <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                        @foreach (var country in new[] { "England", "Northern Ireland", "Scotland", "Wales" })
+                        {
+                            <div class="govuk-checkboxes__item">
+                                <input class="govuk-checkboxes__input" id="@country" name="Countries" type="checkbox" value="@country"
+                                       @(Model.Countries.Contains(country) ? "checked" : "")>
+                                <label class="govuk-label govuk-checkboxes__label" for="@country">@country</label>
+                            </div>
+                        }
+                    </div>
+                </fieldset>
+            </div>
+
+            <div class="govuk-form-group">
+                <label class="govuk-label" asp-for="EmailAddress">Email address</label>
+                <input class="govuk-input govuk-input--width-20" asp-for="EmailAddress" type="email">
+                <span class="govuk-error-message" asp-validation-for="EmailAddress"></span>
+            </div>
+
+            <div class="govuk-form-group">
+                <label class="govuk-label" asp-for="Description">Add description</label>
+                <textarea class="govuk-textarea" asp-for="Description" rows="5"></textarea>
+                <span class="govuk-error-message" asp-validation-for="Description"></span>
+            </div>
+
+            <partial name="_SubmitButton" model='("AddReviewBody", "Continue", new Dictionary<string, string>())' />
+        </form>
+    </div>
+</div>
