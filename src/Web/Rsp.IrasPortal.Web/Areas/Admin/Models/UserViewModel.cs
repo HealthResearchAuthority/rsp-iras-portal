@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Domain.Identity;
 using Rsp.IrasPortal.Web.ValidationAttributes;
 
@@ -8,7 +9,7 @@ namespace Rsp.IrasPortal.Web.Areas.Admin.Models;
 public class UserViewModel
 {
     [HiddenInput]
-    public string? Id { get; set; }
+    public string? Id { get; set; } = null;
 
     [HiddenInput]
     public string? OriginalEmail { get; set; }
@@ -66,6 +67,27 @@ public class UserViewModel
     public DateTime? LastLogin { get; set; } = null;
 
     public IList<Role> AvailableUserRoles { get; set; } = new List<Role>();
+
+    public UserViewModel()
+    { }
+
+    public UserViewModel(UserResponse identityUserResponse)
+    {
+        var user = identityUserResponse?.User;
+        var roles = identityUserResponse?.Roles;
+
+        Id = user.Id;
+        FirstName = user.FirstName;
+        LastName = user.LastName;
+        Email = user.Email;
+        Telephone = user.Telephone;
+        Country = !string.IsNullOrEmpty(user.Country) ? user.Country.Split(',') : null;
+        Title = user.Title;
+        JobTitle = user.JobTitle;
+        Organisation = user.Organisation;
+        Role = roles != null ? roles.FirstOrDefault() : null;
+        LastUpdated = user.LastUpdated;
+    }
 
     public void Deconstruct(out string firstName, out string lastName, out string email)
     {

@@ -129,23 +129,7 @@ public class UsersController(IUserManagementService userManagementService) : Con
         // return the view if successfull
         if (response.IsSuccessStatusCode)
         {
-            var user = response.Content!.User;
-            var roles = response.Content!.Roles;
-
-            var model = new UserViewModel
-            {
-                Id = user.Id,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email,
-                Telephone = user.Telephone,
-                Country = !string.IsNullOrEmpty(user.Country) ? user.Country.Split(',') : null,
-                Title = user.Title,
-                JobTitle = user.JobTitle,
-                Organisation = user.Organisation,
-                Role = roles != null ? roles.FirstOrDefault() : null,
-                LastUpdated = user.LastUpdated
-            };
+            var model = new UserViewModel(response.Content!);
 
             return View(ViewUserView, model);
         }
@@ -272,24 +256,7 @@ public class UsersController(IUserManagementService userManagementService) : Con
         // return the view if successfull
         if (response.IsSuccessStatusCode)
         {
-            var user = response.Content!.User;
-            var roles = response.Content!.Roles;
-
-            var model = new UserViewModel
-            {
-                Id = user.Id,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email,
-                Telephone = user.Telephone,
-                Country = !string.IsNullOrEmpty(user.Country) ? user.Country.Split(',') : null,
-                Title = user.Title,
-                JobTitle = user.JobTitle,
-                Organisation = user.Organisation,
-                Role = roles != null ? roles.FirstOrDefault() : null,
-                LastUpdated = user.LastUpdated
-            };
-
+            var model = new UserViewModel(response.Content!);
             model.AvailableUserRoles = await GetAlluserRoles();
 
             return View(EditUserView, model);
