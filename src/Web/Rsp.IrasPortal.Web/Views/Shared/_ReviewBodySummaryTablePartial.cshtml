@@ -1,0 +1,100 @@
+﻿﻿@using Rsp.IrasPortal.Application.Constants
+@model AddUpdateReviewBodyModel
+
+@{
+    var edit = Model.Id != Guid.Empty;
+    var editReviewBody = "/reviewbody/editreviewbody";
+}
+
+<table class="govuk-table">
+    <thead>
+    <tr>
+        <th></th>
+        <th></th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+		<tr class="govuk-table__row">
+			<td class="govuk-table__cell">
+				<b>Organisation name</b>
+			</td>
+			<td class="govuk-table__cell">
+				@Model.OrganisationName
+				<input type="hidden" asp-for="OrganisationName" name="OrganisationName" value="@Model.OrganisationName" />
+			</td>
+			<td class="govuk-table__cell govuk-table__cell--numeric">
+				@{
+					await RenderEditLink();
+				}
+			</td>
+		</tr>
+
+    <tr class="govuk-table__row">
+        <td class="govuk-table__cell">
+            <b>Country</b>
+        </td>
+        <td class="govuk-table__cell">
+            @string.Join(", ", Model.Countries)
+
+            @foreach (var country in Model.Countries)
+            {
+                <input type="hidden" asp-for="Countries" name="Countries" value="@country" />
+            }
+        </td>
+        <td class="govuk-table__cell govuk-table__cell--numeric">
+            @{
+                await RenderEditLink();
+            }
+        </td>
+    </tr>
+
+
+    <tr class="govuk-table__row">
+        <td class="govuk-table__cell">
+            <b>Email address</b>
+        </td>
+        <td class="govuk-table__cell">
+            @Model.EmailAddress
+            <input type="hidden" asp-for="EmailAddress" name="EmailAddress" value="@Model.EmailAddress"/>
+        </td>
+        <td class="govuk-table__cell govuk-table__cell--numeric">
+            @{
+                await RenderEditLink();
+            }
+        </td>
+    </tr>
+
+    <tr class="govuk-table__row">
+        <td class="govuk-table__cell">
+            <b>Description</b>
+        </td>
+        <td class="govuk-table__cell">
+            @Model.Description
+            <input type="hidden" asp-for="Description" name="Description" value="@Model.Description"/>
+        </td>
+        <td class="govuk-table__cell govuk-table__cell--numeric">
+            @{
+                await RenderEditLink();
+            }
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+@{
+    async Task RenderEditLink()
+    {
+        if (edit)
+        {
+            <a class="govuk-link" asp-route="admin:edituser" asp-route-userId="@Model.Id">Change</a>
+        }
+        else
+        {
+            <button type="submit" formaction="@editReviewBody"
+                    style="background: none; border: none; color: #1d70b8; text-decoration: underline; cursor: pointer; font: inherit; padding: 0;">
+                Change
+            </button>
+        }
+    }
+}

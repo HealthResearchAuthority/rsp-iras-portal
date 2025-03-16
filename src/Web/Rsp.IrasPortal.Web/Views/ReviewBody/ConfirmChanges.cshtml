@@ -1,24 +1,19 @@
-﻿@{
-    ViewData["Title"] = "Review Body Added Successfully";
-}
-
+﻿@using GovUk.Frontend.AspNetCore.TagHelpers
+@using Microsoft.AspNetCore.Mvc.TagHelpers
 @model AddUpdateReviewBodyModel
 
+@{
+    var buttonText = ViewBag.Mode == "edit" ? "Save" : "Create profile";
+    var heading = ViewBag.Mode == "edit" ? "Review body profile" : "Check and create review body";
+}
+
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-        <div class="govuk-panel govuk-panel--confirmation">
-            <h1 class="govuk-panel__title">
-                Review body has been successfully added
-            </h1>
-        </div>
-
-        <p class="govuk-body">
-            A confirmation email will be sent to <strong>@Model.OrganisationName</strong> to confirm that their profile has been added. Their status is now active.
-        </p>
-
-        <ul class="govuk-list">
-            <li><a class="govuk-link" asp-action="AddReviewBody">Add another review body</a></li>
-            <li><a class="govuk-link" href="#">Back to Manage review bodies</a></li>
-        </ul>
+    <div class="govuk-grid-column-full">
+        <h2 class="govuk-heading-l">@heading</h2>
+        <p>Check the information here is correct before creating the profile</p>
+        <form method="post" id="submit-user-form">
+            <partial name="_ReviewBodySummaryTablePartial" model="Model"/>
+            <partial name="_SubmitButton" model="@("qnc:submitreviewbody", buttonText, new Dictionary<string, string>())"/>
+        </form>
     </div>
 </div>
