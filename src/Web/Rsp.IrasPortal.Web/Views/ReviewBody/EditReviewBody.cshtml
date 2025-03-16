@@ -18,10 +18,10 @@
 				<input class="govuk-input govuk-!-width-one-half" id="OrganisationName" name="OrganisationName" type="text" asp-for="OrganisationName" value="@(Model.OrganisationName ?? string.Empty)">
 				<span class="govuk-error-message" asp-validation-for="OrganisationName"></span>
 			</div>
-            <div class="govuk-form-group">
+            <div class="govuk-form-group @(ViewData.ModelState["Countries"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
                 <fieldset class="govuk-fieldset">
                     <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
-						<label class="govuk-label" for="Country"><b>Country</b></label>
+                        <label class="govuk-label" for="Country"><b>Country</b></label>
                     </legend>
                     <div class="govuk-checkboxes" data-module="govuk-checkboxes">
                         @foreach (var country in new[] { "England", "Northern Ireland", "Scotland", "Wales" })
@@ -32,8 +32,10 @@
                             </div>
                         }
                     </div>
+                    <span class="govuk-error-message" asp-validation-for="Countries"></span>
                 </fieldset>
             </div>
+
 
             <div class="govuk-form-group @(ViewData.ModelState["EmailAddress"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
 				<label class="govuk-label" for="EmailAddress"><b>Email address</b></label>
