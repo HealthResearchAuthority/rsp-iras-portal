@@ -1,61 +1,108 @@
-﻿using System.Text.Json;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "qnc:[action]")]
 [Authorize(Policy = "IsUser")]
-public class ReviewBodyController : Controller
+public class ReviewBodyController(IReviewBodyService reviewBodyService) : Controller
 {
-    [HttpGet]
-    public IActionResult AddReviewBody()
-    {
-        if (TempData["ReviewBody"] != null)
-        {
-            var model = JsonSerializer.Deserialize<AddUpdateReviewBodyModel>(TempData["ReviewBody"].ToString());
-            return View(model);
-        }
+    private const string Error = nameof(Error);
+    private const string EditReviewBodyView = nameof(EditReviewBody);
+    private const string ConfirmChangesView = nameof(ConfirmChanges);
+    private const string SuccessMessagesView = nameof(SuccessMessage);
+    private const string DisableMessagesView = nameof(SuccessMessage);
 
-        return View(new AddUpdateReviewBodyModel
-        {
-            Countries = new List<string>()
-        });
+    private const string EditMode = "edit";
+    private const string CreateMode = "create";
+    private const string DisableMode = "disable";
+
+    /// <summary>
+    ///     Displays the empty review body to create
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> EditReviewBody()
+    {
+        ViewBag.Mode = CreateMode;
+        var model = new AddUpdateReviewBodyModel();
+        return View(EditReviewBodyView, model);
     }
 
+    /// <summary>
+    ///     Displays the create / edit review body with data
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
     [HttpPost]
-    public IActionResult AddReviewBody(AddUpdateReviewBodyModel? model)
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditReviewBody(AddUpdateReviewBodyModel model)
+    {
+        ViewBag.Mode = CreateMode;
+        return View(EditReviewBodyView, model);
+    }
+
+    /// <summary>
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult ConfirmChanges(AddUpdateReviewBodyModel model)
     {
         if (!ModelState.IsValid)
         {
-            return View(model);
+            return View(EditReviewBodyView, model);
         }
 
-        TempData["ReviewBody"] = JsonSerializer.Serialize(model);
-        return RedirectToAction("ReviewAmendments", model);
+        return View(ConfirmChangesView, model);
     }
 
-
-    [HttpGet]
-    public IActionResult ReviewAmendments()
-    {
-        var model = JsonSerializer.Deserialize<AddUpdateReviewBodyModel>(TempData["ReviewBody"].ToString());
-        return View(model);
-    }
-
-
+    /// <summary>
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
     [HttpPost]
-    public IActionResult ReviewAmendments(AddUpdateReviewBodyModel model)
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SubmitReviewBody(AddUpdateReviewBodyModel model)
     {
-        TempData["ReviewBody"] = JsonSerializer.Serialize(model);
-        return RedirectToAction("ConfirmChanges", model);
+        ViewBag.Mode = model.Id == Guid.Empty ? CreateMode : EditMode;
+
+        var response = await reviewBodyService.CreateReviewBody(new ReviewBodyDto
+        {
+            OrganisationName = model.OrganisationName,
+            Countries = model.Countries,
+            EmailAddress = model.EmailAddress,
+            Description = model.Description,
+            CreatedBy = User.Identity.Name,
+            UpdatedBy = User.Identity.Name,
+            IsActive = true
+        });
+
+
+        if (response.IsSuccessStatusCode)
+        {
+            return View(SuccessMessagesView, model);
+        }
+
+        // WE NEED TO HANDLE ERRORS HERE
+        return View(SuccessMessagesView, model);
     }
 
     [HttpGet]
-    public IActionResult ConfirmChanges(AddUpdateReviewBodyModel model)
+    public IActionResult SuccessMessage(AddUpdateReviewBodyModel model)
     {
-        TempData["ReviewBody"] = null;
-        return View(model);
+        ViewBag.Mode = model.Id == Guid.Empty ? CreateMode : EditMode;
+        return View(SuccessMessagesView, model);
+    }
+
+    [HttpGet]
+    public IActionResult DisableReviewBody(AddUpdateReviewBodyModel model)
+    {
+        // NEED TO IMPLEMENT PAGES
+        ViewBag.Mode = DisableMode;
+        return View(DisableMessagesView, model);
     }
 }

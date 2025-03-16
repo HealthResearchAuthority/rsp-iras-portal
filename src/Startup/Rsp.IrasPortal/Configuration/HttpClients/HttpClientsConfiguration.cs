@@ -40,6 +40,12 @@ public static class HttpClientsConfiguration
            .AddHttpMessageHandler<AuthHeadersHandler>()
            .AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
 
+        services
+            .AddRestClient<IReviewBodyServiceClient>()
+            .ConfigureHttpClient(client => client.BaseAddress = appSettings.ApplicationsServiceUri)
+            .AddHttpMessageHandler<AuthHeadersHandler>()
+            .AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
+
         return services;
     }
 

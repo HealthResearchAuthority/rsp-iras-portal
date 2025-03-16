@@ -1,0 +1,31 @@
+﻿@{
+    ViewData["Title"] = "Review Body Added Successfully";
+	var heading = ViewBag.Mode == "disable" ? "Review body successfully disabled" : "Review body has been successfully added";
+	var messageText = ViewBag.Mode == "disable" ? $"A confirmation email will be sent to {Model.OrganisationName} to confirm that their profile has been disabled." : $"A confirmation email will be sent to {Model.OrganisationName} to confirm that their profile has been added. Their status is now active";
+}
+
+@model AddUpdateReviewBodyModel
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <div class="govuk-panel govuk-panel--confirmation">
+            <h1 class="govuk-panel__title">
+               @heading
+            </h1>
+        </div>
+
+        <p class="govuk-body">
+           @messageText
+        </p>
+
+        <ul class="govuk-list">
+			@if (ViewBag.Mode != "disable")
+            {
+                <li><a class="govuk-link" asp-action="EditReviewBody">Add another review body</a></li>
+            }
+            
+            <li><a class="govuk-link">Back to Manage review bodies</a></li>
+            <li><a class="govuk-link">Back to Homepage</a></li>
+        </ul>
+    </div>
+</div>

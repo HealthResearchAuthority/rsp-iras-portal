@@ -1,0 +1,53 @@
+﻿@model AddUpdateReviewBodyModel
+
+@{
+    var buttonText = ViewBag.Mode == "edit" ? "Save" : "Continue";
+    var heading = ViewBag.Mode == "edit" ? "Edit review body details" : "Add a new review body";
+	var submitActionName = ViewBag.Mode == "edit" ? "qnc:submitreviewbody" : "qnc:confirmchanges";
+}
+
+
+<a asp-route="admin:users" class="govuk-back-link">Back</a>
+
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-two-thirds">
+		<h1 class="govuk-heading-l">@heading</h1>
+		<form method="post">
+			<div class="govuk-form-group @(ViewData.ModelState["OrganisationName"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+				<label class="govuk-label" for="OrganisationName"><b>Organisation Name</b></label>
+				<input class="govuk-input govuk-!-width-one-half" id="OrganisationName" name="OrganisationName" type="text" asp-for="OrganisationName" value="@(Model.OrganisationName ?? string.Empty)">
+				<span class="govuk-error-message" asp-validation-for="OrganisationName"></span>
+			</div>
+            <div class="govuk-form-group">
+                <fieldset class="govuk-fieldset">
+                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+						<label class="govuk-label" for="Country"><b>Country</b></label>
+                    </legend>
+                    <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                        @foreach (var country in new[] { "England", "Northern Ireland", "Scotland", "Wales" })
+                        {
+                            <div class="govuk-checkboxes__item">
+                                <input class="govuk-checkboxes__input" id="@country" name="Countries" type="checkbox" value="@country" @(Model.Countries.Contains(country) ? "checked" : "")>
+                                <label class="govuk-label govuk-checkboxes__label" for="@country">@country</label>
+                            </div>
+                        }
+                    </div>
+                </fieldset>
+            </div>
+
+            <div class="govuk-form-group @(ViewData.ModelState["EmailAddress"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+				<label class="govuk-label" for="EmailAddress"><b>Email address</b></label>
+				<input class="govuk-input govuk-!-width-three-quarters" id="EmailAddress" name="EmailAddress" type="EmailAddress" asp-for="EmailAddress" value="@(Model.EmailAddress ?? string.Empty)">
+				<span class="govuk-error-message" asp-validation-for="EmailAddress"></span>
+			</div>
+
+			<div class="govuk-form-group @(ViewData.ModelState["Description"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+				<label class="govuk-label" for="Description"><b>Add description</b></label>
+				<textarea class="govuk-textarea" id="Description" rows="5" name="Description" asp-for="Description">@(Model.Description ?? string.Empty)</textarea>
+				<span class="govuk-error-message" asp-validation-for="Description"></span>
+			</div>
+
+			<partial name="_SubmitButton" model="@(submitActionName, buttonText, new Dictionary<string, string>())" />
+		</form>
+	</div>
+</div>
