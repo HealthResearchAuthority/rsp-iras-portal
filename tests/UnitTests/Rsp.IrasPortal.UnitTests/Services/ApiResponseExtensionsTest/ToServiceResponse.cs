@@ -54,7 +54,7 @@ public class ToServiceResponse : TestServiceBase
     [Theory, AutoData]
     public async Task Should_ReturnServiceResponse_Of_T_WithError_When_ApiResponseIsNotSuccessful
     (
-        string reasonPhrase, HttpStatusCode statusCode = HttpStatusCode.UnprocessableContent
+        string reasonPhrase, string errorMessage, HttpStatusCode statusCode = HttpStatusCode.UnprocessableContent
     )
     {
         // Arrange
@@ -64,7 +64,8 @@ public class ToServiceResponse : TestServiceBase
         var responseMessage = new HttpResponseMessage(statusCode)
         {
             ReasonPhrase = reasonPhrase,
-            StatusCode = statusCode
+            StatusCode = statusCode,
+            Content = new StringContent(errorMessage)
         };
 
         // compose ApiResponse with ApiException
@@ -89,7 +90,7 @@ public class ToServiceResponse : TestServiceBase
         // Assert
         result.ShouldNotBeNull();
         result.IsSuccessStatusCode.ShouldBeFalse();
-        result.Error!.ShouldContain(reasonPhrase);
+        result.Error!.ShouldContain(errorMessage);
         result.ReasonPhrase.ShouldBe(reasonPhrase);
         result.StatusCode.ShouldBe(statusCode);
     }
