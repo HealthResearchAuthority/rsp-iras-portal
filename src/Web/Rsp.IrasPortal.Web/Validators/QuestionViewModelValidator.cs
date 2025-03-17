@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Globalization;
+using System.Text.RegularExpressions;
 using FluentValidation;
 using FluentValidation.Results;
 using Rsp.IrasPortal.Application.DTOs;
@@ -31,6 +32,7 @@ public class QuestionViewModelValidator : AbstractValidator<QuestionViewModel>
                 {
                     ConfigureLengthRule();
                     ConfigureRegExRule();
+                    ConfigureDateRule();
                 });
 
             // Validate answers (apply AnswerViewModelValidator)
@@ -55,6 +57,7 @@ public class QuestionViewModelValidator : AbstractValidator<QuestionViewModel>
                 {
                     ConfigureLengthRule();
                     ConfigureRegExRule();
+                    ConfigureDateRule();
                 });
 
             RuleFor(x => x.Answers)
@@ -274,6 +277,54 @@ public class QuestionViewModelValidator : AbstractValidator<QuestionViewModel>
                         // for the property
                         condition.IsApplicable = true;
                         context.AddFailure(nameof(question.AnswerText), $"Question {question.Heading} under {question.Section} section");
+                    }
+                }
+            });
+    }
+
+    private void ConfigureDateRule()
+    {
+        RuleFor(x => x.AnswerText)
+            .Custom((answer, context) =>
+            {
+                var question = context.InstanceToValidate;
+                var conditions = question.Rules.SelectMany(r => r.Conditions.Where(c => c.Operator is "DATE"));
+                foreach (var condition in conditions)
+                {
+                    var dateChecks = condition.Value?.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                    if (dateChecks.Any())
+                    {
+                        foreach (var dateCheck in dateChecks)
+                        {
+                            if (dateCheck.Contains("FORMAT"))
+                            {
+                                var format = dateCheck.Split(':', StringSplitOptions.RemoveEmptyEntries)[1];
+                                if (!DateTime.TryParseExact(answer, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
+                                {
+                                    // by setting IsApplicable property
+                                    // it will display the Description of the condition
+                                    // for the property
+                                    condition.IsApplicable = true;
+                                    context.AddFailure(nameof(question.AnswerText), $"Question {question.Heading} under {question.Section} section");
+                                }
+                            }
+
+                            if (dateCheck.Contains("FUTUREDATE"))
+                            {
+                                if (!DateTime.TryParse(answer, CultureInfo.InvariantCulture, out var date))
+                                {
+                                    continue;
+                                }
+                                if (date.Date <= DateTime.Now.Date)
+                                {
+                                    // by setting IsApplicable property
+                                    // it will display the Description of the condition
+                                    // for the property
+                                    condition.IsApplicable = true;
+                                    context.AddFailure(nameof(question.AnswerText), $"Question {question.Heading} under {question.Section} section");
+                                }
+                            }
+                        }
                     }
                 }
             });
