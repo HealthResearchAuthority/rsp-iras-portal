@@ -1,0 +1,27 @@
+﻿@model Rsp.IrasPortal.Application.DTOs.ReviewBodyDto
+
+@{
+    ViewData["Title"] = "View review body";
+    var reviewBodyModel = new AddUpdateReviewBodyModel
+            {
+                Id = Model.Id,
+                OrganisationName = Model.OrganisationName,
+                Countries = Model.Countries,
+                Description = Model.Description,
+                EmailAddress = Model.EmailAddress,
+                IsActive = Model.IsActive,
+            };
+}
+
+<partial name="_BackNavigation" model="@("rbc:viewreviewbodies", "Back", new Dictionary<string, string>())" />
+
+<h1 style="margin-top:30px" class="govuk-heading-l">Review body profile: @Model.OrganisationName</h1>
+
+<partial name="_ReviewBodySummaryTablePartial" model="(reviewBodyModel, true)" />
+
+<h2 class="govuk-heading-m">Do you want to disable this review body?</h2>
+<p class="govuk-hint">
+    Disabling a user record will prevent the administrator from accessing their account. 
+    This can be reversed once requested.
+</p>
+<button class="govuk-button govuk-button--secondary">Disable review body</button>

@@ -28,9 +28,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{076A9217-81EA-489C-8D4B-5792A8CB7801}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{0106BD4E-99B7-42C3-9287-69CF99988C59}"
-	ProjectSection(SolutionItems) = preProject
-		src\Web\Rsp.IrasPortal.Web\Views\Shared\_SubmitButton.cshtml = src\Web\Rsp.IrasPortal.Web\Views\Shared\_SubmitButton.cshtml
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsp.IrasPortal.UnitTests", "tests\UnitTests\Rsp.IrasPortal.UnitTests\Rsp.IrasPortal.UnitTests.csproj", "{4D42B299-4EA3-469E-ABD4-4816E3E698AF}"
 EndProject
