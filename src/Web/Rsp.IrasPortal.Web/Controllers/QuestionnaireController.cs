@@ -205,6 +205,9 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
                 return this.ServiceError(response);
             }
 
+            // set the active stage for the category
+            SetStage(sectionId);
+
             // if we have questions in the session
             // then return the view with the model
             return View(Index, new QuestionnaireViewModel
