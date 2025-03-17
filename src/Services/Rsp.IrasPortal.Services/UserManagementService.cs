@@ -1,4 +1,6 @@
-﻿using Rsp.IrasPortal.Application.DTOs;
+﻿using Mapster;
+using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Application.Services;
@@ -44,42 +46,19 @@ public class UserManagementService(IUserManagementServiceClient client) : IUserM
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse> CreateUser(string? title,
-        string firstName,
-        string lastName,
-        string email,
-        string? jobTitle,
-        string? organisation,
-        string? telephone,
-        string? country,
-        string status,
-        DateTime? lastUpdated)
+    public async Task<ServiceResponse> CreateUser(CreateUserRequest request)
     {
-        var apiResponse = await client.CreateUser
-        (
-            new User(null, title, firstName, lastName, email, jobTitle, organisation, telephone, country, status, lastUpdated)
-        );
+        var user = request.Adapt<User>();
+        var apiResponse = await client.CreateUser(user);
 
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse> UpdateUser(string originalEmail,
-        string? title,
-        string firstName,
-        string lastName,
-        string email,
-        string? jobTitle,
-        string? organisation,
-        string? telephone,
-        string? country,
-        string status,
-        DateTime? lastUpdated)
+    public async Task<ServiceResponse> UpdateUser(UpdateUserRequest request)
     {
-        var apiResponse = await client.UpdateUser
-        (
-            originalEmail,
-            new User(null, title, firstName, lastName, email, jobTitle, organisation, telephone, country, status, lastUpdated)
-        );
+        var user = request.Adapt<User>();
+
+        var apiResponse = await client.UpdateUser(request.OriginalEmail, user);
 
         return apiResponse.ToServiceResponse();
     }

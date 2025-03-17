@@ -1,4 +1,5 @@
 ﻿using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.Logging.Interceptors;
 
@@ -22,28 +23,9 @@ public interface IUserManagementService : IInterceptable
 
     Task<ServiceResponse<UserResponse>> GetUser(string? userId, string? email);
 
-    Task<ServiceResponse> CreateUser(string? title,
-        string firstName,
-        string lastName,
-        string email,
-        string? jobTitle,
-        string? organisation,
-        string? telephone,
-        string? country,
-        string status,
-        DateTime? lastUpdated);
+    Task<ServiceResponse> CreateUser(CreateUserRequest request);
 
-    Task<ServiceResponse> UpdateUser(string originalEmail,
-        string? title,
-        string firstName,
-        string lastName,
-        string email,
-        string? jobTitle,
-        string? organisation,
-        string? telephone,
-        string? country,
-        string status,
-        DateTime? lastUpdated);
+    Task<ServiceResponse> UpdateUser(UpdateUserRequest request);
 
     Task<ServiceResponse> DeleteUser(string userId, string email);
 

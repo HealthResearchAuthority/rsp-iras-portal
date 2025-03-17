@@ -18,47 +18,47 @@
 		<h1 class="govuk-heading-l">@heading</h1>
 		<form method="post">
 			<input name="Id" asp-for="Id" value="@(Model.Id ?? string.Empty)" />
-			<input name="OriginalEmail" asp-for="OriginalEmail" value="@(Model.Email ?? string.Empty)" />
+			<input name="OriginalEmail" asp-for="OriginalEmail" value="@(Model.OriginalEmail ?? string.Empty)" />
 			<div class="govuk-form-group @(ViewData.ModelState["Title"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
 				<label class="govuk-label" for="Title"><b>Title</b></label>
-				<input class="govuk-input govuk-!-width-one-quarter" id="Title" name="Title" type="text" asp-for="Title" value="@(Model.Title ?? string.Empty)" />
 				<span class="govuk-error-message" asp-validation-for="Title"></span>
+				<input class="govuk-input govuk-!-width-one-quarter @(ViewData.ModelState["Title"]?.Errors.Count > 0 ? "govuk-input--error" : "")" id="Title" name="Title" type="text" asp-for="Title" value="@(Model.Title ?? string.Empty)" />
 			</div>
 
 			<div class="govuk-form-group @(ViewData.ModelState["FirstName"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
 				<label class="govuk-label" for="FirstName"><b>First Name</b></label>
-				<input class="govuk-input govuk-!-width-one-half" id="FirstName" name="FirstName" type="text" asp-for="FirstName" value="@(Model.FirstName ?? string.Empty)" />
 				<span class="govuk-error-message" asp-validation-for="FirstName"></span>
+				<input class="govuk-input govuk-!-width-one-half @(ViewData.ModelState["FirstName"]?.Errors.Count > 0 ? "govuk-input--error" : "")" id="FirstName" name="FirstName" type="text" asp-for="FirstName" value="@(Model.FirstName ?? string.Empty)" />
 			</div>
 
 			<div class="govuk-form-group @(ViewData.ModelState["LastName"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
 				<label class="govuk-label" for="LastName"><b>Last Name</b></label>
-				<input class="govuk-input govuk-!-width-one-half" id="LastName" name="LastName" type="text" asp-for="LastName" value="@(Model.LastName ?? string.Empty)">
 				<span class="govuk-error-message" asp-validation-for="LastName"></span>
+				<input class="govuk-input govuk-!-width-one-half" id="LastName" name="LastName" type="text" asp-for="LastName" value="@(Model.LastName ?? string.Empty)">				
 			</div>
 
 			<div class="govuk-form-group @(ViewData.ModelState["Email"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
 				<label class="govuk-label" for="Email"><b>Email</b></label>
-				<input class="govuk-input govuk-!-width-two-thirds" id="Email" name="Email" type="email" asp-for="Email" value="@(Model.Email ?? string.Empty)">
 				<span class="govuk-error-message" asp-validation-for="Email"></span>
+				<input class="govuk-input govuk-!-width-two-thirds" id="Email" name="Email" type="email" asp-for="Email" value="@(Model.Email ?? string.Empty)">				
 			</div>
 
 			<div class="govuk-form-group @(ViewData.ModelState["Telephone"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
 				<label class="govuk-label" for="Telephone"><b>Telephone</b></label>
-				<input class="govuk-input govuk-!-width-two-thirds" id="Telephone" name="Telephone" type="tel" asp-for="Telephone" value="@(Model.Telephone ?? string.Empty)">
 				<span class="govuk-error-message" asp-validation-for="Telephone"></span>
+				<input class="govuk-input govuk-!-width-two-thirds" id="Telephone" name="Telephone" type="tel" asp-for="Telephone" value="@(Model.Telephone ?? string.Empty)">				
 			</div>
 
 			<div class="govuk-form-group @(ViewData.ModelState["Organisation"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
 				<label class="govuk-label" for="Organisation"><b>Organisation</b></label>
-				<input class="govuk-input govuk-!-width-three-quarters" id="Organisation" name="Organisation" type="text" asp-for="Organisation" value="@(Model.Organisation ?? string.Empty)">
 				<span class="govuk-error-message" asp-validation-for="Organisation"></span>
+				<input class="govuk-input govuk-!-width-three-quarters" id="Organisation" name="Organisation" type="text" asp-for="Organisation" value="@(Model.Organisation ?? string.Empty)">				
 			</div>
 
 			<div class="govuk-form-group @(ViewData.ModelState["JobTitle"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
 				<label class="govuk-label" for="JobTitle"><b>Job title</b></label>
-				<input class="govuk-input govuk-!-width-three-quarters" id="JobTitle" name="JobTitle" type="text" asp-for="JobTitle" value="@(Model.JobTitle ?? string.Empty)">
 				<span class="govuk-error-message" asp-validation-for="JobTitle"></span>
+				<input class="govuk-input govuk-!-width-three-quarters" id="JobTitle" name="JobTitle" type="text" asp-for="JobTitle" value="@(Model.JobTitle ?? string.Empty)">				
 			</div>
 
 			<div class="govuk-form-group @(ViewData.ModelState["Role"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
@@ -114,11 +114,11 @@
 			<div class="govuk-form-group conditional-field @(ViewData.ModelState["AccessRequired"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
 				<fieldset class="govuk-fieldset">
 					<legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
-						<label class="govuk-label" for="Country">
+						<label class="govuk-label" for="AccessRequired">
 							<b>Access Required</b>
 						</label>
 					</legend>
-					<span class="govuk-error-message" asp-validation-for="Country"></span>
+					<span class="govuk-error-message" asp-validation-for="AccessRequired"></span>
 					<div class="govuk-checkboxes" data-module="govuk-checkboxes">
 						@foreach (var option in AccessRequiredOptions.Options)
 						{

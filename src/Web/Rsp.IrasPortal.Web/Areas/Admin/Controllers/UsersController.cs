@@ -1,9 +1,12 @@
 ﻿using System.Collections.Immutable;
 using System.Net;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
+using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Identity;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
@@ -15,7 +18,7 @@ namespace Rsp.IrasPortal.Web.Areas.Admin.Controllers;
 [Route("[area]/[controller]/[action]", Name = "admin:[action]")]
 [Authorize(Policy = "IsAdmin")]
 [FeatureGate(Features.Admin)]
-public class UsersController(IUserManagementService userManagementService) : Controller
+public class UsersController(IUserManagementService userManagementService, IValidator<UserViewModel> validator) : Controller
 {
     private const string Error = nameof(Error);
     private const string EditUserView = nameof(EditUserView);
@@ -101,10 +104,22 @@ public class UsersController(IUserManagementService userManagementService) : Con
     public async Task<IActionResult> ConfirmUserSubmission(UserViewModel model)
     {
         ViewBag.Mode = string.IsNullOrEmpty(model.Id) ? CreateMode : EditMode;
-        if (!ModelState.IsValid)
+
+        var context = new ValidationContext<UserViewModel>(model);
+        var validationResult = await validator.ValidateAsync(context);
+
+        if (!validationResult.IsValid)
         {
             // get all available roles to be presented on the FE if model is invalid
             model.AvailableUserRoles = await GetAlluserRoles();
+
+            // Copy the validation results into ModelState.
+            // ASP.NET uses the ModelState collection to populate
+            // error messages in the View.
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
 
             return View(EditUserView, model);
         }
@@ -144,43 +159,32 @@ public class UsersController(IUserManagementService userManagementService) : Con
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> SubmitUser(UserViewModel model)
     {
-        ViewBag.Mode = string.IsNullOrEmpty(model.Id) ? CreateMode : EditMode;
+        var mode = string.IsNullOrEmpty(model.Id) ? CreateMode : EditMode;
+        ViewBag.Mode = mode;
+
+        var context = new ValidationContext<UserViewModel>(model);
+        var validationResult = await validator.ValidateAsync(context);
+
         // check if modelstate is valid if in edit mode
-        if (!string.IsNullOrEmpty(model.Id) && !ModelState.IsValid)
+        if (mode == EditMode && !validationResult.IsValid)
         {
             // get all available roles to be presented on the FE if model is invalid
             model.AvailableUserRoles = await GetAlluserRoles();
 
+            // Copy the validation results into ModelState.
+            // ASP.NET uses the ModelState collection to populate
+            // error messages in the View.
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
+
             return View(EditUserView, model);
         }
 
-        // convert country from array to comma seperated string to be stored in the database
-        var country = model.Country != null ? string.Join(',', model.Country) : null;
-
         // Creates a user if in "create" mode i.e. model.Id is null
         // Updates the user if in "edit" mode i.e. model.Id has a value
-        var submitUserResponse = string.IsNullOrWhiteSpace(model.Id) ?
-                            await userManagementService.CreateUser(model.Title,
-                            model.FirstName,
-                            model.LastName,
-                            model.Email,
-                            model.JobTitle,
-                            model.Organisation,
-                            model.Telephone,
-                            country,
-                            IrasUserStatus.Active,
-                            DateTime.UtcNow) :
-                            await userManagementService.UpdateUser(model.OriginalEmail!,
-                            model.Title,
-                            model.FirstName,
-                            model.LastName,
-                            model.Email,
-                            model.JobTitle,
-                            model.Organisation,
-                            model.Telephone,
-                            country,
-                            IrasUserStatus.Active,
-                            DateTime.UtcNow);
+        var submitUserResponse = await CreateOrUpdateUser(model, mode);
 
         // if status is forbidden
         // return the appropriate response otherwise
@@ -197,16 +201,7 @@ public class UsersController(IUserManagementService userManagementService) : Con
         // assign role
         if (!string.IsNullOrEmpty(model.Role))
         {
-            string? rolesToRemove = null;
-
-            // if editing user, remove from existing roles before adding to newly selected role
-            if (!string.IsNullOrEmpty(model.Id))
-            {
-                var existingUser = await userManagementService.GetUser(model.Id, model.Email);
-                rolesToRemove = existingUser?.Content?.Roles != null ? string.Join(',', existingUser.Content.Roles) : null;
-            }
-
-            var roleResponse = await userManagementService.UpdateRoles(model.Email, rolesToRemove, model.Role);
+            var roleResponse = await UpdateUserRoles(model);
 
             // if status is forbidden
             // return the appropriate response otherwise
@@ -221,15 +216,11 @@ public class UsersController(IUserManagementService userManagementService) : Con
             }
         }
 
-        if (string.IsNullOrWhiteSpace(model.Id))
+        return mode switch
         {
-            // for successful creation of new user, present a success message view
-            return View(CreateUserSuccessMessage, model);
-        }
-        else
-        {
-            return RedirectToAction(nameof(Index));
-        }
+            CreateMode => View(CreateUserSuccessMessage, model),
+            _ => RedirectToAction(nameof(Index))
+        };
     }
 
     /// <summary>
@@ -426,5 +417,56 @@ public class UsersController(IUserManagementService userManagementService) : Con
         }
 
         return new List<Role>();
+    }
+
+    private async Task<ServiceResponse> CreateOrUpdateUser(UserViewModel model, string mode)
+    {
+        var country = model.Country != null ? string.Join(',', model.Country) : null;
+
+        if (mode == CreateMode)
+        {
+            return await userManagementService.CreateUser(new CreateUserRequest
+            {
+                Title = model.Title,
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                Email = model.Email,
+                JobTitle = model.JobTitle,
+                Organisation = model.Organisation,
+                Telephone = model.Telephone,
+                Country = country,
+                Status = IrasUserStatus.Active,
+                LastUpdated = DateTime.UtcNow
+            });
+        }
+
+        return await userManagementService.UpdateUser(new UpdateUserRequest
+        {
+            OriginalEmail = model.OriginalEmail,
+            Title = model.Title,
+            FirstName = model.FirstName,
+            LastName = model.LastName,
+            Email = model.Email,
+            JobTitle = model.JobTitle,
+            Organisation = model.Organisation,
+            Telephone = model.Telephone,
+            Country = country,
+            Status = IrasUserStatus.Active,
+            LastUpdated = DateTime.UtcNow
+        });
+    }
+
+    private async Task<ServiceResponse> UpdateUserRoles(UserViewModel model)
+    {
+        string? rolesToRemove = null;
+
+        // if editing user, remove from existing roles before adding to newly selected role
+        if (!string.IsNullOrEmpty(model.Id))
+        {
+            var existingUser = await userManagementService.GetUser(model.Id, model.Email);
+            rolesToRemove = existingUser?.Content?.Roles != null ? string.Join(',', existingUser.Content.Roles) : null;
+        }
+
+        return await userManagementService.UpdateRoles(model.Email, rolesToRemove, model.Role!);
     }
 }
