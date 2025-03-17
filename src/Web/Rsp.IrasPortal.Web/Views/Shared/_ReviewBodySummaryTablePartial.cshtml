@@ -1,84 +1,119 @@
 ﻿﻿@using Rsp.IrasPortal.Application.Constants
-@model AddUpdateReviewBodyModel
+@model (AddUpdateReviewBodyModel ReviewBodyModel, bool AdditionalInformation)
 
 @{
-    var edit = Model.Id != Guid.Empty;
+    var edit = Model.ReviewBodyModel.Id != Guid.Empty;
     var editReviewBody = "/reviewbody/editreviewbody";
 }
 
 <table class="govuk-table">
     <thead>
-    <tr>
-        <th></th>
-        <th></th>
-        <th></th>
-    </tr>
+        <tr>
+            <th></th>
+            <th></th>
+            <th></th>
+        </tr>
     </thead>
     <tbody>
-		<tr class="govuk-table__row">
-			<td class="govuk-table__cell">
-				<b>Organisation name</b>
-			</td>
-			<td class="govuk-table__cell">
-				@Model.OrganisationName
-				<input type="hidden" asp-for="OrganisationName" name="OrganisationName" value="@Model.OrganisationName" />
-			</td>
-			<td class="govuk-table__cell govuk-table__cell--numeric">
-				@{
-					await RenderEditLink();
-				}
-			</td>
-		</tr>
+        <tr class="govuk-table__row">
+            <td class="govuk-table__cell">
+                <b>Organisation name</b>
+            </td>
+            <td class="govuk-table__cell">
+                @Model.ReviewBodyModel.OrganisationName
+                <input type="hidden" asp-for="ReviewBodyModel.OrganisationName" name="OrganisationName" value="@Model.ReviewBodyModel.OrganisationName" />
+            </td>
+            <td class="govuk-table__cell govuk-table__cell--numeric">
+                @{
+                    await RenderEditLink();
+                }
+            </td>
+        </tr>
 
-    <tr class="govuk-table__row">
-        <td class="govuk-table__cell">
-            <b>Country</b>
-        </td>
-        <td class="govuk-table__cell">
-            @string.Join(", ", Model.Countries)
+        <tr class="govuk-table__row">
+            <td class="govuk-table__cell">
+                <b>Country</b>
+            </td>
+            <td class="govuk-table__cell">
+                @string.Join(", ", Model.ReviewBodyModel.Countries)
 
-            @foreach (var country in Model.Countries)
-            {
-                <input type="hidden" asp-for="Countries" name="Countries" value="@country" />
-            }
-        </td>
-        <td class="govuk-table__cell govuk-table__cell--numeric">
-            @{
-                await RenderEditLink();
-            }
-        </td>
-    </tr>
+                @foreach (var country in Model.ReviewBodyModel.Countries)
+                {
+                    <input type="hidden" asp-for="ReviewBodyModel.Countries" name="Countries" value="@country" />
+                }
+            </td>
+            <td class="govuk-table__cell govuk-table__cell--numeric">
+                @{
+                    await RenderEditLink();
+                }
+            </td>
+        </tr>
 
 
-    <tr class="govuk-table__row">
-        <td class="govuk-table__cell">
-            <b>Email address</b>
-        </td>
-        <td class="govuk-table__cell">
-            @Model.EmailAddress
-            <input type="hidden" asp-for="EmailAddress" name="EmailAddress" value="@Model.EmailAddress"/>
-        </td>
-        <td class="govuk-table__cell govuk-table__cell--numeric">
-            @{
-                await RenderEditLink();
-            }
-        </td>
-    </tr>
+        <tr class="govuk-table__row">
+            <td class="govuk-table__cell">
+                <b>Email address</b>
+            </td>
+            <td class="govuk-table__cell">
+                @Model.ReviewBodyModel.EmailAddress
+                <input type="hidden" asp-for="ReviewBodyModel.EmailAddress" name="EmailAddress" value="@Model.ReviewBodyModel.EmailAddress" />
+            </td>
+            <td class="govuk-table__cell govuk-table__cell--numeric">
+                @{
+                    await RenderEditLink();
+                }
+            </td>
+        </tr>
 
-    <tr class="govuk-table__row">
-        <td class="govuk-table__cell">
-            <b>Description</b>
-        </td>
-        <td class="govuk-table__cell">
-            @Model.Description
-            <input type="hidden" asp-for="Description" name="Description" value="@Model.Description"/>
-        </td>
-        <td class="govuk-table__cell govuk-table__cell--numeric">
-            @{
-                await RenderEditLink();
-            }
-        </td>
-    </tr>
+        <tr class="govuk-table__row">
+            <td class="govuk-table__cell">
+                <b>Description</b>
+            </td>
+            <td class="govuk-table__cell">
+                @Model.ReviewBodyModel.Description
+                <input type="hidden" asp-for="ReviewBodyModel.Description" name="Description" value="@Model.ReviewBodyModel.Description" />
+            </td>
+            <td class="govuk-table__cell govuk-table__cell--numeric">
+                @{
+                    await RenderEditLink();
+                }
+            </td>
+        </tr>
+
+        @if (Model.AdditionalInformation)
+        {
+            <tr class="govuk-table__row">
+                <td class="govuk-table__cell">
+                    <b>Users</b>
+                </td>
+                <td class="govuk-table__cell">
+                    <a asp-action="" class="govuk-link">View this review body's audit history</a>
+                </td>
+                <td class="govuk-table__cell govuk-table__cell--numeric">
+                </td>
+            </tr>
+
+            <tr class="govuk-table__row">
+                <td class="govuk-table__cell">
+                    <b>Audit</b>
+                </td>
+                <td class="govuk-table__cell">
+                    <a asp-action="" class="govuk-link">View this review body's list of users</a>
+                </td>
+                <td class="govuk-table__cell govuk-table__cell--numeric">
+                </td>
+            </tr>
+
+            <tr class="govuk-table__row">
+                <td class="govuk-table__cell">
+                    <b>Last updated</b>
+                </td>
+                <td class="govuk-table__cell">
+                </td>
+                <td class="govuk-table__cell govuk-table__cell--numeric">
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
 
@@ -87,14 +122,34 @@
     {
         if (edit)
         {
-            <a class="govuk-link" asp-route="admin:edituser" asp-route-userId="@Model.Id">Change</a>
+            <a class="govuk-link" asp-route="admin:edituser" asp-route-userId="@Model.ReviewBodyModel.Id">Change</a>
         }
         else
         {
             <button type="submit" formaction="@editReviewBody"
-                    style="background: none; border: none; color: #1d70b8; text-decoration: underline; cursor: pointer; font: inherit; padding: 0;">
+            style="background: none; border: none; color: #1d70b8; text-decoration: underline; cursor: pointer; font: inherit; padding: 0;">
                 Change
             </button>
         }
+    }
+
+    string FormatDateTime(DateTime? dateTime)
+    {
+        if (!dateTime.HasValue)
+        {
+            return "";
+        }
+
+        var nonNullDateTime = dateTime.Value;
+
+        string formattedDate = nonNullDateTime.ToString("d'th' MMMM yyyy   HH:mm");
+
+        int day = nonNullDateTime.Day;
+        string suffix = (day % 10 == 1 && day != 11) ? "st" :
+                        (day % 10 == 2 && day != 12) ? "nd" :
+                        (day % 10 == 3 && day != 13) ? "rd" : "th";
+
+        formattedDate = $"{day}{suffix} {nonNullDateTime:MMMM yyyy   HH:mm}";
+        return formattedDate;
     }
 }

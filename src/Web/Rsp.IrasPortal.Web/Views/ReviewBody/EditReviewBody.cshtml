@@ -3,11 +3,11 @@
 @{
     var buttonText = ViewBag.Mode == "edit" ? "Save" : "Continue";
     var heading = ViewBag.Mode == "edit" ? "Edit review body details" : "Add a new review body";
-    var submitActionName = ViewBag.Mode == "edit" ? "qnc:submitreviewbody" : "qnc:confirmchanges";
+    var submitActionName = ViewBag.Mode == "edit" ? "rbc:submitreviewbody" : "rbc:confirmchanges";
 }
 
 
-<a asp-route="admin:users" class="govuk-back-link">Back</a>
+<a asp-route="rbc:viewreviewbodies" class="govuk-back-link">Back</a>
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">

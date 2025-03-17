@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.Services;
@@ -6,7 +7,7 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
-[Route("[controller]/[action]", Name = "qnc:[action]")]
+[Route("[controller]/[action]", Name = "rbc:[action]")]
 [Authorize(Policy = "IsUser")]
 public class ReviewBodyController(IReviewBodyService reviewBodyService) : Controller
 {
@@ -21,10 +22,30 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     private const string DisableMode = "disable";
 
     /// <summary>
+    /// Displays a list of review bodies
+    /// </summary>
+    public async Task<IActionResult> ViewReviewBodies()
+    {
+        var reviewBodies = await reviewBodyService.GetReviewBodies();
+
+        return View(reviewBodies.Content?.OrderBy(rb => rb.OrganisationName));
+    }
+
+    /// <summary>
+    /// Displays a single review body
+    /// </summary>
+    public async Task<IActionResult> ViewReviewBody(Guid id)
+    {
+        var reviewBody = await reviewBodyService.GetReviewBodies(id);
+
+        return View(reviewBody.Content?.FirstOrDefault());
+    }
+
+    /// <summary>
     ///     Displays the empty review body to create
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> EditReviewBody()
+    public IActionResult EditReviewBody()
     {
         ViewBag.Mode = CreateMode;
         var model = new AddUpdateReviewBodyModel();
@@ -38,7 +59,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     /// <returns></returns>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> EditReviewBody(AddUpdateReviewBodyModel model)
+    public IActionResult EditReviewBody(AddUpdateReviewBodyModel model)
     {
         ViewBag.Mode = CreateMode;
         return View(EditReviewBodyView, model);
@@ -75,9 +96,9 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
             OrganisationName = model.OrganisationName,
             Countries = model.Countries,
             EmailAddress = model.EmailAddress,
-            Description = model.Description,
-            CreatedBy = User.Identity.Name,
-            UpdatedBy = User.Identity.Name,
+            Description = model.Description!,
+            CreatedBy = User.Identity?.Name!,
+            UpdatedBy = User.Identity?.Name!,
             IsActive = true
         });
 
