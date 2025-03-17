@@ -2,37 +2,17 @@
 
 public static class SheetNames
 {
-    public const string A = nameof(A);
-    public const string B = nameof(B);
-    public const string C1 = nameof(C1);
-    public const string C2 = nameof(C2);
-    public const string C3 = nameof(C3);
-    public const string C4 = nameof(C4);
-    public const string C5 = nameof(C5);
-    public const string C6 = nameof(C6);
-    public const string C7 = nameof(C7);
-    public const string C8 = nameof(C8);
-    public const string D = nameof(D);
+    public const string ProjectRecord = "project record v1";
     public const string Contents = "contents";
     public const string AnswerOptions = "App2 AnswerOptions";
     public const string Rules = "App4 Rules";
 
     public static readonly string[] Modules = [
-        A, B, C1, C2, C3, C4, C5, C6, C7, C8, D
+        ProjectRecord
     ];
 
     public static readonly string[] All = [
-        A,
-        B,
-        C1,
-        C2,
-        C3,
-        C4,
-        C5,
-        C6,
-        C7,
-        C8,
-        D,
+        ProjectRecord,
         Contents,
         AnswerOptions,
         Rules
