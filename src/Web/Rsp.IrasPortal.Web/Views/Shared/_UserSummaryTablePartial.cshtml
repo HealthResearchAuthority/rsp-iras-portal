@@ -120,6 +120,21 @@
 			</td>
 		</tr>
 
+		@if (Model.Role == "operations")
+		{
+			<tr class="govuk-table__row">
+				<td class="govuk-table__cell"><b>Committee</b></td>
+				<td class="govuk-table__cell">
+					
+				</td>
+				<td class="govuk-table__cell govuk-table__cell--numeric">
+					@{
+						await RenderEditLink();
+					}
+				</td>
+			</tr>
+		}
+
 		@if (Model.Role == "operations" && Model.Country != null && Model.Country.Any())
 		{
 			<tr class="govuk-table__row">
@@ -149,6 +164,20 @@
 					{
 						<input type="hidden" asp-for="AccessRequired[@i]" name="AccessRequired[@i]" value="@Model.AccessRequired[i]" />
 					}
+				</td>
+				<td class="govuk-table__cell govuk-table__cell--numeric">
+					@{
+						await RenderEditLink();
+					}
+				</td>
+			</tr>
+		}
+
+		@if (Model.Role == "operations")
+		{
+			<tr class="govuk-table__row">
+				<td class="govuk-table__cell"><b>Review body</b></td>
+				<td class="govuk-table__cell">
 				</td>
 				<td class="govuk-table__cell govuk-table__cell--numeric">
 					@{
