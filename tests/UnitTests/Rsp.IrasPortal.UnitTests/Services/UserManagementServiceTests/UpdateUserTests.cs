@@ -1,4 +1,6 @@
-﻿using Rsp.IrasPortal.Application.Responses;
+﻿using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
+using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Domain.Identity;
 using Rsp.IrasPortal.Services;
@@ -34,7 +36,20 @@ public class UpdateUserTests : TestServiceBase<UserManagementService>
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.UpdateUser(originalEmail, title, firstName, lastName, email, jobTitle, organisation, telephone, country, status, lastUpdated);
+        var result = await Sut.UpdateUser(new UpdateUserRequest
+        {
+            OriginalEmail = originalEmail,
+            Title = title,
+            FirstName = firstName,
+            LastName = lastName,
+            Email = email,
+            JobTitle = jobTitle,
+            Organisation = organisation,
+            Telephone = telephone,
+            Country = country,
+            Status = IrasUserStatus.Active,
+            LastUpdated = DateTime.UtcNow
+        });
 
         // Assert
         result.ShouldBeOfType<ServiceResponse>();
@@ -71,7 +86,20 @@ public class UpdateUserTests : TestServiceBase<UserManagementService>
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.UpdateUser(originalEmail, title, firstName, lastName, email, jobTitle, organisation, telephone, country, status, lastUpdated);
+        var result = await Sut.UpdateUser(new UpdateUserRequest
+        {
+            OriginalEmail = originalEmail,
+            Title = title,
+            FirstName = firstName,
+            LastName = lastName,
+            Email = email,
+            JobTitle = jobTitle,
+            Organisation = organisation,
+            Telephone = telephone,
+            Country = country,
+            Status = IrasUserStatus.Active,
+            LastUpdated = DateTime.UtcNow
+        });
 
         // Assert
         result.ShouldBeOfType<ServiceResponse>();
