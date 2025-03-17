@@ -74,7 +74,7 @@ public class ApplicationController(IApplicationsService applicationsService,
         }
 
         // continue to resume for the categoryId & applicationId
-        return RedirectToAction("Resume", "Questionnaire", new
+        return RedirectToAction(nameof(QuestionnaireController.Resume), "Questionnaire", new
         {
             categoryId,
             irasApplication.ApplicationId
