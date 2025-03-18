@@ -13,6 +13,7 @@ using Rsp.IrasPortal.Web.Models;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using FluentValidation;
 using System.ComponentModel.DataAnnotations;
+using Rsp.IrasPortal.Services.Extensions;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApplicationControllerTests
 {
@@ -22,30 +23,11 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApplicationControllerTests
         public async Task StartNewRecord_ClearsSession_AndRedirectToActionAsync()
         {
             // Arrange
-            var questionsSetServiceSectionsResponse = new ServiceResponse<IEnumerable<QuestionSectionsResponse>>
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new List<QuestionSectionsResponse>
-                {
-                    new()
-                    {
-                        SectionName = "Test",
-                        QuestionCategoryId = "A",
-                        SectionId = "1"
-                    }
-                }
-            };
-
             var mockSession = new Mock<ISession>();
 
             var httpContext = new DefaultHttpContext
             {
                 Session = mockSession.Object
-            };
-
-            Sut.ControllerContext = new ControllerContext
-            {
-                HttpContext = httpContext
             };
 
             var createdApplication = new IrasApplicationResponse
@@ -67,24 +49,22 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApplicationControllerTests
                 HttpContext = httpContext
             };
 
-
-            var questionsSetServiceSectionResponse = new ServiceResponse<IEnumerable<QuestionSectionsResponse>>
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new List<QuestionSectionsResponse>
+            var questionCategories = new ApiResponse<IEnumerable<CategoryDto>>
+            (
+                new HttpResponseMessage(HttpStatusCode.OK),
+                new List<CategoryDto>
                 {
                     new()
                     {
-                        SectionName = "1",
-                        QuestionCategoryId = "A"
+                        CategoryId = "A",
+                        CategoryName = "Test"
                     }
-                }
-            };
+                },
+                new RefitSettings()
+            );
 
-            Mocker
-                .GetMock<IQuestionSetService>()
-                .Setup(x => x.GetQuestionSections())
-                .ReturnsAsync(questionsSetServiceSectionResponse);
+            Mocker.GetMock<IQuestionSetService>()
+                .Setup(q => q.GetQuestionCategories()).ReturnsAsync(questionCategories.ToServiceResponse());
 
             // Act
             var result = await Sut.StartProjectRecord();

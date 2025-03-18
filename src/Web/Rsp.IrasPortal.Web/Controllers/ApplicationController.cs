@@ -18,10 +18,7 @@ namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "app:[action]")]
 [Authorize(Policy = "IsUser")]
-public class ApplicationController(IApplicationsService applicationsService,
-                                   IValidator<ApplicationInfoViewModel> validator,
-                                   IQuestionSetService questionSetService)
-                                   : Controller
+public class ApplicationController(IApplicationsService applicationsService, IValidator<ApplicationInfoViewModel> validator, IQuestionSetService questionSetService) : Controller
 {
     // ApplicationInfo view name
     private const string ApplicationInfo = nameof(ApplicationInfo);
@@ -29,8 +26,6 @@ public class ApplicationController(IApplicationsService applicationsService,
     [AllowAnonymous]
     [Route("/", Name = "app:welcome")]
     public IActionResult Welcome() => View(nameof(Index));
-
-    public IActionResult CreateApplication() => View(nameof(CreateApplication));
 
     public async Task<IActionResult> StartProjectRecord()
     {
@@ -62,17 +57,14 @@ public class ApplicationController(IApplicationsService applicationsService,
         // save the application in session
         HttpContext.Session.SetString(SessionKeys.Application, JsonSerializer.Serialize(irasApplication));
 
-        // get the questions for the category
-        var questionSectionsResponse = await questionSetService.GetQuestionSections();
-        var questionSections = questionSectionsResponse.Content;
-        // Ensure questionSections is not null and has elements
         string categoryId = string.Empty;
-        if (questionSections != null && questionSections.Any())
-        {
-            // get the first category
-            categoryId = questionSections.First().QuestionCategoryId;
-        }
+        var questionCategoriesServiceResponse = await questionSetService.GetQuestionCategories();
 
+        if (questionCategoriesServiceResponse is { IsSuccessStatusCode: true, Content: not null })
+        {
+            categoryId = questionCategoriesServiceResponse.Content.First().CategoryId;
+        }
+        
         // continue to resume for the categoryId & applicationId
         return RedirectToAction(nameof(QuestionnaireController.Resume), "Questionnaire", new
         {
@@ -112,6 +104,8 @@ public class ApplicationController(IApplicationsService applicationsService,
 
         return View(ApplicationInfo, (applicationInfo, "edit"));
     }
+
+    public IActionResult CreateApplication() => View(nameof(CreateApplication));
 
     [HttpPost]
     public async Task<IActionResult> CreateApplication(ApplicationInfoViewModel model)

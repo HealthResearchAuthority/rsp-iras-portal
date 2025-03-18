@@ -85,14 +85,16 @@
 	<script src="~/js/rules.js"></script>
 }
 
-@if (!string.IsNullOrEmpty(previousStage))
-{
-	<partial name="_BackNavigation" model="@("qnc:displayquestionnaire", "Back", new Dictionary<string, string> { { "categoryId", previousCategory }, { "sectionId", previousStage } })" />
+@{
+    var navModel = string.IsNullOrEmpty(previousStage) ? 
+                        ("app:createapplication", "Back", new Dictionary<string, string>()) :
+                        ("qnc:displayquestionnaire", "Back", new Dictionary<string, string>
+                        { 
+                            { "categoryId", previousCategory },
+                            { "sectionId", previousStage }
+                        });
 }
-else
-{
-	<partial name="_BackNavigation" model="@("app:createapplication", "Back", new Dictionary<string, string>())" />
-}
+<partial name="_BackNavigation" model="@navModel" />
 
 <form method="post">
 
@@ -398,9 +400,4 @@ else
 	<partial name="_SubmitButton" model="@("qnc:saveresponses", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } })" />
 
 	<partial name="_SubmitButton" model="@("qnc:saveresponses", "Save for later", new Dictionary<string, string>())" />
-
-	@* <partial name="_SubmitButton" model="@("qnc:validate", "Validate", new Dictionary<string, string>())" /> 
-	<feature name="@Features.ProceedToSubmit">
-		<partial name="_SubmitButton" model="@("qnc:saveresponses", "Proceed to Submit", new Dictionary<string, string> { { "submit", bool.TrueString } })" />
-	</feature>*@
 </form>
