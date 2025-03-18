@@ -97,8 +97,8 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
             Countries = model.Countries,
             EmailAddress = model.EmailAddress,
             Description = model.Description!,
-            CreatedBy = User.Identity?.Name!,
-            UpdatedBy = User.Identity?.Name!,
+            CreatedBy = User?.Identity?.Name!,
+            UpdatedBy = User?.Identity?.Name!,
             IsActive = true
         });
 
