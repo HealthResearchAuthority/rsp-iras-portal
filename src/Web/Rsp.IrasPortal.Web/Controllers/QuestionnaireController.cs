@@ -205,6 +205,11 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
                 return this.ServiceError(response);
             }
 
+            if (string.IsNullOrEmpty(sectionId))
+            {
+                return RedirectToAction("MyApplications", "Application"); // Safe fallback
+            }
+
             // set the active stage for the category
             SetStage(sectionId);
 
