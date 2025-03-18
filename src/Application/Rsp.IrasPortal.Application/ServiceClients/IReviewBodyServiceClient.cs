@@ -8,10 +8,16 @@ namespace Rsp.IrasPortal.Application.ServiceClients;
 /// </summary>
 public interface IReviewBodyServiceClient
 {
+    /// <summary>
+    /// Gets all review bodies
+    /// </summary>
     [Get("/reviewbody")]
     public Task<IApiResponse<IEnumerable<ReviewBodyDto>>> GetAllReviewBodies();
 
-    [Get("/reviewbody")]
+    /// <summary>
+    /// Gets review bodies by Id
+    /// </summary>
+    [Get("/reviewbody/{id}")]
     public Task<IApiResponse<IEnumerable<ReviewBodyDto>>> GetReviewBodyById(Guid id);
 
     /// <summary>
