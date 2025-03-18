@@ -292,37 +292,39 @@ public class QuestionViewModelValidator : AbstractValidator<QuestionViewModel>
                 foreach (var condition in conditions)
                 {
                     var dateChecks = condition.Value?.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                    if (dateChecks.Any())
+                    if (dateChecks is null || dateChecks.Length == 0)
                     {
-                        foreach (var dateCheck in dateChecks)
-                        {
-                            if (dateCheck.Contains("FORMAT"))
-                            {
-                                var format = dateCheck.Split(':', StringSplitOptions.RemoveEmptyEntries)[1];
-                                if (!DateTime.TryParseExact(answer, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
-                                {
-                                    // by setting IsApplicable property
-                                    // it will display the Description of the condition
-                                    // for the property
-                                    condition.IsApplicable = true;
-                                    context.AddFailure(nameof(question.AnswerText), $"Question {question.Heading} under {question.Section} section");
-                                }
-                            }
+                        continue;
+                    }
 
-                            if (dateCheck.Contains("FUTUREDATE"))
+                    foreach (var dateCheck in dateChecks)
+                    {
+                        if (dateCheck.Contains("FORMAT"))
+                        {
+                            var format = dateCheck.Split(':', StringSplitOptions.RemoveEmptyEntries)[1];
+                            if (!DateTime.TryParseExact(answer, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
                             {
-                                if (!DateTime.TryParse(answer, CultureInfo.InvariantCulture, out var date))
-                                {
-                                    continue;
-                                }
-                                if (date.Date <= DateTime.Now.Date)
-                                {
-                                    // by setting IsApplicable property
-                                    // it will display the Description of the condition
-                                    // for the property
-                                    condition.IsApplicable = true;
-                                    context.AddFailure(nameof(question.AnswerText), $"Question {question.Heading} under {question.Section} section");
-                                }
+                                // by setting IsApplicable property
+                                // it will display the Description of the condition
+                                // for the property
+                                condition.IsApplicable = true;
+                                context.AddFailure(nameof(question.AnswerText), $"Question {question.Heading} under {question.Section} section");
+                            }
+                        }
+
+                        if (dateCheck.Contains("FUTUREDATE"))
+                        {
+                            if (!DateTime.TryParse(answer, CultureInfo.InvariantCulture, out var date))
+                            {
+                                continue;
+                            }
+                            if (date.Date <= DateTime.Now.Date)
+                            {
+                                // by setting IsApplicable property
+                                // it will display the Description of the condition
+                                // for the property
+                                condition.IsApplicable = true;
+                                context.AddFailure(nameof(question.AnswerText), $"Question {question.Heading} under {question.Section} section");
                             }
                         }
                     }
