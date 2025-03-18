@@ -10,7 +10,7 @@ namespace Rsp.IrasPortal.Application.Services;
 /// </summary>
 public interface IReviewBodyService : IInterceptable
 {
-    Task<ServiceResponse<IEnumerable<ReviewBodyDto>>> GetReviewBodies();
-    Task<ServiceResponse<IEnumerable<ReviewBodyDto>>> GetReviewBodies(Guid id);
+    Task<ServiceResponse<IEnumerable<ReviewBodyDto>>> GetAllReviewBodies();
+    Task<ServiceResponse<IEnumerable<ReviewBodyDto>>> GetReviewBodyById(Guid id);
     Task<ServiceResponse> CreateReviewBody(ReviewBodyDto reviewBodyDto);
 }

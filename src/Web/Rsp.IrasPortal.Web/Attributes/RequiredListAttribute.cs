@@ -1,5 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+namespace Rsp.IrasPortal.Web.Attributes;
+
+/// <summary>
+/// For checkboxes to ensure that at least one option is selected
+/// </summary>
 public class RequiredListAttribute : ValidationAttribute
 {
     protected override ValidationResult IsValid(object value, ValidationContext validationContext)
