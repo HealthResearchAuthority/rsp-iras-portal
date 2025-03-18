@@ -399,5 +399,7 @@
 
 	<partial name="_SubmitButton" model="@("qnc:saveresponses", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } })" />
 
-	<partial name="_SubmitButton" model="@("qnc:saveresponses", "Save for later", new Dictionary<string, string>())" />
+	<button type="button" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+		Save for later
+	</button>
 </form>
