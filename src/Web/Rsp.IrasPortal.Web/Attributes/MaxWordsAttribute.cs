@@ -2,14 +2,14 @@
 
 namespace Rsp.IrasPortal.Web.Attributes;
 
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-
+/// <summary>
+/// Validate a data parameter for the number of words allowed to be entered
+/// </summary>
 public class MaxWordsAttribute : ValidationAttribute
 {
     private readonly int _maxWords;
 
-    public MaxWordsAttribute(int maxWords, string errorMessage = null)
+    public MaxWordsAttribute(int maxWords, string? errorMessage = null)
     {
         _maxWords = maxWords;
         ErrorMessage = errorMessage ?? $"The field can have a maximum of {_maxWords} words.";
@@ -19,7 +19,7 @@ public class MaxWordsAttribute : ValidationAttribute
     {
         if (value is string str && !string.IsNullOrWhiteSpace(str))
         {
-            int wordCount = str.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
+            var wordCount = str.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
             if (wordCount > _maxWords)
             {
                 return new ValidationResult(ErrorMessage);

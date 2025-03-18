@@ -9,10 +9,10 @@ namespace Rsp.IrasPortal.Application.ServiceClients;
 public interface IReviewBodyServiceClient
 {
     [Get("/reviewbody")]
-    public Task<IApiResponse<IEnumerable<ReviewBodyDto>>> GetReviewBodies();
+    public Task<IApiResponse<IEnumerable<ReviewBodyDto>>> GetAllReviewBodies();
 
     [Get("/reviewbody")]
-    public Task<IApiResponse<IEnumerable<ReviewBodyDto>>> GetReviewBodies(Guid id);
+    public Task<IApiResponse<IEnumerable<ReviewBodyDto>>> GetReviewBodyById(Guid id);
 
     /// <summary>
     ///     Creates a new review body in the database

@@ -3,7 +3,7 @@
 
 @{
     var edit = Model.ReviewBodyModel.Id != Guid.Empty;
-    var editReviewBody = "/reviewbody/editreviewbody";
+    var createReviewBody = "/reviewbody/createreviewbody";
 }
 
 <table class="govuk-table">
@@ -126,7 +126,7 @@
         }
         else
         {
-            <button type="submit" formaction="@editReviewBody"
+            <button type="submit" formaction="@createReviewBody"
             style="background: none; border: none; color: #1d70b8; text-decoration: underline; cursor: pointer; font: inherit; padding: 0;">
                 Change
             </button>

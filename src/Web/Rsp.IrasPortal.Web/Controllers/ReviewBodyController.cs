@@ -12,7 +12,7 @@ namespace Rsp.IrasPortal.Web.Controllers;
 public class ReviewBodyController(IReviewBodyService reviewBodyService) : Controller
 {
     private const string Error = nameof(Error);
-    private const string EditReviewBodyView = nameof(EditReviewBody);
+    private const string CreateEditReviewBodyView = nameof(CreateReviewBody);
     private const string ConfirmChangesView = nameof(ConfirmChanges);
     private const string SuccessMessagesView = nameof(SuccessMessage);
     private const string DisableMessagesView = nameof(SuccessMessage);
@@ -26,7 +26,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     /// </summary>
     public async Task<IActionResult> ViewReviewBodies()
     {
-        var reviewBodies = await reviewBodyService.GetReviewBodies();
+        var reviewBodies = await reviewBodyService.GetAllReviewBodies();
 
         return View(reviewBodies.Content?.OrderBy(rb => rb.OrganisationName));
     }
@@ -36,7 +36,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     /// </summary>
     public async Task<IActionResult> ViewReviewBody(Guid id)
     {
-        var reviewBody = await reviewBodyService.GetReviewBodies(id);
+        var reviewBody = await reviewBodyService.GetReviewBodyById(id);
 
         return View(reviewBody.Content?.FirstOrDefault());
     }
@@ -45,11 +45,11 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     ///     Displays the empty review body to create
     /// </summary>
     [HttpGet]
-    public IActionResult EditReviewBody()
+    public IActionResult CreateReviewBody()
     {
         ViewBag.Mode = CreateMode;
         var model = new AddUpdateReviewBodyModel();
-        return View(EditReviewBodyView, model);
+        return View(CreateEditReviewBodyView, model);
     }
 
     /// <summary>
@@ -59,10 +59,10 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     /// <returns></returns>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult EditReviewBody(AddUpdateReviewBodyModel model)
+    public IActionResult CreateReviewBody(AddUpdateReviewBodyModel model)
     {
         ViewBag.Mode = CreateMode;
-        return View(EditReviewBodyView, model);
+        return View(CreateEditReviewBodyView, model);
     }
 
     /// <summary>
@@ -75,7 +75,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     {
         if (!ModelState.IsValid)
         {
-            return View(EditReviewBodyView, model);
+            return View(CreateEditReviewBodyView, model);
         }
 
         return View(ConfirmChangesView, model);
