@@ -11,6 +11,7 @@ using Rsp.IrasPortal.Configuration.Dependencies;
 using Rsp.IrasPortal.Configuration.Health;
 using Rsp.IrasPortal.Configuration.HttpClients;
 using Rsp.IrasPortal.Web;
+using Rsp.IrasPortal.Web.MappingConfigurators;
 using Rsp.Logging.ActionFilters;
 using Rsp.Logging.Extensions;
 using Rsp.Logging.Interceptors;
@@ -115,6 +116,8 @@ if (await featureManager.IsEnabledAsync(Features.InterceptedLogging))
 {
     services.AddLoggingInterceptor<LoggingInterceptor>();
 }
+
+MappingConfiguration.Configure();
 
 var app = builder.Build();
 

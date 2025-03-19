@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Net;
 using FluentValidation;
+using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
@@ -27,6 +28,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
     private const string DeleteUserView = nameof(DeleteUserView);
     private const string UserRolesView = nameof(UserRolesView);
     private const string CreateUserSuccessMessage = nameof(CreateUserSuccessMessage);
+    private const string DisableUserSuccessMessage = nameof(DisableUserSuccessMessage);
+    private const string ConfirmDisableUser = nameof(ConfirmDisableUser);
 
     private const string EditMode = "edit";
     private const string CreateMode = "create";
@@ -44,7 +47,7 @@ public class UsersController(IUserManagementService userManagementService, IVali
         // return the view if successfull
         if (response.IsSuccessStatusCode)
         {
-            var users = response.Content?.Users.OrderBy(x => x.LastName).Select(user => new UserViewModel
+            var users = response.Content?.Users.OrderBy(x => x.FirstName).Select(user => new UserViewModel
             {
                 Id = user.Id,
                 FirstName = user.FirstName,
@@ -54,7 +57,15 @@ public class UsersController(IUserManagementService userManagementService, IVali
                 LastLogin = user.LastLogin
             }) ?? [];
 
-            return View((users, response.Content.TotalCount, pageNumber, pageSize));
+            var paginationModel = new PaginationViewModel
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                RouteName = "admin:users",
+                TotalCount = response.Content?.TotalCount ?? 0
+            };
+
+            return View((users, paginationModel));
         }
 
         // if status is forbidden
@@ -261,15 +272,56 @@ public class UsersController(IUserManagementService userManagementService, IVali
     /// <param name="userId">User Id</param>
     /// <param name="email">Email</param>
     [HttpGet]
-    public IActionResult DeleteUser(string userId, string email)
+    public async Task<IActionResult> DisableUser(string userId, string email)
     {
-        var model = new UserViewModel
-        {
-            Id = userId,
-            Email = email
-        };
+        var response = await userManagementService.GetUser(userId, email);
 
-        return View(DeleteUserView, model);
+        if (response.IsSuccessStatusCode)
+        {
+            var model = new UserViewModel(response.Content!);
+
+            return View(ConfirmDisableUser, model);
+        }
+
+        // if status is forbidden
+        // return the appropriate response otherwise
+        // return the generic error page
+        return response.StatusCode switch
+        {
+            HttpStatusCode.Forbidden => Forbid(),
+            _ => View(Error, this.ProblemResult(response))
+        };
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DisableUser(UserViewModel model)
+    {
+        var userResponse = await userManagementService.GetUser(model.Id, model.Email);
+        if (userResponse.IsSuccessStatusCode)
+        {
+            var updateModel = new UserViewModel(userResponse.Content!);
+
+            var updateUserRequest = updateModel.Adapt<UpdateUserRequest>();
+            updateUserRequest.LastUpdated = DateTime.UtcNow;
+            updateUserRequest.Status = IrasUserStatus.Disabled;
+
+            var updateDisabledUser = await userManagementService.UpdateUser(updateUserRequest);
+
+            if (updateDisabledUser.IsSuccessStatusCode)
+            {
+                return View(DisableUserSuccessMessage, updateModel);
+            }
+        }
+
+        // if status is forbidden
+        // return the appropriate response otherwise
+        // return the generic error page
+        return userResponse.StatusCode switch
+        {
+            HttpStatusCode.Forbidden => Forbid(),
+            _ => View(Error, this.ProblemResult(userResponse))
+        };
     }
 
     /// <summary>
@@ -421,39 +473,19 @@ public class UsersController(IUserManagementService userManagementService, IVali
 
     private async Task<ServiceResponse> CreateOrUpdateUser(UserViewModel model, string mode)
     {
-        var country = model.Country != null ? string.Join(',', model.Country) : null;
-
         if (mode == CreateMode)
         {
-            return await userManagementService.CreateUser(new CreateUserRequest
-            {
-                Title = model.Title,
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                Email = model.Email,
-                JobTitle = model.JobTitle,
-                Organisation = model.Organisation,
-                Telephone = model.Telephone,
-                Country = country,
-                Status = IrasUserStatus.Active,
-                LastUpdated = DateTime.UtcNow
-            });
+            var createRequest = model.Adapt<CreateUserRequest>();
+            createRequest.Status = IrasUserStatus.Active;
+            createRequest.LastUpdated = DateTime.UtcNow;
+
+            return await userManagementService.CreateUser(createRequest);
         }
 
-        return await userManagementService.UpdateUser(new UpdateUserRequest
-        {
-            OriginalEmail = model.OriginalEmail,
-            Title = model.Title,
-            FirstName = model.FirstName,
-            LastName = model.LastName,
-            Email = model.Email,
-            JobTitle = model.JobTitle,
-            Organisation = model.Organisation,
-            Telephone = model.Telephone,
-            Country = country,
-            Status = IrasUserStatus.Active,
-            LastUpdated = DateTime.UtcNow
-        });
+        var updateRequest = model.Adapt<UpdateUserRequest>();
+        updateRequest.LastUpdated = DateTime.UtcNow;
+
+        return await userManagementService.UpdateUser(updateRequest);
     }
 
     private async Task<ServiceResponse> UpdateUserRoles(UserViewModel model)
