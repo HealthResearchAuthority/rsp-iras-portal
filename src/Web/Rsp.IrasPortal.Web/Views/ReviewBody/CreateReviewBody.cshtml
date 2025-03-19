@@ -1,4 +1,9 @@
-﻿@model AddUpdateReviewBodyModel
+﻿@using GovUk.Frontend.AspNetCore.TagHelpers
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using AnchorTagHelper = GovUk.Frontend.AspNetCore.TagHelpers.AnchorTagHelper
+@using TextAreaTagHelper = GovUk.Frontend.AspNetCore.TagHelpers.TextAreaTagHelper
+@model AddUpdateReviewBodyModel
 
 @{
     var buttonText = ViewBag.Mode == "edit" ? "Save" : "Continue";
@@ -6,59 +11,100 @@
     var submitActionName = ViewBag.Mode == "edit" ? "rbc:submitreviewbody" : "rbc:confirmchanges";
 }
 
-
 <a asp-route="rbc:viewreviewbodies" class="govuk-back-link">Back</a>
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
         <h1 class="govuk-heading-l">@heading</h1>
         <form method="post">
-            <div class="govuk-form-group @(ViewData.ModelState["OrganisationName"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+            @{
+                var errorKey = "OrganisationName";
+                var validationMessage = "Provide an organisation name";
+                var fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
+            }
+            <div class="govuk-form-group @(fieldHasErrors ? "govuk-form-group--error" : "")">
                 <label class="govuk-label" for="OrganisationName">
                     <b>Organisation Name</b>
                 </label>
-                <span class="govuk-error-message" asp-validation-for="OrganisationName"></span>
+                @if (fieldHasErrors)
+                {
+                    @Html.ValidationMessage(errorKey, validationMessage, new { @class = "govuk-error-message" })
+                }
                 <input class="govuk-input govuk-!-width-one-half" id="OrganisationName" name="OrganisationName" type="text" asp-for="OrganisationName" value="@(Model.OrganisationName ?? string.Empty)">
-
             </div>
-            <div class="govuk-form-group @(ViewData.ModelState["Countries"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+
+            @{
+                errorKey = "Countries";
+                validationMessage = "Select at least one country";
+                fieldHasErrors = ViewData.ModelState.TryGetValue(errorKey, out var state) && state.Errors.Any();
+            }
+
+            <div class="govuk-form-group @(fieldHasErrors ? "govuk-form-group--error" : "")">
                 <fieldset class="govuk-fieldset">
                     <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
-                        <label class="govuk-label" for="Country">
+                        <label class="govuk-label">
                             <b>Country</b>
                         </label>
                     </legend>
-                    <span class="govuk-error-message" asp-validation-for="Countries"></span>
+        
+                    @if (fieldHasErrors)
+                    {
+                        @Html.ValidationMessage(errorKey, validationMessage, new { @class = "govuk-error-message" })
+                    }
+
                     <div class="govuk-checkboxes" data-module="govuk-checkboxes">
                         @foreach (var country in new[] { "England", "Northern Ireland", "Scotland", "Wales" })
                         {
                             <div class="govuk-checkboxes__item">
-                                <input class="govuk-checkboxes__input" id="@country" name="Countries" type="checkbox" value="@country" @(Model.Countries.Contains(country) ? "checked" : "")>
+                                <input class="govuk-checkboxes__input"
+                                       id="@country"
+                                       name="Countries"
+                                       type="checkbox"
+                                       value="@country"
+                                       @(Model.Countries != null && Model.Countries.Contains(country) ? "checked" : "")>
                                 <label class="govuk-label govuk-checkboxes__label" for="@country">@country</label>
                             </div>
                         }
                     </div>
-
                 </fieldset>
             </div>
 
 
-            <div class="govuk-form-group @(ViewData.ModelState["EmailAddress"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+
+
+            @{
+                errorKey = "EmailAddress";
+                validationMessage = "Enter a valid email address";
+                fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
+            }
+            <div class="govuk-form-group @(fieldHasErrors ? "govuk-form-group--error" : "")">
                 <label class="govuk-label" for="EmailAddress">
                     <b>Email address</b>
                 </label>
-                <span class="govuk-error-message" asp-validation-for="EmailAddress"></span>
-                <input class="govuk-input govuk-!-width-three-quarters" id="EmailAddress" name="EmailAddress" type="EmailAddress" asp-for="EmailAddress" value="@(Model.EmailAddress ?? string.Empty)">
-
+                @if (fieldHasErrors)
+                {
+                    @Html.ValidationMessage(errorKey, validationMessage, new { @class = "govuk-error-message" })
+                }
+                <input class="govuk-input govuk-!-width-three-quarters" id="EmailAddress" name="EmailAddress" type="text" asp-for="EmailAddress" value="@(Model.EmailAddress ?? string.Empty)">
             </div>
 
-            <div class="govuk-form-group @(ViewData.ModelState["Description"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+            @{
+                errorKey = "Description";
+                validationMessage = "The description cannot exceed 250 words.";
+                fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
+            }
+            <div class="govuk-form-group @(fieldHasErrors ? "govuk-form-group--error" : "")">
                 <label class="govuk-label" for="Description">
                     <b>Add description</b>
                 </label>
-                <span class="govuk-error-message" asp-validation-for="Description"></span>
-                <textarea class="govuk-textarea" id="Description" rows="5" name="Description" asp-for="Description">@(Model.Description ?? string.Empty)</textarea>
+                @if (fieldHasErrors)
+                {
+                    @Html.ValidationMessage(errorKey, validationMessage, new { @class = "govuk-error-message" })
+                }
+                <textarea class="govuk-textarea" id="Description" rows="5" name="Description" asp-for="Description"></textarea>
+                <span asp-validation-for="Description" class="govuk-error-message"></span>
             </div>
+
 
             <partial name="_SubmitButton" model="@(submitActionName, buttonText, new Dictionary<string, string>())"/>
         </form>
