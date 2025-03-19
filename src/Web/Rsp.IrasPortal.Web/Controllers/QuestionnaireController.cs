@@ -232,9 +232,7 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
     {
         // get the questionnaire from the session
         // and deserialize it
-        var navigation = SetStage(model.CurrentStage);
-
-        var questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(HttpContext.Session.GetString($"{SessionKeys.Questionnaire}:{navigation.CurrentStage}")!)!;
+        var questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(HttpContext.Session.GetString($"{SessionKeys.Questionnaire}:{model.CurrentStage}")!)!;
 
         // update the model with the answeres
         // provided by the applicant
@@ -333,9 +331,10 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
         TempData.TryAdd(TempDataKeys.ApplicationId, application.ApplicationId);
 
         // set the previous, current and next stages
+        var navigation = SetStage(model.CurrentStage);
 
- 
-
+        // save the questions in the session
+        HttpContext.Session.SetString($"{SessionKeys.Questionnaire}:{navigation.CurrentStage}", JsonSerializer.Serialize(questions));
 
         // user clicks on the SaveAndContinue button
         // so we need to resume from the next stage
@@ -367,9 +366,6 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
 
             });
         }
-
-        // save the questions in the session
-        HttpContext.Session.SetString($"{SessionKeys.Questionnaire}:{navigation.NextStage}", JsonSerializer.Serialize(questions));
 
         // continue rendering the questionnaire if the above conditions are not true
         return RedirectToAction(nameof(DisplayQuestionnaire), new
