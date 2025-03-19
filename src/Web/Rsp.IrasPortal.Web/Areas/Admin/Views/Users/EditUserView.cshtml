@@ -8,10 +8,18 @@
 	var buttonText = ViewBag.Mode == "edit" ? "Save" : "Continue";
 	var heading = ViewBag.Mode == "edit" ? "Edit user profile record" : "Add a new user profile record";
 	var submitActionName = ViewBag.Mode == "edit" ? "admin:submituser" : "admin:confirmusersubmission";
+
 	ViewBag.Active = "manageUsers";
 }
+@if (ViewBag.Mode == "edit")
+{
+	<a asp-route="admin:viewuser" asp-all-route-data="@(new Dictionary<string, string>{{"email", Model.Email}, {"userId", Model.Id!}})" class="govuk-back-link">Back</a>
+}
+else
+{
+	<a asp-route="admin:users" class="govuk-back-link">Back</a>
+}
 
-<a asp-route="admin:users" class="govuk-back-link">Back</a>
 
 <div class="govuk-grid-row">
 	<div class="govuk-grid-column-two-thirds">
@@ -35,31 +43,31 @@
 			<div class="govuk-form-group @(ViewData.ModelState["LastName"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
 				<label class="govuk-label" for="LastName"><b>Last Name</b></label>
 				<span class="govuk-error-message" asp-validation-for="LastName"></span>
-				<input class="govuk-input govuk-!-width-one-half" id="LastName" name="LastName" type="text" asp-for="LastName" value="@(Model.LastName ?? string.Empty)">				
+				<input class="govuk-input govuk-!-width-one-half" id="LastName" name="LastName" type="text" asp-for="LastName" value="@(Model.LastName ?? string.Empty)">
 			</div>
 
 			<div class="govuk-form-group @(ViewData.ModelState["Email"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
 				<label class="govuk-label" for="Email"><b>Email</b></label>
 				<span class="govuk-error-message" asp-validation-for="Email"></span>
-				<input class="govuk-input govuk-!-width-two-thirds" id="Email" name="Email" type="email" asp-for="Email" value="@(Model.Email ?? string.Empty)">				
+				<input class="govuk-input govuk-!-width-two-thirds" id="Email" name="Email" type="email" asp-for="Email" value="@(Model.Email ?? string.Empty)">
 			</div>
 
 			<div class="govuk-form-group @(ViewData.ModelState["Telephone"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
 				<label class="govuk-label" for="Telephone"><b>Telephone</b></label>
 				<span class="govuk-error-message" asp-validation-for="Telephone"></span>
-				<input class="govuk-input govuk-!-width-two-thirds" id="Telephone" name="Telephone" type="tel" asp-for="Telephone" value="@(Model.Telephone ?? string.Empty)">				
+				<input class="govuk-input govuk-!-width-two-thirds" id="Telephone" name="Telephone" type="tel" asp-for="Telephone" value="@(Model.Telephone ?? string.Empty)">
 			</div>
 
 			<div class="govuk-form-group @(ViewData.ModelState["Organisation"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
 				<label class="govuk-label" for="Organisation"><b>Organisation</b></label>
 				<span class="govuk-error-message" asp-validation-for="Organisation"></span>
-				<input class="govuk-input govuk-!-width-three-quarters" id="Organisation" name="Organisation" type="text" asp-for="Organisation" value="@(Model.Organisation ?? string.Empty)">				
+				<input class="govuk-input govuk-!-width-three-quarters" id="Organisation" name="Organisation" type="text" asp-for="Organisation" value="@(Model.Organisation ?? string.Empty)">
 			</div>
 
 			<div class="govuk-form-group @(ViewData.ModelState["JobTitle"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
 				<label class="govuk-label" for="JobTitle"><b>Job title</b></label>
 				<span class="govuk-error-message" asp-validation-for="JobTitle"></span>
-				<input class="govuk-input govuk-!-width-three-quarters" id="JobTitle" name="JobTitle" type="text" asp-for="JobTitle" value="@(Model.JobTitle ?? string.Empty)">				
+				<input class="govuk-input govuk-!-width-three-quarters" id="JobTitle" name="JobTitle" type="text" asp-for="JobTitle" value="@(Model.JobTitle ?? string.Empty)">
 			</div>
 
 			<div class="govuk-form-group @(ViewData.ModelState["Role"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
@@ -86,7 +94,7 @@
 					<b>Committee</b>
 				</label>
 				<select class="role-list-dropdown govuk-select govuk-!-width-three-quarters @(ViewData.ModelState["Committee"]?.Errors.Count > 0 ? "govuk-select--error" : "")" id="Committee" name="Committee">
-					<option></option>				
+					<option></option>
 				</select>
 			</div>
 
