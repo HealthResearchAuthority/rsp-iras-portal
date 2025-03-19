@@ -47,7 +47,7 @@ public class UsersController(IUserManagementService userManagementService, IVali
         // return the view if successfull
         if (response.IsSuccessStatusCode)
         {
-            var users = response.Content?.Users.OrderBy(x => x.FirstName).Select(user => new UserViewModel
+            var users = response.Content?.Users.Select(user => new UserViewModel
             {
                 Id = user.Id,
                 FirstName = user.FirstName,
