@@ -9,8 +9,7 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ReviewBodyControllerTests;
 
 public class SubmitReviewBodyTests : TestServiceBase<ReviewBodyController>
 {
-    [Theory]
-    [AutoData]
+    [Theory, AutoData]
     public async Task SubmitReviewBody_WithValidData_ShouldReturnSuccessView(
         AddUpdateReviewBodyModel model)
     {
@@ -39,8 +38,7 @@ public class SubmitReviewBodyTests : TestServiceBase<ReviewBodyController>
             .Verify(s => s.CreateReviewBody(It.IsAny<ReviewBodyDto>()), Times.Once);
     }
 
-    [Theory]
-    [AutoData]
+    [Theory, AutoData]
     public async Task SubmitReviewBody_WithInvalidData_ShouldReturnSuccessView(
         AddUpdateReviewBodyModel model)
     {

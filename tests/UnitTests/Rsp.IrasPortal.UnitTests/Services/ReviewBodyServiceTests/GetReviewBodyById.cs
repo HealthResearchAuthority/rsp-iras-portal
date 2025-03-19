@@ -7,8 +7,7 @@ namespace Rsp.IrasPortal.UnitTests.Services.ReviewBodyServiceTests;
 
 public class GetReviewBodiesByIdTests : TestServiceBase<ReviewBodyService>
 {
-    [Theory]
-    [AutoData]
+    [Theory, AutoData]
     public async Task GetReviewBodiesById_Should_Return_Failure_Response_When_Client_Returns_Failure(Guid id)
     {
         // Arrange
@@ -34,8 +33,7 @@ public class GetReviewBodiesByIdTests : TestServiceBase<ReviewBodyService>
         client.Verify(c => c.GetReviewBodyById(id), Times.Once());
     }
 
-    [Theory]
-    [AutoData]
+    [Theory, AutoData]
     public async Task GetReviewBodiesById_Should_Return_Success_Response_When_Client_Returns_Success(Guid id,
         List<ReviewBodyDto> reviewBodies)
     {
@@ -64,8 +62,7 @@ public class GetReviewBodiesByIdTests : TestServiceBase<ReviewBodyService>
         client.Verify(c => c.GetReviewBodyById(id), Times.Once());
     }
 
-    [Theory]
-    [AutoData]
+    [Theory, AutoData]
     public async Task GetReviewBodiesById_Should_Return_BadRequest_When_Invalid_Id_Is_Provided()
     {
         // Arrange
