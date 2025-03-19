@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+﻿using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.DTOs;
@@ -92,7 +92,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
         ViewBag.Mode = model.Id == Guid.Empty ? CreateMode : EditMode;
 
         var reviewBody = model.Adapt<ReviewBodyDto>();
-        reviewBody.CreatedBy = User?.Identity?.Name;
+        reviewBody.CreatedBy = User?.Identity?.Name!;
         reviewBody.UpdatedBy = User?.Identity?.Name;
         reviewBody.IsActive = true;
 
