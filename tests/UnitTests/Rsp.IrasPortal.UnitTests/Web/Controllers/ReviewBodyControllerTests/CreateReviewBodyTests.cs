@@ -21,9 +21,8 @@ public class CreateReviewBodyTests : TestServiceBase<ReviewBodyController>
         return Task.CompletedTask;
     }
 
-    [Theory]
-    [AutoData]
-    public async Task CreateReviewBody_ShouldReturnViewWithOrderedReviewBodies(
+    [Theory, AutoData]
+    public void CreateReviewBody_ShouldReturnViewWithOrderedReviewBodies(
         List<ReviewBodyDto> reviewBodies,
         AddUpdateReviewBodyModel addUpdateReviewBodyModel)
     {

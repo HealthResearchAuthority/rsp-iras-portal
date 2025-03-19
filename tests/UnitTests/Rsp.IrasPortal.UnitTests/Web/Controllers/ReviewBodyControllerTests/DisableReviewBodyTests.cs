@@ -7,8 +7,7 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ReviewBodyControllerTests;
 public class DisableReviewBodyTests : TestServiceBase<ReviewBodyController>
 
 {
-    [Theory]
-    [AutoData]
+    [Theory, AutoData]
     public void DisableReviewBody_WithValidModel_ShouldReturnDisableReviewBodyView(AddUpdateReviewBodyModel model)
     {
         // Act

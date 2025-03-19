@@ -8,8 +8,7 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ReviewBodyControllerTests;
 
 public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
 {
-    [Theory]
-    [AutoData]
+    [Theory, AutoData]
     public async Task ViewReviewBodies_ShouldReturnViewWithOrderedReviewBodies(List<ReviewBodyDto> reviewBodies)
     {
         // Arrange
@@ -80,8 +79,7 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
             .Verify(s => s.GetAllReviewBodies(), Times.Once);
     }
 
-    [Theory]
-    [AutoData]
+    [Theory, AutoData]
     public async Task ViewReviewBody_ShouldReturnViewWithReviewBody(Guid id, ReviewBodyDto reviewBodyDto)
     {
         // Arrange
