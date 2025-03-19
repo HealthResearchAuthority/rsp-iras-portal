@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Domain.Identity;
 
@@ -34,7 +35,13 @@ public class UserViewModel
 
     public DateTime? LastUpdated { get; set; } = null;
 
-    public string? Status { get; set; } = null;
+    private string? _status;
+
+    public string Status
+    {
+        get => _status!;
+        set => _status = string.IsNullOrEmpty(value) ? IrasUserStatus.Active : value;
+    }
 
     public DateTime? LastLogin { get; set; } = null;
 
@@ -62,6 +69,7 @@ public class UserViewModel
             Role = roles != null ? roles.FirstOrDefault() : null;
             LastUpdated = user.LastUpdated;
             OriginalEmail = user.Email;
+            Status = user.Status;
         }
     }
 
