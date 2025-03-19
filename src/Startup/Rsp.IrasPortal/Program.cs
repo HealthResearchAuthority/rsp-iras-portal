@@ -123,6 +123,8 @@ if (await featureManager.IsEnabledAsync(Features.InterceptedLogging))
     services.AddLoggingInterceptor<LoggingInterceptor>();
 }
 
+MappingConfiguration.Configure();
+
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
