@@ -86,9 +86,9 @@
 }
 
 @{
-    var navModel = string.IsNullOrEmpty(previousStage) ? 
-                        ("app:createapplication", "Back", new Dictionary<string, string>()) :
-                        ("qnc:displayquestionnaire", "Back", new Dictionary<string, string>
+	var navModel = string.IsNullOrEmpty(previousStage) ? 
+						("app:createapplication", "Back", new Dictionary<string, string>()) :
+						("qnc:displayquestionnaire", "Back", new Dictionary<string, string>
                         { 
                             { "categoryId", previousCategory },
                             { "sectionId", previousStage }
@@ -366,7 +366,7 @@
 							fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
 
 							<div id="Questions[@index].SelectedOption"
-								 class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")"
+							class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")"
 							@parents @questionId>
 								<govuk-fieldset>
 									<govuk-fieldset-legend class="govuk-fieldset__legend--s">
@@ -398,8 +398,11 @@
 	</div>
 
 	<partial name="_SubmitButton" model="@("qnc:saveresponses", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } })" />
-	
-	<button type="button" class="govuk-button govuk-button--secondary" data-module="govuk-button">
-		Save for later
-	</button>
+
+	@if (!string.IsNullOrEmpty(previousStage))
+	{
+		<button type="button" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+			Save for later
+		</button>
+	}
 </form>
