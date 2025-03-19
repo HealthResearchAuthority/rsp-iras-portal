@@ -91,24 +91,19 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     {
         ViewBag.Mode = model.Id == Guid.Empty ? CreateMode : EditMode;
 
-        var response = await reviewBodyService.CreateReviewBody(new ReviewBodyDto
-        {
-            OrganisationName = model.OrganisationName,
-            Countries = model.Countries,
-            EmailAddress = model.EmailAddress,
-            Description = model.Description,
-            CreatedBy = User?.Identity?.Name,
-            UpdatedBy = User?.Identity?.Name,
-            IsActive = true
-        });
+        var reviewBody = model.Adapt<ReviewBodyDto>();
+        reviewBody.CreatedBy = User?.Identity?.Name;
+        reviewBody.UpdatedBy = User?.Identity?.Name;
+        reviewBody.IsActive = true;
 
+        var response = await reviewBodyService.CreateReviewBody(reviewBody);
 
         if (response.IsSuccessStatusCode)
         {
             return View(SuccessMessagesView, model);
         }
 
-        // WE NEED TO HANDLE ERRORS HERE
+        //TODO: WE NEED TO HANDLE ERRORS HERE
         return View(SuccessMessagesView, model);
     }
 
@@ -122,7 +117,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     [HttpGet]
     public IActionResult DisableReviewBody(AddUpdateReviewBodyModel model)
     {
-        // NEED TO IMPLEMENT PAGES
+        //TODO: NEED TO IMPLEMENT PAGES
         ViewBag.Mode = DisableMode;
         return View(DisableMessagesView, model);
     }

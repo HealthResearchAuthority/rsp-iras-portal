@@ -13,12 +13,16 @@ public class CreateReviewBodyTests : TestServiceBase<ReviewBodyService>
         ReviewBodyDto reviewBodyDto)
     {
         // Arrange
-        var apiResponse = Mock.Of<IApiResponse>(
-            apiResponse => !apiResponse.IsSuccessStatusCode &&
-                           apiResponse.StatusCode == HttpStatusCode.BadRequest);
+        var apiResponse = Mock.Of<IApiResponse>
+        (
+            apiResponse =>
+                !apiResponse.IsSuccessStatusCode &&
+                apiResponse.StatusCode == HttpStatusCode.BadRequest
+        );
 
         var client = new Mock<IReviewBodyServiceClient>();
-        client.Setup(c => c.CreateReviewBody(reviewBodyDto))
+        client
+            .Setup(c => c.CreateReviewBody(reviewBodyDto))
             .ReturnsAsync(apiResponse);
 
         var sut = new ReviewBodyService(client.Object);
@@ -41,12 +45,16 @@ public class CreateReviewBodyTests : TestServiceBase<ReviewBodyService>
         ReviewBodyDto reviewBodyDto)
     {
         // Arrange
-        var apiResponse = Mock.Of<IApiResponse>(
-            apiResponse => apiResponse.IsSuccessStatusCode &&
-                           apiResponse.StatusCode == HttpStatusCode.OK);
+        var apiResponse = Mock.Of<IApiResponse>
+        (
+            apiResponse =>
+                apiResponse.IsSuccessStatusCode &&
+                apiResponse.StatusCode == HttpStatusCode.OK
+        );
 
         var client = new Mock<IReviewBodyServiceClient>();
-        client.Setup(c => c.CreateReviewBody(reviewBodyDto))
+        client
+            .Setup(c => c.CreateReviewBody(reviewBodyDto))
             .ReturnsAsync(apiResponse);
 
         var sut = new ReviewBodyService(client.Object);
