@@ -254,8 +254,27 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
         // with the updated model with answers
         model.Questions = questions;
 
-        // save the responses
+        // validate the questionnaire and save the result in tempdata
+        // this is so we display the validation passed message or not
+        var isValid = await ValidateQuestionnaire(model);
+        ViewData[ViewDataKeys.IsQuestionnaireValid] = isValid;
+
+        // get the application from the session
+        // to get the applicationId
         var application = this.GetApplicationFromSession();
+
+        if (!isValid)
+        {
+            // store the applicationId in the TempData to get in the view
+            TempData.TryAdd(TempDataKeys.ApplicationId, application.ApplicationId);
+
+            // set the previous, current and next stages
+            SetStage(model.CurrentStage!);
+
+            return View(Index, model);
+        }
+
+        // save the responses
         var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
 
         // to save the responses
