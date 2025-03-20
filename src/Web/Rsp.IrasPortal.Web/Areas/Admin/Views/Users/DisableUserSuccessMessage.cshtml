@@ -1,0 +1,18 @@
+﻿@using Rsp.IrasPortal.Web.Areas.Admin.Models
+@model UserViewModel
+@{
+	ViewBag.Active = "manageUsers";
+}
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-two-thirds">
+		<div class="govuk-panel govuk-panel--confirmation">
+			<h1 class="govuk-panel__title">
+				@Model.FirstName @Model.LastName successfully disabled
+			</h1>
+		</div>
+		<p>
+			A confirmation email has been sent to @Model.FirstName @Model.LastName to confirm their record has been disabled.
+		</p>
+		<p><a asp-route="admin:users">Back to Manage users</a></p>
+	</div>
+</div>

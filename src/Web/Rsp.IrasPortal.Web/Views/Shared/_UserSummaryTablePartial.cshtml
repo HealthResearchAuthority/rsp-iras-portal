@@ -7,6 +7,7 @@
 	var editNewUserUrl = "/admin/users/editnewuser";
 }
 
+<input type="hidden" asp-for="Status" name="Status" value="@(Model.Status ?? string.Empty)" />
 <table class="govuk-table">
 	<thead>
 		<tr>

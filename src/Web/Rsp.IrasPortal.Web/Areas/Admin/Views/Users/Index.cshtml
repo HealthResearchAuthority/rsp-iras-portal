@@ -1,6 +1,6 @@
 ﻿@using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Web.Areas.Admin.Models
-@model (IEnumerable<UserViewModel> Users, int TotalCount, int PageNumber, int PageSize)
+@model (IEnumerable<UserViewModel> Users, PaginationViewModel Pagination)
 
 @{
 	ViewBag.Active = "manageUsers";
@@ -62,5 +62,6 @@
 				}
 			</tbody>
 		</table>
+		<partial name="_Pagination" model="@Model.Pagination" />
 	</div>
 </div>
