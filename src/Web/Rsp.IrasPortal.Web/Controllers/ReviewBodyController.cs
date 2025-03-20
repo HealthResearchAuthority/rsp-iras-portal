@@ -12,12 +12,13 @@ namespace Rsp.IrasPortal.Web.Controllers;
 public class ReviewBodyController(IReviewBodyService reviewBodyService) : Controller
 {
     private const string Error = nameof(Error);
-    private const string CreateEditReviewBodyView = nameof(CreateReviewBody);
+    private const string CreateUpdateReviewBodyView = nameof(CreateReviewBody);
+    private const string ViewReviewBodyView = nameof(ViewReviewBody);
     private const string ConfirmChangesView = nameof(ConfirmChanges);
     private const string SuccessMessagesView = nameof(SuccessMessage);
     private const string DisableMessagesView = nameof(SuccessMessage);
 
-    private const string EditMode = "edit";
+    private const string UpdateMode = "update";
     private const string CreateMode = "create";
     private const string DisableMode = "disable";
 
@@ -38,7 +39,9 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     {
         var reviewBody = await reviewBodyService.GetReviewBodyById(id);
 
-        return View(reviewBody.Content?.FirstOrDefault());
+        var model = reviewBody.Content?.FirstOrDefault().Adapt<AddUpdateReviewBodyModel>();
+
+        return View(model);
     }
 
     /// <summary>
@@ -49,7 +52,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     {
         ViewBag.Mode = CreateMode;
         var model = new AddUpdateReviewBodyModel();
-        return View(CreateEditReviewBodyView, model);
+        return View(CreateUpdateReviewBodyView, model);
     }
 
     /// <summary>
@@ -62,7 +65,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     public IActionResult CreateReviewBody(AddUpdateReviewBodyModel model)
     {
         ViewBag.Mode = CreateMode;
-        return View(CreateEditReviewBodyView, model);
+        return View(CreateUpdateReviewBodyView, model);
     }
 
     /// <summary>
@@ -75,7 +78,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     {
         if (!ModelState.IsValid)
         {
-            return View(CreateEditReviewBodyView, model);
+            return View(CreateUpdateReviewBodyView, model);
         }
 
         return View(ConfirmChangesView, model);
@@ -89,18 +92,23 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> SubmitReviewBody(AddUpdateReviewBodyModel model)
     {
-        ViewBag.Mode = model.Id == Guid.Empty ? CreateMode : EditMode;
+        ViewBag.Mode = model.Id == Guid.Empty ? CreateMode : UpdateMode;
 
         var reviewBody = model.Adapt<ReviewBodyDto>();
-        reviewBody.CreatedBy = User?.Identity?.Name!;
+
+        if (ViewBag.Mode == "create")
+        {
+            reviewBody.CreatedBy = User?.Identity?.Name!;
+        }
+
         reviewBody.UpdatedBy = User?.Identity?.Name;
         reviewBody.IsActive = true;
 
-        var response = await reviewBodyService.CreateReviewBody(reviewBody);
+        var response = ViewBag.Mode == "create" ?await reviewBodyService.CreateReviewBody(reviewBody) : await reviewBodyService.UpdateReviewBody(reviewBody);
 
         if (response.IsSuccessStatusCode)
         {
-            return View(SuccessMessagesView, model);
+            return ViewBag.Mode == "create" ? View(SuccessMessagesView, model) : RedirectToAction(ViewReviewBodyView, model);
         }
 
         //TODO: WE NEED TO HANDLE ERRORS HERE
@@ -110,8 +118,24 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     [HttpGet]
     public IActionResult SuccessMessage(AddUpdateReviewBodyModel model)
     {
-        ViewBag.Mode = model.Id == Guid.Empty ? CreateMode : EditMode;
+        ViewBag.Mode = model.Id == Guid.Empty ? CreateMode : UpdateMode;
         return View(SuccessMessagesView, model);
+    }
+
+
+    /// <summary>
+    ///     Displays the update review body 
+    /// </summary>
+    public async Task<IActionResult> UpdateReviewBody(Guid id)
+    {
+        var reviewBodyDto = await reviewBodyService.GetReviewBodyById(id);
+
+        ViewBag.Mode = UpdateMode;
+        var model = reviewBodyDto.Content?.FirstOrDefault();
+
+        var addUpdateReviewBodyModel = model.Adapt<AddUpdateReviewBodyModel>();
+
+        return View(CreateUpdateReviewBodyView, addUpdateReviewBodyModel);
     }
 
     [HttpGet]

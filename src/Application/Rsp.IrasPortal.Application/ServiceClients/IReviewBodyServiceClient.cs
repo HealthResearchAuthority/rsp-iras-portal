@@ -25,4 +25,10 @@ public interface IReviewBodyServiceClient
     /// </summary>
     [Post("/reviewbody/create")]
     public Task<IApiResponse> CreateReviewBody(ReviewBodyDto reviewBodyDto);
+
+    /// <summary>
+    ///     Updates a review body in the database
+    /// </summary>
+    [Post("/reviewbody/update")]
+    public Task<IApiResponse> UpdateReviewBody(ReviewBodyDto reviewBodyDto);
 }

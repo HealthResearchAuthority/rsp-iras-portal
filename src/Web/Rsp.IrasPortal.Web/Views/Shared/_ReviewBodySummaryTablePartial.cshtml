@@ -3,7 +3,7 @@
 @model (AddUpdateReviewBodyModel ReviewBodyModel, bool AdditionalInformation)
 
 @{
-    var edit = Model.ReviewBodyModel.Id != Guid.Empty;
+    var update = Model.ReviewBodyModel.Id != Guid.Empty;
     var createReviewBody = "/reviewbody/createreviewbody";
 }
 
@@ -123,9 +123,9 @@
 @{
     async Task RenderEditLink()
     {
-        if (edit)
+        if (update)
         {
-            <a class="govuk-link" asp-route="admin:edituser" asp-route-userId="@Model.ReviewBodyModel.Id">Change</a>
+            <a class="govuk-link" asp-route="rbc:updatereviewbody" asp-route-id="@Model.ReviewBodyModel.Id">Change</a>
         }
         else
         {

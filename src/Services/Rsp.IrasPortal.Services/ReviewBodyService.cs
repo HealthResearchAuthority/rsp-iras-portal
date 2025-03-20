@@ -28,4 +28,11 @@ public class ReviewBodyService(IReviewBodyServiceClient client) : IReviewBodySer
 
         return apiResponse.ToServiceResponse();
     }
+
+    public async Task<ServiceResponse> UpdateReviewBody(ReviewBodyDto reviewBodyDto)
+    {
+        var apiResponse = await client.UpdateReviewBody(reviewBodyDto);
+
+        return apiResponse.ToServiceResponse();
+    }
 }
