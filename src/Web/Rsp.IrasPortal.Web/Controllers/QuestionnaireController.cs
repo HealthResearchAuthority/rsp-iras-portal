@@ -205,6 +205,14 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
                 return this.ServiceError(response);
             }
 
+            if (string.IsNullOrEmpty(sectionId))
+            {
+                return RedirectToAction("MyApplications", "Application"); // Safe fallback
+            }
+
+            // set the active stage for the category
+            SetStage(sectionId);
+
             // if we have questions in the session
             // then return the view with the model
             return View(Index, new QuestionnaireViewModel
@@ -224,9 +232,7 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
     {
         // get the questionnaire from the session
         // and deserialize it
-        var navigation = SetStage(model.CurrentStage);
-
-        var questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(HttpContext.Session.GetString($"{SessionKeys.Questionnaire}:{navigation.CurrentStage}")!)!;
+        var questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(HttpContext.Session.GetString($"{SessionKeys.Questionnaire}:{model.CurrentStage}")!)!;
 
         // update the model with the answeres
         // provided by the applicant
@@ -246,8 +252,27 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
         // with the updated model with answers
         model.Questions = questions;
 
-        // save the responses
+        // validate the questionnaire and save the result in tempdata
+        // this is so we display the validation passed message or not
+        var isValid = await ValidateQuestionnaire(model);
+        ViewData[ViewDataKeys.IsQuestionnaireValid] = isValid;
+
+        // get the application from the session
+        // to get the applicationId
         var application = this.GetApplicationFromSession();
+
+        if (!isValid)
+        {
+            // store the applicationId in the TempData to get in the view
+            TempData.TryAdd(TempDataKeys.ApplicationId, application.ApplicationId);
+
+            // set the previous, current and next stages
+            SetStage(model.CurrentStage!);
+
+            return View(Index, model);
+        }
+
+        // save the responses
         var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
 
         // to save the responses
@@ -306,9 +331,10 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
         TempData.TryAdd(TempDataKeys.ApplicationId, application.ApplicationId);
 
         // set the previous, current and next stages
+        var navigation = SetStage(model.CurrentStage);
 
- 
-
+        // save the questions in the session
+        HttpContext.Session.SetString($"{SessionKeys.Questionnaire}:{navigation.CurrentStage}", JsonSerializer.Serialize(questions));
 
         // user clicks on the SaveAndContinue button
         // so we need to resume from the next stage
@@ -340,9 +366,6 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
 
             });
         }
-
-        // save the questions in the session
-        HttpContext.Session.SetString($"{SessionKeys.Questionnaire}:{navigation.NextStage}", JsonSerializer.Serialize(questions));
 
         // continue rendering the questionnaire if the above conditions are not true
         return RedirectToAction(nameof(DisplayQuestionnaire), new

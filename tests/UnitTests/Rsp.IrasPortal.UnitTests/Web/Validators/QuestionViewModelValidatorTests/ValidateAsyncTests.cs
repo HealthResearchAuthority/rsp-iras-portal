@@ -448,4 +448,43 @@ public class ValidateAsyncTests : TestServiceBase<QuestionViewModelValidator>
         // Assert
         result.ShouldNotHaveAnyValidationErrors();
     }
+
+
+    [Fact]
+    public async Task ValidateAsync_WithDateRule_ShouldAddFailureForInvalidAnswer()
+    {
+        // Arrange
+        var question = new QuestionViewModel
+        {
+            QuestionId = "Q1",
+            Heading = "Planned end date",
+            Section = "Project Details",
+            DataType = "Date",
+            AnswerText = "2025-03-16",
+            IsMandatory = true,
+            Rules =
+            [
+                new RuleDto
+                {
+                    Conditions =
+                    [
+                        new ConditionDto
+                        {
+                            Operator = "DATE",
+                            Value = @"FORMAT:yyyy-MM-dd,FUTUREDATE",
+                            Description = "Invalid date"
+                        }
+                    ]
+                }
+            ]
+        };
+
+        // Act
+        var result = await Sut.TestValidateAsync(CreateValidationContext(question));
+
+        // Assert
+        result
+            .ShouldHaveValidationErrorFor(q => q.AnswerText);
+    }
+
 }

@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using GovUk.Frontend.AspNetCore;
+using Mapster;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.FeatureManagement;
@@ -11,6 +12,7 @@ using Rsp.IrasPortal.Configuration.Dependencies;
 using Rsp.IrasPortal.Configuration.Health;
 using Rsp.IrasPortal.Configuration.HttpClients;
 using Rsp.IrasPortal.Web;
+using Rsp.IrasPortal.Web.Mapping;
 using Rsp.Logging.ActionFilters;
 using Rsp.Logging.Extensions;
 using Rsp.Logging.Interceptors;
@@ -110,6 +112,11 @@ services
 services.AddGovUkFrontend();
 
 services.AddValidatorsFromAssemblyContaining<IWebApp>();
+
+var config = TypeAdapterConfig.GlobalSettings;
+
+// register the mapping configuration
+config.Scan(typeof(MappingRegister).Assembly);
 
 if (await featureManager.IsEnabledAsync(Features.InterceptedLogging))
 {
