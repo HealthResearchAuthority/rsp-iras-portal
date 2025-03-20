@@ -1,17 +1,8 @@
-﻿@model Rsp.IrasPortal.Application.DTOs.ReviewBodyDto
+﻿@model AddUpdateReviewBodyModel
 
 @{
-    ViewData["Title"] = "View review body";
-    var reviewBodyModel = new AddUpdateReviewBodyModel
-            {
-                Id = Model.Id,
-                OrganisationName = Model.OrganisationName,
-                Countries = Model.Countries,
-                Description = Model.Description,
-                EmailAddress = Model.EmailAddress,
-                IsActive = Model.IsActive,
-				UpdatedDate = Model.UpdatedDate
-            };
+	ViewData["Title"] = "View review body";
+	var reviewBodyModel = @Model;
 }
 
 <partial name="_BackNavigation" model="@("rbc:viewreviewbodies", "Back", new Dictionary<string, string>())" />

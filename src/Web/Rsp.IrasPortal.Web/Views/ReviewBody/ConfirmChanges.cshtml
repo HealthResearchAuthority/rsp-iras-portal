@@ -2,8 +2,8 @@
 @model AddUpdateReviewBodyModel
 
 @{
-    var buttonText = ViewBag.Mode == "edit" ? "Save" : "Create profile";
-    var heading = ViewBag.Mode == "edit" ? "Review body profile" : "Check and create review body";
+    var buttonText = ViewBag.Mode == "update" ? "Save" : "Create profile";
+	var heading = ViewBag.Mode == "update" ? "Review body profile" : "Check and create review body";
 }
 
 <div class="govuk-grid-row">
