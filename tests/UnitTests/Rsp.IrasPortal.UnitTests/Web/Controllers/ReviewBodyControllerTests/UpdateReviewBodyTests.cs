@@ -10,9 +10,8 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ReviewBodyControllerTests;
 public class UpdateReviewBodyTests : TestServiceBase<ReviewBodyController>
 {
     [Theory,AutoData]
-    public async Task CreateReviewBody_ShouldReturnViewWithOrderedReviewBodies(
-        List<ReviewBodyDto> reviewBodies,
-        AddUpdateReviewBodyModel addUpdateReviewBodyModel)
+    public async Task UpdateReviewBody_ShouldReturnViewWithOrderedReviewBodies(
+        List<ReviewBodyDto> reviewBodies)
     {
         // Arrange
         var serviceResponse = new ServiceResponse<IEnumerable<ReviewBodyDto>>
