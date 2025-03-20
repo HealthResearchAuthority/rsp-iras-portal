@@ -1,4 +1,6 @@
 using System.Text.Json;
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -88,6 +90,11 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
         context.Items[ContextItemKeys.RespondentId] = "RespondentId1";
 
         Sut.ControllerContext = new ControllerContext { HttpContext = context };
+
+        Mocker
+            .GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
 
         // Act
         var result = await Sut.SaveResponses(model, submit: bool.TrueString);
@@ -187,6 +194,11 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
         context.Items[ContextItemKeys.RespondentId] = "RespondentId1";
 
         Sut.ControllerContext = new ControllerContext { HttpContext = context };
+        
+        Mocker
+            .GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
 
         // Act
         var result = await Sut.SaveResponses(model, categoryId, submit, saveAndContinue);
@@ -278,6 +290,11 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
         context.Items[ContextItemKeys.RespondentId] = "RespondentId1";
 
         Sut.ControllerContext = new ControllerContext { HttpContext = context };
+
+        Mocker
+            .GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
 
         // Act
         var result = await Sut.SaveResponses(model, categoryId, submit, saveAndContinue);
@@ -374,6 +391,11 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
         context.Items[ContextItemKeys.RespondentId] = "RespondentId1";
 
         Sut.ControllerContext = new ControllerContext { HttpContext = context };
+
+        Mocker
+            .GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
 
         // Act
         var result = await Sut.SaveResponses(model, categoryId, bool.FalseString, bool.FalseString);
@@ -472,6 +494,11 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
         context.Items[ContextItemKeys.RespondentId] = "RespondentId1";
 
         Sut.ControllerContext = new ControllerContext { HttpContext = context };
+
+        Mocker
+            .GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
 
         // Act
         var result = await Sut.SaveResponses(model, categoryId, submit, saveAndContinue);

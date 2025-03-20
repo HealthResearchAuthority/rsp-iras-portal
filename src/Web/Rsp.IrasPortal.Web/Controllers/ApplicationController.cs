@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Diagnostics;
 using System.Security.Claims;
@@ -24,9 +25,52 @@ public class ApplicationController(IApplicationsService applicationsService, IVa
 
     [AllowAnonymous]
     [Route("/", Name = "app:welcome")]
-    public IActionResult Welcome()
+    public IActionResult Welcome() => View(nameof(Index));
+
+    public async Task<IActionResult> StartProjectRecord()
     {
-        return View(nameof(Index));
+        var respondent = GetRespondentFromContext();
+
+        var name = $"{respondent.FirstName} {respondent.LastName}";
+
+        var irasApplicationRequest = new IrasApplicationRequest
+        {
+            Title = string.Empty,
+            Description = string.Empty,
+            CreatedBy = name,
+            UpdatedBy = name,
+            StartDate = DateTime.Now,
+            Respondent = respondent
+        };
+
+        var applicationsServiceResponse = await applicationsService.CreateApplication(irasApplicationRequest);
+
+        // return the view if successfull
+        if (!applicationsServiceResponse.IsSuccessStatusCode)
+        {
+            // return the generic error page
+            return this.ServiceError(applicationsServiceResponse);
+        }
+
+        var irasApplication = applicationsServiceResponse.Content!;
+
+        // save the application in session
+        HttpContext.Session.SetString(SessionKeys.Application, JsonSerializer.Serialize(irasApplication));
+
+        string categoryId = string.Empty;
+        var questionCategoriesServiceResponse = await questionSetService.GetQuestionCategories();
+
+        if (questionCategoriesServiceResponse is { IsSuccessStatusCode: true, Content: not null })
+        {
+            categoryId = questionCategoriesServiceResponse.Content.First().CategoryId;
+        }
+        
+        // continue to resume for the categoryId & applicationId
+        return RedirectToAction(nameof(QuestionnaireController.Resume), "Questionnaire", new
+        {
+            categoryId,
+            irasApplication.ApplicationId
+        });
     }
 
     public IActionResult StartNewApplication()
@@ -36,7 +80,7 @@ public class ApplicationController(IApplicationsService applicationsService, IVa
         return View(ApplicationInfo, (new ApplicationInfoViewModel(), "create"));
     }
 
-    public async Task<IActionResult> EditApplication(string applicationId)
+    public async Task<IActionResult> EditApplication([FromQuery, Required] string applicationId)
     {
         // get the pending application by id
         var applicationsServiceResponse = await applicationsService.GetApplication(applicationId);
@@ -61,6 +105,8 @@ public class ApplicationController(IApplicationsService applicationsService, IVa
         return View(ApplicationInfo, (applicationInfo, "edit"));
     }
 
+    public IActionResult CreateApplication() => View(nameof(CreateApplication));
+
     [HttpPost]
     public async Task<IActionResult> CreateApplication(ApplicationInfoViewModel model)
     {
@@ -81,16 +127,7 @@ public class ApplicationController(IApplicationsService applicationsService, IVa
             return View(ApplicationInfo, (model, "create"));
         }
 
-        var respondent = new RespondentDto
-        {
-            RespondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!,
-            EmailAddress = (HttpContext.Items[ContextItemKeys.Email] as string)!,
-            FirstName = (HttpContext.Items[ContextItemKeys.FirstName] as string)!,
-            LastName = (HttpContext.Items[ContextItemKeys.LastName] as string)!,
-            Role = string.Join(',', User.Claims
-                       .Where(claim => claim.Type == ClaimTypes.Role)
-                       .Select(claim => claim.Value))
-        };
+        var respondent = GetRespondentFromContext();
 
         var name = $"{respondent.FirstName} {respondent.LastName}";
 
@@ -273,5 +310,19 @@ public class ApplicationController(IApplicationsService applicationsService, IVa
     public IActionResult Error()
     {
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+    }
+
+    private RespondentDto GetRespondentFromContext()
+    {
+        return new RespondentDto
+        {
+            RespondentId = HttpContext.Items[ContextItemKeys.RespondentId]?.ToString() ?? string.Empty,
+            EmailAddress = HttpContext.Items[ContextItemKeys.Email]?.ToString() ?? string.Empty,
+            FirstName = HttpContext.Items[ContextItemKeys.FirstName]?.ToString() ?? string.Empty,
+            LastName = HttpContext.Items[ContextItemKeys.LastName]?.ToString() ?? string.Empty,
+            Role = string.Join(',', User.Claims
+                       .Where(claim => claim.Type == ClaimTypes.Role)
+                       .Select(claim => claim.Value))
+        };
     }
 }

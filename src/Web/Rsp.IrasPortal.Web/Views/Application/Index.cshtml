@@ -18,6 +18,21 @@
             </div>
 
         </authorized>
+        <authorized auth-params="@new(Roles:"user")">
+
+			<div class="govuk-grid-row">
+				<div class="govuk-grid-column-two-thirds">
+					<h2 class="govuk-heading-l" id="title">My research</h2>
+				</div>
+			</div>
+
+            <p class="govuk-body">
+                You don't have any projects available in the new service
+            </p>
+
+            <a class="govuk-button govuk-button--secondary" asp-route="app:createapplication">Create project record</a>
+
+        </authorized>
 
         <authorized auth-params="@new(Roles:"user,admin,reviewer")">
 

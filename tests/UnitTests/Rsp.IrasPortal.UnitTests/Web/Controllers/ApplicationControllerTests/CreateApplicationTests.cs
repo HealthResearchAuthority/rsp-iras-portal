@@ -15,6 +15,17 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApplicationControllerTests;
 
 public class CreateApplicationTests : TestServiceBase<ApplicationController>
 {
+    [Fact]
+    public void CreateApplication_ReturnsViewResult_WithCreateApplicationViewName()
+    {
+        // Act
+        var result = Sut.CreateApplication();
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.ViewName.ShouldBe("CreateApplication");
+    }
+
     [Theory, AutoData]
     public async Task CreateApplication_ValidModel_ReturnsNewApplicationView(ApplicationInfoViewModel model)
     {
