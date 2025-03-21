@@ -126,7 +126,6 @@
 			<tr class="govuk-table__row">
 				<td class="govuk-table__cell"><b>Committee</b></td>
 				<td class="govuk-table__cell">
-					
 				</td>
 				<td class="govuk-table__cell govuk-table__cell--numeric">
 					@{
@@ -191,18 +190,22 @@
 		<tr class="govuk-table__row">
 			<td class="govuk-table__cell"><b>Audit</b></td>
 			<td class="govuk-table__cell">
-				<a class="govuk-link govuk-link" href="">View this user's audit trail</a>
+				<a class="govuk-link govuk-link" href="#">View this user's audit trail</a>
 			</td>
 			<td class="govuk-table__cell govuk-table__cell--numeric"></td>
 		</tr>
 
-		<tr class="govuk-table__row">
-			<td class="govuk-table__cell"><b>Last updated</b></td>
-			<td class="govuk-table__cell">
-				@(Model.LastUpdated.HasValue ? Model.LastUpdated.Value.ToString("dd MMMM yyyy HH:mm") : string.Empty)
-			</td>
-			<td class="govuk-table__cell govuk-table__cell--numeric"></td>
-		</tr>
+		@if (edit)
+		{
+			<tr class="govuk-table__row">
+				<td class="govuk-table__cell"><b>Last updated</b></td>
+				<td class="govuk-table__cell">
+					@(Model.LastUpdated.HasValue ? Model.LastUpdated.Value.ToString("dd MMMM yyyy HH:mm") : string.Empty)
+				</td>
+				<td class="govuk-table__cell govuk-table__cell--numeric"></td>
+			</tr>
+		}
+
 
 	</tbody>
 </table>
@@ -217,7 +220,7 @@
 		}
 		else
 		{
-			<button class="govuk-button-hyperlink" type="submit" formaction="@editNewUserUrl">Change</button>
+			<button class="govuk-link-button" type="submit" formaction="@editNewUserUrl">Change</button>
 		}
 	}
 }

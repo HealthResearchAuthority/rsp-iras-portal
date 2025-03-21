@@ -2,6 +2,7 @@
 @model UserViewModel
 @{
 	ViewBag.Active = "manageUsers";
+	ViewBag.Title = "Manage users";
 }
 <div class="govuk-grid-row">
 	<div class="govuk-grid-column-two-thirds">
@@ -15,6 +16,6 @@
 			has been sent an email confirming their account details. Their status is now active.
 		</p>
 		<p><a asp-route="admin:createuser">Add another user</a></p>
-		<p><a asp-route="admin:users">Back to Manage users</a></p>
+		<p><a asp-route="admin:users">Back to Manage Users</a></p>
 	</div>
 </div>

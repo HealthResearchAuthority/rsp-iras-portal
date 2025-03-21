@@ -230,7 +230,7 @@ public class UsersController(IUserManagementService userManagementService, IVali
         return mode switch
         {
             CreateMode => View(CreateUserSuccessMessage, model),
-            _ => RedirectToAction(nameof(Index))
+            _ => RedirectToAction(nameof(ViewUser), new { userId = model.Id, email = model.Email })
         };
     }
 
@@ -477,7 +477,6 @@ public class UsersController(IUserManagementService userManagementService, IVali
         {
             var createRequest = model.Adapt<CreateUserRequest>();
             createRequest.Status = IrasUserStatus.Active;
-            createRequest.LastUpdated = DateTime.UtcNow;
 
             return await userManagementService.CreateUser(createRequest);
         }

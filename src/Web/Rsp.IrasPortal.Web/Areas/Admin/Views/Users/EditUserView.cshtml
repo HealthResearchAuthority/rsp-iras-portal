@@ -10,6 +10,7 @@
 	var submitActionName = ViewBag.Mode == "edit" ? "admin:submituser" : "admin:confirmusersubmission";
 
 	ViewBag.Active = "manageUsers";
+	ViewBag.Title = "Manage users";
 }
 @if (ViewBag.Mode == "edit")
 {
@@ -35,19 +36,19 @@ else
 			</div>
 
 			<div class="govuk-form-group @(ViewData.ModelState["FirstName"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
-				<label class="govuk-label" for="FirstName"><b>First Name</b></label>
+				<label class="govuk-label" for="FirstName"><b>First name</b></label>
 				<span class="govuk-error-message" asp-validation-for="FirstName"></span>
 				<input class="govuk-input govuk-!-width-one-half @(ViewData.ModelState["FirstName"]?.Errors.Count > 0 ? "govuk-input--error" : "")" id="FirstName" name="FirstName" type="text" asp-for="FirstName" value="@(Model.FirstName ?? string.Empty)" />
 			</div>
 
 			<div class="govuk-form-group @(ViewData.ModelState["LastName"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
-				<label class="govuk-label" for="LastName"><b>Last Name</b></label>
+				<label class="govuk-label" for="LastName"><b>Last name</b></label>
 				<span class="govuk-error-message" asp-validation-for="LastName"></span>
 				<input class="govuk-input govuk-!-width-one-half" id="LastName" name="LastName" type="text" asp-for="LastName" value="@(Model.LastName ?? string.Empty)">
 			</div>
 
 			<div class="govuk-form-group @(ViewData.ModelState["Email"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
-				<label class="govuk-label" for="Email"><b>Email</b></label>
+				<label class="govuk-label" for="Email"><b>Email address</b></label>
 				<span class="govuk-error-message" asp-validation-for="Email"></span>
 				<input class="govuk-input govuk-!-width-two-thirds" id="Email" name="Email" type="email" asp-for="Email" value="@(Model.Email ?? string.Empty)">
 			</div>
