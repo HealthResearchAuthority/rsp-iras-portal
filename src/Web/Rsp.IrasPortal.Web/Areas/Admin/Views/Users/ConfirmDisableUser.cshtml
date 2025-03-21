@@ -1,6 +1,11 @@
 ﻿@using Rsp.IrasPortal.Web.Areas.Admin.Models
 @model UserViewModel;
 
+@{
+	ViewBag.Active = "manageUsers";
+	ViewBag.Title = "Manage users";
+}
+
 <a asp-route="admin:viewuser" asp-all-route-data="@(new Dictionary<string, string>{{"email", Model.Email}, {"userId", Model.Id!}})" class="govuk-back-link">Back</a>
 
 <div class="govuk-grid-row">
