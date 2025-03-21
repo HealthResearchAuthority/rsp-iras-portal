@@ -31,4 +31,10 @@ public interface IReviewBodyServiceClient
     /// </summary>
     [Post("/reviewbody/update")]
     public Task<IApiResponse> UpdateReviewBody(ReviewBodyDto reviewBodyDto);
+
+    /// <summary>
+    /// Gets review bodies by Id
+    /// </summary>
+    [Put("/reviewbody/disable/{id}")]
+    public Task<IApiResponse<ReviewBodyDto>> DisableReviewBody(Guid id);
 }

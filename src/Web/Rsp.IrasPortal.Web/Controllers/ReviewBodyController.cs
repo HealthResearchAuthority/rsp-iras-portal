@@ -15,11 +15,13 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     private const string ViewReviewBodyView = nameof(ViewReviewBody);
     private const string ConfirmChangesView = nameof(ConfirmChanges);
     private const string SuccessMessagesView = nameof(SuccessMessage);
-    private const string DisableMessagesView = nameof(SuccessMessage);
+    private const string ConfirmStatusView = nameof(ReviewBodyStatusChanges);
+
 
     private const string UpdateMode = "update";
     private const string CreateMode = "create";
     private const string DisableMode = "disable";
+    private const string EnableMode = "enable";
 
     /// <summary>
     /// Displays a list of review bodies
@@ -95,7 +97,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
 
         var reviewBody = model.Adapt<ReviewBodyDto>();
 
-        if (ViewBag.Mode == "create")
+        if (ViewBag.Mode == CreateMode)
         {
             reviewBody.CreatedBy = User?.Identity?.Name!;
         }
@@ -103,11 +105,15 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
         reviewBody.UpdatedBy = User?.Identity?.Name;
         reviewBody.IsActive = true;
 
-        var response = ViewBag.Mode == "create" ?await reviewBodyService.CreateReviewBody(reviewBody) : await reviewBodyService.UpdateReviewBody(reviewBody);
+        var response = ViewBag.Mode == CreateMode
+            ? await reviewBodyService.CreateReviewBody(reviewBody)
+            : await reviewBodyService.UpdateReviewBody(reviewBody);
 
         if (response.IsSuccessStatusCode)
         {
-            return ViewBag.Mode == "create" ? View(SuccessMessagesView, model) : RedirectToAction(ViewReviewBodyView, model);
+            return ViewBag.Mode == CreateMode
+                ? View(SuccessMessagesView, model)
+                : RedirectToAction(ViewReviewBodyView, model);
         }
 
         //TODO: WE NEED TO HANDLE ERRORS HERE
@@ -137,11 +143,48 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
         return View(CreateUpdateReviewBodyView, addUpdateReviewBodyModel);
     }
 
-    [HttpGet]
-    public IActionResult DisableReviewBody(AddUpdateReviewBodyModel model)
+    /// <summary>
+    ///  Displays the update review body 
+    /// </summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DisableReviewBody(Guid id)
     {
-        //TODO: NEED TO IMPLEMENT PAGES
+        var reviewBodyDto = await reviewBodyService.GetReviewBodyById(id);
+
         ViewBag.Mode = DisableMode;
-        return View(DisableMessagesView, model);
+        var model = reviewBodyDto.Content?.FirstOrDefault();
+
+        // SET MODEL TO INACTIVE BEFORE CONFIRM
+        model.IsActive = false;
+
+        var addUpdateReviewBodyModel = model.Adapt<AddUpdateReviewBodyModel>();
+        return View(ConfirmStatusView, addUpdateReviewBodyModel);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult ReviewBodyStatusChanges(AddUpdateReviewBodyModel model)
+    {
+        ViewBag.Mode = model.IsActive ? EnableMode : DisableMode;
+        return View(ConfirmStatusView, model);
+    }
+
+    /// <summary>
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ConfirmStatusUpdate(AddUpdateReviewBodyModel model)
+    {
+        ViewBag.Mode = model.IsActive ? EnableMode : DisableMode;
+
+        //TODO: Call enable review body here when we have implemented it based on viewbag mode.
+        var response = await reviewBodyService.DisableReviewBody(model.Id);
+
+        var addUpdateReviewBodyModel = response.Adapt<AddUpdateReviewBodyModel>();
+
+        return View(SuccessMessagesView, addUpdateReviewBodyModel);
     }
 }
