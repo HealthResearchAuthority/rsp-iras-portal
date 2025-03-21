@@ -35,4 +35,11 @@ public class ReviewBodyService(IReviewBodyServiceClient client) : IReviewBodySer
 
         return apiResponse.ToServiceResponse();
     }
+
+    public async Task<ServiceResponse> DisableReviewBody(Guid id)
+    {
+        var apiResponse = await client.DisableReviewBody(id);
+
+        return apiResponse.ToServiceResponse();
+    }
 }

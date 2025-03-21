@@ -1,0 +1,29 @@
+﻿@model AddUpdateReviewBodyModel
+
+@{
+	ViewData["Title"] = ViewBag.Mode == "disable" ? "Disable review body" : "Enable review body";
+    var buttonText = "Confirm";
+	var heading = ViewBag.Mode == "disable" ? "Confirm that you want to disable" : "Confirm that you want to enable";
+	var submitActionName = "rbc:confirmstatusupdate";
+}
+
+<form method="get">
+    <partial name="_BackNavigation" model="@("rbc:viewreviewbody", "Back", new Dictionary<string, string>(){{"Id", Model.Id.ToString()}})" />
+</form>
+
+
+<h1 style="margin-top:30px" class="govuk-heading-l">@heading @Model.OrganisationName</h1>
+
+<p class="govuk-hint">
+    You are about to disable this review body
+</p>
+
+<form method="post">
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="IsActive" />
+    @{
+        ViewBag.Style = "govuk-button govuk-button--warning";
+    }
+    <partial name="_SubmitButton" model="@(submitActionName, buttonText, new Dictionary<string, string>())"/>
+</form>
+

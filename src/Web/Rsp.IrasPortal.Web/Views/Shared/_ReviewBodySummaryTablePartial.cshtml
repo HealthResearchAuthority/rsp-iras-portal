@@ -1,5 +1,6 @@
 ﻿﻿@using Rsp.IrasPortal.Application.Constants
 @using System.Globalization
+@using Rsp.IrasPortal.Web.Helpers
 @model (AddUpdateReviewBodyModel ReviewBodyModel, bool AdditionalInformation)
 
 @{
@@ -110,7 +111,7 @@
                     <b>Last updated</b>
                 </td>
                 <td class="govuk-table__cell">
-					@Model.ReviewBodyModel.UpdatedDate.ToString("D", new CultureInfo("en-GB")) @Model.ReviewBodyModel.UpdatedDate.ToString("HH:mm", new CultureInfo("en-GB"))
+                   @DateHelper.GetFormattedDateWithOrdinal(Model.ReviewBodyModel.UpdatedDate)
 					<input type="hidden" asp-for="ReviewBodyModel.UpdatedDate" name="UpdatedDate" value="@Model.ReviewBodyModel.UpdatedDate" />
                 </td>
                 <td class="govuk-table__cell govuk-table__cell--numeric">
@@ -135,3 +136,5 @@
         }
     }
 }
+
+
