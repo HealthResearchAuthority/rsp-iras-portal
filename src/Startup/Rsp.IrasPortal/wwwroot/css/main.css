@@ -276,3 +276,25 @@ button.govuk-link {
 .govuk-back-link-button--inverse:before {
   border-color: currentcolor;
 }
+
+.line-break-anywhere {
+  line-break: anywhere;
+}
+
+.govuk-table--name {
+  width: 16%;
+}
+
+.govuk-table--email {
+  width: 25%;
+}
+
+@media (max-width: 550px) {
+  .govuk-table-wrapper {
+    overflow-x: scroll;
+  }
+}
+
+.govuk-table-users {
+  min-width: 550px;
+}
