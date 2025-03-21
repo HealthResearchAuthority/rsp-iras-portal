@@ -13,6 +13,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     private const string Error = nameof(Error);
     private const string CreateUpdateReviewBodyView = nameof(CreateReviewBody);
     private const string ViewReviewBodyView = nameof(ViewReviewBody);
+    private const string ViewReviewBodiesView = nameof(ViewReviewBodies);
     private const string ConfirmChangesView = nameof(ConfirmChanges);
     private const string SuccessMessagesView = nameof(SuccessMessage);
     private const string ConfirmStatusView = nameof(ReviewBodyStatusChanges);
@@ -155,11 +156,17 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
         ViewBag.Mode = DisableMode;
         var model = reviewBodyDto.Content?.FirstOrDefault();
 
+        if (model == null)
+        {
+            return RedirectToAction(ViewReviewBodiesView);
+        }
+
         // SET MODEL TO INACTIVE BEFORE CONFIRM
         model.IsActive = false;
 
         var addUpdateReviewBodyModel = model.Adapt<AddUpdateReviewBodyModel>();
         return View(ConfirmStatusView, addUpdateReviewBodyModel);
+
     }
 
     [HttpPost]

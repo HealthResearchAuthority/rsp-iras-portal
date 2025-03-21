@@ -1,4 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.Responses;
+using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Controllers;
 using Rsp.IrasPortal.Web.Models;
 
@@ -8,14 +11,55 @@ public class DisableReviewBodyTests : TestServiceBase<ReviewBodyController>
 
 {
     [Theory, AutoData]
-    public void DisableReviewBody_WithValidModel_ShouldReturnDisableReviewBodyView(Guid id)
+    public async Task DisableReviewBody_WithValidModel_ShouldReturnDisableReviewBodyView(List<ReviewBodyDto> reviewBodies)
     {
-        // Act
-        //var result = Sut.DisableReviewBody(id);
+        //Act
+        // Arrange
+        var serviceResponse = new ServiceResponse<IEnumerable<ReviewBodyDto>>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = reviewBodies
+        };
 
-        //// Assert
-        //var viewResult = result.ShouldBeOfType<ViewResult>();
-        //viewResult.ViewName.ShouldBe("SuccessMessage");
-        //viewResult.Model.ShouldBeEquivalentTo(id);
+        Mocker.GetMock<IReviewBodyService>()
+            .Setup(s => s.GetReviewBodyById(It.IsAny<Guid>()))
+            .ReturnsAsync(serviceResponse);
+
+        Mocker.GetMock<IReviewBodyService>()
+            .Setup(s => s.DisableReviewBody(It.IsAny<Guid>()))
+            .ReturnsAsync(serviceResponse);
+
+        // Act
+        var result = await Sut.DisableReviewBody(reviewBodies[0].Id);
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.Model.ShouldBeAssignableTo<AddUpdateReviewBodyModel>();
+    }
+
+    [Theory, AutoData]
+    public async Task DisableReviewBody_WithValidModel_ShouldReturnManageBodiesView(List<ReviewBodyDto> reviewBodies)
+    {
+        //Act
+        // Arrange
+        var serviceResponse = new ServiceResponse<IEnumerable<ReviewBodyDto>>
+        {
+            StatusCode = HttpStatusCode.OK,
+        };
+
+        Mocker.GetMock<IReviewBodyService>()
+            .Setup(s => s.GetReviewBodyById(It.IsAny<Guid>()))
+            .ReturnsAsync(serviceResponse);
+
+        Mocker.GetMock<IReviewBodyService>()
+            .Setup(s => s.DisableReviewBody(It.IsAny<Guid>()))
+            .ReturnsAsync(serviceResponse);
+
+
+        // Act
+        var result = await Sut.DisableReviewBody(reviewBodies[0].Id);
+
+        // Assert
+         result.ShouldBeOfType<RedirectToActionResult>();
     }
 }
