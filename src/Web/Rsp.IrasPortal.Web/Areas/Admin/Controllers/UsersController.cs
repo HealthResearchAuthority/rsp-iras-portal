@@ -210,7 +210,7 @@ public class UsersController(IUserManagementService userManagementService, IVali
         }
 
         // assign role
-        if (!string.IsNullOrEmpty(model.Role))
+        if (!string.IsNullOrEmpty(model.UserRoles))
         {
             var roleResponse = await UpdateUserRoles(model);
 
@@ -499,6 +499,6 @@ public class UsersController(IUserManagementService userManagementService, IVali
             rolesToRemove = existingUser?.Content?.Roles != null ? string.Join(',', existingUser.Content.Roles) : null;
         }
 
-        return await userManagementService.UpdateRoles(model.Email, rolesToRemove, model.Role!);
+        return await userManagementService.UpdateRoles(model.Email, rolesToRemove, model.UserRoles!);
     }
 }

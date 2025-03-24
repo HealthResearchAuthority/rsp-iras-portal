@@ -45,18 +45,19 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
             .MaximumLength(250)
             .WithMessage(MaxCharactersErrorMessage);
 
-        RuleFor(x => x.Role)
+        RuleFor(x => x.UserRoles)
             .NotEmpty()
             .WithMessage(MandatoryErrorMessage);
 
         RuleFor(x => x.Country)
             .NotEmpty()
             .WithMessage(ConditionalMandatoryErrorMessage)
-            .When(x => x.Role == "operations");
+            .When(x => x.UserRoles != null && x.UserRoles.Any(role => role.RoleName == "operations"));
 
         RuleFor(x => x.AccessRequired)
             .NotEmpty()
             .WithMessage(ConditionalMandatoryErrorMessage)
-            .When(x => x.Role == "operations");
+            .When(x => x.UserRoles != null && x.UserRoles.Any(role => role.RoleName == "operations"));
+
     }
 }
