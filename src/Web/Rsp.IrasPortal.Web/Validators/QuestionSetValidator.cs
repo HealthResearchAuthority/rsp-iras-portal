@@ -11,6 +11,6 @@ public class QuestionSetValidator : AbstractValidator<QuestionnaireViewModel>
     {
         // Validate all questions in the questionnaire
         RuleForEach(x => x.Questions)
-            .SetValidator(new QuestionViewModelValidator());
+            .SetValidator(new QuestionViewModelDataValidator());
     }
 }
