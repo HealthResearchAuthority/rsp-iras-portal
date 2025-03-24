@@ -71,19 +71,19 @@
 				<input class="govuk-input govuk-!-width-three-quarters" id="JobTitle" name="JobTitle" type="text" asp-for="JobTitle" value="@(Model.JobTitle ?? string.Empty)">
 			</div>
 
-			<div class="govuk-form-group @(ViewData.ModelState["Role"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
-				<label class="govuk-label" for="Role">
+			<div class="govuk-form-group @(ViewData.ModelState["UserRoles"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+				<label class="govuk-label" for="UserRoles">
 					<b>Role</b>
 				</label>
-				<span class="govuk-error-message" asp-validation-for="Role"></span>
-				<select onchange="changeRoleSelection(this.value)" class="role-list-dropdown govuk-select govuk-!-width-three-quarters @(ViewData.ModelState["Role"]?.Errors.Count > 0 ? "govuk-select--error" : "")" id="Role" name="Role">
+				<span class="govuk-error-message" asp-validation-for="UserRoles"></span>
+				<select onchange="changeRoleSelection(this.value)" class="role-list-dropdown govuk-select govuk-!-width-three-quarters @(ViewData.ModelState["UserRoles"]?.Errors.Count > 0 ? "govuk-select--error" : "")" id="UserRoles" name="UserRoles">
 					<option></option>
 					@if (Model.AvailableUserRoles != null)
 					{
 						foreach (var role in Model.AvailableUserRoles.Select(r => r.Name))
 						{
 							var userFiendleyName = role.Replace("_", " ");
-							<option selected=@(Model.Role == role ? "selected" : null) value="@role">@userFiendleyName</option>
+							<option selected=@(Model.UserRoles == role ? "selected" : null) value="@role">@userFiendleyName</option>
 						}
 					}
 
