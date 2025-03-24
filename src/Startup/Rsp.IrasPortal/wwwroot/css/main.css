@@ -152,6 +152,24 @@ button.govuk-link {
   cursor: pointer;
   font: inherit;
   padding: 0;
+  text-underline-offset: 0.1578em;
+}
+.govuk-link-button:hover {
+  color: #003078;
+  text-decoration-thickness: max(3px, 0.1875rem, 0.12em);
+  -webkit-text-decoration-skip-ink: none;
+  text-decoration-skip-ink: none;
+  -webkit-text-decoration-skip: none;
+  text-decoration-skip: none;
+}
+.govuk-link-button:focus {
+  outline: 3px solid transparent;
+  background-color: #fd0;
+  box-shadow: 0 -2px #fd0, 0 4px #0b0c0c;
+  text-decoration: none;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  color: #0b0c0c;
 }
 
 .govuk-back-link-button {
