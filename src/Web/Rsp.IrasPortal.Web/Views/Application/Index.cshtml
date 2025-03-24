@@ -1,24 +1,24 @@
 ﻿@using Rsp.IrasPortal.Application.DTOs.Responses;
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-full">
+	<div class="govuk-grid-column-full">
 
-        <authorized auth-params="@new(ShowWhenAuthenticated: false)">
+		<authorized auth-params="@new(ShowWhenAuthenticated: false)">
 
-            <div class="govuk-body">
-                <p>
-                    To make changes to an approved project, Sign In using the following link
-                </p>
-                <a class="gem-c-button govuk-button govuk-button--start" asp-route="auth:signin">
-                    Sign In
-                    <svg class="govuk-button__start-icon govuk-!-display-none-print" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19" viewBox="0 0 33 40" focusable="false" aria-hidden="true">
-                        <path fill="currentColor" d="M0 0h13l20 20-20 20H0l20-20z"></path>
-                    </svg>
-                </a>
-            </div>
+			<div class="govuk-body">
+				<p>
+					To make changes to an approved project, Sign In using the following link
+				</p>
+				<a class="gem-c-button govuk-button govuk-button--start" asp-route="auth:signin">
+					Sign In
+					<svg class="govuk-button__start-icon govuk-!-display-none-print" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19" viewBox="0 0 33 40" focusable="false" aria-hidden="true">
+						<path fill="currentColor" d="M0 0h13l20 20-20 20H0l20-20z"></path>
+					</svg>
+				</a>
+			</div>
 
-        </authorized>
-        <authorized auth-params="@new(Roles:"user")">
+		</authorized>
+		<authorized auth-params="@new(Roles:"user,admin,reviewer")">
 
 			<div class="govuk-grid-row">
 				<div class="govuk-grid-column-two-thirds">
@@ -26,22 +26,18 @@
 				</div>
 			</div>
 
-            <p class="govuk-body">
-                You don't have any projects available in the new service
-            </p>
+			<p class="govuk-body">
+				You don't have any projects available in the new service
+			</p>
 
-            <a class="govuk-button govuk-button--secondary" asp-route="app:createapplication">Create project record</a>
+			<a class="govuk-button govuk-button--secondary" asp-route="app:createapplication">Create project record</a>
 
-        </authorized>
+			<h1 class="govuk-heading-l">System administration</h1>
+			<h2 class="govuk-heading-m">Actions</h2>
 
-        <authorized auth-params="@new(Roles:"user,admin,reviewer")">
+			<partial name="_ActionItem" model="@("Manage review bodies","View, add, disable or edit review body records.", "rbc:viewreviewbodies")" />
+			<partial name="_ActionItem" model="@("Manage users","View, add, disable or edit review individual user records.", "admin:users")" />
 
-            <h1 class="govuk-heading-l">System administration</h1>
-            <h2 class="govuk-heading-m">Actions</h2>
-
-            <partial name="_ActionItem" model="@("Manage review bodies","View, add, disable or edit review body records.", "rbc:viewreviewbodies")" />
-            <partial name="_ActionItem" model="@("Manage users","View, add, disable or edit review individual user records.", "admin:users")" />
-
-        </authorized>
-    </div>
+		</authorized>
+	</div>
 </div>

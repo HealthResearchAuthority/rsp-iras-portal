@@ -10,7 +10,7 @@
 	var previousStage = TempData[TempDataKeys.PreviousStage] as string;
 	var previousCategory = TempData[TempDataKeys.PreviousCategory] as string;
 	var currentStage = TempData[TempDataKeys.CurrentStage] as string;
-	var errorSummaryTitle = "You need to complete these questions before you can continue::";
+	var errorSummaryTitle = "There is a problem";
 
 	Model.CurrentStage = currentStage;
 
@@ -86,13 +86,13 @@
 }
 
 @{
-	var navModel = string.IsNullOrEmpty(previousStage) ? 
+	var navModel = string.IsNullOrEmpty(previousStage) ?
 						("app:createapplication", "Back", new Dictionary<string, string>()) :
 						("qnc:displayquestionnaire", "Back", new Dictionary<string, string>
-                        { 
-                            { "categoryId", previousCategory },
-                            { "sectionId", previousStage }
-                        });
+								{
+							{ "categoryId", previousCategory },
+							{ "sectionId", previousStage }
+								});
 }
 <partial name="_BackNavigation" model="@navModel" />
 
@@ -106,8 +106,6 @@
 			</div>
 		</div>
 	}
-
-	<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
 
 	<div class="govuk-form-group">
 
@@ -131,6 +129,8 @@
 			</govuk-fieldset-legend>
 			<br />
 			<br />
+
+			<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
 
 			@{
 				var questions = Model.Questions;
@@ -290,7 +290,18 @@
 									BuildValidationMessage(question.Rules, errorKey, validationMessage);
 								}
 
-								@Html.TextBoxFor(model => model.Questions[index].AnswerText, new { id = question.QuestionId + "_Text", @class = "govuk-input" })
+								@{
+									var sizeRule = rules.FirstOrDefault(x => x.Conditions.SingleOrDefault(y => y.Operator == "SIZE") != null);
+									var condition = sizeRule?.Conditions.FirstOrDefault(x => x.Operator == "SIZE");
+									var conditionValue = condition?.Value;
+
+									var cssClass = "govuk-input govuk-!-width-two-thirds";
+									if (!string.IsNullOrEmpty(conditionValue))
+									{
+										cssClass = "govuk-input-nowidth";
+									}
+								}
+								@Html.TextBoxFor(model => model.Questions[index].AnswerText, new { id = question.QuestionId + "_Text", @class = cssClass, size = conditionValue ?? "0" })
 							</div>
 						}
 						break;
@@ -366,7 +377,7 @@
 							fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
 
 							<div id="Questions[@index].SelectedOption"
-							class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")"
+								 class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")"
 							@parents @questionId>
 								<govuk-fieldset>
 									<govuk-fieldset-legend class="govuk-fieldset__legend--s">
