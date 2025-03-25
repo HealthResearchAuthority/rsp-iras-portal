@@ -8,6 +8,7 @@ using Rsp.IrasPortal.Web.Models;
 namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "rbc:[action]")]
+[Authorize(Policy = "IsAdmin")]
 public class ReviewBodyController(IReviewBodyService reviewBodyService) : Controller
 {
     private const string Error = nameof(Error);
