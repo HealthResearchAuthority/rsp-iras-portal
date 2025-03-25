@@ -1,7 +1,7 @@
 ﻿using Mapster;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Models;
 
@@ -25,7 +25,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     private const string EnableMode = "enable";
 
     /// <summary>
-    /// Displays a list of review bodies
+    ///     Displays a list of review bodies
     /// </summary>
     public async Task<IActionResult> ViewReviewBodies()
     {
@@ -35,7 +35,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     }
 
     /// <summary>
-    /// Displays a single review body
+    ///     Displays a single review body
     /// </summary>
     public async Task<IActionResult> ViewReviewBody(Guid id)
     {
@@ -130,7 +130,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
 
 
     /// <summary>
-    ///     Displays the update review body 
+    ///     Displays the update review body
     /// </summary>
     public async Task<IActionResult> UpdateReviewBody(Guid id)
     {
@@ -145,7 +145,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     }
 
     /// <summary>
-    ///  Displays the update review body 
+    ///     Displays the update review body
     /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -161,12 +161,33 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
             return RedirectToAction(ViewReviewBodiesView);
         }
 
-        // SET MODEL TO INACTIVE BEFORE CONFIRM
         model.IsActive = false;
 
         var addUpdateReviewBodyModel = model.Adapt<AddUpdateReviewBodyModel>();
         return View(ConfirmStatusView, addUpdateReviewBodyModel);
+    }
 
+    /// <summary>
+    ///     Displays the update review body
+    /// </summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EnableReviewBody(Guid id)
+    {
+        var reviewBodyDto = await reviewBodyService.GetReviewBodyById(id);
+
+        ViewBag.Mode = EnableMode;
+        var model = reviewBodyDto.Content?.FirstOrDefault();
+
+        if (model == null)
+        {
+            return RedirectToAction(ViewReviewBodiesView);
+        }
+
+        model.IsActive = true;
+        var addUpdateReviewBodyModel = model.Adapt<AddUpdateReviewBodyModel>();
+
+        return View(ConfirmStatusView, addUpdateReviewBodyModel);
     }
 
     [HttpPost]
@@ -187,8 +208,17 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     {
         ViewBag.Mode = model.IsActive ? EnableMode : DisableMode;
 
-        //TODO: Call enable review body here when we have implemented it based on viewbag mode.
-        var response = await reviewBodyService.DisableReviewBody(model.Id);
+        ServiceResponse response;
+        if (ViewBag.Mode == EnableMode)
+        {
+            response = await reviewBodyService.EnableReviewBody(model.Id);
+            ViewBag.Mode = EnableMode;
+        }
+        else
+        {
+            response = await reviewBodyService.DisableReviewBody(model.Id);
+            ViewBag.Mode = DisableMode;
+        }
 
         var addUpdateReviewBodyModel = response.Adapt<AddUpdateReviewBodyModel>();
 

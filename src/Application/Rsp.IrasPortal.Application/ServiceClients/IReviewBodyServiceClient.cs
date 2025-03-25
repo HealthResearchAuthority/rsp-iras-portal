@@ -37,4 +37,10 @@ public interface IReviewBodyServiceClient
     /// </summary>
     [Put("/reviewbody/disable/{id}")]
     public Task<IApiResponse<ReviewBodyDto>> DisableReviewBody(Guid id);
+
+    /// <summary>
+    /// Gets review bodies by Id
+    /// </summary>
+    [Put("/reviewbody/enable/{id}")]
+    public Task<IApiResponse<ReviewBodyDto>> EnableReviewBody(Guid id);
 }

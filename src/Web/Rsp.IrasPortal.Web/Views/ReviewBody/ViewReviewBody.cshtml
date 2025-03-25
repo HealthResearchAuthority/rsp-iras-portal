@@ -5,6 +5,8 @@
     var reviewBodyModel = Model;
     var submitActionName = Model.IsActive ? "rbc:disablereviewbody" : "rbc:enablereviewbody";
     var buttonText = Model.IsActive ? "Disable review body" : "Enable review body";
+    var heading = Model.IsActive ? "Disable this review body?" : "Enable this review body";
+	var hint = Model.IsActive ? "Disabling a review body will lock their account and can be reversed" : "Enabling a review body will unlock their account";
 }
 
 <partial name="_BackNavigation" model="@("rbc:viewreviewbodies", "Back", new Dictionary<string, string>())"/>
@@ -13,20 +15,16 @@
 
 <partial name="_ReviewBodySummaryTablePartial" model="(reviewBodyModel, true)"/>
 
-@* TODO: Re,ove if when we want to implement enable functionality *@
-@if (Model.IsActive)
-{
-    <h2 class="govuk-heading-m">Do you want to disable this review body?</h2>
-    <p class="govuk-hint">
-        Disabling a user record will prevent the administrator from accessing their account.
-        This can be reversed once requested.
-    </p>
 
-    <form method="post">
-        <input type="hidden" asp-for="Id"/>
-        @{
-            ViewBag.Style = "govuk-button govuk-button--secondary";
-        }
-        <partial name="_SubmitButton" model="@(submitActionName, buttonText, new Dictionary<string, string>())"/>
-    </form>
-}
+<h2 class="govuk-heading-m">@heading</h2>
+<p class="govuk-hint">
+    @hint
+</p>
+
+<form method="post">
+    <input type="hidden" asp-for="Id"/>
+    @{
+        ViewBag.Style = "govuk-button govuk-button--secondary";
+    }
+    <partial name="_SubmitButton" model="@(submitActionName, buttonText, new Dictionary<string, string>())"/>
+</form>
