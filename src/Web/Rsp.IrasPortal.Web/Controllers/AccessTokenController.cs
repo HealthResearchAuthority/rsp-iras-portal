@@ -2,6 +2,7 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
+using Rsp.IrasPortal.Application.Constants;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
@@ -21,7 +22,7 @@ public class AccessTokenController() : Controller
                     new
                     {
                         token = await HttpContext.GetTokenAsync(tokenName),
-                        updatedToken = HttpContext.Items[tokenName]
+                        updatedToken = HttpContext.Items[ContextItemKeys.BearerToken]
                     }
                 )
             };

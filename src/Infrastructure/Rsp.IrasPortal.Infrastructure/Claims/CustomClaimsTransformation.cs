@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+using Microsoft.FeatureManagement;
 using Microsoft.IdentityModel.Tokens;
 using NetDevPack.Security.Jwt.Core.Interfaces;
 using Rsp.IrasPortal.Application.Configuration;
@@ -16,7 +17,8 @@ public class CustomClaimsTransformation
     IHttpContextAccessor httpContextAccessor,
     IJwtService jwtService,
     IUserManagementService userManagementService,
-    IOptionsSnapshot<AppSettings> appSettings
+    IOptionsSnapshot<AppSettings> appSettings,
+    IFeatureManager featureManager
 ) : IClaimsTransformation
 {
     public async Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
@@ -24,6 +26,7 @@ public class CustomClaimsTransformation
         // To be able to assign additional roles based on the email we need to
         // find email claim
         var emailClaim = principal.FindFirst(ClaimTypes.Email);
+        //var emailClaim = principal.FindFirst("email");
 
         // if there is no email claim, return the current principal
         if (emailClaim is null)
@@ -71,6 +74,16 @@ public class CustomClaimsTransformation
                 claimsIdentity.AddClaim(new Claim(roleClaim, role));
             }
 
+            // for one login
+            var oneLoginEnabled = await featureManager.IsEnabledAsync(Features.OneLogin);
+
+            if (oneLoginEnabled)
+            {
+                // these claims are not available in Gov UK One Login implementation, so we have to manually add them
+                claimsIdentity.AddClaim(new Claim(ClaimTypes.GivenName, user.User.FirstName));
+                claimsIdentity.AddClaim(new Claim(ClaimTypes.Name, user.User.FirstName));
+            }
+
             // as the claims are now updated, we need to generate a new token
             await UpdateAccessToken(principal);
         }
@@ -94,9 +107,14 @@ public class CustomClaimsTransformation
         // if we don't have the HttpContext or
         // getting the accessToken fails or
         // the accessToken value is null or empty then return
-        if (context == null ||
-            !context.Items.TryGetValue(ContextItemKeys.AcessToken, out var accessToken) ||
-            string.IsNullOrWhiteSpace(accessToken as string))
+        if (context == null)
+        {
+            return;
+        }
+
+        context.Items.TryGetValue(ContextItemKeys.BearerToken, out var bearerToken);
+
+        if (string.IsNullOrWhiteSpace(bearerToken as string))
         {
             return;
         }
@@ -104,15 +122,22 @@ public class CustomClaimsTransformation
         var handler = new JwtSecurityTokenHandler();
 
         // get the original access token
-        var jsonToken = handler.ReadJwtToken(accessToken as string);
+        var jsonToken = handler.ReadJwtToken(bearerToken as string);
 
         // configure the new token using the existing
-        // access_token properties but with newly added
+        // bearer_token properties but with newly added
         // claims.
+
+        var oneLoginEnabled = await featureManager.IsEnabledAsync(Features.OneLogin);
+
+        var audience = oneLoginEnabled ?
+                                appSettings.Value.OneLogin.ClientId :
+                                appSettings.Value.AuthSettings.ClientId;
+
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Issuer = jsonToken.Issuer, // Add this line
-            Audience = appSettings.Value.AuthSettings.ClientId,
+            Audience = audience,
             IssuedAt = jsonToken.IssuedAt,
             NotBefore = jsonToken.ValidFrom,
             Subject = (ClaimsIdentity)principal.Identity!,
@@ -125,6 +150,6 @@ public class CustomClaimsTransformation
 
         // write the JWT token to the context.Items to be utilised by
         // message handler when sending outgoing requests.
-        context.Items[ContextItemKeys.AcessToken] = handler.WriteToken(token);
+        context.Items[ContextItemKeys.BearerToken] = handler.WriteToken(token);
     }
 }
