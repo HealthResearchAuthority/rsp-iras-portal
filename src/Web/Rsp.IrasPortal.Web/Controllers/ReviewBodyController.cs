@@ -88,6 +88,17 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     }
 
     /// <summary>
+    /// Displays the edit CreateUpdateReviewBodyView when creating a review body
+    /// </summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditNewReviewBody(AddUpdateReviewBodyModel model)
+    {
+        ViewBag.Mode = CreateMode;
+        return View(CreateUpdateReviewBodyView, model);
+    }
+
+    /// <summary>
     /// </summary>
     /// <param name="model"></param>
     /// <returns></returns>
