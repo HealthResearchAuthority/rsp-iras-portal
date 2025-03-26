@@ -204,11 +204,9 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     {
         ViewBag.Mode = model.IsActive ? EnableMode : DisableMode;
 
-        //TODO: Call enable review body here when we have implemented it based on viewbag mode.
-        var response = await reviewBodyService.DisableReviewBody(model.Id);
+        await reviewBodyService.DisableReviewBody(model.Id);
 
-        var addUpdateReviewBodyModel = response.Adapt<AddUpdateReviewBodyModel>();
 
-        return View(SuccessMessagesView, addUpdateReviewBodyModel);
+        return View(SuccessMessagesView, model);
     }
 }
