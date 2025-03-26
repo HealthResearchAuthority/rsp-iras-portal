@@ -67,7 +67,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     [ValidateAntiForgeryToken]
     public IActionResult CreateReviewBody(AddUpdateReviewBodyModel model)
     {
-        ViewBag.Mode = CreateMode;
+        ViewBag.Mode = model.Id == Guid.Empty ? CreateMode : UpdateMode;
         return View(CreateUpdateReviewBodyView, model);
     }
 
@@ -107,6 +107,11 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     public async Task<IActionResult> SubmitReviewBody(AddUpdateReviewBodyModel model)
     {
         ViewBag.Mode = model.Id == Guid.Empty ? CreateMode : UpdateMode;
+
+        if (!ModelState.IsValid)
+        {
+            return View(CreateUpdateReviewBodyView, model);
+        }
 
         var reviewBody = model.Adapt<ReviewBodyDto>();
 
