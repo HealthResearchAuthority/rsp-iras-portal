@@ -9,9 +9,13 @@
     var buttonText = ViewBag.Mode == "update" ? "Save" : "Continue";
 	var heading = ViewBag.Mode == "update" ? "Edit review body details" : "Add a new review body";
 	var submitActionName = ViewBag.Mode == "update" ? "rbc:submitreviewbody" : "rbc:confirmchanges";
+	var backActionName = ViewBag.Mode == "update" ? "rbc:viewreviewbody" : "rbc:viewreviewbodies";
 }
 
-<a asp-route="rbc:viewreviewbodies" class="govuk-back-link">Back</a>
+
+<form method="get">
+	<partial name="_BackNavigation" model="@(backActionName, "Back", new Dictionary<string, string>(){{"Id", Model.Id.ToString()}})" />
+</form>
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
