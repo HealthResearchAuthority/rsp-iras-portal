@@ -13,6 +13,13 @@
 
             <h2 class="govuk-heading-l">@heading</h2>
             <p>Check the information here is correct before creating the profile</p>
+            
+			@if (ViewBag.Mode != "update")
+            {
+                <div style="height: 50px;"></div>
+                <h2 class="govuk-heading-m">Review body details</h2>
+                <div style="height: 20px;"></div>
+            }
 
             <partial name="_ReviewBodySummaryTablePartial" model="@(Model, false)"/>
             <partial name="_SubmitButton" model="@("rbc:submitreviewbody", buttonText, new Dictionary<string, string>())"/>
