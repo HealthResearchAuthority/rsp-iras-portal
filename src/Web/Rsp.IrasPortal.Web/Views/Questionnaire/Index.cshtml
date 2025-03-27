@@ -89,10 +89,10 @@
 	var navModel = string.IsNullOrEmpty(previousStage) ?
 						("app:createapplication", "Back", new Dictionary<string, string>()) :
 						("qnc:displayquestionnaire", "Back", new Dictionary<string, string>
-								{
+														{
 							{ "categoryId", previousCategory },
 							{ "sectionId", previousStage }
-								});
+														});
 }
 <partial name="_BackNavigation" model="@navModel" />
 
@@ -115,6 +115,8 @@
 			var errorKey = string.Empty;
 			var validationMessage = string.Empty;
 			var fieldHasErrors = false;
+			var conditionalClass = string.Empty;
+			var errorClass = string.Empty;
 		}
 
 
@@ -125,11 +127,8 @@
 						<h2 class="govuk-heading-l" id="title">@(Model.Questions.FirstOrDefault()?.Section)</h2>
 					</div>
 				</div>
-				<hr class="govuk-section-break govuk-section-break--visible">
 			</govuk-fieldset-legend>
 			<br />
-			<br />
-
 			<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
 
 			@{
@@ -316,13 +315,23 @@
 									<govuk-fieldset-legend class="govuk-fieldset__legend--s">
 										@question.QuestionText
 									</govuk-fieldset-legend>
-
+									<div id="rule-hint" class="govuk-hint">
+										@if (rules.Count > 0)
+										{
+											@foreach (var rule in rules)
+											{
+												<p>
+													@rule.Description
+												</p>
+											}
+										}
+									</div>
 									@if (fieldHasErrors)
 									{
 										BuildValidationMessage(question.Rules, errorKey, validationMessage);
 									}
 
-									<div class="govuk-checkboxes" data-module="govuk-checkboxes">
+									<div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
 										@foreach (var (answer, ansIndex) in question.Answers.Select((answer, ansIndex) => (answer, ansIndex)))
 										{
 											<div class="govuk-checkboxes__item">
@@ -343,8 +352,11 @@
 							errorKey = $"Questions[{index}].SelectedOption";
 							validationMessage = "Select one option";
 							fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
+							conditionalClass = conditional.Length > 0 ? " govuk-radios__conditional" : "";
+							errorClass = fieldHasErrors ? " govuk-form-group--error" : "";
 
-							<div id="Questions[@index].SelectedOption" class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")" @parents @questionId>
+							<div id="Questions[@index].SelectedOption"
+								 class="@(conditional + conditionalClass + errorClass) govuk-form-group" @parents @questionId>
 								<govuk-fieldset>
 									<govuk-fieldset-legend class="govuk-fieldset__legend--s">
 										@question.QuestionText
@@ -355,7 +367,11 @@
 										BuildValidationMessage(question.Rules, errorKey, validationMessage);
 									}
 
-									<div class="govuk-radios" data-module="govuk-radios">
+									@{
+										string divInlineClass = (conditional.Length > 0) ? "govuk-radios" : "govuk-radios govuk-radios--inline";
+									}
+
+									<div class="@divInlineClass" data-module="govuk-radios">
 										@foreach (var (answer, ansIndex) in question.Answers.Select((answer, ansIndex) => (answer, ansIndex)))
 										{
 											<div class="govuk-radios__item">
