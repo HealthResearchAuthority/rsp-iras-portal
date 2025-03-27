@@ -30,4 +30,7 @@ public interface IUserManagementService : IInterceptable
     Task<ServiceResponse> DeleteUser(string userId, string email);
 
     Task<ServiceResponse> UpdateRoles(string email, string? rolesToRemove, string rolesToAdd);
+
+    //Task<ServiceResponse> UpdateRoles(string email, string? rolesToRemove, IList<UserRoleViewModel> rolesToAdd);
+    //Task<ServiceResponse> UpdateRoles(string email, string? rolesToRemove, IList<IrasPortal.Web.Areas.Admin.Models.UserRoleViewModel> userRoleViewModels);
 }
