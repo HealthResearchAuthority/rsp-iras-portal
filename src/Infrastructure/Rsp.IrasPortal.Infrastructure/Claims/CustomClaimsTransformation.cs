@@ -68,6 +68,11 @@ public class CustomClaimsTransformation
 
             var user = getUserResponse.Content;
 
+            if (!string.IsNullOrWhiteSpace(user.User.Id))
+            {
+                claimsIdentity.AddClaim(new Claim("userId", user.User.Id));
+            }
+
             // add the roles to claimsIdentity
             foreach (var role in user.Roles)
             {
