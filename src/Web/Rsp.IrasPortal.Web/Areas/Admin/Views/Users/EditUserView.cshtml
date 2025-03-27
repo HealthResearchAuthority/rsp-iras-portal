@@ -76,19 +76,43 @@
 					<b>Role</b>
 				</label>
 				<span class="govuk-error-message" asp-validation-for="UserRoles"></span>
-				<select onchange="changeRoleSelection(this.value)" class="role-list-dropdown govuk-select govuk-!-width-three-quarters @(ViewData.ModelState["UserRoles"]?.Errors.Count > 0 ? "govuk-select--error" : "")" id="UserRoles" name="UserRoles">
-					<option></option>
-					@if (Model.AvailableUserRoles != null)
+				<div class="govuk-checkboxes" data-module="govuk-checkboxes">
+					@foreach (var (role, index) in Model.AvailableUserRoles.Select((role, index) => (role, index)))
 					{
-						foreach (var role in Model.AvailableUserRoles.Select(r => r.Name))
+						// initialization check
+						if (Model.UserRoles == null)
 						{
-							var userFiendleyName = role.Replace("_", " ");
-							<option selected=@(Model.UserRoles == role ? "selected" : null) value="@role">@userFiendleyName</option>
+							Model.UserRoles = new List<UserRoleViewModel>();
 						}
-					}
 
-				</select>
+						// check if the role is selected in UserRoles
+						var isChecked = Model.UserRoles.Any(r => r.Name == role.Name && r.IsSelected);
+
+						// add a UserRoleViewModel if it doesn't exist for the current role
+						if (Model.UserRoles.Count <= index)
+						{
+							Model.UserRoles.Add(new UserRoleViewModel { Name = role.Name });
+						}
+
+						<div class="govuk-checkboxes__item">
+							<input type="hidden" asp-for="UserRoles[index].Id" value="@role.Id" />
+							<input type="hidden" asp-for="UserRoles[index].Name" value="@role.Name" />
+
+							<!-- checkbox for selection -->
+							<input class="govuk-checkboxes__input" type="checkbox"
+								   name="UserRoles[@index].IsSelected"
+								   value="@role.Name"
+								   checked="@isChecked" />
+
+							<!-- label for the checkbox -->
+							@Html.LabelFor(m => m.UserRoles[index].IsSelected, role.Name, new { @class = "govuk-label govuk-checkboxes__label" })
+						</div>
+					}
+				</div>
 			</div>
+
+
+
 
 			<div class="govuk-form-group conditional-field @(ViewData.ModelState["Committee"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
 				<label class="govuk-label" for="Committee">
