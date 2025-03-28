@@ -32,12 +32,6 @@
 
 			<a class="govuk-button govuk-button--secondary" asp-route="app:createapplication">Create project record</a>
 
-			<h1 class="govuk-heading-l">System administration</h1>
-			<h2 class="govuk-heading-m">Actions</h2>
-
-			<partial name="_ActionItem" model="@("Manage review bodies","View, add, disable or edit review body records.", "rbc:viewreviewbodies")" />
-			<partial name="_ActionItem" model="@("Manage users","View, add, disable or edit review individual user records.", "admin:users")" />
-
 		</authorized>
 	</div>
 </div>

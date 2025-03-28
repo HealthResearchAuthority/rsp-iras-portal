@@ -21,11 +21,15 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
     private const string SuccessMessagesView = nameof(SuccessMessage);
     private const string ConfirmStatusView = nameof(ReviewBodyStatusChanges);
 
-
     private const string UpdateMode = "update";
     private const string CreateMode = "create";
     private const string DisableMode = "disable";
     private const string EnableMode = "enable";
+
+    public IActionResult Index()
+    {
+        return View();
+    }
 
     /// <summary>
     ///     Displays a list of review bodies
@@ -162,7 +166,6 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
         ViewBag.Mode = model.Id == Guid.Empty ? CreateMode : UpdateMode;
         return View(SuccessMessagesView, model);
     }
-
 
     /// <summary>
     ///     Displays the update review body
