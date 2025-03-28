@@ -22,6 +22,7 @@
             <input type="hidden" asp-for="Id"/>
             <input type="hidden" asp-for="CreatedBy"/>
             <input type="hidden" asp-for="UpdatedBy"/>
+			<input type="hidden" asp-for="IsActive" />
 
             <div class="govuk-form-group @(ViewData.ModelState["OrganisationName"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
                 <label class="govuk-label" for="OrganisationName">

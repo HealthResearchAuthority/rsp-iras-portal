@@ -16,7 +16,8 @@
     <div class="govuk-pagination__prev" style="@(Model.PageNumber <= 1 ? "visibility: hidden" : "")">
         <a class="govuk-link govuk-pagination__link" asp-route="@Model.RouteName"
            asp-route-pageNumber="@(Model.PageNumber > 1 ? Model.PageNumber - 1 : 1)"
-           asp-route-pageSize="@Model.PageSize" rel="prev">
+           asp-route-pageSize="@Model.PageSize"
+		   asp-route-reviewBodyId="@Model.ReviewBodyId"  rel="prev">
             <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg"
                  height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
                 <path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z">
@@ -47,7 +48,7 @@
 
             <li class="govuk-pagination__item @current">
                 <a class="govuk-link govuk-pagination__link @current" aria-label="Page @index" aria-current=@ariaCurrent asp-route="@Model.RouteName"
-                   asp-route-pageNumber="@index" asp-route-pageSize="@Model.PageSize">
+				   asp-route-pageNumber="@index" asp-route-pageSize="@Model.PageSize" asp-route-reviewBodyId="@Model.ReviewBodyId">
                     @index
                 </a>
             </li>
@@ -58,7 +59,8 @@
 
         <a class="govuk-link govuk-pagination__link" asp-route="@Model.RouteName"
            asp-route-pageNumber="@(Model.PageNumber < pageCount ? Model.PageNumber + 1 : Model.PageNumber)"
-           asp-route-pageSize="@Model.PageSize" rel="next">
+           asp-route-pageSize="@Model.PageSize"
+		   asp-route-reviewBodyId="@Model.ReviewBodyId" rel="next">
             <span class="govuk-pagination__link-title">
                 Next<span class="govuk-visually-hidden"> page</span>
             </span>

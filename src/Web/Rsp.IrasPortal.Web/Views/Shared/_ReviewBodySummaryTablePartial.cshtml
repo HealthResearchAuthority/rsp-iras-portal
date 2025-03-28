@@ -87,7 +87,7 @@
                     <b>Users</b>
                 </td>
                 <td class="govuk-table__cell">
-                    <a asp-action="" class="govuk-link">View this review body's audit history</a>
+					<a asp-action="" class="govuk-link">View this review body's list of users</a>
                 </td>
                 <td class="govuk-table__cell govuk-table__cell--numeric">
                 </td>
@@ -97,8 +97,8 @@
                 <td class="govuk-table__cell">
                     <b>Audit</b>
                 </td>
-                <td class="govuk-table__cell">
-                    <a asp-action="" class="govuk-link">View this review body's list of users</a>
+                <td class="govuk-table__cell">                    
+					<a asp-route="rbc:audittrail" asp-all-route-data="@(new Dictionary<string, string>{{"reviewBodyId", Model.ReviewBodyModel.Id.ToString()}})" class="govuk-link">View this review body's audit history</a>
                 </td>
                 <td class="govuk-table__cell govuk-table__cell--numeric">
                 </td>
