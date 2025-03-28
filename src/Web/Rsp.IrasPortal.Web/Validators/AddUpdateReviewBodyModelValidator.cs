@@ -141,7 +141,17 @@ public class AddUpdateReviewBodyModelValidator : AbstractValidator<AddUpdateRevi
 
         // Regex for Unicode local part + ASCII (Punycode) domain
         var pattern = @"^[\p{L}\p{M}\p{N}\p{P}\p{S}]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$";
-        return Regex.IsMatch(normalizedEmail, pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        var timeout = TimeSpan.FromMilliseconds(500); // Adjust as needed
+
+        try
+        {
+            return Regex.IsMatch(normalizedEmail, pattern, RegexOptions.IgnoreCase, timeout);
+        }
+        catch (RegexMatchTimeoutException)
+        {
+            return false;
+        }
+
     }
 
     private static bool HaveMaxWords(string? text, int maxWords)
