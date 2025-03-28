@@ -1,4 +1,6 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Globalization;
+using System.Net;
+using System.Text.RegularExpressions;
 using FluentValidation;
 using Rsp.IrasPortal.Web.Models;
 
@@ -6,21 +8,31 @@ namespace Rsp.IrasPortal.Web.Validators;
 
 public class AddUpdateReviewBodyModelValidator : AbstractValidator<AddUpdateReviewBodyModel>
 {
+    private const string MandatoryErrorMessage = "Field is mandatory";
+
     public AddUpdateReviewBodyModelValidator()
     {
         RuleFor(x => x.OrganisationName)
-            .NotEmpty().WithMessage("Enter the organisation name");
+            .NotEmpty().WithMessage(MandatoryErrorMessage)
+            .MaximumLength(250).WithMessage("Max 250 characters allowed");
 
         RuleFor(x => x.EmailAddress)
-            .NotEmpty().WithMessage("Enter an email address")
-            .EmailAddress().WithMessage("Enter a valid email address");
+            .NotEmpty()
+            .WithMessage(MandatoryErrorMessage)
+            .MaximumLength(255)
+            .WithMessage("Max 255 characters allowed")
+            .Matches(@"^(?!(?:(?:.*\.\.)|(?:.*\.\@)))(?!.*\.\.$)(?!.*\.\@)[\p{L}\p{N}!#$%&'*+/=?^_`{|}~.-]+@[\p{L}\p{N}.-]+\.[\p{L}]{2,}$")
+            .WithMessage("Invalid email format");
+
+
         RuleFor(x => x.Description)
-            .Must(text => HaveMaxWords(text, 250))
-            .WithMessage("The description cannot exceed 250 words.")
+            .Must(text => HaveMaxWords(text, 500))
+            .WithMessage("The description cannot exceed 500 words.")
             .When(x => !string.IsNullOrWhiteSpace(x.Description));
 
         RuleFor(x => x.Countries)
-            .Must(c => c != null && c.Any()).WithMessage("Select at least one country.");
+            .Must(c => c != null && c.Any())
+            .WithMessage("Select at least one country.");
     }
 
     private static bool HaveMaxWords(string? text, int maxWords)

@@ -1,4 +1,5 @@
 ﻿using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Application.Services;
@@ -43,9 +44,17 @@ public class ReviewBodyService(IReviewBodyServiceClient client) : IReviewBodySer
         return apiResponse.ToServiceResponse();
     }
 
+
     public async Task<ServiceResponse> EnableReviewBody(Guid id)
     {
         var apiResponse = await client.EnableReviewBody(id);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse<ReviewBodyAuditTrailResponse>> ReviewBodyAuditTrail(Guid id, int skip, int take)
+    {
+        var apiResponse = await client.GetReviewBodyAuditTrail(id, skip, take);
 
         return apiResponse.ToServiceResponse();
     }

@@ -11,11 +11,15 @@
 				User has been successfully added
 			</h1>
 		</div>
-		<p>
+		<p class="govuk-body">
 			<span>@Model.FirstName @Model.LastName</span>
 			has been sent an email confirming their account details. Their status is now active.
 		</p>
-		<p><a asp-route="admin:createuser">Add another user</a></p>
-		<p><a asp-route="admin:users">Back to Manage Users</a></p>
+		<p class="govuk-body">
+			<a class="govuk-link" asp-route="admin:createuser">Add another user</a>
+		</p>
+		<p class="govuk-body">
+			<a class="govuk-link" asp-route="admin:users">Back to Manage Users</a>
+		</p>
 	</div>
 </div>

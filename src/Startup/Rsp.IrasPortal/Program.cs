@@ -51,6 +51,13 @@ builder.Services.Configure<AppSettings>(builder.Configuration.GetSection(nameof(
 var appSettingsSection = configuration.GetSection(nameof(AppSettings));
 var appSettings = appSettingsSection.Get<AppSettings>()!;
 
+// Creating a feature manager without the use of DI. Injecting IFeatureManager
+// via DI is appropriate in consturctor methods. At the startup, it's
+// not recommended to call services.BuildServiceProvider and retreive IFeatureManager
+// via provider. Instead, the follwing approach is recommended by creating FeatureManager
+// with ConfigurationFeatureDefinitionProvider using the existing configuration.
+var featureManager = new FeatureManager(new ConfigurationFeatureDefinitionProvider(configuration));
+
 // Add services to IoC container
 services.AddServices();
 
@@ -61,7 +68,14 @@ services.AddHttpClients(appSettings!);
 // routing configuration
 services.AddRouting(options => options.LowercaseUrls = true);
 
-services.AddAuthenticationAndAuthorization(appSettings);
+if (await featureManager.IsEnabledAsync(Features.OneLogin))
+{
+    services.AddOneLoginAuthentication(appSettings);
+}
+else
+{
+    services.AddAuthenticationAndAuthorization(appSettings);
+}
 
 services.AddSession(options =>
 {
@@ -69,13 +83,6 @@ services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
-
-// Creating a feature manager without the use of DI. Injecting IFeatureManager
-// via DI is appropriate in consturctor methods. At the startup, it's
-// not recommended to call services.BuildServiceProvider and retreive IFeatureManager
-// via provider. Instead, the follwing approach is recommended by creating FeatureManager
-// with ConfigurationFeatureDefinitionProvider using the existing configuration.
-var featureManager = new FeatureManager(new ConfigurationFeatureDefinitionProvider(configuration));
 
 // add controllers and views
 services

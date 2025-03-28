@@ -3,14 +3,24 @@
 
 @{
     var buttonText = ViewBag.Mode == "update" ? "Save" : "Create profile";
-	var heading = ViewBag.Mode == "update" ? "Review body profile" : "Check and create review body";
+    var heading = ViewBag.Mode == "update" ? "Review body profile" : "Check and create review body";
 }
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-        <h2 class="govuk-heading-l">@heading</h2>
-        <p>Check the information here is correct before creating the profile</p>
         <form method="post" id="submit-user-form">
+            <button asp-route="rbc:editnewreviewbody" class="govuk-back-link-button" type="submit">Back</button>
+
+            <h2 class="govuk-heading-l">@heading</h2>
+            <p>Check the information here is correct before creating the profile</p>
+            
+			@if (ViewBag.Mode != "update")
+            {
+                <div style="height: 50px;"></div>
+                <h2 class="govuk-heading-m">Review body details</h2>
+                <div style="height: 20px;"></div>
+            }
+
             <partial name="_ReviewBodySummaryTablePartial" model="@(Model, false)"/>
             <partial name="_SubmitButton" model="@("rbc:submitreviewbody", buttonText, new Dictionary<string, string>())"/>
         </form>

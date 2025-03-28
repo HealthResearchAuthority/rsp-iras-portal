@@ -1,5 +1,6 @@
 ﻿using Refit;
 using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 
 namespace Rsp.IrasPortal.Application.ServiceClients;
 
@@ -43,4 +44,10 @@ public interface IReviewBodyServiceClient
     /// </summary>
     [Put("/reviewbody/enable/{id}")]
     public Task<IApiResponse<ReviewBodyDto>> EnableReviewBody(Guid id);
+
+    /// <summary>
+    /// Gets review bodies by Id
+    /// </summary>
+    [Get("/reviewbody/audittrail")]
+    public Task<IApiResponse<ReviewBodyAuditTrailResponse>> GetReviewBodyAuditTrail(Guid id, int skip, int take);
 }

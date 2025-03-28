@@ -11,9 +11,11 @@
 				@Model.FirstName @Model.LastName successfully disabled
 			</h1>
 		</div>
-		<p>
+		<p class="govuk-body">
 			A confirmation email has been sent to @Model.FirstName @Model.LastName to confirm their record has been disabled.
 		</p>
-		<p><a asp-route="admin:users">Back to Manage users</a></p>
+		<p class="govuk-body">
+			<a class="govuk-link" asp-route="admin:users">Back to Manage users</a>
+		</p>
 	</div>
 </div>

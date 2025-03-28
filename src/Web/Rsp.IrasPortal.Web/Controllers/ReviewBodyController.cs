@@ -1,14 +1,18 @@
-﻿using Mapster;
+﻿using FluentValidation;
+using Mapster;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "rbc:[action]")]
-public class ReviewBodyController(IReviewBodyService reviewBodyService) : Controller
+[Authorize(Policy = "IsAdmin")]
+public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidator<AddUpdateReviewBodyModel> validator)
+    : Controller
 {
     private const string Error = nameof(Error);
     private const string CreateUpdateReviewBodyView = nameof(CreateReviewBody);
@@ -17,7 +21,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     private const string ConfirmChangesView = nameof(ConfirmChanges);
     private const string SuccessMessagesView = nameof(SuccessMessage);
     private const string ConfirmStatusView = nameof(ReviewBodyStatusChanges);
-
+    private const string AuditTrailView = nameof(AuditTrail);
 
     private const string UpdateMode = "update";
     private const string CreateMode = "create";
@@ -66,7 +70,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     [ValidateAntiForgeryToken]
     public IActionResult CreateReviewBody(AddUpdateReviewBodyModel model)
     {
-        ViewBag.Mode = CreateMode;
+        ViewBag.Mode = model.Id == Guid.Empty ? CreateMode : UpdateMode;
         return View(CreateUpdateReviewBodyView, model);
     }
 
@@ -76,14 +80,33 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     /// <returns></returns>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult ConfirmChanges(AddUpdateReviewBodyModel model)
+    public async Task<IActionResult> ConfirmChanges(AddUpdateReviewBodyModel model)
     {
-        if (!ModelState.IsValid)
+        var context = new ValidationContext<AddUpdateReviewBodyModel>(model);
+        var validationResult = await validator.ValidateAsync(context);
+
+        if (validationResult.IsValid)
         {
-            return View(CreateUpdateReviewBodyView, model);
+            return View(ConfirmChangesView, model);
         }
 
-        return View(ConfirmChangesView, model);
+        foreach (var error in validationResult.Errors)
+        {
+            ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+        }
+
+        return View(CreateUpdateReviewBodyView, model);
+    }
+
+    /// <summary>
+    ///     Displays the edit CreateUpdateReviewBodyView when creating a review body
+    /// </summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditNewReviewBody(AddUpdateReviewBodyModel model)
+    {
+        ViewBag.Mode = CreateMode;
+        return View(CreateUpdateReviewBodyView, model);
     }
 
     /// <summary>
@@ -96,15 +119,28 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     {
         ViewBag.Mode = model.Id == Guid.Empty ? CreateMode : UpdateMode;
 
+        var context = new ValidationContext<AddUpdateReviewBodyModel>(model);
+        var validationResult = await validator.ValidateAsync(context);
+
+        if (!validationResult.IsValid)
+        {
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
+
+            return View(CreateUpdateReviewBodyView, model);
+        }
+
         var reviewBody = model.Adapt<ReviewBodyDto>();
 
         if (ViewBag.Mode == CreateMode)
         {
             reviewBody.CreatedBy = User?.Identity?.Name!;
+            reviewBody.IsActive = true;
         }
 
         reviewBody.UpdatedBy = User?.Identity?.Name;
-        reviewBody.IsActive = true;
 
         var response = ViewBag.Mode == CreateMode
             ? await reviewBodyService.CreateReviewBody(reviewBody)
@@ -127,7 +163,6 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
         ViewBag.Mode = model.Id == Guid.Empty ? CreateMode : UpdateMode;
         return View(SuccessMessagesView, model);
     }
-
 
     /// <summary>
     ///     Displays the update review body
@@ -219,9 +254,40 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
             response = await reviewBodyService.DisableReviewBody(model.Id);
             ViewBag.Mode = DisableMode;
         }
-
         var addUpdateReviewBodyModel = response.Adapt<AddUpdateReviewBodyModel>();
 
         return View(SuccessMessagesView, addUpdateReviewBodyModel);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> AuditTrail(Guid reviewBodyId, int pageNumber = 1, int pageSize = 10)
+    {
+        var skip = (pageNumber - 1) * pageSize;
+        var take = pageNumber * pageSize;
+        var response = await reviewBodyService.ReviewBodyAuditTrail(reviewBodyId, skip, take);
+
+        var auditTrailResponse = response?.Content;
+        var items = auditTrailResponse?.Items;
+
+        var paginationModel = new PaginationViewModel
+        {
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            RouteName = "rbc:audittrail",
+            TotalCount = auditTrailResponse != null ? auditTrailResponse.TotalCount : -1,
+            ReviewBodyId = reviewBodyId.ToString()
+        };
+
+        var reviewBody = await reviewBodyService.GetReviewBodyById(reviewBodyId);
+        var reviewBodyName = reviewBody?.Content?.FirstOrDefault()?.OrganisationName;
+
+        var resultModel = new ReviewBodyAuditTrailViewModel
+        {
+            BodyName = reviewBodyName,
+            Pagination = paginationModel,
+            Items = items!
+        };
+
+        return View(AuditTrailView, resultModel);
     }
 }
