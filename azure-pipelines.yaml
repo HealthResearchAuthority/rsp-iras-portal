@@ -96,11 +96,7 @@ stages:
   - stage: dev
     variables: 
     - group: 'DevelopmentEnvironment'
-    condition: |
-      and(
-        eq('${{ parameters.env }}', 'dev'),
-        ne(variables['Build.Reason'], 'PullRequest')
-      )
+    condition: eq('${{ parameters.env }}', 'dev')
     jobs:
       - template: jobs/build.yaml@library
         parameters:
@@ -123,7 +119,7 @@ stages:
                 onTimeout: 'reject'
         - job: DeployToDev
           dependsOn: ManualApproval
-          condition: succeeded()
+          condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))  #Skip deployment for PRs
           steps:
             - template: jobs/deployPortal.yaml@library
               parameters:
