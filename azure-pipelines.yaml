@@ -1,5 +1,5 @@
 name: $(Build.DefinitionName)_$(Build.SourceBranchName)_$(date:yyyyMMdd)$(rev:.r)
-# testing
+
 pool:
   vmImage: "Ubuntu-latest"
 
@@ -96,7 +96,11 @@ stages:
   - stage: dev
     variables: 
     - group: 'DevelopmentEnvironment'
-    condition: eq('${{ parameters.env }}', 'dev') 
+    condition: |
+      and(
+        eq('${{ parameters.env }}', 'dev'),
+        ne(variables['Build.Reason'], 'PullRequest')
+      )
     jobs:
       - template: jobs/build.yaml@library
         parameters:
@@ -106,13 +110,25 @@ stages:
           run_sonarcloud_analysis: ${{ parameters.run_sonarcloud_analysis }}
           install_aspire: true
           service_defaults_repo: service_defaults
-      
+
       - ${{ if eq(parameters.skip_deployment, false) }}:
-        - template: jobs/deployPortal.yaml@library
-          parameters:
-            depends_on: 'Build'
-            install_aspire: true
-            service_defaults_repo: service_defaults
+        - job: ManualApproval
+          displayName: "Manual Approval for Dev Deployment"
+          pool: server
+          steps:
+            - task: ManualValidation@0
+              timeoutInMinutes: 1440  #24 hours for manual approval
+              inputs:
+                instructions: 'Please approve deployment to dev environment'
+                onTimeout: 'reject'
+        - job: DeployToDev
+          dependsOn: ManualApproval
+          condition: succeeded()
+          steps:
+            - template: jobs/deployPortal.yaml@library
+              parameters:
+                install_aspire: true
+                service_defaults_repo: service_defaults
 
   - stage: systemtest_auto
     variables: 
