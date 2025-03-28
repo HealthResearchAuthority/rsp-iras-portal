@@ -1,4 +1,5 @@
-﻿using Mapster;
+﻿using FluentValidation;
+using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.DTOs;
@@ -9,7 +10,8 @@ namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "rbc:[action]")]
 [Authorize(Policy = "IsAdmin")]
-public class ReviewBodyController(IReviewBodyService reviewBodyService) : Controller
+public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidator<AddUpdateReviewBodyModel> validator)
+    : Controller
 {
     private const string Error = nameof(Error);
     private const string CreateUpdateReviewBodyView = nameof(CreateReviewBody);
@@ -26,7 +28,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     private const string EnableMode = "enable";
 
     /// <summary>
-    /// Displays a list of review bodies
+    ///     Displays a list of review bodies
     /// </summary>
     public async Task<IActionResult> ViewReviewBodies()
     {
@@ -36,7 +38,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     }
 
     /// <summary>
-    /// Displays a single review body
+    ///     Displays a single review body
     /// </summary>
     public async Task<IActionResult> ViewReviewBody(Guid id)
     {
@@ -77,18 +79,26 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     /// <returns></returns>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult ConfirmChanges(AddUpdateReviewBodyModel model)
+    public async Task<IActionResult> ConfirmChanges(AddUpdateReviewBodyModel model)
     {
-        if (!ModelState.IsValid)
+        var context = new ValidationContext<AddUpdateReviewBodyModel>(model);
+        var validationResult = await validator.ValidateAsync(context);
+
+        if (validationResult.IsValid)
         {
-            return View(CreateUpdateReviewBodyView, model);
+            return View(ConfirmChangesView, model);
         }
 
-        return View(ConfirmChangesView, model);
+        foreach (var error in validationResult.Errors)
+        {
+            ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+        }
+
+        return View(CreateUpdateReviewBodyView, model);
     }
 
     /// <summary>
-    /// Displays the edit CreateUpdateReviewBodyView when creating a review body
+    ///     Displays the edit CreateUpdateReviewBodyView when creating a review body
     /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -108,8 +118,16 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     {
         ViewBag.Mode = model.Id == Guid.Empty ? CreateMode : UpdateMode;
 
-        if (!ModelState.IsValid)
+        var context = new ValidationContext<AddUpdateReviewBodyModel>(model);
+        var validationResult = await validator.ValidateAsync(context);
+
+        if (!validationResult.IsValid)
         {
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
+
             return View(CreateUpdateReviewBodyView, model);
         }
 
@@ -147,7 +165,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
 
 
     /// <summary>
-    ///     Displays the update review body 
+    ///     Displays the update review body
     /// </summary>
     public async Task<IActionResult> UpdateReviewBody(Guid id)
     {
@@ -162,7 +180,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
     }
 
     /// <summary>
-    ///  Displays the update review body 
+    ///     Displays the update review body
     /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -183,7 +201,6 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
 
         var addUpdateReviewBodyModel = model.Adapt<AddUpdateReviewBodyModel>();
         return View(ConfirmStatusView, addUpdateReviewBodyModel);
-
     }
 
     [HttpPost]
@@ -205,7 +222,6 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService) : Contro
         ViewBag.Mode = model.IsActive ? EnableMode : DisableMode;
 
         await reviewBodyService.DisableReviewBody(model.Id);
-
 
         return View(SuccessMessagesView, model);
     }
