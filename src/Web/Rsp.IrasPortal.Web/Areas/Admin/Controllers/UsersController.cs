@@ -30,6 +30,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
     private const string CreateUserSuccessMessage = nameof(CreateUserSuccessMessage);
     private const string DisableUserSuccessMessage = nameof(DisableUserSuccessMessage);
     private const string ConfirmDisableUser = nameof(ConfirmDisableUser);
+    private const string EnableUserSuccessMessage = nameof(EnableUserSuccessMessage);
+    private const string ConfirmEnableUser = nameof(ConfirmEnableUser);
 
     private const string EditMode = "edit";
     private const string CreateMode = "create";
@@ -311,6 +313,59 @@ public class UsersController(IUserManagementService userManagementService, IVali
             if (updateDisabledUser.IsSuccessStatusCode)
             {
                 return View(DisableUserSuccessMessage, updateModel);
+            }
+        }
+
+        // if status is forbidden
+        // return the appropriate response otherwise
+        // return the generic error page
+        return userResponse.StatusCode switch
+        {
+            HttpStatusCode.Forbidden => Forbid(),
+            _ => View(Error, this.ProblemResult(userResponse))
+        };
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> EnableUser(string userId, string email)
+    {
+        var response = await userManagementService.GetUser(userId, email);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var model = new UserViewModel(response.Content!);
+
+            return View(ConfirmEnableUser, model);
+        }
+
+        // if status is forbidden
+        // return the appropriate response otherwise
+        // return the generic error page
+        return response.StatusCode switch
+        {
+            HttpStatusCode.Forbidden => Forbid(),
+            _ => View(Error, this.ProblemResult(response))
+        };
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EnableUser(UserViewModel model)
+    {
+        var userResponse = await userManagementService.GetUser(model.Id, model.Email);
+        if (userResponse.IsSuccessStatusCode)
+        {
+            var updateModel = new UserViewModel(userResponse.Content!);
+
+            var updateUserRequest = updateModel.Adapt<UpdateUserRequest>();
+            updateUserRequest.LastUpdated = DateTime.UtcNow;
+            updateUserRequest.Status = IrasUserStatus.Active;
+
+            var updateDisabledUser = await userManagementService.UpdateUser(updateUserRequest);
+
+            if (updateDisabledUser.IsSuccessStatusCode)
+            {
+                return View(EnableUserSuccessMessage, updateModel);
             }
         }
 
