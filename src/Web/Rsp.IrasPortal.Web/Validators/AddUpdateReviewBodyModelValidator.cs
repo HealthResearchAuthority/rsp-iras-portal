@@ -17,8 +17,12 @@ public class AddUpdateReviewBodyModelValidator : AbstractValidator<AddUpdateRevi
             .MaximumLength(250).WithMessage("Max 250 characters allowed");
 
         RuleFor(x => x.EmailAddress)
-            .NotEmpty().WithMessage(MandatoryErrorMessage)
-            .Must(IsValidEmail).WithMessage("Invalid email format");
+            .NotEmpty()
+            .WithMessage(MandatoryErrorMessage)
+            .MaximumLength(255)
+            .WithMessage("Max 255 characters allowed")
+            .Matches(@"^(?!(?:(?:.*\.\.)|(?:.*\.\@)))(?!.*\.\.$)(?!.*\.\@)[\p{L}\p{N}!#$%&'*+/=?^_`{|}~.-]+@[\p{L}\p{N}.-]+\.[\p{L}]{2,}$")
+            .WithMessage("Invalid email format");
 
 
         RuleFor(x => x.Description)
@@ -29,129 +33,6 @@ public class AddUpdateReviewBodyModelValidator : AbstractValidator<AddUpdateRevi
         RuleFor(x => x.Countries)
             .Must(c => c != null && c.Any())
             .WithMessage("Select at least one country.");
-    }
-
-    private static bool IsValidEmail(string email)
-    {
-        if (string.IsNullOrEmpty(email) || email.All(char.IsWhiteSpace))
-        {
-            return false;
-        }
-
-        var trimmedEmail = email.TrimEnd();
-
-        if (trimmedEmail.Length > 320)
-        {
-            return false;
-        }
-
-        var atIndex = trimmedEmail.IndexOf('@');
-        if (atIndex <= 0 || atIndex != trimmedEmail.LastIndexOf('@'))
-        {
-            return false;
-        }
-
-        var local = trimmedEmail[..atIndex];
-        var domain = trimmedEmail[(atIndex + 1)..];
-
-        if (local.Length > 64)
-        {
-            return false;
-        }
-
-        // Split domain into labels and punycode each one safely
-        var domainLabels = domain.Split('.');
-        var idn = new IdnMapping();
-        var asciiLabels = new List<string>();
-
-        foreach (var label in domainLabels)
-        {
-            if (string.IsNullOrEmpty(label))
-            {
-                return false;
-            }
-
-            string asciiLabel;
-            try
-            {
-                asciiLabel = idn.GetAscii(label);
-            }
-            catch
-            {
-                return false; // Invalid Unicode or punycode error
-            }
-
-            if (asciiLabel.Length > 63)
-            {
-                return false;
-            }
-
-            asciiLabels.Add(asciiLabel);
-        }
-
-        var asciiDomain = string.Join(".", asciiLabels);
-
-        if (asciiDomain.Length > 255)
-        {
-            return false;
-        }
-
-        var normalizedEmail = $"{local}@{asciiDomain}";
-
-        if (normalizedEmail.Contains(" ") || normalizedEmail.Any(c => "<>[](),;:\"".Contains(c)))
-        {
-            return false;
-        }
-
-        if (local.StartsWith('.') || local.EndsWith('.') || local.Contains("..") || local.StartsWith('-'))
-        {
-            return false;
-        }
-
-        if (asciiDomain.Contains(".."))
-        {
-            return false;
-        }
-
-        var tld = asciiLabels.LastOrDefault();
-        if (string.IsNullOrEmpty(tld) || tld.Length < 2)
-        {
-            return false; // TLD must be at least 2 characters
-        }
-
-        if (!tld.All(char.IsAsciiLetter) && !tld.StartsWith("xn--", StringComparison.OrdinalIgnoreCase))
-        {
-            return false; // TLD must be alphabetic or an IDN (Punycode)
-        }
-
-        var reservedDomains = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "localhost", "test", "example", "invalid", "local"
-        };
-
-        if (reservedDomains.Contains(asciiDomain) || reservedDomains.Contains(tld))
-        {
-            return false;
-        }
-
-        if (IPAddress.TryParse(asciiDomain, out _))
-        {
-            return false;
-        }
-
-        // Regex for Unicode local part + ASCII (Punycode) domain
-        var pattern = @"^[\p{L}\p{M}\p{N}\p{P}\p{S}]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$";
-        var timeout = TimeSpan.FromMilliseconds(500); // Adjust as needed
-
-        try
-        {
-            return Regex.IsMatch(normalizedEmail, pattern, RegexOptions.IgnoreCase, timeout);
-        }
-        catch (RegexMatchTimeoutException)
-        {
-            return false;
-        }
-
     }
 
     private static bool HaveMaxWords(string? text, int maxWords)
