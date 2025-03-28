@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers;
@@ -20,7 +21,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
     private const string ConfirmChangesView = nameof(ConfirmChanges);
     private const string SuccessMessagesView = nameof(SuccessMessage);
     private const string ConfirmStatusView = nameof(ReviewBodyStatusChanges);
-
+    private const string AuditTrailView = nameof(AuditTrail);
 
     private const string UpdateMode = "update";
     private const string CreateMode = "create";
@@ -136,10 +137,10 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
         if (ViewBag.Mode == CreateMode)
         {
             reviewBody.CreatedBy = User?.Identity?.Name!;
+            reviewBody.IsActive = true;
         }
 
         reviewBody.UpdatedBy = User?.Identity?.Name;
-        reviewBody.IsActive = true;
 
         var response = ViewBag.Mode == CreateMode
             ? await reviewBodyService.CreateReviewBody(reviewBody)
@@ -162,7 +163,6 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
         ViewBag.Mode = model.Id == Guid.Empty ? CreateMode : UpdateMode;
         return View(SuccessMessagesView, model);
     }
-
 
     /// <summary>
     ///     Displays the update review body
@@ -224,5 +224,30 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
         await reviewBodyService.DisableReviewBody(model.Id);
 
         return View(SuccessMessagesView, model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> AuditTrail(Guid reviewBodyId, int pageNumber = 1, int pageSize = 10)
+    {
+        var skip = (pageNumber - 1) * pageSize;
+        var take = pageNumber * pageSize;
+        var response = await reviewBodyService.ReviewBodyAuditTrail(reviewBodyId, skip, take);
+
+        var auditTrailResponse = response.Content;
+        var items = auditTrailResponse?.Items;
+
+        var paginationModel = new PaginationViewModel
+        {
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            RouteName = "rbc:audittrail",
+            TotalCount = auditTrailResponse != null ? auditTrailResponse.TotalCount : -1,
+            ReviewBodyId = reviewBodyId.ToString()
+        };
+
+        var reviewBody = await reviewBodyService.GetReviewBodyById(reviewBodyId);
+        var reviewBodyName = reviewBody?.Content?.FirstOrDefault()?.OrganisationName;
+
+        return View(AuditTrailView, (reviewBodyName, items, paginationModel));
     }
 }
