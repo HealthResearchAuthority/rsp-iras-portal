@@ -29,6 +29,11 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
     private const string DisableMode = "disable";
     private const string EnableMode = "enable";
 
+    public IActionResult Index()
+    {
+        return View();
+    }
+
     /// <summary>
     ///     Displays a list of review bodies
     /// </summary>
@@ -225,8 +230,6 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
 
         return View(ConfirmStatusView, addUpdateReviewBodyModel);
     }
-
-    
 
     [HttpPost]
     [ValidateAntiForgeryToken]
