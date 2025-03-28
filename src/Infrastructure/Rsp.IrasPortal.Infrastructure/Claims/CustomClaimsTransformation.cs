@@ -26,7 +26,6 @@ public class CustomClaimsTransformation
         // To be able to assign additional roles based on the email we need to
         // find email claim
         var emailClaim = principal.FindFirst(ClaimTypes.Email);
-        //var emailClaim = principal.FindFirst("email");
 
         // if there is no email claim, return the current principal
         if (emailClaim is null)
@@ -68,7 +67,7 @@ public class CustomClaimsTransformation
 
             var user = getUserResponse.Content;
 
-            if (!string.IsNullOrWhiteSpace(user.User.Id))
+            if (!string.IsNullOrWhiteSpace(user.User?.Id))
             {
                 claimsIdentity.AddClaim(new Claim("userId", user.User.Id));
             }
