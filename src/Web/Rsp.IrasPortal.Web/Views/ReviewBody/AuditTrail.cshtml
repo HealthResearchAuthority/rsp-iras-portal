@@ -1,6 +1,6 @@
 ﻿@using Rsp.IrasPortal.Application.DTOs.Responses
 @using Rsp.IrasPortal.Web.Areas.Admin.Models
-@model (string ReviewBodyName, IEnumerable<ReviewBodyAuditTrailDto> AuditTrail, PaginationViewModel Pagination)
+@model ReviewBodyAuditTrailViewModel
 
 @{
 	ViewBag.Active = "rbc";
@@ -13,7 +13,7 @@
 
 <div class="govuk-grid-row">
 	<div class="govuk-grid-column-three-quarters">
-		<h1 class="govuk-heading-l">Audit history: @Model.ReviewBodyName</h1>
+		<h1 class="govuk-heading-l">Audit history: @Model.BodyName</h1>
 	</div>
 </div>
 
@@ -30,9 +30,9 @@
 					</tr>
 				</thead>
 				<tbody>
-					@if (Model.AuditTrail != null)
+					@if (Model.Items != null)
 					{
-						foreach (var record in Model.AuditTrail)
+						foreach (var record in Model.Items)
 						{
 							<tr class="govuk-table__row">
 								<td class="govuk-table__cell">@record.DateTimeStamp.ToString("dd MMM yyyy HH:mm")</td>
