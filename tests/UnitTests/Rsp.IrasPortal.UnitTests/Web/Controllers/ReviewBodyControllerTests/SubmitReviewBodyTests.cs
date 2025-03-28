@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FluentValidation;
+using FluentValidation.Results;
+using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
@@ -20,10 +22,15 @@ public class SubmitReviewBodyTests : TestServiceBase<ReviewBodyController>
         };
 
         model.Id = Guid.Empty;
+        model.EmailAddress = "valid.email@example.com";
 
         Mocker.GetMock<IReviewBodyService>()
             .Setup(s => s.CreateReviewBody(It.IsAny<ReviewBodyDto>()))
             .ReturnsAsync(serviceResponse);
+
+        Mocker.GetMock<IValidator<AddUpdateReviewBodyModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<AddUpdateReviewBodyModel>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
 
         // Act
         var result = await Sut.SubmitReviewBody(model);
@@ -54,6 +61,10 @@ public class SubmitReviewBodyTests : TestServiceBase<ReviewBodyController>
             .Setup(s => s.CreateReviewBody(It.IsAny<ReviewBodyDto>()))
             .ReturnsAsync(serviceResponse);
 
+        Mocker.GetMock<IValidator<AddUpdateReviewBodyModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<AddUpdateReviewBodyModel>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
+
         // Act
         var result = await Sut.SubmitReviewBody(model);
 
@@ -65,5 +76,44 @@ public class SubmitReviewBodyTests : TestServiceBase<ReviewBodyController>
         // Verify the service method was called once
         Mocker.GetMock<IReviewBodyService>()
             .Verify(s => s.CreateReviewBody(It.IsAny<ReviewBodyDto>()), Times.Once);
+    }
+
+    [Theory, AutoData]
+    public async Task SubmitReviewBody_WithValidationError_ShouldReturnCreateReviewBodyView(
+        AddUpdateReviewBodyModel model)
+    {
+        // Arrange
+        var serviceResponse = new ServiceResponse<IEnumerable<ReviewBodyDto>>
+        {
+            StatusCode = HttpStatusCode.InternalServerError
+        };
+
+        model.Id = Guid.Empty;
+
+        Mocker.GetMock<IReviewBodyService>()
+            .Setup(s => s.CreateReviewBody(It.IsAny<ReviewBodyDto>()))
+            .ReturnsAsync(serviceResponse);
+
+        Mocker.GetMock<IValidator<AddUpdateReviewBodyModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<AddUpdateReviewBodyModel>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult()
+            {
+                Errors =
+                [
+                    new ValidationFailure()
+                    {
+                        ErrorMessage = "error",
+                        PropertyName = "name"
+                    }
+                ]
+            });
+
+        // Act
+        var result = await Sut.SubmitReviewBody(model);
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.ViewName.ShouldBe("CreateReviewBody");
+        viewResult.Model.ShouldBeEquivalentTo(model);
     }
 }
