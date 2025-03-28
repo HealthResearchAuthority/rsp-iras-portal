@@ -11,11 +11,11 @@
 <div class="govuk-grid-row">
 	<div class="govuk-grid-column-two-thirds">
 		<h2 class="govuk-heading-l">Confirm that you want to enable @Model.FirstName @Model.LastName</h2>
-		<p class="govuk-body">You are about to enable this user record.</p>
+		<p class="govuk-body">You are about to enable this user record</p>
 		<form method="post">
 			<input hidden name="Id" asp-for="Id" value="@(Model.Id ?? string.Empty)" />
 			<input hidden name="Email" asp-for="Email" value="@(Model.Email ?? string.Empty)" />
-			<button asp-route="admin:enableuser" type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button">
+			<button asp-route="admin:enableuser" type="submit" class="govuk-button" data-module="govuk-button">
 				Confirm
 			</button>
 		</form>
