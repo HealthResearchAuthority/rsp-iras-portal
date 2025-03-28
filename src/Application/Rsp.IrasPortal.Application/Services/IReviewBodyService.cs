@@ -21,5 +21,7 @@ public interface IReviewBodyService : IInterceptable
 
     Task<ServiceResponse> DisableReviewBody(Guid id);
 
+    Task<ServiceResponse> EnableReviewBody(Guid id);
+
     Task<ServiceResponse<ReviewBodyAuditTrailResponse>> ReviewBodyAuditTrail(Guid id, int skip, int take);
 }

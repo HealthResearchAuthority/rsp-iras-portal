@@ -196,10 +196,32 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
             return RedirectToAction(ViewReviewBodiesView);
         }
 
-        // SET MODEL TO INACTIVE BEFORE CONFIRM
         model.IsActive = false;
 
         var addUpdateReviewBodyModel = model.Adapt<AddUpdateReviewBodyModel>();
+        return View(ConfirmStatusView, addUpdateReviewBodyModel);
+    }
+
+    /// <summary>
+    ///     Displays the update review body
+    /// </summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EnableReviewBody(Guid id)
+    {
+        var reviewBodyDto = await reviewBodyService.GetReviewBodyById(id);
+
+        ViewBag.Mode = EnableMode;
+        var model = reviewBodyDto.Content?.FirstOrDefault();
+
+        if (model == null)
+        {
+            return RedirectToAction(ViewReviewBodiesView);
+        }
+
+        model.IsActive = true;
+        var addUpdateReviewBodyModel = model.Adapt<AddUpdateReviewBodyModel>();
+
         return View(ConfirmStatusView, addUpdateReviewBodyModel);
     }
 
@@ -221,7 +243,16 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
     {
         ViewBag.Mode = model.IsActive ? EnableMode : DisableMode;
 
-        await reviewBodyService.DisableReviewBody(model.Id);
+        if (ViewBag.Mode == EnableMode)
+        {
+            await reviewBodyService.EnableReviewBody(model.Id);
+            ViewBag.Mode = EnableMode;
+        }
+        else
+        {
+            await reviewBodyService.DisableReviewBody(model.Id);
+            ViewBag.Mode = DisableMode;
+        }
 
         return View(SuccessMessagesView, model);
     }
