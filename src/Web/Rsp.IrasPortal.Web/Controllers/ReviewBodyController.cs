@@ -233,7 +233,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
         var take = pageNumber * pageSize;
         var response = await reviewBodyService.ReviewBodyAuditTrail(reviewBodyId, skip, take);
 
-        var auditTrailResponse = response.Content;
+        var auditTrailResponse = response?.Content;
         var items = auditTrailResponse?.Items;
 
         var paginationModel = new PaginationViewModel
@@ -248,6 +248,13 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
         var reviewBody = await reviewBodyService.GetReviewBodyById(reviewBodyId);
         var reviewBodyName = reviewBody?.Content?.FirstOrDefault()?.OrganisationName;
 
-        return View(AuditTrailView, (reviewBodyName, items, paginationModel));
+        var resultModel = new ReviewBodyAuditTrailViewModel
+        {
+            BodyName = reviewBodyName,
+            Pagination = paginationModel,
+            Items = items!
+        };
+
+        return View(AuditTrailView, resultModel);
     }
 }
