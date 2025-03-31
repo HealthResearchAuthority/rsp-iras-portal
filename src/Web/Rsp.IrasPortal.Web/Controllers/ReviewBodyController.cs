@@ -226,11 +226,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
         return View(ConfirmStatusView, addUpdateReviewBodyModel);
     }
 
-        model.IsActive = true;
-        var addUpdateReviewBodyModel = model.Adapt<AddUpdateReviewBodyModel>();
-
-        return View(ConfirmStatusView, addUpdateReviewBodyModel);
-    }
+    
 
     [HttpPost]
     [ValidateAntiForgeryToken]
