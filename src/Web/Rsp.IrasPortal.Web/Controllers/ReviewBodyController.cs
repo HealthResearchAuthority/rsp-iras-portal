@@ -1,8 +1,8 @@
 ﻿using FluentValidation;
 using Mapster;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Models;
@@ -196,10 +196,32 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
             return RedirectToAction(ViewReviewBodiesView);
         }
 
-        // SET MODEL TO INACTIVE BEFORE CONFIRM
         model.IsActive = false;
 
         var addUpdateReviewBodyModel = model.Adapt<AddUpdateReviewBodyModel>();
+        return View(ConfirmStatusView, addUpdateReviewBodyModel);
+    }
+
+    /// <summary>
+    ///     Displays the update review body
+    /// </summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EnableReviewBody(Guid id)
+    {
+        var reviewBodyDto = await reviewBodyService.GetReviewBodyById(id);
+
+        ViewBag.Mode = EnableMode;
+        var model = reviewBodyDto.Content?.FirstOrDefault();
+
+        if (model == null)
+        {
+            return RedirectToAction(ViewReviewBodiesView);
+        }
+
+        model.IsActive = true;
+        var addUpdateReviewBodyModel = model.Adapt<AddUpdateReviewBodyModel>();
+
         return View(ConfirmStatusView, addUpdateReviewBodyModel);
     }
 
