@@ -1,8 +1,8 @@
 ﻿using FluentValidation;
 using Mapster;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Models;
@@ -218,6 +218,12 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
         {
             return RedirectToAction(ViewReviewBodiesView);
         }
+
+        model.IsActive = true;
+        var addUpdateReviewBodyModel = model.Adapt<AddUpdateReviewBodyModel>();
+
+        return View(ConfirmStatusView, addUpdateReviewBodyModel);
+    }
 
         model.IsActive = true;
         var addUpdateReviewBodyModel = model.Adapt<AddUpdateReviewBodyModel>();
