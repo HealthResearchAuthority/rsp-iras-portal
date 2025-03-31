@@ -1,8 +1,8 @@
 ﻿using FluentValidation;
 using Mapster;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Models;
@@ -243,7 +243,16 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
     {
         ViewBag.Mode = model.IsActive ? EnableMode : DisableMode;
 
-        await reviewBodyService.DisableReviewBody(model.Id);
+        if (ViewBag.Mode == EnableMode)
+        {
+            await reviewBodyService.EnableReviewBody(model.Id);
+            ViewBag.Mode = EnableMode;
+        }
+        else
+        {
+            await reviewBodyService.DisableReviewBody(model.Id);
+            ViewBag.Mode = DisableMode;
+        }
 
         return View(SuccessMessagesView, model);
     }

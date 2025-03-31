@@ -4,7 +4,7 @@
 	ViewData["Title"] = ViewBag.Mode == "disable" ? "Disable review body" : "Enable review body";
     var buttonText = "Confirm";
 	var heading = ViewBag.Mode == "disable" ? "Confirm that you want to disable" : "Confirm that you want to enable";
-	var hint = ViewBag.Mode == "disable" ? "ou are about to disable this review body" : "You are about to enable this review body";
+	var hint = ViewBag.Mode == "disable" ? "You are about to disable this review body" : "You are about to enable this review body";
 	var submitActionName = "rbc:confirmstatusupdate";
 	var style = ViewBag.Mode == "disable" ? "govuk-button govuk-button--warning" : "govuk-button";
 }
