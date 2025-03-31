@@ -111,7 +111,16 @@
 		<tr class="govuk-table__row">
 			<td class="govuk-table__cell"><b>Role</b></td>
 			<td class="govuk-table__cell text-capitalize">
-				@Model.UserRoles
+				@if (Model.UserRoles.Count == 0)
+				{
+					@String.Format("No Role Selected");
+				}
+				else{
+					foreach (var role in Model.UserRoles)
+					{
+					@role.RoleName
+					}
+				}
 				<input type="hidden" asp-for="UserRoles" name="UserRoles" value="@Model.UserRoles" />
 			</td>
 			<td class="govuk-table__cell govuk-table__cell--numeric">
