@@ -7,9 +7,11 @@ namespace Rsp.IrasPortal.Web.Controllers;
 [Authorize(Policy = "IsAdmin")]
 public class SystemAdminController : Controller
 {
+    private const string SystemAdminView = nameof(Index);
+
     [Route("/systemadmin", Name = "systemadmin:view")]
     public IActionResult Index()
     {
-        return View();
+        return View(SystemAdminView);
     }
 }
