@@ -42,6 +42,12 @@ public interface IReviewBodyServiceClient
     /// <summary>
     /// Gets review bodies by Id
     /// </summary>
+    [Put("/reviewbody/enable/{id}")]
+    public Task<IApiResponse<ReviewBodyDto>> EnableReviewBody(Guid id);
+
+    /// <summary>
+    /// Gets review bodies by Id
+    /// </summary>
     [Get("/reviewbody/audittrail")]
     public Task<IApiResponse<ReviewBodyAuditTrailResponse>> GetReviewBodyAuditTrail(Guid id, int skip, int take);
 }
