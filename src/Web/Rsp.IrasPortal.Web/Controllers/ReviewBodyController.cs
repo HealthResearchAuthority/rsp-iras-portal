@@ -32,7 +32,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
     /// <summary>
     ///     Displays a list of review bodies
     /// </summary>
-    [Route("/reviewbody/view", Name = "rbc:view")]
+    [Route("/reviewbody/view", Name = "rbc:viewreviewbodies")]
     public async Task<IActionResult> ViewReviewBodies()
     {
         var reviewBodies = await reviewBodyService.GetAllReviewBodies();
@@ -43,7 +43,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
     /// <summary>
     ///     Displays a single review body
     /// </summary>
-    [Route("/reviewbody/view/{id}")]
+    [Route("/reviewbody/view/{id}", Name = "rbc:viewreviewbody")]
     public async Task<IActionResult> ViewReviewBody(Guid id)
     {
         var reviewBody = await reviewBodyService.GetReviewBodyById(id);
@@ -57,7 +57,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
     ///     Displays the empty review body to create
     /// </summary>
     [HttpGet]
-    [Route("/reviewbody/create")]
+    [Route("/reviewbody/create", Name = "rbc:createreviewbody")]
     public IActionResult CreateReviewBody()
     {
         ViewBag.Mode = CreateMode;
@@ -72,7 +72,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
     /// <returns></returns>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Route("/reviewbody/create")]
+    [Route("/reviewbody/create", Name = "rbc:createreviewbody")]
     public IActionResult CreateReviewBody(AddUpdateReviewBodyModel model)
     {
         ViewBag.Mode = model.Id == Guid.Empty ? CreateMode : UpdateMode;
@@ -85,7 +85,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
     /// <returns></returns>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Route("/reviewbody/confirm-changes")]
+    [Route("/reviewbody/confirm-changes", Name = "rbc:confirmchanges")]
     public async Task<IActionResult> ConfirmChanges(AddUpdateReviewBodyModel model)
     {
         var context = new ValidationContext<AddUpdateReviewBodyModel>(model);
@@ -109,7 +109,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
     /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Route("/reviewbody/edit")]
+    [Route("/reviewbody/edit", Name = "rbc:editreviewbody")]
     public async Task<IActionResult> EditNewReviewBody(AddUpdateReviewBodyModel model)
     {
         ViewBag.Mode = CreateMode;
@@ -122,7 +122,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
     /// <returns></returns>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Route("/reviewbody/submit")]
+    [Route("/reviewbody/submit", Name = "rbc:submitreviewbody")]
     public async Task<IActionResult> SubmitReviewBody(AddUpdateReviewBodyModel model)
     {
         ViewBag.Mode = model.Id == Guid.Empty ? CreateMode : UpdateMode;
@@ -166,7 +166,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
     }
 
     [HttpGet]
-    [Route("/reviewbody/success")]
+    [Route("/reviewbody/success", Name = "rbc:sucessmessage")]
     public IActionResult SuccessMessage(AddUpdateReviewBodyModel model)
     {
         ViewBag.Mode = model.Id == Guid.Empty ? CreateMode : UpdateMode;
@@ -176,7 +176,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
     /// <summary>
     ///     Displays the update review body
     /// </summary>
-    [Route("/reviewbody/update")]
+    [Route("/reviewbody/update", Name = "rbc:updatereviewbody")]
     public async Task<IActionResult> UpdateReviewBody(Guid id)
     {
         var reviewBodyDto = await reviewBodyService.GetReviewBodyById(id);
@@ -194,7 +194,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
     /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Route("/reviewbody/disable")]
+    [Route("/reviewbody/disable", Name = "rbc:disablereviewbody")]
     public async Task<IActionResult> DisableReviewBody(Guid id)
     {
         var reviewBodyDto = await reviewBodyService.GetReviewBodyById(id);
@@ -218,6 +218,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
     /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Route("/reviewbody/enable", Name = "rbc:enablereviewbody")]
     public async Task<IActionResult> EnableReviewBody(Guid id)
     {
         var reviewBodyDto = await reviewBodyService.GetReviewBodyById(id);
@@ -238,7 +239,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Route("/reviewbody/status")]
+    [Route("/reviewbody/status", Name = "rbc:reviewbodystatuschanges")]
     public IActionResult ReviewBodyStatusChanges(AddUpdateReviewBodyModel model)
     {
         ViewBag.Mode = model.IsActive ? EnableMode : DisableMode;
@@ -251,7 +252,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
     /// <returns></returns>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Route("/reviewbody/confirm-status")]
+    [Route("/reviewbody/confirm-status", Name = "rbc:confirmstatusupdate")]
     public async Task<IActionResult> ConfirmStatusUpdate(AddUpdateReviewBodyModel model)
     {
         ViewBag.Mode = model.IsActive ? EnableMode : DisableMode;
@@ -271,6 +272,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
     }
 
     [HttpGet]
+    [Route("/reviewbody/audit-trail", Name = "rbc:audittrail")]
     public async Task<IActionResult> AuditTrail(Guid reviewBodyId, int pageNumber = 1, int pageSize = 10)
     {
         var skip = (pageNumber - 1) * pageSize;
