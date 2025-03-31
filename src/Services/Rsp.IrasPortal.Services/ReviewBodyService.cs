@@ -58,11 +58,4 @@ public class ReviewBodyService(IReviewBodyServiceClient client) : IReviewBodySer
 
         return apiResponse.ToServiceResponse();
     }
-
-    public async Task<ServiceResponse> EnableReviewBody(Guid id)
-    {
-        var apiResponse = await client.EnableReviewBody(id);
-
-        return apiResponse.ToServiceResponse();
-    }
 }
