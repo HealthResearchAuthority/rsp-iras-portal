@@ -569,15 +569,23 @@ public class UsersController(IUserManagementService userManagementService, IVali
     {
         string? rolesToRemove = null;
 
-        // if editing user, remove from existing roles before adding to newly selected role
+        // If editing an existing user, remove them from current roles before assigning new ones
         if (!string.IsNullOrEmpty(model.Id))
         {
             var existingUser = await userManagementService.GetUser(model.Id, model.Email);
             rolesToRemove = existingUser?.Content?.Roles != null ? string.Join(',', existingUser.Content.Roles) : null;
         }
 
-        var userRoles = string.Join(",", model.UserRoles);
+        // Collect all selected roles
+        var selectedRoles = model.UserRoles
+                                 ?.Where(ur => ur.IsSelected)
+                                 .Select(ur => ur.Name)
+                                 .ToList() ?? new List<string>();
 
-        return await userManagementService.UpdateRoles(model.Email, rolesToRemove, userRoles!);
+        // Convert to a comma-separated string
+        string userRoles = string.Join(",", selectedRoles);
+
+        return await userManagementService.UpdateRoles(model.Email, rolesToRemove, userRoles);
     }
+
 }
