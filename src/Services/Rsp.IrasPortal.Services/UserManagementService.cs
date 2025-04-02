@@ -1,6 +1,7 @@
 ﻿using Mapster;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Application.Services;
@@ -79,17 +80,41 @@ public class UserManagementService(IUserManagementServiceClient client) : IUserM
 
     public async Task<ServiceResponse> UpdateRoles(string email, string? rolesToRemove, string rolesToAdd)
     {
-        if (!string.IsNullOrEmpty(rolesToRemove))
+        var rolesToRemoveSet = rolesToRemove?.Split(',').Select(r => r.Trim()).ToHashSet() ?? [];
+        var rolesToAddSet = rolesToAdd.Split(',').Select(r => r.Trim()).ToHashSet();
+
+        // Remove common roles
+        var commonRoles = rolesToRemoveSet.Intersect(rolesToAddSet).ToList();
+        rolesToRemoveSet.ExceptWith(commonRoles);
+        rolesToAddSet.ExceptWith(commonRoles);
+
+        // Convert back to comma-separated strings
+        var filteredRolesToRemove = string.Join(",", rolesToRemoveSet);
+        var filteredRolesToAdd = string.Join(",", rolesToAddSet);
+
+        if (!string.IsNullOrEmpty(filteredRolesToRemove))
         {
-            var apiRemoveUsersResponse = await client.RemoveUsersFromRoles(email, rolesToRemove);
+            var apiRemoveUsersResponse = await client.RemoveUsersFromRoles(email, filteredRolesToRemove);
 
             if (!apiRemoveUsersResponse.IsSuccessStatusCode)
             {
                 return apiRemoveUsersResponse.ToServiceResponse();
             }
         }
-        var apiAddUserToRolesRespoinse = await client.AddUserToRoles(email, rolesToAdd);
 
-        return apiAddUserToRolesRespoinse.ToServiceResponse();
+        if (!string.IsNullOrEmpty(filteredRolesToAdd))
+        {
+            var apiAddUserToRolesResponse = await client.AddUserToRoles(email, filteredRolesToAdd);
+            return apiAddUserToRolesResponse.ToServiceResponse();
+        }
+
+        return new ServiceResponse { StatusCode = System.Net.HttpStatusCode.OK };
+    }
+
+    public async Task<ServiceResponse<UserAuditTrailResponse>> GetUserAuditTrail(string userId)
+    {
+        var apiResponse = await client.GetUserAuditTrail(userId);
+
+        return apiResponse.ToServiceResponse();
     }
 }

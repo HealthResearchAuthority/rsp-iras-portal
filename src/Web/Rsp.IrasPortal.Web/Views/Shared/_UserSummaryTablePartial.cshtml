@@ -192,7 +192,15 @@
 			<tr class="govuk-table__row">
 				<td class="govuk-table__cell"><b>Audit</b></td>
 				<td class="govuk-table__cell">
-					<a class="govuk-link" href="#">View this user's audit trail</a>
+                    <a 
+                        class="govuk-link"
+                        asp-route="admin:useraudittrail" 
+                        asp-route-email="@Model.Email" 
+                        asp-route-userId="@Model.Id" 
+                        asp-route-name="@Model.FirstName @Model.LastName" 
+                    >
+                        View this user's audit trail
+                    </a>
 				</td>
 				<td class="govuk-table__cell govuk-table__cell--numeric"></td>
 			</tr>
