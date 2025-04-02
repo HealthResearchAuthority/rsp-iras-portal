@@ -1,5 +1,6 @@
 ﻿using Refit;
 using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Domain.Identity;
 
 namespace Rsp.IrasPortal.Application.ServiceClients;
@@ -92,4 +93,12 @@ public interface IUserManagementServiceClient
     /// </summary>
     [Delete("/users/roles")]
     public Task<IApiResponse> RemoveUsersFromRoles(string email, string roles);
+
+    /// <summary>
+    /// Gets a user by id or email
+    /// </summary>
+    /// <param name="email">Email of the user</param>
+    /// <returns>List of users</returns>
+    [Get("/users/audit")]
+    public Task<ApiResponse<UserAuditTrailResponse>> GetUserAuditTrail(string userId);
 }
