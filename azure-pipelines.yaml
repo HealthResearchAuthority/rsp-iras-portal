@@ -108,18 +108,9 @@ stages:
           service_defaults_repo: service_defaults
 
       - ${{ if eq(parameters.skip_deployment, false) }}:
-        - job: ManualApproval
-          displayName: "Manual Approval for Dev Deployment"
-          pool: server
-          steps:
-            - task: ManualValidation@0
-              timeoutInMinutes: 1440  #24 hours for manual approval
-              inputs:
-                instructions: 'Please approve deployment to dev environment'
-                onTimeout: 'reject'
         - job: DeployToDev
-          dependsOn: ManualApproval
-          condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))  #Skip deployment for PRs
+          dependsOn: []  # No dependency on manual approval
+          condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))  # Skip deployment for PRs
           steps:
             - template: jobs/deployPortal.yaml@library
               parameters:
