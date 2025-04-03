@@ -109,7 +109,7 @@ stages:
 
       - ${{ if eq(parameters.skip_deployment, false) }}:
         - job: DeployToDev
-          dependsOn: []  # No dependency on manual approval
+          dependsOn: []
           condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))  # Skip deployment for PRs
           steps:
             - template: jobs/deployPortal.yaml@library
