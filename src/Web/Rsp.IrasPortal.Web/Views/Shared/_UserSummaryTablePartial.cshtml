@@ -111,8 +111,14 @@
 		<tr class="govuk-table__row">
 			<td class="govuk-table__cell"><b>Role</b></td>
 			<td class="govuk-table__cell text-capitalize">
-				@Model.Role
-				<input type="hidden" asp-for="Role" name="Role" value="@Model.Role" />
+                @{
+					var roleNames = Model.UserRoles?.Select(role => role.RoleName);
+
+					var selectedRoles = roleNames != null ? string.Join(", ", roleNames) : string.Empty;
+				}
+
+				@selectedRoles
+				<input type="hidden" asp-for="UserRoles" name="UserRoles" value="@Model.UserRoles" />
 			</td>
 			<td class="govuk-table__cell govuk-table__cell--numeric">
 				@{
@@ -121,7 +127,7 @@
 			</td>
 		</tr>
 
-		@if (Model.Role == "operations")
+		@if (Model.UserRoles != null && Model.UserRoles.Any(role => role.RoleName == "operations"))
 		{
 			<tr class="govuk-table__row">
 				<td class="govuk-table__cell"><b>Committee</b></td>
@@ -135,7 +141,7 @@
 			</tr>
 		}
 
-		@if (Model.Role == "operations" && Model.Country != null && Model.Country.Any())
+		@if (Model.UserRoles != null && Model.UserRoles.Any(role => role.RoleName == "operations") && Model.Country != null && Model.Country.Any())
 		{
 			<tr class="govuk-table__row">
 				<td class="govuk-table__cell"><b>Country</b></td>
@@ -154,7 +160,7 @@
 			</tr>
 		}
 
-		@if (Model.Role == "operations" && Model.AccessRequired != null && Model.AccessRequired.Any())
+		@if (Model.UserRoles != null && Model.UserRoles.Any(role => role.RoleName == "operations") && Model.AccessRequired != null && Model.AccessRequired.Any())
 		{
 			<tr class="govuk-table__row">
 				<td class="govuk-table__cell"><b>Access Required</b></td>
@@ -173,7 +179,7 @@
 			</tr>
 		}
 
-		@if (Model.Role == "operations")
+		@if (Model.UserRoles != null && Model.UserRoles.Any(role => role.RoleName == "operations"))
 		{
 			<tr class="govuk-table__row">
 				<td class="govuk-table__cell"><b>Review body</b></td>
@@ -213,7 +219,6 @@
 				<td class="govuk-table__cell govuk-table__cell--numeric"></td>
 			</tr>
 		}
-
 
 	</tbody>
 </table>
