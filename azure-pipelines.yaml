@@ -105,17 +105,20 @@ stages:
           run_sonarcloud_analysis: ${{ parameters.run_sonarcloud_analysis }}
           install_aspire: true
           service_defaults_repo: service_defaults
-
+          
   - stage: dev
     displayName: "Deploy to Development"
     variables: 
-    - group: 'DevelopmentEnvironment'
+      - group: 'DevelopmentEnvironment'
     condition: eq('${{ parameters.env }}', 'dev')
     jobs:
-      - template: jobs/deployPortal.yaml@library
-        parameters:
-          install_aspire: true
-          service_defaults_repo: service_defaults
+      - job: DeployDevJob
+        steps:
+          - ${{ if eq(parameters.skip_deployment, false) }}:
+            - template: jobs/deployPortal.yaml@library
+              parameters:
+                install_aspire: true
+                service_defaults_repo: service_defaults
 
   - stage: systemtest_auto
     displayName: "System Test (Auto)"
