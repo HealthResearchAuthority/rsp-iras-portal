@@ -12,20 +12,20 @@
 	ViewBag.Active = "manageUsers";
 	ViewBag.Title = "Manage users";
 }
-@if (ViewBag.Mode == "edit")
-{
-	<a asp-route="admin:viewuser" asp-all-route-data="@(new Dictionary<string, string>{{"email", Model.Email}, {"userId", Model.Id!}})" class="govuk-back-link">Back</a>
-}
-else
-{
-	<a asp-route="admin:users" class="govuk-back-link">Back</a>
-}
+<form method="post">
+	@if (ViewBag.Mode == "edit")
+	{
+		<a asp-route="admin:viewuser" asp-all-route-data="@(new Dictionary<string, string>{{"email", Model.Email}, {"userId", Model.Id!}})" class="govuk-back-link">Back</a>
+	}
+	else
+	{
+		<button asp-route="@submitActionName" class="govuk-back-link-button" type="submit">Back</button>
+	}
 
 
-<div class="govuk-grid-row">
-	<div class="govuk-grid-column-two-thirds">
-		<h1 class="govuk-heading-l">@heading</h1>
-		<form method="post">
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-two-thirds">
+			<h1 class="govuk-heading-l">@heading</h1>
 			<input name="Id" asp-for="Id" value="@(Model.Id ?? string.Empty)" />
 			<input name="OriginalEmail" asp-for="OriginalEmail" value="@(Model.OriginalEmail ?? string.Empty)" />
 			<input hidden readonly name="Status" asp-for="Status" value="@(Model.Status ?? string.Empty)" />
@@ -156,10 +156,9 @@ else
 			@{
 				ViewBag.Style = "ms-3 govuk-button govuk-button--secondary";
 			}
-		</form>
+		</div>
 	</div>
-</div>
-
+</form>
 <!--Use javascript only when progressive enhancement feature is enabled-->
 @if (await featureManager.IsEnabledAsync(Features.ProgressiveEnhancement))
 {
