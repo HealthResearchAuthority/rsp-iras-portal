@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.Logging.Extensions;
+using Rsp.IrasPortal.Application.Constants;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
@@ -10,7 +10,7 @@ public class AuthController : Controller
 {
     public IActionResult SignIn()
     {
-        return new ChallengeResult("OpenIdConnect", new()
+        return new ChallengeResult(AuthSchemes.OpenIdConnect, new()
         {
             RedirectUri = Url.RouteUrl("app:welcome")
         });
@@ -19,9 +19,9 @@ public class AuthController : Controller
     public async Task<IActionResult> Signout()
     {
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        await HttpContext.SignOutAsync("OpenIdConnect");
+        await HttpContext.SignOutAsync(AuthSchemes.OpenIdConnect);
 
-        return new SignOutResult([CookieAuthenticationDefaults.AuthenticationScheme, "OpenIdConnect"], new()
+        return new SignOutResult([CookieAuthenticationDefaults.AuthenticationScheme, AuthSchemes.OpenIdConnect], new()
         {
             RedirectUri = Url.RouteUrl("app:welcome")
         });

@@ -30,5 +30,13 @@ public class AppSettings
     /// </summary>
     public AuthSettings AuthSettings { get; set; } = null!;
 
+    /// <summary>
+    /// Azure App Configuration settings
+    /// </summary>
     public AzureAppConfigurations AzureAppConfiguration { get; set; } = null!;
+
+    /// <summary>
+    /// OneLogin configuration
+    /// </summary>
+    public OneLoginConfiguration OneLogin { get; set; } = null!;
 }

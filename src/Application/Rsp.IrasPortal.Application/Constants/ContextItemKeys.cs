@@ -6,7 +6,9 @@
 /// </summary>
 public struct ContextItemKeys
 {
+    public const string BearerToken = "bearer_token";
     public const string AcessToken = "access_token";
+    public const string IdToken = "id_token";
     public const string RespondentId = "context:respondentid";
     public const string Email = "context:email";
     public const string FirstName = "context:firstname";

@@ -1,15 +1,12 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using AutoFixture.Xunit2;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Moq;
 using NetDevPack.Security.Jwt.Core.Interfaces;
 using Rsp.IrasPortal.Application.Configuration;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Infrastructure.Claims;
-using Shouldly;
 
 namespace Rsp.IrasPortal.UnitTests.Infrastructure.CustomClaimsTransformationTests;
 
@@ -55,7 +52,7 @@ public class UpdateAccessTokenTests : TestServiceBase<CustomClaimsTransformation
 
         // Mock HttpContext
         var httpContext = new DefaultHttpContext();
-        httpContext.Items[ContextItemKeys.AcessToken] = token;
+        httpContext.Items[ContextItemKeys.BearerToken] = token;
         _httpContextAccessor
             .SetupGet(x => x.HttpContext)
             .Returns(httpContext);
@@ -64,7 +61,7 @@ public class UpdateAccessTokenTests : TestServiceBase<CustomClaimsTransformation
         await Sut.UpdateAccessToken(principal);
 
         // Assert
-        httpContext.Items[ContextItemKeys.AcessToken]
+        httpContext.Items[ContextItemKeys.BearerToken]
             .ShouldNotBeNull()
             .ShouldNotBe(token);
 
@@ -72,7 +69,7 @@ public class UpdateAccessTokenTests : TestServiceBase<CustomClaimsTransformation
         var handler = new JwtSecurityTokenHandler();
 
         // get the updated access token
-        var jsonToken = handler.ReadJwtToken(httpContext.Items[ContextItemKeys.AcessToken] as string);
+        var jsonToken = handler.ReadJwtToken(httpContext.Items[ContextItemKeys.BearerToken] as string);
 
         // get the claims from the updated access token
         var updatedClaims = jsonToken.Claims.ToList();

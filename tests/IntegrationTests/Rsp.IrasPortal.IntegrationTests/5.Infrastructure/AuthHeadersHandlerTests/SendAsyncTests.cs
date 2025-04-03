@@ -52,7 +52,7 @@ public class SendAsyncTests
                                 var client = factory.CreateClient("TestHttpClient");
 
                                 // set the access token in the context
-                                ctx.Items[ContextItemKeys.AcessToken] = "test-token";
+                                ctx.Items[ContextItemKeys.BearerToken] = "test-token";
 
                                 // make a request using the fake base address above
                                 await client.SendAsync(request);

@@ -27,11 +27,14 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
             .MaximumLength(250)
             .WithMessage(MaxCharactersErrorMessage);
 
+        // email validation to loosley comply with RFC 5322 standard
         RuleFor(x => x.Email)
             .NotEmpty()
             .WithMessage(MandatoryErrorMessage)
-            .EmailAddress()
-            .WithMessage("Incorrect email format");
+            .MaximumLength(255)
+            .WithMessage("Max 255 characters allowed")
+            .Matches(@"^(?!(?:(?:.*\.\.)|(?:.*\.\@)))(?!.*\.\.$)(?!.*\.\@)[\p{L}\p{N}!#$%&'*+/=?^_`{|}~.-]+@[\p{L}\p{N}.-]+\.[\p{L}]{2,}$")
+            .WithMessage("Invalid email format.");
 
         RuleFor(x => x.Telephone)
             .MaximumLength(11)
@@ -48,7 +51,7 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
         RuleFor(x => x.UserRoles)
             .NotEmpty()
             .WithMessage(MandatoryErrorMessage);
-
+            
         RuleFor(x => x.Country)
             .NotEmpty()
             .WithMessage(ConditionalMandatoryErrorMessage)

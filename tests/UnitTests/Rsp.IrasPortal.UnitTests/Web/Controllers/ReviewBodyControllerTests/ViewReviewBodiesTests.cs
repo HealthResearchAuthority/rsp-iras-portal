@@ -3,6 +3,7 @@ using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Controllers;
+using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ReviewBodyControllerTests;
 
@@ -98,8 +99,7 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
-        var model = viewResult.Model.ShouldBeAssignableTo<ReviewBodyDto>();
-        model.ShouldBeEquivalentTo(reviewBodyDto);
+        var model = viewResult.Model.ShouldBeAssignableTo<AddUpdateReviewBodyModel>();
 
         // Verify that the service method was called once
         Mocker.GetMock<IReviewBodyService>()

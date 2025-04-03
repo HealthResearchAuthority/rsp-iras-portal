@@ -22,6 +22,8 @@ public class PaginationViewModel
 
     /// <summary>
     /// Gets or sets the total count.
-    /// </summary>
+    /// </summary>s
     public int TotalCount { get; set; }
+
+    public string? ReviewBodyId { get; set; } = null;
 }

@@ -10,7 +10,7 @@
 	var previousStage = TempData[TempDataKeys.PreviousStage] as string;
 	var previousCategory = TempData[TempDataKeys.PreviousCategory] as string;
 	var currentStage = TempData[TempDataKeys.CurrentStage] as string;
-	var errorSummaryTitle = "You need to complete these questions before you can continue::";
+	var errorSummaryTitle = "There is a problem";
 
 	Model.CurrentStage = currentStage;
 
@@ -86,115 +86,188 @@
 }
 
 @{
-	var navModel = string.IsNullOrEmpty(previousStage) ? 
+	var navModel = string.IsNullOrEmpty(previousStage) ?
 						("app:createapplication", "Back", new Dictionary<string, string>()) :
 						("qnc:displayquestionnaire", "Back", new Dictionary<string, string>
-                        { 
-                            { "categoryId", previousCategory },
-                            { "sectionId", previousStage }
-                        });
+																		{
+							{ "categoryId", previousCategory },
+							{ "sectionId", previousStage }
+																		});
 }
 <partial name="_BackNavigation" model="@navModel" />
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-two-thirds">
+		<form method="post">
 
-<form method="post">
-
-	@if (ViewData[ViewDataKeys.IsQuestionnaireValid] is true)
-	{
-		<div class="govuk-panel govuk-panel--confirmation">
-			<div class="govuk-panel__body">
-				Validation Passed
-			</div>
-		</div>
-	}
-
-	<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
-
-	<div class="govuk-form-group">
-
-		<input hidden asp-for="CurrentStage" value="@currentStage" />
-
-		@{
-			var errorKey = string.Empty;
-			var validationMessage = string.Empty;
-			var fieldHasErrors = false;
-		}
-
-
-		<govuk-fieldset class="sections">
-			<govuk-fieldset-legend class="govuk-fieldset__legend--l">
-				<div class="govuk-grid-row">
-					<div class="govuk-grid-column-two-thirds">
-						<h2 class="govuk-heading-l" id="title">@(Model.Questions.FirstOrDefault()?.Section)</h2>
+			@if (ViewData[ViewDataKeys.IsQuestionnaireValid] is true)
+			{
+				<div class="govuk-panel govuk-panel--confirmation">
+					<div class="govuk-panel__body">
+						Validation Passed
 					</div>
 				</div>
-				<hr class="govuk-section-break govuk-section-break--visible">
-			</govuk-fieldset-legend>
-			<br />
-			<br />
-
-			@{
-				var questions = Model.Questions;
 			}
 
+			<div class="govuk-form-group">
 
-			@foreach (var question in questions)
-			{
-				var index = question.Index;
+				<input hidden asp-for="CurrentStage" value="@currentStage" />
 
-				<input type="hidden" asp-for="Questions[index].Index" />
-				<input type="hidden" asp-for="Questions[index].QuestionId" />
-				<input type="hidden" asp-for="Questions[index].Category" />
-				<input type="hidden" asp-for="Questions[index].SectionId" />
-				<input type="hidden" asp-for="Questions[index].Section" />
-				<input type="hidden" asp-for="Questions[index].Heading" />
-				<input type="hidden" asp-for="Questions[index].QuestionText" />
-				<input type="hidden" asp-for="Questions[index].QuestionType" />
-				<input type="hidden" asp-for="Questions[index].DataType" />
-				<input type="hidden" asp-for="Questions[index].IsMandatory" checked="@question.IsMandatory" />
-				<input type="hidden" asp-for="Questions[index].IsOptional" checked="@question.IsOptional" />
-
-				var rules = question.Rules;
-				var conditional = "";
-
-				if (!question.IsMandatory)
-				{
-					if (rules.Count == 0)
-					{
-						<govuk-inset-text>
-							This question is conditional:
-						</govuk-inset-text>
-					}
-					else
-					{
-						conditional = "conditional ";
-					}
+				@{
+					var errorKey = string.Empty;
+					var validationMessage = string.Empty;
+					var fieldHasErrors = false;
+					var conditionalClass = string.Empty;
+					var errorClass = string.Empty;
 				}
 
-				var parents = conditional.Length > 0 ? "data-parents=" + string.Join(',', rules.Select(rule => rule.ParentQuestionId)) : "";
-				var questionId = conditional.Length > 0 ? "data-questionId=" + question.QuestionId : "";
 
-				switch (question.DataType.ToLower())
-				{
-					case "date":
+				<govuk-fieldset class="sections">
+					<govuk-fieldset-legend class="govuk-fieldset__legend--l">
+						<h2 class="govuk-heading-l" id="title">@(Model.Questions.FirstOrDefault()?.Section)</h2>
+					</govuk-fieldset-legend>
+					<br />
+					<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
+
+					@{
+						var questions = Model.Questions;
+					}
+
+
+					@foreach (var question in questions)
+					{
+						var index = question.Index;
+
+						<input type="hidden" asp-for="Questions[index].Index" />
+						<input type="hidden" asp-for="Questions[index].QuestionId" />
+						<input type="hidden" asp-for="Questions[index].Category" />
+						<input type="hidden" asp-for="Questions[index].SectionId" />
+						<input type="hidden" asp-for="Questions[index].Section" />
+						<input type="hidden" asp-for="Questions[index].Heading" />
+						<input type="hidden" asp-for="Questions[index].QuestionText" />
+						<input type="hidden" asp-for="Questions[index].QuestionType" />
+						<input type="hidden" asp-for="Questions[index].DataType" />
+						<input type="hidden" asp-for="Questions[index].IsMandatory" checked="@question.IsMandatory" />
+						<input type="hidden" asp-for="Questions[index].IsOptional" checked="@question.IsOptional" />
+
+						var rules = question.Rules;
+						var conditional = "";
+
+						if (!question.IsMandatory)
 						{
-							errorKey = $"Questions[{index}].AnswerText";
-							validationMessage = "Provide an answer for this question";
-							fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
+							if (rules.Count == 0)
+							{
+								<govuk-inset-text>
+									This question is conditional:
+								</govuk-inset-text>
+							}
+							else
+							{
+								conditional = "conditional ";
+							}
+						}
 
-							<div id="Questions[@index].AnswerText" class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")" @parents @questionId>
+						var parents = conditional.Length > 0 ? "data-parents=" + string.Join(',', rules.Select(rule => rule.ParentQuestionId)) : "";
+						var questionId = conditional.Length > 0 ? "data-questionId=" + question.QuestionId : "";
 
-								@if (fieldHasErrors)
+						switch (question.DataType.ToLower())
+						{
+							case "date":
 								{
-									BuildValidationMessage(question.Rules, errorKey, validationMessage);
-								}
+									errorKey = $"Questions[{index}].AnswerText";
+									validationMessage = "Provide an answer for this question";
+									fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
 
-								<div class="govuk-form-group">
-									<fieldset class="govuk-fieldset" role="group" aria-describedby="passport-issued-hint">
+									<div id="Questions[@index].AnswerText" class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")" @parents @questionId>
+
+										@if (fieldHasErrors)
+										{
+											BuildValidationMessage(question.Rules, errorKey, validationMessage);
+										}
+
+										<div class="govuk-form-group">
+											<fieldset class="govuk-fieldset" role="group" aria-describedby="passport-issued-hint">
+												<h1 class="govuk-label-wrapper">
+													<label class="govuk-label govuk-label--s" for="@(question.QuestionId)_Text">
+														@question.QuestionText
+													</label>
+												</h1>
+												<div id="rule-hint" class="govuk-hint">
+													@if (rules.Count > 0)
+													{
+														@foreach (var rule in rules)
+														{
+															<p>
+																@rule.Description
+															</p>
+														}
+													}
+												</div>
+												@{
+													// Extract values from AnswerText if available
+													if (!string.IsNullOrWhiteSpace(Model.Questions[index].AnswerText) &&
+													DateTime.TryParse(Model.Questions[index].AnswerText, out var parsedDate))
+													{
+														Model.Questions[index].Day = parsedDate.Day.ToString();
+														Model.Questions[index].Month = parsedDate.Month.ToString();
+														Model.Questions[index].Year = parsedDate.Year.ToString();
+													}
+												}
+
+												<div class="govuk-date-input" id="passport-issued">
+													<div class="govuk-date-input__item">
+														<div class="govuk-form-group">
+															<label class="govuk-label govuk-date-input__label" for="Questions_@(index)_Day">Day</label>
+															@Html.TextBoxFor(m => m.Questions[index].Day, new
+																{
+																	@class = "govuk-input govuk-date-input__input govuk-input--width-2",
+																	id = "Questions_" + index + "_Day",
+																	inputmode = "numeric"
+																})
+														</div>
+													</div>
+													<div class="govuk-date-input__item">
+														<div class="govuk-form-group">
+															<label class="govuk-label govuk-date-input__label" for="Questions_@(index)_Month">Month</label>
+															@Html.TextBoxFor(m => m.Questions[index].Month, new
+																{
+																	@class = "govuk-input govuk-date-input__input govuk-input--width-2",
+																	id = "Questions_" + index + "_Month",
+																	inputmode = "numeric"
+																})
+														</div>
+													</div>
+													<div class="govuk-date-input__item">
+														<div class="govuk-form-group">
+															<label class="govuk-label govuk-date-input__label" for="Questions_@(index)_Year">Year</label>
+															@Html.TextBoxFor(m => m.Questions[index].Year, new
+																{
+																	@class = "govuk-input govuk-date-input__input govuk-input--width-4",
+																	id = "Questions_" + index + "_Year",
+																	inputmode = "numeric"
+																})
+														</div>
+													</div>
+												</div>
+											</fieldset>
+										</div>
+									</div>
+								}
+								break;
+							case "text":
+							case "email":
+								{
+									errorKey = $"Questions[{index}].AnswerText";
+									validationMessage = "Provide an answer for this question";
+									fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
+
+									<div id="Questions[@index].AnswerText" class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")" @parents @questionId>
+
 										<h1 class="govuk-label-wrapper">
 											<label class="govuk-label govuk-label--s" for="@(question.QuestionId)_Text">
 												@question.QuestionText
 											</label>
 										</h1>
+
 										<div id="rule-hint" class="govuk-hint">
 											@if (rules.Count > 0)
 											{
@@ -206,203 +279,156 @@
 												}
 											}
 										</div>
+
+
+										@if (fieldHasErrors)
+										{
+											BuildValidationMessage(question.Rules, errorKey, validationMessage);
+										}
+
 										@{
-											// Extract values from AnswerText if available
-											if (!string.IsNullOrWhiteSpace(Model.Questions[index].AnswerText) &&
-											DateTime.TryParse(Model.Questions[index].AnswerText, out var parsedDate))
+											var sizeRule = rules.FirstOrDefault(x => x.Conditions.SingleOrDefault(y => y.Operator == "SIZE") != null);
+											var condition = sizeRule?.Conditions.FirstOrDefault(x => x.Operator == "SIZE");
+											var conditionValue = condition?.Value;
+
+											var cssClass = "govuk-input";
+											if (!string.IsNullOrEmpty(conditionValue))
 											{
-												Model.Questions[index].Day = parsedDate.Day.ToString();
-												Model.Questions[index].Month = parsedDate.Month.ToString();
-												Model.Questions[index].Year = parsedDate.Year.ToString();
+												cssClass = "govuk-input-nowidth";
 											}
 										}
-
-										<div class="govuk-date-input" id="passport-issued">
-											<div class="govuk-date-input__item">
-												<div class="govuk-form-group">
-													<label class="govuk-label govuk-date-input__label" for="Questions_@(index)_Day">Day</label>
-													@Html.TextBoxFor(m => m.Questions[index].Day, new
-														{
-															@class = "govuk-input govuk-date-input__input govuk-input--width-2",
-															id = "Questions_" + index + "_Day",
-															inputmode = "numeric"
-														})
-												</div>
-											</div>
-											<div class="govuk-date-input__item">
-												<div class="govuk-form-group">
-													<label class="govuk-label govuk-date-input__label" for="Questions_@(index)_Month">Month</label>
-													@Html.TextBoxFor(m => m.Questions[index].Month, new
-														{
-															@class = "govuk-input govuk-date-input__input govuk-input--width-2",
-															id = "Questions_" + index + "_Month",
-															inputmode = "numeric"
-														})
-												</div>
-											</div>
-											<div class="govuk-date-input__item">
-												<div class="govuk-form-group">
-													<label class="govuk-label govuk-date-input__label" for="Questions_@(index)_Year">Year</label>
-													@Html.TextBoxFor(m => m.Questions[index].Year, new
-														{
-															@class = "govuk-input govuk-date-input__input govuk-input--width-4",
-															id = "Questions_" + index + "_Year",
-															inputmode = "numeric"
-														})
-												</div>
-											</div>
-										</div>
-									</fieldset>
-								</div>
-							</div>
-						}
-						break;
-					case "text":
-					case "email":
-						{
-							errorKey = $"Questions[{index}].AnswerText";
-							validationMessage = "Provide an answer for this question";
-							fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
-
-							<div id="Questions[@index].AnswerText" class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")" @parents @questionId>
-
-								<h1 class="govuk-label-wrapper">
-									<label class="govuk-label govuk-label--s" for="@(question.QuestionId)_Text">
-										@question.QuestionText
-									</label>
-								</h1>
-
-								<div id="rule-hint" class="govuk-hint">
-									@if (rules.Count > 0)
-									{
-										@foreach (var rule in rules)
-										{
-											<p>
-												@rule.Description
-											</p>
-										}
-									}
-								</div>
-
-
-								@if (fieldHasErrors)
-								{
-									BuildValidationMessage(question.Rules, errorKey, validationMessage);
+										@Html.TextBoxFor(model => model.Questions[index].AnswerText, new { id = question.QuestionId + "_Text", @class = cssClass, size = conditionValue ?? "0" })
+									</div>
 								}
+								break;
+							case "checkbox":
+								{
+									errorKey = $"Questions[{index}].Answers";
+									validationMessage = "Select at least one option";
+									fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
 
-								@Html.TextBoxFor(model => model.Questions[index].AnswerText, new { id = question.QuestionId + "_Text", @class = "govuk-input" })
-							</div>
-						}
-						break;
-					case "checkbox":
-						{
-							errorKey = $"Questions[{index}].Answers";
-							validationMessage = "Select at least one option";
-							fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
-
-							<div id="Questions[@index].Answers" class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")" @parents @questionId>
-								<govuk-fieldset>
-									<govuk-fieldset-legend class="govuk-fieldset__legend--s">
-										@question.QuestionText
-									</govuk-fieldset-legend>
-
-									@if (fieldHasErrors)
-									{
-										BuildValidationMessage(question.Rules, errorKey, validationMessage);
-									}
-
-									<div class="govuk-checkboxes" data-module="govuk-checkboxes">
-										@foreach (var (answer, ansIndex) in question.Answers.Select((answer, ansIndex) => (answer, ansIndex)))
-										{
-											<div class="govuk-checkboxes__item">
-												@Html.HiddenFor(model => model.Questions[index].Answers[ansIndex].AnswerId)
-												@Html.HiddenFor(model => model.Questions[index].Answers[ansIndex].AnswerText)
-												<input class="govuk-checkboxes__input" type="checkbox" asp-for="Questions[index].Answers[ansIndex].IsSelected" id="@(question.QuestionId)_@(answer.AnswerId)" />
-												@Html.Label(question.QuestionId + "_" + answer.AnswerId, answer.AnswerText, new { @class = "govuk-checkboxes__label govuk-label" })
+									<div id="Questions[@index].Answers" class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")" @parents @questionId>
+										<govuk-fieldset>
+											<govuk-fieldset-legend class="govuk-fieldset__legend--s">
+												@question.QuestionText
+											</govuk-fieldset-legend>
+											<div id="rule-hint" class="govuk-hint">
+												@if (rules.Count > 0)
+												{
+													@foreach (var rule in rules)
+													{
+														<p>
+															@rule.Description
+														</p>
+													}
+												}
 											</div>
-										}
-									</div>
-								</govuk-fieldset>
-							</div>
-						}
-						break;
-					case "radio button":
-					case "boolean":
-						{
-							errorKey = $"Questions[{index}].SelectedOption";
-							validationMessage = "Select one option";
-							fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
+											@if (fieldHasErrors)
+											{
+												BuildValidationMessage(question.Rules, errorKey, validationMessage);
+											}
 
-							<div id="Questions[@index].SelectedOption" class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")" @parents @questionId>
-								<govuk-fieldset>
-									<govuk-fieldset-legend class="govuk-fieldset__legend--s">
-										@question.QuestionText
-									</govuk-fieldset-legend>
-
-									@if (fieldHasErrors)
-									{
-										BuildValidationMessage(question.Rules, errorKey, validationMessage);
-									}
-
-									<div class="govuk-radios" data-module="govuk-radios">
-										@foreach (var (answer, ansIndex) in question.Answers.Select((answer, ansIndex) => (answer, ansIndex)))
-										{
-											<div class="govuk-radios__item">
-												@Html.HiddenFor(model => model.Questions[index].Answers[ansIndex].AnswerId)
-												@Html.HiddenFor(model => model.Questions[index].Answers[ansIndex].AnswerText)
-												@Html.RadioButtonFor(model => model.Questions[index].SelectedOption, answer.AnswerId, new { id = question.QuestionId + "_" + answer.AnswerId, @class = "govuk-radios__input" })
-												@Html.Label(question.QuestionId + "_" + answer.AnswerId, answer.AnswerText, new { @class = "govuk-radios__label govuk-label" })
+											<div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+												@foreach (var (answer, ansIndex) in question.Answers.Select((answer, ansIndex) => (answer, ansIndex)))
+												{
+													<div class="govuk-checkboxes__item">
+														@Html.HiddenFor(model => model.Questions[index].Answers[ansIndex].AnswerId)
+														@Html.HiddenFor(model => model.Questions[index].Answers[ansIndex].AnswerText)
+														<input class="govuk-checkboxes__input" type="checkbox" asp-for="Questions[index].Answers[ansIndex].IsSelected" id="@(question.QuestionId)_@(answer.AnswerId)" />
+														@Html.Label(question.QuestionId + "_" + answer.AnswerId, answer.AnswerText, new { @class = "govuk-checkboxes__label govuk-label" })
+													</div>
+												}
 											</div>
-										}
+										</govuk-fieldset>
 									</div>
-								</govuk-fieldset>
-							</div>
+								}
+								break;
+							case "radio button":
+							case "boolean":
+								{
+									errorKey = $"Questions[{index}].SelectedOption";
+									validationMessage = "Select one option";
+									fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
+									conditionalClass = conditional.Length > 0 ? " govuk-radios__conditional" : "";
+									errorClass = fieldHasErrors ? " govuk-form-group--error" : "";
+
+									<div id="Questions[@index].SelectedOption"
+										 class="@(conditional + conditionalClass + errorClass) govuk-form-group" @parents @questionId>
+										<govuk-fieldset>
+											<govuk-fieldset-legend class="govuk-fieldset__legend--s">
+												@question.QuestionText
+											</govuk-fieldset-legend>
+
+											@if (fieldHasErrors)
+											{
+												BuildValidationMessage(question.Rules, errorKey, validationMessage);
+											}
+
+											@{
+												string divInlineClass = (conditional.Length > 0) ? "govuk-radios" : "govuk-radios govuk-radios--inline";
+											}
+
+											<div class="@divInlineClass" data-module="govuk-radios">
+												@foreach (var (answer, ansIndex) in question.Answers.Select((answer, ansIndex) => (answer, ansIndex)))
+												{
+													<div class="govuk-radios__item">
+														@Html.HiddenFor(model => model.Questions[index].Answers[ansIndex].AnswerId)
+														@Html.HiddenFor(model => model.Questions[index].Answers[ansIndex].AnswerText)
+														@Html.RadioButtonFor(model => model.Questions[index].SelectedOption, answer.AnswerId, new { id = question.QuestionId + "_" + answer.AnswerId, @class = "govuk-radios__input" })
+														@Html.Label(question.QuestionId + "_" + answer.AnswerId, answer.AnswerText, new { @class = "govuk-radios__label govuk-label" })
+													</div>
+												}
+											</div>
+										</govuk-fieldset>
+									</div>
+								}
+								break;
+							case "look-up list":
+								{
+									errorKey = $"Questions[{index}].SelectedOption";
+									validationMessage = "Select one option";
+									fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
+
+									<div id="Questions[@index].SelectedOption"
+										 class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")"
+									@parents @questionId>
+										<govuk-fieldset>
+											<govuk-fieldset-legend class="govuk-fieldset__legend--s">
+												@question.QuestionText
+											</govuk-fieldset-legend>
+
+											@if (fieldHasErrors)
+											{
+												BuildValidationMessage(question.Rules, errorKey, validationMessage);
+											}
+
+											<select id="@question.QuestionId" name="Questions[@index].SelectedOption" asp-for="Questions[@index].SelectedOption" class="govuk-select">
+												<option value="" selected disabled>Please select...</option>
+												@foreach (var answer in question.Answers)
+												{
+													<option id="@($"{question.QuestionId}_{answer.AnswerId}")" value="@answer.AnswerId">
+														@answer.AnswerText
+													</option>
+												}
+											</select>
+										</govuk-fieldset>
+									</div>
+								}
+								break;
 						}
-						break;
-					case "look-up list":
-						{
-							errorKey = $"Questions[{index}].SelectedOption";
-							validationMessage = "Select one option";
-							fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
+					}
+				</govuk-fieldset>
 
-							<div id="Questions[@index].SelectedOption"
-							class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")"
-							@parents @questionId>
-								<govuk-fieldset>
-									<govuk-fieldset-legend class="govuk-fieldset__legend--s">
-										@question.QuestionText
-									</govuk-fieldset-legend>
+			</div>
 
-									@if (fieldHasErrors)
-									{
-										BuildValidationMessage(question.Rules, errorKey, validationMessage);
-									}
+			<partial name="_SubmitButton" model="@("qnc:saveresponses", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } })" />
 
-									<select id="@question.QuestionId" name="Questions[@index].SelectedOption" asp-for="Questions[@index].SelectedOption" class="govuk-select">
-										<option value="" selected disabled>Please select...</option>
-										@foreach (var answer in question.Answers)
-										{
-											<option id="@($"{question.QuestionId}_{answer.AnswerId}")" value="@answer.AnswerId">
-												@answer.AnswerText
-											</option>
-										}
-									</select>
-								</govuk-fieldset>
-							</div>
-						}
-						break;
-				}
+			@if (!string.IsNullOrEmpty(previousStage))
+			{
+				<button type="button" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+					Save for later
+				</button>
 			}
-		</govuk-fieldset>
-
+		</form>
 	</div>
-
-	<partial name="_SubmitButton" model="@("qnc:saveresponses", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } })" />
-
-	@if (!string.IsNullOrEmpty(previousStage))
-	{
-		<button type="button" class="govuk-button govuk-button--secondary" data-module="govuk-button">
-			Save for later
-		</button>
-	}
-</form>
+</div>
