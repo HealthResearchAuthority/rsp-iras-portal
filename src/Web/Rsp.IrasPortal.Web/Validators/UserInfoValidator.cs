@@ -51,16 +51,15 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
         RuleFor(x => x.UserRoles)
             .NotEmpty()
             .WithMessage(MandatoryErrorMessage);
-            
+
         RuleFor(x => x.Country)
             .NotEmpty()
             .WithMessage(ConditionalMandatoryErrorMessage)
-            .When(x => x.UserRoles != null && x.UserRoles.Any(role => role.RoleName == "operations"));
+            .When(x => x.UserRoles != null && x.UserRoles.Any(role => role.RoleName == "operations" && role.IsSelected));
 
         RuleFor(x => x.AccessRequired)
             .NotEmpty()
             .WithMessage(ConditionalMandatoryErrorMessage)
-            .When(x => x.UserRoles != null && x.UserRoles.Any(role => role.RoleName == "operations"));
-
+            .When(x => x.UserRoles != null && x.UserRoles.Any(role => role.RoleName == "operations" && role.IsSelected));
     }
 }

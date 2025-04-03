@@ -31,7 +31,10 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
         // Arrange
         var model = new UserViewModel
         {
-            Role = "operations",
+            UserRoles = [ new()
+            {
+                RoleName = "operations"
+            }],
             Country = null!
         };
 
@@ -50,7 +53,12 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
         // Arrange
         var model = new UserViewModel
         {
-            Role = "admin",
+            UserRoles =
+            [ new()
+                {
+                    RoleName = "admin"
+                }
+            ],
             Country = null!
         };
 

@@ -27,7 +27,7 @@ public class UserViewModel
 
     public string? JobTitle { get; set; } = null;
 
-    public IList<UserRoleViewModel>? UserRoles { get; set; } = [];
+    public IList<UserRoleViewModel> UserRoles { get; set; } = [];
 
     public IList<string>? Country { get; set; } = null;
 
@@ -66,7 +66,7 @@ public class UserViewModel
             Title = user.Title;
             JobTitle = user.JobTitle;
             Organisation = user.Organisation;
-            UserRoles = roles != null ? roles.Select(role => new UserRoleViewModel { RoleName = role }).ToList() : new List<UserRoleViewModel>();
+            UserRoles = roles != null ? roles.Select(role => new UserRoleViewModel { RoleName = role, IsSelected = true }).ToList() : [];
             LastUpdated = user.LastUpdated;
             OriginalEmail = user.Email;
             Status = user.Status;
