@@ -108,15 +108,14 @@ stages:
 
   - stage: dev
     displayName: "Deploy to Development"
-    condition: eq('${{ parameters.env }}', 'dev')
     variables: 
     - group: 'DevelopmentEnvironment'
+    condition: eq('${{ parameters.env }}', 'dev')
     jobs:
-      - ${{ if eq(parameters.skip_deployment, false) }}:
-        - template: jobs/deployPortal.yaml@library
-          parameters:
-            install_aspire: true
-            service_defaults_repo: service_defaults
+      - template: jobs/deployPortal.yaml@library
+        parameters:
+          install_aspire: true
+          service_defaults_repo: service_defaults
 
   - stage: systemtest_auto
     displayName: "System Test (Auto)"
