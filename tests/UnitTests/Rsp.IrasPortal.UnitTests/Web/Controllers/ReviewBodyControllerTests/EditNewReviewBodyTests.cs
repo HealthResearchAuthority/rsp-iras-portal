@@ -7,10 +7,10 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ReviewBodyControllerTests;
 public class EditNewReviewBodyTests : TestServiceBase<ReviewBodyController>
 {
     [Fact]
-    public async Task EditNewReviewBody_ShouldReturnView()
+    public void EditNewReviewBody_ShouldReturnView()
     {
         // Arrange + Act
-        var result = await Sut.EditNewReviewBody(It.IsAny<AddUpdateReviewBodyModel>());
+        var result = Sut.EditNewReviewBody(It.IsAny<AddUpdateReviewBodyModel>());
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();

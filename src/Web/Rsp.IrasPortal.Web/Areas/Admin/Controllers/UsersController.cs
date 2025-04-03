@@ -514,6 +514,29 @@ public class UsersController(IUserManagementService userManagementService, IVali
         };
     }
 
+    /// <summary>
+    /// Displays the user audit trail
+    /// </summary>
+    [HttpGet]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Email is needed for backlink in view")]
+    public async Task<IActionResult> UserAuditTrail(string userId, string email, string name)
+    {
+        var userAuditTrail = await userManagementService.GetUserAuditTrail(userId);
+
+        var model = new UserAuditTrailViewModel()
+        {
+            Name = name,
+            Items = [],
+        };
+
+        if (userAuditTrail.IsSuccessStatusCode)
+        {
+            model = userAuditTrail.Content.Adapt<UserAuditTrailViewModel>();
+        }
+
+        return View(model);
+    }
+
     private async Task<IList<Role>> GetAlluserRoles()
     {
         var availableRoles = await userManagementService.GetRoles();

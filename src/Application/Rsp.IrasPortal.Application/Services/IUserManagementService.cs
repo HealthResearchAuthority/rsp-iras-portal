@@ -1,5 +1,6 @@
 ﻿using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.Logging.Interceptors;
 
@@ -31,6 +32,5 @@ public interface IUserManagementService : IInterceptable
 
     Task<ServiceResponse> UpdateRoles(string email, string? rolesToRemove, string rolesToAdd);
 
-    //Task<ServiceResponse> UpdateRoles(string email, string? rolesToRemove, IList<UserRoleViewModel> rolesToAdd);
-    //Task<ServiceResponse> UpdateRoles(string email, string? rolesToRemove, IList<IrasPortal.Web.Areas.Admin.Models.UserRoleViewModel> userRoleViewModels);
+    Task<ServiceResponse<UserAuditTrailResponse>> GetUserAuditTrail(string userId);
 }
