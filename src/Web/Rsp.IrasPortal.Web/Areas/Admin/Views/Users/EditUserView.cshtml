@@ -77,10 +77,6 @@
 				</label>
 				<span class="govuk-error-message" asp-validation-for="UserRoles"></span>
 				<div class="govuk-checkboxes" data-module="govuk-checkboxes">
-					@foreach (var role in Model.UserRoles)
-					{
-						role.IsSelected = true;
-					}
 
 					@foreach (var (role, index) in Model.AvailableUserRoles.Select((role, index) => (role, index)))
 					{
