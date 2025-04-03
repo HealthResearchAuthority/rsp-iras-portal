@@ -1,5 +1,5 @@
 name: $(Build.DefinitionName)_$(Build.SourceBranchName)_$(date:yyyyMMdd)$(rev:.r)
-# testing
+
 pool:
   vmImage: "Ubuntu-latest"
 
@@ -37,7 +37,7 @@ parameters:
   - name: skip_deployment
     displayName: Skip Deployment
     type: boolean
-    default: false
+    default: true
   - name: browser
     displayName: Select a Browser
     type: string
@@ -96,7 +96,7 @@ stages:
   - stage: dev
     variables: 
     - group: 'DevelopmentEnvironment'
-    condition: eq('${{ parameters.env }}', 'dev') 
+    condition: eq('${{ parameters.env }}', 'dev')
     jobs:
       - template: jobs/build.yaml@library
         parameters:
@@ -106,11 +106,10 @@ stages:
           run_sonarcloud_analysis: ${{ parameters.run_sonarcloud_analysis }}
           install_aspire: true
           service_defaults_repo: service_defaults
-      
+
       - ${{ if eq(parameters.skip_deployment, false) }}:
         - template: jobs/deployPortal.yaml@library
           parameters:
-            depends_on: 'Build'
             install_aspire: true
             service_defaults_repo: service_defaults
 
