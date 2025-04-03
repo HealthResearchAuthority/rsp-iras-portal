@@ -111,23 +111,13 @@
 		<tr class="govuk-table__row">
 			<td class="govuk-table__cell"><b>Role</b></td>
 			<td class="govuk-table__cell text-capitalize">
-				@if (Model.UserRoles.Count == 0)
-				{
-					@String.Format("")
-					;
+                @{
+					var roleNames = Model.UserRoles?.Select(role => role.RoleName);
+
+					var selectedRoles = roleNames != null ? string.Join(", ", roleNames) : string.Empty;
 				}
-				else{
-					var roles = "";
-					foreach (var role in Model.UserRoles)
-					{
-						roles += role.RoleName + ", ";
-					}
-					if (roles.Length > 2)
-					{
-						roles = roles.Substring(0, roles.Length - 2);
-					}
-					@roles
-				}
+
+				@selectedRoles
 				<input type="hidden" asp-for="UserRoles" name="UserRoles" value="@Model.UserRoles" />
 			</td>
 			<td class="govuk-table__cell govuk-table__cell--numeric">
