@@ -37,7 +37,7 @@ parameters:
   - name: skip_deployment
     displayName: Skip Deployment
     type: boolean
-    default: false
+    default: true
   - name: browser
     displayName: Select a Browser
     type: string
@@ -108,14 +108,10 @@ stages:
           service_defaults_repo: service_defaults
 
       - ${{ if eq(parameters.skip_deployment, false) }}:
-        - job: DeployToDev
-          dependsOn: []
-          condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))  # Skip deployment for PRs
-          steps:
-            - template: jobs/deployPortal.yaml@library
-              parameters:
-                install_aspire: true
-                service_defaults_repo: service_defaults
+        - template: jobs/deployPortal.yaml@library
+          parameters:
+            install_aspire: true
+            service_defaults_repo: service_defaults
 
   - stage: systemtest_auto
     variables: 
