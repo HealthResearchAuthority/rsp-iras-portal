@@ -93,10 +93,9 @@ resources:
       ref: ${{ parameters.servicedefaults_library_branch }}
 
 stages:
-  - stage: dev
-    variables: 
-    - group: 'DevelopmentEnvironment'
-    condition: eq('${{ parameters.env }}', 'dev')
+  - stage: Build
+    displayName: "Build Stage"
+    condition: eq('${{ parameters.env }}', 'dev')  # Only build for dev environment
     jobs:
       - template: jobs/build.yaml@library
         parameters:
@@ -107,6 +106,12 @@ stages:
           install_aspire: true
           service_defaults_repo: service_defaults
 
+  - stage: dev
+    displayName: "Deploy to Development"
+    condition: eq('${{ parameters.env }}', 'dev')
+    variables: 
+      - group: 'DevelopmentEnvironment'
+    jobs:
       - ${{ if eq(parameters.skip_deployment, false) }}:
         - template: jobs/deployPortal.yaml@library
           parameters:
@@ -114,8 +119,9 @@ stages:
             service_defaults_repo: service_defaults
 
   - stage: systemtest_auto
+    displayName: "System Test (Auto)"
     variables: 
-    - group: 'STAutoEnvironment'
+      - group: 'STAutoEnvironment'
     condition: eq('${{ parameters.env }}', 'systemtest_auto')
     jobs:
       - template: jobs/deployPortal.yaml@library
@@ -136,6 +142,7 @@ stages:
             repo: api_tests
 
   - stage: systemtest_manual
+    displayName: "System Test (Manual)"
     variables: 
     - group: 'STManualEnvironment'
     condition: eq('${{ parameters.env }}', 'systemtest_manual') 
