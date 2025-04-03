@@ -577,10 +577,10 @@ public class UsersController(IUserManagementService userManagementService, IVali
         }
 
         // Collect all selected roles
-        var selectedRoles = model.UserRoles
-                                 ?.Where(ur => ur.IsSelected)
-                                 .Select(ur => ur.Name)
-                                 .ToList() ?? new List<string>();
+        var selectedRoles = model
+                                .UserRoles
+                                .Where(ur => ur.IsSelected)
+                                .Select(ur => ur.Name);
 
         // Convert to a comma-separated string
         string userRoles = string.Join(",", selectedRoles);
