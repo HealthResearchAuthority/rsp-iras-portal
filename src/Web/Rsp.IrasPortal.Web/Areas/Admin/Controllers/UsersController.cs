@@ -88,8 +88,16 @@ public class UsersController(IUserManagementService userManagementService, IVali
     {
         ViewBag.Mode = CreateMode;
 
-        var model = new UserViewModel();
-        model.AvailableUserRoles = await GetAlluserRoles();
+        var model = new UserViewModel
+        {
+            AvailableUserRoles = await GetAlluserRoles()
+        };
+
+        model.UserRoles = model.AvailableUserRoles.Select(role => new UserRoleViewModel
+        {
+            Id = role.Id,
+            Name = role.Name
+        }).ToList();
 
         return View(EditUserView, model);
     }
@@ -105,6 +113,15 @@ public class UsersController(IUserManagementService userManagementService, IVali
 
         // get all available roles to be presented on the FE
         model.AvailableUserRoles = await GetAlluserRoles();
+
+        if (model.UserRoles == null || model.UserRoles.Count == 0)
+        {
+            model.UserRoles = model.AvailableUserRoles.Select(role => new UserRoleViewModel
+            {
+                Id = role.Id,
+                Name = role.Name
+            }).ToList();
+        }
 
         return View(EditUserView, model);
     }
@@ -212,7 +229,7 @@ public class UsersController(IUserManagementService userManagementService, IVali
         }
 
         // assign role
-        if (model.UserRoles != null && model.UserRoles.Any())
+        if (model.UserRoles.Any())
         {
             var roleResponse = await UpdateUserRoles(model);
 
@@ -254,6 +271,22 @@ public class UsersController(IUserManagementService userManagementService, IVali
         {
             var model = new UserViewModel(response.Content!);
             model.AvailableUserRoles = await GetAlluserRoles();
+
+            foreach (var role in model.AvailableUserRoles)
+            {
+                // check if the user has the role
+                if (!model.UserRoles.Any(ur => ur.RoleName!.Contains(role.Name, StringComparison.OrdinalIgnoreCase)))
+                {
+                    // if the user has the role, set it to selected
+                    model.UserRoles.Add(new UserRoleViewModel
+                    {
+                        Id = role.Id,
+                        RoleName = role.Name
+                    });
+                }
+
+                model.UserRoles.Single(vm => vm.RoleName == role.Name).Id = role.Id;
+            }
 
             return View(EditUserView, model);
         }
@@ -578,14 +611,13 @@ public class UsersController(IUserManagementService userManagementService, IVali
 
         // Collect all selected roles
         var selectedRoles = model
-                                .UserRoles
+                                .UserRoles!
                                 .Where(ur => ur.IsSelected)
-                                .Select(ur => ur.Name);
+                                .Select(ur => ur.RoleName);
 
         // Convert to a comma-separated string
         string userRoles = string.Join(",", selectedRoles);
 
         return await userManagementService.UpdateRoles(model.Email, rolesToRemove, userRoles);
     }
-
 }
