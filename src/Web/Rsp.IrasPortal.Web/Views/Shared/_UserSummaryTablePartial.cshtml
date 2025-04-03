@@ -113,13 +113,20 @@
 			<td class="govuk-table__cell text-capitalize">
 				@if (Model.UserRoles.Count == 0)
 				{
-					@String.Format("No Role Selected");
+					@String.Format("No Role Selected")
+					;
 				}
 				else{
+					var roles = "";
 					foreach (var role in Model.UserRoles)
 					{
-					@role.RoleName
+						roles += role.RoleName + ", ";
 					}
+					if (roles.Length > 2)
+					{
+						roles = roles.Substring(0, roles.Length - 2);
+					}
+					@roles
 				}
 				<input type="hidden" asp-for="UserRoles" name="UserRoles" value="@Model.UserRoles" />
 			</td>
