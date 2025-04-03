@@ -110,7 +110,7 @@ stages:
     displayName: "Deploy to Development"
     condition: eq('${{ parameters.env }}', 'dev')
     variables: 
-      - group: 'DevelopmentEnvironment'
+    - group: 'DevelopmentEnvironment'
     jobs:
       - ${{ if eq(parameters.skip_deployment, false) }}:
         - template: jobs/deployPortal.yaml@library
@@ -121,7 +121,7 @@ stages:
   - stage: systemtest_auto
     displayName: "System Test (Auto)"
     variables: 
-      - group: 'STAutoEnvironment'
+    - group: 'STAutoEnvironment'
     condition: eq('${{ parameters.env }}', 'systemtest_auto')
     jobs:
       - template: jobs/deployPortal.yaml@library
@@ -143,7 +143,7 @@ stages:
 
   - stage: systemtest_manual
     displayName: "System Test (Manual)"
-    variables: 
+    variables:
     - group: 'STManualEnvironment'
     condition: eq('${{ parameters.env }}', 'systemtest_manual') 
     jobs:
