@@ -77,27 +77,27 @@
 				</label>
 				<span class="govuk-error-message" asp-validation-for="UserRoles"></span>
 				<div class="govuk-checkboxes" data-module="govuk-checkboxes">
+					@foreach (var role in Model.UserRoles)
+					{
+						role.IsSelected = true;
+					}
+
 					@foreach (var (role, index) in Model.AvailableUserRoles.Select((role, index) => (role, index)))
 					{
-						// Check if UserRoles collection exists, initialize if null
-						if (Model.UserRoles == null)
-						{
-							Model.UserRoles = new List<UserRoleViewModel>();
-						}
+						// make sure UserRoles collection exists
+						Model.UserRoles ??= new List<UserRoleViewModel>();
 
-						// Check if the role is already selected
-						var isChecked = Model.UserRoles.Any(r => r.Name == role.Name && r.IsSelected);
+							
 
-						// Initialize UserRoleViewModel if it doesn't exist for the current role
-						if (Model.UserRoles.Count <= index)
-						{
-							Model.UserRoles.Add(new UserRoleViewModel { RoleName = role.Name });
-						}
+						// find existing role in UserRoles
+						var existingRole = Model.UserRoles.FirstOrDefault(r => r.Name == role.Name);
+						var isChecked = existingRole?.IsSelected ?? false;
 
-						// Check if the checkbox is checked and add the role to UserRoles if not already present
-						if (!isChecked)
+						// if the role doesn't exist in UserRoles, add it
+						if (existingRole == null)
 						{
-							Model.UserRoles[index].IsSelected = true;
+							existingRole = new UserRoleViewModel { RoleName = role.Name, Id = role.Id, IsSelected = false };
+							Model.UserRoles.Add(existingRole);
 						}
 
 						<div class="govuk-checkboxes__item">
@@ -105,19 +105,18 @@
 							<input type="hidden" asp-for="UserRoles[index].Id" value="@role.Id" />
 							<input type="hidden" asp-for="UserRoles[index].Name" value="@role.Name" />
 
-							<!-- Checkbox for selection -->
+							<!-- checkboxes for selection -->
 							<input class="govuk-checkboxes__input" type="checkbox"
-								   name="UserRoles[@index].IsSelected"
-								   value="true"
-								   checked="@isChecked" />
+									asp-for="UserRoles[index].IsSelected"
+									value="true"
+									checked="@(isChecked ? "checked" : null)" />
 
-							<!-- Label for the checkbox -->
+							<!--label for the checkbox -->
 							@Html.LabelFor(m => m.UserRoles[index].IsSelected, role.Name, new { @class = "govuk-label govuk-checkboxes__label" })
 						</div>
 					}
 				</div>
-
-			</div>
+				</div>
 
 
 
