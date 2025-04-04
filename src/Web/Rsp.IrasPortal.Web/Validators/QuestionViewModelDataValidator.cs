@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using System.Data;
+using FluentValidation;
 using FluentValidation.Results;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Web.Models;
@@ -18,7 +19,7 @@ public class QuestionViewModelDataValidator : QuestionViewModelValidatorBase
     public QuestionViewModelDataValidator()
     {
         // Only validate if the user provided an answer
-        When(x => !string.IsNullOrWhiteSpace(x.AnswerText) || IsRuleApplicable(x), () =>
+        When(x => !string.IsNullOrWhiteSpace(x.AnswerText), () =>
         {
             RuleFor(x => x.AnswerText)
                 .NotEmpty()

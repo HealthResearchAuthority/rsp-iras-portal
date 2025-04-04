@@ -49,11 +49,14 @@ public class QuestionViewModel
 
     private void UpdateAnswerText()
     {
-        if (!string.IsNullOrWhiteSpace(Day) &&
-            !string.IsNullOrWhiteSpace(Month) &&
+        if (!string.IsNullOrWhiteSpace(Day) ||
+            !string.IsNullOrWhiteSpace(Month) ||
             !string.IsNullOrWhiteSpace(Year))
         {
-            AnswerText = $"{Year}-{Month.PadLeft(2, '0')}-{Day.PadLeft(2, '0')}";
+            var year = Year ?? "0000";
+            var month = (Month ?? "00").PadLeft(2, '0');
+            var day = (Day ?? "00").PadLeft(2, '0');
+            AnswerText = $"{year}-{month}-{day}";
         }
     }
 }
