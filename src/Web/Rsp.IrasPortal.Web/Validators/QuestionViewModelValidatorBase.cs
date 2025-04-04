@@ -103,6 +103,7 @@ public class QuestionViewModelValidatorBase : AbstractValidator<QuestionViewMode
                                 // for the property
                                 condition.IsApplicable = true;
                                 context.AddFailure(nameof(question.AnswerText), $"{condition.Description}");
+                                break; // Exit the loop immediately if FORMAT check fails
                             }
                         }
 
@@ -125,5 +126,4 @@ public class QuestionViewModelValidatorBase : AbstractValidator<QuestionViewMode
                 }
             });
     }
-
 }
