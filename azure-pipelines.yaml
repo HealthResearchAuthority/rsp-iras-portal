@@ -93,10 +93,9 @@ resources:
       ref: ${{ parameters.servicedefaults_library_branch }}
 
 stages:
-  - stage: dev
-    variables: 
-    - group: 'DevelopmentEnvironment'
-    condition: eq('${{ parameters.env }}', 'dev')
+  - stage: Build
+    displayName: "Build Stage"
+    condition: and(eq('${{ parameters.env }}', 'dev'), eq('${{ parameters.skip_deployment }}', 'true'))
     jobs:
       - template: jobs/build.yaml@library
         parameters:
@@ -106,14 +105,20 @@ stages:
           run_sonarcloud_analysis: ${{ parameters.run_sonarcloud_analysis }}
           install_aspire: true
           service_defaults_repo: service_defaults
-
-      - ${{ if eq(parameters.skip_deployment, false) }}:
-        - template: jobs/deployPortal.yaml@library
-          parameters:
-            install_aspire: true
-            service_defaults_repo: service_defaults
+          
+  - stage: dev
+    displayName: "Deploy to Development"
+    variables: 
+      - group: 'DevelopmentEnvironment'
+    condition: and(eq('${{ parameters.env }}', 'dev'), eq('${{ parameters.skip_deployment }}', 'false'))
+    jobs:
+      - template: jobs/deployPortal.yaml@library
+        parameters:
+          install_aspire: true
+          service_defaults_repo: service_defaults
 
   - stage: systemtest_auto
+    displayName: "System Test (Auto)"
     variables: 
     - group: 'STAutoEnvironment'
     condition: eq('${{ parameters.env }}', 'systemtest_auto')
@@ -136,7 +141,8 @@ stages:
             repo: api_tests
 
   - stage: systemtest_manual
-    variables: 
+    displayName: "System Test (Manual)"
+    variables:
     - group: 'STManualEnvironment'
     condition: eq('${{ parameters.env }}', 'systemtest_manual') 
     jobs:
