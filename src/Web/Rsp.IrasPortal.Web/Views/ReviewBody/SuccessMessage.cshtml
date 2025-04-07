@@ -7,7 +7,7 @@
         case "create":
         {
             heading = "Review body has been successfully added";
-            messageText = $"A confirmation email will be sent to {Model.OrganisationName} to confirm that their profile has been added. Their status is now active";
+            messageText = $"A confirmation email will be sent to {Model.OrganisationName} to confirm that their profile has been added. Their status is now active.";
         }
             break;
         case "disable":
@@ -41,17 +41,15 @@
             @messageText
         </p>
 
-        <ul class="govuk-list">
-            @if (ViewBag.Mode == "create")
-            {
-                <li>
-                    <a class="govuk-link" asp-action="CreateReviewBody">Add another review body</a>
-                </li>
-            }
+        @if (ViewBag.Mode == "create")
+        {
+            <p class="govuk-body">
+                <a class="govuk-link" asp-action="CreateReviewBody">Add another review body</a>
+            </p>
+        }
 
-            <li>
-                <a class="govuk-link" asp-route="rbc:viewreviewbodies">Back to Manage review bodies</a>
-            </li>
-        </ul>
+        <p class="govuk-body">
+            <a class="govuk-link" asp-route="rbc:viewreviewbodies">Back to Manage review bodies</a>
+        </p>
     </div>
 </div>
