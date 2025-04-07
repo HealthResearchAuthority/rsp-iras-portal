@@ -179,11 +179,6 @@
 
 									<div id="Questions[@index].AnswerText" class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")" @parents @questionId>
 
-										@if (fieldHasErrors)
-										{
-											BuildValidationMessage(question.Rules, errorKey, validationMessage);
-										}
-
 										<div class="govuk-form-group">
 											<fieldset class="govuk-fieldset" role="group" aria-describedby="passport-issued-hint">
 												<h1 class="govuk-label-wrapper">
@@ -202,6 +197,12 @@
 														}
 													}
 												</div>
+
+												@if (fieldHasErrors)
+												{
+													BuildValidationMessage(question.Rules, errorKey, validationMessage);
+												}
+
 												@{
 													// Extract values from AnswerText if available
 													if (!string.IsNullOrWhiteSpace(Model.Questions[index].AnswerText) &&
@@ -219,7 +220,7 @@
 															<label class="govuk-label govuk-date-input__label" for="Questions_@(index)_Day">Day</label>
 															@Html.TextBoxFor(m => m.Questions[index].Day, new
 																{
-																	@class = "govuk-input govuk-date-input__input govuk-input--width-2",
+																	@class = "govuk-input govuk-date-input__input govuk-input--width-2" + (fieldHasErrors ? " govuk-input--error" : ""),
 																	id = "Questions_" + index + "_Day",
 																	inputmode = "numeric"
 																})
@@ -230,7 +231,7 @@
 															<label class="govuk-label govuk-date-input__label" for="Questions_@(index)_Month">Month</label>
 															@Html.TextBoxFor(m => m.Questions[index].Month, new
 																{
-																	@class = "govuk-input govuk-date-input__input govuk-input--width-2",
+																	@class = "govuk-input govuk-date-input__input govuk-input--width-2" + (fieldHasErrors ? " govuk-input--error" : ""),
 																	id = "Questions_" + index + "_Month",
 																	inputmode = "numeric"
 																})
@@ -241,7 +242,7 @@
 															<label class="govuk-label govuk-date-input__label" for="Questions_@(index)_Year">Year</label>
 															@Html.TextBoxFor(m => m.Questions[index].Year, new
 																{
-																	@class = "govuk-input govuk-date-input__input govuk-input--width-4",
+																	@class = "govuk-input govuk-date-input__input govuk-input--width-4" + (fieldHasErrors ? " govuk-input--error" : ""),
 																	id = "Questions_" + index + "_Year",
 																	inputmode = "numeric"
 																})
@@ -296,6 +297,11 @@
 											{
 												cssClass = "govuk-input-nowidth";
 											}
+
+											if (fieldHasErrors)
+											{
+												cssClass += " govuk-input--error";
+											}
 										}
 										@Html.TextBoxFor(model => model.Questions[index].AnswerText, new { id = question.QuestionId + "_Text", @class = cssClass, size = conditionValue ?? "0" })
 									</div>
@@ -328,7 +334,7 @@
 												BuildValidationMessage(question.Rules, errorKey, validationMessage);
 											}
 
-											<div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+											<div class="govuk-checkboxes" data-module="govuk-checkboxes">
 												@foreach (var (answer, ansIndex) in question.Answers.Select((answer, ansIndex) => (answer, ansIndex)))
 												{
 													<div class="govuk-checkboxes__item">
