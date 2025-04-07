@@ -108,7 +108,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
     /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Route("/reviewbody/edit", Name = "rbc:editreviewbody")]
+    [Route("/reviewbody/edit", Name = "rbc:editnewreviewbody")]
     public IActionResult EditNewReviewBody(AddUpdateReviewBodyModel model)
     {
         ViewBag.Mode = CreateMode;
