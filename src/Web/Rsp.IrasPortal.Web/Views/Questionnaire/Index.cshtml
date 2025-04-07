@@ -292,10 +292,10 @@
 											var condition = sizeRule?.Conditions.FirstOrDefault(x => x.Operator == "SIZE");
 											var conditionValue = condition?.Value;
 
-											var cssClass = "govuk-input";
+											var cssClass = "govuk-input ";
 											if (!string.IsNullOrEmpty(conditionValue))
 											{
-												cssClass = "govuk-input-nowidth";
+												cssClass += conditionValue;
 											}
 
 											if (fieldHasErrors)
@@ -303,7 +303,7 @@
 												cssClass += " govuk-input--error";
 											}
 										}
-										@Html.TextBoxFor(model => model.Questions[index].AnswerText, new { id = question.QuestionId + "_Text", @class = cssClass, size = conditionValue ?? "0" })
+										@Html.TextBoxFor(model => model.Questions[index].AnswerText, new { id = question.QuestionId + "_Text", @class = cssClass })
 									</div>
 								}
 								break;
