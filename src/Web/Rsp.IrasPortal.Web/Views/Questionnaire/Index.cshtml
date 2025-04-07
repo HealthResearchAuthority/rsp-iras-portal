@@ -334,7 +334,7 @@
 												BuildValidationMessage(question.Rules, errorKey, validationMessage);
 											}
 
-											<div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+											<div class="govuk-checkboxes" data-module="govuk-checkboxes">
 												@foreach (var (answer, ansIndex) in question.Answers.Select((answer, ansIndex) => (answer, ansIndex)))
 												{
 													<div class="govuk-checkboxes__item">
