@@ -33,7 +33,8 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
         {
             UserRoles = [ new()
             {
-                RoleName = "operations"
+                 Name = "operations",
+                 IsSelected = true
             }],
             Country = null!
         };
@@ -56,7 +57,7 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
             UserRoles =
             [ new()
                 {
-                    RoleName = "admin"
+                    Name = "admin"
                 }
             ],
             Country = null!
