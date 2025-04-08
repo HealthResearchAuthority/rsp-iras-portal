@@ -114,7 +114,9 @@
                 @{
 					var roleNames = Model.UserRoles?.Select(role => role.Name);
 
-					var selectedRoles = roleNames != null ? string.Join(", ", roleNames) : string.Empty;
+					var selectedRoles = Model.UserRoles != null
+					? string.Join(", ", Model.UserRoles.Where(r => r.IsSelected).Select(r => r.Name))
+					: string.Empty;
 				}
 
 				@selectedRoles
