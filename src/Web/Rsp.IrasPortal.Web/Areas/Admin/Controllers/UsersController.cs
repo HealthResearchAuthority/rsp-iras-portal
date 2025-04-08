@@ -275,17 +275,17 @@ public class UsersController(IUserManagementService userManagementService, IVali
             foreach (var role in model.AvailableUserRoles)
             {
                 // check if the user has the role
-                if (!model.UserRoles.Any(ur => ur.Name!.Contains(role.Name, StringComparison.OrdinalIgnoreCase)))
+                // if the user has the role, set it to selected
+                if (!model.UserRoles.Any(x => x.Name == role.Name))
                 {
-                    // if the user has the role, set it to selected
+                    // user is not in role so add it
                     model.UserRoles.Add(new UserRoleViewModel
                     {
+                        IsSelected = false,
                         Id = role.Id,
                         Name = role.Name
                     });
                 }
-
-                model.UserRoles.Single(vm => vm.Name == role.Name).Id = role.Id;
             }
 
             return View(EditUserView, model);

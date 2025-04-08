@@ -80,28 +80,30 @@
 
                     @foreach (var (role, index) in Model.UserRoles!.Select((role, index) => (role, index)))
                     {
+						var userFiendleyName = role?.Name?.Replace("_", " ");
+
                         <input type="hidden" asp-for="UserRoles![index].Id" />
                         <div class="govuk-checkboxes__item">
                             <input type="hidden" asp-for="UserRoles![index].Name" />
                             <input class="govuk-checkboxes__input" type="checkbox" asp-for="UserRoles![index].IsSelected" checked="@role.IsSelected">
-                            @Html.LabelFor(m => m.UserRoles![index].Name, role.Name, new { @class = "govuk-label govuk-checkboxes__label" })
+							@Html.LabelFor(m => m.UserRoles![index].Name, userFiendleyName, new { @class = "govuk-label govuk-checkboxes__label role-checkbox" })
                         </div>
                     }
                 </div>
             </div>
 
-            <div class="govuk-form-group conditional-field @(ViewData.ModelState[" Committee"]?.Errors.Count>
+            <div class="govuk-form-group conditional-field @(ViewData.ModelState["Committee"]?.Errors.Count>
                 0 ? "govuk-form-group--error" : "")">
                 <label class="govuk-label" for="Committee">
                     <b>Committee</b>
                 </label>
-                <select class="role-list-dropdown govuk-select govuk-!-width-three-quarters @(ViewData.ModelState[" Committee"]?.Errors.Count>
+                <select class="role-list-dropdown govuk-select govuk-!-width-three-quarters @(ViewData.ModelState["Committee"]?.Errors.Count>
                     0 ? "govuk-select--error" : "")" id="Committee" name="Committee">
                     <option></option>
                 </select>
             </div>
 
-            <div class="govuk-form-group conditional-field @(ViewData.ModelState[" Country"]?.Errors.Count>
+            <div class="govuk-form-group conditional-field @(ViewData.ModelState["Country"]?.Errors.Count>
                 0 ? "govuk-form-group--error" : "")">
                 <fieldset class="govuk-fieldset">
                     <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
@@ -124,7 +126,7 @@
                 </fieldset>
             </div>
 
-            <div class="govuk-form-group conditional-field @(ViewData.ModelState[" AccessRequired"]?.Errors.Count>
+            <div class="govuk-form-group conditional-field @(ViewData.ModelState["AccessRequired"]?.Errors.Count>
                 0 ? "govuk-form-group--error" : "")">
                 <fieldset class="govuk-fieldset">
                     <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
@@ -147,12 +149,12 @@
                 </fieldset>
             </div>
 
-            <div class="govuk-form-group conditional-field @(ViewData.ModelState[" ReviewBody"]?.Errors.Count>
+            <div class="govuk-form-group conditional-field @(ViewData.ModelState["ReviewBody"]?.Errors.Count>
                 0 ? "govuk-form-group--error" : "")">
                 <label class="govuk-label" for="ReviewBody">
                     <b>Review body</b>
                 </label>
-                <select class="role-list-dropdown govuk-select govuk-!-width-three-quarters @(ViewData.ModelState[" ReviewBody"]?.Errors.Count>
+                <select class="role-list-dropdown govuk-select govuk-!-width-three-quarters @(ViewData.ModelState["ReviewBody"]?.Errors.Count>
                     0 ? "govuk-select--error" : "")" id="ReviewBody" name="ReviewBody">
                     <option></option>
                 </select>

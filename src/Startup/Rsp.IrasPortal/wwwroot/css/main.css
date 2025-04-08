@@ -93,7 +93,7 @@ button.govuk-link {
   color: #0a58ca;
 }
 
-.role-list-dropdown {
+.role-checkbox {
   text-transform: capitalize;
 }
 
@@ -284,7 +284,7 @@ button.govuk-link {
 }
 
 .govuk-back-link-button--inverse:active, .govuk-back-link-button--inverse:hover {
-  color: hsla(0, 0%, 100%, 0.99);
+  color: hsla(0deg, 0%, 100%, 0.99);
 }
 
 .govuk-back-link-button--inverse:focus {
