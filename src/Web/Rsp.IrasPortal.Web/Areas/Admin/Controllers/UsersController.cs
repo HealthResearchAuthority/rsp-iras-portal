@@ -275,17 +275,17 @@ public class UsersController(IUserManagementService userManagementService, IVali
             foreach (var role in model.AvailableUserRoles)
             {
                 // check if the user has the role
-                if (!model.UserRoles.Any(ur => ur.RoleName!.Contains(role.Name, StringComparison.OrdinalIgnoreCase)))
+                if (!model.UserRoles.Any(ur => ur.Name!.Contains(role.Name, StringComparison.OrdinalIgnoreCase)))
                 {
                     // if the user has the role, set it to selected
                     model.UserRoles.Add(new UserRoleViewModel
                     {
                         Id = role.Id,
-                        RoleName = role.Name
+                        Name = role.Name
                     });
                 }
 
-                model.UserRoles.Single(vm => vm.RoleName == role.Name).Id = role.Id;
+                model.UserRoles.Single(vm => vm.Name == role.Name).Id = role.Id;
             }
 
             return View(EditUserView, model);
@@ -613,7 +613,7 @@ public class UsersController(IUserManagementService userManagementService, IVali
         var selectedRoles = model
                                 .UserRoles!
                                 .Where(ur => ur.IsSelected)
-                                .Select(ur => ur.RoleName);
+                                .Select(ur => ur.Name);
 
         // Convert to a comma-separated string
         string userRoles = string.Join(",", selectedRoles);

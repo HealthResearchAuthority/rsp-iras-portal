@@ -66,7 +66,7 @@ public class UserViewModel
             Title = user.Title;
             JobTitle = user.JobTitle;
             Organisation = user.Organisation;
-            UserRoles = roles != null ? roles.Select(role => new UserRoleViewModel { RoleName = role, IsSelected = true }).ToList() : [];
+            UserRoles = roles != null ? roles.Select(role => new UserRoleViewModel { Name = role, IsSelected = true }).ToList() : [];
             LastUpdated = user.LastUpdated;
             OriginalEmail = user.Email;
             Status = user.Status;

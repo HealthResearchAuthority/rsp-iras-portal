@@ -3,5 +3,5 @@
 public class UserRoleViewModel : RoleViewModel
 {
     public bool IsSelected { get; set; }
-    public string? RoleName { get; set; }
+    public string? Name { get; set; }
 }

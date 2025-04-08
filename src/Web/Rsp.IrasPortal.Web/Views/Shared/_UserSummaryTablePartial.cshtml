@@ -112,7 +112,7 @@
 			<td class="govuk-table__cell"><b>Role</b></td>
 			<td class="govuk-table__cell text-capitalize">
                 @{
-					var roleNames = Model.UserRoles?.Select(role => role.RoleName);
+					var roleNames = Model.UserRoles?.Select(role => role.Name);
 
 					var selectedRoles = roleNames != null ? string.Join(", ", roleNames) : string.Empty;
 				}
@@ -127,7 +127,7 @@
 			</td>
 		</tr>
 
-		@if (Model.UserRoles != null && Model.UserRoles.Any(role => role.RoleName == "operations"))
+		@if (Model.UserRoles != null && Model.UserRoles.Any(role => role.Name == "operations"))
 		{
 			<tr class="govuk-table__row">
 				<td class="govuk-table__cell"><b>Committee</b></td>
@@ -141,7 +141,7 @@
 			</tr>
 		}
 
-		@if (Model.UserRoles != null && Model.UserRoles.Any(role => role.RoleName == "operations") && Model.Country != null && Model.Country.Any())
+		@if (Model.UserRoles != null && Model.UserRoles.Any(role => role.Name == "operations") && Model.Country != null && Model.Country.Any())
 		{
 			<tr class="govuk-table__row">
 				<td class="govuk-table__cell"><b>Country</b></td>
@@ -160,7 +160,7 @@
 			</tr>
 		}
 
-		@if (Model.UserRoles != null && Model.UserRoles.Any(role => role.RoleName == "operations") && Model.AccessRequired != null && Model.AccessRequired.Any())
+		@if (Model.UserRoles != null && Model.UserRoles.Any(role => role.Name == "operations") && Model.AccessRequired != null && Model.AccessRequired.Any())
 		{
 			<tr class="govuk-table__row">
 				<td class="govuk-table__cell"><b>Access Required</b></td>
@@ -179,7 +179,7 @@
 			</tr>
 		}
 
-		@if (Model.UserRoles != null && Model.UserRoles.Any(role => role.RoleName == "operations"))
+		@if (Model.UserRoles != null && Model.UserRoles.Any(role => role.Name == "operations"))
 		{
 			<tr class="govuk-table__row">
 				<td class="govuk-table__cell"><b>Review body</b></td>
