@@ -82,9 +82,9 @@
                     {
                         <input type="hidden" asp-for="UserRoles![index].Id" />
                         <div class="govuk-checkboxes__item">
-                            <input type="hidden" asp-for="UserRoles![index].RoleName" />
+                            <input type="hidden" asp-for="UserRoles![index].Name" />
                             <input class="govuk-checkboxes__input" type="checkbox" asp-for="UserRoles![index].IsSelected" checked="@role.IsSelected">
-                            @Html.LabelFor(m => m.UserRoles![index].RoleName, role.RoleName, new { @class = "govuk-label govuk-checkboxes__label" })
+                            @Html.LabelFor(m => m.UserRoles![index].Name, role.Name, new { @class = "govuk-label govuk-checkboxes__label" })
                         </div>
                     }
                 </div>

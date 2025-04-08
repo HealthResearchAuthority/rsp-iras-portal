@@ -25,6 +25,19 @@ function changeRoleSelection(role) {
     }
 }
 
+function changeRoleSelection(role) {
+    const hasOperationsRole = role.some(role =>
+        role.RoleName === 'operations' && role.IsSelected
+    );
+
+    if (hasOperationsRole) {
+        $(".conditional-field").show();
+    } else {
+        $(".conditional-field").hide();
+    }
+}
+
+
 function submitFormWithAction(formId, url) {
     let form = document.getElementById(formId);
     form.action = url;
