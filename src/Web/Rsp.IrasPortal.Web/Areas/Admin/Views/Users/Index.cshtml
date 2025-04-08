@@ -30,13 +30,13 @@
 		<div class="govuk-table-wrapper">
 			<table class="govuk-table govuk-table-users">
 				<thead>
-					<tr>
-						<th class="govuk-table__header govuk-table__header-sortable govuk-table--name">First name</th>
-						<th class="govuk-table__header govuk-table__header-sortable govuk-table--name">Last name</th>
-						<th class="govuk-table__header govuk-table__header-sortable govuk-table--email line-break-anywhere">Email address</th>
-						<th class="govuk-table__header govuk-table__header-sortable">Status</th>
-						<th class="govuk-table__header govuk-table__header-sortable">Last logged in</th>
-						<th class="govuk-table__header govuk-table__header-sortable">Action</th>
+					<tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+						<th class="govuk-table__header govuk-table--name">First name</th>
+						<th class="govuk-table__header govuk-table--name">Last name</th>
+						<th class="govuk-table__header govuk-table--email line-break-anywhere">Email address</th>
+						<th class="govuk-table__header">Status</th>
+						<th class="govuk-table__header">Last logged in</th>
+						<th class="govuk-table__header">Action</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -51,7 +51,7 @@
 								{
 									var statusClass = string.Equals(user.Status, IrasUserStatus.Active, StringComparison.InvariantCultureIgnoreCase) ? "govuk-tag--green" : "govuk-tag--red";
 
-									<strong class="govuk-tag @statusClass"><b>@user.Status.ToUpperInvariant()</b></strong>
+									<strong class="govuk-tag govuk-tag__full_width @statusClass"><b>@user.Status.ToUpperInvariant()</b></strong>
 								}
 							</td>
 							<td class="govuk-table__cell">@(user.LastLogin.HasValue ? user.LastLogin.Value.ToString("dd MMM yyyy") : string.Empty)</td>
