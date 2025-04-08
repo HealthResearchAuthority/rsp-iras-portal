@@ -111,7 +111,7 @@
 		<tr class="govuk-table__row">
 			<td class="govuk-table__cell"><b>Role</b></td>
 			<td class="govuk-table__cell text-capitalize">
-                @{
+				@{
 					var roleNames = Model.UserRoles?.Select(role => role.Name);
 
 					var selectedRoles = Model.UserRoles != null
@@ -120,7 +120,12 @@
 				}
 
 				@selectedRoles
-				<input type="hidden" asp-for="UserRoles" name="UserRoles" value="@Model.UserRoles" />
+				@foreach (var (role, index) in Model.UserRoles!.Select((role, index) => (role, index)))
+				{
+					<input type="hidden" asp-for="UserRoles![index].Id" />
+					<input type="hidden" asp-for="UserRoles![index].Name" />
+					<input type="hidden" asp-for="UserRoles![index].IsSelected" />
+				}
 			</td>
 			<td class="govuk-table__cell govuk-table__cell--numeric">
 				@{
