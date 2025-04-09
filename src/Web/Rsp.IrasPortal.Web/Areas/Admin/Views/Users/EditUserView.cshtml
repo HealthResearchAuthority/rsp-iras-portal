@@ -5,22 +5,22 @@
 @inject IFeatureManager featureManager
 
 @{
-    var buttonText = ViewBag.Mode == "edit" ? "Save" : "Continue";
-    var heading = ViewBag.Mode == "edit" ? "Edit user profile record" : "Add a new user profile record";
-    var submitActionName = ViewBag.Mode == "edit" ? "admin:submituser" : "admin:confirmusersubmission";
+	var buttonText = ViewBag.Mode == "edit" ? "Save" : "Continue";
+	var heading = ViewBag.Mode == "edit" ? "Edit user profile record" : "Add a new user profile record";
+	var submitActionName = ViewBag.Mode == "edit" ? "admin:submituser" : "admin:confirmusersubmission";
 
-    ViewBag.Active = "manageUsers";
-    ViewBag.Title = "Manage users";
+	ViewBag.Active = "manageUsers";
+	ViewBag.Title = "Manage users";
 }
 <form method="post">
-    @if (ViewBag.Mode == "edit")
-    {
-        <a asp-route="admin:viewuser" asp-all-route-data="@(new Dictionary<string, string>{{"email", Model.Email}, {"userId", Model.Id!}})" class="govuk-back-link">Back</a>
-    }
-    else
-    {
-        <a asp-route="admin:users" class="govuk-back-link">Back</a>
-    }
+	@if (ViewBag.Mode == "edit")
+	{
+		<a asp-route="admin:viewuser" asp-all-route-data="@(new Dictionary<string, string>{{"email", Model.Email}, {"userId", Model.Id!}})" class="govuk-back-link">Back</a>
+	}
+	else
+	{
+		<a asp-route="admin:users" class="govuk-back-link">Back</a>
+	}
 
 	<div class="govuk-grid-row">
 		<div class="govuk-grid-column-two-thirds">
@@ -37,79 +37,75 @@
 				<input class="govuk-input govuk-!-width-one-quarter @(ViewData.ModelState["Title"]?.Errors.Count > 0 ? "govuk-input--error" : "")" id="Title" name="Title" type="text" asp-for="Title" value="@(Model.Title ?? string.Empty)" />
 			</div>
 
-            <div class="govuk-form-group @(ViewData.ModelState["FirstName"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
-                <label class="govuk-label" for="FirstName"><b>First name</b></label>
-                <span class="govuk-error-message" asp-validation-for="FirstName"></span>
-                <input class="govuk-input govuk-!-width-one-half @(ViewData.ModelState["FirstName"]?.Errors.Count > 0 ? "govuk-input--error" : "")" id="FirstName" name="FirstName" type="text" asp-for="FirstName" value="@(Model.FirstName ?? string.Empty)" />
-            </div>
+			<div class="govuk-form-group @(ViewData.ModelState["FirstName"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+				<label class="govuk-label" for="FirstName"><b>First name</b></label>
+				<span class="govuk-error-message" asp-validation-for="FirstName"></span>
+				<input class="govuk-input govuk-!-width-one-half @(ViewData.ModelState["FirstName"]?.Errors.Count > 0 ? "govuk-input--error" : "")" id="FirstName" name="FirstName" type="text" asp-for="FirstName" value="@(Model.FirstName ?? string.Empty)" />
+			</div>
 
-            <div class="govuk-form-group @(ViewData.ModelState["LastName"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
-                <label class="govuk-label" for="LastName"><b>Last name</b></label>
-                <span class="govuk-error-message" asp-validation-for="LastName"></span>
-                <input class="govuk-input govuk-!-width-one-half" id="LastName" name="LastName" type="text" asp-for="LastName" value="@(Model.LastName ?? string.Empty)">
-            </div>
+			<div class="govuk-form-group @(ViewData.ModelState["LastName"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+				<label class="govuk-label" for="LastName"><b>Last name</b></label>
+				<span class="govuk-error-message" asp-validation-for="LastName"></span>
+				<input class="govuk-input govuk-!-width-one-half" id="LastName" name="LastName" type="text" asp-for="LastName" value="@(Model.LastName ?? string.Empty)">
+			</div>
 
-            <div class="govuk-form-group @(ViewData.ModelState["Email"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
-                <label class="govuk-label" for="Email"><b>Email address</b></label>
-                <span class="govuk-error-message" asp-validation-for="Email"></span>
-                <input class="govuk-input govuk-!-width-two-thirds" id="Email" name="Email" type="email" asp-for="Email" value="@(Model.Email ?? string.Empty)">
-            </div>
+			<div class="govuk-form-group @(ViewData.ModelState["Email"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+				<label class="govuk-label" for="Email"><b>Email address</b></label>
+				<span class="govuk-error-message" asp-validation-for="Email"></span>
+				<input class="govuk-input govuk-!-width-two-thirds" id="Email" name="Email" type="email" asp-for="Email" value="@(Model.Email ?? string.Empty)">
+			</div>
 
-            <div class="govuk-form-group @(ViewData.ModelState["Telephone"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
-                <label class="govuk-label" for="Telephone"><b>Telephone</b></label>
-                <span class="govuk-error-message" asp-validation-for="Telephone"></span>
-                <input class="govuk-input govuk-!-width-two-thirds" id="Telephone" name="Telephone" type="tel" asp-for="Telephone" value="@(Model.Telephone ?? string.Empty)">
-            </div>
+			<div class="govuk-form-group @(ViewData.ModelState["Telephone"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+				<label class="govuk-label" for="Telephone"><b>Telephone</b></label>
+				<span class="govuk-error-message" asp-validation-for="Telephone"></span>
+				<input class="govuk-input govuk-!-width-two-thirds" id="Telephone" name="Telephone" type="tel" asp-for="Telephone" value="@(Model.Telephone ?? string.Empty)">
+			</div>
 
-            <div class="govuk-form-group @(ViewData.ModelState["Organisation"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
-                <label class="govuk-label" for="Organisation"><b>Organisation</b></label>
-                <span class="govuk-error-message" asp-validation-for="Organisation"></span>
-                <input class="govuk-input govuk-!-width-three-quarters" id="Organisation" name="Organisation" type="text" asp-for="Organisation" value="@(Model.Organisation ?? string.Empty)">
-            </div>
+			<div class="govuk-form-group @(ViewData.ModelState["Organisation"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+				<label class="govuk-label" for="Organisation"><b>Organisation</b></label>
+				<span class="govuk-error-message" asp-validation-for="Organisation"></span>
+				<input class="govuk-input govuk-!-width-three-quarters" id="Organisation" name="Organisation" type="text" asp-for="Organisation" value="@(Model.Organisation ?? string.Empty)">
+			</div>
 
-            <div class="govuk-form-group @(ViewData.ModelState["JobTitle"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
-                <label class="govuk-label" for="JobTitle"><b>Job title</b></label>
-                <span class="govuk-error-message" asp-validation-for="JobTitle"></span>
-                <input class="govuk-input govuk-!-width-three-quarters" id="JobTitle" name="JobTitle" type="text" asp-for="JobTitle" value="@(Model.JobTitle ?? string.Empty)">
-            </div>
+			<div class="govuk-form-group @(ViewData.ModelState["JobTitle"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+				<label class="govuk-label" for="JobTitle"><b>Job title</b></label>
+				<span class="govuk-error-message" asp-validation-for="JobTitle"></span>
+				<input class="govuk-input govuk-!-width-three-quarters" id="JobTitle" name="JobTitle" type="text" asp-for="JobTitle" value="@(Model.JobTitle ?? string.Empty)">
+			</div>
 
-            <div class="govuk-form-group @(ViewData.ModelState["UserRoles"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
-                <label class="govuk-label" for="UserRoles">
-                    <b>Role</b>
-                </label>
-                <span class="govuk-error-message" asp-validation-for="UserRoles"></span>
-                <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+			<div class="govuk-form-group @(ViewData.ModelState["Role"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+				<label class="govuk-label" for="Role">
+					<b>Role</b>
+				</label>
+				<span class="govuk-error-message" asp-validation-for="Role"></span>
+				<select onchange="changeRoleSelection(this.value)" class="role-list-dropdown govuk-select govuk-!-width-three-quarters @(ViewData.ModelState["Role"]?.Errors.Count > 0 ? "govuk-select--error" : "")" id="Role" name="Role">
+					<option></option>
+					@if (Model.AvailableUserRoles != null)
+					{
+						foreach (var role in Model.AvailableUserRoles.Select(r => r.Name))
+						{
+							var userFiendleyName = role.Replace("_", " ");
+							<option selected=@(Model.Role == role ? "selected" : null) value="@role">@userFiendleyName</option>
+						}
+					}
 
-                    @foreach (var (role, index) in Model.UserRoles.Select((role, index) => (role, index)))
-                    {
-                        var userFiendleyName = role?.Name?.Replace("_", " ");
+				</select>
+			</div>
 
-                        @Html.HiddenFor(model => model.UserRoles[index].Id)
-                        @Html.HiddenFor(model => model.UserRoles[index].Name)
-                        <div class="govuk-checkboxes__item">
-                            <input class="govuk-checkboxes__input" type="checkbox" asp-for="UserRoles[index].IsSelected" checked="@role!.IsSelected">
-                            @Html.LabelFor(m => m.UserRoles[index].IsSelected, userFiendleyName, new { @class = "govuk-label govuk-checkboxes__label role-checkbox" })
-                        </div>
-                    }
-                </div>
-            </div>
+			<div class="govuk-form-group conditional-field @(ViewData.ModelState["Committee"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+				<label class="govuk-label" for="Committee">
+					<b>Committee</b>
+				</label>
+				<select class="role-list-dropdown govuk-select govuk-!-width-three-quarters @(ViewData.ModelState["Committee"]?.Errors.Count > 0 ? "govuk-select--error" : "")" id="Committee" name="Committee">
+					<option></option>
+				</select>
+			</div>
 
-            <div class="govuk-form-group conditional-field @(ViewData.ModelState["Committee"]?.Errors.Count>
-                0 ? "govuk-form-group--error" : "")">
-                <label class="govuk-label" for="Committee">
-                    <b>Committee</b>
-                </label>
-                <select class="role-list-dropdown govuk-select govuk-!-width-three-quarters @(ViewData.ModelState["Committee"]?.Errors.Count>
-                    0 ? "govuk-select--error" : "")" id="Committee" name="Committee">
-                    <option></option>
-                </select>
-            </div>
-
-			<div id="Country" class="govuk-form-group conditional-field @(ViewData.ModelState["Country"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+			<div class="govuk-form-group conditional-field @(ViewData.ModelState["Country"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
 				<fieldset class="govuk-fieldset">
 					<legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
 						<label class="govuk-label" for="Country">
-							<b >Country</b>
+							<b>Country</b>
 						</label>
 					</legend>
 					<span class="govuk-error-message" asp-validation-for="Country"></span>
@@ -127,11 +123,11 @@
 				</fieldset>
 			</div>
 
-			<div id="AccessRequired" class="govuk-form-group conditional-field @(ViewData.ModelState["AccessRequired"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+			<div class="govuk-form-group conditional-field @(ViewData.ModelState["AccessRequired"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
 				<fieldset class="govuk-fieldset">
 					<legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
 						<label class="govuk-label" for="AccessRequired">
-							<b >Access required</b>
+							<b>Access required</b>
 						</label>
 					</legend>
 					<span class="govuk-error-message" asp-validation-for="AccessRequired"></span>
@@ -149,29 +145,27 @@
 				</fieldset>
 			</div>
 
-            <div class="govuk-form-group conditional-field @(ViewData.ModelState["ReviewBody"]?.Errors.Count>
-                0 ? "govuk-form-group--error" : "")">
-                <label class="govuk-label" for="ReviewBody">
-                    <b>Review body</b>
-                </label>
-                <select class="role-list-dropdown govuk-select govuk-!-width-three-quarters @(ViewData.ModelState["ReviewBody"]?.Errors.Count>
-                    0 ? "govuk-select--error" : "")" id="ReviewBody" name="ReviewBody">
-                    <option></option>
-                </select>
-            </div>
+			<div class="govuk-form-group conditional-field @(ViewData.ModelState["ReviewBody"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+				<label class="govuk-label" for="ReviewBody">
+					<b>Review body</b>
+				</label>
+				<select class="role-list-dropdown govuk-select govuk-!-width-three-quarters @(ViewData.ModelState["ReviewBody"]?.Errors.Count > 0 ? "govuk-select--error" : "")" id="ReviewBody" name="ReviewBody">
+					<option></option>
+				</select>
+			</div>
 
-            <partial name="_SubmitButton" model="@(submitActionName, buttonText, new Dictionary<string, string>())" />
-            @{
-                ViewBag.Style = "ms-3 govuk-button govuk-button--secondary";
-            }
-        </div>
-    </div>
+			<partial name="_SubmitButton" model="@(submitActionName, buttonText, new Dictionary<string, string>())" />
+			@{
+				ViewBag.Style = "ms-3 govuk-button govuk-button--secondary";
+			}
+		</div>
+	</div>
 </form>
 <!--Use javascript only when progressive enhancement feature is enabled-->
 @if (await featureManager.IsEnabledAsync(Features.ProgressiveEnhancement))
 {
-    @section FooterResources {
-        <script src="~/lib/jquery/dist/jquery.js"></script>
-        <script src="~/js/manageUsers.js"></script>
-    }
+	@section FooterResources {
+	<script src="~/lib/jquery/dist/jquery.js"></script>
+	<script src="~/js/manageUsers.js"></script>
+	}
 }
