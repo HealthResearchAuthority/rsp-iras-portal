@@ -22,17 +22,20 @@
         <a asp-route="admin:users" class="govuk-back-link">Back</a>
     }
 
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-two-thirds">
-            <h1 class="govuk-heading-l">@heading</h1>
-            <input name="Id" asp-for="Id" value="@(Model.Id ?? string.Empty)" />
-            <input name="OriginalEmail" asp-for="OriginalEmail" value="@(Model.OriginalEmail ?? string.Empty)" />
-            <input hidden readonly name="Status" asp-for="Status" value="@(Model.Status ?? string.Empty)" />
-            <div class="govuk-form-group @(ViewData.ModelState["Title"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
-                <label class="govuk-label" for="Title"><b>Title</b></label>
-                <span class="govuk-error-message" asp-validation-for="Title"></span>
-                <input class="govuk-input govuk-!-width-one-quarter @(ViewData.ModelState["Title"]?.Errors.Count > 0 ? "govuk-input--error" : "")" id="Title" name="Title" type="text" asp-for="Title" value="@(Model.Title ?? string.Empty)" />
-            </div>
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-two-thirds">
+			<h1 class="govuk-heading-l">@heading</h1>
+			<input name="Id" asp-for="Id" value="@(Model.Id ?? string.Empty)" />
+			<input name="OriginalEmail" asp-for="OriginalEmail" value="@(Model.OriginalEmail ?? string.Empty)" />
+			<input hidden readonly name="Status" asp-for="Status" value="@(Model.Status ?? string.Empty)" />
+
+			<partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
+
+			<div class="govuk-form-group @(ViewData.ModelState["Title"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+				<label class="govuk-label" for="Title"><b>Title</b></label>
+				<span class="govuk-error-message" asp-validation-for="Title"></span>
+				<input class="govuk-input govuk-!-width-one-quarter @(ViewData.ModelState["Title"]?.Errors.Count > 0 ? "govuk-input--error" : "")" id="Title" name="Title" type="text" asp-for="Title" value="@(Model.Title ?? string.Empty)" />
+			</div>
 
             <div class="govuk-form-group @(ViewData.ModelState["FirstName"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
                 <label class="govuk-label" for="FirstName"><b>First name</b></label>
