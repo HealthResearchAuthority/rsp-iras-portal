@@ -88,16 +88,16 @@ public class UsersController(IUserManagementService userManagementService, IVali
     {
         ViewBag.Mode = CreateMode;
 
+        var availableRoles = await GetAlluserRoles();
+
         var model = new UserViewModel
         {
-            AvailableUserRoles = await GetAlluserRoles()
+            UserRoles = availableRoles.Select(role => new UserRoleViewModel
+            {
+                Id = role.Id,
+                Name = role.Name
+            }).ToList()
         };
-
-        model.UserRoles = model.AvailableUserRoles.Select(role => new UserRoleViewModel
-        {
-            Id = role.Id,
-            Name = role.Name
-        }).ToList();
 
         return View(EditUserView, model);
     }
@@ -112,11 +112,11 @@ public class UsersController(IUserManagementService userManagementService, IVali
         ViewBag.Mode = CreateMode;
 
         // get all available roles to be presented on the FE
-        model.AvailableUserRoles = await GetAlluserRoles();
+        var availableRoles = await GetAlluserRoles();
 
-        if (model.UserRoles == null || model.UserRoles.Count == 0)
+        if (model.UserRoles.Count == 0)
         {
-            model.UserRoles = model.AvailableUserRoles.Select(role => new UserRoleViewModel
+            model.UserRoles = availableRoles.Select(role => new UserRoleViewModel
             {
                 Id = role.Id,
                 Name = role.Name
@@ -140,9 +140,6 @@ public class UsersController(IUserManagementService userManagementService, IVali
 
         if (!validationResult.IsValid)
         {
-            // get all available roles to be presented on the FE if model is invalid
-            model.AvailableUserRoles = await GetAlluserRoles();
-
             // Copy the validation results into ModelState.
             // ASP.NET uses the ModelState collection to populate
             // error messages in the View.
@@ -198,9 +195,6 @@ public class UsersController(IUserManagementService userManagementService, IVali
         // check if modelstate is valid if in edit mode
         if (mode == EditMode && !validationResult.IsValid)
         {
-            // get all available roles to be presented on the FE if model is invalid
-            model.AvailableUserRoles = await GetAlluserRoles();
-
             // Copy the validation results into ModelState.
             // ASP.NET uses the ModelState collection to populate
             // error messages in the View.
@@ -270,9 +264,9 @@ public class UsersController(IUserManagementService userManagementService, IVali
         if (response.IsSuccessStatusCode)
         {
             var model = new UserViewModel(response.Content!);
-            model.AvailableUserRoles = await GetAlluserRoles();
+            var availableRoles = await GetAlluserRoles();
 
-            foreach (var role in model.AvailableUserRoles)
+            foreach (var role in availableRoles)
             {
                 // check if the user has the role
                 // if the user has the role, set it to selected
