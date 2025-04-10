@@ -6,8 +6,13 @@ namespace Rsp.IrasPortal.Web.Validators;
 public class UserInfoValidator : AbstractValidator<UserViewModel>
 {
     private const string MaxCharactersErrorMessage = "Max 250 characters allowed";
-    private const string MandatoryErrorMessage = "Field is mandatory";
+    private const string FirstNameMandatoryErrorMessage = "Enter a first name";
+    private const string LastNameMandatoryErrorMessage = "Enter a last name";
+    private const string EmailMandatoryErrorMessage = "Enter an email address in the correct format, like name@example.com";
     private const string ConditionalMandatoryErrorMessage = "Field is mandatory when the role 'operations' is selected";
+    private const string ConditionalCountryMandatoryErrorMessage = "Enter a country";
+    private const string ConditionalReviewBodyMandatoryErrorMessage = "Enter a review body";
+    private const string OperationsRole = "operations";
 
     public UserInfoValidator()
     {
@@ -17,20 +22,20 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
 
         RuleFor(x => x.FirstName)
             .NotEmpty()
-            .WithMessage(MandatoryErrorMessage)
+            .WithMessage(FirstNameMandatoryErrorMessage)
             .MaximumLength(250)
             .WithMessage(MaxCharactersErrorMessage);
 
         RuleFor(x => x.LastName)
             .NotEmpty()
-            .WithMessage(MandatoryErrorMessage)
+            .WithMessage(LastNameMandatoryErrorMessage)
             .MaximumLength(250)
             .WithMessage(MaxCharactersErrorMessage);
 
         // email validation to loosley comply with RFC 5322 standard
         RuleFor(x => x.Email)
             .NotEmpty()
-            .WithMessage(MandatoryErrorMessage)
+            .WithMessage(EmailMandatoryErrorMessage)
             .MaximumLength(255)
             .WithMessage("Max 255 characters allowed")
             .Matches(@"^(?!(?:(?:.*\.\.)|(?:.*\.\@)))(?!.*\.\.$)(?!.*\.\@)[\p{L}\p{N}!#$%&'*+/=?^_`{|}~.-]+@[\p{L}\p{N}.-]+\.[\p{L}]{2,}$")
@@ -54,12 +59,12 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
 
         RuleFor(x => x.Country)
             .NotEmpty()
-            .WithMessage(ConditionalMandatoryErrorMessage)
-            .When(x => x.UserRoles != null && x.UserRoles.Any(role => role.Name == "operations" && role.IsSelected));
+            .WithMessage(ConditionalCountryMandatoryErrorMessagee)
+            .When(x => x.UserRoles != null && x.UserRoles.Any(role => role.Name == OperationsRole && role.IsSelected));
 
         RuleFor(x => x.AccessRequired)
             .NotEmpty()
-            .WithMessage(ConditionalMandatoryErrorMessage)
-            .When(x => x.UserRoles != null && x.UserRoles.Any(role => role.Name == "operations" && role.IsSelected));
+            .WithMessage(ConditionalReviewBodyMandatoryErrorMessage)
+            .When(x => x.UserRoles != null && x.UserRoles.Any(role => role.Name == OperationsRole && role.IsSelected));
     }
 }
