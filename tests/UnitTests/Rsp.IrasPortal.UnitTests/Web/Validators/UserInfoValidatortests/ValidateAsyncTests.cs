@@ -22,7 +22,7 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
         // Assert
         result
             .ShouldHaveValidationErrorFor(x => x.FirstName)
-            .WithErrorMessage("Field is mandatory");
+            .WithErrorMessage("Enter a first name");
     }
 
     [Fact]
@@ -45,7 +45,7 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
         // Assert
         result
             .ShouldHaveValidationErrorFor(x => x.Country)
-            .WithErrorMessage("Field is mandatory when the role 'operations' is selected");
+            .WithErrorMessage("Enter a country");
     }
 
     [Fact]
