@@ -45,4 +45,9 @@ public record IrasApplicationRequest
     /// Respondent creating the application
     /// </summary>
     public RespondentDto Respondent { get; set; } = null!;
+
+    /// <summary>
+    /// IRAS ID of the application
+    /// </summary>
+    public int? IrasId { get; set; }
 }

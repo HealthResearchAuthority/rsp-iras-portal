@@ -1,0 +1,48 @@
+﻿@model IrasIdCheckViewModel
+
+@{
+	ViewData["Title"] = "Project details";
+	var errorSummaryTitle = "There is a problem";
+}
+
+<partial name="_BackNavigation" model="@("app:createapplication", "Back", new Dictionary<string, string>())" />
+
+<h1 class="govuk-heading-l">Project details</h1>
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-two-thirds">
+		<form method="post">
+			@if (ViewData.ModelState["IrasId"]?.Errors.Count > 0)
+			{
+				<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
+			}
+
+			<div class="govuk-form-group @(ViewData.ModelState["IrasId"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+				<label class="govuk-label" asp-for="IrasId">IRAS ID</label>
+
+				<div class="govuk-hint">
+					This is the 4 to 7 digit ID generated when you created your initial application
+				</div>
+
+				@if (ViewData.ModelState["IrasId"]?.Errors.Count > 0)
+				{
+					@foreach (var state in ViewData.ModelState)
+					{
+						foreach (var stateEntry in state.Value.Errors)
+						{
+							<span class="govuk-error-message">
+								<span class="govuk-visually-hidden">Error:</span> @stateEntry.ErrorMessage
+							</span>
+						}
+					}
+				}
+
+				<input class="govuk-input govuk-input--width-10 @(ViewData.ModelState["IrasId"]?.Errors.Count > 0 ? "govuk-input--error" : "")"
+					   asp-for="IrasId"
+					   inputmode="numeric"
+					   maxlength="7" />
+			</div>
+
+			<button class="govuk-button" data-module="govuk-button" type="submit" asp-route="app:IrasIdCheck">Save and continue</button>
+		</form>
+	</div>
+</div>
