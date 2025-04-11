@@ -45,7 +45,7 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
         // Assert
         result
             .ShouldHaveValidationErrorFor(x => x.Country)
-            .WithErrorMessage("Enter a country");
+            .WithErrorMessage("You must provide a country");
     }
 
     [Fact]
