@@ -8,7 +8,7 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
     private const string OrganisationMaxCharactersErrorMessage = "Organisation must be 250 characters or less";
     private const string FirstNameMaxCharactersErrorMessage = "First Name must be 250 characters or less";
     private const string LastNameMaxCharactersErrorMessage = "Last Name must be 250 characters or less";
-    private const string JobTitleMaxCharactersErrorMessage = "Job Title must be 250 characters or less";
+    private const string JobTitleMaxCharactersErrorMessage = "Job title must be 250 characters or less";
     private const string TitleMaxCharactersErrorMessage = "Title must be 250 characters or less";
     private const string EmailMaxCharactersErrorMessage = "Email must be 250 characters or less";
     private const string TelephoneMaxCharactersErrorMessage = "Telephone must be 11 characters or less";
@@ -16,9 +16,9 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
     private const string LastNameMandatoryErrorMessage = "Enter a last name";
     private const string EmailFormatErrorMessage = "Enter an email address in the correct format, like name@example.com";
     private const string EmailMandatoryErrorMessage = "Enter an email address";
-    private const string ConditionalCountryMandatoryErrorMessage = "Enter a country";
+    private const string ConditionalCountryMandatoryErrorMessage = "You must provide a country";
     private const string UserRolesMandatoryErrorMessage = "Enter a role";
-    private const string ConditionalReviewBodyMandatoryErrorMessage = "Enter a review body";
+    private const string ConditionalReviewBodyMandatoryErrorMessage = "You must provide the access required";
     private const string OperationsRole = "operations";
 
     public UserInfoValidator()
