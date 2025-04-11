@@ -88,7 +88,6 @@ services.AddSession(options =>
 services
     .AddControllersWithViews(async options =>
     {
-        options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
         if (await featureManager.IsEnabledAsync(Features.InterceptedLogging))
         {
             options.Filters.Add<LogActionFilter>();
