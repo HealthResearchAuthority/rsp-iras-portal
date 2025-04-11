@@ -5,11 +5,7 @@ namespace Rsp.IrasPortal.Web.Validators;
 
 public class UserInfoValidator : AbstractValidator<UserViewModel>
 {
-    private const string OrganisationMaxCharactersErrorMessage = "Organisation must be 250 characters or less";
-    private const string FirstNameMaxCharactersErrorMessage = "First Name must be 250 characters or less";
-    private const string LastNameMaxCharactersErrorMessage = "Last Name must be 250 characters or less";
-    private const string JobTitleMaxCharactersErrorMessage = "Job Title must be 250 characters or less";
-    private const string TitleMaxCharactersErrorMessage = "Title must be 250 characters or less";
+    private const string MaxCharactersErrorMessage = "Max 250 characters allowed";
     private const string FirstNameMandatoryErrorMessage = "Enter a first name";
     private const string LastNameMandatoryErrorMessage = "Enter a last name";
     private const string EmailMandatoryErrorMessage = "Enter an email address in the correct format, like name@example.com";
@@ -22,19 +18,19 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
     {
         RuleFor(x => x.Title)
            .MaximumLength(250)
-           .WithMessage(TitleMaxCharactersErrorMessage);
+           .WithMessage(MaxCharactersErrorMessage);
 
         RuleFor(x => x.FirstName)
             .NotEmpty()
             .WithMessage(FirstNameMandatoryErrorMessage)
             .MaximumLength(250)
-            .WithMessage(FirstNameMaxCharactersErrorMessage);
+            .WithMessage(MaxCharactersErrorMessage);
 
         RuleFor(x => x.LastName)
             .NotEmpty()
             .WithMessage(LastNameMandatoryErrorMessage)
             .MaximumLength(250)
-            .WithMessage(LastNameMaxCharactersErrorMessage);
+            .WithMessage(MaxCharactersErrorMessage);
 
         // email validation to loosley comply with RFC 5322 standard
         RuleFor(x => x.Email)
@@ -51,11 +47,11 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
 
         RuleFor(x => x.Organisation)
             .MaximumLength(250)
-            .WithMessage(OrganisationMaxCharactersErrorMessage);
+            .WithMessage(MaxCharactersErrorMessage);
 
         RuleFor(x => x.JobTitle)
             .MaximumLength(250)
-            .WithMessage(JobTitleMaxCharactersErrorMessage);
+            .WithMessage(MaxCharactersErrorMessage);
 
         RuleFor(x => x.UserRoles)
             .NotEmpty()
