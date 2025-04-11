@@ -105,11 +105,11 @@
                 </select>
             </div>
 
-			<div class="govuk-form-group conditional-field @(ViewData.ModelState["Country"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+			<div id="Country" class="govuk-form-group conditional-field @(ViewData.ModelState["Country"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
 				<fieldset class="govuk-fieldset">
 					<legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
 						<label class="govuk-label" for="Country">
-							<b id="Country">Country</b>
+							<b >Country</b>
 						</label>
 					</legend>
 					<span class="govuk-error-message" asp-validation-for="Country"></span>
@@ -127,11 +127,11 @@
 				</fieldset>
 			</div>
 
-			<div class="govuk-form-group conditional-field @(ViewData.ModelState["AccessRequired"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+			<div id="AccessRequired" class="govuk-form-group conditional-field @(ViewData.ModelState["AccessRequired"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
 				<fieldset class="govuk-fieldset">
 					<legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
 						<label class="govuk-label" for="AccessRequired">
-							<b id="AccessRequired">Access required</b>
+							<b >Access required</b>
 						</label>
 					</legend>
 					<span class="govuk-error-message" asp-validation-for="AccessRequired"></span>
