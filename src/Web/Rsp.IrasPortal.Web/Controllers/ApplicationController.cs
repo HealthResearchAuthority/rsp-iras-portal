@@ -18,7 +18,11 @@ namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "app:[action]")]
 [Authorize(Policy = "IsUser")]
-public class ApplicationController(IApplicationsService applicationsService, IValidator<ApplicationInfoViewModel> validator, IQuestionSetService questionSetService) : Controller
+public class ApplicationController(
+    IApplicationsService applicationsService,
+    IValidator<ApplicationInfoViewModel> validator,
+    IValidator<IrasIdCheckViewModel> irasIdValidator,
+    IQuestionSetService questionSetService) : Controller
 {
     // ApplicationInfo view name
     private const string ApplicationInfo = nameof(ApplicationInfo);
@@ -27,10 +31,40 @@ public class ApplicationController(IApplicationsService applicationsService, IVa
     [Route("/", Name = "app:welcome")]
     public IActionResult Welcome() => View(nameof(Index));
 
-    public async Task<IActionResult> StartProjectRecord()
-    {
-        var respondent = GetRespondentFromContext();
+    public IActionResult IrasIdCheck() => View(nameof(IrasIdCheck));
 
+    [HttpPost]
+    public async Task<IActionResult> IrasIdCheck(IrasIdCheckViewModel model)
+    {
+        var validationResult = await irasIdValidator.ValidateAsync(new ValidationContext<IrasIdCheckViewModel>(model));
+
+        if (!validationResult.IsValid)
+        {
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
+
+            return View(nameof(IrasIdCheck), model);
+        }
+
+        // Get existing applications
+        var applicationsResponse = await applicationsService.GetApplications();
+        if (!applicationsResponse.IsSuccessStatusCode || applicationsResponse.Content == null)
+        {
+            return this.ServiceError(applicationsResponse);
+        }
+
+        // Check for duplicate IRAS ID
+        bool irasIdExists = applicationsResponse.Content.Any(app => app.IrasId?.ToString() == model.IrasId);
+        if (irasIdExists)
+        {
+            ModelState.AddModelError(nameof(model.IrasId), "A record for the project with this IRAS ID already exists");
+            return View(nameof(IrasIdCheck), model);
+        }
+
+        // Create new application
+        var respondent = GetRespondentFromContext();
         var name = $"{respondent.FirstName} {respondent.LastName}";
 
         var irasApplicationRequest = new IrasApplicationRequest
@@ -40,32 +74,26 @@ public class ApplicationController(IApplicationsService applicationsService, IVa
             CreatedBy = name,
             UpdatedBy = name,
             StartDate = DateTime.Now,
-            Respondent = respondent
+            Respondent = respondent,
+            IrasId = model.IrasId != null ? int.Parse(model.IrasId) : null,
         };
 
-        var applicationsServiceResponse = await applicationsService.CreateApplication(irasApplicationRequest);
-
-        // return the view if successfull
-        if (!applicationsServiceResponse.IsSuccessStatusCode)
+        var createResponse = await applicationsService.CreateApplication(irasApplicationRequest);
+        if (!createResponse.IsSuccessStatusCode || createResponse.Content == null)
         {
-            // return the generic error page
-            return this.ServiceError(applicationsServiceResponse);
+            return this.ServiceError(createResponse);
         }
 
-        var irasApplication = applicationsServiceResponse.Content!;
-
-        // save the application in session
+        var irasApplication = createResponse.Content;
+        // Save application to session
         HttpContext.Session.SetString(SessionKeys.Application, JsonSerializer.Serialize(irasApplication));
 
-        string categoryId = string.Empty;
-        var questionCategoriesServiceResponse = await questionSetService.GetQuestionCategories();
+        // Get question category
+        var questionCategoriesResponse = await questionSetService.GetQuestionCategories();
+        var categoryId = questionCategoriesResponse.IsSuccessStatusCode && questionCategoriesResponse.Content != null
+            ? questionCategoriesResponse.Content.FirstOrDefault()?.CategoryId ?? string.Empty
+            : string.Empty;
 
-        if (questionCategoriesServiceResponse is { IsSuccessStatusCode: true, Content: not null })
-        {
-            categoryId = questionCategoriesServiceResponse.Content.First().CategoryId;
-        }
-        
-        // continue to resume for the categoryId & applicationId
         return RedirectToAction(nameof(QuestionnaireController.Resume), "Questionnaire", new
         {
             categoryId,
