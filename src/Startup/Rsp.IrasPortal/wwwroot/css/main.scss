@@ -1,4 +1,4 @@
-﻿@import url("govuk-frontend-5.7.1.min.css");
+﻿@import url("govuk-frontend.min.css");
 
 .govuk-form-group {
     &.questions {
@@ -332,4 +332,8 @@ button.govuk-link {
 
 .govuk-table-users {
     min-width: 550px;
+}
+
+.govuk-service-navigation {
+    background: #fff !important;
 }
