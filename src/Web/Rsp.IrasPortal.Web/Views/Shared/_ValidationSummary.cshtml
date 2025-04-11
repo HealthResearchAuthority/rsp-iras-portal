@@ -3,25 +3,24 @@
 
 @if (!Model.State.IsValid)
 {
-	<div class="govuk-error-summary" data-module="govuk-error-summary" >
-        <div role="alert">
-            <h2 class="govuk-error-summary__title">
-                @Model.Title
-            </h2>
-            <div class="govuk-error-summary__body">
-                <ul class="govuk-list govuk-error-summary__list">
-                    @* @foreach (var state in Model.State.Where(s => s.Value.ValidationState == ModelValidationState.Invalid).OrderBy(s => s.Key.Split('.')[0][^1])) *@
-                    @foreach (var state in Model.State)
-                    {
-                        foreach (var stateEntry in state.Value.Errors)
-                        {
-                            <li>
-                                <a href="#@state.Key">@stateEntry.ErrorMessage</a>
-                            </li>
-                        }
-                    }
-                </ul>
-            </div>
-        </div>
-    </div>
+	<div class="govuk-error-summary" data-module="govuk-error-summary">
+		<div role="alert">
+			<h2 class="govuk-error-summary__title">
+				@Model.Title
+			</h2>
+			<div class="govuk-error-summary__body">
+				<ul class="govuk-list govuk-error-summary__list">
+					@foreach (var state in Model.State)
+					{
+						foreach (var stateEntry in state.Value.Errors)
+						{
+							<li>
+								<a href="#@state.Key">@stateEntry.ErrorMessage</a>
+							</li>
+						}
+					}
+				</ul>
+			</div>
+		</div>
+	</div>
 }

@@ -17,8 +17,7 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
     private const string EmailFormatErrorMessage = "Enter an email address in the correct format, like name@example.com";
     private const string EmailMandatoryErrorMessage = "Enter an email address";
     private const string ConditionalCountryMandatoryErrorMessage = "You must provide a country";
-    private const string UserRolesMandatoryErrorMessage = "Enter a role";
-    private const string ConditionalReviewBodyMandatoryErrorMessage = "You must provide the access required";
+    private const string ConditionalAccessRequiredMandatoryErrorMessage = "You must provide the access required";
     private const string OperationsRole = "operations";
 
     public UserInfoValidator()
@@ -60,10 +59,6 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
             .MaximumLength(250)
             .WithMessage(JobTitleMaxCharactersErrorMessage);
 
-        RuleFor(x => x.UserRoles)
-            .NotEmpty()
-            .WithMessage(UserRolesMandatoryErrorMessage);
-
         RuleFor(x => x.Country)
             .NotEmpty()
             .WithMessage(ConditionalCountryMandatoryErrorMessage)
@@ -71,7 +66,7 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
 
         RuleFor(x => x.AccessRequired)
             .NotEmpty()
-            .WithMessage(ConditionalReviewBodyMandatoryErrorMessage)
+            .WithMessage(ConditionalAccessRequiredMandatoryErrorMessage)
             .When(x => x.UserRoles != null && x.UserRoles.Any(role => role.Name == OperationsRole && role.IsSelected));
     }
 }
