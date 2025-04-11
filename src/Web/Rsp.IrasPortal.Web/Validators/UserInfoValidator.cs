@@ -10,12 +10,10 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
     private const string LastNameMaxCharactersErrorMessage = "Last Name must be 250 characters or less";
     private const string JobTitleMaxCharactersErrorMessage = "Job Title must be 250 characters or less";
     private const string TitleMaxCharactersErrorMessage = "Title must be 250 characters or less";
-    private const string EmailMaxCharactersErrorMessage = "Email must be 250 characters or less";
-    private const string TelephoneMaxCharactersErrorMessage = "Telephone must be 11 characters or less";
     private const string FirstNameMandatoryErrorMessage = "Enter a first name";
     private const string LastNameMandatoryErrorMessage = "Enter a last name";
-    private const string EmailFormatErrorMessage = "Enter an email address in the correct format, like name@example.com";
-    private const string EmailMandatoryErrorMessage = "Enter an email address";
+    private const string EmailMandatoryErrorMessage = "Enter an email address in the correct format, like name@example.com";
+    private const string ConditionalMandatoryErrorMessage = "Field is mandatory when the role 'operations' is selected";
     private const string ConditionalCountryMandatoryErrorMessage = "Enter a country";
     private const string ConditionalReviewBodyMandatoryErrorMessage = "Enter a review body";
     private const string OperationsRole = "operations";
@@ -43,13 +41,13 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
             .NotEmpty()
             .WithMessage(EmailMandatoryErrorMessage)
             .MaximumLength(255)
-            .WithMessage(EmailMaxCharactersErrorMessage)
+            .WithMessage("Max 255 characters allowed")
             .Matches(@"^(?!(?:(?:.*\.\.)|(?:.*\.\@)))(?!.*\.\.$)(?!.*\.\@)[\p{L}\p{N}!#$%&'*+/=?^_`{|}~.-]+@[\p{L}\p{N}.-]+\.[\p{L}]{2,}$")
-            .WithMessage(EmailFormatErrorMessage);
+            .WithMessage("Invalid email format.");
 
         RuleFor(x => x.Telephone)
             .MaximumLength(11)
-            .WithMessage(TelephoneMaxCharactersErrorMessage);
+            .WithMessage("Max 11 characters allowed");
 
         RuleFor(x => x.Organisation)
             .MaximumLength(250)
