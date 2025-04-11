@@ -46,4 +46,9 @@ public class IrasApplicationResponse
     /// UserId of the person updated the application
     /// </summary>
     public string UpdatedBy { get; set; } = null!;
+
+    /// <summary>
+    /// IRAS ID of the application
+    /// </summary>
+    public int? IrasId { get; set; }
 }
