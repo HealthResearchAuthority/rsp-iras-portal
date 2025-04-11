@@ -17,6 +17,7 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
     private const string EmailFormatErrorMessage = "Enter an email address in the correct format, like name@example.com";
     private const string EmailMandatoryErrorMessage = "Enter an email address";
     private const string ConditionalCountryMandatoryErrorMessage = "Enter a country";
+    private const string UserRolesMandatoryErrorMessage = "Enter a role";
     private const string ConditionalReviewBodyMandatoryErrorMessage = "Enter a review body";
     private const string OperationsRole = "operations";
 
@@ -61,11 +62,11 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
 
         RuleFor(x => x.UserRoles)
             .NotEmpty()
-            .WithMessage(MandatoryErrorMessage);
+            .WithMessage(UserRolesMandatoryErrorMessage);
 
         RuleFor(x => x.Country)
             .NotEmpty()
-            .WithMessage(ConditionalCountryMandatoryErrorMessagee)
+            .WithMessage(ConditionalCountryMandatoryErrorMessage)
             .When(x => x.UserRoles != null && x.UserRoles.Any(role => role.Name == OperationsRole && role.IsSelected));
 
         RuleFor(x => x.AccessRequired)
