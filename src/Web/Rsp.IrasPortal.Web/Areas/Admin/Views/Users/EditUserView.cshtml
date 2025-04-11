@@ -105,49 +105,51 @@
                 </select>
             </div>
 
-			<div class="govuk-form-group conditional-field @(ViewData.ModelState["Country"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
-				<fieldset class="govuk-fieldset">
-					<legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
-						<label class="govuk-label" for="Country">
-							<b id="Country">Country</b>
-						</label>
-					</legend>
-					<span class="govuk-error-message" asp-validation-for="Country"></span>
-					<div class="govuk-checkboxes" data-module="govuk-checkboxes">
-						@foreach (var country in UkCountryNames.Countries)
-						{
-							<div class="govuk-checkboxes__item">
-								<input @(Model.Country != null && Model.Country.Contains(country) ? "checked" : null) class="govuk-checkboxes__input" id="@country" name="Country" type="checkbox" value="@country">
-								<label class="govuk-label govuk-checkboxes__label" for="@country">
-									@country
-								</label>
-							</div>
-						}
-					</div>
-				</fieldset>
-			</div>
+            <div class="govuk-form-group conditional-field @(ViewData.ModelState["Country"]?.Errors.Count>
+                0 ? "govuk-form-group--error" : "")">
+                <fieldset class="govuk-fieldset">
+                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+                        <label class="govuk-label" for="Country">
+                            <b>Country</b>
+                        </label>
+                    </legend>
+                    <span class="govuk-error-message" asp-validation-for="Country"></span>
+                    <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                        @foreach (var country in UkCountryNames.Countries)
+                        {
+                            <div class="govuk-checkboxes__item">
+                                <input @(Model.Country != null && Model.Country.Contains(country) ? "checked" : null) class="govuk-checkboxes__input" id="@country" name="Country" type="checkbox" value="@country">
+                                <label class="govuk-label govuk-checkboxes__label" for="@country">
+                                    @country
+                                </label>
+                            </div>
+                        }
+                    </div>
+                </fieldset>
+            </div>
 
-			<div class="govuk-form-group conditional-field @(ViewData.ModelState["AccessRequired"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
-				<fieldset class="govuk-fieldset">
-					<legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
-						<label class="govuk-label" for="AccessRequired">
-							<b id="AccessRequired">Access required</b>
-						</label>
-					</legend>
-					<span class="govuk-error-message" asp-validation-for="AccessRequired"></span>
-					<div class="govuk-checkboxes" data-module="govuk-checkboxes">
-						@foreach (var option in AccessRequiredOptions.Options)
-						{
-							<div class="govuk-checkboxes__item">
-								<input @(Model.AccessRequired != null && Model.AccessRequired.Contains(option) ? "checked" : null) class="govuk-checkboxes__input" id="@option" name="AccessRequired" type="checkbox" value="@option">
-								<label class="govuk-label govuk-checkboxes__label" for="@option">
-									@option
-								</label>
-							</div>
-						}
-					</div>
-				</fieldset>
-			</div>
+            <div class="govuk-form-group conditional-field @(ViewData.ModelState["AccessRequired"]?.Errors.Count>
+                0 ? "govuk-form-group--error" : "")">
+                <fieldset class="govuk-fieldset">
+                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+                        <label class="govuk-label" for="AccessRequired">
+                            <b>Access required</b>
+                        </label>
+                    </legend>
+                    <span class="govuk-error-message" asp-validation-for="AccessRequired"></span>
+                    <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                        @foreach (var option in AccessRequiredOptions.Options)
+                        {
+                            <div class="govuk-checkboxes__item">
+                                <input @(Model.AccessRequired != null && Model.AccessRequired.Contains(option) ? "checked" : null) class="govuk-checkboxes__input" id="@option" name="AccessRequired" type="checkbox" value="@option">
+                                <label class="govuk-label govuk-checkboxes__label" for="@option">
+                                    @option
+                                </label>
+                            </div>
+                        }
+                    </div>
+                </fieldset>
+            </div>
 
             <div class="govuk-form-group conditional-field @(ViewData.ModelState["ReviewBody"]?.Errors.Count>
                 0 ? "govuk-form-group--error" : "")">
