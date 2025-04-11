@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using GovUk.Frontend.AspNetCore;
 using Mapster;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -115,8 +114,6 @@ services.AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.
 services
     .AddJwksManager()
     .UseJwtValidation();
-
-services.AddGovUkFrontend();
 
 services.AddValidatorsFromAssemblyContaining<IWebApp>();
 
