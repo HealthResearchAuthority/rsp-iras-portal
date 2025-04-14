@@ -228,7 +228,7 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
 
     [RequestFormLimits(ValueCountLimit = int.MaxValue)]
     [HttpPost]
-    public async Task<IActionResult> SaveResponses(QuestionnaireViewModel model, string categoryId = "", string submit = "False", string saveAndContinue = "False")
+    public async Task<IActionResult> SaveResponses(QuestionnaireViewModel model, string categoryId = "", string submit = "False", string saveAndContinue = "False", string saveForLater = "False")
     {
         // get the questionnaire from the session
         // and deserialize it
@@ -353,6 +353,10 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
 
             });
         }
+        
+        if (saveForLater == bool.TrueString)
+        {
+            return RedirectToAction(nameof(Review))
 
         // user jumps to the next stage by clicking on the link
         // so we need to resume the application from there
