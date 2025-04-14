@@ -422,7 +422,7 @@
 
 			@if (!string.IsNullOrEmpty(previousStage))
 			{
-				<button type="button" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+				<button class="govuk-button govuk-button--secondary" data-module="govuk-button" type="submit" asp-route="qnc:saveresponses" asp-all-route-data='@new Dictionary<string, string> { { "saveForLater", bool.TrueString } }'>
 					Save for later
 				</button>
 			}
