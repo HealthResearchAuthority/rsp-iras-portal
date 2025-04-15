@@ -371,7 +371,11 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
 
         if (saveForLater == bool.TrueString)
         {
-            return RedirectToAction("ProjectOverview", "Application", new { projectTitle = HttpContext.Session.GetString("ShortProjectTitle") });
+            return RedirectToAction("ProjectOverview", "Application", new 
+            { projectTitle = HttpContext.Session.GetString("ShortProjectTitle"), 
+                categoryId = navigation.CurrentCategory, 
+                applicationId = application.ApplicationId 
+            });
 
         }    
         // user jumps to the next stage by clicking on the link
