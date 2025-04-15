@@ -249,9 +249,9 @@ public class ApplicationController(
     }
 
     [Route("/projectoverivew", Name = "app:ProjectOverview")]
-    public async Task<IActionResult> ProjectOverview(string projectTitle)
+    public async Task<IActionResult> ProjectOverview(string projectTitle, string categoryId, string applicationId)
     {
-        var model = new ProjectOverviewModel(projectTitle);
+        var model = new ProjectOverviewModel(projectTitle, categoryId, applicationId);
         return View(model);
     }
 
