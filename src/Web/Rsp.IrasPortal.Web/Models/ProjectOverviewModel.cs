@@ -2,13 +2,16 @@
 
 public class ProjectOverviewModel
 {
-    public string ProjectId { get; set; }
-
     public string ProjectTitle { get; set; }
 
-    public ProjectOverviewModel(string projectTitle)
+    public string CategoryId { get; set; }
+
+    public string ApplicationId { get; set; }
+
+    public ProjectOverviewModel(string projectTitle, string categoryId, string applicationId)
     {
-        // add more here or repurpose existing? proof of concept
         ProjectTitle = projectTitle;
+        CategoryId = categoryId;
+        ApplicationId = applicationId;
     }
 }
