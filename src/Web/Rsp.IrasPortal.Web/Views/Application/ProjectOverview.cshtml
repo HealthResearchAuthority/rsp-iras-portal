@@ -1,11 +1,12 @@
 ﻿@using Rsp.IrasPortal.Application.DTOs.Responses;
 
-@model IrasApplicationResponse
+@model ProjectOverviewModel
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-        <h2 class="govuk-heading-l" id="title">Project overview</h2>
+		<h1 class="govuk-heading-xl">
+			<span class="govuk-caption-xl">@Model.ProjectTitle</span>
+			Project overview
+		</h1>
     </div>
 </div>
-
-<a class="govuk-button" asp-route="app:welcome">Return home</a>

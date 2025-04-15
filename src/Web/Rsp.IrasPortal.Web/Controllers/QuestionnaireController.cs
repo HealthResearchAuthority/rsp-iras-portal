@@ -249,6 +249,19 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
             question.AnswerText = response?.AnswerText;
         }
 
+        // for saving short title, for sake of project overview functionality
+
+        var shortTitleQuestion = model.Questions.FirstOrDefault(q => q.QuestionText == "Short project title");
+        var shortProjectTitle = "";
+
+        if (shortTitleQuestion != null)
+        {
+            // add Project Title to session for project overview
+            HttpContext.Session.SetString("ShortProjectTitle", shortTitleQuestion.AnswerText ?? "");
+
+        }
+
+
         // override the submitted model
         // with the updated model with answers
         model.Questions = questions;
@@ -355,11 +368,12 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
             });
         }
 
+
         if (saveForLater == bool.TrueString)
         {
-            return RedirectToAction("ProjectOverview", "Application");
+            return RedirectToAction("ProjectOverview", "Application", new { projectTitle = HttpContext.Session.GetString("ShortProjectTitle") });
 
-        }
+        }    
         // user jumps to the next stage by clicking on the link
         // so we need to resume the application from there
         if (!string.IsNullOrWhiteSpace(navigation.NextStage))
