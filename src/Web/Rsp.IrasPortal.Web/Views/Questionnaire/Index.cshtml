@@ -89,10 +89,10 @@
 	var navModel = string.IsNullOrEmpty(previousStage) ?
 						("app:irasidcheck", "Back", new Dictionary<string, string>()) :
 						("qnc:displayquestionnaire", "Back", new Dictionary<string, string>
-																				{
+																										{
 							{ "categoryId", previousCategory },
 							{ "sectionId", previousStage }
-																				});
+																										});
 }
 <partial name="_BackNavigation" model="@navModel" />
 <div class="govuk-grid-row">
@@ -120,12 +120,11 @@
 					var errorClass = string.Empty;
 				}
 
-
 				<govuk-fieldset class="sections">
 					<govuk-fieldset-legend class="govuk-fieldset__legend--l">
 						<h2 class="govuk-heading-l" id="title">@(Model.Questions.FirstOrDefault()?.Section)</h2>
 					</govuk-fieldset-legend>
-					<br />
+
 					<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
 
 					@{
@@ -180,7 +179,7 @@
 									<div id="Questions[@index].AnswerText" class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")" @parents @questionId>
 
 										<div class="govuk-form-group">
-											<fieldset class="govuk-fieldset" role="group" aria-describedby="@(question.QuestionText)-hint">
+											<fieldset class="govuk-fieldset" role="group" aria-describedby="@(question.QuestionText.Replace(" ", "-"))-hint">
 												<label class="govuk-label" for="@(question.QuestionId)_Text">@question.QuestionText</label>
 
 												<div id="rule-hint" class="govuk-hint">
@@ -259,44 +258,47 @@
 									fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
 
 									<div id="Questions[@index].AnswerText" class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")" @parents @questionId>
+										<div class="govuk-form-group">
+											<fieldset class="govuk-fieldset" role="group" aria-describedby="@(question.QuestionText.Replace(" ", "-"))-hint">
+												<label class="govuk-label" for="@(question.QuestionId)_Text">@question.QuestionText</label>
 
-										<label class="govuk-label" for="@(question.QuestionId)_Text">@question.QuestionText</label>
+												<div id="rule-hint" class="govuk-hint">
+													@if (rules.Count > 0)
+													{
+														@foreach (var rule in rules)
+														{
+															<p>
+																@rule.Description
+															</p>
+														}
+													}
+												</div>
 
-										<div id="rule-hint" class="govuk-hint">
-											@if (rules.Count > 0)
-											{
-												@foreach (var rule in rules)
+
+												@if (fieldHasErrors)
 												{
-													<p>
-														@rule.Description
-													</p>
+													BuildValidationMessage(question.Rules, errorKey, validationMessage);
 												}
-											}
+
+												@{
+													var sizeRule = rules.FirstOrDefault(x => x.Conditions.SingleOrDefault(y => y.Operator == "SIZE") != null);
+													var condition = sizeRule?.Conditions.FirstOrDefault(x => x.Operator == "SIZE");
+													var conditionValue = condition?.Value;
+
+													var cssClass = "govuk-input ";
+													if (!string.IsNullOrEmpty(conditionValue))
+													{
+														cssClass += conditionValue;
+													}
+
+													if (fieldHasErrors)
+													{
+														cssClass += " govuk-input--error";
+													}
+												}
+												@Html.TextBoxFor(model => model.Questions[index].AnswerText, new { id = question.QuestionId + "_Text", @class = cssClass })
+											</fieldset>
 										</div>
-
-
-										@if (fieldHasErrors)
-										{
-											BuildValidationMessage(question.Rules, errorKey, validationMessage);
-										}
-
-										@{
-											var sizeRule = rules.FirstOrDefault(x => x.Conditions.SingleOrDefault(y => y.Operator == "SIZE") != null);
-											var condition = sizeRule?.Conditions.FirstOrDefault(x => x.Operator == "SIZE");
-											var conditionValue = condition?.Value;
-
-											var cssClass = "govuk-input ";
-											if (!string.IsNullOrEmpty(conditionValue))
-											{
-												cssClass += conditionValue;
-											}
-
-											if (fieldHasErrors)
-											{
-												cssClass += " govuk-input--error";
-											}
-										}
-										@Html.TextBoxFor(model => model.Questions[index].AnswerText, new { id = question.QuestionId + "_Text", @class = cssClass })
 									</div>
 								}
 								break;
