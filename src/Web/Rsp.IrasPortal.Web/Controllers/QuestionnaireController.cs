@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using AspNetCoreGeneratedDocument;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -353,11 +354,12 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
 
             });
         }
-        
+
         if (saveForLater == bool.TrueString)
         {
-            return RedirectToAction(nameof(Review))
+            return RedirectToAction("ProjectOverview", "Application");
 
+        }
         // user jumps to the next stage by clicking on the link
         // so we need to resume the application from there
         if (!string.IsNullOrWhiteSpace(navigation.NextStage))

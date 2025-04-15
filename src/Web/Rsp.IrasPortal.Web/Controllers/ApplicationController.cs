@@ -247,6 +247,12 @@ public class ApplicationController(
         return this.ServiceError(applicationServiceResponse);
     }
 
+    [Route("/projectoverivew", Name = "app:ProjectOverview")]
+    public async Task<IActionResult> ProjectOverview()
+    {
+        return View();
+    }
+
     [Route("{applicationId}", Name = "app:ViewApplication")]
     public async Task<IActionResult> ViewApplication(string applicationId)
     {
