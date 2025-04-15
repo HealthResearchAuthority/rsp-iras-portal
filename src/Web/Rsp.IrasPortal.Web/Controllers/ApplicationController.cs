@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Entities;
 using Rsp.IrasPortal.Web.Extensions;
@@ -248,9 +249,10 @@ public class ApplicationController(
     }
 
     [Route("/projectoverivew", Name = "app:ProjectOverview")]
-    public async Task<IActionResult> ProjectOverview()
+    public async Task<IActionResult> ProjectOverview(string projectTitle)
     {
-        return View();
+        var model = new ProjectOverviewModel(projectTitle);
+        return View(model);
     }
 
     [Route("{applicationId}", Name = "app:ViewApplication")]
