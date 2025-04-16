@@ -89,10 +89,10 @@
 	var navModel = string.IsNullOrEmpty(previousStage) ?
 						("app:irasidcheck", "Back", new Dictionary<string, string>()) :
 						("qnc:displayquestionnaire", "Back", new Dictionary<string, string>
-																												{
+																																{
 							{ "categoryId", previousCategory },
 							{ "sectionId", previousStage }
-																												});
+																																});
 }
 <partial name="_BackNavigation" model="@navModel" />
 <div class="govuk-grid-row">
@@ -166,11 +166,11 @@
 						}
 
 						@functions {
-							public string BuildAriaDescribedBy(string text)
-							{
-								return $"{text?.Replace(" ", "-")}-hint";
-							}
+						public string BuildAriaDescribedBy(string text)
+						{
+							return $"{text?.Replace(" ", "-")}-hint";
 						}
+					}
 						var parents = conditional.Length > 0 ? "data-parents=" + string.Join(',', rules.Select(rule => rule.ParentQuestionId)) : "";
 						var questionId = conditional.Length > 0 ? "data-questionId=" + question.QuestionId : "";
 
@@ -185,73 +185,71 @@
 									<div id="Questions[@index].AnswerText" class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")" @parents @questionId>
 
 										<div class="govuk-form-group">
-											<fieldset class="govuk-fieldset" role="group" aria-describedby="@BuildAriaDescribedBy(question.QuestionText)">
-												<label class="govuk-label" for="@(question.QuestionId)_Text">@question.QuestionText</label>
+											<label class="govuk-label" aria-describedby="@BuildAriaDescribedBy(question.QuestionText)" for="@(question.QuestionId)_Text">@question.QuestionText</label>
 
-												<div id="rule-hint" class="govuk-hint">
-													@if (rules.Count > 0)
-													{
-														@foreach (var rule in rules)
-														{
-															<p>
-																@rule.Description
-															</p>
-														}
-													}
-												</div>
-
-												@if (fieldHasErrors)
+											<div id="rule-hint" class="govuk-hint">
+												@if (rules.Count > 0)
 												{
-													BuildValidationMessage(question.Rules, errorKey, validationMessage);
-												}
-
-												@{
-													// Extract values from AnswerText if available
-													if (!string.IsNullOrWhiteSpace(Model.Questions[index].AnswerText) &&
-													DateTime.TryParse(Model.Questions[index].AnswerText, out var parsedDate))
+													@foreach (var rule in rules)
 													{
-														Model.Questions[index].Day = parsedDate.Day.ToString();
-														Model.Questions[index].Month = parsedDate.Month.ToString();
-														Model.Questions[index].Year = parsedDate.Year.ToString();
+														<p>
+															@rule.Description
+														</p>
 													}
 												}
+											</div>
 
-												<div class="govuk-date-input" id="@(question.QuestionId)">
-													<div class="govuk-date-input__item">
-														<div class="govuk-form-group">
-															<label class="govuk-label govuk-date-input__label" for="Questions_@(index)_Day">Day</label>
-															@Html.TextBoxFor(m => m.Questions[index].Day, new
-																{
-																	@class = "govuk-input govuk-date-input__input govuk-input--width-2" + (fieldHasErrors ? " govuk-input--error" : ""),
-																	id = "Questions_" + index + "_Day",
-																	inputmode = "numeric"
-																})
-														</div>
-													</div>
-													<div class="govuk-date-input__item">
-														<div class="govuk-form-group">
-															<label class="govuk-label govuk-date-input__label" for="Questions_@(index)_Month">Month</label>
-															@Html.TextBoxFor(m => m.Questions[index].Month, new
-																{
-																	@class = "govuk-input govuk-date-input__input govuk-input--width-2" + (fieldHasErrors ? " govuk-input--error" : ""),
-																	id = "Questions_" + index + "_Month",
-																	inputmode = "numeric"
-																})
-														</div>
-													</div>
-													<div class="govuk-date-input__item">
-														<div class="govuk-form-group">
-															<label class="govuk-label govuk-date-input__label" for="Questions_@(index)_Year">Year</label>
-															@Html.TextBoxFor(m => m.Questions[index].Year, new
-																{
-																	@class = "govuk-input govuk-date-input__input govuk-input--width-4" + (fieldHasErrors ? " govuk-input--error" : ""),
-																	id = "Questions_" + index + "_Year",
-																	inputmode = "numeric"
-																})
-														</div>
+											@if (fieldHasErrors)
+											{
+												BuildValidationMessage(question.Rules, errorKey, validationMessage);
+											}
+
+											@{
+												// Extract values from AnswerText if available
+												if (!string.IsNullOrWhiteSpace(Model.Questions[index].AnswerText) &&
+												DateTime.TryParse(Model.Questions[index].AnswerText, out var parsedDate))
+												{
+													Model.Questions[index].Day = parsedDate.Day.ToString();
+													Model.Questions[index].Month = parsedDate.Month.ToString();
+													Model.Questions[index].Year = parsedDate.Year.ToString();
+												}
+											}
+
+											<div class="govuk-date-input" id="@(question.QuestionId)">
+												<div class="govuk-date-input__item">
+													<div class="govuk-form-group">
+														<label class="govuk-label govuk-date-input__label" for="Questions_@(index)_Day">Day</label>
+														@Html.TextBoxFor(m => m.Questions[index].Day, new
+															{
+																@class = "govuk-input govuk-date-input__input govuk-input--width-2" + (fieldHasErrors ? " govuk-input--error" : ""),
+																id = "Questions_" + index + "_Day",
+																inputmode = "numeric"
+															})
 													</div>
 												</div>
-											</fieldset>
+												<div class="govuk-date-input__item">
+													<div class="govuk-form-group">
+														<label class="govuk-label govuk-date-input__label" for="Questions_@(index)_Month">Month</label>
+														@Html.TextBoxFor(m => m.Questions[index].Month, new
+															{
+																@class = "govuk-input govuk-date-input__input govuk-input--width-2" + (fieldHasErrors ? " govuk-input--error" : ""),
+																id = "Questions_" + index + "_Month",
+																inputmode = "numeric"
+															})
+													</div>
+												</div>
+												<div class="govuk-date-input__item">
+													<div class="govuk-form-group">
+														<label class="govuk-label govuk-date-input__label" for="Questions_@(index)_Year">Year</label>
+														@Html.TextBoxFor(m => m.Questions[index].Year, new
+															{
+																@class = "govuk-input govuk-date-input__input govuk-input--width-4" + (fieldHasErrors ? " govuk-input--error" : ""),
+																id = "Questions_" + index + "_Year",
+																inputmode = "numeric"
+															})
+													</div>
+												</div>
+											</div>
 										</div>
 									</div>
 								}
@@ -265,45 +263,42 @@
 
 									<div id="Questions[@index].AnswerText" class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")" @parents @questionId>
 										<div class="govuk-form-group">
-											<fieldset class="govuk-fieldset" role="group" aria-describedby="@BuildAriaDescribedBy(question.QuestionText)">
-												<label class="govuk-label" for="@(question.QuestionId)_Text">@question.QuestionText</label>
-
-												<div id="rule-hint" class="govuk-hint">
-													@if (rules.Count > 0)
-													{
-														@foreach (var rule in rules)
-														{
-															<p>
-																@rule.Description
-															</p>
-														}
-													}
-												</div>
-
-
-												@if (fieldHasErrors)
+											<label class="govuk-label" aria-describedby="@BuildAriaDescribedBy(question.QuestionText)" for="@(question.QuestionId)_Text">@question.QuestionText</label>
+											<div id="rule-hint" class="govuk-hint">
+												@if (rules.Count > 0)
 												{
-													BuildValidationMessage(question.Rules, errorKey, validationMessage);
-												}
-
-												@{
-													var sizeRule = rules.FirstOrDefault(x => x.Conditions.SingleOrDefault(y => y.Operator == "SIZE") != null);
-													var condition = sizeRule?.Conditions.FirstOrDefault(x => x.Operator == "SIZE");
-													var conditionValue = condition?.Value;
-
-													var cssClass = "govuk-input ";
-													if (!string.IsNullOrEmpty(conditionValue))
+													@foreach (var rule in rules)
 													{
-														cssClass += conditionValue;
-													}
-
-													if (fieldHasErrors)
-													{
-														cssClass += " govuk-input--error";
+														<p>
+															@rule.Description
+														</p>
 													}
 												}
-												@Html.TextBoxFor(model => model.Questions[index].AnswerText, new { id = question.QuestionId + "_Text", @class = cssClass })
-											</fieldset>
+											</div>
+
+
+											@if (fieldHasErrors)
+											{
+												BuildValidationMessage(question.Rules, errorKey, validationMessage);
+											}
+
+											@{
+												var sizeRule = rules.FirstOrDefault(x => x.Conditions.SingleOrDefault(y => y.Operator == "SIZE") != null);
+												var condition = sizeRule?.Conditions.FirstOrDefault(x => x.Operator == "SIZE");
+												var conditionValue = condition?.Value;
+
+												var cssClass = "govuk-input ";
+												if (!string.IsNullOrEmpty(conditionValue))
+												{
+													cssClass += conditionValue;
+												}
+
+												if (fieldHasErrors)
+												{
+													cssClass += " govuk-input--error";
+												}
+											}
+											@Html.TextBoxFor(model => model.Questions[index].AnswerText, new { id = question.QuestionId + "_Text", @class = cssClass })
 										</div>
 									</div>
 								}
