@@ -12,7 +12,7 @@ public class ValidateAsyncTests : TestServiceBase<AddUpdateReviewBodyModelValida
         var model = new AddUpdateReviewBodyModel { OrganisationName = string.Empty };
         var result = await Sut.TestValidateAsync(model);
         result.ShouldHaveValidationErrorFor(x => x.OrganisationName)
-            .WithErrorMessage("Field is mandatory");
+            .WithErrorMessage("Enter an organisation name");
     }
 
     [Fact]
@@ -21,7 +21,7 @@ public class ValidateAsyncTests : TestServiceBase<AddUpdateReviewBodyModelValida
         var model = new AddUpdateReviewBodyModel { EmailAddress = string.Empty };
         var result = await Sut.TestValidateAsync(model);
         result.ShouldHaveValidationErrorFor(x => x.EmailAddress)
-            .WithErrorMessage("Field is mandatory");
+            .WithErrorMessage("Enter an email address");
     }
 
     [Theory]
@@ -56,7 +56,7 @@ public class ValidateAsyncTests : TestServiceBase<AddUpdateReviewBodyModelValida
         var model = new AddUpdateReviewBodyModel { EmailAddress = email };
         var result = await Sut.TestValidateAsync(model);
         result.ShouldHaveValidationErrorFor(x => x.EmailAddress)
-            .WithErrorMessage("Invalid email format");
+            .WithErrorMessage("Enter an email address in the correct format");
     }
 
     [Theory]
@@ -98,7 +98,7 @@ public class ValidateAsyncTests : TestServiceBase<AddUpdateReviewBodyModelValida
     }
 
     [Fact]
-    public async Task ShouldHaveValidationErrorForDescriptionExceeding500Words()
+    public async Task ShouldHaveValidationErrorForDescriptionExceeding250Words()
     {
         var model = new AddUpdateReviewBodyModel
         {
@@ -106,7 +106,7 @@ public class ValidateAsyncTests : TestServiceBase<AddUpdateReviewBodyModelValida
         };
         var result = await Sut.TestValidateAsync(model);
         result.ShouldHaveValidationErrorFor(x => x.Description)
-            .WithErrorMessage("The description cannot exceed 500 words.");
+            .WithErrorMessage("The description must be 250 words or less");
     }
 
     [Fact]
@@ -114,7 +114,7 @@ public class ValidateAsyncTests : TestServiceBase<AddUpdateReviewBodyModelValida
     {
         var model = new AddUpdateReviewBodyModel
         {
-            Description = string.Join(" ", Enumerable.Repeat("word", 500))
+            Description = string.Join(" ", Enumerable.Repeat("word", 250))
         };
         var result = await Sut.TestValidateAsync(model);
         result.ShouldNotHaveValidationErrorFor(x => x.Description);
@@ -137,7 +137,7 @@ public class ValidateAsyncTests : TestServiceBase<AddUpdateReviewBodyModelValida
         var model = new AddUpdateReviewBodyModel { Countries = null };
         var result = await Sut.TestValidateAsync(model);
         result.ShouldHaveValidationErrorFor(x => x.Countries)
-            .WithErrorMessage("Select at least one country.");
+            .WithErrorMessage("Enter a country");
     }
 
     [Fact]

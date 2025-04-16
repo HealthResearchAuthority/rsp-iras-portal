@@ -1,4 +1,5 @@
-﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+﻿@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Microsoft.AspNetCore.Mvc.TagHelpers
 @model AddUpdateReviewBodyModel
 
 @{
@@ -6,8 +7,16 @@
     var heading = ViewBag.Mode == "update" ? "Edit review body details" : "Add a new review body";
     var submitActionName = ViewBag.Mode == "update" ? "rbc:submitreviewbody" : "rbc:confirmchanges";
     var backActionName = ViewBag.Mode == "update" ? "rbc:viewreviewbody" : "rbc:viewreviewbodies";
-}
 
+    var filteredModelState = new ModelStateDictionary();
+    foreach (var state in ViewData.ModelState.Where(s => !s.Key.StartsWith('_')))
+    {
+        foreach (var error in state.Value!.Errors)
+        {
+            filteredModelState.AddModelError(state.Key, error.ErrorMessage);
+        }
+    }
+}
 
 <form method="get">
     <partial name="_BackNavigation" model="@(backActionName, "Back", new Dictionary<string, string> { { "Id", Model.Id.ToString() } })"/>
@@ -20,39 +29,41 @@
             <input type="hidden" asp-for="Id"/>
             <input type="hidden" asp-for="CreatedBy"/>
             <input type="hidden" asp-for="UpdatedBy"/>
-			<input type="hidden" asp-for="IsActive" />
+            <input type="hidden" asp-for="IsActive" />
+
+            <partial name="_ValidationSummary" model="@(filteredModelState, "There is a problem")" />
 
             <div class="govuk-form-group @(ViewData.ModelState["OrganisationName"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
-                <label class="govuk-label" for="OrganisationName">
-                    <b>Organisation name</b>
+                <label class="govuk-label govuk-label--s" for="OrganisationName">
+                    Organisation name
                 </label>
                 <span class="govuk-error-message" asp-validation-for="OrganisationName"></span>
                 <input class="govuk-input govuk-!-width-one-half"
-                       id="OrganisationName"
-                       name="OrganisationName"
-                       type="text"
-                       asp-for="OrganisationName">
+                id="OrganisationName"
+                name="OrganisationName"
+                type="text"
+                asp-for="OrganisationName">
 
             </div>
 
             <div class="govuk-form-group @(ViewData.ModelState["Countries"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
                 <fieldset class="govuk-fieldset">
                     <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
-                        <label class="govuk-label">
-                            <b>Country</b>
+                        <label class="govuk-label govuk-label--s" for="Countries">
+                            Country
                         </label>
                     </legend>
                     <span class="govuk-error-message" asp-validation-for="Countries"></span>
-                    <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                    <div class="govuk-checkboxes" data-module="govuk-checkboxes" id="Countries">
                         @foreach (var country in new[] { "England", "Northern Ireland", "Scotland", "Wales" })
                         {
                             <div class="govuk-checkboxes__item">
                                 <input class="govuk-checkboxes__input"
-                                       id="@country"
-                                       name="Countries"
-                                       type="checkbox"
-                                       value="@country"
-                                       @(Model.Countries != null && Model.Countries.Contains(country) ? "checked" : "")>
+                                id="@country"
+                                name="Countries"
+                                type="checkbox"
+                                value="@country"
+                                @(Model.Countries != null && Model.Countries.Contains(country) ? "checked" : "")>
                                 <label class="govuk-label govuk-checkboxes__label" for="@country">@country</label>
                             </div>
                         }
@@ -61,20 +72,27 @@
             </div>
 
             <div class="govuk-form-group @(ViewData.ModelState["EmailAddress"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
-                <label class="govuk-label" for="EmailAddress">
-                    <b>Email address</b>
+                <label class="govuk-label govuk-label--s" for="EmailAddress">
+                    Email address
                 </label>
                 <span class="govuk-error-message" asp-validation-for="EmailAddress"></span>
                 <input class="govuk-input govuk-!-width-three-quarters" id="EmailAddress" name="EmailAddress" type="text" asp-for="EmailAddress">
             </div>
-
-            <div class="govuk-form-group @(ViewData.ModelState["Description"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
-                <label class="govuk-label" for="Description">
-                    <b>Add description</b>
-                </label>
+            
+            <div class="govuk-form-group govuk-character-count @(ViewData.ModelState["Description"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")" data-module="govuk-character-count">
+                <div class="govuk-label-wrapper">
+                    <label class="govuk-label govuk-label--s" for="Description">
+                        Add description
+                    </label>
+                </div>
                 <span class="govuk-error-message" asp-validation-for="Description"></span>
-                <textarea class="govuk-textarea" id="Description" rows="5" name="Description" type="text" asp-for="Description"></textarea>
-
+                <textarea class="govuk-textarea" id="Description" rows="5" name="Description" asp-for="Description"></textarea>
+                <div class="govuk-character-count__message govuk-error-message">
+                    @if (ViewData.ModelState["_DescriptionExcessWordCount"]?.Errors.Count > 0)
+                    {
+                        @(ViewData.ModelState["_DescriptionExcessWordCount"]?.Errors[0].ErrorMessage)
+                    }
+                </div>
             </div>
 
             <partial name="_SubmitButton" model="@(submitActionName, buttonText, new Dictionary<string, string>())"/>
