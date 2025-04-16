@@ -3,6 +3,7 @@
 @using Microsoft.FeatureManagement
 @using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.DTOs
+@using Rsp.IrasPortal.Web.TagHelpers
 @model QuestionnaireViewModel
 @inject IFeatureManager featureManager
 
@@ -165,12 +166,6 @@
 							}
 						}
 
-						@functions {
-						public string BuildAriaDescribedBy(string text)
-						{
-							return $"{text?.Replace(" ", "-")}-hint";
-						}
-					}
 						var parents = conditional.Length > 0 ? "data-parents=" + string.Join(',', rules.Select(rule => rule.ParentQuestionId)) : "";
 						var questionId = conditional.Length > 0 ? "data-questionId=" + question.QuestionId : "";
 
@@ -185,7 +180,7 @@
 									<div id="Questions[@index].AnswerText" class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")" @parents @questionId>
 
 										<div class="govuk-form-group">
-											<label class="govuk-label" aria-describedby="@BuildAriaDescribedBy(question.QuestionText)" for="@(question.QuestionId)_Text">@question.QuestionText</label>
+											<label class="govuk-label" aria-describedby="@AccessibilityHelper.BuildAriaDescribedBy(question.QuestionText)" for="@(question.QuestionId)_Text">@question.QuestionText</label>
 
 											<div id="rule-hint" class="govuk-hint">
 												@if (rules.Count > 0)
@@ -263,7 +258,7 @@
 
 									<div id="Questions[@index].AnswerText" class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")" @parents @questionId>
 										<div class="govuk-form-group">
-											<label class="govuk-label" aria-describedby="@BuildAriaDescribedBy(question.QuestionText)" for="@(question.QuestionId)_Text">@question.QuestionText</label>
+											<label class="govuk-label" aria-describedby="@AccessibilityHelper.BuildAriaDescribedBy(question.QuestionText)" for="@(question.QuestionId)_Text">@question.QuestionText</label>
 											<div id="rule-hint" class="govuk-hint">
 												@if (rules.Count > 0)
 												{
