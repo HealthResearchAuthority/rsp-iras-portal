@@ -89,10 +89,10 @@
 	var navModel = string.IsNullOrEmpty(previousStage) ?
 						("app:irasidcheck", "Back", new Dictionary<string, string>()) :
 						("qnc:displayquestionnaire", "Back", new Dictionary<string, string>
-																										{
+																												{
 							{ "categoryId", previousCategory },
 							{ "sectionId", previousStage }
-																										});
+																												});
 }
 <partial name="_BackNavigation" model="@navModel" />
 <div class="govuk-grid-row">
@@ -165,6 +165,12 @@
 							}
 						}
 
+						@functions {
+							public string BuildAriaDescribedBy(string text)
+							{
+								return $"{text?.Replace(" ", "-")}-hint";
+							}
+						}
 						var parents = conditional.Length > 0 ? "data-parents=" + string.Join(',', rules.Select(rule => rule.ParentQuestionId)) : "";
 						var questionId = conditional.Length > 0 ? "data-questionId=" + question.QuestionId : "";
 
@@ -179,7 +185,7 @@
 									<div id="Questions[@index].AnswerText" class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")" @parents @questionId>
 
 										<div class="govuk-form-group">
-											<fieldset class="govuk-fieldset" role="group" aria-describedby="@(question.QuestionText.Replace(" ", "-"))-hint">
+											<fieldset class="govuk-fieldset" role="group" aria-describedby="@BuildAriaDescribedBy(question.QuestionText)">
 												<label class="govuk-label" for="@(question.QuestionId)_Text">@question.QuestionText</label>
 
 												<div id="rule-hint" class="govuk-hint">
@@ -259,7 +265,7 @@
 
 									<div id="Questions[@index].AnswerText" class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")" @parents @questionId>
 										<div class="govuk-form-group">
-											<fieldset class="govuk-fieldset" role="group" aria-describedby="@(question.QuestionText.Replace(" ", "-"))-hint">
+											<fieldset class="govuk-fieldset" role="group" aria-describedby="@BuildAriaDescribedBy(question.QuestionText)">
 												<label class="govuk-label" for="@(question.QuestionId)_Text">@question.QuestionText</label>
 
 												<div id="rule-hint" class="govuk-hint">
