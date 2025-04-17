@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Web.Controllers;
 using Rsp.IrasPortal.Web.Models;
 
@@ -31,7 +30,6 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApplicationControllerTests
             // Act
             var result = Sut.ProjectOverview(projectTitle, categoryId, applicationId);
 
-
             // Assert
             var viewResult = Assert.IsType<ViewResult>(result);
             var model = Assert.IsType<ProjectOverviewModel>(viewResult.Model);
@@ -39,8 +37,6 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApplicationControllerTests
             Assert.Equal(projectTitle, model.ProjectTitle);
             Assert.Equal(categoryId, model.CategoryId);
             Assert.Equal(applicationId, model.ApplicationId);
-
-         
         }
     }
 }
