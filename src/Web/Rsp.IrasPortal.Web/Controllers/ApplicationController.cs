@@ -249,11 +249,13 @@ public class ApplicationController(
 
     public IActionResult ProjectOverview()
     {
-        var projectTitle = TempData["ProjectTitle"] as string;
-        var categoryId = TempData["CategoryId"] as string;
-        var applicationId = TempData["ApplicationId"] as string;
+        var model = new ProjectOverviewModel
+        {
+            ProjectTitle = TempData["ProjectTitle"] as string ?? string.Empty,
+            CategoryId = TempData["CategoryId"] as string ?? string.Empty,
+            ApplicationId = TempData["ApplicationId"] as string ?? string.Empty
+        };
 
-        var model = new ProjectOverviewModel(projectTitle!, categoryId!, applicationId!);
         return View(model);
     }
 
