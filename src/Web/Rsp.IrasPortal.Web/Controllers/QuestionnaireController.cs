@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using AspNetCoreGeneratedDocument;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,9 +10,6 @@ using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
-using static System.Collections.Specialized.BitVector32;
-using static System.Net.Mime.MediaTypeNames;
-using static Rsp.IrasPortal.Application.Constants.QuestionCategories;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
@@ -47,19 +43,16 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
             return this.ServiceError(respondentServiceResponse);
         }
 
-        if(sectionId ==null)
+        if (sectionId == null)
         {
             // get the questions for the category
             var questionSectionsResponse = await questionSetService.GetQuestionSections();
-
 
             if (!questionSectionsResponse.IsSuccessStatusCode)
             {
                 // return the generic error page
                 return this.ServiceError(questionSectionsResponse);
             }
-
-
 
             var questionSections = questionSectionsResponse.Content;
             // Ensure questionSections is not null and has elements
@@ -122,12 +115,11 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
             return View(Index, questionnaire);
         }
 
-        // continue to resume for the category Id & 
+        // continue to resume for the category Id &
         return RedirectToAction(nameof(DisplayQuestionnaire), new
         {
             categoryId,
             sectionId
-
         });
     }
 
@@ -186,7 +178,6 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
                 var sectionIdOrDefault = sectionId ?? string.Empty;   // Default to an empty string if sectionId is null
 
                 var response = await questionSetService.GetQuestions(categoryIdOrDefault, sectionIdOrDefault);
-
 
                 // return the view if successfull
                 if (response.IsSuccessStatusCode)
@@ -257,9 +248,7 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
         {
             // add Project Title to session for project overview
             HttpContext.Session.SetString("ShortProjectTitle", shortTitleQuestion.AnswerText ?? "");
-
         }
-
 
         // override the submitted model
         // with the updated model with answers
@@ -362,21 +351,21 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
             // otherwise resume from the NextStage in sequence
             return RedirectToAction(nameof(Resume), new
             {
-                applicationId = application.ApplicationId, categoryId = navigation.NextCategory, sectionId = navigation.NextStage
-
+                applicationId = application.ApplicationId,
+                categoryId = navigation.NextCategory,
+                sectionId = navigation.NextStage
             });
         }
 
-
         if (saveForLater == bool.TrueString)
         {
-            return RedirectToAction("ProjectOverview", "Application", new 
-            { projectTitle = HttpContext.Session.GetString("ShortProjectTitle"), 
-                categoryId = navigation.CurrentCategory, 
-                applicationId = application.ApplicationId 
+            return RedirectToAction("ProjectOverview", "Application", new
+            {
+                projectTitle = HttpContext.Session.GetString("ShortProjectTitle"),
+                categoryId = navigation.CurrentCategory,
+                applicationId = application.ApplicationId
             });
-
-        }    
+        }
         // user jumps to the next stage by clicking on the link
         // so we need to resume the application from there
         if (!string.IsNullOrWhiteSpace(navigation.NextStage))
@@ -386,7 +375,6 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
                 applicationId = application.ApplicationId,
                 categoryId = navigation.NextCategory,
                 sectionId = navigation.NextStage
-
             });
         }
 
@@ -679,8 +667,6 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
 
         return irasApplication;
     }
-
-
 
     /// <summary>
     /// Sets the Previous, Current, and Next stages required for navigation.
