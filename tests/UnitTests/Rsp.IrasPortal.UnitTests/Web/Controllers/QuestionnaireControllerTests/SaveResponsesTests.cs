@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 using FluentValidation;
 using FluentValidation.Results;
@@ -143,7 +144,6 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
             { $"{SessionKeys.Questionnaire}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(questions) }
         };
 
-
         session
             .Setup(s => s.TryGetValue(It.IsAny<string>(), out It.Ref<byte[]?>.IsAny))
             .Returns((string key, out byte[]? value) =>
@@ -194,7 +194,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
         context.Items[ContextItemKeys.RespondentId] = "RespondentId1";
 
         Sut.ControllerContext = new ControllerContext { HttpContext = context };
-        
+
         Mocker
             .GetMock<IValidator<QuestionnaireViewModel>>()
             .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), It.IsAny<CancellationToken>()))
@@ -243,7 +243,6 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
             { $"{SessionKeys.Application}", JsonSerializer.SerializeToUtf8Bytes(application) },
             { $"{SessionKeys.Questionnaire}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(questions) }
         };
-
 
         session
             .Setup(s => s.TryGetValue(It.IsAny<string>(), out It.Ref<byte[]?>.IsAny))
@@ -312,6 +311,104 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
     }
 
     [Theory, AutoData]
+    public async Task Should_RedirectToProjectOverview_When_SaveForLaterIsTrue(
+    QuestionnaireViewModel model,
+    string categoryId,
+    string shortProjectTitle,
+    List<QuestionSectionsResponse> questionSectionsResponse)
+    {
+        // Arrange
+        var submit = bool.FalseString;
+        var saveAndContinue = bool.FalseString;
+        var saveForLater = bool.TrueString;
+
+        model.CurrentStage = QuestionCategories.A;
+
+        var questions = new List<QuestionViewModel>
+    {
+        new() { Index = 0, QuestionId = "Q1", SelectedOption = "Option1" },
+        new() { Index = 1, QuestionId = "Q2", AnswerText = "Answer2" }
+    };
+
+        var application = new IrasApplicationResponse
+        {
+            ApplicationId = "App1"
+        };
+
+        var session = new Mock<ISession>();
+
+        var sessionData = new Dictionary<string, byte[]?>
+    {
+        { $"{SessionKeys.Application}", JsonSerializer.SerializeToUtf8Bytes(application) },
+        { $"{SessionKeys.Questionnaire}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(questions) },
+        { "ShortProjectTitle", Encoding.UTF8.GetBytes(shortProjectTitle) }
+    };
+
+        session
+            .Setup(s => s.TryGetValue(It.IsAny<string>(), out It.Ref<byte[]?>.IsAny))
+            .Returns((string key, out byte[]? value) =>
+            {
+                if (sessionData.ContainsKey(key))
+                {
+                    value = sessionData[key];
+                    return true;
+                }
+
+                value = null;
+                return false;
+            });
+
+        var context = new DefaultHttpContext
+        {
+            Session = session.Object
+        };
+
+        Sut.TempData = new TempDataDictionary(context, Mock.Of<ITempDataProvider>());
+        context.Items[ContextItemKeys.RespondentId] = "RespondentId1";
+        Sut.ControllerContext = new ControllerContext { HttpContext = context };
+
+        var responseQuestionSections = new ServiceResponse<IEnumerable<QuestionSectionsResponse>>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = questionSectionsResponse
+        };
+
+        var responseQuestionSection = new ServiceResponse<QuestionSectionsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = questionSectionsResponse[0]
+        };
+
+        Mocker.GetMock<IQuestionSetService>()
+            .Setup(q => q.GetQuestionSections()).ReturnsAsync(responseQuestionSections);
+
+        Mocker.GetMock<IQuestionSetService>()
+            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>())).ReturnsAsync(responseQuestionSection);
+
+        Mocker.GetMock<IQuestionSetService>()
+            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>())).ReturnsAsync(responseQuestionSection);
+
+        Mocker
+            .GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
+
+        // Act
+        var result = await Sut.SaveResponses(model, categoryId, submit, saveAndContinue, saveForLater);
+
+        // Assert
+        var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
+        redirectResult.ActionName.ShouldBe(nameof(ApplicationController.ProjectOverview));
+
+        Mocker
+           .GetMock<IRespondentService>()
+           .Verify(s => s.SaveRespondentAnswers(It.Is<RespondentAnswersRequest>(r =>
+               r.ApplicationId == "App1" &&
+               r.RespondentId == "RespondentId1" &&
+               r.RespondentAnswers.Count == 2)), Times.Once);
+    }
+
+    [Theory, AutoData]
     public async Task Should_RedirectToResume_When_CategoryIdIsProvided
     (
         QuestionnaireViewModel model,
@@ -339,7 +436,6 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
             { $"{SessionKeys.Questionnaire}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(questions) }
         };
 
-
         session
             .Setup(s => s.TryGetValue(It.IsAny<string>(), out It.Ref<byte[]?>.IsAny))
             .Returns((string key, out byte[]? value) =>
@@ -353,7 +449,6 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
                 value = null;
                 return false;
             });
-
 
         var responseQuestionSections = new ServiceResponse<IEnumerable<QuestionSectionsResponse>>
         {
@@ -456,7 +551,6 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
                 value = null;
                 return false;
             });
-
 
         var responseQuestionSections = new ServiceResponse<IEnumerable<QuestionSectionsResponse>>
         {
