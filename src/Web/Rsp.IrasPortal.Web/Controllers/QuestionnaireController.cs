@@ -252,7 +252,6 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
         // for saving short title, for sake of project overview functionality
 
         var shortTitleQuestion = model.Questions.FirstOrDefault(q => q.QuestionText == "Short project title");
-        var shortProjectTitle = "";
 
         if (shortTitleQuestion != null)
         {
