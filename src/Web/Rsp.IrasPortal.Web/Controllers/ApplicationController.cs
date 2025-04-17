@@ -247,10 +247,13 @@ public class ApplicationController(
         return this.ServiceError(applicationServiceResponse);
     }
 
-    [Route("/projectoverivew", Name = "app:ProjectOverview")]
-    public IActionResult ProjectOverview(string projectTitle, string categoryId, string applicationId)
+    public IActionResult ProjectOverview()
     {
-        var model = new ProjectOverviewModel(projectTitle, categoryId, applicationId);
+        var projectTitle = TempData["ProjectTitle"] as string;
+        var categoryId = TempData["CategoryId"] as string;
+        var applicationId = TempData["ApplicationId"] as string;
+
+        var model = new ProjectOverviewModel(projectTitle!, categoryId!, applicationId!);
         return View(model);
     }
 

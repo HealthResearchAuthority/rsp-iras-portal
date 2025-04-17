@@ -359,12 +359,11 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
 
         if (saveForLater == bool.TrueString)
         {
-            return RedirectToAction("ProjectOverview", "Application", new
-            {
-                projectTitle = HttpContext.Session.GetString("ShortProjectTitle"),
-                categoryId = navigation.CurrentCategory,
-                applicationId = application.ApplicationId
-            });
+            TempData["ProjectTitle"] = HttpContext.Session.GetString("ShortProjectTitle");
+            TempData["CategoryId"] = navigation.NextCategory;
+            TempData["ApplicationId"] = application.ApplicationId;
+
+            return RedirectToAction("ProjectOverview", "Application");
         }
         // user jumps to the next stage by clicking on the link
         // so we need to resume the application from there
