@@ -419,11 +419,9 @@
 			</div>
 
 			<div class="save-buttons">
-				<partial name="_SubmitButton" model="@("qnc:saveresponses", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } })" />
+				<partial name="_SubmitButton" model="@("qnc:saveresponses", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } }, false)" />
 
-				<button class="govuk-button govuk-button--secondary" data-module="govuk-button" type="submit" asp-route="qnc:saveresponses" asp-all-route-data='@new Dictionary<string, string> { { "saveForLater", bool.TrueString } }'>
-					Save for later
-				</button>
+				<partial name="_SubmitButton" model="@("qnc:saveresponses", "Save for later", new Dictionary<string, string> { { "saveForLater", bool.TrueString } }, true)" />
 			</div>
 
 			
