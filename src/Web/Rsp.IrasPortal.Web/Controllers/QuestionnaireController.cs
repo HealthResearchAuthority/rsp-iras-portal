@@ -105,7 +105,7 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
         TempData.TryAdd(TempDataKeys.ApplicationId, applicationId);
 
         // this is where the questionnaire will resume
-        var navigationDto = SetStage(sectionId);
+        var navigationDto = SetStage(sectionId!);
 
         questionnaire.CurrentStage = navigationDto.CurrentStage;
 
@@ -192,7 +192,7 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
                 if (response.IsSuccessStatusCode)
                 {
                     // set the active stage for the category
-                    SetStage(sectionId);
+                    SetStage(sectionId!);
 
                     var questionnaire = BuildQuestionnaireViewModel(response.Content!);
 
