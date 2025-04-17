@@ -247,6 +247,18 @@ public class ApplicationController(
         return this.ServiceError(applicationServiceResponse);
     }
 
+    public IActionResult ProjectOverview()
+    {
+        var model = new ProjectOverviewModel
+        {
+            ProjectTitle = TempData["ProjectTitle"] as string ?? string.Empty,
+            CategoryId = TempData["CategoryId"] as string ?? string.Empty,
+            ApplicationId = TempData["ApplicationId"] as string ?? string.Empty
+        };
+
+        return View(model);
+    }
+
     [Route("{applicationId}", Name = "app:ViewApplication")]
     public async Task<IActionResult> ViewApplication(string applicationId)
     {

@@ -12,7 +12,7 @@
 	var currentStage = TempData[TempDataKeys.CurrentStage] as string;
 	var errorSummaryTitle = "There is a problem";
 
-	Model.CurrentStage = currentStage;
+	Model.CurrentStage = currentStage!;
 
 	void BuildValidationMessage(IList<RuleDto> rules, string errorKey, string validationMessage)
 	{
@@ -90,7 +90,7 @@
 						("app:irasidcheck", "Back", new Dictionary<string, string>()) :
 						("qnc:displayquestionnaire", "Back", new Dictionary<string, string>
 																																{
-							{ "categoryId", previousCategory },
+							{ "categoryId", previousCategory ?? string.Empty},
 							{ "sectionId", previousStage }
 																																});
 }
@@ -423,14 +423,13 @@
 
 			</div>
 
-			<partial name="_SubmitButton" model="@("qnc:saveresponses", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } })" />
+			<div class="save-buttons">
+				<partial name="_SubmitButton" model="@("qnc:saveresponses", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } }, false)" />
 
-			@if (!string.IsNullOrEmpty(previousStage))
-			{
-				<button type="button" class="govuk-button govuk-button--secondary" data-module="govuk-button">
-					Save for later
-				</button>
-			}
+				<partial name="_SubmitButton" model="@("qnc:saveresponses", "Save for later", new Dictionary<string, string> { { "saveForLater", bool.TrueString } }, true)" />
+			</div>
+
+			
 		</form>
 	</div>
 </div>

@@ -92,6 +92,11 @@ button.govuk-link {
     background-color: transparent;
 }
 
+.save-buttons {
+    display: flex;
+    gap: 15px;
+}
+
 .govuk-button-hyperlink {
     background: none;
     border: 0;
