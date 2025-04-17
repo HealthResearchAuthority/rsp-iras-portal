@@ -13,7 +13,7 @@
 	var currentStage = TempData[TempDataKeys.CurrentStage] as string;
 	var errorSummaryTitle = "There is a problem";
 
-	Model.CurrentStage = currentStage;
+	Model.CurrentStage = currentStage!;
 
 	void BuildValidationMessage(IList<RuleDto> rules, string errorKey, string validationMessage)
 	{
@@ -91,7 +91,7 @@
 						("app:startproject", "Back", new Dictionary<string, string>()) :
 						("qnc:displayquestionnaire", "Back", new Dictionary<string, string>
 																																{
-							{ "categoryId", previousCategory },
+							{ "categoryId", previousCategory ?? string.Empty},
 							{ "sectionId", previousStage }
 																																});
 }
@@ -418,14 +418,15 @@
 
 			</div>
 
-			<partial name="_SubmitButton" model="@("qnc:saveresponses", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } })" />
+			<div style="display: flex; gap: 15px;">
+				<partial name="_SubmitButton" model="@("qnc:saveresponses", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } })" />
 
-			@if (!string.IsNullOrEmpty(previousStage))
-			{
 				<button class="govuk-button govuk-button--secondary" data-module="govuk-button" type="submit" asp-route="qnc:saveresponses" asp-all-route-data='@new Dictionary<string, string> { { "saveForLater", bool.TrueString } }'>
 					Save for later
 				</button>
-			}
+			</div>
+
+			
 		</form>
 	</div>
 </div>
