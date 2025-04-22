@@ -88,7 +88,7 @@
 
 @{
 	var navModel = string.IsNullOrEmpty(previousStage) ?
-						("app:irasidcheck", "Back", new Dictionary<string, string>()) :
+						("app:startproject", "Back", new Dictionary<string, string>()) :
 						("qnc:displayquestionnaire", "Back", new Dictionary<string, string>
 																																{
 							{ "categoryId", previousCategory },
@@ -180,9 +180,9 @@
 									<div id="Questions[@index].AnswerText" class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")" @parents @questionId>
 
 										<div class="govuk-form-group">
-											<label class="govuk-label" aria-describedby="@AccessibilityHelper.BuildAriaDescribedBy(question.QuestionText)" for="@(question.QuestionId)_Text">@question.QuestionText</label>
+											<label class="govuk-label" for="@(question.QuestionId)_Text" aria-described-for="Questions[index].QuestionText">@question.QuestionText</label>
 
-											<div id="rule-hint" class="govuk-hint">
+											<div id="rule-hint" aria-id-for="Questions[index].QuestionText" class="govuk-hint">
 												@if (rules.Count > 0)
 												{
 													@foreach (var rule in rules)
@@ -258,8 +258,8 @@
 
 									<div id="Questions[@index].AnswerText" class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")" @parents @questionId>
 										<div class="govuk-form-group">
-											<label class="govuk-label" aria-describedby="@AccessibilityHelper.BuildAriaDescribedBy(question.QuestionText)" for="@(question.QuestionId)_Text">@question.QuestionText</label>
-											<div id="rule-hint" class="govuk-hint">
+											<label class="govuk-label" for="@(question.QuestionId)_Text" aria-described-for="Questions[index].QuestionText">@question.QuestionText</label>
+											<div aria-id-for="Questions[index].QuestionText" class="govuk-hint">
 												@if (rules.Count > 0)
 												{
 													@foreach (var rule in rules)
