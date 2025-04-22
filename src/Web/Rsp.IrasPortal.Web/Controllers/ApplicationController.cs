@@ -21,7 +21,7 @@ namespace Rsp.IrasPortal.Web.Controllers;
 public class ApplicationController(
     IApplicationsService applicationsService,
     IValidator<ApplicationInfoViewModel> validator,
-    IValidator<IrasIdCheckViewModel> irasIdValidator,
+    IValidator<IrasIdViewModel> irasIdValidator,
     IQuestionSetService questionSetService) : Controller
 {
     // ApplicationInfo view name
@@ -31,12 +31,12 @@ public class ApplicationController(
     [Route("/", Name = "app:welcome")]
     public IActionResult Welcome() => View(nameof(Index));
 
-    public IActionResult IrasIdCheck() => View(nameof(IrasIdCheck));
+    public IActionResult StartProject() => View(nameof(StartProject));
 
     [HttpPost]
-    public async Task<IActionResult> IrasIdCheck(IrasIdCheckViewModel model)
+    public async Task<IActionResult> StartProject(IrasIdViewModel model)
     {
-        var validationResult = await irasIdValidator.ValidateAsync(new ValidationContext<IrasIdCheckViewModel>(model));
+        var validationResult = await irasIdValidator.ValidateAsync(new ValidationContext<IrasIdViewModel>(model));
 
         if (!validationResult.IsValid)
         {
@@ -45,7 +45,7 @@ public class ApplicationController(
                 ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
             }
 
-            return View(nameof(IrasIdCheck), model);
+            return View(nameof(StartProject), model);
         }
 
         // Get existing applications
@@ -60,7 +60,7 @@ public class ApplicationController(
         if (irasIdExists)
         {
             ModelState.AddModelError(nameof(model.IrasId), "A record for the project with this IRAS ID already exists");
-            return View(nameof(IrasIdCheck), model);
+            return View(nameof(StartProject), model);
         }
 
         // Create new application

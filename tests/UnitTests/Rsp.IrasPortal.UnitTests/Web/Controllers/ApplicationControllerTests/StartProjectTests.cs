@@ -12,9 +12,9 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApplicationControllerTests;
 
-public class IrasIdCheckTests : TestServiceBase<ApplicationController>
+public class StartProjectTests : TestServiceBase<ApplicationController>
 {
-    public IrasIdCheckTests()
+    public StartProjectTests()
     {
         var mockSession = new Mock<ISession>();
 
@@ -30,20 +30,20 @@ public class IrasIdCheckTests : TestServiceBase<ApplicationController>
     }
 
     [Fact]
-    public async Task IrasIdCheck_ReturnsView_WithModel_WhenValidationFails()
+    public async Task StartProject_ReturnsView_WithModel_WhenValidationFails()
     {
         // Arrange
-        var model = new IrasIdCheckViewModel { IrasId = "1234" };
+        var model = new IrasIdViewModel { IrasId = "1234" };
         Mocker
-            .GetMock<IValidator<IrasIdCheckViewModel>>()
-            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<IrasIdCheckViewModel>>(), default))
+            .GetMock<IValidator<IrasIdViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<IrasIdViewModel>>(), default))
             .ReturnsAsync(new ValidationResult(new List<ValidationFailure>
             {
                 new("IrasId", "Required")
             }));
 
         // Act
-        var result = await Sut.IrasIdCheck(model);
+        var result = await Sut.StartProject(model);
 
         // Assert
         result.ShouldBeOfType<ViewResult>();
@@ -51,14 +51,14 @@ public class IrasIdCheckTests : TestServiceBase<ApplicationController>
     }
 
     [Fact]
-    public async Task IrasIdCheck_ReturnsServiceError_IfGetApplicationsFails()
+    public async Task StartProject_ReturnsServiceError_IfGetApplicationsFails()
     {
         // Arrange
-        var model = new IrasIdCheckViewModel { IrasId = "1234" };
+        var model = new IrasIdViewModel { IrasId = "1234" };
 
         Mocker
-            .GetMock<IValidator<IrasIdCheckViewModel>>()
-            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<IrasIdCheckViewModel>>(), default))
+            .GetMock<IValidator<IrasIdViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<IrasIdViewModel>>(), default))
             .ReturnsAsync(new ValidationResult());
 
         Mocker
@@ -70,25 +70,25 @@ public class IrasIdCheckTests : TestServiceBase<ApplicationController>
             });
 
         // Act
-        var result = await Sut.IrasIdCheck(model);
+        var result = await Sut.StartProject(model);
 
         // Assert
         result.ShouldBeOfType<ViewResult>();
     }
 
     [Fact]
-    public async Task IrasIdCheck_ReturnsView_IfIrasIdAlreadyExists()
+    public async Task StartProject_ReturnsView_IfIrasIdAlreadyExists()
     {
         // Arrange
-        var model = new IrasIdCheckViewModel { IrasId = "1234" };
+        var model = new IrasIdViewModel { IrasId = "1234" };
         var existingApps = new List<IrasApplicationResponse>
         {
             new() { IrasId = 1234, ApplicationId = "a1", Title = "Test" }
         };
 
         Mocker
-            .GetMock<IValidator<IrasIdCheckViewModel>>()
-            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<IrasIdCheckViewModel>>(), default))
+            .GetMock<IValidator<IrasIdViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<IrasIdViewModel>>(), default))
             .ReturnsAsync(new ValidationResult());
 
         Mocker
@@ -101,7 +101,7 @@ public class IrasIdCheckTests : TestServiceBase<ApplicationController>
             });
 
         // Act
-        var result = await Sut.IrasIdCheck(model);
+        var result = await Sut.StartProject(model);
 
         // Assert
         result.ShouldBeOfType<ViewResult>();
@@ -109,14 +109,14 @@ public class IrasIdCheckTests : TestServiceBase<ApplicationController>
     }
 
     [Fact]
-    public async Task IrasIdCheck_ReturnsServiceError_IfCreateApplicationFails()
+    public async Task StartProject_ReturnsServiceError_IfCreateApplicationFails()
     {
         // Arrange
-        var model = new IrasIdCheckViewModel { IrasId = "9999" };
+        var model = new IrasIdViewModel { IrasId = "9999" };
 
         Mocker
-            .GetMock<IValidator<IrasIdCheckViewModel>>()
-            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<IrasIdCheckViewModel>>(), default))
+            .GetMock<IValidator<IrasIdViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<IrasIdViewModel>>(), default))
             .ReturnsAsync(new ValidationResult());
 
         Mocker
@@ -134,14 +134,14 @@ public class IrasIdCheckTests : TestServiceBase<ApplicationController>
             .ReturnsAsync(new ServiceResponse<IrasApplicationResponse> { StatusCode = HttpStatusCode.OK });
 
         // Act
-        var result = await Sut.IrasIdCheck(model);
+        var result = await Sut.StartProject(model);
 
         // Assert
         result.ShouldBeOfType<ViewResult>();
     }
 
     [Fact]
-    public async Task IrasIdCheck_RedirectsToResume_IfEverythingSucceeds()
+    public async Task StartProject_RedirectsToResume_IfEverythingSucceeds()
     {
         // Arrange
         var mockSession = new Mock<ISession>();
@@ -151,12 +151,12 @@ public class IrasIdCheckTests : TestServiceBase<ApplicationController>
             Session = mockSession.Object
         };
 
-        var model = new IrasIdCheckViewModel { IrasId = "5678" };
+        var model = new IrasIdViewModel { IrasId = "5678" };
         var createdApp = new IrasApplicationResponse { ApplicationId = "abc", IrasId = 5678, Title = "Test" };
 
         Mocker
-            .GetMock<IValidator<IrasIdCheckViewModel>>()
-            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<IrasIdCheckViewModel>>(), default))
+            .GetMock<IValidator<IrasIdViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<IrasIdViewModel>>(), default))
             .ReturnsAsync(new ValidationResult());
 
         Mocker
@@ -187,7 +187,7 @@ public class IrasIdCheckTests : TestServiceBase<ApplicationController>
             });
 
         // Act
-        var result = await Sut.IrasIdCheck(model);
+        var result = await Sut.StartProject(model);
 
         // Assert
         result.ShouldBeOfType<RedirectToActionResult>();

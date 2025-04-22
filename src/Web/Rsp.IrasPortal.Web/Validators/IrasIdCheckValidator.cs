@@ -3,7 +3,7 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Validators;
 
-public class IrasIdCheckValidator : AbstractValidator<IrasIdCheckViewModel>
+public class IrasIdCheckValidator : AbstractValidator<IrasIdViewModel>
 {
     public IrasIdCheckValidator()
     {
