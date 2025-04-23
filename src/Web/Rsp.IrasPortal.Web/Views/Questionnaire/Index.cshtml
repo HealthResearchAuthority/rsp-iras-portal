@@ -182,7 +182,7 @@
 										<div class="govuk-form-group">
 											<label class="govuk-label" for="@(question.QuestionId)_Text" aria-described-for="Questions[index].QuestionText">@question.QuestionText</label>
 
-											<div id="rule-hint" aria-id-for="Questions[index].QuestionText" class="govuk-hint">
+											<div aria-id-for="Questions[index].QuestionText" class="govuk-hint">
 												@if (rules.Count > 0)
 												{
 													@foreach (var rule in rules)
