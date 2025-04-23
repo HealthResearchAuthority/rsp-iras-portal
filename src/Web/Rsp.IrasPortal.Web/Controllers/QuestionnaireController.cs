@@ -460,11 +460,17 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
         var respondentAnswers = respondentServiceResponse.Content!;
         var questions = questionSetServiceResponse.Content!;
 
+        var questionnaire = new QuestionnaireViewModel
+        {
+            CurrentStage = string.Empty,
+            Questions = new List<QuestionViewModel>()
+        };
+
         // validate each category
         foreach (var questionsResponse in questions.ToLookup(q => q.Category))
         {
             // build the QuestionnaireViewModel for each category
-            var questionnaire = BuildQuestionnaireViewModel(questionsResponse);
+            questionnaire = BuildQuestionnaireViewModel(questionsResponse);
 
             if (questionnaire.Questions.Count == 0)
             {
@@ -514,7 +520,7 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
             ViewData[ViewDataKeys.IsApplicationValid] = false;
         }
 
-        return View(questionnaireValidationState);
+        return View("ReviewAnswers", questionnaire);
     }
 
     /// <summary>

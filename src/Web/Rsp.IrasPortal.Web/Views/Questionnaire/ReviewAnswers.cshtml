@@ -1,0 +1,132 @@
+﻿@model QuestionnaireViewModel
+
+@{
+	var groupedSections = Model.Questions
+		.GroupBy(q => q.Section)
+		.OrderBy(g => g.First().Sequence)
+		.ToList();
+
+	var firstSectionKey = groupedSections.FirstOrDefault()?.Key;
+	var lastSection = groupedSections.LastOrDefault();
+	var lastQuestion = lastSection?.FirstOrDefault();
+	var errorSummaryTitle = "There is a problem";
+
+	var navModel = lastQuestion != null
+		? ("qnc:displayquestionnaire", "Back", new Dictionary<string, string>
+													{
+			{ "sectionId", lastQuestion.SectionId },
+			{ "categoryId", lastQuestion.Category }
+													})
+		: ("app:createapplication", "Back", new Dictionary<string, string>());
+
+	string GetDisplayText(QuestionViewModel q)
+	{
+		// 1. Use AnswerText if available
+		if (!string.IsNullOrWhiteSpace(q.AnswerText))
+			return q.AnswerText!;
+
+		// 2. For radio/boolean: get AnswerText from SelectedOption
+		if ((q.DataType.Equals("radio button", StringComparison.OrdinalIgnoreCase)
+			|| q.DataType.Equals("boolean", StringComparison.OrdinalIgnoreCase))
+			&& !string.IsNullOrWhiteSpace(q.SelectedOption))
+		{
+			var selected = q.Answers.FirstOrDefault(a => a.AnswerId == q.SelectedOption);
+			if (selected != null && !string.IsNullOrWhiteSpace(selected.AnswerText))
+				return selected.AnswerText!;
+		}
+
+		// 3. For checkboxes/lookup lists, return selected answers
+		if (q.Answers?.Any(a => a.IsSelected) == true)
+			return string.Join("<br/>", q.Answers
+				.Where(a => a.IsSelected && !string.IsNullOrWhiteSpace(a.AnswerText))
+				.Select(a => a.AnswerText));
+
+		// 4. If everything is blank, return a prompt
+		return $"Enter {q.QuestionText.ToLowerInvariant()}";
+	}
+
+	string GetActionText(QuestionViewModel q)
+	{
+		return (!string.IsNullOrWhiteSpace(q.AnswerText)
+				|| q.Answers.Any(a => a.IsSelected)
+				|| (!string.IsNullOrWhiteSpace(q.SelectedOption)
+					&& q.Answers.Any(a => a.AnswerId == q.SelectedOption)))
+			? "Change"
+			: $"Enter {q.QuestionText.ToLowerInvariant()}";
+	}
+
+	bool IsMissingAnswer(QuestionViewModel q)
+	{
+		return string.IsNullOrWhiteSpace(q.AnswerText)
+						&& string.IsNullOrWhiteSpace(q.SelectedOption)
+						&& !(q.Answers?.Any(a => a.IsSelected) ?? false);
+	}
+}
+
+<partial name="_BackNavigation" model="navModel" />
+
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-two-thirds">
+		<h1 class="govuk-heading-l">Review your answers</h1>
+
+		<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
+
+		@foreach (var sectionGroup in groupedSections)
+		{
+			<h2 class="govuk-heading-m govuk-!-margin-top-5">@sectionGroup.Key</h2>
+			<dl class="govuk-summary-list govuk-!-margin-bottom-7">
+				@if (sectionGroup.Key == firstSectionKey)
+				{
+					<div class="govuk-summary-list__row">
+						<dt class="govuk-summary-list__key">IRAS ID</dt>
+						<dd class="govuk-summary-list__value">@Model.IrasId</dd>
+					</div>
+				}
+
+				@foreach (var q in sectionGroup)
+				{
+					<div class="govuk-summary-list__row" id="@q.QuestionId">
+						<dt class="govuk-summary-list__key">
+							@q.QuestionText
+						</dt>
+						<dd class="govuk-summary-list__value">
+							@if (IsMissingAnswer(q))
+							{
+								<a class="govuk-link"
+								   href="@Url.RouteUrl("qnc:displayquestionnaire", new { sectionId = q.SectionId, categoryId = q.Category })">
+									@GetActionText(q)<span class="govuk-visually-hidden"> @q.QuestionText</span>
+								</a>
+							}
+							else
+							{
+								@Html.Raw(GetDisplayText(q))
+							}
+						</dd>
+						<dd class="govuk-summary-list__actions">
+							@if (!IsMissingAnswer(q))
+							{
+								<a class="govuk-link"
+								   href="@Url.RouteUrl("qnc:displayquestionnaire", new { sectionId = q.SectionId, categoryId = q.Category })">
+									@GetActionText(q)<span class="govuk-visually-hidden"> @q.QuestionText</span>
+								</a>
+							}
+						</dd>
+					</div>
+				}
+			</dl>
+		}
+
+		<h2 class="govuk-heading-m govuk-!-margin-top-5">Confirm project details</h2>
+		<p class="govuk-body">
+			Review your answers and complete any missing information before confirming project details.
+		</p>
+		<form method="post">
+			<button class="govuk-button" data-module="govuk-button" formaction="@Url.RouteUrl("qnc:saveresponses", new { saveAndContinue = true })">
+				Confirm project details
+			</button>
+			<button class="govuk-button govuk-button--secondary" data-module="govuk-button" formaction="@Url.RouteUrl("qnc:saveresponses", new { saveForLater = true })">
+				Save for later
+			</button>
+		</form>
+	</div>
+</div>
