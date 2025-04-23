@@ -5,7 +5,7 @@ using Rsp.IrasPortal.Web.TagHelpers;
 
 namespace Rsp.IrasPortal.UnitTests.Web.TagHelpers;
 
-public class BuildAriaTagHelperTests : TestServiceBase
+public class AccessibilityTagHelperTests : TestServiceBase
 {
     private static async Task<TagHelperOutput> RunTagHelperAsync(string? describedForValue, string? idForValue)
     {
@@ -13,7 +13,7 @@ public class BuildAriaTagHelperTests : TestServiceBase
         var metadataProvider = new EmptyModelMetadataProvider();
         var metadata = metadataProvider.GetMetadataForType(typeof(string));
 
-        var tagHelper = new BuildAriaTagHelper
+        var tagHelper = new AccessibilityTagHelper
         {
             DescribedFor = describedForValue != null
                 ? new ModelExpression("DescribedProp", new ModelExplorer(metadataProvider, metadata, describedForValue))

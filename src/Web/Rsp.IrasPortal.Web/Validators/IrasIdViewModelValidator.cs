@@ -3,9 +3,9 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Validators;
 
-public class IrasIdCheckValidator : AbstractValidator<IrasIdViewModel>
+public class IrasIdViewModelValidator : AbstractValidator<IrasIdViewModel>
 {
-    public IrasIdCheckValidator()
+    public IrasIdViewModelValidator()
     {
         // Validate IRAS ID
         RuleFor(x => x.IrasId)
