@@ -86,6 +86,6 @@ public class AccessibilityTagHelper : TagHelper
     /// </summary>
     private static Regex SanitizeInputRegex()
     {
-        return new Regex(@"[^a-zA-Z0-9\-]", RegexOptions.Compiled);
+        return new Regex(@"[^a-zA-Z0-9\-]", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
     }
 }
