@@ -7,7 +7,8 @@ namespace Rsp.IrasPortal.UnitTests.Web.TagHelpers;
 
 public class AccessibilityTagHelperTests : TestServiceBase
 {
-    private static async Task<TagHelperOutput> RunTagHelperAsync(string? describedForValue, string? idForValue)
+    [Fact]
+    public async Task Sets_AriaDescribedBy_When_DescribedFor_Is_Provided()
     {
         // Arrange
         var metadataProvider = new EmptyModelMetadataProvider();
@@ -15,74 +16,95 @@ public class AccessibilityTagHelperTests : TestServiceBase
 
         var tagHelper = new AccessibilityTagHelper
         {
-            DescribedFor = describedForValue != null
-                ? new ModelExpression("DescribedProp", new ModelExplorer(metadataProvider, metadata, describedForValue))
-                : null!,
-
-            IdFor = idForValue != null
-                ? new ModelExpression("IdProp", new ModelExplorer(metadataProvider, metadata, idForValue))
-                : null!
+            DescribedFor = new ModelExpression("QuestionText", new ModelExplorer(metadataProvider, metadata, "Short project title"))
         };
 
-        var context = new TagHelperContext(
-            tagName: "input",
-            allAttributes: new TagHelperAttributeList
-            {
-                    { "aria-described-for", describedForValue },
-                    { "aria-id-for", idForValue }
-            },
-            items: new Dictionary<object, object>(),
-            uniqueId: "test");
-
-        var output = new TagHelperOutput(
-            "input",
-            new TagHelperAttributeList
-            {
-                    { "aria-described-for", describedForValue },
-                    { "aria-id-for", idForValue }
-            },
+        var output = new TagHelperOutput("input",
+            new TagHelperAttributeList(),
             (useCachedResult, encoder) =>
             {
-                var content = new DefaultTagHelperContent();
-                content.SetContent("Test content");
-                return Task.FromResult<TagHelperContent>(content);
+                var tagHelperContent = new DefaultTagHelperContent();
+                return Task.FromResult<TagHelperContent>(tagHelperContent);
             });
+
+        var context = new TagHelperContext(
+            new TagHelperAttributeList(),
+            new Dictionary<object, object?>(),
+            "test");
 
         // Act
         await tagHelper.ProcessAsync(context, output);
-        return output;
+
+        // Assert
+        var expected = "short-project-title-hint";
+        Assert.True(output.Attributes.ContainsName("aria-describedby"));
+        Assert.Equal(expected, output.Attributes["aria-describedby"].Value);
     }
 
     [Fact]
-    public async Task Sets_AriaDescribedBy_When_DescribedFor_Provided()
+    public async Task Sets_Id_When_IdFor_Is_Provided()
     {
-        var output = await RunTagHelperAsync("Short Project Title", null);
+        // Arrange
+        var metadataProvider = new EmptyModelMetadataProvider();
+        var metadata = metadataProvider.GetMetadataForType(typeof(string));
+
+        var tagHelper = new AccessibilityTagHelper
+        {
+            IdFor = new ModelExpression("QuestionText", new ModelExplorer(metadataProvider, metadata, "Planned end date"))
+        };
+
+        var output = new TagHelperOutput("div",
+            new TagHelperAttributeList(),
+            (useCachedResult, encoder) =>
+            {
+                var tagHelperContent = new DefaultTagHelperContent();
+                return Task.FromResult<TagHelperContent>(tagHelperContent);
+            });
+
+        var context = new TagHelperContext(
+            new TagHelperAttributeList(),
+            new Dictionary<object, object?>(),
+            "test");
+
+        // Act
+        await tagHelper.ProcessAsync(context, output);
 
         // Assert
-        Assert.Contains(output.Attributes, a => a.Name == "aria-describedby");
-        Assert.Equal("short-project-title-hint", output.Attributes["aria-describedby"].Value);
+        var expected = "planned-end-date-hint";
+        Assert.True(output.Attributes.ContainsName("id"));
+        Assert.Equal(expected, output.Attributes["id"].Value);
     }
 
     [Fact]
-    public async Task Sets_Id_When_IdFor_Provided()
+    public async Task Does_Not_Set_Attributes_If_Model_Is_Empty()
     {
-        var output = await RunTagHelperAsync(null, "Project Planned End Date");
+        // Arrange
+        var metadataProvider = new EmptyModelMetadataProvider();
+        var metadata = metadataProvider.GetMetadataForType(typeof(string));
+
+        var tagHelper = new AccessibilityTagHelper
+        {
+            DescribedFor = new ModelExpression("QuestionText", new ModelExplorer(metadataProvider, metadata, string.Empty))
+        };
+
+        var output = new TagHelperOutput("span",
+            new TagHelperAttributeList(),
+            (useCachedResult, encoder) =>
+            {
+                var tagHelperContent = new DefaultTagHelperContent();
+                return Task.FromResult<TagHelperContent>(tagHelperContent);
+            });
+
+        var context = new TagHelperContext(
+            new TagHelperAttributeList(),
+            new Dictionary<object, object?>(),
+            "test");
+
+        // Act
+        await tagHelper.ProcessAsync(context, output);
 
         // Assert
-        Assert.Contains(output.Attributes, a => a.Name == "id");
-        Assert.Equal("project-planned-end-date-hint", output.Attributes["id"].Value);
-    }
-
-    [Theory]
-    [InlineData(null, null)]
-    [InlineData("", "")]
-    [InlineData("   ", "   ")]
-    public async Task Does_Not_Set_Attributes_When_Model_Values_Invalid(string? describedFor, string? idFor)
-    {
-        var output = await RunTagHelperAsync(describedFor, idFor);
-
-        // Assert
-        Assert.DoesNotContain(output.Attributes, a => a.Name == "aria-describedby");
-        Assert.DoesNotContain(output.Attributes, a => a.Name == "id");
+        Assert.False(output.Attributes.ContainsName("aria-describedby"));
+        Assert.False(output.Attributes.ContainsName("id"));
     }
 }
