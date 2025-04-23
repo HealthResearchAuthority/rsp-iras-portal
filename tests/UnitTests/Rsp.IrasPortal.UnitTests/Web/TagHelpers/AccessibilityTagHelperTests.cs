@@ -36,9 +36,8 @@ public class AccessibilityTagHelperTests : TestServiceBase
         await tagHelper.ProcessAsync(context, output);
 
         // Assert
-        var expected = "short-project-title-hint";
-        Assert.True(output.Attributes.ContainsName("aria-describedby"));
-        Assert.Equal(expected, output.Attributes["aria-describedby"].Value);
+        output.Attributes.ShouldContain(a => a.Name == "aria-describedby");
+        output.Attributes["aria-describedby"].Value.ShouldBe("short-project-title-hint");
     }
 
     [Fact]
@@ -70,9 +69,8 @@ public class AccessibilityTagHelperTests : TestServiceBase
         await tagHelper.ProcessAsync(context, output);
 
         // Assert
-        var expected = "planned-end-date-hint";
-        Assert.True(output.Attributes.ContainsName("id"));
-        Assert.Equal(expected, output.Attributes["id"].Value);
+        output.Attributes.ShouldContain(a => a.Name == "id");
+        output.Attributes["id"].Value.ShouldBe("planned-end-date-hint");
     }
 
     [Fact]
@@ -104,7 +102,7 @@ public class AccessibilityTagHelperTests : TestServiceBase
         await tagHelper.ProcessAsync(context, output);
 
         // Assert
-        Assert.False(output.Attributes.ContainsName("aria-describedby"));
-        Assert.False(output.Attributes.ContainsName("id"));
+        output.Attributes.ShouldNotContain(a => a.Name == "aria-describedby");
+        output.Attributes.ShouldNotContain(a => a.Name == "id");
     }
 }
