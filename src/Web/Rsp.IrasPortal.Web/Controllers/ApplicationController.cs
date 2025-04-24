@@ -251,9 +251,9 @@ public class ApplicationController(
     {
         var model = new ProjectOverviewModel
         {
-            ProjectTitle = TempData["ProjectTitle"] as string ?? string.Empty,
-            CategoryId = TempData["CategoryId"] as string ?? string.Empty,
-            ApplicationId = TempData["ApplicationId"] as string ?? string.Empty
+            ProjectTitle = TempData[TempDataKeys.ProjectTitle] as string ?? string.Empty,
+            CategoryId = TempData[TempDataKeys.CategoryId] as string ?? string.Empty,
+            ApplicationId = TempData[TempDataKeys.ApplicationId] as string ?? string.Empty
         };
 
         return View(model);
