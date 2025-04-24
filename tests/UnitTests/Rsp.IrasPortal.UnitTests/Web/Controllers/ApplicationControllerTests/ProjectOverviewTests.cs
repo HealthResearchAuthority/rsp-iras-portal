@@ -30,9 +30,9 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApplicationControllerTests
             var viewResult = Assert.IsType<ViewResult>(result);
             var model = Assert.IsType<ProjectOverviewModel>(viewResult.Model);
 
-            Assert.Equal("Test Project", model.ProjectTitle);
-            Assert.Equal("123", model.CategoryId);
-            Assert.Equal("456", model.ApplicationId);
+            model.ProjectTitle.ShouldBe("Test Project");
+            model.CategoryId.ShouldBe("123");
+            model.ApplicationId.ShouldBe("456");
         }
     }
 }
