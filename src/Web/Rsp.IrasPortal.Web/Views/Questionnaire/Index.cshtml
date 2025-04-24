@@ -350,7 +350,7 @@
 									errorClass = fieldHasErrors ? " govuk-form-group--error" : "";
 
 									<div id="Questions[@index].SelectedOption"
-										 class="@(conditional + conditionalClass + errorClass) govuk-form-group" @parents @questionId>
+									class="@(conditional + conditionalClass + errorClass) govuk-form-group" @parents @questionId>
 										<govuk-fieldset>
 											<govuk-fieldset-legend class="govuk-fieldset__legend--s">
 												@question.QuestionText
@@ -387,7 +387,7 @@
 									fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
 
 									<div id="Questions[@index].SelectedOption"
-										 class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")"
+									class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")"
 									@parents @questionId>
 										<govuk-fieldset>
 											<govuk-fieldset-legend class="govuk-fieldset__legend--s">
@@ -419,9 +419,13 @@
 			</div>
 
 			<div class="save-buttons">
-				<partial name="_SubmitButton" model="@("qnc:saveresponses", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } }, false)" />
+				<partial name="_SubmitButton" model="@("qnc:saveresponses", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } })" />
 
-				<partial name="_SubmitButton" model="@("qnc:saveresponses", "Save for later", new Dictionary<string, string> { { "saveForLater", bool.TrueString } }, true)" />
+				@{
+					ViewBag.Style = "govuk-button govuk-button--secondary";
+				}
+
+				<partial name="_SubmitButton" model="@("qnc:saveresponses", "Save for later", new Dictionary<string, string> { { "saveForLater", bool.TrueString } })" />
 			</div>
 
 			
