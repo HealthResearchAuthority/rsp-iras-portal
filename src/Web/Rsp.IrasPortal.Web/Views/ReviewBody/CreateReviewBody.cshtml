@@ -38,7 +38,7 @@
                     Organisation name
                 </label>
                 <span class="govuk-error-message" asp-validation-for="OrganisationName"></span>
-                <input class="govuk-input govuk-!-width-one-half"
+				<input class="govuk-input govuk-!-width-one-half @(ViewData.ModelState["OrganisationName"]?.Errors.Count > 0 ? "govuk-input--error" : "")"
                 id="OrganisationName"
                 name="OrganisationName"
                 type="text"
@@ -76,7 +76,8 @@
                     Email address
                 </label>
                 <span class="govuk-error-message" asp-validation-for="EmailAddress"></span>
-                <input class="govuk-input govuk-!-width-three-quarters" id="EmailAddress" name="EmailAddress" type="text" asp-for="EmailAddress">
+
+				<input class="govuk-input govuk-!-width-three-quarters @(ViewData.ModelState["EmailAddress"]?.Errors.Count > 0 ? "govuk-input--error" : "")" id="EmailAddress" name="EmailAddress" type="text" asp-for="EmailAddress">
             </div>
             
             <div class="govuk-form-group govuk-character-count @(ViewData.ModelState["Description"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")" data-module="govuk-character-count">
@@ -86,7 +87,7 @@
                     </label>
                 </div>
                 <span class="govuk-error-message" asp-validation-for="Description"></span>
-                <textarea class="govuk-textarea" id="Description" rows="5" name="Description" asp-for="Description"></textarea>
+				<textarea class="govuk-textarea @(ViewData.ModelState["Description"]?.Errors.Count > 0 ? "govuk-textarea--error" : "")" id="Description" rows="5" name="Description" asp-for="Description"></textarea>
                 <div class="govuk-character-count__message govuk-error-message">
                     @if (ViewData.ModelState["_DescriptionExcessWordCount"]?.Errors.Count > 0)
                     {
