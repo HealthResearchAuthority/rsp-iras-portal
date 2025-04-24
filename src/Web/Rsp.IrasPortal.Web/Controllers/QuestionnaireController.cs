@@ -240,15 +240,8 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
             question.AnswerText = response?.AnswerText;
         }
 
-        // for saving short title, for sake of project overview functionality
-
-        var shortTitleQuestion = model.Questions.FirstOrDefault(q => q.QuestionText == "Short project title");
-
-        if (shortTitleQuestion != null)
-        {
-            // add Project Title to session for project overview
-            HttpContext.Session.SetString("ShortProjectTitle", shortTitleQuestion.AnswerText ?? "");
-        }
+        // for creating variable of short title and storing in tempdata, for sake of project overview functionality
+        TempData[TempDataKeys.ShortProjectTitle] ??= model.Questions.FirstOrDefault(q => q.QuestionText == "Short project title")?.AnswerText; ;
 
         // override the submitted model
         // with the updated model with answers
@@ -359,9 +352,9 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
 
         if (saveForLater == bool.TrueString)
         {
-            TempData[TempDataKeys.ShortProjectTitle] = shortProjectTitle; // please see earlier comment on line 252
+            // short project title already stored in Tempdata in line 244
             TempData[TempDataKeys.CategoryId] = navigation.CurrentCategory;
-            TempData[TempDataKeys.ApplicationId] = application.ApplicationId; 
+            TempData[TempDataKeys.ApplicationId] = application.ApplicationId;
 
             return RedirectToAction("ProjectOverview", "Application");
         }
