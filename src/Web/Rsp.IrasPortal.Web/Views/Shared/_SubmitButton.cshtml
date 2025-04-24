@@ -1,9 +1,8 @@
 ﻿@using Rsp.IrasPortal.Application.Constants
-@model (string RouteName, string DisplayText, Dictionary<string, string>? Params, bool ButtonSecondary)
+@model (string RouteName, string DisplayText, Dictionary<string, string>? Params)
 
 @{
-	var baseStyle = "govuk-button";
-	var style = Model.ButtonSecondary ? $"{baseStyle} govuk-button--secondary" : baseStyle;
+	var style = ViewBag.Style ?? "govuk-button";
 	var disabled = ViewData[ViewDataKeys.IsApplicationValid] is not (null or true);
 }
 
