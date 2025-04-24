@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Web.Controllers;
 using Rsp.IrasPortal.Web.Models;
 
@@ -8,35 +10,29 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApplicationControllerTests
     public class ProjectOverview : TestServiceBase<ApplicationController>
     {
         [Fact]
-        public void StartNewApplication_ClearsSession_AndReturnsViewResult()
+        public void StartNewApplication_UsesTempData_AndReturnsViewResult()
         {
             // Arrange
-            var mockSession = new Mock<ISession>();
-
-            var httpContext = new DefaultHttpContext
+            var tempDataProvider = new Mock<ITempDataProvider>();
+            var tempData = new TempDataDictionary(new DefaultHttpContext(), tempDataProvider.Object)
             {
-                Session = mockSession.Object
+                [TempDataKeys.ShortProjectTitle] = "Test Project",
+                [TempDataKeys.CategoryId] = "123",
+                [TempDataKeys.ApplicationId] = "456"
             };
 
-            Sut.ControllerContext = new ControllerContext
-            {
-                HttpContext = httpContext
-            };
-
-            var projectTitle = "Test Project";
-            var categoryId = "123";
-            var applicationId = "456";
+            Sut.TempData = tempData;
 
             // Act
-            var result = Sut.ProjectOverview(projectTitle, categoryId, applicationId);
+            var result = Sut.ProjectOverview();
 
             // Assert
             var viewResult = Assert.IsType<ViewResult>(result);
             var model = Assert.IsType<ProjectOverviewModel>(viewResult.Model);
 
-            Assert.Equal(projectTitle, model.ProjectTitle);
-            Assert.Equal(categoryId, model.CategoryId);
-            Assert.Equal(applicationId, model.ApplicationId);
+            Assert.Equal("Test Project", model.ProjectTitle);
+            Assert.Equal("123", model.CategoryId);
+            Assert.Equal("456", model.ApplicationId);
         }
     }
 }
