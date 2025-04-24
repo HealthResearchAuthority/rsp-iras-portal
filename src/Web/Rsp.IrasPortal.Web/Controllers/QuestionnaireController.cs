@@ -359,9 +359,9 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
 
         if (saveForLater == bool.TrueString)
         {
-            TempData["ProjectTitle"] = HttpContext.Session.GetString("ShortProjectTitle");
-            TempData["CategoryId"] = navigation.NextCategory;
-            TempData["ApplicationId"] = application.ApplicationId;
+            TempData[TempDataKeys.ShortProjectTitle] = shortProjectTitle; // please see earlier comment on line 252
+            TempData[TempDataKeys.CategoryId] = navigation.CurrentCategory;
+            TempData[TempDataKeys.ApplicationId] = application.ApplicationId; 
 
             return RedirectToAction("ProjectOverview", "Application");
         }
