@@ -10,12 +10,19 @@ using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "qnc:[action]")]
 [Authorize(Policy = "IsUser")]
-public class QuestionnaireController(IApplicationsService applicationsService, IRespondentService respondentService, IQuestionSetService questionSetService, IValidator<QuestionnaireViewModel> validator) : Controller
+public class QuestionnaireController
+    (
+    IApplicationsService applicationsService,
+    IRespondentService respondentService,
+    IQuestionSetService questionSetService,
+    IValidator<QuestionnaireViewModel> validator
+    ) : Controller
 {
     // Index view name
     private const string Index = nameof(Index);
@@ -128,7 +135,7 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
     /// </summary>
     /// <param name="categoryId">CategoryId of the questions to be rendered</param>
     ///<param name="sectionId">sectionId of the questions to be rendered</param>
-    public async Task<IActionResult> DisplayQuestionnaire(string? categoryId, string? sectionId)
+    public async Task<IActionResult> DisplayQuestionnaire(string? categoryId, string? sectionId, bool reviewAnswers = false)
     {
         if (categoryId == null && sectionId == null)
         {
@@ -210,7 +217,8 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
             return View(Index, new QuestionnaireViewModel
             {
                 CurrentStage = sectionId,
-                Questions = questions
+                Questions = questions,
+                ReviewAnswers = reviewAnswers
             });
         }
 
@@ -220,7 +228,7 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
 
     [RequestFormLimits(ValueCountLimit = int.MaxValue)]
     [HttpPost]
-    public async Task<IActionResult> SaveResponses(QuestionnaireViewModel model, string categoryId = "", string submit = "False", string saveAndContinue = "False", string saveForLater = "False")
+    public async Task<IActionResult> SaveResponses(QuestionnaireViewModel model, string categoryId = "", bool submit = false, string saveAndContinue = "False")
     {
         // get the questionnaire from the session
         // and deserialize it
@@ -261,9 +269,12 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
             // store the applicationId in the TempData to get in the view
             TempData.TryAdd(TempDataKeys.ApplicationId, application.ApplicationId);
 
+            // store the irasId in the TempData to get in the view
+            TempData.TryAdd(TempDataKeys.IrasId, application.IrasId);
+
             // set the previous, current and next stages
             SetStage(model.CurrentStage!);
-
+            model.ReviewAnswers = submit;
             return View(Index, model);
         }
 
@@ -316,20 +327,23 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
             await respondentService.SaveRespondentAnswers(request);
         }
 
-        // user clicks on Proceed to submit button
-        if (submit == bool.TrueString)
-        {
-            return RedirectToAction(nameof(SubmitApplication), new { applicationId = application.ApplicationId });
-        }
-
         // add the applicationId in the tempdata
         TempData.TryAdd(TempDataKeys.ApplicationId, application.ApplicationId);
+
+        // store the irasId in the TempData to get in the view
+        TempData.TryAdd(TempDataKeys.IrasId, application.IrasId);
 
         // set the previous, current and next stages
         var navigation = SetStage(model.CurrentStage);
 
         // save the questions in the session
         HttpContext.Session.SetString($"{SessionKeys.Questionnaire}:{navigation.CurrentStage}", JsonSerializer.Serialize(questions));
+
+        // user clicks on Proceed to submit button
+        if (submit)
+        {
+            return RedirectToAction(nameof(SubmitApplication), new { applicationId = application.ApplicationId });
+        }
 
         // user clicks on the SaveAndContinue button
         // so we need to resume from the next stage
@@ -420,6 +434,9 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
         // store the applicationId in the TempData to get in the view
         TempData.TryAdd(TempDataKeys.ApplicationId, application.ApplicationId);
 
+        // store the irasId in the TempData to get in the view
+        TempData.TryAdd(TempDataKeys.IrasId, application.IrasId);
+
         // set the previous, current and next stages
         SetStage(model.CurrentStage!);
 
@@ -495,6 +512,7 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
                 // this is required to get the questions in the validator
                 // before the validation cicks in
                 context.RootContextData["questions"] = questionnaire.Questions;
+                context.RootContextData["ValidateMandatoryOnly"] = false;
 
                 // call the ValidateAsync to execute the validation
                 // this will trigger the fluentvalidation using the injected validator if configured
@@ -520,6 +538,108 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
             ViewData[ViewDataKeys.IsApplicationValid] = false;
         }
 
+        // get the application from the session
+        // to get the applicationId
+        var application = this.GetApplicationFromSession();
+
+        // store the irasId in the TempData to get in the view
+        TempData.TryAdd(TempDataKeys.IrasId, application.IrasId);
+
+        return View("ReviewAnswers", questionnaire);
+    }
+
+    /// <summary>
+    /// Gets all questions for the application. Validates for each category
+    /// and display the progress of the application
+    /// </summary>
+    public async Task<IActionResult> MandatoryFieldCheck()
+    {
+        // get the application from the session
+        // to get the applicationId
+        var application = this.GetApplicationFromSession();
+
+        // get the responent answers for the category
+        var respondentServiceResponse = await respondentService.GetRespondentAnswers(application.ApplicationId);
+
+        // get the questions for all categories
+        var questionSetServiceResponse = await questionSetService.GetQuestions();
+
+        // return the error view if unsuccessfull
+        if (!respondentServiceResponse.IsSuccessStatusCode)
+        {
+            // return the error page
+            return this.ServiceError(respondentServiceResponse);
+        }
+
+        // return the error view if unsuccessfull
+        if (!questionSetServiceResponse.IsSuccessStatusCode)
+        {
+            // return the error page
+            return this.ServiceError(questionSetServiceResponse);
+        }
+
+        // define the questionnaire validation state dictionary
+        var questionnaireValidationState = new Dictionary<string, string>();
+
+        var respondentAnswers = respondentServiceResponse.Content!;
+        var questions = questionSetServiceResponse.Content!;
+
+        var questionnaire = new QuestionnaireViewModel
+        {
+            CurrentStage = string.Empty,
+            Questions = new List<QuestionViewModel>()
+        };
+
+        // validate each category
+        foreach (var questionsResponse in questions.ToLookup(q => q.Category))
+        {
+            // build the QuestionnaireViewModel for each category
+            questionnaire = BuildQuestionnaireViewModel(questionsResponse);
+
+            if (questionnaire.Questions.Count == 0)
+            {
+                continue;
+            }
+
+            var category = questionsResponse.Key;
+
+            // get the answers for the category
+            var answers = respondentAnswers.Where(r => r.CategoryId == category).ToList();
+
+            ValidationContext<QuestionnaireViewModel> context;
+
+            if (answers.Count > 0)
+            {
+                // if we have answers, update the model with the provided answers
+                UpdateWithAnswers(respondentAnswers, questionnaire.Questions);
+
+                // using the FluentValidation, create a new context for the model
+                context = new ValidationContext<QuestionnaireViewModel>(questionnaire);
+
+                // this is required to get the questions in the validator
+                // before the validation cicks in
+                context.RootContextData["questions"] = questionnaire.Questions;
+                context.RootContextData["ValidateMandatoryOnly"] = true;
+
+                // call the ValidateAsync to execute the validation
+                // this will trigger the fluentvalidation using the injected validator if configured
+                var result = await validator.ValidateAsync(context);
+                if (!result.IsValid)
+                {
+                    // Copy the validation results into ModelState.
+                    // ASP.NET uses the ModelState collection to populate
+                    // error messages in the View.
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                    }
+                }
+            }
+        }
+
+        // store the irasId in the TempData to get in the view
+        TempData.TryAdd(TempDataKeys.IrasId, application.IrasId);
+
         return View("ReviewAnswers", questionnaire);
     }
 
@@ -535,6 +655,7 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
         // this is required to get the questions in the validator
         // before the validation cicks in
         context.RootContextData["questions"] = model.Questions;
+        context.RootContextData["ValidateMandatoryOnly"] = false;
 
         // call the ValidateAsync to execute the validation
         // this will trigger the fluentvalidation using the injected validator if configured
@@ -628,6 +749,7 @@ public class QuestionnaireController(IApplicationsService applicationsService, I
                 Sequence = question.Sequence,
                 Heading = question.Heading,
                 QuestionText = question.QuestionText,
+                ShortQuestionText = question.ShortQuestionText,
                 QuestionType = question.QuestionType,
                 DataType = question.DataType,
                 IsMandatory = question.IsMandatory,

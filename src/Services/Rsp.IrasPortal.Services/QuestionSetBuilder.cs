@@ -89,6 +89,7 @@ public class QuestionSetBuilder : IQuestionSetBuilder
                     Sequence = Convert.ToInt32(question[ModuleColumns.Sequence]),
                     Heading = Convert.ToString(question[ModuleColumns.Heading]),
                     QuestionText = question.Field<string>(ModuleColumns.QuestionText) ?? string.Empty,
+                    ShortQuestionText = question.Field<string>(ModuleColumns.ShortQuestionText) ?? string.Empty,
                     QuestionType = question.Field<string>(ModuleColumns.QuestionType) ?? string.Empty,
                     DataType = question.Field<string>(ModuleColumns.DataType) ?? string.Empty,
                     IsMandatory = conformance == "Mandatory",

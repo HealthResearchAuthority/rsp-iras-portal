@@ -9,6 +9,7 @@ public struct TempDataKeys
     public const string ApplicationId = "td:application_id";
     public const string ShortProjectTitle = "td:short_project_title";
     public const string CategoryId = "td:category_id";
+    public const string IrasId = "td:iras_id";
     public const string PreviousStage = "td:app_previousstage";
     public const string PreviousCategory = "td:app_previouscategory";
     public const string CurrentStage = "td:app_currentstage";

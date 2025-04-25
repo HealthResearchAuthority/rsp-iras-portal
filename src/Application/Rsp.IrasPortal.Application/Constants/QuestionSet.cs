@@ -32,6 +32,7 @@ public static class ModuleColumns
     public const string Rules = "Data and visibility rules";
     public const string DataType = "Data type";
     public const string Answers = "Values";
+    public const string ShortQuestionText = "Short field label";
 
     public static readonly string[] All = [
         QuestionId,
@@ -44,7 +45,8 @@ public static class ModuleColumns
         Conformance,
         Rules,
         DataType,
-        Answers
+        Answers,
+        ShortQuestionText
     ];
 }
 

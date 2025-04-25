@@ -84,4 +84,9 @@ public record QuestionsResponse
     /// Version of the question
     /// </summary>
     public string? Version { get; set; }
+
+    /// <summary>
+    /// Short question text to display to the user
+    /// </summary>
+    public string ShortQuestionText { get; set; } = null!;
 }

@@ -20,6 +20,7 @@ public class QuestionViewModel
     public string? SelectedOption { get; set; }
     public List<AnswerViewModel> Answers { get; set; } = [];
     public IList<RuleDto> Rules { get; set; } = [];
+    public string ShortQuestionText { get; set; } = null!;
 
     private string? _day, _month, _year;
 
