@@ -8,10 +8,12 @@
 @inject IFeatureManager featureManager
 
 @{
+	var navModel = (string.Empty, string.Empty, new Dictionary<string, string>());
 	var previousStage = TempData[TempDataKeys.PreviousStage] as string;
 	var previousCategory = TempData[TempDataKeys.PreviousCategory] as string;
 	var currentStage = TempData[TempDataKeys.CurrentStage] as string;
 	var errorSummaryTitle = "There is a problem";
+	var applicationId = TempData[TempDataKeys.ApplicationId] as string;
 
 	Model.CurrentStage = currentStage!;
 
@@ -87,13 +89,26 @@
 }
 
 @{
-	var navModel = string.IsNullOrEmpty(previousStage) ?
-						("app:startproject", "Back", new Dictionary<string, string>()) :
-						("qnc:displayquestionnaire", "Back", new Dictionary<string, string>
-																																{
-							{ "categoryId", previousCategory ?? string.Empty},
+	if (!Model.ReviewAnswers)
+	{
+		// Set the navigation model for the back button
+		// If there is no previous stage, navigate to start project
+		// Otherwise, navigate to the previous stage in the questionnaire)
+		navModel = string.IsNullOrEmpty(previousStage) ?
+							("app:startproject", "Back", new Dictionary<string, string>()) :
+							("qnc:displayquestionnaire", "Back", new Dictionary<string, string>
+																																							{
+							{ "categoryId", previousCategory },
 							{ "sectionId", previousStage }
-																																});
+																																							});
+	}
+	else
+	{
+		navModel = ("qnc:submitapplication", "Back", new Dictionary<string, string>
+																																					{
+							{ "applicationId", applicationId }
+																																					});
+	}
 }
 <partial name="_BackNavigation" model="@navModel" />
 <div class="govuk-grid-row">
@@ -144,6 +159,7 @@
 						<input type="hidden" asp-for="Questions[index].Section" />
 						<input type="hidden" asp-for="Questions[index].Heading" />
 						<input type="hidden" asp-for="Questions[index].QuestionText" />
+						<input type="hidden" asp-for="Questions[index].ShortQuestionText" />
 						<input type="hidden" asp-for="Questions[index].QuestionType" />
 						<input type="hidden" asp-for="Questions[index].DataType" />
 						<input type="hidden" asp-for="Questions[index].IsMandatory" checked="@question.IsMandatory" />
@@ -350,7 +366,7 @@
 									errorClass = fieldHasErrors ? " govuk-form-group--error" : "";
 
 									<div id="Questions[@index].SelectedOption"
-									class="@(conditional + conditionalClass + errorClass) govuk-form-group" @parents @questionId>
+										 class="@(conditional + conditionalClass + errorClass) govuk-form-group" @parents @questionId>
 										<govuk-fieldset>
 											<govuk-fieldset-legend class="govuk-fieldset__legend--s">
 												@question.QuestionText
@@ -387,7 +403,7 @@
 									fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
 
 									<div id="Questions[@index].SelectedOption"
-									class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")"
+										 class="@(conditional)govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")"
 									@parents @questionId>
 										<govuk-fieldset>
 											<govuk-fieldset-legend class="govuk-fieldset__legend--s">
@@ -419,16 +435,24 @@
 			</div>
 
 			<div class="save-buttons">
-				<partial name="_SubmitButton" model="@("qnc:saveresponses", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } })" />
+				@if (!Model.ReviewAnswers)
+				{
 
-				@{
-					ViewBag.Style = "govuk-button govuk-button--secondary";
+					<partial name="_SubmitButton" model="@("qnc:saveresponses", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } })" />
+
+					@{
+						ViewBag.Style = "govuk-button govuk-button--secondary";
+					}
+
+					<partial name="_SubmitButton" model="@("qnc:saveresponses", "Save for later", new Dictionary<string, string> { { "saveForLater", bool.TrueString } })" />
 				}
-
-				<partial name="_SubmitButton" model="@("qnc:saveresponses", "Save for later", new Dictionary<string, string> { { "saveForLater", bool.TrueString } })" />
+				else
+				{
+					<partial name="_SubmitButton" model="@("qnc:saveresponses", "Save changes", new Dictionary<string, string> { { "submit", bool.TrueString } })" />
+				}
 			</div>
 
-			
+
 		</form>
 	</div>
 </div>
