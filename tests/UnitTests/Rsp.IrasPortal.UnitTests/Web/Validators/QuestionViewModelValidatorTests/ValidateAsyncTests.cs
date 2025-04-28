@@ -25,6 +25,7 @@ public class ValidateAsyncTests : TestServiceBase<QuestionViewModelValidator>
         var question = new QuestionViewModel
         {
             IsMandatory = true,
+            QuestionText = "Test Question",
             DataType = dataType,
             AnswerText = string.Empty,
             Heading = "Test Question",
@@ -46,6 +47,7 @@ public class ValidateAsyncTests : TestServiceBase<QuestionViewModelValidator>
         var question = new QuestionViewModel
         {
             QuestionId = "Q1",
+            QuestionText = "Test Question",
             Heading = "Test Question",
             Section = "Test Section",
             IsMandatory = true,
@@ -63,7 +65,7 @@ public class ValidateAsyncTests : TestServiceBase<QuestionViewModelValidator>
         // Assert
         result
             .ShouldHaveValidationErrorFor(q => q.Answers)
-            .WithErrorMessage($"Question {question.Heading} under {question.Section} section");
+            .WithErrorMessage($"Enter {question.QuestionText.ToLowerInvariant()}");
     }
 
     [Fact]
@@ -73,6 +75,7 @@ public class ValidateAsyncTests : TestServiceBase<QuestionViewModelValidator>
         var question = new QuestionViewModel
         {
             QuestionId = "Q1",
+            QuestionText = "Test Question",
             Heading = "Test Question",
             Section = "Test Section",
             DataType = "Radio button",
@@ -91,7 +94,7 @@ public class ValidateAsyncTests : TestServiceBase<QuestionViewModelValidator>
         // Assert
         result
             .ShouldHaveValidationErrorFor(q => q.SelectedOption)
-            .WithErrorMessage($"Question {question.Heading} under {question.Section} section");
+            .WithErrorMessage($"Enter {question.QuestionText.ToLowerInvariant()}");
     }
 
     [Fact]
@@ -449,7 +452,6 @@ public class ValidateAsyncTests : TestServiceBase<QuestionViewModelValidator>
         result.ShouldNotHaveAnyValidationErrors();
     }
 
-
     [Fact]
     public async Task ValidateAsync_WithDateRule_ShouldAddFailureForInvalidAnswer()
     {
@@ -486,5 +488,4 @@ public class ValidateAsyncTests : TestServiceBase<QuestionViewModelValidator>
         result
             .ShouldHaveValidationErrorFor(q => q.AnswerText);
     }
-
 }

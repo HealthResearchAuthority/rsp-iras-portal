@@ -98,7 +98,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
             .ReturnsAsync(new ValidationResult());
 
         // Act
-        var result = await Sut.SaveResponses(model, submit: bool.TrueString);
+        var result = await Sut.SaveResponses(model, submit: true);
 
         // Assert
 
@@ -123,7 +123,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
     {
         // Arrange
         model.CurrentStage = QuestionCategories.D; // Next stage is empty
-        var submit = bool.FalseString;
+        var submit = false;
         var saveAndContinue = bool.TrueString;
         var questions = new List<QuestionViewModel>
     {
@@ -222,7 +222,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
     List<QuestionSectionsResponse> questionSectionsResponse)
     {
         // Arrange
-        var submit = bool.FalseString;
+        var submit = false;
         var saveAndContinue = bool.TrueString;
         model.CurrentStage = QuestionCategories.A;
         var questions = new List<QuestionViewModel>
@@ -318,7 +318,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
     List<QuestionSectionsResponse> questionSectionsResponse)
     {
         // Arrange
-        var submit = bool.FalseString;
+        var submit = false;
         var saveAndContinue = bool.FalseString;
         var saveForLater = bool.TrueString;
 
@@ -493,7 +493,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
             .ReturnsAsync(new ValidationResult());
 
         // Act
-        var result = await Sut.SaveResponses(model, categoryId, bool.FalseString, bool.FalseString);
+        var result = await Sut.SaveResponses(model, categoryId, false, bool.FalseString);
 
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
@@ -517,7 +517,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
     {
         // Arrange
         var categoryId = string.Empty;
-        var submit = bool.FalseString;
+        var submit = false;
         var saveAndContinue = bool.FalseString;
         var questions = new List<QuestionViewModel>
     {

@@ -2,148 +2,155 @@
 @using Microsoft.AspNetCore.Mvc.ModelBinding
 @using Microsoft.FeatureManagement
 @using Rsp.IrasPortal.Application.Constants
+@using System.Globalization
 @model QuestionnaireViewModel
 @inject IFeatureManager featureManager
-
 @{
+	// Try to read the IRAS ID from TempData, default to 0 if missing
 	int.TryParse(TempData[TempDataKeys.IrasId]?.ToString(), out int irasId);
-	var questionKey = string.Empty;
-	var questionText = string.Empty;
-	var fieldHasErrors = false;
+
+	// Group questions by their Section and order them by Sequence
 	var groupedSections = Model.Questions
 		.GroupBy(q => q.Section)
 		.OrderBy(g => g.First().Sequence)
 		.ToList();
 
+	// Get the key of the first section (e.g., for special handling like IRAS ID)
 	var firstSectionKey = groupedSections.FirstOrDefault()?.Key;
-	var lastSection = groupedSections.LastOrDefault();
-	var lastQuestion = lastSection?.FirstOrDefault();
+
+	// Get the last question from the last section for back navigation
+	var lastQuestion = groupedSections.LastOrDefault()?.FirstOrDefault();
+
+	// Title used in the validation error summary
 	var errorSummaryTitle = "There is a problem";
 
+	// Prepare the navigation model depending on whether we have a lastQuestion
 	var navModel = lastQuestion != null
 		? ("qnc:displayquestionnaire", "Back", new Dictionary<string, string>
-																													{
+				{
 			{ "sectionId", lastQuestion.SectionId },
 			{ "categoryId", lastQuestion.Category }
-																													})
+				})
 		: ("app:createapplication", "Back", new Dictionary<string, string>());
-
-	string GetDisplayText(QuestionViewModel q)
-	{
-		// 1. Use AnswerText if available
-		if (!string.IsNullOrWhiteSpace(q.AnswerText))
-			return q.AnswerText!;
-
-		// 2. For radio/boolean: get AnswerText from SelectedOption
-		if ((q.DataType.Equals("radio button", StringComparison.OrdinalIgnoreCase)
-			|| q.DataType.Equals("boolean", StringComparison.OrdinalIgnoreCase))
-			&& !string.IsNullOrWhiteSpace(q.SelectedOption))
-		{
-			var selected = q.Answers.FirstOrDefault(a => a.AnswerId == q.SelectedOption);
-			if (selected != null && !string.IsNullOrWhiteSpace(selected.AnswerText))
-				return selected.AnswerText!;
-		}
-
-		// 3. For checkboxes/lookup lists, return selected answers
-		if (q.Answers?.Any(a => a.IsSelected) == true)
-			return string.Join("<br/>", q.Answers
-				.Where(a => a.IsSelected && !string.IsNullOrWhiteSpace(a.AnswerText))
-				.Select(a => a.AnswerText));
-
-		// 4. If everything is blank, return a prompt
-		var label = !string.IsNullOrWhiteSpace(q.ShortQuestionText)
-			? q.ShortQuestionText
-			: q.QuestionText;
-		return $"Enter {label.ToLowerInvariant()}";
-	}
-
-	string GetActionText(QuestionViewModel q)
-	{
-		var label = !string.IsNullOrWhiteSpace(q.ShortQuestionText)
-			? q.ShortQuestionText
-			: q.QuestionText;
-
-		return (!string.IsNullOrWhiteSpace(q.AnswerText)
-				|| q.Answers.Any(a => a.IsSelected)
-				|| (!string.IsNullOrWhiteSpace(q.SelectedOption)
-					&& q.Answers.Any(a => a.AnswerId == q.SelectedOption)))
-			? "Change"
-			: $"Enter {label.ToLowerInvariant()}";
-	}
-
-	bool IsMissingAnswer(QuestionViewModel q)
-	{
-		return string.IsNullOrWhiteSpace(q.AnswerText)
-						&& string.IsNullOrWhiteSpace(q.SelectedOption)
-						&& !(q.Answers?.Any(a => a.IsSelected) ?? false);
-	}
 }
 
 @if (await featureManager.IsEnabledAsync(Features.ProgressiveEnhancement))
 {
+	// If progressive enhancement is enabled, add jQuery and custom JavaScript
 	<script src="~/lib/jquery/dist/jquery.js"></script>
-
-	// Collect all rules for conditional questions
-	var conditionalRules = Model.Questions
-		.Where(q => !q.IsMandatory && q.Rules.Any())
-		.Select(q => new
-		{
-			q.QuestionId,
-			q.Rules
-		}).ToList();
 
 	<script>
 		$(document).ready(function () {
-		const conditionalRules = @Html.Raw(JsonSerializer.Serialize(conditionalRules));
+			// Serialize conditional rules and store them in sessionStorage
+			const conditionalRules = @Html.Raw(JsonSerializer.Serialize(
+		Model.Questions
+			.Where(q => !q.IsMandatory && q.Rules.Any())
+			.Select(q => new { q.QuestionId, q.Rules })
+		));
 
-		// Loop through each rule and store it individually by QuestionId
-		conditionalRules.forEach(rule => {
-		sessionStorage.setItem(rule.QuestionId, JSON.stringify(rule.Rules));
-		});
-		});
-	</script>
-	<script>
-		$(function () {
-			// Hide all conditional questions initially
-			$(".conditional").hide();
+			// Save each conditional rule by QuestionId
+			conditionalRules.forEach(rule => {
+				sessionStorage.setItem(rule.QuestionId, JSON.stringify(rule.Rules));
 			});
-		document.addEventListener("DOMContentLoaded", function () {
-			// Select all divs with class 'conditional'
-			document.querySelectorAll('div.conditional').forEach(function (div) {
-				// Get the value of data-parents attribute
+
+			// Initially hide all elements with 'conditional' class
+			$(".conditional").hide();
+
+			// For each conditional div, check its parent hidden input value
+			document.querySelectorAll('div.conditional').forEach(div => {
 				const parentId = div.getAttribute('data-parents');
-				if (!parentId) return;
-
-				// Try to find the hidden input with the matching ID
 				const hiddenInput = document.getElementById(parentId);
-				if (!hiddenInput) return;
 
-				// Check the value of the hidden input
-				const value = hiddenInput.value.trim().toLowerCase();
-
-				// If the value is 'yes', remove 'conditional' class and unhide the div
-				if (value === 'yes') {
+				// If the hidden input value is "yes", unhide the conditional div
+				if (hiddenInput?.value.trim().toLowerCase() === 'yes') {
 					div.classList.remove('conditional');
-					div.style.display = ''; // Unhide
+					div.style.display = '';
 				}
 			});
 		});
 	</script>
 }
 
-@* This view is used to display the review answers page of the questionnaire. It shows the user's answers and allows them to confirm or save for later. *@
+@functions {
+	// Get the correct ModelState key for the question based on its data type
+	string GetModelKey(QuestionViewModel q) => q.DataType.ToLower() switch
+	{
+		"date" or "text" or "email" => $"Questions[{q.Index}].AnswerText",
+		"checkbox" => $"Questions[{q.Index}].Answers",
+		"radio button" or "boolean" or "look-up list" => $"Questions[{q.Index}].SelectedOption",
+		_ => ""
+	};
+
+	// Determine what to display for the user's answer
+	string GetDisplayText(QuestionViewModel q)
+	{
+		if (!string.IsNullOrWhiteSpace(q.AnswerText))
+		{
+			// Special handling if the AnswerText is a valid Date
+			if (q.DataType.Equals("Date", StringComparison.OrdinalIgnoreCase)
+				&& DateTime.TryParse(q.AnswerText, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedDate))
+				{
+					return parsedDate.ToString("dd MMMM yyyy", CultureInfo.InvariantCulture);
+				}
+
+			return q.AnswerText!;
+		}
+
+		// For radio button or boolean types, find the selected option's text
+		if ((q.DataType.Equals("radio button", StringComparison.OrdinalIgnoreCase)
+			|| q.DataType.Equals("boolean", StringComparison.OrdinalIgnoreCase))
+			&& !string.IsNullOrWhiteSpace(q.SelectedOption))
+		{
+			return q.Answers.FirstOrDefault(a => a.AnswerId == q.SelectedOption)?.AnswerText
+				?? $"Enter {q.QuestionText.ToLowerInvariant()}";
+		}
+
+		// For checkboxes or lookup lists, show all selected answers
+		if (q.Answers?.Any(a => a.IsSelected) == true)
+		{
+			return string.Join("<br/>", q.Answers
+				.Where(a => a.IsSelected)
+				.Select(a => a.AnswerText));
+		}
+
+		// Fallback: Prompt to "Enter" the question if no answer provided
+		var label = string.IsNullOrWhiteSpace(q.ShortQuestionText) ? q.QuestionText : q.ShortQuestionText;
+		return $"Enter {label.ToLowerInvariant()}";
+	}
+
+	// Generate action text (either "Change" or "Enter ...") based on the question state
+	string GetActionText(QuestionViewModel q)
+	{
+		var label = string.IsNullOrWhiteSpace(q.ShortQuestionText) ? q.QuestionText : q.ShortQuestionText;
+
+		return (!string.IsNullOrWhiteSpace(q.AnswerText)
+			|| q.Answers.Any(a => a.IsSelected)
+			|| (!string.IsNullOrWhiteSpace(q.SelectedOption) && q.Answers.Any(a => a.AnswerId == q.SelectedOption)))
+			? "Change"
+			: $"Enter {label.ToLowerInvariant()}";
+	}
+
+	// Check if a question is missing an answer (used to highlight errors)
+	bool IsMissingAnswer(QuestionViewModel q)
+	{
+		return string.IsNullOrWhiteSpace(q.AnswerText)
+			&& string.IsNullOrWhiteSpace(q.SelectedOption)
+			&& !(q.Answers?.Any(a => a.IsSelected) ?? false);
+	}
+}
+
 <partial name="_BackNavigation" model="navModel" />
 
 <div class="govuk-grid-row">
 	<div class="govuk-grid-column-two-thirds">
 		<h1 class="govuk-heading-l">Review your answers</h1>
-
 		<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
 
 		@foreach (var sectionGroup in groupedSections)
 		{
 			<h2 class="govuk-heading-m govuk-!-margin-top-5">@sectionGroup.Key</h2>
 			<dl class="govuk-summary-list govuk-!-margin-bottom-7">
+
 				@if (sectionGroup.Key == firstSectionKey)
 				{
 					<div class="govuk-summary-list__row">
@@ -154,63 +161,19 @@
 
 				@foreach (var question in sectionGroup)
 				{
-					switch (question.DataType.ToLower())
-					{
-						case "date":
-						case "text":
-						case "email":
-							{
-								questionKey = $"Questions[{question.Index}].AnswerText";
-							}
-							break;
-						case "checkbox":
-							{
-								questionKey = $"Questions[{question.Index}].Answers";
-							}
-							break;
-						case "radio button":
-						case "boolean":
-						case "look-up list":
-							{
-								questionKey = $"Questions[{question.Index}].SelectedOption";
-							}
-							break;
-					}
+					string questionKey = GetModelKey(question);
+					bool fieldHasErrors = ViewData.ModelState[questionKey]?.ValidationState == ModelValidationState.Invalid;
+					string conditionalClass = !question.IsMandatory && question.Rules.Any() ? "conditional" : "";
+					string parentAttributes = conditionalClass != "" ? $"data-parents=\"{string.Join(',', question.Rules.Select(r => r.ParentQuestionId))}\" data-questionid=\"{question.QuestionId}\"" : "";
+					string questionText = string.IsNullOrWhiteSpace(question.ShortQuestionText) ? question.QuestionText : question.ShortQuestionText;
 
-					fieldHasErrors = ViewData.ModelState[questionKey]?.ValidationState == ModelValidationState.Invalid;
-					var rules = question.Rules;
-					var conditional = "";
+					<div class="@conditionalClass govuk-summary-list__row" id="@questionKey" @Html.Raw(parentAttributes)>
+						<dt class="govuk-summary-list__key">@questionText</dt>
 
-					if (!question.IsMandatory)
-					{
-						if (rules.Count == 0)
-						{
-							<govuk-inset-text>
-								This question is conditional:
-							</govuk-inset-text>
-						}
-						else
-						{
-							conditional = "conditional ";
-						}
-					}
-
-					questionText = string.IsNullOrWhiteSpace(question.ShortQuestionText)
-					? question.QuestionText
-					: question.ShortQuestionText;
-
-					var parents = conditional.Length > 0 ? "data-parents=" + string.Join(',', rules.Select(rule => rule.ParentQuestionId)) : "";
-					var questionId = conditional.Length > 0 ? "data-questionId=" + question.QuestionId : "";
-
-					<div class="@(conditional) govuk-summary-list__row" id="@questionKey" @parents @questionId>
-						<dt class="govuk-summary-list__key">
-							@questionText
-						</dt>
-						<dd class="govuk-summary-list__value @(fieldHasErrors ? " govuk-error-summary__list" : "")">
+						<dd class="govuk-summary-list__value @(fieldHasErrors ? "govuk-error-summary__list" : "")">
 							@if (IsMissingAnswer(question))
 							{
-								<a class="govuk-link"
-								   href="@Url.RouteUrl("qnc:displayquestionnaire", new { sectionId = question.SectionId, categoryId = question.Category, reviewAnswers = true })">
+								<a class="govuk-link" href="@Url.RouteUrl("qnc:displayquestionnaire", new { sectionId = question.SectionId, categoryId = question.Category, reviewAnswers = true })">
 									@GetActionText(question)<span class="govuk-visually-hidden"> @questionText</span>
 								</a>
 							}
@@ -220,11 +183,11 @@
 								@Html.Raw(GetDisplayText(question))
 							}
 						</dd>
+
 						<dd class="govuk-summary-list__actions">
 							@if (!IsMissingAnswer(question))
 							{
-								<a class="govuk-link"
-								   href="@Url.RouteUrl("qnc:displayquestionnaire", new { sectionId = question.SectionId, categoryId = question.Category, reviewAnswers = true })">
+								<a class="govuk-link" href="@Url.RouteUrl("qnc:displayquestionnaire", new { sectionId = question.SectionId, categoryId = question.Category, reviewAnswers = true })">
 									@GetActionText(question)<span class="govuk-visually-hidden"> @questionText</span>
 								</a>
 							}
@@ -235,16 +198,17 @@
 		}
 
 		<h2 class="govuk-heading-m govuk-!-margin-top-5">Confirm project details</h2>
-		<p class="govuk-body">
-			Review your answers and complete any missing information before confirming project details.
-		</p>
+		<p class="govuk-body">Review your answers and complete any missing information before confirming project details.</p>
+
 		<form method="post">
-			<button class="govuk-button" data-module="govuk-button" formaction="@Url.RouteUrl("qnc:mandatoryfieldcheck", new { })">
-				Confirm project details
-			</button>
-			<button class="govuk-button govuk-button--secondary" data-module="govuk-button" @*formaction="@Url.RouteUrl("qnc:saveresponses", new { saveForLater = true })"*@>
-				Save for later
-			</button>
+			<div class="save-buttons">
+				<partial name="_SubmitButton" model="@("qnc:confirmprojectdetails", "Confirm project details", new Dictionary<string, string>())" />
+
+				@{
+					ViewBag.Style = "govuk-button govuk-button--secondary";
+				}
+				<partial name="_SubmitButton" model="@("app:projectoverview", "Save for later", new Dictionary<string, string> { })" />
+			</div>
 		</form>
 	</div>
 </div>
