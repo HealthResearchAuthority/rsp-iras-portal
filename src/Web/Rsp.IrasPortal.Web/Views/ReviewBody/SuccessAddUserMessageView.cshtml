@@ -1,0 +1,28 @@
+﻿@model ConfirmAddReviewBodyUserModel
+@{
+	ViewBag.Active = "reviewBodies";
+	ViewBag.Title = "View review body";
+}
+
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-two-thirds">
+		<div class="govuk-panel govuk-panel--confirmation">
+			<h1 class="govuk-panel__title">
+				User has been successfully added
+			</h1>
+		</div>
+
+		<p class="govuk-body">
+			@Model.User.FirstName @Model.User.LastName has been sent an email confirming that they have been added to @Model.ReviewBody.OrganisationName.
+		</p>
+
+		<p class="govuk-body">
+			<a class="govuk-link" asp-route="rbc:viewadduser" asp-all-route-data="@(new Dictionary<string, string> { { "reviewBodyId", Model.ReviewBody.Id.ToString() } })">Add another user to review body</a>
+		</p>
+
+
+		<p class="govuk-body">
+			<a class="govuk-link" asp-route="rbc:viewreviewbodies">Back to Manage review bodies</a>
+		</p>
+	</div>
+</div>

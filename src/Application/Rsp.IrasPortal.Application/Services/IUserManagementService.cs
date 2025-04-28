@@ -22,6 +22,10 @@ public interface IUserManagementService : IInterceptable
 
     Task<ServiceResponse<UsersResponse>> GetUsers(int pageNumber = 1, int pageSize = 10);
 
+    Task<ServiceResponse<UsersResponse>> SearchUsers(string searchQuery, IEnumerable<string>? userIdsToIgnore = null, int pageNumber = 1, int pageSize = 10);
+
+    Task<ServiceResponse<UsersResponse>> GetUsersByIds(IEnumerable<string> ids, string? searchQuery = null, int pageNumber = 1, int pageSize = 10);
+
     Task<ServiceResponse<UserResponse>> GetUser(string? userId, string? email);
 
     Task<ServiceResponse> CreateUser(CreateUserRequest request);

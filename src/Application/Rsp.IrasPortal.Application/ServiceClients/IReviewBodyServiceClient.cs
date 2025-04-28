@@ -50,4 +50,7 @@ public interface IReviewBodyServiceClient
     /// </summary>
     [Get("/reviewbody/audittrail")]
     public Task<IApiResponse<ReviewBodyAuditTrailResponse>> GetReviewBodyAuditTrail(Guid id, int skip, int take);
+
+    [Post("/reviewbody/adduser")]
+    public Task<IApiResponse<ReviewBodyUserDto>> AddUserToReviewBody([Body] ReviewBodyUserDto reviewBodyUser);
 }

@@ -11,4 +11,5 @@ public class ReviewBodyDto
     public string CreatedBy { get; set; } = null!;
     public string? UpdatedBy { get; set; }
     public DateTime UpdatedDate { get; set; }
+    public IEnumerable<ReviewBodyUserDto>? Users { get; set; } = [];
 }

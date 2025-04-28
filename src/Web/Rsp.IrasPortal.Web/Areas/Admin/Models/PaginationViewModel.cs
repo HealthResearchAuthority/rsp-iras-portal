@@ -26,4 +26,6 @@ public class PaginationViewModel
     public int TotalCount { get; set; }
 
     public string? ReviewBodyId { get; set; } = null;
+
+    public string? SearchQuery { get; set; }
 }

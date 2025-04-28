@@ -47,6 +47,20 @@ public class UserManagementService(IUserManagementServiceClient client) : IUserM
         return apiResponse.ToServiceResponse();
     }
 
+    public async Task<ServiceResponse<UsersResponse>> SearchUsers(string searchQuery, IEnumerable<string>? userIdsToIgnore = null, int pageNumber = 1, int pageSize = 10)
+    {
+        var apiResponse = await client.SearchUsers(searchQuery, userIdsToIgnore, pageNumber, pageSize);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse<UsersResponse>> GetUsersByIds(IEnumerable<string> ids, string? searchQuery = null, int pageNumber = 1, int pageSize = 10)
+    {
+        var apiResponse = await client.GetUsersById(ids, searchQuery, pageNumber, pageSize);
+
+        return apiResponse.ToServiceResponse();
+    }
+
     public async Task<ServiceResponse> CreateUser(CreateUserRequest request)
     {
         var user = request.Adapt<User>();
