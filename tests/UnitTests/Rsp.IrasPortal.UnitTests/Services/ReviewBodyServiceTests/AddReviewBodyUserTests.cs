@@ -9,7 +9,7 @@ public class AddReviewBodyUserTests : TestServiceBase<ReviewBodyService>
 {
     [Theory]
     [AutoData]
-    public async Task AddReviewBodyuser_Should_Return_Failure_Response_When_Client_Returns_Failure(
+    public async Task AddReviewBodyUser_Should_Return_Failure_Response_When_Client_Returns_Failure(
         ReviewBodyUserDto reviewBodyUserDto)
     {
         // Arrange
@@ -41,7 +41,7 @@ public class AddReviewBodyUserTests : TestServiceBase<ReviewBodyService>
 
     [Theory]
     [AutoData]
-    public async Task CreateReviewBody_Should_Return_Success_Response_When_Client_Returns_Success(
+    public async Task AddReviewBodyUser_Should_Return_Success_Response_When_Client_Returns_Success(
         ReviewBodyUserDto reviewBodyUserDto)
     {
         // Arrange
