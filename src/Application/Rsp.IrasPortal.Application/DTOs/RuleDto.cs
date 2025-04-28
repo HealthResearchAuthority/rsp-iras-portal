@@ -1,4 +1,6 @@
-﻿namespace Rsp.IrasPortal.Application.DTOs;
+﻿using System.Data;
+
+namespace Rsp.IrasPortal.Application.DTOs;
 public record RuleDto
 {
     /// <summary>
@@ -41,4 +43,14 @@ public record RuleDto
     /// The question set version this rule belongs to
     /// </summary>
     public string VersionId { get; set; } = null!;
+
+    /// <summary>
+    /// returns the distinct applicable conditions by description
+    /// </summary>
+    public IEnumerable<ConditionDto> GetApplicableConditions()
+    {
+        return Conditions
+                .Where(c => c.IsApplicable && c.Description != null)
+                .DistinctBy(c => c.Description);
+    }
 }
