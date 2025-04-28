@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using FluentValidation;
 using FluentValidation.Results;
-using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Validators;
@@ -13,7 +12,16 @@ public class QuestionSetValidator : AbstractValidator<QuestionnaireViewModel>
 
     protected override bool PreValidate(ValidationContext<QuestionnaireViewModel> context, ValidationResult result)
     {
-        includeMandatoryCheck = (bool)context.RootContextData["ValidateMandatoryOnly"];
+        // Check if RootContextData contains the key and it's a bool
+        if (context.RootContextData.TryGetValue("ValidateMandatoryOnly", out var flag) && flag is bool value)
+        {
+            includeMandatoryCheck = value;
+        }
+        else
+        {
+            includeMandatoryCheck = false;
+        }
+
         return base.PreValidate(context, result);
     }
 

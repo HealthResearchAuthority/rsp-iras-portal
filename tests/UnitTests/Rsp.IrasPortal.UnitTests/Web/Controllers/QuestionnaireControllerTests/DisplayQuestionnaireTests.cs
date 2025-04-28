@@ -135,7 +135,6 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
         Mocker.GetMock<IQuestionSetService>()
             .Setup(q => q.GetQuestionSections()).ReturnsAsync(responseQuestionSections);
 
-
         var session = new Mock<ISession>();
 
         var httpContext = new DefaultHttpContext
@@ -149,7 +148,7 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
         };
 
         // Act
-        var result = await Sut.DisplayQuestionnaire(categoryId,sectionId);
+        var result = await Sut.DisplayQuestionnaire(categoryId, sectionId);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -178,7 +177,6 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
             .GetMock<IQuestionSetService>()
             .Setup(s => s.GetQuestions(It.IsAny<string>()))
             .ReturnsAsync(response);
-
 
         var responseQuestionSections = new ServiceResponse<IEnumerable<QuestionSectionsResponse>>
         {
@@ -242,6 +240,7 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
                 Sequence = q.question.Sequence,
                 Heading = q.question.Heading,
                 QuestionText = q.question.QuestionText,
+                ShortQuestionText = q.question.ShortQuestionText,
                 QuestionType = q.question.QuestionType,
                 DataType = q.question.DataType,
                 IsMandatory = q.question.IsMandatory,
@@ -256,7 +255,7 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
         };
 
         // Act
-        var result = await Sut.DisplayQuestionnaire(categoryId,sectionId);
+        var result = await Sut.DisplayQuestionnaire(categoryId, sectionId);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
