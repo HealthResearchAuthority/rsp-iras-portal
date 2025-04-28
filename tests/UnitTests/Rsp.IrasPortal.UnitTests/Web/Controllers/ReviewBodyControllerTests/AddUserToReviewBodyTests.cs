@@ -59,7 +59,8 @@ public class AddUserToReviewBodyTests : TestServiceBase<ReviewBodyController>
     public async Task AddUser_ShouldReturnView(
         Guid id,
         List<ReviewBodyDto> reviewBodies,
-        UsersResponse usersResponse)
+        UsersResponse usersResponse,
+        string searchQuery)
     {
         foreach (var body in reviewBodies)
         {
@@ -86,11 +87,11 @@ public class AddUserToReviewBodyTests : TestServiceBase<ReviewBodyController>
         var userIds = reviewBodies?.FirstOrDefault()?.Users?.Select(x => x.UserId.ToString()).ToList();
 
         Mocker.GetMock<IUserManagementService>()
-           .Setup(s => s.GetUsersByIds(userIds!, null, 1, 10))
+           .Setup(s => s.SearchUsers(searchQuery, userIds, 1, 10))
            .ReturnsAsync(usersServiceResponse);
 
         // Act
-        var result = await Sut.AddUser(id);
+        var result = await Sut.AddUser(id, searchQuery);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -99,6 +100,9 @@ public class AddUserToReviewBodyTests : TestServiceBase<ReviewBodyController>
         // Verify
         Mocker.GetMock<IReviewBodyService>()
             .Verify(s => s.GetReviewBodyById(id), Times.Once);
+
+        Mocker.GetMock<IUserManagementService>()
+            .Verify(s => s.SearchUsers(searchQuery, userIds, 1, 10), Times.Once);
     }
 
     [Theory, AutoData]
