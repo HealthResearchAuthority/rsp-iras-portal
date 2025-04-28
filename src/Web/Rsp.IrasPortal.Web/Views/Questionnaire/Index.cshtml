@@ -4,6 +4,7 @@
 @using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.DTOs
 @using Rsp.IrasPortal.Web.TagHelpers
+@using System.Globalization
 @model QuestionnaireViewModel
 @inject IFeatureManager featureManager
 
@@ -217,8 +218,8 @@
 
 											@{
 												// Extract values from AnswerText if available
-												if (!string.IsNullOrWhiteSpace(Model.Questions[index].AnswerText) &&
-												DateTime.TryParse(Model.Questions[index].AnswerText, out var parsedDate))
+												if (!string.IsNullOrWhiteSpace(Model.Questions[index].AnswerText)
+												&& DateTime.TryParse(Model.Questions[index].AnswerText, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedDate))
 												{
 													Model.Questions[index].Day = parsedDate.Day.ToString();
 													Model.Questions[index].Month = parsedDate.Month.ToString();
