@@ -1,0 +1,59 @@
+﻿@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Rsp.IrasPortal.Web.ViewHelpers
+
+@model QuestionViewModel
+
+@{
+    var fieldName = ViewData["fieldName"] as string; // $"Questions[{Model.Index}].AnswerText";
+    var validationMessage = ViewData["validationMessage"] as string; // "Provide an answer for this question";
+    var fieldHasErrors = ViewData.ModelState[fieldName!]?.ValidationState == ModelValidationState.Invalid;
+
+    var conditional = "";
+
+    if (!Model.IsMandatory)
+    {
+        if (Model.Rules.Count == 0)
+        {
+            <govuk-inset-text>
+                This question is conditional:
+            </govuk-inset-text>
+        }
+        else
+        {
+            conditional = "conditional ";
+        }
+    }
+
+    var parents = conditional.Length > 0 ? "data-parents=" + string.Join(',', @Model.Rules.Select(rule => rule.ParentQuestionId)) : "";
+    var questionId = conditional.Length > 0 ? "data-questionId=" + Model.QuestionId : "";
+}
+
+@* @parents @questionId  *@
+<div id="Questions[@Model.Index].AnswerText" class="govuk-form-group" error-class-for="AnswerText">
+
+    <div class="govuk-form-group">
+        <fieldset class="govuk-fieldset" role="group" aria-describedby="passport-issued-hint">
+            <h1 class="govuk-label-wrapper">
+                <label class="govuk-label govuk-label--s" for="@(Model.QuestionId)_Text">
+                    @Model.QuestionText
+                </label>
+            </h1>
+            <div id="rule-hint" class="govuk-hint">
+                @if (Model.Rules.Count > 0)
+                {
+                    @foreach (var rule in Model.Rules)
+                    {
+                        <p>
+                            @rule.Description
+                        </p>
+                    }
+                }
+            </div>
+
+            @if (fieldHasErrors)
+            {
+                Html.BuildValidationMessage(Model.Rules, fieldName!, validationMessage!);
+            }
+        </fieldset>
+    </div>
+</div>

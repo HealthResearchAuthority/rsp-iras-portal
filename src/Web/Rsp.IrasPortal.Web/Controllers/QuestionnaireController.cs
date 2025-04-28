@@ -104,7 +104,7 @@ public class QuestionnaireController
         TempData.TryAdd(TempDataKeys.ApplicationId, applicationId);
 
         // this is where the questionnaire will resume
-        var navigationDto = SetStage(sectionId!);
+        var navigationDto = await SetStage(sectionIdOrDefault);
 
         questionnaire.CurrentStage = navigationDto.CurrentStage;
 
@@ -184,7 +184,6 @@ public class QuestionnaireController
                 var sectionIdOrDefault = sectionId ?? string.Empty;   // Default to an empty string if sectionId is null
 
                 var response = await questionSetService.GetQuestions(categoryIdOrDefault, sectionIdOrDefault);
-
                 // return the view if successfull
                 if (response.IsSuccessStatusCode)
                 {
@@ -333,7 +332,7 @@ public class QuestionnaireController
         TempData.TryAdd(TempDataKeys.IrasId, application.IrasId);
 
         // set the previous, current and next stages
-        var navigation = SetStage(model.CurrentStage);
+        var navigation = await SetStage(model.CurrentStage);
 
         // save the questions in the session
         HttpContext.Session.SetString($"{SessionKeys.Questionnaire}:{navigation.CurrentStage}", JsonSerializer.Serialize(questions));
@@ -774,11 +773,11 @@ public class QuestionnaireController
     /// Sets the Previous, Current, and Next stages required for navigation.
     /// </summary>
     /// <param name="section">Section of the current stage</param>
-    private NavigationDto SetStage(string section)
+    private async Task<NavigationDto> SetStage(string section)
     {
-        var previousResponse = questionSetService.GetPreviousQuestionSection(section).Result;
-        var currentResponse = questionSetService.GetQuestionSections().Result;
-        var nextResponse = questionSetService.GetNextQuestionSection(section).Result;
+        var previousResponse = await questionSetService.GetPreviousQuestionSection(section);
+        var currentResponse = await questionSetService.GetQuestionSections();
+        var nextResponse = await questionSetService.GetNextQuestionSection(section);
 
         // Extracting previous stage and category
         string previousStage = previousResponse.IsSuccessStatusCode ? previousResponse.Content?.SectionId ?? "" : "";
