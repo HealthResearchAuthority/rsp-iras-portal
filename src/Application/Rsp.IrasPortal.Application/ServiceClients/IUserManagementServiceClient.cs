@@ -116,5 +116,5 @@ public interface IUserManagementServiceClient
     /// <param name="searchQuery">Search query</param>
     /// <returns>List of users</returns>
     [Post("/users/search")]
-    public Task<ApiResponse<UsersResponse>> SearchUsers(string searchQuery, [FromBody] IEnumerable<string>? userIdsToIgnore = null, int pageIndex = 1, int pageSize = 10);
+    public Task<IApiResponse<UsersResponse>> SearchUsers(string searchQuery, [FromBody] IEnumerable<string>? userIdsToIgnore = null, int pageIndex = 1, int pageSize = 10);
 }
