@@ -39,15 +39,17 @@
 	// If progressive enhancement is enabled, add jQuery and custom JavaScript
 	<script src="~/lib/jquery/dist/jquery.js"></script>
 
+	// Serialize conditional rules and store them in sessionStorage
+	var conditionalRules = Model.Questions
+		.Where(q => !q.IsMandatory && q.Rules.Any())
+		.Select(q => new
+		{
+			q.QuestionId,
+			q.Rules
+		}).ToList();
+
 	<script>
 		$(document).ready(function () {
-			// Serialize conditional rules and store them in sessionStorage
-			const conditionalRules = @Html.Raw(JsonSerializer.Serialize(
-		Model.Questions
-			.Where(q => !q.IsMandatory && q.Rules.Any())
-			.Select(q => new { q.QuestionId, q.Rules })
-		));
-
 			// Save each conditional rule by QuestionId
 			conditionalRules.forEach(rule => {
 				sessionStorage.setItem(rule.QuestionId, JSON.stringify(rule.Rules));
