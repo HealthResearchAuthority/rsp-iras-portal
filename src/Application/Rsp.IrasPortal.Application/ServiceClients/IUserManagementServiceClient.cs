@@ -45,7 +45,7 @@ public interface IUserManagementServiceClient
     /// </summary>
     /// <returns>List of users</returns>
     [Post("/users/by-ids")]
-    public Task<ApiResponse<UsersResponse>> GetUsersById([Body] IEnumerable<string> ids, string? searchQuery = null, int pageIndex = 1, int pageSize = 10);
+    public Task<IApiResponse<UsersResponse>> GetUsersById([Body] IEnumerable<string> ids, string? searchQuery = null, int pageIndex = 1, int pageSize = 10);
 
     /// <summary>
     /// Gets a user by id or email
