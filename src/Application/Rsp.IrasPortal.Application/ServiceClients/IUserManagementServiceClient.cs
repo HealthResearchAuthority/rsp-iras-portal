@@ -1,4 +1,5 @@
-﻿using Refit;
+﻿using Microsoft.AspNetCore.Mvc;
+using Refit;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Domain.Identity;
@@ -38,6 +39,13 @@ public interface IUserManagementServiceClient
     /// <returns>List of users</returns>
     [Get("/users/all")]
     public Task<ApiResponse<UsersResponse>> GetUsers(int pageIndex = 1, int pageSize = 100);
+
+    /// <summary>
+    /// Gets users by their ids database
+    /// </summary>
+    /// <returns>List of users</returns>
+    [Post("/users/by-ids")]
+    public Task<ApiResponse<UsersResponse>> GetUsersById([Body] IEnumerable<string> ids, string? searchQuery = null, int pageIndex = 1, int pageSize = 10);
 
     /// <summary>
     /// Gets a user by id or email
@@ -101,4 +109,12 @@ public interface IUserManagementServiceClient
     /// <returns>List of users</returns>
     [Get("/users/audit")]
     public Task<ApiResponse<UserAuditTrailResponse>> GetUserAuditTrail(string userId);
+
+    /// <summary>
+    /// Searches users by their name or email
+    /// </summary>
+    /// <param name="searchQuery">Search query</param>
+    /// <returns>List of users</returns>
+    [Post("/users/search")]
+    public Task<ApiResponse<UsersResponse>> SearchUsers(string searchQuery, [FromBody] IEnumerable<string>? userIdsToIgnore = null, int pageIndex = 1, int pageSize = 10);
 }

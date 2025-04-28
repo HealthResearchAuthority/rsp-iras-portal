@@ -87,7 +87,7 @@
                     <b>Users</b>
                 </td>
                 <td class="govuk-table__cell">
-					<a asp-action="" class="govuk-link">View this review body's list of users</a>
+					<a asp-route="rbc:viewreviewbodyusers" asp-all-route-data="@(new Dictionary<string, string>{{"id", Model.ReviewBodyModel.Id.ToString()}})" class="govuk-link">View this review body's list of users</a>
                 </td>
                 <td class="govuk-table__cell govuk-table__cell--numeric">
                 </td>

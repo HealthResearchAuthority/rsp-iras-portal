@@ -289,7 +289,7 @@ button.govuk-link {
 }
 
 .govuk-back-link-button--inverse:active, .govuk-back-link-button--inverse:hover {
-  color: hsla(0, 0%, 100%, 0.99);
+  color: hsla(0deg, 0%, 100%, 0.99);
 }
 
 .govuk-back-link-button--inverse:focus {
@@ -324,4 +324,10 @@ button.govuk-link {
 
 .govuk-service-navigation {
   background: #fff !important;
+}
+
+@media (min-width: 40.0625em) {
+  .govuk-back-link {
+    margin-bottom: 45px;
+  }
 }

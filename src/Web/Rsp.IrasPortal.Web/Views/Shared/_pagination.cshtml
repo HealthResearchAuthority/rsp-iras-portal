@@ -47,8 +47,12 @@
             }
 
             <li class="govuk-pagination__item @current">
-                <a class="govuk-link govuk-pagination__link @current" aria-label="Page @index" aria-current=@ariaCurrent asp-route="@Model.RouteName"
-				   asp-route-pageNumber="@index" asp-route-pageSize="@Model.PageSize" asp-route-reviewBodyId="@Model.ReviewBodyId">
+                <a class="govuk-link govuk-pagination__link @current" aria-label="Page @index" aria-current=@ariaCurrent 
+					asp-route="@Model.RouteName"
+					asp-route-pageNumber="@index" 
+					asp-route-pageSize="@Model.PageSize" 
+					asp-route-reviewBodyId="@Model.ReviewBodyId"
+					asp-route-searchQuery="@Model.SearchQuery">
                     @index
                 </a>
             </li>
