@@ -1,0 +1,93 @@
+﻿@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Web.Areas.Admin.Models
+@model ReviewBodyListUsersModel
+
+@{
+	ViewBag.Active = "reviewBodies";
+	ViewBag.Title = "View review body";
+}
+
+<partial name="_BackNavigation" model="@("rbc:viewreviewbody", "Back to review body profile", new Dictionary<string, string> { { "Id", Model.ReviewBody.Id.ToString() } })" />
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-two-thirds">		
+		<h1 class="govuk-heading-l">Users for @Model.ReviewBody.OrganisationName</h1>
+		<p class="govuk-body">Search, assign or remove users from this review body</p>
+	</div>
+
+	<div class="govuk-grid-column-one-third">
+		<a class="govuk-link govuk-body float-right" asp-route="rbc:viewadduser" asp-all-route-data="@(new Dictionary<string, string> { { "reviewBodyId", Model.ReviewBody.Id.ToString() } })">Add a user to this review body</a>
+	</div>
+</div>
+
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-full">
+
+		<form method="get">
+			<label class="govuk-label" for="SearchUser"><b>Find a user</b></label>
+			<input class="govuk-input govuk-!-width-two-thirds" id="SearchQuery" name="SearchQuery" type="text" value="@(Model.Pagination?.SearchQuery ?? string.Empty)">
+			<input hidden readonly name="Id" value="@Model.ReviewBody.Id" />
+			<input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize" />
+			<input hidden readonly name="PageNumber" value="@Model.Pagination?.PageNumber" />
+			<partial name="_SubmitButton" model="@("rbc:viewreviewbodyusers", "Search", new Dictionary<string, string>())" />
+		</form>
+	</div>
+	@if (Model.Users != null && Model.Users.Any())
+	{
+		<div class="govuk-grid-column-full">
+			<div class="govuk-table-wrapper">
+
+				<table class="govuk-table govuk-table-users">
+					<thead>
+						<tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+							<th class="govuk-table__header govuk-table--name">First name</th>
+							<th class="govuk-table__header govuk-table--name">Last name</th>
+							<th class="govuk-table__header govuk-table--email line-break-anywhere">Email address</th>
+							<th class="govuk-table__header">Status</th>
+							<th class="govuk-table__header">Last logged in</th>
+							<th class="govuk-table__header">Action</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var user in Model.Users)
+						{
+							<tr class="govuk-table__row">
+								<td class="govuk-table__cell">@user.FirstName</td>
+								<td class="govuk-table__cell">@user.LastName</td>
+								<td class="govuk-table__cell line-break-anywhere">@user.Email</td>
+								<td class="govuk-table__cell">
+									@if (!string.IsNullOrEmpty(user.Status))
+									{
+										var statusClass = string.Equals(user.Status, IrasUserStatus.Active, StringComparison.InvariantCultureIgnoreCase) ? "govuk-tag--green" : "govuk-tag--red";
+
+										<strong class="govuk-tag govuk-tag__full_width @statusClass"><b>@user.Status.ToUpperInvariant()</b></strong>
+									}
+								</td>
+								<td class="govuk-table__cell">@(user.LastLogin.HasValue ? user.LastLogin.Value.ToString("dd MMM yyyy") : string.Empty)</td>
+								<td class="govuk-table__cell">
+									<a class="govuk-link" asp-route="rbc:removeuser" asp-route-userId="@user.Id"
+									   asp-route-email="@user.Email">Remove</a>
+								</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+				<partial name="_Pagination" model="@Model.Pagination" />
+			</div>
+		</div>
+	}
+	else if (!string.IsNullOrEmpty(Model.Pagination?.SearchQuery))
+	{
+		<div class="govuk-grid-column-two-thirds">
+			<h1 class="govuk-heading-l">No results found</h1>
+			<p class="govuk-body">
+				Check your spelling or enter another search term and try again. If no results are found, go to Manage users where you can check if a user profile exists and create one if needed.
+			</p>
+			<p class="govuk-body">
+				<a class="govuk-link" asp-route="rbc:viewreviewbodyusers" asp-all-route-data="@(new Dictionary<string, string> { { "Id", Model.ReviewBody.Id.ToString() } })">Back to Users @Model.ReviewBody.OrganisationName</a>
+			</p>
+			<p class="govuk-body">
+				<a class="govuk-link" asp-route="admin:users">Manage users</a>
+			</p>
+		</div>
+	}
+</div>

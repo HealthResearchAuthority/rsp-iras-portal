@@ -342,3 +342,9 @@ button.govuk-link {
 .govuk-service-navigation {
     background: #fff !important;
 }
+
+.govuk-back-link {
+    @media(min-width: 40.0625em) {
+        margin-bottom: 45px;
+    }
+}

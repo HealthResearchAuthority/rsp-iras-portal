@@ -1,0 +1,98 @@
+﻿@model ConfirmAddReviewBodyUserModel
+
+@{
+	ViewBag.Active = "reviewBodies";
+	ViewBag.Title = "View review body";
+}
+
+<partial name="_BackNavigation" model="@("rbc:viewadduser", "Back", new Dictionary<string, string> { { "reviewBodyId", Model.ReviewBody.Id.ToString() } })" />
+
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-two-thirds">
+		<h1 class="govuk-heading-l">Check and add user profile</h1>
+		<p class="govuk-body">Check the information here is correct before adding the profile to @Model.ReviewBody.OrganisationName.</p>
+	</div>
+</div>
+
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-full">
+		<form method="post" id="submit-user-form">
+
+			<input type="hidden" name="UserId" value="@(Model.User.Id ?? string.Empty)" />
+			<input type="hidden" name="ReviewBodyId" value="@(Model.ReviewBody.Id.ToString() ?? string.Empty)" />
+
+			<table class="govuk-table">
+				<thead>
+					<tr>
+						<th></th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell"><b>Title</b></td>
+						<td class="govuk-table__cell">
+							@Model.User.Title
+						</td>
+					</tr>
+
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell"><b>First name</b></td>
+						<td class="govuk-table__cell">
+							@Model.User.FirstName
+						</td>
+					</tr>
+
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell"><b>Last name</b></td>
+						<td class="govuk-table__cell">
+							@Model.User.LastName
+						</td>
+					</tr>
+
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell"><b>Email address</b></td>
+						<td class="govuk-table__cell">
+							@Model.User.Email
+						</td>
+					</tr>
+
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell"><b>Telephone</b></td>
+						<td class="govuk-table__cell">
+							@Model.User.Telephone
+						</td>
+					</tr>
+
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell"><b>Organisation</b></td>
+						<td class="govuk-table__cell">
+							@Model.User.Organisation
+						</td>
+					</tr>
+
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell"><b>Job title</b></td>
+						<td class="govuk-table__cell">
+							@Model.User.JobTitle
+						</td>
+					</tr>
+
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell"><b>Role</b></td>
+						<td class="govuk-table__cell text-capitalize">
+							@{
+								var selectedRoles = Model.User.UserRoles != null
+								? string.Join(", ", Model.User.UserRoles.Where(r => r.IsSelected).Select(r => r?.Name?.Replace("_", " ")))
+								: string.Empty;
+							}
+
+							@selectedRoles
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<partial name="_SubmitButton" model="@("rbc:submitadduser", "Add user profile", new Dictionary<string, string>())" />
+		</form>
+	</div>
+</div>
