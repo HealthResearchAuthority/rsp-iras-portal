@@ -17,6 +17,6 @@ public class IrasIdViewModelValidator : AbstractValidator<IrasIdViewModel>
             .Matches(@"^\d+$")
                 .WithMessage("IRAS ID must only contain numbers")
             .Must(id => !id.StartsWith('0'))
-                .WithMessage("IRAS ID cannot start with '0'.");
+                .WithMessage("IRAS ID cannot start with '0'");
     }
 }
