@@ -11,7 +11,10 @@ namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "rbc:[action]")]
 [Authorize(Policy = "IsAdmin")]
-public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidator<AddUpdateReviewBodyModel> validator)
+public class ReviewBodyController(
+    IReviewBodyService reviewBodyService,
+    IUserManagementService userService,
+    IValidator<AddUpdateReviewBodyModel> validator)
     : Controller
 {
     private const string Error = nameof(Error);
@@ -22,6 +25,7 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
     private const string SuccessMessagesView = nameof(SuccessMessage);
     private const string ConfirmStatusView = nameof(ReviewBodyStatusChanges);
     private const string AuditTrailView = nameof(AuditTrail);
+    private const string SuccessAddUserMessageView = nameof(SuccessAddUserMessageView);
 
     private const string UpdateMode = "update";
     private const string CreateMode = "create";
@@ -301,5 +305,132 @@ public class ReviewBodyController(IReviewBodyService reviewBodyService, IValidat
         };
 
         return View(AuditTrailView, resultModel);
+    }
+
+    /// <summary>
+    ///     Displays users for a review body
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> ViewReviewBodyUsers(Guid reviewBodyId, string? searchQuery = null, int pageNumber = 1, int pageSize = 10)
+    {
+        var reviewBody = await reviewBodyService.GetReviewBodyById(reviewBodyId);
+
+        var reviewBodyModel = reviewBody.Content?.FirstOrDefault().Adapt<AddUpdateReviewBodyModel>();
+
+        var model = new ReviewBodyListUsersModel();
+        model.ReviewBody = reviewBodyModel!;
+
+        if (reviewBody?.Content?.FirstOrDefault()?.Users != null)
+        {
+            var userIds = reviewBody.Content?.FirstOrDefault()?.Users?.Select(x => x.UserId.ToString());
+            if (userIds != null && userIds.Any())
+            {
+                var users = await userService.GetUsersByIds(userIds,
+                    searchQuery,
+                    pageNumber,
+                    pageSize);
+
+                model.Users = users.Content?.Users.Select(user => new UserViewModel(user)) ?? [];
+
+                model.Pagination = new PaginationViewModel
+                {
+                    ReviewBodyId = reviewBodyId.ToString(),
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    TotalCount = users.Content?.TotalCount ?? 0,
+                    SearchQuery = searchQuery,
+                    RouteName = "rbc:viewreviewbodyusers",
+                };
+            }
+        }
+
+        return View(model);
+    }
+
+    /// <summary>
+    ///     Displays page for adding a user to review body
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> ViewAddUser(Guid reviewBodyId, string? searchQuery = null, int pageNumber = 1, int pageSize = 10)
+    {
+        var reviewBody = await reviewBodyService.GetReviewBodyById(reviewBodyId);
+
+        var reviewBodyModel = reviewBody.Content?.FirstOrDefault().Adapt<AddUpdateReviewBodyModel>();
+
+        var model = new ReviewBodyListUsersModel();
+        model.ReviewBody = reviewBodyModel!;
+        var existingUserIds = reviewBody.Content?.FirstOrDefault()?.Users?.Select(x => x.UserId.ToString()) ?? [];
+
+        if (!string.IsNullOrEmpty(searchQuery))
+        {
+            // search all users
+            var users = await userService.SearchUsers(searchQuery, existingUserIds, pageNumber, pageSize);
+
+            model.Users = users.Content?.Users.Select(user => new UserViewModel(user)) ?? [];
+
+            model.Pagination = new PaginationViewModel
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                RouteName = "rbc:viewadduser",
+                TotalCount = users.Content?.TotalCount ?? 0,
+                SearchQuery = searchQuery,
+                ReviewBodyId = reviewBodyId.ToString()
+            };
+        }
+
+        return View(model);
+    }
+
+    /// <summary>
+    ///     Displays confirmation page before adding a user to a review body
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> ConfirmAddUser(Guid reviewBodyId, Guid userId)
+    {
+        var model = new ConfirmAddReviewBodyUserModel();
+
+        // get review body
+        var reviewBody = await reviewBodyService.GetReviewBodyById(reviewBodyId);
+        var reviewBodyModel = reviewBody.Content?.FirstOrDefault().Adapt<AddUpdateReviewBodyModel>();
+
+        // get selected user
+        var user = await userService.GetUser(userId.ToString(), null);
+
+        model.ReviewBody = reviewBodyModel ?? new AddUpdateReviewBodyModel();
+        model.User = user.Content != null ? new UserViewModel(user.Content) : new UserViewModel();
+
+        return View(model);
+    }
+
+    /// <summary>
+    ///     Adds a user to a review body
+    /// </summary>
+    [HttpPost]
+    public async Task<IActionResult> SubmitAddUser(Guid reviewBodyId, Guid userId)
+    {
+        var reviewBodyUserDto = new ReviewBodyUserDto
+        {
+            ReviewBodyId = reviewBodyId,
+            UserId = userId,
+            DateAdded = DateTime.UtcNow
+        };
+
+        await reviewBodyService.AddUserToReviewBody(reviewBodyUserDto);
+
+        // get review body
+        var reviewBody = await reviewBodyService.GetReviewBodyById(reviewBodyId);
+        var reviewBodyModel = reviewBody.Content?.FirstOrDefault().Adapt<AddUpdateReviewBodyModel>();
+
+        // get selected user
+        var user = await userService.GetUser(userId.ToString(), null);
+
+        var model = new ConfirmAddReviewBodyUserModel
+        {
+            User = user.Content != null ? new UserViewModel(user.Content) : new UserViewModel(),
+            ReviewBody = reviewBodyModel ?? new AddUpdateReviewBodyModel()
+        };
+
+        return View(SuccessAddUserMessageView, model);
     }
 }

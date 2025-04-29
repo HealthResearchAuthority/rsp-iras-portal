@@ -51,6 +51,28 @@ public class StartProjectTests : TestServiceBase<ApplicationController>
     }
 
     [Fact]
+    public async Task StartProject_ReturnsView_WithModelError_WhenIrasIdStartsWithZero()
+    {
+        // Arrange
+        var model = new IrasIdViewModel { IrasId = "0000" };
+
+        Mocker
+            .GetMock<IValidator<IrasIdViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<IrasIdViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult(new List<ValidationFailure>
+            {
+            new ValidationFailure("IrasId", "IRAS ID cannot start with '0'")
+            }));
+
+        // Act
+        var result = await Sut.StartProject(model);
+
+        // Assert
+        result.ShouldBeOfType<ViewResult>();
+        Sut.ModelState["IrasId"]?.Errors.ShouldContain(e => e.ErrorMessage == "IRAS ID cannot start with '0'");
+    }
+
+    [Fact]
     public async Task StartProject_ReturnsServiceError_IfGetApplicationsFails()
     {
         // Arrange
