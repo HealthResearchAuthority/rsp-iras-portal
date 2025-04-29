@@ -161,6 +161,112 @@ public class ConfirmProjectDetaisTests : TestServiceBase<QuestionnaireController
         redirectResult.ControllerName.ShouldBe("Application");
     }
 
+    [Theory]
+    [InlineData("Date", "2026-04-23", "23 April 2026")]
+    [InlineData("Text", "Sample Text", "Sample Text")]
+    [InlineData("Email", "test@example.com", "test@example.com")]
+    public void GetDisplayText_ReturnsFormatted_AnswerText(string dataType, string input, string expected)
+    {
+        var question = CreateQuestion(dataType, answerText: input);
+
+        var result = question.GetDisplayText();
+
+        result.ShouldBe(expected);
+    }
+
+    [Fact]
+    public void GetDisplayText_ReturnsSelectedOptionText_ForRadioButton()
+    {
+        var question = CreateQuestion("Radio button", selectedOption: "yes");
+
+        var result = question.GetDisplayText();
+
+        result.ShouldBe("Yes");
+    }
+
+    [Fact]
+    public void GetDisplayText_ReturnsSelectedAnswers_ForCheckbox()
+    {
+        var question = CreateQuestion("Checkbox", hasSelectedAnswer: true);
+
+        var result = question.GetDisplayText();
+
+        result.ShouldBe("Yes");
+    }
+
+    [Fact]
+    public void GetDisplayText_ReturnsPrompt_IfNoAnswer()
+    {
+        var question = CreateQuestion("Text");
+
+        var result = question.GetDisplayText();
+
+        result.ShouldBe("Enter start date");
+    }
+
+    [Fact]
+    public void GetActionText_ReturnsChange_IfAnswered()
+    {
+        var question = CreateQuestion("Text", answerText: "Something");
+
+        var result = question.GetActionText();
+
+        result.ShouldBe("Change");
+    }
+
+    [Fact]
+    public void GetActionText_ReturnsEnterPrompt_IfNotAnswered()
+    {
+        var question = CreateQuestion("Text");
+
+        var result = question.GetActionText();
+
+        result.ShouldBe("Enter start date");
+    }
+
+    [Fact]
+    public void IsMissingAnswer_ReturnsTrue_IfAllAreEmpty()
+    {
+        var question = CreateQuestion("Text");
+
+        var result = question.IsMissingAnswer();
+
+        result.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void IsMissingAnswer_ReturnsFalse_IfAnswered()
+    {
+        var question = CreateQuestion("Text", answerText: "123");
+
+        var result = question.IsMissingAnswer();
+
+        result.ShouldBeFalse();
+    }
+
+    private QuestionViewModel CreateQuestion(
+        string dataType,
+        string? answerText = null,
+        string? selectedOption = null,
+        bool hasSelectedAnswer = false)
+    {
+        return new QuestionViewModel
+        {
+            Index = 0,
+            QuestionId = "Q1",
+            DataType = dataType,
+            QuestionText = "What is the start date of the project?",
+            ShortQuestionText = "Start date",
+            AnswerText = answerText,
+            SelectedOption = selectedOption,
+            Answers = new List<AnswerViewModel>
+            {
+                new() { AnswerId = "yes", AnswerText = "Yes", IsSelected = hasSelectedAnswer },
+                new() { AnswerId = "no", AnswerText = "No", IsSelected = false }
+            }
+        };
+    }
+
     private void SetupApplicationInSession()
     {
         var faker = new Faker<QuestionViewModel>()
