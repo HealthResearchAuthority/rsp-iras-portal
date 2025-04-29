@@ -91,7 +91,7 @@ public class AddUserToReviewBodyTests : TestServiceBase<ReviewBodyController>
            .ReturnsAsync(usersServiceResponse);
 
         // Act
-        var result = await Sut.AddUser(id, searchQuery);
+        var result = await Sut.ViewAddUser(id, searchQuery);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
