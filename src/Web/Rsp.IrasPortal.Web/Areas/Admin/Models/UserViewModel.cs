@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Domain.Identity;
 
 namespace Rsp.IrasPortal.Web.Areas.Admin.Models;
 
@@ -68,6 +69,16 @@ public class UserViewModel
             OriginalEmail = user.Email;
             Status = user.Status;
         }
+    }
+
+    public UserViewModel(User user)
+    {
+        Id = user.Id;
+        FirstName = user.FirstName;
+        LastName = user.LastName;
+        Email = user.Email;
+        Status = user.Status;
+        LastLogin = user.LastLogin;
     }
 
     public void Deconstruct(out string firstName, out string lastName, out string email)
