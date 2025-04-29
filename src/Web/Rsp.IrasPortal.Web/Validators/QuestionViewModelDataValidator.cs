@@ -1,16 +1,9 @@
 ﻿using FluentValidation;
-using FluentValidation.Results;
-using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Validators;
 
 public class QuestionViewModelDataValidator : QuestionViewModelValidatorBase
 {
-    protected override bool PreValidate(ValidationContext<QuestionViewModel> context, ValidationResult result)
-    {
-        return base.PreValidate(context, result);
-    }
-
     public QuestionViewModelDataValidator()
     {
         // Only validate if the user provided an answer

@@ -1,4 +1,5 @@
-﻿using Rsp.IrasPortal.Application.DTOs;
+﻿using System.Globalization;
+using Rsp.IrasPortal.Application.DTOs;
 
 namespace Rsp.IrasPortal.Web.Models;
 
@@ -40,6 +41,62 @@ public class QuestionViewModel
     {
         get => _year;
         set => SetValue(ref _year, value);
+    }
+
+    public string GetModelKey() => DataType.ToLower() switch
+    {
+        "date" or "text" or "email" => $"Questions[{Index}].AnswerText",
+        "checkbox" => $"Questions[{Index}].Answers",
+        "radio button" or "boolean" or "look-up list" => $"Questions[{Index}].SelectedOption",
+        _ => ""
+    };
+
+    public string GetDisplayText()
+    {
+        if (!string.IsNullOrWhiteSpace(AnswerText))
+        {
+            if (DataType.Equals("Date", StringComparison.OrdinalIgnoreCase) &&
+                DateTime.TryParse(AnswerText, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedDate))
+            {
+                return parsedDate.ToString("dd MMMM yyyy", CultureInfo.InvariantCulture);
+            }
+
+            return AnswerText!;
+        }
+
+        if ((DataType.Equals("radio button", StringComparison.OrdinalIgnoreCase) ||
+             DataType.Equals("boolean", StringComparison.OrdinalIgnoreCase)) &&
+            !string.IsNullOrWhiteSpace(SelectedOption))
+        {
+            return Answers.FirstOrDefault(a => a.AnswerId == SelectedOption)?.AnswerText
+                ?? $"Enter {QuestionText.ToLowerInvariant()}";
+        }
+
+        if (Answers?.Any(a => a.IsSelected) == true)
+        {
+            return string.Join("<br/>", Answers.Where(a => a.IsSelected).Select(a => a.AnswerText));
+        }
+
+        var label = string.IsNullOrWhiteSpace(ShortQuestionText) ? QuestionText : ShortQuestionText;
+        return $"Enter {label.ToLowerInvariant()}";
+    }
+
+    public string GetActionText()
+    {
+        var label = string.IsNullOrWhiteSpace(ShortQuestionText) ? QuestionText : ShortQuestionText;
+
+        return (!string.IsNullOrWhiteSpace(AnswerText)
+                || Answers.Any(a => a.IsSelected)
+                || (!string.IsNullOrWhiteSpace(SelectedOption) && Answers.Any(a => a.AnswerId == SelectedOption)))
+            ? "Change"
+            : $"Enter {label.ToLowerInvariant()}";
+    }
+
+    public bool IsMissingAnswer()
+    {
+        return string.IsNullOrWhiteSpace(AnswerText)
+               && string.IsNullOrWhiteSpace(SelectedOption)
+               && !(Answers?.Any(a => a.IsSelected) ?? false);
     }
 
     private void SetValue(ref string? field, string? value)
