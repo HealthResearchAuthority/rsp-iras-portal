@@ -10,7 +10,6 @@ using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
@@ -544,7 +543,7 @@ public class QuestionnaireController
         // to get the applicationId
         var application = this.GetApplicationFromSession();
 
-        // get the responent answers for the category
+        // get the respondent answers for the category
         var respondentServiceResponse = await respondentService.GetRespondentAnswers(application.ApplicationId);
 
         // return the error view if unsuccessfull
