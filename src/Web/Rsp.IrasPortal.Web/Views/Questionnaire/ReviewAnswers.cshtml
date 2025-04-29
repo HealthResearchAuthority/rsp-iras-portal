@@ -71,74 +71,6 @@
 	</script>
 }
 
-@functions {
-	// Get the correct ModelState key for the question based on its data type
-	string GetModelKey(QuestionViewModel q) => q.DataType.ToLower() switch
-	{
-		"date" or "text" or "email" => $"Questions[{q.Index}].AnswerText",
-		"checkbox" => $"Questions[{q.Index}].Answers",
-		"radio button" or "boolean" or "look-up list" => $"Questions[{q.Index}].SelectedOption",
-		_ => ""
-	};
-
-	// Determine what to display for the user's answer
-	string GetDisplayText(QuestionViewModel q)
-	{
-		if (!string.IsNullOrWhiteSpace(q.AnswerText))
-		{
-			// Special handling if the AnswerText is a valid Date
-			if (q.DataType.Equals("Date", StringComparison.OrdinalIgnoreCase)
-				&& DateTime.TryParse(q.AnswerText, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedDate))
-				{
-					return parsedDate.ToString("dd MMMM yyyy", CultureInfo.InvariantCulture);
-				}
-
-			return q.AnswerText!;
-		}
-
-		// For radio button or boolean types, find the selected option's text
-		if ((q.DataType.Equals("radio button", StringComparison.OrdinalIgnoreCase)
-			|| q.DataType.Equals("boolean", StringComparison.OrdinalIgnoreCase))
-			&& !string.IsNullOrWhiteSpace(q.SelectedOption))
-		{
-			return q.Answers.FirstOrDefault(a => a.AnswerId == q.SelectedOption)?.AnswerText
-				?? $"Enter {q.QuestionText.ToLowerInvariant()}";
-		}
-
-		// For checkboxes or lookup lists, show all selected answers
-		if (q.Answers?.Any(a => a.IsSelected) == true)
-		{
-			return string.Join("<br/>", q.Answers
-				.Where(a => a.IsSelected)
-				.Select(a => a.AnswerText));
-		}
-
-		// Fallback: Prompt to "Enter" the question if no answer provided
-		var label = string.IsNullOrWhiteSpace(q.ShortQuestionText) ? q.QuestionText : q.ShortQuestionText;
-		return $"Enter {label.ToLowerInvariant()}";
-	}
-
-	// Generate action text (either "Change" or "Enter ...") based on the question state
-	string GetActionText(QuestionViewModel q)
-	{
-		var label = string.IsNullOrWhiteSpace(q.ShortQuestionText) ? q.QuestionText : q.ShortQuestionText;
-
-		return (!string.IsNullOrWhiteSpace(q.AnswerText)
-			|| q.Answers.Any(a => a.IsSelected)
-			|| (!string.IsNullOrWhiteSpace(q.SelectedOption) && q.Answers.Any(a => a.AnswerId == q.SelectedOption)))
-			? "Change"
-			: $"Enter {label.ToLowerInvariant()}";
-	}
-
-	// Check if a question is missing an answer (used to highlight errors)
-	bool IsMissingAnswer(QuestionViewModel q)
-	{
-		return string.IsNullOrWhiteSpace(q.AnswerText)
-			&& string.IsNullOrWhiteSpace(q.SelectedOption)
-			&& !(q.Answers?.Any(a => a.IsSelected) ?? false);
-	}
-}
-
 <partial name="_BackNavigation" model="navModel" />
 
 <div class="govuk-grid-row">
@@ -161,7 +93,7 @@
 
 				@foreach (var question in sectionGroup)
 				{
-					string questionKey = GetModelKey(question);
+					string questionKey = question.GetModelKey();
 					bool fieldHasErrors = ViewData.ModelState[questionKey]?.ValidationState == ModelValidationState.Invalid;
 					string conditionalClass = !question.IsMandatory && question.Rules.Any() ? "conditional" : "";
 					string parentAttributes = conditionalClass != "" ? $"data-parents=\"{string.Join(',', question.Rules.Select(r => r.ParentQuestionId))}\" data-questionid=\"{question.QuestionId}\"" : "";
@@ -171,24 +103,24 @@
 						<dt class="govuk-summary-list__key">@questionText</dt>
 
 						<dd class="govuk-summary-list__value @(fieldHasErrors ? "govuk-error-summary__list" : "")">
-							@if (IsMissingAnswer(question))
+							@if (question.IsMissingAnswer())
 							{
 								<a class="govuk-link" href="@Url.RouteUrl("qnc:displayquestionnaire", new { sectionId = question.SectionId, categoryId = question.Category, reviewAnswers = true })">
-									@GetActionText(question)<span class="govuk-visually-hidden"> @questionText</span>
+									@question.GetActionText()<span class="govuk-visually-hidden"> @questionText</span>
 								</a>
 							}
 							else
 							{
-								<input type="hidden" id="@question.QuestionId" name="hiddenResponse" value="@GetDisplayText(question)" />
-								@Html.Raw(GetDisplayText(question))
+								<input type="hidden" id="@question.QuestionId" name="hiddenResponse" value="@question.GetDisplayText()" />
+								@Html.Raw(question.GetDisplayText())
 							}
 						</dd>
 
 						<dd class="govuk-summary-list__actions">
-							@if (!IsMissingAnswer(question))
+							@if (!question.IsMissingAnswer())
 							{
 								<a class="govuk-link" href="@Url.RouteUrl("qnc:displayquestionnaire", new { sectionId = question.SectionId, categoryId = question.Category, reviewAnswers = true })">
-									@GetActionText(question)<span class="govuk-visually-hidden"> @questionText</span>
+									@question.GetActionText()<span class="govuk-visually-hidden"> @questionText</span>
 								</a>
 							}
 						</dd>

@@ -1,15 +1,9 @@
-using System.Collections.Generic;
-using System.Net.Http;
 using System.Text.Json;
-using System.Threading.Tasks;
-using AutoFixture.Xunit2;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Moq;
-using Moq.AutoMock;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
@@ -18,9 +12,6 @@ using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Controllers;
 using Rsp.IrasPortal.Web.Models;
-using Shouldly;
-using Xunit;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.QuestionnaireControllerTests;
 

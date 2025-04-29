@@ -127,11 +127,11 @@ public class QuestionViewModelValidatorBase : AbstractValidator<QuestionViewMode
             });
     }
 
-    protected string GetValidationMessage(QuestionViewModel q)
+    protected static string GetValidationMessage(QuestionViewModel question)
     {
-        var label = !string.IsNullOrWhiteSpace(q.ShortQuestionText)
-            ? q.ShortQuestionText
-            : q.QuestionText;
+        var label = !string.IsNullOrWhiteSpace(question.ShortQuestionText)
+            ? question.ShortQuestionText
+            : question.QuestionText;
 
         return $"Enter {label.ToLowerInvariant()}";
     }
