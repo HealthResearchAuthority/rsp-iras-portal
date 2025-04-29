@@ -322,7 +322,7 @@ public class ReviewBodyController(
 
         if (reviewBody?.Content?.FirstOrDefault()?.Users != null)
         {
-            var userIds = reviewBody?.Content?.FirstOrDefault()?.Users?.Select(x => x.UserId.ToString());
+            var userIds = reviewBody.Content?.FirstOrDefault()?.Users?.Select(x => x.UserId.ToString());
             if (userIds != null && userIds.Any())
             {
                 var users = await userService.GetUsersByIds(userIds,
@@ -330,24 +330,16 @@ public class ReviewBodyController(
                     pageNumber,
                     pageSize);
 
-                model.Users = users.Content?.Users.Select(user => new UserViewModel
-                {
-                    Id = user.Id,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    Email = user.Email,
-                    Status = user.Status,
-                    LastLogin = user.LastLogin
-                }) ?? [];
+                model.Users = users.Content?.Users.Select(user => new UserViewModel(user)) ?? [];
 
                 model.Pagination = new PaginationViewModel
                 {
+                    ReviewBodyId = reviewBodyId.ToString(),
                     PageNumber = pageNumber,
                     PageSize = pageSize,
-                    RouteName = "rbc:viewreviewbodyusers",
                     TotalCount = users.Content?.TotalCount ?? 0,
                     SearchQuery = searchQuery,
-                    ReviewBodyId = reviewBodyId.ToString()
+                    RouteName = "rbc:viewreviewbodyusers",
                 };
             }
         }
@@ -367,22 +359,14 @@ public class ReviewBodyController(
 
         var model = new ReviewBodyListUsersModel();
         model.ReviewBody = reviewBodyModel!;
-        var existingUserIds = reviewBody?.Content?.FirstOrDefault()?.Users?.Select(x => x.UserId.ToString()) ?? [];
+        var existingUserIds = reviewBody.Content?.FirstOrDefault()?.Users?.Select(x => x.UserId.ToString()) ?? [];
 
         if (!string.IsNullOrEmpty(searchQuery))
         {
             // search all users
             var users = await userService.SearchUsers(searchQuery, existingUserIds, pageNumber, pageSize);
 
-            model.Users = users.Content?.Users.Select(user => new UserViewModel
-            {
-                Id = user.Id,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email,
-                Status = user.Status,
-                LastLogin = user.LastLogin
-            }) ?? [];
+            model.Users = users.Content?.Users.Select(user => new UserViewModel(user)) ?? [];
 
             model.Pagination = new PaginationViewModel
             {
