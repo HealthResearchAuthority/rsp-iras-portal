@@ -311,10 +311,9 @@ public class ReviewBodyController(
     ///     Displays users for a review body
     /// </summary>
     [HttpGet]
-    [Route("/reviewbody/users/{id}", Name = "rbc:viewreviewbodyusers")]
-    public async Task<IActionResult> ViewReviewBodyUsers(Guid id, string? searchQuery = null, int pageNumber = 1, int pageSize = 10)
+    public async Task<IActionResult> ViewReviewBodyUsers(Guid reviewBodyId, string? searchQuery = null, int pageNumber = 1, int pageSize = 10)
     {
-        var reviewBody = await reviewBodyService.GetReviewBodyById(id);
+        var reviewBody = await reviewBodyService.GetReviewBodyById(reviewBodyId);
 
         var reviewBodyModel = reviewBody.Content?.FirstOrDefault().Adapt<AddUpdateReviewBodyModel>();
 
@@ -348,7 +347,7 @@ public class ReviewBodyController(
                     RouteName = "rbc:viewreviewbodyusers",
                     TotalCount = users.Content?.TotalCount ?? 0,
                     SearchQuery = searchQuery,
-                    ReviewBodyId = id.ToString()
+                    ReviewBodyId = reviewBodyId.ToString()
                 };
             }
         }
@@ -357,11 +356,10 @@ public class ReviewBodyController(
     }
 
     /// <summary>
-    ///     Displays users for a review body
+    ///     Displays page for adding a user to review body
     /// </summary>
     [HttpGet]
-    [Route("/reviewbody/adduser", Name = "rbc:viewadduser")]
-    public async Task<IActionResult> AddUser(Guid reviewBodyId, string? searchQuery = null, int pageNumber = 1, int pageSize = 10)
+    public async Task<IActionResult> ViewAddUser(Guid reviewBodyId, string? searchQuery = null, int pageNumber = 1, int pageSize = 10)
     {
         var reviewBody = await reviewBodyService.GetReviewBodyById(reviewBodyId);
 
@@ -401,10 +399,9 @@ public class ReviewBodyController(
     }
 
     /// <summary>
-    ///     Displays users for a review body
+    ///     Displays confirmation page before adding a user to a review body
     /// </summary>
     [HttpGet]
-    [Route("/reviewbody/confirmadduser", Name = "rbc:confirmadduser")]
     public async Task<IActionResult> ConfirmAddUser(Guid reviewBodyId, Guid userId)
     {
         var model = new ConfirmAddReviewBodyUserModel();
@@ -423,10 +420,9 @@ public class ReviewBodyController(
     }
 
     /// <summary>
-    ///     Displays users for a review body
+    ///     Adds a user to a review body
     /// </summary>
     [HttpPost]
-    [Route("/reviewbody/submitadduser", Name = "rbc:submitadduser")]
     public async Task<IActionResult> SubmitAddUser(Guid reviewBodyId, Guid userId)
     {
         var reviewBodyUserDto = new ReviewBodyUserDto
