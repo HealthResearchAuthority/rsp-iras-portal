@@ -61,7 +61,7 @@ public class StartProjectTests : TestServiceBase<ApplicationController>
             .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<IrasIdViewModel>>(), default))
             .ReturnsAsync(new ValidationResult(new List<ValidationFailure>
             {
-            new ValidationFailure("IrasId", "IRAS ID cannot start with '0'.")
+            new ValidationFailure("IrasId", "IRAS ID cannot start with '0'")
             }));
 
         // Act
@@ -69,7 +69,7 @@ public class StartProjectTests : TestServiceBase<ApplicationController>
 
         // Assert
         result.ShouldBeOfType<ViewResult>();
-        Sut.ModelState["IrasId"]?.Errors.ShouldContain(e => e.ErrorMessage == "IRAS ID cannot start with '0'.");
+        Sut.ModelState["IrasId"]?.Errors.ShouldContain(e => e.ErrorMessage == "IRAS ID cannot start with '0'");
     }
 
     [Fact]
