@@ -42,4 +42,10 @@
       <Folder Include="Attributes\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Reference Include="Rsp.Gds.Component">
+        <HintPath>..\..\..\..\rsp-gds-component-package\src\Rsp.Gds.Component\bin\Debug\net9.0\Rsp.Gds.Component.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>

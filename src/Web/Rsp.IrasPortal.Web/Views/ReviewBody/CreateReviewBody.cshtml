@@ -16,6 +16,8 @@
             filteredModelState.AddModelError(state.Key, error.ErrorMessage);
         }
     }
+
+    var countries = new[] { "England", "Northern Ireland", "Scotland", "Wales" };
 }
 
 <form method="get">
@@ -33,75 +35,28 @@
 
             <partial name="_ValidationSummary" model="@(filteredModelState, "There is a problem")" />
 
-            <div class="govuk-form-group @(ViewData.ModelState["OrganisationName"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
-                <label class="govuk-label govuk-label--s" for="OrganisationName">
-                    Organisation name
-                </label>
-                <span class="govuk-error-message" asp-validation-for="OrganisationName"></span>
-				<input class="govuk-input govuk-!-width-one-half @(ViewData.ModelState["OrganisationName"]?.Errors.Count > 0 ? "govuk-input--error" : "")"
-                id="OrganisationName"
-                name="OrganisationName"
-                type="text"
-                asp-for="OrganisationName">
+            <rsp-gds-input 
+                asp-for="OrganisationName" 
+                label-text=" Organisation name" />
 
-            </div>
-
-            <div class="govuk-form-group @(ViewData.ModelState["Countries"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
-                <fieldset class="govuk-fieldset">
-                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
-                        <label class="govuk-label govuk-label--s" for="Countries">
-                            Country
-                        </label>
-                    </legend>
-                    <span class="govuk-error-message" asp-validation-for="Countries"></span>
-                    <div class="govuk-checkboxes" data-module="govuk-checkboxes" id="Countries">
-                        @foreach (var country in new[] { "England", "Northern Ireland", "Scotland", "Wales" })
-                        {
-                            <div class="govuk-checkboxes__item">
-                                <input class="govuk-checkboxes__input"
-                                id="@country"
-                                name="Countries"
-                                type="checkbox"
-                                value="@country"
-                                @(Model.Countries != null && Model.Countries.Contains(country) ? "checked" : "")>
-                                <label class="govuk-label govuk-checkboxes__label" for="@country">@country</label>
-                            </div>
-                        }
-                    </div>
-                </fieldset>
-            </div>
-
-            <div class="govuk-form-group @(ViewData.ModelState["EmailAddress"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
-                <label class="govuk-label govuk-label--s" for="EmailAddress">
-                    Email address
-                </label>
-                
-                @if (ViewData.ModelState["EmailAddress"]?.Errors.Count > 0)
-                {
-                    foreach (var error in ViewData.ModelState["EmailAddress"]?.Errors!)
-                    {
-                        <span class="govuk-error-message">@error.ErrorMessage</span>
-                    }
-                }
-
-				<input class="govuk-input govuk-!-width-three-quarters @(ViewData.ModelState["EmailAddress"]?.Errors.Count > 0 ? "govuk-input--error" : "")" id="EmailAddress" name="EmailAddress" type="text" asp-for="EmailAddress">
-            </div>
+            <rsp-gds-checkbox-group 
+                asp-for="Countries" 
+                label-text="Country"
+                options="countries" />
+   
+            <rsp-gds-input 
+                asp-for="EmailAddress" 
+                label-text="Email address" 
+                input-type="email" 
+                autocomplete="email" 
+                width-class="govuk-!-width-three-quarters" />o
             
-            <div class="govuk-form-group govuk-character-count @(ViewData.ModelState["Description"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")" data-module="govuk-character-count">
-                <div class="govuk-label-wrapper">
-                    <label class="govuk-label govuk-label--s" for="Description">
-                        Add description
-                    </label>
-                </div>
-                <span class="govuk-error-message" asp-validation-for="Description"></span>
-				<textarea class="govuk-textarea @(ViewData.ModelState["Description"]?.Errors.Count > 0 ? "govuk-textarea--error" : "")" id="Description" rows="5" name="Description" asp-for="Description"></textarea>
-                <div class="govuk-character-count__message govuk-error-message">
-                    @if (ViewData.ModelState["_DescriptionExcessWordCount"]?.Errors.Count > 0)
-                    {
-                        @(ViewData.ModelState["_DescriptionExcessWordCount"]?.Errors[0].ErrorMessage)
-                    }
-                </div>
-            </div>
+            <rsp-gds-character-count-textarea 
+                asp-for="Description" 
+                label-text="Add description" 
+                word-count-error-for="_DescriptionExcessWordCount" 
+                rows="5"
+                width-class="govuk-!-width-full"/>
 
             <partial name="_SubmitButton" model="@(submitActionName, buttonText, new Dictionary<string, string>())"/>
         </form>
