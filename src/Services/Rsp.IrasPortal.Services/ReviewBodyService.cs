@@ -64,4 +64,11 @@ public class ReviewBodyService(IReviewBodyServiceClient client) : IReviewBodySer
 
         return apiResponse.ToServiceResponse();
     }
+
+    public async Task<ServiceResponse<ReviewBodyUserDto>> RemoveUserFromReviewBody(Guid reviewBodyId, Guid userId)
+    {
+        var apiResponse = await client.RemoveUserFromReviewBody(reviewBodyId, userId);
+
+        return apiResponse.ToServiceResponse();
+    }
 }
