@@ -1,0 +1,71 @@
+﻿@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Rsp.IrasPortal.Web.Models
+@using Rsp.IrasPortal.Web.ViewHelpers
+@model QuestionnaireViewModel
+
+@{
+    var index = (int)ViewBag.Index;
+    var question = Model.Questions[index];
+    var errorKey = $"Questions[{index}].AnswerText";
+    var validationMessage = "Provide an answer for this question";
+    var fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
+
+    var rules = question.Rules;
+    var conditional = !question.IsMandatory && rules.Count > 0;
+    var parents = conditional ? string.Join(',', rules.Select(rule => rule.ParentQuestionId)) : "";
+    var questionId = conditional ? question.QuestionId : "";
+}
+
+<div id="Questions[@index].AnswerText"
+     error-class-for="Questions[index].AnswerText"
+     conditional="question is { IsMandatory: false, Rules: { Count: > 0 } }"
+     class="govuk-form-group"
+     data-parents="@parents"
+     data-questionid="@questionId">
+    <div class="govuk-form-group">
+        <label class="govuk-label" for="@(question.QuestionId)_Text" aria-described-for="Questions[index].QuestionText">@question.QuestionText</label>
+        <div aria-id-for="Questions[index].QuestionText" class="govuk-hint">
+            @if (rules.Count > 0)
+            {
+                @foreach (var rule in rules)
+                {
+                    <p>
+                        @rule.Description
+                    </p>
+                }
+            }
+        </div>
+
+        @if (fieldHasErrors)
+        {
+            @Html.BuildValidationMessage(question.Rules, errorKey, validationMessage);
+        }
+
+        @{
+            var sizeRule = rules.FirstOrDefault(x => x.Conditions.SingleOrDefault(y => y.Operator == "SIZE") != null);
+            var condition = sizeRule?.Conditions.FirstOrDefault(x => x.Operator == "SIZE");
+            var conditionValue = condition?.Value;
+
+            //var cssClass = "govuk-input ";
+            //if (!string.IsNullOrEmpty(conditionValue))
+            //{
+            //    cssClass += conditionValue;
+            //}
+
+            //if (fieldHasErrors)
+            //{
+            //    cssClass += " govuk-input--error";
+            //}
+        }
+
+        <input id="@(question.QuestionId)_Text"
+               type="text"
+               asp-for="Questions[index].AnswerText"
+               conditional="@(!string.IsNullOrWhiteSpace(condition?.Value))"
+               conditional-class="@conditionValue"
+               error-class-for="Questions[index].AnswerText"
+               class="govuk-input" />
+
+        @*@Html.TextBoxFor(model => model.Questions[index].AnswerText, new { id = question.QuestionId + "_Text", @class = cssClass })*@
+    </div>
+</div>
