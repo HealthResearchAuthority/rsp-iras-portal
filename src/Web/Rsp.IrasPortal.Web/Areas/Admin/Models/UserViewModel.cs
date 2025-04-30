@@ -31,7 +31,7 @@ public class UserViewModel
 
     public IList<string>? Country { get; set; } = null;
 
-    public IList<string>? AccessRequired { get; set; } = null;
+    public IList<string> AccessRequired { get; set; } = [];
 
     public DateTime? LastUpdated { get; set; } = null;
 
@@ -52,6 +52,7 @@ public class UserViewModel
     {
         var user = identityUserResponse?.User;
         var roles = identityUserResponse?.Roles;
+        var accessRequired = identityUserResponse?.AccessRequired;
 
         if (user != null)
         {
@@ -68,6 +69,7 @@ public class UserViewModel
             LastUpdated = user.LastUpdated;
             OriginalEmail = user.Email;
             Status = user.Status;
+            AccessRequired = accessRequired != null ? accessRequired.ToList() : [];
         }
     }
 

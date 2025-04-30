@@ -240,6 +240,18 @@ public class UsersController(IUserManagementService userManagementService, IVali
             }
         }
 
+        // assign access required claims to user
+        var updateAccessRequired = await UpdateUserAccessRequired(model);
+
+        if (!updateAccessRequired.IsSuccessStatusCode)
+        {
+            return updateAccessRequired.StatusCode switch
+            {
+                HttpStatusCode.Forbidden => Forbid(),
+                _ => View(Error, this.ProblemResult(updateAccessRequired))
+            };
+        }
+
         return mode switch
         {
             CreateMode => View(CreateUserSuccessMessage, model),
@@ -573,7 +585,7 @@ public class UsersController(IUserManagementService userManagementService, IVali
             return availableRoles.Content.Roles.ToList();
         }
 
-        return new List<Role>();
+        return [];
     }
 
     private async Task<ServiceResponse> CreateOrUpdateUser(UserViewModel model, string mode)
@@ -613,5 +625,10 @@ public class UsersController(IUserManagementService userManagementService, IVali
         string userRoles = string.Join(",", selectedRoles);
 
         return await userManagementService.UpdateRoles(model.Email, rolesToRemove, userRoles);
+    }
+
+    private async Task<ServiceResponse> UpdateUserAccessRequired(UserViewModel model)
+    {
+        return await userManagementService.UpdateUserAccess(model.Email, model.AccessRequired);
     }
 }
