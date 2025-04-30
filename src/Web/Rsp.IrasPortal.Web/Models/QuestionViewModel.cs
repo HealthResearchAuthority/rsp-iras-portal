@@ -90,6 +90,7 @@ public class QuestionViewModel
                      || (!string.IsNullOrWhiteSpace(SelectedOption) && Answers.Any(a => a.AnswerId == SelectedOption));
 
         var labelText = label.Contains("NHS / HSC", StringComparison.OrdinalIgnoreCase)
+            || label.Contains("Chief Investigator", StringComparison.OrdinalIgnoreCase)
             ? label
             : label.ToLowerInvariant();
 

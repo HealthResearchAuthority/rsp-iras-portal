@@ -134,6 +134,7 @@ public class QuestionViewModelValidatorBase : AbstractValidator<QuestionViewMode
             : question.QuestionText;
 
         var labelText = label.Contains("NHS / HSC", StringComparison.OrdinalIgnoreCase)
+            || label.Contains("Chief Investigator", StringComparison.OrdinalIgnoreCase)
             ? label
             : label.ToLowerInvariant();
 
