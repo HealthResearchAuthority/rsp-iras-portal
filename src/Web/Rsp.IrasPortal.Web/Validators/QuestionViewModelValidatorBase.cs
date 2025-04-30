@@ -133,6 +133,10 @@ public class QuestionViewModelValidatorBase : AbstractValidator<QuestionViewMode
             ? question.ShortQuestionText
             : question.QuestionText;
 
-        return $"Enter {label.ToLowerInvariant()}";
+        var labelText = label.Contains("NHS / HSC", StringComparison.OrdinalIgnoreCase)
+            ? label
+            : label.ToLowerInvariant();
+
+        return $"Enter {labelText}";
     }
 }
