@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Refit;
+﻿using Refit;
 using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Domain.Identity;
 
@@ -116,5 +116,23 @@ public interface IUserManagementServiceClient
     /// <param name="searchQuery">Search query</param>
     /// <returns>List of users</returns>
     [Post("/users/search")]
-    public Task<IApiResponse<UsersResponse>> SearchUsers(string searchQuery, [FromBody] IEnumerable<string>? userIdsToIgnore = null, int pageIndex = 1, int pageSize = 10);
+    public Task<IApiResponse<UsersResponse>> SearchUsers(string searchQuery, [Body] IEnumerable<string>? userIdsToIgnore = null, int pageIndex = 1, int pageSize = 10);
+
+    /// <summary>
+    /// Add claims for a user
+    /// </summary>
+    [Post("/users/claims")]
+    public Task<IApiResponse> AddUserClaims([Body] UserClaimsRequest claimsRequest);
+
+    /// <summary>
+    /// Remove user claims
+    /// </summary>
+    [Delete("/users/claims")]
+    public Task<IApiResponse> RemoveUserClaims([Body] UserClaimsRequest claimsRequest);
+
+    /// <summary>
+    /// Get claims for a user
+    /// </summary>
+    [Get("/users/claims")]
+    public Task<IApiResponse<IEnumerable<UserClaimDto>>> GetUserClaims(string? id, string? email);
 }

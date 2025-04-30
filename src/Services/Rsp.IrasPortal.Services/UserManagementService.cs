@@ -1,4 +1,5 @@
 ﻿using Mapster;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
 using Rsp.IrasPortal.Application.DTOs.Responses;
@@ -128,6 +129,46 @@ public class UserManagementService(IUserManagementServiceClient client) : IUserM
     public async Task<ServiceResponse<UserAuditTrailResponse>> GetUserAuditTrail(string userId)
     {
         var apiResponse = await client.GetUserAuditTrail(userId);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse> UpdateUserAccess(string userEmail, IEnumerable<string> accessRequired)
+    {
+        // get all user claims
+        var allUserClaims = await client.GetUserClaims(null, userEmail);
+
+        // check if user has "access required" claims
+        if (allUserClaims.Content != null && allUserClaims.Content.Any(x => x.Type == UserClaimTypes.AccessRequired))
+        {
+            var deleteClaimsRequest = new UserClaimsRequest
+            {
+                Email = userEmail,
+                Claims = []
+            };
+
+            foreach (var claim in allUserClaims.Content.Where(x => x.Type == UserClaimTypes.AccessRequired))
+            {
+                deleteClaimsRequest.Claims.Add(new KeyValuePair<string, string>(claim.Type, claim.Value));
+            }
+
+            // remove all access claims for user to avoid duplicate entries
+            await client.RemoveUserClaims(deleteClaimsRequest);
+        }
+
+        var request = new UserClaimsRequest
+        {
+            Email = userEmail,
+            Claims = []
+        };
+
+        foreach (var item in accessRequired)
+        {
+            request.Claims.Add(new KeyValuePair<string, string>(UserClaimTypes.AccessRequired, item));
+        }
+
+        // add new updated user claims for access required
+        var apiResponse = await client.AddUserClaims(request);
 
         return apiResponse.ToServiceResponse();
     }

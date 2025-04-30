@@ -37,4 +37,6 @@ public interface IUserManagementService : IInterceptable
     Task<ServiceResponse> UpdateRoles(string email, string? rolesToRemove, string rolesToAdd);
 
     Task<ServiceResponse<UserAuditTrailResponse>> GetUserAuditTrail(string userId);
+
+    Task<ServiceResponse> UpdateUserAccess(string userEmail, IEnumerable<string> accessRequired);
 }
