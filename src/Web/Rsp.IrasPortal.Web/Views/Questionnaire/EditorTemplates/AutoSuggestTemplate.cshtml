@@ -1,0 +1,66 @@
+﻿@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Rsp.IrasPortal.Application.Configuration
+@using Rsp.IrasPortal.Web.Models
+@using Rsp.IrasPortal.Web.ViewHelpers
+@model QuestionnaireViewModel
+@inject AppSettings appSettings
+
+@{
+    var index = (int)ViewBag.Index;
+    var question = Model.Questions[index];
+    var errorKey = $"Questions[{index}].AnswerText";
+    var validationMessage = "Provide an answer for this question";
+    var fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
+
+    var rules = question.Rules;
+    var conditional = !question.IsMandatory && rules.Count > 0;
+    var parents = conditional ? string.Join(',', rules.Select(rule => rule.ParentQuestionId)) : "";
+    var questionId = conditional ? question.QuestionId : "";
+}
+
+<link rel="stylesheet" href="~/assets/css/accessible-autocomplete.min.css" />
+<script type="text/javascript" src="~/assets/js/accessible-autocomplete.min.js"></script>
+<script src="~/js/rts.js"></script>
+
+<script>
+    $(document).ready(function () {
+        initAutocomplete('@(question.QuestionId)_Text', 'Questions[' + @index + '].AnswerText', '@(appSettings.RtsServiceUri)');
+    });
+</script>
+
+<div id="Questions[@index].AnswerText"
+     error-class-for="Questions[index].AnswerText"
+     conditional="question is { IsMandatory: false, Rules: { Count: > 0 } }"
+     class="govuk-form-group"
+     data-parents="@parents"
+     data-questionid="@questionId">
+    <div class="govuk-form-group">
+        <label class="govuk-label" for="@(question.QuestionId)_Text" aria-described-for="Questions[index].QuestionText">@question.QuestionText</label>
+        <div aria-id-for="Questions[index].QuestionText" class="govuk-hint">
+            @if (rules.Count > 0)
+            {
+                @foreach (var rule in rules)
+                {
+                    <p>
+                        @rule.Description
+                    </p>
+                }
+            }
+        </div>
+
+        @if (fieldHasErrors)
+        {
+            @Html.BuildValidationMessage(question.Rules, errorKey, validationMessage);
+        }
+
+        @*<input id="@(question.QuestionId)_Text"
+            type="text"
+            asp-for="Questions[index].AnswerText"
+            error-class-for="Questions[index].AnswerText"
+            class="govuk-input" />*@
+
+        <div class="autocomplete-wrapper"></div>
+
+        @*@Html.TextBoxFor(model => model.Questions[index].AnswerText, new { id = question.QuestionId + "_Text", @class = cssClass })*@
+    </div>
+</div>

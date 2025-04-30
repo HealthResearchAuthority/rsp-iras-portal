@@ -42,7 +42,10 @@ public class CssClassTagHelper : TagHelper
         // If the element is conditional, add the "conditional" class.
         if (Conditional)
         {
-            output.AddClass(ConditionalClass, HtmlEncoder.Default);
+            foreach (var @class in ConditionalClass.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+            {
+                output.AddClass(@class, HtmlEncoder.Default);
+            }
         }
 
         return Task.CompletedTask;
