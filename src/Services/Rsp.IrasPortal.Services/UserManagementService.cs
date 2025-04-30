@@ -1,4 +1,5 @@
-﻿using Mapster;
+﻿using System.Net;
+using Mapster;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
@@ -135,41 +136,56 @@ public class UserManagementService(IUserManagementServiceClient client) : IUserM
 
     public async Task<ServiceResponse> UpdateUserAccess(string userEmail, IEnumerable<string> accessRequired)
     {
-        // get all user claims
+        // Get all user claims
         var allUserClaims = await client.GetUserClaims(null, userEmail);
 
-        // check if user has "access required" claims
-        if (allUserClaims.Content != null && allUserClaims.Content.Any(x => x.Type == UserClaimTypes.AccessRequired))
+        var currentAccessClaims = allUserClaims.Content?
+            .Where(x => x.Type == UserClaimTypes.AccessRequired)
+            .Select(x => x.Value)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase) ?? new HashSet<string>();
+
+        var desiredAccessClaims = accessRequired?.ToHashSet(StringComparer.OrdinalIgnoreCase) ?? new HashSet<string>();
+
+        // Determine claims to remove (present now but not required)
+        var claimsToRemove = currentAccessClaims.Except(desiredAccessClaims).ToList();
+
+        // Determine claims to add (required but not currently present)
+        var claimsToAdd = desiredAccessClaims.Except(currentAccessClaims).ToList();
+
+        // Remove only claims that are not required anymore
+        if (claimsToRemove.Any())
         {
             var deleteClaimsRequest = new UserClaimsRequest
             {
                 Email = userEmail,
-                Claims = []
+                Claims = claimsToRemove
+                    .Select(value => new KeyValuePair<string, string>(UserClaimTypes.AccessRequired, value))
+                    .ToList()
             };
 
-            foreach (var claim in allUserClaims.Content.Where(x => x.Type == UserClaimTypes.AccessRequired))
-            {
-                deleteClaimsRequest.Claims.Add(new KeyValuePair<string, string>(claim.Type, claim.Value));
-            }
-
-            // remove all access claims for user to avoid duplicate entries
             await client.RemoveUserClaims(deleteClaimsRequest);
         }
 
-        var request = new UserClaimsRequest
+        // Add only new claims that the user doesn't already have
+        if (claimsToAdd.Any())
         {
-            Email = userEmail,
-            Claims = []
-        };
+            var addClaimsRequest = new UserClaimsRequest
+            {
+                Email = userEmail,
+                Claims = claimsToAdd
+                    .Select(value => new KeyValuePair<string, string>(UserClaimTypes.AccessRequired, value))
+                    .ToList()
+            };
 
-        foreach (var item in accessRequired)
-        {
-            request.Claims.Add(new KeyValuePair<string, string>(UserClaimTypes.AccessRequired, item));
+            var apiResponse = await client.AddUserClaims(addClaimsRequest);
+            return apiResponse.ToServiceResponse();
         }
 
-        // add new updated user claims for access required
-        var apiResponse = await client.AddUserClaims(request);
-
-        return apiResponse.ToServiceResponse();
+        // No changes needed
+        return new ServiceResponse
+        {
+            ReasonPhrase = "No changes needed",
+            StatusCode = HttpStatusCode.OK
+        };
     }
 }
