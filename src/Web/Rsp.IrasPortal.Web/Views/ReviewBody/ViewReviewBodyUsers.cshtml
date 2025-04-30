@@ -64,8 +64,13 @@
 								</td>
 								<td class="govuk-table__cell">@(user.LastLogin.HasValue ? user.LastLogin.Value.ToString("dd MMM yyyy") : string.Empty)</td>
 								<td class="govuk-table__cell">
-									<a class="govuk-link" asp-route="rbc:removeuser" asp-route-userId="@user.Id"
-									   asp-route-email="@user.Email">Remove</a>
+                                    <a 
+                                        class="govuk-link" 
+                                        asp-route="rbc:confirmremoveuser" 
+                                        asp-route-reviewBodyId="@Model.ReviewBody.Id" 
+                                        asp-route-userId="@user.Id">
+                                        Remove
+                                    </a>
 								</td>
 							</tr>
 						}
