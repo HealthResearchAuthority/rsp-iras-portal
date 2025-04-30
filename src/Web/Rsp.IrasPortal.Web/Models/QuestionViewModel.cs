@@ -85,11 +85,15 @@ public class QuestionViewModel
     {
         var label = string.IsNullOrWhiteSpace(ShortQuestionText) ? QuestionText : ShortQuestionText;
 
-        return (!string.IsNullOrWhiteSpace(AnswerText)
-                || Answers.Any(a => a.IsSelected)
-                || (!string.IsNullOrWhiteSpace(SelectedOption) && Answers.Any(a => a.AnswerId == SelectedOption)))
-            ? "Change"
-            : $"Enter {label.ToLowerInvariant()}";
+        var isAnswered = !string.IsNullOrWhiteSpace(AnswerText)
+                     || Answers.Any(a => a.IsSelected)
+                     || (!string.IsNullOrWhiteSpace(SelectedOption) && Answers.Any(a => a.AnswerId == SelectedOption));
+
+        var labelText = label.Contains("NHS / HSC", StringComparison.OrdinalIgnoreCase)
+            ? label
+            : label.ToLowerInvariant();
+
+        return isAnswered ? "Change" : $"Enter {labelText}";
     }
 
     public bool IsMissingAnswer()
