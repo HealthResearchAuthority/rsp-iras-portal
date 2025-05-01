@@ -27,7 +27,6 @@
 			<input class="govuk-input govuk-!-width-two-thirds" id="SearchQuery" name="SearchQuery" type="text" value="@(Model.Pagination?.SearchQuery ?? string.Empty)">
 			<input hidden readonly name="ReviewBodyId" value="@Model.ReviewBody.Id" />
 			<input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize" />
-			<input hidden readonly name="PageNumber" value="@Model.Pagination?.PageNumber" />
 			<partial name="_SubmitButton" model="@("rbc:viewreviewbodyusers", "Search", new Dictionary<string, string>())" />
 		</form>
 	</div>
