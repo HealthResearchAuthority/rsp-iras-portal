@@ -188,7 +188,7 @@ public class QuestionnaireController
                 if (response.IsSuccessStatusCode)
                 {
                     // set the active stage for the category
-                    SetStage(sectionId!);
+                    await SetStage(sectionId!);
 
                     var questionnaire = BuildQuestionnaireViewModel(response.Content!);
 
@@ -208,7 +208,7 @@ public class QuestionnaireController
             }
 
             // set the active stage for the category
-            SetStage(sectionId);
+            await SetStage(sectionId);
 
             // if we have questions in the session
             // then return the view with the model
@@ -271,7 +271,7 @@ public class QuestionnaireController
             TempData.TryAdd(TempDataKeys.IrasId, application.IrasId);
 
             // set the previous, current and next stages
-            SetStage(model.CurrentStage!);
+            await SetStage(model.CurrentStage!);
             model.ReviewAnswers = submit;
             return View(Index, model);
         }
@@ -436,7 +436,7 @@ public class QuestionnaireController
         TempData.TryAdd(TempDataKeys.IrasId, application.IrasId);
 
         // set the previous, current and next stages
-        SetStage(model.CurrentStage!);
+        await SetStage(model.CurrentStage!);
 
         return View(Index, model);
     }

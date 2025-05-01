@@ -10,14 +10,10 @@
     var validationMessage = "Select one option";
     var fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
 
-    //conditionalClass = conditional.Length > 0 ? " govuk-radios__conditional" : "";
-    //errorClass = fieldHasErrors ? " govuk-form-group--error" : "";
-
     var rules = question.Rules;
     var conditional = !question.IsMandatory && rules.Count > 0;
     var parents = conditional ? string.Join(',', rules.Select(rule => rule.ParentQuestionId)) : "";
     var questionId = conditional ? question.QuestionId : "";
-    //class="@(conditional + conditionalClass + errorClass) govuk-form-group"
 }
 
 <div id="Questions[@index].SelectedOption"
@@ -26,7 +22,7 @@
      conditional-class="conditional govuk-radios__conditional"
      error-class-for="Questions[@index].SelectedOption"
      data-parents="@parents"
-     data-questionid="@questionId">
+     data-questionId="@questionId">
 
     <govuk-fieldset>
         <govuk-fieldset-legend class="govuk-fieldset__legend--s">

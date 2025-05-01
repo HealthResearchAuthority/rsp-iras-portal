@@ -60,7 +60,7 @@ public class ErrorClassTagHelper : TagHelper
         // when using this tag helper on any input element, it will utilise
         // For.Name. If we are passing in the name to the template, we need to use the actual value
         // hence For.Model is also checked.
-        var key = For.Name ?? For.Model?.ToString() ?? string.Empty;
+        var key = For.Name;
 
         var modelStateEntry = ViewContext.ViewData.ModelState[key];
 

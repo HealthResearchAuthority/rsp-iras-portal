@@ -59,7 +59,7 @@
             {
                 { "categoryId", previousCategory },
                 { "sectionId", previousStage }
-                                                                                                                            });
+                                                                                                                                                                                                                                            });
     }
     else
     {
@@ -124,39 +124,28 @@
                             }
                         }
 
-                        question.QuestionType = question.QuestionType.ToLower(CultureInfo.InvariantCulture);
-                        question.DataType = question.DataType.ToLower(CultureInfo.InvariantCulture);
+                        var types = (question.QuestionType.ToLower(), question.DataType.ToLower());
 
                         ViewBag.Index = index;
 
                         // this will be used in the template
-                        var templateName = question switch
+                        var templateName = types switch
                         {
-                            { QuestionType: "date", DataType: "date" } => "DateTemplate",
-                            { QuestionType: "text", DataType: "text" or "email" } => "TextTemplate",
-                            { QuestionType: "look-up list", DataType: "checkbox" } => "CheckboxTemplate",
-                            { QuestionType: "look-up list", DataType: "radio button" } => "RadioButtonTemplate",
-                            { QuestionType: "boolean", DataType: "boolean" } => "RadioButtonTemplate",
-                            { QuestionType: "rts:org_lookup", DataType: "text" } => "AutoSuggestTemplate",
+                            ("date", "date") => "DateTemplate",
+                            ("text", "text" or "email") => "TextTemplate",
+                            ("look-up list", "checkbox") => "CheckboxTemplate",
+                            ("look-up list", "radio button") => "RadioButtonTemplate",
+                            ("boolean", "boolean") => "RadioButtonTemplate",
+                            ("rts:org_lookup", "text") => "AutoSuggestTemplate",
                             _ => string.Empty
                         };
 
-                        // plese note the @ is necessary before Html so that Template is rendered, otherwise it won't render
-                        if (templateName == "AutoSuggestTemplate")
+                        if (!string.IsNullOrWhiteSpace(templateName))
                         {
-                            ViewBag.AutoSuggestUrl = "";
+                            // plese note the @ is necessary before Html so that Template is rendered, otherwise it won't render
+                            @Html.EditorForModel(templateName, ViewData);
                         }
 
-                        @Html.EditorForModel(templateName, ViewData);
-
-                        switch (question)
-                        {
-                            case { QuestionType: "rts:org_lookup", DataType: "text" }:
-                                {
-
-                                }
-                                break;
-                        }
                     }
                 </govuk-fieldset>
             </div>
