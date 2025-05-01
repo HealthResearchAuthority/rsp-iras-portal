@@ -318,6 +318,14 @@ public class ReviewBodyController(
         var reviewBodyModel = reviewBody.Content?.FirstOrDefault().Adapt<AddUpdateReviewBodyModel>();
 
         var model = new ReviewBodyListUsersModel();
+        model.Pagination = new PaginationViewModel
+        {
+            SearchQuery = searchQuery,
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            ReviewBodyId = reviewBodyId.ToString(),
+            RouteName = "rbc:viewreviewbodyusers"
+        };
         model.ReviewBody = reviewBodyModel!;
 
         if (reviewBody?.Content?.FirstOrDefault()?.Users != null)
@@ -332,15 +340,7 @@ public class ReviewBodyController(
 
                 model.Users = users.Content?.Users.Select(user => new UserViewModel(user)) ?? [];
 
-                model.Pagination = new PaginationViewModel
-                {
-                    ReviewBodyId = reviewBodyId.ToString(),
-                    PageNumber = pageNumber,
-                    PageSize = pageSize,
-                    TotalCount = users.Content?.TotalCount ?? 0,
-                    SearchQuery = searchQuery,
-                    RouteName = "rbc:viewreviewbodyusers",
-                };
+                model.Pagination.TotalCount = users.Content?.TotalCount ?? 0;
             }
         }
 
