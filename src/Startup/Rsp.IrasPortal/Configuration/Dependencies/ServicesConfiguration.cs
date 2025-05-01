@@ -25,6 +25,7 @@ public static class ServicesConfiguration
         services.AddTransient<IRespondentService, RespondentService>();
         services.AddTransient<IClaimsTransformation, CustomClaimsTransformation>();
         services.AddTransient<IReviewBodyService, ReviewBodyService>();
+        services.AddTransient<IRtsService, RtsService>();
 
         // add message handlers
         services.AddTransient<AuthHeadersHandler>();

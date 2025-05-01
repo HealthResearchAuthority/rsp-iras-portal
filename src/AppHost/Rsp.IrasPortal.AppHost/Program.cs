@@ -13,11 +13,13 @@ var projectSettings = projectSettingsSection.Get<ProjectsSettings>();
 var irasServiceSettings = projectSettings.IrasServiceSettings;
 var usersServiceSettings = projectSettings.UsersServiceSettings;
 var questionSetServiceSettings = projectSettings.QuestionSetServiceSettings;
+var rtsServiceSettings = projectSettings.RtsServiceSettings;
 
 // add the project reference
 var irasService = builder.AddProject(irasServiceSettings.ProjectName, irasServiceSettings.ProjectPath);
 var usersService = builder.AddProject(usersServiceSettings.ProjectName, usersServiceSettings.ProjectPath);
 var questionSetService = builder.AddProject(questionSetServiceSettings.ProjectName, questionSetServiceSettings.ProjectPath);
+var rtsService = builder.AddProject(rtsServiceSettings.ProjectName, rtsServiceSettings.ProjectPath);
 
 // add the portal project with a dependency on
 // irasService
@@ -25,7 +27,8 @@ builder
     .AddProject<Projects.Rsp_IrasPortal>("iras-portal")
     .WithReference(irasService)
     .WithReference(usersService)
-    .WithReference(questionSetService);
+    .WithReference(questionSetService)
+    .WithReference(rtsService);
 
 // run the host app
 await builder.Build().RunAsync();

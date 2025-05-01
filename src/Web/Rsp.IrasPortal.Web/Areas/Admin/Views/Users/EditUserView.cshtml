@@ -46,31 +46,31 @@
             <div class="govuk-form-group" error-class-for="LastName">
                 <label class="govuk-label" for="LastName"><b>Last name</b></label>
                 <span class="govuk-error-message" asp-validation-for="LastName"></span>
-				<input class="govuk-input govuk-!-width-one-half @(ViewData.ModelState["LastName"]?.Errors.Count > 0 ? "govuk-input--error" : "")" id="LastName" name="LastName" type="text" asp-for="LastName" value="@(Model.LastName ?? string.Empty)">
+                <input class="govuk-input govuk-!-width-one-half" error-class-for="LastName" id="LastName" name="LastName" type="text" asp-for="LastName" value="@(Model.LastName ?? string.Empty)">
             </div>
 
             <div class="govuk-form-group" error-class-for="Email">
                 <label class="govuk-label" for="Email"><b>Email address</b></label>
                 <span class="govuk-error-message" asp-validation-for="Email"></span>
-				<input class="govuk-input govuk-!-width-two-thirds @(ViewData.ModelState["Email"]?.Errors.Count > 0 ? "govuk-input--error" : "")" id="Email" name="Email" type="email" asp-for="Email" value="@(Model.Email ?? string.Empty)">
+                <input class="govuk-input govuk-!-width-two-thirds" error-class-for="Email" id="Email" name="Email" type="email" asp-for="Email" value="@(Model.Email ?? string.Empty)">
             </div>
 
             <div class="govuk-form-group" error-class-for="Telephone">
                 <label class="govuk-label" for="Telephone"><b>Telephone</b></label>
                 <span class="govuk-error-message" asp-validation-for="Telephone"></span>
-				<input class="govuk-input govuk-!-width-two-thirds @(ViewData.ModelState["Telephone"]?.Errors.Count > 0 ? "govuk-input--error" : "")" id="Telephone" name="Telephone" type="tel" asp-for="Telephone" value="@(Model.Telephone ?? string.Empty)">
+                <input class="govuk-input govuk-!-width-two-thirds)" error-class-for="Telephone" id="Telephone" name="Telephone" type="tel" asp-for="Telephone" value="@(Model.Telephone ?? string.Empty)">
             </div>
 
             <div class="govuk-form-group" error-class-for="Organisation">
                 <label class="govuk-label" for="Organisation"><b>Organisation</b></label>
                 <span class="govuk-error-message" asp-validation-for="Organisation"></span>
-				<input class="govuk-input govuk-!-width-three-quarters @(ViewData.ModelState["Organisation"]?.Errors.Count > 0 ? "govuk-input--error" : "")" id="Organisation" name="Organisation" type="text" asp-for="Organisation" value="@(Model.Organisation ?? string.Empty)">
+                <input class="govuk-input govuk-!-width-three-quarters" error-class-for="Organisation" id="Organisation" name="Organisation" type="text" asp-for="Organisation" value="@(Model.Organisation ?? string.Empty)">
             </div>
 
             <div class="govuk-form-group" error-class-for="JobTitle">
                 <label class="govuk-label" for="JobTitle"><b>Job title</b></label>
                 <span class="govuk-error-message" asp-validation-for="JobTitle"></span>
-				<input class="govuk-input govuk-!-width-three-quarters @(ViewData.ModelState["JobTitle"]?.Errors.Count > 0 ? "govuk-input--error" : "")" id="JobTitle" name="JobTitle" type="text" asp-for="JobTitle" value="@(Model.JobTitle ?? string.Empty)">
+                <input class="govuk-input govuk-!-width-three-quarters" error-class-for="JobTitle" id="JobTitle" name="JobTitle" type="text" asp-for="JobTitle" value="@(Model.JobTitle ?? string.Empty)">
             </div>
 
             <div class="govuk-form-group" error-class-for="UserRoles">
@@ -95,15 +95,13 @@
             </div>
 
             @* TODO: Replace ViewData.ModelState["Committee"]?.Errors.Count with error-class-for="Committee"  *@
-            <div class="govuk-form-group conditional-field @(ViewData.ModelState["Committee"]?.Errors.Count>
-                0 ? "govuk-form-group--error" : "")">
+            <div class="govuk-form-group conditional-field @(ViewData.ModelState["Committee"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
                 <label class="govuk-label" for="Committee">
                     <b>Committee</b>
                 </label>
 
                 @* TODO: Replace ViewData.ModelState["Committee"]?.Errors.Count with error-class-for="Committee" and provide the error-class="govuk-select--error"  *@
-                <select class="role-list-dropdown govuk-select govuk-!-width-three-quarters @(ViewData.ModelState["Committee"]?.Errors.Count>
-                    0 ? "govuk-select--error" : "")" id="Committee" name="Committee">
+                <select class="role-list-dropdown govuk-select govuk-!-width-three-quarters @(ViewData.ModelState["Committee"]?.Errors.Count > 0 ? "govuk-select--error" : "")" id="Committee" name="Committee">
                     <option></option>
                 </select>
             </div>
@@ -152,15 +150,14 @@
                 </fieldset>
             </div>
 
-            @* TODO: Replace ViewData.ModelState["Committee"]?.Errors.Count with error-class-for="ReviewBody"  *@
+            @* TODO: Replace ViewData.ModelState["ReviewBody"]?.Errors.Count with error-class-for="ReviewBody"  *@
             <div class="govuk-form-group conditional-field @(ViewData.ModelState["ReviewBody"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
                 <label class="govuk-label" for="ReviewBody">
                     <b>Review body</b>
                 </label>
 
-                @* TODO: Replace ViewData.ModelState["Committee"]?.Errors.Count with error-class-for="ReviewBody" and provide the error-class="govuk-select--error"  *@
-                <select class="role-list-dropdown govuk-select govuk-!-width-three-quarters @(ViewData.ModelState["ReviewBody"]?.Errors.Count>
-                    0 ? "govuk-select--error" : "")" id="ReviewBody" name="ReviewBody">
+                @* TODO: Replace ViewData.ModelState["ReviewBody"]?.Errors.Count with error-class-for="ReviewBody" and provide the error-class="govuk-select--error"  *@
+                <select class="role-list-dropdown govuk-select govuk-!-width-three-quarters @(ViewData.ModelState["ReviewBody"]?.Errors.Count> 0 ? "govuk-select--error" : "")" id="ReviewBody" name="ReviewBody">
                     <option></option>
                 </select>
             </div>
