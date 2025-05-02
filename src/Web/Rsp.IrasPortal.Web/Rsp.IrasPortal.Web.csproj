@@ -19,27 +19,4 @@
         <ProjectReference Include="..\..\Application\Rsp.IrasPortal.Application\Rsp.IrasPortal.Application.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Content Update="Views\Application\CreateApplication.cshtml">
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      </Content>
-      <Content Update="Views\Application\ProjectOverview.cshtml">
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      </Content>
-      <Content Update="Views\Application\NewApplication.cshtml">
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      </Content>
-      <Content Update="Views\Questionnaire\SubmitApplication.cshtml">
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      </Content>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Attributes\" />
-    </ItemGroup>
-
 </Project>

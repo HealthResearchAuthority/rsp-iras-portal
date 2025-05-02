@@ -26,4 +26,6 @@ public interface IReviewBodyService : IInterceptable
     Task<ServiceResponse> EnableReviewBody(Guid id);
 
     Task<ServiceResponse<ReviewBodyUserDto>> AddUserToReviewBody(ReviewBodyUserDto reviewBodyUser);
+
+    Task<ServiceResponse<ReviewBodyUserDto>> RemoveUserFromReviewBody(Guid reviewBodyId, Guid userId);
 }

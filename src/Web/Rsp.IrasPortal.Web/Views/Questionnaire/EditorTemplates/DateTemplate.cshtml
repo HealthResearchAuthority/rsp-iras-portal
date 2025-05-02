@@ -1,0 +1,98 @@
+﻿@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Rsp.IrasPortal.Web.Models
+@using Rsp.IrasPortal.Web.ViewHelpers
+@model QuestionnaireViewModel
+
+@{
+    var index = (int)ViewBag.Index;
+    var question = Model.Questions[index];
+    var errorKey = $"Questions[{index}].AnswerText";
+    var validationMessage = "Provide an answer for this question";
+    var fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
+
+    var rules = question.Rules;
+    var conditional = !question.IsMandatory && rules.Count > 0;
+    var parents = conditional ? string.Join(',', rules.Select(rule => rule.ParentQuestionId)) : "";
+    var questionId = conditional ? question.QuestionId : "";
+}
+
+<div id="Questions[@index].AnswerText"
+     error-class-for="Questions[index].AnswerText"
+     conditional="question is { IsMandatory: false, Rules: { Count: > 0 } }"
+     class="govuk-form-group"
+     data-parents="@parents"
+     data-questionId="@questionId">
+
+    <div class="govuk-form-group">
+        <label class="govuk-label" for="@(question.QuestionId)_Text" aria-described-for="Questions[index].QuestionText">@question.QuestionText</label>
+
+        <div aria-id-for="Questions[index].QuestionText" class="govuk-hint">
+            @if (rules.Count > 0)
+            {
+                @foreach (var rule in rules)
+                {
+                    <p>
+                        @rule.Description
+                    </p>
+                }
+            }
+        </div>
+
+        @if (fieldHasErrors)
+        {
+            // plese note the @ is necessary before Html so that ValidationMessage is rendered, otherwise it won't render
+            @Html.BuildValidationMessage(question.Rules, errorKey, validationMessage);
+        }
+
+        @{
+
+            // Extract values from AnswerText if available
+            if
+            (
+                !string.IsNullOrWhiteSpace(Model.Questions[index].AnswerText) &&
+                DateTime.TryParse(Model.Questions[index].AnswerText, out var parsedDate)
+            )
+            {
+                Model.Questions[index].Day = parsedDate.Day.ToString();
+                Model.Questions[index].Month = parsedDate.Month.ToString();
+                Model.Questions[index].Year = parsedDate.Year.ToString();
+            }
+        }
+
+        <div class="govuk-date-input" id="@(question.QuestionId)">
+            <div class="govuk-date-input__item">
+                <div class="govuk-form-group">
+                    <label class="govuk-label govuk-date-input__label" for="Questions_@(index)_Day">Day</label>
+                    @Html.TextBoxFor(m => m.Questions[index].Day, new
+                        {
+                            @class = "govuk-input govuk-date-input__input govuk-input--width-2" + (fieldHasErrors ? " govuk-input--error" : ""),
+                            id = "Questions_" + index + "_Day",
+                            inputmode = "numeric"
+                        })
+                </div>
+            </div>
+            <div class="govuk-date-input__item">
+                <div class="govuk-form-group">
+                    <label class="govuk-label govuk-date-input__label" for="Questions_@(index)_Month">Month</label>
+                    @Html.TextBoxFor(m => m.Questions[index].Month, new
+                        {
+                            @class = "govuk-input govuk-date-input__input govuk-input--width-2" + (fieldHasErrors ? " govuk-input--error" : ""),
+                            id = "Questions_" + index + "_Month",
+                            inputmode = "numeric"
+                        })
+                </div>
+            </div>
+            <div class="govuk-date-input__item">
+                <div class="govuk-form-group">
+                    <label class="govuk-label govuk-date-input__label" for="Questions_@(index)_Year">Year</label>
+                    @Html.TextBoxFor(m => m.Questions[index].Year, new
+                        {
+                            @class = "govuk-input govuk-date-input__input govuk-input--width-4" + (fieldHasErrors ? " govuk-input--error" : ""),
+                            id = "Questions_" + index + "_Year",
+                            inputmode = "numeric"
+                        })
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

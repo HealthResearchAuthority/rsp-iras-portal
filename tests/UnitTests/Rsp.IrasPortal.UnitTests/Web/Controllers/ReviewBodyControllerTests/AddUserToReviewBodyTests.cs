@@ -143,7 +143,7 @@ public class AddUserToReviewBodyTests : TestServiceBase<ReviewBodyController>
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.Model.ShouldBeAssignableTo<ConfirmAddReviewBodyUserModel>();
+        viewResult.Model.ShouldBeAssignableTo<ConfirmAddRemoveReviewBodyUserModel>();
 
         // Verify
         Mocker.GetMock<IReviewBodyService>()
@@ -206,7 +206,7 @@ public class AddUserToReviewBodyTests : TestServiceBase<ReviewBodyController>
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.Model.ShouldBeAssignableTo<ConfirmAddReviewBodyUserModel>();
+        viewResult.Model.ShouldBeAssignableTo<ConfirmAddRemoveReviewBodyUserModel>();
 
         // Verify
         Mocker.GetMock<IReviewBodyService>()

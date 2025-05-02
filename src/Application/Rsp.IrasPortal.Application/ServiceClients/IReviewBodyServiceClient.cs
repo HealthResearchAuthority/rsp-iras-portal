@@ -53,4 +53,7 @@ public interface IReviewBodyServiceClient
 
     [Post("/reviewbody/adduser")]
     public Task<IApiResponse<ReviewBodyUserDto>> AddUserToReviewBody([Body] ReviewBodyUserDto reviewBodyUser);
+
+    [Post("/reviewbody/removeuser")]
+    public Task<IApiResponse<ReviewBodyUserDto>> RemoveUserFromReviewBody(Guid reviewBodyId, Guid userId);
 }

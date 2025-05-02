@@ -9,20 +9,16 @@
 <form method="post">
 
     @{
-        var errorKey = string.Empty;
         var validationMessage = string.Empty;
-        var fieldHasErrors = false;
     }
 
     <partial name="_ValidationSummary" model="@(ViewData.ModelState, "Please address the following issues:")" />
 
     @{
-        errorKey = $"name";
         validationMessage = "Provide an application name";
-        fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
     }
 
-    <div id="Name" class="govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")">
+    <div id="Name" class="govuk-form-group" error-class-for="Info.Name">
 
         <h1 class="govuk-label-wrapper">
             <label class="govuk-label govuk-label--s" for="projectName">
@@ -30,25 +26,21 @@
             </label>
         </h1>
 
-        @if (fieldHasErrors)
-        {
-            @Html.ValidationMessage(errorKey, validationMessage, new { @class = "govuk-error-message" })
-        }
+        @Html.ValidationMessageFor(m => m.Info.Name, validationMessage, new { @class = "govuk-error-message" })
 
         <input class="govuk-input govuk-input--width-30"
                id="app-name"
                name="name"
                type="text"
-               value="@Model.Info.Name">
+               value="@Model.Info.Name"
+               error-class-for="Info.Name" />
     </div>
 
     @{
-        errorKey = $"description";
         validationMessage = "Provide an application description";
-        fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
     }
 
-    <div id="Description" class="govuk-form-group@(fieldHasErrors ? " govuk-form-group--error" : "")">
+    <div id="Description" class="govuk-form-group" error-class-for="Info.Description">
 
         <h1 class="govuk-label-wrapper">
             <label class="govuk-label govuk-label--s" for="projectDescription">
@@ -56,16 +48,14 @@
             </label>
         </h1>
 
-        @if (fieldHasErrors)
-        {
-            @Html.ValidationMessage(errorKey, validationMessage, new { @class = "govuk-error-message" })
-        }
+        @Html.ValidationMessageFor(m => m.Info.Description, validationMessage, new { @class = "govuk-error-message" })
 
         <input class="govuk-input govuk-input--width-30"
                id="app-description"
                name="description"
                type="text"
-               value="@Model.Info.Description">
+               value="@Model.Info.Description"
+               error-class-for="Info.Description" />
     </div>
 
     @{
@@ -78,5 +68,4 @@
     }
 
     <partial name="_SubmitButton" model="@(Route, Action, new Dictionary<string, string>())" />
-
 </form>

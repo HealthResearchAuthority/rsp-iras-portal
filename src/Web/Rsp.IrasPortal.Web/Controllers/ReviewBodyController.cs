@@ -25,7 +25,8 @@ public class ReviewBodyController(
     private const string SuccessMessagesView = nameof(SuccessMessage);
     private const string ConfirmStatusView = nameof(ReviewBodyStatusChanges);
     private const string AuditTrailView = nameof(AuditTrail);
-    private const string SuccessAddUserMessageView = nameof(SuccessAddUserMessageView);
+    private const string ConfirmAddRemoveUser = nameof(ConfirmAddRemoveUser);
+    private const string SuccessAddRemoveUserMessageView = nameof(SuccessAddRemoveUserMessageView);
 
     private const string UpdateMode = "update";
     private const string CreateMode = "create";
@@ -388,7 +389,7 @@ public class ReviewBodyController(
     [HttpGet]
     public async Task<IActionResult> ConfirmAddUser(Guid reviewBodyId, Guid userId)
     {
-        var model = new ConfirmAddReviewBodyUserModel();
+        var model = new ConfirmAddRemoveReviewBodyUserModel();
 
         // get review body
         var reviewBody = await reviewBodyService.GetReviewBodyById(reviewBodyId);
@@ -400,7 +401,7 @@ public class ReviewBodyController(
         model.ReviewBody = reviewBodyModel ?? new AddUpdateReviewBodyModel();
         model.User = user.Content != null ? new UserViewModel(user.Content) : new UserViewModel();
 
-        return View(model);
+        return View(ConfirmAddRemoveUser, model);
     }
 
     /// <summary>
@@ -425,12 +426,56 @@ public class ReviewBodyController(
         // get selected user
         var user = await userService.GetUser(userId.ToString(), null);
 
-        var model = new ConfirmAddReviewBodyUserModel
+        var model = new ConfirmAddRemoveReviewBodyUserModel
         {
             User = user.Content != null ? new UserViewModel(user.Content) : new UserViewModel(),
             ReviewBody = reviewBodyModel ?? new AddUpdateReviewBodyModel()
         };
 
-        return View(SuccessAddUserMessageView, model);
+        return View(SuccessAddRemoveUserMessageView, model);
+    }
+
+    /// <summary>
+    ///     Displays confirmation page before removing a user from a review body
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> ConfirmRemoveUser(Guid reviewBodyId, Guid userId)
+    {
+        var reviewBody = await reviewBodyService.GetReviewBodyById(reviewBodyId);
+        var reviewBodyModel = reviewBody.Content?.FirstOrDefault().Adapt<AddUpdateReviewBodyModel>();
+        var user = await userService.GetUser(userId.ToString(), null);
+
+        var model = new ConfirmAddRemoveReviewBodyUserModel()
+        {
+            ReviewBody = reviewBodyModel ?? new AddUpdateReviewBodyModel(),
+            User = user.Content != null ? new UserViewModel(user.Content) : new UserViewModel(),
+            IsRemove = true
+        };
+
+        ViewBag.Style = "govuk-button govuk-button--warning";
+
+        return View(ConfirmAddRemoveUser, model);
+    }
+
+    /// <summary>
+    ///     Removes a user from a review body
+    /// </summary>
+    [HttpPost]
+    public async Task<IActionResult> SubmitRemoveUser(Guid reviewBodyId, Guid userId)
+    {
+        await reviewBodyService.RemoveUserFromReviewBody(reviewBodyId, userId);
+
+        var reviewBody = await reviewBodyService.GetReviewBodyById(reviewBodyId);
+        var reviewBodyModel = reviewBody.Content?.FirstOrDefault().Adapt<AddUpdateReviewBodyModel>();
+        var user = await userService.GetUser(userId.ToString(), null);
+
+        var model = new ConfirmAddRemoveReviewBodyUserModel
+        {
+            User = user.Content != null ? new UserViewModel(user.Content) : new UserViewModel(),
+            ReviewBody = reviewBodyModel ?? new AddUpdateReviewBodyModel(),
+            IsRemove = true
+        };
+
+        return View(SuccessAddRemoveUserMessageView, model);
     }
 }
