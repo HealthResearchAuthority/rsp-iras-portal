@@ -1,0 +1,36 @@
+﻿@model IrasIdViewModel
+
+@{
+    ViewData["Title"] = "Project details";
+    var errorSummaryTitle = "There is a problem";
+}
+
+<partial name="_BackNavigation" model="@("app:createapplication", "Back", new Dictionary<string, string>())" />
+
+<h1 class="govuk-heading-l">Project details</h1>
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <form method="post">
+
+            <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
+
+            <div class="govuk-form-group" error-class-for="IrasId">
+
+                <label class="govuk-label" asp-for="IrasId">IRAS ID</label>
+
+                <div class="govuk-hint">
+                    This is the 4 to 7 digit ID generated when you created your initial application
+                </div>
+                <span class="govuk-error-message" asp-validation-for="IrasId"></span>
+
+                <input class="govuk-input govuk-input--width-10"
+                       error-class-for="IrasId"
+                       asp-for="IrasId"
+                       inputmode="numeric"
+                       maxlength="7" />
+            </div>
+
+            <button class="govuk-button" data-module="govuk-button" type="submit" asp-route="app:startproject">Save and continue</button>
+        </form>
+    </div>
+</div>

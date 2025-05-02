@@ -289,7 +289,7 @@ button.govuk-link {
 }
 
 .govuk-back-link-button--inverse:active, .govuk-back-link-button--inverse:hover {
-  color: hsla(0deg, 0%, 100%, 0.99);
+  color: hsla(0, 0%, 100%, 0.99);
 }
 
 .govuk-back-link-button--inverse:focus {
@@ -330,4 +330,40 @@ button.govuk-link {
   .govuk-back-link {
     margin-bottom: 45px;
   }
+}
+
+.autocomplete__menu {
+  margin-top: 10px !important;
+  border: 2px solid black !important;
+}
+
+.autocomplete__menu::before {
+  content: "Suggestions";
+  background-color: #f3f2f1;
+  border-bottom: 2px solid black;
+  border-left-width: 0;
+  border-right-width: 0;
+  cursor: pointer;
+  display: block;
+  position: relative;
+  padding: 5px;
+  font-size: 18px;
+}
+
+.autocomplete__menu::after {
+  content: "Continue entering to improve suggestions";
+  background-color: #f3f2f1;
+  border-top: 2px solid black;
+  border-left-width: 0;
+  border-right-width: 0;
+  cursor: pointer;
+  display: block;
+  position: relative;
+  padding: 5px;
+  font-size: 18px;
+}
+
+.autocomplete__option {
+  border-bottom: 2px solid black;
+  border-top: 2px solid black;
 }

@@ -1,16 +1,23 @@
-﻿@model ConfirmAddReviewBodyUserModel
+﻿@model ConfirmAddRemoveReviewBodyUserModel
 
 @{
-	ViewBag.Active = "reviewBodies";
-	ViewBag.Title = "View review body";
+    ViewBag.Active = "reviewBodies";
+    ViewBag.Title = "View review body";
+    var submitButtonModel = !Model.IsRemove ?
+        ("rbc:submitadduser", "Add user profile", new Dictionary<string, string>()) :
+        ("rbc:submitremoveuser", "Remove user profile", new Dictionary<string, string>());
+
+    var backButtonModel = !Model.IsRemove ?
+        ("rbc:viewadduser", "Back", new Dictionary<string, string> { { "reviewBodyId", Model.ReviewBody.Id.ToString() } }) :
+        ("rbc:viewreviewbodyusers", "Back", new Dictionary<string, string> { { "reviewBodyId", Model.ReviewBody.Id.ToString() } });
 }
 
-<partial name="_BackNavigation" model="@("rbc:viewadduser", "Back", new Dictionary<string, string> { { "reviewBodyId", Model.ReviewBody.Id.ToString() } })" />
+<partial name="_BackNavigation" model="@backButtonModel" />
 
 <div class="govuk-grid-row">
 	<div class="govuk-grid-column-two-thirds">
-		<h1 class="govuk-heading-l">Check and add user profile</h1>
-		<p class="govuk-body">Check the information here is correct before adding the profile to @Model.ReviewBody.OrganisationName.</p>
+		<h1 class="govuk-heading-l">Check and @(!Model.IsRemove ? "add" : "remove") user profile</h1>
+        <p class="govuk-body">Check the information here is correct before @(!Model.IsRemove ? "adding the profile to" : "removing the profile from") @Model.ReviewBody.OrganisationName.</p>
 	</div>
 </div>
 
@@ -92,7 +99,7 @@
 					</tr>
 				</tbody>
 			</table>
-			<partial name="_SubmitButton" model="@("rbc:submitadduser", "Add user profile", new Dictionary<string, string>())" />
+            <partial name="_SubmitButton" model="@submitButtonModel" />
 		</form>
 	</div>
 </div>

@@ -46,6 +46,12 @@ public static class HttpClientsConfiguration
             .AddHttpMessageHandler<AuthHeadersHandler>()
             .AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
 
+        services
+            .AddRestClient<IRtsServiceClient>()
+            .ConfigureHttpClient(client => client.BaseAddress = appSettings.RtsServiceUri)
+            .AddHttpMessageHandler<AuthHeadersHandler>()
+            .AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
+
         return services;
     }
 
