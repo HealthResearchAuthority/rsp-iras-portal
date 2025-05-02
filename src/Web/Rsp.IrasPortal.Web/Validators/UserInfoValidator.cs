@@ -10,11 +10,11 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
     private const string LastNameMaxCharactersErrorMessage = "Last name must be 250 characters or less";
     private const string JobTitleMaxCharactersErrorMessage = "Job title must be 250 characters or less";
     private const string TitleMaxCharactersErrorMessage = "Title must be 250 characters or less";
-    private const string EmailMaxCharactersErrorMessage = "Email must be 250 characters or less";
+    private const string EmailMaxCharactersErrorMessage = "Email address must be 250 characters or less";
     private const string TelephoneMaxCharactersErrorMessage = "Telephone must be 11 digits or less";
     private const string FirstNameMandatoryErrorMessage = "Enter a first name";
     private const string LastNameMandatoryErrorMessage = "Enter a last name";
-    private const string EmailFormatErrorMessage = "Enter an email address in the correct format, like name@example.com";
+    private const string EmailFormatErrorMessage = "Enter an email address in the correct format";
     private const string EmailMandatoryErrorMessage = "Enter an email address";
     private const string ConditionalCountryMandatoryErrorMessage = "You must provide a country";
     private const string ConditionalAccessRequiredMandatoryErrorMessage = "You must provide the access required";
