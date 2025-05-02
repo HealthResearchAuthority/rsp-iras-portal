@@ -19,34 +19,34 @@
 }
 
 <form method="get">
-    <partial name="_BackNavigation" model="@(backActionName, "Back", new Dictionary<string, string> { { "Id", Model.Id.ToString() } })"/>
+    <partial name="_BackNavigation" model="@(backActionName, "Back", new Dictionary<string, string> { { "Id", Model.Id.ToString() } })" />
 </form>
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
         <h1 class="govuk-heading-l">@heading</h1>
         <form method="post">
-            <input type="hidden" asp-for="Id"/>
-            <input type="hidden" asp-for="CreatedBy"/>
-            <input type="hidden" asp-for="UpdatedBy"/>
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="CreatedBy" />
+            <input type="hidden" asp-for="UpdatedBy" />
             <input type="hidden" asp-for="IsActive" />
 
             <partial name="_ValidationSummary" model="@(filteredModelState, "There is a problem")" />
 
-            <div class="govuk-form-group @(ViewData.ModelState["OrganisationName"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+            <div class="govuk-form-group" error-class-for="OrganisationName">
                 <label class="govuk-label govuk-label--s" for="OrganisationName">
                     Organisation name
                 </label>
                 <span class="govuk-error-message" asp-validation-for="OrganisationName"></span>
-				<input class="govuk-input govuk-!-width-one-half @(ViewData.ModelState["OrganisationName"]?.Errors.Count > 0 ? "govuk-input--error" : "")"
-                id="OrganisationName"
-                name="OrganisationName"
-                type="text"
-                asp-for="OrganisationName">
-
+                <input class="govuk-input govuk-!-width-one-half"
+                       id="OrganisationName"
+                       error-class-for="OrganisationName"
+                       name="OrganisationName"
+                       type="text"
+                       asp-for="OrganisationName">
             </div>
 
-            <div class="govuk-form-group @(ViewData.ModelState["Countries"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+            <div class="govuk-form-group" error-class-for="Countries">
                 <fieldset class="govuk-fieldset">
                     <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
                         <label class="govuk-label govuk-label--s" for="Countries">
@@ -59,11 +59,11 @@
                         {
                             <div class="govuk-checkboxes__item">
                                 <input class="govuk-checkboxes__input"
-                                id="@country"
-                                name="Countries"
-                                type="checkbox"
-                                value="@country"
-                                @(Model.Countries != null && Model.Countries.Contains(country) ? "checked" : "")>
+                                       id="@country"
+                                       name="Countries"
+                                       type="checkbox"
+                                       value="@country"
+                                       @(Model.Countries != null && Model.Countries.Contains(country) ? "checked" : "")>
                                 <label class="govuk-label govuk-checkboxes__label" for="@country">@country</label>
                             </div>
                         }
@@ -71,11 +71,11 @@
                 </fieldset>
             </div>
 
-            <div class="govuk-form-group @(ViewData.ModelState["EmailAddress"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+            <div class="govuk-form-group" error-class-for="EmailAddress">
                 <label class="govuk-label govuk-label--s" for="EmailAddress">
                     Email address
                 </label>
-                
+
                 @if (ViewData.ModelState["EmailAddress"]?.Errors.Count > 0)
                 {
                     foreach (var error in ViewData.ModelState["EmailAddress"]?.Errors!)
@@ -84,17 +84,17 @@
                     }
                 }
 
-				<input class="govuk-input govuk-!-width-three-quarters @(ViewData.ModelState["EmailAddress"]?.Errors.Count > 0 ? "govuk-input--error" : "")" id="EmailAddress" name="EmailAddress" type="text" asp-for="EmailAddress">
+                <input class="govuk-input govuk-!-width-three-quarters" error-class-for="EmailAddress" id="EmailAddress" name="EmailAddress" type="text" asp-for="EmailAddress">
             </div>
-            
-            <div class="govuk-form-group govuk-character-count @(ViewData.ModelState["Description"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")" data-module="govuk-character-count">
+
+            <div class="govuk-form-group govuk-character-count" error-class-for="Description" data-module="govuk-character-count">
                 <div class="govuk-label-wrapper">
                     <label class="govuk-label govuk-label--s" for="Description">
                         Add description
                     </label>
                 </div>
                 <span class="govuk-error-message" asp-validation-for="Description"></span>
-				<textarea class="govuk-textarea @(ViewData.ModelState["Description"]?.Errors.Count > 0 ? "govuk-textarea--error" : "")" id="Description" rows="5" name="Description" asp-for="Description"></textarea>
+                <textarea class="govuk-textarea" error-class-for="Description" error-class="govuk-textarea--error" id="Description" rows="5" name="Description" asp-for="Description"></textarea>
                 <div class="govuk-character-count__message govuk-error-message">
                     @if (ViewData.ModelState["_DescriptionExcessWordCount"]?.Errors.Count > 0)
                     {
@@ -103,7 +103,7 @@
                 </div>
             </div>
 
-            <partial name="_SubmitButton" model="@(submitActionName, buttonText, new Dictionary<string, string>())"/>
+            <partial name="_SubmitButton" model="@(submitActionName, buttonText, new Dictionary<string, string>())" />
         </form>
     </div>
 </div>
