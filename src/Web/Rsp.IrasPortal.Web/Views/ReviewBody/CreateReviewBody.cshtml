@@ -1,5 +1,8 @@
 ﻿@using Microsoft.AspNetCore.Mvc.ModelBinding
 @using Microsoft.AspNetCore.Mvc.TagHelpers
+@using Rsp.Gds.Component.Models
+@using Rsp.Gds.Component.TagHelpers.Base
+@using Rsp.Gds.Component.TagHelpers.Specialised
 @model AddUpdateReviewBodyModel
 
 @{
@@ -18,6 +21,20 @@
     }
 
     var countries = new[] { "England", "Northern Ireland", "Scotland", "Wales" };
+
+    var countryOptions = new List<GdsOption>
+    {
+        new() { Value = "England", Label = "England" },
+        new() { Value = "Northern Ireland", Label = "Northern Ireland" },
+        new() { Value = "Scotland", Label = "Scotland" },
+        new() { Value = "Wales", Label = "Wales" }
+    };
+
+    // ✅ Set SelectedCountry to the first country (if available), else leave null (default option shown)
+    Model.Selected = (Model.Countries != null && Model.Countries.Any())
+        ? Model.Countries.First()
+        : null;
+
 }
 
 <form method="get">
@@ -39,17 +56,31 @@
                 asp-for="OrganisationName" 
                 label-text=" Organisation name" />
 
-            <rsp-gds-checkbox-group 
+ @*            <rsp-gds-checkbox-group 
                 asp-for="Countries" 
                 label-text="Country"
-                options="countries" />
+                options="countries" /> *@
+            
+            @*      <rsp-gds-radio-group asp-for="Countries"
+								 label-text="Country"
+                options="countryOptions" /> *@
+
+
+            <rsp-gds-select 
+                asp-for="Countries"
+                label-text="Select your country"
+                options="countryOptions"
+                include-default-option="true"
+                default-option-text="Please select..." />
+
+
    
             <rsp-gds-input 
                 asp-for="EmailAddress" 
                 label-text="Email address" 
                 input-type="email" 
                 autocomplete="email" 
-                width-class="govuk-!-width-three-quarters" />o
+                width-class="govuk-!-width-three-quarters" />
             
             <rsp-gds-character-count-textarea 
                 asp-for="Description" 

@@ -173,7 +173,7 @@
 						{
 							case "date":
 								{
-									errorKey = $"Questions[{index}].AnswerText";
+                                    @* errorKey = $"Questions[{index}].AnswerText";
 									validationMessage = "Provide an answer for this question";
 									fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
 
@@ -246,8 +246,17 @@
 												</div>
 											</div>
 										</div>
-									</div>
-								}
+									</div> *@
+
+                                    <rsp-gds-date-input
+                                        asp-for="Questions[@index].AnswerText"
+                                        label-text="@question.QuestionText"
+                                        day-name="Questions[@index].Day"
+                                        month-name="Questions[@index].Month"
+                                        year-name="Questions[@index].Year"
+                                        error-key="Questions[@index].AnswerText" />
+
+                                }
 								break;
 							case "text":
 							case "email":
