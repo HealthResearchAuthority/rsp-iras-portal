@@ -26,6 +26,26 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
     }
 
     [Fact]
+    public async Task ShouldHaveValidationErrorForTelephoneNoDigit()
+    {
+        // Arrange
+        var model = new UserViewModel
+        {
+            FirstName = "Hello",
+            LastName = "Ham",
+            Telephone = "qwerty"
+        };
+
+        // Act
+        var result = await Sut.TestValidateAsync(model);
+
+        // Assert
+        result
+            .ShouldHaveValidationErrorFor(x => x.Telephone)
+            .WithErrorMessage("Telephone must be 11 digits or less");
+    }
+
+    [Fact]
     public async Task ShouldHaveValidationErrorForCountryWhenRoleOperationsIsSelected()
     {
         // Arrange

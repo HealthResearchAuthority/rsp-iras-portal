@@ -168,7 +168,7 @@
 		@if (Model.UserRoles != null && Model.UserRoles.Any(role => role.Name == "operations") && Model.AccessRequired != null && Model.AccessRequired.Any())
 		{
 			<tr class="govuk-table__row">
-				<td class="govuk-table__cell"><b>Access Required</b></td>
+				<td class="govuk-table__cell"><b>Access required</b></td>
 				<td class="govuk-table__cell">
 					@string.Join(", ", Model.AccessRequired)
 					@for (int i = 0; i <= Model.AccessRequired.Count - 1; i++)
