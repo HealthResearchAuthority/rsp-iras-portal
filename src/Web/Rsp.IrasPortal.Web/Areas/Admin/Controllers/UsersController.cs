@@ -41,7 +41,7 @@ public class UsersController(IUserManagementService userManagementService, IVali
     /// with the options to edit/delete or manage roles
     /// </summary>
     [Route("/admin/users", Name = "admin:users")]
-    public async Task<IActionResult> Index(int pageNumber = 1, int pageSize = 10)
+    public async Task<IActionResult> Index(int pageNumber = 1, int pageSize = 20)
     {
         // get the users
         var response = await userManagementService.GetUsers(pageNumber, pageSize);
@@ -59,12 +59,9 @@ public class UsersController(IUserManagementService userManagementService, IVali
                 LastLogin = user.LastLogin
             }) ?? [];
 
-            var paginationModel = new PaginationViewModel
+            var paginationModel = new PaginationViewModel(pageNumber, pageSize, response.Content?.TotalCount ?? 0)
             {
-                PageNumber = pageNumber,
-                PageSize = pageSize,
-                RouteName = "admin:users",
-                TotalCount = response.Content?.TotalCount ?? 0
+                RouteName = "admin:users"
             };
 
             return View((users, paginationModel));

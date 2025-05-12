@@ -9,14 +9,14 @@ namespace Rsp.IrasPortal.Services;
 
 public class ReviewBodyService(IReviewBodyServiceClient client) : IReviewBodyService
 {
-    public async Task<ServiceResponse<IEnumerable<ReviewBodyDto>>> GetAllReviewBodies()
+    public async Task<ServiceResponse<AllReviewBodiesResponse>> GetAllReviewBodies(int pageNumber = 1, int pageSize = 20, string? searchQuery = null)
     {
-        var apiResponse = await client.GetAllReviewBodies();
+        var apiResponse = await client.GetAllReviewBodies(pageNumber, pageSize, searchQuery);
 
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse<IEnumerable<ReviewBodyDto>>> GetReviewBodyById(Guid id)
+    public async Task<ServiceResponse<ReviewBodyDto>> GetReviewBodyById(Guid id)
     {
         var apiResponse = await client.GetReviewBodyById(id);
 

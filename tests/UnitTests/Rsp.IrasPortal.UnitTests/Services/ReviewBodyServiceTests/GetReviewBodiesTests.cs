@@ -1,4 +1,5 @@
 ﻿using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Services;
@@ -11,26 +12,26 @@ public class GetReviewBodiesTests : TestServiceBase<ReviewBodyService>
     public async Task GetReviewBodies_Should_Return_Failure_Response_When_Client_Returns_Failure()
     {
         // Arrange
-        var apiResponse = Mock.Of<IApiResponse<IEnumerable<ReviewBodyDto>>>(
+        var apiResponse = Mock.Of<IApiResponse<AllReviewBodiesResponse>>(
             apiResponse => !apiResponse.IsSuccessStatusCode &&
                            apiResponse.StatusCode == HttpStatusCode.BadRequest);
 
         var client = new Mock<IReviewBodyServiceClient>();
-        client.Setup(c => c.GetAllReviewBodies())
+        client.Setup(c => c.GetAllReviewBodies(1, 100, null))
             .ReturnsAsync(apiResponse);
 
         var sut = new ReviewBodyService(client.Object);
 
         // Act
-        var result = await sut.GetAllReviewBodies();
+        var result = await sut.GetAllReviewBodies(1, 100, null);
 
         // Assert
-        result.ShouldBeOfType<ServiceResponse<IEnumerable<ReviewBodyDto>>>();
+        result.ShouldBeOfType<ServiceResponse<AllReviewBodiesResponse>>();
         result.IsSuccessStatusCode.ShouldBeFalse();
         result.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
 
         // Verify
-        client.Verify(c => c.GetAllReviewBodies(), Times.Once());
+        client.Verify(c => c.GetAllReviewBodies(1, 100, null), Times.Once());
     }
 
     [Theory, AutoData]
@@ -38,27 +39,27 @@ public class GetReviewBodiesTests : TestServiceBase<ReviewBodyService>
         List<ReviewBodyDto> reviewBodies)
     {
         // Arrange
-        var apiResponse = Mock.Of<IApiResponse<IEnumerable<ReviewBodyDto>>>(
+        var apiResponse = Mock.Of<IApiResponse<AllReviewBodiesResponse>>(
             apiResponse => apiResponse.IsSuccessStatusCode &&
                            apiResponse.StatusCode == HttpStatusCode.OK &&
-                           apiResponse.Content == reviewBodies);
+                           apiResponse.Content == new AllReviewBodiesResponse { ReviewBodies = reviewBodies });
 
         var client = new Mock<IReviewBodyServiceClient>();
-        client.Setup(c => c.GetAllReviewBodies())
+        client.Setup(c => c.GetAllReviewBodies(1, 100, null))
             .ReturnsAsync(apiResponse);
 
         var sut = new ReviewBodyService(client.Object);
 
         // Act
-        var result = await sut.GetAllReviewBodies();
+        var result = await sut.GetAllReviewBodies(1, 100, null);
 
         // Assert
-        result.ShouldBeOfType<ServiceResponse<IEnumerable<ReviewBodyDto>>>();
+        result.ShouldBeOfType<ServiceResponse<AllReviewBodiesResponse>>();
         result.IsSuccessStatusCode.ShouldBeTrue();
         result.StatusCode.ShouldBe(HttpStatusCode.OK);
-        result.Content.ShouldBeEquivalentTo(reviewBodies);
+        result.Content!.ReviewBodies.ShouldBeEquivalentTo(reviewBodies);
 
         // Verify
-        client.Verify(c => c.GetAllReviewBodies(), Times.Once());
+        client.Verify(c => c.GetAllReviewBodies(1, 100, null), Times.Once());
     }
 }

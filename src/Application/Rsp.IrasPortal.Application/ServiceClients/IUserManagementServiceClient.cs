@@ -38,7 +38,7 @@ public interface IUserManagementServiceClient
     /// </summary>
     /// <returns>List of users</returns>
     [Get("/users/all")]
-    public Task<ApiResponse<UsersResponse>> GetUsers(int pageIndex = 1, int pageSize = 100);
+    public Task<ApiResponse<UsersResponse>> GetUsers(int pageIndex = 1, int pageSize = 20);
 
     /// <summary>
     /// Gets users by their ids database

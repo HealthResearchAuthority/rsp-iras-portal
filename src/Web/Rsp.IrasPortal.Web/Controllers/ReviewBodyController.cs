@@ -37,11 +37,17 @@ public class ReviewBodyController(
     ///     Displays a list of review bodies
     /// </summary>
     [Route("/reviewbody/view", Name = "rbc:viewreviewbodies")]
-    public async Task<IActionResult> ViewReviewBodies()
+    public async Task<IActionResult> ViewReviewBodies(int pageNumber = 1, int pageSize = 20, string? searchQuery = null)
     {
-        var reviewBodies = await reviewBodyService.GetAllReviewBodies();
+        var response = await reviewBodyService.GetAllReviewBodies(pageNumber, pageSize, searchQuery);
 
-        return View(reviewBodies.Content?.OrderBy(rb => rb.OrganisationName));
+        var paginationModel = new PaginationViewModel(pageNumber, pageSize, response.Content?.TotalCount ?? 0)
+        {
+            RouteName = "rbc:viewreviewbodies",
+            SearchQuery = searchQuery
+        };
+
+        return View((response.Content?.ReviewBodies, paginationModel));
     }
 
     /// <summary>
@@ -52,7 +58,7 @@ public class ReviewBodyController(
     {
         var reviewBody = await reviewBodyService.GetReviewBodyById(id);
 
-        var model = reviewBody.Content?.FirstOrDefault().Adapt<AddUpdateReviewBodyModel>();
+        var model = reviewBody.Content.Adapt<AddUpdateReviewBodyModel>();
 
         return View(model);
     }
@@ -186,7 +192,7 @@ public class ReviewBodyController(
         var reviewBodyDto = await reviewBodyService.GetReviewBodyById(id);
 
         ViewBag.Mode = UpdateMode;
-        var model = reviewBodyDto.Content?.FirstOrDefault();
+        var model = reviewBodyDto.Content;
 
         var addUpdateReviewBodyModel = model.Adapt<AddUpdateReviewBodyModel>();
 
@@ -204,7 +210,7 @@ public class ReviewBodyController(
         var reviewBodyDto = await reviewBodyService.GetReviewBodyById(id);
 
         ViewBag.Mode = DisableMode;
-        var model = reviewBodyDto.Content?.FirstOrDefault();
+        var model = reviewBodyDto.Content;
 
         if (model == null)
         {
@@ -228,7 +234,7 @@ public class ReviewBodyController(
         var reviewBodyDto = await reviewBodyService.GetReviewBodyById(id);
 
         ViewBag.Mode = EnableMode;
-        var model = reviewBodyDto.Content?.FirstOrDefault();
+        var model = reviewBodyDto.Content;
 
         if (model == null)
         {
@@ -277,7 +283,7 @@ public class ReviewBodyController(
 
     [HttpGet]
     [Route("/reviewbody/audit-trail", Name = "rbc:audittrail")]
-    public async Task<IActionResult> AuditTrail(Guid reviewBodyId, int pageNumber = 1, int pageSize = 10)
+    public async Task<IActionResult> AuditTrail(Guid reviewBodyId, int pageNumber = 1, int pageSize = 20)
     {
         var skip = (pageNumber - 1) * pageSize;
         var take = pageNumber * pageSize;
@@ -286,17 +292,16 @@ public class ReviewBodyController(
         var auditTrailResponse = response?.Content;
         var items = auditTrailResponse?.Items;
 
-        var paginationModel = new PaginationViewModel
+        var paginationModel = new PaginationViewModel(pageNumber, pageSize, (auditTrailResponse != null ? auditTrailResponse.TotalCount : -1))
         {
-            PageNumber = pageNumber,
-            PageSize = pageSize,
             RouteName = "rbc:audittrail",
-            TotalCount = auditTrailResponse != null ? auditTrailResponse.TotalCount : -1,
-            ReviewBodyId = reviewBodyId.ToString()
+            AdditionalParameters = {
+                { "reviewBodyId", reviewBodyId.ToString() }
+            }
         };
 
         var reviewBody = await reviewBodyService.GetReviewBodyById(reviewBodyId);
-        var reviewBodyName = reviewBody?.Content?.FirstOrDefault()?.OrganisationName;
+        var reviewBodyName = reviewBody?.Content?.OrganisationName;
 
         var resultModel = new ReviewBodyAuditTrailViewModel
         {
@@ -312,26 +317,20 @@ public class ReviewBodyController(
     ///     Displays users for a review body
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> ViewReviewBodyUsers(Guid reviewBodyId, string? searchQuery = null, int pageNumber = 1, int pageSize = 10)
+    public async Task<IActionResult> ViewReviewBodyUsers(Guid reviewBodyId, string? searchQuery = null, int pageNumber = 1, int pageSize = 20)
     {
         var reviewBody = await reviewBodyService.GetReviewBodyById(reviewBodyId);
+        var reviewBodyModel = reviewBody.Content?.Adapt<AddUpdateReviewBodyModel>();
 
-        var reviewBodyModel = reviewBody.Content?.FirstOrDefault().Adapt<AddUpdateReviewBodyModel>();
-
-        var model = new ReviewBodyListUsersModel();
-        model.Pagination = new PaginationViewModel
+        var totalUserCount = 0;
+        var model = new ReviewBodyListUsersModel
         {
-            SearchQuery = searchQuery,
-            PageNumber = pageNumber,
-            PageSize = pageSize,
-            ReviewBodyId = reviewBodyId.ToString(),
-            RouteName = "rbc:viewreviewbodyusers"
+            ReviewBody = reviewBodyModel!
         };
-        model.ReviewBody = reviewBodyModel!;
 
-        if (reviewBody?.Content?.FirstOrDefault()?.Users != null)
+        if (reviewBody?.Content?.Users != null)
         {
-            var userIds = reviewBody.Content?.FirstOrDefault()?.Users?.Select(x => x.UserId.ToString());
+            var userIds = reviewBody.Content?.Users?.Select(x => x.UserId.ToString());
             if (userIds != null && userIds.Any())
             {
                 var users = await userService.GetUsersByIds(userIds,
@@ -341,9 +340,18 @@ public class ReviewBodyController(
 
                 model.Users = users.Content?.Users.Select(user => new UserViewModel(user)) ?? [];
 
-                model.Pagination.TotalCount = users.Content?.TotalCount ?? 0;
+                totalUserCount = users.Content?.TotalCount ?? 0;
             }
         }
+
+        model.Pagination = new PaginationViewModel(pageNumber, pageSize, totalUserCount)
+        {
+            SearchQuery = searchQuery,
+            RouteName = "rbc:viewreviewbodyusers",
+            AdditionalParameters = {
+                { "reviewBodyId", reviewBodyId.ToString() }
+            }
+        };
 
         return View(model);
     }
@@ -352,15 +360,17 @@ public class ReviewBodyController(
     ///     Displays page for adding a user to review body
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> ViewAddUser(Guid reviewBodyId, string? searchQuery = null, int pageNumber = 1, int pageSize = 10)
+    public async Task<IActionResult> ViewAddUser(Guid reviewBodyId, string? searchQuery = null, int pageNumber = 1, int pageSize = 20)
     {
         var reviewBody = await reviewBodyService.GetReviewBodyById(reviewBodyId);
 
-        var reviewBodyModel = reviewBody.Content?.FirstOrDefault().Adapt<AddUpdateReviewBodyModel>();
+        var reviewBodyModel = reviewBody.Content?.Adapt<AddUpdateReviewBodyModel>();
 
-        var model = new ReviewBodyListUsersModel();
-        model.ReviewBody = reviewBodyModel!;
-        var existingUserIds = reviewBody.Content?.FirstOrDefault()?.Users?.Select(x => x.UserId.ToString()) ?? [];
+        var model = new ReviewBodyListUsersModel
+        {
+            ReviewBody = reviewBodyModel!
+        };
+        var existingUserIds = reviewBody.Content?.Users?.Select(x => x.UserId.ToString()) ?? [];
 
         if (!string.IsNullOrEmpty(searchQuery))
         {
@@ -369,14 +379,13 @@ public class ReviewBodyController(
 
             model.Users = users.Content?.Users.Select(user => new UserViewModel(user)) ?? [];
 
-            model.Pagination = new PaginationViewModel
+            model.Pagination = new PaginationViewModel(pageNumber, pageSize, users.Content?.TotalCount ?? 0)
             {
-                PageNumber = pageNumber,
-                PageSize = pageSize,
                 RouteName = "rbc:viewadduser",
-                TotalCount = users.Content?.TotalCount ?? 0,
                 SearchQuery = searchQuery,
-                ReviewBodyId = reviewBodyId.ToString()
+                AdditionalParameters = {
+                    { "reviewBodyId", reviewBodyId.ToString() }
+                }
             };
         }
 
@@ -393,7 +402,7 @@ public class ReviewBodyController(
 
         // get review body
         var reviewBody = await reviewBodyService.GetReviewBodyById(reviewBodyId);
-        var reviewBodyModel = reviewBody.Content?.FirstOrDefault().Adapt<AddUpdateReviewBodyModel>();
+        var reviewBodyModel = reviewBody.Content?.Adapt<AddUpdateReviewBodyModel>();
 
         // get selected user
         var user = await userService.GetUser(userId.ToString(), null);
@@ -421,7 +430,7 @@ public class ReviewBodyController(
 
         // get review body
         var reviewBody = await reviewBodyService.GetReviewBodyById(reviewBodyId);
-        var reviewBodyModel = reviewBody.Content?.FirstOrDefault().Adapt<AddUpdateReviewBodyModel>();
+        var reviewBodyModel = reviewBody.Content?.Adapt<AddUpdateReviewBodyModel>();
 
         // get selected user
         var user = await userService.GetUser(userId.ToString(), null);
@@ -442,7 +451,7 @@ public class ReviewBodyController(
     public async Task<IActionResult> ConfirmRemoveUser(Guid reviewBodyId, Guid userId)
     {
         var reviewBody = await reviewBodyService.GetReviewBodyById(reviewBodyId);
-        var reviewBodyModel = reviewBody.Content?.FirstOrDefault().Adapt<AddUpdateReviewBodyModel>();
+        var reviewBodyModel = reviewBody.Content?.Adapt<AddUpdateReviewBodyModel>();
         var user = await userService.GetUser(userId.ToString(), null);
 
         var model = new ConfirmAddRemoveReviewBodyUserModel()
@@ -466,7 +475,7 @@ public class ReviewBodyController(
         await reviewBodyService.RemoveUserFromReviewBody(reviewBodyId, userId);
 
         var reviewBody = await reviewBodyService.GetReviewBodyById(reviewBodyId);
-        var reviewBodyModel = reviewBody.Content?.FirstOrDefault().Adapt<AddUpdateReviewBodyModel>();
+        var reviewBodyModel = reviewBody.Content?.Adapt<AddUpdateReviewBodyModel>();
         var user = await userService.GetUser(userId.ToString(), null);
 
         var model = new ConfirmAddRemoveReviewBodyUserModel

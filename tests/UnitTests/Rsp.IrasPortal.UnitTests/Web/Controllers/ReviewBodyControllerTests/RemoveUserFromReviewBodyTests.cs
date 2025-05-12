@@ -14,20 +14,17 @@ public class RemoveUserFromReviewBodyTests : TestServiceBase<ReviewBodyControlle
     (
         Guid reviewBodyId,
         Guid userId,
-        List<ReviewBodyDto> reviewBodies,
+        ReviewBodyDto reviewBody,
         UserResponse userResponse
     )
     {
-        foreach (var body in reviewBodies)
-        {
-            body.Id = reviewBodyId;
-        }
+        reviewBody.Id = reviewBodyId;
 
         // Arrange
-        var reviewBodyResponse = new ServiceResponse<IEnumerable<ReviewBodyDto>>
+        var reviewBodyResponse = new ServiceResponse<ReviewBodyDto>
         {
             StatusCode = HttpStatusCode.OK,
-            Content = reviewBodies
+            Content = reviewBody
         };
 
         Mocker.GetMock<IReviewBodyService>()
@@ -64,7 +61,7 @@ public class RemoveUserFromReviewBodyTests : TestServiceBase<ReviewBodyControlle
     (
         Guid reviewBodyId,
         Guid userId,
-        List<ReviewBodyDto> reviewBodies,
+        ReviewBodyDto reviewBody,
         ReviewBodyUserDto reviewBodyUser,
         UserResponse userResponse
     )
@@ -73,16 +70,13 @@ public class RemoveUserFromReviewBodyTests : TestServiceBase<ReviewBodyControlle
         reviewBodyUser.ReviewBodyId = reviewBodyId;
         reviewBodyUser.DateAdded = DateTime.UtcNow;
 
-        foreach (var body in reviewBodies)
-        {
-            body.Id = reviewBodyId;
-        }
+        reviewBody.Id = reviewBodyId;
 
         // Arrange
-        var reviewBodyResponse = new ServiceResponse<IEnumerable<ReviewBodyDto>>
+        var reviewBodyResponse = new ServiceResponse<ReviewBodyDto>
         {
             StatusCode = HttpStatusCode.OK,
-            Content = reviewBodies
+            Content = reviewBody
         };
 
         Mocker.GetMock<IReviewBodyService>()
