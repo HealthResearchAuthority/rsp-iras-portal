@@ -11,14 +11,14 @@ public class EnableReviewBodyTests : TestServiceBase<ReviewBodyController>
 
 {
     [Theory, AutoData]
-    public async Task EnableReviewBody_WithValidModel_ShouldReturnEnableReviewBodyView(List<ReviewBodyDto> reviewBodies)
+    public async Task EnableReviewBody_WithValidModel_ShouldReturnEnableReviewBodyView(ReviewBodyDto reviewBody)
     {
         //Act
         // Arrange
-        var serviceResponse = new ServiceResponse<IEnumerable<ReviewBodyDto>>
+        var serviceResponse = new ServiceResponse<ReviewBodyDto>
         {
             StatusCode = HttpStatusCode.OK,
-            Content = reviewBodies
+            Content = reviewBody
         };
 
         Mocker.GetMock<IReviewBodyService>()
@@ -30,7 +30,7 @@ public class EnableReviewBodyTests : TestServiceBase<ReviewBodyController>
             .ReturnsAsync(serviceResponse);
 
         // Act
-        var result = await Sut.EnableReviewBody(reviewBodies[0].Id);
+        var result = await Sut.EnableReviewBody(reviewBody.Id);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -38,11 +38,11 @@ public class EnableReviewBodyTests : TestServiceBase<ReviewBodyController>
     }
 
     [Theory, AutoData]
-    public async Task EnableReviewBody_WithValidModel_ShouldReturnManageBodiesView(List<ReviewBodyDto> reviewBodies)
+    public async Task EnableReviewBody_WithValidModel_ShouldReturnManageBodiesView(ReviewBodyDto reviewBody)
     {
         //Act
         // Arrange
-        var serviceResponse = new ServiceResponse<IEnumerable<ReviewBodyDto>>
+        var serviceResponse = new ServiceResponse<ReviewBodyDto>
         {
             StatusCode = HttpStatusCode.OK,
         };
@@ -55,11 +55,10 @@ public class EnableReviewBodyTests : TestServiceBase<ReviewBodyController>
             .Setup(s => s.EnableReviewBody(It.IsAny<Guid>()))
             .ReturnsAsync(serviceResponse);
 
-
         // Act
-        var result = await Sut.EnableReviewBody(reviewBodies[0].Id);
+        var result = await Sut.EnableReviewBody(reviewBody.Id);
 
         // Assert
-         result.ShouldBeOfType<RedirectToActionResult>();
+        result.ShouldBeOfType<RedirectToActionResult>();
     }
 }

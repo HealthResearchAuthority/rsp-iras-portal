@@ -11,14 +11,14 @@ public class DisableReviewBodyTests : TestServiceBase<ReviewBodyController>
 
 {
     [Theory, AutoData]
-    public async Task DisableReviewBody_WithValidModel_ShouldReturnDisableReviewBodyView(List<ReviewBodyDto> reviewBodies)
+    public async Task DisableReviewBody_WithValidModel_ShouldReturnDisableReviewBodyView(ReviewBodyDto reviewBody)
     {
         //Act
         // Arrange
-        var serviceResponse = new ServiceResponse<IEnumerable<ReviewBodyDto>>
+        var serviceResponse = new ServiceResponse<ReviewBodyDto>
         {
             StatusCode = HttpStatusCode.OK,
-            Content = reviewBodies
+            Content = reviewBody
         };
 
         Mocker.GetMock<IReviewBodyService>()
@@ -30,7 +30,7 @@ public class DisableReviewBodyTests : TestServiceBase<ReviewBodyController>
             .ReturnsAsync(serviceResponse);
 
         // Act
-        var result = await Sut.DisableReviewBody(reviewBodies[0].Id);
+        var result = await Sut.DisableReviewBody(reviewBody.Id);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -38,11 +38,11 @@ public class DisableReviewBodyTests : TestServiceBase<ReviewBodyController>
     }
 
     [Theory, AutoData]
-    public async Task DisableReviewBody_WithValidModel_ShouldReturnManageBodiesView(List<ReviewBodyDto> reviewBodies)
+    public async Task DisableReviewBody_WithValidModel_ShouldReturnManageBodiesView(ReviewBodyDto reviewBody)
     {
         //Act
         // Arrange
-        var serviceResponse = new ServiceResponse<IEnumerable<ReviewBodyDto>>
+        var serviceResponse = new ServiceResponse<ReviewBodyDto>
         {
             StatusCode = HttpStatusCode.OK,
         };
@@ -55,11 +55,10 @@ public class DisableReviewBodyTests : TestServiceBase<ReviewBodyController>
             .Setup(s => s.DisableReviewBody(It.IsAny<Guid>()))
             .ReturnsAsync(serviceResponse);
 
-
         // Act
-        var result = await Sut.DisableReviewBody(reviewBodies[0].Id);
+        var result = await Sut.DisableReviewBody(reviewBody.Id);
 
         // Assert
-         result.ShouldBeOfType<RedirectToActionResult>();
+        result.ShouldBeOfType<RedirectToActionResult>();
     }
 }

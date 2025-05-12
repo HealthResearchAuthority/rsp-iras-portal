@@ -9,15 +9,15 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ReviewBodyControllerTests;
 
 public class UpdateReviewBodyTests : TestServiceBase<ReviewBodyController>
 {
-    [Theory,AutoData]
+    [Theory, AutoData]
     public async Task UpdateReviewBody_ShouldReturnViewWithOrderedReviewBodies(
-        List<ReviewBodyDto> reviewBodies)
+        ReviewBodyDto reviewBody)
     {
         // Arrange
-        var serviceResponse = new ServiceResponse<IEnumerable<ReviewBodyDto>>
+        var serviceResponse = new ServiceResponse<ReviewBodyDto>
         {
             StatusCode = HttpStatusCode.OK,
-            Content = reviewBodies
+            Content = reviewBody
         };
 
         Mocker.GetMock<IReviewBodyService>()
@@ -29,7 +29,7 @@ public class UpdateReviewBodyTests : TestServiceBase<ReviewBodyController>
             .ReturnsAsync(serviceResponse);
 
         // Act
-        var result = await Sut.UpdateReviewBody(reviewBodies[0].Id);
+        var result = await Sut.UpdateReviewBody(reviewBody.Id);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();

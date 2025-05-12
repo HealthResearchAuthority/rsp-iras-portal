@@ -12,19 +12,16 @@ public class AddUserToReviewBodyTests : TestServiceBase<ReviewBodyController>
     [Theory, AutoData]
     public async Task ViewReviewBodyUsers_ShouldReturnView(
         Guid id,
-        List<ReviewBodyDto> reviewBodies,
+        ReviewBodyDto reviewBody,
         UsersResponse usersResponse)
     {
-        foreach (var body in reviewBodies)
-        {
-            body.Id = id;
-        }
+        reviewBody.Id = id;
 
         // Arrange
-        var reviewBodyResponse = new ServiceResponse<IEnumerable<ReviewBodyDto>>
+        var reviewBodyResponse = new ServiceResponse<ReviewBodyDto>
         {
             StatusCode = HttpStatusCode.OK,
-            Content = reviewBodies
+            Content = reviewBody
         };
 
         Mocker.GetMock<IReviewBodyService>()
@@ -37,10 +34,10 @@ public class AddUserToReviewBodyTests : TestServiceBase<ReviewBodyController>
             Content = usersResponse
         };
 
-        var userIds = reviewBodies?.FirstOrDefault()?.Users?.Select(x => x.UserId.ToString()).ToList();
+        var userIds = reviewBody?.Users?.Select(x => x.UserId.ToString()).ToList();
 
         Mocker.GetMock<IUserManagementService>()
-           .Setup(s => s.GetUsersByIds(userIds!, null, 1, 10))
+           .Setup(s => s.GetUsersByIds(userIds!, null, 1, 20))
            .ReturnsAsync(usersServiceResponse);
 
         // Act
@@ -58,20 +55,17 @@ public class AddUserToReviewBodyTests : TestServiceBase<ReviewBodyController>
     [Theory, AutoData]
     public async Task AddUser_ShouldReturnView(
         Guid id,
-        List<ReviewBodyDto> reviewBodies,
+        ReviewBodyDto reviewBody,
         UsersResponse usersResponse,
         string searchQuery)
     {
-        foreach (var body in reviewBodies)
-        {
-            body.Id = id;
-        }
+        reviewBody.Id = id;
 
         // Arrange
-        var reviewBodyResponse = new ServiceResponse<IEnumerable<ReviewBodyDto>>
+        var reviewBodyResponse = new ServiceResponse<ReviewBodyDto>
         {
             StatusCode = HttpStatusCode.OK,
-            Content = reviewBodies
+            Content = reviewBody
         };
 
         Mocker.GetMock<IReviewBodyService>()
@@ -84,10 +78,10 @@ public class AddUserToReviewBodyTests : TestServiceBase<ReviewBodyController>
             Content = usersResponse
         };
 
-        var userIds = reviewBodies?.FirstOrDefault()?.Users?.Select(x => x.UserId.ToString()).ToList();
+        var userIds = reviewBody?.Users?.Select(x => x.UserId.ToString()).ToList();
 
         Mocker.GetMock<IUserManagementService>()
-           .Setup(s => s.SearchUsers(searchQuery, userIds, 1, 10))
+           .Setup(s => s.SearchUsers(searchQuery, userIds, 1, 20))
            .ReturnsAsync(usersServiceResponse);
 
         // Act
@@ -102,26 +96,23 @@ public class AddUserToReviewBodyTests : TestServiceBase<ReviewBodyController>
             .Verify(s => s.GetReviewBodyById(id), Times.Once);
 
         Mocker.GetMock<IUserManagementService>()
-            .Verify(s => s.SearchUsers(searchQuery, userIds, 1, 10), Times.Once);
+            .Verify(s => s.SearchUsers(searchQuery, userIds, 1, 20), Times.Once);
     }
 
     [Theory, AutoData]
     public async Task ConfirmAddUser_ShouldReturnView(
         Guid reviewBodyId,
         Guid userId,
-        List<ReviewBodyDto> reviewBodies,
+        ReviewBodyDto reviewBody,
         UserResponse userResponse)
     {
-        foreach (var body in reviewBodies)
-        {
-            body.Id = reviewBodyId;
-        }
+        reviewBody.Id = reviewBodyId;
 
         // Arrange
-        var reviewBodyResponse = new ServiceResponse<IEnumerable<ReviewBodyDto>>
+        var reviewBodyResponse = new ServiceResponse<ReviewBodyDto>
         {
             StatusCode = HttpStatusCode.OK,
-            Content = reviewBodies
+            Content = reviewBody
         };
 
         Mocker.GetMock<IReviewBodyService>()
@@ -157,7 +148,7 @@ public class AddUserToReviewBodyTests : TestServiceBase<ReviewBodyController>
     public async Task SubmitAddUser_ShouldReturnView(
         Guid reviewBodyId,
         Guid userId,
-        List<ReviewBodyDto> reviewBodies,
+        ReviewBodyDto reviewBody,
         ReviewBodyUserDto reviewBodyUser,
         UserResponse userResponse)
     {
@@ -165,16 +156,13 @@ public class AddUserToReviewBodyTests : TestServiceBase<ReviewBodyController>
         reviewBodyUser.ReviewBodyId = reviewBodyId;
         reviewBodyUser.DateAdded = DateTime.UtcNow;
 
-        foreach (var body in reviewBodies)
-        {
-            body.Id = reviewBodyId;
-        }
+        reviewBody.Id = reviewBodyId;
 
         // Arrange
-        var reviewBodyResponse = new ServiceResponse<IEnumerable<ReviewBodyDto>>
+        var reviewBodyResponse = new ServiceResponse<ReviewBodyDto>
         {
             StatusCode = HttpStatusCode.OK,
-            Content = reviewBodies
+            Content = reviewBody
         };
 
         Mocker.GetMock<IReviewBodyService>()

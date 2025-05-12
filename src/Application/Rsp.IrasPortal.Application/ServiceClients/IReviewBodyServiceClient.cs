@@ -12,14 +12,14 @@ public interface IReviewBodyServiceClient
     /// <summary>
     /// Gets all review bodies
     /// </summary>
-    [Get("/reviewbody")]
-    public Task<IApiResponse<IEnumerable<ReviewBodyDto>>> GetAllReviewBodies();
+    [Get("/reviewbody/all")]
+    public Task<IApiResponse<AllReviewBodiesResponse>> GetAllReviewBodies(int pageNumber = 1, int pageSize = 20, string? searchQuery = null);
 
     /// <summary>
     /// Gets review bodies by Id
     /// </summary>
     [Get("/reviewbody/{id}")]
-    public Task<IApiResponse<IEnumerable<ReviewBodyDto>>> GetReviewBodyById(Guid id);
+    public Task<IApiResponse<ReviewBodyDto>> GetReviewBodyById(Guid id);
 
     /// <summary>
     ///     Creates a new review body in the database
