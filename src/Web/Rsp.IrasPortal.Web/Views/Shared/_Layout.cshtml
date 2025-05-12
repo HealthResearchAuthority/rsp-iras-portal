@@ -87,17 +87,6 @@
                             </authorized>
                         </feature>
 
-                        <feature name="@Features.Admin">
-                            <authorized auth-params="@new()">
-                                <li class="govuk-service-navigation__item @(active == "manageUsers" ? "govuk-service-navigation__item--active" : "" )">
-                                    <a class="govuk-service-navigation__link"
-                                       asp-route="admin:users">
-                                        Manage Users
-                                    </a>
-                                </li>
-                            </authorized>
-                        </feature>
-
                         <authorized auth-params="@new(Roles:"admin")">
                             <li class="govuk-service-navigation__item">
                                 <a class="govuk-service-navigation__link"
@@ -106,6 +95,7 @@
                                 </a>
                             </li>
                         </authorized>
+
                         <authorized auth-params="@new(Roles:"admin")">
                             <li class="govuk-service-navigation__item">
                                 <a class="govuk-service-navigation__link"
