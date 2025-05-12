@@ -65,7 +65,9 @@ public class PaginationViewModel
             Pages.Add(1);
 
             if (currentPage > 3)
+            {
                 Pages.Add(null); // Add Ellipsis
+            }
 
             for (int i = currentPage - 1; i <= currentPage + 1; i++)
             {
