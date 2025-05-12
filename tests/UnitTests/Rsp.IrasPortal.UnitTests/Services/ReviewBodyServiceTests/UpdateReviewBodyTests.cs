@@ -7,7 +7,7 @@ namespace Rsp.IrasPortal.UnitTests.Services.ReviewBodyServiceTests;
 
 public class UpdateReviewBodyTests : TestServiceBase<ReviewBodyService>
 {
-    [Theory,AutoData]
+    [Theory, AutoData]
     public async Task UpdateReviewBody_Should_Return_Failure_Response_When_Client_Returns_Failure(
         ReviewBodyDto reviewBodyDto)
     {
@@ -19,7 +19,7 @@ public class UpdateReviewBodyTests : TestServiceBase<ReviewBodyService>
                 apiResponse.StatusCode == HttpStatusCode.BadRequest
         );
 
-        var client = new Mock<IReviewBodyServiceClient>();
+        var client = Mocker.GetMock<IReviewBodyServiceClient>();
         client
             .Setup(c => c.UpdateReviewBody(reviewBodyDto))
             .ReturnsAsync(apiResponse);
@@ -38,7 +38,7 @@ public class UpdateReviewBodyTests : TestServiceBase<ReviewBodyService>
         client.Verify(c => c.UpdateReviewBody(reviewBodyDto), Times.Once());
     }
 
-    [Theory,AutoData]
+    [Theory, AutoData]
     public async Task UpdateReviewBody_Should_Return_Success_Response_When_Client_Returns_Success(
         ReviewBodyDto reviewBodyDto)
     {
@@ -50,7 +50,7 @@ public class UpdateReviewBodyTests : TestServiceBase<ReviewBodyService>
                 apiResponse.StatusCode == HttpStatusCode.OK
         );
 
-        var client = new Mock<IReviewBodyServiceClient>();
+        var client = Mocker.GetMock<IReviewBodyServiceClient>();
         client
             .Setup(c => c.UpdateReviewBody(reviewBodyDto))
             .ReturnsAsync(apiResponse);

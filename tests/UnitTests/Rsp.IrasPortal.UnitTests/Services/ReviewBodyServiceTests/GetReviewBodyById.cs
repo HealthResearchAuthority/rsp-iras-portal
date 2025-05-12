@@ -15,7 +15,7 @@ public class GetReviewBodiesByIdTests : TestServiceBase<ReviewBodyService>
             apiResponse => !apiResponse.IsSuccessStatusCode &&
                            apiResponse.StatusCode == HttpStatusCode.NotFound);
 
-        var client = new Mock<IReviewBodyServiceClient>();
+        var client = Mocker.GetMock<IReviewBodyServiceClient>();
         client.Setup(c => c.GetReviewBodyById(id))
             .ReturnsAsync(apiResponse);
 
@@ -43,7 +43,7 @@ public class GetReviewBodiesByIdTests : TestServiceBase<ReviewBodyService>
                            apiResponse.StatusCode == HttpStatusCode.OK &&
                            apiResponse.Content == reviewBody);
 
-        var client = new Mock<IReviewBodyServiceClient>();
+        var client = Mocker.GetMock<IReviewBodyServiceClient>();
         client.Setup(c => c.GetReviewBodyById(id))
             .ReturnsAsync(apiResponse);
 
@@ -71,7 +71,7 @@ public class GetReviewBodiesByIdTests : TestServiceBase<ReviewBodyService>
             apiResponse => !apiResponse.IsSuccessStatusCode &&
                            apiResponse.StatusCode == HttpStatusCode.BadRequest);
 
-        var client = new Mock<IReviewBodyServiceClient>();
+        var client = Mocker.GetMock<IReviewBodyServiceClient>();
         client.Setup(c => c.GetReviewBodyById(invalidId))
             .ReturnsAsync(apiResponse);
 

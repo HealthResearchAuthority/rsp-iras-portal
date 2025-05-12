@@ -20,7 +20,7 @@ public class AddReviewBodyUserTests : TestServiceBase<ReviewBodyService>
                 apiResponse.StatusCode == HttpStatusCode.BadRequest
         );
 
-        var client = new Mock<IReviewBodyServiceClient>();
+        var client = Mocker.GetMock<IReviewBodyServiceClient>();
         client
             .Setup(c => c.AddUserToReviewBody(reviewBodyUserDto))
             .ReturnsAsync(apiResponse);
@@ -52,7 +52,7 @@ public class AddReviewBodyUserTests : TestServiceBase<ReviewBodyService>
                 apiResponse.StatusCode == HttpStatusCode.OK
         );
 
-        var client = new Mock<IReviewBodyServiceClient>();
+        var client = Mocker.GetMock<IReviewBodyServiceClient>();
         client
             .Setup(c => c.AddUserToReviewBody(reviewBodyUserDto))
             .ReturnsAsync(apiResponse);

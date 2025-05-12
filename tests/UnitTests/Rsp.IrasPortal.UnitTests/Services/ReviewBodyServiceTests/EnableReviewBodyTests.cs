@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Moq;
-using Rsp.IrasPortal.Application.DTOs;
+﻿using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Services;
@@ -25,8 +19,7 @@ public class EnableReviewBodyTests : TestServiceBase<ReviewBodyService>
                            apiResponse.StatusCode == HttpStatusCode.OK &&
                            apiResponse.Content == reviewBodyDto);
 
-
-        var client = new Mock<IReviewBodyServiceClient>();
+        var client = Mocker.GetMock<IReviewBodyServiceClient>();
         client
             .Setup(c => c.EnableReviewBody(It.IsAny<Guid>()))
             .ReturnsAsync(apiResponse);
