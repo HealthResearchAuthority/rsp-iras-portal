@@ -16,7 +16,7 @@ public class GetReviewBodiesTests : TestServiceBase<ReviewBodyService>
             apiResponse => !apiResponse.IsSuccessStatusCode &&
                            apiResponse.StatusCode == HttpStatusCode.BadRequest);
 
-        var client = new Mock<IReviewBodyServiceClient>();
+        var client = Mocker.GetMock<IReviewBodyServiceClient>();
         client.Setup(c => c.GetAllReviewBodies(1, 100, null))
             .ReturnsAsync(apiResponse);
 
@@ -44,7 +44,7 @@ public class GetReviewBodiesTests : TestServiceBase<ReviewBodyService>
                            apiResponse.StatusCode == HttpStatusCode.OK &&
                            apiResponse.Content == new AllReviewBodiesResponse { ReviewBodies = reviewBodies });
 
-        var client = new Mock<IReviewBodyServiceClient>();
+        var client = Mocker.GetMock<IReviewBodyServiceClient>();
         client.Setup(c => c.GetAllReviewBodies(1, 100, null))
             .ReturnsAsync(apiResponse);
 

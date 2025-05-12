@@ -20,7 +20,7 @@ public class GetUsersByIdTests : TestServiceBase<ReviewBodyService>
            apiResponse => !apiResponse.IsSuccessStatusCode &&
                           apiResponse.StatusCode == HttpStatusCode.NotFound);
 
-        var client = new Mock<IUserManagementServiceClient>();
+        var client = Mocker.GetMock<IUserManagementServiceClient>();
         client
             .Setup(c => c.GetUsersById(ids, searchQuery, pageNumber, pageSize))
             .ReturnsAsync(apiResponse);
@@ -55,7 +55,7 @@ public class GetUsersByIdTests : TestServiceBase<ReviewBodyService>
                 apiResponse.StatusCode == HttpStatusCode.OK
         );
 
-        var client = new Mock<IUserManagementServiceClient>();
+        var client = Mocker.GetMock<IUserManagementServiceClient>();
         client
             .Setup(c => c.GetUsersById(ids, searchQuery, pageNumber, pageSize))
             .ReturnsAsync(apiResponse);

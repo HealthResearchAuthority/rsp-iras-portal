@@ -56,7 +56,9 @@ public class PaginationViewModel
         if (pageCount <= 7)
         {
             for (int i = 1; i <= pageCount; i++)
+            {
                 Pages.Add(i);
+            }
         }
         else
         {
@@ -68,11 +70,15 @@ public class PaginationViewModel
             for (int i = currentPage - 1; i <= currentPage + 1; i++)
             {
                 if (i > 1 && i < pageCount)
+                {
                     Pages.Add(i);
+                }
             }
 
             if (currentPage < pageCount - 2)
+            {
                 Pages.Add(null); // Add Ellipsis
+            }
 
             Pages.Add(pageCount);
         }
