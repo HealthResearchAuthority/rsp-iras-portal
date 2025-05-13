@@ -1,20 +1,25 @@
 <Project Sdk="Microsoft.NET.Sdk">
-    <Sdk Name="Aspire.AppHost.Sdk" Version="9.0.0" />
+    <Sdk Name="Aspire.AppHost.Sdk" Version="9.2.0" />
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <IsAspireHost>true</IsAspireHost>
         <UserSecretsId>8933b834-d6d6-4d74-acb8-2a51c706b297</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Aspire.Hosting.AppHost" Version="9.0.0" />
+        <PackageReference Include="Aspire.Hosting.AppHost" Version="9.2.1" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\..\Startup\Rsp.IrasPortal\Rsp.IrasPortal.csproj" />
+        <!--Uncomment the following to enable the dotnet watch experience-->
+        <!--<ProjectReference Include="..\..\..\..\rsp-iras-service\src\Startup\Rsp.IrasService\Rsp.IrasService.csproj" />
+        <ProjectReference Include="..\..\..\..\rsp-usermanagement-service\src\Startup\Rsp.UsersService\Rsp.UsersService.csproj" />
+        <ProjectReference Include="..\..\..\..\rsp-questionset-service\src\Startup\Rsp.QuestionSetService\Rsp.QuestionSetService.csproj" />
+        <ProjectReference Include="..\..\..\..\rsp-rts-service\src\Startup\Rsp.RtsService\Rsp.RtsService.csproj" />-->
+        <!--Uncomment the above to enable the dotnet watch experience-->
     </ItemGroup>
 
 </Project>

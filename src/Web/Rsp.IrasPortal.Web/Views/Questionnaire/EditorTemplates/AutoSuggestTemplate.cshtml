@@ -35,6 +35,14 @@
         $(`label[for="${inputId}"]`).hide();
 
         $('label[for="input-autocomplete"]').show();
+
+        $("#input-autocomplete").keyup(function () {
+
+            if (!this.value) {
+                $(`#${inputId}`).attr('value', ''); // Clears the hidden input value.
+            }
+
+        });
     });
 </script>
 
