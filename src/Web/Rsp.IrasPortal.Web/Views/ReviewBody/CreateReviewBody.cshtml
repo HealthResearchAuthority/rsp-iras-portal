@@ -1,5 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Mvc.ModelBinding
 @using Microsoft.AspNetCore.Mvc.TagHelpers
+@using Rsp.Gds.Component.Models
 @model AddUpdateReviewBodyModel
 
 @{
@@ -16,10 +17,23 @@
             filteredModelState.AddModelError(state.Key, error.ErrorMessage);
         }
     }
+    
+    var countryOptions = new List<GdsOption>
+    {
+        new() { Value = "England", Label = "England" },
+        new() { Value = "Northern Ireland", Label = "Northern Ireland" },
+        new() { Value = "Scotland", Label = "Scotland" },
+        new() { Value = "Wales", Label = "Wales" }
+    };
+
+    // ✅ Set SelectedCountry to the first country (if available), else leave null (default option shown)
+    Model.Selected = Model.Countries != null && Model.Countries.Any()
+        ? Model.Countries.First()
+        : null;
 }
 
 <form method="get">
-    <partial name="_BackNavigation" model="@(backActionName, "Back", new Dictionary<string, string> { { "Id", Model.Id.ToString() } })" />
+    <partial name="_BackNavigation" model="@(backActionName, "Back", new Dictionary<string, string> { { "Id", Model.Id.ToString() } })"/>
 </form>
 
 <div class="govuk-grid-row">
@@ -32,77 +46,27 @@
             <input type="hidden" asp-for="IsActive" />
 
             <partial name="_ValidationSummary" model="@(filteredModelState, "There is a problem")" />
+            
 
-            <div class="govuk-form-group" error-class-for="OrganisationName">
-                <label class="govuk-label govuk-label--s" for="OrganisationName">
-                    Organisation name
-                </label>
-                <span class="govuk-error-message" asp-validation-for="OrganisationName"></span>
-                <input class="govuk-input govuk-!-width-one-half"
-                       id="OrganisationName"
-                       error-class-for="OrganisationName"
-                       name="OrganisationName"
-                       type="text"
-                       asp-for="OrganisationName">
-            </div>
+            <rsp-gds-input asp-for="OrganisationName"
+                           label-text=" Organisation name"/>
 
-            <div class="govuk-form-group" error-class-for="Countries">
-                <fieldset class="govuk-fieldset">
-                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
-                        <label class="govuk-label govuk-label--s" for="Countries">
-                            Country
-                        </label>
-                    </legend>
-                    <span class="govuk-error-message" asp-validation-for="Countries"></span>
-                    <div class="govuk-checkboxes" data-module="govuk-checkboxes" id="Countries">
-                        @foreach (var country in new[] { "England", "Northern Ireland", "Scotland", "Wales" })
-                        {
-                            <div class="govuk-checkboxes__item">
-                                <input class="govuk-checkboxes__input"
-                                       id="@country"
-                                       name="Countries"
-                                       type="checkbox"
-                                       value="@country"
-                                       @(Model.Countries != null && Model.Countries.Contains(country) ? "checked" : "")>
-                                <label class="govuk-label govuk-checkboxes__label" for="@country">@country</label>
-                            </div>
-                        }
-                    </div>
-                </fieldset>
-            </div>
+            <rsp-gds-radio-group asp-for="Countries"
+                                 label-text="Country"
+                                 options="countryOptions"/>
 
-            <div class="govuk-form-group" error-class-for="EmailAddress">
-                <label class="govuk-label govuk-label--s" for="EmailAddress">
-                    Email address
-                </label>
 
-                @if (ViewData.ModelState["EmailAddress"]?.Errors.Count > 0)
-                {
-                    foreach (var error in ViewData.ModelState["EmailAddress"]?.Errors!)
-                    {
-                        <span class="govuk-error-message">@error.ErrorMessage</span>
-                    }
-                }
+            <rsp-gds-input asp-for="EmailAddress"
+                           label-text="Email address"
+                           input-type="email"
+                           autocomplete="email"
+                           width-class="govuk-!-width-three-quarters"/>
 
-                <input class="govuk-input govuk-!-width-three-quarters" error-class-for="EmailAddress" id="EmailAddress" name="EmailAddress" type="text" asp-for="EmailAddress">
-            </div>
-
-            <div class="govuk-form-group govuk-character-count" error-class-for="Description" data-module="govuk-character-count">
-                <div class="govuk-label-wrapper">
-                    <label class="govuk-label govuk-label--s" for="Description">
-                        Add description
-                    </label>
-                </div>
-                <span class="govuk-error-message" asp-validation-for="Description"></span>
-                <textarea class="govuk-textarea" error-class-for="Description" error-class="govuk-textarea--error" id="Description" rows="5" name="Description" asp-for="Description"></textarea>
-                <div class="govuk-character-count__message govuk-error-message">
-                    @if (ViewData.ModelState["_DescriptionExcessWordCount"]?.Errors.Count > 0)
-                    {
-                        @(ViewData.ModelState["_DescriptionExcessWordCount"]?.Errors[0].ErrorMessage)
-                    }
-                </div>
-            </div>
-
+            <rsp-gds-character-count-textarea asp-for="Description"
+                                              label-text="Add description"
+                                              word-count-error-for="_DescriptionExcessWordCount"
+                                              rows="5"
+                                              width-class="govuk-!-width-full"/>
             <partial name="_SubmitButton" model="@(submitActionName, buttonText, new Dictionary<string, string>())" />
         </form>
     </div>
