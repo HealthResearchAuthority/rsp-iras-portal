@@ -25,8 +25,7 @@ public class DisableReviewBodyTests : TestServiceBase<ReviewBodyService>
                            apiResponse.StatusCode == HttpStatusCode.OK &&
                            apiResponse.Content == reviewBodyDto);
 
-
-        var client = new Mock<IReviewBodyServiceClient>();
+        var client = Mocker.GetMock<IReviewBodyServiceClient>();
         client
             .Setup(c => c.DisableReviewBody(It.IsAny<Guid>()))
             .ReturnsAsync(apiResponse);

@@ -25,7 +25,64 @@ public class PaginationViewModel
     /// </summary>s
     public int TotalCount { get; set; }
 
-    public string? ReviewBodyId { get; set; } = null;
-
+    /// <summary>
+    /// Gets or sets the search query if available
+    /// </summary>
     public string? SearchQuery { get; set; }
+
+    /// <summary>
+    /// Gets or sets any additional parameters that should be part of the pagination URL
+    /// </summary>
+    public IDictionary<string, string> AdditionalParameters { get; set; } = new Dictionary<string, string>();
+
+    /// <summary>
+    /// Pages available in this pagination
+    /// </summary>
+    public List<int?> Pages { get; } = [];
+
+    public int TotalPages { get; }
+
+    public PaginationViewModel(int pageNumber, int pageSize, int totalCount)
+    {
+        PageNumber = pageNumber;
+        PageSize = pageSize;
+        TotalCount = totalCount;
+
+        var currentPage = PageNumber;
+        var pageCount = (int)Math.Ceiling((double)TotalCount / PageSize);
+
+        TotalPages = pageCount;
+
+        if (pageCount <= 7)
+        {
+            for (int i = 1; i <= pageCount; i++)
+            {
+                Pages.Add(i);
+            }
+        }
+        else
+        {
+            Pages.Add(1);
+
+            if (currentPage > 3)
+            {
+                Pages.Add(null); // Add Ellipsis
+            }
+
+            for (int i = currentPage - 1; i <= currentPage + 1; i++)
+            {
+                if (i > 1 && i < pageCount)
+                {
+                    Pages.Add(i);
+                }
+            }
+
+            if (currentPage < pageCount - 2)
+            {
+                Pages.Add(null); // Add Ellipsis
+            }
+
+            Pages.Add(pageCount);
+        }
+    }
 }

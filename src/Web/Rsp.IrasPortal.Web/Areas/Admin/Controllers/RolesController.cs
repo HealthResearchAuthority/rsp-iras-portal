@@ -34,12 +34,9 @@ public class RolesController(IUserManagementService userManagementService) : Con
                 Name = role.Name
             }) ?? [];
 
-            var paginationModel = new PaginationViewModel
+            var paginationModel = new PaginationViewModel(pageNumber, pageSize, response.Content?.TotalCount ?? 0)
             {
-                PageNumber = pageNumber,
-                PageSize = pageSize,
                 RouteName = "admin:roles",
-                TotalCount = response.Content?.TotalCount ?? 0
             };
 
             return View((roles, paginationModel));

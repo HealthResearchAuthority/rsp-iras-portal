@@ -11,11 +11,11 @@ public class GetReviewBodiesByIdTests : TestServiceBase<ReviewBodyService>
     public async Task GetReviewBodiesById_Should_Return_Failure_Response_When_Client_Returns_Failure(Guid id)
     {
         // Arrange
-        var apiResponse = Mock.Of<IApiResponse<IEnumerable<ReviewBodyDto>>>(
+        var apiResponse = Mock.Of<IApiResponse<ReviewBodyDto>>(
             apiResponse => !apiResponse.IsSuccessStatusCode &&
                            apiResponse.StatusCode == HttpStatusCode.NotFound);
 
-        var client = new Mock<IReviewBodyServiceClient>();
+        var client = Mocker.GetMock<IReviewBodyServiceClient>();
         client.Setup(c => c.GetReviewBodyById(id))
             .ReturnsAsync(apiResponse);
 
@@ -25,7 +25,7 @@ public class GetReviewBodiesByIdTests : TestServiceBase<ReviewBodyService>
         var result = await sut.GetReviewBodyById(id);
 
         // Assert
-        result.ShouldBeOfType<ServiceResponse<IEnumerable<ReviewBodyDto>>>();
+        result.ShouldBeOfType<ServiceResponse<ReviewBodyDto>>();
         result.IsSuccessStatusCode.ShouldBeFalse();
         result.StatusCode.ShouldBe(HttpStatusCode.NotFound);
 
@@ -35,15 +35,15 @@ public class GetReviewBodiesByIdTests : TestServiceBase<ReviewBodyService>
 
     [Theory, AutoData]
     public async Task GetReviewBodiesById_Should_Return_Success_Response_When_Client_Returns_Success(Guid id,
-        List<ReviewBodyDto> reviewBodies)
+        ReviewBodyDto reviewBody)
     {
         // Arrange
-        var apiResponse = Mock.Of<IApiResponse<IEnumerable<ReviewBodyDto>>>(
+        var apiResponse = Mock.Of<IApiResponse<ReviewBodyDto>>(
             apiResponse => apiResponse.IsSuccessStatusCode &&
                            apiResponse.StatusCode == HttpStatusCode.OK &&
-                           apiResponse.Content == reviewBodies);
+                           apiResponse.Content == reviewBody);
 
-        var client = new Mock<IReviewBodyServiceClient>();
+        var client = Mocker.GetMock<IReviewBodyServiceClient>();
         client.Setup(c => c.GetReviewBodyById(id))
             .ReturnsAsync(apiResponse);
 
@@ -53,10 +53,10 @@ public class GetReviewBodiesByIdTests : TestServiceBase<ReviewBodyService>
         var result = await sut.GetReviewBodyById(id);
 
         // Assert
-        result.ShouldBeOfType<ServiceResponse<IEnumerable<ReviewBodyDto>>>();
+        result.ShouldBeOfType<ServiceResponse<ReviewBodyDto>>();
         result.IsSuccessStatusCode.ShouldBeTrue();
         result.StatusCode.ShouldBe(HttpStatusCode.OK);
-        result.Content.ShouldBeEquivalentTo(reviewBodies);
+        result.Content.ShouldBeEquivalentTo(reviewBody);
 
         // Verify
         client.Verify(c => c.GetReviewBodyById(id), Times.Once());
@@ -67,11 +67,11 @@ public class GetReviewBodiesByIdTests : TestServiceBase<ReviewBodyService>
     {
         // Arrange
         var invalidId = Guid.Empty;
-        var apiResponse = Mock.Of<IApiResponse<IEnumerable<ReviewBodyDto>>>(
+        var apiResponse = Mock.Of<IApiResponse<ReviewBodyDto>>(
             apiResponse => !apiResponse.IsSuccessStatusCode &&
                            apiResponse.StatusCode == HttpStatusCode.BadRequest);
 
-        var client = new Mock<IReviewBodyServiceClient>();
+        var client = Mocker.GetMock<IReviewBodyServiceClient>();
         client.Setup(c => c.GetReviewBodyById(invalidId))
             .ReturnsAsync(apiResponse);
 
@@ -81,7 +81,7 @@ public class GetReviewBodiesByIdTests : TestServiceBase<ReviewBodyService>
         var result = await sut.GetReviewBodyById(invalidId);
 
         // Assert
-        result.ShouldBeOfType<ServiceResponse<IEnumerable<ReviewBodyDto>>>();
+        result.ShouldBeOfType<ServiceResponse<ReviewBodyDto>>();
         result.IsSuccessStatusCode.ShouldBeFalse();
         result.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
 

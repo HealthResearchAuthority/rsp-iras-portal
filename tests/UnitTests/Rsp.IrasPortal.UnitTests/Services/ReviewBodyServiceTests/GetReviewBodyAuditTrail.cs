@@ -5,7 +5,7 @@ using Rsp.IrasPortal.Services;
 
 namespace Rsp.IrasPortal.UnitTests.Services.ReviewBodyServiceTests;
 
-public class GetReviewBodyAuditTrail
+public class GetReviewBodyAuditTrail : TestServiceBase<ReviewBodyService>
 {
     [Theory, AutoData]
     public async Task GetReviewBodieyAuditTrail(Guid id)
@@ -17,7 +17,7 @@ public class GetReviewBodyAuditTrail
             apiResponse => !apiResponse.IsSuccessStatusCode &&
                            apiResponse.StatusCode == HttpStatusCode.NotFound);
 
-        var client = new Mock<IReviewBodyServiceClient>();
+        var client = Mocker.GetMock<IReviewBodyServiceClient>();
         client.Setup(c => c.GetReviewBodyAuditTrail(id, skip, take))
             .ReturnsAsync(apiResponse);
 

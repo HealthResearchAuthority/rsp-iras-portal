@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Controllers;
 using Rsp.IrasPortal.Web.Models;
 
@@ -10,17 +12,17 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ReviewBodyControllerTests;
 public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
 {
     [Theory, AutoData]
-    public async Task ViewReviewBodies_ShouldReturnViewWithOrderedReviewBodies(List<ReviewBodyDto> reviewBodies)
+    public async Task ViewReviewBodies_ShouldReturnViewWithOrderedReviewBodies(AllReviewBodiesResponse reviewBodies)
     {
         // Arrange
-        var serviceResponse = new ServiceResponse<IEnumerable<ReviewBodyDto>>
+        var serviceResponse = new ServiceResponse<AllReviewBodiesResponse>
         {
             StatusCode = HttpStatusCode.OK,
             Content = reviewBodies
         };
 
         Mocker.GetMock<IReviewBodyService>()
-            .Setup(s => s.GetAllReviewBodies())
+            .Setup(s => s.GetAllReviewBodies(1, 20, null))
             .ReturnsAsync(serviceResponse);
 
         // Act
@@ -28,12 +30,12 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
-        var model = viewResult.Model.ShouldBeAssignableTo<IEnumerable<ReviewBodyDto>>();
-        model.ShouldBeEquivalentTo(reviewBodies.OrderBy(rb => rb.OrganisationName));
+        var model = viewResult.Model.ShouldBeAssignableTo<(IEnumerable<ReviewBodyDto>, PaginationViewModel)>();
+        model.Item1.ShouldBeEquivalentTo(reviewBodies.ReviewBodies);
 
         // Verify
         Mocker.GetMock<IReviewBodyService>()
-            .Verify(s => s.GetAllReviewBodies(), Times.Once);
+            .Verify(s => s.GetAllReviewBodies(1, 20, null), Times.Once);
     }
 
     [Fact]
@@ -41,21 +43,20 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
     {
         // Arrange
         Mocker.GetMock<IReviewBodyService>()
-            .Setup(s => s.GetAllReviewBodies())
-            .ReturnsAsync(new ServiceResponse<IEnumerable<ReviewBodyDto>>
-                { StatusCode = HttpStatusCode.OK, Content = null });
+            .Setup(s => s.GetAllReviewBodies(1, 20, null))
+            .ReturnsAsync(new ServiceResponse<AllReviewBodiesResponse>
+            { StatusCode = HttpStatusCode.OK, Content = null });
 
         // Act
         var result = await Sut.ViewReviewBodies();
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
-        var model = viewResult.Model.ShouldBeAssignableTo<IEnumerable<ReviewBodyDto>>();
-        model.ShouldBeNull();
+        viewResult.Model.ShouldBeAssignableTo<(IEnumerable<ReviewBodyDto>, PaginationViewModel)>();
 
         // Verify
         Mocker.GetMock<IReviewBodyService>()
-            .Verify(s => s.GetAllReviewBodies(), Times.Once);
+            .Verify(s => s.GetAllReviewBodies(1, 20, null), Times.Once);
     }
 
     [Fact]
@@ -63,31 +64,30 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
     {
         // Arrange
         Mocker.GetMock<IReviewBodyService>()
-            .Setup(s => s.GetAllReviewBodies())
-            .ReturnsAsync(new ServiceResponse<IEnumerable<ReviewBodyDto>>
-                { StatusCode = HttpStatusCode.InternalServerError });
+            .Setup(s => s.GetAllReviewBodies(1, 20, null))
+            .ReturnsAsync(new ServiceResponse<AllReviewBodiesResponse>
+            { StatusCode = HttpStatusCode.InternalServerError });
 
         // Act
         var result = await Sut.ViewReviewBodies();
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
-        var model = viewResult.Model.ShouldBeAssignableTo<IEnumerable<ReviewBodyDto>>();
-        model.ShouldBeNull();
+        viewResult.Model.ShouldBeAssignableTo<(IEnumerable<ReviewBodyDto>, PaginationViewModel)>();
 
         // Verify
         Mocker.GetMock<IReviewBodyService>()
-            .Verify(s => s.GetAllReviewBodies(), Times.Once);
+            .Verify(s => s.GetAllReviewBodies(1, 20, null), Times.Once);
     }
 
     [Theory, AutoData]
     public async Task ViewReviewBody_ShouldReturnViewWithReviewBody(Guid id, ReviewBodyDto reviewBodyDto)
     {
         // Arrange
-        var serviceResponse = new ServiceResponse<IEnumerable<ReviewBodyDto>>
+        var serviceResponse = new ServiceResponse<ReviewBodyDto>
         {
             StatusCode = HttpStatusCode.OK,
-            Content = new List<ReviewBodyDto> { reviewBodyDto }
+            Content = reviewBodyDto
         };
 
         Mocker.GetMock<IReviewBodyService>()

@@ -1,6 +1,4 @@
-﻿using FluentValidation;
-using FluentValidation.Results;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
@@ -13,14 +11,14 @@ public class ConfirmStatusUpdateTests : TestServiceBase<ReviewBodyController>
 
 {
     [Theory, AutoData]
-    public async Task ConfirmStatusUpdate_DisableReviewBody(List<ReviewBodyDto> reviewBodies,
+    public async Task ConfirmStatusUpdate_DisableReviewBody(ReviewBodyDto reviewBody,
         AddUpdateReviewBodyModel addUpdateReviewBodyModel)
     {
         // Arrange
-        var serviceResponse = new ServiceResponse<IEnumerable<ReviewBodyDto>>
+        var serviceResponse = new ServiceResponse<ReviewBodyDto>
         {
             StatusCode = HttpStatusCode.OK,
-            Content = reviewBodies
+            Content = reviewBody
         };
 
         Mocker.GetMock<IReviewBodyService>()
@@ -40,14 +38,14 @@ public class ConfirmStatusUpdateTests : TestServiceBase<ReviewBodyController>
     }
 
     [Theory, AutoData]
-    public async Task ConfirmStatusUpdate_EnableReviewBody(List<ReviewBodyDto> reviewBodies,
+    public async Task ConfirmStatusUpdate_EnableReviewBody(ReviewBodyDto reviewBody,
         AddUpdateReviewBodyModel addUpdateReviewBodyModel)
     {
         // Arrange
-        var serviceResponse = new ServiceResponse<IEnumerable<ReviewBodyDto>>
+        var serviceResponse = new ServiceResponse<ReviewBodyDto>
         {
             StatusCode = HttpStatusCode.OK,
-            Content = reviewBodies
+            Content = reviewBody
         };
 
         Mocker.GetMock<IReviewBodyService>()

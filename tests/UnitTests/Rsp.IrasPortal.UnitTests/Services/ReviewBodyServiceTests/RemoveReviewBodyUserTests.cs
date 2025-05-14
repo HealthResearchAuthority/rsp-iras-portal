@@ -18,7 +18,7 @@ public class RemoveReviewBodyUserTests : TestServiceBase<ReviewBodyService>
                 apiResponse.StatusCode == HttpStatusCode.BadRequest
         );
 
-        var client = new Mock<IReviewBodyServiceClient>();
+        var client = Mocker.GetMock<IReviewBodyServiceClient>();
         client
             .Setup(c => c.RemoveUserFromReviewBody(reviewBodyId, userId))
             .ReturnsAsync(apiResponse);
@@ -48,7 +48,7 @@ public class RemoveReviewBodyUserTests : TestServiceBase<ReviewBodyService>
                 apiResponse.StatusCode == HttpStatusCode.OK
         );
 
-        var client = new Mock<IReviewBodyServiceClient>();
+        var client = Mocker.GetMock<IReviewBodyServiceClient>();
         client
             .Setup(c => c.RemoveUserFromReviewBody(reviewBodyId, userId))
             .ReturnsAsync(apiResponse);
