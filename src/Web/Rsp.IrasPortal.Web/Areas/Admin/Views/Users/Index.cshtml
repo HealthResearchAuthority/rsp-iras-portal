@@ -26,7 +26,7 @@
 			<label class="govuk-label" for="SearchQuery"><b>Find a user</b></label>
 			<input class="govuk-input govuk-!-width-two-thirds" id="SearchQuery" name="SearchQuery" type="text" value="@(Model.Pagination?.SearchQuery ?? string.Empty)">
 			<input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize" />
-			<partial name="_SubmitButton" model="@("", "Search", new Dictionary<string, string>())" />
+			<partial name="_SubmitButton" model="@("admin:users", "Search", new Dictionary<string, string>())" />
 		</form>
 	</div>
 
