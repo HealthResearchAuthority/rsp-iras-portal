@@ -5,74 +5,57 @@
 @inject IFeatureManager featureManager
 
 @{
-    var buttonText = ViewBag.Mode == "edit" ? "Save" : "Continue";
-    var heading = ViewBag.Mode == "edit" ? "Edit user profile record" : "Add a new user profile record";
-    var submitActionName = ViewBag.Mode == "edit" ? "admin:submituser" : "admin:confirmusersubmission";
+	var buttonText = ViewBag.Mode == "edit" ? "Save" : "Continue";
+	var heading = ViewBag.Mode == "edit" ? "Edit user profile record" : "Add a new user profile record";
+	var submitActionName = ViewBag.Mode == "edit" ? "admin:submituser" : "admin:confirmusersubmission";
 
-    ViewBag.Active = "manageUsers";
-    ViewBag.Title = "Manage users";
+	ViewBag.Active = "manageUsers";
+	ViewBag.Title = "Manage users";
+
+	// Display labels from Name (e.g., "Admin_User" → "Admin User")
+	var allRoleOptions = Model.UserRoles
+		.Select(r => r.Name.Replace("_", " "))
+		.Distinct()
+		.ToList();
+
+	// Selected values for display (only used if your TagHelper supports it)
+	var selectedRoles = Model.UserRoles
+		.Where(r => r.IsSelected)
+		.Select(r => r.Name.Replace("_", " "))
+		.ToList();
 }
 <form method="post">
-    @if (ViewBag.Mode == "edit")
-    {
-        <a asp-route="admin:viewuser" asp-all-route-data="@(new Dictionary<string, string>{{"email", Model.Email}, {"userId", Model.Id!}})" class="govuk-back-link">Back</a>
-    }
-    else
-    {
-        <a asp-route="admin:users" class="govuk-back-link">Back</a>
-    }
+	@if (ViewBag.Mode == "edit")
+	{
+		<a asp-route="admin:viewuser" asp-all-route-data="@(new Dictionary<string, string>{{"email", Model.Email}, {"userId", Model.Id!}})" class="govuk-back-link">Back</a>
+	}
+	else
+	{
+		<a asp-route="admin:users" class="govuk-back-link">Back</a>
+	}
 
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-two-thirds">
-            <h1 class="govuk-heading-l">@heading</h1>
-            <input name="Id" asp-for="Id" value="@(Model.Id ?? string.Empty)" />
-            <input name="OriginalEmail" asp-for="OriginalEmail" value="@(Model.OriginalEmail ?? string.Empty)" />
-            <input hidden readonly name="Status" asp-for="Status" value="@(Model.Status ?? string.Empty)" />
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-two-thirds">
+			<h1 class="govuk-heading-l">@heading</h1>
+			<input name="Id" asp-for="Id" value="@(Model.Id ?? string.Empty)" />
+			<input name="OriginalEmail" asp-for="OriginalEmail" value="@(Model.OriginalEmail ?? string.Empty)" />
+			<input hidden readonly name="Status" asp-for="Status" value="@(Model.Status ?? string.Empty)" />
 
-            <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
+			<partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
 
-            <div class="govuk-form-group" error-class-for="Title">
-                <label class="govuk-label" for="Title"><b>Title</b></label>
-                <span class="govuk-error-message" asp-validation-for="Title"></span>
-                <input class="govuk-input govuk-!-width-one-quarter" error-class-for="Title" id="Title" name="Title" type="text" asp-for="Title" value="@(Model.Title ?? string.Empty)" />
-            </div>
+			<rsp-gds-input asp-for="Title" label-text="Title" width-class="govuk-!-width-one-quarter" />
 
-            <div class="govuk-form-group" error-class-for="FirstName">
-                <label class="govuk-label" for="FirstName"><b>First name</b></label>
-                <span class="govuk-error-message" asp-validation-for="FirstName"></span>
-                <input class="govuk-input govuk-!-width-one-half" error-class-for="FirstName" id="FirstName" name="FirstName" type="text" asp-for="FirstName" value="@(Model.FirstName ?? string.Empty)" />
-            </div>
+			<rsp-gds-input asp-for="FirstName" label-text="First name" width-class="govuk-!-width-one-half" />
 
-            <div class="govuk-form-group" error-class-for="LastName">
-                <label class="govuk-label" for="LastName"><b>Last name</b></label>
-                <span class="govuk-error-message" asp-validation-for="LastName"></span>
-                <input class="govuk-input govuk-!-width-one-half" error-class-for="LastName" id="LastName" name="LastName" type="text" asp-for="LastName" value="@(Model.LastName ?? string.Empty)">
-            </div>
+			<rsp-gds-input asp-for="LastName" label-text="Last name" width-class="govuk-!-width-one-half" />
 
-            <div class="govuk-form-group" error-class-for="Email">
-                <label class="govuk-label" for="Email"><b>Email address</b></label>
-                <span class="govuk-error-message" asp-validation-for="Email"></span>
-                <input class="govuk-input govuk-!-width-two-thirds" error-class-for="Email" id="Email" name="Email" type="email" asp-for="Email" value="@(Model.Email ?? string.Empty)">
-            </div>
+			<rsp-gds-input asp-for="Email" label-text="Email address" input-type="email" width-class="govuk-!-width-two-thirds" />
 
-            <div class="govuk-form-group" error-class-for="Telephone">
-                <label class="govuk-label" for="Telephone"><b>Telephone</b></label>
-                <span class="govuk-error-message" asp-validation-for="Telephone"></span>
-                <input class="govuk-input govuk-!-width-two-thirds)" error-class-for="Telephone" id="Telephone" name="Telephone" type="tel" asp-for="Telephone" value="@(Model.Telephone ?? string.Empty)">
-            </div>
+			<rsp-gds-input asp-for="Telephone" label-text="Telephone" input-type="tel" width-class="govuk-!-width-two-thirds" />
 
-            <div class="govuk-form-group" error-class-for="Organisation">
-                <label class="govuk-label" for="Organisation"><b>Organisation</b></label>
-                <span class="govuk-error-message" asp-validation-for="Organisation"></span>
-                <input class="govuk-input govuk-!-width-three-quarters" error-class-for="Organisation" id="Organisation" name="Organisation" type="text" asp-for="Organisation" value="@(Model.Organisation ?? string.Empty)">
-            </div>
+			<rsp-gds-input asp-for="Organisation" label-text="Organisation" width-class="govuk-!-width-three-quarters" />
 
-            <div class="govuk-form-group" error-class-for="JobTitle">
-                <label class="govuk-label" for="JobTitle"><b>Job title</b></label>
-                <span class="govuk-error-message" asp-validation-for="JobTitle"></span>
-                <input class="govuk-input govuk-!-width-three-quarters" error-class-for="JobTitle" id="JobTitle" name="JobTitle" type="text" asp-for="JobTitle" value="@(Model.JobTitle ?? string.Empty)">
-            </div>
-
+			<rsp-gds-input asp-for="JobTitle" label-text="Job title" width-class="govuk-!-width-three-quarters" />
             <div class="govuk-form-group" error-class-for="UserRoles">
                 <label class="govuk-label" for="UserRoles">
                     <b>Role</b>
@@ -94,86 +77,95 @@
                 </div>
             </div>
 
+            <rsp-gds-checkbox-group asp-for="UserRoles"
+                                    label-text="Role"
+                                    item-label-property="Name"
+                                    item-value-property="IsSelected"
+                                    item-hidden-properties="Id,Name" />
+
+
+
+
             @* TODO: Replace ViewData.ModelState["Committee"]?.Errors.Count with error-class-for="Committee"  *@
-            <div class="govuk-form-group conditional-field @(ViewData.ModelState["Committee"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
-                <label class="govuk-label" for="Committee">
-                    <b>Committee</b>
-                </label>
+			<div class="govuk-form-group conditional-field @(ViewData.ModelState["Committee"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+				<label class="govuk-label" for="Committee">
+					<b>Committee</b>
+				</label>
 
-                @* TODO: Replace ViewData.ModelState["Committee"]?.Errors.Count with error-class-for="Committee" and provide the error-class="govuk-select--error"  *@
-                <select class="role-list-dropdown govuk-select govuk-!-width-three-quarters @(ViewData.ModelState["Committee"]?.Errors.Count > 0 ? "govuk-select--error" : "")" id="Committee" name="Committee">
-                    <option></option>
-                </select>
-            </div>
+				@* TODO: Replace ViewData.ModelState["Committee"]?.Errors.Count with error-class-for="Committee" and provide the error-class="govuk-select--error"  *@
+				<select class="role-list-dropdown govuk-select govuk-!-width-three-quarters @(ViewData.ModelState["Committee"]?.Errors.Count > 0 ? "govuk-select--error" : "")" id="Committee" name="Committee">
+					<option></option>
+				</select>
+			</div>
 
-            <div id="Country" class="govuk-form-group conditional-field" error-class-for="Country">
-                <fieldset class="govuk-fieldset">
-                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
-                        <label class="govuk-label" for="Country">
-                            <b>Country</b>
-                        </label>
-                    </legend>
-                    <span class="govuk-error-message" asp-validation-for="Country"></span>
-                    <div class="govuk-checkboxes" data-module="govuk-checkboxes">
-                        @foreach (var country in UkCountryNames.Countries)
-                        {
-                            <div class="govuk-checkboxes__item">
-                                <input @(Model.Country != null && Model.Country.Contains(country) ? "checked" : null) class="govuk-checkboxes__input" id="@country" name="Country" type="checkbox" value="@country">
-                                <label class="govuk-label govuk-checkboxes__label" for="@country">
-                                    @country
-                                </label>
-                            </div>
-                        }
-                    </div>
-                </fieldset>
-            </div>
+			<div id="Country" class="govuk-form-group conditional-field" error-class-for="Country">
+				<fieldset class="govuk-fieldset">
+					<legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+						<label class="govuk-label" for="Country">
+							<b>Country</b>
+						</label>
+					</legend>
+					<span class="govuk-error-message" asp-validation-for="Country"></span>
+					<div class="govuk-checkboxes" data-module="govuk-checkboxes">
+						@foreach (var country in UkCountryNames.Countries)
+						{
+							<div class="govuk-checkboxes__item">
+								<input @(Model.Country != null && Model.Country.Contains(country) ? "checked" : null) class="govuk-checkboxes__input" id="@country" name="Country" type="checkbox" value="@country">
+								<label class="govuk-label govuk-checkboxes__label" for="@country">
+									@country
+								</label>
+							</div>
+						}
+					</div>
+				</fieldset>
+			</div>
 
-            <div id="AccessRequired" class="govuk-form-group conditional-field" error-class-for="AccessRequired">
-                <fieldset class="govuk-fieldset">
-                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
-                        <label class="govuk-label" for="AccessRequired">
-                            <b>Access required</b>
-                        </label>
-                    </legend>
-                    <span class="govuk-error-message" asp-validation-for="AccessRequired"></span>
-                    <div class="govuk-checkboxes" data-module="govuk-checkboxes">
-                        @foreach (var option in AccessRequiredOptions.Options)
-                        {
-                            <div class="govuk-checkboxes__item">
-                                <input @(Model.AccessRequired != null && Model.AccessRequired.Contains(option) ? "checked" : null) class="govuk-checkboxes__input" id="@option" name="AccessRequired" type="checkbox" value="@option">
-                                <label class="govuk-label govuk-checkboxes__label" for="@option">
-                                    @option
-                                </label>
-                            </div>
-                        }
-                    </div>
-                </fieldset>
-            </div>
+			<div id="AccessRequired" class="govuk-form-group conditional-field" error-class-for="AccessRequired">
+				<fieldset class="govuk-fieldset">
+					<legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+						<label class="govuk-label" for="AccessRequired">
+							<b>Access required</b>
+						</label>
+					</legend>
+					<span class="govuk-error-message" asp-validation-for="AccessRequired"></span>
+					<div class="govuk-checkboxes" data-module="govuk-checkboxes">
+						@foreach (var option in AccessRequiredOptions.Options)
+						{
+							<div class="govuk-checkboxes__item">
+								<input @(Model.AccessRequired != null && Model.AccessRequired.Contains(option) ? "checked" : null) class="govuk-checkboxes__input" id="@option" name="AccessRequired" type="checkbox" value="@option">
+								<label class="govuk-label govuk-checkboxes__label" for="@option">
+									@option
+								</label>
+							</div>
+						}
+					</div>
+				</fieldset>
+			</div>
 
-            @* TODO: Replace ViewData.ModelState["ReviewBody"]?.Errors.Count with error-class-for="ReviewBody"  *@
-            <div class="govuk-form-group conditional-field @(ViewData.ModelState["ReviewBody"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
-                <label class="govuk-label" for="ReviewBody">
-                    <b>Review body</b>
-                </label>
+			@* TODO: Replace ViewData.ModelState["ReviewBody"]?.Errors.Count with error-class-for="ReviewBody"  *@
+			<div class="govuk-form-group conditional-field @(ViewData.ModelState["ReviewBody"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+				<label class="govuk-label" for="ReviewBody">
+					<b>Review body</b>
+				</label>
 
-                @* TODO: Replace ViewData.ModelState["ReviewBody"]?.Errors.Count with error-class-for="ReviewBody" and provide the error-class="govuk-select--error"  *@
-                <select class="role-list-dropdown govuk-select govuk-!-width-three-quarters @(ViewData.ModelState["ReviewBody"]?.Errors.Count> 0 ? "govuk-select--error" : "")" id="ReviewBody" name="ReviewBody">
-                    <option></option>
-                </select>
-            </div>
+				@* TODO: Replace ViewData.ModelState["ReviewBody"]?.Errors.Count with error-class-for="ReviewBody" and provide the error-class="govuk-select--error"  *@
+				<select class="role-list-dropdown govuk-select govuk-!-width-three-quarters @(ViewData.ModelState["ReviewBody"]?.Errors.Count> 0 ? "govuk-select--error" : "")" id="ReviewBody" name="ReviewBody">
+					<option></option>
+				</select>
+			</div>
 
-            <partial name="_SubmitButton" model="@(submitActionName, buttonText, new Dictionary<string, string>())" />
-            @{
-                ViewBag.Style = "ms-3 govuk-button govuk-button--secondary";
-            }
-        </div>
-    </div>
+			<partial name="_SubmitButton" model="@(submitActionName, buttonText, new Dictionary<string, string>())" />
+			@{
+				ViewBag.Style = "ms-3 govuk-button govuk-button--secondary";
+			}
+		</div>
+	</div>
 </form>
 <!--Use javascript only when progressive enhancement feature is enabled-->
 @if (await featureManager.IsEnabledAsync(Features.ProgressiveEnhancement))
 {
-    @section FooterResources {
-        <script src="~/lib/jquery/dist/jquery.js"></script>
-        <script src="~/js/manageUsers.js"></script>
+	@section FooterResources {
+		<script src="~/lib/jquery/dist/jquery.js"></script>
+		<script src="~/js/manageUsers.js"></script>
     }
 }
