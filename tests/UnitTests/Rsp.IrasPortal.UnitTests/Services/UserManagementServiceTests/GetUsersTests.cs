@@ -1,12 +1,7 @@
-﻿using System.Net;
-using AutoFixture.Xunit2;
-using Moq;
-using Refit;
-using Rsp.IrasPortal.Application.DTOs;
+﻿using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Services;
-using Shouldly;
 
 namespace Rsp.IrasPortal.UnitTests.Services.UserManagementServiceTests;
 
@@ -21,7 +16,7 @@ public class GetUsersTests : TestServiceBase<UserManagementService>
 
         var client = Mocker.GetMock<IUserManagementServiceClient>();
         client
-            .Setup(c => c.GetUsers(It.IsAny<int>(), It.IsAny<int>()))
+            .Setup(c => c.GetUsers(null, It.IsAny<int>(), It.IsAny<int>()))
             .ReturnsAsync(apiResponse);
 
         // Act
@@ -34,7 +29,7 @@ public class GetUsersTests : TestServiceBase<UserManagementService>
         result.Content.ShouldBe(usersResponse);
 
         // Verify
-        client.Verify(c => c.GetUsers(It.IsAny<int>(), It.IsAny<int>()), Times.Once());
+        client.Verify(c => c.GetUsers(null, It.IsAny<int>(), It.IsAny<int>()), Times.Once());
     }
 
     [Fact]
@@ -46,7 +41,7 @@ public class GetUsersTests : TestServiceBase<UserManagementService>
 
         var client = Mocker.GetMock<IUserManagementServiceClient>();
         client
-            .Setup(c => c.GetUsers(It.IsAny<int>(), It.IsAny<int>()))
+            .Setup(c => c.GetUsers(null, It.IsAny<int>(), It.IsAny<int>()))
             .ReturnsAsync(apiResponse);
 
         // Act
@@ -58,6 +53,6 @@ public class GetUsersTests : TestServiceBase<UserManagementService>
         result.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
 
         // Verify
-        client.Verify(c => c.GetUsers(It.IsAny<int>(), It.IsAny<int>()), Times.Once());
+        client.Verify(c => c.GetUsers(null, It.IsAny<int>(), It.IsAny<int>()), Times.Once());
     }
 }
