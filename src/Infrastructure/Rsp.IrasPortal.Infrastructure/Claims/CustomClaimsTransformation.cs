@@ -50,20 +50,27 @@ public class CustomClaimsTransformation
         await UpdateAccessToken(principal);
 
         // now we can call the usermanagement api
+        var context = httpContextAccessor.HttpContext!;
+        if (context.Session.GetString(SessionKeys.FirstLogin) == bool.TrueString)
+        {
+            await userManagementService.UpdateLastLogin(email);
+            context.Session.Remove(SessionKeys.FirstLogin);
+        }
+
         var getUserResponse = await userManagementService.GetUser(null, email);
 
         if (getUserResponse.IsSuccessStatusCode && getUserResponse.Content != null)
         {
-            var context = httpContextAccessor.HttpContext!;
-
             var respondentId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var firstName = principal.FindFirst(ClaimTypes.GivenName)?.Value;
             var surName = principal.FindFirst(ClaimTypes.Surname)?.Value;
+            var lastLogin = getUserResponse.Content.User?.LastLogin;
 
             context.Items.Add(ContextItemKeys.RespondentId, respondentId);
             context.Items.Add(ContextItemKeys.Email, email);
             context.Items.Add(ContextItemKeys.FirstName, firstName);
             context.Items.Add(ContextItemKeys.LastName, surName);
+            context.Items.Add(ContextItemKeys.LastLogin, lastLogin);
 
             var user = getUserResponse.Content;
 

@@ -188,4 +188,28 @@ public class UserManagementService(IUserManagementServiceClient client) : IUserM
             StatusCode = HttpStatusCode.OK
         };
     }
+
+    public async Task<ServiceResponse> UpdateLastLogin(string email)
+    {
+        var getUserResponse = await GetUser(null, email);
+
+        if (getUserResponse.IsSuccessStatusCode)
+        {
+            var updateUserRequest = getUserResponse.Content!.User.Adapt<UpdateUserRequest>();
+            updateUserRequest.CurrentLogin = DateTime.UtcNow;
+            updateUserRequest.OriginalEmail = email;
+
+            var updateUserResponse = await UpdateUser(updateUserRequest);
+
+            return new ServiceResponse
+            {
+                StatusCode = updateUserResponse.StatusCode
+            };
+        }
+
+        return new ServiceResponse
+        {
+            StatusCode = getUserResponse.StatusCode
+        };
+    }
 }

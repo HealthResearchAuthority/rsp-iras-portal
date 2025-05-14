@@ -163,9 +163,9 @@ app.MapShortCircuit(404, "robots.txt", "favicon.ico", "*.css");
 
 app
     .UseRouting()
+    .UseSession()
     .UseAuthentication()
     .UseAuthorization()
-    .UseSession()
     .UseEndpoints
     (
         endpoints =>

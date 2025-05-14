@@ -12,7 +12,7 @@ public class AuthController : Controller
     {
         return new ChallengeResult(AuthSchemes.OpenIdConnect, new()
         {
-            RedirectUri = Url.RouteUrl("app:welcome")
+            RedirectUri = Url.RouteUrl("acc:home")
         });
     }
 
@@ -23,7 +23,7 @@ public class AuthController : Controller
 
         return new SignOutResult([CookieAuthenticationDefaults.AuthenticationScheme, AuthSchemes.OpenIdConnect], new()
         {
-            RedirectUri = Url.RouteUrl("app:welcome")
+            RedirectUri = Url.RouteUrl("acc:home")
         });
     }
 }
