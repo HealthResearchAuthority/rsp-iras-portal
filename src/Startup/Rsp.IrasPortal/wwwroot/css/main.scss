@@ -351,36 +351,61 @@ button.govuk-link {
 
 .autocomplete__menu {
     margin-top: 10px !important;
-    border: 2px solid black !important;
+    border: 2px solid black;
+    font-size: 16px !important;
 }
 
-.autocomplete__menu::before {
-    content: "Suggestions";
+.autocomplete__menu:not([data-before-suggestions=""])::before {
+    content: attr(data-before-suggestions); //"Suggestions";
     background-color: #f3f2f1;
-    border-bottom: 2px solid black;
-    border-left-width: 0;
-    border-right-width: 0;
-    cursor: pointer;
-    display: block;
-    position: relative;
-    padding: 5px;
-    font-size: 18px;
-}
-
-.autocomplete__menu::after {
-    content: "Continue entering to improve suggestions";
-    background-color: #f3f2f1;
+    border-bottom: 2px solid black !important;
     border-top: 2px solid black;
-    border-left-width: 0;
-    border-right-width: 0;
     cursor: pointer;
     display: block;
     position: relative;
     padding: 5px;
-    font-size: 18px;
+}
+
+.autocomplete__menu:not([data-after-suggestions=""])::after {
+    content: attr(data-after-suggestions); //"Continue entering to improve suggestions";
+    background-color: #f3f2f1;
+    border-top: 2px solid black !important;
+    cursor: pointer;
+    display: block;
+    position: relative;
+    padding: 5px;
+}
+
+.autocomplete__menu:has(.autocomplete__option:empty) {
+    border-style: solid;
+    border-color: black;
+    border-width: 0 2px 0 2px;
 }
 
 .autocomplete__option {
     border-bottom: 2px solid black;
     border-top: 2px solid black;
+    background-color: white !important;
+    color: black !important;
+    font-size: 16px !important;
+}
+
+.autocomplete__option--focused, .autocomplete__option:hover {
+    background-color: #003078 !important;
+    color: white !important;
+}
+
+.autocomplete__option.autocomplete__option--no-results {
+    background-color: #f3f2f1 !important;
+    border-top: 2px solid black !important;
+    border-left-width: 0;
+    border-right-width: 0;
+    cursor: pointer;
+    display: block;
+    position: relative;
+    padding: 5px;
+}
+
+.autocomplete__option:empty {
+    display: none;
 }
