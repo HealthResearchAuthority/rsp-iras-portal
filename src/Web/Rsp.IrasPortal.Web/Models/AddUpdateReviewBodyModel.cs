@@ -11,5 +11,4 @@ public class AddUpdateReviewBodyModel
     public string? CreatedBy { get; set; }
     public string? UpdatedBy { get; set; }
     public DateTime UpdatedDate { get; set; }
-    public string? Selected { get; set; }
 }
