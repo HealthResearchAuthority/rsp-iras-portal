@@ -11,4 +11,5 @@ public record User(string? Id,
     string? Country,
     string Status,
     DateTime? LastUpdated,
-    DateTime? LastLogin = null);
+    DateTime? LastLogin = null,
+    DateTime? CurrentLogin = null);

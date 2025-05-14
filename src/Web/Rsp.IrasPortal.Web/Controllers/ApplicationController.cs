@@ -27,8 +27,6 @@ public class ApplicationController(
     // ApplicationInfo view name
     private const string ApplicationInfo = nameof(ApplicationInfo);
 
-    [AllowAnonymous]
-    [Route("/", Name = "app:welcome")]
     public IActionResult Welcome() => View(nameof(Index));
 
     public IActionResult StartProject() => View(nameof(StartProject));

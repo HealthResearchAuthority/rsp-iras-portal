@@ -56,7 +56,7 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.AuthControllerTests
                 .RedirectUri.ShouldBe("/welcome");
 
             // Verify
-            urlHelper.Verify(u => u.RouteUrl(It.Is<UrlRouteContext>(c => c.RouteName == "app:welcome")), Times.Once);
+            urlHelper.Verify(u => u.RouteUrl(It.Is<UrlRouteContext>(c => c.RouteName == "acc:home")), Times.Once);
         }
     }
 }
