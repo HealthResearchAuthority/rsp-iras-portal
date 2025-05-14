@@ -1,6 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Mvc.ModelBinding
 @using Microsoft.AspNetCore.Mvc.TagHelpers
-@using Rsp.Gds.Component.Models
 @model AddUpdateReviewBodyModel
 
 @{
@@ -17,19 +16,14 @@
             filteredModelState.AddModelError(state.Key, error.ErrorMessage);
         }
     }
-    
-    var countryOptions = new List<GdsOption>
-    {
-        new() { Value = "England", Label = "England" },
-        new() { Value = "Northern Ireland", Label = "Northern Ireland" },
-        new() { Value = "Scotland", Label = "Scotland" },
-        new() { Value = "Wales", Label = "Wales" }
-    };
 
-    // ✅ Set SelectedCountry to the first country (if available), else leave null (default option shown)
-    Model.Selected = Model.Countries != null && Model.Countries.Any()
-        ? Model.Countries.First()
-        : null;
+    var countryOptions = new List<string>
+    {
+        "England", 
+        "Northern Ireland", 
+        "Scotland", 
+        "Wales"
+    };
 }
 
 <form method="get">
@@ -47,14 +41,12 @@
 
             <partial name="_ValidationSummary" model="@(filteredModelState, "There is a problem")" />
             
-
             <rsp-gds-input asp-for="OrganisationName"
                            label-text=" Organisation name"/>
 
-            <rsp-gds-radio-group asp-for="Countries"
+            <rsp-gds-checkbox-group asp-for="Countries"
                                  label-text="Country"
                                  options="countryOptions"/>
-
 
             <rsp-gds-input asp-for="EmailAddress"
                            label-text="Email address"
