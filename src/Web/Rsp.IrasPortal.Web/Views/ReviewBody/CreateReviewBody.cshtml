@@ -42,10 +42,12 @@
             <partial name="_ValidationSummary" model="@(filteredModelState, "There is a problem")" />
             
             <rsp-gds-input asp-for="OrganisationName"
-                           label-text=" Organisation name"/>
+                           label-text=" Organisation name"
+						   id="OrganisationName"/>
 
             <rsp-gds-checkbox-group asp-for="Countries"
                                  label-text="Country"
+								 id="Countries"
                                  options="countryOptions"/>
 
             <rsp-gds-input asp-for="EmailAddress"

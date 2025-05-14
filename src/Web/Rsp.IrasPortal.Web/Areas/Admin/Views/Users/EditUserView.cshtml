@@ -31,46 +31,46 @@
 
             <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
 
-            <div class="govuk-form-group" error-class-for="Title">
+			<div class="govuk-form-group" id="Title" error-class-for="Title">
                 <label class="govuk-label" for="Title"><b>Title</b></label>
                 <span class="govuk-error-message" asp-validation-for="Title"></span>
-                <input class="govuk-input govuk-!-width-one-quarter" error-class-for="Title" id="Title" name="Title" type="text" asp-for="Title" value="@(Model.Title ?? string.Empty)" />
+                <input class="govuk-input govuk-!-width-one-quarter" error-class-for="Title" name="Title" type="text" asp-for="Title" value="@(Model.Title ?? string.Empty)" />
             </div>
 
-            <div class="govuk-form-group" error-class-for="FirstName">
+			<div class="govuk-form-group" id="FirstName" error-class-for="FirstName">
                 <label class="govuk-label" for="FirstName"><b>First name</b></label>
                 <span class="govuk-error-message" asp-validation-for="FirstName"></span>
-                <input class="govuk-input govuk-!-width-one-half" error-class-for="FirstName" id="FirstName" name="FirstName" type="text" asp-for="FirstName" value="@(Model.FirstName ?? string.Empty)" />
+                <input class="govuk-input govuk-!-width-one-half" error-class-for="FirstName" name="FirstName" type="text" asp-for="FirstName" value="@(Model.FirstName ?? string.Empty)" />
             </div>
 
-            <div class="govuk-form-group" error-class-for="LastName">
+			<div class="govuk-form-group" id="LastName" error-class-for="LastName">
                 <label class="govuk-label" for="LastName"><b>Last name</b></label>
                 <span class="govuk-error-message" asp-validation-for="LastName"></span>
-                <input class="govuk-input govuk-!-width-one-half" error-class-for="LastName" id="LastName" name="LastName" type="text" asp-for="LastName" value="@(Model.LastName ?? string.Empty)">
+                <input class="govuk-input govuk-!-width-one-half" error-class-for="LastName" name="LastName" type="text" asp-for="LastName" value="@(Model.LastName ?? string.Empty)">
             </div>
 
-            <div class="govuk-form-group" error-class-for="Email">
+			<div class="govuk-form-group" id="Email" error-class-for="Email">
                 <label class="govuk-label" for="Email"><b>Email address</b></label>
                 <span class="govuk-error-message" asp-validation-for="Email"></span>
-                <input class="govuk-input govuk-!-width-two-thirds" error-class-for="Email" id="Email" name="Email" type="email" asp-for="Email" value="@(Model.Email ?? string.Empty)">
+                <input class="govuk-input govuk-!-width-two-thirds" error-class-for="Email"  name="Email" type="email" asp-for="Email" value="@(Model.Email ?? string.Empty)">
             </div>
 
-            <div class="govuk-form-group" error-class-for="Telephone">
+			<div class="govuk-form-group" id="Telephone" error-class-for="Telephone">
                 <label class="govuk-label" for="Telephone"><b>Telephone</b></label>
                 <span class="govuk-error-message" asp-validation-for="Telephone"></span>
-                <input class="govuk-input govuk-!-width-two-thirds)" error-class-for="Telephone" id="Telephone" name="Telephone" type="tel" asp-for="Telephone" value="@(Model.Telephone ?? string.Empty)">
+                <input class="govuk-input govuk-!-width-two-thirds)" error-class-for="Telephone" name="Telephone" type="tel" asp-for="Telephone" value="@(Model.Telephone ?? string.Empty)">
             </div>
 
-            <div class="govuk-form-group" error-class-for="Organisation">
+			<div class="govuk-form-group" id="Organisation" error-class-for="Organisation">
                 <label class="govuk-label" for="Organisation"><b>Organisation</b></label>
                 <span class="govuk-error-message" asp-validation-for="Organisation"></span>
-                <input class="govuk-input govuk-!-width-three-quarters" error-class-for="Organisation" id="Organisation" name="Organisation" type="text" asp-for="Organisation" value="@(Model.Organisation ?? string.Empty)">
+                <input class="govuk-input govuk-!-width-three-quarters" error-class-for="Organisation" name="Organisation" type="text" asp-for="Organisation" value="@(Model.Organisation ?? string.Empty)">
             </div>
 
-            <div class="govuk-form-group" error-class-for="JobTitle">
+			<div class="govuk-form-group" id="JobTitle" error-class-for="JobTitle">
                 <label class="govuk-label" for="JobTitle"><b>Job title</b></label>
                 <span class="govuk-error-message" asp-validation-for="JobTitle"></span>
-                <input class="govuk-input govuk-!-width-three-quarters" error-class-for="JobTitle" id="JobTitle" name="JobTitle" type="text" asp-for="JobTitle" value="@(Model.JobTitle ?? string.Empty)">
+                <input class="govuk-input govuk-!-width-three-quarters" error-class-for="JobTitle" name="JobTitle" type="text" asp-for="JobTitle" value="@(Model.JobTitle ?? string.Empty)">
             </div>
 
             <div class="govuk-form-group" error-class-for="UserRoles">
