@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Globalization;
+using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Domain.Identity;
@@ -39,7 +40,20 @@ public class UserViewModel
 
     public string Status
     {
-        get => _status!;
+        get
+        {
+            if (_status != null)
+            {
+                // always cast status string to sentence case for displaying
+                var textInfo = new CultureInfo("en-GB", false).TextInfo;
+
+                return textInfo.ToTitleCase(_status!);
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
         set => _status = string.IsNullOrEmpty(value) ? IrasUserStatus.Active : value;
     }
 

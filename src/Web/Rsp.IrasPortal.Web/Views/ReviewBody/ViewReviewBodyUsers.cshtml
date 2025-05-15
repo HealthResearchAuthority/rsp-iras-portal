@@ -58,7 +58,7 @@
 									{
 										var statusClass = string.Equals(user.Status, IrasUserStatus.Active, StringComparison.InvariantCultureIgnoreCase) ? "govuk-tag--green" : "govuk-tag--red";
 
-										<strong class="govuk-tag govuk-tag__full_width @statusClass"><b>@user.Status.ToUpperInvariant()</b></strong>
+										<strong class="govuk-tag @statusClass">@user.Status</strong>
 									}
 								</td>
 								<td class="govuk-table__cell">@(user.LastLogin.HasValue ? user.LastLogin.Value.ToString("dd MMM yyyy") : string.Empty)</td>

@@ -17,7 +17,7 @@
 	</div>
 </div>
 
-@if (Model.Status != IrasUserStatus.Disabled)
+@if (!Model.Status.Equals(IrasUserStatus.Disabled, StringComparison.InvariantCultureIgnoreCase))
 {
 	<div class="govuk-grid-row">
 		<div class="govuk-grid-column-two-thirds">
@@ -35,7 +35,7 @@
 		</div>
 	</div>
 }
-else if (Model.Status == IrasUserStatus.Disabled)
+else if (Model.Status.Equals(IrasUserStatus.Disabled, StringComparison.InvariantCultureIgnoreCase))
 {
 	<div class="govuk-grid-row">
 		<div class="govuk-grid-column-two-thirds">

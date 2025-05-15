@@ -126,19 +126,6 @@ button.govuk-link {
   float: right;
 }
 
-.govuk-tag__full_width {
-  max-width: none;
-  width: 100%;
-  text-align: center;
-  font-weight: 700;
-  font-size: 16px;
-}
-
-.govuk-tag--dark_red {
-  color: #942514;
-  background-color: #F6D7D2;
-}
-
 .text-capitalize {
   text-transform: capitalize;
 }
@@ -283,7 +270,7 @@ button.govuk-link {
 }
 
 .govuk-back-link-button--inverse:active, .govuk-back-link-button--inverse:hover {
-  color: hsla(0, 0%, 100%, 0.99);
+  color: hsla(0deg, 0%, 100%, 0.99);
 }
 
 .govuk-back-link-button--inverse:focus {
