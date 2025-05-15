@@ -2,5 +2,5 @@
 
 public static class UkCountryNames
 {
-    public static readonly string[] Countries = { "England", "Northern Ireland", "Scotland", "Wales" };
+    public static readonly List<string> Countries = ["England", "Northern Ireland", "Scotland", "Wales"];
 }
