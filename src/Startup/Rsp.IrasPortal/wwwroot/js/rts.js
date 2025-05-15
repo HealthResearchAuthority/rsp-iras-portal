@@ -14,6 +14,7 @@ function initAutocomplete(autoCompleteInputId, inputIdForSubmission, defaultValu
     const afterSuggestionsText = 'Continue entering to improve suggestions'; // Message displayed after the suggestions.
     const noResultsText = 'No suggestions found.'; // Message displayed when no suggestions are found.
     let resultsFound = false; // Flag to indicate if results were found.
+    let requestToken = 0;       // A counter to identify the most recent AJAX request
 
     accessibleAutocomplete({
         element: document.querySelector('#autocomplete-container'), // The container element for the autocomplete.
@@ -25,8 +26,12 @@ function initAutocomplete(autoCompleteInputId, inputIdForSubmission, defaultValu
         menuClasses: 'govuk-!-width-three-quarters', // CSS classes for styling the suggestion menu.
         defaultValue: defaultValue, // Sets the default value for the input field.
         confirmOnBlur: false, // Prevents confirmation of a suggestion when the input loses focus.
+
         source: function (query, populateResults) {
-            if (query.length < 3) {
+            requestToken++; // Increment the token for each new request
+            const currentToken = requestToken; // Capture this request's token
+
+            if (query.length < 3) {  // If fewer than 3 characters, hide menu and show guidance
                 populateResults([]);
                 $(".autocomplete__menu").attr('data-before-suggestions', ''); // Clear message before suggestions.
                 $(".autocomplete__menu").attr('data-after-suggestions', afterSuggestionsText); // Show message after suggestions.
@@ -40,6 +45,23 @@ function initAutocomplete(autoCompleteInputId, inputIdForSubmission, defaultValu
                 data: { name: query }, // Query parameter sent to the API.
                 dataType: 'json',
                 success: function (data) {
+                    // If another request has started since this one, ignore this response
+                    if (currentToken !== requestToken) {
+                        return;
+                    }
+
+                    // Only populate if query hasn't changed
+                    const currentValue = $(`#${autoCompleteInputId}`).val();
+
+                    if (!currentValue || currentValue.length < 3) {
+                        return;
+                    }
+
+                    if (!data || data.length === 0) {
+                        populateResults([]); // No results to show
+                        return;
+                    }
+
                     resultsFound = true; // Set flag to indicate that results were found.
                     $(".autocomplete__menu").attr('data-before-suggestions', beforeSuggestionsText); // Show message before suggestions.
                     populateResults(data); // Populate the suggestion list with the API response.
@@ -47,6 +69,11 @@ function initAutocomplete(autoCompleteInputId, inputIdForSubmission, defaultValu
                     $(`#${inputIdForSubmission}`).attr('value', ''); // Clear the hidden input; only populated when a suggestion is selected.
                 },
                 error: function (xhr, status, error) {
+                    // Ignore if this is a stale request
+                    if (currentToken !== requestToken) {
+                        return;
+                    }
+
                     console.error('Error fetching suggestions:', error); // Log errors to the console.
                     populateResults([]); // Clear the suggestion list on error.
                 }
@@ -57,7 +84,8 @@ function initAutocomplete(autoCompleteInputId, inputIdForSubmission, defaultValu
             suggestion: function (suggestion) {
                 if (resultsFound) {
                     const query = $(`#${autoCompleteInputId}`).val(); // Get the current input value.
-                    let regex = new RegExp('(' + query + ')', 'gi'); // Highlight matching text in suggestions.
+                    const escapedQuery = RegExp.escape(query); // Escape special characters in the query string.
+                    let regex = new RegExp('(' + escapedQuery + ')', 'gi'); // Highlight matching text in suggestions.
                     return suggestion.replace(regex, '<strong>$1</strong>'); // Wrap matches in <strong> tags.
                 }
 
@@ -90,6 +118,19 @@ function initAutocomplete(autoCompleteInputId, inputIdForSubmission, defaultValu
             $(`#${inputIdForSubmission}`).attr('value', ''); // Clear the hidden input value.
 
             return noResultsText; // Return the message for no results.
+        }
+    });
+
+    // if javascript is enabled, hide the original input and show the autocomplete input
+    $(`#${inputIdForSubmission}`).hide();
+    $(`label[for="${inputIdForSubmission}"]`).hide();
+    $(`label[for="${autoCompleteInputId}"]`).show();
+
+    $(`#${autoCompleteInputId}`).on('input', function () {
+        if (!this.value) {
+            $(`#${inputIdForSubmission}`).attr('value', ''); // Clears the hidden input value.
+            $(".autocomplete__menu").html(''); // Clear the suggestion list.)
+            resultsFound = false; // Reset the resultsFound flag.
         }
     });
 }

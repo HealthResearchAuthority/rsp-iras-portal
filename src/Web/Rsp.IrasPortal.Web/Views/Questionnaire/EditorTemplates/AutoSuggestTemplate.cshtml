@@ -29,20 +29,7 @@
         // but this input will be used to submit the value regrardless if javascript is enabled or not
         let inputId = '@(question.QuestionId)_Text';
 
-        initAutocomplete('input-autocomplete', inputId, '@question.AnswerText', '/organisation/getorganisations');
-
-        $(`#${inputId}`).hide();
-        $(`label[for="${inputId}"]`).hide();
-
-        $('label[for="input-autocomplete"]').show();
-
-        $("#input-autocomplete").keyup(function () {
-
-            if (!this.value) {
-                $(`#${inputId}`).attr('value', ''); // Clears the hidden input value.
-            }
-
-        });
+        initAutocomplete('input-autocomplete', inputId, "@Html.Raw(question.AnswerText)", '/organisation/getorganisations');
     });
 </script>
 
