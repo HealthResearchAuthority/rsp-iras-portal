@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Globalization;
 using System.Net;
 using FluentValidation;
 using Mapster;
@@ -50,6 +51,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
         // return the view if successfull
         if (response.IsSuccessStatusCode)
         {
+            var textInfo = new CultureInfo("en-GB", false).TextInfo;
+
             var users = response.Content?.Users.Select(user => new UserViewModel
             {
                 Id = user.Id,

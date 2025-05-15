@@ -48,9 +48,9 @@
 									<td class="govuk-table__cell">@reviewBody.OrganisationName</td>
 									<td class="govuk-table__cell">@String.Join(", ", reviewBody.Countries)</td>
 									<td class="govuk-table__cell">
-										<strong class="govuk-tag govuk-tag__full_width @(reviewBody.IsActive ? "govuk-tag--green" : "govuk-tag--dark_red")">
-											@(reviewBody.IsActive ? "ACTIVE" : "DISABLED")
-										</strong>
+										<span class="govuk-tag @(reviewBody.IsActive ? "govuk-tag--green" : "govuk-tag--red")">
+											@(reviewBody.IsActive ? "Active" : "Disabled")
+										</span>
 									</td>
 									<td class="govuk-table__cell">
 										<a class="govuk-link" asp-route="rbc:viewreviewbody" asp-route-id="@reviewBody.Id">View/Edit</a>

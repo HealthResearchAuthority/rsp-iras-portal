@@ -1,5 +1,6 @@
 ﻿@using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Web.Areas.Admin.Models
+@using System.Globalization
 @model (IEnumerable<UserViewModel> Users, PaginationViewModel Pagination)
 
 @{
@@ -55,9 +56,9 @@
 								<td class="govuk-table__cell">
 									@if (!string.IsNullOrEmpty(user.Status))
 									{
-										var statusClass = string.Equals(user.Status, IrasUserStatus.Active, StringComparison.InvariantCultureIgnoreCase) ? "govuk-tag--green" : "govuk-tag--red";
+										var statusClass = string.Equals(user.Status, IrasUserStatus.Active, StringComparison.InvariantCultureIgnoreCase) ? "govuk-tag--green" : "govuk-tag--red";										
 
-										<strong class="govuk-tag govuk-tag__full_width @statusClass"><b>@user.Status.ToUpperInvariant()</b></strong>
+										<span class="govuk-tag @statusClass">@user.Status</span>
 									}
 								</td>
 								<td class="govuk-table__cell">@(user.LastLogin.HasValue ? user.LastLogin.Value.ToString("dd MMM yyyy") : string.Empty)</td>
