@@ -44,6 +44,8 @@ public class UserViewModel
     }
 
     public DateTime? LastLogin { get; set; } = null;
+    public string Committee { get; set; } = null;
+    public string ReviewBody { get; set; } = null;
 
     public UserViewModel()
     { }
