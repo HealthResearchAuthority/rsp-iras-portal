@@ -27,41 +27,53 @@
 		</form>
 	</div>
 
-	<div class="govuk-grid-column-full">
-		<div class="govuk-table-wrapper">
-			<table class="govuk-table">
-				<thead class="govuk-table__head">
-					<tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
-						<th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Organisation name</th>
-						<th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Country</th>
-						<th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Status</th>
-						<th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Actions</th>
-					</tr>
-				</thead>
-				<tbody class="govuk-table__body">
-					@{
-						foreach (var reviewBody in Model.ReviewBodies)
-						{
-							<tr class="govuk-table__row">
-								<td class="govuk-table__cell">@reviewBody.OrganisationName</td>
-								<td class="govuk-table__cell">@String.Join(", ", reviewBody.Countries)</td>
-								<td class="govuk-table__cell">
-									<strong class="govuk-tag govuk-tag__full_width @(reviewBody.IsActive ? "govuk-tag--green" : "govuk-tag--dark_red")">
-										@(reviewBody.IsActive ? "ACTIVE" : "DISABLED")
-									</strong>
-								</td>
-								<td class="govuk-table__cell">
-									<a class="govuk-link" asp-route="rbc:viewreviewbody" asp-route-id="@reviewBody.Id">View/Edit</a>
-								</td>
-							</tr>
+	@if (Model.ReviewBodies != null && Model.ReviewBodies.Any())
+	{
+		<div class="govuk-grid-column-full">
+			<div class="govuk-table-wrapper">
+				<table class="govuk-table">
+					<thead class="govuk-table__head">
+						<tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+							<th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Organisation name</th>
+							<th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Country</th>
+							<th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Status</th>
+							<th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Actions</th>
+						</tr>
+					</thead>
+					<tbody class="govuk-table__body">
+						@{
+							foreach (var reviewBody in Model.ReviewBodies)
+							{
+								<tr class="govuk-table__row">
+									<td class="govuk-table__cell">@reviewBody.OrganisationName</td>
+									<td class="govuk-table__cell">@String.Join(", ", reviewBody.Countries)</td>
+									<td class="govuk-table__cell">
+										<strong class="govuk-tag govuk-tag__full_width @(reviewBody.IsActive ? "govuk-tag--green" : "govuk-tag--dark_red")">
+											@(reviewBody.IsActive ? "ACTIVE" : "DISABLED")
+										</strong>
+									</td>
+									<td class="govuk-table__cell">
+										<a class="govuk-link" asp-route="rbc:viewreviewbody" asp-route-id="@reviewBody.Id">View/Edit</a>
+									</td>
+								</tr>
+							}
 						}
-					}
-				</tbody>
-			</table>
-			<partial name="_Pagination" model="@Model.Pagination" />
+					</tbody>
+				</table>
+				<partial name="_Pagination" model="@Model.Pagination" />
 
+			</div>
 		</div>
-	</div>
+	}
+	else if (!string.IsNullOrEmpty(Model.Pagination?.SearchQuery))
+	{
+		<div class="govuk-grid-column-two-thirds">
+			<h1 class="govuk-heading-l">No results found</h1>
+			<p class="govuk-body">
+				Check your spelling or enter another search term and try again. If no results are found, you can create a new review body record.
+			</p>			
+		</div>
+	}
 
 </div>
 
