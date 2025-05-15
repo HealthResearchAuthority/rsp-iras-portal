@@ -87,6 +87,12 @@ public static class AuthConfiguration
                         //context.TokenEndpointResponse.AccessToken =
                         return Task.CompletedTask;
                     };
+
+                    options.Events.OnTokenValidated = context =>
+                    {
+                        context.HttpContext.Session.SetString(SessionKeys.FirstLogin, bool.TrueString);
+                        return Task.CompletedTask;
+                    };
                 }
             );
 

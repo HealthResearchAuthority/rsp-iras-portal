@@ -1,16 +1,12 @@
-﻿using System.Net;
-using System.Security.Claims;
-using AutoFixture.Xunit2;
+﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
-using Moq;
-using Refit;
 using Rsp.IrasPortal.Application.Configuration;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Infrastructure.Claims;
 using Rsp.IrasPortal.Services.Extensions;
-using Shouldly;
 using Claim = System.Security.Claims.Claim;
 
 namespace Rsp.IrasPortal.UnitTests.Infrastructure.CustomClaimsTransformationTests;
@@ -62,7 +58,14 @@ public class TransformAsyncTests : TestServiceBase<CustomClaimsTransformation>
         var principal = new ClaimsPrincipal(new ClaimsIdentity(claims));
 
         // Mock HttpContext
-        var httpContext = new DefaultHttpContext();
+        var httpContext = new DefaultHttpContext()
+        {
+            Session = new FakeSession(),
+        };
+
+        // Set up the session to simulate first login
+        httpContext.Session.SetString(SessionKeys.FirstLogin, bool.TrueString);
+
         _httpContextAccessor
             .Setup(x => x.HttpContext)
             .Returns(httpContext);
@@ -101,7 +104,14 @@ public class TransformAsyncTests : TestServiceBase<CustomClaimsTransformation>
         var principal = new ClaimsPrincipal(new ClaimsIdentity(claims));
 
         // Mock HttpContext
-        var httpContext = new DefaultHttpContext();
+        var httpContext = new DefaultHttpContext()
+        {
+            Session = new FakeSession(),
+        };
+
+        // Set up the session to simulate first login
+        httpContext.Session.SetString(SessionKeys.FirstLogin, bool.TrueString);
+
         _httpContextAccessor
             .Setup(x => x.HttpContext)
             .Returns(httpContext);

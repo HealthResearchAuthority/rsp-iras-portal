@@ -1,0 +1,114 @@
+﻿@model string?
+@{
+    ViewBag.Title = "My account";
+}
+
+<authorized auth-params="@new(ShowWhenAuthenticated: false)">
+    <div class="govuk-body">
+        <p>
+            To make changes to an approved project, Sign In using the following link
+        </p>
+        <a class="gem-c-button govuk-button govuk-button--start" asp-route="auth:signin">
+            Sign In
+            <svg class="govuk-button__start-icon govuk-!-display-none-print" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19" viewBox="0 0 33 40" focusable="false" aria-hidden="true">
+                <path fill="currentColor" d="M0 0h13l20 20-20 20H0l20-20z"></path>
+            </svg>
+        </a>
+    </div>
+</authorized>
+
+<authorized auth-params="@new(Roles:"user,admin,reviewer")">
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <h1 class="govuk-heading-l">My Account homepage</h1>
+            <p class="govuk-body">This is your account homepage where you can access your workspaces</p>
+            <dl class="govuk-summary-list">
+                <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">
+                        Last logged in:
+                    </dt>
+                    <dd class="govuk-summary-list__value">
+                        @Model
+                    </dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <h2 class="govuk-heading-m">
+                My workspaces   
+            </h2>
+        </div>
+    </div>
+
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-one-third">
+            <partial name="_ActionItem"
+                     model="@("Approvals",
+                        "Workspace for approvals service staff to receive and process applications and post approval activity for review.",
+                        "")" />
+        </div>
+        <div class="govuk-grid-column-one-third">
+            <partial 
+                name="_ActionItem"
+                model="@("CAG members",
+                        " Workspace for members to review applications and post approval activity.",
+                        "")" />
+        </div>
+        <div class="govuk-grid-column-one-third">
+            <partial name="_ActionItem"
+                     model="@("CAT",
+                        "Workspace for CAT staff to receive and process applications and post approval activity for review.",
+                        "")" />
+        </div>
+    </div>
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-one-third">
+            <partial name="_ActionItem"
+                     model="@("Member management",
+                        "Workspace for staff to view and update committee member records.",
+                        "")" />
+        </div>
+        <div class="govuk-grid-column-one-third">
+            <partial name="_ActionItem"
+                     model="@("My research",
+                        "Workspace to view and manage the research I am responsible for.",
+                        "app:welcome")" />
+        </div>
+        <div class="govuk-grid-column-one-third">
+            <partial name="_ActionItem"
+                     model="@("REC members",
+                        "Workspace for members to review applications and post approval activity.",
+                        "")" />
+        </div>
+    </div>
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-one-third">
+            <partial name="_ActionItem"
+                     model="@("Sponsor",
+                        "Workspace to view, manage and authorise the research I am responsible for.",
+                        "")" />
+        </div>
+        <div class="govuk-grid-column-one-third">
+            <partial name="_ActionItem"
+                     model="@("System administration",
+                        "Workspace for system administrators to view and manage system administration functions.",
+                        "systemadmin:view")" />
+        </div>
+        <div class="govuk-grid-column-one-third">
+            <partial name="_ActionItem"
+                     model="@("Technical Assurance",
+                        "Workspace for Technical Assurance staff to receive and process applications and post approval activity for review.",
+                        "")" />
+        </div>
+        <div class="govuk-grid-column-one-third">
+            <partial name="_ActionItem"
+                     model="@("Technical Assurance reviewers",
+                        "Workspace for Technical Assurance reviewers to review applications and post approval activity.",
+                        "")" />
+        </div>
+    </div>
+
+</authorized>

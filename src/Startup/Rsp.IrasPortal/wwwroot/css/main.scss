@@ -20,14 +20,6 @@ fieldset {
     }
 }
 
-.govuk-section-break {
-    &.govuk-section-break--visible {
-        border-color: blue;
-        line-height: 2px;
-        margin-bottom: 10px;
-    }
-}
-
 .progress-container {
     font-family: "GDS Transport", arial, sans-serif;
     display: flex;
@@ -408,4 +400,46 @@ button.govuk-link {
 
 .autocomplete__option:empty {
     display: none;
+}
+
+.hra-card {
+    padding-top: 20px;
+    padding-bottom: 20px;
+    border-top: 1px solid #b1b4b6
+}
+
+.hra-card-heading__link {
+    position: relative;
+
+    &::before {
+        content: "";
+        position: absolute;
+        top: 9px;
+        right: 4px;
+        height: 7px;
+        width: 7px;
+        border-right: 3px solid #1d70b8;
+        border-top: 3px solid #1d70b8;
+        transform: translateY(0) rotate(45deg) scale(1);
+        -webkit-transform: translateY(0) rotate(45deg) scale(1);
+        -ms-transform: translateY(0) rotate(45deg) scale(1);
+        box-sizing: content-box;
+    }
+
+    &:link::before {
+        border-color: #1d70b8;
+    }
+
+    &:visited::before {
+        border-color: #4c2c92;
+    }
+
+    &:hover::before {
+        border-color: #003078;
+    }
+
+    &:focus::before,
+    &:active::before {
+        border-color: #0b0c0c;
+    }
 }
