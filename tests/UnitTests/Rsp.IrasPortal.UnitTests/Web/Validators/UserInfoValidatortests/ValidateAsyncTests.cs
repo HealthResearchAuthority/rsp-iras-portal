@@ -33,7 +33,27 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
         {
             FirstName = "Hello",
             LastName = "Ham",
-            Telephone = "qwerty"
+            Telephone = "qwertyuiopa"
+        };
+
+        // Act
+        var result = await Sut.TestValidateAsync(model);
+
+        // Assert
+        result
+            .ShouldHaveValidationErrorFor(x => x.Telephone)
+            .WithErrorMessage("Telephone must only contain numbers");
+    }
+
+    [Fact]
+    public async Task ShouldHaveValidationErrorForTelephone11DigitOrMore()
+    {
+        // Arrange
+        var model = new UserViewModel
+        {
+            FirstName = "Hello",
+            LastName = "Ham",
+            Telephone = "078987654323"
         };
 
         // Act
