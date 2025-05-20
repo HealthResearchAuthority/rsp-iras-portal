@@ -33,7 +33,7 @@
                     label-text="@question.QuestionText"
                     hint-html="@Html.Raw(hintHtml)"
                     error-key="Questions[@index].AnswerText"
-                    conditional-field="@(conditional)"
-                    dataparents="@parents"
-                    dataquestionid="@questionId"
+                    conditional="@conditional"
+                    dataparents-attr="@parents"
+					dataquestionid-attr="@questionId"
                     id="Questions[@index].AnswerText"/>
