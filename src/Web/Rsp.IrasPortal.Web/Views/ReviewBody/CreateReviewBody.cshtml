@@ -1,29 +1,23 @@
 ﻿@using Microsoft.AspNetCore.Mvc.ModelBinding
-@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using Rsp.IrasPortal.Application.Constants
 @model AddUpdateReviewBodyModel
 
 @{
-    var buttonText = ViewBag.Mode == "update" ? "Save" : "Continue";
-    var heading = ViewBag.Mode == "update" ? "Edit review body details" : "Add a new review body";
-    var submitActionName = ViewBag.Mode == "update" ? "rbc:submitreviewbody" : "rbc:confirmchanges";
-    var backActionName = ViewBag.Mode == "update" ? "rbc:viewreviewbody" : "rbc:viewreviewbodies";
+	var buttonText = ViewBag.Mode == "update" ? "Save" : "Continue";
+	var heading = ViewBag.Mode == "update" ? "Edit review body details" : "Add a new review body";
+	var submitActionName = ViewBag.Mode == "update" ? "rbc:submitreviewbody" : "rbc:confirmchanges";
+	var backActionName = ViewBag.Mode == "update" ? "rbc:viewreviewbody" : "rbc:viewreviewbodies";
 
-    var filteredModelState = new ModelStateDictionary();
-    foreach (var state in ViewData.ModelState.Where(s => !s.Key.StartsWith('_')))
-    {
-        foreach (var error in state.Value!.Errors)
-        {
-            filteredModelState.AddModelError(state.Key, error.ErrorMessage);
-        }
-    }
+	var filteredModelState = new ModelStateDictionary();
+	foreach (var state in ViewData.ModelState.Where(s => !s.Key.StartsWith('_')))
+	{
+		foreach (var error in state.Value!.Errors)
+		{
+			filteredModelState.AddModelError(state.Key, error.ErrorMessage);
+		}
+	}
 
-    var countryOptions = new List<string>
-    {
-        "England", 
-        "Northern Ireland", 
-        "Scotland", 
-        "Wales"
-    };
+
 }
 
 <form method="get">
@@ -46,7 +40,8 @@
 
             <rsp-gds-checkbox-group asp-for="Countries"
                                  label-text="Country"
-                                 options="countryOptions"/>
+                                 options="UkCountryNames.Countries"
+									legend-class="govuk-label govuk-label--s" />
 
             <rsp-gds-input asp-for="EmailAddress"
                            label-text="Email address"
