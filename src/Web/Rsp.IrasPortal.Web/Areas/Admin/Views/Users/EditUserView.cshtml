@@ -52,7 +52,8 @@
                                     item-label-property="Name"
                                     item-value-property="IsSelected"
                                     item-hidden-properties="Id,Name"
-                                    label-css-class="role-checkbox"/>
+                                    label-css-class="role-checkbox"
+									legend-class="govuk-label govuk-label--s" />
 
 
             <rsp-gds-select
@@ -70,13 +71,15 @@
                                     label-text="Country"
                                     options="UkCountryNames.Countries"
                                     label-css-class="role-checkbox"
-                                    conditional-field="true"/>
+                                    conditional-field="true"
+									legend-class="govuk-label govuk-label--s" />
 
             <rsp-gds-checkbox-group asp-for="AccessRequired"
                                     label-text="Access required"
                                     options="AccessRequiredOptions.Options"
                                     label-css-class="role-checkbox"
-                                    conditional-field="true"/>
+                                    conditional-field="true"
+									legend-class="govuk-label govuk-label--s" />
 
             <rsp-gds-select
                 asp-for="ReviewBody"
