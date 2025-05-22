@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Entities;
 using Rsp.IrasPortal.Web.Extensions;
@@ -25,7 +26,29 @@ public class ApplicationController
     // ApplicationInfo view name
     private const string ApplicationInfo = nameof(ApplicationInfo);
 
-    public IActionResult Welcome() => View(nameof(Index));
+    public async Task<IActionResult> Welcome()
+    {
+        // getting respondentID from Http context
+        var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
+
+        // getting research applications by respondent ID
+        var applicationServiceResponse = await applicationsService.GetApplicationsByRespondent(respondentId);
+
+        // safeguard against null response or content
+        var applications = applicationServiceResponse?.Content?.ToList() ?? new List<IrasApplicationResponse>();
+
+        var researchApplications = applications
+            .Where(app => app != null)
+            .Select((app, index) => new ResearchApplicationSummaryModel
+            {
+                IrasId = app.IrasId ?? (index + 1), // fallback if IrasId is null
+                Title = string.IsNullOrWhiteSpace(app.Title) ? $"{index + 1}" : app.Title, //temporary for first iteration
+                ProjectEndDate = new DateTime(2025, 12, 10) //same as above
+            })
+            .ToList();
+
+        return View(nameof(Index), researchApplications);
+    }
 
     public IActionResult StartProject() => View(nameof(StartProject));
 
