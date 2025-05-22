@@ -1,4 +1,7 @@
-﻿@using Rsp.IrasPortal.Application.DTOs.Responses;
+﻿@model List<ResearchApplicationSummaryModel>
+
+@using Rsp.IrasPortal.Application.DTOs.Responses;
+@using System.Linq
 
 <partial name="_BackNavigation" model="@("acc:home", "Back", new Dictionary<string, string>())" />
 
@@ -12,9 +15,36 @@
 				</div>
 			</div>
 
-			<p class="govuk-body">
-				You don't have any projects available in the new service
-			</p>
+			@if (Model != null && Model.Any())
+			{
+				<div class="govuk-grid-row govuk-grid-column-full govuk-grid-gap">
+
+					@foreach (var item in Model)
+					{
+						<div class="govuk-grid-row">
+							<div class="govuk-grid-column-two-thirds">
+								<div class="govuk-panel govuk-panel--bordered">
+									<h2 class="govuk-heading-s">
+										<a href="#" class="govuk-link">Placeholder ->@item.Title</a>
+									</h2>
+									<p class="govuk-body"><strong>IRAS ID:</strong> @item.IrasId</p>
+									<p class="govuk-body" ><strong>Project end date:</strong>Placeholder -> @item.ProjectEndDate.ToString()</p>
+									@if (item.IsNew)
+									{
+										<strong class="govuk-tag govuk-tag--blue">NEW</strong>
+									}
+								</div>
+							</div>
+						</div>
+					}
+				</div>
+			}
+			else
+			{
+				<p class="govuk-body">
+					You don't have any projects available in the new service
+				</p>
+			}
 
 			<a class="govuk-button govuk-button--secondary" asp-route="app:createapplication">Create project record</a>
 
