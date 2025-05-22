@@ -43,8 +43,8 @@ public class ApplicationController(
             .Where(app => app != null)
             .Select((app, index) => new ResearchApplicationSummaryModel
             {
-                IrasId = app.IrasId ?? (index + 1), // fallback if IrasId is null
-                Title = string.IsNullOrWhiteSpace(app.Title) ? $"{index + 1}" : app.Title, //temporary for first iteration
+                IrasId = app.IrasId ?? null, // fallback if IrasId is null
+                Title = string.IsNullOrWhiteSpace(app.Title) ? "Empty" : app.Title, //temporary for first iteration
                 ProjectEndDate = new DateTime(2025, 12, 10) //same as above
             })
             .ToList();
