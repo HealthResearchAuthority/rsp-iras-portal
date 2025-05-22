@@ -1,4 +1,6 @@
-﻿namespace Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
+﻿using Rsp.IrasPortal.Application.Constants;
+
+namespace Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
 
 public class CreateUserRequest
 {
@@ -10,6 +12,16 @@ public class CreateUserRequest
     public string? Organisation { get; set; } = null;
     public string? Telephone { get; set; } = null;
     public string? Country { get; set; } = null;
-    public string Status { get; set; } = null!;
+    private string? _status;
+
+    public string Status
+    {
+        get
+        {
+            return _status ?? string.Empty;
+        }
+        set => _status = string.IsNullOrEmpty(value) ? IrasUserStatus.Active : value.ToLower();
+    }
+
     public DateTime? LastUpdated { get; set; } = null;
 }
