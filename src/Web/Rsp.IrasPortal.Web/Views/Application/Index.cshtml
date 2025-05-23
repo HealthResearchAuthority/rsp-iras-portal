@@ -25,7 +25,7 @@
 								<div class="govuk-grid-column-two-thirds">
 									<div class="govuk-panel govuk-panel--bordered research-panel">
 										<h2 class="govuk-heading-s">
-											<a href="#" class="govuk-link">Placeholder -> @item.Title</a>
+											<a asp-route="app:projectoverview" asp-route-ApplicationId="@item.ApplicatonId" asp-route-CategoryId="project record v1" class="govuk-link">Placeholder -> @item.Title</a>
 										</h2>
 										<div class="govuk-body">
 											<p class="govuk-body research-text"><strong>IRAS ID:</strong> @(item.IrasId == null ? "Null" : item.IrasId)</p>

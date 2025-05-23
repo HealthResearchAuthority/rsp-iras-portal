@@ -44,6 +44,7 @@ public class ApplicationController(
             .Select((app, index) => new ResearchApplicationSummaryModel
             {
                 IrasId = app.IrasId ?? null, // fallback if IrasId is null
+                ApplicatonId = app.ApplicationId ?? null, // also a fallback
                 Title = string.IsNullOrWhiteSpace(app.Title) ? "Empty" : app.Title, //temporary for first iteration
                 ProjectEndDate = new DateTime(2025, 12, 10) //same as above
             })
@@ -268,17 +269,19 @@ public class ApplicationController(
         return this.ServiceError(applicationServiceResponse);
     }
 
-    public IActionResult ProjectOverview()
+
+    public IActionResult ProjectOverview(string? CategoryId = null, string? ApplicationId = null)
     {
         var model = new ProjectOverviewModel
         {
             ProjectTitle = TempData[TempDataKeys.ShortProjectTitle] as string ?? string.Empty,
-            CategoryId = TempData[TempDataKeys.CategoryId] as string ?? string.Empty,
-            ApplicationId = TempData[TempDataKeys.ApplicationId] as string ?? string.Empty
+            CategoryId = TempData[TempDataKeys.CategoryId] as string ?? CategoryId ?? string.Empty,
+            ApplicationId = TempData[TempDataKeys.ApplicationId] as string ?? ApplicationId ?? string.Empty
         };
 
         return View(model);
     }
+
 
     [Route("{applicationId}", Name = "app:ViewApplication")]
     public async Task<IActionResult> ViewApplication(string applicationId)
