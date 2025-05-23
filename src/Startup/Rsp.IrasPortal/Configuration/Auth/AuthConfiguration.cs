@@ -3,7 +3,6 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
@@ -36,8 +35,12 @@ public static class AuthConfiguration
             (
                 options =>
                 {
+                    // Default scheme is cookie authentication
                     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                    options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+
+                    // Default scheme and challenge scheme are same to handle the session and auth
+                    // cookie timeout using the cookie authentication handler
+                    options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 }
             )
             .AddCookie
@@ -58,7 +61,9 @@ public static class AuthConfiguration
                         }
                     };
 
-                    options.ExpireTimeSpan = TimeSpan.FromMinutes(15);
+                    options.LoginPath = "/";
+                    options.LogoutPath = "/";
+                    options.ExpireTimeSpan = TimeSpan.FromSeconds(appSettings.AuthSettings.AuthCookieTimeout);
                     options.SlidingExpiration = true;
                     options.AccessDeniedPath = "/Forbidden";
                 }
@@ -82,15 +87,17 @@ public static class AuthConfiguration
                     options.UsePkce = false;
                     options.ClaimActions.MapUniqueJsonKey(ClaimTypes.Name, "given_name");
 
-                    options.Events.OnAuthorizationCodeReceived = context =>
-                    {
-                        //context.TokenEndpointResponse.AccessToken =
-                        return Task.CompletedTask;
-                    };
-
                     options.Events.OnTokenValidated = context =>
                     {
+                        // this key is used to indicate that the user is logged in for the first time
+                        // will be used to update the LastLogin during the claims transformation
+                        // to indicate when the user was logged in last time.
                         context.HttpContext.Session.SetString(SessionKeys.FirstLogin, bool.TrueString);
+
+                        // this key is used to check if the session is alive in the middleware
+                        // and signout the user if the session is expired
+                        context.HttpContext.Session.SetString(SessionKeys.Alive, bool.TrueString);
+
                         return Task.CompletedTask;
                     };
                 }
@@ -112,8 +119,12 @@ public static class AuthConfiguration
         services
             .AddAuthentication(options =>
             {
+                // Default scheme is cookie authentication
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+
+                // Default scheme and challenge scheme are same to handle the session and auth
+                // cookie timeout using the cookie authentication handler
+                options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             })
             .AddCookie(options =>
             {
@@ -131,7 +142,9 @@ public static class AuthConfiguration
                     }
                 };
 
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(15);
+                options.LoginPath = "/";
+                options.LogoutPath = "/";
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(appSettings.OneLogin.AuthCookieTimeout);
                 options.SlidingExpiration = true;
                 options.AccessDeniedPath = "/Forbidden";
             })
@@ -188,6 +201,20 @@ public static class AuthConfiguration
                     Console.WriteLine(clientAssertion);
                     context.TokenEndpointRequest!.ClientAssertion = clientAssertion;
                     context.TokenEndpointRequest.ClientAssertionType = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer";
+                    return Task.CompletedTask;
+                };
+
+                options.Events.OnTokenValidated = context =>
+                {
+                    // this key is used to indicate that the user is logged in for the first time
+                    // will be used to update the LastLogin during the claims transformation
+                    // to indicate when the user was logged in last time.
+                    context.HttpContext.Session.SetString(SessionKeys.FirstLogin, bool.TrueString);
+
+                    // this key is used to check if the session is alive in the middleware
+                    // and signout the user if the session is expired
+                    context.HttpContext.Session.SetString(SessionKeys.Alive, bool.TrueString);
+
                     return Task.CompletedTask;
                 };
             });

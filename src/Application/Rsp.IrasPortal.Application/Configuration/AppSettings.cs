@@ -44,4 +44,9 @@ public class AppSettings
     /// OneLogin configuration
     /// </summary>
     public OneLoginConfiguration OneLogin { get; set; } = null!;
+
+    /// <summary>
+    /// Timeout for the session in seconds.
+    /// </summary>
+    public uint SessionTimeout { get; set; }
 }
