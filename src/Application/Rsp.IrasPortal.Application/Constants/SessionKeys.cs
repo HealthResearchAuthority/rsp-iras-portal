@@ -10,4 +10,5 @@ public static class SessionKeys
     public const string Questionnaire = "session:questionnaire";
     public const string DocumentUpload = "session:document_upload";
     public const string FirstLogin = "session:first_login";
+    public const string Alive = "session:alive";
 }

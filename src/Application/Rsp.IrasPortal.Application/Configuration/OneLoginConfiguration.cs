@@ -16,4 +16,9 @@ public class OneLoginConfiguration
     /// The client identifier.
     /// </summary>
     public string ClientId { get; set; } = null!;
+
+    /// <summary>
+    /// Timeout for the authentication cookie in seconds.
+    /// </summary>
+    public uint AuthCookieTimeout { get; set; }
 }

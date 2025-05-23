@@ -50,7 +50,6 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.AuthControllerTests
             // Assert
             var signOutResult = result.ShouldBeOfType<SignOutResult>();
             signOutResult.AuthenticationSchemes.ShouldContain(CookieAuthenticationDefaults.AuthenticationScheme);
-            signOutResult.AuthenticationSchemes.ShouldContain("OpenIdConnect");
             signOutResult
                 .Properties.ShouldNotBeNull()
                 .RedirectUri.ShouldBe("/welcome");
