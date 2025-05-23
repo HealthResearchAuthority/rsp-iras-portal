@@ -1,5 +1,7 @@
 ﻿using FluentValidation;
 using Mapster;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.FeatureManagement;
@@ -78,7 +80,7 @@ else
 
 services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(15);
+    options.IdleTimeout = TimeSpan.FromSeconds(appSettings.SessionTimeout);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
@@ -159,12 +161,32 @@ app.UseHeaderPropagation();
 // message template for request
 app.UseRequestTracing();
 
-app.MapShortCircuit(404, "robots.txt", "favicon.ico", "*.css");
+app.MapShortCircuit(StatusCodes.Status404NotFound, "robots.txt", "favicon.ico", "*.css");
 
 app
     .UseRouting()
     .UseSession()
     .UseAuthentication()
+    .Use(async (context, next) =>
+    {
+        var user = context.User;
+
+        var isAuthenticated = user?.Identity?.IsAuthenticated ?? false;
+
+        // if the user is authenticated, check if the session is alive
+        // this scenario is when the user is authenticated but the session has expired
+        // because the AuthCookieTimeout is longer than the session timeout
+        if (isAuthenticated && !context.Session.TryGetValue(SessionKeys.Alive, out _))
+        {
+            // Session expired - redirect to signout
+            await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            context.Response.Redirect("/");
+            return;
+        }
+
+        await next();
+    })
     .UseAuthorization()
     .UseEndpoints
     (
