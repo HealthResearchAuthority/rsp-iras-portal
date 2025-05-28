@@ -246,9 +246,6 @@ public class QuestionnaireController
             question.AnswerText = response?.AnswerText;
         }
 
-        // for creating variable of short title and storing in tempdata, for sake of project overview functionality
-        TempData[TempDataKeys.ShortProjectTitle] ??= model.Questions.FirstOrDefault(q => q.QuestionText == "Short project title")?.AnswerText; ;
-
         // override the submitted model
         // with the updated model with answers
         model.Questions = questions;
@@ -364,7 +361,7 @@ public class QuestionnaireController
 
         if (saveForLater == bool.TrueString)
         {
-            // short project title already stored in Tempdata in line 244
+            TempData[TempDataKeys.ShortProjectTitle] = model.GetShortProjectTitle();
             TempData[TempDataKeys.CategoryId] = navigation.CurrentCategory;
             TempData[TempDataKeys.ApplicationId] = application.ApplicationId;
 
