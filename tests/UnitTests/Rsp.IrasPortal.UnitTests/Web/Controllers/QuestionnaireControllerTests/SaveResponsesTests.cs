@@ -326,8 +326,8 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
 
         var questions = new List<QuestionViewModel>
     {
-        new() { Index = 0, QuestionId = "Q1", SelectedOption = "Option1" },
-        new() { Index = 1, QuestionId = "Q2", AnswerText = "Answer2" }
+        new() { Index = 0, QuestionId = "Q1", QuestionText = "Participating nations", SelectedOption = "Option1" },
+        new() { Index = 1, QuestionId = "Q2", QuestionText = "Short project title", AnswerText = "Answer2" }
     };
 
         var application = new IrasApplicationResponse
@@ -341,7 +341,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
     {
         { $"{SessionKeys.Application}", JsonSerializer.SerializeToUtf8Bytes(application) },
         { $"{SessionKeys.Questionnaire}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(questions) },
-        { "ShortProjectTitle", Encoding.UTF8.GetBytes(shortProjectTitle) }
+        { "Short Project Title", Encoding.UTF8.GetBytes(shortProjectTitle) }
     };
 
         session
