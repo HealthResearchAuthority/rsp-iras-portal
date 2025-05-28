@@ -254,6 +254,7 @@ public class ApplicationController(
             ApplicationId = TempData[TempDataKeys.ApplicationId] as string ?? string.Empty
         };
 
+        TempData[TempDataKeys.ProjectOverview] = true;
         return View(model);
     }
 
