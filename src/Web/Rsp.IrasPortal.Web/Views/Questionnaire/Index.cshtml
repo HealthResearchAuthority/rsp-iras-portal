@@ -25,13 +25,7 @@
 	<script src="~/lib/jquery/dist/jquery.js"></script>
 
 	// Collect all rules for conditional questions
-	var conditionalRules = Model.Questions
-		.Where(q => !q.IsMandatory && q.Rules.Any())
-		.Select(q => new
-		{
-			q.QuestionId,
-			q.Rules
-		}).ToList();
+	var conditionalRules = Model.GetConditionalRules();
 
 	<script>
 		$(document).ready(function () {
