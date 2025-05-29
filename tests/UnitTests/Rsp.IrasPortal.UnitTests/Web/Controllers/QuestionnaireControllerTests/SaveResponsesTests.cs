@@ -326,8 +326,8 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
 
         var questions = new List<QuestionViewModel>
     {
-        new() { Index = 0, QuestionId = "Q1", QuestionText = "Participating nations", SelectedOption = "Option1" },
-        new() { Index = 1, QuestionId = "Q2", QuestionText = "Short project title", AnswerText = "Answer2" }
+        new() { Index = 0, QuestionId = "Q1", QuestionText = "Participating nations", SelectedOption = "Option1", Category = "Category1" },
+        new() { Index = 1, QuestionId = "Q2", QuestionText = "Short project title", AnswerText = "Answer2", Category = "Category2" }
     };
 
         var application = new IrasApplicationResponse
