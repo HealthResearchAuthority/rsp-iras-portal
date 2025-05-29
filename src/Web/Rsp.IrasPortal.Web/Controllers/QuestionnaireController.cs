@@ -362,7 +362,7 @@ public class QuestionnaireController
         if (saveForLater == bool.TrueString)
         {
             TempData[TempDataKeys.ShortProjectTitle] = model.GetShortProjectTitle();
-            TempData[TempDataKeys.CategoryId] = navigation.CurrentCategory;
+            TempData[TempDataKeys.CategoryId] = model.GetFirstCategory();
             TempData[TempDataKeys.ApplicationId] = application.ApplicationId;
 
             return RedirectToAction("ProjectOverview", "Application");

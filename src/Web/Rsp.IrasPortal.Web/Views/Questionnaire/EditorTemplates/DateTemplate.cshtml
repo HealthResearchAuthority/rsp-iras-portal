@@ -27,13 +27,16 @@
 }
 
 <rsp-gds-date-input asp-for="@Model.Questions[index].AnswerText"
-                    day-name="Questions[@index].Day"
-                    month-name="Questions[@index].Month"
-                    year-name="Questions[@index].Year"
-                    label-text="@question.QuestionText"
-                    hint-html="@Html.Raw(hintHtml)"
-                    error-key="Questions[@index].AnswerText"
-                    conditional="@conditional"
-                    dataparents-attr="@parents"
+					day-name="Questions[@index].Day"
+					day-value="@Model.Questions[index].Day"
+					month-name="Questions[@index].Month"
+					month-value="@Model.Questions[index].Month"
+					year-name="Questions[@index].Year"
+					year-value="@Model.Questions[index].Year"
+					label-text="@question.QuestionText"
+					hint-html="@Html.Raw(hintHtml)"
+					error-key="Questions[@index].AnswerText"
+					conditional="@conditional"
+					dataparents-attr="@parents"
 					dataquestionid-attr="@questionId"
-                    id="Questions[@index].AnswerText"/>
+					id="Questions[@index].AnswerText" />
