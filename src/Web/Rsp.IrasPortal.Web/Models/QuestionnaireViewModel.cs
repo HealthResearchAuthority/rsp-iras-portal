@@ -6,17 +6,6 @@ public class QuestionnaireViewModel
     public string CurrentStage { get; set; } = "";
     public List<QuestionViewModel> Questions { get; set; } = [];
 
-    public List<object> GetConditionalRules()
-    {
-        return [.. Questions
-           .Where(q => !q.IsMandatory && q.Rules.Any())
-           .Select(q => new
-           {
-               q.QuestionId,
-               q.Rules
-           })];
-    }
-
     public string? GetShortProjectTitle()
     {
         return Questions
