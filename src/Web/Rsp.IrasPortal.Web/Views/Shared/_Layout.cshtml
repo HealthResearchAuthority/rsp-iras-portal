@@ -149,10 +149,16 @@
         </div>
     </footer>
     <script type="module" src="~/js/govuk-frontend.min.js"></script>
-    <script type="module">
+<script type="module">
         import { initAll } from '/js//govuk-frontend.min.js'
         initAll()
     </script>
+	<!-- Required styles and scripts -->
+	<link rel="stylesheet" href="~/assets/css/accessible-autocomplete.min.css" />
+	<script src="~/lib/jquery/dist/jquery.js"></script>
+	<script src="~/assets/js/accessible-autocomplete.min.js"></script>
+	<script src="~/js/accessible-autocomplete-wrapper.js"></script>
+
 </body>
 
 @await RenderSectionAsync("FooterResources", false)

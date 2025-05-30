@@ -18,20 +18,15 @@
         : null;
 }
 
-<!-- Required styles and scripts -->
-<link rel="stylesheet" href="~/assets/css/accessible-autocomplete.min.css" />
-<script src="~/lib/jquery/dist/jquery.js"></script>
-<script src="~/assets/js/accessible-autocomplete.min.js"></script>
-<script src="~/rsp-gds-component/js/accessible-autocomplete-wrapper.js"></script>
-
-<!-- Autocomplete component -->
-<rsp-gds-autocomplete
-    asp-for="Questions[index].AnswerText"
-    label-text="@question.QuestionText"
-    api-url="/organisation/getorganisations"
-    validation-message="@validationMessage"
-    hint-html="@Html.Raw(hintContent)"
-    dataparents-attr="@parents"
-    dataquestionid-attr="@questionId"
-    conditional="@conditional">
+<rsp-gds-autocomplete 
+    asp-for="Questions[@index].AnswerText"
+					  field-id="@($"Questions_{index}_AnswerText")"
+					  label-text="@question.QuestionText"
+					  api-url="/organisation/getorganisations"
+					  validation-message="@validationMessage"
+					  hint-html="@Html.Raw(hintContent)"
+					  dataparents-attr="@parents"
+					  dataquestionid-attr="@questionId"
+					  conditional="@conditional">
 </rsp-gds-autocomplete>
+
