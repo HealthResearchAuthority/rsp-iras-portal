@@ -1,4 +1,4 @@
-﻿@import url("govuk-frontend.min.css");
+@import url("govuk-frontend.min.css");
 .govuk-form-group.questions {
   border: solid 1px lightgrey;
   padding: 30px;
@@ -270,7 +270,7 @@ button.govuk-link {
 }
 
 .govuk-back-link-button--inverse:active, .govuk-back-link-button--inverse:hover {
-  color: hsla(0deg, 0%, 100%, 0.99);
+  color: hsla(0, 0%, 100%, 0.99);
 }
 
 .govuk-back-link-button--inverse:focus {
@@ -409,3 +409,9 @@ button.govuk-link {
 .hra-card-heading__link:focus::before, .hra-card-heading__link:active::before {
   border-color: #0b0c0c;
 }
+
+.js-hidden {
+  display: none !important;
+}
+
+/*# sourceMappingURL=main.css.map */
