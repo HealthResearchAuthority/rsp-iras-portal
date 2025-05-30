@@ -41,4 +41,23 @@ public class AuthController : Controller
             RedirectUri = Url.RouteUrl("acc:home")
         });
     }
+
+    public async Task<IActionResult> TimedOut()
+    {
+        // Signs out the user from the local cookie authentication.
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+        // The SignOutResult below can handle federated sign-out
+        // if configured, and in many Razor Pages scenarios, signing out of the local cookie is sufficient.
+        // If we need to explicitly sign out from the external identity provider, then we need to
+        // call the HttpContext.SignOutAsync method with the OpenIdConnect scheme.
+
+        // Returns a sign-out result, which will clear the authentication cookie and redirect.
+        //return new SignOutResult([CookieAuthenticationDefaults.AuthenticationScheme], new()
+        //{
+        //    RedirectUri = Url.RouteUrl("acc:home")
+        //});
+
+        return View("_SessionTimedOut");
+    }
 }

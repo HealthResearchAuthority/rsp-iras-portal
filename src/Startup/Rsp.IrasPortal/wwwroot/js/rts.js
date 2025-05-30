@@ -9,7 +9,7 @@
  * @param {string} defaultValue - The default value to prefill in the autocomplete input.
  * @param {string} apiUrl - The API endpoint to fetch autocomplete suggestions.
  */
-function initAutocomplete(autoCompleteInputId, inputIdForSubmission, defaultValue, apiUrl) {
+function initAutocomplete(autoCompleteInputId, inputIdForSubmission, defaultValue, apiUrl, sessionTimeout) {
     const beforeSuggestionsText = 'Suggestions'; // Message displayed before the suggestions.
     const afterSuggestionsText = 'Continue entering to improve suggestions'; // Message displayed after the suggestions.
     const noResultsText = 'No suggestions found.'; // Message displayed when no suggestions are found.
@@ -37,6 +37,8 @@ function initAutocomplete(autoCompleteInputId, inputIdForSubmission, defaultValu
                 $(".autocomplete__menu").attr('data-after-suggestions', afterSuggestionsText); // Show message after suggestions.
                 return;
             }
+
+            localStorage.setItem('shared-session-timeout', (Date.now() + sessionTimeout * 1000).toString());
 
             // Fetch suggestions from the API based on the user's query.
             $.ajax({

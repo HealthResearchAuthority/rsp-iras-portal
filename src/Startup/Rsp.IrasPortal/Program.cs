@@ -52,6 +52,8 @@ builder.Services.Configure<AppSettings>(builder.Configuration.GetSection(nameof(
 var appSettingsSection = configuration.GetSection(nameof(AppSettings));
 var appSettings = appSettingsSection.Get<AppSettings>()!;
 
+services.AddSingleton(appSettings);
+
 // Creating a feature manager without the use of DI. Injecting IFeatureManager
 // via DI is appropriate in consturctor methods. At the startup, it's
 // not recommended to call services.BuildServiceProvider and retreive IFeatureManager

@@ -3,6 +3,7 @@
 @using Rsp.IrasPortal.Web.Models
 @using Rsp.IrasPortal.Web.ViewHelpers
 @model QuestionnaireViewModel
+@inject AppSettings appSettings
 
 @{
     var index = (int)ViewBag.Index;
@@ -18,7 +19,6 @@
 }
 
 <link rel="stylesheet" href="~/assets/css/accessible-autocomplete.min.css" />
-<script src="~/lib/jquery/dist/jquery.js"></script>
 <script type="text/javascript" src="~/assets/js/accessible-autocomplete.min.js"></script>
 <script src="~/js/rts.js"></script>
 
@@ -29,7 +29,7 @@
         // but this input will be used to submit the value regrardless if javascript is enabled or not
         let inputId = '@(question.QuestionId)_Text';
 
-        initAutocomplete('input-autocomplete', inputId, "@Html.Raw(question.AnswerText)", '/organisation/getorganisations');
+        initAutocomplete('input-autocomplete', inputId, "@Html.Raw(question.AnswerText)", '/organisation/getorganisations', @appSettings.SessionTimeout);
     });
 </script>
 

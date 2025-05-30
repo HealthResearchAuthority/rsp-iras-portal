@@ -1,0 +1,87 @@
+﻿@using Rsp.IrasPortal.Application.Configuration
+@inject AppSettings appSettings
+
+<authorized auth-params="new()">
+
+    <!-- Live announcer for screen readers -->
+    @*<div id="modal-aria-announcer" class="govuk-visually-hidden" aria-live="assertive" role="status"></div>*@
+
+    <!--<div id="timeout-warning-overlay" class="govuk-modal-overlay" hidden></div>
+
+    <div id="timeout-warning"
+         class="govuk-modal"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="timeout-title"
+         aria-describedby="at-timer"
+         aria-live="polite"
+         hidden>
+
+        <div class="govuk-modal__content">
+            <h2 class="govuk-heading-m" id="timeout-title">We’re about to sign you out</h2>
+
+            <p class="govuk-body">
+                We'll sign you out in
+                <span id="timeout-countdown" aria-hidden="true">@appSettings.WarningBeforeSeconds</span> seconds
+                to protect your data.
+            </p>-->
+    <!-- Screen reader friendly live region -->
+    <!--<span id="at-timer" role="status" class="govuk-visually-hidden">2 minutes remaining</span>
+
+            <div class="govuk-button-group">
+                <button id="stay-signed-in" class="govuk-button">Stay signed in</button>
+                <a asp-route="auth:signout" class="govuk-button govuk-button--secondary">Sign out</a>
+            </div>
+        </div>
+    </div>-->
+
+    <div id="timeout-warning-overlay" class="govuk-modal-overlay" hidden></div>
+
+    <div id="timeout-warning"
+         class="govuk-modal"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="timeout-title"
+         aria-describedby="at-timer-description"
+         hidden>
+
+        <div class="govuk-modal__content">
+            <h2 class="govuk-heading-m" id="timeout-title">We’re about to sign you out</h2>
+
+            <!-- Visible timer (non-AT) -->
+            <p class="govuk-body" id="at-timer-description">
+                We'll sign you out in <span id="timeout-countdown-visible" aria-hidden="true">@appSettings.WarningBeforeSeconds </span>to protect your data.
+            </p>
+
+            <span id="timeout-countdown"
+                  role="timer"
+                  aria-live="assertive"
+                  aria-label="Time remaining before automatic sign out"
+                  class="govuk-visually-hidden">@appSettings.WarningBeforeSeconds</span>
+
+                @*<span id="at-timer-description" class="govuk-visually-hidden">
+                        This countdown timer shows how much time is left before you are signed out automatically.
+                    </span>*@
+            </div>
+
+            <div class="govuk-button-group">
+                <button id="stay-signed-in" class="govuk-button" role="button">Stay signed in</button>
+                <a asp-route="auth:signout" class="govuk-button govuk-button--secondary" role="button">Sign out</a>
+            </div>
+        </div>
+
+        <noscript>
+            <div class="govuk-notification-banner govuk-notification-banner--blue" role="region" aria-labelledby="js-disabled-title" data-module="govuk-notification-banner">
+                <div class="govuk-notification-banner__header">
+                    <h2 class="govuk-notification-banner__title" id="js-disabled-title">
+                        Important
+                    </h2>
+                </div>
+                <div class="govuk-notification-banner__content">
+                    <span class="govuk-notification-banner__heading">
+                        If there is no activity for @(appSettings.SessionTimeout / 60) minutes we'll sign you out automatically to protect your data. Any answers you have saved will not be affected.
+                    </span>
+                </div>
+            </div>
+        </noscript>
+    </authorized>
