@@ -1,7 +1,5 @@
 ﻿using FluentValidation;
 using Mapster;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.FeatureManagement;
@@ -51,6 +49,8 @@ builder.Services.Configure<AppSettings>(builder.Configuration.GetSection(nameof(
 
 var appSettingsSection = configuration.GetSection(nameof(AppSettings));
 var appSettings = appSettingsSection.Get<AppSettings>()!;
+
+services.AddSingleton(appSettings);
 
 // Creating a feature manager without the use of DI. Injecting IFeatureManager
 // via DI is appropriate in consturctor methods. At the startup, it's
@@ -167,26 +167,6 @@ app
     .UseRouting()
     .UseSession()
     .UseAuthentication()
-    .Use(async (context, next) =>
-    {
-        var user = context.User;
-
-        var isAuthenticated = user?.Identity?.IsAuthenticated ?? false;
-
-        // if the user is authenticated, check if the session is alive
-        // this scenario is when the user is authenticated but the session has expired
-        // because the AuthCookieTimeout is longer than the session timeout
-        if (isAuthenticated && !context.Session.TryGetValue(SessionKeys.Alive, out _))
-        {
-            // Session expired - redirect to signout
-            await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-
-            context.Response.Redirect("/");
-            return;
-        }
-
-        await next();
-    })
     .UseAuthorization()
     .UseEndpoints
     (

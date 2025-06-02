@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
@@ -40,5 +41,15 @@ public class AuthController : Controller
         {
             RedirectUri = Url.RouteUrl("acc:home")
         });
+    }
+
+    [ExcludeFromCodeCoverage]
+    public async Task<IActionResult> TimedOut()
+    {
+        // Signs out the user from the local cookie authentication.
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+        // Returns a view indicating that the session has timed out.
+        return View("_SessionTimedOut");
     }
 }

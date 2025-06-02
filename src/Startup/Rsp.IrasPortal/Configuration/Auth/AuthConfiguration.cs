@@ -58,6 +58,12 @@ public static class AuthConfiguration
                             context.HttpContext.Items[ContextItemKeys.BearerToken] = context.Properties.GetTokenValue(ContextItemKeys.AcessToken);
 
                             return Task.CompletedTask;
+                        },
+
+                        OnRedirectToLogin = context =>
+                        {
+                            context.Response.Redirect("/auth/timedout");
+                            return Task.CompletedTask;
                         }
                     };
 
@@ -138,6 +144,12 @@ public static class AuthConfiguration
                         // to regenerate the JwtToken with additional claims
                         context.HttpContext.Items[ContextItemKeys.BearerToken] = context.Properties.GetTokenValue(ContextItemKeys.IdToken);
 
+                        return Task.CompletedTask;
+                    },
+					
+                    OnRedirectToLogin = context =>
+                    {
+                        context.Response.Redirect("/auth/timedout");
                         return Task.CompletedTask;
                     }
                 };
