@@ -57,7 +57,7 @@
 		{
 			{ "categoryId", previousCategory },
 			{ "sectionId", previousStage }
-		});
+                                                                                                                                                                                                                                            });
 	}
 	else if (projectOverview)
 	{
@@ -71,9 +71,13 @@
 
 @if (navModel != null)
 {
-	<partial name="_BackNavigation" model="navModel.Value" />
+	@* @section is added for the back button, so that we can render something below the back button
+	    and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
+	    the named section *@
+	@section BackNavigation {
+		<partial name="_BackNavigation" model="navModel.Value" />
+	}
 }
-
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
         <form method="post">

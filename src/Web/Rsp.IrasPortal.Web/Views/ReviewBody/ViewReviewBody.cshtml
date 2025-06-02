@@ -1,34 +1,38 @@
 ﻿@model AddUpdateReviewBodyModel
 
 @{
-	ViewData["Title"] = "View review body";
-	var reviewBodyModel = Model;
-	var submitActionName = Model.IsActive ? "rbc:disablereviewbody" : "rbc:enablereviewbody";
-	var buttonText = Model.IsActive ? "Disable review body" : "Enable review body";
-	var heading = Model.IsActive ? "Disable this review body?" : "Enable this review body";
-	var hint = Model.IsActive ? "Disabling a review body will lock their account and can be reversed" : "Enabling a review body will unlock their account";
+    ViewData["Title"] = "View review body";
+    var reviewBodyModel = Model;
+    var submitActionName = Model.IsActive ? "rbc:disablereviewbody" : "rbc:enablereviewbody";
+    var buttonText = Model.IsActive ? "Disable review body" : "Enable review body";
+    var heading = Model.IsActive ? "Disable this review body?" : "Enable this review body";
+    var hint = Model.IsActive ? "Disabling a review body will lock their account and can be reversed" : "Enabling a review body will unlock their account";
 }
 
-<partial name="_BackNavigation" model="@("rbc:viewreviewbodies", "Back", new Dictionary<string, string>())" />
+@* @section is added for the back button, so that we can render something below the back button
+    and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
+    the named section *@
+@section BackNavigation {
+    <partial name="_BackNavigation" model="@("rbc:viewreviewbodies", "Back", new Dictionary<string, string>())" />
+}
 
 <div class="govuk-grid-row">
-	<div class="govuk-grid-column-one-half">
-		<h1 class="govuk-heading-l">Review body profile: @Model.OrganisationName</h1>
-	</div>
+    <div class="govuk-grid-column-one-half">
+        <h1 class="govuk-heading-l">Review body profile: @Model.OrganisationName</h1>
+    </div>
 </div>
 
 <partial name="_ReviewBodySummaryTablePartial" model="(reviewBodyModel, true)" />
 
-
 <h2 class="govuk-heading-m">@heading</h2>
 <p class="govuk-hint">
-	@hint
+    @hint
 </p>
 
 <form method="post">
-	<input type="hidden" asp-for="Id" />
-	@{
-		ViewBag.Style = "govuk-button govuk-button--secondary";
-	}
-	<partial name="_SubmitButton" model="@(submitActionName, buttonText, new Dictionary<string, string>())" />
+    <input type="hidden" asp-for="Id" />
+    @{
+        ViewBag.Style = "govuk-button govuk-button--secondary";
+    }
+    <partial name="_SubmitButton" model="@(submitActionName, buttonText, new Dictionary<string, string>())" />
 </form>
