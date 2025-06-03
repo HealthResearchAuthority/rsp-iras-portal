@@ -115,16 +115,27 @@ function initAutocomplete(autoCompleteInputId, inputIdForSubmission, defaultValu
         }
     });
 
-    // if javascript is enabled, hide the original input and label
-    $('#' + inputIdForSubmission).addClass('js-hidden');
-    $('label[for="' + inputIdForSubmission + '"]').hide();
+    // If JavaScript is enabled, hide the original input and its label
+    const hiddenInputId = '#' + inputIdForSubmission;
+    const $hiddenInput = $(hiddenInputId);
+    if ($hiddenInput.length) {
+        $hiddenInput.hide();
+    }
+
+    const $label = $('label[for="' + inputIdForSubmission + '"]');
+    if ($label.length) {
+        $label.hide();
+    }
 
     // Clear hidden field if input is cleared
-    $('#' + autoCompleteInputId).on('input', function () {
-        if (!this.value) {
-            $('#' + inputIdForSubmission).val(''); // Clears the hidden input value.
-            $('.autocomplete__menu').html(''); // Clear the suggestion list.
-            resultsFound = false; // Reset the resultsFound flag.
-        }
-    });
+    const $autoInput = $('#' + autoCompleteInputId);
+    if ($autoInput.length) {
+        $autoInput.on('input', function () {
+            if (!$(this).val()) {
+                $(hiddenInputId).val(''); // Clears the hidden input value
+                $('.autocomplete__menu').empty(); // Clear the suggestion list
+                resultsFound = false; // Reset the resultsFound flag
+            }
+        });
+    }
 }
