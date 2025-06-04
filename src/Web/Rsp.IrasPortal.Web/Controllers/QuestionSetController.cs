@@ -15,7 +15,7 @@ namespace Rsp.IrasPortal.Web.Controllers;
 
 [ExcludeFromCodeCoverage]
 [Route("[controller]/[action]", Name = "qsc:[action]")]
-[Authorize(Policy = "IsAdmin")]
+[Authorize(Policy = "IsSystemAdministrator")]
 public class QuestionSetController(IQuestionSetService questionSetService, IValidator<QuestionSetViewModel> validator) : Controller
 {
     public async Task<IActionResult> Index(QuestionSetViewModel model)

@@ -17,7 +17,7 @@
     </div>
 </authorized>
 
-<authorized auth-params="@new(Roles:"user,admin,reviewer")">
+<authorized auth-params="@new(Roles:"user,system_administrator,reviewer")">
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
             <h1 class="govuk-heading-l">My Account homepage</h1>
@@ -91,12 +91,14 @@
                         "Workspace to view, manage and authorise the research I am responsible for.",
                         "")" />
         </div>
-        <div class="govuk-grid-column-one-third">
-            <partial name="_ActionItem"
-                     model="@("System administration",
-                        "Workspace for system administrators to view and manage system administration functions.",
-                        "systemadmin:view")" />
-        </div>
+        <authorized auth-params="@new(Roles:"system_administrator")">
+            <div class="govuk-grid-column-one-third">
+                <partial name="_ActionItem"
+                         model="@("System administration",
+                            "Workspace for system administrators to view and manage system administration functions.",
+                            "systemadmin:view")" />
+            </div>
+        </authorized>
         <div class="govuk-grid-column-one-third">
             <partial name="_ActionItem"
                      model="@("Technical Assurance",

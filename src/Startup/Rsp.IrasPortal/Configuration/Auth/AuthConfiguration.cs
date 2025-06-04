@@ -18,7 +18,7 @@ public static class AuthConfiguration
 {
     private struct Roles
     {
-        public const string admin = nameof(admin);
+        public const string systemAdministrator = "system_administrator";
         public const string user = nameof(user);
         public const string reviewer = nameof(reviewer);
     };
@@ -146,7 +146,7 @@ public static class AuthConfiguration
 
                         return Task.CompletedTask;
                     },
-					
+
                     OnRedirectToLogin = context =>
                     {
                         context.Response.Redirect("/auth/timedout");
@@ -246,7 +246,7 @@ public static class AuthConfiguration
         services
             .AddAuthorizationBuilder()
             .AddPolicy("IsReviewer", policy => policy.RequireRole(Roles.reviewer))
-            .AddPolicy("IsAdmin", policy => policy.RequireRole(Roles.admin))
+            .AddPolicy("IsSystemAdministrator", policy => policy.RequireRole(Roles.systemAdministrator))
             .AddPolicy("IsUser", policy => policy.RequireRole(Roles.user))
             .SetDefaultPolicy(policy);
     }
