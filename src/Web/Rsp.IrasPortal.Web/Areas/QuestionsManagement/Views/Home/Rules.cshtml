@@ -1,0 +1,117 @@
+﻿@using Rsp.IrasPortal.Web.Areas.QuestionsManagement.Models
+@model RuleViewModel
+
+@{
+    ViewData["Title"] = "Rules Management";
+    var versionId = Context.Request.Query["versionId"].ToString();
+}
+
+@* @section is added for the back button, so that we can render something below the back button
+    and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
+    the named section *@
+@section BackNavigation {
+    <partial name="_BackNavigation" model="@("qm:home", "Back", new Dictionary<string, string>() { { "versionId", @versionId } })" />
+}
+
+<div class="govuk-grid-row">
+
+    <partial name="_QuestionsManagementNav" />
+
+    <div class="govuk-grid-column-three-quarters">
+
+        <h1 class="govuk-heading-l">Manage Rules for: @Model.QuestionText</h1>
+
+        <form asp-action="SaveRule" method="post" class="govuk-form-group">
+
+            <input type="hidden" asp-for="QuestionId" />
+
+            <div class="govuk-form-group" id="rule-type">
+                <fieldset class="govuk-fieldset">
+                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                        Rule Type
+                    </legend>
+                    <div class="govuk-radios" data-module="govuk-radios">
+                        <div class="govuk-radios__item">
+                            <input class="govuk-radios__input" id="ruleType-conditional" asp-for="RuleType" type="radio" value="Conditional">
+                            <label class="govuk-label govuk-radios__label" for="ruleType-conditional">Conditional</label>
+                        </div>
+                        <div class="govuk-radios__item">
+                            <input class="govuk-radios__input" id="ruleType-validation" asp-for="RuleType" type="radio" value="Validation">
+                            <label class="govuk-label govuk-radios__label" for="ruleType-validation">Validation</label>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+
+            <div class="govuk-form-group" id="conditional-section">
+                <label class="govuk-heading-m " for="ParentQuestionId">Parent Question</label>
+                <select class="govuk-select" asp-for="ParentQuestionId" asp-items="Model.ParentQuestions">
+                    <option value="">-- Select Parent Question --</option>
+                </select>
+            </div>
+
+            <div class="govuk-form-group">
+                <label class="govuk-heading-m" for="Mode">Rule Logic</label>
+                <select class="govuk-select" asp-for="Mode">
+                    <option value="AND">AND</option>
+                    <option value="OR">OR</option>
+                </select>
+            </div>
+
+            <div class="govuk-form-group" id="conditions-container">
+                <fieldset class="govuk-fieldset">
+                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">Conditions</legend>
+                    <div id="conditions-list">
+                        @for (int i = 0; i < Model.Conditions.Count; i++)
+                        {
+                            <div class="govuk-form-group condition-row" data-index="@i">
+                                <label class="govuk-label" for="Conditions[@i].Mode">Condition Logic</label>
+                                <select class="govuk-select" asp-for="Conditions[@i].Mode">
+                                    <option value="AND">AND</option>
+                                    <option value="OR">OR</option>
+                                </select>
+
+                                <label class="govuk-label" for="Conditions[@i].OptionType">Option Type</label>
+                                <select class="govuk-select" asp-for="Conditions[@i].OptionType">
+                                    <option value="Single">Single</option>
+                                    <option value="Multi">Multi</option>
+                                    <option value="Exact">Exact</option>
+                                </select>
+
+                                <label class="govuk-label" for="Conditions[@i].ParentOptions">Parent Options</label>
+                                <input class="govuk-input" asp-for="Conditions[@i].ParentOptionsAsString" placeholder="Comma-separated Option IDs" />
+
+                                <div class="govuk-checkboxes govuk-checkboxes--small">
+                                    <div class="govuk-checkboxes__item">
+                                        <input class="govuk-checkboxes__input" type="checkbox" asp-for="Conditions[@i].Negate" />
+                                        <label class="govuk-label govuk-checkboxes__label">Negate</label>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <button type="button" class="govuk-button govuk-button--secondary" id="add-condition">Add Another Condition</button>
+                </fieldset>
+            </div>
+
+            <div class="govuk-form-group" id="validation-section" style="display: none;">
+                <fieldset class="govuk-fieldset">
+                    <legend class="govuk-fieldset__legend">Validation Type</legend>
+                    <select class="govuk-select" asp-for="ValidationType">
+                        <option value="">-- Select Validation --</option>
+                        <option value="Email">Email</option>
+                        <option value="Phone">Phone</option>
+                        <option value="Date">Date</option>
+                        <option value="Length">Length</option>
+                        <option value="Regex">Regex</option>
+                    </select>
+
+                    <label class="govuk-label" for="ValidationValue">Value</label>
+                    <input class="govuk-input" asp-for="ValidationValue" />
+                </fieldset>
+            </div>
+
+            <button type="submit" class="govuk-button">Save Rule</button>
+        </form>
+    </div>
+</div>
