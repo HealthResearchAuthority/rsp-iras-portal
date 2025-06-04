@@ -17,7 +17,7 @@ namespace Rsp.IrasPortal.Web.Areas.Admin.Controllers;
 
 [Area("Admin")]
 [Route("[area]/[controller]/[action]", Name = "admin:[action]")]
-[Authorize(Policy = "IsAdmin")]
+[Authorize(Policy = "IsSystemAdministrator")]
 [FeatureGate(Features.Admin)]
 public class UsersController(IUserManagementService userManagementService, IValidator<UserViewModel> validator) : Controller
 {
