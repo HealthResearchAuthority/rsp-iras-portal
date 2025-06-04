@@ -42,6 +42,8 @@
             <th class="govuk-table__header">Date published</th>
             <th class="govuk-table__header">Status</th>
             <th class="govuk-table__header">Actions</th>
+            <th class="govuk-table__header"></th>
+            <th class="govuk-table__header"></th>
         </tr>
     </thead>
     <tbody>
@@ -51,26 +53,30 @@
                 <tr class="govuk-table__row">
                     <td class="govuk-table__cell" colspan="5">No versions found</td>
                 </tr>
-            } else
+            }
+            else
             {
-                foreach(var version in Model.Versions)
+                foreach (var version in Model.Versions)
                 {
                     <tr class="govuk-table__row">
                         <td class="govuk-table__cell">@version.VersionId</td>
                         <td class="govuk-table__cell">@version.CreatedAt.ToString("dd MMM yyyy HH:mm:ss")</td>
                         <td class="govuk-table__cell">@(version.PublishedAt?.ToString("dd MMM yyyy HH:mm:ss") ?? "N/A")</td>
                         <td class="govuk-table__cell">
-                            @if (version.IsPublished) {
+                            @if (version.IsPublished)
+                            {
                                 <strong class="govuk-tag govuk-tag--green">
                                     Published
-                                </strong> 
+                                </strong>
                             }
-                            else if (version.IsDraft) {
+                            else if (version.IsDraft)
+                            {
                                 <strong class="govuk-tag govuk-tag--blue">
                                     Draft
                                 </strong>
                             }
-                            else {
+                            else
+                            {
                                 <strong class="govuk-tag govuk-tag--red">
                                     Superseded
                                 </strong>
@@ -82,15 +88,25 @@
                                 <button style="margin-bottom:4px"
                                         class="govuk-button"
                                         type="submit"
-                                @(version.IsPublished ? "disabled" : "")>
+                                        @(version.IsPublished ? "disabled" : "")>
                                     Publish
                                 </button>
                             </form>
-                            <a asp-route="qsc:previewapplication" 
-                                asp-all-route-data="@(new Dictionary<string, string> { { "versionId", @version.VersionId }})" 
-                                style="margin-bottom:0px" 
-                                class="govuk-button">
+                        </td>
+                        <td class="govuk-table__cell">
+                            <a asp-route="qsc:previewapplication"
+                               asp-all-route-data="@(new Dictionary<string, string> { { "versionId", @version.VersionId }})"
+                               style="margin-bottom:0px"
+                               class="govuk-button">
                                 Preview
+                            </a>
+                        </td>
+                        <td class="govuk-table__cell">
+                            <a asp-route="qm:home"
+                               asp-route-versionId="@version.VersionId"
+                               style="margin-bottom:0px"
+                               class="govuk-button">
+                                Manage
                             </a>
                         </td>
                     </tr>
