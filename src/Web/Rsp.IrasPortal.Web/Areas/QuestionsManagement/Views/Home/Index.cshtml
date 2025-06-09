@@ -2,85 +2,92 @@
 @model QuestionsViewModel
 
 @{
-    ViewData["Title"] = "Question Management";
+	ViewData["Title"] = "Question Management";
 
-    var versionId = Context.Request.Query["versionId"].ToString();
+	var versionId = Context.Request.Query["versionId"].ToString();
 }
 
-@if (Model is { Categories: { Count: 0 } } or { Sections: { Count: 0 } } or { Questions: { Count: 0 } })
+@if (Model is { Categories: { Count: 0 } } or { Sections: { Count: 0 } })
 {
-    <partial name="_NoData" />
+	<partial name="_NoData" />
 
-    return;
+	return;
 }
 
 <div class="govuk-grid-row">
 
-    <partial name="_QuestionsManagementNav" />
+	<partial name="_QuestionsManagementNav" />
 
-    <div class="govuk-grid-column-three-quarters">
-        <h1 class="govuk-heading-l">Question Management</h1>
+	<div class="govuk-grid-column-three-quarters">
+		<h1 class="govuk-heading-l">Question Management</h1>
 
-        <form method="get" class="govuk-form-group">
-            <div class="govuk-grid-row">
-                <div class="govuk-grid-column-one-third">
-                    <label class="govuk-label" for="Category">Category</label>
-                    <select id="Category" name="Category" class="govuk-select">
-                        <option value="">All Categories</option>
-                        @foreach (var cat in Model.Categories)
-                        {
-                            <option value="@cat.CategoryId">@cat.CategoryName</option>
-                        }
-                    </select>
-                </div>
-                <div class="govuk-grid-column-one-third">
-                    <label class="govuk-label" for="Section">Section</label>
-                    <select id="Section" name="Section" class="govuk-select">
-                        <option value="">All Sections</option>
-                        @foreach (var questionSection in Model.Sections)
-                        {
-                            <option value="@questionSection.SectionId">@questionSection.SectionName</option>
-                        }
-                    </select>
-                </div>
-                <div class="govuk-grid-column-one-third">
-                    <label class="govuk-label" for="Type">Question Type</label>
-                    <select id="Type" name="Type" class="govuk-select">
-                        <option value="">All Types</option>
-                        @foreach (var type in Model.GetQuestionTypes())
-                        {
-                            <option value="@type">@type</option>
-                        }
-                    </select>
-                </div>
-            </div>
-            <button type="submit" class="govuk-button govuk-!-margin-top-3">Filter</button>
-        </form>
+		<form method="post" class="govuk-form-group">
+			<div class="govuk-grid-row">
+				<div class="govuk-grid-column-one-third">
+					<label class="govuk-label">Category</label>
+					<select name="SelectedCategory" asp-for="SelectedCategory" class="govuk-select">
+						<option value="" selected="@(string.IsNullOrWhiteSpace(Model.SelectedCategory) ? "selected" : null)">All Categories</option>
+						@foreach (var cat in Model.Categories)
+						{
+							<option value="@cat.CategoryId" selected="@(Model.SelectedCategory == cat.CategoryId ? "selected" : null)">@cat.CategoryName</option>
+						}
+					</select>
+				</div>
+				<div class="govuk-grid-column-one-third">
+					<label class="govuk-label">Section</label>
+					<select name="SelectedSection" asp-for="SelectedSection" class="govuk-select">
+						<option value="" selected="@(string.IsNullOrWhiteSpace(Model.SelectedSection) ? "selected" : null)">All Sections</option>
+						@foreach (var questionSection in Model.Sections)
+						{
+							<option value="@questionSection.SectionId" selected="@(Model.SelectedSection == questionSection.SectionId ? "selected" : null)">@questionSection.SectionName</option>
+						}
+					</select>
+				</div>
+				<div class="govuk-grid-column-one-third">
+					<label class="govuk-label">Question Type</label>
+					<select name="SelectedType" asp-for="SelectedType" class="govuk-select">
+						<option value="" selected="@(string.IsNullOrWhiteSpace(Model.SelectedType) ? "selected" : null)">All Types</option>
+						@foreach (var type in Model.QuestionTypes)
+						{
+							<option value="@type" selected="@(Model.SelectedType == type ? "selected" : null)">@type</option>
+						}
+					</select>
+				</div>
+			</div>
+			<button type="submit" class="govuk-button govuk-!-margin-top-3">Apply Filters</button>
+		</form>
 
-        <div id="question-list">
-            @foreach (var question in Model.Questions)
-            {
-                var rulesRouteData = new Dictionary<string, string>
-                {
-                    { "questionId", question.QuestionId },
-                    { "versionId", versionId }
-                };
+		<div id="question-list">
+			@if (Model.Questions.Any())
+			{
+				@foreach (var question in Model.Questions)
+				{
+					var rulesRouteData = new Dictionary<string, string>
+					{
+						{ "questionId", question.QuestionId },
+						{ "versionId", versionId }
+					};
 
-                <div class="govuk-summary-card govuk-!-margin-top-4">
-                    <div class="govuk-summary-card__title-wrapper">
-                        <h2 class="govuk-summary-card__title">@question.QuestionText</h2>
-                    </div>
-                    <div class="govuk-summary-card__content">
-                        <p><strong>Type: </strong> @question.DataType</p>
-                        <p><strong>Category: </strong>@question.Category</p>
-                        <p><strong>Section: </strong>@question.Section</p>
-                        <p><strong>Sequence: </strong>@question.Sequence</p>
-                        <div class="govuk-button-group">
-                            <a asp-route="qm:managerules" asp-all-route-data="@rulesRouteData" class="govuk-link">Manage Rules</a>
-                        </div>
-                    </div>
-                </div>
-            }
-        </div>
-    </div>
+					<div class="govuk-summary-card govuk-!-margin-top-4">
+						<div class="govuk-summary-card__title-wrapper">
+							<h2 class="govuk-summary-card__title">@question.QuestionText</h2>
+						</div>
+						<div class="govuk-summary-card__content">
+							<p><strong>Type: </strong> @question.DataType</p>
+							<p><strong>Category: </strong>@question.Category</p>
+							<p><strong>Section: </strong>@question.Section</p>
+							<p><strong>Sequence: </strong>@question.Sequence</p>
+							<div class="govuk-button-group">
+								<a asp-route="qm:managerules" asp-all-route-data="@rulesRouteData" class="govuk-link">Manage Rules</a>
+							</div>
+						</div>
+					</div>
+				}
+			}
+			else
+			{
+				<p>No questions match your filter.</p>
+			}
+		</div>
+	</div>
 </div>
