@@ -103,7 +103,7 @@
                         </td>
                         <td class="govuk-table__cell">
                             <a asp-route="qm:home"
-                               asp-route-versionId="@version.VersionId"
+							   asp-all-route-data="@(new Dictionary<string, string> { { "versionId", @version.VersionId }})"
                                style="margin-bottom:0px"
                                class="govuk-button">
                                 Manage

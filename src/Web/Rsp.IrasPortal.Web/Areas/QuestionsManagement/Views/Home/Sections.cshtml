@@ -1,0 +1,65 @@
+﻿@model IEnumerable<Rsp.IrasPortal.Web.Areas.QuestionsManagement.Models.QuestionSectionViewModel>
+
+@{
+	ViewData["Title"] = "Sections";
+	var versionId = Context.Request.Query["versionId"].ToString();
+}
+
+@* @section is added for the back button, so that we can render something below the back button
+    and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
+    the named section *@
+@section BackNavigation {
+	<partial name="_BackNavigation" model="@("qm:home", "Back", new Dictionary<string, string>() { { "versionId", @versionId } })" />
+}
+
+<div class="govuk-grid-row">
+
+	<partial name="_QuestionsManagementNav" />
+
+	<div class="govuk-grid-column-three-quarters">
+		<h1 class="govuk-heading-l">Sections</h1>
+
+		<div class="govuk-accordion" data-module="govuk-accordion" id="sections-accordion">
+			@foreach (var questionSection in Model)
+			{
+				<div class="govuk-accordion__section">
+					<div class="govuk-accordion__section-header">
+						<h2 class="govuk-accordion__section-heading">
+							<span class="govuk-accordion__section-button">
+								@questionSection.SectionName
+							</span>
+						</h2>
+					</div>
+					<div class="govuk-accordion__section-content">
+						<dl class="govuk-summary-list">
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Question Category ID</dt>
+								<dd class="govuk-summary-list__value">@questionSection.QuestionCategoryId</dd>
+							</div>
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Section ID</dt>
+								<dd class="govuk-summary-list__value">@questionSection.SectionId</dd>
+							</div>
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Version</dt>
+								<dd class="govuk-summary-list__value">@questionSection.VersionId</dd>
+							</div>
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">CategoryName</dt>
+								<dd class="govuk-summary-list__value">@questionSection.SectionName</dd>
+							</div>
+						</dl>
+					</div>
+				</div>
+			}
+		</div>
+
+	</div>
+</div>
+
+@section Scripts {
+	<script src="https://cdn.jsdelivr.net/npm/govuk-frontend/govuk.min.js"></script>
+	<script>
+		window.GOVUKFrontend.initAll();
+	</script>
+}
