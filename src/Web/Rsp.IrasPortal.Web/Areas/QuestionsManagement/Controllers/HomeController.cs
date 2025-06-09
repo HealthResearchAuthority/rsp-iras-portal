@@ -20,11 +20,11 @@ public class HomeController(IQuestionSetService questionSetService) : Controller
     /// Displays the home page for the Questions Management area.
     /// </summary>
     [Route("/[area]", Name = "qm:home")]
-    public async Task<IActionResult> Index(string versionId)
+    public async Task<IActionResult> Index(QuestionsViewModel model)
     {
         var catogoriesResponse = await questionSetService.GetQuestionCategories();
         var sectionsResponse = await questionSetService.GetQuestionSections();
-        var questionsResponse = await questionSetService.GetQuestionsByVersion(versionId);
+        var questionsResponse = await questionSetService.GetQuestionsByVersion(model.VersionId);
 
         if (!catogoriesResponse.IsSuccessStatusCode || !sectionsResponse.IsSuccessStatusCode || !questionsResponse.IsSuccessStatusCode)
         {
@@ -38,20 +38,30 @@ public class HomeController(IQuestionSetService questionSetService) : Controller
 
         var categories = catogoriesResponse.Content;
         var sections = sectionsResponse.Content;
-        var questions = questionsResponse.Content;
+        var questions = questionsResponse!.Content!.AsQueryable();
 
-        var model = new QuestionsViewModel
-        {
-            Categories = categories!
-                            .Where(c => c.VersionId == versionId)
-                            .Adapt<List<QuestionCategoryViewModel>>(),
+        model.QuestionTypes = [..questions
+            .DistinctBy(question => question.DataType)
+                .Select(question => question.DataType)];
 
-            Sections = sections!
-                            .Where(s => s.VersionId == versionId)
-                            .Adapt<List<QuestionSectionViewModel>>(),
+        model.Categories = categories!
+                            .Where(c => c.VersionId == model.VersionId)
+                            .Adapt<List<QuestionCategoryViewModel>>();
 
-            Questions = questions!.Adapt<List<QuestionViewModel>>()
-        };
+        model.Sections = sections!
+                            .Where(s => s.VersionId == model.VersionId)
+                            .Adapt<List<QuestionSectionViewModel>>();
+
+        if (!string.IsNullOrWhiteSpace(model.SelectedCategory))
+            questions = questions.Where(q => q.Category == model.SelectedCategory);
+
+        if (!string.IsNullOrWhiteSpace(model.SelectedSection))
+            questions = questions.Where(q => q.SectionId == model.SelectedSection);
+
+        if (!string.IsNullOrWhiteSpace(model.SelectedType))
+            questions = questions.Where(q => q.DataType == model.SelectedType);
+
+        model.Questions = questions!.ToList().Adapt<List<QuestionViewModel>>();
 
         return View(model);
     }
@@ -88,5 +98,47 @@ public class HomeController(IQuestionSetService questionSetService) : Controller
         };
 
         return View("Rules", model);
+    }
+
+    [Route("[area]/categories", Name = "qm:categories")]
+    public async Task<IActionResult> Categories(string versionId)
+    {
+        var categoriesResponse = await questionSetService.GetQuestionCategories();
+
+        if (!categoriesResponse.IsSuccessStatusCode)
+        {
+            return View("Error", this.ProblemResult(new()
+            {
+                ReasonPhrase = "Failed to load categories",
+                Error = "Unable to retrieve question categories.",
+                StatusCode = categoriesResponse.StatusCode
+            }));
+        }
+
+        var categories = categoriesResponse.Content!
+            .Where(c => c.VersionId == versionId)
+            .Adapt<List<QuestionCategoryViewModel>>();
+        return View(categories);
+    }
+
+    [Route("[area]/sections", Name = "qm:sections")]
+    public async Task<IActionResult> Sections(string versionId)
+    {
+        var sectionsResponse = await questionSetService.GetQuestionSections();
+
+        if (!sectionsResponse.IsSuccessStatusCode)
+        {
+            return View("Error", this.ProblemResult(new()
+            {
+                ReasonPhrase = "Failed to load sections",
+                Error = "Unable to retrieve question sections.",
+                StatusCode = sectionsResponse.StatusCode
+            }));
+        }
+
+        var categories = sectionsResponse.Content!
+            .Where(c => c.VersionId == versionId)
+            .Adapt<List<QuestionSectionViewModel>>();
+        return View(categories);
     }
 }
