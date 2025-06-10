@@ -148,13 +148,172 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         return this.ServiceError(response);
     }
 
+    private static string QuestionsKey(string sectionId) => $"questionset:{sectionId}:questions";
+    private static string VersionKey(string sectionId) => $"questionset:{sectionId}:version";
+
+
+    // GET: Start form from scratch
+    [HttpGet]
+    public IActionResult Create()
+    {
+        var model = new QuestionSetDto
+        {
+            Version = new VersionDto()
+        };
+
+        ViewBag.Step = "version";
+        return View("QuestionSetForm", model);
+    }
+
+    [HttpPost]
+    public IActionResult NextStep(QuestionSetDto model)
+    {
+        var versionId = model.Version?.VersionId;
+
+        if (string.IsNullOrWhiteSpace(versionId))
+        {
+            ModelState.AddModelError("Version.VersionId", "Enter a version ID");
+            ViewBag.Step = "version";
+            return View("QuestionSetForm", model);
+        }
+
+        // Save version separately in session
+        HttpContext.Session.SetString($"questionset:{versionId}:version", JsonSerializer.Serialize(model.Version));
+        HttpContext.Session.SetString($"questionset:{versionId}:questions",
+            JsonSerializer.Serialize(new List<QuestionDto>()));
+
+        ViewBag.Step = "questions";
+        ViewBag.QuestionIndex = 0;
+
+        return View("QuestionSetForm", model with { Questions = [] });
+    }
+
+    [HttpPost]
+    public IActionResult AddQuestion(string versionId, QuestionDto question, int questionIndex)
+    {
+        var versionJson = HttpContext.Session.GetString($"questionset:{versionId}:version");
+        var questionsJson = HttpContext.Session.GetString($"questionset:{versionId}:questions");
+
+        var version = string.IsNullOrWhiteSpace(versionJson)
+            ? new VersionDto { VersionId = versionId }
+            : JsonSerializer.Deserialize<VersionDto>(versionJson!)!;
+
+        var questions = string.IsNullOrWhiteSpace(questionsJson)
+            ? new List<QuestionDto>()
+            : JsonSerializer.Deserialize<List<QuestionDto>>(questionsJson!)!;
+
+        // If the index exists, update; otherwise, add as new
+        if (questionIndex >= 0 && questionIndex < questions.Count)
+        {
+            questions[questionIndex] = question;
+        }
+        else
+        {
+            questions.Add(question);
+            questionIndex = questions.Count - 1;
+        }
+
+        // Save updated questions list
+        HttpContext.Session.SetString($"questionset:{versionId}:questions", JsonSerializer.Serialize(questions));
+
+        ViewBag.Step = "questions";
+        ViewBag.QuestionIndex = questionIndex + 1; // Move to next entry for add mode
+
+        return View("QuestionSetForm", new QuestionSetDto
+        {
+            Version = version,
+            Questions = questions
+        });
+    }
+
+
+    [HttpPost]
+    public IActionResult EditQuestion(string versionId, int questionIndex)
+    {
+        var versionJson = HttpContext.Session.GetString($"questionset:{versionId}:version");
+        var questionsJson = HttpContext.Session.GetString($"questionset:{versionId}:questions");
+
+        if (versionJson is null || questionsJson is null)
+            return RedirectToAction("Create");
+
+        var version = JsonSerializer.Deserialize<VersionDto>(versionJson)!;
+        var questions = JsonSerializer.Deserialize<List<QuestionDto>>(questionsJson)!;
+
+        var model = new QuestionSetDto
+        {
+            Version = version,
+            Questions = questions
+        };
+
+        ViewBag.Step = "questions";
+        ViewBag.QuestionIndex = questionIndex;
+
+        return View("QuestionSetForm", model);
+    }
+
+
+    [HttpPost]
+    public IActionResult Back(string versionId, int questionIndex)
+    {
+        var versionJson = HttpContext.Session.GetString($"questionset:{versionId}:version");
+        var questionsJson = HttpContext.Session.GetString($"questionset:{versionId}:questions");
+
+        var version = string.IsNullOrWhiteSpace(versionJson)
+            ? new VersionDto { VersionId = versionId }
+            : JsonSerializer.Deserialize<VersionDto>(versionJson!)!;
+
+        var questions = string.IsNullOrWhiteSpace(questionsJson)
+            ? new List<QuestionDto>()
+            : JsonSerializer.Deserialize<List<QuestionDto>>(questionsJson!)!;
+
+        if (questionIndex <= 0)
+        {
+            ViewBag.Step = "version";
+            ViewBag.QuestionIndex = 0;
+        }
+        else
+        {
+            ViewBag.Step = "questions";
+            ViewBag.QuestionIndex = questionIndex - 1;
+        }
+
+        return View("QuestionSetForm", new QuestionSetDto
+        {
+            Version = version,
+            Questions = questions
+        });
+    }
+
+    [HttpPost]
+    public IActionResult Save(string versionId)
+    {
+        var versionJson = HttpContext.Session.GetString($"questionset:{versionId}:version");
+        var questionsJson = HttpContext.Session.GetString($"questionset:{versionId}:questions");
+
+        if (string.IsNullOrWhiteSpace(versionJson) || string.IsNullOrWhiteSpace(questionsJson))
+            return RedirectToAction("Create");
+
+        var model = new QuestionSetDto
+        {
+            Version = JsonSerializer.Deserialize<VersionDto>(versionJson!)!,
+            Questions = JsonSerializer.Deserialize<List<QuestionDto>>(questionsJson!)!
+        };
+
+        // TODO: Save model to DB or service
+        HttpContext.Session.Remove($"questionset:{versionId}:version");
+        HttpContext.Session.Remove($"questionset:{versionId}:questions");
+
+        return RedirectToAction("Index");
+    }
+
+
     private static QuestionnaireViewModel BuildQuestionnaireViewModel(IEnumerable<QuestionsResponse> response)
     {
         // order the questions by SectionId and Sequence
         var questions = response
-                .OrderBy(q => q.SectionId)
-                .ThenBy(q => q.Sequence)
-                .Select((question, index) => (question, index));
+            .OrderBy(q => q.SectionId)
+            .ThenBy(q => q.Sequence)
+            .Select((question, index) => (question, index));
 
         var questionnaire = new QuestionnaireViewModel();
 

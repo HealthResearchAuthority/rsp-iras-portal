@@ -1,0 +1,37 @@
+﻿@using Rsp.Gds.Component.Models
+@model Rsp.IrasPortal.Application.DTOs.QuestionDto
+@{
+    var index = ViewData["Index"] as int? ?? 0;
+    var prefix = $"Questions[{index}]";
+}
+
+<!-- Hidden field to bind VersionId per question -->
+<input type="hidden" name="@($"{prefix}.VersionId")" value="@Model.VersionId"/>
+
+<rsp-gds-input asp-for="QuestionId" name="@($"{prefix}.QuestionId")" label-text="Question ID"/>
+<rsp-gds-input asp-for="Category" name="@($"{prefix}.Category")" label-text="Category"/>
+<rsp-gds-input asp-for="SectionId" name="@($"{prefix}.SectionId")" label-text="Section ID"/>
+<rsp-gds-input asp-for="Section" name="@($"{prefix}.Section")" label-text="Section"/>
+<rsp-gds-input asp-for="Sequence" name="@($"{prefix}.Sequence")" label-text="Sequence" input-type="number"/>
+<rsp-gds-input asp-for="Heading" name="@($"{prefix}.Heading")" label-text="Heading (optional)"/>
+<rsp-gds-character-count-textarea asp-for="QuestionText" name="@($"{prefix}.QuestionText")" label-text="Question Text"/>
+
+<rsp-gds-select asp-for="QuestionType"
+                name="@($"{prefix}.QuestionType")"
+                label-text="Question Type"
+                options="@(new List<GdsOption>
+                         {
+                             new() { Value = "date", Label = "Date" },
+                             new() { Value = "text", Label = "Text" },
+                             new() { Value = "look-up list", Label = "Look-up list" },
+                             new() { Value = "boolean", Label = "Boolean" },
+                             new() { Value = "rts:org_lookup", Label = "RTS Organisation Lookup" }
+                         })"
+                additional-attributes='new Dictionary<string, string> { { "data-conditional-target", "question-type" } }'/>
+
+<div class="conditional-datatype">
+    <rsp-gds-select asp-for="DataType" name="@($"{prefix}.DataType")" label-text="Data Type" options="@(new List<GdsOption> { new() { Value = "text", Label = "Text" }, new() { Value = "email", Label = "Email" }, new() { Value = "checkbox", Label = "Checkbox" }, new() { Value = "radio button", Label = "Radio button" }, new() { Value = "date", Label = "Date" }, new() { Value = "boolean", Label = "Boolean" } })"/>
+</div>
+<rsp-gds-date-input asp-for="StartDate" name="@($"{prefix}.StartDate")" label-text="Start Date (optional)"/>
+<rsp-gds-date-input asp-for="EndDate" name="@($"{prefix}.EndDate")" label-text="End Date (optional)"/>
+<rsp-gds-input asp-for="ShortQuestionText" name="@($"{prefix}.ShortQuestionText")" label-text="Short Question Text"/>
