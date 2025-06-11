@@ -17,7 +17,7 @@ $(function () {
         // Skip processing if questionId or parentQuestions is missing
         if (!questionId || !parentQuestions) return;
 
-        const parentQuestionIds = parentQuestions.split(',');
+        const parentQuestionIds = parentQuestions.toString().split(',');
 
         // Set up event listeners for parent questions
         parentQuestionIds.forEach(function (parentQuestionId) {
@@ -35,7 +35,6 @@ $(function () {
         });
     });
 });
-
 
 /**
  * Updates the visibility of a conditional question based on rule evaluation.
