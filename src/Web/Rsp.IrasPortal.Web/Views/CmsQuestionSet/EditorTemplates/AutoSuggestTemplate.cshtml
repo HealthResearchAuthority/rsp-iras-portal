@@ -9,15 +9,16 @@
 @model QuestionnaireViewModel
 
 @{
-	var index = (int)ViewBag.Index;
-	var question = Model.Questions[index];
-	var errorKey = $"Questions[{index}].AnswerText";
-	var fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
+    var index = (int)ViewBag.Index;
+    var question = Model.Questions[index];
+    var errorKey = $"Questions[{index}].AnswerText";
+    var validationMessage = "Provide an answer for this question";
+    var fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
 
-	var rules = question.Rules;
-	var conditional = !question.IsMandatory && rules.Count > 0;
-	var parents = conditional ? string.Join(',', rules.Select(rule => rule.ParentQuestionId)) : "";
-	var questionId = conditional ? question.QuestionId : "";
+    var rules = question.Rules;
+    var conditional = !question.IsMandatory && rules.Count > 0;
+    var parents = conditional ? string.Join(',', rules.Select(rule => rule.ParentQuestionId)) : "";
+    var questionId = conditional ? question.QuestionId : "";
 
 	var hintContent = rules.Any()
 		? string.Join("", rules.Select(rule => $"<p>{rule.Description}</p>"))
@@ -34,7 +35,7 @@
 	if (string.Equals(routeData?.Values["action"]?.ToString(), "DisplayQuestionnaire", StringComparison.OrdinalIgnoreCase))
 	{
 		TempData[TempDataKeys.OrgSearchReturnUrl] = requestUrl;
-	}
+}
 }
 
 <rsp-gds-autocomplete asp-for="Questions[index].AnswerText"
@@ -119,10 +120,10 @@
 		}
 
 		<div class="govuk-form-group" error-class-property="sponsor_org_search">
-			@* The following label will be hidden by javascript if enabled, this label will be used for non-js version *@
+        @* The following label will be hidden by javascript if enabled, this label will be used for non-js version *@
 			<label class="govuk-label govuk-label--s" for="sponsor_org_search" aria-described-for="Questions[index].QuestionText">
-				@question.QuestionText
-			</label>
+            @question.QuestionText
+        </label>
 
 			@Html.ValidationMessage("sponsor_org_search", new { @class = "govuk-error-message" })
 
@@ -144,22 +145,22 @@
 
 		<div class="govuk-form-group">
 			@if (!string.IsNullOrWhiteSpace(searchText))
-			{
+            {
 				// Try to retrieve the organisation search response from TempData
 				TempData.TryGetValue<OrganisationSearchResponse>(TempDataKeys.SponsorOrganisations, out var response, true);
 
 				// If there are organisations in the response, display them
 				@if (response?.Organisations is not null)
-				{
+                {
 					var organisations = response.Organisations;
 
 					// If no organisations found, show a message
 					if (!organisations.Any())
-					{
+        {
 						<div class="govuk-inset-text">
 							No suggestions found for <strong>@searchText</strong>
 						</div>
-					}
+        }
 
 					// If organisations are found, display them as radio options
 					if (organisations.Any())
@@ -181,11 +182,11 @@
 						{
 							<div class="govuk-inset-text">
 								@response.TotalCount sponsor organisations match your search for '@searchText'. Try narrowing down your search if the organisation you are looking for is not listed
-							</div>
+    </div>
 						}
 					}
 				}
 			}
-		</div>
+</div>
 	}
 </noscript>
