@@ -1,0 +1,82 @@
+﻿@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Rsp.IrasPortal.Application.Configuration
+@using Rsp.IrasPortal.Web.Models
+@using Rsp.IrasPortal.Web.ViewHelpers
+@model QuestionnaireViewModel
+
+@{
+    var index = (int)ViewBag.Index;
+    var question = Model.Questions[index];
+    var errorKey = $"Questions[{index}].AnswerText";
+    var validationMessage = "Provide an answer for this question";
+    var fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
+
+    var rules = question.Rules;
+    var conditional = !question.IsMandatory && rules.Count > 0;
+    var parents = conditional ? string.Join(',', rules.Select(rule => rule.ParentQuestionId)) : "";
+    var questionId = conditional ? question.QuestionId : "";
+}
+
+<link rel="stylesheet" href="~/assets/css/accessible-autocomplete.min.css" />
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script type="text/javascript" src="~/assets/js/accessible-autocomplete.min.js"></script>
+<script src="~/js/rts.js"></script>
+
+<script>
+    $(function () {
+
+        // id of the input field to hide if javascript is enabled
+        // but this input will be used to submit the value regrardless if javascript is enabled or not
+        let inputId = '@(question.QuestionId)_Text';
+
+        initAutocomplete('input-autocomplete', inputId, "@Html.Raw(question.AnswerText)", '/organisation/getorganisations');
+    });
+</script>
+
+<div id="Questions[@index].AnswerText"
+     error-class-for="Questions[index].AnswerText"
+     conditional="question is { IsMandatory: false, Rules: { Count: > 0 } }"
+     class="govuk-form-group"
+     data-parents="@parents"
+     data-questionId="@questionId">
+
+    <div class="govuk-form-group">
+
+        @* The following label will be hidden by javascript if enabled, this label will be used for non-js version *@
+        <label class="govuk-label" for="@(question.QuestionId)_Text" aria-described-for="Questions[index].QuestionText">
+            @question.QuestionText
+        </label>
+
+        @* The following label will be shown by javascript if enabled, this label will be used for js version *@
+        <label class="govuk-label" for="input-autocomplete" aria-described-for="Questions[index].QuestionText" style="display:none">
+            @question.QuestionText
+        </label>
+
+        <div aria-id-for="Questions[index].QuestionText" class="govuk-hint">
+            @if (rules.Count > 0)
+            {
+                @foreach (var rule in rules)
+                {
+                    <p>
+                        @rule.Description
+                    </p>
+                }
+            }
+        </div>
+
+        @if (fieldHasErrors)
+        {
+            @Html.BuildValidationMessage(question.Rules, errorKey, validationMessage);
+        }
+
+        <input id="@(question.QuestionId)_Text"
+               type="text"
+               asp-for="Questions[index].AnswerText"
+               error-class-for="Questions[index].AnswerText"
+               class="govuk-input" />
+
+        <div id="autocomplete-container"></div>
+
+        @*@Html.TextBoxFor(model => model.Questions[index].AnswerText, new { id = question.QuestionId + "_Text", @class = cssClass })*@
+    </div>
+</div>
