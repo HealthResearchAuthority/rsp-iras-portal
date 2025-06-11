@@ -1,37 +1,51 @@
-﻿document.addEventListener("DOMContentLoaded", function () {
-    const questionTypeSelect = document.querySelector('[data-conditional-target="question-type"]');
-    const dataTypeContainer = document.querySelector(".conditional-datatype");
+﻿document.addEventListener('DOMContentLoaded', function () {
+    const wrappers = document.querySelectorAll('[data-conditional-target="question-type"]');
 
-    function updateDataTypeVisibility() {
-        if (!questionTypeSelect || !dataTypeContainer) return;
+    const optionMap = {
+        "look-up list": [
+            { value: "checkbox", label: "Checkbox" },
+            { value: "radio button", label: "Radio button" }
+        ],
+        "text": [
+            { value: "text", label: "Text" },
+            { value: "email", label: "Email" }
+        ]
+    };
 
-        const selectedValue = questionTypeSelect.value.toLowerCase();
+    wrappers.forEach(wrapper => {
+        const select = wrapper.querySelector('select');
+        if (!select) return;
 
-        const showDataTypeFor = {
-            "look-up list": ["checkbox", "radio button"],
-            "text": ["text", "email"]
-        };
+        const wrapperName = wrapper.getAttribute('name');
+        const indexMatch = wrapperName?.match(/\[(\d+)\]/);
+        const index = indexMatch ? indexMatch[1] : "0";
 
-        if (showDataTypeFor[selectedValue]) {
-            dataTypeContainer.style.display = "block";
+        const dataTypeWrapper = document.querySelector(`.conditional-datatype[data-index="${index}"]`);
+        const dataTypeSelect = dataTypeWrapper?.querySelector('select');
 
-            const dataTypeSelect = dataTypeContainer.querySelector("select");
-            [...dataTypeSelect.options].forEach(opt => {
-                opt.style.display = showDataTypeFor[selectedValue].includes(opt.value.toLowerCase())
-                    ? "block" : "none";
-            });
+        function updateDataTypeVisibility() {
+            const selectedValue = (select.value || "").toLowerCase();
 
-            // Reset value if current selection is not valid
-            if (!showDataTypeFor[selectedValue].includes(dataTypeSelect.value.toLowerCase())) {
-                dataTypeSelect.value = "";
+            if (!optionMap[selectedValue]) {
+                dataTypeWrapper.style.display = "none";
+                if (dataTypeSelect) dataTypeSelect.innerHTML = "";
+                return;
             }
-        } else {
-            dataTypeContainer.style.display = "none";
-        }
-    }
 
-    if (questionTypeSelect) {
-        questionTypeSelect.addEventListener("change", updateDataTypeVisibility);
-        updateDataTypeVisibility(); // Initial load
-    }
+            // Build default and options
+            if (dataTypeSelect) {
+                dataTypeWrapper.style.display = "block";
+
+                const defaultOption = `<option value="" disabled selected>Please select a data type</option>`;
+                const optionHtml = optionMap[selectedValue]
+                    .map(opt => `<option value="${opt.value}">${opt.label}</option>`)
+                    .join("\n");
+
+                dataTypeSelect.innerHTML = defaultOption + optionHtml;
+            }
+        }
+
+        updateDataTypeVisibility(); // Init on load
+        select.addEventListener('change', updateDataTypeVisibility);
+    });
 });

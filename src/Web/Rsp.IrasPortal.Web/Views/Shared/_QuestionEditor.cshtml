@@ -8,13 +8,13 @@
 <!-- Hidden field to bind VersionId per question -->
 <input type="hidden" name="@($"{prefix}.VersionId")" value="@Model.VersionId"/>
 
-<rsp-gds-input asp-for="QuestionId" name="@($"{prefix}.QuestionId")" label-text="Question ID"/>
-<rsp-gds-input asp-for="Category" name="@($"{prefix}.Category")" label-text="Category"/>
-<rsp-gds-input asp-for="SectionId" name="@($"{prefix}.SectionId")" label-text="Section ID"/>
-<rsp-gds-input asp-for="Section" name="@($"{prefix}.Section")" label-text="Section"/>
-<rsp-gds-input asp-for="Sequence" name="@($"{prefix}.Sequence")" label-text="Sequence" input-type="number"/>
-<rsp-gds-input asp-for="Heading" name="@($"{prefix}.Heading")" label-text="Heading (optional)"/>
+<rsp-gds-input asp-for="QuestionId" name="@($"{prefix}.QuestionId")" label-text="Question ID" width-class="govuk-!-width-one-quarter" />
+<rsp-gds-input asp-for="SectionId" name="@($"{prefix}.SectionId")" label-text="Section ID" width-class="govuk-!-width-one-quarter" />
+<rsp-gds-input asp-for="Section" name="@($"{prefix}.Section")" label-text="Section Name" width-class="govuk-!-width-one-half" />
+<rsp-gds-input asp-for="Sequence" name="@($"{prefix}.Sequence")" label-text="Sequence" input-type="number" width-class="govuk-!-width-one-quarter" />
 <rsp-gds-character-count-textarea asp-for="QuestionText" name="@($"{prefix}.QuestionText")" label-text="Question Text"/>
+
+<rsp-gds-input asp-for="ShortQuestionText" name="@($"{prefix}.ShortQuestionText")" label-text="Short Question Text" />
 
 <rsp-gds-select asp-for="QuestionType"
                 name="@($"{prefix}.QuestionType")"
@@ -28,10 +28,18 @@
                              new() { Value = "rts:org_lookup", Label = "RTS Organisation Lookup" }
                          })"
                 additional-attributes='new Dictionary<string, string> { { "data-conditional-target", "question-type" } }'/>
-
-<div class="conditional-datatype">
-    <rsp-gds-select asp-for="DataType" name="@($"{prefix}.DataType")" label-text="Data Type" options="@(new List<GdsOption> { new() { Value = "text", Label = "Text" }, new() { Value = "email", Label = "Email" }, new() { Value = "checkbox", Label = "Checkbox" }, new() { Value = "radio button", Label = "Radio button" }, new() { Value = "date", Label = "Date" }, new() { Value = "boolean", Label = "Boolean" } })"/>
+<div class="conditional-datatype" data-index="@index">
+    <rsp-gds-select asp-for="DataType"
+                    name="@($"{prefix}.DataType")"
+                    label-text="Data Type"
+                    options="new List<GdsOption>()"
+                    include-default-option="true"
+                    default-option-text="Please select a data type">
+    </rsp-gds-select>
 </div>
-<rsp-gds-date-input asp-for="StartDate" name="@($"{prefix}.StartDate")" label-text="Start Date (optional)"/>
-<rsp-gds-date-input asp-for="EndDate" name="@($"{prefix}.EndDate")" label-text="End Date (optional)"/>
-<rsp-gds-input asp-for="ShortQuestionText" name="@($"{prefix}.ShortQuestionText")" label-text="Short Question Text"/>
+
+@* ADD DATA FIELDS HERE  *@
+
+
+
+

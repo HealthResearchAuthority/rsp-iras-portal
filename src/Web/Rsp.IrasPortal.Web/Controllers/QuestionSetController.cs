@@ -1,5 +1,7 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
@@ -9,6 +11,7 @@ using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
+using static System.Collections.Specialized.BitVector32;
 using static Rsp.IrasPortal.Application.Constants.QuestionCategories;
 
 namespace Rsp.IrasPortal.Web.Controllers;
@@ -16,7 +19,8 @@ namespace Rsp.IrasPortal.Web.Controllers;
 [ExcludeFromCodeCoverage]
 [Route("[controller]/[action]", Name = "qsc:[action]")]
 [Authorize(Policy = "IsSystemAdministrator")]
-public class QuestionSetController(IQuestionSetService questionSetService, IValidator<QuestionSetViewModel> validator) : Controller
+public class QuestionSetController(IQuestionSetService questionSetService, IValidator<QuestionSetViewModel> validator)
+    : Controller
 {
     public async Task<IActionResult> Index(QuestionSetViewModel model)
     {
@@ -148,10 +152,6 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         return this.ServiceError(response);
     }
 
-    private static string QuestionsKey(string sectionId) => $"questionset:{sectionId}:questions";
-    private static string VersionKey(string sectionId) => $"questionset:{sectionId}:version";
-
-
     // GET: Start form from scratch
     [HttpGet]
     public IActionResult Create()
@@ -166,7 +166,7 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
     }
 
     [HttpPost]
-    public IActionResult NextStep(QuestionSetDto model)
+    public IActionResult CreateVersion(QuestionSetDto model)
     {
         var versionId = model.Version?.VersionId;
 
@@ -176,6 +176,10 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
             ViewBag.Step = "version";
             return View("QuestionSetForm", model);
         }
+
+        model.Version.CreatedAt = DateTime.UtcNow;
+        model.Version.IsDraft = false;
+        model.Version.IsPublished = false;
 
         // Save version separately in session
         HttpContext.Session.SetString($"questionset:{versionId}:version", JsonSerializer.Serialize(model.Version));
@@ -202,7 +206,99 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
             ? new List<QuestionDto>()
             : JsonSerializer.Deserialize<List<QuestionDto>>(questionsJson!)!;
 
-        // If the index exists, update; otherwise, add as new
+        // MODAL VALIDATION 
+        if (string.IsNullOrWhiteSpace(question.QuestionId))
+        {
+            ModelState.AddModelError("QuestionId", "Enter a question ID");
+        }
+        else
+        {
+            // Check for duplicate QuestionId, ignoring the current editing index
+            var isDuplicate = questions
+                .Where((q, index) => index != questionIndex) // exclude current question if editing
+                .Any(q => string.Equals(q.QuestionId?.Trim(), question.QuestionId.Trim(),
+                    StringComparison.OrdinalIgnoreCase));
+
+            if (isDuplicate)
+            {
+                ModelState.AddModelError("QuestionId", "This question ID has already been used");
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(question.SectionId))
+        {
+            ModelState.AddModelError("SectionId", "Enter a section ID");
+        }
+
+
+        if (string.IsNullOrWhiteSpace(question.Section))
+        {
+            ModelState.AddModelError("Section", "Enter a section name");
+        }
+
+        if (question.Sequence <= 0)
+        {
+            ModelState.AddModelError("Sequence", "Enter a sequence number greater than 0");
+        }
+        else
+        {
+            // Check for duplicate Sequence within the same section, excluding the current question if editing
+            bool isSequenceDuplicate = questions
+                .Where((q, index) => index != questionIndex && string.Equals(q.Section?.Trim(),
+                    question.Section?.Trim(), StringComparison.OrdinalIgnoreCase))
+                .Any(q => q.Sequence == question.Sequence);
+
+            if (isSequenceDuplicate)
+            {
+                ModelState.AddModelError("Sequence",
+                    $"Sequence {question.Sequence} is already used in section \"{question.Section}\"");
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(question.QuestionText))
+        {
+            ModelState.AddModelError("QuestionText", "Enter the question text");
+        }
+
+        if (string.IsNullOrWhiteSpace(question.QuestionType))
+        {
+            ModelState.AddModelError("QuestionType", "Select a question type");
+        }
+
+        if (question.QuestionType?.ToLowerInvariant() is "text" or "look-up list")
+        {
+            if (string.IsNullOrWhiteSpace(question.DataType))
+            {
+                ModelState.AddModelError("DataType", "Select a data type");
+            }
+        }
+        else
+        {
+            question.DataType = question.QuestionType;
+        }
+
+        // CATEGORY NEEDS TO BE SET TO THE VERSION ID
+        if (string.IsNullOrWhiteSpace(question.Category))
+        {
+            question.Category = versionId;
+        }
+
+
+        // ON VALIDATION FAILURE 
+        if (!ModelState.IsValid)
+        {
+            ViewBag.Step = "questions";
+            ViewBag.QuestionIndex = questionIndex;
+            ViewBag.UnsavedQuestion = question; // Store the unsaved input separately
+
+            return View("QuestionSetForm", new QuestionSetDto
+            {
+                Version = version,
+                Questions = questions
+            });
+        }
+
+        // ON SUCCESS
         if (questionIndex >= 0 && questionIndex < questions.Count)
         {
             questions[questionIndex] = question;
@@ -210,14 +306,12 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         else
         {
             questions.Add(question);
-            questionIndex = questions.Count - 1;
         }
 
-        // Save updated questions list
         HttpContext.Session.SetString($"questionset:{versionId}:questions", JsonSerializer.Serialize(questions));
 
         ViewBag.Step = "questions";
-        ViewBag.QuestionIndex = questionIndex + 1; // Move to next entry for add mode
+        ViewBag.QuestionIndex = questions.Count; // always load next (empty) index
 
         return View("QuestionSetForm", new QuestionSetDto
         {
@@ -225,7 +319,6 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
             Questions = questions
         });
     }
-
 
     [HttpPost]
     public IActionResult EditQuestion(string versionId, int questionIndex)
@@ -285,10 +378,19 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
     }
 
     [HttpPost]
-    public IActionResult Save(string versionId)
+    public async Task<IActionResult> Save(string versionId)
     {
         var versionJson = HttpContext.Session.GetString($"questionset:{versionId}:version");
         var questionsJson = HttpContext.Session.GetString($"questionset:{versionId}:questions");
+        var categoryList = new List<CategoryDto>()
+        {
+            new CategoryDto()
+            {
+                VersionId = versionId,
+                CategoryId = "categoryid" + versionId,
+                CategoryName = "categoryname" + versionId
+            }
+        };
 
         if (string.IsNullOrWhiteSpace(versionJson) || string.IsNullOrWhiteSpace(questionsJson))
             return RedirectToAction("Create");
@@ -296,8 +398,23 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         var model = new QuestionSetDto
         {
             Version = JsonSerializer.Deserialize<VersionDto>(versionJson!)!,
-            Questions = JsonSerializer.Deserialize<List<QuestionDto>>(questionsJson!)!
+            Questions = JsonSerializer.Deserialize<List<QuestionDto>>(questionsJson!)!,
+            Categories = categoryList
         };
+
+        var addQuestionSet = await questionSetService.AddQuestionSet(model);
+
+        if (!addQuestionSet.IsSuccessStatusCode)
+        {
+            ModelState.AddModelError(nameof(Save), "Internal server error");
+
+            return View("QuestionSetForm", new QuestionSetDto
+            {
+                Version = JsonSerializer.Deserialize<VersionDto>(versionJson!)!,
+                Questions = JsonSerializer.Deserialize<List<QuestionDto>>(questionsJson!)!
+            });
+        }
+
 
         // TODO: Save model to DB or service
         HttpContext.Session.Remove($"questionset:{versionId}:version");

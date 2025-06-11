@@ -2,62 +2,48 @@
 @model Rsp.IrasPortal.Application.DTOs.QuestionSetDto
 
 @{
-	var flowStep = ViewBag.Step as string ?? "version";
-	var versionId = Model.Version?.VersionId ?? "";
-	var questions = Model.Questions?.ToList() ?? new List<QuestionDto>();
-	var currentIndex = ViewBag.QuestionIndex as int? ?? (questions.Count > 0 ? questions.Count - 1 : 0);
+    var flowStep = ViewBag.Step as string ?? "version";
+    var versionId = Model.Version?.VersionId ?? "";
+    var questions = Model.Questions?.ToList() ?? new List<QuestionDto>();
+    var currentIndex = ViewBag.QuestionIndex as int? ?? (questions.Count > 0 ? questions.Count - 1 : 0);
 
     var isEditing = currentIndex < questions.Count;
-	var questionButtonText = isEditing ? "Update this question" : "Add this question";
-
-        var headingText = isEditing ? $"Edit Question ID: {questions[currentIndex].QuestionId}" : "Add new question";
+    var questionButtonText = isEditing ? "Update this question" : "Add this question";
+    var headingText = isEditing ? $"Edit Question ID: {questions[currentIndex].QuestionId}" : "Add new question";
 }
 
 <div class="govuk-grid-row">
-	<div class="govuk-grid-column-two-thirds">
-		<h1 class="govuk-heading-l">Create a Question Set</h1>
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">Create a Question Set</h1>
 
-		@if (flowStep == "version")
-		{
-			<form asp-action="NextStep" asp-controller="QuestionSet" method="post">
-				<fieldset>
-					<legend class="govuk-fieldset__legend govuk-fieldset__legend--m">Version details</legend>
+        @if (flowStep == "version")
+        {
+            <form asp-action="CreateVersion" asp-controller="QuestionSet" method="post">
+                <fieldset>
+                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">Version details</legend>
 
-					@if (!string.IsNullOrWhiteSpace(Model.Version?.VersionId))
-					{
-						<p class="govuk-hint">The version ID cannot be changed after this point.</p>
-						<rsp-gds-input asp-for="Version.VersionId" label-text="Version ID" readonly="true" disabled="true" />
-						<input type="hidden" name="Version.VersionId" value="@Model.Version.VersionId" />
-					}
-					else
-					{
-						<rsp-gds-input asp-for="Version.VersionId" label-text="Version ID" />
-					}
-				</fieldset>
+                    @if (!string.IsNullOrWhiteSpace(Model.Version?.VersionId))
+                    {
+                        <p class="govuk-hint">The version ID cannot be changed after this point.</p>
+                        <rsp-gds-input asp-for="Version.VersionId" label-text="Version ID" readonly="true" disabled="true"/>
+                        <input type="hidden" name="Version.VersionId" value="@Model.Version.VersionId"/>
+                    }
+                    else
+                    {
+                        <rsp-gds-input asp-for="Version.VersionId" label-text="Version ID"/>
+                    }
+                </fieldset>
 
-				<button type="submit" class="govuk-button">Next</button>
-			</form>
-		}
-		else if (flowStep == "questions")
-		{
-						<!-- Back button -->
-			<form asp-action="Back" asp-controller="QuestionSet" method="post" class="govuk-!-margin-bottom-4">
-				<input type="hidden" name="versionId" value="@versionId" />
-				<input type="hidden" name="questionIndex" value="@currentIndex" />
-				<button type="submit" class="govuk-button govuk-button--secondary">Back</button>
-			</form>
-
-
-			var question = questions.Count > currentIndex ? questions[currentIndex] : new QuestionDto { VersionId = versionId };
-
-			<h2 class="govuk-heading-m">@headingText</h2>
-
-			<!-- Question input form -->
-            <form asp-action="AddQuestion" asp-controller="QuestionSet" method="post">
-				<input type="hidden" name="versionId" value="@versionId" />
-                <input type="hidden" name="questionIndex" value="@currentIndex" />
-                @await Html.PartialAsync("_QuestionEditor", question, new ViewDataDictionary(ViewData) { { "Index", currentIndex } })
-                <button type="submit" class="govuk-button">@questionButtonText</button>
+                <button type="submit" class="govuk-button">Next</button>
+            </form>
+        }
+        else if (flowStep == "questions")
+        {
+            <!-- Back button -->
+            <form asp-action="Back" asp-controller="QuestionSet" method="post" class="govuk-!-margin-bottom-4">
+                <input type="hidden" name="versionId" value="@versionId"/>
+                <input type="hidden" name="questionIndex" value="@currentIndex"/>
+                <button type="submit" class="govuk-button govuk-button--secondary">Back</button>
             </form>
 
 			@if (questions.Any())
@@ -78,7 +64,7 @@
 									</tr>
 								</thead>
 								<tbody class="govuk-table__body">
-									@for (int i = 0; i < questions.Count; i++)
+									@for (var i = 0; i < questions.Count; i++)
 									{
 										var q = questions[i];
 										<tr class="govuk-table__row">
@@ -100,10 +86,25 @@
 					</div>
 					<form asp-action="Save" asp-controller="QuestionSet" method="post">
 						<input type="hidden" name="versionId" value="@versionId" />
-						<button type="submit" class="govuk-button govuk-button--primary">Save Question Set</button>
+						<button type="submit" class="govuk-button govuk-button--primary">Save without Adding Rules Set</button>
 					</form>
 				}
 			}
-		}
-	</div>
+
+            var unsavedQuestion = ViewBag.UnsavedQuestion as QuestionDto;
+            var question = unsavedQuestion ?? (isEditing ? questions[currentIndex] : new QuestionDto { VersionId = versionId });
+
+            <h2 class="govuk-heading-m">@headingText</h2>
+
+            <!-- Question input form -->
+            <form asp-action="AddQuestion" asp-controller="QuestionSet" method="post">
+                <input type="hidden" name="versionId" value="@versionId"/>
+                <input type="hidden" name="questionIndex" value="@currentIndex"/>
+                @await Html.PartialAsync("_QuestionEditor", question, new ViewDataDictionary(ViewData) { { "Index", currentIndex } })
+                <button type="submit" class="govuk-button">@questionButtonText</button>
+            </form>
+
+  
+        }
+    </div>
 </div>
