@@ -146,7 +146,7 @@
                         if (!string.IsNullOrWhiteSpace(templateName))
                         {
                             // plese note the @ is necessary before Html so that Template is rendered, otherwise it won't render
-                            @Html.EditorForModel(templateName, ViewData);
+							@Html.EditorForModel(templateName, ViewData)
                         }
 
                     }

@@ -12,6 +12,7 @@ using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Identity;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
+using Rsp.IrasPortal.Web.Validators;
 
 namespace Rsp.IrasPortal.Web.Areas.Admin.Controllers;
 
@@ -136,6 +137,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
 
         var context = new ValidationContext<UserViewModel>(model);
         var validationResult = await validator.ValidateAsync(context);
+
+        var u = userManagementService.GetUser(null, model.Email);
 
         if (!validationResult.IsValid)
         {
