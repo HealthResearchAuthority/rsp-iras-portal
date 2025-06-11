@@ -10,17 +10,22 @@
 <main class="govuk-main-wrapper">
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
-            <h2 class="govuk-heading-l">Choose documents to upload</h2>
             <form method="post" enctype="multipart/form-data">
+
                 <div class="govuk-form-group">
-                    <input class="govuk-file-upload" type="file" id="formFiles" name="formFiles" multiple />
+                    <label class="govuk-label" for="file-upload-1">
+                        <h2 class="govuk-heading-l">Upload a file</h2>
+                    </label>
+                    <div class="govuk-drop-zone"
+                         data-module="govuk-file-upload">
+                        <input class="govuk-file-upload" id="file-upload-1" name="fileUpload1" type="file" multiple>
+                    </div>
                 </div>
 
                 @{
                     ViewBag.Style = "govuk-button govuk-button--secondary";
                 }
 
-                <partial name="_SubmitButton" model="@("app:upload","Upload documents(s)", new Dictionary<string, string>())" />
                 <dl class="govuk-summary-list govuk-summary-list--long-key">
                     @if (Model != null)
                     {
@@ -45,7 +50,8 @@
                 ViewBag.Style = "govuk-button govuk-button--secondary";
             }
 
-            <a class="govuk-button" asp-route="app:reviewanswers">Continue</a>
+            <partial name="_SubmitButton" model="@("app:upload", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } })" />
+            <a class="govuk-button" asp-route="app:ProjectOverview">Save for later</a>
         </div>
     </div>
 </main>
