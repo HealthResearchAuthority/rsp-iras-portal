@@ -69,6 +69,11 @@ public static class HttpClientsConfiguration
             .ConfigureHttpClient(client => client.BaseAddress = appSettings.ApplicationsServiceUri)
             .AddHttpMessageHandler<AuthHeadersHandler>()
             .AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
+			
+        services
+            .AddRestClient<ICmsQuestionSetServiceClient>()
+            .ConfigureHttpClient(client => client.BaseAddress = new Uri("https://localhost:44357/"))
+            .AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
 
         services
             .AddRefitClient<ICmsQuestionSetServiceClient>(refitSettings)

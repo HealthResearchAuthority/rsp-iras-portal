@@ -151,7 +151,7 @@ public class CmsQuestionSetController(ICmsQuestionsetService questionSetService,
 
             // get the existing questionnaire for the category if exists in the session
             if (HttpContext.Session.Keys.Contains($"{SessionKeys.Questionnaire}:{sectionId}"))
-            {
+    {
                 var questionsJson = HttpContext.Session.GetString($"{SessionKeys.Questionnaire}:{sectionId}")!;
 
                 questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(questionsJson)!;
@@ -160,12 +160,12 @@ public class CmsQuestionSetController(ICmsQuestionsetService questionSetService,
             // questionnaire doesn't exist in session so
             // get questions from the database for the category
             if (questions == null || questions.Count == 0)
-            {
+        {
                 var response = await questionSetService.GetQuestionSet(sectionId: sectionId);
 
                 // return the view if successfull
                 if (response.IsSuccessStatusCode)
-                {
+            {
                     var questionsObject = response.Content;
                     var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(questionsObject);
 
@@ -185,16 +185,16 @@ public class CmsQuestionSetController(ICmsQuestionsetService questionSetService,
             // if we have questions in the session
             // then return the view with the model
             return View("Index", new QuestionnaireViewModel
-            {
+                {
                 CurrentStage = sectionId,
                 Questions = questions,
                 ReviewAnswers = reviewAnswers
             });
-        }
+                }
 
         // return error page as api wasn't successful
         return this.ServiceError(questionSectionsResponse);
-    }
+            }
 
     [RequestFormLimits(ValueCountLimit = int.MaxValue)]
     [HttpPost]
@@ -238,7 +238,7 @@ public class CmsQuestionSetController(ICmsQuestionsetService questionSetService,
             await SetStage(model.CurrentStage!);
             model.ReviewAnswers = submit;
             return View("Index", model);
-        }
+    }
 
         // save the responses
         var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
@@ -247,7 +247,7 @@ public class CmsQuestionSetController(ICmsQuestionsetService questionSetService,
         // we need to build the RespondentAnswerRequest
         // populate the RespondentAnswers
         var request = new RespondentAnswersRequest
-        {
+    {
             ProjectRecordId = application.Id,
             Id = respondentId
         };
@@ -329,9 +329,9 @@ public class CmsQuestionSetController(ICmsQuestionsetService questionSetService,
         // user jumps to the next stage by clicking on the link
         // so we need to resume the application from there
         if (!string.IsNullOrWhiteSpace(navigation.NextStage))
-        {
-            return RedirectToAction(nameof(Resume), new
             {
+            return RedirectToAction(nameof(Resume), new
+                {
                 projectRecordId = application.Id,
                 categoryId = navigation.NextCategory,
                 sectionId = navigation.NextStage
@@ -340,11 +340,11 @@ public class CmsQuestionSetController(ICmsQuestionsetService questionSetService,
 
         // continue rendering the questionnaire if the above conditions are not true
         return RedirectToAction(nameof(DisplayQuestionnaire), new
-        {
+                    {
             navigation.NextCategory,
             navigation.NextStage
-        });
-    }
+                    });
+                }
 
     public async Task<IActionResult> SubmitApplication(string projectRecordId)
     {
@@ -366,7 +366,7 @@ public class CmsQuestionSetController(ICmsQuestionsetService questionSetService,
         {
             // return the error page
             throw new Exception("Error occured");
-        }
+            }
 
         // define the questionnaire validation state dictionary
         var questionnaireValidationState = new Dictionary<string, string>();
@@ -383,12 +383,12 @@ public class CmsQuestionSetController(ICmsQuestionsetService questionSetService,
 
         // validate each category
         foreach (var questionsResponse in questionnaire.Questions.GroupBy(x => x.Category))
-        {
+            {
             // build the QuestionnaireViewModel for each category
             //questionnaire = BuildQuestionnaireViewModel(questionsResponse);
 
             if (questionnaire.Questions.Count == 0)
-            {
+                {
                 continue;
             }
 
@@ -400,7 +400,7 @@ public class CmsQuestionSetController(ICmsQuestionsetService questionSetService,
             ValidationContext<QuestionnaireViewModel> context;
 
             if (answers.Count > 0)
-            {
+                    {
                 // if we have answers, update the model with the provided answers
                 UpdateWithAnswers(respondentAnswers, questionnaire.Questions);
 
@@ -578,9 +578,9 @@ public class CmsQuestionSetController(ICmsQuestionsetService questionSetService,
 
         // Handle error response from the service.
         if (!searchResponse.IsSuccessStatusCode || searchResponse.Content == null)
-        {
+                        {
             return this.ServiceError(searchResponse);
-        }
+                        }
 
         // Convert the response content to a list of organisation names.
         var sponsorOrganisations = searchResponse.Content;
@@ -588,7 +588,7 @@ public class CmsQuestionSetController(ICmsQuestionsetService questionSetService,
         TempData.TryAdd(TempDataKeys.SponsorOrganisations, sponsorOrganisations, true);
 
         return Redirect(returnUrl);
-    }
+                    }
 
     private List<QuestionViewModel> GetQuestionsFromSession(QuestionnaireViewModel model)
     {
@@ -608,10 +608,10 @@ public class CmsQuestionSetController(ICmsQuestionsetService questionSetService,
             question.SelectedOption = response?.SelectedOption;
             question.Answers = response?.Answers ?? [];
             question.AnswerText = response?.AnswerText;
-        }
+                }
 
         return questions;
-    }
+            }
 
     private async Task<IrasApplicationResponse?> LoadApplication(string projectApplicationId)
     {
@@ -642,7 +642,7 @@ public class CmsQuestionSetController(ICmsQuestionsetService questionSetService,
             // continue to next question if we
             // don't have an answer
             if (question == null)
-            {
+    {
                 continue;
             }
 
@@ -651,18 +651,18 @@ public class CmsQuestionSetController(ICmsQuestionsetService questionSetService,
 
             // if the question was multiple choice type i.e. checkboxes
             if (respondentAnswer.OptionType == "Multiple")
-            {
+        {
                 // set the IsSelected property to true
                 // where the answerId matches with the respondent answer
                 question.Answers.ForEach(ans =>
-                {
+            {
                     var answer = respondentAnswer.Answers.Find(ra => ans.AnswerId == ra);
                     if (answer != null)
-                    {
+                {
                         ans.IsSelected = true;
                     }
-                });
-            }
+            });
+        }
             // update the freetext answer
             question.AnswerText = respondentAnswer.AnswerText;
         }
