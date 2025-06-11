@@ -22,16 +22,15 @@
     var modificationId = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string;
     var specificArea = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationSpecificArea) as string;
 
-    Model.CurrentStage = currentStage!;    
+    Model.CurrentStage = currentStage!;
 }
 
 @{
     var prefix = ViewData.ModelState.IsValid ? "" : "Error - ";
     ViewBag.Title = !string.IsNullOrWhiteSpace(specificArea) ?
             $"{prefix}{specificArea} - Make changes to research" :
-            $"{prefix}{Model.Questions.FirstOrDefault()?.Section} - Make changes to research";    
+            $"{prefix}{Model.Questions.FirstOrDefault()?.Section} - Make changes to research";
 }
-
 
 @if (await featureManager.IsEnabledAsync(Features.ProgressiveEnhancement))
 {
@@ -41,14 +40,14 @@
     var conditionalRules = Model.GetConditionalRules();
 
     <script>
-		$(document).ready(function () {
-		const conditionalRules = @Html.Raw(JsonSerializer.Serialize(conditionalRules));
+        $(document).ready(function () {
+        const conditionalRules = @Html.Raw(JsonSerializer.Serialize(conditionalRules));
 
-		// Loop through each rule and store it individually by QuestionId
-		conditionalRules.forEach(rule => {
-		sessionStorage.setItem(rule.QuestionId, JSON.stringify(rule.Rules));
-		});
-		});
+        // Loop through each rule and store it individually by QuestionId
+        conditionalRules.forEach(rule => {
+        sessionStorage.setItem(rule.QuestionId, JSON.stringify(rule.Rules));
+        });
+        });
     </script>
 
     <script src="~/js/questionnaire.js"></script>
@@ -75,10 +74,7 @@
     else if (projectOverview)
     {
         // If the project overview is true, navigate to the project overview page
-        navModel = ("pov:projectdetails", "Back", new()
-        {
-            { "projectRecordId", projectRecordId }
-        });
+        navModel = ("app:projectoverview", "Back", new());
     }
 }
 
@@ -178,7 +174,7 @@
                         if (!string.IsNullOrWhiteSpace(templateName))
                         {
                             // plese note the @ is necessary before Html so that Template is rendered, otherwise it won't render
-							@Html.EditorForModel(templateName, ViewData)
+                            @Html.EditorForModel(templateName, ViewData)
                         }
 
                     }
