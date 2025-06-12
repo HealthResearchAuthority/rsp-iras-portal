@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Net;
 using FluentValidation;
+using FluentValidation.Results;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -137,6 +138,12 @@ public class UsersController(IUserManagementService userManagementService, IVali
         var context = new ValidationContext<UserViewModel>(model);
         var validationResult = await validator.ValidateAsync(context);
 
+        var response = await userManagementService.GetUser(null, model.Email);
+
+        if (response.StatusCode == System.Net.HttpStatusCode.OK) // This means that the user exists otherwise the status code would be NotFound.
+        {
+            validationResult.Errors.Add(new ValidationFailure("Email", "This user already exists", null));
+        }
         if (!validationResult.IsValid)
         {
             // Copy the validation results into ModelState.
