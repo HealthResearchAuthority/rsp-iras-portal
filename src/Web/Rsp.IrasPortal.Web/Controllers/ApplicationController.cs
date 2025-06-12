@@ -20,8 +20,8 @@ public class ApplicationController
 (
     IApplicationsService applicationsService,
     IValidator<IrasIdViewModel> irasIdValidator,
-    IQuestionSetService questionSetService
-) : Controller
+    IRespondentService respondentService,
+    IQuestionSetService questionSetService) : Controller
 {
     // ApplicationInfo view name
     private const string ApplicationInfo = nameof(ApplicationInfo);
@@ -39,14 +39,43 @@ public class ApplicationController
 
         var researchApplications = applications
             .Where(app => app != null)
-            .Select((app, index) => new ResearchApplicationSummaryModel
+            .Select(app => new ResearchApplicationSummaryModel
             {
-                IrasId = app.IrasId ?? null, // fallback if IrasId is null
-                ApplicatonId = app.ApplicationId ?? null, // also a fallback
-                Title = string.IsNullOrWhiteSpace(app.Title) ? "Empty" : app.Title, //temporary for first iteration
-                ProjectEndDate = new DateTime(2025, 12, 10) //same as above
+                IrasId = app.IrasId,
+                ApplicatonId = app.ApplicationId,
+                Title = "Empty", // temporary default
+                ProjectEndDate = new DateTime(2025, 12, 10) // temporary default
             })
             .ToList();
+
+        var categoryId = "project record v1";
+
+        foreach (var researchApp in researchApplications)
+        {
+            var respondentServiceResponse = await respondentService.GetRespondentAnswers(researchApp.ApplicatonId, categoryId);
+
+            if (!respondentServiceResponse.IsSuccessStatusCode)
+            {
+                // Optionally log or handle the error
+                continue;
+            }
+
+            var answers = respondentServiceResponse.Content;
+
+            var titleAnswer = answers.FirstOrDefault(a => a.QuestionId == "IQA0002")?.AnswerText;
+            var endDateAnswer = answers.FirstOrDefault(a => a.QuestionId == "IQA0003")?.AnswerText;
+
+            if (!string.IsNullOrWhiteSpace(titleAnswer))
+            {
+                researchApp.Title = titleAnswer;
+            }
+
+            if (DateTime.TryParse(endDateAnswer, out var parsedDate))
+            {
+                researchApp.ProjectEndDate = parsedDate;
+            }
+        }
+
 
         return View(nameof(Index), researchApplications);
     }
@@ -206,7 +235,6 @@ public class ApplicationController
         return this.ServiceError(applicationServiceResponse);
     }
 
-
     public IActionResult ProjectOverview(string? CategoryId = null, string? ApplicationId = null)
     {
         // If there is a project modification change, show the notification banner
@@ -233,7 +261,6 @@ public class ApplicationController
         TempData[TempDataKeys.ProjectOverview] = true;
         return View(model);
     }
-
 
     [Route("{applicationId}", Name = "app:ViewApplication")]
     public async Task<IActionResult> ViewApplication(string applicationId)
