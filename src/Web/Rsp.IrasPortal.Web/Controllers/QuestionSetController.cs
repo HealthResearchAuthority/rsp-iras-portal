@@ -280,8 +280,20 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         // CATEGORY NEEDS TO BE SET TO THE VERSION ID
         if (string.IsNullOrWhiteSpace(question.Category))
         {
-            question.Category = versionId;
+            question.Category = "categoryid" + versionId;
         }
+
+        // NEED TO SET ANSWERS HERE
+
+
+
+        //question.Answers = new List<AnswerDto>()
+        //{
+        //    new AnswerDto()
+        //    {
+
+        //    }
+        //};
 
 
         // ON VALIDATION FAILURE 
@@ -415,12 +427,12 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
             });
         }
 
-
         // TODO: Save model to DB or service
         HttpContext.Session.Remove($"questionset:{versionId}:version");
         HttpContext.Session.Remove($"questionset:{versionId}:questions");
 
-        return RedirectToAction("Index");
+        ViewBag.Mode = "create";
+        return View("SuccessMessage", model);
     }
 
 

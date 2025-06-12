@@ -1,0 +1,46 @@
+﻿@{
+    var heading = "";
+    var messageText = "";
+
+    switch (ViewBag.Mode)
+    {
+        case "create":
+        {
+            heading = "Question set successfully created";
+            messageText = $"The question set with version ID {Model.Version.VersionId} has been saved as a draft. To make it available, you must publish the question set.";
+        }
+            break;
+        
+        case "enable":
+        {
+            heading = "Question set successfully enabled";
+            messageText = $"The selected question set will now be used when adding new questionnaires {Model.Version.VersionId}.";
+        }
+            break;
+    }
+
+
+    ViewData["Title"] = heading;
+}
+
+@model Rsp.IrasPortal.Application.DTOs.QuestionSetDto
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <div class="govuk-panel govuk-panel--confirmation">
+            <h1 class="govuk-panel__title">
+                @heading
+            </h1>
+        </div>
+
+        <p class="govuk-body">
+            @messageText
+        </p>
+
+  
+
+        <p class="govuk-body">
+			<a class="govuk-link" asp-route="qsc:index">Back to Manage Question set</a>
+        </p>
+    </div>
+</div>
