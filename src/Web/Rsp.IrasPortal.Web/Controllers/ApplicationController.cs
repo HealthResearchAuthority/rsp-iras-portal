@@ -63,7 +63,7 @@ public class ApplicationController(
 
         // Create new application
         var respondent = GetRespondentFromContext();
-        var name = $"{respondent.FirstName} {respondent.LastName}";
+        var name = $"{respondent.GivenName} {respondent.FamilyName}";
 
         var irasApplicationRequest = new IrasApplicationRequest
         {
@@ -95,7 +95,7 @@ public class ApplicationController(
         return RedirectToAction(nameof(QuestionnaireController.Resume), "Questionnaire", new
         {
             categoryId,
-            irasApplication.ApplicationId
+            irasApplication.ProjectApplicationId
         });
     }
 
@@ -155,7 +155,7 @@ public class ApplicationController(
 
         var respondent = GetRespondentFromContext();
 
-        var name = $"{respondent.FirstName} {respondent.LastName}";
+        var name = $"{respondent.GivenName} {respondent.FamilyName}";
 
         var irasApplicationRequest = new IrasApplicationRequest
         {
@@ -251,7 +251,7 @@ public class ApplicationController(
         {
             ProjectTitle = TempData[TempDataKeys.ShortProjectTitle] as string ?? string.Empty,
             CategoryId = TempData[TempDataKeys.CategoryId] as string ?? string.Empty,
-            ApplicationId = TempData[TempDataKeys.ApplicationId] as string ?? string.Empty
+            ProjectApplicationId = TempData[TempDataKeys.ApplicationId] as string ?? string.Empty
         };
 
         TempData[TempDataKeys.ProjectOverview] = true;
@@ -309,22 +309,22 @@ public class ApplicationController(
 
         var respondent = new RespondentDto
         {
-            RespondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!,
+            ProjectApplicationRespondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!,
             EmailAddress = (HttpContext.Items[ContextItemKeys.Email] as string)!,
-            FirstName = (HttpContext.Items[ContextItemKeys.FirstName] as string)!,
-            LastName = (HttpContext.Items[ContextItemKeys.LastName] as string)!,
+            GivenName = (HttpContext.Items[ContextItemKeys.FirstName] as string)!,
+            FamilyName = (HttpContext.Items[ContextItemKeys.LastName] as string)!,
             Role = string.Join(',', User.Claims
                        .Where(claim => claim.Type == ClaimTypes.Role)
                        .Select(claim => claim.Value))
         };
 
-        var name = $"{respondent.FirstName} {respondent.LastName}";
+        var name = $"{respondent.GivenName} {respondent.FamilyName}";
 
         var application = this.GetApplicationFromSession();
 
         var request = new IrasApplicationRequest
         {
-            ApplicationId = application.ApplicationId,
+            ApplicationId = application.ProjectApplicationId,
             Title = model.Name!,
             Description = model.Description!,
             CreatedBy = application.CreatedBy,
@@ -355,10 +355,10 @@ public class ApplicationController(
     {
         return new RespondentDto
         {
-            RespondentId = HttpContext.Items[ContextItemKeys.RespondentId]?.ToString() ?? string.Empty,
+            ProjectApplicationRespondentId = HttpContext.Items[ContextItemKeys.RespondentId]?.ToString() ?? string.Empty,
             EmailAddress = HttpContext.Items[ContextItemKeys.Email]?.ToString() ?? string.Empty,
-            FirstName = HttpContext.Items[ContextItemKeys.FirstName]?.ToString() ?? string.Empty,
-            LastName = HttpContext.Items[ContextItemKeys.LastName]?.ToString() ?? string.Empty,
+            GivenName = HttpContext.Items[ContextItemKeys.FirstName]?.ToString() ?? string.Empty,
+            FamilyName = HttpContext.Items[ContextItemKeys.LastName]?.ToString() ?? string.Empty,
             Role = string.Join(',', User.Claims
                        .Where(claim => claim.Type == ClaimTypes.Role)
                        .Select(claim => claim.Value))

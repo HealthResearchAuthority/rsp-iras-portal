@@ -32,7 +32,7 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApplicationControllerTests
 
             model.ProjectTitle.ShouldBe("Test Project");
             model.CategoryId.ShouldBe("123");
-            model.ApplicationId.ShouldBe("456");
+            model.ProjectApplicationId.ShouldBe("456");
         }
     }
 }

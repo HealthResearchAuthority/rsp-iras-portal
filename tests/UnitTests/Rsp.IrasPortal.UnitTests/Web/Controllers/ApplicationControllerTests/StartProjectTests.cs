@@ -105,7 +105,7 @@ public class StartProjectTests : TestServiceBase<ApplicationController>
         var model = new IrasIdViewModel { IrasId = "1234" };
         var existingApps = new List<IrasApplicationResponse>
         {
-            new() { IrasId = 1234, ApplicationId = "a1", Title = "Test" }
+            new() { IrasId = 1234, ProjectApplicationId = "a1", Title = "Test" }
         };
 
         Mocker
@@ -174,7 +174,7 @@ public class StartProjectTests : TestServiceBase<ApplicationController>
         };
 
         var model = new IrasIdViewModel { IrasId = "5678" };
-        var createdApp = new IrasApplicationResponse { ApplicationId = "abc", IrasId = 5678, Title = "Test" };
+        var createdApp = new IrasApplicationResponse { ProjectApplicationId = "abc", IrasId = 5678, Title = "Test" };
 
         Mocker
             .GetMock<IValidator<IrasIdViewModel>>()
@@ -215,6 +215,6 @@ public class StartProjectTests : TestServiceBase<ApplicationController>
         result.ShouldBeOfType<RedirectToActionResult>();
         var redirect = result as RedirectToActionResult;
         redirect!.ActionName.ShouldBe(nameof(QuestionnaireController.Resume));
-        redirect.RouteValues!["ApplicationId"].ShouldBe("abc");
+        redirect.RouteValues!["ProjectApplicationId"].ShouldBe("abc");
     }
 }

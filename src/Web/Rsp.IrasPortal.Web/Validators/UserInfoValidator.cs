@@ -27,13 +27,13 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
            .MaximumLength(250)
            .WithMessage(TitleMaxCharactersErrorMessage);
 
-        RuleFor(x => x.FirstName)
+        RuleFor(x => x.GivenName)
             .NotEmpty()
             .WithMessage(FirstNameMandatoryErrorMessage)
             .MaximumLength(250)
             .WithMessage(FirstNameMaxCharactersErrorMessage);
 
-        RuleFor(x => x.LastName)
+        RuleFor(x => x.FamilyName)
             .NotEmpty()
             .WithMessage(LastNameMandatoryErrorMessage)
             .MaximumLength(250)
