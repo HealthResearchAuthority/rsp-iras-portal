@@ -140,12 +140,14 @@ public class UsersController(IUserManagementService userManagementService, IVali
 
         var response = await userManagementService.GetUser(null, model.Email);
 
-        if (response.StatusCode == System.Net.HttpStatusCode.OK) // This means that the user exists otherwise the status code would be NotFound.
+        var emailExists = response.IsSuccessStatusCode && response.Content != null;
+
+        if (!validationResult.IsValid || emailExists)
         {
-            validationResult.Errors.Add(new ValidationFailure("Email", "This user already exists", null));
-        }
-        if (!validationResult.IsValid)
-        {
+            if (emailExists)
+            {
+                validationResult.Errors.Add(new ValidationFailure("Email", "This user already exists", null));
+            }
             // Copy the validation results into ModelState.
             // ASP.NET uses the ModelState collection to populate
             // error messages in the View.
