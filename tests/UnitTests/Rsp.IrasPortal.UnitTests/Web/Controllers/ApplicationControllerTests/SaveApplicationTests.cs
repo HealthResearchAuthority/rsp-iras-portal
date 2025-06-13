@@ -85,10 +85,10 @@ public class SaveApplicationTests : TestServiceBase<ApplicationController>
         // Arrange
         var expectedRespondent = new RespondentDto
         {
-            RespondentId = "testRespondentId",
+            ProjectApplicationRespondentId = "testRespondentId",
             EmailAddress = "test@example.com",
-            FirstName = "Test",
-            LastName = "User",
+            GivenName = "Test",
+            FamilyName = "User",
             Role = "TestRole"
         };
 
@@ -104,10 +104,10 @@ public class SaveApplicationTests : TestServiceBase<ApplicationController>
         Mocker
             .GetMock<IApplicationsService>()
             .Verify(s => s.UpdateApplication(It.Is<IrasApplicationRequest>(r =>
-                r.Respondent.RespondentId == expectedRespondent.RespondentId &&
+                r.Respondent.ProjectApplicationRespondentId == expectedRespondent.ProjectApplicationRespondentId &&
                 r.Respondent.EmailAddress == expectedRespondent.EmailAddress &&
-                r.Respondent.FirstName == expectedRespondent.FirstName &&
-                r.Respondent.LastName == expectedRespondent.LastName &&
+                r.Respondent.GivenName == expectedRespondent.GivenName &&
+                r.Respondent.FamilyName == expectedRespondent.FamilyName &&
                 r.Respondent.Role == expectedRespondent.Role
             )), Times.Once);
     }
@@ -118,7 +118,7 @@ public class SaveApplicationTests : TestServiceBase<ApplicationController>
         // Arrange
         var mockApplication = new IrasApplicationResponse
         {
-            ApplicationId = "testApplicationId",
+            ProjectApplicationId = "testApplicationId",
             CreatedBy = "Original Creator",
             CreatedDate = DateTime.Now.AddDays(-1)
         };
@@ -152,7 +152,7 @@ public class SaveApplicationTests : TestServiceBase<ApplicationController>
             .GetMock<IApplicationsService>()
             .Verify(s => s.UpdateApplication(It.Is<IrasApplicationRequest>
             (r =>
-                r.ApplicationId == mockApplication.ApplicationId &&
+                r.ApplicationId == mockApplication.ProjectApplicationId &&
                 r.CreatedBy == mockApplication.CreatedBy &&
                 r.StartDate == mockApplication.CreatedDate
             )), Times.Once);

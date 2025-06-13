@@ -33,7 +33,7 @@ public class ValidateTests : TestServiceBase<QuestionnaireController>
 
         var application = new IrasApplicationResponse
         {
-            ApplicationId = "App1"
+            ProjectApplicationId = "App1"
         };
         var session = new Mock<ISession>();
 
@@ -108,7 +108,7 @@ public class ValidateTests : TestServiceBase<QuestionnaireController>
 
         var application = new IrasApplicationResponse
         {
-            ApplicationId = "App1"
+            ProjectApplicationId = "App1"
         };
 
         var session = new Mock<ISession>();

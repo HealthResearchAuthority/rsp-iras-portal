@@ -6,5 +6,5 @@ public class ProjectOverviewModel
 
     public string? CategoryId { get; set; }
 
-    public string? ApplicationId { get; set; }
+    public string? ProjectApplicationId { get; set; }
 }

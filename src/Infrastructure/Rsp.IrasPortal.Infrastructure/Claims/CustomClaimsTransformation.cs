@@ -91,8 +91,8 @@ public class CustomClaimsTransformation
             if (oneLoginEnabled)
             {
                 // these claims are not available in Gov UK One Login implementation, so we have to manually add them
-                claimsIdentity.AddClaim(new Claim(ClaimTypes.GivenName, user.User.FirstName));
-                claimsIdentity.AddClaim(new Claim(ClaimTypes.Name, user.User.FirstName));
+                claimsIdentity.AddClaim(new Claim(ClaimTypes.GivenName, user.User.GivenName));
+                claimsIdentity.AddClaim(new Claim(ClaimTypes.Name, user.User.GivenName));
             }
 
             // as the claims are now updated, we need to generate a new token
