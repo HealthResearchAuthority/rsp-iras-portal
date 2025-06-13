@@ -1,0 +1,57 @@
+﻿@model List<AnswerDto>
+
+@{
+	var selectedAnswerId = ViewData["SelectedAnswerId"] as string;
+	var versionId = ViewData["VersionId"] as string ?? "";
+
+	var selectedAnswer = Model.FirstOrDefault(a => a.AnswerId == selectedAnswerId);
+	bool isEditing = selectedAnswer != null;
+}
+
+<div class="govuk-form-group">
+	<h2 class="govuk-heading-m">Answers</h2>
+
+	@if (Model.Any())
+	{
+		<dl class="govuk-summary-list">
+			@foreach (var answer in Model)
+			{
+				<div class="govuk-summary-list__row">
+					<dt class="govuk-summary-list__key">
+						@answer.AnswerText
+					</dt>
+					<dd class="govuk-summary-list__actions">
+						<form asp-action="EditAnswer" method="post" class="inline-form">
+							<input type="hidden" name="answerId" value="@answer.AnswerId" />
+							<button class="govuk-button govuk-button--secondary" type="submit">Edit</button>
+						</form>
+					</dd>
+				</div>
+			}
+		</dl>
+	}
+	else
+	{
+		<p class="govuk-body">No answers added yet.</p>
+	}
+
+	<hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible" />
+
+	<form asp-action="@(isEditing ? "UpdateAnswer" : "AddAnswer")" method="post">
+		@if (isEditing)
+		{
+			<input type="hidden" name="AnswerId" value="@selectedAnswer.AnswerId" />
+		}
+		<input type="hidden" name="VersionId" value="@versionId" />
+
+		<div class="govuk-form-group">
+			<label class="govuk-label" for="AnswerText">Answer text</label>
+			<input class="govuk-input" id="AnswerText" name="AnswerText" type="text"
+				   value="@(isEditing ? selectedAnswer!.AnswerText : "")" />
+		</div>
+
+		<button type="submit" class="govuk-button">
+			@(isEditing ? "Update answer" : "Add answer")
+		</button>
+	</form>
+</div>

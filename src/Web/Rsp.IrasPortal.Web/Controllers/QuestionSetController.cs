@@ -166,10 +166,11 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
     }
 
     [HttpPost]
-    public IActionResult CreateVersion(QuestionSetDto model)
+    public async Task<IActionResult> CreateVersion(QuestionSetDto model)
     {
         var versionId = model.Version?.VersionId;
 
+        // If version ID is empty, also show a validation message
         if (string.IsNullOrWhiteSpace(versionId))
         {
             ModelState.AddModelError("Version.VersionId", "Enter a version ID");
@@ -177,9 +178,26 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
             return View("QuestionSetForm", model);
         }
 
+        // Get existing versions
+        var response = await questionSetService.GetVersions();
+        if (response.IsSuccessStatusCode)
+        {
+            var versions = response.Content?.OrderByDescending(x => x.CreatedAt).ToList() ?? [];
+
+            // Check if the entered version ID already exists
+            if (versions.Any(v => v.VersionId.Equals(versionId, StringComparison.OrdinalIgnoreCase)))
+            {
+                ModelState.AddModelError("Version.VersionId", "A question set with this version ID already exists.");
+                ViewBag.Step = "version";
+                ViewBag.LockVersionId = false;
+                return View("QuestionSetForm", model);
+            }
+        }
+
         model.Version.CreatedAt = DateTime.UtcNow;
         model.Version.IsDraft = false;
         model.Version.IsPublished = false;
+        ViewBag.LockVersionId = true;
 
         // Save version separately in session
         HttpContext.Session.SetString($"questionset:{versionId}:version", JsonSerializer.Serialize(model.Version));
@@ -230,7 +248,6 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
             ModelState.AddModelError("SectionId", "Enter a section ID");
         }
 
-
         if (string.IsNullOrWhiteSpace(question.Section))
         {
             ModelState.AddModelError("Section", "Enter a section name");
@@ -265,6 +282,7 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
             ModelState.AddModelError("QuestionType", "Select a question type");
         }
 
+        // SORT DATA TYPE DEPENDING ON QUESTION TYPE
         if (question.QuestionType?.ToLowerInvariant() is "text" or "look-up list")
         {
             if (string.IsNullOrWhiteSpace(question.DataType))
@@ -272,9 +290,13 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
                 ModelState.AddModelError("DataType", "Select a data type");
             }
         }
-        else
+        else if (question.QuestionType?.ToLowerInvariant() is "date" or "boolean")
         {
-            question.DataType = question.QuestionType;
+            question.DataType = question.QuestionType.ToLower();
+        }
+        else if (question.QuestionType?.ToLowerInvariant() is "rts:org_lookup")
+        {
+            question.DataType = "text";
         }
 
         // CATEGORY NEEDS TO BE SET TO THE VERSION ID
@@ -284,18 +306,30 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         }
 
         // NEED TO SET ANSWERS HERE
+        question.IsMandatory = true;
+        question.IsOptional = false;
 
+        if (question.DataType is "boolean")
+        {
+            var answers = new List<AnswerDto>
+            {
+                new AnswerDto()
+                {
+                    AnswerId = "Boolean1",
+                    AnswerText = "Yes",
+                    VersionId = versionId
+                },
+                new AnswerDto()
+                {
+                    AnswerId = "Boolean2",
+                    AnswerText = "No",
+                    VersionId = versionId
+                }
+            };
 
-
-        //question.Answers = new List<AnswerDto>()
-        //{
-        //    new AnswerDto()
-        //    {
-
-        //    }
-        //};
-
-
+            question.Answers = answers;
+        }
+     
         // ON VALIDATION FAILURE 
         if (!ModelState.IsValid)
         {
@@ -381,6 +415,8 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
             ViewBag.Step = "questions";
             ViewBag.QuestionIndex = questionIndex - 1;
         }
+
+        ViewBag.LockVersionId = true;
 
         return View("QuestionSetForm", new QuestionSetDto
         {

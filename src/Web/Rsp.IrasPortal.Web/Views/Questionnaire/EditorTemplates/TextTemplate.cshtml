@@ -23,7 +23,7 @@
 <rsp-gds-input asp-for="Questions[index].AnswerText"
                id="Questions[@index].AnswerText"
                field-id="@(question.QuestionId)_Text"
-               input-type="text"
+               input-type="@question.DataType"
                label-text="@question.QuestionText"
                hint-html="@Html.Raw(hintHtml)"
                error-key="Questions[@index].AnswerText"

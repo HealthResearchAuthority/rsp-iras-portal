@@ -22,7 +22,7 @@
                 <fieldset>
                     <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">Version details</legend>
 
-                    @if (!string.IsNullOrWhiteSpace(Model.Version?.VersionId))
+					@if (!string.IsNullOrWhiteSpace(Model.Version?.VersionId) && ViewBag.LockVersionId)
                     {
                         <p class="govuk-hint">The version ID cannot be changed after this point.</p>
                         <rsp-gds-input asp-for="Version.VersionId" label-text="Version ID" readonly="true" disabled="true"/>
@@ -59,7 +59,8 @@
 									<tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
 										<th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Question ID</th>
 										<th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Question Text</th>
-										<th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Category</th>
+										<th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Section ID</th>
+										<th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Section</th>
 										<th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Actions</th>
 									</tr>
 								</thead>
@@ -70,7 +71,8 @@
 										<tr class="govuk-table__row">
 											<td class="govuk-table__cell">@q.QuestionId</td>
 											<td class="govuk-table__cell">@q.QuestionText</td>
-											<td class="govuk-table__cell">@q.Category</td>
+											<td class="govuk-table__cell">@q.SectionId</td>
+											<td class="govuk-table__cell">@q.Section</td>
 											<td class="govuk-table__cell">
 												<form asp-action="EditQuestion" asp-controller="QuestionSet" method="post" class="inline-form">
 													<input type="hidden" name="versionId" value="@versionId" />
