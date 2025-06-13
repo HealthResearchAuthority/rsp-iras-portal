@@ -10,7 +10,7 @@
 
 <div class="govuk-grid-row">
 	<div class="govuk-grid-column-two-thirds">
-		<h2 class="govuk-heading-l">Confirm that you want to enable @Model.FirstName @Model.LastName</h2>
+		<h2 class="govuk-heading-l">Confirm that you want to enable @Model.GivenName @Model.FamilyName</h2>
 		<p class="govuk-body">You are about to enable this user record</p>
 		<form method="post">
 			<input hidden name="Id" asp-for="Id" value="@(Model.Id ?? string.Empty)" />

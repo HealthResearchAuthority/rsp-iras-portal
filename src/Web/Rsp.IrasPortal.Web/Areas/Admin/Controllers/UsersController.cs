@@ -55,8 +55,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
             var users = response.Content?.Users.Select(user => new UserViewModel
             {
                 Id = user.Id,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
+                GivenName = user.GivenName,
+                FamilyName = user.FamilyName,
                 Email = user.Email,
                 Status = user.Status,
                 LastLogin = user.LastLogin

@@ -30,19 +30,19 @@ public class QuestionnaireController
     /// <summary>
     /// Resumes the application for the categoryId
     /// </summary>
-    /// <param name="applicationId">Application Id</param>
+    /// <param name="projectApplicationId">Application Id</param>
     /// <param name="categoryId">CategoryId to resume from</param>
     /// <param name="validate">Indicates whether to validate or not</param>
-    public async Task<IActionResult> Resume(string applicationId, string categoryId, string validate = "False", string? sectionId = null)
+    public async Task<IActionResult> Resume(string projectApplicationId, string categoryId, string validate = "False", string? sectionId = null)
     {
         // load existing application in session
-        if (await LoadApplication(applicationId) == null)
+        if (await LoadApplication(projectApplicationId) == null)
         {
             return NotFound();
         }
 
         // get the responent answers for the category
-        var respondentServiceResponse = await respondentService.GetRespondentAnswers(applicationId, categoryId);
+        var respondentServiceResponse = await respondentService.GetRespondentAnswers(projectApplicationId, categoryId);
 
         if (!respondentServiceResponse.IsSuccessStatusCode)
         {
@@ -101,8 +101,8 @@ public class QuestionnaireController
         // save the list of QuestionViewModel in session to get it later
         HttpContext.Session.SetString($"{SessionKeys.Questionnaire}:{sectionId}", JsonSerializer.Serialize(questionnaire.Questions));
 
-        // add the applicationId in the TempData to be retrieved in the view
-        TempData.TryAdd(TempDataKeys.ApplicationId, applicationId);
+        // add the projectApplicationId in the TempData to be retrieved in the view
+        TempData.TryAdd(TempDataKeys.ApplicationId, projectApplicationId);
 
         // this is where the questionnaire will resume
         var navigationDto = await SetStage(sectionIdOrDefault);
@@ -306,13 +306,13 @@ public class QuestionnaireController
         ViewData[ViewDataKeys.IsQuestionnaireValid] = isValid;
 
         // get the application from the session
-        // to get the applicationId
+        // to get the projectApplicationId
         var application = this.GetApplicationFromSession();
 
         if (!isValid)
         {
-            // store the applicationId in the TempData to get in the view
-            TempData.TryAdd(TempDataKeys.ApplicationId, application.ApplicationId);
+            // store the projectApplicationId in the TempData to get in the view
+            TempData.TryAdd(TempDataKeys.ApplicationId, application.ProjectApplicationId);
 
             // store the irasId in the TempData to get in the view
             TempData.TryAdd(TempDataKeys.IrasId, application.IrasId);
@@ -331,8 +331,8 @@ public class QuestionnaireController
         // populate the RespondentAnswers
         var request = new RespondentAnswersRequest
         {
-            ApplicationId = application.ApplicationId,
-            RespondentId = respondentId
+            ProjectApplicationId = application.ProjectApplicationId,
+            ProjectApplicationRespondentId = respondentId
         };
 
         foreach (var question in questions)
@@ -372,8 +372,8 @@ public class QuestionnaireController
             await respondentService.SaveRespondentAnswers(request);
         }
 
-        // add the applicationId in the tempdata
-        TempData.TryAdd(TempDataKeys.ApplicationId, application.ApplicationId);
+        // add the projectApplicationId in the tempdata
+        TempData.TryAdd(TempDataKeys.ApplicationId, application.ProjectApplicationId);
 
         // store the irasId in the TempData to get in the view
         TempData.TryAdd(TempDataKeys.IrasId, application.IrasId);
@@ -387,7 +387,7 @@ public class QuestionnaireController
         // user clicks on Proceed to submit button
         if (submit)
         {
-            return RedirectToAction(nameof(SubmitApplication), new { applicationId = application.ApplicationId });
+            return RedirectToAction(nameof(SubmitApplication), new { projectApplicationId = application.ProjectApplicationId });
         }
 
         // get the question sections
@@ -412,13 +412,13 @@ public class QuestionnaireController
             // if the user is at the last stage and clicks on Save and Continue
             if (string.IsNullOrWhiteSpace(navigation.NextStage))
             {
-                return RedirectToAction(nameof(SubmitApplication), new { applicationId = application.ApplicationId });
+                return RedirectToAction(nameof(SubmitApplication), new { projectApplicationId = application.ProjectApplicationId });
             }
 
             // otherwise resume from the NextStage in sequence
             return RedirectToAction(nameof(Resume), new
             {
-                applicationId = application.ApplicationId,
+                projectApplicationId = application.ProjectApplicationId,
                 categoryId = navigation.NextCategory,
                 sectionId = navigation.NextStage
             });
@@ -427,7 +427,7 @@ public class QuestionnaireController
         if (saveForLater == bool.TrueString)
         {
             TempData[TempDataKeys.CategoryId] = model.GetFirstCategory();
-            TempData[TempDataKeys.ApplicationId] = application.ApplicationId;
+            TempData[TempDataKeys.ApplicationId] = application.ProjectApplicationId;
 
             return RedirectToAction("ProjectOverview", "Application");
         }
@@ -438,7 +438,7 @@ public class QuestionnaireController
         {
             return RedirectToAction(nameof(Resume), new
             {
-                applicationId = application.ApplicationId,
+                projectApplicationId = application.ProjectApplicationId,
                 categoryId = navigation.NextCategory,
                 sectionId = navigation.NextStage
             });
@@ -473,11 +473,11 @@ public class QuestionnaireController
         ViewData[ViewDataKeys.IsQuestionnaireValid] = await ValidateQuestionnaire(model);
 
         // get the application from the session
-        // to get the applicationId
+        // to get the projectApplicationId
         var application = this.GetApplicationFromSession();
 
-        // store the applicationId in the TempData to get in the view
-        TempData.TryAdd(TempDataKeys.ApplicationId, application.ApplicationId);
+        // store the projectApplicationId in the TempData to get in the view
+        TempData.TryAdd(TempDataKeys.ApplicationId, application.ProjectApplicationId);
 
         // store the irasId in the TempData to get in the view
         TempData.TryAdd(TempDataKeys.IrasId, application.IrasId);
@@ -492,12 +492,12 @@ public class QuestionnaireController
     /// Gets all questions for the application. Validates for each category
     /// and display the progress of the application
     /// </summary>
-    /// <param name="applicationId">ApplicationId to submit</param>
+    /// <param name="projectApplicationId">ApplicationId to submit</param>
     [FeatureGate("Action.ProceedToSubmit")]
-    public async Task<IActionResult> SubmitApplication(string applicationId)
+    public async Task<IActionResult> SubmitApplication(string projectApplicationId)
     {
         // get the responent answers for the category
-        var respondentServiceResponse = await respondentService.GetRespondentAnswers(applicationId);
+        var respondentServiceResponse = await respondentService.GetRespondentAnswers(projectApplicationId);
 
         // get the questions for all categories
         var questionSetServiceResponse = await questionSetService.GetQuestions();
@@ -565,16 +565,16 @@ public class QuestionnaireController
         }
 
         // get the application from the session
-        // to get the applicationId
+        // to get the projectApplicationId
         var application = this.GetApplicationFromSession();
 
         // store the irasId in the TempData to get in the view
         TempData.TryAdd(TempDataKeys.IrasId, application.IrasId);
 
-        // store the first categoryId and applicationId in the TempData to get in the view
+        // store the first categoryId and projectApplicationId in the TempData to get in the view
         TempData[TempDataKeys.CategoryId] = (questionnaire.Questions.GroupBy(q => q.Category)
         .OrderBy(g => g.First().Sequence).FirstOrDefault()?.Key);
-        TempData[TempDataKeys.ApplicationId] = application.ApplicationId;
+        TempData[TempDataKeys.ApplicationId] = application.ProjectApplicationId;
 
         return View("ReviewAnswers", questionnaire);
     }
@@ -586,11 +586,11 @@ public class QuestionnaireController
     public async Task<IActionResult> ConfirmProjectDetails()
     {
         // get the application from the session
-        // to get the applicationId
+        // to get the projectApplicationId
         var application = this.GetApplicationFromSession();
 
         // get the respondent answers for the category
-        var respondentServiceResponse = await respondentService.GetRespondentAnswers(application.ApplicationId);
+        var respondentServiceResponse = await respondentService.GetRespondentAnswers(application.ProjectApplicationId);
 
         // return the error view if unsuccessfull
         if (!respondentServiceResponse.IsSuccessStatusCode)
@@ -647,10 +647,10 @@ public class QuestionnaireController
             // store the irasId in the TempData to get in the view
             TempData.TryAdd(TempDataKeys.IrasId, application.IrasId);
 
-            // store the first categoryId and applicationId in the TempData to get in the view
+            // store the first categoryId and projectApplicationId in the TempData to get in the view
             TempData[TempDataKeys.CategoryId] = (questionnaire.Questions.GroupBy(q => q.Category)
             .OrderBy(g => g.First().Sequence).FirstOrDefault()?.Key);
-            TempData[TempDataKeys.ApplicationId] = application.ApplicationId;
+            TempData[TempDataKeys.ApplicationId] = application.ProjectApplicationId;
 
             // call the ValidateAsync to execute the validation
             // this will trigger the fluentvalidation using the injected validator if configured
@@ -894,11 +894,11 @@ public class QuestionnaireController
     /// <summary>
     /// Loads the existing application from the database
     /// </summary>
-    /// <param name="applicationId">Application Id</param>
-    private async Task<IrasApplicationResponse?> LoadApplication(string applicationId)
+    /// <param name="projectApplicationId">Application Id</param>
+    private async Task<IrasApplicationResponse?> LoadApplication(string projectApplicationId)
     {
         // get the application by id
-        var response = await applicationsService.GetApplication(applicationId);
+        var response = await applicationsService.GetApplication(projectApplicationId);
 
         if (!response.IsSuccessStatusCode)
         {
