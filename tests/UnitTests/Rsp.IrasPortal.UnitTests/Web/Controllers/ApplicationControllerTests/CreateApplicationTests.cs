@@ -61,7 +61,7 @@ public class CreateApplicationTests : TestServiceBase<ApplicationController>
 
         var createdApplication = new IrasApplicationResponse
         {
-            ApplicationId = "test-app-id",
+            ProjectApplicationId = "test-app-id",
             Title = model.Name!,
             Description = model.Description!
         };
@@ -90,7 +90,7 @@ public class CreateApplicationTests : TestServiceBase<ApplicationController>
                         r =>
                             r.Title == model.Name &&
                             r.Description == model.Description &&
-                            r.Respondent.RespondentId == "test-respondent-id")
+                            r.Respondent.ProjectApplicationRespondentId == "test-respondent-id")
                     ),
                 Times.Once
             );

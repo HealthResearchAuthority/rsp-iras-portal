@@ -12,8 +12,8 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
         // Arrange
         var model = new UserViewModel
         {
-            FirstName = null!,
-            LastName = "Ham"
+            GivenName = null!,
+            FamilyName = "Ham"
         };
 
         // Act
@@ -21,7 +21,7 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
 
         // Assert
         result
-            .ShouldHaveValidationErrorFor(x => x.FirstName)
+            .ShouldHaveValidationErrorFor(x => x.GivenName)
             .WithErrorMessage("Enter a first name");
     }
 
@@ -31,8 +31,8 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
         // Arrange
         var model = new UserViewModel
         {
-            FirstName = "Hello",
-            LastName = "Ham",
+            GivenName = "Hello",
+            FamilyName = "Ham",
             Telephone = "qwertyuiopa"
         };
 
@@ -51,8 +51,8 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
         // Arrange
         var model = new UserViewModel
         {
-            FirstName = "Hello",
-            LastName = "Ham",
+            GivenName = "Hello",
+            FamilyName = "Ham",
             Telephone = "078987654323"
         };
 
@@ -116,15 +116,15 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
         // Arrange
         var model = new UserViewModel
         {
-            FirstName = "John",
-            LastName = "Ham"
+            GivenName = "John",
+            FamilyName = "Ham"
         };
 
         // Act
         var result = await Sut.TestValidateAsync(model);
 
         // Assert
-        result.ShouldNotHaveValidationErrorFor(x => x.FirstName);
-        result.ShouldNotHaveValidationErrorFor(x => x.LastName);
+        result.ShouldNotHaveValidationErrorFor(x => x.GivenName);
+        result.ShouldNotHaveValidationErrorFor(x => x.FamilyName);
     }
 }
