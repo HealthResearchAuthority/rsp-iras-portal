@@ -38,7 +38,11 @@
     </rsp-gds-select>
 </div>
 
-@* ADD DATA FIELDS HERE  *@
+@await Html.PartialAsync("_AnswerListPartial", Model.Answers.ToList(), new ViewDataDictionary(ViewData)
+{
+	{ "VersionId", Model.VersionId },
+    { "SelectedAnswerId", ViewData[$"SelectedAnswerId_{index}"] }
+})
 
 
 

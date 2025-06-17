@@ -8,8 +8,29 @@
     var currentIndex = ViewBag.QuestionIndex as int? ?? (questions.Count > 0 ? questions.Count - 1 : 0);
 
     var isEditing = currentIndex < questions.Count;
-    var questionButtonText = isEditing ? "Update this question" : "Add this question";
-    var headingText = isEditing ? $"Edit Question ID: {questions[currentIndex].QuestionId}" : "Add new question";
+    // var questionButtonText = isEditing ? "Update this question" : "Add this question";
+
+    // // var headingText = isEditing ? $"Edit Question ID: {questions[currentIndex].QuestionId}" : "Add new question";
+
+    var questionButtonText =  "Add this question";
+    var headingText = "Add new question";
+
+
+    var validQuestions = questions
+        .Where(q =>
+            !string.IsNullOrWhiteSpace(q.QuestionId) &&
+            !string.IsNullOrWhiteSpace(q.SectionId) &&
+            !string.IsNullOrWhiteSpace(q.Section) &&
+            q.Sequence > 0 &&
+            !string.IsNullOrWhiteSpace(q.QuestionText) &&
+            !string.IsNullOrWhiteSpace(q.QuestionType) &&
+            (
+                q.QuestionType?.ToLowerInvariant() is not ("date" or "boolean" or "rts:org_lookup")
+                    ? !string.IsNullOrWhiteSpace(q.DataType)
+                    : true
+            )
+        )
+        .ToList();
 }
 
 <div class="govuk-grid-row">
@@ -22,7 +43,7 @@
                 <fieldset>
                     <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">Version details</legend>
 
-					@if (!string.IsNullOrWhiteSpace(Model.Version?.VersionId) && ViewBag.LockVersionId)
+                    @if (!string.IsNullOrWhiteSpace(Model.Version?.VersionId) && ViewBag.LockVersionId)
                     {
                         <p class="govuk-hint">The version ID cannot be changed after this point.</p>
                         <rsp-gds-input asp-for="Version.VersionId" label-text="Version ID" readonly="true" disabled="true"/>
@@ -46,52 +67,50 @@
                 <button type="submit" class="govuk-button govuk-button--secondary">Back</button>
             </form>
 
-			@if (questions.Any())
-			{
-				<h2 class="govuk-heading-m govuk-!-margin-top-6">Current questions</h2>
+            @if (validQuestions.Any())
+            {
+                <h2 class="govuk-heading-m govuk-!-margin-top-6">Current questions</h2>
 
-				@if (questions.Any())
-				{
-					<div class="govuk-grid-column-full">
-						<div class="govuk-table-wrapper">
-							<table class="govuk-table">
-								<thead class="govuk-table__head">
-									<tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
-										<th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Question ID</th>
-										<th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Question Text</th>
-										<th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Section ID</th>
-										<th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Section</th>
-										<th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Actions</th>
-									</tr>
-								</thead>
-								<tbody class="govuk-table__body">
-									@for (var i = 0; i < questions.Count; i++)
-									{
-										var q = questions[i];
-										<tr class="govuk-table__row">
-											<td class="govuk-table__cell">@q.QuestionId</td>
-											<td class="govuk-table__cell">@q.QuestionText</td>
-											<td class="govuk-table__cell">@q.SectionId</td>
-											<td class="govuk-table__cell">@q.Section</td>
-											<td class="govuk-table__cell">
-												<form asp-action="EditQuestion" asp-controller="QuestionSet" method="post" class="inline-form">
-													<input type="hidden" name="versionId" value="@versionId" />
-													<input type="hidden" name="questionIndex" value="@i" />
-													<button type="submit" class="govuk-button govuk-button--secondary">Edit</button>
-												</form>
-											</td>
-										</tr>
-									}
-								</tbody>
-							</table>
-						</div>
-					</div>
-					<form asp-action="Save" asp-controller="QuestionSet" method="post">
-						<input type="hidden" name="versionId" value="@versionId" />
-						<button type="submit" class="govuk-button govuk-button--primary">Save without Adding Rules Set</button>
-					</form>
-				}
-			}
+
+                <div class="govuk-grid-column-full">
+                    <div class="govuk-table-wrapper">
+                        <table class="govuk-table">
+                            <thead class="govuk-table__head">
+                            <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+                                <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Question ID</th>
+                                <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Question Text</th>
+                                <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Section ID</th>
+                                <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Section</th>
+                                <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody class="govuk-table__body">
+                            @for (var i = 0; i < questions.Count; i++)
+                            {
+                                var q = questions[i];
+                                <tr class="govuk-table__row">
+                                    <td class="govuk-table__cell">@q.QuestionId</td>
+                                    <td class="govuk-table__cell">@q.QuestionText</td>
+                                    <td class="govuk-table__cell">@q.SectionId</td>
+                                    <td class="govuk-table__cell">@q.Section</td>
+                                    <td class="govuk-table__cell">
+                                        <form asp-action="EditQuestion" asp-controller="QuestionSet" method="post" class="inline-form">
+                                            <input type="hidden" name="versionId" value="@versionId"/>
+                                            <input type="hidden" name="questionIndex" value="@i"/>
+                                            <button type="submit" class="govuk-button govuk-button--secondary">Edit</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <form asp-action="Save" asp-controller="QuestionSet" method="post">
+                    <input type="hidden" name="versionId" value="@versionId"/>
+                    <button type="submit" class="govuk-button govuk-button--primary">Save without Adding Rules Set</button>
+                </form>
+            }
 
             var unsavedQuestion = ViewBag.UnsavedQuestion as QuestionDto;
             var question = unsavedQuestion ?? (isEditing ? questions[currentIndex] : new QuestionDto { VersionId = versionId });
@@ -105,8 +124,6 @@
                 @await Html.PartialAsync("_QuestionEditor", question, new ViewDataDictionary(ViewData) { { "Index", currentIndex } })
                 <button type="submit" class="govuk-button">@questionButtonText</button>
             </form>
-
-  
         }
     </div>
 </div>
