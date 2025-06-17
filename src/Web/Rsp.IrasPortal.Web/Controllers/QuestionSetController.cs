@@ -211,102 +211,42 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
     }
 
     [HttpPost]
-    public IActionResult AddQuestion(
-        string versionId,
-        QuestionDto question,
-        int questionIndex,
-        string actionType = "question",
-        AnswerDto? answer = null)
+    public IActionResult AddQuestion(string versionId, QuestionDto question, int questionIndex)
     {
-        var versionJson = HttpContext.Session.GetString($"questionset:{versionId}:version");
         var questionsJson = HttpContext.Session.GetString($"questionset:{versionId}:questions");
-        var answersJson = HttpContext.Session.GetString($"questionset:{versionId}:questionanswers");
-
-        var version = string.IsNullOrWhiteSpace(versionJson)
-            ? new VersionDto { VersionId = versionId }
-            : JsonSerializer.Deserialize<VersionDto>(versionJson!)!;
-
-        var questions = string.IsNullOrWhiteSpace(questionsJson)
-            ? new List<QuestionDto>()
-            : JsonSerializer.Deserialize<List<QuestionDto>>(questionsJson!)!;
-
-        var answers = string.IsNullOrWhiteSpace(answersJson)
-            ? new List<AnswerDto>()
-            : JsonSerializer.Deserialize<List<AnswerDto>>(answersJson!)!;
+        var questions = string.IsNullOrWhiteSpace(questionsJson) ? new List<QuestionDto>() : JsonSerializer.Deserialize<List<QuestionDto>>(questionsJson!)!;
 
         if (questionIndex >= questions.Count)
         {
             while (questions.Count <= questionIndex)
-                questions.Add(new QuestionDto { VersionId = versionId, Answers = answers });
+                questions.Add(new QuestionDto { VersionId = versionId });
         }
 
-        var originalAnswerId = Request.Form["originalAnswerId"].ToString();
-        question.Answers = answers;
+        // Validation
+        if (string.IsNullOrWhiteSpace(question.QuestionId))
+            ModelState.AddModelError("QuestionId", "Enter a question ID");
+        if (string.IsNullOrWhiteSpace(question.SectionId))
+            ModelState.AddModelError("SectionId", "Enter a section ID");
+        if (string.IsNullOrWhiteSpace(question.Section))
+            ModelState.AddModelError("Section", "Enter a section name");
+        if (question.Sequence <= 0)
+            ModelState.AddModelError("Sequence", "Enter a sequence number greater than 0");
+        if (string.IsNullOrWhiteSpace(question.QuestionText))
+            ModelState.AddModelError("QuestionText", "Enter the question text");
+        if (string.IsNullOrWhiteSpace(question.QuestionType))
+            ModelState.AddModelError("QuestionType", "Select a question type");
+        if (question.QuestionType?.ToLowerInvariant() is "text" or "look-up list")
+            if (string.IsNullOrWhiteSpace(question.DataType))
+                ModelState.AddModelError("DataType", "Select a data type");
 
-        if ((actionType == "add-answer" || actionType == "edit-answer") && answer != null)
+        if (!ModelState.IsValid)
         {
-            if (string.IsNullOrWhiteSpace(answer.AnswerId))
-            {
-                // Count current answers for the question
-                var currentAnswers = answers.Where(a => a.VersionId == versionId).ToList();
-                var answerCount = currentAnswers.Count(a => questions[questionIndex].Answers.Contains(a));
-
-                answer.AnswerId = $"{versionId}-{questionIndex}-{answerCount + 1}";
-            }
-            else
-            {
-                var isDuplicate = answers.Any(a =>
-                    !string.Equals(a.AnswerId, originalAnswerId, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(a.AnswerId, answer.AnswerId, StringComparison.OrdinalIgnoreCase)
-                );
-
-                if (isDuplicate)
-                {
-                    ModelState.AddModelError("answer.AnswerId", "This Answer ID has already been used.");
-                }
-            }
-
-            if (string.IsNullOrWhiteSpace(answer.AnswerText))
-            {
-                ModelState.AddModelError("answer.AnswerText", "Enter an answer text");
-            }
-
-            if (!ModelState.IsValid)
-            {
-                ViewData[$"SelectedAnswerId_{questionIndex}"] = answer.AnswerId;
-                ViewData["IsEditingAnswer"] = true;
-                ViewBag.Step = "questions";
-                ViewBag.QuestionIndex = questionIndex;
-
-                return View("QuestionSetForm", new QuestionSetDto
-                {
-                    Version = version,
-                    Questions = questions
-                });
-            }
-
-            if (actionType == "edit-answer" && !string.IsNullOrWhiteSpace(originalAnswerId))
-            {
-                answers.RemoveAll(a => a.AnswerId == originalAnswerId);
-            }
-
-            answers.Add(new AnswerDto
-            {
-                AnswerId = answer.AnswerId,
-                AnswerText = answer.AnswerText,
-                VersionId = versionId
-            });
-
-            question.Answers = answers;
-            questions[questionIndex] = question;
-
-            HttpContext.Session.SetString($"questionset:{versionId}:questionanswers",
-                JsonSerializer.Serialize(answers));
-
             ViewBag.Step = "questions";
             ViewBag.QuestionIndex = questionIndex;
+            ViewBag.UnsavedQuestion = question;
 
-            ViewData["IsEditingAnswer"] = false;
+            var versionJson = HttpContext.Session.GetString($"questionset:{versionId}:version");
+            var version = string.IsNullOrWhiteSpace(versionJson) ? new VersionDto { VersionId = versionId } : JsonSerializer.Deserialize<VersionDto>(versionJson!)!;
 
             return View("QuestionSetForm", new QuestionSetDto
             {
@@ -315,80 +255,60 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
             });
         }
 
-        if (string.IsNullOrWhiteSpace(question.QuestionId))
-        {
-            ModelState.AddModelError("QuestionId", "Enter a question ID");
-        }
-        else
-        {
-            var isDuplicate = questions
-                .Where((q, index) => index != questionIndex)
-                .Any(q => string.Equals(q.QuestionId?.Trim(), question.QuestionId.Trim(),
-                    StringComparison.OrdinalIgnoreCase));
+        questions[questionIndex] = question;
+        HttpContext.Session.SetString($"questionset:{versionId}:questions", JsonSerializer.Serialize(questions));
 
-            if (isDuplicate)
+        ViewBag.Step = "questions";
+        ViewBag.QuestionIndex = questions.Count;
+
+        var versionFinal = JsonSerializer.Deserialize<VersionDto>(HttpContext.Session.GetString($"questionset:{versionId}:version")!);
+
+        return View("QuestionSetForm", new QuestionSetDto
+        {
+            Version = versionFinal,
+            Questions = questions
+        });
+    }
+
+    [HttpPost]
+    public IActionResult AddAnswer(string versionId, int questionIndex, AnswerDto answer, string? originalAnswerId)
+    {
+        var answersJson = HttpContext.Session.GetString($"questionset:{versionId}:questionanswers");
+        var questionsJson = HttpContext.Session.GetString($"questionset:{versionId}:questions");
+        var versionJson = HttpContext.Session.GetString($"questionset:{versionId}:version");
+
+        var answers = string.IsNullOrWhiteSpace(answersJson) ? new List<AnswerDto>() : JsonSerializer.Deserialize<List<AnswerDto>>(answersJson!)!;
+        var questions = string.IsNullOrWhiteSpace(questionsJson) ? new List<QuestionDto>() : JsonSerializer.Deserialize<List<QuestionDto>>(questionsJson!)!;
+        var version = string.IsNullOrWhiteSpace(versionJson) ? new VersionDto { VersionId = versionId } : JsonSerializer.Deserialize<VersionDto>(versionJson!)!;
+
+        while (questions.Count <= questionIndex)
+            questions.Add(new QuestionDto { VersionId = versionId });
+
+        var question = questions[questionIndex];
+        question.Answers = answers;
+
+        if (string.IsNullOrWhiteSpace(answer.AnswerText) && !string.IsNullOrWhiteSpace(originalAnswerId))
+        {
+            var selected = answers.FirstOrDefault(a => a.AnswerId == originalAnswerId);
+
+            ViewBag.Step = "questions";
+            ViewBag.QuestionIndex = questionIndex;
+            ViewBag.UnsavedQuestion = question;
+
+            ViewData[$"SelectedAnswerId_{questionIndex}"] = selected?.AnswerId;
+            ViewData["IsEditingAnswer"] = true;
+            ViewData["OriginalAnswerId"] = originalAnswerId;
+
+            return View("QuestionSetForm", new QuestionSetDto
             {
-                ModelState.AddModelError("QuestionId", "This question ID has already been used");
-            }
+                Version = version,
+                Questions = questions
+            });
         }
 
-        if (string.IsNullOrWhiteSpace(question.SectionId))
+        if (string.IsNullOrWhiteSpace(answer.AnswerText))
         {
-            ModelState.AddModelError("SectionId", "Enter a section ID");
-        }
-
-        if (string.IsNullOrWhiteSpace(question.Section))
-        {
-            ModelState.AddModelError("Section", "Enter a section name");
-        }
-
-        if (question.Sequence <= 0)
-        {
-            ModelState.AddModelError("Sequence", "Enter a sequence number greater than 0");
-        }
-        else
-        {
-            bool isSequenceDuplicate = questions
-                .Where((q, index) => index != questionIndex && string.Equals(q.Section?.Trim(),
-                    question.Section?.Trim(), StringComparison.OrdinalIgnoreCase))
-                .Any(q => q.Sequence == question.Sequence);
-
-            if (isSequenceDuplicate)
-            {
-                ModelState.AddModelError("Sequence",
-                    $"Sequence {question.Sequence} is already used in section \"{question.Section}\"");
-            }
-        }
-
-        if (string.IsNullOrWhiteSpace(question.QuestionText))
-        {
-            ModelState.AddModelError("QuestionText", "Enter the question text");
-        }
-
-        if (string.IsNullOrWhiteSpace(question.QuestionType))
-        {
-            ModelState.AddModelError("QuestionType", "Select a question type");
-        }
-
-        if (question.QuestionType?.ToLowerInvariant() is "text" or "look-up list")
-        {
-            if (string.IsNullOrWhiteSpace(question.DataType))
-            {
-                ModelState.AddModelError("DataType", "Select a data type");
-            }
-        }
-        else if (question.QuestionType?.ToLowerInvariant() is "date" or "boolean")
-        {
-            question.DataType = question.QuestionType.ToLower();
-        }
-        else if (question.QuestionType?.ToLowerInvariant() is "rts:org_lookup")
-        {
-            question.DataType = "text";
-        }
-
-        if (string.IsNullOrWhiteSpace(question.Category))
-        {
-            question.Category = "categoryid" + versionId;
+            ModelState.AddModelError("answer.AnswerText", "Enter an answer text");
         }
 
         if (!ModelState.IsValid)
@@ -397,7 +317,9 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
             ViewBag.QuestionIndex = questionIndex;
             ViewBag.UnsavedQuestion = question;
 
-
+            ViewData[$"SelectedAnswerId_{questionIndex}"] = answer.AnswerId;
+            ViewData["IsEditingAnswer"] = !string.IsNullOrWhiteSpace(originalAnswerId);
+            ViewData["OriginalAnswerId"] = originalAnswerId;
 
             return View("QuestionSetForm", new QuestionSetDto
             {
@@ -406,37 +328,20 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
             });
         }
 
-        question.IsMandatory = true;
-        question.IsOptional = false;
+        if (!string.IsNullOrWhiteSpace(originalAnswerId))
+            answers.RemoveAll(a => a.AnswerId == originalAnswerId);
 
-        if (question.QuestionType?.ToLowerInvariant() is "boolean")
-        {
-            question.Answers = new List<AnswerDto>
-            {
-                new() { AnswerId = "Boolean1", AnswerText = "Yes", VersionId = versionId },
-                new() { AnswerId = "Boolean2", AnswerText = "No", VersionId = versionId }
-            };
-        }
+        if (string.IsNullOrWhiteSpace(answer.AnswerId))
+            answer.AnswerId = $"{versionId}-{questionIndex}-{answers.Count + 1}";
 
-        if (question.QuestionType?.ToLowerInvariant() is "look-up list")
-        {
-            var answerJson = HttpContext.Session.GetString($"questionset:{versionId}:questionanswers");
+        answer.VersionId = versionId;
+        answers.Add(answer);
 
-            var answerDtos = string.IsNullOrWhiteSpace(answerJson)
-                ? new List<AnswerDto>()
-                : JsonSerializer.Deserialize<List<AnswerDto>>(answerJson!)!;
-
-            question.Answers = answerDtos;
-        }
-
-   
-
-        questions[questionIndex] = question;
-
-        HttpContext.Session.SetString($"questionset:{versionId}:questions", JsonSerializer.Serialize(questions));
+        question.Answers = answers;
+        HttpContext.Session.SetString($"questionset:{versionId}:questionanswers", JsonSerializer.Serialize(answers));
 
         ViewBag.Step = "questions";
-        ViewBag.QuestionIndex = questions.Count;
+        ViewBag.QuestionIndex = questionIndex;
 
         return View("QuestionSetForm", new QuestionSetDto
         {
@@ -444,32 +349,6 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
             Questions = questions
         });
     }
-
-
-    [HttpPost]
-    public IActionResult EditQuestion(string versionId, int questionIndex)
-    {
-        var versionJson = HttpContext.Session.GetString($"questionset:{versionId}:version");
-        var questionsJson = HttpContext.Session.GetString($"questionset:{versionId}:questions");
-
-        if (versionJson is null || questionsJson is null)
-            return RedirectToAction("Create");
-
-        var version = JsonSerializer.Deserialize<VersionDto>(versionJson)!;
-        var questions = JsonSerializer.Deserialize<List<QuestionDto>>(questionsJson)!;
-
-        var model = new QuestionSetDto
-        {
-            Version = version,
-            Questions = questions
-        };
-
-        ViewBag.Step = "questions";
-        ViewBag.QuestionIndex = questionIndex;
-
-        return View("QuestionSetForm", model);
-    }
-
 
     [HttpPost]
     public IActionResult Back(string versionId, int questionIndex)

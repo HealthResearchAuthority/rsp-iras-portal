@@ -12,7 +12,7 @@
 
     // // var headingText = isEditing ? $"Edit Question ID: {questions[currentIndex].QuestionId}" : "Add new question";
 
-    var questionButtonText =  "Add this question";
+    var questionButtonText = "Add this question";
     var headingText = "Add new question";
 
 
@@ -117,27 +117,29 @@
 
             <h2 class="govuk-heading-m">@headingText</h2>
 
-            @await Html.PartialAsync("_QuestionEditor", question, new ViewDataDictionary(ViewData)
-            {
-                { "Index", currentIndex }
-            })
-
-            @await Html.PartialAsync("_AnswerListPartial", question.Answers.ToList(), new ViewDataDictionary(ViewData)
-            {
-                { "VersionId", question.VersionId },
-                { "QuestionAnswerIndex", currentIndex },
-                { "SelectedAnswerId", ViewData[$"SelectedAnswerId_{currentIndex}"] }
-            })
-
+            <!-- QUESTION FORM -->
             <form asp-action="AddQuestion" asp-controller="QuestionSet" method="post">
-                <input type="hidden" name="versionId" value="@versionId" />
-                <input type="hidden" name="questionIndex" value="@currentIndex" />
-                <input type="hidden" name="actionType" value="add-question" />
-                <input type="hidden" name="question" value="@question" />
-                
-       
-                <button type="submit" class="govuk-button">@questionButtonText</button>
+                <input type="hidden" name="versionId" value="@versionId"/>
+                <input type="hidden" name="questionIndex" value="@currentIndex"/>
+
+                <h2 class="govuk-heading-m">@headingText</h2>
+                @await Html.PartialAsync("_QuestionEditor", question, new ViewDataDictionary(ViewData) { { "Index", currentIndex } })
+
+                <button type="submit" class="govuk-button">@(isEditing ? "Update this question" : "Add this question")</button>
             </form>
+
+            var answerViewData = new ViewDataDictionary(ViewData)
+            {
+                ["VersionId"] = question.VersionId,
+                ["QuestionAnswerIndex"] = currentIndex,
+                ["SelectedAnswerId"] = ViewData[$"SelectedAnswerId_{currentIndex}"]
+            };
+
+            answerViewData["IsEditingAnswer"] = ViewData["IsEditingAnswer"];
+            answerViewData["OriginalAnswerId"] = ViewData["OriginalAnswerId"];
+
+
+            @await Html.PartialAsync("_AnswerListPartial", question.Answers.ToList(), answerViewData);
         }
     </div>
 </div>
