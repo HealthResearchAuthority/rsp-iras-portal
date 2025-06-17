@@ -11,8 +11,11 @@
         : null;
 
     bool isEditing = selectedAnswer != null;
-}
 
+    var answerTextError = ViewData.ModelState["answer.AnswerText"]?.Errors.FirstOrDefault()?.ErrorMessage;
+    var formGroupClass = !string.IsNullOrEmpty(answerTextError) ? "govuk-form-group govuk-form-group--error" : "govuk-form-group";
+    var inputClass = !string.IsNullOrEmpty(answerTextError) ? "govuk-input govuk-input--error" : "govuk-input";
+}
 <div class="govuk-form-group">
     <h2 class="govuk-heading-m">Answers</h2>
 
@@ -20,7 +23,6 @@
     {
         <dl class="govuk-summary-list">
             <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key">Answer ID</dt>
                 <dd class="govuk-summary-list__value govuk-!-font-weight-bold">Answer Text</dd>
                 <dd class="govuk-summary-list__actions"></dd>
             </div>
@@ -28,7 +30,6 @@
             @foreach (var answer in Model)
             {
                 <div class="govuk-summary-list__row">
-                    <dt class="govuk-summary-list__key">@answer.AnswerId</dt>
                     <dd class="govuk-summary-list__value">@answer.AnswerText</dd>
                     <dd class="govuk-summary-list__actions">
                         <form asp-action="AddQuestion" asp-controller="QuestionSet" method="post">
@@ -47,9 +48,6 @@
             }
         </dl>
     }
-
-    <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible"/>
-
     <form asp-action="AddQuestion" asp-controller="QuestionSet" method="post">
         <input type="hidden" name="versionId" value="@versionId"/>
         <input type="hidden" name="questionIndex" value="@questionIndex"/>
@@ -59,20 +57,29 @@
             <input type="hidden" name="originalAnswerId" value="@selectedAnswer.AnswerId"/>
         }
 
-        <div class="govuk-form-group">
-            <label class="govuk-label" for="AnswerId">Answer ID</label>
-            <input class="govuk-input" id="AnswerId" name="answer.AnswerId" type="text"
-                   value="@(isEditing ? selectedAnswer.AnswerId : "")"/>
-        </div>
+        <input type="hidden" id="AnswerId" name="answer.AnswerId"
+               value="@(isEditing ? selectedAnswer.AnswerId : "")"/>
 
-        <div class="govuk-form-group">
-            <label class="govuk-label" for="AnswerText">Answer Text</label>
-            <input class="govuk-input" id="AnswerText" name="answer.AnswerText" type="text"
-                   value="@(isEditing ? selectedAnswer.AnswerText : "")"/>
-        </div>
+        <div class="@formGroupClass" style="display: flex; align-items: flex-end; gap: 10px;">
+            <div style="flex-grow: 1;">
+                <label class="govuk-label" for="AnswerText">Answer Text</label>
 
-        <button type="submit" class="govuk-button">
-            @(isEditing ? "Update answer" : "Add answer")
-        </button>
+                @if (!string.IsNullOrEmpty(answerTextError))
+                {
+                    <span class="govuk-error-message">
+                        <span class="govuk-visually-hidden">Error:</span> @answerTextError
+                    </span>
+                }
+
+                <input class="@inputClass" id="AnswerText" name="answer.AnswerText" type="text"
+                       value="@(isEditing ? selectedAnswer.AnswerText : "")"/>
+            </div>
+
+            <div>
+                <button type="submit" class="govuk-button" style="margin-bottom: 0;">
+                    @(isEditing ? "Update answer" : "Add answer")
+                </button>
+            </div>
+        </div>
     </form>
 </div>

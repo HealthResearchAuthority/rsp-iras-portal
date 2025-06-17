@@ -247,7 +247,11 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         {
             if (string.IsNullOrWhiteSpace(answer.AnswerId))
             {
-                ModelState.AddModelError("answer.AnswerId", "Enter an answer ID");
+                // Count current answers for the question
+                var currentAnswers = answers.Where(a => a.VersionId == versionId).ToList();
+                var answerCount = currentAnswers.Count(a => questions[questionIndex].Answers.Contains(a));
+
+                answer.AnswerId = $"{versionId}-{questionIndex}-{answerCount + 1}";
             }
             else
             {
