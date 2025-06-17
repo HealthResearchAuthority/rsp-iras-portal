@@ -117,11 +117,25 @@
 
             <h2 class="govuk-heading-m">@headingText</h2>
 
-            <!-- Question input form -->
+            @await Html.PartialAsync("_QuestionEditor", question, new ViewDataDictionary(ViewData)
+            {
+                { "Index", currentIndex }
+            })
+
+            @await Html.PartialAsync("_AnswerListPartial", question.Answers.ToList(), new ViewDataDictionary(ViewData)
+            {
+                { "VersionId", question.VersionId },
+                { "QuestionAnswerIndex", currentIndex },
+                { "SelectedAnswerId", ViewData[$"SelectedAnswerId_{currentIndex}"] }
+            })
+
             <form asp-action="AddQuestion" asp-controller="QuestionSet" method="post">
-                <input type="hidden" name="versionId" value="@versionId"/>
-                <input type="hidden" name="questionIndex" value="@currentIndex"/>
-                @await Html.PartialAsync("_QuestionEditor", question, new ViewDataDictionary(ViewData) { { "Index", currentIndex } })
+                <input type="hidden" name="versionId" value="@versionId" />
+                <input type="hidden" name="questionIndex" value="@currentIndex" />
+                <input type="hidden" name="actionType" value="add-question" />
+                <input type="hidden" name="question" value="@question" />
+                
+       
                 <button type="submit" class="govuk-button">@questionButtonText</button>
             </form>
         }

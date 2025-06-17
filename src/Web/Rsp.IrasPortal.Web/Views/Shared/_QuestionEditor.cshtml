@@ -38,12 +38,5 @@
     </rsp-gds-select>
 </div>
 
-@await Html.PartialAsync("_AnswerListPartial", Model.Answers.ToList(), new ViewDataDictionary(ViewData)
-{
-	{ "VersionId", Model.VersionId },
-    { "SelectedAnswerId", ViewData[$"SelectedAnswerId_{index}"] }
-})
-
-
 
 
