@@ -410,10 +410,6 @@ button.govuk-link {
   border-color: #0b0c0c;
 }
 
-.js-hidden {
-  display: none !important;
-}
-
 .govuk-modal-overlay {
   position: fixed;
   top: 0;
@@ -426,7 +422,6 @@ button.govuk-link {
 
 dialog.govuk-modal {
   position: fixed;
-  inset: 0;
   margin: auto;
   max-width: 90%;
   width: 400px;
@@ -449,9 +444,16 @@ dialog[open] {
 }
 
 #timeout-title:focus {
-  outline-style: solid;
   outline-color: #1d70b8;
   outline-width: 2px;
 }
 
-/*# sourceMappingURL=main.css.map */
+.sponsor-org-search {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+.sponsor-org-search .govuk-button {
+  margin-bottom: 0;
+}

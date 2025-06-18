@@ -1,4 +1,5 @@
 ﻿using Refit;
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 
 namespace Rsp.IrasPortal.Application.ServiceClients;
@@ -15,7 +16,7 @@ public interface IRtsServiceClient
     /// <param name="role">Role of the Organisation</param>
     /// <returns>An asynchronous operation that returns organisations.</returns>
     [Get("/organisations/searchbyname")]
-    public Task<ApiResponse<IEnumerable<OrganisationSearchResponse>>> GetOrganisations(string name, string? role);
+    public Task<ApiResponse<OrganisationSearchResponse>> GetOrganisations(string name, string? role);
 
     /// <summary>
     /// Gets the specified number of organisations by name and role
@@ -25,7 +26,7 @@ public interface IRtsServiceClient
     /// <param name="pageSize">Page size</param>
     /// <returns>An asynchronous operation that returns organisations.</returns>
     [Get("/organisations/searchbyname")]
-    public Task<ApiResponse<IEnumerable<OrganisationSearchResponse>>> GetOrganisations(string name, string? role, int pageSize);
+    public Task<ApiResponse<OrganisationSearchResponse>> GetOrganisations(string name, string? role, int pageSize);
 
     /// <summary>
     /// Gets the organisation by Id
@@ -33,5 +34,5 @@ public interface IRtsServiceClient
     /// <param name="id">Organisation Id</param>
     /// <returns>An asynchronous operation that returns an organisation.</returns>
     [Get("/organisations/getbyid")]
-    public Task<ApiResponse<OrganisationSearchResponse>> GetOrganisation(string id);
+    public Task<ApiResponse<OrganisationDto>> GetOrganisation(string id);
 }
