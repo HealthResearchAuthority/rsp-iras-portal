@@ -110,8 +110,8 @@ public class UserViewModel
     {
         id = Id!;
         originalEmail = OriginalEmail!;
-        firstName = FirstName;
-        lastName = LastName;
+        givenName = GivenName;
+        familyName = FamilyName;
         email = Email;
     }
 }
