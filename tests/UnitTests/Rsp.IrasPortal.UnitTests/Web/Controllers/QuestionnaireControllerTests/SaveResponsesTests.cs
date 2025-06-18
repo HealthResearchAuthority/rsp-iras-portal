@@ -647,7 +647,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
 
         var application = new IrasApplicationResponse
         {
-            ApplicationId = "App1"
+            Id = "App1"
         };
 
         var session = new Mock<ISession>();
@@ -723,8 +723,8 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
         Mocker
            .GetMock<IRespondentService>()
            .Verify(s => s.SaveRespondentAnswers(It.Is<RespondentAnswersRequest>(r =>
-               r.ApplicationId == "App1" &&
-               r.RespondentId == "RespondentId1" &&
+               r.ProjectApplicationId == "App1" &&
+               r.Id == "RespondentId1" &&
                r.RespondentAnswers[0].AnswerText == expectedAnswerText)), Times.Once);
     }
 }
