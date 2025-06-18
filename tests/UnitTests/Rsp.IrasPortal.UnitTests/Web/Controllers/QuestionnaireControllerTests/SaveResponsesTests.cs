@@ -35,7 +35,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
 
         var application = new IrasApplicationResponse
         {
-            ProjectApplicationId = "App1"
+            Id = "App1"
         };
 
         var session = new Mock<ISession>();
@@ -109,7 +109,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
            .GetMock<IRespondentService>()
            .Verify(s => s.SaveRespondentAnswers(It.Is<RespondentAnswersRequest>(r =>
                r.ProjectApplicationId == "App1" &&
-               r.ProjectApplicationRespondentId == "RespondentId1" &&
+               r.Id == "RespondentId1" &&
                r.RespondentAnswers.Count == 2)), Times.Once);
     }
 
@@ -133,7 +133,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
 
         var application = new IrasApplicationResponse
         {
-            ProjectApplicationId = "App1"
+            Id = "App1"
         };
 
         var session = new Mock<ISession>();
@@ -211,7 +211,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
            .GetMock<IRespondentService>()
            .Verify(s => s.SaveRespondentAnswers(It.Is<RespondentAnswersRequest>(r =>
                r.ProjectApplicationId == "App1" &&
-               r.ProjectApplicationRespondentId == "RespondentId1" &&
+               r.Id == "RespondentId1" &&
                r.RespondentAnswers.Count == 2)), Times.Once);
     }
 
@@ -233,7 +233,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
 
         var application = new IrasApplicationResponse
         {
-            ProjectApplicationId = "App1"
+            Id = "App1"
         };
 
         var session = new Mock<ISession>();
@@ -306,7 +306,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
            .GetMock<IRespondentService>()
            .Verify(s => s.SaveRespondentAnswers(It.Is<RespondentAnswersRequest>(r =>
                r.ProjectApplicationId == "App1" &&
-               r.ProjectApplicationRespondentId == "RespondentId1" &&
+               r.Id == "RespondentId1" &&
                r.RespondentAnswers.Count == 2)), Times.Once);
     }
 
@@ -332,7 +332,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
 
         var application = new IrasApplicationResponse
         {
-            ProjectApplicationId = "App1"
+            Id = "App1"
         };
 
         var session = new Mock<ISession>();
@@ -404,7 +404,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
            .GetMock<IRespondentService>()
            .Verify(s => s.SaveRespondentAnswers(It.Is<RespondentAnswersRequest>(r =>
                r.ProjectApplicationId == "App1" &&
-               r.ProjectApplicationRespondentId == "RespondentId1" &&
+               r.Id == "RespondentId1" &&
                r.RespondentAnswers.Count == 2)), Times.Once);
     }
 
@@ -425,7 +425,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
 
         var application = new IrasApplicationResponse
         {
-            ProjectApplicationId = "App1"
+            Id = "App1"
         };
 
         var session = new Mock<ISession>();
@@ -498,13 +498,13 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
         redirectResult.ActionName.ShouldBe(nameof(QuestionnaireController.Resume));
-        redirectResult.RouteValues?["projectApplicationId"].ShouldBe(application.ProjectApplicationId);
+        redirectResult.RouteValues?["projectApplicationId"].ShouldBe(application.Id);
 
         Mocker
            .GetMock<IRespondentService>()
            .Verify(s => s.SaveRespondentAnswers(It.Is<RespondentAnswersRequest>(r =>
                r.ProjectApplicationId == "App1" &&
-               r.ProjectApplicationRespondentId == "RespondentId1" &&
+               r.Id == "RespondentId1" &&
                r.RespondentAnswers.Count == 2)), Times.Once);
     }
 
@@ -527,7 +527,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
 
         var application = new IrasApplicationResponse
         {
-            ProjectApplicationId = "App1"
+            Id = "App1"
         };
 
         var session = new Mock<ISession>();
@@ -605,7 +605,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
            .GetMock<IRespondentService>()
            .Verify(s => s.SaveRespondentAnswers(It.Is<RespondentAnswersRequest>(r =>
                r.ProjectApplicationId == "App1" &&
-               r.ProjectApplicationRespondentId == "RespondentId1" &&
+               r.Id == "RespondentId1" &&
                r.RespondentAnswers.Count == 2)), Times.Once);
     }
 

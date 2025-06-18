@@ -67,7 +67,7 @@ public class RemoveUserFromReviewBodyTests : TestServiceBase<ReviewBodyControlle
     )
     {
         reviewBodyUser.UserId = userId;
-        reviewBodyUser.ReviewBodyId = reviewBodyId;
+        reviewBodyUser.Id = reviewBodyId;
         reviewBodyUser.DateAdded = DateTime.UtcNow;
 
         reviewBody.Id = reviewBodyId;

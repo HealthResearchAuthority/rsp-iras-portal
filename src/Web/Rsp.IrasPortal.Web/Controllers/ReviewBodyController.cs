@@ -421,7 +421,7 @@ public class ReviewBodyController(
     {
         var reviewBodyUserDto = new ReviewBodyUserDto
         {
-            ReviewBodyId = reviewBodyId,
+            Id = reviewBodyId,
             UserId = userId,
             DateAdded = DateTime.UtcNow
         };

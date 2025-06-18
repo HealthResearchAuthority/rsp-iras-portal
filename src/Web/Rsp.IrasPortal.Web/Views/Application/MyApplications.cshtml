@@ -51,13 +51,13 @@
     @foreach (var app in applications)
     {
         <tr class="govuk-table__row">
-            <td class="govuk-table__cell">@app.ProjectApplicationId</td>
+            <td class="govuk-table__cell">@app.Id</td>
             <td class="govuk-table__cell">@app.Title</td>
             <td class="govuk-table__cell">@app.Description</td>
             <td class="govuk-table__cell">@app.Status</td>
             <td class="govuk-table__cell">@app.CreatedBy</td>
             <td class="govuk-table__cell">
-                <a asp-route="app:editapplication" asp-route-applicationId="@app.ProjectApplicationId" class="govuk-link">Edit</a>
+                <a asp-route="app:editapplication" asp-route-projectApplicationId="@app.Id" class="govuk-link">Edit</a>
             </td>
         </tr>
 
@@ -71,7 +71,7 @@
                         @foreach (var category in Model.Categories)
                         {
                             <a class="govuk-link" asp-route="qnc:resume"
-                               asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", category.CategoryId }, { "applicationId", app.ProjectApplicationId } })">
+                               asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", category.CategoryId }, { "applicationId", app.Id } })">
                                 @category.CategoryName
                             </a>
                             count++;
@@ -91,7 +91,7 @@
 
 
             <td class="govuk-table__cell">
-                <a class="govuk-button" asp-route="qnc:submitapplication" asp-route-applicationId="@app.ProjectApplicationId">
+                <a class="govuk-button" asp-route="qnc:submitapplication" asp-route-projectApplicationId="@app.Id">
                     Proceed to Submit
                 </a>
             </td>
