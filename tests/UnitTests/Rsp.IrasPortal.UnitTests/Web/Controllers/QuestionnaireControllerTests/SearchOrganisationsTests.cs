@@ -29,7 +29,7 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
 
         var application = new IrasApplicationResponse
         {
-            ApplicationId = "App1",
+            Id = "App1",
             IrasId = 123
         };
 
@@ -134,7 +134,7 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
 
         var application = new IrasApplicationResponse
         {
-            ApplicationId = "App1",
+            Id = "App1",
             IrasId = 123
         };
 
@@ -233,7 +233,7 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
 
         var application = new IrasApplicationResponse
         {
-            ApplicationId = "App1",
+            Id = "App1",
             IrasId = 123
         };
 
@@ -333,7 +333,7 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
         viewResult.ViewName.ShouldBe("Index");
         ((QuestionnaireViewModel)viewResult.Model!).SponsorOrganisation.ShouldBeNullOrEmpty();
         Sut.TempData[TempDataKeys.SponsorOrgSearched].ShouldBe("searched:true");
-        Sut.TempData[TempDataKeys.ApplicationId].ShouldBe(application.ApplicationId);
+        Sut.TempData[TempDataKeys.ProjectApplicationId].ShouldBe(application.Id);
         Sut.TempData[TempDataKeys.IrasId].ShouldBe(application.IrasId);
         Sut.TempData.ContainsKey(TempDataKeys.SponsorOrganisations).ShouldBeTrue();
     }
