@@ -468,3 +468,13 @@ dialog[open] {
     outline-color: #1d70b8;
     outline-width: 2px;
 }
+
+.sponsor-org-search {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.sponsor-org-search .govuk-button {
+    margin-bottom: 0;
+}
