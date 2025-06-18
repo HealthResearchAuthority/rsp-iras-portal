@@ -8,7 +8,6 @@
 <!-- Hidden field to bind VersionId per question -->
 <input type="hidden" name="@($"{prefix}.VersionId")" value="@Model.VersionId"/>
 
-<rsp-gds-input asp-for="QuestionId" name="@($"{prefix}.QuestionId")" label-text="Question ID" width-class="govuk-!-width-one-quarter" />
 <rsp-gds-input asp-for="SectionId" name="@($"{prefix}.SectionId")" label-text="Section ID" width-class="govuk-!-width-one-quarter" />
 <rsp-gds-input asp-for="Section" name="@($"{prefix}.Section")" label-text="Section Name" width-class="govuk-!-width-one-half" />
 <rsp-gds-input asp-for="Sequence" name="@($"{prefix}.Sequence")" label-text="Sequence" input-type="number" width-class="govuk-!-width-one-quarter" />

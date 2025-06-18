@@ -1,80 +1,97 @@
 ﻿@model List<Rsp.IrasPortal.Application.DTOs.AnswerDto>
 
 @{
-	var versionId = ViewData["VersionId"] as string ?? "";
-	var questionIndex = ViewData["QuestionAnswerIndex"]?.ToString() ?? "0";
+    var versionId = ViewData["VersionId"] as string ?? "";
+    var questionIndex = ViewData["QuestionAnswerIndex"]?.ToString() ?? "0";
 
-	var isEditing = ViewData["IsEditingAnswer"] as bool? ?? false;
-	var selectedAnswerId = ViewData[$"SelectedAnswerId_{questionIndex}"] as string;
-	var originalAnswerId = ViewData["OriginalAnswerId"] as string;
+    var isEditing = ViewData["IsEditingAnswer"] as bool? ?? false;
+    var selectedAnswerId = ViewData[$"SelectedAnswerId_{questionIndex}"] as string;
+    var originalAnswerId = ViewData["OriginalAnswerId"] as string;
 
-	var selectedAnswer = isEditing && !string.IsNullOrWhiteSpace(selectedAnswerId)
-		? Model.FirstOrDefault(a => a.AnswerId == selectedAnswerId)
-		: null;
+    var selectedAnswer = isEditing && !string.IsNullOrWhiteSpace(selectedAnswerId)
+        ? Model.FirstOrDefault(a => a.AnswerId == selectedAnswerId)
+        : null;
 
-	var answerTextError = ViewData.ModelState["answer.AnswerText"]?.Errors.FirstOrDefault()?.ErrorMessage;
-	var formGroupClass = !string.IsNullOrEmpty(answerTextError) ? "govuk-form-group govuk-form-group--error" : "govuk-form-group";
-	var inputClass = !string.IsNullOrEmpty(answerTextError) ? "govuk-input govuk-input--error" : "govuk-input";
+    var answerTextError = ViewData.ModelState["answer.AnswerText"]?.Errors.FirstOrDefault()?.ErrorMessage;
+    var formGroupClass = !string.IsNullOrEmpty(answerTextError) ? "govuk-form-group govuk-form-group--error" : "govuk-form-group";
+    var inputClass = !string.IsNullOrEmpty(answerTextError) ? "govuk-input govuk-input--error" : "govuk-input";
 }
 
 <div class="govuk-form-group">
-	<h2 class="govuk-heading-m">Answers</h2>
+    <h2 class="govuk-heading-m">Answers</h2>
 
-	@if (Model.Any())
-	{
-		<dl class="govuk-summary-list">
-			<div class="govuk-summary-list__row">
-				<dd class="govuk-summary-list__value govuk-!-font-weight-bold">Answer Text</dd>
-				<dd class="govuk-summary-list__actions"></dd>
-			</div>
+    @if (Model.Any())
+    {
+        <dl class="govuk-summary-list">
+            <div class="govuk-summary-list__row">
+                <dd class="govuk-summary-list__value govuk-!-font-weight-bold">Answer Text</dd>
+                <dd class="govuk-summary-list__actions"></dd>
+            </div>
 
-			@foreach (var answer in Model)
-			{
-				<div class="govuk-summary-list__row">
-					<dd class="govuk-summary-list__value">@answer.AnswerText</dd>
-					<dd class="govuk-summary-list__actions">
-						<form asp-action="AddAnswer" asp-controller="QuestionSet" method="post">
-							<input type="hidden" name="versionId" value="@versionId" />
-							<input type="hidden" name="questionIndex" value="@questionIndex" />
-							<input type="hidden" name="originalAnswerId" value="@answer.AnswerId" />
-							<button type="submit" class="govuk-button govuk-button--secondary">Change</button>
-						</form>
-					</dd>
-				</div>
-			}
-		</dl>
-	}
+            @foreach (var answer in Model)
+            {
+                <div class="govuk-summary-list__row">
+                    <dd class="govuk-summary-list__value">@answer.AnswerText</dd>
+                    <dd class="govuk-summary-list__actions">
+                        <form asp-action="AddAnswer" asp-controller="QuestionSet" method="post">
+                            <input type="hidden" name="versionId" value="@versionId"/>
+                            <input type="hidden" name="questionIndex" value="@questionIndex"/>
+                            <input type="hidden" name="originalAnswerId" value="@answer.AnswerId"/>
+                            <button type="submit" class="govuk-button govuk-button--secondary">Change</button>
+                        </form>
+                    </dd>
+                </div>
+            }
+        </dl>
+    }
 
-	<form asp-action="AddAnswer" asp-controller="QuestionSet" method="post">
-		<input type="hidden" name="versionId" value="@versionId" />
-		<input type="hidden" name="questionIndex" value="@questionIndex" />
-		@if (isEditing)
-		{
-			<input type="hidden" name="originalAnswerId" value="@originalAnswerId" />
-		}
+    <form asp-action="AddAnswer" asp-controller="QuestionSet" method="post">
+        <input type="hidden" name="versionId" value="@versionId"/>
+        <input type="hidden" name="questionIndex" value="@questionIndex"/>
+        @if (isEditing)
+        {
+            <input type="hidden" name="originalAnswerId" value="@originalAnswerId"/>
+        }
 
-		<input type="hidden" name="answer.AnswerId" value="@(isEditing ? selectedAnswer?.AnswerId : "")" />
+        <input type="hidden" name="answer.AnswerId" value="@(isEditing ? selectedAnswer?.AnswerId : "")"/>
 
-		<div class="@formGroupClass" style="display: flex; align-items: flex-end; gap: 10px;">
-			<div style="flex-grow: 1;">
-				<label class="govuk-label" for="AnswerText">Answer Text</label>
+        <div class="@formGroupClass" style="display: flex; align-items: flex-end; gap: 10px;">
+            <div style="flex-grow: 1;">
+                <label class="govuk-label" for="AnswerText">Answer Text</label>
 
-				@if (!string.IsNullOrEmpty(answerTextError))
-				{
-					<span class="govuk-error-message">
-						<span class="govuk-visually-hidden">Error:</span> @answerTextError
-					</span>
-				}
+                @if (!string.IsNullOrEmpty(answerTextError))
+                {
+                    <span class="govuk-error-message">
+                        <span class="govuk-visually-hidden">Error:</span> @answerTextError
+                    </span>
+                }
 
-				<input class="@inputClass" id="AnswerText" name="answer.AnswerText" type="text"
-					   value="@(isEditing ? selectedAnswer?.AnswerText : "")" />
-			</div>
+                <input class="@inputClass" id="AnswerText" name="answer.AnswerText" type="text"
+                       value="@(isEditing ? selectedAnswer?.AnswerText : "")"/>
+            </div>
 
-			<div>
-				<button type="submit" class="govuk-button" style="margin-bottom: 0;">
-					@(isEditing ? "Update answer" : "Add answer")
-				</button>
-			</div>
-		</div>
-	</form>
+            <div>
+                <button type="submit" class="govuk-button" style="margin-bottom: 0;">
+                    @(isEditing ? "Update answer" : "Add answer")
+                </button>
+            </div>
+        </div>
+    </form>
+
+    @if (Model.Any())
+    {
+        <form asp-action="CompleteQuestionAndAnswers" asp-controller="QuestionSet" method="post">
+            <input type="hidden" name="versionId" value="@versionId"/>
+            <input type="hidden" name="questionIndex" value="@questionIndex"/>
+
+            <div>
+                <button type="submit" class="govuk-button" style="margin-bottom: 0;">
+                    Complete Question & Answers
+                </button>
+            </div>
+
+
+        </form>
+    }
+
 </div>

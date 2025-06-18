@@ -8,12 +8,9 @@
     var currentIndex = ViewBag.QuestionIndex as int? ?? (questions.Count > 0 ? questions.Count - 1 : 0);
 
     var isEditing = currentIndex < questions.Count;
-    // var questionButtonText = isEditing ? "Update this question" : "Add this question";
+    var questionButtonText = isEditing ? "Update this question" : "Add this question";
 
-    // // var headingText = isEditing ? $"Edit Question ID: {questions[currentIndex].QuestionId}" : "Add new question";
-
-    var questionButtonText = "Add this question";
-    var headingText = "Add new question";
+    var headingText = isEditing ? $"Edit Question ID: {questions[currentIndex].QuestionId}" : "Add new question";
 
 
     var validQuestions = questions
@@ -60,12 +57,12 @@
         }
         else if (flowStep == "questions")
         {
-            <!-- Back button -->
-            <form asp-action="Back" asp-controller="QuestionSet" method="post" class="govuk-!-margin-bottom-4">
-                <input type="hidden" name="versionId" value="@versionId"/>
-                <input type="hidden" name="questionIndex" value="@currentIndex"/>
-                <button type="submit" class="govuk-button govuk-button--secondary">Back</button>
-            </form>
+            // <!-- Back button -->
+            // <form asp-action="Back" asp-controller="QuestionSet" method="post" class="govuk-!-margin-bottom-4">
+            // 	<input type="hidden" name="versionId" value="@versionId"/>
+            // 	<input type="hidden" name="questionIndex" value="@currentIndex"/>
+            // 	<button type="submit" class="govuk-button govuk-button--secondary">Back</button>
+            // </form>
 
             @if (validQuestions.Any())
             {
@@ -77,10 +74,12 @@
                         <table class="govuk-table">
                             <thead class="govuk-table__head">
                             <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
-                                <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Question ID</th>
-                                <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Question Text</th>
                                 <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Section ID</th>
                                 <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Section</th>
+                                <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Question Text</th>
+                                <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Question Type</th>
+                      
+                              
                                 <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Actions</th>
                             </tr>
                             </thead>
@@ -89,10 +88,13 @@
                             {
                                 var q = questions[i];
                                 <tr class="govuk-table__row">
-                                    <td class="govuk-table__cell">@q.QuestionId</td>
-                                    <td class="govuk-table__cell">@q.QuestionText</td>
                                     <td class="govuk-table__cell">@q.SectionId</td>
                                     <td class="govuk-table__cell">@q.Section</td>
+                                    <td class="govuk-table__cell">@q.QuestionText</td>
+                                    <td class="govuk-table__cell">
+                                        @q.QuestionType@(string.IsNullOrWhiteSpace(q.DataType) ? "" : $" - {q.DataType}")
+                                    </td>
+
                                     <td class="govuk-table__cell">
                                         <form asp-action="EditQuestion" asp-controller="QuestionSet" method="post" class="inline-form">
                                             <input type="hidden" name="versionId" value="@versionId"/>
@@ -113,13 +115,13 @@
             }
 
             var unsavedQuestion = ViewBag.UnsavedQuestion as QuestionDto;
-            var question = unsavedQuestion ?? (isEditing ? questions[currentIndex] : new QuestionDto { VersionId = versionId });
-
-            <h2 class="govuk-heading-m">@headingText</h2>
+            var unsavedAnswers = ViewBag.UnsavedAnswer as List<AnswerDto>;
+            var question = unsavedQuestion ?? (isEditing ? questions[currentIndex] : new QuestionDto { VersionId = versionId, Answers = unsavedAnswers });
 
             <!-- QUESTION FORM -->
             <form asp-action="AddQuestion" asp-controller="QuestionSet" method="post">
                 <input type="hidden" name="versionId" value="@versionId"/>
+                <input type="hidden" name="flowStep" value="questions"/>
                 <input type="hidden" name="questionIndex" value="@currentIndex"/>
 
                 <h2 class="govuk-heading-m">@headingText</h2>
@@ -127,10 +129,26 @@
 
                 <button type="submit" class="govuk-button">@(isEditing ? "Update this question" : "Add this question")</button>
             </form>
+        }
+        else if (flowStep == "answers")
+        {
+            // <!-- Back button -->
+            // <form asp-action="Back" asp-controller="QuestionSet" method="post" class="govuk-!-margin-bottom-4">
+            //     <input type="hidden" name="versionId" value="@versionId"/>
+            //     <input type="hidden" name="questionIndex" value="@currentIndex"/>
+            //     <input type="hidden" name="flowStep" value="questions" />
+            //     <button type="submit" class="govuk-button govuk-button--secondary">Back</button>
+            // </form>
+
+
+            // <h2 class="govuk-heading-m">@headingText</h2>
+
+            var unsavedQuestion = ViewBag.UnsavedQuestion as QuestionDto;
+            var question = unsavedQuestion ?? (isEditing ? questions[currentIndex] : new QuestionDto { VersionId = versionId });
 
             var answerViewData = new ViewDataDictionary(ViewData)
             {
-                ["VersionId"] = question.VersionId,
+                ["VersionId"] = versionId,
                 ["QuestionAnswerIndex"] = currentIndex,
                 ["SelectedAnswerId"] = ViewData[$"SelectedAnswerId_{currentIndex}"]
             };
@@ -139,7 +157,7 @@
             answerViewData["OriginalAnswerId"] = ViewData["OriginalAnswerId"];
 
 
-            @await Html.PartialAsync("_AnswerListPartial", question.Answers.ToList(), answerViewData);
+            @await Html.PartialAsync("_AnswerListPartial", question.Answers.ToList(), answerViewData)
         }
     </div>
 </div>

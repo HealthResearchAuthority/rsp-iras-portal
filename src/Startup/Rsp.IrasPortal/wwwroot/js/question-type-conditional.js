@@ -9,7 +9,10 @@
         "text": [
             { value: "text", label: "Text" },
             { value: "email", label: "Email" }
-        ]
+        ],
+        "boolean": [],
+        "date": [],
+        "rts:org_lookup": []
     };
 
     wrappers.forEach(wrapper => {
@@ -24,24 +27,30 @@
         const dataTypeSelect = dataTypeWrapper?.querySelector('select');
 
         function updateDataTypeVisibility() {
-            const selectedValue = (select.value || "").toLowerCase();
+            const selectedQuestionType = (select.value || "").toLowerCase();
 
-            if (!optionMap[selectedValue]) {
+            if (!optionMap[selectedQuestionType] || optionMap[selectedQuestionType].length === 0) {
                 dataTypeWrapper.style.display = "none";
                 if (dataTypeSelect) dataTypeSelect.innerHTML = "";
                 return;
             }
 
-            // Build default and options
             if (dataTypeSelect) {
+                const currentValue = dataTypeSelect.value; // ← preserve current value
+
                 dataTypeWrapper.style.display = "block";
 
-                const defaultOption = `<option value="" disabled selected>Please select a data type</option>`;
-                const optionHtml = optionMap[selectedValue]
+                const defaultOption = `<option value="">Please select a data type</option>`;
+                const optionHtml = optionMap[selectedQuestionType]
                     .map(opt => `<option value="${opt.value}">${opt.label}</option>`)
                     .join("\n");
 
                 dataTypeSelect.innerHTML = defaultOption + optionHtml;
+
+                // Re-assign the original value if it still exists
+                if (currentValue) {
+                    dataTypeSelect.value = currentValue;
+                }
             }
         }
 
