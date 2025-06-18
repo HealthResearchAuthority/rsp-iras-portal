@@ -7,6 +7,6 @@ public class ResearchApplicationSummaryModel
     public string? ApplicatonId { get; set; }
     public string Title { get; set; } = string.Empty;
     public bool IsNew { get; set; } = false; // temporary for first iteration
-    public string PrimarySponsorOrganisation { get; set; }
+    public string? PrimarySponsorOrganisation { get; set; }
     public DateTime ProjectEndDate { get; set; }
 }
