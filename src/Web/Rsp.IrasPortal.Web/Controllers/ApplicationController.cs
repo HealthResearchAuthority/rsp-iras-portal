@@ -34,7 +34,6 @@ public class ApplicationController
         // getting research applications by respondent ID
         var applicationServiceResponse = await applicationsService.GetApplicationsByRespondent(respondentId);
 
-        // safeguard against null response or content
         var applications = applicationServiceResponse?.Content?.ToList() ?? new List<IrasApplicationResponse>();
 
         var researchApplications = applications
@@ -44,7 +43,8 @@ public class ApplicationController
                 IrasId = app.IrasId,
                 ApplicatonId = app.ApplicationId,
                 Title = "Empty", // temporary default
-                ProjectEndDate = new DateTime(2025, 12, 10) // temporary default
+                ProjectEndDate = new DateTime(2025, 12, 10), // temporary default
+                PrimarySponsorOrganisation = "Unknown" // default value
             })
             .ToList();
 
@@ -56,14 +56,15 @@ public class ApplicationController
 
             if (!respondentServiceResponse.IsSuccessStatusCode)
             {
-                // Optionally log or handle the error
-                continue;
+                // return the generic error page
+                return this.ServiceError(respondentServiceResponse);
             }
 
             var answers = respondentServiceResponse.Content;
 
             var titleAnswer = answers.FirstOrDefault(a => a.QuestionId == "IQA0002")?.AnswerText;
             var endDateAnswer = answers.FirstOrDefault(a => a.QuestionId == "IQA0003")?.AnswerText;
+            var sponsorAnswer = answers.FirstOrDefault(a => a.QuestionId == "IQA0312")?.AnswerText;
 
             if (!string.IsNullOrWhiteSpace(titleAnswer))
             {
@@ -74,8 +75,12 @@ public class ApplicationController
             {
                 researchApp.ProjectEndDate = parsedDate;
             }
-        }
 
+            if (!string.IsNullOrWhiteSpace(sponsorAnswer))
+            {
+                researchApp.PrimarySponsorOrganisation = sponsorAnswer;
+            }
+        }
 
         return View(nameof(Index), researchApplications);
     }
