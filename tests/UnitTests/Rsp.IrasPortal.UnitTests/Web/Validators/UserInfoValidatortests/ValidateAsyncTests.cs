@@ -22,7 +22,7 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
         // Assert
         result
             .ShouldHaveValidationErrorFor(x => x.GivenName)
-            .WithErrorMessage("Enter a first name");
+            .WithErrorMessage("Enter a given name");
     }
 
     [Fact]

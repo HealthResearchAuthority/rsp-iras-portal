@@ -105,7 +105,7 @@ public class StartProjectTests : TestServiceBase<ApplicationController>
         var model = new IrasIdViewModel { IrasId = "1234" };
         var existingApps = new List<IrasApplicationResponse>
         {
-            new() { IrasId = 1234, ProjectApplicationId = "a1", Title = "Test" }
+            new() { IrasId = 1234, Id = "a1", Title = "Test" }
         };
 
         Mocker
@@ -174,7 +174,7 @@ public class StartProjectTests : TestServiceBase<ApplicationController>
         };
 
         var model = new IrasIdViewModel { IrasId = "5678" };
-        var createdApp = new IrasApplicationResponse { ProjectApplicationId = "abc", IrasId = 5678, Title = "Test" };
+        var createdApp = new IrasApplicationResponse { Id = "abc", IrasId = 5678, Title = "Test" };
 
         Mocker
             .GetMock<IValidator<IrasIdViewModel>>()

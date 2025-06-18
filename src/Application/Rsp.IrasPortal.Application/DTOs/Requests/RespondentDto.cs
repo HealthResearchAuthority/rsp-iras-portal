@@ -8,7 +8,7 @@ public record RespondentDto
     /// <summary>
     /// Project Application Respondent Id creating/updating the application
     /// </summary>
-    public string ProjectApplicationRespondentId { get; set; } = null!;
+    public string Id { get; set; } = null!;
 
     /// <summary>
     /// First Name of the respondent

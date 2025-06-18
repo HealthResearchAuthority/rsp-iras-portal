@@ -32,13 +32,13 @@
         @foreach (var app in Model)
         {
             <tr class="govuk-table__row">
-                <td class="govuk-table__cell">@app.ProjectApplicationId</td>
+                <td class="govuk-table__cell">@app.Id</td>
                 <td class="govuk-table__cell">@app.Title</td>
                 <td class="govuk-table__cell">@app.Description</td>
                 <td class="govuk-table__cell">@app.Status</td>
                 <td class="govuk-table__cell">@app.CreatedBy</td>
                 <td class="govuk-table__cell">
-                    <a asp-route="arc:getapplication" asp-route-applicationId="@app.ProjectApplicationId" class="govuk-link">View</a>
+					<a asp-route="arc:getapplication" asp-route-projectApplicationId="@app.Id" class="govuk-link">View</a>
                 </td>
             </tr>
         }

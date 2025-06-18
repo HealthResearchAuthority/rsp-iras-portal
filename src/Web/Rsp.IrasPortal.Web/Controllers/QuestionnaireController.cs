@@ -102,7 +102,7 @@ public class QuestionnaireController
         HttpContext.Session.SetString($"{SessionKeys.Questionnaire}:{sectionId}", JsonSerializer.Serialize(questionnaire.Questions));
 
         // add the projectApplicationId in the TempData to be retrieved in the view
-        TempData.TryAdd(TempDataKeys.ApplicationId, projectApplicationId);
+        TempData.TryAdd(TempDataKeys.ProjectApplicationId, projectApplicationId);
 
         // this is where the questionnaire will resume
         var navigationDto = await SetStage(sectionIdOrDefault);
@@ -312,7 +312,7 @@ public class QuestionnaireController
         if (!isValid)
         {
             // store the projectApplicationId in the TempData to get in the view
-            TempData.TryAdd(TempDataKeys.ApplicationId, application.ProjectApplicationId);
+            TempData.TryAdd(TempDataKeys.ProjectApplicationId, application.Id);
 
             // store the irasId in the TempData to get in the view
             TempData.TryAdd(TempDataKeys.IrasId, application.IrasId);
@@ -331,8 +331,8 @@ public class QuestionnaireController
         // populate the RespondentAnswers
         var request = new RespondentAnswersRequest
         {
-            ProjectApplicationId = application.ProjectApplicationId,
-            ProjectApplicationRespondentId = respondentId
+            ProjectApplicationId = application.Id,
+            Id = respondentId
         };
 
         foreach (var question in questions)
@@ -373,7 +373,7 @@ public class QuestionnaireController
         }
 
         // add the projectApplicationId in the tempdata
-        TempData.TryAdd(TempDataKeys.ApplicationId, application.ProjectApplicationId);
+        TempData.TryAdd(TempDataKeys.ProjectApplicationId, application.Id);
 
         // store the irasId in the TempData to get in the view
         TempData.TryAdd(TempDataKeys.IrasId, application.IrasId);
@@ -387,7 +387,7 @@ public class QuestionnaireController
         // user clicks on Proceed to submit button
         if (submit)
         {
-            return RedirectToAction(nameof(SubmitApplication), new { projectApplicationId = application.ProjectApplicationId });
+            return RedirectToAction(nameof(SubmitApplication), new { projectApplicationId = application.Id });
         }
 
         // get the question sections
@@ -412,13 +412,13 @@ public class QuestionnaireController
             // if the user is at the last stage and clicks on Save and Continue
             if (string.IsNullOrWhiteSpace(navigation.NextStage))
             {
-                return RedirectToAction(nameof(SubmitApplication), new { projectApplicationId = application.ProjectApplicationId });
+                return RedirectToAction(nameof(SubmitApplication), new { projectApplicationId = application.Id });
             }
 
             // otherwise resume from the NextStage in sequence
             return RedirectToAction(nameof(Resume), new
             {
-                projectApplicationId = application.ProjectApplicationId,
+                projectApplicationId = application.Id,
                 categoryId = navigation.NextCategory,
                 sectionId = navigation.NextStage
             });
@@ -427,7 +427,7 @@ public class QuestionnaireController
         if (saveForLater == bool.TrueString)
         {
             TempData[TempDataKeys.CategoryId] = model.GetFirstCategory();
-            TempData[TempDataKeys.ApplicationId] = application.ProjectApplicationId;
+            TempData[TempDataKeys.ProjectApplicationId] = application.Id;
 
             return RedirectToAction("ProjectOverview", "Application");
         }
@@ -438,7 +438,7 @@ public class QuestionnaireController
         {
             return RedirectToAction(nameof(Resume), new
             {
-                projectApplicationId = application.ProjectApplicationId,
+                projectApplicationId = application.Id,
                 categoryId = navigation.NextCategory,
                 sectionId = navigation.NextStage
             });
@@ -477,7 +477,7 @@ public class QuestionnaireController
         var application = this.GetApplicationFromSession();
 
         // store the projectApplicationId in the TempData to get in the view
-        TempData.TryAdd(TempDataKeys.ApplicationId, application.ProjectApplicationId);
+        TempData.TryAdd(TempDataKeys.ProjectApplicationId, application.Id);
 
         // store the irasId in the TempData to get in the view
         TempData.TryAdd(TempDataKeys.IrasId, application.IrasId);
@@ -574,7 +574,7 @@ public class QuestionnaireController
         // store the first categoryId and projectApplicationId in the TempData to get in the view
         TempData[TempDataKeys.CategoryId] = (questionnaire.Questions.GroupBy(q => q.Category)
         .OrderBy(g => g.First().Sequence).FirstOrDefault()?.Key);
-        TempData[TempDataKeys.ApplicationId] = application.ProjectApplicationId;
+        TempData[TempDataKeys.ProjectApplicationId] = application.Id;
 
         return View("ReviewAnswers", questionnaire);
     }
@@ -590,7 +590,7 @@ public class QuestionnaireController
         var application = this.GetApplicationFromSession();
 
         // get the respondent answers for the category
-        var respondentServiceResponse = await respondentService.GetRespondentAnswers(application.ProjectApplicationId);
+        var respondentServiceResponse = await respondentService.GetRespondentAnswers(application.Id);
 
         // return the error view if unsuccessfull
         if (!respondentServiceResponse.IsSuccessStatusCode)
@@ -650,7 +650,7 @@ public class QuestionnaireController
             // store the first categoryId and projectApplicationId in the TempData to get in the view
             TempData[TempDataKeys.CategoryId] = (questionnaire.Questions.GroupBy(q => q.Category)
             .OrderBy(g => g.First().Sequence).FirstOrDefault()?.Key);
-            TempData[TempDataKeys.ApplicationId] = application.ProjectApplicationId;
+            TempData[TempDataKeys.ProjectApplicationId] = application.Id;
 
             // call the ValidateAsync to execute the validation
             // this will trigger the fluentvalidation using the injected validator if configured
