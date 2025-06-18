@@ -6,7 +6,7 @@
 /// </summary>
 public struct TempDataKeys
 {
-    public const string ApplicationId = "td:application_id";
+    public const string ProjectApplicationId = "td:project_application_id";
     public const string ShortProjectTitle = "td:short_project_title";
     public const string CategoryId = "td:category_id";
     public const string IrasId = "td:iras_id";

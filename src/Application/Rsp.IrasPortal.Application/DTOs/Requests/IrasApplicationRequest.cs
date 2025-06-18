@@ -9,7 +9,7 @@ public record IrasApplicationRequest
     /// <summary>
     /// IRAS Project Id
     /// </summary>
-    public string? ApplicationId { get; set; } = DateTime.Now.ToString("yyyyMMddHHmmss");
+    public string? Id { get; set; } = DateTime.Now.ToString("yyyyMMddHHmmss");
 
     /// <summary>
     /// The title of the project

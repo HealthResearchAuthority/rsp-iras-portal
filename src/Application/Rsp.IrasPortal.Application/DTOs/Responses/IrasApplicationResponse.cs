@@ -5,7 +5,7 @@ public class IrasApplicationResponse
     /// <summary>
     /// The public key for the application database record
     /// </summary>
-    public string ProjectApplicationId { get; set; } = null!;
+    public string Id { get; set; } = null!;
 
     /// <summary>
     /// The title of the project
