@@ -19,4 +19,6 @@ public struct TempDataKeys
     public const string QuestionSetUploadSuccess = "td:qset_upload_success";
     public const string QuestionSetPublishedVersionId = "td:qset_published_version_id";
     public const string ProjectOverview = "td:project_overview";
+    public const string SponsorOrganisations = "td:sponsor_organisations";
+    public const string SponsorOrgSearched = "td:sponsor_org_searched";
 }

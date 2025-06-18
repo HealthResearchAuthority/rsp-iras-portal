@@ -1,4 +1,5 @@
-﻿using Rsp.IrasPortal.Application.DTOs.Responses;
+﻿using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Application.Services;
@@ -17,7 +18,7 @@ public class RtsService(IRtsServiceClient rtsServiceClient) : IRtsService
     /// </summary>
     /// <param name="id">The unique identifier of the organisation.</param>
     /// <returns>A service response containing the organisation details.</returns>
-    public async Task<ServiceResponse<OrganisationSearchResponse>> GetOrganisation(string id)
+    public async Task<ServiceResponse<OrganisationDto>> GetOrganisation(string id)
     {
         var apiResponse = await rtsServiceClient.GetOrganisation(id);
 
@@ -30,7 +31,7 @@ public class RtsService(IRtsServiceClient rtsServiceClient) : IRtsService
     /// <param name="name">The name of the organisation to search for.</param>
     /// <param name="role">The optional role of the organisation to filter by.</param>
     /// <returns>A service response containing a list of organisations.</returns>
-    public async Task<ServiceResponse<IEnumerable<OrganisationSearchResponse>>> GetOrganisations(string name, string? role)
+    public async Task<ServiceResponse<OrganisationSearchResponse>> GetOrganisations(string name, string? role)
     {
         var apiResponse = await rtsServiceClient.GetOrganisations(name, role);
 
@@ -44,7 +45,7 @@ public class RtsService(IRtsServiceClient rtsServiceClient) : IRtsService
     /// <param name="role">The optional role of the organisation to filter by.</param>
     /// <param name="pageSize">The number of organisations to retrieve per page.</param>
     /// <returns>A service response containing a paginated list of organisations.</returns>
-    public async Task<ServiceResponse<IEnumerable<OrganisationSearchResponse>>> GetOrganisations(string name, string? role, int pageSize)
+    public async Task<ServiceResponse<OrganisationSearchResponse>> GetOrganisations(string name, string? role, int pageSize)
     {
         var apiResponse = await rtsServiceClient.GetOrganisations(name, role, pageSize);
 

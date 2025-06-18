@@ -1,3 +1,4 @@
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
@@ -19,10 +20,10 @@ public class RtsServiceTests : TestServiceBase<RtsService>
     {
         // Arrange
         var organisationId = "123";
-        var apiResponse = new ApiResponse<OrganisationSearchResponse>
+        var apiResponse = new ApiResponse<OrganisationDto>
         (
             new HttpResponseMessage(HttpStatusCode.OK),
-            new OrganisationSearchResponse { Id = organisationId, Name = "Test Organisation" },
+            new OrganisationDto { Id = organisationId, Name = "Test Organisation" },
             new()
         );
 
@@ -35,7 +36,7 @@ public class RtsServiceTests : TestServiceBase<RtsService>
         var result = await Sut.GetOrganisation(organisationId);
 
         // Assert
-        result.ShouldBeOfType<ServiceResponse<OrganisationSearchResponse>>();
+        result.ShouldBeOfType<ServiceResponse<OrganisationDto>>();
         result.IsSuccessStatusCode.ShouldBeTrue();
         result.StatusCode.ShouldBe(HttpStatusCode.OK);
         result.Content.Id.ShouldBe(organisationId);
@@ -50,13 +51,16 @@ public class RtsServiceTests : TestServiceBase<RtsService>
     {
         // Arrange
         var organisationName = "Test";
-        var expectedResponse = new ApiResponse<IEnumerable<OrganisationSearchResponse>>
+        var expectedResponse = new ApiResponse<OrganisationSearchResponse>
         (
             new HttpResponseMessage(HttpStatusCode.OK),
-            [
-                new OrganisationSearchResponse { Id = "123", Name = "Test Organisation 1" },
-                new OrganisationSearchResponse { Id = "456", Name = "Test Organisation 2" }
-            ],
+            new()
+            {
+                Organisations = [
+                    new() { Id = "123", Name = "Test Organisation 1" },
+                    new() { Id = "456", Name = "Test Organisation 2" }],
+                TotalCount = 2
+            },
             new()
         );
 
@@ -69,11 +73,11 @@ public class RtsServiceTests : TestServiceBase<RtsService>
         var result = await Sut.GetOrganisations(organisationName, null);
 
         // Assert
-        result.ShouldBeOfType<ServiceResponse<IEnumerable<OrganisationSearchResponse>>>();
+        result.ShouldBeOfType<ServiceResponse<OrganisationSearchResponse>>();
         result.IsSuccessStatusCode.ShouldBeTrue();
         result.Content.ShouldNotBeNull();
-        result.Content.Count().ShouldBe(2);
-        result.Content.ShouldContain(o => o.Name.Contains("Test Organisation"));
+        result.Content.Organisations.Count.ShouldBe(2);
+        result.Content.Organisations.ShouldContain(o => o.Name.Contains("Test Organisation"));
     }
 
     [Fact]
@@ -82,14 +86,17 @@ public class RtsServiceTests : TestServiceBase<RtsService>
         // Arrange
         var organisationName = "Test";
         var pageSize = 2;
-        var expectedResponse = new ApiResponse<IEnumerable<OrganisationSearchResponse>>
+        var expectedResponse = new ApiResponse<OrganisationSearchResponse>
        (
-           new HttpResponseMessage(HttpStatusCode.OK),
-           [
-                new OrganisationSearchResponse { Id = "123", Name = "Test Organisation 1" },
-                new OrganisationSearchResponse { Id = "456", Name = "Test Organisation 2" }
-           ],
+          new HttpResponseMessage(HttpStatusCode.OK),
            new()
+           {
+               Organisations = [
+                    new() { Id = "123", Name = "Test Organisation 1" },
+                    new() { Id = "456", Name = "Test Organisation 2" }],
+               TotalCount = 2
+           },
+            new()
        );
 
         Mocker
@@ -101,10 +108,10 @@ public class RtsServiceTests : TestServiceBase<RtsService>
         var result = await Sut.GetOrganisations(organisationName, null, pageSize);
 
         // Assert
-        result.ShouldBeOfType<ServiceResponse<IEnumerable<OrganisationSearchResponse>>>();
+        result.ShouldBeOfType<ServiceResponse<OrganisationSearchResponse>>();
         result.IsSuccessStatusCode.ShouldBeTrue();
         result.Content.ShouldNotBeNull();
-        result.Content.Count().ShouldBe(2);
-        result.Content.ShouldContain(o => o.Name.Contains("Test Organisation"));
+        result.Content.Organisations.Count.ShouldBe(2);
+        result.Content.Organisations.ShouldContain(o => o.Name.Contains("Test Organisation"));
     }
 }
