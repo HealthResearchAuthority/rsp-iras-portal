@@ -691,7 +691,7 @@ public class QuestionnaireController
         var application = this.GetApplicationFromSession();
 
         // store the applicationId in the TempData to get in the view
-        TempData.TryAdd(TempDataKeys.ApplicationId, application.ApplicationId);
+        TempData.TryAdd(TempDataKeys.ProjectApplicationId, application.Id);
 
         // store the irasId in the TempData to get in the view
         TempData.TryAdd(TempDataKeys.IrasId, application.IrasId);
