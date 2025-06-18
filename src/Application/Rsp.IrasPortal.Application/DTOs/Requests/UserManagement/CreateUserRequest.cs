@@ -5,8 +5,8 @@ namespace Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
 public class CreateUserRequest
 {
     public string? Title { get; set; } = null;
-    public string FirstName { get; set; } = null!;
-    public string LastName { get; set; } = null!;
+    public string GivenName { get; set; } = null!;
+    public string FamilyName { get; set; } = null!;
     public string Email { get; set; } = null!;
     public string? JobTitle { get; set; } = null;
     public string? Organisation { get; set; } = null;

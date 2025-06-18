@@ -99,19 +99,19 @@ public class UserViewModel
         LastLogin = user.LastLogin;
     }
 
-    public void Deconstruct(out string firstName, out string lastName, out string email)
+    public void Deconstruct(out string givenName, out string familyName, out string email)
     {
-        firstName = GivenName;
-        lastName = FamilyName;
+        givenName = GivenName;
+        familyName = FamilyName;
         email = Email;
     }
 
-    public void Deconstruct(out string id, out string originalEmail, out string firstName, out string lastName, out string email)
+    public void Deconstruct(out string id, out string originalEmail, out string givenName, out string familyName, out string email)
     {
         id = Id!;
         originalEmail = OriginalEmail!;
-        firstName = GivenName;
-        lastName = FamilyName;
+        givenName = GivenName;
+        familyName = FamilyName;
         email = Email;
     }
 }

@@ -85,7 +85,7 @@ public class SaveApplicationTests : TestServiceBase<ApplicationController>
         // Arrange
         var expectedRespondent = new RespondentDto
         {
-            ProjectApplicationRespondentId = "testRespondentId",
+            Id = "testRespondentId",
             EmailAddress = "test@example.com",
             GivenName = "Test",
             FamilyName = "User",
@@ -104,7 +104,7 @@ public class SaveApplicationTests : TestServiceBase<ApplicationController>
         Mocker
             .GetMock<IApplicationsService>()
             .Verify(s => s.UpdateApplication(It.Is<IrasApplicationRequest>(r =>
-                r.Respondent.ProjectApplicationRespondentId == expectedRespondent.ProjectApplicationRespondentId &&
+                r.Respondent.Id == expectedRespondent.Id &&
                 r.Respondent.EmailAddress == expectedRespondent.EmailAddress &&
                 r.Respondent.GivenName == expectedRespondent.GivenName &&
                 r.Respondent.FamilyName == expectedRespondent.FamilyName &&
@@ -118,7 +118,7 @@ public class SaveApplicationTests : TestServiceBase<ApplicationController>
         // Arrange
         var mockApplication = new IrasApplicationResponse
         {
-            ProjectApplicationId = "testApplicationId",
+            Id = "testApplicationId",
             CreatedBy = "Original Creator",
             CreatedDate = DateTime.Now.AddDays(-1)
         };
@@ -152,7 +152,7 @@ public class SaveApplicationTests : TestServiceBase<ApplicationController>
             .GetMock<IApplicationsService>()
             .Verify(s => s.UpdateApplication(It.Is<IrasApplicationRequest>
             (r =>
-                r.ApplicationId == mockApplication.ProjectApplicationId &&
+                r.Id == mockApplication.Id &&
                 r.CreatedBy == mockApplication.CreatedBy &&
                 r.StartDate == mockApplication.CreatedDate
             )), Times.Once);

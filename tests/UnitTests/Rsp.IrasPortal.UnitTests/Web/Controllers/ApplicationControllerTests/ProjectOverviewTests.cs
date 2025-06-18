@@ -18,7 +18,7 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApplicationControllerTests
             {
                 [TempDataKeys.ShortProjectTitle] = "Test Project",
                 [TempDataKeys.CategoryId] = "123",
-                [TempDataKeys.ApplicationId] = "456"
+                [TempDataKeys.ProjectApplicationId] = "456"
             };
 
             Sut.TempData = tempData;
