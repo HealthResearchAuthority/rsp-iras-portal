@@ -34,7 +34,8 @@
 										</h2>
 										<div class="govuk-body">
 											<p class="govuk-body research-text"><strong>IRAS ID:</strong> @(item.IrasId == null ? "Null" : item.IrasId)</p>
-											<p class="govuk-body research-text"><strong>Project end date:</strong> @item.ProjectEndDate.ToString("dd MMMM yyyy")</p>
+											<p class="govuk-body research-text"><strong>Primary Sponsor Organisation:</strong> @(item.PrimarySponsorOrganisation == null ? "Null" : item.PrimarySponsorOrganisation)</p>
+											<p class="govuk-body research-text"><strong>Planned project end date:</strong> @item.ProjectEndDate.ToString("dd MMMM yyyy")</p>
 										</div>
 										@if (item.IsNew)
 										{
