@@ -200,9 +200,18 @@ public class UsersController(IUserManagementService userManagementService, IVali
         var context = new ValidationContext<UserViewModel>(model);
         var validationResult = await validator.ValidateAsync(context);
 
+        var response = await userManagementService.GetUser(null, model.Email);
+        var originalEmail = model.OriginalEmail;
+        var email = model.Email;
+        var emailExists = response.IsSuccessStatusCode && response.Content != null;
+
         // check if modelstate is valid if in edit mode
-        if (mode == EditMode && !validationResult.IsValid)
+        if (mode == EditMode && !validationResult.IsValid || (emailExists && model.OriginalEmail != model.Email))
         {
+            if (emailExists && model.OriginalEmail != model.Email)
+            {
+                validationResult.Errors.Add(new ValidationFailure("Email", "This user already exists", null));
+            }
             // Copy the validation results into ModelState.
             // ASP.NET uses the ModelState collection to populate
             // error messages in the View.
