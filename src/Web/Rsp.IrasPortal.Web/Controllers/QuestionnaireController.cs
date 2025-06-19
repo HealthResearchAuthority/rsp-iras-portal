@@ -16,12 +16,13 @@ namespace Rsp.IrasPortal.Web.Controllers;
 [Route("[controller]/[action]", Name = "qnc:[action]")]
 [Authorize(Policy = "IsUser")]
 public class QuestionnaireController
-    (
+(
     IApplicationsService applicationsService,
     IRespondentService respondentService,
     IQuestionSetService questionSetService,
+    IRtsService rtsService,
     IValidator<QuestionnaireViewModel> validator
-    ) : Controller
+) : Controller
 {
     // Index view name
     private const string Index = nameof(Index);
@@ -226,7 +227,7 @@ public class QuestionnaireController
 
     [RequestFormLimits(ValueCountLimit = int.MaxValue)]
     [HttpPost]
-    public async Task<IActionResult> SaveResponses(QuestionnaireViewModel model, string categoryId = "", bool submit = false, string saveAndContinue = "False", string saveForLater = "False")
+    public async Task<IActionResult> SaveResponses(QuestionnaireViewModel model, string searchedPerformed, bool autoSearchEnabled, string categoryId = "", bool submit = false, string saveAndContinue = "False", string saveForLater = "False")
     {
         // get the questionnaire from the session
         // and deserialize it
@@ -244,6 +245,51 @@ public class QuestionnaireController
             question.SelectedOption = response?.SelectedOption;
             question.Answers = response?.Answers ?? [];
             question.AnswerText = response?.AnswerText;
+        }
+
+        if (!autoSearchEnabled)
+        {
+            var sponsorOrgInput = questions.FirstOrDefault(q => string.Equals(q.QuestionType, "rts:org_lookup", StringComparison.OrdinalIgnoreCase));
+
+            // Check if the sponsor organisation input is null or empty.
+            if (sponsorOrgInput is not null)
+            {
+                var searchPerformed = searchedPerformed == "searched:true";
+                var selectedOrg = model.SponsorOrganisation;
+                var searchedText = model.SponsorOrgSearchText;
+
+                if (searchPerformed)
+                {
+                    // If a search was performed, only assign if a selection was made
+                    sponsorOrgInput.AnswerText = string.IsNullOrWhiteSpace(selectedOrg) ? string.Empty : selectedOrg;
+                }
+                else
+                {
+                    // No search was performed, check if we have a selected org previously
+                    if (!string.IsNullOrWhiteSpace(selectedOrg))
+                    {
+                        // searched text was cleared or changed
+                        if
+                        (
+                            string.IsNullOrWhiteSpace(searchedText) ||
+                            !selectedOrg.Equals(searchedText, StringComparison.OrdinalIgnoreCase)
+                        )
+                        {
+                            // Cleared search or mismatch
+                            sponsorOrgInput.AnswerText = string.Empty;
+                            model.SponsorOrganisation = string.Empty;
+                        }
+                        else
+                        {
+                            sponsorOrgInput.AnswerText = selectedOrg;
+                        }
+                    }
+                    else
+                    {
+                        sponsorOrgInput.AnswerText = string.Empty;
+                    }
+                }
+            }
         }
 
         // override the submitted model
@@ -414,24 +460,9 @@ public class QuestionnaireController
     [HttpPost]
     public async Task<IActionResult> Validate(QuestionnaireViewModel model)
     {
-        // get the questionnaire from the session
-        // and deserialize it
-        var questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(HttpContext.Session.GetString($"{SessionKeys.Questionnaire}:{model.CurrentStage}")!)!;
-
-        // update the model with the answeres
-        // provided by the applicant
-        foreach (var question in questions)
-        {
-            var response = model.Questions.Find(q => q.Index == question.Index);
-
-            question.SelectedOption = response?.SelectedOption;
-            question.Answers = response?.Answers ?? [];
-            question.AnswerText = response?.AnswerText;
-        }
-
         // override the submitted model
         // with the updated model with answers
-        model.Questions = questions;
+        model.Questions = GetQuestionsFromSession(model);
 
         // validate the questionnaire and save the result in tempdata
         // this is so we display the validation passed message or not
@@ -635,6 +666,91 @@ public class QuestionnaireController
         }
 
         return RedirectToAction("ProjectOverview", "Application");
+    }
+
+    /// <summary>
+    /// Retrieves a list of organisations based on the provided name, role, and optional page size.
+    /// </summary>
+    /// <param name="role">The role of the organisation. Defaults to SponsorRole if not provided.</param>
+    /// <param name="pageSize">Optional page size for pagination.</param>
+    /// <returns>A list of organisation names or an error response.</returns>
+    public async Task<IActionResult> SearchOrganisations(QuestionnaireViewModel model, string? role, int? pageSize)
+    {
+        // override the submitted model
+        // with the updated model with answers
+        model.Questions = GetQuestionsFromSession(model);
+
+        // get the application from the session
+        // to get the applicationId
+        var application = this.GetApplicationFromSession();
+
+        // store the applicationId in the TempData to get in the view
+        TempData.TryAdd(TempDataKeys.ApplicationId, application.ApplicationId);
+
+        // store the irasId in the TempData to get in the view
+        TempData.TryAdd(TempDataKeys.IrasId, application.IrasId);
+
+        // set the previous, current and next stages
+        await SetStage(model.CurrentStage!);
+        model.ReviewAnswers = false;
+
+        TempData.TryAdd(TempDataKeys.SponsorOrgSearched, "searched:true");
+
+        // when search is performed, empty the currently selected organisation
+        model.SponsorOrganisation = string.Empty;
+
+        if (string.IsNullOrEmpty(model.SponsorOrgSearchText) || model.SponsorOrgSearchText.Length < 3)
+        {
+            // add model validation error if search text is empty
+            ModelState.AddModelError("sponsor_org_search", "Please provide 3 or more characters to search sponsor organisation.");
+
+            // Return the view with the model state errors.
+            return View("Index", model);
+        }
+
+        // Use the default sponsor role if no role is provided.
+        role ??= OrganisationRoles.Sponsor;
+
+        // Fetch organisations from the RTS service, with or without pagination.
+        var searchResponse = pageSize is null ?
+            await rtsService.GetOrganisations(model.SponsorOrgSearchText, role) :
+            await rtsService.GetOrganisations(model.SponsorOrgSearchText, role, pageSize.Value);
+
+        // Handle error response from the service.
+        if (!searchResponse.IsSuccessStatusCode || searchResponse.Content == null)
+        {
+            return this.ServiceError(searchResponse);
+        }
+
+        // Convert the response content to a list of organisation names.
+        var sponsorOrganisations = searchResponse.Content;
+
+        TempData.TryAdd(TempDataKeys.SponsorOrganisations, sponsorOrganisations, true);
+
+        return View("Index", model);
+    }
+
+    private List<QuestionViewModel> GetQuestionsFromSession(QuestionnaireViewModel model)
+    {
+        // get the questionnaire from the session
+        // and deserialize it
+        var questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(HttpContext.Session.GetString($"{SessionKeys.Questionnaire}:{model.CurrentStage}")!)!;
+
+        // update the model with the answeres
+        // provided by the applicant
+        foreach (var question in questions)
+        {
+            // find the question in the submitted model
+            // that matches the index
+            var response = model.Questions.Find(q => q.Index == question.Index);
+
+            // update the question with provided answers
+            question.SelectedOption = response?.SelectedOption;
+            question.Answers = response?.Answers ?? [];
+            question.AnswerText = response?.AnswerText;
+        }
+
+        return questions;
     }
 
     /// <summary>

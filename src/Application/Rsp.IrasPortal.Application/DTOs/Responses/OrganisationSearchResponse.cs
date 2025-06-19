@@ -5,13 +5,7 @@
 /// </summary>
 public class OrganisationSearchResponse
 {
-    /// <summary>
-    /// Organisation Id
-    /// </summary>
-    public string Id { get; set; } = null!;
+    public List<OrganisationDto> Organisations { get; set; } = [];
 
-    /// <summary>
-    /// Organisation Name
-    /// </summary>
-    public string Name { get; set; } = null!;
+    public int TotalCount { get; set; }
 }
