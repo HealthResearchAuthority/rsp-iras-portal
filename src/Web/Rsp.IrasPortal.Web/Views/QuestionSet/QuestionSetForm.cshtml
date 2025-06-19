@@ -2,16 +2,14 @@
 @model Rsp.IrasPortal.Application.DTOs.QuestionSetDto
 
 @{
-    var flowStep = ViewBag.Step as string ?? "version";
+	var flowStep = ViewData["Step"] as string ?? "version";
     var versionId = Model.Version?.VersionId ?? "";
     var questions = Model.Questions?.ToList() ?? new List<QuestionDto>();
-    var currentIndex = ViewBag.QuestionIndex as int? ?? (questions.Count > 0 ? questions.Count - 1 : 0);
+	var currentIndex = ViewData["QuestionIndex"] as int? ?? (questions.Count > 0 ? questions.Count - 1 : 0);
 
-    var isEditing = currentIndex < questions.Count;
-    var questionButtonText = isEditing ? "Update this question" : "Add this question";
+	var isEditing = currentIndex < questions.Count;
 
     var headingText = isEditing ? $"Edit Question ID: {questions[currentIndex].QuestionId}" : "Add new question";
-
 
     var validQuestions = questions
         .Where(q =>
@@ -40,7 +38,7 @@
                 <fieldset>
                     <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">Version details</legend>
 
-                    @if (!string.IsNullOrWhiteSpace(Model.Version?.VersionId) && ViewBag.LockVersionId)
+                    @if (!string.IsNullOrWhiteSpace(Model.Version?.VersionId) && Convert.ToBoolean(ViewData["LockVersionId"]))
                     {
                         <p class="govuk-hint">The version ID cannot be changed after this point.</p>
                         <rsp-gds-input asp-for="Version.VersionId" label-text="Version ID" readonly="true" disabled="true"/>
@@ -68,7 +66,6 @@
             {
                 <h2 class="govuk-heading-m govuk-!-margin-top-6">Current questions</h2>
 
-
                 <div class="govuk-grid-column-full">
                     <div class="govuk-table-wrapper">
                         <table class="govuk-table">
@@ -78,15 +75,15 @@
                                 <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Section</th>
                                 <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Question Text</th>
                                 <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Question Type</th>
-                      
-                              
+
+
                                 <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Actions</th>
                             </tr>
                             </thead>
                             <tbody class="govuk-table__body">
-                            @for (var i = 0; i < questions.Count; i++)
+                            @for (var i = 0; i < validQuestions.Count; i++)
                             {
-                                var q = questions[i];
+                                var q = validQuestions[i];
                                 <tr class="govuk-table__row">
                                     <td class="govuk-table__cell">@q.SectionId</td>
                                     <td class="govuk-table__cell">@q.Section</td>
@@ -110,12 +107,12 @@
                 </div>
                 <form asp-action="Save" asp-controller="QuestionSet" method="post">
                     <input type="hidden" name="versionId" value="@versionId"/>
-                    <button type="submit" class="govuk-button govuk-button--primary">Save without Adding Rules Set</button>
+                    <button type="submit" class="govuk-button govuk-button--primary">Save Question Set</button>
                 </form>
             }
 
-            var unsavedQuestion = ViewBag.UnsavedQuestion as QuestionDto;
-            var unsavedAnswers = ViewBag.UnsavedAnswer as List<AnswerDto>;
+            var unsavedQuestion = ViewData["UnsavedQuestion"] as QuestionDto;
+            var unsavedAnswers = ViewData["UnsavedAnswer"] as List<AnswerDto>;
             var question = unsavedQuestion ?? (isEditing ? questions[currentIndex] : new QuestionDto { VersionId = versionId, Answers = unsavedAnswers });
 
             <!-- QUESTION FORM -->
@@ -125,7 +122,7 @@
                 <input type="hidden" name="questionIndex" value="@currentIndex"/>
 
                 <h2 class="govuk-heading-m">@headingText</h2>
-                @await Html.PartialAsync("_QuestionEditor", question, new ViewDataDictionary(ViewData) { { "Index", currentIndex } })
+                @await Html.PartialAsync("_QuestionEditorPartial", question, new ViewDataDictionary(ViewData) { { "Index", currentIndex } })
 
                 <button type="submit" class="govuk-button">@(isEditing ? "Update this question" : "Add this question")</button>
             </form>
@@ -143,7 +140,7 @@
 
             // <h2 class="govuk-heading-m">@headingText</h2>
 
-            var unsavedQuestion = ViewBag.UnsavedQuestion as QuestionDto;
+            var unsavedQuestion = ViewData["UnsavedQuestion"] as QuestionDto;
             var question = unsavedQuestion ?? (isEditing ? questions[currentIndex] : new QuestionDto { VersionId = versionId });
 
             var answerViewData = new ViewDataDictionary(ViewData)

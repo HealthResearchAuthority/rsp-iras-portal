@@ -3,6 +3,26 @@
 @{
     var index = ViewData["Index"] as int? ?? 0;
     var prefix = $"Questions[{index}]";
+
+	var questionType = Model.QuestionType?.ToLowerInvariant();
+	var dataTypeOptions = new List<GdsOption>();
+
+	if (questionType == "look-up list")
+	{
+		dataTypeOptions = new List<GdsOption>
+		{
+			new() { Value = "checkbox", Label = "Checkbox" },
+			new() { Value = "radio button", Label = "Radio button" }
+		};
+	}
+	else if (questionType == "text")
+	{
+		dataTypeOptions = new List<GdsOption>
+		{
+			new() { Value = "text", Label = "Text" },
+			new() { Value = "email", Label = "Email" }
+		};
+	}
 }
 
 <!-- Hidden field to bind VersionId per question -->
@@ -28,14 +48,14 @@
                          })"
                 additional-attributes='new Dictionary<string, string> { { "data-conditional-target", "question-type" } }'/>
 <div class="conditional-datatype" data-index="@index">
-    <rsp-gds-select asp-for="DataType"
-                    name="@($"{prefix}.DataType")"
-                    label-text="Data Type"
-                    options="new List<GdsOption>()"
-                    include-default-option="true"
-                    default-option-text="Please select a data type">
-    </rsp-gds-select>
-</div>
-
+        <rsp-gds-select asp-for="DataType"
+                        name="@($"{prefix}.DataType")"
+                        label-text="Data Type"
+                        options="dataTypeOptions"
+                        include-default-option="true"
+                        default-option-text="Please select a data type">
+        </rsp-gds-select>
+    </div>
+    
 
 

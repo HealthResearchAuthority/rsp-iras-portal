@@ -162,7 +162,7 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
             Version = new VersionDto()
         };
 
-        ViewBag.Step = "version";
+        ViewData["Step"] = "version";
         return View("QuestionSetForm", model);
     }
 
@@ -175,7 +175,7 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         if (string.IsNullOrWhiteSpace(versionId))
         {
             ModelState.AddModelError("Version.VersionId", "Enter a version ID");
-            ViewBag.Step = "version";
+            ViewData["Step"] = "version";
             return View("QuestionSetForm", model);
         }
 
@@ -189,7 +189,7 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
             if (versions.Any(v => v.VersionId.Equals(versionId, StringComparison.OrdinalIgnoreCase)))
             {
                 ModelState.AddModelError("Version.VersionId", "A question set with this version ID already exists.");
-                ViewBag.Step = "version";
+                ViewData["Step"] = "version";
                 ViewBag.LockVersionId = false;
                 return View("QuestionSetForm", model);
             }
@@ -198,15 +198,15 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         model.Version.CreatedAt = DateTime.UtcNow;
         model.Version.IsDraft = false;
         model.Version.IsPublished = false;
-        ViewBag.LockVersionId = true;
+        ViewData["LockVersionId"] = true;
 
         // Save version separately in session
         HttpContext.Session.SetString($"questionset:{versionId}:version", JsonSerializer.Serialize(model.Version));
         HttpContext.Session.SetString($"questionset:{versionId}:questions",
             JsonSerializer.Serialize(new List<QuestionDto>()));
 
-        ViewBag.Step = "questions";
-        ViewBag.QuestionIndex = 0;
+        ViewData["Step"] = "questions";
+        ViewData["QuestionIndex"] = 0;
 
         return View("QuestionSetForm", model with { Questions = [] });
     }
@@ -252,9 +252,9 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
 
         if (!ModelState.IsValid)
         {
-            ViewBag.Step = "questions";
-            ViewBag.QuestionIndex = questionIndex;
-            ViewBag.UnsavedQuestion = question;
+            ViewData["Step"] = "questions";
+            ViewData["QuestionIndex"] = questionIndex;
+            ViewData["UnsavedQuestion"] = question;
 
             var versionJson = HttpContext.Session.GetString($"questionset:{versionId}:version");
             var version = string.IsNullOrWhiteSpace(versionJson) ? new VersionDto { VersionId = versionId } : JsonSerializer.Deserialize<VersionDto>(versionJson!)!;
@@ -269,13 +269,10 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         questions[questionIndex] = question;
         HttpContext.Session.SetString($"questionset:{versionId}:questions", JsonSerializer.Serialize(questions));
 
-        ViewBag.Step = "questions";
-       
-
         var versionFinal = JsonSerializer.Deserialize<VersionDto>(HttpContext.Session.GetString($"questionset:{versionId}:version")!);
 
-        ViewBag.Step = question.QuestionType?.ToLowerInvariant() == "look-up list" ? "answers" : "questions";
-        ViewBag.QuestionIndex = question.QuestionType?.ToLowerInvariant() == "look-up list" ? questionIndex : questionIndex + 1;
+        ViewData["Step"] = question.QuestionType?.ToLowerInvariant() == "look-up list" ? "answers" : "questions";
+        ViewData["QuestionIndex"] = question.QuestionType?.ToLowerInvariant() == "look -up list" ? questionIndex : questionIndex + 1;
 
         return View("QuestionSetForm", new QuestionSetDto
         {
@@ -309,8 +306,8 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
             Questions = questions
         };
 
-        ViewBag.Step = "questions";
-        ViewBag.QuestionIndex = questionIndex;
+        ViewData["Step"] = "questions";
+        ViewData["QuestionIndex"] = questionIndex;
 
         return View("QuestionSetForm", model);
     }
@@ -336,10 +333,9 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         {
             var selected = answers.FirstOrDefault(a => a.AnswerId == originalAnswerId);
 
-            ViewBag.Step = "answers";
-            ViewBag.QuestionIndex = questionIndex;
-            ViewBag.UnsavedQuestion = question;
-
+            ViewData["Step"] = "answers";
+            ViewData["QuestionIndex"] = questionIndex;
+            ViewData["UnsavedQuestion"] = question;
             ViewData[$"SelectedAnswerId_{questionIndex}"] = selected?.AnswerId;
             ViewData["IsEditingAnswer"] = true;
             ViewData["OriginalAnswerId"] = originalAnswerId;
@@ -358,10 +354,9 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
 
         if (!ModelState.IsValid)
         {
-            ViewBag.Step = "answers";
-            ViewBag.QuestionIndex = questionIndex;
-            ViewBag.UnsavedQuestion = question;
-
+            ViewData["Step"] = "answers";
+            ViewData["QuestionIndex"] = questionIndex;
+            ViewData["UnsavedQuestion"] = question;
             ViewData[$"SelectedAnswerId_{questionIndex}"] = answer.AnswerId;
             ViewData["IsEditingAnswer"] = !string.IsNullOrWhiteSpace(originalAnswerId);
             ViewData["OriginalAnswerId"] = originalAnswerId;
@@ -385,8 +380,8 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         question.Answers = answers;
         HttpContext.Session.SetString($"questionset:{versionId}:{questionIndex}:questionanswers", JsonSerializer.Serialize(answers));
 
-        ViewBag.Step = "answers";
-        ViewBag.QuestionIndex = questionIndex;
+        ViewData["Step"] = "answers";
+        ViewData["QuestionIndex"] = questionIndex;
 
         return View("QuestionSetForm", new QuestionSetDto
         {
@@ -411,8 +406,8 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         question.Answers = answers;
         questions[questionIndex] = question;
 
-        ViewBag.Step = "questions";
-        ViewBag.QuestionIndex = questionIndex + 1;
+        ViewData["Step"] = "questions";
+        ViewData["QuestionIndex"] = questionIndex + 1;
 
         HttpContext.Session.SetString($"questionset:{versionId}:questions", JsonSerializer.Serialize(questions));
         HttpContext.Session.SetString($"questionset:{versionId}:{questionIndex}:questionanswers", JsonSerializer.Serialize(answers));
@@ -435,17 +430,16 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
 
         if (questionIndex <= 0)
         {
-            ViewBag.Step = "version";
-            ViewBag.QuestionIndex = 0;
+            ViewData["Step"] = "version";
+            ViewData["QuestionIndex"] = 0;
         }
         else
         {
-            ViewBag.QuestionIndex = questionIndex;
-            ViewBag.Step = questions[questionIndex].Answers.Any() ? "answers" : "questions";
-        
+            ViewData["Step"] = questions[questionIndex].Answers.Any() ? "answers" : "questions";
+            ViewData["QuestionIndex"] = questionIndex;
         }
 
-        ViewBag.LockVersionId = true;
+        ViewData["LockVersionId"] = true;
 
         return View("QuestionSetForm", new QuestionSetDto
         {
