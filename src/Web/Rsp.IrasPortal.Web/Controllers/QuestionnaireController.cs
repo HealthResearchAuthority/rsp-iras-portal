@@ -245,6 +245,10 @@ public class QuestionnaireController
             question.SelectedOption = response?.SelectedOption;
             question.Answers = response?.Answers ?? [];
             question.AnswerText = response?.AnswerText;
+            // update the date fields if they are present
+            question.Day = response?.Day;
+            question.Month = response?.Month;
+            question.Year = response?.Year;
         }
 
         if (!autoSearchEnabled)
