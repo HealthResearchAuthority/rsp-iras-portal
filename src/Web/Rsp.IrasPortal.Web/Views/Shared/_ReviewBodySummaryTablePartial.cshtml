@@ -109,7 +109,7 @@
                     <b>Last updated</b>
                 </td>
                 <td class="govuk-table__cell">
-					@Model.ReviewBodyModel.UpdatedDate.ToString("dd MMMM yyyy HH:mm")
+					@Model.ReviewBodyModel.UpdatedDate?.ToString("dd MMMM yyyy HH:mm")
 					<input type="hidden" asp-for="ReviewBodyModel.UpdatedDate" name="UpdatedDate" value="@Model.ReviewBodyModel.UpdatedDate" />
                 </td>
                 <td class="govuk-table__cell govuk-table__cell--numeric">

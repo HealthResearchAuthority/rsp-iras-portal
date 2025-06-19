@@ -3,6 +3,8 @@ using Mapster;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.FeatureManagement;
+using Microsoft.Extensions.Azure;
+using Azure.Storage.Blobs;
 using Rsp.IrasPortal.Application.Configuration;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Configuration.AppConfiguration;
@@ -50,6 +52,8 @@ builder.Services.Configure<AppSettings>(builder.Configuration.GetSection(nameof(
 var appSettingsSection = configuration.GetSection(nameof(AppSettings));
 var appSettings = appSettingsSection.Get<AppSettings>()!;
 
+services.AddSingleton(appSettings);
+
 // Creating a feature manager without the use of DI. Injecting IFeatureManager
 // via DI is appropriate in consturctor methods. At the startup, it's
 // not recommended to call services.BuildServiceProvider and retreive IFeatureManager
@@ -78,7 +82,7 @@ else
 
 services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(15);
+    options.IdleTimeout = TimeSpan.FromSeconds(appSettings.SessionTimeout);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
@@ -111,6 +115,11 @@ services.AddCustomHealthChecks(appSettings);
 // header to be propagated to the httpclient
 // to be sent in the request for external api calls
 services.AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
+
+services.AddAzureClients(azure =>
+{
+    azure.AddBlobServiceClient(builder.Configuration.GetRequiredSection("AppSettings:Azure:DocumentStorage:Blob"));
+});
 
 services
     .AddJwksManager()
@@ -159,7 +168,7 @@ app.UseHeaderPropagation();
 // message template for request
 app.UseRequestTracing();
 
-app.MapShortCircuit(404, "robots.txt", "favicon.ico", "*.css");
+app.MapShortCircuit(StatusCodes.Status404NotFound, "robots.txt", "favicon.ico", "*.css");
 
 app
     .UseRouting()

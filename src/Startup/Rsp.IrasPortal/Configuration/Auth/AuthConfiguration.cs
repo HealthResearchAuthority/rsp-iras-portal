@@ -3,7 +3,6 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
@@ -19,7 +18,7 @@ public static class AuthConfiguration
 {
     private struct Roles
     {
-        public const string admin = nameof(admin);
+        public const string systemAdministrator = "system_administrator";
         public const string user = nameof(user);
         public const string reviewer = nameof(reviewer);
     };
@@ -36,8 +35,12 @@ public static class AuthConfiguration
             (
                 options =>
                 {
+                    // Default scheme is cookie authentication
                     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                    options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+
+                    // Default scheme and challenge scheme are same to handle the session and auth
+                    // cookie timeout using the cookie authentication handler
+                    options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 }
             )
             .AddCookie
@@ -55,10 +58,18 @@ public static class AuthConfiguration
                             context.HttpContext.Items[ContextItemKeys.BearerToken] = context.Properties.GetTokenValue(ContextItemKeys.AcessToken);
 
                             return Task.CompletedTask;
+                        },
+
+                        OnRedirectToLogin = context =>
+                        {
+                            context.Response.Redirect("/auth/timedout");
+                            return Task.CompletedTask;
                         }
                     };
 
-                    options.ExpireTimeSpan = TimeSpan.FromMinutes(15);
+                    options.LoginPath = "/";
+                    options.LogoutPath = "/";
+                    options.ExpireTimeSpan = TimeSpan.FromSeconds(appSettings.AuthSettings.AuthCookieTimeout);
                     options.SlidingExpiration = true;
                     options.AccessDeniedPath = "/Forbidden";
                 }
@@ -82,15 +93,17 @@ public static class AuthConfiguration
                     options.UsePkce = false;
                     options.ClaimActions.MapUniqueJsonKey(ClaimTypes.Name, "given_name");
 
-                    options.Events.OnAuthorizationCodeReceived = context =>
-                    {
-                        //context.TokenEndpointResponse.AccessToken =
-                        return Task.CompletedTask;
-                    };
-
                     options.Events.OnTokenValidated = context =>
                     {
+                        // this key is used to indicate that the user is logged in for the first time
+                        // will be used to update the LastLogin during the claims transformation
+                        // to indicate when the user was logged in last time.
                         context.HttpContext.Session.SetString(SessionKeys.FirstLogin, bool.TrueString);
+
+                        // this key is used to check if the session is alive in the middleware
+                        // and signout the user if the session is expired
+                        context.HttpContext.Session.SetString(SessionKeys.Alive, bool.TrueString);
+
                         return Task.CompletedTask;
                     };
                 }
@@ -112,8 +125,12 @@ public static class AuthConfiguration
         services
             .AddAuthentication(options =>
             {
+                // Default scheme is cookie authentication
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+
+                // Default scheme and challenge scheme are same to handle the session and auth
+                // cookie timeout using the cookie authentication handler
+                options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             })
             .AddCookie(options =>
             {
@@ -128,10 +145,18 @@ public static class AuthConfiguration
                         context.HttpContext.Items[ContextItemKeys.BearerToken] = context.Properties.GetTokenValue(ContextItemKeys.IdToken);
 
                         return Task.CompletedTask;
+                    },
+
+                    OnRedirectToLogin = context =>
+                    {
+                        context.Response.Redirect("/auth/timedout");
+                        return Task.CompletedTask;
                     }
                 };
 
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(15);
+                options.LoginPath = "/";
+                options.LogoutPath = "/";
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(appSettings.OneLogin.AuthCookieTimeout);
                 options.SlidingExpiration = true;
                 options.AccessDeniedPath = "/Forbidden";
             })
@@ -190,6 +215,20 @@ public static class AuthConfiguration
                     context.TokenEndpointRequest.ClientAssertionType = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer";
                     return Task.CompletedTask;
                 };
+
+                options.Events.OnTokenValidated = context =>
+                {
+                    // this key is used to indicate that the user is logged in for the first time
+                    // will be used to update the LastLogin during the claims transformation
+                    // to indicate when the user was logged in last time.
+                    context.HttpContext.Session.SetString(SessionKeys.FirstLogin, bool.TrueString);
+
+                    // this key is used to check if the session is alive in the middleware
+                    // and signout the user if the session is expired
+                    context.HttpContext.Session.SetString(SessionKeys.Alive, bool.TrueString);
+
+                    return Task.CompletedTask;
+                };
             });
 
         ConfigureAuthorization(services);
@@ -207,7 +246,7 @@ public static class AuthConfiguration
         services
             .AddAuthorizationBuilder()
             .AddPolicy("IsReviewer", policy => policy.RequireRole(Roles.reviewer))
-            .AddPolicy("IsAdmin", policy => policy.RequireRole(Roles.admin))
+            .AddPolicy("IsSystemAdministrator", policy => policy.RequireRole(Roles.systemAdministrator))
             .AddPolicy("IsUser", policy => policy.RequireRole(Roles.user))
             .SetDefaultPolicy(policy);
     }

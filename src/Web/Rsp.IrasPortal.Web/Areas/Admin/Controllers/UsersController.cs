@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Net;
 using FluentValidation;
+using FluentValidation.Results;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,7 +18,7 @@ namespace Rsp.IrasPortal.Web.Areas.Admin.Controllers;
 
 [Area("Admin")]
 [Route("[area]/[controller]/[action]", Name = "admin:[action]")]
-[Authorize(Policy = "IsAdmin")]
+[Authorize(Policy = "IsSystemAdministrator")]
 [FeatureGate(Features.Admin)]
 public class UsersController(IUserManagementService userManagementService, IValidator<UserViewModel> validator) : Controller
 {
@@ -137,8 +138,16 @@ public class UsersController(IUserManagementService userManagementService, IVali
         var context = new ValidationContext<UserViewModel>(model);
         var validationResult = await validator.ValidateAsync(context);
 
-        if (!validationResult.IsValid)
+        var response = await userManagementService.GetUser(null, model.Email);
+
+        var emailExists = response.IsSuccessStatusCode && response.Content != null;
+
+        if (!validationResult.IsValid || emailExists)
         {
+            if (emailExists)
+            {
+                validationResult.Errors.Add(new ValidationFailure("Email", "This user already exists", null));
+            }
             // Copy the validation results into ModelState.
             // ASP.NET uses the ModelState collection to populate
             // error messages in the View.

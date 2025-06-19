@@ -5,6 +5,8 @@ public class QuestionnaireViewModel
     public bool ReviewAnswers { get; set; }
     public string CurrentStage { get; set; } = "";
     public List<QuestionViewModel> Questions { get; set; } = [];
+    public string? SponsorOrganisation { get; set; }
+    public string? SponsorOrgSearchText { get; set; }
 
     public List<object> GetConditionalRules()
     {
@@ -15,5 +17,19 @@ public class QuestionnaireViewModel
                 q.QuestionId,
                 q.Rules
             })];
+    }
+
+    public string? GetShortProjectTitle()
+    {
+        return Questions
+            .FirstOrDefault(q => q.QuestionText.Equals("Short project title", StringComparison.OrdinalIgnoreCase))?.AnswerText;
+    }
+
+    public string? GetFirstCategory()
+    {
+        return Questions
+        .GroupBy(q => q.Section)
+        .OrderBy(g => g.First().Sequence)
+        .FirstOrDefault()?.FirstOrDefault()?.Category;
     }
 }

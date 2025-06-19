@@ -44,4 +44,14 @@ public class AppSettings
     /// OneLogin configuration
     /// </summary>
     public OneLoginConfiguration OneLogin { get; set; } = null!;
+
+    /// <summary>
+    /// Timeout for the session in seconds.
+    /// </summary>
+    public uint SessionTimeout { get; set; }
+
+    /// <summary>
+    /// Number of minutes before the session expires to show a warning to the user.
+    /// </summary>
+    public uint WarningBeforeSeconds { get; set; }
 }

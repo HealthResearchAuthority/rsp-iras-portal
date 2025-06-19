@@ -98,7 +98,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
             .ReturnsAsync(new ValidationResult());
 
         // Act
-        var result = await Sut.SaveResponses(model, submit: true);
+        var result = await Sut.SaveResponses(model, "", true, submit: true);
 
         // Assert
 
@@ -201,7 +201,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
             .ReturnsAsync(new ValidationResult());
 
         // Act
-        var result = await Sut.SaveResponses(model, categoryId, submit, saveAndContinue);
+        var result = await Sut.SaveResponses(model, "", true, categoryId, submit, saveAndContinue);
 
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
@@ -296,7 +296,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
             .ReturnsAsync(new ValidationResult());
 
         // Act
-        var result = await Sut.SaveResponses(model, categoryId, submit, saveAndContinue);
+        var result = await Sut.SaveResponses(model, "", true, categoryId, submit, saveAndContinue);
 
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
@@ -326,8 +326,8 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
 
         var questions = new List<QuestionViewModel>
     {
-        new() { Index = 0, QuestionId = "Q1", SelectedOption = "Option1" },
-        new() { Index = 1, QuestionId = "Q2", AnswerText = "Answer2" }
+        new() { Index = 0, QuestionId = "Q1", QuestionText = "Participating nations", SelectedOption = "Option1", Category = "Category1" },
+        new() { Index = 1, QuestionId = "Q2", QuestionText = "Short project title", AnswerText = "Answer2", Category = "Category2" }
     };
 
         var application = new IrasApplicationResponse
@@ -341,7 +341,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
     {
         { $"{SessionKeys.Application}", JsonSerializer.SerializeToUtf8Bytes(application) },
         { $"{SessionKeys.Questionnaire}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(questions) },
-        { "ShortProjectTitle", Encoding.UTF8.GetBytes(shortProjectTitle) }
+        { "Short Project Title", Encoding.UTF8.GetBytes(shortProjectTitle) }
     };
 
         session
@@ -394,7 +394,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
             .ReturnsAsync(new ValidationResult());
 
         // Act
-        var result = await Sut.SaveResponses(model, categoryId, submit, saveAndContinue, saveForLater);
+        var result = await Sut.SaveResponses(model, "", true, categoryId, submit, saveAndContinue, saveForLater);
 
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
@@ -493,7 +493,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
             .ReturnsAsync(new ValidationResult());
 
         // Act
-        var result = await Sut.SaveResponses(model, categoryId, false, bool.FalseString);
+        var result = await Sut.SaveResponses(model, categoryId, true, bool.FalseString);
 
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
@@ -534,7 +534,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
 
         var sessionData = new Dictionary<string, byte[]?>
         {
-            { $"{SessionKeys.Application}", JsonSerializer.SerializeToUtf8Bytes(application) },
+            { SessionKeys.Application, JsonSerializer.SerializeToUtf8Bytes(application) },
             { $"{SessionKeys.Questionnaire}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(questions) }
         };
 
@@ -595,7 +595,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
             .ReturnsAsync(new ValidationResult());
 
         // Act
-        var result = await Sut.SaveResponses(model, categoryId, submit, saveAndContinue);
+        var result = await Sut.SaveResponses(model, "", true, categoryId, submit, saveAndContinue);
 
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
@@ -607,5 +607,120 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
                r.ApplicationId == "App1" &&
                r.RespondentId == "RespondentId1" &&
                r.RespondentAnswers.Count == 2)), Times.Once);
+    }
+
+    [Theory]
+    [InlineData("searched:true", "Org123", "", "Org123")] // Search performed, org selected
+    [InlineData("searched:true", "", "", "")] // Search performed, no org selected
+    [InlineData("", "Org123", "Org123", "Org123")] // No search, org selected, search text matches
+    [InlineData("", "Org123", "Different", "")] // No search, org selected, search text does not match
+    [InlineData("", "Org123", "", "")] // No search, org selected, search text empty
+    [InlineData("", "", "SomeText", "")] // No search, no org selected
+    public async Task SaveResponses_SponsorOrgLookup_UpdatesAnswerText_Correctly
+    (
+        string searchedPerformed,
+        string sponsorOrganisation,
+        string sponsorOrgSearchText,
+        string expectedAnswerText
+    )
+    {
+        // Arrange
+        var sponsorQuestion = new QuestionViewModel
+        {
+            Index = 0,
+            QuestionId = "Q1",
+            QuestionType = "rts:org_lookup",
+            AnswerText = ""
+        };
+
+        var model = new QuestionnaireViewModel
+        {
+            CurrentStage = "A",
+            Questions = [sponsorQuestion],
+            SponsorOrganisation = sponsorOrganisation,
+            SponsorOrgSearchText = sponsorOrgSearchText
+        };
+
+        var application = new IrasApplicationResponse
+        {
+            ApplicationId = "App1"
+        };
+
+        var session = new Mock<ISession>();
+        var sessionData = new Dictionary<string, byte[]?>
+        {
+            { SessionKeys.Application, JsonSerializer.SerializeToUtf8Bytes(application) },
+            { $"{SessionKeys.Questionnaire}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(model.Questions) }
+        };
+
+        session
+            .Setup(s => s.TryGetValue(It.IsAny<string>(), out It.Ref<byte[]?>.IsAny))
+            .Returns((string key, out byte[]? value) =>
+            {
+                if (sessionData.ContainsKey(key))
+                {
+                    value = sessionData[key];
+                    return true;
+                }
+                value = null;
+                return false;
+            });
+
+        var context = new DefaultHttpContext
+        {
+            Session = session.Object
+        };
+
+        context.Items[ContextItemKeys.RespondentId] = "RespondentId1";
+        Sut.ControllerContext = new ControllerContext { HttpContext = context };
+        Sut.TempData = new TempDataDictionary(context, Mock.Of<ITempDataProvider>());
+
+        Mocker
+            .GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
+
+        Mocker
+            .GetMock<IQuestionSetService>()
+            .Setup(q => q.GetQuestionSections())
+            .ReturnsAsync(new ServiceResponse<IEnumerable<QuestionSectionsResponse>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = [new QuestionSectionsResponse { QuestionCategoryId = "A", SectionId = "A" }]
+            });
+
+        Mocker
+            .GetMock<IQuestionSetService>()
+            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new QuestionSectionsResponse { QuestionCategoryId = "A", SectionId = "A" }
+            });
+
+        Mocker
+            .GetMock<IQuestionSetService>()
+            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new QuestionSectionsResponse { QuestionCategoryId = "A", SectionId = "A" }
+            });
+
+        Mocker
+            .GetMock<IRespondentService>()
+            .Setup(s => s.SaveRespondentAnswers(It.IsAny<RespondentAnswersRequest>()))
+            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+
+        // Act
+        var result = await Sut.SaveResponses(model, searchedPerformed, false);
+
+        // Assert
+        Mocker
+           .GetMock<IRespondentService>()
+           .Verify(s => s.SaveRespondentAnswers(It.Is<RespondentAnswersRequest>(r =>
+               r.ApplicationId == "App1" &&
+               r.RespondentId == "RespondentId1" &&
+               r.RespondentAnswers[0].AnswerText == expectedAnswerText)), Times.Once);
     }
 }

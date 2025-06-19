@@ -1,15 +1,22 @@
 ﻿@using System.Security.Claims
-@using Rsp.IrasPortal.Application.Constants;
+@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Application.Configuration
+@inject AppSettings appSettings
+@inject IHttpContextAccessor httpContextAccessor
 
 @{
     Layout = null;
 
+    var serviceName = "Plan and manage healthcare research";
+
     var active = ViewBag.Active as string;
     var pageTitle = ViewBag.Title as string;
+
+    pageTitle = string.IsNullOrWhiteSpace(pageTitle) ? serviceName : $"{pageTitle} - {serviceName}";
 }
 
 <!DOCTYPE html>
-<html lang="en" class="govuk-template">
+<html lang="en-gb" class="govuk-template">
 
 <head>
     <meta charset="utf-8" />
@@ -26,12 +33,36 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/govuk-frontend.min.css" />
     <link rel="stylesheet" href="~/css/main.css" asp-append-version="true" />
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script src="~/js/sessionTimeout.js"></script>
 </head>
 
 <body class="govuk-template__body">
     <script>
         document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');
     </script>
+
+    <authorized auth-params="new()">
+        @* Only if the user is authorized *@
+        <script>
+            // On document ready
+            $(function () {
+                // Store the session timeout expiry in localStorage (current time + session timeout in ms)
+                // This is used to synchronize session timeout across multiple tabs/windows
+                localStorage.setItem('shared-session-timeout', (Date.now() + @appSettings.SessionTimeout * 1000).toString());
+
+                // Initialize the session timeout warning logic
+                // Parameters: session timeout (seconds), warning before (seconds), and timeout redirect URL
+                initSessionTimeout(@appSettings.SessionTimeout, @appSettings.WarningBeforeSeconds, '@Url.RouteUrl("auth:timedout")');
+            });
+        </script>
+    </authorized>
+
+    <authorized auth-params="new(false)">
+        <script>
+            localStorage.removeItem("shared-session-timeout");
+        </script>
+    </authorized>
 
     <header class="govuk-header govuk-header--full-width-border" data-module="govuk-header">
         <div class="govuk-header__container govuk-width-container">
@@ -87,7 +118,7 @@
                             </authorized>
                         </feature>
 
-                        <authorized auth-params="@new(Roles:"admin")">
+                        <authorized auth-params="@new(Roles:"system_administrator")">
                             <li class="govuk-service-navigation__item">
                                 <a class="govuk-service-navigation__link"
                                    asp-route="qsc:index">
@@ -125,6 +156,15 @@
 
     <div class="govuk-width-container">
         <main class="govuk-main-wrapper" id="main-content">
+
+            @*Render the optional BackNavigation section if it exists*@
+            @RenderSection("BackNavigation", required: false)
+
+            @*Render the session timeout warning partial view, this will work with both javaScript enbaled and disabled*@
+            <partial name="_SessionTimeoutWarning" />
+
+            @*Render the main body content of the page, but not the named sections
+                like the BackNavigation, so that it appears above the session time out banner*@
             @RenderBody()
         </main>
     </div>
@@ -149,10 +189,16 @@
         </div>
     </footer>
     <script type="module" src="~/js/govuk-frontend.min.js"></script>
-    <script type="module">
-        import { initAll } from '/js//govuk-frontend.min.js'
-        initAll()
+<script type="module">
+        import { initAll } from '/js//govuk-frontend.min.js';
+        initAll();
     </script>
+	<!-- Required styles and scripts -->
+	<link rel="stylesheet" href="~/assets/css/accessible-autocomplete.min.css" />
+	<script src="~/lib/jquery/dist/jquery.js"></script>
+	<script src="~/assets/js/accessible-autocomplete.min.js"></script>
+	<script src="~/js/accessible-autocomplete-wrapper.js"></script>
+
 </body>
 
 @await RenderSectionAsync("FooterResources", false)

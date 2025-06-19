@@ -3,17 +3,22 @@
 @using Rsp.IrasPortal.Application.DTOs.Responses;
 @using System.Linq
 
-<partial name="_BackNavigation" model="@("acc:home", "Back", new Dictionary<string, string>())" />
+@* @section is added for the back button, so that we can render something below the back button
+    and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
+    the named section *@
+@section BackNavigation {
+    <partial name="_BackNavigation" model="@("acc:home", "Back", new Dictionary<string, string>())" />
+}
 
 <div class="govuk-grid-row">
-	<div class="govuk-grid-column-full">
-		<authorized auth-params="@new(Roles:"user,admin,reviewer")">
+    <div class="govuk-grid-column-full">
+        <authorized auth-params="@new(Roles:"user,system_administrator,reviewer")">
 
-			<div class="govuk-grid-row">
-				<div class="govuk-grid-column-two-thirds">
-					<h2 class="govuk-heading-l" id="title">My research</h2>
-				</div>
-			</div>
+            <div class="govuk-grid-row">
+                <div class="govuk-grid-column-two-thirds">
+                    <h2 class="govuk-heading-l" id="title">My research</h2>
+                </div>
+            </div>
 
 			@if (Model != null && Model.Any())
 			{

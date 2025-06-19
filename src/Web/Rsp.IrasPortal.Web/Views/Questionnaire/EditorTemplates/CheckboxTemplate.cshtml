@@ -1,6 +1,5 @@
-﻿@using Microsoft.AspNetCore.Mvc.ModelBinding
-@using Rsp.IrasPortal.Web.Models
-@using Rsp.IrasPortal.Web.ViewHelpers
+﻿@using Microsoft.AspNetCore.Html
+@using Microsoft.AspNetCore.Mvc.ModelBinding
 @model QuestionnaireViewModel
 
 @{
@@ -14,51 +13,23 @@
     var conditional = !question.IsMandatory && rules.Count > 0;
     var parents = conditional ? string.Join(',', rules.Select(rule => rule.ParentQuestionId)) : "";
     var questionId = conditional ? question.QuestionId : "";
+    var hintHtml = rules.Count > 0
+        ? new HtmlString("<div class='govuk-hint'>" +
+                         string.Join("", rules.Select(r => $"<p>{r.Description}</p>")) +
+                         "</div>")
+        : HtmlString.Empty;
 }
 
-<div id="Questions[@index].Answers"
-     class="govuk-form-group"
-     conditional="conditional"
-     error-class-for="Questions[index].Answers"
-     data-parents="@parents"
-     data-questionId="@questionId">
-
-    <govuk-fieldset>
-        <govuk-fieldset-legend class="govuk-fieldset__legend--s">
-            @question.QuestionText
-        </govuk-fieldset-legend>
-
-        <div id="rule-hint" class="govuk-hint">
-            @if (rules.Count > 0)
-            {
-                @foreach (var rule in rules)
-                {
-                    <p>
-                        @rule.Description
-                    </p>
-                }
-            }
-        </div>
-
-        @if (fieldHasErrors)
-        {
-            @Html.BuildValidationMessage(question.Rules, errorKey, validationMessage);
-        }
-
-        <div class="govuk-checkboxes" data-module="govuk-checkboxes">
-            @foreach (var (answer, ansIndex) in question.Answers.Select((answer, ansIndex) => (answer, ansIndex)))
-            {
-                <div class="govuk-checkboxes__item">
-                    @Html.HiddenFor(model => model.Questions[index].Answers[ansIndex].AnswerId)
-                    @Html.HiddenFor(model => model.Questions[index].Answers[ansIndex].AnswerText)
-                    <input id="@(question.QuestionId)_@(answer.AnswerId)"
-                           class="govuk-checkboxes__input"
-                           type="checkbox"
-                           asp-for="Questions[index].Answers[ansIndex].IsSelected" />
-
-                    @Html.Label(question.QuestionId + "_" + answer.AnswerId, answer.AnswerText, new { @class = "govuk-checkboxes__label govuk-label" })
-                </div>
-            }
-        </div>
-    </govuk-fieldset>
-</div>
+<rsp-gds-checkbox-group asp-for="Questions[@index].Answers"
+                        label-text="@question.QuestionText"
+                        item-label-property="AnswerText"
+                        item-value-property="IsSelected"
+                        item-hidden-properties="AnswerId,AnswerText"
+                        conditional-field="@conditional"
+                        conditional-class="conditional govuk-checkboxes__conditional"
+                        dataparents-attr="@parents"
+                        dataquestionid-attr="@questionId"
+                        validation-message="@validationMessage"
+                        hint-html="@hintHtml"
+                        legend-class="govuk-fieldset__legend--s"
+                        id="Questions[@index]_Answers"/>

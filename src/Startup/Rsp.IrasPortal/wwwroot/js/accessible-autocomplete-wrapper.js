@@ -1,23 +1,21 @@
-﻿/// <reference path="../lib/jquery/dist/jquery.js" />
-/// <reference path="../assets/js/accessible-autocomplete.min.js" />
-
-/**
+﻿/**
  * Initializes the accessible autocomplete functionality for a given input field.
  *
  * @param {string} autoCompleteInputId - The ID of the input field for autocomplete.
  * @param {string} inputIdForSubmission - The ID of the hidden input field to store the selected value.
  * @param {string} defaultValue - The default value to prefill in the autocomplete input.
  * @param {string} apiUrl - The API endpoint to fetch autocomplete suggestions.
+ * @param {string} containerId - The ID of the container to render the autocomplete component into.
  */
-function initAutocomplete(autoCompleteInputId, inputIdForSubmission, defaultValue, apiUrl) {
+function initAutocomplete(autoCompleteInputId, inputIdForSubmission, defaultValue, apiUrl, containerId, autoCompleteEnabledId) {
     const beforeSuggestionsText = 'Suggestions'; // Message displayed before the suggestions.
     const afterSuggestionsText = 'Continue entering to improve suggestions'; // Message displayed after the suggestions.
     const noResultsText = 'No suggestions found.'; // Message displayed when no suggestions are found.
     let resultsFound = false; // Flag to indicate if results were found.
-    let requestToken = 0;       // A counter to identify the most recent AJAX request
+    let requestToken = 0; // A counter to identify the most recent AJAX request
 
     accessibleAutocomplete({
-        element: document.querySelector('#autocomplete-container'), // The container element for the autocomplete.
+        element: document.getElementById(containerId), // The container element for the autocomplete.
         id: autoCompleteInputId, // The ID for the autocomplete input field.
         minLength: 1, // Minimum number of characters required to trigger suggestions.
         autoselect: false, // Prevents automatic selection of the first suggestion.
@@ -31,8 +29,9 @@ function initAutocomplete(autoCompleteInputId, inputIdForSubmission, defaultValu
             requestToken++; // Increment the token for each new request
             const currentToken = requestToken; // Capture this request's token
 
-            if (query.length < 3) {  // If fewer than 3 characters, hide menu and show guidance
-                populateResults([]);
+            // If fewer than 3 characters, hide menu and show guidance
+            if (query.length < 3) {
+                populateResults([]); // No suggestions to populate
                 $(".autocomplete__menu").attr('data-before-suggestions', ''); // Clear message before suggestions.
                 $(".autocomplete__menu").attr('data-after-suggestions', afterSuggestionsText); // Show message after suggestions.
                 return;
@@ -45,18 +44,17 @@ function initAutocomplete(autoCompleteInputId, inputIdForSubmission, defaultValu
                 data: { name: query }, // Query parameter sent to the API.
                 dataType: 'json',
                 success: function (data) {
-                    // If another request has started since this one, ignore this response
+                    // Ignore this response if a newer request has been made
                     if (currentToken !== requestToken) {
                         return;
                     }
 
-                    // Only populate if query hasn't changed
+                    // No results to populate
                     const currentValue = $(`#${autoCompleteInputId}`).val();
 
                     if (!currentValue || currentValue.length < 3) {
                         return;
                     }
-
                     if (!data || data.length === 0) {
                         populateResults([]); // No results to show
                         return;
@@ -74,7 +72,7 @@ function initAutocomplete(autoCompleteInputId, inputIdForSubmission, defaultValu
                         return;
                     }
 
-                    console.error('Error fetching suggestions:', error); // Log errors to the console.
+                    console.error(`Error fetching suggestions from ${apiUrl}`, error); // Log errors to the console.
                     populateResults([]); // Clear the suggestion list on error.
                 }
             });
@@ -116,15 +114,15 @@ function initAutocomplete(autoCompleteInputId, inputIdForSubmission, defaultValu
             $(".autocomplete__menu").attr('data-before-suggestions', ''); // Clear message before suggestions.
             $(".autocomplete__menu").attr('data-after-suggestions', ''); // Clear message after suggestions.
             $(`#${inputIdForSubmission}`).attr('value', ''); // Clear the hidden input value.
-
             return noResultsText; // Return the message for no results.
         }
     });
 
-    // if javascript is enabled, hide the original input and show the autocomplete input
-    $(`#${inputIdForSubmission}`).hide();
-    $(`label[for="${inputIdForSubmission}"]`).hide();
+    // If JavaScript is enabled, show the input and its label
     $(`label[for="${autoCompleteInputId}"]`).show();
+
+    // Set the hidden input to indicate that autocomplete is enabled.)
+    $(`#${autoCompleteEnabledId}`).attr('value', 'true');
 
     $(`#${autoCompleteInputId}`).on('input', function () {
         if (!this.value) {

@@ -5,7 +5,12 @@
     var errorSummaryTitle = "There is a problem";
 }
 
-<partial name="_BackNavigation" model="@("app:createapplication", "Back", new Dictionary<string, string>())" />
+@* @section is added for the back button, so that we can render something below the back button
+    and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
+    the named section *@
+@section BackNavigation {
+    <partial name="_BackNavigation" model="@("app:createapplication", "Back", new Dictionary<string, string>())" />
+}
 
 <h1 class="govuk-heading-l">Project details</h1>
 <div class="govuk-grid-row">
@@ -30,7 +35,7 @@
                        maxlength="7" />
             </div>
 
-            <button class="govuk-button" data-module="govuk-button" type="submit" asp-route="app:startproject">Save and continue</button>
+            <button class="govuk-button" data-module="govuk-button" type="submit" asp-route="app:startproject">Add project</button>
         </form>
     </div>
 </div>
