@@ -1,6 +1,7 @@
 using System.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Extensions;
 
@@ -16,9 +17,6 @@ public class OrganisationController
     IRtsService rtsService
 ) : Controller
 {
-    // Constant representing the default sponsor role.
-    private const string SponsorRole = "CRSPNSR@2.16.840.1.113883.5.110";
-
     /// <summary>
     /// Retrieves a list of organisations based on the provided name, role, and optional page size.
     /// </summary>
@@ -29,7 +27,7 @@ public class OrganisationController
     public async Task<IActionResult> GetOrganisations(string name, string? role, int? pageSize)
     {
         // Use the default sponsor role if no role is provided.
-        role ??= SponsorRole;
+        role ??= OrganisationRoles.Sponsor;
 
         // Fetch organisations from the RTS service, with or without pagination.
         var response = pageSize is null ?
@@ -43,7 +41,7 @@ public class OrganisationController
         }
 
         // Convert the response content to a list of organisation names.
-        var organisations = response.Content.ToList();
+        var organisations = response.Content.Organisations.ToList();
 
         return Ok(organisations.Select(org => org.Name));
     }

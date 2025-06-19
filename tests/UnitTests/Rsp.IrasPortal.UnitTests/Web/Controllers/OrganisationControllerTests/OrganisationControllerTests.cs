@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
@@ -16,10 +17,13 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
         // Arrange
         var name = "TestOrg";
         var role = "TestRole";
-        var organisations = new[]
+
+        var searchResponse = new OrganisationSearchResponse
         {
-            new OrganisationSearchResponse { Id = "1", Name = "TestOrg1" },
-            new OrganisationSearchResponse { Id = "2", Name = "TestOrg2" }
+            Organisations = [
+                new() { Id = "1", Name = "TestOrg1" },
+                new() { Id = "2", Name = "TestOrg2" }],
+            TotalCount = 2
         };
 
         Mocker
@@ -27,8 +31,8 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
             .Setup(s => s.GetOrganisations(name, role))
             .ReturnsAsync
             (
-                new ServiceResponse<IEnumerable<OrganisationSearchResponse>>()
-                    .WithContent(organisations, HttpStatusCode.OK)
+                new ServiceResponse<OrganisationSearchResponse>()
+                    .WithContent(searchResponse, HttpStatusCode.OK)
             );
 
         // Act
@@ -36,7 +40,7 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
 
         // Assert
         var okResult = result.ShouldBeOfType<OkObjectResult>();
-        okResult.Value.ShouldBe(organisations.Select(o => o.Name));
+        okResult.Value.ShouldBe(searchResponse.Organisations.Select(o => o.Name));
     }
 
     [Fact]
@@ -51,7 +55,7 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
             .Setup(s => s.GetOrganisations(name, role))
             .ReturnsAsync
             (
-                new ServiceResponse<IEnumerable<OrganisationSearchResponse>>()
+                new ServiceResponse<OrganisationSearchResponse>()
                     .WithError("Error", "Service failed", HttpStatusCode.InternalServerError)
             );
 
@@ -75,14 +79,14 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
     [Fact]
     public async Task GetOrganisation_ShouldReturnOk_WhenServiceReturnsSuccess()
     {
-        // Arrange
+        // OrganisationSearchResponse?ange
         var id = "1";
-        var organisation = new OrganisationSearchResponse { Id = id, Name = "Org1" };
+        var organisation = new OrganisationDto { Id = id, Name = "Org1" };
 
         Mocker
             .GetMock<IRtsService>()
             .Setup(s => s.GetOrganisation(id))
-            .ReturnsAsync(new ServiceResponse<OrganisationSearchResponse>()
+            .ReturnsAsync(new ServiceResponse<OrganisationDto>()
                 .WithContent(organisation, HttpStatusCode.OK));
 
         // Act
@@ -104,7 +108,7 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
             .Setup(s => s.GetOrganisation(id))
             .ReturnsAsync
             (
-                new ServiceResponse<OrganisationSearchResponse>()
+                new ServiceResponse<OrganisationDto>()
                     .WithError("Error", "Service failed", HttpStatusCode.InternalServerError)
             );
 
