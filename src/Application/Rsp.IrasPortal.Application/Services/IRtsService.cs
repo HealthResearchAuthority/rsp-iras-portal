@@ -1,4 +1,5 @@
-﻿using Rsp.IrasPortal.Application.DTOs.Responses;
+﻿using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.Logging.Interceptors;
 
@@ -16,7 +17,7 @@ public interface IRtsService : IInterceptable
     /// <param name="name">Organisation name</param>
     /// <param name="role">Role of the Organisation</param>
     /// <returns>An asynchronous operation that returns organisations.</returns>
-    public Task<ServiceResponse<IEnumerable<OrganisationSearchResponse>>> GetOrganisations(string name, string? role);
+    public Task<ServiceResponse<OrganisationSearchResponse>> GetOrganisations(string name, string? role);
 
     /// <summary>
     /// Gets the specified number of organisations by name and role
@@ -25,12 +26,12 @@ public interface IRtsService : IInterceptable
     /// <param name="role">Role of the Organisation</param>
     /// <param name="pageSize">Page size</param>
     /// <returns>An asynchronous operation that returns organisations.</returns>
-    public Task<ServiceResponse<IEnumerable<OrganisationSearchResponse>>> GetOrganisations(string name, string? role, int pageSize);
+    public Task<ServiceResponse<OrganisationSearchResponse>> GetOrganisations(string name, string? role, int pageSize);
 
     /// <summary>
     /// Gets the organisation by Id
     /// </summary>
     /// <param name="id">Organisation Id</param>
     /// <returns>An asynchronous operation that returns an organisation.</returns>
-    public Task<ServiceResponse<OrganisationSearchResponse>> GetOrganisation(string id);
+    public Task<ServiceResponse<OrganisationDto>> GetOrganisation(string id);
 }

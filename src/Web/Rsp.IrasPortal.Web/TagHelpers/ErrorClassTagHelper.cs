@@ -10,8 +10,12 @@ namespace Rsp.IrasPortal.Web.TagHelpers;
 /// A TagHelper that appends error-specific CSS classes to form elements based on the model state.
 /// </summary>
 [HtmlTargetElement("*", Attributes = ForAttributeName)]
+[HtmlTargetElement("*", Attributes = ForPropertyName)]
 public class ErrorClassTagHelper : TagHelper
 {
+    // Attribute name for the property if model wasn't specified.
+    private const string ForPropertyName = "error-class-property";
+
     // Attribute name for binding the model expression.
     private const string ForAttributeName = "error-class-for";
 
@@ -29,10 +33,16 @@ public class ErrorClassTagHelper : TagHelper
     public ViewContext ViewContext { get; set; } = null!;
 
     /// <summary>
-    /// The model expression to check for validation errors.
+    /// The model expression
     /// </summary>
     [HtmlAttributeName(ForAttributeName)]
-    public ModelExpression For { get; set; } = null!;
+    public ModelExpression? For { get; set; }
+
+    /// <summary>
+    /// The model prperty
+    /// </summary>
+    [HtmlAttributeName(ForPropertyName)]
+    public string? Property { get; set; }
 
     /// <summary>
     /// The CSS class to apply when the associated model property has validation errors (non-input elements).
@@ -60,9 +70,9 @@ public class ErrorClassTagHelper : TagHelper
         // when using this tag helper on any input element, it will utilise
         // For.Name. If we are passing in the name to the template, we need to use the actual value
         // hence For.Model is also checked.
-        var key = For.Name;
+        var key = For?.Name ?? Property;
 
-        var modelStateEntry = ViewContext.ViewData.ModelState[key];
+        var modelStateEntry = ViewContext.ViewData.ModelState[key!];
 
         // Check if the model state contains errors for the specified property.
         if (modelStateEntry?.Errors.Count is null or 0)
