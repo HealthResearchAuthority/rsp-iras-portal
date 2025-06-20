@@ -45,7 +45,7 @@ public class MyApplicationsTests : TestServiceBase<ApplicationController>
             {
                 new()
                 {
-                    ApplicationId = "1234567890"
+                    Id = "1234567890"
                 }
             }
         };
