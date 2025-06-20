@@ -153,7 +153,6 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         return this.ServiceError(response);
     }
 
-    // GET: Start form from scratch
     [HttpGet]
     public IActionResult Create()
     {
@@ -212,13 +211,18 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
     }
 
     [HttpPost]
-    public IActionResult AddQuestion(string versionId, QuestionDto question, int questionIndex, string flowStep = "questions")
+    public IActionResult AddQuestion(string versionId, QuestionDto question, int questionIndex,
+        string flowStep = "questions")
     {
         var answersJson = HttpContext.Session.GetString($"questionset:{versionId}:{questionIndex}:questionanswers");
         var questionsJson = HttpContext.Session.GetString($"questionset:{versionId}:questions");
 
-        var answers = string.IsNullOrWhiteSpace(answersJson) ? new List<AnswerDto>() : JsonSerializer.Deserialize<List<AnswerDto>>(answersJson!)!;
-        var questions = string.IsNullOrWhiteSpace(questionsJson) ? new List<QuestionDto>() : JsonSerializer.Deserialize<List<QuestionDto>>(questionsJson!)!;
+        var answers = string.IsNullOrWhiteSpace(answersJson)
+            ? new List<AnswerDto>()
+            : JsonSerializer.Deserialize<List<AnswerDto>>(answersJson!)!;
+        var questions = string.IsNullOrWhiteSpace(questionsJson)
+            ? new List<QuestionDto>()
+            : JsonSerializer.Deserialize<List<QuestionDto>>(questionsJson!)!;
 
         while (questions.Count <= questionIndex)
             questions.Add(new QuestionDto { VersionId = versionId });
@@ -257,7 +261,9 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
             ViewData["UnsavedQuestion"] = question;
 
             var versionJson = HttpContext.Session.GetString($"questionset:{versionId}:version");
-            var version = string.IsNullOrWhiteSpace(versionJson) ? new VersionDto { VersionId = versionId } : JsonSerializer.Deserialize<VersionDto>(versionJson!)!;
+            var version = string.IsNullOrWhiteSpace(versionJson)
+                ? new VersionDto { VersionId = versionId }
+                : JsonSerializer.Deserialize<VersionDto>(versionJson!)!;
 
             return View("QuestionSetForm", new QuestionSetDto
             {
@@ -269,10 +275,13 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         questions[questionIndex] = question;
         HttpContext.Session.SetString($"questionset:{versionId}:questions", JsonSerializer.Serialize(questions));
 
-        var versionFinal = JsonSerializer.Deserialize<VersionDto>(HttpContext.Session.GetString($"questionset:{versionId}:version")!);
+        var versionFinal =
+            JsonSerializer.Deserialize<VersionDto>(HttpContext.Session.GetString($"questionset:{versionId}:version")!);
 
         ViewData["Step"] = question.QuestionType?.ToLowerInvariant() == "look-up list" ? "answers" : "questions";
-        ViewData["QuestionIndex"] = question.QuestionType?.ToLowerInvariant() == "look -up list" ? questionIndex : questionIndex + 1;
+        ViewData["QuestionIndex"] = question.QuestionType?.ToLowerInvariant() == "look-up list"
+            ? questionIndex
+            : questionIndex + 1;
 
         return View("QuestionSetForm", new QuestionSetDto
         {
@@ -288,9 +297,15 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         var questionsJson = HttpContext.Session.GetString($"questionset:{versionId}:questions");
         var versionJson = HttpContext.Session.GetString($"questionset:{versionId}:version");
 
-        var answers = string.IsNullOrWhiteSpace(answersJson) ? new List<AnswerDto>() : JsonSerializer.Deserialize<List<AnswerDto>>(answersJson!)!;
-        var questions = string.IsNullOrWhiteSpace(questionsJson) ? new List<QuestionDto>() : JsonSerializer.Deserialize<List<QuestionDto>>(questionsJson!)!;
-        var version = string.IsNullOrWhiteSpace(versionJson) ? new VersionDto { VersionId = versionId } : JsonSerializer.Deserialize<VersionDto>(versionJson!)!;
+        var answers = string.IsNullOrWhiteSpace(answersJson)
+            ? new List<AnswerDto>()
+            : JsonSerializer.Deserialize<List<AnswerDto>>(answersJson!)!;
+        var questions = string.IsNullOrWhiteSpace(questionsJson)
+            ? new List<QuestionDto>()
+            : JsonSerializer.Deserialize<List<QuestionDto>>(questionsJson!)!;
+        var version = string.IsNullOrWhiteSpace(versionJson)
+            ? new VersionDto { VersionId = versionId }
+            : JsonSerializer.Deserialize<VersionDto>(versionJson!)!;
 
 
         var question = questions[questionIndex];
@@ -319,9 +334,15 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         var questionsJson = HttpContext.Session.GetString($"questionset:{versionId}:questions");
         var versionJson = HttpContext.Session.GetString($"questionset:{versionId}:version");
 
-        var answers = string.IsNullOrWhiteSpace(answersJson) ? new List<AnswerDto>() : JsonSerializer.Deserialize<List<AnswerDto>>(answersJson!)!;
-        var questions = string.IsNullOrWhiteSpace(questionsJson) ? new List<QuestionDto>() : JsonSerializer.Deserialize<List<QuestionDto>>(questionsJson!)!;
-        var version = string.IsNullOrWhiteSpace(versionJson) ? new VersionDto { VersionId = versionId } : JsonSerializer.Deserialize<VersionDto>(versionJson!)!;
+        var answers = string.IsNullOrWhiteSpace(answersJson)
+            ? new List<AnswerDto>()
+            : JsonSerializer.Deserialize<List<AnswerDto>>(answersJson!)!;
+        var questions = string.IsNullOrWhiteSpace(questionsJson)
+            ? new List<QuestionDto>()
+            : JsonSerializer.Deserialize<List<QuestionDto>>(questionsJson!)!;
+        var version = string.IsNullOrWhiteSpace(versionJson)
+            ? new VersionDto { VersionId = versionId }
+            : JsonSerializer.Deserialize<VersionDto>(versionJson!)!;
 
         while (questions.Count <= questionIndex)
             questions.Add(new QuestionDto { VersionId = versionId });
@@ -351,6 +372,21 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         {
             ModelState.AddModelError("answer.AnswerText", "Enter an answer text");
         }
+        else
+        {
+            // Normalize and compare to check if answer already exists
+            var existingAnswers = question.Answers ?? new List<AnswerDto>();
+            bool duplicateExists = existingAnswers.Any(a =>
+                    !string.IsNullOrWhiteSpace(a.AnswerText) &&
+                    a.AnswerText.Trim().Equals(answer.AnswerText.Trim(), StringComparison.OrdinalIgnoreCase) &&
+                    a.AnswerId != answer.AnswerId // skip current one if editing
+            );
+
+            if (duplicateExists)
+            {
+                ModelState.AddModelError("answer.AnswerText", "An answer with this text already exists");
+            }
+        }
 
         if (!ModelState.IsValid)
         {
@@ -368,8 +404,6 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
             });
         }
 
-        if (!string.IsNullOrWhiteSpace(originalAnswerId))
-            answers.RemoveAll(a => a.AnswerId == originalAnswerId);
 
         if (string.IsNullOrWhiteSpace(answer.AnswerId))
             answer.AnswerId = $"{versionId}-{questionIndex}-{answers.Count + 1}";
@@ -378,7 +412,8 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         answers.Add(answer);
 
         question.Answers = answers;
-        HttpContext.Session.SetString($"questionset:{versionId}:{questionIndex}:questionanswers", JsonSerializer.Serialize(answers));
+        HttpContext.Session.SetString($"questionset:{versionId}:{questionIndex}:questionanswers",
+            JsonSerializer.Serialize(answers));
 
         ViewData["Step"] = "answers";
         ViewData["QuestionIndex"] = questionIndex;
@@ -397,12 +432,19 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         var questionsJson = HttpContext.Session.GetString($"questionset:{versionId}:questions");
         var versionJson = HttpContext.Session.GetString($"questionset:{versionId}:version");
 
-        var version = string.IsNullOrWhiteSpace(versionJson) ? new VersionDto { VersionId = versionId } : JsonSerializer.Deserialize<VersionDto>(versionJson!)!;
-
-        var questions = string.IsNullOrWhiteSpace(questionsJson) ? new List<QuestionDto>() : JsonSerializer.Deserialize<List<QuestionDto>>(questionsJson!)!;
-        var answers = string.IsNullOrWhiteSpace(answersJson) ? new List<AnswerDto>() : JsonSerializer.Deserialize<List<AnswerDto>>(answersJson!)!;
+        var version = string.IsNullOrWhiteSpace(versionJson)
+            ? new VersionDto { VersionId = versionId }
+            : JsonSerializer.Deserialize<VersionDto>(versionJson!)!;
+        var questions = string.IsNullOrWhiteSpace(questionsJson)
+            ? new List<QuestionDto>()
+            : JsonSerializer.Deserialize<List<QuestionDto>>(questionsJson!)!;
+        var answers = string.IsNullOrWhiteSpace(answersJson)
+            ? new List<AnswerDto>()
+            : JsonSerializer.Deserialize<List<AnswerDto>>(answersJson!)!;
 
         var question = questions[questionIndex];
+
+
         question.Answers = answers;
         questions[questionIndex] = question;
 
@@ -410,7 +452,8 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         ViewData["QuestionIndex"] = questionIndex + 1;
 
         HttpContext.Session.SetString($"questionset:{versionId}:questions", JsonSerializer.Serialize(questions));
-        HttpContext.Session.SetString($"questionset:{versionId}:{questionIndex}:questionanswers", JsonSerializer.Serialize(answers));
+        HttpContext.Session.SetString($"questionset:{versionId}:{questionIndex}:questionanswers",
+            JsonSerializer.Serialize(answers));
 
         return View("QuestionSetForm", new QuestionSetDto
         {
@@ -425,8 +468,12 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         var questionsJson = HttpContext.Session.GetString($"questionset:{versionId}:questions");
         var versionJson = HttpContext.Session.GetString($"questionset:{versionId}:version");
 
-        var questions = string.IsNullOrWhiteSpace(questionsJson) ? new List<QuestionDto>() : JsonSerializer.Deserialize<List<QuestionDto>>(questionsJson!)!;
-        var version = string.IsNullOrWhiteSpace(versionJson) ? new VersionDto { VersionId = versionId } : JsonSerializer.Deserialize<VersionDto>(versionJson!)!;
+        var questions = string.IsNullOrWhiteSpace(questionsJson)
+            ? new List<QuestionDto>()
+            : JsonSerializer.Deserialize<List<QuestionDto>>(questionsJson!)!;
+        var version = string.IsNullOrWhiteSpace(versionJson)
+            ? new VersionDto { VersionId = versionId }
+            : JsonSerializer.Deserialize<VersionDto>(versionJson!)!;
 
         if (questionIndex <= 0)
         {
@@ -453,25 +500,67 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
     {
         var versionJson = HttpContext.Session.GetString($"questionset:{versionId}:version");
         var questionsJson = HttpContext.Session.GetString($"questionset:{versionId}:questions");
+
+        var version = string.IsNullOrWhiteSpace(versionJson)
+            ? new VersionDto { VersionId = versionId }
+            : JsonSerializer.Deserialize<VersionDto>(versionJson!)!;
+        var questions = string.IsNullOrWhiteSpace(questionsJson)
+            ? new List<QuestionDto>()
+            : JsonSerializer.Deserialize<List<QuestionDto>>(questionsJson!)!;
+
         var categoryList = new List<CategoryDto>()
         {
             new CategoryDto()
             {
                 VersionId = versionId,
-                CategoryId = "categoryid" + versionId,
-                CategoryName = "categoryname" + versionId
+                CategoryId = "categoryid_" + versionId.ToLower(),
+                CategoryName = "categoryname_" + versionId.ToLower(),
             }
         };
 
         if (string.IsNullOrWhiteSpace(versionJson) || string.IsNullOrWhiteSpace(questionsJson))
             return RedirectToAction("Create");
 
+
+        for (var i = 0; i < questions.Count; i++)
+        {
+            questions[i].Category = "categoryid_" + versionId.ToLower();
+            questions[i].IsMandatory = true;
+            questions[i].IsOptional = false;
+
+            if (questions[i].QuestionType?.ToLowerInvariant() is not ("text" or "look-up list"))
+            {
+                // SET QUESTION TYPE TO DATATYPE
+                questions[i].DataType = questions[i].QuestionType;
+
+                if (questions[i].QuestionType?.ToLowerInvariant() is "boolean")
+                {
+                    questions[i].Answers = new List<AnswerDto>()
+                    {
+                        new AnswerDto()
+                        {
+                            AnswerId = $"{versionId}-{i}-0",
+                            AnswerText = "Yes",
+                            VersionId = versionId,
+                        },
+                        new AnswerDto()
+                        {
+                            AnswerId = $"{versionId}-{i}-1",
+                            AnswerText = "No",
+                            VersionId = versionId,
+                        },
+                    };
+                }
+            }
+        }
+
         var model = new QuestionSetDto
         {
-            Version = JsonSerializer.Deserialize<VersionDto>(versionJson!)!,
-            Questions = JsonSerializer.Deserialize<List<QuestionDto>>(questionsJson!)!,
+            Version = version!,
+            Questions = questions,
             Categories = categoryList
         };
+
 
         var addQuestionSet = await questionSetService.AddQuestionSet(model);
 
@@ -486,7 +575,6 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
             });
         }
 
-        // TODO: Save model to DB or service
         HttpContext.Session.Remove($"questionset:{versionId}:version");
         HttpContext.Session.Remove($"questionset:{versionId}:questions");
 

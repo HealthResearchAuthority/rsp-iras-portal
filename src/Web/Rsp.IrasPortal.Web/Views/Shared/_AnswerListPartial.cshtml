@@ -80,6 +80,8 @@
 
     @if (Model.Any())
     {
+        <div class="govuk-!-margin-top-6"></div>
+
         <form asp-action="CompleteQuestionAndAnswers" asp-controller="QuestionSet" method="post">
             <input type="hidden" name="versionId" value="@versionId"/>
             <input type="hidden" name="questionIndex" value="@questionIndex"/>
@@ -89,9 +91,6 @@
                     Complete Question & Answers
                 </button>
             </div>
-
-
         </form>
     }
-
 </div>

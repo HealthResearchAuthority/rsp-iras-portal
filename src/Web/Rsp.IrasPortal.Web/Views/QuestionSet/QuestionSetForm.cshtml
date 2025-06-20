@@ -2,14 +2,10 @@
 @model Rsp.IrasPortal.Application.DTOs.QuestionSetDto
 
 @{
-	var flowStep = ViewData["Step"] as string ?? "version";
+    var flowStep = ViewData["Step"] as string ?? "version";
     var versionId = Model.Version?.VersionId ?? "";
     var questions = Model.Questions?.ToList() ?? new List<QuestionDto>();
-	var currentIndex = ViewData["QuestionIndex"] as int? ?? (questions.Count > 0 ? questions.Count - 1 : 0);
-
-	var isEditing = currentIndex < questions.Count;
-
-    var headingText = isEditing ? $"Edit Question ID: {questions[currentIndex].QuestionId}" : "Add new question";
+    var currentIndex = ViewData["QuestionIndex"] as int? ?? (questions.Count > 0 ? questions.Count - 1 : 0);
 
     var validQuestions = questions
         .Where(q =>
@@ -26,6 +22,15 @@
             )
         )
         .ToList();
+
+    var isEditing = currentIndex < questions.Count &&
+                    questions[currentIndex] is { } currentQuestion &&
+                    !string.IsNullOrWhiteSpace(currentQuestion.QuestionId) &&
+                    validQuestions.Any(q => q.QuestionId == currentQuestion.QuestionId);
+
+    var headingText = isEditing
+        ? "Edit existing question"
+        : "Add new question";
 }
 
 <div class="govuk-grid-row">
@@ -55,12 +60,7 @@
         }
         else if (flowStep == "questions")
         {
-            // <!-- Back button -->
-            // <form asp-action="Back" asp-controller="QuestionSet" method="post" class="govuk-!-margin-bottom-4">
-            // 	<input type="hidden" name="versionId" value="@versionId"/>
-            // 	<input type="hidden" name="questionIndex" value="@currentIndex"/>
-            // 	<button type="submit" class="govuk-button govuk-button--secondary">Back</button>
-            // </form>
+ 
 
             @if (validQuestions.Any())
             {
@@ -129,17 +129,6 @@
         }
         else if (flowStep == "answers")
         {
-            // <!-- Back button -->
-            // <form asp-action="Back" asp-controller="QuestionSet" method="post" class="govuk-!-margin-bottom-4">
-            //     <input type="hidden" name="versionId" value="@versionId"/>
-            //     <input type="hidden" name="questionIndex" value="@currentIndex"/>
-            //     <input type="hidden" name="flowStep" value="questions" />
-            //     <button type="submit" class="govuk-button govuk-button--secondary">Back</button>
-            // </form>
-
-
-            // <h2 class="govuk-heading-m">@headingText</h2>
-
             var unsavedQuestion = ViewData["UnsavedQuestion"] as QuestionDto;
             var question = unsavedQuestion ?? (isEditing ? questions[currentIndex] : new QuestionDto { VersionId = versionId });
 
@@ -152,7 +141,6 @@
 
             answerViewData["IsEditingAnswer"] = ViewData["IsEditingAnswer"];
             answerViewData["OriginalAnswerId"] = ViewData["OriginalAnswerId"];
-
 
             @await Html.PartialAsync("_AnswerListPartial", question.Answers.ToList(), answerViewData)
         }
