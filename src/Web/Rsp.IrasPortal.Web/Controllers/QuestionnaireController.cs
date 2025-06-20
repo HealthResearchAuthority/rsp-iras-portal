@@ -245,6 +245,10 @@ public class QuestionnaireController
             question.SelectedOption = response?.SelectedOption;
             question.Answers = response?.Answers ?? [];
             question.AnswerText = response?.AnswerText;
+            // update the date fields if they are present
+            question.Day = response?.Day;
+            question.Month = response?.Month;
+            question.Year = response?.Year;
         }
 
         if (!autoSearchEnabled)
@@ -386,6 +390,21 @@ public class QuestionnaireController
             return RedirectToAction(nameof(SubmitApplication), new { applicationId = application.ApplicationId });
         }
 
+        // get the question sections
+        var questionSectionsResponse = await questionSetService.GetQuestionSections();
+        var questionSections = questionSectionsResponse.Content;
+        // Ensure questionSections is not null and has elements
+        if (questionSections?.Any() == true)
+        {
+            // Get the first question section
+            var firstSection = questionSections.First();
+
+            if (firstSection != null && model.CurrentStage == firstSection.SectionId)
+            {
+                TempData[TempDataKeys.ShortProjectTitle] = model.GetShortProjectTitle();
+            }
+        }
+
         // user clicks on the SaveAndContinue button
         // so we need to resume from the next stage
         if (saveAndContinue == bool.TrueString)
@@ -407,12 +426,12 @@ public class QuestionnaireController
 
         if (saveForLater == bool.TrueString)
         {
-            TempData[TempDataKeys.ShortProjectTitle] = model.GetShortProjectTitle();
             TempData[TempDataKeys.CategoryId] = model.GetFirstCategory();
             TempData[TempDataKeys.ApplicationId] = application.ApplicationId;
 
             return RedirectToAction("ProjectOverview", "Application");
         }
+
         // user jumps to the next stage by clicking on the link
         // so we need to resume the application from there
         if (!string.IsNullOrWhiteSpace(navigation.NextStage))
