@@ -195,7 +195,7 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         }
 
         model.Version.CreatedAt = DateTime.UtcNow;
-        model.Version.IsDraft = false;
+        model.Version.IsDraft = true;
         model.Version.IsPublished = false;
         ViewData["LockVersionId"] = true;
 
