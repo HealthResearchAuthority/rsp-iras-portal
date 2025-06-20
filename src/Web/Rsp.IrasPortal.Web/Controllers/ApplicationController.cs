@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Entities;
 using Rsp.IrasPortal.Web.Extensions;
@@ -22,12 +23,70 @@ public class ApplicationController(
     IApplicationsService applicationsService,
     IValidator<ApplicationInfoViewModel> validator,
     IValidator<IrasIdViewModel> irasIdValidator,
+    IRespondentService respondentService,
     IQuestionSetService questionSetService) : Controller
 {
     // ApplicationInfo view name
     private const string ApplicationInfo = nameof(ApplicationInfo);
 
-    public IActionResult Welcome() => View(nameof(Index));
+    public async Task<IActionResult> Welcome()
+    {
+        // getting respondentID from Http context
+        var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
+
+        // getting research applications by respondent ID
+        var applicationServiceResponse = await applicationsService.GetApplicationsByRespondent(respondentId);
+
+        var applications = applicationServiceResponse?.Content?.ToList() ?? new List<IrasApplicationResponse>();
+
+        var researchApplications = applications
+            .Where(app => app != null)
+            .Select(app => new ResearchApplicationSummaryModel
+            {
+                IrasId = app.IrasId,
+                ApplicatonId = app.ApplicationId,
+                Title = "Empty", // temporary default
+                ProjectEndDate = new DateTime(2025, 12, 10), // temporary default
+                PrimarySponsorOrganisation = "Unknown" // default value
+            })
+            .ToList();
+
+        var categoryId = "project record v1";
+
+        foreach (var researchApp in researchApplications)
+        {
+            var respondentServiceResponse = await respondentService.GetRespondentAnswers(researchApp.ApplicatonId, categoryId);
+
+            if (!respondentServiceResponse.IsSuccessStatusCode)
+            {
+                // return the generic error page
+                return this.ServiceError(respondentServiceResponse);
+            }
+
+            var answers = respondentServiceResponse.Content;
+
+            var titleAnswer = answers.FirstOrDefault(a => a.QuestionId == "IQA0002")?.AnswerText;
+            var endDateAnswer = answers.FirstOrDefault(a => a.QuestionId == "IQA0003")?.AnswerText;
+            var sponsorAnswer = answers.FirstOrDefault(a => a.QuestionId == "IQA0312")?.AnswerText;
+
+            if (!string.IsNullOrWhiteSpace(titleAnswer))
+            {
+                researchApp.Title = titleAnswer;
+            }
+
+            if (DateTime.TryParse(endDateAnswer, out var parsedDate))
+            {
+                researchApp.ProjectEndDate = parsedDate;
+            }
+
+            if (!string.IsNullOrWhiteSpace(sponsorAnswer))
+            {
+                researchApp.PrimarySponsorOrganisation = sponsorAnswer;
+            }
+        }
+
+        return View(nameof(Index), researchApplications);
+    }
 
     public IActionResult StartProject() => View(nameof(StartProject));
 
@@ -245,13 +304,13 @@ public class ApplicationController(
         return this.ServiceError(applicationServiceResponse);
     }
 
-    public IActionResult ProjectOverview()
+    public IActionResult ProjectOverview(string? CategoryId = null, string? ApplicationId = null)
     {
         var model = new ProjectOverviewModel
         {
             ProjectTitle = TempData[TempDataKeys.ShortProjectTitle] as string ?? string.Empty,
-            CategoryId = TempData[TempDataKeys.CategoryId] as string ?? string.Empty,
-            ApplicationId = TempData[TempDataKeys.ApplicationId] as string ?? string.Empty
+            CategoryId = TempData[TempDataKeys.CategoryId] as string ?? CategoryId ?? string.Empty,
+            ApplicationId = TempData[TempDataKeys.ApplicationId] as string ?? ApplicationId ?? string.Empty
         };
 
         TempData[TempDataKeys.ProjectOverview] = true;
