@@ -91,10 +91,10 @@ button.govuk-link {
 .govuk-button-hyperlink:hover {
   color: #0a58ca;
 }
-
+/*
 .role-checkbox {
   text-transform: capitalize;
-}
+}*/
 
 .govuk-table__header-sortable {
   color: #1D70B8;
