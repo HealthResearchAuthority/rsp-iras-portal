@@ -637,8 +637,11 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
         {
             CurrentStage = "A",
             Questions = [sponsorQuestion],
-            SponsorOrganisation = sponsorOrganisation,
-            SponsorOrgSearchText = sponsorOrgSearchText
+            SponsorOrgSearch = new()
+            {
+                SelectedOrganisation = sponsorOrganisation,
+                SearchText = sponsorOrgSearchText
+            }
         };
 
         var application = new IrasApplicationResponse
