@@ -7,6 +7,7 @@ using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.Services;
@@ -154,6 +155,7 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
     }
 
     [HttpGet]
+    [FeatureGate("QuestionSet.UseUI")]
     public IActionResult Create()
     {
         var model = new QuestionSetDto
@@ -166,6 +168,7 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
     }
 
     [HttpPost]
+    [FeatureGate("QuestionSet.UseUI")]
     public async Task<IActionResult> CreateVersion(QuestionSetDto model)
     {
         var versionId = model.Version?.VersionId;
@@ -211,6 +214,7 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
     }
 
     [HttpPost]
+    [FeatureGate("QuestionSet.UseUI")]
     public IActionResult AddQuestion(string versionId, QuestionDto question, int questionIndex,
         string flowStep = "questions")
     {
@@ -291,6 +295,7 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
     }
 
     [HttpPost]
+    [FeatureGate("QuestionSet.UseUI")]
     public IActionResult EditQuestion(string versionId, int questionIndex)
     {
         var answersJson = HttpContext.Session.GetString($"questionset:{versionId}:{questionIndex}:questionanswers");
@@ -328,6 +333,7 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
     }
 
     [HttpPost]
+    [FeatureGate("QuestionSet.UseUI")]
     public IActionResult AddAnswer(string versionId, int questionIndex, AnswerDto answer, string? originalAnswerId)
     {
         var answersJson = HttpContext.Session.GetString($"questionset:{versionId}:{questionIndex}:questionanswers");
@@ -426,6 +432,7 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
     }
 
     [HttpPost]
+    [FeatureGate("QuestionSet.UseUI")]
     public IActionResult CompleteQuestionAndAnswers(string versionId, int questionIndex)
     {
         var answersJson = HttpContext.Session.GetString($"questionset:{versionId}:{questionIndex}:questionanswers");
@@ -463,39 +470,7 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
     }
 
     [HttpPost]
-    public IActionResult Back(string versionId, int questionIndex)
-    {
-        var questionsJson = HttpContext.Session.GetString($"questionset:{versionId}:questions");
-        var versionJson = HttpContext.Session.GetString($"questionset:{versionId}:version");
-
-        var questions = string.IsNullOrWhiteSpace(questionsJson)
-            ? new List<QuestionDto>()
-            : JsonSerializer.Deserialize<List<QuestionDto>>(questionsJson!)!;
-        var version = string.IsNullOrWhiteSpace(versionJson)
-            ? new VersionDto { VersionId = versionId }
-            : JsonSerializer.Deserialize<VersionDto>(versionJson!)!;
-
-        if (questionIndex <= 0)
-        {
-            ViewData["Step"] = "version";
-            ViewData["QuestionIndex"] = 0;
-        }
-        else
-        {
-            ViewData["Step"] = questions[questionIndex].Answers.Any() ? "answers" : "questions";
-            ViewData["QuestionIndex"] = questionIndex;
-        }
-
-        ViewData["LockVersionId"] = true;
-
-        return View("QuestionSetForm", new QuestionSetDto
-        {
-            Version = version,
-            Questions = questions
-        });
-    }
-
-    [HttpPost]
+    [FeatureGate("QuestionSet.UseUI")]
     public async Task<IActionResult> Save(string versionId)
     {
         var versionJson = HttpContext.Session.GetString($"questionset:{versionId}:version");
@@ -581,7 +556,6 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         ViewBag.Mode = "create";
         return View("SuccessMessage", model);
     }
-
 
     private static QuestionnaireViewModel BuildQuestionnaireViewModel(IEnumerable<QuestionsResponse> response)
     {
