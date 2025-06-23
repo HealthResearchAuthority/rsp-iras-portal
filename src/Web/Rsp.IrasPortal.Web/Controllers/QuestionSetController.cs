@@ -244,12 +244,8 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
             question.QuestionId = $"{versionId}-{questionIndex}";
 
         // Validation
-        if (string.IsNullOrWhiteSpace(question.SectionId))
-            ModelState.AddModelError("SectionId", "Enter a section ID");
         if (string.IsNullOrWhiteSpace(question.Section))
             ModelState.AddModelError("Section", "Enter a section name");
-        if (question.Sequence <= 0)
-            ModelState.AddModelError("Sequence", "Enter a sequence number greater than 0");
         if (string.IsNullOrWhiteSpace(question.QuestionText))
             ModelState.AddModelError("QuestionText", "Enter the question text");
         if (string.IsNullOrWhiteSpace(question.QuestionType))
@@ -502,8 +498,10 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
             questions[i].Category = "categoryid_" + versionId.ToLower();
             questions[i].IsMandatory = true;
             questions[i].IsOptional = false;
+            questions[i].SectionId = versionId.ToLower() +questions[i].Section.Replace(" ", "");
+     
 
-            if (questions[i].QuestionType?.ToLowerInvariant() is not ("text" or "look-up list"))
+            if (questions[i].QuestionType?.ToLowerInvariant() is not ("text" or "look-up list" or "rts:org_lookup"))
             {
                 // SET QUESTION TYPE TO DATATYPE
                 questions[i].DataType = questions[i].QuestionType;
@@ -526,6 +524,40 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
                         },
                     };
                 }
+            }
+
+            if (questions[i].QuestionType?.ToLowerInvariant() is "rts:org_lookup")
+            {
+                questions[i].DataType = "text";
+
+                questions[i].Rules = new List<RuleDto>()
+                {
+                    new RuleDto()
+                    {
+                        Description = "Please start typing to add your primary sponsor org.",
+                        QuestionId = questions[i].QuestionId,
+                        Mode = "AND",
+                        Sequence = 1,
+                        VersionId = versionId,
+                        ParentQuestionId = null,
+
+                        Conditions = new List<ConditionDto>()
+                        {
+                            new ConditionDto()
+                            {
+
+                                Description = "Please start typing to add your primary sponsor org.",
+                                Mode = "AND",
+                                Negate = false,
+                                Operator = "HINT",
+                                Value = "15,100",
+                                OptionType = questions[i].QuestionType,
+                                IsApplicable = true,
+
+                            }
+                        }
+                    }
+                };
             }
         }
 
