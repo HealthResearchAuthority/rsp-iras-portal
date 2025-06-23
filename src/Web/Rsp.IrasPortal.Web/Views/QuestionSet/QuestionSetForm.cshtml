@@ -10,9 +10,7 @@
     var validQuestions = questions
         .Where(q =>
             !string.IsNullOrWhiteSpace(q.QuestionId) &&
-            !string.IsNullOrWhiteSpace(q.SectionId) &&
             !string.IsNullOrWhiteSpace(q.Section) &&
-            q.Sequence > 0 &&
             !string.IsNullOrWhiteSpace(q.QuestionText) &&
             !string.IsNullOrWhiteSpace(q.QuestionType) &&
             (
@@ -71,12 +69,9 @@
                         <table class="govuk-table">
                             <thead class="govuk-table__head">
                             <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
-                                <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Section ID</th>
                                 <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Section</th>
                                 <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Question Text</th>
                                 <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Question Type</th>
-
-
                                 <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Actions</th>
                             </tr>
                             </thead>
@@ -85,7 +80,6 @@
                             {
                                 var q = validQuestions[i];
                                 <tr class="govuk-table__row">
-                                    <td class="govuk-table__cell">@q.SectionId</td>
                                     <td class="govuk-table__cell">@q.Section</td>
                                     <td class="govuk-table__cell">@q.QuestionText</td>
                                     <td class="govuk-table__cell">
