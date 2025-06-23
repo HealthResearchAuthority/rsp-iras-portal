@@ -30,7 +30,7 @@
     conditional-class="conditional-field govuk-radios__conditional"
     dataquestionid-attr="@questionId"
     dataparents-attr="@parents"
-    div-inline-class="@(conditional ? "govuk-radios" : "govuk-radios govuk-radios--inline")"
+	div-inline-class="@(conditional ? "govuk-radios govuk-radios--inline" : "govuk-radios")"
     item-hidden-properties="AnswerId,AnswerText"
     hidden-model="question.Answers"
     validation-message="@validationMessage"
