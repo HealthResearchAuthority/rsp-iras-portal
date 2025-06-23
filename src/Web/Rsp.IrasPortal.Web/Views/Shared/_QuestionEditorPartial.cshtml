@@ -28,13 +28,9 @@
 <!-- Hidden field to bind VersionId per question -->
 <input type="hidden" name="@($"{prefix}.VersionId")" value="@Model.VersionId"/>
 
-<rsp-gds-input asp-for="SectionId" name="@($"{prefix}.SectionId")" label-text="Section ID" width-class="govuk-!-width-one-quarter" />
 <rsp-gds-input asp-for="Section" name="@($"{prefix}.Section")" label-text="Section Name" width-class="govuk-!-width-one-half" />
-<rsp-gds-input asp-for="Sequence" name="@($"{prefix}.Sequence")" label-text="Sequence" input-type="number" width-class="govuk-!-width-one-quarter" />
 <rsp-gds-character-count-textarea asp-for="QuestionText" name="@($"{prefix}.QuestionText")" label-text="Question Text"/>
-
 <rsp-gds-input asp-for="ShortQuestionText" name="@($"{prefix}.ShortQuestionText")" label-text="Short Question Text" />
-
 <rsp-gds-select asp-for="QuestionType"
                 name="@($"{prefix}.QuestionType")"
                 label-text="Question Type"
