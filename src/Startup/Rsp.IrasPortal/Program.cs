@@ -1,10 +1,9 @@
 ﻿using FluentValidation;
 using Mapster;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.FeatureManagement;
-using Microsoft.Extensions.Azure;
-using Azure.Storage.Blobs;
 using Rsp.IrasPortal.Application.Configuration;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Configuration.AppConfiguration;
@@ -13,6 +12,7 @@ using Rsp.IrasPortal.Configuration.Dependencies;
 using Rsp.IrasPortal.Configuration.Health;
 using Rsp.IrasPortal.Configuration.HttpClients;
 using Rsp.IrasPortal.Web;
+using Rsp.IrasPortal.Web.Attributes;
 using Rsp.IrasPortal.Web.Mapping;
 using Rsp.Logging.ActionFilters;
 using Rsp.Logging.Extensions;
@@ -96,6 +96,8 @@ services
         {
             options.Filters.Add<LogActionFilter>();
         }
+
+        options.Filters.Add<ModelStateMergeAttribute>();
     })
     .AddSessionStateTempDataProvider();
 

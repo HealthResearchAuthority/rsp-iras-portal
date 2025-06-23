@@ -21,4 +21,7 @@ public struct TempDataKeys
     public const string ProjectOverview = "td:project_overview";
     public const string SponsorOrganisations = "td:sponsor_organisations";
     public const string SponsorOrgSearched = "td:sponsor_org_searched";
+    public const string OrgSearch = "td:org_search";
+    public const string OrgSearchReturnUrl = "td:org_search_return_url";
+    public const string ModelState = "td:model_state";
 }

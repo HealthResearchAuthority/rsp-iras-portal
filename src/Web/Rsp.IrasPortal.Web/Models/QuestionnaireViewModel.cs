@@ -5,8 +5,7 @@ public class QuestionnaireViewModel
     public bool ReviewAnswers { get; set; }
     public string CurrentStage { get; set; } = "";
     public List<QuestionViewModel> Questions { get; set; } = [];
-    public string? SponsorOrganisation { get; set; }
-    public string? SponsorOrgSearchText { get; set; }
+    public OrganisationSearchViewModel SponsorOrgSearch { get; set; } = new();
 
     public List<object> GetConditionalRules()
     {

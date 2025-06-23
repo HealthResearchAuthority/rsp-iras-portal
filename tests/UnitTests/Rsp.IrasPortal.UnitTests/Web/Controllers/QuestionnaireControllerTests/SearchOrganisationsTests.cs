@@ -36,7 +36,7 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
         var model = new QuestionnaireViewModel
         {
             CurrentStage = "A",
-            SponsorOrgSearchText = "ab",
+            SponsorOrgSearch = new() { SearchText = "ab" },
             Questions = questions
         };
 
@@ -108,16 +108,17 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
         context.Items[ContextItemKeys.RespondentId] = "RespondentId1";
 
         Sut.ControllerContext = new ControllerContext { HttpContext = context };
+        Sut.TempData[TempDataKeys.OrgSearchReturnUrl] = "/";
 
         // Act
         var result = await Sut.SearchOrganisations(model, null, null);
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Index");
+        var viewResult = result.ShouldBeOfType<RedirectResult>();
         Sut.ModelState.ContainsKey("sponsor_org_search").ShouldBeTrue();
         Sut.ModelState["sponsor_org_search"]!.Errors.Count.ShouldBe(1);
-        ((QuestionnaireViewModel)viewResult.Model!).SponsorOrganisation.ShouldBeNullOrEmpty();
+
+        model.SponsorOrgSearch.SelectedOrganisation.ShouldBeNullOrEmpty();
     }
 
     [Theory, AutoData]
@@ -141,7 +142,7 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
         var model = new QuestionnaireViewModel
         {
             CurrentStage = "A",
-            SponsorOrgSearchText = "TestOrg",
+            SponsorOrgSearch = new() { SearchText = "TestOrg" },
             Questions = questions
         };
 
@@ -206,6 +207,8 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
                 StatusCode = HttpStatusCode.InternalServerError
             });
 
+        Sut.TempData[TempDataKeys.OrgSearchReturnUrl] = "/";
+
         // Act
         var result = await Sut.SearchOrganisations(model, null, null);
 
@@ -240,7 +243,7 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
         var model = new QuestionnaireViewModel
         {
             CurrentStage = "A",
-            SponsorOrgSearchText = "TestOrg",
+            SponsorOrgSearch = new() { SearchText = "TestOrg" },
             Questions = questions
         };
 
@@ -325,13 +328,14 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
                 Content = orgResponse
             });
 
+        Sut.TempData[TempDataKeys.OrgSearchReturnUrl] = "/";
+
         // Act
         var result = await Sut.SearchOrganisations(model, null, pageSize);
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Index");
-        ((QuestionnaireViewModel)viewResult.Model!).SponsorOrganisation.ShouldBeNullOrEmpty();
+        var viewResult = result.ShouldBeOfType<RedirectResult>();
+        model.SponsorOrgSearch.SelectedOrganisation.ShouldBeNullOrEmpty();
         Sut.TempData[TempDataKeys.SponsorOrgSearched].ShouldBe("searched:true");
         Sut.TempData[TempDataKeys.ApplicationId].ShouldBe(application.ApplicationId);
         Sut.TempData[TempDataKeys.IrasId].ShouldBe(application.IrasId);

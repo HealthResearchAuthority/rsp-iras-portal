@@ -245,6 +245,10 @@ public class QuestionnaireController
             question.SelectedOption = response?.SelectedOption;
             question.Answers = response?.Answers ?? [];
             question.AnswerText = response?.AnswerText;
+            // update the date fields if they are present
+            question.Day = response?.Day;
+            question.Month = response?.Month;
+            question.Year = response?.Year;
         }
 
         if (!autoSearchEnabled)
@@ -255,8 +259,8 @@ public class QuestionnaireController
             if (sponsorOrgInput is not null)
             {
                 var searchPerformed = searchedPerformed == "searched:true";
-                var selectedOrg = model.SponsorOrganisation;
-                var searchedText = model.SponsorOrgSearchText;
+                var selectedOrg = model.SponsorOrgSearch.SelectedOrganisation;
+                var searchedText = model.SponsorOrgSearch.SearchText;
 
                 if (searchPerformed)
                 {
@@ -277,7 +281,7 @@ public class QuestionnaireController
                         {
                             // Cleared search or mismatch
                             sponsorOrgInput.AnswerText = string.Empty;
-                            model.SponsorOrganisation = string.Empty;
+                            model.SponsorOrgSearch.SelectedOrganisation = string.Empty;
                         }
                         else
                         {
@@ -386,6 +390,21 @@ public class QuestionnaireController
             return RedirectToAction(nameof(SubmitApplication), new { applicationId = application.ApplicationId });
         }
 
+        // get the question sections
+        var questionSectionsResponse = await questionSetService.GetQuestionSections();
+        var questionSections = questionSectionsResponse.Content;
+        // Ensure questionSections is not null and has elements
+        if (questionSections?.Any() == true)
+        {
+            // Get the first question section
+            var firstSection = questionSections.First();
+
+            if (firstSection != null && model.CurrentStage == firstSection.SectionId)
+            {
+                TempData[TempDataKeys.ShortProjectTitle] = model.GetShortProjectTitle();
+            }
+        }
+
         // user clicks on the SaveAndContinue button
         // so we need to resume from the next stage
         if (saveAndContinue == bool.TrueString)
@@ -407,12 +426,12 @@ public class QuestionnaireController
 
         if (saveForLater == bool.TrueString)
         {
-            TempData[TempDataKeys.ShortProjectTitle] = model.GetShortProjectTitle();
             TempData[TempDataKeys.CategoryId] = model.GetFirstCategory();
             TempData[TempDataKeys.ApplicationId] = application.ApplicationId;
 
             return RedirectToAction("ProjectOverview", "Application");
         }
+
         // user jumps to the next stage by clicking on the link
         // so we need to resume the application from there
         if (!string.IsNullOrWhiteSpace(navigation.NextStage))
@@ -661,6 +680,8 @@ public class QuestionnaireController
     /// <returns>A list of organisation names or an error response.</returns>
     public async Task<IActionResult> SearchOrganisations(QuestionnaireViewModel model, string? role, int? pageSize)
     {
+        var returnUrl = TempData.Peek(TempDataKeys.OrgSearchReturnUrl) as string;
+
         // override the submitted model
         // with the updated model with answers
         model.Questions = GetQuestionsFromSession(model);
@@ -677,20 +698,30 @@ public class QuestionnaireController
 
         // set the previous, current and next stages
         await SetStage(model.CurrentStage!);
-        model.ReviewAnswers = false;
 
         TempData.TryAdd(TempDataKeys.SponsorOrgSearched, "searched:true");
 
         // when search is performed, empty the currently selected organisation
-        model.SponsorOrganisation = string.Empty;
+        model.SponsorOrgSearch.SelectedOrganisation = string.Empty;
 
-        if (string.IsNullOrEmpty(model.SponsorOrgSearchText) || model.SponsorOrgSearchText.Length < 3)
+        // save the list of QuestionViewModel in session to get it later
+        HttpContext.Session.SetString($"{SessionKeys.Questionnaire}:{model.CurrentStage}", JsonSerializer.Serialize(model.Questions));
+
+        // add the search model to temp data to use in the view
+        TempData.TryAdd(TempDataKeys.OrgSearch, model.SponsorOrgSearch, true);
+
+        if (string.IsNullOrEmpty(model.SponsorOrgSearch.SearchText) || model.SponsorOrgSearch.SearchText.Length < 3)
         {
             // add model validation error if search text is empty
             ModelState.AddModelError("sponsor_org_search", "Please provide 3 or more characters to search sponsor organisation.");
 
+            // save the model state in temp data, to use it on redirects to show validation errors
+            // the modelstate will be merged using the action filter ModelStateMergeAttribute
+            // only if the TempData has ModelState stored
+            TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
+
             // Return the view with the model state errors.
-            return View("Index", model);
+            return Redirect(returnUrl);
         }
 
         // Use the default sponsor role if no role is provided.
@@ -698,8 +729,8 @@ public class QuestionnaireController
 
         // Fetch organisations from the RTS service, with or without pagination.
         var searchResponse = pageSize is null ?
-            await rtsService.GetOrganisations(model.SponsorOrgSearchText, role) :
-            await rtsService.GetOrganisations(model.SponsorOrgSearchText, role, pageSize.Value);
+            await rtsService.GetOrganisations(model.SponsorOrgSearch.SearchText!, role) :
+            await rtsService.GetOrganisations(model.SponsorOrgSearch.SearchText, role, pageSize.Value);
 
         // Handle error response from the service.
         if (!searchResponse.IsSuccessStatusCode || searchResponse.Content == null)
@@ -712,7 +743,7 @@ public class QuestionnaireController
 
         TempData.TryAdd(TempDataKeys.SponsorOrganisations, sponsorOrganisations, true);
 
-        return View("Index", model);
+        return Redirect(returnUrl);
     }
 
     private List<QuestionViewModel> GetQuestionsFromSession(QuestionnaireViewModel model)
