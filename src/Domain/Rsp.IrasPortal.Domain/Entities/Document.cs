@@ -7,4 +7,6 @@ public class Document
     public long? Size { get; set; }
 
     public string? Type { get; set; }
+
+    public string? Url { get; set; }
 }

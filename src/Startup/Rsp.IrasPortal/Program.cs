@@ -23,6 +23,11 @@ using Rsp.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 268435456; // 256 MB
+});
+
 //Add logger
 builder
     .Configuration
@@ -60,6 +65,8 @@ services.AddSingleton(appSettings);
 // via provider. Instead, the follwing approach is recommended by creating FeatureManager
 // with ConfigurationFeatureDefinitionProvider using the existing configuration.
 var featureManager = new FeatureManager(new ConfigurationFeatureDefinitionProvider(configuration));
+
+services.AddAzureClients(azure => azure.AddBlobServiceClient(builder.Configuration.GetConnectionString("AzureStorageBlob")));
 
 // Add services to IoC container
 services.AddServices();
@@ -108,6 +115,7 @@ services.Configure<HealthCheckPublisherOptions>(options => options.Period = Time
 services.Configure<FormOptions>(options =>
 {
     options.ValueCountLimit = int.MaxValue;
+    options.MultipartBodyLengthLimit = 268435456; // 256 MB,
 });
 
 // configure health checks to monitor
@@ -117,11 +125,6 @@ services.AddCustomHealthChecks(appSettings);
 // header to be propagated to the httpclient
 // to be sent in the request for external api calls
 services.AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
-
-services.AddAzureClients(azure =>
-{
-    azure.AddBlobServiceClient(builder.Configuration.GetRequiredSection("AppSettings:Azure:DocumentStorage:Blob"));
-});
 
 services
     .AddJwksManager()

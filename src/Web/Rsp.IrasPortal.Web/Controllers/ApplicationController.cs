@@ -18,11 +18,15 @@ namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "app:[action]")]
 [Authorize(Policy = "IsUser")]
-public class ApplicationController(
+public class ApplicationController
+(
     IApplicationsService applicationsService,
     IValidator<ApplicationInfoViewModel> validator,
     IValidator<IrasIdViewModel> irasIdValidator,
-    IQuestionSetService questionSetService) : Controller
+    IQuestionSetService questionSetService,
+    IFileStorageService fileStorageService,
+    ILogger<ApplicationController> logger
+) : Controller
 {
     // ApplicationInfo view name
     private const string ApplicationInfo = nameof(ApplicationInfo);
@@ -192,17 +196,39 @@ public class ApplicationController(
     }
 
     [HttpPost]
-    public IActionResult Upload(IFormFileCollection formFiles)
+    public async Task<IActionResult> Upload(IFormFileCollection formFiles)
     {
         List<Document> documents = [];
 
+        const long maxFileSize = 256 * 1024 * 1024; // 256 MB
+
+        if (Request.ContentLength > maxFileSize)
+        {
+            ModelState.AddModelError("formFiles", "The total size of the files exceeds the maximum allowed size of 256 MB.");
+            return View(nameof(DocumentUpload), documents);
+        }
+
         foreach (var file in formFiles)
         {
+            if (file.Length == 0)
+            {
+                continue;
+            }
+
+            var progress = new Progress<long>(bytesTransferred =>
+            {
+                var percent = (int)(bytesTransferred * 100) / file.Length;
+                logger.LogInformation("Uploading {Percent}%", percent);
+            });
+
+            var fileUrl = await fileStorageService.UploadFileAsync(file, progress);
+
             documents.Add(new Document
             {
                 Name = file.FileName,
                 Size = file.Length,
-                Type = Path.GetExtension(file.FileName)
+                Type = Path.GetExtension(file.FileName),
+                Url = fileUrl.Content,
             });
         }
 
