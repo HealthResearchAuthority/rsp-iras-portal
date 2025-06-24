@@ -1,28 +1,30 @@
-﻿namespace Rsp.IrasPortal.Web.Areas.QuestionsManagement.Models;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using Rsp.IrasPortal.Web.Areas.QuestionsManagement.Enums;
 
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc.Rendering;
+namespace Rsp.IrasPortal.Web.Areas.QuestionsManagement.Models;
 
 public class RuleViewModel
 {
-    // General metadata
-    public string QuestionId { get; set; }
+    public int RuleId { get; set; }
 
-    public string QuestionText { get; set; }
+    public string RuleType { get; set; } = null!;
 
-    public string RuleType { get; set; } // "Conditional" or "Validation"
+    public int Sequence { get; set; }
+
+    public string QuestionId { get; set; } = null!;
+
+    public string QuestionText { get; set; } = null!;
 
     // For conditional rules
-    public string ParentQuestionId { get; set; }
+    public string? ParentQuestionId { get; set; }
+
+    public string? ParentQuestionText { get; set; }
+
+    public string? Description { get; set; } = string.Empty;
+
+    public RuleMode Mode { get; set; } // Rule-level logic: AND or OR
 
     public List<SelectListItem> ParentQuestions { get; set; } = [];
 
-    public string Mode { get; set; } = "AND"; // Rule-level logic: AND or OR
-
     public List<ConditionViewModel> Conditions { get; set; } = [];
-
-    // For validation rules
-    public string ValidationType { get; set; } // "Email", "Phone", "Length", "Regex", "Date"
-
-    public string ValidationValue { get; set; } // MaxLength or Regex pattern etc.
 }

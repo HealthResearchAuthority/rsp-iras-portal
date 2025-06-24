@@ -1,27 +1,31 @@
 ﻿namespace Rsp.IrasPortal.Web.Areas.QuestionsManagement.Models;
 
-using System.Collections.Generic;
+using Rsp.IrasPortal.Web.Areas.QuestionsManagement.Enums;
 
 public class ConditionViewModel
 {
+    public ConditionType ConditionType { get; set; }
+
     // Whether condition is AND or OR
-    public string Mode { get; set; } = "AND";
+    public ConditionMode Mode { get; set; }
+
+    public ConditionOperator Operator { get; set; }
 
     // IN clause Option Type: "Single", "Multi", or "Exact"
-    public string OptionType { get; set; } = "Single";
+    public OptionType OptionType { get; set; }
 
     // Answer Option IDs from the parent question (comma-separated from UI)
-    public string ParentOptionsAsString { get; set; }
+    public string ParentOptionsAsString { get; set; } = string.Empty;
 
     // Converted internally from ParentOptionsAsString
-    public List<string> ParentOptions =>
-        string.IsNullOrWhiteSpace(ParentOptionsAsString)
-        ? []
-        : [.. ParentOptionsAsString.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)];
+    public List<AnswerViewModel>? ParentOptions { get; set; }
+
+    public string? ParentQuestionType { get; set; }
+
+    public string? Value { get; set; }
+
+    public string? Description { get; set; }
 
     // Whether the condition should be negated (i.e., NOT IN)
     public bool Negate { get; set; }
-
-    // Used for rendering if condition applies
-    public bool IsApplicable { get; set; }
 }

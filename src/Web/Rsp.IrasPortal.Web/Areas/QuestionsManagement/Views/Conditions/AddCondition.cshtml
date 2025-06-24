@@ -1,0 +1,148 @@
+﻿@using Rsp.IrasPortal.Web.Areas.QuestionsManagement.Enums
+@using Rsp.IrasPortal.Web.Areas.QuestionsManagement.Models
+@using Rsp.Gds.Component.Models
+@model ConditionViewModel
+
+@{
+    ViewData["Title"] = "Rules Management";
+    var versionId = Context.Request.Query["versionId"].ToString();
+    var questionId = Context.Request.Query["questionId"].ToString();
+
+    var rulesRouteData = new Dictionary<string, string> { { "questionId", questionId }, { "versionId", versionId } };
+}
+
+@* @section is added for the back button, so that we can render something below the back button
+    and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
+    the named section *@
+@section BackNavigation {
+    <partial name="_BackNavigation" model="@("qm:managerules", "Back", rulesRouteData)" />
+}
+
+<div class="govuk-grid-row">
+
+    <partial name="_QuestionsManagementNav" />
+
+    <div class="govuk-grid-column-three-quarters">
+
+        <h1 class="govuk-heading-l">Add Condition</h1>
+
+        <div class="govuk-summary-card govuk-!-margin-top-4">
+            <div class="govuk-summary-card__title-wrapper">
+                <h2 class="govuk-summary-card__title">Condition Type: @Model.ConditionType</h2>
+            </div>
+            <div class="govuk-summary-card__content">
+                <p><strong>Question Id: </strong>@questionId</p>
+            </div>
+        </div>
+
+        <div class="govuk-form-group" id="conditions-container">
+
+            @*<div class="govuk-form-group" id="rule-type">
+
+                    <label class="govuk-label govuk-label--s" asp-for="RuleType">Condition Type</label>
+
+                    <div class="govuk-radios" data-module="govuk-radios">
+                        <div class="govuk-radios__item">
+                            <input class="govuk-radios__input" id="ruleType-conditional" asp-for="RuleType" type="radio" value="Conditional">
+                            <label class="govuk-label govuk-radios__label" for="ruleType-conditional">Conditional</label>
+                        </div>
+                        <div class="govuk-radios__item">
+                            <input class="govuk-radios__input" id="ruleType-validation" asp-for="RuleType" type="radio" value="Validation">
+                            <label class="govuk-label govuk-radios__label" for="ruleType-validation">Validation</label>
+                        </div>
+                    </div>
+                </div>*@
+
+            <div class="govuk-form-group">
+                <label class="govuk-label govuk-label--s" asp-for="Mode">Condition Logic</label>
+                <select class="govuk-select" asp-for="Mode">
+                    <option value="AND">AND</option>
+                    <option value="OR">OR</option>
+                </select>
+            </div>
+
+            @if (Model.ConditionType == ConditionType.Conditional)
+            {
+                <div class="govuk-form-group">
+                    <label class="govuk-label govuk-label--s" asp-for="Operator">Operator</label>
+
+                    <select class="govuk-select" asp-for="Operator">
+                        <option value="">-- Select Operator --</option>
+                        <option value="IN">In</option>
+                    </select>
+                </div>
+
+                <div class="govuk-form-group">
+                    <label class="govuk-label govuk-label--s" asp-for="OptionType">Option Type</label>
+
+                    <select class="govuk-select" asp-for="OptionType">
+                        <option value="None">-- Select OptionType --</option>
+                        <option value="Single">Single</option>
+                        <option value="Exact">Exact</option>
+                        <option value="Multiple">Multi</option>
+                    </select>
+                </div>
+
+                <div class="govuk-form-group">
+
+                    @if (Model.ParentQuestionType?.ToLower() is "checkbox")
+                    {
+                        <rsp-gds-checkbox-group asp-for="ParentOptions"
+                                                label-text="Parent Options"
+                                                item-label-property="AnswerText"
+                                                item-value-property="IsSelected"
+                                                item-hidden-properties="AnswerId,AnswerText"
+                                                label-css-class="role-checkbox"
+                                                legend-class="govuk-label govuk-label--s" />
+                    }
+                    else if (Model.ParentQuestionType?.ToLower() is "boolean" or "radio button")
+                    {
+
+                        <rsp-gds-radio-group asp-for="ParentOptions"
+                                             label-text="Parent Options"
+                                             options="@(Model.ParentOptions!.Select(opt => new GdsOption { Value = opt.AnswerId, Label = Html.Encode(opt.AnswerText) }))"
+                                             item-hidden-properties="AnswerId,AnswerText"
+                                             div-inline-class="govuk-radios"
+                                             legend-class="govuk-label govuk-label--s" />
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="govuk-form-group">
+                    <label class="govuk-label govuk-label--s" asp-for="Operator">Validation Type</label>
+
+                    <select class="govuk-select" asp-for="Operator">
+                        <option value="">-- Select Validation --</option>
+                        <option value="REGEX">Email</option>
+                        <option value="DATE">Date</option>
+                        <option value="LENGTH">Length</option>
+                        <option value="SIZE">Size</option>
+                        <option value="HINT">Hint</option>
+                    </select>
+                </div>
+
+                <div class="govuk-form-group">
+                    <label class="govuk-label govuk-label--s" asp-for="Value">Validation Value</label>
+                    <input class="govuk-input govuk-!-width-two-thirds" asp-for="Value" />
+                </div>
+            }
+        </div>
+
+        <div class="govuk-form-group">
+            <div class="govuk-checkboxes govuk-checkboxes--small">
+                <div class="govuk-checkboxes__item">
+                    <input class="govuk-checkboxes__input" type="checkbox" asp-for="Negate" />
+                    <label class="govuk-label govuk-checkboxes__label">Negate</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="govuk-form-group">
+            <label class="govuk-label govuk-label--s" asp-for="Description">Description</label>
+            <input class="govuk-input govuk-!-width-two-thirds" asp-for="Description" />
+        </div>
+
+        <button type="button" class="govuk-button" id="add-condition">Save Condition</button>
+    </div>
+</div>

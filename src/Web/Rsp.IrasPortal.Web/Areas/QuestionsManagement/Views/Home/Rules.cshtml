@@ -1,9 +1,13 @@
-﻿@using Rsp.IrasPortal.Web.Areas.QuestionsManagement.Models
-@model RuleViewModel
+﻿@using Rsp.IrasPortal.Web.Areas.QuestionsManagement.Enums
+@using Rsp.IrasPortal.Web.Areas.QuestionsManagement.Models
+@model IEnumerable<RuleViewModel>
 
 @{
     ViewData["Title"] = "Rules Management";
     var versionId = Context.Request.Query["versionId"].ToString();
+    var questionId = Context.Request.Query["questionId"].ToString();
+
+    var rulesRouteData = new Dictionary<string, string> { { "questionId", questionId }, { "versionId", versionId } };
 }
 
 @* @section is added for the back button, so that we can render something below the back button
@@ -19,99 +23,109 @@
 
     <div class="govuk-grid-column-three-quarters">
 
-        <h1 class="govuk-heading-l">Manage Rules for: @Model.QuestionText</h1>
+        <h1 class="govuk-heading-l">Rules</h1>
 
-        <form asp-action="SaveRule" method="post" class="govuk-form-group">
+        <div id="question-list">
+            @if (Model.Any())
+            {
+                @foreach (var rule in Model)
+                {
+                    var conditionsRouteData = new Dictionary<string, string> { { "ruleId", rule.RuleId.ToString() }, { "questionId", questionId }, { "versionId", versionId } };
 
-            <input type="hidden" asp-for="QuestionId" />
-
-            <div class="govuk-form-group" id="rule-type">
-                <fieldset class="govuk-fieldset">
-                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
-                        Rule Type
-                    </legend>
-                    <div class="govuk-radios" data-module="govuk-radios">
-                        <div class="govuk-radios__item">
-                            <input class="govuk-radios__input" id="ruleType-conditional" asp-for="RuleType" type="radio" value="Conditional">
-                            <label class="govuk-label govuk-radios__label" for="ruleType-conditional">Conditional</label>
+                    <div class="govuk-summary-card govuk-!-margin-top-4">
+                        <div class="govuk-summary-card__title-wrapper">
+                            <h2 class="govuk-summary-card__title">@rule.QuestionText</h2>
                         </div>
-                        <div class="govuk-radios__item">
-                            <input class="govuk-radios__input" id="ruleType-validation" asp-for="RuleType" type="radio" value="Validation">
-                            <label class="govuk-label govuk-radios__label" for="ruleType-validation">Validation</label>
-                        </div>
-                    </div>
-                </fieldset>
-            </div>
+                        <div class="govuk-summary-card__content">
+                            <p><strong>Rule Id: </strong> @rule.RuleId</p>
+                            <p><strong>Sequence: </strong>@rule.Sequence</p>
+                            <p><strong>QuestionId: </strong> @rule.QuestionId</p>
 
-            <div class="govuk-form-group" id="conditional-section">
-                <label class="govuk-heading-m " for="ParentQuestionId">Parent Question</label>
-                <select class="govuk-select" asp-for="ParentQuestionId" asp-items="Model.ParentQuestions">
-                    <option value="">-- Select Parent Question --</option>
-                </select>
-            </div>
+                            @if (!string.IsNullOrWhiteSpace(rule.ParentQuestionId))
+                            {
+                                <p><strong>Parent Question Id: </strong>@rule.ParentQuestionId</p>
 
-            <div class="govuk-form-group">
-                <label class="govuk-heading-m" for="Mode">Rule Logic</label>
-                <select class="govuk-select" asp-for="Mode">
-                    <option value="AND">AND</option>
-                    <option value="OR">OR</option>
-                </select>
-            </div>
+                                <p><strong>Parent Question: </strong>@rule.ParentQuestionText</p>
 
-            <div class="govuk-form-group" id="conditions-container">
-                <fieldset class="govuk-fieldset">
-                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">Conditions</legend>
-                    <div id="conditions-list">
-                        @for (int i = 0; i < Model.Conditions.Count; i++)
-                        {
-                            <div class="govuk-form-group condition-row" data-index="@i">
-                                <label class="govuk-label" for="Conditions[@i].Mode">Condition Logic</label>
-                                <select class="govuk-select" asp-for="Conditions[@i].Mode">
-                                    <option value="AND">AND</option>
-                                    <option value="OR">OR</option>
-                                </select>
+                            }
 
-                                <label class="govuk-label" for="Conditions[@i].OptionType">Option Type</label>
-                                <select class="govuk-select" asp-for="Conditions[@i].OptionType">
-                                    <option value="Single">Single</option>
-                                    <option value="Multi">Multi</option>
-                                    <option value="Exact">Exact</option>
-                                </select>
+                            <p><strong>Mode: </strong>@rule.Mode.ToString()</p>
 
-                                <label class="govuk-label" for="Conditions[@i].ParentOptions">Parent Options</label>
-                                <input class="govuk-input" asp-for="Conditions[@i].ParentOptionsAsString" placeholder="Comma-separated Option IDs" />
+                            <p><strong>Description: </strong>@rule.Description</p>
 
-                                <div class="govuk-checkboxes govuk-checkboxes--small">
-                                    <div class="govuk-checkboxes__item">
-                                        <input class="govuk-checkboxes__input" type="checkbox" asp-for="Conditions[@i].Negate" />
-                                        <label class="govuk-label govuk-checkboxes__label">Negate</label>
-                                    </div>
-                                </div>
+                            <div class="govuk-button-group">
+                                <a asp-route="qrm:editrule" asp-all-route-data="@conditionsRouteData" class="govuk-link">Edit Rule</a>
+                                <a asp-route="qrm:deleterule" asp-all-route-data="@conditionsRouteData" class="govuk-link">Delete Rule</a>
                             </div>
-                        }
+
+                            <h1 class="govuk-heading-s">Conditions</h1>
+
+                            <div id="conditions-list">
+
+                                @if (!rule.Conditions.Any())
+                                {
+                                    <p>No conditions defined.</p>
+                                }
+
+                                @foreach (var condition in rule.Conditions)
+                                {
+                                    <div class="govuk-form-group condition-row">
+                                        <div class="govuk-summary-card govuk-!-margin-top-4">
+                                            <div class="govuk-summary-card__title-wrapper">
+                                                <h2 class="govuk-summary-card__title">@condition.Description</h2>
+                                            </div>
+                                            <div class="govuk-summary-card__content">
+                                                <p><strong>Mode: </strong> @condition.Mode</p>
+
+                                                <p><strong>Operator: </strong> @condition.Operator</p>
+
+                                                <p><strong>Parent Options: </strong>@condition.ParentOptionsAsString</p>
+
+                                                <p><strong>Option Type: </strong>@condition.OptionType</p>
+
+                                                <p><strong>Value: </strong> @condition.Value</p>
+
+                                                <p><strong>Description: </strong>@condition.Description</p>
+
+                                                <p><strong>Negate: </strong>@condition.Negate</p>
+
+                                                <div class="govuk-button-group">
+                                                    <a asp-route="rcm:editcondition" asp-all-route-data="@rulesRouteData" class="govuk-link">Edit Condition</a>
+                                                    <a asp-route="rcm:deletecondition" asp-all-route-data="@rulesRouteData" class="govuk-link">Delete Condition</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+
+                                @{
+                                    conditionsRouteData["conditionType"] = ConditionType.Conditional.ToString();
+                                }
+
+                                <a asp-route="rcm:addcondition" asp-all-route-data="@conditionsRouteData" class="govuk-button govuk-button--secondary">Add condition</a>
+
+                                @{
+                                    conditionsRouteData["conditionType"] = ConditionType.Validation.ToString();
+                                }
+
+                                <a asp-route="rcm:addcondition" asp-all-route-data="@conditionsRouteData" class="govuk-button govuk-button--secondary">Add validation condition</a>
+                            </div>
+                        </div>
                     </div>
-                    <button type="button" class="govuk-button govuk-button--secondary" id="add-condition">Add Another Condition</button>
-                </fieldset>
-            </div>
+                }
+            }
+            else
+            {
+                <p>No rules defined.</p>
+            }
+        </div>
 
-            <div class="govuk-form-group" id="validation-section" style="display: none;">
-                <fieldset class="govuk-fieldset">
-                    <legend class="govuk-fieldset__legend">Validation Type</legend>
-                    <select class="govuk-select" asp-for="ValidationType">
-                        <option value="">-- Select Validation --</option>
-                        <option value="Email">Email</option>
-                        <option value="Phone">Phone</option>
-                        <option value="Date">Date</option>
-                        <option value="Length">Length</option>
-                        <option value="Regex">Regex</option>
-                    </select>
+        <div class="govuk-button-group">
+            @{
+                ViewBag.Style = "govuk-button govuk-button--secondary";
+            }
 
-                    <label class="govuk-label" for="ValidationValue">Value</label>
-                    <input class="govuk-input" asp-for="ValidationValue" />
-                </fieldset>
-            </div>
-
-            <button type="submit" class="govuk-button">Save Rule</button>
-        </form>
+            <a asp-route="qrm:addrule" asp-all-route-data="@rulesRouteData" class="govuk-button govuk-button--secondary">Add rule</a>
+        </div>
     </div>
 </div>

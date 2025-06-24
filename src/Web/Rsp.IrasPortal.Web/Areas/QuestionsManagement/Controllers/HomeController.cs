@@ -1,10 +1,10 @@
 ﻿using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Web.Areas.QuestionsManagement.Enums;
 using Rsp.IrasPortal.Web.Areas.QuestionsManagement.Models;
 using Rsp.IrasPortal.Web.Extensions;
 
@@ -83,19 +83,51 @@ public class HomeController(IQuestionSetService questionSetService) : Controller
             }));
         }
 
-        var questions = questionsResponse.Content;
-        var model = new RuleViewModel
+        var questions = questionsResponse.Content!;
+
+        var question = questions.Single(q => q.QuestionId == questionId);
+
+        var rules = question.Rules;
+
+        var model = new List<RuleViewModel>();
+
+        foreach (var rule in rules)
         {
-            QuestionId = questionId,
-            QuestionText = questions!.FirstOrDefault(q => q.QuestionId == questionId)?.QuestionText ?? string.Empty,
-            ParentQuestions = [.. questions!
-                .Where(q => q.QuestionId != questionId)
-                .Select(q => new SelectListItem
-                {
-                    Value = q.QuestionId,
-                    Text = q.QuestionText
-                })]
-        };
+            var ruleViewModel = new RuleViewModel
+            {
+                RuleId = rule.RuleId,
+                Sequence = rule.Sequence,
+                QuestionId = questionId,
+                QuestionText = question.QuestionText ?? string.Empty,
+                ParentQuestionId = rule.ParentQuestionId,
+                ParentQuestionText = questions.SingleOrDefault(q => q.QuestionId == rule.ParentQuestionId)?.QuestionText,
+                Description = rule.Description,
+                //ParentQuestions = [.. questions!
+                //.Where(q => q.QuestionId != questionId)
+                //.Select(q => new SelectListItem
+                //{
+                //    Value = q.QuestionId,
+                //    Text = q.QuestionText
+                //})],
+                Conditions = [..from condition in rule.Conditions
+                             select new ConditionViewModel
+                             {
+                                 Mode = Enum.Parse<ConditionMode>(condition.Mode),
+                                 Description = condition.Description,
+                                 Negate = condition.Negate,
+                                 Operator = !string.IsNullOrEmpty(condition.Operator) ?
+                                               Enum.Parse<ConditionOperator>(condition.Operator) :
+                                               ConditionOperator.None,
+                                 OptionType = !string.IsNullOrEmpty(condition.OptionType) ?
+                                                   Enum.Parse<OptionType>(condition.OptionType) :
+                                                   OptionType.None,
+                                 Value = condition.Value,
+                                 ParentOptionsAsString = string.Join(',', condition.ParentOptions)
+                             }],
+            };
+
+            model.Add(ruleViewModel);
+        }
 
         return View("Rules", model);
     }
