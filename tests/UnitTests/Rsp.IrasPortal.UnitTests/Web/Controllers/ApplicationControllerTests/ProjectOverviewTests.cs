@@ -18,7 +18,7 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApplicationControllerTests
             {
                 [TempDataKeys.ShortProjectTitle] = "Test Project",
                 [TempDataKeys.CategoryId] = "123",
-                [TempDataKeys.ApplicationId] = "456"
+                [TempDataKeys.ProjectApplicationId] = "456"
             };
 
             Sut.TempData = tempData;
@@ -32,7 +32,7 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApplicationControllerTests
 
             model.ProjectTitle.ShouldBe("Test Project");
             model.CategoryId.ShouldBe("123");
-            model.ApplicationId.ShouldBe("456");
+            model.ProjectApplicationId.ShouldBe("456");
         }
     }
 }

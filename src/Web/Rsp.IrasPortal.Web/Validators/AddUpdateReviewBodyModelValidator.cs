@@ -9,7 +9,7 @@ public class AddUpdateReviewBodyModelValidator : AbstractValidator<AddUpdateRevi
 
     public AddUpdateReviewBodyModelValidator()
     {
-        RuleFor(x => x.OrganisationName)
+        RuleFor(x => x.RegulatoryBodyName)
             .NotEmpty()
             .WithMessage("Enter an organisation name")
             .MaximumLength(250)
