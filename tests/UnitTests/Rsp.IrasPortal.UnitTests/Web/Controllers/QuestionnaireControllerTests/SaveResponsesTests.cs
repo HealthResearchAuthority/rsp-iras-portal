@@ -630,6 +630,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
             Index = 0,
             QuestionId = "Q1",
             QuestionType = "rts:org_lookup",
+            QuestionText = "Short project title",
             AnswerText = ""
         };
 
@@ -637,8 +638,11 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
         {
             CurrentStage = "A",
             Questions = [sponsorQuestion],
-            SponsorOrganisation = sponsorOrganisation,
-            SponsorOrgSearchText = sponsorOrgSearchText
+            SponsorOrgSearch = new()
+            {
+                SelectedOrganisation = sponsorOrganisation,
+                SearchText = sponsorOrgSearchText
+            }
         };
 
         var application = new IrasApplicationResponse
