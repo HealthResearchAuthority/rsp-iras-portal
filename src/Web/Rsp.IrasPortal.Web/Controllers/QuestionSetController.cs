@@ -22,6 +22,7 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
     private const string StepAnswers = "answers";
     private const string StepQuestions = "questions";
     private const string StepVersion = "version";
+    private const string QuestionSetFormView = "QuestionSetForm";
 
     public async Task<IActionResult> Index(QuestionSetViewModel model)
     {
@@ -163,7 +164,7 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         };
 
         ViewData["Step"] = StepVersion;
-        return View("QuestionSetForm", model);
+        return View(QuestionSetFormView, model);
     }
 
     [HttpPost]
@@ -177,7 +178,7 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         {
             ModelState.AddModelError("Version.VersionId", "Enter a version ID");
             ViewData["Step"] = StepVersion;
-            return View("QuestionSetForm", model);
+            return View(QuestionSetFormView, model);
         }
 
         // Get existing versions
@@ -192,7 +193,7 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
                 ModelState.AddModelError("Version.VersionId", "A question set with this version ID already exists.");
                 ViewData["Step"] = StepVersion;
                 ViewBag.LockVersionId = false;
-                return View("QuestionSetForm", model);
+                return View(QuestionSetFormView, model);
             }
         }
 
@@ -213,13 +214,18 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         ViewData["Step"] = StepQuestions;
         ViewData["QuestionIndex"] = 0;
 
-        return View("QuestionSetForm", model with { Questions = [] });
+        return View(QuestionSetFormView, model with { Questions = [] });
     }
 
     [HttpPost]
     [FeatureGate("QuestionSet.UseUI")]
     public IActionResult AddQuestion(string versionId, QuestionDto question, int questionIndex)
     {
+        if (questionIndex < 0)
+        {
+            return BadRequest("Invalid question index.");
+        }
+
         var answersJson = HttpContext.Session.GetString($"questionset:{versionId}:{questionIndex}:questionanswers");
         var questionsJson = HttpContext.Session.GetString($"questionset:{versionId}:questions");
 
@@ -230,17 +236,14 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
             ? []
             : JsonSerializer.Deserialize<List<QuestionDto>>(questionsJson!)!;
 
-        while (questions.Count <= questionIndex)
-            questions.Add(new QuestionDto { VersionId = versionId });
-
-        question.Answers = answers;
-        questions[questionIndex] = question;
-
-        if (questionIndex >= questions.Count)
+        if (questionIndex <= questions.Count)
         {
-            while (questions.Count <= questionIndex)
-                questions.Add(new QuestionDto { VersionId = versionId });
+            questions.Add(new QuestionDto());
+            question.VersionId ??= versionId;
+            question.Answers ??= answers;
+            questions[questionIndex] = question;
         }
+
 
         if (string.IsNullOrWhiteSpace(question.QuestionId))
             question.QuestionId = $"{versionId}-{questionIndex}";
@@ -278,7 +281,7 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
                 ? new VersionDto { VersionId = versionId }
                 : JsonSerializer.Deserialize<VersionDto>(versionJson!)!;
 
-            return View("QuestionSetForm", new QuestionSetDto
+            return View(QuestionSetFormView, new QuestionSetDto
             {
                 Version = version,
                 Questions = questions
@@ -296,7 +299,7 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
             ? questionIndex
             : questionIndex + 1;
 
-        return View("QuestionSetForm", new QuestionSetDto
+        return View(QuestionSetFormView, new QuestionSetDto
         {
             Version = versionFinal,
             Questions = questions
@@ -337,7 +340,7 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         ViewData["Step"] = StepQuestions;
         ViewData["QuestionIndex"] = questionIndex;
 
-        return View("QuestionSetForm", model);
+        return View(QuestionSetFormView, model);
     }
 
     [HttpPost]
@@ -375,7 +378,7 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
             ViewData["IsEditingAnswer"] = true;
             ViewData["OriginalAnswerId"] = originalAnswerId;
 
-            return View("QuestionSetForm", new QuestionSetDto
+            return View(QuestionSetFormView, new QuestionSetDto
             {
                 Version = version,
                 Questions = questions
@@ -411,7 +414,7 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
             ViewData["IsEditingAnswer"] = !string.IsNullOrWhiteSpace(originalAnswerId);
             ViewData["OriginalAnswerId"] = originalAnswerId;
 
-            return View("QuestionSetForm", new QuestionSetDto
+            return View(QuestionSetFormView, new QuestionSetDto
             {
                 Version = version,
                 Questions = questions
@@ -433,7 +436,7 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         ViewData["Step"] = StepAnswers;
         ViewData["QuestionIndex"] = questionIndex;
 
-        return View("QuestionSetForm", new QuestionSetDto
+        return View(QuestionSetFormView, new QuestionSetDto
         {
             Version = version,
             Questions = questions
@@ -470,7 +473,7 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         HttpContext.Session.SetString($"questionset:{versionId}:{questionIndex}:questionanswers",
             JsonSerializer.Serialize(answers));
 
-        return View("QuestionSetForm", new QuestionSetDto
+        return View(QuestionSetFormView, new QuestionSetDto
         {
             Version = version,
             Questions = questions
@@ -533,7 +536,6 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
                             AnswerText = "No",
                             VersionId = versionId,
                         }
-
                     ];
                 }
             }
@@ -584,7 +586,7 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
         {
             ModelState.AddModelError(nameof(Save), "Internal server error");
 
-            return View("QuestionSetForm", new QuestionSetDto
+            return View(QuestionSetFormView, new QuestionSetDto
             {
                 Version = JsonSerializer.Deserialize<VersionDto>(versionJson!)!,
                 Questions = JsonSerializer.Deserialize<List<QuestionDto>>(questionsJson!)!
