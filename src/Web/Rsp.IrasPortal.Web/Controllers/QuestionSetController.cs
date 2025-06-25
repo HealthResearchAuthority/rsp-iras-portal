@@ -222,12 +222,19 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
     [FeatureGate("QuestionSet.UseUI")]
     public IActionResult AddAnswer(string versionId, int questionIndex, AnswerDto answer, string? originalAnswerId)
     {
+        if (questionIndex < 0)
+        {
+            return BadRequest("Invalid question index.");
+        }
+
         var answers = GetAnswers(versionId, questionIndex);
         var questions = GetQuestions(versionId);
         var version = GetVersion(versionId);
 
         while (questions.Count <= questionIndex)
+        {
             questions.Add(new QuestionDto { VersionId = versionId });
+        }
 
         var question = questions[questionIndex];
         question.Answers = answers;
