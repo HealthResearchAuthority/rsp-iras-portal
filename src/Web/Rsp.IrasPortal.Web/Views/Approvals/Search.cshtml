@@ -3,15 +3,452 @@
 @* @section is added for the back button, so that we can render something below the back button
     and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
     the named section *@
+
 @section BackNavigation {
-    <partial name="_BackNavigation" model="@("approvls:welcome", "Back", new Dictionary<string, string>())" />
+    <partial name="_BackNavigation" model="@("approvls:welcome", "Back", new Dictionary<string, string>())"/>
 }
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
+        <authorized auth-params="@new(Roles:"user,system_administrator,reviewer")">
 
-        <h1 class="govuk-heading-l">Search</h1>
+            <div class="govuk-grid-row">
+                <div class="govuk-grid-column-two-thirds">
+                    <h2 class="govuk-heading-l" id="title">Search</h2>
+                </div>
+            </div>
 
+            <p class="govuk-body govuk-!-width-two-thirds">
+                Enter the IRAS ID to search for all modifications received, including those submitted for notification only
+            </p>
 
+            <form method="get">
+                <input class="govuk-input govuk-!-width-two-thirds" id="SearchQuery" name="SearchQuery" type="text" value="@(string.Empty)">
+                @* <input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize"/> *@
+                <partial name="_SubmitButton" model="@("rbc:viewreviewbodies", "Search", new Dictionary<string, string>())"/>
+            </form>
+        </authorized>
     </div>
+    
+
+</div>
+
+<div class="govuk-grid-row">
+	<div data-module="filter-panel ga4-event-tracker" class="app-c-filter-panel" data-filter-panel-module-started="true" data-ga4-event-tracker-module-started="true">
+		<div class="app-c-filter-panel__header">
+			<button id="filter-button-931a777e" class="app-c-filter-panel__button govuk-link" aria-expanded="true" aria-controls="filter-panel-931a777e" data-ga4-expandable="" data-ga4-event="{&quot;event_name&quot;:&quot;select_content&quot;,&quot;type&quot;:&quot;finder&quot;,&quot;section&quot;:&quot;Filter and sort&quot;,&quot;text&quot;:&quot;Filter and sort&quot;,&quot;index_section&quot;:0,&quot;index_section_count&quot;:4}">
+				<span class="app-c-filter-panel__button-inner">Filter and sort</span>
+			</button>
+			<h2 id="js-result-count" class="app-c-filter-panel__count">652,750 results</h2>
+		</div>
+
+		<div class="app-c-filter-panel__content" id="filter-panel-931a777e" role="region" aria-labelledby="filter-button-931a777e">
+
+			<details data-ga4-index="{&quot;index_section&quot;:1,&quot;index_section_count&quot;:4}" data-module="filter-section" data-ga4-section="Sort by" data-ga4-filter-parent="Sort by" data-ga4-change-category="update-filter radio" class="app-c-filter-section" open="">
+				<summary class="app-c-filter-section__summary" data-ga4-expandable="" data-ga4-event="{&quot;event_name&quot;:&quot;select_content&quot;,&quot;type&quot;:&quot;finder&quot;,&quot;section&quot;:&quot;Sort by&quot;,&quot;text&quot;:&quot;Sort by&quot;,&quot;index_section&quot;:1,&quot;index_section_count&quot;:4}">
+					<h2 class="app-c-filter-section__summary-heading">
+						Sort by
+					</h2>
+				</summary>
+				<div class="app-c-filter-section__content">
+
+					<div class="govuk-form-group govuk-!-margin-bottom-2">
+						<fieldset class="govuk-fieldset">
+							<legend class="govuk-fieldset__legend govuk-fieldset__legend--m govuk-visually-hidden">
+
+								<span class="govuk-fieldset__heading">Sort order</span>
+							</legend>
+
+
+							<div class="govuk-radios govuk-radios--small">
+								<div class="gem-c-radio govuk-radios__item">
+									<input type="radio" name="order" id="radio-593775fb-0" value="most-viewed" class="govuk-radios__input" checked="">
+
+									<label for="radio-593775fb-0" class="gem-c-label govuk-label govuk-radios__label">Most viewed</label>
+
+
+								</div>
+
+								<div class="gem-c-radio govuk-radios__item">
+									<input type="radio" name="order" id="radio-593775fb-1" value="updated-newest" class="govuk-radios__input">
+
+									<label for="radio-593775fb-1" class="gem-c-label govuk-label govuk-radios__label">Updated (newest)</label>
+
+
+								</div>
+
+								<div class="gem-c-radio govuk-radios__item">
+									<input type="radio" name="order" id="radio-593775fb-2" value="updated-oldest" class="govuk-radios__input">
+
+									<label for="radio-593775fb-2" class="gem-c-label govuk-label govuk-radios__label">Updated (oldest)</label>
+
+
+								</div>
+
+							</div>
+						</fieldset>
+					</div>
+
+				</div>
+			</details>
+			<details data-ga4-index="{&quot;index_section&quot;:2,&quot;index_section_count&quot;:4}" data-module="filter-section" data-ga4-section="Date" data-ga4-filter-parent="Date" data-ga4-change-category="update-filter date" class="app-c-filter-section" open="">
+				<summary class="app-c-filter-section__summary" data-ga4-expandable="" data-ga4-event="{&quot;event_name&quot;:&quot;select_content&quot;,&quot;type&quot;:&quot;finder&quot;,&quot;section&quot;:&quot;Date&quot;,&quot;text&quot;:&quot;Date&quot;,&quot;index_section&quot;:2,&quot;index_section_count&quot;:4}">
+					<h2 class="app-c-filter-section__summary-heading">
+						<span class="govuk-visually-hidden">Filter by</span>
+						Date
+					</h2>
+				</summary>
+				<div class="app-c-filter-section__content">
+
+					<div data-ga4-section="Updated after">
+						<div class="govuk-form-group">
+
+							<div class="gem-c-fieldset govuk-form-group" role="group">
+								<fieldset class="govuk-fieldset" aria-describedby="hint-0d0bad3a" role="group">
+									<legend class="govuk-fieldset__legend">Updated after</legend>
+									<div id="hint-0d0bad3a" class="gem-c-hint govuk-hint govuk-!-margin-bottom-2">
+										For example, 28 2 2023
+									</div>
+
+
+									<div class="gem-c-date-input govuk-date-input" id="public_timestamp[from]">
+										<div class="govuk-date-input__item">
+
+											<div class="govuk-form-group">
+
+
+												<label for="input-8f47b35c" class="gem-c-label govuk-label">Day</label>
+
+
+
+
+
+
+
+
+												<input class="gem-c-input govuk-input govuk-input--width-2" id="input-8f47b35c" inputmode="numeric" name="public_timestamp[from][day]" spellcheck="false" type="text">
+											</div>
+										</div>        <div class="govuk-date-input__item">
+
+											<div class="govuk-form-group">
+
+
+												<label for="input-a0ea0246" class="gem-c-label govuk-label">Month</label>
+
+
+
+
+
+
+
+
+												<input class="gem-c-input govuk-input govuk-input--width-2" id="input-a0ea0246" inputmode="numeric" name="public_timestamp[from][month]" spellcheck="false" type="text">
+											</div>
+										</div>        <div class="govuk-date-input__item">
+
+											<div class="govuk-form-group">
+
+
+												<label for="input-1cae0cc1" class="gem-c-label govuk-label">Year</label>
+
+
+
+
+
+
+
+
+												<input class="gem-c-input govuk-input govuk-input--width-4" id="input-1cae0cc1" inputmode="numeric" name="public_timestamp[from][year]" spellcheck="false" type="text">
+											</div>
+										</div>
+									</div>
+								</fieldset>
+							</div>
+						</div>
+					</div>
+
+					<div data-ga4-section="Updated before">
+						<div class="govuk-form-group">
+
+							<div class="gem-c-fieldset govuk-form-group" role="group">
+								<fieldset class="govuk-fieldset" aria-describedby="hint-80b7fa33" role="group">
+									<legend class="govuk-fieldset__legend">Updated before</legend>
+									<div id="hint-80b7fa33" class="gem-c-hint govuk-hint govuk-!-margin-bottom-2">
+										For example, 13 12 2024
+									</div>
+
+
+									<div class="gem-c-date-input govuk-date-input" id="public_timestamp[to]">
+										<div class="govuk-date-input__item">
+
+											<div class="govuk-form-group">
+
+
+												<label for="input-fdeb82af" class="gem-c-label govuk-label">Day</label>
+
+
+
+
+
+
+
+
+												<input class="gem-c-input govuk-input govuk-input--width-2" id="input-fdeb82af" inputmode="numeric" name="public_timestamp[to][day]" spellcheck="false" type="text">
+											</div>
+										</div>        <div class="govuk-date-input__item">
+
+											<div class="govuk-form-group">
+
+
+												<label for="input-d94ff689" class="gem-c-label govuk-label">Month</label>
+
+
+
+
+
+
+
+
+												<input class="gem-c-input govuk-input govuk-input--width-2" id="input-d94ff689" inputmode="numeric" name="public_timestamp[to][month]" spellcheck="false" type="text">
+											</div>
+										</div>        <div class="govuk-date-input__item">
+
+											<div class="govuk-form-group">
+
+
+												<label for="input-35fb60d3" class="gem-c-label govuk-label">Year</label>
+
+
+
+
+
+
+
+
+												<input class="gem-c-input govuk-input govuk-input--width-4" id="input-35fb60d3" inputmode="numeric" name="public_timestamp[to][year]" spellcheck="false" type="text">
+											</div>
+										</div>
+									</div>
+								</fieldset>
+							</div>
+						</div>
+					</div>
+
+				</div>
+			</details>
+			<details data-ga4-index="{&quot;index_section&quot;:3,&quot;index_section_count&quot;:4}" data-module="filter-section" data-ga4-section="Topic" data-ga4-filter-parent="Topic" data-ga4-change-category="update-filter select" class="js-all-content-finder-taxonomy-select app-c-filter-section">
+				<summary class="app-c-filter-section__summary" data-ga4-expandable="" data-ga4-event="{&quot;event_name&quot;:&quot;select_content&quot;,&quot;type&quot;:&quot;finder&quot;,&quot;section&quot;:&quot;Topic&quot;,&quot;text&quot;:&quot;Topic&quot;,&quot;index_section&quot;:3,&quot;index_section_count&quot;:4}">
+					<h2 class="app-c-filter-section__summary-heading">
+						<span class="govuk-visually-hidden">Filter by</span>
+						Topic
+					</h2>
+				</summary>
+				<div class="app-c-filter-section__content">
+
+					<div class="govuk-form-group gem-c-select">
+						<label class="govuk-label" for="level_one_taxon">Topic</label>
+
+
+
+						<select name="level_one_taxon" id="level_one_taxon" class="govuk-select gem-c-select__select--full-width">
+							<option value="">All topics</option>
+							<option value="495afdb6-47be-4df1-8b38-91c8adb1eefc">Business and industry</option>
+							<option value="a544d48b-1e9e-47fb-b427-7a987c658c14">Corporate information</option>
+							<option value="ba951b09-5146-43be-87af-44075eac3ae9">Crime, justice and law</option>
+							<option value="e491505c-77ae-45b2-84be-8c94b94f6a2b">Defence and armed forces</option>
+							<option value="c58fdadd-7743-46d6-9629-90bb3ccc4ef0">Education, training and skills</option>
+							<option value="ba3a9702-da22-487f-86c1-8334a730e559">Entering and staying in the UK</option>
+							<option value="3cf97f69-84de-41ae-bc7b-7e2cc238fa58">Environment</option>
+							<option value="9597c30a-605a-4e36-8bc1-47e5cdae41b3">Going and being abroad</option>
+							<option value="e48ab80a-de80-4e83-bf59-26316856a5f9">Government</option>
+							<option value="8124ead8-8ebc-4faf-88ad-dd5cbcc92ba8">Health and social care</option>
+							<option value="4794066e-e3cc-425e-8cc4-e7ff3edb4c39">Housing, local and community</option>
+							<option value="37d0fa26-abed-4c74-8835-b3b51ae1c8b2">International</option>
+							<option value="20086ead-41fc-49cf-8a62-d4e1126f41fc">Life circumstances</option>
+							<option value="6acc9db4-780e-4a46-92b4-1812e3c2c48a">Money</option>
+							<option value="206b7f3a-49b5-476f-af0f-fd27e2a68473">Parenting, childcare and children's services </option>
+							<option value="503c5bc7-809a-47b9-83e2-bd0c212dbabb">Regional and local government</option>
+							<option value="e2ca2f1a-0ff3-43ce-b813-16645ff27904">Society and culture</option>
+							<option value="a4038b29-b332-4f13-98b1-1c9709e216bc">Transport</option>
+							<option value="dded88e2-f92e-424f-b73e-6ad24a839c51">Welfare</option>
+							<option value="d0f1e5a3-c8f4-4780-8678-994f19104b21">Work</option>
+						</select>
+					</div>
+
+					<div class="js-required govuk-form-group" data-ga4-section="Subtopic" style="display: block;">
+						<div class="govuk-form-group gem-c-select">
+							<label class="govuk-label" for="level_two_taxon">Subtopic</label>
+
+
+
+							<select name="level_two_taxon" id="level_two_taxon" class="govuk-select gem-c-select__select--full-width" disabled="true">
+								<option value="">All subtopics</option>
+							</select>
+						</div>
+					</div>
+
+				</div>
+			</details>
+
+
+			<details data-ga4-index="{&quot;index_section&quot;:4,&quot;index_section_count&quot;:4}" data-module="filter-section" data-ga4-section="Type" data-ga4-filter-parent="Type" data-ga4-change-category="update-filter checkbox" class="app-c-filter-section">
+				<summary class="app-c-filter-section__summary" data-ga4-expandable="" data-ga4-event="{&quot;event_name&quot;:&quot;select_content&quot;,&quot;type&quot;:&quot;finder&quot;,&quot;section&quot;:&quot;Type&quot;,&quot;text&quot;:&quot;Type&quot;,&quot;index_section&quot;:4,&quot;index_section_count&quot;:4}">
+					<h2 class="app-c-filter-section__summary-heading">
+						<span class="govuk-visually-hidden">Filter by</span>
+						Type
+					</h2>
+				</summary>
+				<div class="app-c-filter-section__content">
+
+
+					<div id="checkboxes-755cd029" data-module="gem-checkboxes govuk-checkboxes" class="gem-c-checkboxes govuk-form-group govuk-checkboxes--small" data-gem-checkboxes-module-started="true" data-govuk-checkboxes-init="" data-govuk-checkboxes-module-started="true">
+						<fieldset class="govuk-fieldset">
+							<legend class="govuk-fieldset__legend govuk-fieldset__legend--m gem-c-checkboxes__legend--hidden">Type</legend>
+
+
+
+
+							<div class="govuk-checkboxes">
+								<div class="govuk-checkboxes__item">
+									<input type="checkbox" name="content_purpose_supergroup[]" id="content_purpose_supergroup-services" value="services" class="govuk-checkboxes__input"><label for="content_purpose_supergroup-services" class="govuk-label govuk-checkboxes__label">Services</label>
+
+								</div>
+
+								<div class="govuk-checkboxes__item">
+									<input type="checkbox" name="content_purpose_supergroup[]" id="content_purpose_supergroup-guidance_and_regulation" value="guidance_and_regulation" class="govuk-checkboxes__input"><label for="content_purpose_supergroup-guidance_and_regulation" class="govuk-label govuk-checkboxes__label">Guidance and regulation</label>
+
+								</div>
+
+								<div class="govuk-checkboxes__item">
+									<input type="checkbox" name="content_purpose_supergroup[]" id="content_purpose_supergroup-news_and_communications" value="news_and_communications" class="govuk-checkboxes__input"><label for="content_purpose_supergroup-news_and_communications" class="govuk-label govuk-checkboxes__label">News and communications</label>
+
+								</div>
+
+								<div class="govuk-checkboxes__item">
+									<input type="checkbox" name="content_purpose_supergroup[]" id="content_purpose_supergroup-research_and_statistics" value="research_and_statistics" class="govuk-checkboxes__input"><label for="content_purpose_supergroup-research_and_statistics" class="govuk-label govuk-checkboxes__label">Research and statistics</label>
+
+								</div>
+
+								<div class="govuk-checkboxes__item">
+									<input type="checkbox" name="content_purpose_supergroup[]" id="content_purpose_supergroup-policy_and_engagement" value="policy_and_engagement" class="govuk-checkboxes__input"><label for="content_purpose_supergroup-policy_and_engagement" class="govuk-label govuk-checkboxes__label">Policy papers and consultations</label>
+
+								</div>
+
+								<div class="govuk-checkboxes__item">
+									<input type="checkbox" name="content_purpose_supergroup[]" id="content_purpose_supergroup-transparency" value="transparency" class="govuk-checkboxes__input"><label for="content_purpose_supergroup-transparency" class="govuk-label govuk-checkboxes__label">Transparency and freedom of information releases</label>
+
+								</div>
+
+							</div>
+						</fieldset>
+					</div>
+
+				</div>
+			</details>
+
+
+
+
+
+			<div class="app-c-filter-panel__actions">
+				<input type="submit" value="Apply" class="govuk-button app-c-filter-panel__action app-c-filter-panel__action--submit" data-ga4-event="{&quot;event_name&quot;:&quot;select_content&quot;,&quot;type&quot;:&quot;finder&quot;,&quot;text&quot;:&quot;Apply&quot;,&quot;section&quot;:&quot;Filter and sort&quot;,&quot;action&quot;:&quot;apply&quot;,&quot;index_section&quot;:0,&quot;index_section_count&quot;:4}" data-disable-with="Apply">
+
+			</div>
+		</div>
+	</div>
+
+ @*    <div class="govuk-grid-column-full">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-full">
+                <div class="govuk-accordion" data-module="govuk-accordion" id="filters-accordion">
+
+                    <div class="govuk-accordion__section">
+                        <div class="govuk-accordion__section-header">
+                            <h2 class="govuk-accordion__section-heading">
+                                <button type="button" class="govuk-accordion__section-button" id="section-ci-name">
+                                    Chief Investigator name
+                                </button>
+                            </h2>
+                        </div>
+                        <div id="section-ci-name-content" class="govuk-accordion__section-content" aria-labelledby="section-ci-name">
+                            <!-- Insert input/select fields here -->
+                        </div>
+                    </div>
+
+                    <div class="govuk-accordion__section">
+                        <div class="govuk-accordion__section-header">
+                            <h2 class="govuk-accordion__section-heading">
+                                <button type="button" class="govuk-accordion__section-button" id="section-date-submitted">
+                                    Date modification submitted
+                                </button>
+                            </h2>
+                        </div>
+                        <div id="section-date-submitted-content" class="govuk-accordion__section-content" aria-labelledby="section-date-submitted">
+                            <!-- Insert input/select fields here -->
+                        </div>
+                    </div>
+
+                    <div class="govuk-accordion__section">
+                        <div class="govuk-accordion__section-header">
+                            <h2 class="govuk-accordion__section-heading">
+                                <button type="button" class="govuk-accordion__section-button" id="section-lead-nation">
+                                    Lead nation
+                                </button>
+                            </h2>
+                        </div>
+                        <div id="section-lead-nation-content" class="govuk-accordion__section-content" aria-labelledby="section-lead-nation">
+                            <!-- Insert input/select fields here -->
+                        </div>
+                    </div>
+
+                    <div class="govuk-accordion__section">
+                        <div class="govuk-accordion__section-header">
+                            <h2 class="govuk-accordion__section-heading">
+                                <button type="button" class="govuk-accordion__section-button" id="section-mod-type">
+                                    Modification type
+                                </button>
+                            </h2>
+                        </div>
+                        <div id="section-mod-type-content" class="govuk-accordion__section-content" aria-labelledby="section-mod-type">
+                            <!-- Insert input/select fields here -->
+                        </div>
+                    </div>
+
+                    <div class="govuk-accordion__section">
+                        <div class="govuk-accordion__section-header">
+                            <h2 class="govuk-accordion__section-heading">
+                                <button type="button" class="govuk-accordion__section-button" id="section-title">
+                                    Short project title
+                                </button>
+                            </h2>
+                        </div>
+                        <div id="section-title-content" class="govuk-accordion__section-content" aria-labelledby="section-title">
+                            <!-- Insert input/select fields here -->
+                        </div>
+                    </div>
+
+                    <div class="govuk-accordion__section">
+                        <div class="govuk-accordion__section-header">
+                            <h2 class="govuk-accordion__section-heading">
+                                <button type="button" class="govuk-accordion__section-button" id="section-sponsor">
+                                    Sponsor organisation
+                                </button>
+                            </h2>
+                        </div>
+                        <div id="section-sponsor-content" class="govuk-accordion__section-content" aria-labelledby="section-sponsor">
+                            <!-- Insert input/select fields here -->
+                        </div>
+                    </div>
+
+                </div>
+
+                <button class="govuk-button govuk-button--success" data-module="govuk-button">
+                    Apply filters
+                </button>
+            </div>
+        </div>
+
+    </div> *@
+
+
 </div>
