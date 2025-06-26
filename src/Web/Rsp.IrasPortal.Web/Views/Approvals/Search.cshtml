@@ -1,77 +1,69 @@
 ﻿@using Rsp.IrasPortal.Application.DTOs.Responses;
 
-@* @section is added for the back button, so that we can render something below the back button
-    and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
-    the named section *@
-
 @section BackNavigation {
-    <partial name="_BackNavigation" model="@("approvls:welcome", "Back", new Dictionary<string, string>())"/>
+	<partial name="_BackNavigation" model="@("approvls:welcome", "Back", new Dictionary<string, string>())" />
 }
 
-<div class="govuk-grid-row ">
-        <authorized auth-params="@new(Roles:"user,system_administrator,reviewer")">
-
-            <div class="govuk-grid-row">
-                <div class="govuk-grid-column-two-thirds">
-                    <h2 class="govuk-heading-l" id="title">Search</h2>
-                </div>
-            </div>
-
-            <p class="govuk-body govuk-!-width-two-thirds">
-                Enter the IRAS ID to search for all modifications received, including those submitted for notification only
-            </p>
-
-            <form method="get">
-                <input class="govuk-input govuk-!-width-two-thirds" id="SearchQuery" name="SearchQuery" type="text" value="@(string.Empty)">
-                @* <input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize"/> *@
-                <partial name="_SubmitButton" model="@("rbc:viewreviewbodies", "Search", new Dictionary<string, string>())"/>
-            </form>
-        </authorized>
-    
-
-</div>
-
 <div class="govuk-grid-row">
-	<div class="app-c-filter-panel">
+	<authorized auth-params="@new(Roles:"user,system_administrator,reviewer")">
+		<div class="govuk-grid-column-two-thirds">
+			<h2 class="govuk-heading-l" id="title">Search</h2>
 
-		<!-- Must be in this order: checkbox → label → count → content -->
-		<input type="checkbox" id="toggle-filter" class="app-c-filter-toggle" hidden>
+			<p class="govuk-body">
+				Enter the IRAS ID to search for all modifications received, including those submitted for notification only
+			</p>
 
-		<label for="toggle-filter" class="app-c-filter-panel__button govuk-link" role="button" aria-controls="filter-panel">
-			<span class="app-c-filter-panel__button-inner">Filter and sort</span>
-		</label>
+            <form method="get" class="govuk-form-group" style="margin-bottom: 0;">
+                <div style="display: flex; width: 100%; gap: 10px;">
+                    <input class="govuk-input" id="SearchQuery" name="SearchQuery" type="text"
+                           style="width: 87.5%;" value="@(string.Empty)" />
+                    <div style="width: 12.5%;">
+                        <partial name="_SubmitButton" model="@("rbc:viewreviewbodies", "Search", new Dictionary<string, string>())" />
+                    </div>
+                </div>
+            </form>
 
-		<h2 id="js-result-count" class="app-c-filter-panel__count">652,750 results</h2>
 
-		<div class="app-c-filter-panel__content" id="filter-panel" role="region" aria-labelledby="toggle-filter">
-			<!-- Example accordion -->
-			<details class="app-c-filter-section" open>
-				<summary class="app-c-filter-section__summary">
-					<h2 class="app-c-filter-section__summary-heading">Sort by</h2>
-				</summary>
-				<div class="app-c-filter-section__content">
-					<div class="govuk-form-group govuk-!-margin-bottom-2">
-						<fieldset class="govuk-fieldset">
-							<legend class="govuk-visually-hidden">Sort order</legend>
-							<div class="govuk-radios govuk-radios--small">
-								<div class="govuk-radios__item">
-									<input class="govuk-radios__input" type="radio" name="sort" id="most-viewed" checked>
-									<label class="govuk-label govuk-radios__label" for="most-viewed">Most viewed</label>
-								</div>
-								<div class="govuk-radios__item">
-									<input class="govuk-radios__input" type="radio" name="sort" id="updated-newest">
-									<label class="govuk-label govuk-radios__label" for="updated-newest">Updated (newest)</label>
-								</div>
+
+			<!-- Filter Panel -->
+			<div class="app-c-filter-panel">
+				<input type="checkbox" id="toggle-filter" class="app-c-filter-toggle" hidden>
+
+				<label for="toggle-filter" class="app-c-filter-panel__button govuk-link" role="button" aria-controls="filter-panel">
+					<span class="app-c-filter-panel__button-inner">Filter and sort</span>
+				</label>
+
+				<h2 id="js-result-count" class="app-c-filter-panel__count">652,750 results</h2>
+
+				<div class="app-c-filter-panel__content" id="filter-panel" role="region" aria-labelledby="toggle-filter">
+					<details class="app-c-filter-section" open>
+						<summary class="app-c-filter-section__summary">
+							<h2 class="app-c-filter-section__summary-heading">Sort by</h2>
+						</summary>
+						<div class="app-c-filter-section__content">
+							<div class="govuk-form-group govuk-!-margin-bottom-2">
+								<fieldset class="govuk-fieldset">
+									<legend class="govuk-visually-hidden">Sort order</legend>
+									<div class="govuk-radios govuk-radios--small">
+										<div class="govuk-radios__item">
+											<input class="govuk-radios__input" type="radio" name="sort" id="most-viewed" checked>
+											<label class="govuk-label govuk-radios__label" for="most-viewed">Most viewed</label>
+										</div>
+										<div class="govuk-radios__item">
+											<input class="govuk-radios__input" type="radio" name="sort" id="updated-newest">
+											<label class="govuk-label govuk-radios__label" for="updated-newest">Updated (newest)</label>
+										</div>
+									</div>
+								</fieldset>
 							</div>
-						</fieldset>
+						</div>
+					</details>
+
+					<div class="app-c-filter-panel__actions">
+						<button class="govuk-button app-c-filter-panel__action app-c-filter-panel__action--submit">Apply</button>
 					</div>
 				</div>
-			</details>
-
-			<div class="app-c-filter-panel__actions">
-				<button class="govuk-button app-c-filter-panel__action app-c-filter-panel__action--submit">Apply</button>
 			</div>
 		</div>
-	</div>
+	</authorized>
 </div>
-
