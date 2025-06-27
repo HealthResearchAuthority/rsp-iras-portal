@@ -1,4 +1,5 @@
 ﻿@using Rsp.IrasPortal.Application.DTOs.Responses;
+@model Rsp.IrasPortal.Web.Views.Approvals.SearchDto;
 
 @section BackNavigation {
 	<partial name="_BackNavigation" model="@("approvls:welcome", "Back", new Dictionary<string, string>())" />
@@ -23,47 +24,110 @@
                 </div>
             </form>
 
-
-
 			<!-- Filter Panel -->
-			<div class="app-c-filter-panel">
-				<input type="checkbox" id="toggle-filter" class="app-c-filter-toggle" hidden>
+            <div class="app-c-filter-panel">
+                <input type="checkbox" id="toggle-filter" class="app-c-filter-toggle" hidden>
+                <div class="app-c-filter-panel__header">
+                    <label for="toggle-filter" class="app-c-filter-panel__button govuk-link" role="button" aria-controls="filter-panel">
+                        <span class="app-c-filter-panel__button-inner">Advanced filter</span>
+                    </label>
 
-				<label for="toggle-filter" class="app-c-filter-panel__button govuk-link" role="button" aria-controls="filter-panel">
-					<span class="app-c-filter-panel__button-inner">Filter and sort</span>
-				</label>
+                    <h2 id="js-result-count" class="app-c-filter-panel__count">652,750 results</h2>
+                </div>
+                <div class="app-c-filter-panel__content" id="filter-panel" role="region" aria-labelledby="toggle-filter">
+                    @* Chief Investigator name *@
+                    <details class="app-c-filter-section">
+                        <summary class="app-c-filter-section__summary">
+                            <h2 class="app-c-filter-section__summary-heading">Chief Investigator name</h2>
+                        </summary>
+                        <div class="app-c-filter-section__content">
+                            <div class="govuk-form-group govuk-!-margin-bottom-2">
+                                <fieldset class="govuk-fieldset">
+                                    <rsp-gds-input asp-for="ChiefInvestigatorname" label-text="Enter the name of the Chief Investigator " width-class="govuk-!-width-three-quarters"/>
+                                </fieldset>
+                            </div>
+                        </div>
+                    </details>
+                    @* Date modification submitted *@
+                    <details class="app-c-filter-section">
+                        <summary class="app-c-filter-section__summary">
+                            <h2 class="app-c-filter-section__summary-heading">Date modification submitted</h2>
+                        </summary>
+                        <div class="app-c-filter-section__content">
+                            <div class="govuk-form-group govuk-!-margin-bottom-2">
+                                <fieldset class="govuk-fieldset">
+                                    @*                         <rsp-gds-date-input asp-for="@Model.Questions[index].AnswerText"
+                                                        day-name="Questions[@index].Day"
+                                                        day-value="@Model.Questions[index].Day"
+                                                        month-name="Questions[@index].Month"
+                                                        month-value="@Model.Questions[index].Month"
+                                                        year-name="Questions[@index].Year"
+                                                        year-value="@Model.Questions[index].Year"
+                                                        label-text="@question.QuestionText"
+                                                        hint-html="@Html.Raw(hintHtml)"
+                                             
+                                                        id="Questions[@index].AnswerText" /> *@
+                                </fieldset>
+                            </div>
+                        </div>
+                    </details>
+                    @* Lead nation *@
+                    <details class="app-c-filter-section">
+                        <summary class="app-c-filter-section__summary">
+                            <h2 class="app-c-filter-section__summary-heading">Lead nation</h2>
+                        </summary>
+                        <div class="app-c-filter-section__content">
+                            <div class="govuk-form-group govuk-!-margin-bottom-2">
+                                <fieldset class="govuk-fieldset">
 
-				<h2 id="js-result-count" class="app-c-filter-panel__count">652,750 results</h2>
+                                </fieldset>
+                            </div>
+                        </div>
+                    </details>
+                    @* Modification type *@
+                    <details class="app-c-filter-section">
+                        <summary class="app-c-filter-section__summary">
+                            <h2 class="app-c-filter-section__summary-heading">Modification type</h2>
+                        </summary>
+                        <div class="app-c-filter-section__content">
+                            <div class="govuk-form-group govuk-!-margin-bottom-2">
+                                <fieldset class="govuk-fieldset">
 
-				<div class="app-c-filter-panel__content" id="filter-panel" role="region" aria-labelledby="toggle-filter">
-					<details class="app-c-filter-section" open>
-						<summary class="app-c-filter-section__summary">
-							<h2 class="app-c-filter-section__summary-heading">Sort by</h2>
-						</summary>
-						<div class="app-c-filter-section__content">
-							<div class="govuk-form-group govuk-!-margin-bottom-2">
-								<fieldset class="govuk-fieldset">
-									<legend class="govuk-visually-hidden">Sort order</legend>
-									<div class="govuk-radios govuk-radios--small">
-										<div class="govuk-radios__item">
-											<input class="govuk-radios__input" type="radio" name="sort" id="most-viewed" checked>
-											<label class="govuk-label govuk-radios__label" for="most-viewed">Most viewed</label>
-										</div>
-										<div class="govuk-radios__item">
-											<input class="govuk-radios__input" type="radio" name="sort" id="updated-newest">
-											<label class="govuk-label govuk-radios__label" for="updated-newest">Updated (newest)</label>
-										</div>
-									</div>
-								</fieldset>
-							</div>
-						</div>
-					</details>
+                                </fieldset>
+                            </div>
+                        </div>
+                    </details>
+                    @* Short project title *@
+                    <details class="app-c-filter-section">
+                        <summary class="app-c-filter-section__summary">
+                            <h2 class="app-c-filter-section__summary-heading">Short project title</h2>
+                        </summary>
+                        <div class="app-c-filter-section__content">
+                            <div class="govuk-form-group govuk-!-margin-bottom-2">
+                                <fieldset class="govuk-fieldset">
 
-					<div class="app-c-filter-panel__actions">
-						<button class="govuk-button app-c-filter-panel__action app-c-filter-panel__action--submit">Apply</button>
-					</div>
-				</div>
-			</div>
+                                </fieldset>
+                            </div>
+                        </div>
+                    </details>
+                    @* Sponsor organisation *@
+                    <details class="app-c-filter-section">
+                        <summary class="app-c-filter-section__summary">
+                            <h2 class="app-c-filter-section__summary-heading">Sponsor organisation</h2>
+                        </summary>
+                        <div class="app-c-filter-section__content">
+                            <div class="govuk-form-group govuk-!-margin-bottom-2">
+                                <fieldset class="govuk-fieldset">
+
+                                </fieldset>
+                            </div>
+                        </div>
+                    </details>
+                    <div class="app-c-filter-panel__actions">
+                        <button class="govuk-button app-c-filter-panel__action app-c-filter-panel__action--submit">Apply</button>
+                    </div>
+                </div>
+            </div>
 		</div>
 	</authorized>
 </div>
