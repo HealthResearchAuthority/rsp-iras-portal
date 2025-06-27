@@ -89,6 +89,20 @@ button.govuk-link {
     gap: 15px;
 }
 
+.research-panel {
+    padding-top: 20px;
+    padding-bottom: 0px;
+    padding-left: 20px;
+    padding-right: 20px;
+    text-align: left;
+    border-color: lightgray;
+    border-width: 2px;
+}
+
+.research-text {
+    margin: 0;
+}
+
 .govuk-button-hyperlink {
     background: none;
     border: 0;
