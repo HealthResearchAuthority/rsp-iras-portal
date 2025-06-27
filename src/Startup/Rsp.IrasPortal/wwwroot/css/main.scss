@@ -480,52 +480,65 @@ dialog[open] {
 }
 
 // FILTER PANEL
-
 .app-c-filter-panel {
     padding-top: 15px;
     margin-bottom: 10px;
 }
 
-// ✅ Header with inline layout
+// ✅ Header layout: toggle + result count
 .app-c-filter-panel__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-wrap: nowrap;
     gap: 10px;
-    // Toggle label
+    // Ensure button behaves well in flex
     & > .app-c-filter-panel__button {
         flex-shrink: 1;
         min-width: 0;
     }
-    // Result count aligned right
-    & > .app-c-filter-panel__count {
-        flex-shrink: 0;
-        margin-left: auto;
-        white-space: nowrap;
-        font-family: "GDS Transport", arial, sans-serif;
-        color: #505a5f;
-        font-size: 1rem;
-        line-height: 1.25;
-    }
 }
 
+// 📱 Responsive tweak: stack elements on narrow screens
 @media (max-width: 600px) {
     .app-c-filter-panel__header {
         flex-wrap: wrap;
     }
+}
 
+// ✅ Rotate arrow when checkbox is checked
+.app-c-filter-toggle:checked + .app-c-filter-panel__header .app-c-filter-panel__button::before {
+    transform: rotate(-135deg); // up arrow
+}
+
+// ✅ Result count text (right-aligned via flex)
+.app-c-filter-panel__count {
+    margin: 0;
+    color: #505a5f;
+    font-family: "GDS Transport", arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-weight: 400;
+    font-size: 1rem;
+    line-height: 1.25;
+}
+
+@media print {
     .app-c-filter-panel__count {
-        margin-left: 0;
+        font-family: sans-serif;
+        font-size: 14pt;
+        line-height: 1.2;
     }
 }
 
 // ✅ Toggle behaviour using sibling selectors
-.app-c-filter-toggle + .app-c-filter-panel__button + .app-c-filter-panel__count + .app-c-filter-panel__content {
+// Hide by default
+.app-c-filter-toggle:not(:checked) ~ .app-c-filter-panel__content {
     display: none;
 }
 
-.app-c-filter-toggle:checked + .app-c-filter-panel__button + .app-c-filter-panel__count + .app-c-filter-panel__content {
+// Show when checked
+.app-c-filter-toggle:checked ~ .app-c-filter-panel__content {
     display: block;
 }
 
@@ -590,25 +603,26 @@ dialog[open] {
 
 .app-c-filter-section__summary {
     display: flex;
-    align-items: center; // ✅ ensures children align vertically
+    align-items: center; // Vertically centers ::before and h2
     cursor: pointer;
     color: #0b0c0c;
     list-style: none;
     padding: 25px 0;
+    margin: 0; // 🔄 remove auto centering – unnecessary
 }
 
 .app-c-filter-section__summary::before {
     content: "";
-    border: solid #0b0c0c;
-    border-width: 0 2px 2px 0;
     display: inline-block;
     width: 10px;
     height: 10px;
     margin-right: 8px;
+    border: solid #0b0c0c;
+    border-width: 0 2px 2px 0;
     transform: rotate(45deg);
     transition: transform 0.2s ease-in-out;
-    // ✅ remove vertical-align/flex tweaks — parent handles it
     flex-shrink: 0;
+    align-self: center; // ✅ stays aligned through rotation
 }
 
 .app-c-filter-section[open] .app-c-filter-section__summary::before {
@@ -620,4 +634,5 @@ dialog[open] {
     font-size: 1.1875rem;
     line-height: 1.315789474;
     font-family: "GDS Transport", arial, sans-serif;
+    margin: 0; // ✅ ensures heading aligns with icon
 }
