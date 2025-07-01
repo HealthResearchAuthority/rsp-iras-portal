@@ -1,0 +1,13 @@
+﻿@using Microsoft.AspNetCore.Mvc.ModelBinding
+@model QuestionnaireViewModel
+@{
+	var index = (int)ViewBag.Index;
+	var question = Model.Questions[index];
+	var errorKey = $"Questions[{index}].AnswerText";
+	var fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
+	var rules = question.Rules;
+	var conditional = !question.IsMandatory && rules.Count > 0;
+	var parents = conditional ? string.Join(',', rules.Select(rule => rule.ParentQuestionId)) : "";
+	var questionId = conditional ? question.QuestionId : "";
+	var hintContent = rules.Any() ? string.Join("", rules.Select(rule => $"<p>{rule.Description}</p>")) : null;
+}

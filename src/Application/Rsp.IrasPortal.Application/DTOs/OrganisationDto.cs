@@ -10,4 +10,6 @@ public record OrganisationDto
     /// Organisation Name
     /// </summary>
     public string Name { get; set; } = null!;
+    public string Address { get; set; } = null!;
+    public string CountryName { get; set; } = null!;
 }
