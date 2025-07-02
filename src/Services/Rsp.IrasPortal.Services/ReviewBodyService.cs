@@ -23,14 +23,14 @@ public class ReviewBodyService(IReviewBodyServiceClient client) : IReviewBodySer
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse> CreateReviewBody(ReviewBodyDto reviewBodyDto)
+    public async Task<ServiceResponse<ReviewBodyDto>> CreateReviewBody(ReviewBodyDto reviewBodyDto)
     {
         var apiResponse = await client.CreateReviewBody(reviewBodyDto);
 
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse> UpdateReviewBody(ReviewBodyDto reviewBodyDto)
+    public async Task<ServiceResponse<ReviewBodyDto>> UpdateReviewBody(ReviewBodyDto reviewBodyDto)
     {
         var apiResponse = await client.UpdateReviewBody(reviewBodyDto);
 
