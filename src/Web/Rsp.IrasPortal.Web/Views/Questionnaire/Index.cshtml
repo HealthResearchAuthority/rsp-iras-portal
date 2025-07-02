@@ -14,7 +14,7 @@
 	var previousCategory = TempData[TempDataKeys.PreviousCategory] as string;
 	var currentStage = TempData[TempDataKeys.CurrentStage] as string;
 	var errorSummaryTitle = "There is a problem";
-	var applicationId = TempData[TempDataKeys.ApplicationId] as string;
+	var applicationId = TempData[TempDataKeys.ProjectApplicationId] as string;
 	var projectOverview = TempData[TempDataKeys.ProjectOverview] as bool? ?? false;
 
 	Model.CurrentStage = currentStage!;
@@ -47,7 +47,7 @@
 	{
 		navModel = ("qnc:submitapplication", "Back", new()
 		{
-			{ "applicationId", applicationId }
+			{ "projectApplicationId", applicationId }
 		});
 	}
 	else if (!string.IsNullOrEmpty(previousStage))
@@ -63,7 +63,7 @@
 	{
 		TempData[TempDataKeys.ShortProjectTitle] = Model.GetShortProjectTitle();
 		TempData[TempDataKeys.CategoryId] = Model.GetFirstCategory();
-		TempData[TempDataKeys.ApplicationId] = applicationId;
+		TempData[TempDataKeys.ProjectApplicationId] = applicationId;
 		// If the project overview is true, navigate to the project overview page
 		navModel = ("app:projectoverview", "Back", new());
 	}

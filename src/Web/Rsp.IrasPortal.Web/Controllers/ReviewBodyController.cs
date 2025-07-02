@@ -301,7 +301,7 @@ public class ReviewBodyController(
         };
 
         var reviewBody = await reviewBodyService.GetReviewBodyById(reviewBodyId);
-        var reviewBodyName = reviewBody?.Content?.OrganisationName;
+        var reviewBodyName = reviewBody?.Content?.RegulatoryBodyName;
 
         var resultModel = new ReviewBodyAuditTrailViewModel
         {
@@ -421,7 +421,7 @@ public class ReviewBodyController(
     {
         var reviewBodyUserDto = new ReviewBodyUserDto
         {
-            ReviewBodyId = reviewBodyId,
+            Id = reviewBodyId,
             UserId = userId,
             DateAdded = DateTime.UtcNow
         };

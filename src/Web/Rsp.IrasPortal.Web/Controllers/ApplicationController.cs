@@ -63,7 +63,7 @@ public class ApplicationController(
 
         // Create new application
         var respondent = GetRespondentFromContext();
-        var name = $"{respondent.FirstName} {respondent.LastName}";
+        var name = $"{respondent.GivenName} {respondent.FamilyName}";
 
         var irasApplicationRequest = new IrasApplicationRequest
         {
@@ -95,7 +95,7 @@ public class ApplicationController(
         return RedirectToAction(nameof(QuestionnaireController.Resume), "Questionnaire", new
         {
             categoryId,
-            irasApplication.ApplicationId
+            projectApplicationId = irasApplication.Id
         });
     }
 
@@ -106,10 +106,10 @@ public class ApplicationController(
         return View(ApplicationInfo, (new ApplicationInfoViewModel(), "create"));
     }
 
-    public async Task<IActionResult> EditApplication([FromQuery, Required] string applicationId)
+    public async Task<IActionResult> EditApplication([FromQuery, Required] string projectApplicationId)
     {
         // get the pending application by id
-        var applicationsServiceResponse = await applicationsService.GetApplication(applicationId);
+        var applicationsServiceResponse = await applicationsService.GetApplication(projectApplicationId);
 
         // return the view if successfull
         if (!applicationsServiceResponse.IsSuccessStatusCode)
@@ -155,7 +155,7 @@ public class ApplicationController(
 
         var respondent = GetRespondentFromContext();
 
-        var name = $"{respondent.FirstName} {respondent.LastName}";
+        var name = $"{respondent.GivenName} {respondent.FamilyName}";
 
         var irasApplicationRequest = new IrasApplicationRequest
         {
@@ -251,15 +251,15 @@ public class ApplicationController(
         {
             ProjectTitle = TempData[TempDataKeys.ShortProjectTitle] as string ?? string.Empty,
             CategoryId = TempData[TempDataKeys.CategoryId] as string ?? string.Empty,
-            ApplicationId = TempData[TempDataKeys.ApplicationId] as string ?? string.Empty
+            ProjectApplicationId = TempData[TempDataKeys.ProjectApplicationId] as string ?? string.Empty
         };
 
         TempData[TempDataKeys.ProjectOverview] = true;
         return View(model);
     }
 
-    [Route("{applicationId}", Name = "app:ViewApplication")]
-    public async Task<IActionResult> ViewApplication(string applicationId)
+    [Route("{projectApplicationId}", Name = "app:ViewApplication")]
+    public async Task<IActionResult> ViewApplication(string projectApplicationId)
     {
         // if the ModelState is invalid, return the view
         // with the null model. The view shouldn't display any
@@ -270,7 +270,7 @@ public class ApplicationController(
         }
 
         // get the pending application by id
-        var applicationServiceResponse = await applicationsService.GetApplication(applicationId);
+        var applicationServiceResponse = await applicationsService.GetApplication(projectApplicationId);
 
         // return the view if successfull
         if (applicationServiceResponse.IsSuccessStatusCode)
@@ -309,22 +309,22 @@ public class ApplicationController(
 
         var respondent = new RespondentDto
         {
-            RespondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!,
+            Id = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!,
             EmailAddress = (HttpContext.Items[ContextItemKeys.Email] as string)!,
-            FirstName = (HttpContext.Items[ContextItemKeys.FirstName] as string)!,
-            LastName = (HttpContext.Items[ContextItemKeys.LastName] as string)!,
+            GivenName = (HttpContext.Items[ContextItemKeys.FirstName] as string)!,
+            FamilyName = (HttpContext.Items[ContextItemKeys.LastName] as string)!,
             Role = string.Join(',', User.Claims
                        .Where(claim => claim.Type == ClaimTypes.Role)
                        .Select(claim => claim.Value))
         };
 
-        var name = $"{respondent.FirstName} {respondent.LastName}";
+        var name = $"{respondent.GivenName} {respondent.FamilyName}";
 
         var application = this.GetApplicationFromSession();
 
         var request = new IrasApplicationRequest
         {
-            ApplicationId = application.ApplicationId,
+            Id = application.Id,
             Title = model.Name!,
             Description = model.Description!,
             CreatedBy = application.CreatedBy,
@@ -355,10 +355,10 @@ public class ApplicationController(
     {
         return new RespondentDto
         {
-            RespondentId = HttpContext.Items[ContextItemKeys.RespondentId]?.ToString() ?? string.Empty,
+            Id = HttpContext.Items[ContextItemKeys.RespondentId]?.ToString() ?? string.Empty,
             EmailAddress = HttpContext.Items[ContextItemKeys.Email]?.ToString() ?? string.Empty,
-            FirstName = HttpContext.Items[ContextItemKeys.FirstName]?.ToString() ?? string.Empty,
-            LastName = HttpContext.Items[ContextItemKeys.LastName]?.ToString() ?? string.Empty,
+            GivenName = HttpContext.Items[ContextItemKeys.FirstName]?.ToString() ?? string.Empty,
+            FamilyName = HttpContext.Items[ContextItemKeys.LastName]?.ToString() ?? string.Empty,
             Role = string.Join(',', User.Claims
                        .Where(claim => claim.Type == ClaimTypes.Role)
                        .Select(claim => claim.Value))

@@ -22,7 +22,7 @@
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
         <h1 class="govuk-heading-l">Check and @(!Model.IsRemove ? "add" : "remove") user profile</h1>
-        <p class="govuk-body">Check the information here is correct before @(!Model.IsRemove ? "adding the profile to" : "removing the profile from") @Model.ReviewBody.OrganisationName.</p>
+        <p class="govuk-body">Check the information here is correct before @(!Model.IsRemove ? "adding the profile to" : "removing the profile from") @Model.ReviewBody.RegulatoryBodyName.</p>
     </div>
 </div>
 
@@ -51,14 +51,14 @@
                     <tr class="govuk-table__row">
                         <td class="govuk-table__cell"><b>First name</b></td>
                         <td class="govuk-table__cell">
-                            @Model.User.FirstName
+                            @Model.User.GivenName
                         </td>
                     </tr>
 
                     <tr class="govuk-table__row">
                         <td class="govuk-table__cell"><b>Last name</b></td>
                         <td class="govuk-table__cell">
-                            @Model.User.LastName
+                            @Model.User.FamilyName
                         </td>
                     </tr>
 

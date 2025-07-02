@@ -16,7 +16,7 @@
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-        <h1 class="govuk-heading-l">Users for @Model.ReviewBody.OrganisationName</h1>
+        <h1 class="govuk-heading-l">Users for @Model.ReviewBody.RegulatoryBodyName</h1>
         <p class="govuk-body">Search, assign or remove users from this review body</p>
     </div>
 
@@ -56,8 +56,8 @@
                         @foreach (var user in Model.Users)
                         {
                             <tr class="govuk-table__row">
-                                <td class="govuk-table__cell">@user.FirstName</td>
-                                <td class="govuk-table__cell">@user.LastName</td>
+                                <td class="govuk-table__cell">@user.GivenName</td>
+                                <td class="govuk-table__cell">@user.FamilyName</td>
                                 <td class="govuk-table__cell line-break-anywhere">@user.Email</td>
                                 <td class="govuk-table__cell">
                                     @if (!string.IsNullOrEmpty(user.Status))
@@ -92,7 +92,7 @@
                 Check your spelling or enter another search term and try again. If no results are found, go to Manage users where you can check if a user profile exists and create one if needed.
             </p>
             <p class="govuk-body">
-                <a class="govuk-link" asp-route="rbc:viewreviewbodyusers" asp-all-route-data="@(new Dictionary<string, string> { { "ReviewBodyId", Model.ReviewBody.Id.ToString() } })">Back to Users for @Model.ReviewBody.OrganisationName</a>
+                <a class="govuk-link" asp-route="rbc:viewreviewbodyusers" asp-all-route-data="@(new Dictionary<string, string> { { "ReviewBodyId", Model.ReviewBody.Id.ToString() } })">Back to Users for @Model.ReviewBody.RegulatoryBodyName</a>
             </p>
             <p class="govuk-body">
                 <a class="govuk-link" asp-route="admin:users">Manage users</a>

@@ -9,12 +9,12 @@ public record RespondentAnswersRequest
     /// <summary>
     /// Respondent's Id
     /// </summary>
-    public string RespondentId { get; set; } = null!;
+    public string Id { get; set; } = null!;
 
     /// <summary>
     /// Application Id
     /// </summary>
-    public string ApplicationId { get; set; } = null!;
+    public string ProjectApplicationId { get; set; } = null!;
 
     /// <summary>
     /// Respondent Answers

@@ -2,7 +2,7 @@
 
 public class ReviewBodyUserDto
 {
-    public Guid ReviewBodyId { get; set; }
+    public Guid Id { get; set; }
     public Guid UserId { get; set; }
     public DateTime DateAdded { get; set; }
 }

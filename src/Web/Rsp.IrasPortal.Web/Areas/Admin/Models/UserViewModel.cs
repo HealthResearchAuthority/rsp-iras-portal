@@ -16,9 +16,9 @@ public class UserViewModel
 
     public string? Title { get; set; } = null;
 
-    public string FirstName { get; set; } = null!;
+    public string GivenName { get; set; } = null!;
 
-    public string LastName { get; set; } = null!;
+    public string FamilyName { get; set; } = null!;
 
     public string Email { get; set; } = null!;
 
@@ -73,8 +73,8 @@ public class UserViewModel
         if (user != null)
         {
             Id = user.Id;
-            FirstName = user.FirstName;
-            LastName = user.LastName;
+            GivenName = user.GivenName;
+            FamilyName = user.FamilyName;
             Email = user.Email;
             Telephone = user.Telephone;
             Country = !string.IsNullOrEmpty(user.Country) ? user.Country.Split(',') : null;
@@ -92,26 +92,26 @@ public class UserViewModel
     public UserViewModel(User user)
     {
         Id = user.Id;
-        FirstName = user.FirstName;
-        LastName = user.LastName;
+        GivenName = user.GivenName;
+        FamilyName = user.FamilyName;
         Email = user.Email;
         Status = user.Status;
         LastLogin = user.LastLogin;
     }
 
-    public void Deconstruct(out string firstName, out string lastName, out string email)
+    public void Deconstruct(out string givenName, out string familyName, out string email)
     {
-        firstName = FirstName;
-        lastName = LastName;
+        givenName = GivenName;
+        familyName = FamilyName;
         email = Email;
     }
 
-    public void Deconstruct(out string id, out string originalEmail, out string firstName, out string lastName, out string email)
+    public void Deconstruct(out string id, out string originalEmail, out string givenName, out string familyName, out string email)
     {
         id = Id!;
         originalEmail = OriginalEmail!;
-        firstName = FirstName;
-        lastName = LastName;
+        givenName = GivenName;
+        familyName = FamilyName;
         email = Email;
     }
 }

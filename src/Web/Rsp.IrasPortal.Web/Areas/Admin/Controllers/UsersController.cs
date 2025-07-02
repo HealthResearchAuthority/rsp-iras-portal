@@ -33,6 +33,7 @@ public class UsersController(IUserManagementService userManagementService, IVali
     private const string ConfirmDisableUser = nameof(ConfirmDisableUser);
     private const string EnableUserSuccessMessage = nameof(EnableUserSuccessMessage);
     private const string ConfirmEnableUser = nameof(ConfirmEnableUser);
+    private const string OperationsRole = "operations";
 
     private const string EditMode = "edit";
     private const string CreateMode = "create";
@@ -54,8 +55,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
             var users = response.Content?.Users.Select(user => new UserViewModel
             {
                 Id = user.Id,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
+                GivenName = user.GivenName,
+                FamilyName = user.FamilyName,
                 Email = user.Email,
                 Status = user.Status,
                 LastLogin = user.LastLogin
@@ -135,6 +136,12 @@ public class UsersController(IUserManagementService userManagementService, IVali
     {
         ViewBag.Mode = string.IsNullOrEmpty(model.Id) ? CreateMode : EditMode;
 
+        if (model.UserRoles.Any(r => r.Name.Equals(OperationsRole, StringComparison.OrdinalIgnoreCase) && !r.IsSelected))
+        {
+            model.AccessRequired = [];
+            model.Country = [];
+        }
+
         var context = new ValidationContext<UserViewModel>(model);
         var validationResult = await validator.ValidateAsync(context);
 
@@ -196,6 +203,12 @@ public class UsersController(IUserManagementService userManagementService, IVali
     {
         var mode = string.IsNullOrEmpty(model.Id) ? CreateMode : EditMode;
         ViewBag.Mode = mode;
+
+        if (model.UserRoles.Any(r => r.Name.Equals(OperationsRole, StringComparison.OrdinalIgnoreCase) && !r.IsSelected))
+        {
+            model.AccessRequired = [];
+            model.Country = [];
+        }
 
         var context = new ValidationContext<UserViewModel>(model);
         var validationResult = await validator.ValidateAsync(context);
