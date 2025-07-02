@@ -1,133 +1,224 @@
-﻿@using Rsp.IrasPortal.Application.DTOs.Responses;
-@model Rsp.IrasPortal.Web.Views.Approvals.SearchDto;
+﻿@using Rsp.IrasPortal.Application.Constants
+@model Rsp.IrasPortal.Web.Models.ApprovalsSearchModel;
 
 @section BackNavigation {
-	<partial name="_BackNavigation" model="@("approvls:welcome", "Back", new Dictionary<string, string>())" />
+	<partial name="_BackNavigation" model="@("approvals:welcome", "Back", new Dictionary<string, string>())" />
 }
 
+@functions {
+	private bool HasError(string fieldName)
+	{
+		return ViewData.ModelState.ContainsKey(fieldName) && ViewData.ModelState[fieldName].Errors.Any();
+	}
+
+	private bool HasAnyError(params string[] fieldNames)
+	{
+		return fieldNames.Any(name => HasError(name));
+	}
+
+    private bool HasAnyErrorGlobally()
+    { 
+       return ViewData.ModelState.Values.Any(v => v.Errors.Count > 0);
+    }
+}
+
+
 <div class="govuk-grid-row">
-	<authorized auth-params="@new(Roles:"user,system_administrator,reviewer")">
-		<div class="govuk-grid-column-two-thirds">
-			<h2 class="govuk-heading-l" id="title">Search</h2>
+    <authorized auth-params="@new(Roles:"user,system_administrator,reviewer")">
+        <div class="govuk-grid-column-two-thirds">
+            <h2 class="govuk-heading-l" id="title">Search</h2>
 
-			<p class="govuk-body">
-				Enter the IRAS ID to search for all modifications received, including those submitted for notification only
-			</p>
+            <p class="govuk-body">
+                Enter the IRAS ID to search for all modifications received, including those submitted for notification only
+            </p>
 
-            <form method="get" class="govuk-form-group" style="margin-bottom: 0;">
+            <form asp-route="approvals:applyfilters" method="post" class="govuk-form-group" style="margin-bottom: 0;">
                 <div style="display: flex; width: 100%; gap: 10px;">
-                    <input class="govuk-input" id="SearchQuery" name="SearchQuery" type="text"
-                           style="width: 87.5%;" value="@(string.Empty)" />
+                    <input class="govuk-input" asp-for="IrasId" type="text" style="width: 87.5%;" />
                     <div style="width: 12.5%;">
-                        <partial name="_SubmitButton" model="@("rbc:viewreviewbodies", "Search", new Dictionary<string, string>())" />
+                        <button type="submit" class="govuk-button">Search</button>
+                    </div>
+                </div>
+
+                <!-- Filter Panel -->
+                <div class="app-c-filter-panel">
+                    <input type="checkbox" id="toggle-filter" class="app-c-filter-toggle" hidden @(HasAnyErrorGlobally() ? "checked" : null)>
+
+                    <div class="app-c-filter-panel__header">
+                        <label for="toggle-filter" class="app-c-filter-panel__button govuk-link" role="button" aria-controls="filter-panel">
+                            <span class="app-c-filter-panel__button-inner">Advanced filter</span>
+                        </label>
+                        <h2 id="js-result-count" class="app-c-filter-panel__count">0 results</h2>
+                    </div>
+                    <div class="app-c-filter-panel__content" id="filter-panel" role="region" aria-labelledby="toggle-filter">
+                        <!-- Chief Investigator -->
+                        <details class="app-c-filter-section" @(HasError("ChiefInvestigatorName") ? "open" : null)>
+                            <summary class="app-c-filter-section__summary">
+                                <h2 class="app-c-filter-section__summary-heading">Chief Investigator name</h2>
+                            </summary>
+                            <div class="app-c-filter-section__content">
+                                <div class="govuk-form-group govuk-!-margin-bottom-2">
+                                    <fieldset class="govuk-fieldset">
+                                        <rsp-gds-input asp-for="ChiefInvestigatorName" label-text="Enter the name of the Chief Investigator" width-class="govuk-!-width-three-quarters" />
+                                    </fieldset>
+                                </div>
+                            </div>
+                        </details>
+
+                        <!-- Date modification submitted -->
+                        <details class="app-c-filter-section" @(HasAnyError("FromDate", "ToDate") ? "open" : null)>
+
+                            <summary class="app-c-filter-section__summary">
+                                <h2 class="app-c-filter-section__summary-heading">Date modification submitted</h2>
+                            </summary>
+                            <div class="app-c-filter-section__content">
+                                <div class="govuk-form-group govuk-!-margin-bottom-2">
+                                    <fieldset class="govuk-fieldset">
+                                        <rsp-gds-date-input asp-for="FromDate"
+                                                            day-name="FromDay"
+                                                            day-value="@Model.FromDay"
+                                                            month-name="FromMonth"
+                                                            month-value="@Model.FromMonth"
+                                                            year-name="FromYear"
+                                                            year-value="@Model.FromYear"
+                                                            label-text="Enter the date you want to search from"
+                                                            hint-html="For example, 28 February 2023"
+                                                            error-key="FromDate"
+                                                            id="FromDate" />
+
+                                        <rsp-gds-date-input asp-for="ToDate"
+                                                            day-name="ToDay"
+                                                            day-value="@Model.ToDay"
+                                                            month-name="ToMonth"
+                                                            month-value="@Model.ToMonth"
+                                                            year-name="ToYear"
+                                                            year-value="@Model.ToYear"
+                                                            label-text="Enter the date you want to search to"
+                                                            hint-html="For example, 12 October 2024"
+                                                            error-key="ToDate"
+                                                            id="ToDate" />
+                                    </fieldset>
+                                </div>
+                            </div>
+                        </details>
+
+                        <!-- Lead nation -->
+                        <details class="app-c-filter-section" @(HasError("Country") ? "open" : null)>
+                            <summary class="app-c-filter-section__summary">
+                                <h2 class="app-c-filter-section__summary-heading">Lead nation</h2>
+                            </summary>
+                            <div class="app-c-filter-section__content">
+                                <div class="govuk-form-group govuk-!-margin-bottom-2">
+                                    <fieldset class="govuk-fieldset">
+                                        <rsp-gds-checkbox-group asp-for="Country"
+                                                                label-text="Country"
+                                                                options="UkCountryNames.Countries"
+                                                                label-css-class="role-checkbox"
+                                                                conditional-field="false"
+                                                                legend-class="govuk-label govuk-label--s"
+                                                                hint-id="country-hint"
+                                                                hint-html="@($"{Model.Country?.Count ?? 0} selected")" />
+
+
+                                    </fieldset>
+                                </div>
+                            </div>
+                        </details>
+
+                        <!-- Modification type -->
+                        <details class="app-c-filter-section" @(HasError("ModificationTypes") ? "open" : null)>
+                            <summary class="app-c-filter-section__summary">
+                                <h2 class="app-c-filter-section__summary-heading">Modification type</h2>
+                            </summary>
+                            <div class="app-c-filter-section__content">
+                                <div class="govuk-form-group govuk-!-margin-bottom-2">
+                                    <fieldset class="govuk-fieldset">
+                                        <rsp-gds-checkbox-group asp-for="ModificationTypes"
+                                                                label-text="Type of Modification"
+                                                                options="ModificationOptions.Types"
+                                                                label-css-class="role-checkbox"
+                                                                conditional-field="true"
+                                                                legend-class="govuk-label govuk-label--s"
+                                                                hint-id="modification-hint"
+                                                                hint-html="@($"{Model.ModificationTypes?.Count ?? 0} selected")" />
+                                    </fieldset>
+                                </div>
+                            </div>
+                        </details>
+
+                        <!-- Short project title -->
+                        <details class="app-c-filter-section" @(HasError("ShortProjectTitle") ? "open" : null)>
+                            <summary class="app-c-filter-section__summary">
+                                <h2 class="app-c-filter-section__summary-heading">Short project title</h2>
+                            </summary>
+                            <div class="app-c-filter-section__content">
+                                <div class="govuk-form-group govuk-!-margin-bottom-2">
+                                    <fieldset class="govuk-fieldset">
+                                        <rsp-gds-input asp-for="ShortProjectTitle" label-text="Enter the short project title" width-class="govuk-!-width-three-quarters" />
+                                    </fieldset>
+                                </div>
+                            </div>
+                        </details>
+
+                        <!-- Sponsor organisation -->
+                        <details class="app-c-filter-section" @(HasError("SponsorOrganisation") ? "open" : null)>
+                            <summary class="app-c-filter-section__summary">
+                                <h2 class="app-c-filter-section__summary-heading">Sponsor organisation</h2>
+                            </summary>
+                            <div class="app-c-filter-section__content">
+                                <div class="govuk-form-group govuk-!-margin-bottom-2">
+                                    <fieldset class="govuk-fieldset">
+                                        <rsp-gds-input asp-for="SponsorOrganisation" label-text="Enter the sponsor organisation" width-class="govuk-!-width-three-quarters" />
+                                    </fieldset>
+                                </div>
+                            </div>
+                        </details>
+
+                        <div class="app-c-filter-panel__actions">
+                            <button class="govuk-button app-c-filter-panel__action app-c-filter-panel__action--submit">Apply</button>
+                        </div>
                     </div>
                 </div>
             </form>
 
-			<!-- Filter Panel -->
-            <div class="app-c-filter-panel">
-                <input type="checkbox" id="toggle-filter" class="app-c-filter-toggle" hidden>
-                <div class="app-c-filter-panel__header">
-                    <label for="toggle-filter" class="app-c-filter-panel__button govuk-link" role="button" aria-controls="filter-panel">
-                        <span class="app-c-filter-panel__button-inner">Advanced filter</span>
-                    </label>
+            <!-- Active Filters Panel -->
+            @if (Model.Filters.Any())
+            {
+                <div class="app-c-filter-summary">
+                    <h3 class="app-c-filter-summary__heading">Active filters</h3>
+                    <ul class="app-c-filter-summary__remove-filters">
+                        @foreach (var filter in Model.Filters)
+                        {
+                            var filterKey = filter.Key;
+                            var filterValues = filter.Value?.Split(",") ?? [];
 
-                    <h2 id="js-result-count" class="app-c-filter-panel__count">652,750 results</h2>
-                </div>
-                <div class="app-c-filter-panel__content" id="filter-panel" role="region" aria-labelledby="toggle-filter">
-                    @* Chief Investigator name *@
-                    <details class="app-c-filter-section">
-                        <summary class="app-c-filter-section__summary">
-                            <h2 class="app-c-filter-section__summary-heading">Chief Investigator name</h2>
-                        </summary>
-                        <div class="app-c-filter-section__content">
-                            <div class="govuk-form-group govuk-!-margin-bottom-2">
-                                <fieldset class="govuk-fieldset">
-                                    <rsp-gds-input asp-for="ChiefInvestigatorname" label-text="Enter the name of the Chief Investigator " width-class="govuk-!-width-three-quarters"/>
-                                </fieldset>
-                            </div>
-                        </div>
-                    </details>
-                    @* Date modification submitted *@
-                    <details class="app-c-filter-section">
-                        <summary class="app-c-filter-section__summary">
-                            <h2 class="app-c-filter-section__summary-heading">Date modification submitted</h2>
-                        </summary>
-                        <div class="app-c-filter-section__content">
-                            <div class="govuk-form-group govuk-!-margin-bottom-2">
-                                <fieldset class="govuk-fieldset">
-                                    @*                         <rsp-gds-date-input asp-for="@Model.Questions[index].AnswerText"
-                                                        day-name="Questions[@index].Day"
-                                                        day-value="@Model.Questions[index].Day"
-                                                        month-name="Questions[@index].Month"
-                                                        month-value="@Model.Questions[index].Month"
-                                                        year-name="Questions[@index].Year"
-                                                        year-value="@Model.Questions[index].Year"
-                                                        label-text="@question.QuestionText"
-                                                        hint-html="@Html.Raw(hintHtml)"
-                                             
-                                                        id="Questions[@index].AnswerText" /> *@
-                                </fieldset>
-                            </div>
-                        </div>
-                    </details>
-                    @* Lead nation *@
-                    <details class="app-c-filter-section">
-                        <summary class="app-c-filter-section__summary">
-                            <h2 class="app-c-filter-section__summary-heading">Lead nation</h2>
-                        </summary>
-                        <div class="app-c-filter-section__content">
-                            <div class="govuk-form-group govuk-!-margin-bottom-2">
-                                <fieldset class="govuk-fieldset">
+                            foreach (var val in filterValues)
+                            {
+                                <li>
+                                    <a asp-route="approvals:removefilter"
+                                       asp-route-key="@filterKey"
+                                       asp-route-value="@val.Trim()"
+                                       class="app-c-filter-summary__remove-filter">
+                                        <span class="app-c-filter-summary__remove-filter-text">
+                                            <span class="govuk-visually-hidden">Remove filter</span>
+                                            @filterKey - @val.Trim()
+                                        </span>
+                                    </a>
+                                </li>
+                            }
+                        }
 
-                                </fieldset>
-                            </div>
-                        </div>
-                    </details>
-                    @* Modification type *@
-                    <details class="app-c-filter-section">
-                        <summary class="app-c-filter-section__summary">
-                            <h2 class="app-c-filter-section__summary-heading">Modification type</h2>
-                        </summary>
-                        <div class="app-c-filter-section__content">
-                            <div class="govuk-form-group govuk-!-margin-bottom-2">
-                                <fieldset class="govuk-fieldset">
+                    </ul>
 
-                                </fieldset>
-                            </div>
-                        </div>
-                    </details>
-                    @* Short project title *@
-                    <details class="app-c-filter-section">
-                        <summary class="app-c-filter-section__summary">
-                            <h2 class="app-c-filter-section__summary-heading">Short project title</h2>
-                        </summary>
-                        <div class="app-c-filter-section__content">
-                            <div class="govuk-form-group govuk-!-margin-bottom-2">
-                                <fieldset class="govuk-fieldset">
-
-                                </fieldset>
-                            </div>
-                        </div>
-                    </details>
-                    @* Sponsor organisation *@
-                    <details class="app-c-filter-section">
-                        <summary class="app-c-filter-section__summary">
-                            <h2 class="app-c-filter-section__summary-heading">Sponsor organisation</h2>
-                        </summary>
-                        <div class="app-c-filter-section__content">
-                            <div class="govuk-form-group govuk-!-margin-bottom-2">
-                                <fieldset class="govuk-fieldset">
-
-                                </fieldset>
-                            </div>
-                        </div>
-                    </details>
-                    <div class="app-c-filter-panel__actions">
-                        <button class="govuk-button app-c-filter-panel__action app-c-filter-panel__action--submit">Apply</button>
+                    <div>
+                        <a asp-route="approvals:clearfilters" class="app-c-filter-summary__clear-filters govuk-link govuk-link--no-visited-state">
+                            Clear all filters
+                        </a>
                     </div>
                 </div>
-            </div>
-		</div>
-	</authorized>
+            }
+        </div>
+    </authorized>
 </div>
+
+<script src="~/js/searchModifications.js"></script>
