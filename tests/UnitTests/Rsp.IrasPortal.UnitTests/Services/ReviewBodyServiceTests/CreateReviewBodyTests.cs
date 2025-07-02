@@ -13,7 +13,7 @@ public class CreateReviewBodyTests : TestServiceBase<ReviewBodyService>
         ReviewBodyDto reviewBodyDto)
     {
         // Arrange
-        var apiResponse = Mock.Of<IApiResponse>
+        var apiResponse = Mock.Of<IApiResponse<ReviewBodyDto>>
         (
             apiResponse =>
                 !apiResponse.IsSuccessStatusCode &&
@@ -31,7 +31,7 @@ public class CreateReviewBodyTests : TestServiceBase<ReviewBodyService>
         var result = await sut.CreateReviewBody(reviewBodyDto);
 
         // Assert
-        result.ShouldBeOfType<ServiceResponse>();
+        result.ShouldBeOfType<ServiceResponse<ReviewBodyDto>>();
         result.IsSuccessStatusCode.ShouldBeFalse();
         result.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
 
@@ -45,7 +45,7 @@ public class CreateReviewBodyTests : TestServiceBase<ReviewBodyService>
         ReviewBodyDto reviewBodyDto)
     {
         // Arrange
-        var apiResponse = Mock.Of<IApiResponse>
+        var apiResponse = Mock.Of<IApiResponse<ReviewBodyDto>>
         (
             apiResponse =>
                 apiResponse.IsSuccessStatusCode &&
@@ -63,7 +63,7 @@ public class CreateReviewBodyTests : TestServiceBase<ReviewBodyService>
         var result = await sut.CreateReviewBody(reviewBodyDto);
 
         // Assert
-        result.ShouldBeOfType<ServiceResponse>();
+        result.ShouldBeOfType<ServiceResponse<ReviewBodyDto>>();
         result.IsSuccessStatusCode.ShouldBeTrue();
         result.StatusCode.ShouldBe(HttpStatusCode.OK);
 
