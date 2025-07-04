@@ -9,6 +9,8 @@ using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Helpers;
+using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers;
@@ -663,6 +665,107 @@ public class CmsQuestionSetController(ICmsQuestionsetService questionSetService,
                     }
             });
         }
+            // update the freetext answer
+            question.AnswerText = respondentAnswer.AnswerText;
+        }
+    }
+
+    private async Task<bool> ValidateQuestionnaire(QuestionnaireViewModel model)
+    {
+        // using the FluentValidation, create a new context for the model
+        var context = new ValidationContext<QuestionnaireViewModel>(model);
+
+        // this is required to get the questions in the validator
+        // before the validation cicks in
+        context.RootContextData["questions"] = model.Questions;
+
+        // call the ValidateAsync to execute the validation
+        // this will trigger the fluentvalidation using the injected validator if configured
+        var result = await validator.ValidateAsync(context);
+
+        if (!result.IsValid)
+        {
+            // Copy the validation results into ModelState.
+            // ASP.NET uses the ModelState collection to populate
+            // error messages in the View.
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private async Task<NavigationDto> SetStage(string section)
+    {
+        var previousResponse = await questionSetService.GetPreviousQuestionSection(section);
+        var currentResponse = await questionSetService.GetQuestionSections();
+        var nextResponse = await questionSetService.GetNextQuestionSection(section);
+
+        // Extracting previous stage and category
+        string previousStage = previousResponse.IsSuccessStatusCode ? previousResponse.Content?.SectionId ?? "" : "";
+        string previousCategory = previousResponse.IsSuccessStatusCode ? previousResponse.Content?.QuestionCategoryId ?? "" : "";
+
+        // Extracting current stage and category
+        var currentSection = currentResponse?.Content?.FirstOrDefault(s => s.SectionId == section);
+        string currentStage = currentSection?.SectionId ?? section;
+        string currentCategory = currentSection?.QuestionCategoryId ?? "";
+
+        // Extracting next stage and category
+        string nextStage = nextResponse.IsSuccessStatusCode ? nextResponse.Content?.SectionId ?? "" : "";
+        string nextCategory = nextResponse.IsSuccessStatusCode ? nextResponse.Content?.QuestionCategoryId ?? "" : "";
+
+        // Store in TempData
+        TempData[TempDataKeys.PreviousStage] = previousStage;
+        TempData[TempDataKeys.PreviousCategory] = previousCategory;
+        TempData[TempDataKeys.CurrentStage] = currentStage;
+
+        return new NavigationDto
+        {
+            PreviousCategory = previousCategory,
+            PreviousStage = previousStage,
+            CurrentCategory = currentCategory,
+            CurrentStage = currentStage,
+            NextCategory = nextCategory,
+            NextStage = nextStage
+        };
+    }
+
+    private static void UpdateWithAnswers(IEnumerable<RespondentAnswerDto> respondentAnswers, List<QuestionViewModel> questionAnswers)
+    {
+        foreach (var respondentAnswer in respondentAnswers)
+        {
+            // for each respondentAnswer find the question in the
+            // questionviewmodel
+            var question = questionAnswers.Find(q => q.QuestionId == respondentAnswer.QuestionId)!;
+
+            // continue to next question if we
+            // don't have an answer
+            if (question == null)
+            {
+                continue;
+            }
+
+            // set the selected option
+            question.SelectedOption = respondentAnswer.SelectedOption;
+
+            // if the question was multiple choice type i.e. checkboxes
+            if (respondentAnswer.OptionType == "Multiple")
+            {
+                // set the IsSelected property to true
+                // where the answerId matches with the respondent answer
+                question.Answers.ForEach(ans =>
+                {
+                    var answer = respondentAnswer.Answers.Find(ra => ans.AnswerId == ra);
+                    if (answer != null)
+                    {
+                        ans.IsSelected = true;
+                    }
+                });
+            }
             // update the freetext answer
             question.AnswerText = respondentAnswer.AnswerText;
         }
