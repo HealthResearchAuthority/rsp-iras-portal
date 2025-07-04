@@ -56,7 +56,8 @@
 }
 
 <div class="govuk-grid-row">
-<authorized auth-params="@new AuthTagHelperParams(Roles:"user,system_administrator,reviewer")">
+	<authorized auth-params="@(new AuthTagHelperParams { Roles = "user,system_administrator,reviewer" })">
+
 <div class="govuk-grid-column-two-thirds">
 <h2 class="govuk-heading-l" id="title">Search</h2>
 
@@ -316,7 +317,7 @@
                                                                           Label = Regex.Replace(org.Name, escapedSearch, match => $"<b>{match.Value}</b>", RegexOptions.IgnoreCase)
                                                                       }))"
                                                              div-inline-class="govuk-radios"
-                                                             hint-html="Results for '@ searchText'">
+                                                             hint-html="Results for '@searchText'">
                                         </rsp-gds-radio-group>
 
                                         if (response.TotalCount > 5)
