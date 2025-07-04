@@ -6,6 +6,7 @@
     "Navigation.Admin": true, // Show/Hide Admin menu
     "Action.ProceedToSubmit": true, // Show/Hide Proceed to Submit button
     "Logging.InterceptedLogging": true, // Intercepts the start/end of method calls if enabled
-    "Auth.UseOneLogin": false // Use OneLogin for authentication
+    "Auth.UseOneLogin": false, // Use OneLogin for authentication
+    "Auth.UseOneLoginClientSecret": true // Use OneLogin for authentication with Client Secret
   }
 }

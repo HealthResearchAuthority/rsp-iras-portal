@@ -1,8 +1,10 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
@@ -23,6 +25,7 @@ public static class AuthConfiguration
         public const string reviewer = nameof(reviewer);
     };
 
+    #region AddAuthenticationAndAuthorization
     /// <summary>
     /// Adds the Authentication and Authorization to the service
     /// </summary>
@@ -114,6 +117,9 @@ public static class AuthConfiguration
         return services;
     }
 
+    #endregion AddAuthenticationAndAuthorization
+
+    #region AddOneLoginAuthentication
     /// <summary>
     /// Adds One Login Authentication and Authorization to the service
     /// </summary>
@@ -235,6 +241,125 @@ public static class AuthConfiguration
 
         return services;
     }
+
+    #endregion
+
+    #region AddOneLoginClientSecretAuthentication
+
+    /// <summary>
+    /// Adds One Login Authentication and Authorization to the service
+    /// </summary>
+    /// <param name="services"><see cref="IServiceCollection"/></param>
+    /// <param name="appSettings">Application Settinghs</param>
+    public static IServiceCollection AddOneLoginClientSecretAuthentication(this IServiceCollection services, AppSettings appSettings)
+    {
+        // Add services to the container.
+        _ = services
+            .AddAuthentication(options =>
+            {
+                // Default scheme is cookie authentication
+                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+
+                // Default scheme and challenge scheme are same to handle the session and auth
+                // cookie timeout using the cookie authentication handler
+                options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            })
+            .AddCookie(options =>
+            {
+                options.Events = new CookieAuthenticationEvents
+                {
+                    // this event is called on each request
+                    // to validate that the current principal is still valid
+                    OnValidatePrincipal = context =>
+                    {
+                        // save the original access_token in the memory, this will be needed
+                        // to regenerate the JwtToken with additional claims
+                        context.HttpContext.Items[ContextItemKeys.BearerToken] = context.Properties.GetTokenValue(ContextItemKeys.IdToken);
+
+                        return Task.CompletedTask;
+                    },
+
+                    OnRedirectToLogin = context =>
+                    {
+                        context.Response.Redirect("/auth/timedout");
+                        return Task.CompletedTask;
+                    }
+                };
+
+                options.LoginPath = "/";
+                options.LogoutPath = "/";
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(appSettings.OneLogin.AuthCookieTimeout);
+                options.SlidingExpiration = true;
+                options.AccessDeniedPath = "/Forbidden";
+            })
+            .AddOpenIdConnect(options =>
+            {
+                options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.Authority = appSettings.OneLogin.Authority;
+                options.ClientId = appSettings.OneLogin.ClientId;
+                options.ClientSecret = appSettings.OneLogin.ClientSecret;
+                options.MetadataAddress = $"{appSettings.OneLogin.Authority}/.well-known/openid-configuration";
+                options.ResponseType = OpenIdConnectResponseType.Code;
+                options.ResponseMode = OpenIdConnectResponseMode.Query;
+                options.SaveTokens = true;
+                options.Scope.Clear();
+                options.Scope.Add("openid");
+                options.Scope.Add("email");
+                options.Scope.Add("phone");
+                options.CallbackPath = "/onelogin-callback";
+                options.SignedOutCallbackPath = "/onelogin-logout-callback";
+                options.GetClaimsFromUserInfoEndpoint = true;
+                options.UsePkce = false;
+                options.ClaimActions.MapUniqueJsonKey(ClaimTypes.Email, "email");
+                //options.NonceCookie.SameSite = SameSiteMode.Strict; // Set SameSite to None for cross-site requests
+                options.NonceCookie.SecurePolicy = CookieSecurePolicy.SameAsRequest; // Ensure the cookie is secure
+
+                options.Events.OnRedirectToIdentityProvider = context =>
+                {
+                    // Ensure the redirect URI is set correctly
+                    context.ProtocolMessage.RedirectUri = context.Request.Scheme + "://" + context.Request.Host + context.Request.PathBase + options.CallbackPath;
+                    return Task.CompletedTask;
+                };
+
+                options.Events.OnAuthenticationFailed = context =>
+                {
+                    Console.WriteLine($"OIDC error: {context.Exception.Message}");
+                    return Task.CompletedTask;
+                };
+
+                options.Events.OnAuthorizationCodeReceived = async context =>
+                {
+                    context.TokenEndpointRequest!.ClientId = appSettings.OneLogin.ClientId;
+                    context.TokenEndpointRequest.ClientSecret = appSettings.OneLogin.ClientSecret;
+                    context.TokenEndpointRequest.GrantType = OpenIdConnectGrantTypes.AuthorizationCode;
+                    context.TokenEndpointRequest.Code = context.ProtocolMessage.Code;
+                    context.TokenEndpointRequest.RedirectUri = context.Request.Scheme + "://" + context.Request.Host + context.Request.PathBase + options.CallbackPath;
+
+                    await Task.CompletedTask;
+                };
+
+                options.Events.OnTokenValidated = context =>
+                {
+                    // this key is used to indicate that the user is logged in for the first time
+                    // will be used to update the LastLogin during the claims transformation
+                    // to indicate when the user was logged in last time.
+                    context.HttpContext.Session.SetString(SessionKeys.FirstLogin, bool.TrueString);
+
+                    // this key is used to check if the session is alive in the middleware
+                    // and signout the user if the session is expired
+                    context.HttpContext.Session.SetString(SessionKeys.Alive, bool.TrueString);
+
+                    return Task.CompletedTask;
+                };
+            });
+
+        ConfigureAuthorization(services);
+
+        return services;
+    }
+
+    #endregion AddOneLoginClientSecretAuthentication
+
 
     private static void ConfigureAuthorization(IServiceCollection services)
     {

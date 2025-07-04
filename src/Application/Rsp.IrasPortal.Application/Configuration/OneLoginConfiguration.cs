@@ -18,6 +18,11 @@ public class OneLoginConfiguration
     public string ClientId { get; set; } = null!;
 
     /// <summary>
+    /// The client secret   .
+    /// </summary>
+    public string ClientSecret { get; set; } = null!;
+
+    /// <summary>
     /// Timeout for the authentication cookie in seconds.
     /// </summary>
     public uint AuthCookieTimeout { get; set; }

@@ -25,4 +25,7 @@ public static class Features
 
     // Use OneLogin authentication
     public const string OneLogin = "Auth.UseOneLogin";
+
+    // Use OneLogin authentication
+    public const string OneLoginClientSecret = "Auth.UseOneLoginClientSecret";
 }

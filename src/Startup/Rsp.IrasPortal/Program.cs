@@ -20,6 +20,7 @@ using Rsp.Logging.Interceptors;
 using Rsp.Logging.Middlewares.CorrelationId;
 using Rsp.Logging.Middlewares.RequestTracing;
 using Rsp.ServiceDefaults;
+using System.Diagnostics.Eventing.Reader;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -75,10 +76,15 @@ if (await featureManager.IsEnabledAsync(Features.OneLogin))
 {
     services.AddOneLoginAuthentication(appSettings);
 }
+else if (await featureManager.IsEnabledAsync(Features.OneLoginClientSecret))
+{
+    services.AddOneLoginClientSecretAuthentication(appSettings);
+}
 else
 {
     services.AddAuthenticationAndAuthorization(appSettings);
 }
+
 
 services.AddSession(options =>
 {
