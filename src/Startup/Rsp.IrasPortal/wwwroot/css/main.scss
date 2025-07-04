@@ -507,7 +507,6 @@ dialog[open] {
     flex-basis: 12.5%;
 }
 
-
 // SEARCH FILTER PANEL
 .search-filter-panel {
     padding-top: 15px;
@@ -616,8 +615,8 @@ dialog[open] {
     flex-wrap: wrap;
     align-items: center;
     gap: 15px;
-    padding-top: 25px ;
-    padding-bottom: 25px ;
+    padding-top: 25px;
+    padding-bottom: 25px;
 }
 
 .search-filter-panel__action--submit {
@@ -673,8 +672,10 @@ dialog[open] {
 
 /* Filter Summar y*/
 .search-filter-summary {
-    padding-bottom: 5px;
-    border-top: 1px solid #b1b4b6
+    padding-bottom: 20px;
+    margin-bottom: 40px;
+    border-top: 1px solid #b1b4b6;
+    border-bottom: 1px solid #b1b4b6;
 }
 
 .search-filter-summary__heading {
