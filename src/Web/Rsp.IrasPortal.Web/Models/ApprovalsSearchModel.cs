@@ -2,25 +2,25 @@
 
 public class ApprovalsSearchModel
 {
-    private Dictionary<string, string> _filters;
-    public string IrasId { get; set; }
-    public string ChiefInvestigatorName { get; set; }
-    public string ShortProjectTitle { get; set; }
-    public string SponsorOrganisation { get; set; }
+    private Dictionary<string, string> _filters = [];
+    public string? IrasId { get; set; }
+    public string? ChiefInvestigatorName { get; set; }
+    public string? ShortProjectTitle { get; set; }
+    public string? SponsorOrganisation { get; set; }
 
     public DateTime? FromDate => ParseDate(FromDay, FromMonth, FromYear);
     public DateTime? ToDate => ParseDate(ToDay, ToMonth, ToYear);
 
-    public string FromDay { get; set; }
-    public string FromMonth { get; set; }
-    public string FromYear { get; set; }
+    public string? FromDay { get; set; }
+    public string? FromMonth { get; set; }
+    public string? FromYear { get; set; }
 
-    public string ToDay { get; set; }
-    public string ToMonth { get; set; }
-    public string ToYear { get; set; }
+    public string? ToDay { get; set; }
+    public string? ToMonth { get; set; }
+    public string? ToYear { get; set; }
 
-    public List<string> Country { get; set; } = new();
-    public List<string> ModificationTypes { get; set; } = new();
+    public List<string> Country { get; set; } = [];
+    public List<string> ModificationTypes { get; set; } = [];
     public OrganisationSearchViewModel SponsorOrgSearch { get; set; } = new();
 
     public Dictionary<string, string> Filters
@@ -64,12 +64,12 @@ public class ApprovalsSearchModel
                 filters.Add("To Date", ToDate.Value.ToString("d MMM yyyy"));
             }
 
-            if (Country.Any())
+            if (Country.Count != 0)
             {
                 filters.Add("Lead Nation", string.Join(", ", Country));
             }
 
-            if (ModificationTypes.Any())
+            if (ModificationTypes.Count != 0)
             {
                 filters.Add("Modification Type", string.Join(", ", ModificationTypes));
             }
@@ -79,7 +79,7 @@ public class ApprovalsSearchModel
         set => _filters = value; // Allows manual clearing or override
     }
 
-    private static DateTime? ParseDate(string day, string month, string year)
+    private static DateTime? ParseDate(string? day, string? month, string? year)
     {
         return int.TryParse(day, out var d) &&
                int.TryParse(month, out var m) &&

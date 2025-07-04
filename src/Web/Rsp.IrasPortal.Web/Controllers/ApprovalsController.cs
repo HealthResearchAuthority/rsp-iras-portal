@@ -4,15 +4,17 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
 
+namespace Rsp.IrasPortal.Web.Controllers;
+
 [Route("[controller]/[action]", Name = "approvals:[action]")]
 [Authorize(Policy = "IsUser")]
-public class ApprovalsController(
-    IRtsService rtsService,
-    IValidator<ApprovalsSearchModel> validator) : Controller
+public class ApprovalsController(IRtsService rtsService, IValidator<ApprovalsSearchModel> validator) : Controller
 {
+    [Route("/approvals", Name = "approvals:welcome")]
     public IActionResult Welcome()
     {
         return View(nameof(Index));
@@ -21,59 +23,79 @@ public class ApprovalsController(
     [HttpGet]
     public IActionResult Search()
     {
-        ApprovalsSearchModel model = new();
+        var model = new ApprovalsSearchViewModel();
 
         if (HttpContext.Session.Keys.Contains(SessionKeys.ApprovalsSearch))
         {
             var json = HttpContext.Session.GetString(SessionKeys.ApprovalsSearch)!;
-            model = JsonSerializer.Deserialize<ApprovalsSearchModel>(json)!;
+            model.Search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json)!;
         }
+
+        // replace with call to iras-service
+        model.Modifications =
+        [
+            new ModificationsModel {
+                ModificationId = "ID 1",
+                ChiefInvestigator = "CI",
+                ShortProjectTite = "Title",
+                Date = new DateOnly(2022, 1, 1),
+                LeadNation = "England",
+                ModificationType =  "Minor modifications",
+                SponsorOrganisation = ""
+            },
+            new ModificationsModel {
+                ModificationId = "ID 2",
+                ChiefInvestigator = "CI 2",
+                ShortProjectTite = "Title 2",
+                Date = new DateOnly(2022, 1, 1),
+                LeadNation = "England",
+                ModificationType =  "Minor modifications",
+                SponsorOrganisation = ""
+            }
+        ];
+
+        model.Pagination = new PaginationViewModel(1, 10, 420);
 
         return View(model);
     }
 
     [HttpPost]
-    [Route("/approvals/applyfilters", Name = "approvals:applyfilters")]
-    public async Task<IActionResult> ApplyFilters(ApprovalsSearchModel model)
+    public async Task<IActionResult> ApplyFilters(ApprovalsSearchViewModel model)
     {
-        var validationResult = await validator.ValidateAsync(model);
+        var validationResult = await validator.ValidateAsync(model.Search);
 
         if (!validationResult.IsValid)
         {
             foreach (var error in validationResult.Errors)
             {
                 ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
-                model.Filters = new Dictionary<string, string>();
             }
 
-            return View("Search", model);
+            return View(nameof(Search), model);
         }
 
-        HttpContext.Session.SetString(SessionKeys.ApprovalsSearch, JsonSerializer.Serialize(model));
-        return View("Search", model);
+        HttpContext.Session.SetString(SessionKeys.ApprovalsSearch, JsonSerializer.Serialize(model.Search));
+        return RedirectToAction(nameof(Search));
     }
 
     [HttpGet]
-    [Route("/approvals/clearfilters", Name = "approvals:clearfilters")]
     public IActionResult ClearFilters()
     {
-        var model = new ApprovalsSearchModel();
-        HttpContext.Session.SetString(SessionKeys.ApprovalsSearch, JsonSerializer.Serialize(model));
-        return View("Search", model);
+        HttpContext.Session.SetString(SessionKeys.ApprovalsSearch, JsonSerializer.Serialize(new ApprovalsSearchModel()));
+        return RedirectToAction(nameof(Search));
     }
 
     [HttpGet]
-    [Route("/approvals/removefilter", Name = "approvals:removefilter")]
     public async Task<IActionResult> RemoveFilter(string key, string? value)
     {
-        ApprovalsSearchModel model = new();
+        var searchModel = new ApprovalsSearchModel();
 
         if (HttpContext.Session.Keys.Contains(SessionKeys.ApprovalsSearch))
         {
             var json = HttpContext.Session.GetString(SessionKeys.ApprovalsSearch)!;
-            model = JsonSerializer.Deserialize<ApprovalsSearchModel>(json)!;
+            searchModel = JsonSerializer.Deserialize<ApprovalsSearchModel>(json)!;
 
-            if (model.Filters.TryGetValue(key, out var existingValue))
+            if (searchModel.Filters.TryGetValue(key, out var existingValue))
             {
                 var updatedValues = existingValue
                     .Split(",", StringSplitOptions.RemoveEmptyEntries)
@@ -81,13 +103,13 @@ public class ApprovalsController(
                     .Where(v => !string.Equals(v, value, StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
-                if (updatedValues.Any())
+                if (updatedValues.Count != 0)
                 {
-                    model.Filters[key] = string.Join(", ", updatedValues);
+                    searchModel.Filters[key] = string.Join(", ", updatedValues);
                 }
                 else
                 {
-                    model.Filters.Remove(key);
+                    searchModel.Filters.Remove(key);
                 }
             }
         }
@@ -95,34 +117,34 @@ public class ApprovalsController(
         switch (key.ToLowerInvariant().Replace(" ", ""))
         {
             case "irasid":
-                model.IrasId = null;
+                searchModel.IrasId = null;
                 break;
 
             case "chiefinvestigatorname":
-                model.ChiefInvestigatorName = null;
+                searchModel.ChiefInvestigatorName = null;
                 break;
 
             case "projecttitle":
-                model.ShortProjectTitle = null;
+                searchModel.ShortProjectTitle = null;
                 break;
 
             case "sponsororganisation":
-                model.SponsorOrganisation = null;
-                model.SponsorOrgSearch = new OrganisationSearchViewModel();
+                searchModel.SponsorOrganisation = null;
+                searchModel.SponsorOrgSearch = new OrganisationSearchViewModel();
                 break;
 
             case "fromdate":
-                model.FromDay = model.FromMonth = model.FromYear = null;
+                searchModel.FromDay = searchModel.FromMonth = searchModel.FromYear = null;
                 break;
 
             case "todate":
-                model.ToDay = model.ToMonth = model.ToYear = null;
+                searchModel.ToDay = searchModel.ToMonth = searchModel.ToYear = null;
                 break;
 
             case "country":
-                if (!string.IsNullOrEmpty(value) && model.Country != null)
+                if (!string.IsNullOrEmpty(value) && searchModel.Country != null)
                 {
-                    model.Country = model.Country
+                    searchModel.Country = searchModel.Country
                         .Where(c => !string.Equals(c, value, StringComparison.OrdinalIgnoreCase))
                         .ToList();
                 }
@@ -130,9 +152,9 @@ public class ApprovalsController(
                 break;
 
             case "modificationtypes":
-                if (!string.IsNullOrEmpty(value) && model.ModificationTypes != null)
+                if (!string.IsNullOrEmpty(value) && searchModel.ModificationTypes != null)
                 {
-                    model.ModificationTypes = model.ModificationTypes
+                    searchModel.ModificationTypes = searchModel.ModificationTypes
                         .Where(m => !string.Equals(m, value, StringComparison.OrdinalIgnoreCase))
                         .ToList();
                 }
@@ -141,9 +163,9 @@ public class ApprovalsController(
         }
 
         // Save updated model to session
-        HttpContext.Session.SetString(SessionKeys.ApprovalsSearch, JsonSerializer.Serialize(model));
+        HttpContext.Session.SetString(SessionKeys.ApprovalsSearch, JsonSerializer.Serialize(searchModel));
 
-        return await ApplyFilters(model);
+        return await ApplyFilters(new ApprovalsSearchViewModel { Search = searchModel });
     }
 
     /// <summary>
@@ -152,7 +174,6 @@ public class ApprovalsController(
     /// <param name="role">The role of the organisation. Defaults to SponsorRole if not provided.</param>
     /// <param name="pageSize">Optional page size for pagination.</param>
     /// <returns>A list of organisation names or an error response.</returns>
-    [Route("/approvals/searchorganisations", Name = "approvals:searchorganisations")]
     public async Task<IActionResult> SearchOrganisations(ApprovalsSearchModel model, string? role, int? pageSize)
     {
         var returnUrl = TempData.Peek(TempDataKeys.OrgSearchReturnUrl) as string;
@@ -181,7 +202,7 @@ public class ApprovalsController(
             TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
 
             // Return the view with the model state errors.
-            return Redirect(returnUrl);
+            return Redirect(returnUrl!);
         }
 
         // Use the default sponsor role if no role is provided.
@@ -203,6 +224,6 @@ public class ApprovalsController(
 
         TempData.TryAdd(TempDataKeys.SponsorOrganisations, sponsorOrganisations, true);
 
-        return Redirect(returnUrl);
+        return Redirect(returnUrl!);
     }
 }

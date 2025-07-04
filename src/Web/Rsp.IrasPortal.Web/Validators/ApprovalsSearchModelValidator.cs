@@ -13,7 +13,7 @@ public class ApprovalsSearchModelValidator : AbstractValidator<ApprovalsSearchMo
             RuleFor(x => x)
                 .Must(x => x.ToDate >= x.FromDate)
                 .WithMessage("'Search to' date must be after 'Search from' date")
-                .WithName("ToDate");
+                .WithName("Search.ToDate");
         });
     }
 }

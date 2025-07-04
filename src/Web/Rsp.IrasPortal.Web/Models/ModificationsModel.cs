@@ -1,6 +1,6 @@
 ﻿namespace Rsp.IrasPortal.Web.Models;
 
-public class ApprovalsModificationViewModel
+public class ModificationsModel
 {
     public string ModificationId { get; set; } = null!;
     public string? ShortProjectTite { get; set; }
