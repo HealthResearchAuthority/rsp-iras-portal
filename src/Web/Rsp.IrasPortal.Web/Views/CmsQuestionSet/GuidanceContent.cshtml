@@ -1,0 +1,80 @@
+﻿@using Rsp.IrasPortal.Application.DTOs.CmsQuestionset
+@model IList<ContentComponent>
+
+@if (Model.Any())
+{
+	<!--START: Render UI content if any-->
+	foreach (var item in Model)
+	{
+		switch (item)
+		{
+			case AccordionComponentModel component:
+				<div class="govuk-accordion" data-module="govuk-accordion" id="accordion-default">
+					@foreach (var accItem in component.Items)
+					{
+						<div class="govuk-accordion__section">
+							<div class="govuk-accordion__section-header">
+								<h2 class="govuk-accordion__section-heading">
+									<span class="govuk-accordion__section-button" id="accordion-default-heading-1">
+										@accItem.Title
+									</span>
+								</h2>
+							</div>
+							<div id="accordion-default-content-1" class="govuk-accordion__section-content">
+								<p class="govuk-body">@accItem.Value</p>
+							</div>
+						</div>
+					}
+				</div>
+				break;
+
+			case DetailsContentComponent component:
+				<details class="govuk-details">
+					<summary class="govuk-details__summary">
+						<span class="govuk-details__summary-text">
+							@component.Title
+						</span>
+					</summary>
+					<div class="govuk-details__text">
+						@component.Value
+					</div>
+				</details>
+				break;
+
+			case BodyTextComponentModel component:
+				<div class="govuk-body" style="white-space: pre-wrap;">@component.Value</div>
+				break;
+
+			case TabsComponentModel component:
+				<div class="govuk-tabs" data-module="govuk-tabs">
+					<h2 class="govuk-tabs__title">
+						Contents
+					</h2>
+					<ul class="govuk-tabs__list">
+						@foreach ((int i, var tab) in component.Items.Index())
+						{
+							var selectedClass = (i == 0) ? "govuk-tabs__list-item--selected" : string.Empty;
+
+							<li class="govuk-tabs__list-item @selectedClass">
+								<a class="govuk-tabs__tab" href="#id-@i">
+									@tab.Title
+								</a>
+							</li>
+						}
+					</ul>
+
+					@foreach ((int i, var tab) in component.Items.Index())
+					{
+						var hiddenClass = (i > 0) ? "govuk-tabs__panel--hidden" : string.Empty;
+
+						<div class="govuk-tabs__panel @hiddenClass" id="id-@i">
+							@tab.Value
+						</div>
+					}
+				</div>
+				break;
+
+		}
+	}
+	<!--END: Render UI content if any-->
+}
