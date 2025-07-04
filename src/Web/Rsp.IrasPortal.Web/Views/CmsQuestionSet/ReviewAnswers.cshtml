@@ -1,0 +1,156 @@
+﻿@using System.Text.Json
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Microsoft.FeatureManagement
+@using Rsp.IrasPortal.Application.Constants
+@using System.Globalization
+@model QuestionnaireViewModel
+@inject IFeatureManager featureManager
+@{
+    // Try to read the IRAS ID from TempData, default to 0 if missing
+    var irasId = TempData.Peek(TempDataKeys.IrasId) as int? ?? 0;
+
+    // Group questions by their Section and order them by Sequence
+    var groupedSections = Model.Questions
+        .GroupBy(q => q.Section)
+        .OrderBy(g => g.First().Sequence)
+        .ToList();
+
+    // Get the key of the first section (e.g., for special handling like IRAS ID)
+    var firstSectionKey = groupedSections.FirstOrDefault()?.Key;
+
+    // Get the last question from the last section for back navigation
+    var lastQuestion = groupedSections.LastOrDefault()?.FirstOrDefault();
+
+    // Title used in the validation error summary
+    var errorSummaryTitle = "There is a problem";
+
+    // Prepare the navigation model depending on whether we have a lastQuestion
+    var navModel = lastQuestion != null
+        ? ("qnc:displayquestionnaire", "Back", new Dictionary<string, string>
+                {
+            { "sectionId", lastQuestion.SectionId },
+            { "categoryId", lastQuestion.Category }
+                                                                                                                                                                                                                                                                                                                                                                })
+        : ("app:createapplication", "Back", new Dictionary<string, string>());
+}
+
+@if (await featureManager.IsEnabledAsync(Features.ProgressiveEnhancement))
+{
+    // If progressive enhancement is enabled, add jQuery and custom JavaScript
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+
+    <script>
+		$(document).ready(function () {
+			// Serialize conditional rules and store them in sessionStorage
+			const conditionalRules = @Html.Raw(JsonSerializer.Serialize(
+				Model.Questions
+					.Where(q => !q.IsMandatory && q.Rules.Any())
+					.Select(q => new { q.QuestionId, q.Rules })
+				));
+
+			// Save each conditional rule by QuestionId
+			conditionalRules.forEach(rule => {
+				sessionStorage.setItem(rule.QuestionId, JSON.stringify(rule.Rules));
+			});
+
+			// Initially hide all elements with 'conditional' class
+			$(".conditional").hide();
+
+			// For each conditional div, check its parent hidden input value
+			document.querySelectorAll('div.conditional').forEach(div => {
+				const parentId = div.getAttribute('data-parents');
+				const hiddenInput = document.getElementById(parentId);
+
+				// If the hidden input value is "yes", unhide the conditional div
+				if (hiddenInput?.value.trim().toLowerCase() === 'yes') {
+					div.classList.remove('conditional');
+					div.style.display = '';
+				}
+			});
+		});
+    </script>
+}
+
+@* @section is added for the back button, so that we can render something below the back button
+    and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
+    the named section *@
+@section BackNavigation {
+    <partial name="_BackNavigation" model="navModel" />
+}
+
+@{
+    var prefix = ViewData.ModelState.IsValid ? "" : "Error - ";
+    ViewBag.Title = $"{prefix}Review your answers - Make changes to research";
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">Review your answers</h1>
+        <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
+
+        @foreach (var sectionGroup in groupedSections)
+        {
+            <h2 class="govuk-heading-m govuk-!-margin-top-5">@sectionGroup.Key</h2>
+            <dl class="govuk-summary-list govuk-!-margin-bottom-7">
+
+                @if (sectionGroup.Key == firstSectionKey)
+                {
+                    <div class="govuk-summary-list__row">
+                        <dt class="govuk-summary-list__key">IRAS ID</dt>
+                        <dd class="govuk-summary-list__value">@irasId</dd>
+                    </div>
+                }
+
+                @foreach (var question in sectionGroup)
+                {
+                    string questionKey = question.GetModelKey();
+                    bool fieldHasErrors = ViewData.ModelState[questionKey]?.ValidationState == ModelValidationState.Invalid;
+                    string conditionalClass = !question.IsMandatory && question.Rules.Any() ? "conditional" : "";
+                    string parentAttributes = conditionalClass != "" ? $"data-parents=\"{string.Join(',', question.Rules.Select(r => r.ParentQuestionId))}\" data-questionid=\"{question.QuestionId}\"" : "";
+                    string questionText = string.IsNullOrWhiteSpace(question.ShortQuestionText) ? question.QuestionText : question.ShortQuestionText;
+
+                    <div class="@conditionalClass govuk-summary-list__row" id="@questionKey" @Html.Raw(parentAttributes)>
+                        <dt class="govuk-summary-list__key">@questionText</dt>
+
+                        <dd class="govuk-summary-list__value @(fieldHasErrors ? "govuk-error-summary__list" : "")">
+                            @if (question.IsMissingAnswer())
+                            {
+                                <a class="govuk-link" href="@Url.RouteUrl("qnc:displayquestionnaire", new { sectionId = question.SectionId, categoryId = question.Category, reviewAnswers = true })">
+                                    @question.GetActionText()<span class="govuk-visually-hidden"> @questionText</span>
+                                </a>
+                            }
+                            else
+                            {
+                                <input type="hidden" id="@question.QuestionId" name="hiddenResponse" value="@question.GetDisplayText()" />
+                                @Html.Raw(question.GetDisplayText())
+                            }
+                        </dd>
+
+                        <dd class="govuk-summary-list__actions">
+                            @if (!question.IsMissingAnswer())
+                            {
+                                <a class="govuk-link" href="@Url.RouteUrl("qnc:displayquestionnaire", new { sectionId = question.SectionId, categoryId = question.Category, reviewAnswers = true })">
+                                    @question.GetActionText()<span class="govuk-visually-hidden"> @questionText</span>
+                                </a>
+                            }
+                        </dd>
+                    </div>
+                }
+            </dl>
+        }
+
+        <h2 class="govuk-heading-m govuk-!-margin-top-5">Confirm project details</h2>
+        <p class="govuk-body">Review your answers and complete any missing information before confirming project details.</p>
+
+        <form method="post">
+            <div class="save-buttons">
+                <partial name="_SubmitButton" model="@("qnc:confirmprojectdetails", "Confirm project details", new Dictionary<string, string>())" />
+
+                @{
+                    ViewBag.Style = "govuk-button govuk-button--secondary";
+                }
+                <partial name="_SubmitButton" model="@("app:projectoverview", "Save for later", new Dictionary<string, string> { })" />
+            </div>
+        </form>
+    </div>
+</div>
