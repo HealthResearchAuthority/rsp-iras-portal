@@ -483,6 +483,14 @@ dialog[open] {
     background-color: white !important;
 }
 
+.autocomplete__input {
+    background-color: white !important;
+}
+
+.govuk-label--s.font-weight-none {
+    font-weight: 100 !important; // or `normal`, depending on desired appearance
+}
+
 // FILTER PANEL
 .app-c-filter-panel {
     padding-top: 15px;
@@ -591,7 +599,8 @@ dialog[open] {
     flex-wrap: wrap;
     align-items: center;
     gap: 15px;
-    padding: 20px 0;
+    padding-top: 25px ;
+    padding-bottom: 25px ;
 }
 
 .app-c-filter-panel__action--submit {
@@ -641,8 +650,11 @@ dialog[open] {
     margin: 0; // ✅ ensures heading aligns with icon
 }
 
-/* Filter Summar y*/
+.app-c-filter-section__content {
+    margin-bottom: 25px;
+}
 
+/* Filter Summar y*/
 .app-c-filter-summary {
     padding-bottom: 5px;
     border-top: 1px solid #b1b4b6
