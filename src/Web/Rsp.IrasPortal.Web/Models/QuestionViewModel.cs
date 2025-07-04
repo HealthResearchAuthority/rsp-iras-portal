@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 
 namespace Rsp.IrasPortal.Web.Models;
 
@@ -22,6 +23,7 @@ public class QuestionViewModel
     public List<AnswerViewModel> Answers { get; set; } = [];
     public IList<RuleDto> Rules { get; set; } = [];
     public string ShortQuestionText { get; set; } = null!;
+    public IList<ContentComponent> GuidanceComponents { get; set; } = [];
 
     private string? _day, _month, _year;
 

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Entities;
 using Rsp.IrasPortal.Web.Extensions;
@@ -22,7 +23,8 @@ public class ApplicationController(
     IApplicationsService applicationsService,
     IValidator<ApplicationInfoViewModel> validator,
     IValidator<IrasIdViewModel> irasIdValidator,
-    IQuestionSetService questionSetService) : Controller
+    IQuestionSetService questionSetService,
+    ICmsQuestionSetServiceClient cmsSevice) : Controller
 {
     // ApplicationInfo view name
     private const string ApplicationInfo = nameof(ApplicationInfo);
@@ -87,12 +89,13 @@ public class ApplicationController(
         HttpContext.Session.SetString(SessionKeys.Application, JsonSerializer.Serialize(irasApplication));
 
         // Get question category
-        var questionCategoriesResponse = await questionSetService.GetQuestionCategories();
+        //var questionCategoriesResponse = await questionSetService.GetQuestionCategories();
+        var questionCategoriesResponse = await cmsSevice.GetQuestionCategories();
         var categoryId = questionCategoriesResponse.IsSuccessStatusCode && questionCategoriesResponse.Content != null
             ? questionCategoriesResponse.Content.FirstOrDefault()?.CategoryId ?? string.Empty
             : string.Empty;
 
-        return RedirectToAction(nameof(QuestionnaireController.Resume), "Questionnaire", new
+        return RedirectToAction(nameof(CmsQuestionSetController.Resume), "CmsQuestionSet", new
         {
             categoryId,
             irasApplication.ApplicationId

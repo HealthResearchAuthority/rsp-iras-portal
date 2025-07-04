@@ -1,10 +1,13 @@
-﻿namespace Rsp.IrasPortal.Web.Models;
+﻿using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
+
+namespace Rsp.IrasPortal.Web.Models;
 
 public class QuestionnaireViewModel
 {
     public bool ReviewAnswers { get; set; }
     public string CurrentStage { get; set; } = "";
     public List<QuestionViewModel> Questions { get; set; } = [];
+    public List<ContentComponent> GuidanceContent { get; set; } = [];
 
     public List<object> GetConditionalRules()
     {

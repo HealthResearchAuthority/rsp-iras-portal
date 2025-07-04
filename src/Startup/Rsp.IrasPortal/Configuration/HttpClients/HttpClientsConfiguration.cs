@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using Refit;
+using Rsp.IrasPortal.Application;
 using Rsp.IrasPortal.Application.Configuration;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.ServiceClients;
@@ -52,8 +53,19 @@ public static class HttpClientsConfiguration
             .AddHttpMessageHandler<AuthHeadersHandler>()
             .AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
 
+        var jsonOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+        jsonOptions.Converters.Add(new ContentComponentConverter());
+
+        var refitSettings = new RefitSettings
+        {
+            ContentSerializer = new SystemTextJsonContentSerializer(jsonOptions)
+        };
+
         services
-            .AddRestClient<ICmsQuestionSetServiceClient>()
+            .AddRefitClient<ICmsQuestionSetServiceClient>(refitSettings)
             .ConfigureHttpClient(client => client.BaseAddress = new Uri("https://localhost:44357/"))
             .AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
 
