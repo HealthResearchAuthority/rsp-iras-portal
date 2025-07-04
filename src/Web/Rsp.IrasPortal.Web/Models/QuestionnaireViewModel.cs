@@ -23,6 +23,7 @@ public class QuestionnaireViewModel
     /// List of questions in the questionnaire.
     /// </summary>
     public List<QuestionViewModel> Questions { get; set; } = [];
+    public List<ContentComponent> GuidanceContent { get; set; } = [];
 
     public List<ContentComponent> GuidanceContent { get; set; } = [];
 
