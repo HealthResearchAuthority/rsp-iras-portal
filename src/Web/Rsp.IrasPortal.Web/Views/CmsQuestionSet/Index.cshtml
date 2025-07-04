@@ -3,6 +3,7 @@
 @using Microsoft.FeatureManagement
 @using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.DTOs
+@using Rsp.IrasPortal.Application.DTOs.CmsQuestionset
 @using Rsp.IrasPortal.Web.TagHelpers
 @using System.Globalization
 @model QuestionnaireViewModel
@@ -126,6 +127,8 @@
 
                     <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
 
+					<partial name="~/Views/CmsQuestionSet/GuidanceContent.cshtml" model="Model.GuidanceContent" />
+
                     @foreach (var question in Model.Questions)
                     {
                         var index = question.Index;
@@ -172,6 +175,7 @@
                             _ => string.Empty
                         };
 
+						<partial name="~/Views/CmsQuestionSet/GuidanceContent.cshtml" model="question.GuidanceComponents" />
                         if (!string.IsNullOrWhiteSpace(templateName))
                         {
                             // plese note the @ is necessary before Html so that Template is rendered, otherwise it won't render

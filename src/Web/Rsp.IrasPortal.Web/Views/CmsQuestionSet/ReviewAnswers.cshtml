@@ -26,11 +26,12 @@
 
     // Prepare the navigation model depending on whether we have a lastQuestion
     var navModel = lastQuestion != null
+        ? ("qnc:displayquestionnaire", "Back", new Dictionary<string, string>
 		? ("cmsqnc:displayquestionnaire", "Back", new Dictionary<string, string>
                 {
             { "sectionId", lastQuestion.SectionId },
             { "categoryId", lastQuestion.Category }
-                                                                                                                                                                                                                                                                                                                        })
+                                                                                                                                                                                                                                                                                                                                                                })
         : ("app:createapplication", "Back", new Dictionary<string, string>());
 }
 
