@@ -3,6 +3,7 @@
 @using Microsoft.FeatureManagement
 @using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.DTOs
+@using Rsp.IrasPortal.Application.DTOs.CmsQuestionset
 @using Rsp.IrasPortal.Web.TagHelpers
 @using System.Globalization
 @model QuestionnaireViewModel
@@ -125,6 +126,8 @@
 
                     <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
 
+					<partial name="~/Views/CmsQuestionSet/GuidanceContent.cshtml" model="Model.GuidanceContent" />
+
                     @foreach (var question in Model.Questions)
                     {
                         var index = question.Index;
@@ -171,6 +174,7 @@
                             _ => string.Empty
                         };
 
+						<partial name="~/Views/CmsQuestionSet/GuidanceContent.cshtml" model="question.GuidanceComponents" />
                         if (!string.IsNullOrWhiteSpace(templateName))
                         {
                             // plese note the @ is necessary before Html so that Template is rendered, otherwise it won't render
@@ -184,14 +188,14 @@
             <div class="save-buttons">
                 @if (!Model.ReviewAnswers)
                 {
-                    <partial name="_SubmitButton" model="@("qnc:saveresponses", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } })" />
+					<partial name="_SubmitButton" model="@("cmsqnc:saveresponses", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } })" />
 
                     ViewBag.Style = "govuk-button govuk-button--secondary";
-                    <partial name="_SubmitButton" model="@("qnc:saveresponses", "Save for later", new Dictionary<string, string> { { "saveForLater", bool.TrueString } })" />
+					<partial name="_SubmitButton" model="@("cmsqnc:saveresponses", "Save for later", new Dictionary<string, string> { { "saveForLater", bool.TrueString } })" />
                 }
                 else
                 {
-                    <partial name="_SubmitButton" model="@("qnc:saveresponses", "Save changes", new Dictionary<string, string> { { "submit", bool.TrueString } })" />
+					<partial name="_SubmitButton" model="@("cmsqnc:saveresponses", "Save changes", new Dictionary<string, string> { { "submit", bool.TrueString } })" />
                 }
             </div>
 
