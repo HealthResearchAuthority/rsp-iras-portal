@@ -463,6 +463,14 @@ dialog[open] {
   background-color: white !important;
 }
 
+.autocomplete__input {
+  background-color: white !important;
+}
+
+.govuk-label--s.font-weight-none {
+  font-weight: 100 !important;
+}
+
 .app-c-filter-panel {
   padding-top: 15px;
   margin-bottom: 10px;
@@ -559,7 +567,8 @@ dialog[open] {
   flex-wrap: wrap;
   align-items: center;
   gap: 15px;
-  padding: 20px 0;
+  padding-top: 25px;
+  padding-bottom: 25px;
 }
 
 .app-c-filter-panel__action--submit {
@@ -605,6 +614,10 @@ dialog[open] {
   line-height: 1.315789474;
   font-family: "GDS Transport", arial, sans-serif;
   margin: 0;
+}
+
+.app-c-filter-section__content {
+  margin-bottom: 25px;
 }
 
 /* Filter Summar y*/

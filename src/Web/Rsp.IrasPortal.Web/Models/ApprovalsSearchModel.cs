@@ -2,6 +2,7 @@
 
 public class ApprovalsSearchModel
 {
+    private Dictionary<string, string> _filters;
     public string IrasId { get; set; }
     public string ChiefInvestigatorName { get; set; }
     public string ShortProjectTitle { get; set; }
@@ -20,37 +21,58 @@ public class ApprovalsSearchModel
 
     public List<string> Country { get; set; } = new();
     public List<string> ModificationTypes { get; set; } = new();
-
-    private Dictionary<string, string> _filters;
+    public OrganisationSearchViewModel SponsorOrgSearch { get; set; } = new();
 
     public Dictionary<string, string> Filters
     {
         get
         {
-            if (_filters != null) return _filters;
-
             var filters = new Dictionary<string, string>();
 
             if (!string.IsNullOrWhiteSpace(IrasId))
+            {
                 filters.Add("IRAS ID", IrasId);
+            }
 
             if (!string.IsNullOrWhiteSpace(ChiefInvestigatorName))
+            {
                 filters.Add("Chief Investigator Name", ChiefInvestigatorName);
+            }
 
             if (!string.IsNullOrWhiteSpace(ShortProjectTitle))
+            {
                 filters.Add("Project Title", ShortProjectTitle);
+            }
+
+            if (!string.IsNullOrWhiteSpace(SponsorOrgSearch.SelectedOrganisation))
+            {
+                SponsorOrganisation = SponsorOrgSearch.SelectedOrganisation;
+            }
+
+            if (!string.IsNullOrWhiteSpace(SponsorOrganisation))
+            {
+                filters.Add("Sponsor Organisation", SponsorOrganisation);
+            }
 
             if (FromDate.HasValue)
+            {
                 filters.Add("From Date", FromDate.Value.ToString("d MMM yyyy"));
+            }
 
             if (ToDate.HasValue)
+            {
                 filters.Add("To Date", ToDate.Value.ToString("d MMM yyyy"));
+            }
 
             if (Country.Any())
-                filters.Add("Country", string.Join(", ", Country));
+            {
+                filters.Add("Lead Nation", string.Join(", ", Country));
+            }
 
             if (ModificationTypes.Any())
+            {
                 filters.Add("Modification Type", string.Join(", ", ModificationTypes));
+            }
 
             return filters;
         }
