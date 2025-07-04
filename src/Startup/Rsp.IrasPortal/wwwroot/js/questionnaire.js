@@ -7,9 +7,9 @@
 // questionnaire.js
 $(function () {
     // Hide all conditional questions initially
-    $(".conditional").hide();
+    $(".conditional, .conditional-field").hide();
 
-    $(".conditional").each(function (_, conditionalElement) {
+    $(".conditional, .conditional-field").each(function (_, conditionalElement) {
         const $conditionalElement = $(conditionalElement);
         const questionId = $conditionalElement.data("questionid");
         const parentQuestions = $conditionalElement.data("parents");
