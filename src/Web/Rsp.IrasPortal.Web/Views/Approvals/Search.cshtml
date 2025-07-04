@@ -56,7 +56,7 @@
 }
 
 <div class="govuk-grid-row">
-	<authorized auth-params="@(new AuthTagHelperParams { Roles = "user,system_administrator,reviewer" })">
+<authorized auth-params="@(new AuthTagHelperParams { Roles = "user,system_administrator,reviewer" })">
 
 <div class="govuk-grid-column-two-thirds">
 <h2 class="govuk-heading-l" id="title">Search</h2>
@@ -65,31 +65,32 @@
     Enter the IRAS ID to search for all modifications received, including those submitted for notification only
 </p>
 
-<form asp-route="approvals:applyfilters" method="post" class="govuk-form-group" style="margin-bottom: 0;">
-<div style="display: flex; width: 100%; gap: 10px;">
-    <input class="govuk-input" asp-for="IrasId" type="text" style="width: 87.5%;"/>
-    <div style="width: 12.5%;">
+<form asp-route="approvals:applyfilters" method="post" class="govuk-form-group govuk-!-margin-bottom-0">
+<div class="search-flex-container">
+    <input class="govuk-input search-flex-input" asp-for="IrasId" type="text"/>
+    <div class="search-flex-button">
         <button type="submit" class="govuk-button">Search</button>
     </div>
 </div>
 
-<!-- Filter Panel -->
-<div class="app-c-filter-panel">
-<input type="checkbox" id="toggle-filter" class="app-c-filter-toggle" hidden @(CanOpenFilterPanel() ? "checked" : null)>
 
-<div class="app-c-filter-panel__header">
-    <label for="toggle-filter" class="app-c-filter-panel__button govuk-link" role="button" aria-controls="filter-panel">
-        <span class="app-c-filter-panel__button-inner">Advanced filter</span>
+<!-- Filter Panel -->
+<div class="search-filter-panel">
+<input type="checkbox" id="toggle-filter" class="search-filter-toggle" hidden @(CanOpenFilterPanel() ? "checked" : null)>
+
+<div class="search-filter-panel__header">
+    <label for="toggle-filter" class="search-filter-panel__button govuk-link" role="button" aria-controls="filter-panel">
+        <span class="search-filter-panel__button-inner">Advanced filter</span>
     </label>
-    <h2 id="js-result-count" class="app-c-filter-panel__count">0 results</h2>
+    <h2 id="js-result-count" class="search-filter-panel__count">0 results</h2>
 </div>
-<div class="app-c-filter-panel__content" id="filter-panel" role="region" aria-labelledby="toggle-filter">
+<div class="search-filter-panel__content" id="filter-panel" role="region" aria-labelledby="toggle-filter">
     <!-- Chief Investigator -->
-    <details class="app-c-filter-section" @(CanOpenPanelForField("ChiefInvestigatorName") ? "open" : null)>
-        <summary class="app-c-filter-section__summary">
-            <h2 class="app-c-filter-section__summary-heading">Chief Investigator name</h2>
+    <details class="search-filter-section" @(CanOpenPanelForField("ChiefInvestigatorName") ? "open" : null)>
+        <summary class="search-filter-section__summary">
+            <h2 class="search-filter-section__summary-heading">Chief Investigator name</h2>
         </summary>
-        <div class="app-c-filter-section__content">
+        <div class="search-filter-section__content">
             <div class="govuk-form-group govuk-!-margin-bottom-2">
                 <fieldset class="govuk-fieldset">
                     <rsp-gds-input asp-for="ChiefInvestigatorName" label-text="Enter the name of the Chief Investigator" width-class="govuk-!-width-three-quarters" label-html-class="font-weight-none"/>
@@ -99,12 +100,12 @@
     </details>
 
     <!-- Date modification submitted -->
-    <details class="app-c-filter-section" @(CanOpenPanelForAnyField("FromDate", "ToDate") ? "open" : null)>
+    <details class="search-filter-section" @(CanOpenPanelForAnyField("FromDate", "ToDate") ? "open" : null)>
 
-        <summary class="app-c-filter-section__summary">
-            <h2 class="app-c-filter-section__summary-heading">Date modification submitted</h2>
+        <summary class="search-filter-section__summary">
+            <h2 class="search-filter-section__summary-heading">Date modification submitted</h2>
         </summary>
-        <div class="app-c-filter-section__content">
+        <div class="search-filter-section__content">
             <div class="govuk-form-group govuk-!-margin-bottom-2">
                 <fieldset class="govuk-fieldset">
                     <rsp-gds-date-input asp-for="FromDate"
@@ -138,11 +139,11 @@
     </details>
 
     <!-- Lead nation -->
-    <details class="app-c-filter-section" @(CanOpenPanelForField("Country") ? "open" : null)>
-        <summary class="app-c-filter-section__summary">
-            <h2 class="app-c-filter-section__summary-heading">Lead nation</h2>
+    <details class="search-filter-section" @(CanOpenPanelForField("Country") ? "open" : null)>
+        <summary class="search-filter-section__summary">
+            <h2 class="search-filter-section__summary-heading">Lead nation</h2>
         </summary>
-        <div class="app-c-filter-section__content">
+        <div class="search-filter-section__content">
             <div class="govuk-form-group govuk-!-margin-bottom-2">
                 <fieldset class="govuk-fieldset">
                     <rsp-gds-checkbox-group asp-for="Country"
@@ -162,11 +163,11 @@
     </details>
 
     <!-- Modification type -->
-    <details class="app-c-filter-section" @(CanOpenPanelForField("ModificationTypes") ? "open" : null)>
-        <summary class="app-c-filter-section__summary">
-            <h2 class="app-c-filter-section__summary-heading">Modification type</h2>
+    <details class="search-filter-section" @(CanOpenPanelForField("ModificationTypes") ? "open" : null)>
+        <summary class="search-filter-section__summary">
+            <h2 class="search-filter-section__summary-heading">Modification type</h2>
         </summary>
-        <div class="app-c-filter-section__content">
+        <div class="search-filter-section__content">
             <div class="govuk-form-group govuk-!-margin-bottom-2">
                 <fieldset class="govuk-fieldset">
                     <rsp-gds-checkbox-group asp-for="ModificationTypes"
@@ -184,11 +185,11 @@
     </details>
 
     <!-- Short project title -->
-    <details class="app-c-filter-section" @(CanOpenPanelForField("ShortProjectTitle") ? "open" : null)>
-        <summary class="app-c-filter-section__summary">
-            <h2 class="app-c-filter-section__summary-heading">Short project title</h2>
+    <details class="search-filter-section" @(CanOpenPanelForField("ShortProjectTitle") ? "open" : null)>
+        <summary class="search-filter-section__summary">
+            <h2 class="search-filter-section__summary-heading">Short project title</h2>
         </summary>
-        <div class="app-c-filter-section__content">
+        <div class="search-filter-section__content">
             <div class="govuk-form-group govuk-!-margin-bottom-2">
                 <fieldset class="govuk-fieldset">
                     <rsp-gds-input asp-for="ShortProjectTitle" label-text="Enter the short project title" width-class="govuk-!-width-three-quarters" label-html-class="font-weight-none"/>
@@ -198,11 +199,11 @@
     </details>
 
     <!-- Sponsor organisation -->
-    <details class="app-c-filter-section" @(CanOpenSponsorOrgSection() ? "open" : null)>
-        <summary class="app-c-filter-section__summary">
-            <h2 class="app-c-filter-section__summary-heading">Sponsor organisation</h2>
+    <details class="search-filter-section" @(CanOpenSponsorOrgSection() ? "open" : null)>
+        <summary class="search-filter-section__summary">
+            <h2 class="search-filter-section__summary-heading">Sponsor organisation</h2>
         </summary>
-        <div class="app-c-filter-section__content">
+        <div class="search-filter-section__content">
             <div class="govuk-form-group govuk-!-margin-bottom-2">
                 <fieldset class="govuk-fieldset">
                     <rsp-gds-autocomplete asp-for="SponsorOrganisation"
@@ -337,8 +338,8 @@
     </details>
 
     <!-- Apply -->
-    <div class="app-c-filter-panel__actions">
-        <button class="govuk-button app-c-filter-panel__action app-c-filter-panel__action--submit">Apply</button>
+    <div class="search-filter-panel__actions">
+        <button class="govuk-button search-filter-panel__action search-filter-panel__action--submit">Apply</button>
     </div>
 </div>
 </div>
@@ -347,9 +348,9 @@
 <!-- Active Filters Panel -->
 @if (Model.Filters.Any())
 {
-    <div class="app-c-filter-summary">
-        <h3 class="app-c-filter-summary__heading">Active filters</h3>
-        <ul class="app-c-filter-summary__remove-filters">
+    <div class="search-filter-summary">
+        <h3 class="search-filter-summary__heading">Active filters</h3>
+        <ul class="search-filter-summary__remove-filters">
             @foreach (var filter in Model.Filters)
             {
                 var filterKey = filter.Key;
@@ -361,8 +362,8 @@
                         <a asp-route="approvals:removefilter"
                            asp-route-key="@filterKey"
                            asp-route-value="@val.Trim()"
-                           class="app-c-filter-summary__remove-filter">
-                            <span class="app-c-filter-summary__remove-filter-text">
+                           class="search-filter-summary__remove-filter">
+                            <span class="search-filter-summary__remove-filter-text">
                                 <span class="govuk-visually-hidden">Remove filter</span>
                                 @filterKey - @val.Trim()
                             </span>
@@ -374,7 +375,7 @@
         </ul>
 
         <div>
-            <a asp-route="approvals:clearfilters" class="app-c-filter-summary__clear-filters govuk-link govuk-link--no-visited-state">
+            <a asp-route="approvals:clearfilters" class="search-filter-summary__clear-filters govuk-link govuk-link--no-visited-state">
                 Clear all filters
             </a>
         </div>
