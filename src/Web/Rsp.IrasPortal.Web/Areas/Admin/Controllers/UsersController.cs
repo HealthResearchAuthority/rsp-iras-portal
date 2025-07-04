@@ -71,14 +71,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
             return View((users, paginationModel));
         }
 
-        // if status is forbidden
-        // return the appropriate response otherwise
-        // return the generic error page
-        return response.StatusCode switch
-        {
-            HttpStatusCode.Forbidden => Forbid(),
-            _ => View(Error, this.ProblemResult(response))
-        };
+        // return error page as api wasn't successful
+        return this.ServiceError(response);
     }
 
     /// <summary>
@@ -318,14 +312,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
             return View(EditUserView, model);
         }
 
-        // if status is forbidden
-        // return the appropriate response otherwise
-        // return the generic error page
-        return response.StatusCode switch
-        {
-            HttpStatusCode.Forbidden => Forbid(),
-            _ => View(Error, this.ProblemResult(response))
-        };
+        // return error page as api wasn't successful
+        return this.ServiceError(response);
     }
 
     /// <summary>
@@ -345,14 +333,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
             return View(ConfirmDisableUser, model);
         }
 
-        // if status is forbidden
-        // return the appropriate response otherwise
-        // return the generic error page
-        return response.StatusCode switch
-        {
-            HttpStatusCode.Forbidden => Forbid(),
-            _ => View(Error, this.ProblemResult(response))
-        };
+        // return error page as api wasn't successful
+        return this.ServiceError(response);
     }
 
     [HttpPost]
@@ -376,14 +358,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
             }
         }
 
-        // if status is forbidden
-        // return the appropriate response otherwise
-        // return the generic error page
-        return userResponse.StatusCode switch
-        {
-            HttpStatusCode.Forbidden => Forbid(),
-            _ => View(Error, this.ProblemResult(userResponse))
-        };
+        // return error page as api wasn't successful
+        return this.ServiceError(userResponse);
     }
 
     [HttpGet]
@@ -398,14 +374,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
             return View(ConfirmEnableUser, model);
         }
 
-        // if status is forbidden
-        // return the appropriate response otherwise
-        // return the generic error page
-        return response.StatusCode switch
-        {
-            HttpStatusCode.Forbidden => Forbid(),
-            _ => View(Error, this.ProblemResult(response))
-        };
+        // return error page as api wasn't successful
+        return this.ServiceError(response);
     }
 
     [HttpPost]
@@ -429,14 +399,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
             }
         }
 
-        // if status is forbidden
-        // return the appropriate response otherwise
-        // return the generic error page
-        return userResponse.StatusCode switch
-        {
-            HttpStatusCode.Forbidden => Forbid(),
-            _ => View(Error, this.ProblemResult(userResponse))
-        };
+        // return error page as api wasn't successful
+        return this.ServiceError(userResponse);
     }
 
     /// <summary>
@@ -521,14 +485,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
             return View(UserRolesView, model);
         }
 
-        // if status is forbidden
-        // return the appropriate response otherwise
-        // return the generic error page
-        return response.StatusCode switch
-        {
-            HttpStatusCode.Forbidden => Forbid(),
-            _ => View(Error, this.ProblemResult(response))
-        };
+        // return error page as api wasn't successful
+        return this.ServiceError(response);
     }
 
     /// <summary>

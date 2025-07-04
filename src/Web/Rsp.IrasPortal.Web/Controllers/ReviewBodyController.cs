@@ -1,10 +1,12 @@
-﻿using FluentValidation;
+﻿using System.Data;
+using FluentValidation;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
+using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers;
@@ -171,8 +173,8 @@ public class ReviewBodyController(
                 : RedirectToAction(ViewReviewBodyView, model);
         }
 
-        //TODO: WE NEED TO HANDLE ERRORS HERE
-        return View(SuccessMessagesView, model);
+        // return error page as api wasn't successful
+        return this.ServiceError(response);
     }
 
     [HttpGet]

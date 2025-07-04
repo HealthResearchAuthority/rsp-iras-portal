@@ -23,11 +23,11 @@ public class CreateReviewBodyTests : TestServiceBase<ReviewBodyController>
 
     [Theory, AutoData]
     public void CreateReviewBody_ShouldReturnViewWithOrderedReviewBodies(
-        List<ReviewBodyDto> reviewBodies,
+        ReviewBodyDto reviewBodies,
         AddUpdateReviewBodyModel addUpdateReviewBodyModel)
     {
         // Arrange
-        var serviceResponse = new ServiceResponse<IEnumerable<ReviewBodyDto>>
+        var serviceResponse = new ServiceResponse<ReviewBodyDto>
         {
             StatusCode = HttpStatusCode.OK,
             Content = reviewBodies

@@ -25,13 +25,13 @@ public interface IReviewBodyServiceClient
     ///     Creates a new review body in the database
     /// </summary>
     [Post("/reviewbody/create")]
-    public Task<IApiResponse> CreateReviewBody(ReviewBodyDto reviewBodyDto);
+    public Task<IApiResponse<ReviewBodyDto>> CreateReviewBody(ReviewBodyDto reviewBodyDto);
 
     /// <summary>
     ///     Updates a review body in the database
     /// </summary>
     [Post("/reviewbody/update")]
-    public Task<IApiResponse> UpdateReviewBody(ReviewBodyDto reviewBodyDto);
+    public Task<IApiResponse<ReviewBodyDto>> UpdateReviewBody(ReviewBodyDto reviewBodyDto);
 
     /// <summary>
     /// Gets review bodies by Id
