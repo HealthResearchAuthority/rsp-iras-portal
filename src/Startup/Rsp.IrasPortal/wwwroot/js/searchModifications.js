@@ -13,6 +13,6 @@
         updateHint(); // Initial update on page load
     }
 
-    updateCheckboxCount("Country", "country-hint");
-    updateCheckboxCount("ModificationTypes", "modification-hint");
+    updateCheckboxCount("Search.Country", "country-hint");
+    updateCheckboxCount("Search.ModificationTypes", "modification-hint");
 });
