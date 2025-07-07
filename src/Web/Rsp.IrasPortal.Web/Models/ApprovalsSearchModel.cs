@@ -1,8 +1,9 @@
-﻿namespace Rsp.IrasPortal.Web.Models;
+﻿using System.Globalization;
+
+namespace Rsp.IrasPortal.Web.Models;
 
 public class ApprovalsSearchModel
 {
-    private Dictionary<string, string> _filters = [];
     public string? IrasId { get; set; }
     public string? ChiefInvestigatorName { get; set; }
     public string? ShortProjectTitle { get; set; }
@@ -76,7 +77,6 @@ public class ApprovalsSearchModel
 
             return filters;
         }
-        set => _filters = value; // Allows manual clearing or override
     }
 
     private static DateTime? ParseDate(string? day, string? month, string? year)
@@ -84,8 +84,11 @@ public class ApprovalsSearchModel
         return int.TryParse(day, out var d) &&
                int.TryParse(month, out var m) &&
                int.TryParse(year, out var y) &&
-               DateTime.TryParse($"{y:D4}-{m:D2}-{d:D2}", out var result)
-            ? result
-            : null;
+               DateTime.TryParse(
+                   $"{y:D4}-{m:D2}-{d:D2}",
+                   CultureInfo.InvariantCulture,
+                   DateTimeStyles.None,
+                   out var result
+               ) ? result : null;
     }
 }
