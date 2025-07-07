@@ -1,7 +1,9 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 namespace Rsp.IrasPortal.Web.Models;
 
+[ExcludeFromCodeCoverage]
 public class ApprovalsSearchModel
 {
     public string? IrasId { get; set; }

@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,6 +12,7 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
+[ExcludeFromCodeCoverage]
 [Route("[controller]/[action]", Name = "approvals:[action]")]
 [Authorize(Policy = "IsUser")]
 public class ApprovalsController
