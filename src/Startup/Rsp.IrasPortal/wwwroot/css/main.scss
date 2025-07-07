@@ -488,10 +488,9 @@ dialog[open] {
 }
 
 .govuk-label--s.font-weight-none {
-    font-weight: 100 !important; // or `normal`, depending on desired appearance
+    font-weight: 100 !important;
 }
 
-// SEARCH BAR
 .search-flex-container {
     display: flex;
     width: 100%;
@@ -507,39 +506,34 @@ dialog[open] {
     flex-basis: 12.5%;
 }
 
-// SEARCH FILTER PANEL
 .search-filter-panel {
     padding-top: 15px;
     margin-bottom: 10px;
 }
 
-// ✅ Header layout: toggle + result count
 .search-filter-panel__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-wrap: nowrap;
     gap: 10px;
-    // Ensure button behaves well in flex
+
     & > .search-filter-panel__button {
         flex-shrink: 1;
         min-width: 0;
     }
 }
 
-// 📱 Responsive tweak: stack elements on narrow screens
 @media (max-width: 600px) {
     .search-filter-panel__header {
         flex-wrap: wrap;
     }
 }
 
-// ✅ Rotate arrow when checkbox is checked
 .search-filter-toggle:checked + .search-filter-panel__header .search-filter-panel__button::before {
-    transform: rotate(-135deg); // up arrow
+    transform: rotate(-135deg);
 }
 
-// ✅ Result count text (right-aligned via flex)
 .search-filter-panel__count {
     margin: 0;
     color: #505a5f;
@@ -559,18 +553,14 @@ dialog[open] {
     }
 }
 
-// ✅ Toggle behaviour using sibling selectors
-// Hide by default
 .search-filter-toggle:not(:checked) ~ .search-filter-panel__content {
     display: none;
 }
 
-// Show when checked
 .search-filter-toggle:checked ~ .search-filter-panel__content {
     display: block;
 }
 
-// ✅ Button styling with rotating arrow
 .search-filter-panel__button {
     background: none;
     border: none;
@@ -595,12 +585,12 @@ dialog[open] {
     display: inline-block;
     padding: 4px;
     margin-right: 8px;
-    transform: rotate(45deg); // Down arrow
+    transform: rotate(45deg);
     transition: transform 0.2s ease-in-out;
 }
 
 .search-filter-toggle:checked + .search-filter-panel__button::before {
-    transform: rotate(-135deg); // Up arrow
+    transform: rotate(-135deg);
 }
 
 .search-filter-panel__content {
@@ -624,20 +614,18 @@ dialog[open] {
     margin-bottom: 0;
 }
 
-// FILTER SECTION (optional accordion)
-
 .search-filter-section {
     border-bottom: 1px solid #b1b4b6;
 }
 
 .search-filter-section__summary {
     display: flex;
-    align-items: center; // Vertically centers ::before and h2
+    align-items: center;
     cursor: pointer;
     color: #0b0c0c;
     list-style: none;
     padding: 25px 0;
-    margin: 0; // 🔄 remove auto centering – unnecessary
+    margin: 0;
 }
 
 .search-filter-section__summary::before {
@@ -651,7 +639,7 @@ dialog[open] {
     transform: rotate(45deg);
     transition: transform 0.2s ease-in-out;
     flex-shrink: 0;
-    align-self: center; // ✅ stays aligned through rotation
+    align-self: center;
 }
 
 .search-filter-section[open] .search-filter-section__summary::before {
@@ -663,14 +651,13 @@ dialog[open] {
     font-size: 1.1875rem;
     line-height: 1.315789474;
     font-family: "GDS Transport", arial, sans-serif;
-    margin: 0; // ✅ ensures heading aligns with icon
+    margin: 0;
 }
 
 .search-filter-section__content {
     margin-bottom: 25px;
 }
 
-/* Filter Summar y*/
 .search-filter-summary {
     padding-bottom: 20px;
     margin-bottom: 40px;

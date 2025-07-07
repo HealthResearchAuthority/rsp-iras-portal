@@ -1,10 +1,10 @@
-﻿namespace Rsp.IrasPortal.Web.Models;
+﻿namespace Rsp.IrasPortal.Application.DTOs;
 
-public class ModificationsModel
+public class ModificationsDto
 {
     public string ModificationId { get; set; } = null!;
     public string ShortProjectTitle { get; set; } = null!;
-    public string? ModificationType { get; set; } = null!;
+    public string ModificationType { get; set; } = null!;
     public string ChiefInvestigator { get; set; } = null!;
     public string LeadNation { get; set; } = null!;
     public string SponsorOrganisation { get; set; } = null!;

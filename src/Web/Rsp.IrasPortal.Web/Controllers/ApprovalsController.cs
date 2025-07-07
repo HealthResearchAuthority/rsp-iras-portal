@@ -3,6 +3,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
@@ -12,7 +13,12 @@ namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "approvals:[action]")]
 [Authorize(Policy = "IsUser")]
-public class ApprovalsController(IRtsService rtsService, IValidator<ApprovalsSearchModel> validator) : Controller
+public class ApprovalsController
+(
+    IApplicationsService applicationsService,
+    IRtsService rtsService,
+    IValidator<ApprovalsSearchModel> validator
+) : Controller
 {
     [Route("/approvals", Name = "approvals:welcome")]
     public IActionResult Welcome()
@@ -21,40 +27,52 @@ public class ApprovalsController(IRtsService rtsService, IValidator<ApprovalsSea
     }
 
     [HttpGet]
-    public IActionResult Search()
+    public async Task<IActionResult> Search(int pageNumber = 1, int pageSize = 20)
     {
         var model = new ApprovalsSearchViewModel();
 
         if (HttpContext.Session.Keys.Contains(SessionKeys.ApprovalsSearch))
         {
             var json = HttpContext.Session.GetString(SessionKeys.ApprovalsSearch)!;
-            model.Search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json)!;
-        }
+            var search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json)!;
 
-        // replace with call to iras-service
-        model.Modifications =
-        [
-            new ModificationsModel {
-                ModificationId = "ID 1",
-                ChiefInvestigator = "CI",
-                ShortProjectTite = "Title",
-                Date = new DateOnly(2022, 1, 1),
-                LeadNation = "England",
-                ModificationType =  "Minor modifications",
-                SponsorOrganisation = ""
-            },
-            new ModificationsModel {
-                ModificationId = "ID 2",
-                ChiefInvestigator = "CI 2",
-                ShortProjectTite = "Title 2",
-                Date = new DateOnly(2022, 1, 1),
-                LeadNation = "England",
-                ModificationType =  "Minor modifications",
-                SponsorOrganisation = ""
+            model.Search = search;
+
+            if (search.Filters.Count == 0)
+            {
+                model.EmptySearchPerformed = true;
+                return View(model);
             }
-        ];
 
-        model.Pagination = new PaginationViewModel(1, 10, 420);
+            var searchQuery = new ModificationSearchRequest
+            {
+                IrasId = search.IrasId,
+                ChiefInvestigatorName = search.ChiefInvestigatorName,
+                Country = search.Country,
+                FromDate = search.FromDate,
+                ToDate = search.ToDate,
+                ModificationTypes = search.ModificationTypes,
+                ShortProjectTitle = search.ShortProjectTitle,
+                SponsorOrganisation = search.SponsorOrganisation
+            };
+
+            var result = await applicationsService.GetModifications(searchQuery, pageNumber, pageSize);
+
+            model.Modifications = result?.Content?.Modifications?
+                .Select(dto => new ModificationsModel
+                {
+                    ModificationId = dto.ModificationId,
+                    ShortProjectTitle = dto.ShortProjectTitle,
+                    ModificationType = dto.ModificationType,
+                    ChiefInvestigator = dto.ChiefInvestigator,
+                    LeadNation = dto.LeadNation,
+                    SponsorOrganisation = dto.SponsorOrganisation,
+                    CreatedAt = dto.CreatedAt
+                })
+                .ToList() ?? [];
+
+            model.Pagination = new PaginationViewModel(pageNumber, pageSize, result?.Content?.TotalCount ?? 0);
+        }
 
         return View(model);
     }
@@ -81,7 +99,7 @@ public class ApprovalsController(IRtsService rtsService, IValidator<ApprovalsSea
     [HttpGet]
     public IActionResult ClearFilters()
     {
-        HttpContext.Session.SetString(SessionKeys.ApprovalsSearch, JsonSerializer.Serialize(new ApprovalsSearchModel()));
+        HttpContext.Session.Remove(SessionKeys.ApprovalsSearch);
         return RedirectToAction(nameof(Search));
     }
 
@@ -144,9 +162,7 @@ public class ApprovalsController(IRtsService rtsService, IValidator<ApprovalsSea
             case "country":
                 if (!string.IsNullOrEmpty(value) && searchModel.Country != null)
                 {
-                    searchModel.Country = searchModel.Country
-                        .Where(c => !string.Equals(c, value, StringComparison.OrdinalIgnoreCase))
-                        .ToList();
+                    searchModel.Country = [.. searchModel.Country.Where(c => !string.Equals(c, value, StringComparison.OrdinalIgnoreCase))];
                 }
 
                 break;
@@ -154,16 +170,11 @@ public class ApprovalsController(IRtsService rtsService, IValidator<ApprovalsSea
             case "modificationtypes":
                 if (!string.IsNullOrEmpty(value) && searchModel.ModificationTypes != null)
                 {
-                    searchModel.ModificationTypes = searchModel.ModificationTypes
-                        .Where(m => !string.Equals(m, value, StringComparison.OrdinalIgnoreCase))
-                        .ToList();
+                    searchModel.ModificationTypes = [.. searchModel.ModificationTypes.Where(m => !string.Equals(m, value, StringComparison.OrdinalIgnoreCase))];
                 }
 
                 break;
         }
-
-        // Save updated model to session
-        HttpContext.Session.SetString(SessionKeys.ApprovalsSearch, JsonSerializer.Serialize(searchModel));
 
         return await ApplyFilters(new ApprovalsSearchViewModel { Search = searchModel });
     }

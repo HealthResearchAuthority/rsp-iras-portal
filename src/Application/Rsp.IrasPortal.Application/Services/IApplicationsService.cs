@@ -59,4 +59,6 @@ public interface IApplicationsService : IInterceptable
     /// <param name="irasApplication">IrasApplication to be updated</param>
     /// <returns>An asynchronous operation that updates the existing application.</returns>
     public Task<ServiceResponse<IrasApplicationResponse>> UpdateApplication(IrasApplicationRequest irasApplication);
+
+    public Task<ServiceResponse<GetModificationsResponse>> GetModifications(ModificationSearchRequest searchQuery, int pageNumber = 1, int pageSize = 20);
 }
