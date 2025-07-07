@@ -1,7 +1,9 @@
-﻿using Rsp.IrasPortal.Web.Areas.Admin.Models;
+﻿using System.Diagnostics.CodeAnalysis;
+using Rsp.IrasPortal.Web.Areas.Admin.Models;
 
 namespace Rsp.IrasPortal.Web.Models;
 
+[ExcludeFromCodeCoverage]
 public class ApprovalsSearchViewModel
 {
     public ApprovalsSearchModel Search { get; set; } = new();
