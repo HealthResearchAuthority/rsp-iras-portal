@@ -62,4 +62,7 @@ public interface IApplicationsServiceClient
     /// <returns>An asynchronous operation that updates the existing application.</returns>
     [Put("/applications")]
     public Task<ApiResponse<IrasApplicationResponse>> UpdateApplication(IrasApplicationRequest irasApplication);
+
+    [Get("/applications/modifications")]
+    public Task<ApiResponse<GetModificationsResponse>> GetModifications([Body] ModificationSearchRequest searchQuery, int pageNumber = 1, int pageSize = 20);
 }

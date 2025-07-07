@@ -64,4 +64,11 @@ public class ApplicationsService(IApplicationsServiceClient applicationsClient) 
 
         return apiResponse.ToServiceResponse();
     }
+
+    public async Task<ServiceResponse<GetModificationsResponse>> GetModifications(ModificationSearchRequest searchQuery, int pageNumber = 1, int pageSize = 20)
+    {
+        var apiResponse = await applicationsClient.GetModifications(searchQuery, pageNumber, pageSize);
+
+        return apiResponse.ToServiceResponse();
+    }
 }
