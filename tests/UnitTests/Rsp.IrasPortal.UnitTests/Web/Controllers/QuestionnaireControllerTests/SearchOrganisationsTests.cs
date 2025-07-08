@@ -44,7 +44,7 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
         var sessionData = new Dictionary<string, byte[]?>
         {
             { $"{SessionKeys.Questionnaire}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(questions) },
-            { SessionKeys.Application, JsonSerializer.SerializeToUtf8Bytes(application) }
+            { SessionKeys.ProjectRecord, JsonSerializer.SerializeToUtf8Bytes(application) }
         };
 
         session
@@ -150,7 +150,7 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
         var sessionData = new Dictionary<string, byte[]?>
         {
             { $"{SessionKeys.Questionnaire}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(questions) },
-            { SessionKeys.Application, JsonSerializer.SerializeToUtf8Bytes(application) }
+            { SessionKeys.ProjectRecord, JsonSerializer.SerializeToUtf8Bytes(application) }
         };
 
         session
@@ -251,7 +251,7 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
         var sessionData = new Dictionary<string, byte[]?>
         {
             { $"{SessionKeys.Questionnaire}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(questions) },
-            { SessionKeys.Application, JsonSerializer.SerializeToUtf8Bytes(application) }
+            { SessionKeys.ProjectRecord, JsonSerializer.SerializeToUtf8Bytes(application) }
         };
 
         var responseQuestionSections = new ServiceResponse<IEnumerable<QuestionSectionsResponse>>
@@ -337,8 +337,6 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
         var viewResult = result.ShouldBeOfType<RedirectResult>();
         model.SponsorOrgSearch.SelectedOrganisation.ShouldBeNullOrEmpty();
         Sut.TempData[TempDataKeys.SponsorOrgSearched].ShouldBe("searched:true");
-        Sut.TempData[TempDataKeys.ProjectApplicationId].ShouldBe(application.Id);
-        Sut.TempData[TempDataKeys.IrasId].ShouldBe(application.IrasId);
         Sut.TempData.ContainsKey(TempDataKeys.SponsorOrganisations).ShouldBeTrue();
     }
 }

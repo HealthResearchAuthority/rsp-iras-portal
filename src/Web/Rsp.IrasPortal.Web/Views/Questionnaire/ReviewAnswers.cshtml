@@ -7,7 +7,7 @@
 @inject IFeatureManager featureManager
 @{
     // Try to read the IRAS ID from TempData, default to 0 if missing
-    int.TryParse(TempData[TempDataKeys.IrasId]?.ToString(), out int irasId);
+    var irasId = TempData.Peek(TempDataKeys.IrasId) as int? ?? 0;
 
     // Group questions by their Section and order them by Sequence
     var groupedSections = Model.Questions
@@ -30,11 +30,8 @@
                 {
             { "sectionId", lastQuestion.SectionId },
             { "categoryId", lastQuestion.Category }
-                                        })
+                                                                                                                                                                                                                                                                                                                        })
         : ("app:createapplication", "Back", new Dictionary<string, string>());
-
-	TempData[TempDataKeys.ShortProjectTitle] = Model.GetShortProjectTitle();
-	TempData[TempDataKeys.CategoryId] = Model.GetFirstCategory();
 }
 
 @if (await featureManager.IsEnabledAsync(Features.ProgressiveEnhancement))

@@ -26,7 +26,7 @@ public class SubmitApplicationTests : TestServiceBase<QuestionnaireController>
         // Arrange
         Mocker
             .GetMock<IRespondentService>()
-            .Setup(s => s.GetRespondentAnswers(It.IsAny<string>()))
+            .Setup(s => s.GetRespondentAnswers(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>>
             {
                 StatusCode = HttpStatusCode.InternalServerError
@@ -34,8 +34,8 @@ public class SubmitApplicationTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<IQuestionSetService>()
-            .Setup(s => s.GetQuestions())
-            .ReturnsAsync(new ServiceResponse<IEnumerable<Application.DTOs.QuestionsResponse>>
+            .Setup(s => s.GetQuestions(It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<QuestionsResponse>>
             {
                 StatusCode = HttpStatusCode.OK
             });
@@ -47,6 +47,8 @@ public class SubmitApplicationTests : TestServiceBase<QuestionnaireController>
         {
             HttpContext = context
         };
+
+        Sut.TempData = new TempDataDictionary(context, Mock.Of<ITempDataProvider>());
 
         // Act
         var result = await Sut.SubmitApplication(applicationId);
@@ -65,7 +67,7 @@ public class SubmitApplicationTests : TestServiceBase<QuestionnaireController>
         // Arrange
         Mocker
             .GetMock<IRespondentService>()
-            .Setup(s => s.GetRespondentAnswers(It.IsAny<string>()))
+            .Setup(s => s.GetRespondentAnswers(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>>
             {
                 StatusCode = HttpStatusCode.OK
@@ -73,14 +75,16 @@ public class SubmitApplicationTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<IQuestionSetService>()
-            .Setup(s => s.GetQuestions())
-            .ReturnsAsync(new ServiceResponse<IEnumerable<Application.DTOs.QuestionsResponse>>
+            .Setup(s => s.GetQuestions(It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<QuestionsResponse>>
             {
                 StatusCode = HttpStatusCode.InternalServerError
             });
 
         var context = new DefaultHttpContext();
         context.Request.Path = "/questionnaire/submitapplication";
+
+        Sut.TempData = new TempDataDictionary(context, Mock.Of<ITempDataProvider>());
 
         Sut.ControllerContext = new ControllerContext
         {
@@ -127,7 +131,7 @@ public class SubmitApplicationTests : TestServiceBase<QuestionnaireController>
 
         var sessionData = new Dictionary<string, byte[]?>
         {
-            { SessionKeys.Application, JsonSerializer.SerializeToUtf8Bytes(application) }
+            { SessionKeys.ProjectRecord, JsonSerializer.SerializeToUtf8Bytes(application) }
         };
 
         session
@@ -157,12 +161,12 @@ public class SubmitApplicationTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<IRespondentService>()
-            .Setup(s => s.GetRespondentAnswers(applicationId))
+            .Setup(s => s.GetRespondentAnswers(applicationId, It.IsAny<string>()))
             .ReturnsAsync(respondentServiceResponse);
 
         Mocker
             .GetMock<IQuestionSetService>()
-            .Setup(s => s.GetQuestions())
+            .Setup(s => s.GetQuestions(It.IsAny<string>()))
             .ReturnsAsync(questionSetServiceResponse);
 
         // Act
@@ -201,7 +205,7 @@ public class SubmitApplicationTests : TestServiceBase<QuestionnaireController>
 
         var sessionData = new Dictionary<string, byte[]?>
         {
-            { SessionKeys.Application, JsonSerializer.SerializeToUtf8Bytes(application) }
+            { SessionKeys.ProjectRecord, JsonSerializer.SerializeToUtf8Bytes(application) }
         };
 
         session
@@ -241,12 +245,12 @@ public class SubmitApplicationTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<IRespondentService>()
-            .Setup(s => s.GetRespondentAnswers(applicationId))
+            .Setup(s => s.GetRespondentAnswers(applicationId, It.IsAny<string>()))
             .ReturnsAsync(respondentServiceResponse);
 
         Mocker
             .GetMock<IQuestionSetService>()
-            .Setup(s => s.GetQuestions())
+            .Setup(s => s.GetQuestions(It.IsAny<string>()))
             .ReturnsAsync(questionSetServiceResponse);
 
         Mocker
@@ -300,7 +304,7 @@ public class SubmitApplicationTests : TestServiceBase<QuestionnaireController>
 
         var sessionData = new Dictionary<string, byte[]?>
         {
-            { SessionKeys.Application, JsonSerializer.SerializeToUtf8Bytes(application) }
+            { SessionKeys.ProjectRecord, JsonSerializer.SerializeToUtf8Bytes(application) }
         };
 
         session
@@ -330,12 +334,12 @@ public class SubmitApplicationTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<IRespondentService>()
-            .Setup(s => s.GetRespondentAnswers(applicationId))
+            .Setup(s => s.GetRespondentAnswers(applicationId, It.IsAny<string>()))
             .ReturnsAsync(respondentServiceResponse);
 
         Mocker
             .GetMock<IQuestionSetService>()
-            .Setup(s => s.GetQuestions())
+            .Setup(s => s.GetQuestions(It.IsAny<string>()))
             .ReturnsAsync(questionSetServiceResponse);
 
         Mocker
