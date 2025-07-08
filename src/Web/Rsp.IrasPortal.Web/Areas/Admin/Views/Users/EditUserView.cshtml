@@ -30,6 +30,7 @@
             <input name="Id" asp-for="Id" value="@(Model.Id ?? string.Empty)"/>
             <input name="OriginalEmail" asp-for="OriginalEmail" value="@(Model.OriginalEmail ?? string.Empty)"/>
             <input hidden readonly name="Status" asp-for="Status" value="@(Model.Status ?? string.Empty)"/>
+			<input hidden readonly name="Email" asp-for="Email" value="@(Model.Email ?? string.Empty)" />
 
             <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")"/>
 
@@ -38,8 +39,6 @@
             <rsp-gds-input asp-for="GivenName" label-text="First name" width-class="govuk-!-width-one-half"/>
 
             <rsp-gds-input asp-for="FamilyName" label-text="Last name" width-class="govuk-!-width-one-half"/>
-
-            <rsp-gds-input asp-for="Email" label-text="Email address" input-type="email" width-class="govuk-!-width-two-thirds"/>
 
             <rsp-gds-input asp-for="Telephone" label-text="Telephone" input-type="tel" width-class="govuk-!-width-two-thirds"/>
 
