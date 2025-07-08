@@ -16,4 +16,7 @@ public struct QuestionCategories
     public const string C7 = nameof(C7);
     public const string C8 = nameof(C8);
     public const string D = nameof(D);
+
+    public const string ProjectRecrod = "project record v1";
+    public const string ProjectModification = "project modification";
 }
