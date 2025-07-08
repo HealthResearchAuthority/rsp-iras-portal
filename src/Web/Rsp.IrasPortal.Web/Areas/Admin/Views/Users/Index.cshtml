@@ -4,89 +4,104 @@
 @model (IEnumerable<UserViewModel> Users, PaginationViewModel Pagination)
 
 @{
-    ViewBag.Active = "manageUsers";
-    ViewBag.Title = "Manage users";
+	ViewBag.Active = "manageUsers";
+	ViewBag.Title = "Manage users";
 }
 
 @* @section is added for the back button, so that we can render something below the back button
     and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
     the named section *@
 @section BackNavigation {
-    <partial name="_BackNavigation" model="@("systemadmin:view", "Back", new Dictionary<string, string>())" />
+	<partial name="_BackNavigation" model="@("systemadmin:view", "Back", new Dictionary<string, string>())" />
 }
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-one-half">
-        <h1 class="govuk-heading-l">Manage users</h1>
-    </div>
+	<div class="govuk-grid-column-one-half">
+		<h1 class="govuk-heading-l">Manage users</h1>
+	</div>
 
-    <div class="govuk-grid-column-one-half">
-        <a class="govuk-link govuk-body float-right" asp-route="admin:createuser">Add a new user profile record</a>
-    </div>
+	<div class="govuk-grid-column-one-half">
+		<a class="govuk-link govuk-body float-right" asp-route="admin:createuser">Add a new user profile record</a>
+	</div>
 </div>
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-full">
+	<div class="govuk-grid-column-full">
 
-        <form method="get">
-            <label class="govuk-label" for="SearchQuery"><b>Find a user</b></label>
-            <input class="govuk-input govuk-!-width-two-thirds" id="SearchQuery" name="SearchQuery" type="text" value="@(Model.Pagination?.SearchQuery ?? string.Empty)">
-            <input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize" />
-            <partial name="_SubmitButton" model="@("admin:users", "Search", new Dictionary<string, string>())" />
-        </form>
-    </div>
+		<form method="get">
+			<label class="govuk-label" for="SearchQuery"><b>Find a user</b></label>
+			<input class="govuk-input govuk-!-width-two-thirds" id="SearchQuery" name="SearchQuery" type="text" value="@(Model.Pagination?.SearchQuery ?? string.Empty)">
+			<input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize" />
+			<partial name="_SubmitButton" model="@("admin:users", "Search", new Dictionary<string, string>())" />
+		</form>
+	</div>
 
-    @if (Model.Users != null && Model.Users.Any())
-    {
-        <div class="govuk-grid-column-full">
-            <div class="govuk-table-wrapper">
-                <table class="govuk-table govuk-table-users">
-                    <thead>
-                        <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
-                            <th class="govuk-table__header govuk-table--name">Given name</th>
-                            <th class="govuk-table__header govuk-table--name">Family name</th>
-                            <th class="govuk-table__header govuk-table--email line-break-anywhere">Email address</th>
-                            <th class="govuk-table__header">Status</th>
-                            <th class="govuk-table__header">Last logged in</th>
-                            <th class="govuk-table__header">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var user in Model.Users)
-                        {
-                            <tr class="govuk-table__row">
-                                <td class="govuk-table__cell">@user.GivenName</td>
-                                <td class="govuk-table__cell">@user.FamilyName</td>
-                                <td class="govuk-table__cell line-break-anywhere">@user.Email</td>
-                                <td class="govuk-table__cell">
-                                    @if (!string.IsNullOrEmpty(user.Status))
-                                    {
-                                        var statusClass = string.Equals(user.Status, IrasUserStatus.Active, StringComparison.InvariantCultureIgnoreCase) ? "govuk-tag--green" : "govuk-tag--red";
+	@if (Model.Users != null && Model.Users.Any())
+	{
+		<div class="govuk-grid-column-full">
+			<div class="govuk-table-wrapper">
+				<table class="govuk-table govuk-table-users">
+					<thead>
+						<tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+							<th class="govuk-table__header govuk-table--name">Given name</th>
+							<th class="govuk-table__header govuk-table--name">Family name</th>
+							<th class="govuk-table__header govuk-table--email line-break-anywhere">Email address</th>
+							<th class="govuk-table__header">Status</th>
+							<th class="govuk-table__header">Last logged in</th>
+							<th class="govuk-table__header">Action</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var user in Model.Users)
+						{
+							string currentLoginDate = string.Empty;
+							string currentLoginTime = string.Empty;
+							if (user.CurrentLogin.HasValue)
+							{
+								var dateString = user.CurrentLogin.Value.ToString("dd MMM yyyy");
+								var timeString = user.CurrentLogin.Value.ToString("hh:mm");
+								var amPm = user.CurrentLogin.Value.ToString("tt").ToLower();
 
-                                        <span class="govuk-tag @statusClass">@user.Status</span>
-                                    }
-                                </td>
-                                <td class="govuk-table__cell">@(user.LastLogin.HasValue ? user.LastLogin.Value.ToString("dd MMM yyyy") : string.Empty)</td>
-                                <td class="govuk-table__cell">
-                                    <a class="govuk-link" asp-route="admin:viewuser" asp-route-userId="@user.Id"
-                                       asp-route-email="@user.Email">View/Edit</a>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
+								currentLoginDate = $"{dateString} at ";
+								currentLoginTime = $"{timeString}{amPm}";
+							}
 
-            <partial name="_Pagination" model="@Model.Pagination" />
-        </div>
-    }
-    else if (!string.IsNullOrEmpty(Model.Pagination?.SearchQuery))
-    {
-        <div class="govuk-grid-column-two-thirds">
-            <h1 class="govuk-heading-l">No results found</h1>
-            <p class="govuk-body">
-                Check your spelling or enter another search term and try again. If no results are found, you can create a new user profile record.
-            </p>
-        </div>
-    }
+							<tr class="govuk-table__row">
+								<td class="govuk-table__cell">@user.GivenName</td>
+								<td class="govuk-table__cell">@user.FamilyName</td>
+								<td class="govuk-table__cell line-break-anywhere">@user.Email</td>
+								<td class="govuk-table__cell">
+									@if (!string.IsNullOrEmpty(user.Status))
+									{
+										var statusClass = string.Equals(user.Status, IrasUserStatus.Active, StringComparison.InvariantCultureIgnoreCase) ? "govuk-tag--green" : "govuk-tag--red";
+
+										<span class="govuk-tag @statusClass">@user.Status</span>
+									}
+								</td>
+								<td class="govuk-table__cell">
+									<p class="margin-zero">@currentLoginDate</p>
+									<p class="margin-zero">@currentLoginTime</p>
+								</td>
+								<td class="govuk-table__cell">
+									<a class="govuk-link" asp-route="admin:viewuser" asp-route-userId="@user.Id"
+									   asp-route-email="@user.Email">View/Edit</a>
+								</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+
+			<partial name="_Pagination" model="@Model.Pagination" />
+		</div>
+	}
+	else if (!string.IsNullOrEmpty(Model.Pagination?.SearchQuery))
+	{
+		<div class="govuk-grid-column-two-thirds">
+			<h1 class="govuk-heading-l">No results found</h1>
+			<p class="govuk-body">
+				Check your spelling or enter another search term and try again. If no results are found, you can create a new user profile record.
+			</p>
+		</div>
+	}
 </div>
