@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Web.Controllers;
 
@@ -12,7 +13,14 @@ public class HomeTests : TestServiceBase<ResearchAccountController>
     public void Home_Should_Return_Index_View_When_LastLogin_Is_Null()
     {
         // Arrange
-        var httpContext = new DefaultHttpContext();
+        var session = new Mock<ISession>();
+
+        var httpContext = new DefaultHttpContext
+        {
+            Session = session.Object
+        };
+
+        Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
 
         Sut.ControllerContext = new ControllerContext
         {
@@ -31,7 +39,15 @@ public class HomeTests : TestServiceBase<ResearchAccountController>
     public void Home_Should_Format_LastLogin_And_Return_View_With_Model()
     {
         // Arrange
-        var httpContext = new DefaultHttpContext();
+
+        var session = new Mock<ISession>();
+
+        var httpContext = new DefaultHttpContext
+        {
+            Session = session.Object
+        };
+
+        Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
 
         var lastLoginUtc = new DateTime(2024, 4, 4, 10, 42, 0, DateTimeKind.Utc);
         httpContext.Items[ContextItemKeys.LastLogin] = lastLoginUtc;

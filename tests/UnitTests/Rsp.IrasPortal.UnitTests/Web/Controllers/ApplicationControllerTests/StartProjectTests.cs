@@ -2,6 +2,7 @@
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
@@ -27,6 +28,10 @@ public class StartProjectTests : TestServiceBase<ApplicationController>
         {
             HttpContext = httpContext
         };
+
+        var tempDataProvider = new Mock<ITempDataProvider>();
+
+        Sut.TempData = new TempDataDictionary(httpContext, tempDataProvider.Object);
     }
 
     [Fact]
@@ -166,13 +171,6 @@ public class StartProjectTests : TestServiceBase<ApplicationController>
     public async Task StartProject_RedirectsToResume_IfEverythingSucceeds()
     {
         // Arrange
-        var mockSession = new Mock<ISession>();
-
-        var httpContext = new DefaultHttpContext
-        {
-            Session = mockSession.Object
-        };
-
         var model = new IrasIdViewModel { IrasId = "5678" };
         var createdApp = new IrasApplicationResponse { Id = "abc", IrasId = 5678, Title = "Test" };
 
@@ -215,6 +213,6 @@ public class StartProjectTests : TestServiceBase<ApplicationController>
         result.ShouldBeOfType<RedirectToActionResult>();
         var redirect = result as RedirectToActionResult;
         redirect!.ActionName.ShouldBe(nameof(QuestionnaireController.Resume));
-        redirect.RouteValues!["ProjectApplicationId"].ShouldBe("abc");
+        redirect.RouteValues!["projectRecordId"].ShouldBe("abc");
     }
 }

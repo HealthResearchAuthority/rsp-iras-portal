@@ -1,7 +1,4 @@
-using System.ComponentModel.DataAnnotations;
-using System.Data;
 using System.Diagnostics;
-using System.Security.Claims;
 using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
@@ -18,11 +15,12 @@ namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "app:[action]")]
 [Authorize(Policy = "IsUser")]
-public class ApplicationController(
+public class ApplicationController
+(
     IApplicationsService applicationsService,
-    IValidator<ApplicationInfoViewModel> validator,
     IValidator<IrasIdViewModel> irasIdValidator,
-    IQuestionSetService questionSetService) : Controller
+    IQuestionSetService questionSetService
+) : Controller
 {
     // ApplicationInfo view name
     private const string ApplicationInfo = nameof(ApplicationInfo);
@@ -31,40 +29,60 @@ public class ApplicationController(
 
     public IActionResult StartProject() => View(nameof(StartProject));
 
+    /// <summary>
+    /// Handles the POST request to start a new project.
+    /// Validates the IRAS ID, checks for duplicates, creates a new application, and redirects to the questionnaire.
+    /// </summary>
+    /// <param name="model">The IRAS ID view model containing the IRAS ID input by the user.</param>
+    /// <returns>
+    /// If validation fails or a duplicate IRAS ID is found, returns the StartProject view with errors.
+    /// If the application is created successfully, redirects to the Questionnaire Resume action.
+    /// Otherwise, returns a service error view.
+    /// </returns>
     [HttpPost]
     public async Task<IActionResult> StartProject(IrasIdViewModel model)
     {
+        // Clear session and TempData to ensure a clean state for the new project
+        HttpContext.Session.Clear();
+        TempData.Clear();
+
+        // Validate the IRAS ID input
         var validationResult = await irasIdValidator.ValidateAsync(new ValidationContext<IrasIdViewModel>(model));
 
         if (!validationResult.IsValid)
         {
+            // Add validation errors to the ModelState
             foreach (var error in validationResult.Errors)
             {
                 ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
             }
 
+            // Return the view with validation errors
             return View(nameof(StartProject), model);
         }
 
-        // Get existing applications
+        // Retrieve all existing applications
         var applicationsResponse = await applicationsService.GetApplications();
         if (!applicationsResponse.IsSuccessStatusCode || applicationsResponse.Content == null)
         {
+            // Return a generic service error view if retrieval fails
             return this.ServiceError(applicationsResponse);
         }
 
-        // Check for duplicate IRAS ID
+        // Check if an application with the same IRAS ID already exists
         bool irasIdExists = applicationsResponse.Content.Any(app => app.IrasId?.ToString() == model.IrasId);
         if (irasIdExists)
         {
+            // Add a model error for duplicate IRAS ID
             ModelState.AddModelError(nameof(model.IrasId), "A record for the project with this IRAS ID already exists");
             return View(nameof(StartProject), model);
         }
 
-        // Create new application
-        var respondent = GetRespondentFromContext();
+        // Get the respondent information from the current context
+        var respondent = this.GetRespondentFromContext();
         var name = $"{respondent.GivenName} {respondent.FamilyName}";
 
+        // Create a new application request object
         var irasApplicationRequest = new IrasApplicationRequest
         {
             Title = string.Empty,
@@ -76,113 +94,32 @@ public class ApplicationController(
             IrasId = model.IrasId != null ? int.Parse(model.IrasId) : null,
         };
 
+        // Call the service to create the new application
         var createResponse = await applicationsService.CreateApplication(irasApplicationRequest);
         if (!createResponse.IsSuccessStatusCode || createResponse.Content == null)
         {
+            // Return a generic service error view if creation fails
             return this.ServiceError(createResponse);
         }
 
         var irasApplication = createResponse.Content;
-        // Save application to session
-        HttpContext.Session.SetString(SessionKeys.Application, JsonSerializer.Serialize(irasApplication));
+        // Save the newly created application to the session
+        HttpContext.Session.SetString(SessionKeys.ProjectRecord, JsonSerializer.Serialize(irasApplication));
 
-        // Get question category
-        var questionCategoriesResponse = await questionSetService.GetQuestionCategories();
-        var categoryId = questionCategoriesResponse.IsSuccessStatusCode && questionCategoriesResponse.Content != null
-            ? questionCategoriesResponse.Content.FirstOrDefault()?.CategoryId ?? string.Empty
-            : string.Empty;
+        // Store relevant information in TempData for use in subsequent requests
+        TempData[TempDataKeys.CategoryId] = QuestionCategories.ProjectRecrod;
+        TempData[TempDataKeys.ProjectRecordId] = irasApplication.Id;
+        TempData[TempDataKeys.IrasId] = irasApplication.IrasId;
 
+        // Redirect to the Questionnaire Resume action to continue the application process
         return RedirectToAction(nameof(QuestionnaireController.Resume), "Questionnaire", new
         {
-            categoryId,
-            projectApplicationId = irasApplication.Id
+            categoryId = QuestionCategories.ProjectRecrod,
+            projectRecordId = irasApplication.Id
         });
     }
 
-    public IActionResult StartNewApplication()
-    {
-        HttpContext.Session.RemoveAllSessionValues();
-
-        return View(ApplicationInfo, (new ApplicationInfoViewModel(), "create"));
-    }
-
-    public async Task<IActionResult> EditApplication([FromQuery, Required] string projectApplicationId)
-    {
-        // get the pending application by id
-        var applicationsServiceResponse = await applicationsService.GetApplication(projectApplicationId);
-
-        // return the view if successfull
-        if (!applicationsServiceResponse.IsSuccessStatusCode)
-        {
-            // return the generic error page
-            return this.ServiceError(applicationsServiceResponse);
-        }
-
-        var irasApplication = applicationsServiceResponse.Content!;
-
-        HttpContext.Session.SetString(SessionKeys.Application, JsonSerializer.Serialize(irasApplication));
-
-        var applicationInfo = new ApplicationInfoViewModel
-        {
-            Name = irasApplication.Title,
-            Description = irasApplication.Description
-        };
-
-        return View(ApplicationInfo, (applicationInfo, "edit"));
-    }
-
     public IActionResult CreateApplication() => View(nameof(CreateApplication));
-
-    [HttpPost]
-    public async Task<IActionResult> CreateApplication(ApplicationInfoViewModel model)
-    {
-        var context = new ValidationContext<ApplicationInfoViewModel>(model);
-
-        var validationResult = await validator.ValidateAsync(context);
-
-        if (!validationResult.IsValid)
-        {
-            // Copy the validation results into ModelState.
-            // ASP.NET uses the ModelState collection to populate
-            // error messages in the View.
-            foreach (var error in validationResult.Errors)
-            {
-                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
-            }
-
-            return View(ApplicationInfo, (model, "create"));
-        }
-
-        var respondent = GetRespondentFromContext();
-
-        var name = $"{respondent.GivenName} {respondent.FamilyName}";
-
-        var irasApplicationRequest = new IrasApplicationRequest
-        {
-            Title = model.Name!,
-            Description = model.Description!,
-            CreatedBy = name,
-            UpdatedBy = name,
-            StartDate = DateTime.Now,
-            Respondent = respondent
-        };
-
-        var applicationsServiceResponse = await applicationsService.CreateApplication(irasApplicationRequest);
-
-        // return the view if successfull
-        if (!applicationsServiceResponse.IsSuccessStatusCode)
-        {
-            // return the generic error page
-            return this.ServiceError(applicationsServiceResponse);
-        }
-
-        var irasApplication = applicationsServiceResponse.Content!;
-
-        // save the application in session
-        HttpContext.Session.SetString(SessionKeys.Application, JsonSerializer.Serialize(irasApplication));
-
-        return View("NewApplication", irasApplication);
-    }
 
     public IActionResult DocumentUpload()
     {
@@ -245,97 +182,41 @@ public class ApplicationController(
         return this.ServiceError(applicationServiceResponse);
     }
 
+    /// <summary>
+    /// Displays the project overview page. Shows a notification banner if a project modification change exists,
+    /// clears related TempData keys, and populates the ProjectOverviewModel with project details from TempData.
+    /// </summary>
+    /// <returns>The ProjectOverview view with the populated model.</returns>
     public IActionResult ProjectOverview()
     {
+        // If there is a project modification change, show the notification banner
+        if (TempData.Peek(TempDataKeys.ProjectModificationChangeId) is not null)
+        {
+            TempData[TempDataKeys.ShowNotificationBanner] = true;
+        }
+
+        // Remove modification-related TempData keys to reset state
+        TempData.Remove(TempDataKeys.ProjectModificationId);
+        TempData.Remove(TempDataKeys.ProjectModificationIdentifier);
+        TempData.Remove(TempDataKeys.ProjectModificationChangeId);
+        TempData.Remove(TempDataKeys.ProjectModificationSpecificArea);
+
+        // Build the model using values from TempData, falling back to defaults if not present
         var model = new ProjectOverviewModel
         {
-            ProjectTitle = TempData[TempDataKeys.ShortProjectTitle] as string ?? string.Empty,
-            CategoryId = TempData[TempDataKeys.CategoryId] as string ?? string.Empty,
-            ProjectApplicationId = TempData[TempDataKeys.ProjectApplicationId] as string ?? string.Empty
+            ProjectTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
+            CategoryId = QuestionCategories.ProjectRecrod, //TempData.Peek(TempDataKeys.CategoryId) as string ?? string.Empty,
+            ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty
         };
 
+        // Indicate that the project overview is being shown
         TempData[TempDataKeys.ProjectOverview] = true;
         return View(model);
-    }
-
-    [Route("{projectApplicationId}", Name = "app:ViewApplication")]
-    public async Task<IActionResult> ViewApplication(string projectApplicationId)
-    {
-        // if the ModelState is invalid, return the view
-        // with the null model. The view shouldn't display any
-        // data as model is null
-        if (!ModelState.IsValid)
-        {
-            return View("ApplicationView");
-        }
-
-        // get the pending application by id
-        var applicationServiceResponse = await applicationsService.GetApplication(projectApplicationId);
-
-        // return the view if successfull
-        if (applicationServiceResponse.IsSuccessStatusCode)
-        {
-            return View("ApplicationView", applicationServiceResponse.Content);
-        }
-
-        // return the generic error page
-        return this.ServiceError(applicationServiceResponse);
     }
 
     public IActionResult ReviewAnswers()
     {
         return View(this.GetApplicationFromSession());
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> SaveApplication(ApplicationInfoViewModel model)
-    {
-        var context = new ValidationContext<ApplicationInfoViewModel>(model);
-
-        var validationResult = await validator.ValidateAsync(context);
-
-        if (!validationResult.IsValid)
-        {
-            // Copy the validation results into ModelState.
-            // ASP.NET uses the ModelState collection to populate
-            // error messages in the View.
-            foreach (var error in validationResult.Errors)
-            {
-                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
-            }
-
-            return View(ApplicationInfo, (model, "edit"));
-        }
-
-        var respondent = new RespondentDto
-        {
-            Id = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!,
-            EmailAddress = (HttpContext.Items[ContextItemKeys.Email] as string)!,
-            GivenName = (HttpContext.Items[ContextItemKeys.FirstName] as string)!,
-            FamilyName = (HttpContext.Items[ContextItemKeys.LastName] as string)!,
-            Role = string.Join(',', User.Claims
-                       .Where(claim => claim.Type == ClaimTypes.Role)
-                       .Select(claim => claim.Value))
-        };
-
-        var name = $"{respondent.GivenName} {respondent.FamilyName}";
-
-        var application = this.GetApplicationFromSession();
-
-        var request = new IrasApplicationRequest
-        {
-            Id = application.Id,
-            Title = model.Name!,
-            Description = model.Description!,
-            CreatedBy = application.CreatedBy,
-            UpdatedBy = name,
-            StartDate = application.CreatedDate,
-            Respondent = respondent
-        };
-
-        await applicationsService.UpdateApplication(request);
-
-        return RedirectToAction(nameof(MyApplications));
     }
 
     [AllowAnonymous]
@@ -349,19 +230,5 @@ public class ApplicationController(
     public IActionResult Error()
     {
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-    }
-
-    private RespondentDto GetRespondentFromContext()
-    {
-        return new RespondentDto
-        {
-            Id = HttpContext.Items[ContextItemKeys.RespondentId]?.ToString() ?? string.Empty,
-            EmailAddress = HttpContext.Items[ContextItemKeys.Email]?.ToString() ?? string.Empty,
-            GivenName = HttpContext.Items[ContextItemKeys.FirstName]?.ToString() ?? string.Empty,
-            FamilyName = HttpContext.Items[ContextItemKeys.LastName]?.ToString() ?? string.Empty,
-            Role = string.Join(',', User.Claims
-                       .Where(claim => claim.Type == ClaimTypes.Role)
-                       .Select(claim => claim.Value))
-        };
     }
 }

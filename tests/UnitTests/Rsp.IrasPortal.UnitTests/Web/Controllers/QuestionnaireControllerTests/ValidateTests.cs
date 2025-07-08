@@ -39,7 +39,7 @@ public class ValidateTests : TestServiceBase<QuestionnaireController>
 
         var sessionData = new Dictionary<string, byte[]?>
         {
-            { $"{SessionKeys.Application}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(application) },
+            { $"{SessionKeys.ProjectRecord}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(application) },
             { $"{SessionKeys.Questionnaire}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(questions) }
         };
 
@@ -115,7 +115,7 @@ public class ValidateTests : TestServiceBase<QuestionnaireController>
 
         var sessionData = new Dictionary<string, byte[]?>
         {
-            { $"{SessionKeys.Application}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(application) },
+            { $"{SessionKeys.ProjectRecord}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(application) },
             { $"{SessionKeys.Questionnaire}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(questions) }
         };
 

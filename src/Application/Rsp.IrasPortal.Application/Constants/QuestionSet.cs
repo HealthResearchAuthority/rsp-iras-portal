@@ -3,16 +3,19 @@
 public static class SheetNames
 {
     public const string ProjectRecord = "project record v1";
+    public const string ProjectModification = "project modification";
     public const string Contents = "contents";
     public const string AnswerOptions = "App2 AnswerOptions";
     public const string Rules = "App4 Rules";
 
     public static readonly string[] Modules = [
-        ProjectRecord
+        ProjectRecord,
+        ProjectModification
     ];
 
     public static readonly string[] All = [
         ProjectRecord,
+        ProjectModification,
         Contents,
         AnswerOptions,
         Rules
@@ -25,6 +28,7 @@ public static class ModuleColumns
     public const string Category = "Category";
     public const string Section = "Section";
     public const string Sequence = "UI display sequence";
+    public const string ModificationQuestion = "For Modification";
     public const string Heading = "Proposed Q#";
     public const string QuestionText = "Field label";
     public const string QuestionType = "Field type";
@@ -43,6 +47,7 @@ public static class ModuleColumns
         QuestionText,
         QuestionType,
         Conformance,
+        ModificationQuestion,
         Rules,
         DataType,
         Answers,
