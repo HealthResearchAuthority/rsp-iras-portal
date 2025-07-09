@@ -52,16 +52,7 @@ public class UsersController(IUserManagementService userManagementService, IVali
         // return the view if successfull
         if (response.IsSuccessStatusCode)
         {
-            var users = response.Content?.Users.Select(user => new UserViewModel
-            {
-                Id = user.Id,
-                GivenName = user.GivenName,
-                FamilyName = user.FamilyName,
-                Email = user.Email,
-                Status = user.Status,
-                LastLogin = user.LastLogin,
-                CurrentLogin = user.CurrentLogin,
-            }) ?? [];
+            var users = response.Content?.Users.Select(user => new UserViewModel(user)) ?? [];
 
             var paginationModel = new PaginationViewModel(pageNumber, pageSize, response.Content?.TotalCount ?? 0)
             {
