@@ -1,8 +1,7 @@
-using System.Diagnostics;
-using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
@@ -11,6 +10,11 @@ using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Entities;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
+using System.ComponentModel.DataAnnotations;
+using System.Data;
+using System.Diagnostics;
+using System.Security.Claims;
+using System.Text.Json;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
@@ -21,13 +25,17 @@ public class ApplicationController
     IApplicationsService applicationsService,
     IValidator<IrasIdViewModel> irasIdValidator,
     IRespondentService respondentService,
-    IQuestionSetService questionSetService) : Controller
+    IQuestionSetService questionSetService,
+    IFeatureManager featureManager) : Controller
 {
     // ApplicationInfo view name
     private const string ApplicationInfo = nameof(ApplicationInfo);
 
     public async Task<IActionResult> Welcome()
     {
+        var myResearhPageEnabled = await featureManager.IsEnabledAsync(Features.MyResearchPage);
+        if (!myResearhPageEnabled) { return View(nameof(Index)); }
+
         // getting respondentID from Http context
         var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
 
