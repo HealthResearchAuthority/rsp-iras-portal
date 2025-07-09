@@ -59,7 +59,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
                 FamilyName = user.FamilyName,
                 Email = user.Email,
                 Status = user.Status,
-                LastLogin = user.LastLogin
+                LastLogin = user.LastLogin,
+                CurrentLogin = user.CurrentLogin,
             }) ?? [];
 
             var paginationModel = new PaginationViewModel(pageNumber, pageSize, response.Content?.TotalCount ?? 0)

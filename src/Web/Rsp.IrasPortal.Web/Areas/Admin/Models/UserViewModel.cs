@@ -58,6 +58,7 @@ public class UserViewModel
     }
 
     public DateTime? LastLogin { get; set; } = null;
+    public DateTime? CurrentLogin { get; set; } = null;
     public string Committee { get; set; } = null;
     public string ReviewBody { get; set; } = null;
 
@@ -86,6 +87,7 @@ public class UserViewModel
             OriginalEmail = user.Email;
             Status = user.Status;
             AccessRequired = accessRequired != null ? accessRequired.ToList() : [];
+            CurrentLogin = user.CurrentLogin;
         }
     }
 
@@ -97,6 +99,7 @@ public class UserViewModel
         Email = user.Email;
         Status = user.Status;
         LastLogin = user.LastLogin;
+        CurrentLogin = user.CurrentLogin;
     }
 
     public void Deconstruct(out string givenName, out string familyName, out string email)
