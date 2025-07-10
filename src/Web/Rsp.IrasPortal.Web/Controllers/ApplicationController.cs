@@ -51,8 +51,9 @@ public class ApplicationController
                 IrasId = app.IrasId,
                 ApplicatonId = app.ApplicationId,
                 Title = "Empty", // temporary default
-                ProjectEndDate = new DateTime(2025, 12, 10), // temporary default
-                PrimarySponsorOrganisation = "Unknown" // default value
+                ProjectEndDate = new DateTime(2025, 12, 10, 0, 0, 0, DateTimeKind.Utc), // temporary default
+                PrimarySponsorOrganisation = "Unknown", // default value
+                IsNew = app.CreatedDate >= DateTime.UtcNow.AddDays(-2)
             })
             .ToList();
 
