@@ -14,6 +14,7 @@ using Rsp.IrasPortal.Web.Models;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Diagnostics;
+using System.Globalization;
 using System.Security.Claims;
 using System.Text.Json;
 
@@ -81,7 +82,8 @@ public class ApplicationController
                 researchApp.Title = titleAnswer;
             }
 
-            if (DateTime.TryParse(endDateAnswer, out var parsedDate))
+            var ukCulture = new CultureInfo("en-GB");
+            if (DateTime.TryParse(endDateAnswer, ukCulture, DateTimeStyles.None, out var parsedDate))
             {
                 researchApp.ProjectEndDate = parsedDate;
             }
