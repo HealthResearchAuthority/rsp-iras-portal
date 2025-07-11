@@ -53,7 +53,6 @@ public class ReviewBodyController(
     {
         if (fromPagination && !string.IsNullOrWhiteSpace(complexSearchQuery))
         {
-            model ??= new ReviewBodySearchViewModel();
             model.Search = JsonSerializer.Deserialize<ReviewBodySearchModel>(complexSearchQuery);
         }
         else
@@ -63,14 +62,10 @@ public class ReviewBodyController(
             pageSize = 20;
         }
 
-        // Ensure model and model.Search are not null
-        model ??= new ReviewBodySearchViewModel();
-        model.Search ??= new ReviewBodySearchModel();
-
         var request = new ReviewBodySearchRequest
         {
-            SearchQuery = model.Search.SearchQuery,
-            Country = model.Search.Country,
+            SearchQuery = model?.Search.SearchQuery,
+            Country = model?.Search.Country,
             Status = model.Search.Status
         };
 

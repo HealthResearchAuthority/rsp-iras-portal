@@ -794,43 +794,6 @@ dialog[open] {
     }
 }
 
-.govuk-\!-width-one-sixth {
-    width: 16.666667% !important;
-}
-
-.table-header-sort-button {
-    display: inline-flex;
-    gap: 5px;
-    align-items: center;
-    background: none;
-    border: none;
-    color: #1d70b8;
-    text-decoration: none;
-    cursor: pointer;
-    font: inherit;
-    padding: 0;
-    text-underline-offset: .1578em;
-
-    &:hover {
-        color: #003078;
-        text-decoration-thickness: max(3px, .1875rem, .12em);
-        -webkit-text-decoration-skip-ink: none;
-        text-decoration-skip-ink: none;
-        -webkit-text-decoration-skip: none;
-        text-decoration-skip: none;
-    }
-
-    &:focus {
-        outline: 3px solid transparent;
-        background-color: #fd0;
-        box-shadow: 0 -2px #fd0, 0 4px #0b0c0c;
-        text-decoration: none;
-        -webkit-box-decoration-break: clone;
-        box-decoration-break: clone;
-        color: #0b0c0c;
-    }
-}
-
 .review-body-search {
     display: flex;
     gap: 10px;
@@ -839,3 +802,4 @@ dialog[open] {
         flex-grow: 1;
     }
 }
+
