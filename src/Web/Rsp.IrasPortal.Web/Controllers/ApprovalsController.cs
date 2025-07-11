@@ -84,7 +84,6 @@ public class ApprovalsController(
         return View(model);
     }
 
-
     [HttpPost]
     public async Task<IActionResult> ApplyFilters(ApprovalsSearchViewModel model)
     {
