@@ -32,19 +32,14 @@ public class ApprovalsSearchModel
         {
             var filters = new Dictionary<string, string>();
 
-            if (!string.IsNullOrWhiteSpace(IrasId))
-            {
-                filters.Add("IRAS ID", IrasId);
-            }
-
             if (!string.IsNullOrWhiteSpace(ChiefInvestigatorName))
             {
-                filters.Add("Chief Investigator Name", ChiefInvestigatorName);
+                filters.Add("Chief Investigator name", ChiefInvestigatorName);
             }
 
             if (!string.IsNullOrWhiteSpace(ShortProjectTitle))
             {
-                filters.Add("Project Title", ShortProjectTitle);
+                filters.Add("Short project title ", ShortProjectTitle);
             }
 
             if (!string.IsNullOrWhiteSpace(SponsorOrgSearch.SelectedOrganisation))
@@ -54,17 +49,17 @@ public class ApprovalsSearchModel
 
             if (!string.IsNullOrWhiteSpace(SponsorOrganisation))
             {
-                filters.Add("Sponsor Organisation", SponsorOrganisation);
+                filters.Add("Sponsor organisation", SponsorOrganisation);
             }
 
             if (FromDate.HasValue)
             {
-                filters.Add("From Date", FromDate.Value.ToString("d MMM yyyy"));
+                filters.Add("Date modification submitted - from date", FromDate.Value.ToString("d MMM yyyy"));
             }
 
             if (ToDate.HasValue)
             {
-                filters.Add("To Date", ToDate.Value.ToString("d MMM yyyy"));
+                filters.Add("Date modification submitted - to date", ToDate.Value.ToString("d MMM yyyy"));
             }
 
             if (Country.Count != 0)
@@ -74,7 +69,7 @@ public class ApprovalsSearchModel
 
             if (ModificationTypes.Count != 0)
             {
-                filters.Add("Modification Type", string.Join(", ", ModificationTypes));
+                filters.Add("Modification type", string.Join(", ", ModificationTypes));
             }
 
             return filters;
