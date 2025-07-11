@@ -8,6 +8,7 @@ using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Entities;
+using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
 using System.ComponentModel.DataAnnotations;
@@ -31,7 +32,7 @@ public class ApplicationController
     // ApplicationInfo view name
     private const string ApplicationInfo = nameof(ApplicationInfo);
 
-    public async Task<IActionResult> Welcome()
+    public async Task<IActionResult> Welcome(string? searchQuery = null, int pageNumber = 1, int pageSize = 5)
     {
         var myResearhPageEnabled = await featureManager.IsEnabledAsync(Features.MyResearchPage);
         if (!myResearhPageEnabled) { return View(nameof(Index)); }
@@ -40,9 +41,9 @@ public class ApplicationController
         var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
 
         // getting research applications by respondent ID
-        var applicationServiceResponse = await applicationsService.GetApplicationsByRespondent(respondentId);
+        var applicationServiceResponse = await applicationsService.GetPaginatedApplicationsByRespondent(respondentId, searchQuery, pageNumber, pageSize);
 
-        var applications = applicationServiceResponse?.Content?.ToList() ?? new List<IrasApplicationResponse>();
+        var applications = applicationServiceResponse?.Content?.Items.ToList() ?? new List<IrasApplicationResponse>();
 
         var researchApplications = applications
             .Where(app => app != null)
@@ -91,7 +92,13 @@ public class ApplicationController
             }
         }
 
-        return View(nameof(Index), researchApplications);
+        var paginationModel = new PaginationViewModel(pageNumber, pageSize, applicationServiceResponse?.Content?.TotalCount ?? 0)
+        {
+            RouteName = "app:welcome",
+            SearchQuery = searchQuery
+        };
+
+        return View(nameof(Index), (researchApplications, paginationModel));
     }
 
     public IActionResult StartProject() => View(nameof(StartProject));

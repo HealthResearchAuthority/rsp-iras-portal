@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Services.Extensions;
+using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Controllers;
 using Rsp.IrasPortal.Web.Models;
 
@@ -37,7 +39,8 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApplicationControllerTests
                 new IrasApplicationResponse
                 {
                     IrasId = 123,
-                    ApplicationId = "App1"
+                    ApplicationId = "App1",
+                    CreatedDate = DateTime.UtcNow
                 }
             };
 
@@ -72,14 +75,26 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApplicationControllerTests
             );
 
             Mocker
-                .GetMock<IApplicationsService>()
-                .Setup(s => s.GetApplicationsByRespondent(It.IsAny<string>()))
-                .ReturnsAsync(apiResponse.ToServiceResponse());
+            .GetMock<IApplicationsService>()
+            .Setup(s => s.GetPaginatedApplicationsByRespondent(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>()))
+            .ReturnsAsync(new ServiceResponse<PaginatedResponse<IrasApplicationResponse>>
+            {
+                Content = new PaginatedResponse<IrasApplicationResponse>
+                {
+                    Items = mockApplications,
+                    TotalCount = mockApplications.Count
+                }
+            });
 
             Mocker
             .GetMock<IRespondentService>()
             .Setup(x => x.GetRespondentAnswers(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(apiRespondent.ToServiceResponse());
+
+            Mocker
+            .GetMock<IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(Features.MyResearchPage))
+            .ReturnsAsync(true);
 
             // Act
             var result = await Sut.Welcome();
@@ -88,14 +103,15 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApplicationControllerTests
             var viewResult = result.ShouldBeOfType<ViewResult>();
             viewResult.ViewName.ShouldBe("Index");
 
-            var model = viewResult.Model.ShouldBeAssignableTo<List<ResearchApplicationSummaryModel>>();
-            model.Count.ShouldBe(1);
+            var (applications, pagination) = viewResult.Model.ShouldBeOfType<(List<ResearchApplicationSummaryModel>, PaginationViewModel)>();
+            applications.Count.ShouldBe(1);
 
-            var item = model[0];
+            var item = applications[0];
             item.IrasId.ShouldBe(123);
             item.ApplicatonId.ShouldBe("App1");
             item.Title.ShouldBe("My Study Title");
             item.PrimarySponsorOrganisation.ShouldBe("NIHR Sponsor");
+            item.IsNew.ShouldBeTrue();
         }
     }
 }
