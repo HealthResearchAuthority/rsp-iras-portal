@@ -39,7 +39,7 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApplicationControllerTests
                 new IrasApplicationResponse
                 {
                     IrasId = 123,
-                    ApplicationId = "App1",
+                    Id = "App1",
                     CreatedDate = DateTime.UtcNow
                 }
             };
