@@ -31,16 +31,16 @@ public class ApprovalsSearchModel
     {
         get
         {
-            var filters = new Dictionary<string, List<string>>();
+            var filters = new Dictionary<string, string>();
 
             if (!string.IsNullOrWhiteSpace(ChiefInvestigatorName))
             {
-                filters.Add(ApprovalsSearch.ChiefInvestigatorKey, [ChiefInvestigatorName]);
+                filters.Add("Chief Investigator name", ChiefInvestigatorName);
             }
 
             if (!string.IsNullOrWhiteSpace(ShortProjectTitle))
             {
-                filters.Add(ApprovalsSearch.ShortProjectTitleKey, [ShortProjectTitle]);
+                filters.Add("Short project title ", ShortProjectTitle);
             }
 
             if (!string.IsNullOrWhiteSpace(SponsorOrgSearch.SelectedOrganisation))
@@ -50,17 +50,17 @@ public class ApprovalsSearchModel
 
             if (!string.IsNullOrWhiteSpace(SponsorOrganisation))
             {
-                filters.Add(ApprovalsSearch.SponsorOrganisationKey, [SponsorOrganisation]);
+                filters.Add("Sponsor organisation", SponsorOrganisation);
             }
 
             if (FromDate.HasValue)
             {
-                filters.Add(ApprovalsSearch.FromDateKey, [FromDate.Value.ToString("d MMM yyyy")]);
+                filters.Add("Date modification submitted - from date", FromDate.Value.ToString("d MMM yyyy"));
             }
 
             if (ToDate.HasValue)
             {
-                filters.Add(ApprovalsSearch.ToDateKey, [ToDate.Value.ToString("d MMM yyyy")]);
+                filters.Add("Date modification submitted - to date", ToDate.Value.ToString("d MMM yyyy"));
             }
 
             if (Country.Count != 0)
@@ -70,7 +70,7 @@ public class ApprovalsSearchModel
 
             if (ModificationTypes.Count != 0)
             {
-                filters.Add(ApprovalsSearch.ModificationTypeKey, ModificationTypes);
+                filters.Add("Modification type", string.Join(", ", ModificationTypes));
             }
 
             return filters;
