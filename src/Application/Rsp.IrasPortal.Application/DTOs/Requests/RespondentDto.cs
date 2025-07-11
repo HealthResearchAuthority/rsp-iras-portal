@@ -1,4 +1,6 @@
-﻿namespace Rsp.IrasPortal.Application.DTOs.Requests;
+﻿using System.Text.Json.Serialization;
+
+namespace Rsp.IrasPortal.Application.DTOs.Requests;
 
 /// <summary>
 /// Represents a respondent (applicant)
