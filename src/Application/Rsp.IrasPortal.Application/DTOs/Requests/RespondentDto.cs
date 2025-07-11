@@ -1,4 +1,6 @@
-﻿namespace Rsp.IrasPortal.Application.DTOs.Requests;
+﻿using System.Text.Json.Serialization;
+
+namespace Rsp.IrasPortal.Application.DTOs.Requests;
 
 /// <summary>
 /// Represents a respondent (applicant)
@@ -8,16 +10,19 @@ public record RespondentDto
     /// <summary>
     /// Respondent Id creating/updating the application
     /// </summary>
+    [JsonPropertyName("Id")]
     public string RespondentId { get; set; } = null!;
 
     /// <summary>
     /// First Name of the respondent
     /// </summary>
+    [JsonPropertyName("GivenName")]
     public string FirstName { get; set; } = null!;
 
     /// <summary>
     /// Surname of the respondent
     /// </summary>
+    [JsonPropertyName("FamilyName")]
     public string LastName { get; set; } = null!;
 
     /// <summary>

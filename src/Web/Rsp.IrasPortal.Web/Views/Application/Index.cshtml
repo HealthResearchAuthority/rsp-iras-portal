@@ -1,9 +1,10 @@
-﻿@model List<ResearchApplicationSummaryModel>
+﻿@model (List<ResearchApplicationSummaryModel> Applications, PaginationViewModel Pagination)
 
 @using Microsoft.FeatureManagement
 @using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.DTOs.Responses;
 @using System.Linq
+@using Rsp.IrasPortal.Web.Areas.Admin.Models
 
 @inject IFeatureManager featureManager
 
@@ -22,20 +23,23 @@
               <div class="govuk-grid-column-one-third">
                 <h2 class="govuk-heading-l" id="title">My research</h2>
               </div>
-              <div class="govuk-grid-column-one-third govuk-!-text-align-right">
-                <a class="govuk-button govuk-button--secondary" asp-route="app:createapplication">Create new project</a>
-              </div>
+              @if (await featureManager.IsEnabledAsync(Features.MyResearchPage))
+              {
+                <div class="govuk-grid-column-one-third govuk-!-text-align-right">
+                    <a class="govuk-button govuk-button--secondary" asp-route="app:createapplication">Create new project</a>
+                </div>                    
+              }                
             </div>
 
 
             <!--Show projects only when my research page feature is enabled-->            
             @if (await featureManager.IsEnabledAsync(Features.MyResearchPage))
             {
-                @if (Model != null && Model.Any())
+                @if (Model.Applications != null && Model.Applications.Any())
 			    {
 				    <div class="govuk-grid-row govuk-grid-gap">
 					    <div class="govuk-grid-column-full">
-						    @foreach (var item in Model)
+						    @foreach (var item in Model.Applications)
 						    {
 							    <div class="govuk-grid-row">
 								    <div class="govuk-grid-column-two-thirds">
@@ -64,12 +68,15 @@
 											    <p class="govuk-body research-text"><strong>Planned project end date:</strong> @item.ProjectEndDate.ToString("dd MMMM yyyy")</p>
 										    </div>										    
 									    </div>
-								    </div>
+								    </div>                                    
 							    </div>
-						    }
+						    }                             
 					    </div>
+                        <div class="govuk-grid-column-two-thirds">
+                            <partial name="_Pagination" model="@Model.Pagination" />
+                        </div>
 				    </div>
-
+                    
 			    }
 			    else
 			    {
@@ -83,6 +90,7 @@
                 <p class="govuk-body">
                     You don't have any projects available in the new service
                 </p>
+                <a class="govuk-button govuk-button--secondary" asp-route="app:createapplication">Create project record</a>
             }						
 		</authorized>
 	</div>
