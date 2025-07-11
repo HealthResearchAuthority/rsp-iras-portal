@@ -483,6 +483,15 @@ dialog[open] {
     background-color: white !important;
 }
 
+.govuk-radios__input + .govuk-radios__label::before {
+    background-color: white !important; /* Inner fill */
+    border-color: #0b0c0c !important; /* Optional: outer ring */
+}
+
+.govuk-radios__input:checked + .govuk-radios__label::after {
+    background-color: #0b0c0c !important; /* Inner dot */
+}
+
 .autocomplete__input {
     background-color: white !important;
 }
@@ -771,3 +780,13 @@ dialog[open] {
         line-height: 1.15
     }
 }
+
+.review-body-search {
+    display: flex;
+    gap: 10px;
+
+    .govuk-input {
+        flex-grow: 1;
+    }
+}
+

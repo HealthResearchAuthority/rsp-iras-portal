@@ -19,7 +19,10 @@
 		   asp-all-route-data="Model.AdditionalParameters"
 		   asp-route-pageNumber="@previousPage"
 		   asp-route-pageSize="@Model.PageSize"
-		   asp-route-searchQuery="@Model.SearchQuery" rel="prev">
+           asp-route-searchQuery="@Model.SearchQuery"
+           asp-route-fromPagination="true"
+		   asp-route-complexSearchQuery="@System.Text.Json.JsonSerializer.Serialize(Model.ComplexSearchQuery)"
+           rel="prev">
 			<svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg"
 				 height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
 				<path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z">
@@ -59,7 +62,9 @@
 					   asp-all-route-data="Model.AdditionalParameters"
 					   asp-route-pageNumber="@index"
 					   asp-route-pageSize="@Model.PageSize"
-					   asp-route-searchQuery="@Model.SearchQuery">
+                       asp-route-searchQuery="@Model.SearchQuery"
+                       asp-route-fromPagination="true"
+					   asp-route-complexSearchQuery="@System.Text.Json.JsonSerializer.Serialize(Model.ComplexSearchQuery)">
 						@index
 					</a>
 				</li>
@@ -73,7 +78,10 @@
 		   asp-all-route-data="Model.AdditionalParameters"
 		   asp-route-pageNumber="@nextPage"
 		   asp-route-pageSize="@Model.PageSize"
-		   asp-route-searchQuery="@Model.SearchQuery" rel="next">
+           asp-route-searchQuery="@Model.SearchQuery"
+           asp-route-fromPagination="true"
+		   asp-route-complexSearchQuery="@System.Text.Json.JsonSerializer.Serialize(Model.ComplexSearchQuery)"
+           rel="next">
 			<span class="govuk-pagination__link-title">
 				Next<span class="govuk-visually-hidden"> page</span>
 			</span>
