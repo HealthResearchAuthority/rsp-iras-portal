@@ -10,6 +10,7 @@ using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
+using Rsp.IrasPortal.Web.ValidatorHelpers;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
@@ -241,14 +242,24 @@ public class QuestionnaireController
             // that matches the index
             var response = model.Questions.Find(q => q.Index == question.Index);
 
-            // update the question with provided answers
-            question.SelectedOption = response?.SelectedOption;
-            question.Answers = response?.Answers ?? [];
-            question.AnswerText = response?.AnswerText;
-            // update the date fields if they are present
-            question.Day = response?.Day;
-            question.Month = response?.Month;
-            question.Year = response?.Year;
+            var resetAnswer = QuestionRuleEvaluator.ShouldResetQuestionAnswers(question, questions);
+            if (resetAnswer)
+            {
+                question.AnswerText = string.Empty;
+                question.SelectedOption = null;
+                question.Answers.ForEach(a => a.IsSelected = false);
+            }
+            else
+            {
+                // update the question with provided answers
+                question.SelectedOption = response?.SelectedOption;
+                question.Answers = response?.Answers ?? [];
+                question.AnswerText = response?.AnswerText;
+                // update the date fields if they are present
+                question.Day = response?.Day;
+                question.Month = response?.Month;
+                question.Year = response?.Year;
+            }
         }
 
         if (!autoSearchEnabled)
