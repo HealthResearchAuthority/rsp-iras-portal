@@ -773,6 +773,25 @@ dialog[open] {
     margin: 0;
 }
 
+.checkbox-cell {
+    padding: 7px 0 0 0 !important;
+}
+
+.modifications-tasklist-table {
+    td, th {
+        padding: 20px 20px 20px 0;
+    }
+}
+
+/* hide the real child checkboxes */
+//ul input[type="checkbox"] {
+//    display: none;
+//}
+/* draw fake checks when master is ticked */
+#select-all-modifications:checked ~ modification-checkbox-label::after {
+    opacity: 1; /* purely visual */
+}
+
 @media print {
     .search-filter-summary__clear-filters {
         font-family: sans-serif
