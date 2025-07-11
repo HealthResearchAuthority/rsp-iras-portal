@@ -9,24 +9,28 @@ public class ReviewBodySearchModel
     public List<string> Country { get; set; } = [];
     public bool? Status { get; set; }
 
-    public Dictionary<string, List<string>> Filters
+    public Dictionary<string, string> Filters
     {
         get
         {
-            var filters = new Dictionary<string, List<string>>();
+            var filters = new Dictionary<string, string>();
 
-            if (Country?.Count > 0)
+            if (Country.Count != 0)
             {
-                filters.Add("Country", Country);
+                filters.Add("Country", string.Join(", ", Country));
             }
 
-            if (Status != null)
+            switch (Status)
             {
-                filters.Add("Status", [Status == true ? "Active" : "Disabled"]);
+                case true:
+                    filters.Add("Status", "Active");
+                    break;
+                case false:
+                    filters.Add("Status", "Disabled");
+                    break;
             }
 
             return filters;
         }
     }
-
 }
