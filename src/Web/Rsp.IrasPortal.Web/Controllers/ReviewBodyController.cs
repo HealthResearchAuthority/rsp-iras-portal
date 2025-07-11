@@ -1,9 +1,12 @@
 ﻿using System.Data;
+using System.Text.Json;
 using FluentValidation;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
@@ -38,19 +41,53 @@ public class ReviewBodyController(
     /// <summary>
     ///     Displays a list of review bodies
     /// </summary>
+    [HttpGet]
+    [HttpPost]
     [Route("/reviewbody/view", Name = "rbc:viewreviewbodies")]
-    public async Task<IActionResult> ViewReviewBodies(int pageNumber = 1, int pageSize = 20, string? searchQuery = null)
+    public async Task<IActionResult> ViewReviewBodies(
+        int pageNumber = 1,
+        int pageSize = 20,
+        [FromForm] ReviewBodySearchViewModel? model = null,
+        [FromQuery] string? complexSearchQuery = null,
+        [FromQuery] bool fromPagination = false)
     {
-        var response = await reviewBodyService.GetAllReviewBodies(pageNumber, pageSize, searchQuery);
+        if (fromPagination && !string.IsNullOrWhiteSpace(complexSearchQuery))
+        {
+            model.Search = JsonSerializer.Deserialize<ReviewBodySearchModel>(complexSearchQuery);
+        }
+        else
+        {
+            // RESET ON SEARCH AND REMOVE FILTERS
+            pageNumber = 1;
+            pageSize = 20;
+        }
+
+        var request = new ReviewBodySearchRequest
+        {
+            SearchQuery = model?.Search.SearchQuery,
+            Country = model?.Search.Country,
+            Status = model.Search.Status
+        };
+
+        var response = await reviewBodyService.GetAllReviewBodies(request, pageNumber, pageSize);
 
         var paginationModel = new PaginationViewModel(pageNumber, pageSize, response.Content?.TotalCount ?? 0)
         {
             RouteName = "rbc:viewreviewbodies",
-            SearchQuery = searchQuery
+            ComplexSearchQuery = model.Search
         };
 
-        return View((response.Content?.ReviewBodies, paginationModel));
+        var reviewBodySearchViewModel = new ReviewBodySearchViewModel
+        {
+            Pagination = paginationModel,
+            ReviewBodies = response.Content?.ReviewBodies,
+            Search = model.Search
+        };
+
+
+        return View(reviewBodySearchViewModel);
     }
+
 
     /// <summary>
     ///     Displays a single review body
@@ -294,10 +331,12 @@ public class ReviewBodyController(
         var auditTrailResponse = response?.Content;
         var items = auditTrailResponse?.Items;
 
-        var paginationModel = new PaginationViewModel(pageNumber, pageSize, (auditTrailResponse != null ? auditTrailResponse.TotalCount : -1))
+        var paginationModel = new PaginationViewModel(pageNumber, pageSize,
+            auditTrailResponse != null ? auditTrailResponse.TotalCount : -1)
         {
             RouteName = "rbc:audittrail",
-            AdditionalParameters = {
+            AdditionalParameters =
+            {
                 { "reviewBodyId", reviewBodyId.ToString() }
             }
         };
@@ -319,7 +358,8 @@ public class ReviewBodyController(
     ///     Displays users for a review body
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> ViewReviewBodyUsers(Guid reviewBodyId, string? searchQuery = null, int pageNumber = 1, int pageSize = 20)
+    public async Task<IActionResult> ViewReviewBodyUsers(Guid reviewBodyId, string? searchQuery = null,
+        int pageNumber = 1, int pageSize = 20)
     {
         var reviewBody = await reviewBodyService.GetReviewBodyById(reviewBodyId);
         var reviewBodyModel = reviewBody.Content?.Adapt<AddUpdateReviewBodyModel>();
@@ -350,7 +390,8 @@ public class ReviewBodyController(
         {
             SearchQuery = searchQuery,
             RouteName = "rbc:viewreviewbodyusers",
-            AdditionalParameters = {
+            AdditionalParameters =
+            {
                 { "reviewBodyId", reviewBodyId.ToString() }
             }
         };
@@ -362,7 +403,8 @@ public class ReviewBodyController(
     ///     Displays page for adding a user to review body
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> ViewAddUser(Guid reviewBodyId, string? searchQuery = null, int pageNumber = 1, int pageSize = 20)
+    public async Task<IActionResult> ViewAddUser(Guid reviewBodyId, string? searchQuery = null, int pageNumber = 1,
+        int pageSize = 20)
     {
         var reviewBody = await reviewBodyService.GetReviewBodyById(reviewBodyId);
 
@@ -385,7 +427,8 @@ public class ReviewBodyController(
             {
                 RouteName = "rbc:viewadduser",
                 SearchQuery = searchQuery,
-                AdditionalParameters = {
+                AdditionalParameters =
+                {
                     { "reviewBodyId", reviewBodyId.ToString() }
                 }
             };
@@ -456,7 +499,7 @@ public class ReviewBodyController(
         var reviewBodyModel = reviewBody.Content?.Adapt<AddUpdateReviewBodyModel>();
         var user = await userService.GetUser(userId.ToString(), null);
 
-        var model = new ConfirmAddRemoveReviewBodyUserModel()
+        var model = new ConfirmAddRemoveReviewBodyUserModel
         {
             ReviewBody = reviewBodyModel ?? new AddUpdateReviewBodyModel(),
             User = user.Content != null ? new UserViewModel(user.Content) : new UserViewModel(),
@@ -488,5 +531,55 @@ public class ReviewBodyController(
         };
 
         return View(SuccessAddRemoveUserMessageView, model);
+    }
+
+    [HttpGet]
+    public IActionResult ClearFilters()
+    {
+        return RedirectToAction(ViewReviewBodiesView);
+    }
+
+    [HttpGet]
+    [Route("/reviewbody/removefilter", Name = "rbc:removefilter")]
+    public IActionResult RemoveFilter(string key, string? value, [FromQuery] string? model = null)
+    {
+        var viewModel = new ReviewBodySearchViewModel();
+
+        if (!string.IsNullOrWhiteSpace(model))
+        {
+            viewModel.Search = JsonSerializer.Deserialize<ReviewBodySearchModel>(model);
+        }
+        else
+        {
+            viewModel.Search = new ReviewBodySearchModel();
+        }
+
+        switch (key.ToLowerInvariant().Replace(" ", ""))
+        {
+            case "country":
+                if (!string.IsNullOrEmpty(value) && viewModel.Search.Country != null)
+                {
+                    viewModel.Search.Country = viewModel.Search.Country
+                        .Where(c => !string.Equals(c, value, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
+                break;
+
+            case "status":
+                viewModel.Search.Status = null;
+                break;
+        }
+
+        // Serialize modified search model to JSON for complexSearchQuery parameter
+        var searchJson = JsonSerializer.Serialize(viewModel.Search);
+
+        // Redirect to ViewReviewBodies with query parameters
+        return RedirectToRoute("rbc:viewreviewbodies", new
+        {
+            pageNumber = 1,
+            pageSize = 20,
+            complexSearchQuery = searchJson,
+            fromPagination = true
+        });
     }
 }

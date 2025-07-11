@@ -22,7 +22,7 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
         };
 
         Mocker.GetMock<IReviewBodyService>()
-            .Setup(s => s.GetAllReviewBodies(1, 20, null))
+            .Setup(s => s.GetAllReviewBodies(null,1, 20))
             .ReturnsAsync(serviceResponse);
 
         // Act
@@ -35,7 +35,7 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
 
         // Verify
         Mocker.GetMock<IReviewBodyService>()
-            .Verify(s => s.GetAllReviewBodies(1, 20, null), Times.Once);
+            .Verify(s => s.GetAllReviewBodies(null, 1, 20), Times.Once);
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
     {
         // Arrange
         Mocker.GetMock<IReviewBodyService>()
-            .Setup(s => s.GetAllReviewBodies(1, 20, null))
+            .Setup(s => s.GetAllReviewBodies(null, 1, 20))
             .ReturnsAsync(new ServiceResponse<AllReviewBodiesResponse>
             { StatusCode = HttpStatusCode.OK, Content = null });
 
@@ -56,7 +56,7 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
 
         // Verify
         Mocker.GetMock<IReviewBodyService>()
-            .Verify(s => s.GetAllReviewBodies(1, 20, null), Times.Once);
+            .Verify(s => s.GetAllReviewBodies(null, 1, 20), Times.Once);
     }
 
     [Fact]
@@ -64,7 +64,7 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
     {
         // Arrange
         Mocker.GetMock<IReviewBodyService>()
-            .Setup(s => s.GetAllReviewBodies(1, 20, null))
+            .Setup(s => s.GetAllReviewBodies(null, 1, 20))
             .ReturnsAsync(new ServiceResponse<AllReviewBodiesResponse>
             { StatusCode = HttpStatusCode.InternalServerError });
 
@@ -77,7 +77,7 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
 
         // Verify
         Mocker.GetMock<IReviewBodyService>()
-            .Verify(s => s.GetAllReviewBodies(1, 20, null), Times.Once);
+            .Verify(s => s.GetAllReviewBodies(null, 1, 20), Times.Once);
     }
 
     [Theory, AutoData]
