@@ -50,7 +50,7 @@ public class ApplicationController
             .Select(app => new ResearchApplicationSummaryModel
             {
                 IrasId = app.IrasId,
-                ApplicatonId = app.ApplicationId,
+                ApplicatonId = app.Id,
                 Title = "Empty", // temporary default
                 ProjectEndDate = new DateTime(2025, 12, 10, 0, 0, 0, DateTimeKind.Utc), // temporary default
                 PrimarySponsorOrganisation = "Unknown", // default value
@@ -91,7 +91,6 @@ public class ApplicationController
                 researchApp.PrimarySponsorOrganisation = sponsorAnswer;
             }
         }
-
         var paginationModel = new PaginationViewModel(pageNumber, pageSize, applicationServiceResponse?.Content?.TotalCount ?? 0)
         {
             RouteName = "app:welcome",
