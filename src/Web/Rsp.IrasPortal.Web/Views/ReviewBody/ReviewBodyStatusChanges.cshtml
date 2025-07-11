@@ -18,7 +18,7 @@
     }
 </form>
 
-<h1 style="margin-top:30px" class="govuk-heading-l">@heading @Model.OrganisationName</h1>
+<h1 style="margin-top:30px" class="govuk-heading-l">@heading @Model.RegulatoryBodyName</h1>
 
 <p class="govuk-body">
     @hint
@@ -27,7 +27,7 @@
 <form method="post">
     <input type="hidden" asp-for="Id" />
     <input type="hidden" asp-for="IsActive" />
-    <input type="hidden" asp-for="OrganisationName" />
+    <input type="hidden" asp-for="RegulatoryBodyName" />
     @{
         ViewBag.Style = style;
     }

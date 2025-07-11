@@ -44,7 +44,7 @@ public static class ControllerExtensions
             Title = response.ReasonPhrase,
             Detail = response.Error,
             Status = (int)response.StatusCode,
-            Instance = controller.Request.Path
+            Instance = controller.Request?.Path
         };
     }
 }

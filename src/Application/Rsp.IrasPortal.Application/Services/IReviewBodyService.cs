@@ -15,9 +15,9 @@ public interface IReviewBodyService : IInterceptable
 
     Task<ServiceResponse<ReviewBodyDto>> GetReviewBodyById(Guid id);
 
-    Task<ServiceResponse> CreateReviewBody(ReviewBodyDto reviewBodyDto);
+    Task<ServiceResponse<ReviewBodyDto>> CreateReviewBody(ReviewBodyDto reviewBodyDto);
 
-    Task<ServiceResponse> UpdateReviewBody(ReviewBodyDto reviewBodyDto);
+    Task<ServiceResponse<ReviewBodyDto>> UpdateReviewBody(ReviewBodyDto reviewBodyDto);
 
     Task<ServiceResponse> DisableReviewBody(Guid id);
 

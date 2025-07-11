@@ -12,7 +12,7 @@ $(function () {
             const label = $("label[for='" + $(this).attr('id') + "']");
 
             // check if the label text is 'Operations'
-            if (label.text() === 'operations') {
+            if (label.text().toLowerCase() === 'operations') {
                 $(".conditional-field").show();
                 showConditionalFields = true;
                 return false;

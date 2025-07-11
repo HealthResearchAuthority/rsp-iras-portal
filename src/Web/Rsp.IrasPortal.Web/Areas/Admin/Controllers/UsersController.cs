@@ -33,6 +33,7 @@ public class UsersController(IUserManagementService userManagementService, IVali
     private const string ConfirmDisableUser = nameof(ConfirmDisableUser);
     private const string EnableUserSuccessMessage = nameof(EnableUserSuccessMessage);
     private const string ConfirmEnableUser = nameof(ConfirmEnableUser);
+    private const string OperationsRole = "operations";
 
     private const string EditMode = "edit";
     private const string CreateMode = "create";
@@ -51,15 +52,7 @@ public class UsersController(IUserManagementService userManagementService, IVali
         // return the view if successfull
         if (response.IsSuccessStatusCode)
         {
-            var users = response.Content?.Users.Select(user => new UserViewModel
-            {
-                Id = user.Id,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email,
-                Status = user.Status,
-                LastLogin = user.LastLogin
-            }) ?? [];
+            var users = response.Content?.Users.Select(user => new UserViewModel(user)) ?? [];
 
             var paginationModel = new PaginationViewModel(pageNumber, pageSize, response.Content?.TotalCount ?? 0)
             {
@@ -70,14 +63,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
             return View((users, paginationModel));
         }
 
-        // if status is forbidden
-        // return the appropriate response otherwise
-        // return the generic error page
-        return response.StatusCode switch
-        {
-            HttpStatusCode.Forbidden => Forbid(),
-            _ => View(Error, this.ProblemResult(response))
-        };
+        // return error page as api wasn't successful
+        return this.ServiceError(response);
     }
 
     /// <summary>
@@ -134,6 +121,12 @@ public class UsersController(IUserManagementService userManagementService, IVali
     public async Task<IActionResult> ConfirmUserSubmission(UserViewModel model)
     {
         ViewBag.Mode = string.IsNullOrEmpty(model.Id) ? CreateMode : EditMode;
+
+        if (model.UserRoles.Any(r => r.Name.Equals(OperationsRole, StringComparison.OrdinalIgnoreCase) && !r.IsSelected))
+        {
+            model.AccessRequired = [];
+            model.Country = [];
+        }
 
         var context = new ValidationContext<UserViewModel>(model);
         var validationResult = await validator.ValidateAsync(context);
@@ -196,6 +189,12 @@ public class UsersController(IUserManagementService userManagementService, IVali
     {
         var mode = string.IsNullOrEmpty(model.Id) ? CreateMode : EditMode;
         ViewBag.Mode = mode;
+
+        if (model.UserRoles.Any(r => r.Name.Equals(OperationsRole, StringComparison.OrdinalIgnoreCase) && !r.IsSelected))
+        {
+            model.AccessRequired = [];
+            model.Country = [];
+        }
 
         var context = new ValidationContext<UserViewModel>(model);
         var validationResult = await validator.ValidateAsync(context);
@@ -305,14 +304,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
             return View(EditUserView, model);
         }
 
-        // if status is forbidden
-        // return the appropriate response otherwise
-        // return the generic error page
-        return response.StatusCode switch
-        {
-            HttpStatusCode.Forbidden => Forbid(),
-            _ => View(Error, this.ProblemResult(response))
-        };
+        // return error page as api wasn't successful
+        return this.ServiceError(response);
     }
 
     /// <summary>
@@ -332,14 +325,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
             return View(ConfirmDisableUser, model);
         }
 
-        // if status is forbidden
-        // return the appropriate response otherwise
-        // return the generic error page
-        return response.StatusCode switch
-        {
-            HttpStatusCode.Forbidden => Forbid(),
-            _ => View(Error, this.ProblemResult(response))
-        };
+        // return error page as api wasn't successful
+        return this.ServiceError(response);
     }
 
     [HttpPost]
@@ -363,14 +350,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
             }
         }
 
-        // if status is forbidden
-        // return the appropriate response otherwise
-        // return the generic error page
-        return userResponse.StatusCode switch
-        {
-            HttpStatusCode.Forbidden => Forbid(),
-            _ => View(Error, this.ProblemResult(userResponse))
-        };
+        // return error page as api wasn't successful
+        return this.ServiceError(userResponse);
     }
 
     [HttpGet]
@@ -385,14 +366,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
             return View(ConfirmEnableUser, model);
         }
 
-        // if status is forbidden
-        // return the appropriate response otherwise
-        // return the generic error page
-        return response.StatusCode switch
-        {
-            HttpStatusCode.Forbidden => Forbid(),
-            _ => View(Error, this.ProblemResult(response))
-        };
+        // return error page as api wasn't successful
+        return this.ServiceError(response);
     }
 
     [HttpPost]
@@ -416,14 +391,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
             }
         }
 
-        // if status is forbidden
-        // return the appropriate response otherwise
-        // return the generic error page
-        return userResponse.StatusCode switch
-        {
-            HttpStatusCode.Forbidden => Forbid(),
-            _ => View(Error, this.ProblemResult(userResponse))
-        };
+        // return error page as api wasn't successful
+        return this.ServiceError(userResponse);
     }
 
     /// <summary>
@@ -508,14 +477,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
             return View(UserRolesView, model);
         }
 
-        // if status is forbidden
-        // return the appropriate response otherwise
-        // return the generic error page
-        return response.StatusCode switch
-        {
-            HttpStatusCode.Forbidden => Forbid(),
-            _ => View(Error, this.ProblemResult(response))
-        };
+        // return error page as api wasn't successful
+        return this.ServiceError(response);
     }
 
     /// <summary>

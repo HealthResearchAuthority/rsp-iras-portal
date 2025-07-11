@@ -120,7 +120,7 @@ public class SubmitApplicationTests : TestServiceBase<QuestionnaireController>
 
         var application = new IrasApplicationResponse
         {
-            ApplicationId = applicationId
+            Id = applicationId
         };
 
         var session = new Mock<ISession>();
@@ -194,7 +194,7 @@ public class SubmitApplicationTests : TestServiceBase<QuestionnaireController>
 
         var application = new IrasApplicationResponse
         {
-            ApplicationId = applicationId
+            Id = applicationId
         };
 
         var session = new Mock<ISession>();
@@ -293,7 +293,7 @@ public class SubmitApplicationTests : TestServiceBase<QuestionnaireController>
 
         var application = new IrasApplicationResponse
         {
-            ApplicationId = applicationId
+            Id = applicationId
         };
 
         var session = new Mock<ISession>();

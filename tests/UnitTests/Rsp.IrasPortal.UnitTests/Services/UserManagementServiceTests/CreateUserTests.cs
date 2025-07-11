@@ -38,8 +38,8 @@ public class CreateUserTests : TestServiceBase<UserManagementService>
         var result = await Sut.CreateUser(new CreateUserRequest
         {
             Title = title,
-            FirstName = firstName,
-            LastName = lastName,
+            GivenName = firstName,
+            FamilyName = lastName,
             Email = email,
             JobTitle = jobTitle,
             Organisation = organisation,
@@ -87,8 +87,8 @@ public class CreateUserTests : TestServiceBase<UserManagementService>
         var result = await Sut.CreateUser(new CreateUserRequest
         {
             Title = title,
-            FirstName = firstName,
-            LastName = lastName,
+            GivenName = firstName,
+            FamilyName = lastName,
             Email = email,
             JobTitle = jobTitle,
             Organisation = organisation,

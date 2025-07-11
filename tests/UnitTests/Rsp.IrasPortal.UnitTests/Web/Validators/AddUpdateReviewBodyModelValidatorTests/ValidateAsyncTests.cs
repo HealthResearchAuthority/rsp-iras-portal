@@ -9,9 +9,9 @@ public class ValidateAsyncTests : TestServiceBase<AddUpdateReviewBodyModelValida
     [Fact]
     public async Task ShouldHaveValidationErrorForEmptyOrganisationName()
     {
-        var model = new AddUpdateReviewBodyModel { OrganisationName = string.Empty };
+        var model = new AddUpdateReviewBodyModel { RegulatoryBodyName = string.Empty };
         var result = await Sut.TestValidateAsync(model);
-        result.ShouldHaveValidationErrorFor(x => x.OrganisationName)
+        result.ShouldHaveValidationErrorFor(x => x.RegulatoryBodyName)
             .WithErrorMessage("Enter an organisation name");
     }
 

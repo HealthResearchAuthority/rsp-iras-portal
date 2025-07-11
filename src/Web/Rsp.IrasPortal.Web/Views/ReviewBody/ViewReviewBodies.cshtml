@@ -51,7 +51,7 @@
                             foreach (var reviewBody in Model.ReviewBodies)
                             {
                                 <tr class="govuk-table__row">
-                                    <td class="govuk-table__cell">@reviewBody.OrganisationName</td>
+                                    <td class="govuk-table__cell">@reviewBody.RegulatoryBodyName</td>
                                     <td class="govuk-table__cell">@String.Join(", ", reviewBody.Countries)</td>
                                     <td class="govuk-table__cell">
                                         <span class="govuk-tag @(reviewBody.IsActive ? "govuk-tag--green" : "govuk-tag--red")">

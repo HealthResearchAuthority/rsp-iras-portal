@@ -16,7 +16,7 @@ public class SubmitReviewBodyTests : TestServiceBase<ReviewBodyController>
         AddUpdateReviewBodyModel model)
     {
         // Arrange
-        var serviceResponse = new ServiceResponse<IEnumerable<ReviewBodyDto>>
+        var serviceResponse = new ServiceResponse<ReviewBodyDto>
         {
             StatusCode = HttpStatusCode.OK
         };
@@ -50,7 +50,7 @@ public class SubmitReviewBodyTests : TestServiceBase<ReviewBodyController>
         AddUpdateReviewBodyModel model)
     {
         // Arrange
-        var serviceResponse = new ServiceResponse<IEnumerable<ReviewBodyDto>>
+        var serviceResponse = new ServiceResponse<ReviewBodyDto>
         {
             StatusCode = HttpStatusCode.InternalServerError
         };
@@ -70,8 +70,7 @@ public class SubmitReviewBodyTests : TestServiceBase<ReviewBodyController>
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("SuccessMessage");
-        viewResult.Model.ShouldBeEquivalentTo(model);
+        viewResult.ViewName.ShouldBe("Error");
 
         // Verify the service method was called once
         Mocker.GetMock<IReviewBodyService>()
@@ -83,7 +82,7 @@ public class SubmitReviewBodyTests : TestServiceBase<ReviewBodyController>
         AddUpdateReviewBodyModel model)
     {
         // Arrange
-        var serviceResponse = new ServiceResponse<IEnumerable<ReviewBodyDto>>
+        var serviceResponse = new ServiceResponse<ReviewBodyDto>
         {
             StatusCode = HttpStatusCode.InternalServerError
         };

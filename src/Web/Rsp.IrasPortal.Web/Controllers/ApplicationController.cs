@@ -1,21 +1,18 @@
-using FluentValidation;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.FeatureManagement;
-using Microsoft.FeatureManagement.Mvc;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Domain.Entities;
-using Rsp.IrasPortal.Web.Areas.Admin.Models;
-using Rsp.IrasPortal.Web.Extensions;
-using Rsp.IrasPortal.Web.Models;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Text.Json;
+using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement.Mvc;
+using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Domain.Entities;
+using Rsp.IrasPortal.Web.Extensions;
+using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
@@ -25,81 +22,12 @@ public class ApplicationController(
     IApplicationsService applicationsService,
     IValidator<ApplicationInfoViewModel> validator,
     IValidator<IrasIdViewModel> irasIdValidator,
-    IRespondentService respondentService,
-    IQuestionSetService questionSetService,
-    IFeatureManager featureManager) : Controller
+    IQuestionSetService questionSetService) : Controller
 {
     // ApplicationInfo view name
     private const string ApplicationInfo = nameof(ApplicationInfo);
 
-    public async Task<IActionResult> Welcome(string? searchQuery = null, int pageNumber = 1, int pageSize = 5)
-    {
-        var myResearhPageEnabled = await featureManager.IsEnabledAsync(Features.MyResearchPage);
-        if (!myResearhPageEnabled) { return View(nameof(Index)); }
-
-        // getting respondentID from Http context
-        var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
-
-        // getting research applications by respondent ID
-        var applicationServiceResponse = await applicationsService.GetPaginatedApplicationsByRespondent(respondentId, searchQuery, pageNumber, pageSize);
-
-        var applications = applicationServiceResponse?.Content?.Items.ToList() ?? new List<IrasApplicationResponse>();
-
-        var researchApplications = applications
-            .Where(app => app != null)
-            .Select(app => new ResearchApplicationSummaryModel
-            {
-                IrasId = app.IrasId,
-                ApplicatonId = app.ApplicationId,
-                Title = "Empty", // temporary default
-                ProjectEndDate = new DateTime(2025, 12, 10, 0, 0, 0, DateTimeKind.Utc), // temporary default
-                PrimarySponsorOrganisation = "Unknown", // default value
-                IsNew = app.CreatedDate >= DateTime.UtcNow.AddDays(-2)
-            })
-            .ToList();
-
-        var categoryId = "project record v1";
-
-        foreach (var researchApp in researchApplications)
-        {
-            var respondentServiceResponse = await respondentService.GetRespondentAnswers(researchApp.ApplicatonId, categoryId);
-
-            if (!respondentServiceResponse.IsSuccessStatusCode)
-            {
-                // return the generic error page
-                return this.ServiceError(respondentServiceResponse);
-            }
-
-            var answers = respondentServiceResponse.Content;
-
-            var titleAnswer = answers.FirstOrDefault(a => a.QuestionId == "IQA0002")?.AnswerText;
-            var endDateAnswer = answers.FirstOrDefault(a => a.QuestionId == "IQA0003")?.AnswerText;
-            var sponsorAnswer = answers.FirstOrDefault(a => a.QuestionId == "IQA0312")?.AnswerText;
-
-            if (!string.IsNullOrWhiteSpace(titleAnswer))
-            {
-                researchApp.Title = titleAnswer;
-            }
-
-            if (DateTime.TryParse(endDateAnswer, out var parsedDate))
-            {
-                researchApp.ProjectEndDate = parsedDate;
-            }
-
-            if (!string.IsNullOrWhiteSpace(sponsorAnswer))
-            {
-                researchApp.PrimarySponsorOrganisation = sponsorAnswer;
-            }
-        }
-
-        var paginationModel = new PaginationViewModel(pageNumber, pageSize, applicationServiceResponse?.Content?.TotalCount ?? 0)
-        {
-            RouteName = "app:welcome",
-            SearchQuery = searchQuery
-        };
-
-        return View(nameof(Index), (researchApplications, paginationModel));
-    }
+    public IActionResult Welcome() => View(nameof(Index));
 
     public IActionResult StartProject() => View(nameof(StartProject));
 
@@ -135,7 +63,7 @@ public class ApplicationController(
 
         // Create new application
         var respondent = GetRespondentFromContext();
-        var name = $"{respondent.FirstName} {respondent.LastName}";
+        var name = $"{respondent.GivenName} {respondent.FamilyName}";
 
         var irasApplicationRequest = new IrasApplicationRequest
         {
@@ -167,7 +95,7 @@ public class ApplicationController(
         return RedirectToAction(nameof(QuestionnaireController.Resume), "Questionnaire", new
         {
             categoryId,
-            irasApplication.ApplicationId
+            projectApplicationId = irasApplication.Id
         });
     }
 
@@ -178,10 +106,10 @@ public class ApplicationController(
         return View(ApplicationInfo, (new ApplicationInfoViewModel(), "create"));
     }
 
-    public async Task<IActionResult> EditApplication([FromQuery, Required] string applicationId)
+    public async Task<IActionResult> EditApplication([FromQuery, Required] string projectApplicationId)
     {
         // get the pending application by id
-        var applicationsServiceResponse = await applicationsService.GetApplication(applicationId);
+        var applicationsServiceResponse = await applicationsService.GetApplication(projectApplicationId);
 
         // return the view if successfull
         if (!applicationsServiceResponse.IsSuccessStatusCode)
@@ -227,7 +155,7 @@ public class ApplicationController(
 
         var respondent = GetRespondentFromContext();
 
-        var name = $"{respondent.FirstName} {respondent.LastName}";
+        var name = $"{respondent.GivenName} {respondent.FamilyName}";
 
         var irasApplicationRequest = new IrasApplicationRequest
         {
@@ -317,21 +245,21 @@ public class ApplicationController(
         return this.ServiceError(applicationServiceResponse);
     }
 
-    public IActionResult ProjectOverview(string? CategoryId = null, string? ApplicationId = null)
+    public IActionResult ProjectOverview()
     {
         var model = new ProjectOverviewModel
         {
             ProjectTitle = TempData[TempDataKeys.ShortProjectTitle] as string ?? string.Empty,
-            CategoryId = TempData[TempDataKeys.CategoryId] as string ?? CategoryId ?? string.Empty,
-            ApplicationId = TempData[TempDataKeys.ApplicationId] as string ?? ApplicationId ?? string.Empty
+            CategoryId = TempData[TempDataKeys.CategoryId] as string ?? string.Empty,
+            ProjectApplicationId = TempData[TempDataKeys.ProjectApplicationId] as string ?? string.Empty
         };
 
         TempData[TempDataKeys.ProjectOverview] = true;
         return View(model);
     }
 
-    [Route("{applicationId}", Name = "app:ViewApplication")]
-    public async Task<IActionResult> ViewApplication(string applicationId)
+    [Route("{projectApplicationId}", Name = "app:ViewApplication")]
+    public async Task<IActionResult> ViewApplication(string projectApplicationId)
     {
         // if the ModelState is invalid, return the view
         // with the null model. The view shouldn't display any
@@ -342,7 +270,7 @@ public class ApplicationController(
         }
 
         // get the pending application by id
-        var applicationServiceResponse = await applicationsService.GetApplication(applicationId);
+        var applicationServiceResponse = await applicationsService.GetApplication(projectApplicationId);
 
         // return the view if successfull
         if (applicationServiceResponse.IsSuccessStatusCode)
@@ -381,22 +309,22 @@ public class ApplicationController(
 
         var respondent = new RespondentDto
         {
-            RespondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!,
+            Id = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!,
             EmailAddress = (HttpContext.Items[ContextItemKeys.Email] as string)!,
-            FirstName = (HttpContext.Items[ContextItemKeys.FirstName] as string)!,
-            LastName = (HttpContext.Items[ContextItemKeys.LastName] as string)!,
+            GivenName = (HttpContext.Items[ContextItemKeys.FirstName] as string)!,
+            FamilyName = (HttpContext.Items[ContextItemKeys.LastName] as string)!,
             Role = string.Join(',', User.Claims
                        .Where(claim => claim.Type == ClaimTypes.Role)
                        .Select(claim => claim.Value))
         };
 
-        var name = $"{respondent.FirstName} {respondent.LastName}";
+        var name = $"{respondent.GivenName} {respondent.FamilyName}";
 
         var application = this.GetApplicationFromSession();
 
         var request = new IrasApplicationRequest
         {
-            ApplicationId = application.ApplicationId,
+            Id = application.Id,
             Title = model.Name!,
             Description = model.Description!,
             CreatedBy = application.CreatedBy,
@@ -427,10 +355,10 @@ public class ApplicationController(
     {
         return new RespondentDto
         {
-            RespondentId = HttpContext.Items[ContextItemKeys.RespondentId]?.ToString() ?? string.Empty,
+            Id = HttpContext.Items[ContextItemKeys.RespondentId]?.ToString() ?? string.Empty,
             EmailAddress = HttpContext.Items[ContextItemKeys.Email]?.ToString() ?? string.Empty,
-            FirstName = HttpContext.Items[ContextItemKeys.FirstName]?.ToString() ?? string.Empty,
-            LastName = HttpContext.Items[ContextItemKeys.LastName]?.ToString() ?? string.Empty,
+            GivenName = HttpContext.Items[ContextItemKeys.FirstName]?.ToString() ?? string.Empty,
+            FamilyName = HttpContext.Items[ContextItemKeys.LastName]?.ToString() ?? string.Empty,
             Role = string.Join(',', User.Claims
                        .Where(claim => claim.Type == ClaimTypes.Role)
                        .Select(claim => claim.Value))
