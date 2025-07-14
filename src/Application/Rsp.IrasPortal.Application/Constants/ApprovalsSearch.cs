@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Rsp.IrasPortal.Application.Constants;
+﻿namespace Rsp.IrasPortal.Application.Constants;
 public class ApprovalsSearch
 {
     public const string ChiefInvestigatorKey = "Chief Investigator name";

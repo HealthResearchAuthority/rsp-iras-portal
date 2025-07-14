@@ -79,7 +79,6 @@ public class ApprovalsSearchModel
         }
     }
 
-
     private static DateTime? ParseDate(string? day, string? month, string? year)
     {
         return int.TryParse(day, out var d) &&

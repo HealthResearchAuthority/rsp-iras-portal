@@ -24,4 +24,5 @@ public struct TempDataKeys
     public const string OrgSearch = "td:org_search";
     public const string OrgSearchReturnUrl = "td:org_search_return_url";
     public const string ModelState = "td:model_state";
+    public const string ApprovalsSearchModel = "td:approvalsSearchModel";
 }

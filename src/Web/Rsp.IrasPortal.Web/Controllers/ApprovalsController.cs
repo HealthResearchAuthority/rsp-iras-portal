@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
@@ -22,12 +21,10 @@ public class ApprovalsController(
     IValidator<ApprovalsSearchModel> validator
 ) : Controller
 {
-    private const string TempDataKey_ApprovalsSearch = "ApprovalsSearchModel";
-
     [Route("/approvals", Name = "approvals:welcome")]
     public IActionResult Welcome()
     {
-        TempData.Remove(TempDataKey_ApprovalsSearch);
+        TempData.Remove(TempDataKeys.ApprovalsSearchModel);
         return View(nameof(Index));
     }
 
@@ -36,9 +33,9 @@ public class ApprovalsController(
     {
         var model = new ApprovalsSearchViewModel();
 
-        if (TempData.ContainsKey(TempDataKey_ApprovalsSearch))
+        if (TempData.ContainsKey(TempDataKeys.ApprovalsSearchModel))
         {
-            var json = TempData.Peek(TempDataKey_ApprovalsSearch)?.ToString();
+            var json = TempData.Peek(TempDataKeys.ApprovalsSearchModel)?.ToString();
             if (!string.IsNullOrEmpty(json))
             {
                 var search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json)!;
@@ -100,22 +97,22 @@ public class ApprovalsController(
             return View(nameof(Search), model);
         }
 
-        TempData[TempDataKey_ApprovalsSearch] = JsonSerializer.Serialize(model.Search);
+        TempData[TempDataKeys.ApprovalsSearchModel] = JsonSerializer.Serialize(model.Search);
         return RedirectToAction(nameof(Search));
     }
 
     [HttpGet]
     public IActionResult ClearFilters()
     {
-        TempData.Remove(TempDataKey_ApprovalsSearch);
+        TempData.Remove(TempDataKeys.ApprovalsSearchModel);
         return RedirectToAction(nameof(Search));
     }
 
     [HttpGet]
     public async Task<IActionResult> RemoveFilter(string key, string? value)
     {
-        if (!TempData.TryGetValue(TempDataKey_ApprovalsSearch, out var tempDataValue))
-        {
+        if (!TempData.TryGetValue(TempDataKeys.ApprovalsSearchModel, out var tempDataValue))
+        {   
             return RedirectToAction(nameof(Search));
         }
 
@@ -172,11 +169,10 @@ public class ApprovalsController(
         }
 
         // Write the updated search model back to TempData
-        TempData[TempDataKey_ApprovalsSearch] = JsonSerializer.Serialize(search);
+        TempData[TempDataKeys.ApprovalsSearchModel] = JsonSerializer.Serialize(search);
 
         return await ApplyFilters(new ApprovalsSearchViewModel { Search = search });
     }
-
 
     /// <summary>
     ///     Retrieves a list of organisations based on the provided name, role, and optional page size.
@@ -234,7 +230,7 @@ public class ApprovalsController(
 
         TempData.TryAdd(TempDataKeys.SponsorOrganisations, sponsorOrganisations, true);
 
-        TempData[TempDataKey_ApprovalsSearch] = JsonSerializer.Serialize(model.Search);
+        TempData[TempDataKeys.ApprovalsSearchModel] = JsonSerializer.Serialize(model.Search);
 
         return Redirect(returnUrl!);
     }
