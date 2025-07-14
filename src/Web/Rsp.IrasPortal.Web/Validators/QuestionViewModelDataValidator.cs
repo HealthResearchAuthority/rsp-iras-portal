@@ -27,7 +27,7 @@ public class QuestionViewModelDataValidator : QuestionViewModelValidatorBase
 
             RuleFor(x => x.SelectedOption)
                 .Must(x => !string.IsNullOrWhiteSpace(x))
-                .When(x => x.DataType is "Boolean" or "Radio button")
+                .When(x => x.DataType is "Boolean" or "Radio button" or "Dropdown")
                 .WithMessage(GetValidationMessage);
         });
     }

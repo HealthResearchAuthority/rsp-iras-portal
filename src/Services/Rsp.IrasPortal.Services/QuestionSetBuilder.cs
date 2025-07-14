@@ -87,6 +87,7 @@ public class QuestionSetBuilder : IQuestionSetBuilder
                     SectionId = question.Field<string>(ModuleColumns.Section) ?? string.Empty,
                     Section = sectionName ?? "",
                     Sequence = Convert.ToInt32(question[ModuleColumns.Sequence]),
+                    IsModificationQuestion = Convert.ToBoolean(question[ModuleColumns.ModificationQuestion]),
                     Heading = Convert.ToString(question[ModuleColumns.Heading]),
                     QuestionText = question.Field<string>(ModuleColumns.QuestionText) ?? string.Empty,
                     ShortQuestionText = question.Field<string>(ModuleColumns.ShortQuestionText) ?? string.Empty,
