@@ -58,17 +58,17 @@ else
 				<table class="govuk-table modifications-tasklist-table">
 					<thead class="govuk-table__head">
 						<tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
-							<th scope="col" class="govuk-table__header govuk-!-text-align-right govuk-!-width-one-sixth checkbox-cell">
+							<th scope="col" class="govuk-table__header govuk-!-text-align-right checkbox-cell">
 								<div class="govuk-checkboxes__item govuk-checkboxes--small">
 									<input id="select-all-modifications" name="" class="govuk-checkboxes__input select-all-modifications" type="checkbox">
 									<label for="select-all-modifications" class="govuk-label govuk-checkboxes__label"></label>
 								</div>
 							</th>
-							<th scope="col" class="govuk-table__header govuk-!-width-one-sixth">Modification ID</th>
-							<th scope="col" class="govuk-table__header govuk-!-width-one-sixth">Short project title</th>
-							<th scope="col" class="govuk-table__header govuk-!-width-one-sixth">Modification type</th>
-							<th scope="col" class="govuk-table__header govuk-!-width-one-sixth">Date submitted</th>
-							<th scope="col" class="govuk-table__header govuk-!-width-one-sixth">Days since submission</th>
+							<th scope="col" class="govuk-table__header">Modification ID</th>
+							<th scope="col" class="govuk-table__header">Short project title</th>
+							<th scope="col" class="govuk-table__header">Modification type</th>
+							<th scope="col" class="govuk-table__header">Date submitted</th>
+							<th scope="col" class="govuk-table__header">Days since submission</th>
 						</tr>
 					</thead>
 					<tbody class="govuk-table__body govuk-body-s">
@@ -81,7 +81,7 @@ else
 								<tr class="govuk-table__row">
 									<td class="govuk-table__cell checkbox-cell">
 										<div class="govuk-checkboxes__item govuk-checkboxes--small">
-											<input id="@modification.Modification.ModificationId" name="@modification.Modification.ModificationId" class="govuk-checkboxes__input" type="checkbox">
+											<input id="@modification.Modification.ModificationId" name="@modification.Modification.ModificationId" class="govuk-checkboxes__input" type="checkbox" @(modification.IsSelected ? "checked" : "")>
 											<label for="@modification.Modification.ModificationId" class="govuk-label govuk-checkboxes__label modification-checkbox-label"></label>
 										</div>
 									</td>
