@@ -22,8 +22,18 @@ public class PaginationViewModel
 
     /// <summary>
     /// Gets or sets the total count.
-    /// </summary>s
+    /// </summary>
     public int TotalCount { get; set; }
+
+    /// <summary>
+    /// Gets or sets the field to sort by if available.
+    /// </summary>
+    public string? SortField { get; set; }
+
+    /// <summary>
+    /// Gets or sets the sort direction if available (e.g., "asc" or "desc").
+    /// </summary>
+    public string? SortDirection { get; set; }
 
     /// <summary>
     /// Gets or sets the search query if available

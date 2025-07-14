@@ -1,4 +1,5 @@
 ﻿@using System.Text.RegularExpressions
+@using Microsoft.AspNetCore.Html
 @using Microsoft.AspNetCore.Http.Extensions
 @using Microsoft.AspNetCore.Mvc.ModelBinding
 @using Rsp.Gds.Component.Models
@@ -201,7 +202,7 @@
                                         field-id="SponsorOrganisation_Text"
                                         label-text=""
                                         api-url="/organisation/getorganisations"
-										hint-html="Type the name of the organisation or scroll through the list"
+                                        hint-html="Type the name of the organisation or scroll through the list"
                                         auto-complete-enabled-id="auto_search"
                                         label-html-class="font-weight-none">
                                         </rsp-gds-autocomplete>
@@ -394,15 +395,37 @@
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-full">
                 <div class="govuk-table-wrapper">
-                    <table class="govuk-table">
+                    <table class="govuk-table" id="modificationsTable">
                         <thead class="govuk-table__head">
-                            <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
-                                <th scope="col" class="govuk-table__header govuk-!-width-one-sixth">Modification ID</th>
-                                <th scope="col" class="govuk-table__header govuk-!-width-one-sixth">Short project title</th>
-                                <th scope="col" class="govuk-table__header govuk-!-width-one-sixth">Modification type</th>
-                                <th scope="col" class="govuk-table__header govuk-!-width-one-sixth">Chief Investigator</th>
-                                <th scope="col" class="govuk-table__header govuk-!-width-one-sixth">Lead Nation</th>
-                                <th scope="col" class="govuk-table__header govuk-!-text-align-right govuk-!-width-one-sixth">Project link</th>
+                            @{
+                                var sortableHeaders = new[]
+                                    {
+                                    new { Field = nameof(ModificationsModel.ModificationId), Label = "Modification ID" },
+                                    new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
+                                    new { Field = nameof(ModificationsModel.ModificationType), Label = "Modification type" },
+                                    new { Field = nameof(ModificationsModel.ChiefInvestigator), Label = "Chief Investigator" },
+                                    new { Field = nameof(ModificationsModel.LeadNation), Label = "Lead Nation" }
+                                };
+                                var tableId = "modificationsTable";
+                            }
+                            <tr class="govuk-table__row govuk-body-s">
+                                @foreach (var header in sortableHeaders)
+                                {
+                                    <th scope="col" class="govuk-table__header govuk-table__header-sortable">
+                                        <partial name="_SortableHeaderButton" model="new SortableHeaderModel 
+                                        {
+                                            FieldName = header.Field,
+                                            DisplayText = header.Label,
+                                            CurrentSortField = Model.SortField,
+                                            CurrentSortDirection = Model.SortDirection,
+                                            TableId = tableId,
+                                        }"
+                                        />
+                                    </th>
+                                }
+                                <th scope="col" class="govuk-table__header govuk-table__header-sortable govuk-!-text-align-right">
+                                    Project link
+                                </th>
                             </tr>
                         </thead>
                         <tbody class="govuk-table__body">

@@ -1,4 +1,6 @@
-﻿using Rsp.IrasPortal.Application.DTOs.Requests;
+﻿using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.Logging.Interceptors;
@@ -60,5 +62,12 @@ public interface IApplicationsService : IInterceptable
     /// <returns>An asynchronous operation that updates the existing application.</returns>
     public Task<ServiceResponse<IrasApplicationResponse>> UpdateApplication(IrasApplicationRequest irasApplication);
 
-    public Task<ServiceResponse<GetModificationsResponse>> GetModifications(ModificationSearchRequest searchQuery, int pageNumber = 1, int pageSize = 20);
+    public Task<ServiceResponse<GetModificationsResponse>> GetModifications
+    (
+        ModificationSearchRequest searchQuery,
+        int pageNumber = 1,
+        int pageSize = 20,
+        string? sortField = nameof(ModificationsDto.ModificationId),
+        string? sortDirection = SortDirections.Descending
+    );
 }
