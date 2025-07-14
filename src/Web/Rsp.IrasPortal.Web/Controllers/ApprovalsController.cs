@@ -12,10 +12,10 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
-[ExcludeFromCodeCoverage]
 [Route("[controller]/[action]", Name = "approvals:[action]")]
 [Authorize(Policy = "IsUser")]
-public class ApprovalsController(
+public class ApprovalsController
+(
     IApplicationsService applicationsService,
     IRtsService rtsService,
     IValidator<ApprovalsSearchModel> validator
@@ -29,7 +29,13 @@ public class ApprovalsController(
     }
 
     [HttpGet]
-    public async Task<IActionResult> Search(int pageNumber = 1, int pageSize = 20)
+    public async Task<IActionResult> Search
+    (
+        int pageNumber = 1,
+        int pageSize = 20,
+        string? sortField = nameof(ModificationsModel.ModificationId),
+        string? sortDirection = SortDirections.Descending
+    )
     {
         var model = new ApprovalsSearchViewModel();
 
@@ -41,7 +47,7 @@ public class ApprovalsController(
                 var search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json)!;
                 model.Search = search;
 
-                if (search.Filters.Count == 0)
+                if (search.Filters.Count == 0 && string.IsNullOrEmpty(search.IrasId))
                 {
                     model.EmptySearchPerformed = true;
                     return View(model);
@@ -56,10 +62,10 @@ public class ApprovalsController(
                     ToDate = search.ToDate,
                     ModificationTypes = search.ModificationTypes,
                     ShortProjectTitle = search.ShortProjectTitle,
-                    SponsorOrganisation = search.SponsorOrganisation
+                    SponsorOrganisation = search.SponsorOrganisation,
                 };
 
-                var result = await applicationsService.GetModifications(searchQuery, pageNumber, pageSize);
+                var result = await applicationsService.GetModifications(searchQuery, pageNumber, pageSize, sortField, sortDirection);
 
                 model.Modifications = result?.Content?.Modifications?
                     .Select(dto => new ModificationsModel
@@ -74,13 +80,19 @@ public class ApprovalsController(
                     })
                     .ToList() ?? [];
 
-                model.Pagination = new PaginationViewModel(pageNumber, pageSize, result?.Content?.TotalCount ?? 0);
+                model.Pagination = new PaginationViewModel(pageNumber, pageSize, result?.Content?.TotalCount ?? 0)
+                {
+                    SortDirection = sortDirection,
+                    SortField = sortField
+                };
             }
         }
 
+        model.SortField = sortField;
+        model.SortDirection = sortDirection;
+
         return View(model);
     }
-
 
     [HttpPost]
     public async Task<IActionResult> ApplyFilters(ApprovalsSearchViewModel model)

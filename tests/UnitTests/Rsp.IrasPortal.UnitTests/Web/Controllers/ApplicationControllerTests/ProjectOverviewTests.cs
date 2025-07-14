@@ -17,8 +17,8 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApplicationControllerTests
             var tempData = new TempDataDictionary(new DefaultHttpContext(), tempDataProvider.Object)
             {
                 [TempDataKeys.ShortProjectTitle] = "Test Project",
-                [TempDataKeys.CategoryId] = "123",
-                [TempDataKeys.ProjectApplicationId] = "456"
+                [TempDataKeys.CategoryId] = QuestionCategories.ProjectRecrod,
+                [TempDataKeys.ProjectRecordId] = "456"
             };
 
             Sut.TempData = tempData;
@@ -31,8 +31,8 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApplicationControllerTests
             var model = Assert.IsType<ProjectOverviewModel>(viewResult.Model);
 
             model.ProjectTitle.ShouldBe("Test Project");
-            model.CategoryId.ShouldBe("123");
-            model.ProjectApplicationId.ShouldBe("456");
+            model.CategoryId.ShouldBe(QuestionCategories.ProjectRecrod);
+            model.ProjectRecordId.ShouldBe("456");
         }
     }
 }

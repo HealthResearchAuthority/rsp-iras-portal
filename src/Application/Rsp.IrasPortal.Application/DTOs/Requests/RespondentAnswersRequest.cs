@@ -1,23 +1,22 @@
 ﻿namespace Rsp.IrasPortal.Application.DTOs.Requests;
 
 /// <summary>
-/// Represents a request to create
-/// respondent answers in the database.
+/// Represents a request to create respondent answers in the database.
 /// </summary>
 public record RespondentAnswersRequest
 {
     /// <summary>
-    /// Respondent's Id
+    /// Gets or sets the respondent's unique identifier.
     /// </summary>
     public string Id { get; set; } = null!;
 
     /// <summary>
-    /// Application Id
+    /// Gets or sets the application or project record identifier.
     /// </summary>
-    public string ProjectApplicationId { get; set; } = null!;
+    public string ProjectRecordId { get; set; } = null!;
 
     /// <summary>
-    /// Respondent Answers
+    /// Gets or sets the list of respondent answers.
     /// </summary>
     public List<RespondentAnswerDto> RespondentAnswers { get; set; } = [];
 }
