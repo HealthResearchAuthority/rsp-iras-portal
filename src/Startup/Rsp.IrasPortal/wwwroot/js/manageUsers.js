@@ -39,3 +39,7 @@ function submitFormWithAction(formId, url) {
     form.action = url;
     form.submit();
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+    initCheckboxCount("Search.Country", "country-hint");
+});
