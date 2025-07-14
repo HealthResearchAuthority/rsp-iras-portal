@@ -66,20 +66,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
             pageSize = 20;
         }
 
-        model ??= new UserSearchViewModel();
-        model.Search ??= new UserSearchModel();
-
-        var request = new SearchUserRequest()
-        {
-            SearchQuery = model.Search.SearchQuery,
-            Country = model.Search.Country,
-            Status = model.Search.Status,
-            FromDate = model.Search.FromDate,
-            ToDate = model.Search.ToDate
-        };
-
         // get the users
-        var response = await userManagementService.GetUsers(request, pageNumber, pageSize);
+        var response = await userManagementService.GetUsers(model.Search.SearchQuery, pageNumber, pageSize);
 
         // return the view if successfull
         if (response.IsSuccessStatusCode)
@@ -92,14 +80,10 @@ public class UsersController(IUserManagementService userManagementService, IVali
                 ComplexSearchQuery = model.Search
             };
 
-            var reviewBodySearchViewModel = new UserSearchViewModel()
-            {
-                Pagination = paginationModel,
-                Users = users,
-                Search = model.Search
-            };
+            model.Users = users;
+            model.Pagination = paginationModel;
 
-            return View("Index", reviewBodySearchViewModel); // or "Search", "ViewReviewBodies", etc.
+            return View(model);
         }
 
         // return error page as api wasn't successful
@@ -588,27 +572,6 @@ public class UsersController(IUserManagementService userManagementService, IVali
         return View(model);
     }
 
-    [Route("/admin/applyfilters", Name = "admin:applyfilters")]
-    [HttpPost]
-    public async Task<IActionResult> ApplyFilters(UserSearchViewModel model)
-    {
-        var validationResult = await searchValidator.ValidateAsync(model.Search);
-
-        if (!validationResult.IsValid)
-        {
-            foreach (var error in validationResult.Errors)
-            {
-                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
-            }
-
-            return View(nameof(Index), model); // Return with validation errors
-        }
-
-        // Call the Index action directly, passing the model and default paging values
-        return await Index(1, 20, model, null, false);
-    }
-
-
     [HttpGet]
     public IActionResult ClearFilters()
     {
@@ -630,9 +593,9 @@ public class UsersController(IUserManagementService userManagementService, IVali
             viewModel.Search = new UserSearchModel();
         }
 
-        switch (key)
+        switch (key.ToLowerInvariant().Replace(" ", ""))
         {
-            case UsersSearch.CountryKey:
+            case "country":
                 if (!string.IsNullOrEmpty(value) && viewModel.Search.Country != null)
                 {
                     viewModel.Search.Country = viewModel.Search.Country
@@ -641,15 +604,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
                 }
 
                 break;
-            case UsersSearch.FromDateKey:
-                viewModel.Search.FromDay = viewModel.Search.FromMonth = viewModel.Search.FromYear = null;
-                break;
 
-            case UsersSearch.ToDateKey:
-                viewModel.Search.ToDay = viewModel.Search.ToMonth = viewModel.Search.ToYear = null;
-                break;
-
-            case UsersSearch.StatusKey:
+            case "status":
                 viewModel.Search.Status = null;
                 break;
         }

@@ -1,20 +1,45 @@
 ﻿@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Web.Areas.Admin.Models
+@using System.Globalization
 @using Rsp.Gds.Component.Models
 @model UserSearchViewModel
 
 @{
-	ViewBag.Active = "manageUsers";
-	ViewBag.Title = "Manage users";
+    ViewBag.Active = "manageUsers";
+    ViewBag.Title = "Manage users";
 
-	var statusOptions = new List<GdsOption>
-	{
-		new() { Value = "true", Label = "Active" },
-		new() { Value = "false", Label = "Disabled" }
-	};
+    var statusOptions = new List<GdsOption>
+    {
+        new() { Value = "true", Label = "Active" },
+        new() { Value = "false", Label = "Disabled" }
+    };
 }
 
+@* @section is added for the back button, so that we can render something below the back button
+    and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
+    the named section *@
+
 @section BackNavigation {
-	<partial name="_BackNavigation" model="@("systemadmin:view", "Back", new Dictionary<string, string>())" />
+    <partial name="_BackNavigation" model="@("systemadmin:view", "Back", new Dictionary<string, string>())"/>
+}
+
+@functions {
+
+    private bool CanOpenPanelForField(string fieldName)
+    {
+        return ViewData.ModelState.TryGetValue(fieldName, out var state) && state.Errors.Any();
+    }
+
+    private bool CanOpenPanelForAnyField(params string[] fieldNames)
+    {
+        return fieldNames.Any(CanOpenPanelForField);
+    }
+
+    private bool CanOpenFilterPanel()
+    {
+        return ViewData.ModelState.Values.Any(v => v.Errors.Count > 0);
+    }
+
 }
 
 @functions {
@@ -29,74 +54,73 @@
 }
 
 <div class="govuk-grid-row">
-	<div class="govuk-grid-column-one-half">
-		<h1 class="govuk-heading-l">Manage users</h1>
-	</div>
-	<div class="govuk-grid-column-one-half">
-		<a class="govuk-link govuk-body float-right" asp-route="admin:createuser">Add a new user profile record</a>
-	</div>
+    <div class="govuk-grid-column-one-half">
+        <h1 class="govuk-heading-l">Manage users</h1>
+    </div>
+
+    <div class="govuk-grid-column-one-half">
+        <a class="govuk-link govuk-body float-right" asp-route="admin:createuser">Add a new user profile record</a>
+    </div>
 </div>
 
 <div class="govuk-grid-row">
-	<div class="govuk-grid-column-two-thirds">
-        <form method="post" asp-action="ApplyFilters" asp-controller="User" class="govuk-form-group" asp-route-fromPagination="false">
 
-			<label class="govuk-label" for="Search.SearchQuery">
-				<b>Find a user</b>
-			</label>
-			<div class="govuk-hint" id="Search.SearchQuery-hint">
+    <div class="govuk-grid-column-two-thirds">
+        <form method="post" class="govuk-form-group" asp-route-fromPagination="false">
+            <label class="govuk-label" for="Search.SearchQuery">
+                <b>Find a user</b>
+            </label>
+            <div class="govuk-hint" id="Search.SearchQuery-hint">
 				Search for the first name, last name or email address
-			</div>
+            </div>
+    
+            <div class="review-body-search">
+                <input class="govuk-input" id="Search.SearchQuery" name="Search.SearchQuery" type="text"
+                       value="@(Model.Search?.SearchQuery ?? string.Empty)"/>
 
-			<div class="review-body-search">
-				<input class="govuk-input" id="Search.SearchQuery" name="Search.SearchQuery" type="text"
-					   value="@(Model.Search?.SearchQuery ?? string.Empty)" />
+                <partial name="_SubmitButton"
+						 model="@("admin:users", "Search", new Dictionary<string, string>())" />
+            </div>
+            <input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize"/>
 
-				<button class="govuk-button mb-0" data-module="govuk-button" type="submit">
-                   Search
-                </button>
-			</div>
 
-			<input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize" />
-			<input hidden readonly name="PageNumber" value="@Model.Pagination?.PageNumber" />
+            <!-- Filter Panel -->
+            <div class="search-filter-panel">
+                <input type="checkbox" id="toggle-filter" class="search-filter-toggle" hidden @(CanOpenFilterPanel() ? "checked" : null)>
 
-			<!-- Filter Panel -->
-			<div class="search-filter-panel">
-				<input type="checkbox" id="toggle-filter" class="search-filter-toggle" hidden @(CanOpenFilterPanel() ? "checked" : null)>
+                <div class="search-filter-panel__header">
+                    <label for="toggle-filter" class="search-filter-panel__button govuk-link" role="button" aria-controls="filter-panel">
+                        <span class="search-filter-panel__button-inner">Advanced filter</span>
+                    </label>
+                    <h2 id="js-result-count" class="search-filter-panel__count">@(Model.Pagination?.TotalCount ?? 0) results</h2>
+                </div>
 
-				<div class="search-filter-panel__header">
-					<label for="toggle-filter" class="search-filter-panel__button govuk-link" role="button" aria-controls="filter-panel">
-						<span class="search-filter-panel__button-inner">Advanced filter</span>
-					</label>
-					<h2 id="js-result-count" class="search-filter-panel__count">@(Model.Pagination?.TotalCount ?? 0) results</h2>
-				</div>
+                <div class="search-filter-panel__content" id="filter-panel" role="region" aria-labelledby="toggle-filter">
 
-				<div class="search-filter-panel__content" id="filter-panel" role="region" aria-labelledby="toggle-filter">
+                    <!-- Country -->
+                    <details class="search-filter-section" @(CanOpenPanelForField("Country") ? "open" : null)>
+                        <summary class="search-filter-section__summary">
+                            <h2 class="search-filter-section__summary-heading">Country</h2>
+                        </summary>
+                        <div class="search-filter-section__content">
+                            <div class="govuk-form-group govuk-!-margin-bottom-2">
+                                <fieldset class="govuk-fieldset">
+                                    <rsp-gds-checkbox-group asp-for="Search.Country"
+                                                            label-text="Select all that apply"
+                                                            options="UkCountryNames.Countries"
+                                                            label-css-class="role-checkbox"
+                                                            conditional-field="false"
+                                                            legend-class="govuk-label govuk-label--s"
+                                                            hint-id="country-hint"
+                                                            hint-html="@($"{Model.Search.Country?.Count ?? 0} selected")"
+                                                            label-html-class="font-weight-none"/>
+                                </fieldset>
+                            </div>
+                        </div>
+                    </details>
 
-					<!-- Country -->
-					<details class="search-filter-section" @(CanOpenPanelForField("Search.Country") ? "open" : null)>
-						<summary class="search-filter-section__summary">
-							<h2 class="search-filter-section__summary-heading">Country</h2>
-						</summary>
-						<div class="search-filter-section__content">
-							<div class="govuk-form-group govuk-!-margin-bottom-2">
-								<fieldset class="govuk-fieldset">
-									<rsp-gds-checkbox-group asp-for="Search.Country"
-															label-text="Select all that apply"
-															options="UkCountryNames.Countries"
-															label-css-class="role-checkbox"
-															conditional-field="false"
-															legend-class="govuk-label govuk-label--s"
-															hint-id="country-hint"
-															hint-html="@($"{Model.Search.Country?.Count ?? 0} selected")"
-															label-html-class="font-weight-none" />
-								</fieldset>
-							</div>
-						</div>
-					</details>
-
-					<!-- Last logged in -->
-					<details class="search-filter-section" @(CanOpenPanelForAnyField("Search.FromDate", "Search.ToDate") ? "open" : null)>
+					<!-- Date modification submitted -->
+					<details class="search-filter-section" @(CanOpenPanelForAnyField("FromDate", "ToDate") ? "open" : null)>
 						<summary class="search-filter-section__summary">
 							<h2 class="search-filter-section__summary-heading">Last logged in</h2>
 						</summary>
@@ -134,138 +158,145 @@
 					</details>
 
 					<!-- Status -->
-					<details class="search-filter-section" @(CanOpenPanelForField("Search.Status") ? "open" : null)>
-						<summary class="search-filter-section__summary">
-							<h2 class="search-filter-section__summary-heading">Status</h2>
-						</summary>
-						<div class="search-filter-section__content">
-							<div class="govuk-form-group govuk-!-margin-bottom-2">
-								<fieldset class="govuk-fieldset">
-									<rsp-gds-radio-group asp-for="Search.Status"
-														 label-text="Select one option"
-														 options="statusOptions"
-														 conditional-field="false"
-														 legend-class="govuk-label govuk-label--s"
-														 hint-id="status-hint"
-														 hint-html="Select whether the status is active or disabled"
-														 label-html-class="font-weight-none" />
-								</fieldset>
-							</div>
-						</div>
-					</details>
+                    <details class="search-filter-section" @(CanOpenPanelForField("Status") ? "open" : null)>
+                        <summary class="search-filter-section__summary">
+                            <h2 class="search-filter-section__summary-heading">Status</h2>
+                        </summary>
+                        <div class="search-filter-section__content">
+                            <div class="govuk-form-group govuk-!-margin-bottom-2">
+                                <fieldset class="govuk-fieldset">
+                                    <rsp-gds-radio-group asp-for="Search.Status"
+                                                         label-text="Select one option"
+                                                         options="statusOptions"
+                                                         conditional-field="false"
+                                                         legend-class="govuk-label govuk-label--s"
+                                                         hint-id="status-hint"
+                                                         hint-html="Select whether the status is active or disabled"
+                                                         label-html-class="font-weight-none"/>
+                                </fieldset>
+                            </div>
+                        </div>
+                    </details>
 
-					<div  class="search-filter-panel__actions">
-						<button type="submit" class="govuk-button search-filter-panel__action search-filter-panel__action--submit">Apply</button>
-					</div>
-				</div>
-			</div>
-		</form>
 
-		<!-- Active Filters Panel -->
-		@if ( Model.Search.Filters.Any())
-		{
-			<div class="search-filter-summary">
-				<h3 class="search-filter-summary__heading">Active filters</h3>
-				<ul class="search-filter-summary__remove-filters">
-					@foreach (var filter in Model.Search.Filters)
-					{
-						var filterKey = filter.Key;
-						var filterValues = filter.Value?.Split(",") ?? [];
+                    <!-- Apply -->
+                    <div class="search-filter-panel__actions">
+                        <button class="govuk-button search-filter-panel__action search-filter-panel__action--submit">Apply</button>
+                    </div>
+                </div>
+            </div>
+        </form>
 
-						foreach (var val in filterValues)
-						{
-							<li>
-								<a asp-route="admin:removefilter"
-								   asp-route-key="@filterKey"
-								   asp-route-value="@val.Trim()"
-								   asp-route-model="@System.Text.Json.JsonSerializer.Serialize(Model.Search)"
-								   class="search-filter-summary__remove-filter">
+        <!-- Active Filters Panel -->
+        @if (Model.Search.Filters.Any())
+        {
+            <div class="search-filter-summary">
+                <h3 class="search-filter-summary__heading">Active filters</h3>
+                <ul class="search-filter-summary__remove-filters">
+                    @foreach (var filter in Model.Search.Filters)
+                    {
+                        var filterKey = filter.Key;
+                        var filterValues = filter.Value?.Split(",") ?? [];
+
+                        foreach (var val in filterValues)
+                        {
+                            <li>
+                                <a asp-route="admin:removefilter"
+                                   asp-route-key="@filterKey"
+                                   asp-route-value="@val.Trim()"
+                                   asp-route-model="@System.Text.Json.JsonSerializer.Serialize(Model.Search)"
+                                   class="search-filter-summary__remove-filter">
                                     <span class="search-filter-summary__remove-filter-text">
                                         <span class="govuk-visually-hidden">Remove filter</span>
-										@if (filterKey.Contains("Last logged in", StringComparison.OrdinalIgnoreCase))
-                                        {
-                                            @($"{filterKey} {val}")
-                                        }
-                                        else
-                                        {
-                                            @($"{filterKey} - {val}")
-                                        }
+                                        @filterKey: @val.Trim()
                                     </span>
-								</a>
-							</li>
-						}
-					}
-				</ul>
-				<div>
-					<a asp-route="admin:clearfilters" class="search-filter-summary__clear-filters govuk-link govuk-link--no-visited-state">
-						Clear all filters
-					</a>
-				</div>
-			</div>
-		}
-	</div>
-</div>
+                                </a>
+                            </li>
+                        }
+                    }
+                </ul>
+                <div>
+                    <a asp-route="admin:clearfilters" class="search-filter-summary__clear-filters govuk-link govuk-link--no-visited-state">
+                        Clear all filters
+                    </a>
+                </div>
+            </div>
+        }
 
+    </div>
+
+</div>
 <div class="govuk-grid-row">
-	@if (Model.Users != null && Model.Users.Any())
-	{
-		<div class="govuk-grid-column-full">
-			<div class="govuk-table-wrapper">
-				<table class="govuk-table govuk-table-users">
-					<thead>
-						<tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
-							<th class="govuk-table__header govuk-table--name">First name</th>
-							<th class="govuk-table__header govuk-table--name">Last name</th>
-							<th class="govuk-table__header govuk-table--email line-break-anywhere">Email address</th>
-							<th class="govuk-table__header">Status</th>
-							<th class="govuk-table__header">Last logged in</th>
-							<th class="govuk-table__header">Action</th>
-						</tr>
-					</thead>
-					<tbody>
-						@foreach (var user in Model.Users)
-						{
-							<tr class="govuk-table__row">
-								<td class="govuk-table__cell">@user.GivenName</td>
-								<td class="govuk-table__cell">@user.FamilyName</td>
-								<td class="govuk-table__cell line-break-anywhere">@user.Email</td>
-								<td class="govuk-table__cell">
-									@if (!string.IsNullOrEmpty(user.Status))
-									{
-										var statusClass = string.Equals(user.Status, IrasUserStatus.Active, StringComparison.InvariantCultureIgnoreCase) ? "govuk-tag--green" : "govuk-tag--red";
-										<span class="govuk-tag @statusClass">@user.Status</span>
-									}
-								</td>
-								<td class="govuk-table__cell">
-									@if (user.CurrentLogin.HasValue)
-									{
-										var loginDate = user.CurrentLogin.Value;
-										<p class="margin-zero">@loginDate:dd MMM yyyy at</p>
-										<p class="margin-zero">@loginDate:hh:mmtt.ToLower()</p>
-									}
-								</td>
-								<td class="govuk-table__cell">
-									<a class="govuk-link" asp-route="admin:viewuser" asp-route-userId="@user.Id" asp-route-email="@user.Email">
-										View/Edit
-									</a>
-								</td>
-							</tr>
-						}
-					</tbody>
-				</table>
-			</div>
-			<partial name="_Pagination" model="@Model.Pagination" />
-		</div>
-	}
-	else if (!string.IsNullOrEmpty(Model.Pagination?.SearchQuery))
-	{
-		<div class="govuk-grid-column-two-thirds">
-			<h1 class="govuk-heading-l">No results found</h1>
-			<p class="govuk-body">
-				Check your spelling or enter another search term and try again. If no results are found, you can create a new user profile record.
-			</p>
-		</div>
-	}
+
+
+    @if (Model.Users != null && Model.Users.Any())
+    {
+        <div class="govuk-grid-column-full">
+            <div class="govuk-table-wrapper">
+                <table class="govuk-table govuk-table-users">
+                    <thead>
+                    <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+                        <th class="govuk-table__header govuk-table--name">First name</th>
+                        <th class="govuk-table__header govuk-table--name">Last name</th>
+                        <th class="govuk-table__header govuk-table--email line-break-anywhere">Email address</th>
+                        <th class="govuk-table__header">Status</th>
+                        <th class="govuk-table__header">Last logged in</th>
+                        <th class="govuk-table__header">Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var user in Model.Users)
+                    {
+                        <tr class="govuk-table__row">
+                            <td class="govuk-table__cell">@user.GivenName</td>
+                            <td class="govuk-table__cell">@user.FamilyName</td>
+                            <td class="govuk-table__cell line-break-anywhere">@user.Email</td>
+                            <td class="govuk-table__cell">
+                                @if (!string.IsNullOrEmpty(user.Status))
+                                {
+                                    var statusClass = string.Equals(user.Status, IrasUserStatus.Active, StringComparison.InvariantCultureIgnoreCase) ? "govuk-tag--green" : "govuk-tag--red";
+
+                                    <span class="govuk-tag @statusClass">@user.Status</span>
+                                }
+                            </td>
+                            <td class="govuk-table__cell">
+                                @if (user.CurrentLogin.HasValue)
+                                {
+                                    var dateString = user.CurrentLogin.Value.ToString("dd MMM yyyy");
+                                    var timeString = user.CurrentLogin.Value.ToString("hh:mm");
+                                    var amPm = user.CurrentLogin.Value.ToString("tt").ToLower();
+
+                                    var currentLoginDate = $"{dateString} at ";
+                                    var currentLoginTime = $"{timeString}{amPm}";
+
+                                    <p class="margin-zero">@currentLoginDate</p>
+                                    <p class="margin-zero">@currentLoginTime</p>
+                                }
+                            </td>
+                            <td class="govuk-table__cell">
+                                <a class="govuk-link" asp-route="admin:viewuser" asp-route-userId="@user.Id"
+                                   asp-route-email="@user.Email">
+                                    View/Edit
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+
+            <partial name="_Pagination" model="@Model.Pagination"/>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(Model.Pagination?.SearchQuery))
+    {
+        <div class="govuk-grid-column-two-thirds">
+            <h1 class="govuk-heading-l">No results found</h1>
+            <p class="govuk-body">
+                Check your spelling or enter another search term and try again. If no results are found, you can create a new user profile record.
+            </p>
+        </div>
+    }
 </div>
 
 <script src="~/js/manageUsers.js"></script>
