@@ -14,7 +14,7 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApprovalsControllerTests;
 
 public class SearchTests : TestServiceBase<ApprovalsController>
 {
-    private const string TempDataKey = "ApprovalsSearchModel";
+    private const string TempDataKey = "td:ApprovalsSearchModel";
 
     private readonly Mock<IApplicationsService> _applicationsService;
     private readonly Mock<IRtsService> _rtsService;
