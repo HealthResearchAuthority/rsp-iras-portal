@@ -10,5 +10,4 @@ public class ModificationSearchRequest
     public DateTime? ToDate { get; set; }
     public List<string> Country { get; set; } = [];
     public List<string> ModificationTypes { get; set; } = [];
-    public bool UnassignedOnly { get; set; }
 }
