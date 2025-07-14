@@ -43,7 +43,7 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
                 Country = null,
                 Status = null
             }
-        });
+        }, JsonSerializer.Serialize(reviewBodySearchModel), true);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
