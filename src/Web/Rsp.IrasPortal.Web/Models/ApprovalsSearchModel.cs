@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using Rsp.IrasPortal.Application.Constants;
 
 namespace Rsp.IrasPortal.Web.Models;
 
@@ -26,6 +27,8 @@ public class ApprovalsSearchModel
     public List<string> ModificationTypes { get; set; } = [];
     public OrganisationSearchViewModel SponsorOrgSearch { get; set; } = new();
 
+
+
     public Dictionary<string, List<string>> Filters
     {
         get
@@ -34,12 +37,12 @@ public class ApprovalsSearchModel
 
             if (!string.IsNullOrWhiteSpace(ChiefInvestigatorName))
             {
-                filters.Add("Chief Investigator name", [ChiefInvestigatorName]);
+                filters.Add(ApprovalsSearch.ChiefInvestigatorKey, [ChiefInvestigatorName]);
             }
 
             if (!string.IsNullOrWhiteSpace(ShortProjectTitle))
             {
-                filters.Add("Short project title", [ShortProjectTitle]);
+                filters.Add(ApprovalsSearch.ShortProjectTitleKey, [ShortProjectTitle]);
             }
 
             if (!string.IsNullOrWhiteSpace(SponsorOrgSearch.SelectedOrganisation))
@@ -49,32 +52,33 @@ public class ApprovalsSearchModel
 
             if (!string.IsNullOrWhiteSpace(SponsorOrganisation))
             {
-                filters.Add("Sponsor organisation", [SponsorOrganisation]);
+                filters.Add(ApprovalsSearch.SponsorOrganisationKey, [SponsorOrganisation]);
             }
 
             if (FromDate.HasValue)
             {
-                filters.Add("Date modification submitted - from date", [FromDate.Value.ToString("d MMM yyyy")]);
+                filters.Add(ApprovalsSearch.FromDateKey, [FromDate.Value.ToString("d MMM yyyy")]);
             }
 
             if (ToDate.HasValue)
             {
-                filters.Add("Date modification submitted - to date", [ToDate.Value.ToString("d MMM yyyy")]);
+                filters.Add(ApprovalsSearch.ToDateKey, [ToDate.Value.ToString("d MMM yyyy")]);
             }
 
             if (Country.Count != 0)
             {
-                filters.Add("Lead Nation", Country);
+                filters.Add(ApprovalsSearch.LeadNationKey, Country);
             }
 
             if (ModificationTypes.Count != 0)
             {
-                filters.Add("Modification type", ModificationTypes);
+                filters.Add(ApprovalsSearch.ModificationTypeKey, ModificationTypes);
             }
 
             return filters;
         }
     }
+
 
     private static DateTime? ParseDate(string? day, string? month, string? year)
     {
