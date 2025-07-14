@@ -3,7 +3,7 @@
 public static class ModificationOptions
 {
     public static readonly List<string> Types = [
-        "Modification of an important detail",
-        "Minor modifications"
+        "Minor modifications",
+        "Modification of an important detail"
     ];
 }

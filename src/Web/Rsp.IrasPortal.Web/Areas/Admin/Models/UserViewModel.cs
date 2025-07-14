@@ -58,6 +58,7 @@ public class UserViewModel
     }
 
     public DateTime? LastLogin { get; set; } = null;
+    public DateTime? CurrentLogin { get; set; } = null;
     public string Committee { get; set; } = null;
     public string ReviewBody { get; set; } = null;
 
@@ -72,6 +73,8 @@ public class UserViewModel
 
         if (user != null)
         {
+            var ukTimeZone = TimeZoneInfo.FindSystemTimeZoneById("GMT Standard Time");
+
             Id = user.Id;
             GivenName = user.GivenName;
             FamilyName = user.FamilyName;
@@ -86,17 +89,21 @@ public class UserViewModel
             OriginalEmail = user.Email;
             Status = user.Status;
             AccessRequired = accessRequired != null ? accessRequired.ToList() : [];
+            CurrentLogin = user.CurrentLogin.HasValue ? TimeZoneInfo.ConvertTimeFromUtc((DateTime)user.CurrentLogin, ukTimeZone) : null;
         }
     }
 
     public UserViewModel(User user)
     {
+        var ukTimeZone = TimeZoneInfo.FindSystemTimeZoneById("GMT Standard Time");
+
         Id = user.Id;
         GivenName = user.GivenName;
         FamilyName = user.FamilyName;
         Email = user.Email;
         Status = user.Status;
         LastLogin = user.LastLogin;
+        CurrentLogin = user.CurrentLogin.HasValue ? TimeZoneInfo.ConvertTimeFromUtc((DateTime)user.CurrentLogin, ukTimeZone) : null;
     }
 
     public void Deconstruct(out string givenName, out string familyName, out string email)

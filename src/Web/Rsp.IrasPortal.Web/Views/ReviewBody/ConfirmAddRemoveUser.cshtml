@@ -92,10 +92,10 @@
 
                     <tr class="govuk-table__row">
                         <td class="govuk-table__cell"><b>Role</b></td>
-                        <td class="govuk-table__cell text-capitalize">
+                        <td class="govuk-table__cell">
                             @{
                                 var selectedRoles = Model.User.UserRoles != null
-                                ? string.Join(", ", Model.User.UserRoles.Where(r => r.IsSelected).Select(r => r?.Name?.Replace("_", " ")))
+                                ? string.Join(", ", Model.User.UserRoles.Where(r => r.IsSelected).Select(r => r?.DisplayName))
                                 : string.Empty;
                             }
 

@@ -39,7 +39,6 @@
                || !string.IsNullOrWhiteSpace(Model.Search.SponsorOrgSearch?.SearchText)
                || !string.IsNullOrWhiteSpace(Model.Search.SponsorOrgSearch?.SelectedOrganisation);
     }
-
 }
 
 @{
@@ -144,7 +143,6 @@
                                 <div class="govuk-form-group govuk-!-margin-bottom-2">
                                     <fieldset class="govuk-fieldset">
                                         <rsp-gds-checkbox-group asp-for="Search.Country"
-                                        label-text="Country"
                                         options="UkCountryNames.Countries"
                                         label-css-class="role-checkbox"
                                         conditional-field="false"
@@ -166,9 +164,7 @@
                                 <div class="govuk-form-group govuk-!-margin-bottom-2">
                                     <fieldset class="govuk-fieldset">
                                         <rsp-gds-checkbox-group asp-for="Search.ModificationTypes"
-                                        label-text="Type of Modification"
                                         options="ModificationOptions.Types"
-                                        label-css-class="role-checkbox"
                                         conditional-field="true"
                                         legend-class="govuk-label govuk-label--s"
                                         hint-id="modification-hint"
@@ -187,7 +183,7 @@
                             <div class="search-filter-section__content">
                                 <div class="govuk-form-group govuk-!-margin-bottom-2">
                                     <fieldset class="govuk-fieldset">
-                                        <rsp-gds-input asp-for="Search.ShortProjectTitle" label-text="Enter the short project title" width-class="govuk-!-width-three-quarters" label-html-class="font-weight-none" />
+                                        <rsp-gds-input asp-for="Search.ShortProjectTitle" label-text="Enter the name of short project title" width-class="govuk-!-width-three-quarters" label-html-class="font-weight-none" />
                                     </fieldset>
                                 </div>
                             </div>
@@ -203,9 +199,9 @@
                                     <fieldset class="govuk-fieldset">
                                         <rsp-gds-autocomplete asp-for="Search.SponsorOrganisation"
                                         field-id="SponsorOrganisation_Text"
-                                        label-text="Enter the sponsor organisation"
+                                        label-text=""
                                         api-url="/organisation/getorganisations"
-                                        hint-html="Start typing to find an organisation"
+										hint-html="Type the name of the organisation or scroll through the list"
                                         auto-complete-enabled-id="auto_search"
                                         label-html-class="font-weight-none">
                                         </rsp-gds-autocomplete>
@@ -258,13 +254,12 @@
 
                                                 if (sponsorOrgSearched is not "searched:true" && !string.IsNullOrWhiteSpace(Model.Search.SponsorOrganisation))
                                                 {
-                                                    <input type="hidden" name="SponsorOrgSearch.SelectedOrganisation" value="@Model.Search.SponsorOrganisation" />
+                                                    <input type="hidden" name="Search.SponsorOrgSearch.SelectedOrganisation" value="@Model.Search.SponsorOrganisation" />
                                                 }
                                             }
 
                                             <div class="govuk-form-group" error-class-property="sponsor_org_search">
                                                 <label class="govuk-label govuk-label--s font-weight-none" for="sponsor_org_search" aria-describedby="SponsorOrganisation">
-                                                    Enter the sponsor organisation
                                                 </label>
 
                                                 @Html.ValidationMessage("sponsor_org_search", new { @class = "govuk-error-message" })
@@ -272,7 +267,7 @@
                                                 <div class="sponsor-org-search">
                                                     <input id="sponsor_org_search"
                                                     type="text"
-                                                    name="SponsorOrgSearch.SearchText"
+                                                    name="Search.SponsorOrgSearch.SearchText"
                                                     class="govuk-input govuk-!-width-three-quarters"
                                                     value="@searchText"
                                                     error-class-property="sponsor_org_search"/>
@@ -334,7 +329,7 @@
 
                         <!-- Apply -->
                         <div class="search-filter-panel__actions">
-                            <button class="govuk-button search-filter-panel__action search-filter-panel__action--submit">Apply</button>
+                            <button class="govuk-button search-filter-panel__action search-filter-panel__action--submit">Apply filters</button>
                         </div>
                     </div>
                 </div>

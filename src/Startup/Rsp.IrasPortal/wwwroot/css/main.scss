@@ -768,6 +768,10 @@ dialog[open] {
     line-height: 1.3157894737
 }
 
+.margin-zero {
+    margin: 0;
+}
+
 @media print {
     .search-filter-summary__clear-filters {
         font-family: sans-serif

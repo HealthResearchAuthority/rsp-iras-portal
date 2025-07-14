@@ -271,7 +271,7 @@ button.govuk-link {
 }
 
 .govuk-back-link-button--inverse:active, .govuk-back-link-button--inverse:hover {
-  color: hsla(0, 0%, 100%, 0.99);
+  color: hsla(0deg, 0%, 100%, 0.99);
 }
 
 .govuk-back-link-button--inverse:focus {
@@ -739,6 +739,10 @@ dialog[open] {
   font-weight: 400;
   font-size: 1.1875rem;
   line-height: 1.3157894737;
+}
+
+.margin-zero {
+  margin: 0;
 }
 
 @media print {

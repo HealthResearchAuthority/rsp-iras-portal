@@ -6,15 +6,15 @@ namespace Rsp.IrasPortal.Web.Validators;
 public class UserInfoValidator : AbstractValidator<UserViewModel>
 {
     private const string OrganisationMaxCharactersErrorMessage = "Organisation must be 250 characters or less";
-    private const string GivenNameMaxCharactersErrorMessage = "Given name must be 250 characters or less";
-    private const string FamilyNameMaxCharactersErrorMessage = "Family name must be 250 characters or less";
+    private const string GivenNameMaxCharactersErrorMessage = "First name must be 250 characters or less";
+    private const string FamilyNameMaxCharactersErrorMessage = "Last name must be 250 characters or less";
     private const string JobTitleMaxCharactersErrorMessage = "Job title must be 250 characters or less";
     private const string TitleMaxCharactersErrorMessage = "Title must be 250 characters or less";
     private const string EmailMaxCharactersErrorMessage = "Email address must be 250 characters or less";
     private const string TelephoneMaxCharactersErrorMessage = "Telephone must be 11 digits or less";
     private const string TelephoneNotDigitMessage = "Telephone must only contain numbers";
-    private const string GivenNameMandatoryErrorMessage = "Enter a given name";
-    private const string FamilyNameMandatoryErrorMessage = "Enter a family name";
+    private const string GivenNameMandatoryErrorMessage = "Enter a first name";
+    private const string FamilyNameMandatoryErrorMessage = "Enter a last name";
     private const string EmailFormatErrorMessage = "Enter an email address in the correct format";
     private const string EmailMandatoryErrorMessage = "Enter an email address";
     private const string ConditionalCountryMandatoryErrorMessage = "You must provide a country";
