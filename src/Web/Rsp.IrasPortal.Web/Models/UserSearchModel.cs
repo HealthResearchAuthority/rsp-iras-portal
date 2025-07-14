@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using Rsp.IrasPortal.Application.Constants;
 
 namespace Rsp.IrasPortal.Web.Models;
 
@@ -27,28 +26,18 @@ public class UserSearchModel
         {
             var filters = new Dictionary<string, string>();
 
-            if (Country?.Count > 0)
+            if (Country?.Count != 0 && Country != null)
             {
-                filters.Add(UsersSearch.CountryKey, string.Join(", ", Country));
-            }
-
-            if (FromDate.HasValue)
-            {
-                filters.Add(UsersSearch.FromDateKey, FromDate.Value.ToString("d MMM yyyy"));
-            }
-
-            if (ToDate.HasValue)
-            {
-                filters.Add(UsersSearch.ToDateKey, ToDate.Value.ToString("d MMM yyyy"));
+                filters.Add("Country", string.Join(", ", Country));
             }
 
             switch (Status)
             {
                 case true:
-                    filters.Add(UsersSearch.StatusKey, "Active");
+                    filters.Add("Status", "Active");
                     break;
                 case false:
-                    filters.Add(UsersSearch.StatusKey, "Disabled");
+                    filters.Add("Status", "Disabled");
                     break;
             }
 
@@ -66,8 +55,6 @@ public class UserSearchModel
                    CultureInfo.InvariantCulture,
                    DateTimeStyles.None,
                    out var result
-               )
-            ? result
-            : null;
+               ) ? result : null;
     }
 }
