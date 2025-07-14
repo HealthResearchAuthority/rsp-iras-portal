@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
@@ -22,41 +23,64 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
         };
 
         Mocker.GetMock<IReviewBodyService>()
-            .Setup(s => s.GetAllReviewBodies(null,1, 20))
+            .Setup(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20))
             .ReturnsAsync(serviceResponse);
 
         // Act
-        var result = await Sut.ViewReviewBodies();
+        var result = await Sut.ViewReviewBodies(1, 20, new ReviewBodySearchViewModel()
+        {
+            Search = new ReviewBodySearchModel()
+            {
+                SearchQuery = null,
+                Country = null,
+                Status = null
+            }
+        });
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
-        var model = viewResult.Model.ShouldBeAssignableTo<(IEnumerable<ReviewBodyDto>, PaginationViewModel)>();
-        model.Item1.ShouldBeEquivalentTo(reviewBodies.ReviewBodies);
+        var model = viewResult.Model.ShouldBeAssignableTo<ReviewBodySearchViewModel>();
+        model.ReviewBodies.ShouldBeEquivalentTo(reviewBodies.ReviewBodies);
 
         // Verify
         Mocker.GetMock<IReviewBodyService>()
-            .Verify(s => s.GetAllReviewBodies(null, 1, 20), Times.Once);
+            .Verify(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20), Times.Once);
     }
 
     [Fact]
-    public async Task ViewReviewBodies_ShouldReturnEmptyView_WhenServiceReturnsNull()
+    public async Task ViewReviewBodies_ShouldReturnEmptyView_WhenServiceReturnsNullContent()
     {
         // Arrange
         Mocker.GetMock<IReviewBodyService>()
-            .Setup(s => s.GetAllReviewBodies(null, 1, 20))
+            .Setup(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20))
             .ReturnsAsync(new ServiceResponse<AllReviewBodiesResponse>
-            { StatusCode = HttpStatusCode.OK, Content = null });
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = null
+            });
 
         // Act
-        var result = await Sut.ViewReviewBodies();
+        var result = await Sut.ViewReviewBodies(1, 20, new ReviewBodySearchViewModel()
+        {
+            Search = new ReviewBodySearchModel()
+            {
+                SearchQuery = null,
+                Country = null,
+                Status = null
+            }
+        });
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.Model.ShouldBeAssignableTo<(IEnumerable<ReviewBodyDto>, PaginationViewModel)>();
+        var model = viewResult.Model.ShouldBeAssignableTo<ReviewBodySearchViewModel>();
+        model.ShouldNotBeNull();
+        model.ReviewBodies.ShouldBeNull();
+        model.Pagination.ShouldNotBeNull();
+        model.Pagination.TotalCount.ShouldBe(0);
 
         // Verify
         Mocker.GetMock<IReviewBodyService>()
-            .Verify(s => s.GetAllReviewBodies(null, 1, 20), Times.Once);
+            .Verify(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20), Times.Once);
     }
 
     [Fact]
@@ -64,20 +88,28 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
     {
         // Arrange
         Mocker.GetMock<IReviewBodyService>()
-            .Setup(s => s.GetAllReviewBodies(null, 1, 20))
+            .Setup(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20))
             .ReturnsAsync(new ServiceResponse<AllReviewBodiesResponse>
-            { StatusCode = HttpStatusCode.InternalServerError });
+                { StatusCode = HttpStatusCode.InternalServerError });
 
         // Act
-        var result = await Sut.ViewReviewBodies();
+        var result = await Sut.ViewReviewBodies(1, 20, new ReviewBodySearchViewModel()
+        {
+            Search = new ReviewBodySearchModel()
+            {
+                SearchQuery = null,
+                Country = null,
+                Status = null
+            }
+        });
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.Model.ShouldBeAssignableTo<(IEnumerable<ReviewBodyDto>, PaginationViewModel)>();
+        viewResult.Model.ShouldBeAssignableTo<ReviewBodySearchViewModel>();
 
         // Verify
         Mocker.GetMock<IReviewBodyService>()
-            .Verify(s => s.GetAllReviewBodies(null, 1, 20), Times.Once);
+            .Verify(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20), Times.Once);
     }
 
     [Theory, AutoData]
