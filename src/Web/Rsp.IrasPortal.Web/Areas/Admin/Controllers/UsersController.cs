@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Net;
+using System.Text.Json;
 using FluentValidation;
 using FluentValidation.Results;
 using Mapster;
@@ -13,6 +14,7 @@ using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Identity;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
+using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Areas.Admin.Controllers;
 
@@ -44,10 +46,27 @@ public class UsersController(IUserManagementService userManagementService, IVali
     /// </summary>
     [Route("/admin/users", Name = "admin:users")]
     [HttpGet]
-    public async Task<IActionResult> Index(string? searchQuery = null, int pageNumber = 1, int pageSize = 20)
+    [HttpPost]
+    public async Task<IActionResult> Index(int pageNumber = 1,
+        int pageSize = 20,
+        [FromForm] UserSearchViewModel? model = null,
+        [FromQuery] string? complexSearchQuery = null,
+        [FromQuery] bool fromPagination = false)
     {
+        if (fromPagination && !string.IsNullOrWhiteSpace(complexSearchQuery))
+        {
+            model ??= new UserSearchViewModel();
+            model.Search = JsonSerializer.Deserialize<UserSearchModel>(complexSearchQuery);
+        }
+        else
+        {
+            // RESET ON SEARCH AND REMOVE FILTERS
+            pageNumber = 1;
+            pageSize = 20;
+        }
+
         // get the users
-        var response = await userManagementService.GetUsers(searchQuery, pageNumber, pageSize);
+        var response = await userManagementService.GetUsers(model.Search.SearchQuery, pageNumber, pageSize);
 
         // return the view if successfull
         if (response.IsSuccessStatusCode)
@@ -57,10 +76,13 @@ public class UsersController(IUserManagementService userManagementService, IVali
             var paginationModel = new PaginationViewModel(pageNumber, pageSize, response.Content?.TotalCount ?? 0)
             {
                 RouteName = "admin:users",
-                SearchQuery = searchQuery
+                ComplexSearchQuery = model.Search
             };
 
-            return View((users, paginationModel));
+            model.Users = users;
+            model.Pagination = paginationModel;
+
+            return View(model);
         }
 
         // return error page as api wasn't successful
@@ -545,6 +567,57 @@ public class UsersController(IUserManagementService userManagementService, IVali
         }
 
         return View(model);
+    }
+
+    [HttpGet]
+    public IActionResult ClearFilters()
+    {
+        return RedirectToAction("Index");
+    }
+
+    [HttpGet]
+    [Route("/admin/users/removefilter", Name = "admin:removefilter")]
+    public IActionResult RemoveFilter(string key, string? value, [FromQuery] string? model = null)
+    {
+        var viewModel = new UserSearchViewModel();
+
+        if (!string.IsNullOrWhiteSpace(model))
+        {
+            viewModel.Search = JsonSerializer.Deserialize<UserSearchModel>(model);
+        }
+        else
+        {
+            viewModel.Search = new UserSearchModel();
+        }
+
+        switch (key.ToLowerInvariant().Replace(" ", ""))
+        {
+            case "country":
+                if (!string.IsNullOrEmpty(value) && viewModel.Search.Country != null)
+                {
+                    viewModel.Search.Country = viewModel.Search.Country
+                        .Where(c => !string.Equals(c, value, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
+
+                break;
+
+            case "status":
+                viewModel.Search.Status = null;
+                break;
+        }
+
+        // Serialize modified search model to JSON for complexSearchQuery parameter
+        var searchJson = JsonSerializer.Serialize(viewModel.Search);
+
+        // Redirect to ViewReviewBodies with query parameters
+        return RedirectToRoute("admin:users", new
+        {
+            pageNumber = 1,
+            pageSize = 20,
+            complexSearchQuery = searchJson,
+            fromPagination = true
+        });
     }
 
     private async Task<IList<Role>> GetAlluserRoles()
