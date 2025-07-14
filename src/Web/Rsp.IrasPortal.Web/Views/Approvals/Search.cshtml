@@ -183,7 +183,7 @@
                             <div class="search-filter-section__content">
                                 <div class="govuk-form-group govuk-!-margin-bottom-2">
                                     <fieldset class="govuk-fieldset">
-										<rsp-gds-input asp-for="Search.ShortProjectTitle" label-text="Enter the short project title" width-class="govuk-!-width-three-quarters" label-html-class="font-weight-none" />
+										<rsp-gds-input asp-for="Search.ShortProjectTitle" label-text="Enter the name of the short project title" width-class="govuk-!-width-three-quarters" label-html-class="font-weight-none" />
                                     </fieldset>
                                 </div>
                             </div>
@@ -314,7 +314,7 @@
                                                             if (response.TotalCount > 5)
                                                             {
                                                                 <div class="govuk-inset-text">
-                                                                    @response.TotalCount sponsor organisations match your search for '@searchText'. Try narrowing down your search if the organisation you are looking for is not listed.
+                                                                    @response.TotalCount sponsor organisations match your search for '@searchText'. Try narrowing down your search if the organisation you are looking for is not listed
                                                                 </div>
                                                             }
                                                         }
@@ -344,18 +344,18 @@
                         @foreach (var filter in Model.Search.Filters)
                         {
                             var filterKey = filter.Key;
-                            var filterValues = filter.Value?.Split(",") ?? [];
+                            var filterValues = filter.Value ?? [];
 
                             foreach (var val in filterValues)
                             {
                                 <li>
                                     <a asp-route="approvals:removefilter"
-                                    asp-route-key="@filterKey"
-                                    asp-route-value="@val.Trim()"
-                                    class="search-filter-summary__remove-filter">
+                                       asp-route-key="@filterKey"
+                                       asp-route-value="@val"
+                                       class="search-filter-summary__remove-filter">
                                         <span class="search-filter-summary__remove-filter-text">
                                             <span class="govuk-visually-hidden">Remove filter</span>
-                                            @filterKey - @val.Trim()
+                                            @filterKey - @val
                                         </span>
                                     </a>
                                 </li>

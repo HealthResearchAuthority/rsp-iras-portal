@@ -54,6 +54,9 @@
             <label class="govuk-label" for="Search.SearchQuery">
                 <b>Find a review body</b>
             </label>
+            <div class="govuk-hint" id="Search.SearchQuery-hint">
+                Search for the first name, last name or email address
+            </div>
 
             <div class="review-body-search">
                 <input class="govuk-input" id="Search.SearchQuery" name="Search.SearchQuery" type="text"
@@ -139,24 +142,25 @@
                     @foreach (var filter in Model.Search.Filters)
                     {
                         var filterKey = filter.Key;
-                        var filterValues = filter.Value?.Split(",") ?? [];
+                        var filterValues = filter.Value ?? [];
 
                         foreach (var val in filterValues)
                         {
                             <li>
                                 <a asp-route="rbc:removefilter"
                                    asp-route-key="@filterKey"
-                                   asp-route-value="@val.Trim()"
+                                   asp-route-value="@val"
                                    asp-route-model="@System.Text.Json.JsonSerializer.Serialize(Model.Search)"
                                    class="search-filter-summary__remove-filter">
                                     <span class="search-filter-summary__remove-filter-text">
                                         <span class="govuk-visually-hidden">Remove filter</span>
-                                        @filterKey: @val.Trim()
+                                        @filterKey: @val
                                     </span>
                                 </a>
                             </li>
                         }
                     }
+
                 </ul>
                 <div>
                     <a asp-route="rbc:clearfilters" class="search-filter-summary__clear-filters govuk-link govuk-link--no-visited-state">

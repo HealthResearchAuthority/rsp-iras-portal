@@ -114,92 +114,69 @@ public class ApprovalsController(
     [HttpGet]
     public async Task<IActionResult> RemoveFilter(string key, string? value)
     {
-        var model = new ApprovalsSearchViewModel();
-
-        if (TempData.ContainsKey(TempDataKey_ApprovalsSearch))
+        if (!TempData.TryGetValue(TempDataKey_ApprovalsSearch, out var tempDataValue))
         {
-            var json = TempData.Peek(TempDataKey_ApprovalsSearch)?.ToString();
-            if (!string.IsNullOrEmpty(json))
-            {
-                var search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json)!;
-                model.Search = search;
-
-                if (search.Filters.TryGetValue(key, out var existingValue))
-                {
-                    var updatedValues = existingValue
-                        .Split(",", StringSplitOptions.RemoveEmptyEntries)
-                        .Select(v => v.Trim())
-                        .Where(v => !string.Equals(v, value, StringComparison.OrdinalIgnoreCase))
-                        .ToList();
-
-                    if (updatedValues.Count != 0)
-                    {
-                        search.Filters[key] = string.Join(", ", updatedValues);
-                    }
-                    else
-                    {
-                        search.Filters.Remove(key);
-                    }
-
-                    switch (key.ToLowerInvariant().Replace(" ", ""))
-                    {
-                        case "irasid":
-                            search.IrasId = null;
-                            break;
-
-                        case "chiefinvestigatorname":
-                            search.ChiefInvestigatorName = null;
-                            break;
-
-                        case "projecttitle":
-                            search.ShortProjectTitle = null;
-                            break;
-
-                        case "sponsororganisation":
-                            search.SponsorOrganisation = null;
-                            search.SponsorOrgSearch = new OrganisationSearchViewModel();
-                            break;
-
-                        case "fromdate":
-                            search.FromDay = search.FromMonth = search.FromYear = null;
-                            break;
-
-                        case "todate":
-                            search.ToDay = search.ToMonth = search.ToYear = null;
-                            break;
-
-                        case "leadnation":
-                            if (!string.IsNullOrEmpty(value) && search.Country != null)
-                            {
-                                search.Country =
-                                [
-                                    .. search.Country.Where(c =>
-                                        !string.Equals(c, value, StringComparison.OrdinalIgnoreCase))
-                                ];
-                            }
-
-                            break;
-
-                        case "modificationtype":
-                            if (!string.IsNullOrEmpty(value) && search.ModificationTypes != null)
-                            {
-                                search.ModificationTypes =
-                                [
-                                    .. search.ModificationTypes.Where(m =>
-                                        !string.Equals(m, value, StringComparison.OrdinalIgnoreCase))
-                                ];
-                            }
-
-                            break;
-                    }
-
-                    return await ApplyFilters(new ApprovalsSearchViewModel { Search = search });
-                }
-            }
+            return RedirectToAction(nameof(Search));
         }
 
-        return RedirectToAction(nameof(Search));
+        var json = tempDataValue?.ToString();
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return RedirectToAction(nameof(Search));
+        }
+
+        var search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json)!;
+
+        var keyNormalized = key?.ToLowerInvariant().Replace(" ", "");
+
+        switch (keyNormalized)
+        {
+            case "chiefinvestigatorname":
+                search.ChiefInvestigatorName = null;
+                break;
+
+            case "projecttitle":
+                search.ShortProjectTitle = null;
+                break;
+
+            case "sponsororganisation":
+                search.SponsorOrganisation = null;
+                search.SponsorOrgSearch = new OrganisationSearchViewModel();
+                break;
+
+            case "fromdate":
+                search.FromDay = search.FromMonth = search.FromYear = null;
+                break;
+
+            case "todate":
+                search.ToDay = search.ToMonth = search.ToYear = null;
+                break;
+
+            case "leadnation":
+                if (!string.IsNullOrEmpty(value) && search.Country?.Count > 0)
+                {
+                    search.Country = search.Country
+                        .Where(c => !string.Equals(c, value, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
+                break;
+
+            case "modificationtype":
+                if (!string.IsNullOrEmpty(value) && search.ModificationTypes?.Count > 0)
+                {
+                    search.ModificationTypes = search.ModificationTypes
+                        .Where(m => !string.Equals(m, value, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
+                break;
+        }
+
+        // Write the updated search model back to TempData
+        TempData[TempDataKey_ApprovalsSearch] = JsonSerializer.Serialize(search);
+
+        return await ApplyFilters(new ApprovalsSearchViewModel { Search = search });
     }
+
 
     /// <summary>
     ///     Retrieves a list of organisations based on the provided name, role, and optional page size.
