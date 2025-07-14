@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
@@ -26,6 +27,13 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
             .Setup(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20))
             .ReturnsAsync(serviceResponse);
 
+        var reviewBodySearchModel = new ReviewBodySearchModel()
+        {
+            SearchQuery = null,
+            Country = null,
+            Status = null
+        };
+
         // Act
         var result = await Sut.ViewReviewBodies(1, 20, new ReviewBodySearchViewModel()
         {
@@ -35,7 +43,7 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
                 Country = null,
                 Status = null
             }
-        });
+        }, JsonSerializer.Serialize(reviewBodySearchModel), true);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
