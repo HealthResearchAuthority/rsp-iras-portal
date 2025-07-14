@@ -24,7 +24,7 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
         };
 
         Mocker.GetMock<IReviewBodyService>()
-            .Setup(s => s.GetAllReviewBodies(null,1, 20))
+            .Setup(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20))
             .ReturnsAsync(serviceResponse);
 
         var reviewBodySearchModel = new ReviewBodySearchModel()
@@ -43,7 +43,7 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
                 Country = null,
                 Status = null
             }
-        }, JsonSerializer.Serialize(reviewBodySearchModel), true);
+        });
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -52,7 +52,7 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
 
         // Verify
         Mocker.GetMock<IReviewBodyService>()
-            .Verify(s => s.GetAllReviewBodies(null, 1, 20), Times.Once);
+            .Verify(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20), Times.Once);
     }
 
     [Fact]
@@ -60,7 +60,7 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
     {
         // Arrange
         Mocker.GetMock<IReviewBodyService>()
-            .Setup(s => s.GetAllReviewBodies(null, 1, 20))
+            .Setup(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20))
             .ReturnsAsync(new ServiceResponse<AllReviewBodiesResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -88,7 +88,7 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
 
         // Verify
         Mocker.GetMock<IReviewBodyService>()
-            .Verify(s => s.GetAllReviewBodies(null, 1, 20), Times.Once);
+            .Verify(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20), Times.Once);
     }
 
     [Fact]
@@ -96,7 +96,7 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
     {
         // Arrange
         Mocker.GetMock<IReviewBodyService>()
-            .Setup(s => s.GetAllReviewBodies(null, 1, 20))
+            .Setup(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20))
             .ReturnsAsync(new ServiceResponse<AllReviewBodiesResponse>
                 { StatusCode = HttpStatusCode.InternalServerError });
 
@@ -117,7 +117,7 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
 
         // Verify
         Mocker.GetMock<IReviewBodyService>()
-            .Verify(s => s.GetAllReviewBodies(null, 1, 20), Times.Once);
+            .Verify(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20), Times.Once);
     }
 
     [Theory, AutoData]
