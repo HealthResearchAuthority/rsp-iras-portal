@@ -93,6 +93,151 @@ public class SearchTests : TestServiceBase<ApprovalsController>
         Assert.Equal(mockResponse.Modifications.Count(), model.Modifications.Count());
     }
 
+    [Theory, AutoData]
+    public async Task Search_ShouldReturnModifications_WhenShortProjectTitleIsSet(GetModificationsResponse mockResponse)
+    {
+        // Arrange
+        var searchModel = new ApprovalsSearchModel
+        {
+            ShortProjectTitle = "Cancer Research"
+        };
+
+        Sut.TempData[TempDataKey] = JsonSerializer.Serialize(searchModel);
+
+        var serviceResponse = new ServiceResponse<GetModificationsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = mockResponse
+        };
+
+        _applicationsService
+            .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(serviceResponse);
+
+        // Act
+        var result = await Sut.Search();
+
+        // Assert
+        var view = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<ApprovalsSearchViewModel>(view.Model);
+        Assert.Equal(mockResponse.Modifications.Count(), model.Modifications.Count());
+    }
+
+    [Theory, AutoData]
+    public async Task Search_ShouldReturnModifications_WhenSponsorOrganisationIsSet(GetModificationsResponse mockResponse)
+    {
+        var searchModel = new ApprovalsSearchModel
+        {
+            SponsorOrganisation = "University College London"
+        };
+
+        Sut.TempData[TempDataKey] = JsonSerializer.Serialize(searchModel);
+
+        var serviceResponse = new ServiceResponse<GetModificationsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = mockResponse
+        };
+
+        _applicationsService
+            .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(serviceResponse);
+
+        var result = await Sut.Search();
+
+        var view = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<ApprovalsSearchViewModel>(view.Model);
+        Assert.Equal(mockResponse.Modifications.Count(), model.Modifications.Count());
+    }
+
+    [Theory, AutoData]
+    public async Task Search_ShouldReturnModifications_WhenDateRangeIsSet(GetModificationsResponse mockResponse)
+    {
+        var searchModel = new ApprovalsSearchModel
+        {
+            FromDay = "01",
+            FromMonth = "01",
+            FromYear = "2024",
+            ToDay = "31",
+            ToMonth = "12",
+            ToYear = "2024"
+        };
+
+        Sut.TempData[TempDataKey] = JsonSerializer.Serialize(searchModel);
+
+        var serviceResponse = new ServiceResponse<GetModificationsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = mockResponse
+        };
+
+        _applicationsService
+            .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(serviceResponse);
+
+        var result = await Sut.Search();
+
+        var view = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<ApprovalsSearchViewModel>(view.Model);
+        Assert.Equal(mockResponse.Modifications.Count(), model.Modifications.Count());
+    }
+
+
+    [Theory, AutoData]
+    public async Task Search_ShouldReturnModifications_WhenCountryFilterIsSet(GetModificationsResponse mockResponse)
+    {
+        var searchModel = new ApprovalsSearchModel
+        {
+            Country = new List<string> { "England", "Wales" }
+        };
+
+        Sut.TempData[TempDataKey] = JsonSerializer.Serialize(searchModel);
+
+        var serviceResponse = new ServiceResponse<GetModificationsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = mockResponse
+        };
+
+        _applicationsService
+            .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(serviceResponse);
+
+        var result = await Sut.Search();
+
+        var view = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<ApprovalsSearchViewModel>(view.Model);
+        Assert.Equal(mockResponse.Modifications.Count(), model.Modifications.Count());
+    }
+
+    [Theory, AutoData]
+    public async Task Search_ShouldReturnModifications_WhenModificationTypeIsSet(GetModificationsResponse mockResponse)
+    {
+        var searchModel = new ApprovalsSearchModel
+        {
+            ModificationTypes = new List<string> { "Substantial", "Non-substantial" }
+        };
+
+        Sut.TempData[TempDataKey] = JsonSerializer.Serialize(searchModel);
+
+        var serviceResponse = new ServiceResponse<GetModificationsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = mockResponse
+        };
+
+        _applicationsService
+            .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(serviceResponse);
+
+        var result = await Sut.Search();
+
+        var view = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<ApprovalsSearchViewModel>(view.Model);
+        Assert.Equal(mockResponse.Modifications.Count(), model.Modifications.Count());
+    }
+
+
     [Fact]
     public async Task Search_ShouldThrow_WhenTempDataIsInvalidJson()
     {
