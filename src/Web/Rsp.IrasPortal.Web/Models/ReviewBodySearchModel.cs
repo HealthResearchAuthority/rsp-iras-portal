@@ -15,7 +15,7 @@ public class ReviewBodySearchModel
         {
             var filters = new Dictionary<string, string>();
 
-            if (Country.Count != 0)
+            if (Country?.Count != 0 && Country != null)
             {
                 filters.Add("Country", string.Join(", ", Country));
             }
