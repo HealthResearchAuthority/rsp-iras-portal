@@ -110,8 +110,6 @@ button.govuk-link {
 }
 
 .govuk-pagination {
-    -webkit-justify-content: center;
-    justify-content: center;
     margin-bottom: 0;
 }
 
@@ -773,6 +771,16 @@ dialog[open] {
     margin: 0;
 }
 
+.checkbox-cell {
+    padding: 7px 0 0 0 !important;
+}
+
+.modifications-tasklist-table {
+    td, th {
+        padding: 20px 20px 20px 0;
+    }
+}
+
 @media print {
     .search-filter-summary__clear-filters {
         font-family: sans-serif
@@ -831,4 +839,3 @@ dialog[open] {
         flex-grow: 1;
     }
 }
-

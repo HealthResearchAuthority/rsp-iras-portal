@@ -1,0 +1,105 @@
+﻿@using System.Text.RegularExpressions
+@using Microsoft.AspNetCore.Http.Extensions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Rsp.Gds.Component.Models
+@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Application.DTOs.Responses
+@using Rsp.IrasPortal.Web.Extensions
+@using Rsp.IrasPortal.Web.TagHelpers.Models
+@model ModificationsTasklistViewModel
+@inject IHttpContextAccessor httpContextAccessor
+
+@section BackNavigation {
+	<partial name="_BackNavigation" model="@("approvals:welcome", "Back", new Dictionary<string, string>())" />
+}
+
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-two-thirds search-filter-bottom-border">
+		<h2 class="govuk-heading-l" id="title">Modifications ready to assign</h2>
+		<p class="govuk-body">
+			This page shows all the modifications that are ready for you to assign, where the lead nation is England.
+		</p>
+		<p class="govuk-body">
+			Enter the IRAS ID to search for all modifications received, including those submitted for notification only
+		</p>
+
+		<form method="post" class="govuk-form-group govuk-!-margin-bottom-0">
+			<div class="search-flex-container">
+				<input class="govuk-input search-flex-input" type="text" />
+				<div class="search-flex-button">
+					<button type="submit" class="govuk-button">Search</button>
+				</div>
+			</div>
+
+			<!-- Filter Panel -->
+		</form>
+	</div>
+</div>
+@if (Model.Modifications == null || !Model.Modifications.Any())
+{
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-two-thirds search-filter-error-border">
+			<h2 class="govuk-heading-l">There are no matching results</h2>
+			<p class="govuk-body">Improve your search results by:</p>
+			<ul class="govuk-list govuk-list--bullet">
+				<li>removing filters</li>
+				<li>double-checking your spelling</li>
+				<li>using fewer keywords</li>
+				<li>searching for something less specific</li>
+			</ul>
+		</div>
+	</div>
+}
+else
+{
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-full">
+			<div class="govuk-table-wrapper">
+				<table class="govuk-table modifications-tasklist-table">
+					<thead class="govuk-table__head">
+						<tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+							<th scope="col" class="govuk-table__header govuk-!-text-align-right checkbox-cell">
+								<div class="govuk-checkboxes__item govuk-checkboxes--small">
+									<input id="select-all-modifications" name="" class="govuk-checkboxes__input select-all-modifications" type="checkbox">
+									<label for="select-all-modifications" class="govuk-label govuk-checkboxes__label"></label>
+								</div>
+							</th>
+							<th scope="col" class="govuk-table__header">Modification ID</th>
+							<th scope="col" class="govuk-table__header">Short project title</th>
+							<th scope="col" class="govuk-table__header">Modification type</th>
+							<th scope="col" class="govuk-table__header">Date submitted</th>
+							<th scope="col" class="govuk-table__header">Days since submission</th>
+						</tr>
+					</thead>
+					<tbody class="govuk-table__body govuk-body-s">
+						@{
+							foreach (var modification in Model.Modifications)
+							{
+								int daysAgo = (DateTime.Today - modification.Modification.CreatedAt.Date).Days;      // whole days
+								var daysText = daysAgo == 1 ? "day" : "days";
+
+								<tr class="govuk-table__row">
+									<td class="govuk-table__cell checkbox-cell">
+										<div class="govuk-checkboxes__item govuk-checkboxes--small">
+											<input id="@modification.Modification.ModificationId" name="@modification.Modification.ModificationId" class="govuk-checkboxes__input" type="checkbox" @(modification.IsSelected ? "checked" : "")>
+											<label for="@modification.Modification.ModificationId" class="govuk-label govuk-checkboxes__label modification-checkbox-label"></label>
+										</div>
+									</td>
+									<td class="govuk-table__cell">@modification.Modification.ModificationId</td>
+									<td class="govuk-table__cell"><a href="?@modification.Modification.ModificationId" class="govuk-link"><strong>@modification.Modification.ShortProjectTitle</strong></a></td>
+									<td class="govuk-table__cell">@modification.Modification.ModificationType</td>
+									<td class="govuk-table__cell">@modification.Modification.CreatedAt.ToString("dd MMM yyyy")</td>
+									<td class="govuk-table__cell">@daysAgo @daysText</td>
+								</tr>
+							}
+						}
+					</tbody>
+				</table>
+			</div>
+			<partial name="_Pagination" model="@Model.Pagination" />
+			<div class="search-flex-button">
+				<button type="submit" class="govuk-button">Continue to assign modifications</button>
+			</div>
+		</div>
+	</div>
+}
