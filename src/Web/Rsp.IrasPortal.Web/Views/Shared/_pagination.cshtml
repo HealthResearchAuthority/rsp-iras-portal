@@ -14,7 +14,7 @@
 
 <nav class="govuk-pagination" aria-label="Pagination">
 
-	<div class="govuk-pagination__prev" style="@(Model.PageNumber <= 1 ? "visibility: hidden" : "")">
+	<div class="govuk-pagination__prev" style="@(Model.PageNumber <= 1 ? "display: none" : "")">
 		<a class="govuk-link govuk-pagination__link" asp-route="@Model.RouteName"
 		   asp-all-route-data="Model.AdditionalParameters"
 		   asp-route-pageNumber="@previousPage"
@@ -95,8 +95,6 @@
 		</a>
 	</div>
 </nav>
-
-<p class="govuk-pagination__results">Showing <b>@((Model.PageNumber - 1) * Model.PageSize + 1)</b> to <b>@(Math.Min(Model.PageNumber * Model.PageSize, Model.TotalCount))</b> of <b>@Model.TotalCount</b> results</p>
 <div>
 	&nbsp;
 </div>
