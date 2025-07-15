@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
+﻿using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -124,7 +123,7 @@ public class ApprovalsController
     public async Task<IActionResult> RemoveFilter(string key, string? value)
     {
         if (!TempData.TryGetValue(TempDataKeys.ApprovalsSearchModel, out var tempDataValue))
-        {   
+        {
             return RedirectToAction(nameof(Search));
         }
 
