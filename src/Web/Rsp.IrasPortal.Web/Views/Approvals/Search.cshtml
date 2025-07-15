@@ -184,7 +184,7 @@
                             <div class="search-filter-section__content">
                                 <div class="govuk-form-group govuk-!-margin-bottom-2">
                                     <fieldset class="govuk-fieldset">
-										<rsp-gds-input asp-for="Search.ShortProjectTitle" label-text="Enter the name of the short project title" width-class="govuk-!-width-three-quarters" label-html-class="font-weight-none" />
+                                        <rsp-gds-input asp-for="Search.ShortProjectTitle" label-text="Enter the name of the short project title" width-class="govuk-!-width-three-quarters" label-html-class="font-weight-none" />
                                     </fieldset>
                                 </div>
                             </div>
@@ -200,10 +200,10 @@
                                     <fieldset class="govuk-fieldset">
                                         <rsp-gds-autocomplete asp-for="Search.SponsorOrganisation"
                                         field-id="SponsorOrganisation_Text"
-										label-text="Type the name of the organisation or scroll through the list" 
+                                        label-text="Type the name of the organisation or scroll through the list" 
                                         api-url="/organisation/getorganisations"
                                         auto-complete-enabled-id="auto_search"
-										label-html-class="govuk-label govuk-label--s font-weight-none">
+                                        label-html-class="govuk-label govuk-label--s font-weight-none">
                                         </rsp-gds-autocomplete>
 
                                         <input id="SponsorOrganisation_Text"
@@ -300,7 +300,7 @@
                                                             var escapedSearch = Regex.Escape(searchText);
 
                                                             <rsp-gds-radio-group asp-for="Search.SponsorOrgSearch.SelectedOrganisation"
-															label-css-class="govuk-label govuk-label--s font-weight-none"
+                                                            label-css-class="govuk-label govuk-label--s font-weight-none"
                                                             label-text=""
                                                             options="@(organisations.Select(org => new GdsOption
                                                                         {
@@ -405,7 +405,7 @@
                         <thead class="govuk-table__head">
                             @{
                                 var sortableHeaders = new[]
-                                    {
+                                {
                                     new { Field = nameof(ModificationsModel.ModificationId), Label = "Modification ID" },
                                     new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
                                     new { Field = nameof(ModificationsModel.ModificationType), Label = "Modification type" },
