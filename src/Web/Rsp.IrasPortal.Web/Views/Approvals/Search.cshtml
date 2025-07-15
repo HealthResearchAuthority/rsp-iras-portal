@@ -381,7 +381,7 @@
 </authorized>
 
 @{
-    if (Model.EmptySearchPerformed || (Model.Search.Filters.Any() && !Model.Modifications.Any()))
+    if (Model.EmptySearchPerformed || ((Model.Search.Filters.Any() || Model.Search.IrasId != null) && !Model.Modifications.Any()))
     {
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds search-filter-error-border">
