@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
@@ -9,7 +8,6 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
-[ExcludeFromCodeCoverage]
 [Route("[controller]/[action]", Name = "tasklist:[action]")]
 [Authorize(Policy = "IsUser")]
 public class ModificationsTasklistController(IApplicationsService applicationsService) : Controller
