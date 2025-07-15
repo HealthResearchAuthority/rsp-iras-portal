@@ -168,6 +168,7 @@ public class QuestionSetController(IQuestionSetService questionSetService, IVali
             {
                 Index = index,
                 QuestionId = question.QuestionId,
+                VersionId = question.VersionId ?? string.Empty,
                 Category = question.Category,
                 SectionId = question.SectionId,
                 Section = question.Section,
