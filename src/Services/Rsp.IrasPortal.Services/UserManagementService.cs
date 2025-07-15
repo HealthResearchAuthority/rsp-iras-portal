@@ -42,7 +42,7 @@ public class UserManagementService(IUserManagementServiceClient client) : IUserM
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse<UsersResponse>> GetUsers(SearchUserRequest searchQuery = null, int pageNumber = 1, int pageSize = 10)
+    public async Task<ServiceResponse<UsersResponse>> GetUsers(SearchUserRequest? searchQuery = null, int pageNumber = 1, int pageSize = 10)
     {
         var apiResponse = await client.GetUsers(searchQuery, pageNumber, pageSize);
 
