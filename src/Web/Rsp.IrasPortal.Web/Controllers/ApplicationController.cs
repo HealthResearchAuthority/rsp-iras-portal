@@ -1,3 +1,9 @@
+using System.ComponentModel.DataAnnotations;
+using System.Data;
+using System.Diagnostics;
+using System.Globalization;
+using System.Security.Claims;
+using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,12 +17,6 @@ using Rsp.IrasPortal.Domain.Entities;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
-using System.ComponentModel.DataAnnotations;
-using System.Data;
-using System.Diagnostics;
-using System.Globalization;
-using System.Security.Claims;
-using System.Text.Json;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
@@ -36,7 +36,10 @@ public class ApplicationController
     public async Task<IActionResult> Welcome(string? searchQuery = null, int pageNumber = 1, int pageSize = 5)
     {
         var myResearhPageEnabled = await featureManager.IsEnabledAsync(Features.MyResearchPage);
-        if (!myResearhPageEnabled) { return View(nameof(Index)); }
+        if (!myResearhPageEnabled)
+        {
+            return View(nameof(Index));
+        }
 
         // getting respondentID from Http context
         var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
