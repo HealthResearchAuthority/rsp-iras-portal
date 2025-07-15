@@ -2,11 +2,6 @@
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rsp.IrasPortal.UnitTests.Services.ApplicationsServiceTests;
 
@@ -20,8 +15,13 @@ public class GetPaginatedApplicationsByRespondentTests : TestServiceBase<Applica
     }
 
     [Theory, AutoData]
-    public async Task GetPaginatedApplicationsByRespondent_Should_Return_Success_Response_When_Client_Returns_Success(
-        string respondentId, string? searchQuery, int pageIndex, int pageSize)
+    public async Task GetPaginatedApplicationsByRespondent_Should_Return_Success_Response_When_Client_Returns_Success
+    (
+        string respondentId,
+        string? searchQuery,
+        int pageIndex,
+        int pageSize
+    )
     {
         // Arrange
         var paginatedResponse = new PaginatedResponse<IrasApplicationResponse>
