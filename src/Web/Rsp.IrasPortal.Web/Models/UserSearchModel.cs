@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using Rsp.IrasPortal.Application.Constants;
 
 namespace Rsp.IrasPortal.Web.Models;
 
@@ -31,6 +32,15 @@ public class UserSearchModel
                 filters.Add("Country", string.Join(", ", Country));
             }
 
+            if (FromDate.HasValue)
+            {
+                filters.Add(ApprovalsSearch.FromDateKey, FromDate.Value.ToString("d MMM yyyy"));
+            }
+
+            if (ToDate.HasValue)
+            {
+                filters.Add(ApprovalsSearch.ToDateKey, ToDate.Value.ToString("d MMM yyyy"));
+            }
             switch (Status)
             {
                 case true:
