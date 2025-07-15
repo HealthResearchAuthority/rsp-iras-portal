@@ -27,7 +27,7 @@ public class GetModifications : TestServiceBase<ApplicationsService>
             new());
 
         _applicationsServiceClient
-            .Setup(c => c.GetModifications(searchQuery, 1, 20))
+            .Setup(c => c.GetModifications(searchQuery, 1, 20, "ModificationId", "desc"))
             .ReturnsAsync(apiResponse);
 
         // Act
@@ -40,6 +40,6 @@ public class GetModifications : TestServiceBase<ApplicationsService>
         result.Content.ShouldBe(modificationsResponse);
 
         // Verify
-        _applicationsServiceClient.Verify(c => c.GetModifications(searchQuery, 1, 20), Times.Once());
+        _applicationsServiceClient.Verify(c => c.GetModifications(searchQuery, 1, 20, "ModificationId", "desc"), Times.Once());
     }
 }

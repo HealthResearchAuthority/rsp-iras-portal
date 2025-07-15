@@ -1,8 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿namespace Rsp.IrasPortal.Web.Models;
 
-namespace Rsp.IrasPortal.Web.Models;
-
-[ExcludeFromCodeCoverage]
 public class ModificationsModel
 {
     public string ModificationId { get; set; } = null!;

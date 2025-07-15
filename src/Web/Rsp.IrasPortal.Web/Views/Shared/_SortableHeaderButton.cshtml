@@ -1,0 +1,42 @@
+﻿@using Rsp.IrasPortal.Application.Constants
+@model SortableHeaderModel
+
+@{
+    var nextSortDirection = 
+    (Model.CurrentSortField == Model.FieldName && 
+        Model.CurrentSortDirection == SortDirections.Ascending) ? 
+        SortDirections.Descending : 
+        SortDirections.Ascending;
+    var formAction = $"{Model.FormAction ?? Context.Request.Path}{(string.IsNullOrEmpty(Model.TableId) ? "" : $"#{Model.TableId}")}";
+}
+
+<form method="get" action="@formAction">
+    <input type="hidden" name="sortField" value="@Model.FieldName" />
+    <input type="hidden" name="sortDirection" value="@nextSortDirection" />
+    <button type="submit" class="table-header-sort-button">
+        @Model.DisplayText
+        @Html.Raw(GetSortIcon(Model.FieldName, Model.CurrentSortField, Model.CurrentSortDirection))
+    </button>
+</form>
+
+@functions {
+    private string GetSortIcon(string field, string? currentField, string? currentDirection)
+    {
+        var upDownArrow = "<svg style=\"flex-shrink:0;\" width=\"22\" height=\"22\" focusable=\"false\" aria-hidden=\"true\" role=\"img\" viewBox=\"0 0 22 22\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M8.1875 9.5L10.9609 3.95703L13.7344 9.5H8.1875Z\" fill=\"currentColor\"/><path d=\"M13.7344 12.0781L10.9609 17.6211L8.1875 12.0781H13.7344Z\" fill=\"currentColor\"/></svg>";
+        var upArrow = "<svg style=\"flex-shrink:0;\" width=\"22\" height=\"22\" focusable=\"false\" aria-hidden=\"true\" role=\"img\" viewBox=\"0 0 22 22\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M6.5625 15.5L11 6.63125L15.4375 15.5H6.5625Z\" fill=\"currentColor\"/></svg>";
+        var downArrow = "<svg style=\"flex-shrink:0;\" width=\"22\" height=\"22\" focusable=\"false\" aria-hidden=\"true\" role=\"img\" viewBox=\"0 0 22 22\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M15.4375 7L11 15.8687L6.5625 7L15.4375 7Z\" fill=\"currentColor\"/></svg>";
+
+        if (currentField == null || currentDirection == null || field != currentField)
+        {
+            return upDownArrow;
+        }
+        else if (currentDirection == SortDirections.Ascending)
+        {
+            return upArrow;
+        }
+        else
+        {
+            return downArrow;
+        }
+    }
+}

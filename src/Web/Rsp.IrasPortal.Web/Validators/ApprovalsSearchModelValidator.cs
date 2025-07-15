@@ -1,10 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using FluentValidation;
+﻿using FluentValidation;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Validators;
 
-[ExcludeFromCodeCoverage]
 public class ApprovalsSearchModelValidator : AbstractValidator<ApprovalsSearchModel>
 {
     public ApprovalsSearchModelValidator()

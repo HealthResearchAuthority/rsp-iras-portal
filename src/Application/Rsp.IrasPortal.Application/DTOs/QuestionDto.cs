@@ -7,6 +7,7 @@ public record QuestionDto
     public string SectionId { get; set; } = null!;
     public string Section { get; set; } = null!;
     public int Sequence { get; set; }
+    public bool IsModificationQuestion { get; set; }
     public string? Heading { get; set; }
     public string QuestionText { get; set; } = null!;
     public string QuestionType { get; set; } = null!;

@@ -23,7 +23,7 @@ public class GetReviewBodiesTests : TestServiceBase<ReviewBodyService>
         var sut = new ReviewBodyService(client.Object);
 
         // Act
-        var result = await sut.GetAllReviewBodies(1, 100, null);
+        var result = await sut.GetAllReviewBodies(null, 1, 100);
 
         // Assert
         result.ShouldBeOfType<ServiceResponse<AllReviewBodiesResponse>>();
@@ -51,7 +51,7 @@ public class GetReviewBodiesTests : TestServiceBase<ReviewBodyService>
         var sut = new ReviewBodyService(client.Object);
 
         // Act
-        var result = await sut.GetAllReviewBodies(1, 100, null);
+        var result = await sut.GetAllReviewBodies(null, 1, 100);
 
         // Assert
         result.ShouldBeOfType<ServiceResponse<AllReviewBodiesResponse>>();
