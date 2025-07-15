@@ -23,7 +23,7 @@ namespace Rsp.IrasPortal.Web.Areas.Admin.Controllers;
 [Route("[area]/[controller]/[action]", Name = "admin:[action]")]
 //[Authorize(Policy = "IsSystemAdministrator")]
 //[FeatureGate(Features.Admin)]
-public class UsersController(IUserManagementService userManagementService, IValidator<UserViewModel> validator) : Controller
+public class UsersController(IUserManagementService userManagementService, IValidator<UserViewModel> validator, IValidator<UserSearchModel> searchValidator) : Controller
 {
     private const string Error = nameof(Error);
     private const string EditUserView = nameof(EditUserView);
@@ -99,8 +99,7 @@ public class UsersController(IUserManagementService userManagementService, IVali
                 Search = model.Search
             };
 
-
-            return View(reviewBodySearchViewModel);
+            return View("Index", reviewBodySearchViewModel); // or "Search", "ViewReviewBodies", etc.
         }
 
         // return error page as api wasn't successful
@@ -589,6 +588,27 @@ public class UsersController(IUserManagementService userManagementService, IVali
         return View(model);
     }
 
+    [Route("/admin/applyfilters", Name = "admin:applyfilters")]
+    [HttpPost]
+    public async Task<IActionResult> ApplyFilters(UserSearchViewModel model)
+    {
+        var validationResult = await searchValidator.ValidateAsync(model.Search);
+
+        if (!validationResult.IsValid)
+        {
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
+
+            return View(nameof(Index), model); // Return with validation errors
+        }
+
+        // Call the Index action directly, passing the model and default paging values
+        return await Index(1, 20, model, null, false);
+    }
+
+
     [HttpGet]
     public IActionResult ClearFilters()
     {
@@ -610,9 +630,9 @@ public class UsersController(IUserManagementService userManagementService, IVali
             viewModel.Search = new UserSearchModel();
         }
 
-        switch (key.ToLowerInvariant().Replace(" ", ""))
+        switch (key)
         {
-            case "country":
+            case UsersSearch.CountryKey:
                 if (!string.IsNullOrEmpty(value) && viewModel.Search.Country != null)
                 {
                     viewModel.Search.Country = viewModel.Search.Country
@@ -621,15 +641,15 @@ public class UsersController(IUserManagementService userManagementService, IVali
                 }
 
                 break;
-            case "fromdate":
+            case UsersSearch.FromDateKey:
                 viewModel.Search.FromDay = viewModel.Search.FromMonth = viewModel.Search.FromYear = null;
                 break;
 
-            case "todate":
+            case UsersSearch.ToDateKey:
                 viewModel.Search.ToDay = viewModel.Search.ToMonth = viewModel.Search.ToYear = null;
                 break;
 
-            case "status":
+            case UsersSearch.StatusKey:
                 viewModel.Search.Status = null;
                 break;
         }

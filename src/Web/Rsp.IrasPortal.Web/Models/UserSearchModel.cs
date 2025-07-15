@@ -27,27 +27,28 @@ public class UserSearchModel
         {
             var filters = new Dictionary<string, string>();
 
-            if (Country?.Count != 0 && Country != null)
+            if (Country?.Count > 0)
             {
-                filters.Add("Country", string.Join(", ", Country));
+                filters.Add(UsersSearch.CountryKey, string.Join(", ", Country));
             }
 
             if (FromDate.HasValue)
             {
-                filters.Add(ApprovalsSearch.FromDateKey, FromDate.Value.ToString("d MMM yyyy"));
+                filters.Add(UsersSearch.FromDateKey, FromDate.Value.ToString("d MMM yyyy"));
             }
 
             if (ToDate.HasValue)
             {
-                filters.Add(ApprovalsSearch.ToDateKey, ToDate.Value.ToString("d MMM yyyy"));
+                filters.Add(UsersSearch.ToDateKey, ToDate.Value.ToString("d MMM yyyy"));
             }
+
             switch (Status)
             {
                 case true:
-                    filters.Add("Status", "Active");
+                    filters.Add(UsersSearch.StatusKey, "Active");
                     break;
                 case false:
-                    filters.Add("Status", "Disabled");
+                    filters.Add(UsersSearch.StatusKey, "Disabled");
                     break;
             }
 
@@ -65,6 +66,8 @@ public class UserSearchModel
                    CultureInfo.InvariantCulture,
                    DateTimeStyles.None,
                    out var result
-               ) ? result : null;
+               )
+            ? result
+            : null;
     }
 }
