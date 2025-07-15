@@ -1,6 +1,4 @@
 ﻿@using Rsp.IrasPortal.Application.Constants
-@using Rsp.IrasPortal.Web.Areas.Admin.Models
-@using System.Globalization
 @using Rsp.Gds.Component.Models
 @model UserSearchViewModel
 
@@ -41,7 +39,8 @@
 
 <div class="govuk-grid-row">
 	<div class="govuk-grid-column-two-thirds">
-		<form method="post" class="govuk-form-group" asp-route-fromPagination="false">
+        <form method="post" asp-action="ApplyFilters" asp-controller="User" class="govuk-form-group" asp-route-fromPagination="false">
+
 			<label class="govuk-label" for="Search.SearchQuery">
 				<b>Find a user</b>
 			</label>
@@ -53,7 +52,9 @@
 				<input class="govuk-input" id="Search.SearchQuery" name="Search.SearchQuery" type="text"
 					   value="@(Model.Search?.SearchQuery ?? string.Empty)" />
 
-				<partial name="_SubmitButton" model="@("admin:users", "Search", new Dictionary<string, string>())" />
+				<button class="govuk-button mb-0" data-module="govuk-button" type="submit">
+                   Search
+                </button>
 			</div>
 
 			<input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize" />
@@ -73,7 +74,7 @@
 				<div class="search-filter-panel__content" id="filter-panel" role="region" aria-labelledby="toggle-filter">
 
 					<!-- Country -->
-					<details class="search-filter-section" @(CanOpenPanelForField("Country") ? "open" : null)>
+					<details class="search-filter-section" @(CanOpenPanelForField("Search.Country") ? "open" : null)>
 						<summary class="search-filter-section__summary">
 							<h2 class="search-filter-section__summary-heading">Country</h2>
 						</summary>
@@ -95,7 +96,7 @@
 					</details>
 
 					<!-- Last logged in -->
-					<details class="search-filter-section" @(CanOpenPanelForAnyField("FromDate", "ToDate") ? "open" : null)>
+					<details class="search-filter-section" @(CanOpenPanelForAnyField("Search.FromDate", "Search.ToDate") ? "open" : null)>
 						<summary class="search-filter-section__summary">
 							<h2 class="search-filter-section__summary-heading">Last logged in</h2>
 						</summary>
@@ -133,7 +134,7 @@
 					</details>
 
 					<!-- Status -->
-					<details class="search-filter-section" @(CanOpenPanelForField("Status") ? "open" : null)>
+					<details class="search-filter-section" @(CanOpenPanelForField("Search.Status") ? "open" : null)>
 						<summary class="search-filter-section__summary">
 							<h2 class="search-filter-section__summary-heading">Status</h2>
 						</summary>
@@ -153,15 +154,15 @@
 						</div>
 					</details>
 
-					<div class="search-filter-panel__actions">
-						<button class="govuk-button search-filter-panel__action search-filter-panel__action--submit">Apply</button>
+					<div  class="search-filter-panel__actions">
+						<button type="submit" class="govuk-button search-filter-panel__action search-filter-panel__action--submit">Apply</button>
 					</div>
 				</div>
 			</div>
 		</form>
 
 		<!-- Active Filters Panel -->
-		@if (Model.Search.Filters.Any())
+		@if ( Model.Search.Filters.Any())
 		{
 			<div class="search-filter-summary">
 				<h3 class="search-filter-summary__heading">Active filters</h3>
@@ -179,10 +180,17 @@
 								   asp-route-value="@val.Trim()"
 								   asp-route-model="@System.Text.Json.JsonSerializer.Serialize(Model.Search)"
 								   class="search-filter-summary__remove-filter">
-									<span class="search-filter-summary__remove-filter-text">
-										<span class="govuk-visually-hidden">Remove filter</span>
-										@filterKey: @val.Trim()
-									</span>
+                                    <span class="search-filter-summary__remove-filter-text">
+                                        <span class="govuk-visually-hidden">Remove filter</span>
+										@if (filterKey.Contains("Last logged in", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            @($"{filterKey} {val}")
+                                        }
+                                        else
+                                        {
+                                            @($"{filterKey} - {val}")
+                                        }
+                                    </span>
 								</a>
 							</li>
 						}
