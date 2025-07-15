@@ -18,13 +18,6 @@ public class ReviewBodyService(IReviewBodyServiceClient client) : IReviewBodySer
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse<AllReviewBodiesResponse>> GetAllReviewBodies(int pageNumber = 1, int pageSize = 20)
-    {
-        var apiResponse = await client.GetAllReviewBodies(pageNumber, pageSize);
-
-        return apiResponse.ToServiceResponse();
-    }
-
     public async Task<ServiceResponse<ReviewBodyDto>> GetReviewBodyById(Guid id)
     {
         var apiResponse = await client.GetReviewBodyById(id);
