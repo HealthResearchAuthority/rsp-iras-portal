@@ -783,15 +783,6 @@ dialog[open] {
     }
 }
 
-/* hide the real child checkboxes */
-//ul input[type="checkbox"] {
-//    display: none;
-//}
-/* draw fake checks when master is ticked */
-#select-all-modifications:checked ~ modification-checkbox-label::after {
-    opacity: 1; /* purely visual */
-}
-
 @media print {
     .search-filter-summary__clear-filters {
         font-family: sans-serif
