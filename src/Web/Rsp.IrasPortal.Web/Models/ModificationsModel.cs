@@ -9,4 +9,5 @@ public class ModificationsModel
     public string LeadNation { get; set; } = null!;
     public string SponsorOrganisation { get; set; } = null!;
     public DateTime CreatedAt { get; set; }
+    public int DaysSinceSubmission => (DateTime.UtcNow - CreatedAt).Days;
 }

@@ -21,29 +21,42 @@ public class ModificationsTasklistController(IApplicationsService applicationsSe
     {
         var model = new ModificationsTasklistViewModel();
 
-        // use this query to add filters
-        var modQuery = new ModificationSearchRequest();
+        var modQuery = new ModificationSearchRequest()
+        {
+            Country = ["England"],
+        };
 
-        var result = await applicationsService.GetModifications(modQuery, pageNumber, pageSize, sortField, sortDirection);
+        var querySortField = sortField;
+        var querySortDirection = sortDirection;
+
+        if (sortField == nameof(ModificationsModel.DaysSinceSubmission))
+        {
+            querySortField = nameof(ModificationsModel.CreatedAt);
+            querySortDirection = sortDirection == SortDirections.Ascending
+                ? SortDirections.Descending
+                : SortDirections.Ascending;
+        }
+
+        var result = await applicationsService.GetModifications(modQuery, pageNumber, pageSize, querySortField, querySortDirection);
         model.Modifications = result?.Content?.Modifications?
-                    .Select(dto => new TaskListModificationViewModel
-                    {
-                        Modification = new ModificationsModel
-                        {
-                            ModificationId = dto.ModificationId,
-                            ShortProjectTitle = dto.ShortProjectTitle,
-                            ModificationType = dto.ModificationType,
-                            ChiefInvestigator = dto.ChiefInvestigator,
-                            LeadNation = dto.LeadNation,
-                            SponsorOrganisation = dto.SponsorOrganisation,
-                            CreatedAt = dto.CreatedAt
-                        }
-                    })
-                    .ToList() ?? [];
+            .Select(dto => new TaskListModificationViewModel
+            {
+                Modification = new ModificationsModel
+                {
+                    ModificationId = dto.ModificationId,
+                    ShortProjectTitle = dto.ShortProjectTitle,
+                    ModificationType = dto.ModificationType,
+                    ChiefInvestigator = dto.ChiefInvestigator,
+                    LeadNation = dto.LeadNation,
+                    SponsorOrganisation = dto.SponsorOrganisation,
+                    CreatedAt = dto.CreatedAt
+                }
+            })
+            .ToList() ?? [];
 
         foreach (var mod in model.Modifications)
         {
-            if (selectedModificationIds != null && selectedModificationIds.Contains(mod.Modification.ModificationId))
+            if (selectedModificationIds?.Contains(mod.Modification.ModificationId) == true)
             {
                 mod.IsSelected = true;
             }
