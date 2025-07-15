@@ -10,13 +10,11 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
     private const string FamilyNameMaxCharactersErrorMessage = "Last name must be 250 characters or less";
     private const string JobTitleMaxCharactersErrorMessage = "Job title must be 250 characters or less";
     private const string TitleMaxCharactersErrorMessage = "Title must be 250 characters or less";
-    private const string EmailMaxCharactersErrorMessage = "Email address must be 250 characters or less";
     private const string TelephoneMaxCharactersErrorMessage = "Telephone must be 11 digits or less";
     private const string TelephoneNotDigitMessage = "Telephone must only contain numbers";
     private const string GivenNameMandatoryErrorMessage = "Enter a first name";
     private const string FamilyNameMandatoryErrorMessage = "Enter a last name";
-    private const string EmailFormatErrorMessage = "Enter an email address in the correct format";
-    private const string EmailMandatoryErrorMessage = "Enter an email address";
+    private const string EmailFormatErrorMessage = "The email address format is invalid";
     private const string ConditionalCountryMandatoryErrorMessage = "You must provide a country";
     private const string ConditionalAccessRequiredMandatoryErrorMessage = "You must provide the access required";
     private const string OperationsRole = "operations";
@@ -39,14 +37,9 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
             .MaximumLength(250)
             .WithMessage(FamilyNameMaxCharactersErrorMessage);
 
-        // email validation to loosley comply with RFC 5322 standard
         RuleFor(x => x.Email)
-            .NotEmpty()
-            .WithMessage(EmailMandatoryErrorMessage)
-            .MaximumLength(255)
-            .WithMessage(EmailMaxCharactersErrorMessage)
-            .Matches(@"^(?!(?:(?:.*\.\.)|(?:.*\.\@)))(?!.*\.\.$)(?!.*\.\@)[\p{L}\p{N}!#$%&'*+/=?^_`{|}~.-]+@[\p{L}\p{N}.-]+\.[\p{L}]{2,}$")
-            .WithMessage(EmailFormatErrorMessage);
+            .Must(email => EmailValidator.GetEmailValidationError(email?.TrimEnd()) == null)
+            .WithMessage(x => $"{EmailFormatErrorMessage} – reason: {EmailValidator.GetEmailValidationError(x.Email?.TrimEnd())}");
 
         RuleFor(x => x.Telephone)
             .MaximumLength(11)
