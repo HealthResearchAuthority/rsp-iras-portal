@@ -23,7 +23,7 @@ namespace Rsp.IrasPortal.Web.Areas.Admin.Controllers;
 [Route("[area]/[controller]/[action]", Name = "admin:[action]")]
 //[Authorize(Policy = "IsSystemAdministrator")]
 //[FeatureGate(Features.Admin)]
-public class UsersController(IUserManagementService userManagementService, IValidator<UserViewModel> validator, IValidator<UserSearchModel> searchValidator) : Controller
+public class UsersController(IUserManagementService userManagementService, IValidator<UserViewModel> validator) : Controller
 {
     private const string Error = nameof(Error);
     private const string EditUserView = nameof(EditUserView);
@@ -66,8 +66,20 @@ public class UsersController(IUserManagementService userManagementService, IVali
             pageSize = 20;
         }
 
+        model ??= new UserSearchViewModel();
+        model.Search ??= new UserSearchModel();
+
+        var request = new SearchUserRequest()
+        {
+            SearchQuery = model.Search.SearchQuery,
+            Country = model.Search.Country,
+            Status = model.Search.Status,
+            FromDate = model.Search.FromDate,
+            ToDate = model.Search.ToDate
+        };
+
         // get the users
-        var response = await userManagementService.GetUsers(model.Search.SearchQuery, pageNumber, pageSize);
+        var response = await userManagementService.GetUsers(request, pageNumber, pageSize);
 
         // return the view if successfull
         if (response.IsSuccessStatusCode)
@@ -80,10 +92,15 @@ public class UsersController(IUserManagementService userManagementService, IVali
                 ComplexSearchQuery = model.Search
             };
 
-            model.Users = users;
-            model.Pagination = paginationModel;
+            var reviewBodySearchViewModel = new UserSearchViewModel()
+            {
+                Pagination = paginationModel,
+                Users = users,
+                Search = model.Search
+            };
 
-            return View(model);
+
+            return View(reviewBodySearchViewModel);
         }
 
         // return error page as api wasn't successful
@@ -603,6 +620,13 @@ public class UsersController(IUserManagementService userManagementService, IVali
                         .ToList();
                 }
 
+                break;
+            case "fromdate":
+                viewModel.Search.FromDay = viewModel.Search.FromMonth = viewModel.Search.FromYear = null;
+                break;
+
+            case "todate":
+                viewModel.Search.ToDay = viewModel.Search.ToMonth = viewModel.Search.ToYear = null;
                 break;
 
             case "status":
