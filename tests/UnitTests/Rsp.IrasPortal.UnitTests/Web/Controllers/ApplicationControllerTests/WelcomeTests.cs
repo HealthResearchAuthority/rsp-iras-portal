@@ -11,72 +11,74 @@ using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Controllers;
 using Rsp.IrasPortal.Web.Models;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApplicationControllerTests
+namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApplicationControllerTests;
+
+public class WelcomeTests : TestServiceBase<ApplicationController>
 {
-    public class WelcomeTests : TestServiceBase<ApplicationController>
+    private readonly Mock<ISession> session = new();
+
+    [Fact]
+    public async Task Welcome_ReturnsViewResult_WithMappedResearchApplications()
     {
-        private readonly Mock<ISession> session = new();
+        // Arrange
+        var respondentId = "RespondentId1";
 
-        [Fact]
-        public async Task Welcome_ReturnsViewResult_WithMappedResearchApplications()
+        var httpContext = new DefaultHttpContext
         {
-            // Arrange
-            var respondentId = "RespondentId1";
+            Session = session.Object
+        };
+        httpContext.Items[ContextItemKeys.RespondentId] = respondentId;
 
-            var httpContext = new DefaultHttpContext
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = httpContext
+        };
+
+        var mockApplications = new List<IrasApplicationResponse>
+        {
+            new()
             {
-                Session = session.Object
-            };
-            httpContext.Items[ContextItemKeys.RespondentId] = respondentId;
+                IrasId = 123,
+                Id = "App1",
+                CreatedDate = DateTime.UtcNow
+            }
+        };
 
-            Sut.ControllerContext = new ControllerContext
-            {
-                HttpContext = httpContext
-            };
+        var answers = new List<RespondentAnswerDto>
+        {
+            new() { QuestionId = "IQA0002", AnswerText = "My Study Title" },
+            new() { QuestionId = "IQA0312", AnswerText = "NIHR Sponsor" }
+        };
 
-            var mockApplications = new List<IrasApplicationResponse>
-            {
-                new IrasApplicationResponse
-                {
-                    IrasId = 123,
-                    Id = "App1",
-                    CreatedDate = DateTime.UtcNow
-                }
-            };
+        var appResponse = new ServiceResponse<IEnumerable<IrasApplicationResponse>>
+        {
+            Content = mockApplications
+        };
 
-            var answers = new List<RespondentAnswerDto>
-            {
-                new RespondentAnswerDto { QuestionId = "IQA0002", AnswerText = "My Study Title" },
-                new RespondentAnswerDto { QuestionId = "IQA0312", AnswerText = "NIHR Sponsor" }
-            };
+        var answerResponse = new ServiceResponse<IEnumerable<RespondentAnswerDto>>
+        {
+            Content = answers
+        };
 
-            var appResponse = new ServiceResponse<IEnumerable<IrasApplicationResponse>>
-            {
-                Content = mockApplications
-            };
+        var apiRespondent = new ApiResponse<IEnumerable<RespondentAnswerDto>>
+        (
+            new HttpResponseMessage(HttpStatusCode.OK),
+            answerResponse.Content,
+            new RefitSettings()
+        );
 
-            var answerResponse = new ServiceResponse<IEnumerable<RespondentAnswerDto>>
-            {
-                Content = answers
-            };
-
-            var apiResponse = new ApiResponse<IEnumerable<IrasApplicationResponse>>
-            (
-                new HttpResponseMessage(HttpStatusCode.OK),
-                appResponse.Content,
-                new RefitSettings()
-            );
-
-            var apiRespondent = new ApiResponse<IEnumerable<RespondentAnswerDto>>
-            (
-                new HttpResponseMessage(HttpStatusCode.OK),
-                answerResponse.Content,
-                new RefitSettings()
-            );
-
-            Mocker
+        Mocker
             .GetMock<IApplicationsService>()
-            .Setup(s => s.GetPaginatedApplicationsByRespondent(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>()))
+            .Setup
+            (
+                s => s.GetPaginatedApplicationsByRespondent
+                (
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<int>(),
+                    It.IsAny<int>()
+                )
+            )
             .ReturnsAsync(new ServiceResponse<PaginatedResponse<IrasApplicationResponse>>
             {
                 Content = new PaginatedResponse<IrasApplicationResponse>
@@ -86,32 +88,37 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApplicationControllerTests
                 }
             });
 
-            Mocker
+        Mocker
             .GetMock<IRespondentService>()
-            .Setup(x => x.GetRespondentAnswers(It.IsAny<string>(), It.IsAny<string>()))
+            .Setup
+            (x => x.GetRespondentAnswers
+                (
+                    It.IsAny<string>(),
+                    It.IsAny<string>()
+                )
+            )
             .ReturnsAsync(apiRespondent.ToServiceResponse());
 
-            Mocker
+        Mocker
             .GetMock<IFeatureManager>()
             .Setup(f => f.IsEnabledAsync(Features.MyResearchPage))
             .ReturnsAsync(true);
 
-            // Act
-            var result = await Sut.Welcome();
+        // Act
+        var result = await Sut.Welcome();
 
-            // Assert
-            var viewResult = result.ShouldBeOfType<ViewResult>();
-            viewResult.ViewName.ShouldBe("Index");
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.ViewName.ShouldBe("Index");
 
-            var (applications, pagination) = viewResult.Model.ShouldBeOfType<(List<ResearchApplicationSummaryModel>, PaginationViewModel)>();
-            applications.Count.ShouldBe(1);
+        var (applications, _) = viewResult.Model.ShouldBeOfType<(List<ResearchApplicationSummaryModel>, PaginationViewModel)>();
+        applications.Count.ShouldBe(1);
 
-            var item = applications[0];
-            item.IrasId.ShouldBe(123);
-            item.ApplicatonId.ShouldBe("App1");
-            item.Title.ShouldBe("My Study Title");
-            item.PrimarySponsorOrganisation.ShouldBe("NIHR Sponsor");
-            item.IsNew.ShouldBeTrue();
-        }
+        var item = applications[0];
+        item.IrasId.ShouldBe(123);
+        item.ApplicatonId.ShouldBe("App1");
+        item.Title.ShouldBe("My Study Title");
+        item.PrimarySponsorOrganisation.ShouldBe("NIHR Sponsor");
+        item.IsNew.ShouldBeTrue();
     }
 }
