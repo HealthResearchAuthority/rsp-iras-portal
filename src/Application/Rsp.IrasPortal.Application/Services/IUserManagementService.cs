@@ -20,7 +20,7 @@ public interface IUserManagementService : IInterceptable
 
     Task<ServiceResponse> UpdateRole(string originalName, string roleName);
 
-    Task<ServiceResponse<UsersResponse>> GetUsers(string? searchQuery = null, int pageNumber = 1, int pageSize = 10);
+    Task<ServiceResponse<UsersResponse>> GetUsers(SearchUserRequest? searchQuery = null, int pageNumber = 1, int pageSize = 10);
 
     Task<ServiceResponse<UsersResponse>> SearchUsers(string searchQuery, IEnumerable<string>? userIdsToIgnore = null, int pageNumber = 1, int pageSize = 10);
 
