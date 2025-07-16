@@ -6,6 +6,9 @@ namespace Rsp.IrasPortal.Web.Validators;
 public class AddUpdateReviewBodyModelValidator : AbstractValidator<AddUpdateReviewBodyModel>
 {
     private const int MaxWordCount = 250;
+    private const string EmailFormatErrorMessage = "Enter an email address in the correct format";
+    private const string EmailMaxCharactersErrorMessage = "Email address must be 254 characters or less";
+    private const string EmailMandatoryErrorMessage = "Enter an email address";
 
     public AddUpdateReviewBodyModelValidator()
     {
@@ -24,11 +27,11 @@ public class AddUpdateReviewBodyModelValidator : AbstractValidator<AddUpdateRevi
 
         RuleFor(x => x.EmailAddress)
             .NotEmpty()
-            .WithMessage("Enter an email address")
-            .MaximumLength(250)
-            .WithMessage("Email address must be 250 characters or less")
-            .Matches(@"^(?!(?:(?:.*\.\.)|(?:.*\.\@)))(?!.*\.\.$)(?!.*\.\@)[\p{L}\p{N}!#$%&'*+/=?^_`{|}~.-]+@[\p{L}\p{N}.-]+\.[\p{L}]{2,}$")
-            .WithMessage("Enter an email address in the correct format");
+            .WithMessage(EmailMandatoryErrorMessage)
+            .MaximumLength(254)
+            .WithMessage(EmailMaxCharactersErrorMessage)
+            .Matches(@"^(?!\.)(?!(?:(?:.*\.\.)|(?:.*\.\@)))(?!.*\.\.$)(?!.*\.\@)[\p{L}\p{N}!#$%&'*+\/=?^_`{|}~.-]{1,64}@(?:[\p{L}\p{N}](?:[\p{L}\p{N}-]{0,61}[\p{L}\p{N}])?\.)+[\p{L}]{2,}$")
+            .WithMessage(EmailFormatErrorMessage);
 
         RuleFor(x => x.Description)
             .Must(text => GetWordCount(text) <= MaxWordCount)
