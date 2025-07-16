@@ -16,7 +16,7 @@ public class GetUsersTests : TestServiceBase<UserManagementService>
 
         var client = Mocker.GetMock<IUserManagementServiceClient>();
         client
-            .Setup(c => c.GetUsers(null, It.IsAny<int>(), It.IsAny<int>()))
+            .Setup(c => c.GetUsers(null, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(apiResponse);
 
         // Act
@@ -29,7 +29,7 @@ public class GetUsersTests : TestServiceBase<UserManagementService>
         result.Content.ShouldBe(usersResponse);
 
         // Verify
-        client.Verify(c => c.GetUsers(null, It.IsAny<int>(), It.IsAny<int>()), Times.Once());
+        client.Verify(c => c.GetUsers(null, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(),It.IsAny<string>()), Times.Once());
     }
 
     [Fact]
@@ -41,7 +41,7 @@ public class GetUsersTests : TestServiceBase<UserManagementService>
 
         var client = Mocker.GetMock<IUserManagementServiceClient>();
         client
-            .Setup(c => c.GetUsers(null, It.IsAny<int>(), It.IsAny<int>()))
+            .Setup(c => c.GetUsers(null, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(apiResponse);
 
         // Act
@@ -53,6 +53,6 @@ public class GetUsersTests : TestServiceBase<UserManagementService>
         result.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
 
         // Verify
-        client.Verify(c => c.GetUsers(null, It.IsAny<int>(), It.IsAny<int>()), Times.Once());
+        client.Verify(c => c.GetUsers(null, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once());
     }
 }
