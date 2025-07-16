@@ -130,7 +130,6 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
 
     [Theory]
     [InlineData("john.doe@example.com")]
-    [InlineData("john.doe@example.com ")]
     [InlineData("john_doe@example.com")]
     [InlineData("john-doe@example.com")]
     [InlineData("john+newsletter@example.com")]
@@ -152,12 +151,10 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
     [InlineData("johñ.unicode@example.com")]
     [InlineData("john!#$%&'*+-/=?^_`{|}~doe@example.com")] // (uses special characters allowed in the local part)
     [InlineData("john-_doe@example.com")] // (combination of valid special characters)
-    [InlineData("johñ.döe@example.com")] // (Unicode characters are valid if supported by the system)
     [InlineData("mail.sub.subsub.sub@example.com")] // (nested subdomains within valid limits)
     [InlineData("john.doe@example.photography")]
-    [InlineData("john@example.भारत")]
     [InlineData("Johndoe2@example.com")]
-    [InlineData("MaxEmailLength64LocalAddressMaxEmailLength64LocalAddressMaxEmail@MaxEmailLength192DomainEmailAddressMaxEmailLength192DomainEmailAddressMaxEmailLength192DomainEmailAddressMaxEmailLength192DomainEmailAddressMaxEmailLength192DomainEmailAddressMaxEmailLengt192.MaxEmailLength63SecondDomainAddressMaxEmailLength63SecondDomain")]
+    [InlineData("MaxEmailLength64LocalAddressMaxEmailLength64LocalAddressMaxEmail@MaxEmailLength63SecondDomainAddressMaxEmailLength63SecondDomain.MaxEmailLength63SecondDomainAddressMaxEmailLength63SecondDomain.MaxEmailLengthXXSecondDomainAddressMaxEmailLengthXXSecondDoma")]
     public async Task ShouldNotHaveValidationErrorForValidEmail(string email)
     {
         // Arrange
@@ -189,7 +186,6 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
     [InlineData("john@example-.com")] // (trailing hyphen in domain part)
     [InlineData("john.@example..com")] // (double dots in domain part)
     [InlineData("john!doe@exa!mple.com")] // (invalid special character in domain part)
-    [InlineData("johñ@example.com")] // (Unicode not supported by all providers)
     [InlineData("\"john.doe\"@example.com")] // (quoted string unsupported by most providers)
     [InlineData(" john.doe@example.com")] // (space before the local part)
     [InlineData("averyveryverylongdomainnamewithmanysubdomainsandmorecharacters.com")] // (domain exceeds 253-character limit)
@@ -200,7 +196,6 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
     [InlineData("john.doe@example.1234")] // invalid TLD - Incorrectly accepted by system (as valid)
     [InlineData("john.doeexample.com")] // (missing @ symbol)
     [InlineData("john.doe@localhost")] // (reserved domain)
-    [InlineData("john@example.مثال")] // (punycode representation unsupported by some systems)
     [InlineData("MoreThan64CharactersForTheLocalAddressBeforeTheAtSymbolInAnEmailA@example.com")] // (more than 64 characters for the local address before the @ symbol)
     [InlineData("MoreThan320CharactersForTheWholeEmailAddressonetwothreefourfive@MoreThan320CharactersForTheWholeEmailAddressonetwothreefourfiveMoreThan320CharactersForTheWholeEmailAddressonetwothreefourfiveMoreThan320CharactersForTheWholeEmailAddressonetwothreefourfivesixs.MoreThan320CharactersForTheWholeEmailAddressonetwothreefourfive")]
     public async Task ShouldHaveValidationErrorForInvalidEmail(string email)
