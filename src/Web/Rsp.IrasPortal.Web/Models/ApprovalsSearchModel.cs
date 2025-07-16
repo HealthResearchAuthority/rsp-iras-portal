@@ -1,8 +1,10 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using Rsp.IrasPortal.Application.Constants;
 
 namespace Rsp.IrasPortal.Web.Models;
 
+[ExcludeFromCodeCoverage]
 public class ApprovalsSearchModel
 {
     public string? IrasId { get; set; }
@@ -76,6 +78,7 @@ public class ApprovalsSearchModel
             return filters;
         }
     }
+
 
     private static DateTime? ParseDate(string? day, string? month, string? year)
     {

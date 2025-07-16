@@ -1,4 +1,4 @@
-﻿@charset "UTF-8";
+@charset "UTF-8";
 @import url("govuk-frontend.min.css");
 .govuk-form-group.questions {
   border: solid 1px lightgrey;
@@ -822,3 +822,5 @@ button.govuk-pagination__item--current {
 .review-body-search .govuk-input {
   flex-grow: 1;
 }
+
+/*# sourceMappingURL=main.css.map */
