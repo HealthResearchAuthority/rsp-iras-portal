@@ -1,4 +1,5 @@
 ﻿using Refit;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
 using Rsp.IrasPortal.Application.DTOs.Responses;
@@ -38,7 +39,7 @@ public interface IUserManagementServiceClient
     /// </summary>
     /// <returns>List of users</returns>
     [Post("/users/all")]
-    public Task<ApiResponse<UsersResponse>> GetUsers(SearchUserRequest? searchQuery = null, int pageIndex = 1, int pageSize = 20);
+    public Task<ApiResponse<UsersResponse>> GetUsers(SearchUserRequest? searchQuery = null, int pageIndex = 1, int pageSize = 20, string? sortField = "GivenName", string? sortDirection = SortDirections.Descending);
 
     /// <summary>
     /// Gets users by their ids database
