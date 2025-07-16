@@ -14,10 +14,12 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
     private const string TelephoneNotDigitMessage = "Telephone must only contain numbers";
     private const string GivenNameMandatoryErrorMessage = "Enter a first name";
     private const string FamilyNameMandatoryErrorMessage = "Enter a last name";
-    private const string EmailFormatErrorMessage = "The email address format is invalid";
+    private const string EmailFormatErrorMessage = "Enter an email address in the correct format";
     private const string ConditionalCountryMandatoryErrorMessage = "You must provide a country";
     private const string ConditionalAccessRequiredMandatoryErrorMessage = "You must provide the access required";
     private const string OperationsRole = "operations";
+    private const string EmailMaxCharactersErrorMessage = "Email address must be 254 characters or less";
+    private const string EmailMandatoryErrorMessage = "Enter an email address";
 
     public UserInfoValidator()
     {
@@ -38,8 +40,12 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
             .WithMessage(FamilyNameMaxCharactersErrorMessage);
 
         RuleFor(x => x.Email)
-            .Must(email => EmailValidator.GetEmailValidationError(email?.TrimEnd()) == null)
-            .WithMessage(x => $"{EmailFormatErrorMessage} – reason: {EmailValidator.GetEmailValidationError(x.Email?.TrimEnd())}");
+            .NotEmpty()
+            .WithMessage(EmailMandatoryErrorMessage)
+            .MaximumLength(254)
+            .WithMessage(EmailMaxCharactersErrorMessage)
+            .Matches(@"^(?!\.)(?!(?:(?:.*\.\.)|(?:.*\.\@)))(?!.*\.\.$)(?!.*\.\@)[\p{L}\p{N}!#$%&'*+\/=?^_`{|}~.-]{1,64}@(?:[\p{L}\p{N}](?:[\p{L}\p{N}-]{0,61}[\p{L}\p{N}])?\.)+[\p{L}]{2,}$")
+            .WithMessage(EmailFormatErrorMessage);
 
         RuleFor(x => x.Telephone)
             .MaximumLength(11)
