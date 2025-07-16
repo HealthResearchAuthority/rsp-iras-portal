@@ -781,6 +781,23 @@ dialog[open] {
     }
 }
 
+button.govuk-pagination__item--current {
+    color: #fff;
+}
+
+button.govuk-pagination__link {
+    color: #1d70b8;
+    padding: 0;
+}
+
+.govuk-pagination__next button, .govuk-pagination__prev button {
+    font-weight: 700
+}
+
+button.govuk-pagination__item--current {
+    color: #fff;
+}
+
 @media print {
     .search-filter-summary__clear-filters {
         font-family: sans-serif

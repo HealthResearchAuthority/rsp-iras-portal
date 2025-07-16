@@ -46,6 +46,11 @@ public class PaginationViewModel
     public object? ComplexSearchQuery { get; set; }
 
     /// <summary>
+    /// Name of the form being submitted.
+    /// </summary>
+    public string FormName { get; set; }
+
+    /// <summary>
     /// Gets or sets any additional parameters that should be part of the pagination URL
     /// </summary>
     public IDictionary<string, string> AdditionalParameters { get; set; } = new Dictionary<string, string>();

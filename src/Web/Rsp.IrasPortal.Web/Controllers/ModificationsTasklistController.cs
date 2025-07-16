@@ -12,14 +12,18 @@ namespace Rsp.IrasPortal.Web.Controllers;
 [Authorize(Policy = "IsUser")]
 public class ModificationsTasklistController(IApplicationsService applicationsService) : Controller
 {
+    [HttpGet]
     public async Task<IActionResult> Index(
         int pageNumber = 1,
         int pageSize = 20,
-        IList<string>? selectedModificationIds = null,
+        List<string>? selectedModificationIds = null,
         string? sortField = nameof(ModificationsModel.CreatedAt),
         string? sortDirection = SortDirections.Ascending)
     {
-        var model = new ModificationsTasklistViewModel();
+        var model = new ModificationsTasklistViewModel
+        {
+            SelectedModificationIds = selectedModificationIds ?? []
+        };
 
         var modQuery = new ModificationSearchRequest()
         {
@@ -54,6 +58,7 @@ public class ModificationsTasklistController(IApplicationsService applicationsSe
             })
             .ToList() ?? [];
 
+        // mark selected modifications as such in the view model
         foreach (var mod in model.Modifications)
         {
             if (selectedModificationIds?.Contains(mod.Modification.ModificationId) == true)
@@ -65,9 +70,17 @@ public class ModificationsTasklistController(IApplicationsService applicationsSe
         model.Pagination = new PaginationViewModel(pageNumber, pageSize, result?.Content?.TotalCount ?? 0)
         {
             SortDirection = sortDirection,
-            SortField = sortField
+            SortField = sortField,
+            FormName = "tasklist-selection"
         };
 
         return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> AssignModifications(List<string> selectedModificationIds)
+    {
+        // logic for assigning modifications
+        throw new NotImplementedException();
     }
 }
