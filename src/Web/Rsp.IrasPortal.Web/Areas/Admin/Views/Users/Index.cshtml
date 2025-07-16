@@ -28,17 +28,6 @@
 		ViewData.ModelState.Values.Any(v => v.Errors.Count > 0);
 }
 
-@functions {
-	private bool CanOpenPanelForField(string fieldName) =>
-		ViewData.ModelState.TryGetValue(fieldName, out var state) && state.Errors.Any();
-
-	private bool CanOpenPanelForAnyField(params string[] fieldNames) =>
-		fieldNames.Any(CanOpenPanelForField);
-
-	private bool CanOpenFilterPanel() =>
-		ViewData.ModelState.Values.Any(v => v.Errors.Count > 0);
-}
-
 <div class="govuk-grid-row">
 	<div class="govuk-grid-column-one-half">
 		<h1 class="govuk-heading-l">Manage users</h1>
