@@ -38,7 +38,7 @@ public class ApprovalsController
     {
         var model = new ApprovalsSearchViewModel();
 
-        if (TempData.ContainsKey(TempDataKeys.ApprovalsSearchModel))
+       if (TempData.ContainsKey(TempDataKeys.ApprovalsSearchModel))
         {
             var json = TempData.Peek(TempDataKeys.ApprovalsSearchModel)?.ToString();
             if (!string.IsNullOrEmpty(json))
@@ -115,7 +115,31 @@ public class ApprovalsController
     [HttpGet]
     public IActionResult ClearFilters()
     {
-        TempData.Remove(TempDataKeys.ApprovalsSearchModel);
+        if (!TempData.TryGetValue(TempDataKeys.ApprovalsSearchModel, out var tempDataValue))
+        {
+            return RedirectToAction(nameof(Search));
+        }
+
+        var json = tempDataValue?.ToString();
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return RedirectToAction(nameof(Search));
+        }
+
+        var search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json);
+        if (search == null)
+        {
+            return RedirectToAction(nameof(Search));
+        }
+
+        // Retain only the IRAS Project ID
+        var cleanedSearch = new ApprovalsSearchModel
+        {
+            IrasId = search.IrasId
+        };
+
+        TempData[TempDataKeys.ApprovalsSearchModel] = JsonSerializer.Serialize(cleanedSearch);
+
         return RedirectToAction(nameof(Search));
     }
 
@@ -143,7 +167,7 @@ public class ApprovalsController
                 search.ChiefInvestigatorName = null;
                 break;
 
-            case "projecttitle":
+            case "shortprojecttitle":
                 search.ShortProjectTitle = null;
                 break;
 
@@ -152,11 +176,11 @@ public class ApprovalsController
                 search.SponsorOrgSearch = new OrganisationSearchViewModel();
                 break;
 
-            case "fromdate":
+            case "datemodificationsubmitted-from":
                 search.FromDay = search.FromMonth = search.FromYear = null;
                 break;
 
-            case "todate":
+            case "datemodificationsubmitted-to":
                 search.ToDay = search.ToMonth = search.ToYear = null;
                 break;
 
