@@ -89,26 +89,26 @@ public class ProjectModificationController
         return RedirectToAction(nameof(AreaOfChange));
     }
 
+    /// <summary>
+    /// Displays the Area of Change selection screen.
+    /// Retrieves area of change data and stores it in session for later reuse.
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> AreaOfChange()
     {
         var response = await projectModificationsService.GetAreaOfChanges();
+
+        // Handle case when no area of change data is returned from service
         if (response.Content == null)
         {
             return View(new AreaOfChangeViewModel
             {
-                AreaOfChangeOptions = new List<SelectListItem>
-            {
-                new SelectListItem { Text = "Select", Value = "" }
-            },
-                SpecificChangeOptions = new List<SelectListItem>
-            {
-                new SelectListItem { Text = "Select", Value = "" }
-            }
+                AreaOfChangeOptions = new List<SelectListItem> { new SelectListItem { Text = "Select", Value = "" } },
+                SpecificChangeOptions = new List<SelectListItem> { new SelectListItem { Text = "Select", Value = "" } }
             });
         }
 
-        // save the list of area of changes in session to get it later
+        // Cache area of change list in session for future use (e.g., specific change filtering)
         HttpContext.Session.SetString(SessionKeys.AreaOfChanges, JsonSerializer.Serialize(response.Content));
 
         var viewModel = new AreaOfChangeViewModel
@@ -117,24 +117,19 @@ public class ProjectModificationController
             ShortTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
             IrasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty,
             ModificationIdentifier = TempData.Peek(TempDataKeys.ProjectModificationIdentifier) as string ?? string.Empty,
-
             AreaOfChangeOptions = response.Content
-                .Select(a => new SelectListItem
-                {
-                    Value = a.Id.ToString(),
-                    Text = a.Name
-                })
+                .Select(a => new SelectListItem { Value = a.Id.ToString(), Text = a.Name })
                 .Prepend(new SelectListItem { Value = "", Text = "Select" }),
-
-            SpecificChangeOptions = new List<SelectListItem>
-            {
-                new SelectListItem { Value = "", Text = "Select" }
-            }
+            SpecificChangeOptions = new List<SelectListItem> { new SelectListItem { Value = "", Text = "Select" } }
         };
 
         return View(viewModel);
     }
 
+    /// <summary>
+    /// Returns the specific changes related to a selected Area of Change.
+    /// Pulls data from session cache for performance.
+    /// </summary>
     [HttpGet]
     public IActionResult GetSpecificChangesByAreaId(int areaOfChangeId)
     {
@@ -145,18 +140,9 @@ public class ProjectModificationController
         var areaOfChanges = JsonSerializer.Deserialize<List<GetAreaOfChangesResponse>>(sessionData)!;
         var selectedArea = areaOfChanges.FirstOrDefault(a => a.Id == areaOfChangeId);
 
-        var specificChanges = new List<ModificationSpecificAreaOfChangeDto>();
+        var specificChanges = selectedArea?.ModificationSpecificAreaOfChanges?.ToList() ?? new List<ModificationSpecificAreaOfChangeDto>();
 
-        if (selectedArea?.ModificationSpecificAreaOfChanges != null)
-        {
-            specificChanges = selectedArea.ModificationSpecificAreaOfChanges.ToList();
-        }
-
-        var selectList = new List<SelectListItem>
-        {
-            new SelectListItem { Value = "", Text = "Select" }
-        };
-
+        var selectList = new List<SelectListItem> { new SelectListItem { Value = "", Text = "Select" } };
         selectList.AddRange(specificChanges.Select(sc => new SelectListItem
         {
             Value = sc.Id.ToString(),
@@ -166,6 +152,10 @@ public class ProjectModificationController
         return Json(selectList);
     }
 
+    /// <summary>
+    /// Processes user’s selection of Area and Specific Change and redirects based on journey type.
+    /// Saves the modification change to backend and handles validation.
+    /// </summary>
     [HttpPost]
     public async Task<IActionResult> ConfirmModificationJourney(AreaOfChangeViewModel model)
     {
@@ -187,6 +177,10 @@ public class ProjectModificationController
         return RedirectBasedOnJourneyType(journeyType, model);
     }
 
+    /// <summary>
+    /// Returns the view for selecting a participating organisation.
+    /// Populates metadata from TempData.
+    /// </summary>
     [HttpGet]
     public IActionResult ParticipatingOrganisation()
     {
@@ -201,6 +195,10 @@ public class ProjectModificationController
         return View(nameof(SearchOrganisation), viewModel);
     }
 
+    /// <summary>
+    /// Returns the view to update the planned end date of the project.
+    /// Populates metadata from TempData.
+    /// </summary>
     [HttpGet]
     public IActionResult PlannedEndDate()
     {
@@ -215,6 +213,10 @@ public class ProjectModificationController
         return View(nameof(PlannedEndDate), viewModel);
     }
 
+    /// <summary>
+    /// Handles search form submission for participant organisation lookup.
+    /// Validates the search model and returns the view with errors if needed.
+    /// </summary>
     [HttpPost]
     public async Task<IActionResult> SearchOrganisation(SearchOrganisationViewModel model)
     {
@@ -230,6 +232,9 @@ public class ProjectModificationController
         return View(nameof(SearchOrganisation), model);
     }
 
+    /// <summary>
+    /// Adds validation errors to ModelState and rebuilds dropdowns from session.
+    /// </summary>
     private void HandleValidationErrors(ValidationResult validationResult, AreaOfChangeViewModel model)
     {
         foreach (var error in validationResult.Errors)
@@ -245,6 +250,9 @@ public class ProjectModificationController
         }
     }
 
+    /// <summary>
+    /// Populates AreaOfChange and SpecificChange dropdowns based on current selection.
+    /// </summary>
     private void PopulateDropdownOptions(AreaOfChangeViewModel model, List<GetAreaOfChangesResponse> areaOfChanges)
     {
         model.AreaOfChangeOptions = areaOfChanges
@@ -267,17 +275,17 @@ public class ProjectModificationController
                     Selected = sc.Id == model.SpecificChangeId
                 })
                 .Prepend(new SelectListItem { Value = "", Text = "Select" })
-                ?? new List<SelectListItem> { new SelectListItem { Value = "", Text = "Select" } };
+                ?? [new() { Value = "", Text = "Select" }];
         }
         else
         {
-            model.SpecificChangeOptions = new List<SelectListItem>
-           {
-               new SelectListItem { Value = "", Text = "Select" }
-           };
+            model.SpecificChangeOptions = [new SelectListItem { Value = "", Text = "Select" }];
         }
     }
 
+    /// <summary>
+    /// Saves a new ProjectModificationChange record to the backend based on user selection.
+    /// </summary>
     private async Task SaveModificationChange(AreaOfChangeViewModel model, Guid modificationId)
     {
         var respondent = this.GetRespondentFromContext();
@@ -300,10 +308,16 @@ public class ProjectModificationController
         }
     }
 
+    /// <summary>
+    /// Retrieves the JourneyType of the selected specific change from session.
+    /// </summary>
     private string? GetJourneyTypeFromSession(AreaOfChangeViewModel model)
     {
         var sessionData = HttpContext.Session.GetString(SessionKeys.AreaOfChanges);
-        if (string.IsNullOrWhiteSpace(sessionData)) return null;
+        if (string.IsNullOrWhiteSpace(sessionData))
+        {
+            return null;
+        }
 
         var areaOfChanges = JsonSerializer.Deserialize<List<GetAreaOfChangesResponse>>(sessionData)!;
         var selectedChange = areaOfChanges
@@ -315,6 +329,9 @@ public class ProjectModificationController
         return selectedChange?.JourneyType;
     }
 
+    /// <summary>
+    /// Redirects user to the appropriate screen based on the journey type of their selection.
+    /// </summary>
     private IActionResult RedirectBasedOnJourneyType(string? journeyType, AreaOfChangeViewModel model)
     {
         return journeyType switch
