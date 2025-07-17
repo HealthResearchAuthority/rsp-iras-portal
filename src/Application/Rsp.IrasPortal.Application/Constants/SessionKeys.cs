@@ -12,5 +12,4 @@ public static class SessionKeys
     public const string FirstLogin = "session:first_login";
     public const string Alive = "session:alive";
     public const string ApprovalsSearch = "session:approvalssearch";
-    public const string AreaOfChanges = "session:areaofchanges";
 }

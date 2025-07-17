@@ -98,18 +98,30 @@ public class ProjectModificationController
     {
         var response = await projectModificationsService.GetAreaOfChanges();
 
+        // If the service call failed, return a generic error page
+        if (!response.IsSuccessStatusCode)
+        {
+            return this.ServiceError(response);
+        }
+
         // Handle case when no area of change data is returned from service
         if (response.Content == null)
         {
             return View(new AreaOfChangeViewModel
             {
-                AreaOfChangeOptions = new List<SelectListItem> { new SelectListItem { Text = "Select", Value = "" } },
-                SpecificChangeOptions = new List<SelectListItem> { new SelectListItem { Text = "Select", Value = "" } }
+                AreaOfChangeOptions = new List<SelectListItem>
+                {
+                    new() { Text = "Select", Value = "" }
+                },
+                SpecificChangeOptions = new List<SelectListItem>
+                {
+                    new() { Text = "Select", Value = "" }
+                }
             });
         }
 
-        // Cache area of change list in session for future use (e.g., specific change filtering)
-        HttpContext.Session.SetString(SessionKeys.AreaOfChanges, JsonSerializer.Serialize(response.Content));
+        // Store the list of area of changes in TempData (as serialized JSON string)
+        TempData[TempDataKeys.AreaOfChanges] = JsonSerializer.Serialize(response.Content);
 
         var viewModel = new AreaOfChangeViewModel
         {
@@ -133,16 +145,18 @@ public class ProjectModificationController
     [HttpGet]
     public IActionResult GetSpecificChangesByAreaId(int areaOfChangeId)
     {
-        var sessionData = HttpContext.Session.GetString(SessionKeys.AreaOfChanges);
-        if (string.IsNullOrWhiteSpace(sessionData))
+        var tempDataString = TempData.Peek(TempDataKeys.AreaOfChanges) as string;
+
+        if (string.IsNullOrWhiteSpace(tempDataString))
             return BadRequest("Area of changes not available.");
 
-        var areaOfChanges = JsonSerializer.Deserialize<List<GetAreaOfChangesResponse>>(sessionData)!;
+        var areaOfChanges = JsonSerializer.Deserialize<List<GetAreaOfChangesResponse>>(tempDataString)!;
         var selectedArea = areaOfChanges.FirstOrDefault(a => a.Id == areaOfChangeId);
 
         var specificChanges = selectedArea?.ModificationSpecificAreaOfChanges?.ToList() ?? new List<ModificationSpecificAreaOfChangeDto>();
 
         var selectList = new List<SelectListItem> { new SelectListItem { Value = "", Text = "Select" } };
+
         selectList.AddRange(specificChanges.Select(sc => new SelectListItem
         {
             Value = sc.Id.ToString(),
@@ -242,10 +256,10 @@ public class ProjectModificationController
             ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
         }
 
-        var sessionData = HttpContext.Session.GetString(SessionKeys.AreaOfChanges);
-        if (!string.IsNullOrWhiteSpace(sessionData))
+        var tempDataString = TempData.Peek(TempDataKeys.AreaOfChanges) as string;
+        if (!string.IsNullOrWhiteSpace(tempDataString))
         {
-            var areaOfChanges = JsonSerializer.Deserialize<List<GetAreaOfChangesResponse>>(sessionData)!;
+            var areaOfChanges = JsonSerializer.Deserialize<List<GetAreaOfChangesResponse>>(tempDataString)!;
             PopulateDropdownOptions(model, areaOfChanges);
         }
     }
@@ -313,13 +327,13 @@ public class ProjectModificationController
     /// </summary>
     private string? GetJourneyTypeFromSession(AreaOfChangeViewModel model)
     {
-        var sessionData = HttpContext.Session.GetString(SessionKeys.AreaOfChanges);
-        if (string.IsNullOrWhiteSpace(sessionData))
+        var tempDataString = TempData.Peek(TempDataKeys.AreaOfChanges) as string;
+        if (string.IsNullOrWhiteSpace(tempDataString))
         {
             return null;
         }
 
-        var areaOfChanges = JsonSerializer.Deserialize<List<GetAreaOfChangesResponse>>(sessionData)!;
+        var areaOfChanges = JsonSerializer.Deserialize<List<GetAreaOfChangesResponse>>(tempDataString)!;
         var selectedChange = areaOfChanges
             .FirstOrDefault(a => a.Id == model.AreaOfChangeId)?
             .ModificationSpecificAreaOfChanges?

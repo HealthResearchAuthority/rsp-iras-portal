@@ -31,27 +31,10 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ProjectModificati
             new(nameof(model.AreaOfChangeId), "Area is required")
             }));
 
-        var sessionMock = new Mock<ISession>();
-        sessionMock
-            .Setup(s => s.Keys)
-            .Returns([SessionKeys.AreaOfChanges]);
-        sessionMock
-            .Setup(s => s.TryGetValue(SessionKeys.AreaOfChanges, out It.Ref<byte[]?>.IsAny))
-            .Returns((string key, out byte[]? value) =>
-            {
-                if (key != SessionKeys.AreaOfChanges)
-                {
-                    value = null;
-                    return false;
-                }
-
-                value = JsonSerializer.SerializeToUtf8Bytes(areaChanges);
-                return true;
-            });
-
-        var httpContext = new DefaultHttpContext { Session = sessionMock.Object };
-
-        Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.AreaOfChanges] = JsonSerializer.Serialize(areaChanges)
+        };
 
         // Act
         var result = await Sut.ConfirmModificationJourney(model);
@@ -95,33 +78,16 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ProjectModificati
         }
     };
 
-        var sessionMock = new Mock<ISession>();
-        sessionMock
-            .Setup(s => s.Keys)
-            .Returns([SessionKeys.AreaOfChanges]);
-        sessionMock
-            .Setup(s => s.TryGetValue(SessionKeys.AreaOfChanges, out It.Ref<byte[]?>.IsAny))
-            .Returns((string key, out byte[]? value) =>
-            {
-                if (key != SessionKeys.AreaOfChanges)
-                {
-                    value = null;
-                    return false;
-                }
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.AreaOfChanges] = JsonSerializer.Serialize(areaChanges),
+            [TempDataKeys.ProjectModificationId] = Guid.NewGuid()
+        };
 
-                value = JsonSerializer.SerializeToUtf8Bytes(areaChanges);
-                return true;
-            });
-
-        var httpContext = new DefaultHttpContext { Session = sessionMock.Object };
+        var httpContext = new DefaultHttpContext();
         httpContext.Items["Respondent"] = respondent;
 
         Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
-
-        Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>())
-        {
-            [TempDataKeys.ProjectModificationId] = Guid.NewGuid()
-        };
 
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.CreateModificationChange(It.IsAny<ProjectModificationChangeRequest>()))
@@ -154,25 +120,12 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ProjectModificati
             .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<AreaOfChangeViewModel>>(), default))
             .ReturnsAsync(new ValidationResult());
 
-        var sessionMock = new Mock<ISession>();
-        sessionMock
-            .Setup(s => s.Keys)
-            .Returns([SessionKeys.AreaOfChanges]);
-        sessionMock
-            .Setup(s => s.TryGetValue(SessionKeys.AreaOfChanges, out It.Ref<byte[]?>.IsAny))
-            .Returns((string key, out byte[]? value) =>
-            {
-                if (key != SessionKeys.AreaOfChanges)
-                {
-                    value = null;
-                    return false;
-                }
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.AreaOfChanges] = JsonSerializer.Serialize(areaChanges)
+        };
 
-                value = JsonSerializer.SerializeToUtf8Bytes(areaChanges);
-                return true;
-            });
-
-        var httpContext = new DefaultHttpContext { Session = sessionMock.Object };
+        var httpContext = new DefaultHttpContext();
         httpContext.Items["Respondent"] = new { GivenName = "Test", FamilyName = "User" };
 
         Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };

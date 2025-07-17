@@ -31,4 +31,5 @@ public struct TempDataKeys
     public const string ShowNotificationBanner = "td:show_notification_banner";
     public const string ApprovalsSearchModel = "td:approvalsSearchModel";
     public const string SpecificAreaOfChangeText = "td:specificAreaOfChangeText";
+    public const string AreaOfChanges = "td:areaofchanges";
 }
