@@ -135,6 +135,7 @@ public class ProjectModificationController
             SpecificChangeOptions = new List<SelectListItem> { new SelectListItem { Value = "", Text = "Select" } }
         };
 
+        // Populate the dropdown options based on any existing selections
         return View(viewModel);
     }
 
@@ -148,21 +149,30 @@ public class ProjectModificationController
         var tempDataString = TempData.Peek(TempDataKeys.AreaOfChanges) as string;
 
         if (string.IsNullOrWhiteSpace(tempDataString))
+        {
             return BadRequest("Area of changes not available.");
+        }
 
+        // Deserialize the area of changes from TempData
         var areaOfChanges = JsonSerializer.Deserialize<List<GetAreaOfChangesResponse>>(tempDataString)!;
+
+        // Find the specific area of change based on the provided ID
         var selectedArea = areaOfChanges.FirstOrDefault(a => a.Id == areaOfChangeId);
 
+        // If no area is found, return an empty list
         var specificChanges = selectedArea?.ModificationSpecificAreaOfChanges?.ToList() ?? new List<ModificationSpecificAreaOfChangeDto>();
 
+        // Create a SelectListItem list for the specific changes
         var selectList = new List<SelectListItem> { new SelectListItem { Value = "", Text = "Select" } };
 
+        // Add each specific change to the SelectListItem list
         selectList.AddRange(specificChanges.Select(sc => new SelectListItem
         {
             Value = sc.Id.ToString(),
             Text = sc.Name
         }));
 
+        // Return the list as a JSON result
         return Json(selectList);
     }
 
@@ -187,7 +197,10 @@ public class ProjectModificationController
             await SaveModificationChange(model, newGuid);
         }
 
+        // Retrieve the journey type from the selected specific change
         var journeyType = GetJourneyTypeFromSession(model);
+
+        // If no journey type is specified, return the AreaOfChange view
         return RedirectBasedOnJourneyType(journeyType, model);
     }
 
@@ -206,6 +219,7 @@ public class ProjectModificationController
             PageTitle = TempData.Peek(TempDataKeys.SpecificAreaOfChangeText) as string ?? string.Empty
         };
 
+        // Retrieve the current organisation search term from TempData
         return View(nameof(SearchOrganisation), viewModel);
     }
 
@@ -224,6 +238,7 @@ public class ProjectModificationController
             PageTitle = TempData.Peek(TempDataKeys.SpecificAreaOfChangeText) as string ?? string.Empty
         };
 
+        // Retrieve the current planned end date from TempData
         return View(nameof(PlannedEndDate), viewModel);
     }
 
@@ -243,6 +258,7 @@ public class ProjectModificationController
             }
         }
 
+        // If there are validation errors, repopulate dropdowns from session
         return View(nameof(SearchOrganisation), model);
     }
 
@@ -305,6 +321,7 @@ public class ProjectModificationController
         var respondent = this.GetRespondentFromContext();
         var name = $"{respondent.GivenName} {respondent.FamilyName}";
 
+        // Create a new ProjectModificationChangeRequest
         var modificationChangeResponse = await projectModificationsService.CreateModificationChange(new ProjectModificationChangeRequest
         {
             AreaOfChange = model.AreaOfChangeId.ToString(),
@@ -315,6 +332,7 @@ public class ProjectModificationController
             UpdatedBy = name
         });
 
+        // Store the modification change ID in TempData for later use
         if (modificationChangeResponse.IsSuccessStatusCode)
         {
             var modificationChange = modificationChangeResponse.Content!;
@@ -333,12 +351,15 @@ public class ProjectModificationController
             return null;
         }
 
+        // Deserialize the area of changes from TempData
         var areaOfChanges = JsonSerializer.Deserialize<List<GetAreaOfChangesResponse>>(tempDataString)!;
+        // Find the specific change based on the selected area and specific change IDs
         var selectedChange = areaOfChanges
             .FirstOrDefault(a => a.Id == model.AreaOfChangeId)?
             .ModificationSpecificAreaOfChanges?
             .FirstOrDefault(sc => sc.Id == model.SpecificChangeId);
 
+        // Store the name of the specific area of change in TempData for later use
         TempData[TempDataKeys.SpecificAreaOfChangeText] = selectedChange?.Name ?? string.Empty;
         return selectedChange?.JourneyType;
     }
@@ -348,6 +369,7 @@ public class ProjectModificationController
     /// </summary>
     private IActionResult RedirectBasedOnJourneyType(string? journeyType, AreaOfChangeViewModel model)
     {
+        // If no journey type is specified, return the AreaOfChange view
         return journeyType switch
         {
             ModificationJourneyTypes.ParticipatingOrganisation => RedirectToAction(nameof(ParticipatingOrganisation)),
