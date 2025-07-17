@@ -186,7 +186,7 @@
                             <div class="search-filter-section__content">
                                 <div class="govuk-form-group govuk-!-margin-bottom-2">
                                     <fieldset class="govuk-fieldset">
-										<rsp-gds-input asp-for="Search.ShortProjectTitle" label-text="Enter the name of the short project title" width-class="govuk-!-width-three-quarters" label-html-class="font-weight-none" />
+                                        <rsp-gds-input asp-for="Search.ShortProjectTitle" label-text="Enter the name of the short project title" width-class="govuk-!-width-three-quarters" label-html-class="font-weight-none" />
                                     </fieldset>
                                 </div>
                             </div>
@@ -385,7 +385,7 @@
 @{
     @if (!Model.Modifications.Any() 
          && Model.Search is { IrasId: not null, Filters.Count: > 1 })
-	{
+    {
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds search-filter-error-border">
                 <h2 class="govuk-heading-l">There are no matching results</h2>
@@ -437,7 +437,7 @@
                                 </th>
                             </tr>
                         </thead>
-                        <tbody class="govuk-table__body">
+                        <tbody class="govuk-table__body govuk-body-s">
                             @{
                                 foreach (var modification in Model.Modifications)
                                 {
