@@ -2,11 +2,8 @@
 
 namespace Rsp.IrasPortal.Web.Models;
 
-public class AreaOfChangeViewModel
+public class AreaOfChangeViewModel : BaseProjectModificationViewModel
 {
-    public string IrasId { get; set; }
-    public string ShortTitle { get; set; }
-    public string ModificationIdentifier { get; set; }
     public int? AreaOfChangeId { get; set; }
     public int? SpecificChangeId { get; set; }
 

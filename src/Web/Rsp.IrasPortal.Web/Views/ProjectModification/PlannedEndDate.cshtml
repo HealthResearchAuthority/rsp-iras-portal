@@ -3,12 +3,17 @@
 @{
 	ViewData["Title"] = "Planned End Date";
 	var errorSummaryTitle = "There is a problem";
+
+	(string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
+	navModel = ("pmc:areaofchange", "Back", new());
 }
 
 <govuk-header />
 
 <div class="govuk-width-container">
-	<a href="javascript:history.back()" class="govuk-back-link">Back</a>
+	@section BackNavigation {
+		<partial name="_BackNavigation" model="navModel.Value" />
+	}
 
 	@if (!ViewData.ModelState.IsValid)
 	{
@@ -29,22 +34,8 @@
 		<div class="govuk-grid-row">
 			<div class="govuk-grid-column-two-thirds">
 				<form asp-action="PlannedEndDate" method="post">
-
-					<h1 class="govuk-heading-l">@Model.PageTitle</h1>
-
+					<partial name="_ProjectModificationSummary" model="Model" />
 					<dl class="govuk-summary-list">
-						<div class="govuk-summary-list__row">
-							<dt class="govuk-summary-list__key">IRAS ID</dt>
-							<dd class="govuk-summary-list__value">@Model.IrasId</dd>
-						</div>
-						<div class="govuk-summary-list__row">
-							<dt class="govuk-summary-list__key">Short project title</dt>
-							<dd class="govuk-summary-list__value">@Model.ShortTitle</dd>
-						</div>
-						<div class="govuk-summary-list__row">
-							<dt class="govuk-summary-list__key">Modification ID</dt>
-							<dd class="govuk-summary-list__value">@Model.ModificationIdentifier</dd>
-						</div>
 						<div class="govuk-summary-list__row">
 							<dt class="govuk-summary-list__key">Current planned end date</dt>
 							<dd class="govuk-summary-list__value govuk-!-font-weight-bold">

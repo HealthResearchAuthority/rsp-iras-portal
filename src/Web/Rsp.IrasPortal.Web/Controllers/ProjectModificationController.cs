@@ -113,6 +113,7 @@ public class ProjectModificationController
 
         var viewModel = new AreaOfChangeViewModel
         {
+            PageTitle = "Select area of change",
             ShortTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
             IrasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty,
             ModificationIdentifier = TempData.Peek(TempDataKeys.ProjectModificationIdentifier) as string ?? string.Empty,

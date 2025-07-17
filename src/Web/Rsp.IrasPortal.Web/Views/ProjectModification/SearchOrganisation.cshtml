@@ -3,38 +3,24 @@
 @{
 	ViewData["Title"] = "Search participating organisation";
 	var errorSummaryTitle = "There is a problem";
+
+	(string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
+	navModel = ("pmc:areaofchange", "Back", new());
 }
 
 <govuk-header />
 
-<div class="govuk-width-container">
-	<a href="javascript:history.back()" class="govuk-back-link">Back</a>
-
+<div class="govuk-width-container">	
+	@section BackNavigation {
+		<partial name="_BackNavigation" model="navModel.Value" />
+	}
 	<main class="govuk-main-wrapper">
 		<div class="govuk-grid-row">
 			<div class="govuk-grid-column-two-thirds">
 
 				<form asp-action="SearchOrganisation" method="post" novalidate>
-					@Html.HiddenFor(m => m.IrasId)
-					@Html.HiddenFor(m => m.ShortTitle)
-					@Html.HiddenFor(m => m.ModificationIdentifier)
 					<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
-					<h1 class="govuk-heading-l">@Model.PageTitle</h1>
-
-					<dl class="govuk-summary-list">
-						<div class="govuk-summary-list__row">
-							<dt class="govuk-summary-list__key">IRAS ID</dt>
-							<dd class="govuk-summary-list__value">@Model.IrasId</dd>
-						</div>
-						<div class="govuk-summary-list__row">
-							<dt class="govuk-summary-list__key">Short project title</dt>
-							<dd class="govuk-summary-list__value">@Model.ShortTitle</dd>
-						</div>
-						<div class="govuk-summary-list__row">
-							<dt class="govuk-summary-list__key">Modification ID</dt>
-							<dd class="govuk-summary-list__value">@Model.ModificationIdentifier</dd>
-						</div>
-					</dl>
+					<partial name="_ProjectModificationSummary" model="Model" />
 
 					<div class="govuk-form-group @(ViewData.ModelState.ContainsKey(nameof(Model.SearchTerm)) && ViewData.ModelState[nameof(Model.SearchTerm)]?.Errors?.Any() == true ? "govuk-form-group--error" : "")">
 						<label class="govuk-label" for="SearchTerm">Organisation name</label>
