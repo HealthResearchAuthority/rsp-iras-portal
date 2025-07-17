@@ -37,8 +37,8 @@
     }
 }
 
-<div class="js-component-gds-autocomplete">
-    <rsp-gds-autocomplete asp-for="Questions[index].AnswerText"
+<rsp-gds-autocomplete asp-for="Questions[index].AnswerText"
+                      label-html-class="js-hidden"
                       field-id="@(question.QuestionId)_Text"
                       label-text="@question.QuestionText"
                       api-url="/organisation/getorganisations"
@@ -47,8 +47,7 @@
                       dataquestionid-attr="@questionId"
                       conditional="@conditional"
                       auto-complete-enabled-id="auto_search">
-    </rsp-gds-autocomplete>
-</div>
+</rsp-gds-autocomplete>
 
 @* This value of this input box will be submitted when javascript is enabled
     or when javascript is disabled but the value was previously selected
@@ -65,8 +64,6 @@
        value="false" hidden />
 
 <noscript>    
-    @* Overwrite this style, to hide rsp-gds-autocomplete if javascript is disabled *@
-    <style>.js-component-gds-autocomplete { display: none !important; }</style>
     @{
         string? searchText;
 

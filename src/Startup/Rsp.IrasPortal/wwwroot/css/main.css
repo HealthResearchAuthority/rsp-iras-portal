@@ -824,3 +824,7 @@ button.govuk-pagination__item--current {
 .review-body-search .govuk-input {
   flex-grow: 1;
 }
+
+.govuk-label.js-hidden {
+  display: none;
+}
