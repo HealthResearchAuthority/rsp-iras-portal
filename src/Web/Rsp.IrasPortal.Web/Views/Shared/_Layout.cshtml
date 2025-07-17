@@ -200,7 +200,7 @@
 	<script src="~/lib/jquery/dist/jquery.js"></script>
 	<script src="~/assets/js/accessible-autocomplete.min.js"></script>
 	<script src="~/js/accessible-autocomplete-wrapper.js"></script>
-
+	@RenderSection("Scripts", required: false)
 </body>
 
 @await RenderSectionAsync("FooterResources", false)
