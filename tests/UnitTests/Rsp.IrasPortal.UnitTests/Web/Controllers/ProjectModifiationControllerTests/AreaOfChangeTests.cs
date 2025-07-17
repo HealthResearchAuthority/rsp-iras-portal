@@ -29,8 +29,6 @@ public class AreaOfChangeTests : TestServiceBase<ProjectModificationController>
 
         tempData[TempDataKeys.IrasId] = irasId;
 
-        Sut.TempData = tempData;
-
         // Mock GetRespondentFromContext extension
         var respondent = new { GivenName = "John", FamilyName = "Doe" };
 
@@ -60,36 +58,17 @@ public class AreaOfChangeTests : TestServiceBase<ProjectModificationController>
             }
         };
 
-        var session = new Mock<ISession>();
-        session
-            .Setup(s => s.Keys)
-            .Returns([SessionKeys.AreaOfChanges]);
+        tempData[TempDataKeys.AreaOfChanges] = JsonSerializer.Serialize(modificationResponse);
 
-        session
-            .Setup(s => s.TryGetValue(SessionKeys.AreaOfChanges, out It.Ref<byte[]?>.IsAny))
-            .Returns((string key, out byte[]? value) =>
-            {
-                if (key != SessionKeys.AreaOfChanges)
-                {
-                    value = null;
-                    return false;
-                }
-
-                value = JsonSerializer.SerializeToUtf8Bytes(modificationResponse);
-                return true;
-            });
-
-        var httpContext = new DefaultHttpContext
-        {
-            Session = session.Object
-        };
+        Sut.TempData = tempData;
 
         Sut.ControllerContext = new ControllerContext
         {
-            HttpContext = httpContext
+            HttpContext = new DefaultHttpContext
+            {
+                Items = { ["Respondent"] = respondent }
+            }
         };
-
-        Sut.HttpContext.Items["Respondent"] = respondent;
 
         var serviceResponse = new ServiceResponse<IEnumerable<GetAreaOfChangesResponse>>
         {

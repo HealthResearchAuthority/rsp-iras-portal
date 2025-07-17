@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Responses;
@@ -41,32 +42,9 @@ public class GetSpecificChangeByIdTests : TestServiceBase<ProjectModificationCon
             }
         };
 
-        var sessionMock = new Mock<ISession>();
-        sessionMock
-            .Setup(s => s.Keys)
-            .Returns([SessionKeys.AreaOfChanges]);
-        sessionMock
-            .Setup(s => s.TryGetValue(SessionKeys.AreaOfChanges, out It.Ref<byte[]?>.IsAny))
-            .Returns((string key, out byte[]? value) =>
-            {
-                if (key != SessionKeys.AreaOfChanges)
-                {
-                    value = null;
-                    return false;
-                }
-
-                value = JsonSerializer.SerializeToUtf8Bytes(modificationResponse);
-                return true;
-            });
-
-        var httpContext = new DefaultHttpContext
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            Session = sessionMock.Object
-        };
-
-        Sut.ControllerContext = new ControllerContext
-        {
-            HttpContext = httpContext
+            [TempDataKeys.AreaOfChanges] = JsonSerializer.Serialize(modificationResponse)
         };
 
         // Act
@@ -85,19 +63,8 @@ public class GetSpecificChangeByIdTests : TestServiceBase<ProjectModificationCon
     public void GetSpecificChangesByAreaId_ReturnsBadRequest_WhenSessionIsMissing()
     {
         // Arrange
-        var sessionMock = new Mock<ISession>();
-        sessionMock
-            .Setup(s => s.Keys)
-            .Returns([SessionKeys.AreaOfChanges]);
-
-        var httpContext = new DefaultHttpContext
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            Session = sessionMock.Object
-        };
-
-        Sut.ControllerContext = new ControllerContext
-        {
-            HttpContext = httpContext
         };
 
         // Act

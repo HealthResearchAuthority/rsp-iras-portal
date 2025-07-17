@@ -1,4 +1,5 @@
-﻿@model Rsp.IrasPortal.Web.Models.AreaOfChangeViewModel
+﻿@using Rsp.Gds.Component.Models
+@model Rsp.IrasPortal.Web.Models.AreaOfChangeViewModel
 @{
 	ViewData["Title"] = "Select area of change";
 }
@@ -21,7 +22,7 @@
 			<div class="govuk-grid-column-two-thirds">
 				<form asp-action="ConfirmModificationJourney" method="post">
 					<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
-					
+
 					<partial name="_ProjectModificationSummary" model="Model" />
 
 					@{
@@ -72,33 +73,31 @@
 		</div>
 	</main>
 </div>
-@section Scripts {
-	<script>
-		document.getElementById("AreaOfChangeId").addEventListener("change", function () {
-			const areaId = this.value;
-			const specificChangeDropdown = document.getElementById("SpecificChangeId");
+<script>
+	$(document).ready(function () {
+		$('#AreaOfChangeId').on('change', function () {
+			const areaId = $(this).val();
+			const $specificChangeDropdown = $('#SpecificChangeId');
 
 			// Clear existing options
-			specificChangeDropdown.innerHTML = '';
+			$specificChangeDropdown.empty();
 
 			// Fetch specific changes from controller
-			fetch(`/ProjectModification/GetSpecificChangesByAreaId?areaOfChangeId=${areaId}`)
-				.then(response => response.json())
-				.then(data => {
-					data.forEach(function (item) {
-						const option = document.createElement("option");
-						option.value = item.value;
-						option.textContent = item.text;
-						specificChangeDropdown.appendChild(option);
+			$.getJSON(`/ProjectModification/GetSpecificChangesByAreaId`, { areaOfChangeId: areaId })
+				.done(function (data) {
+					$.each(data, function (index, item) {
+						$specificChangeDropdown.append($('<option>', {
+							value: item.value,
+							text: item.text
+						}));
 					});
 				})
-				.catch(() => {
-					specificChangeDropdown.innerHTML = '';
-					const errorOption = document.createElement("option");
-					errorOption.value = '';
-					errorOption.textContent = 'Error loading changes';
-					specificChangeDropdown.appendChild(errorOption);
+				.fail(function () {
+					$specificChangeDropdown.empty().append($('<option>', {
+						value: '',
+						text: 'Error loading changes'
+					}));
 				});
 		});
-	</script>
-}
+	});
+</script>
