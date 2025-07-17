@@ -50,6 +50,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
     [HttpPost]
     public async Task<IActionResult> Index(int pageNumber = 1,
         int pageSize = 20,
+        string? sortField = nameof(UserViewModel.GivenName),
+        string? sortDirection = SortDirections.Ascending,
         [FromForm] UserSearchViewModel? model = null,
         [FromQuery] string? complexSearchQuery = null,
         [FromQuery] bool fromPagination = false)
@@ -79,7 +81,7 @@ public class UsersController(IUserManagementService userManagementService, IVali
         };
 
         // get the users
-        var response = await userManagementService.GetUsers(request, pageNumber, pageSize);
+        var response = await userManagementService.GetUsers(request, pageNumber, pageSize, sortField, sortDirection);
 
         // return the view if successfull
         if (response.IsSuccessStatusCode)
@@ -89,7 +91,9 @@ public class UsersController(IUserManagementService userManagementService, IVali
             var paginationModel = new PaginationViewModel(pageNumber, pageSize, response.Content?.TotalCount ?? 0)
             {
                 RouteName = "admin:users",
-                ComplexSearchQuery = model.Search
+                ComplexSearchQuery = model.Search,
+                SortField = sortField,
+                SortDirection = sortDirection
             };
 
             var reviewBodySearchViewModel = new UserSearchViewModel()
@@ -99,7 +103,9 @@ public class UsersController(IUserManagementService userManagementService, IVali
                 Search = model.Search
             };
 
-            return View("Index", reviewBodySearchViewModel); // or "Search", "ViewReviewBodies", etc.
+      
+
+            return View("Index", reviewBodySearchViewModel);
         }
 
         // return error page as api wasn't successful
@@ -590,7 +596,9 @@ public class UsersController(IUserManagementService userManagementService, IVali
 
     [Route("/admin/applyfilters", Name = "admin:applyfilters")]
     [HttpPost]
-    public async Task<IActionResult> ApplyFilters(UserSearchViewModel model)
+    public async Task<IActionResult> ApplyFilters(UserSearchViewModel model,
+        string? sortField = nameof(UserViewModel.GivenName),
+        string? sortDirection = SortDirections.Descending)
     {
         var validationResult = await searchValidator.ValidateAsync(model.Search);
 
@@ -605,9 +613,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
         }
 
         // Call the Index action directly, passing the model and default paging values
-        return await Index(1, 20, model, null, false);
+        return await Index(1, 20, sortField,sortDirection, model, null, false);
     }
-
 
     [HttpGet]
     public IActionResult ClearFilters()

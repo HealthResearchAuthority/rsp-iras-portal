@@ -42,9 +42,9 @@ public class UserManagementService(IUserManagementServiceClient client) : IUserM
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse<UsersResponse>> GetUsers(SearchUserRequest? searchQuery = null, int pageNumber = 1, int pageSize = 10)
+    public async Task<ServiceResponse<UsersResponse>> GetUsers(SearchUserRequest? searchQuery = null, int pageNumber = 1, int pageSize = 10, string? sortField = "GivenName", string? sortDirection = SortDirections.Ascending)
     {
-        var apiResponse = await client.GetUsers(searchQuery, pageNumber, pageSize);
+        var apiResponse = await client.GetUsers(searchQuery, pageNumber, pageSize, sortField,sortDirection);
 
         return apiResponse.ToServiceResponse();
     }
