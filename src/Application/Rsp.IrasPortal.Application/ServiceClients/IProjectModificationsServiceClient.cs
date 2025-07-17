@@ -51,4 +51,11 @@ public interface IProjectModificationsServiceClient
     /// <returns>An asynchronous operation that returns the newly created project modification change.</returns>
     [Post("/projectmodifications/change")]
     public Task<ApiResponse<ProjectModificationChangeResponse>> CreateModificationChange(ProjectModificationChangeRequest projectModificationChangeRequest);
+
+    /// <summary>
+    /// Gets all the area of changes and specific area of changes for the modification.
+    /// </summary>
+    /// <returns>An asynchronous operation that returns all area of changes and specific area of changes.</returns>
+    [Get("/projectmodifications/areaofchanges")]
+    public Task<ApiResponse<IEnumerable<GetAreaOfChangesResponse>>> GetAreaOfChanges();
 }

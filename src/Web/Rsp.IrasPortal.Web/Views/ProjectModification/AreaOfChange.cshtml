@@ -1,0 +1,116 @@
+﻿@model Rsp.IrasPortal.Web.Models.AreaOfChangeViewModel
+@{
+	ViewData["Title"] = "Select area of change";
+}
+
+<govuk-header />
+@{
+	// Title used in the validation error summary
+	var errorSummaryTitle = "There is a problem";
+}
+<div class="govuk-width-container">
+	<a href="javascript:history.back()" class="govuk-back-link">Back</a>
+
+	<main class="govuk-main-wrapper">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<form asp-action="ConfirmModificationJourney" method="post">
+					@Html.HiddenFor(m => m.IrasId)
+					@Html.HiddenFor(m => m.ShortTitle)
+					@Html.HiddenFor(m => m.ModificationIdentifier)
+					<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
+					<h1 class="govuk-heading-l">Select area of change</h1>
+
+					<dl class="govuk-summary-list">
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">IRAS ID</dt>
+							<dd class="govuk-summary-list__value">@Model.IrasId</dd>
+						</div>
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Short project title</dt>
+							<dd class="govuk-summary-list__value">@Model.ShortTitle</dd>
+						</div>
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Modification ID</dt>
+							<dd class="govuk-summary-list__value">@Model.ModificationIdentifier</dd>
+						</div>
+					</dl>
+
+					@{
+						var areaHasError = ViewData.ModelState.TryGetValue(nameof(Model.AreaOfChangeId), out var areaError) && areaError.Errors.Any();
+					}
+
+					<div class="govuk-form-group @(areaHasError ? "govuk-form-group--error" : "")">
+						<label class="govuk-label" for="AreaOfChangeId">Area of change</label>
+
+						@if (areaHasError)
+						{
+							<p class="govuk-error-message">
+								<span class="govuk-visually-hidden">Error:</span> @areaError.Errors.First().ErrorMessage
+							</p>
+						}
+
+						<select asp-for="AreaOfChangeId" asp-items="Model.AreaOfChangeOptions" class="govuk-select" id="AreaOfChangeId"></select>
+					</div>
+
+
+					@{
+						var specificHasError = ViewData.ModelState.TryGetValue(nameof(Model.SpecificChangeId), out var specificError) && specificError.Errors.Any();
+					}
+
+					<div class="govuk-form-group @(specificHasError ? "govuk-form-group--error" : "")">
+						<label class="govuk-label" for="SpecificChangeId">Specific change</label>
+
+						@if (specificHasError)
+						{
+							<p class="govuk-error-message">
+								<span class="govuk-visually-hidden">Error:</span> @specificError.Errors.First().ErrorMessage
+							</p>
+						}
+
+						<select asp-for="SpecificChangeId" asp-items="Model.SpecificChangeOptions" class="govuk-select" id="SpecificChangeId"></select>
+					</div>
+
+					<div class="save-buttons">
+						<button type="submit" class="govuk-button">Save and continue</button>
+						@{
+							ViewBag.Style = "govuk-button govuk-button--secondary";
+						}
+						<partial name="_SubmitButton" model="@("app:projectoverview", "Save for later", new Dictionary<string, string> { })" />
+					</div>
+					<p><a href="#" class="govuk-link">Remove this change</a></p>
+				</form>
+			</div>
+		</div>
+	</main>
+</div>
+@section Scripts {
+	<script>
+		document.getElementById("AreaOfChangeId").addEventListener("change", function () {
+			const areaId = this.value;
+			const specificChangeDropdown = document.getElementById("SpecificChangeId");
+
+			// Clear existing options
+			specificChangeDropdown.innerHTML = '';
+
+			// Fetch specific changes from controller
+			fetch(`/ProjectModification/GetSpecificChangesByAreaId?areaOfChangeId=${areaId}`)
+				.then(response => response.json())
+				.then(data => {
+					data.forEach(function (item) {
+						const option = document.createElement("option");
+						option.value = item.value;
+						option.textContent = item.text;
+						specificChangeDropdown.appendChild(option);
+					});
+				})
+				.catch(() => {
+					specificChangeDropdown.innerHTML = '';
+					const errorOption = document.createElement("option");
+					errorOption.value = '';
+					errorOption.textContent = 'Error loading changes';
+					specificChangeDropdown.appendChild(errorOption);
+				});
+		});
+	</script>
+}

@@ -47,4 +47,9 @@ public interface IProjectModificationsService : IInterceptable
     /// <param name="projectModificationChangeRequest">The request object containing details for the modification change.</param>
     /// <returns>An asynchronous operation that returns the updated project modification change.</returns>
     Task<ServiceResponse<ProjectModificationChangeResponse>> CreateModificationChange(ProjectModificationChangeRequest projectModificationChangeRequest);
+
+    /// <summary>
+    /// Gets all the area of changes and specific area of changes for the modification.
+    /// </summary>
+    Task<ServiceResponse<IEnumerable<GetAreaOfChangesResponse>>> GetAreaOfChanges();
 }

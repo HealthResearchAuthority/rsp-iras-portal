@@ -190,7 +190,7 @@ public class ApplicationController
     public IActionResult ProjectOverview()
     {
         // If there is a project modification change, show the notification banner
-        if (TempData.Peek(TempDataKeys.ProjectModificationChangeId) is not null)
+        if (TempData.Peek(TempDataKeys.ProjectModificationId) is not null)
         {
             TempData[TempDataKeys.ShowNotificationBanner] = true;
         }

@@ -1,0 +1,79 @@
+﻿@model Rsp.IrasPortal.Web.Models.SearchOrganisationViewModel
+
+@{
+	ViewData["Title"] = "Search participating organisation";
+	var errorSummaryTitle = "There is a problem";
+}
+
+<govuk-header />
+
+<div class="govuk-width-container">
+	<a href="javascript:history.back()" class="govuk-back-link">Back</a>
+
+	<main class="govuk-main-wrapper">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+
+				<form asp-action="SearchOrganisation" method="post" novalidate>
+					@Html.HiddenFor(m => m.IrasId)
+					@Html.HiddenFor(m => m.ShortTitle)
+					@Html.HiddenFor(m => m.ModificationIdentifier)
+					<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
+					<h1 class="govuk-heading-l">@Model.PageTitle</h1>
+
+					<dl class="govuk-summary-list">
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">IRAS ID</dt>
+							<dd class="govuk-summary-list__value">@Model.IrasId</dd>
+						</div>
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Short project title</dt>
+							<dd class="govuk-summary-list__value">@Model.ShortTitle</dd>
+						</div>
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Modification ID</dt>
+							<dd class="govuk-summary-list__value">@Model.ModificationIdentifier</dd>
+						</div>
+					</dl>
+
+					<div class="govuk-form-group @(ViewData.ModelState.ContainsKey(nameof(Model.SearchTerm)) && ViewData.ModelState[nameof(Model.SearchTerm)]?.Errors?.Any() == true ? "govuk-form-group--error" : "")">
+						<label class="govuk-label" for="SearchTerm">Organisation name</label>
+
+						@if (ViewData.ModelState.TryGetValue(nameof(Model.SearchTerm), out var searchError) && searchError.Errors.Any())
+						{
+							<p class="govuk-error-message">
+								<span class="govuk-visually-hidden">Error:</span> @searchError.Errors.First().ErrorMessage
+							</p>
+						}
+
+						<div class="govuk-input__wrapper">
+							<input asp-for="SearchTerm" class="govuk-input" type="text" id="SearchTerm" />
+							<button class="govuk-button govuk-button--secondary" style="margin-left:10px" type="submit" name="action" value="search">
+								Search
+							</button>
+						</div>
+					</div>
+
+					<details class="govuk-details govuk-!-margin-top-3">
+						<summary class="govuk-details__summary">
+							<span class="govuk-details__summary-text">Advanced filter</span>
+						</summary>
+						<div class="govuk-details__text">
+							<p>0 results</p>
+						</div>
+					</details>
+
+					<div class="govuk-button-group govuk-!-margin-top-4">
+						<button class="govuk-button" data-module="govuk-button" name="action" value="continue">Save and continue</button>
+						@{
+							ViewBag.Style = "govuk-button govuk-button--secondary";
+						}
+						<partial name="_SubmitButton" model="@("app:projectoverview", "Save for later", new Dictionary<string, string> { })" />
+					</div>
+
+					<p class="govuk-!-margin-top-4"><a href="#" class="govuk-link">Remove this change</a></p>
+				</form>
+			</div>
+		</div>
+	</main>
+</div>
