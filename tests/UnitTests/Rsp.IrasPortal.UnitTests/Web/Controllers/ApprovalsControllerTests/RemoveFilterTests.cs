@@ -44,7 +44,7 @@ public class RemoveFiltersTests : TestServiceBase<ApprovalsController>
         });
         SetupValidValidator();
 
-        var result = await Sut.RemoveFilter("projecttitle", null);
+        var result = await Sut.RemoveFilter("shortprojecttitle", null);
 
         result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Search");
 
@@ -90,7 +90,7 @@ public class RemoveFiltersTests : TestServiceBase<ApprovalsController>
         });
         SetupValidValidator();
 
-        var result = await Sut.RemoveFilter("fromdate", null);
+        var result = await Sut.RemoveFilter("datemodificationsubmitted-from", null);
 
         result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Search");
 
@@ -112,7 +112,7 @@ public class RemoveFiltersTests : TestServiceBase<ApprovalsController>
         });
         SetupValidValidator();
 
-        var result = await Sut.RemoveFilter("todate", null);
+        var result = await Sut.RemoveFilter("datemodificationsubmitted-to", null);
 
         result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Search");
 
