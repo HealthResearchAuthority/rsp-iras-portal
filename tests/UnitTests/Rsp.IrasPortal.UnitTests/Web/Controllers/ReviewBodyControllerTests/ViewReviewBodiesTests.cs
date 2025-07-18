@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
@@ -24,7 +25,7 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
         };
 
         Mocker.GetMock<IReviewBodyService>()
-            .Setup(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20))
+            .Setup(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20, nameof(ReviewBodyDto.RegulatoryBodyName), SortDirections.Ascending))
             .ReturnsAsync(serviceResponse);
 
         var reviewBodySearchModel = new ReviewBodySearchModel()
@@ -35,7 +36,7 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
         };
 
         // Act
-        var result = await Sut.ViewReviewBodies(1, 20, new ReviewBodySearchViewModel()
+        var result = await Sut.ViewReviewBodies(1, 20, nameof(ReviewBodyDto.RegulatoryBodyName), SortDirections.Ascending, new ReviewBodySearchViewModel()
         {
             Search = new ReviewBodySearchModel()
             {
@@ -52,7 +53,7 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
 
         // Verify
         Mocker.GetMock<IReviewBodyService>()
-            .Verify(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20), Times.Once);
+            .Verify(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20,nameof(ReviewBodyDto.RegulatoryBodyName), SortDirections.Ascending), Times.Once);
     }
 
     [Fact]
@@ -60,7 +61,7 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
     {
         // Arrange
         Mocker.GetMock<IReviewBodyService>()
-            .Setup(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20))
+            .Setup(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20, nameof(ReviewBodyDto.RegulatoryBodyName), SortDirections.Ascending))
             .ReturnsAsync(new ServiceResponse<AllReviewBodiesResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -68,7 +69,7 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
             });
 
         // Act
-        var result = await Sut.ViewReviewBodies(1, 20, new ReviewBodySearchViewModel()
+        var result = await Sut.ViewReviewBodies(1, 20, nameof(ReviewBodyDto.RegulatoryBodyName), SortDirections.Ascending, new ReviewBodySearchViewModel()
         {
             Search = new ReviewBodySearchModel()
             {
@@ -88,7 +89,7 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
 
         // Verify
         Mocker.GetMock<IReviewBodyService>()
-            .Verify(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20), Times.Once);
+            .Verify(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20, nameof(ReviewBodyDto.RegulatoryBodyName), SortDirections.Ascending), Times.Once);
     }
 
     [Fact]
@@ -96,12 +97,12 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
     {
         // Arrange
         Mocker.GetMock<IReviewBodyService>()
-            .Setup(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20))
+            .Setup(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20, nameof(ReviewBodyDto.RegulatoryBodyName), SortDirections.Ascending))
             .ReturnsAsync(new ServiceResponse<AllReviewBodiesResponse>
                 { StatusCode = HttpStatusCode.InternalServerError });
 
         // Act
-        var result = await Sut.ViewReviewBodies(1, 20, new ReviewBodySearchViewModel()
+        var result = await Sut.ViewReviewBodies(1, 20, nameof(ReviewBodyDto.RegulatoryBodyName), SortDirections.Ascending,new ReviewBodySearchViewModel()
         {
             Search = new ReviewBodySearchModel()
             {
@@ -117,7 +118,7 @@ public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
 
         // Verify
         Mocker.GetMock<IReviewBodyService>()
-            .Verify(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20), Times.Once);
+            .Verify(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20, nameof(ReviewBodyDto.RegulatoryBodyName), SortDirections.Ascending), Times.Once);
     }
 
     [Theory, AutoData]

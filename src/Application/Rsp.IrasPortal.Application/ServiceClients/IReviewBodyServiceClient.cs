@@ -1,4 +1,5 @@
 ﻿using Refit;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
@@ -14,7 +15,7 @@ public interface IReviewBodyServiceClient
     /// Gets all review bodies
     /// </summary>
     [Post("/reviewbody/all")]
-    public Task<IApiResponse<AllReviewBodiesResponse>> GetAllReviewBodies(int pageNumber = 1, int pageSize = 20, ReviewBodySearchRequest? searchQuery = null);
+    public Task<IApiResponse<AllReviewBodiesResponse>> GetAllReviewBodies(int pageNumber = 1, int pageSize = 20, string? sortField = nameof(ReviewBodyDto.RegulatoryBodyName), string? sortDirection = SortDirections.Ascending, ReviewBodySearchRequest? searchQuery = null);
 
     /// <summary>
     /// Gets review bodies by Id
