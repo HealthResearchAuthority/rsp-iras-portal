@@ -63,7 +63,12 @@
 				@Model.Email
 				<input type="hidden" asp-for="Email" name="Email" value="@Model.Email" />
 			</td>
-            <td class="govuk-table__cell govuk-table__cell--numeric"></td>
+			<td class="govuk-table__cell govuk-table__cell--numeric">
+				@if (!edit)
+				{
+					await RenderEditLink();
+				}
+			</td>
 		</tr>
 
 		<tr class="govuk-table__row">
@@ -200,15 +205,13 @@
 			<tr class="govuk-table__row">
 				<td class="govuk-table__cell"><b>Audit</b></td>
 				<td class="govuk-table__cell">
-                    <a 
-                        class="govuk-link"
-                        asp-route="admin:useraudittrail" 
-                        asp-route-email="@Model.Email" 
-                        asp-route-userId="@Model.Id" 
-                        asp-route-name="@Model.GivenName @Model.FamilyName" 
-                    >
-                        View this user's audit history
-                    </a>
+					<a class="govuk-link"
+					   asp-route="admin:useraudittrail"
+					   asp-route-email="@Model.Email"
+					   asp-route-userId="@Model.Id"
+					   asp-route-name="@Model.GivenName @Model.FamilyName">
+						View this user's audit history
+					</a>
 				</td>
 				<td class="govuk-table__cell govuk-table__cell--numeric"></td>
 			</tr>
