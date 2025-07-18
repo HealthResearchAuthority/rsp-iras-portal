@@ -55,6 +55,8 @@
     {
         TempData[TempDataKeys.OrgSearchReturnUrl] = requestUrl;
     }
+
+    var showNoResultsMessage = !Model.Modifications.Any() && Model.Search is { IrasId: not null } or { Filters.Count: > 0 };
 }
 
 <authorized auth-params="@(new AuthTagHelperParams { Roles = "user,system_administrator,reviewer" })">
@@ -352,9 +354,9 @@
                             {
                                 <li>
                                     <a asp-route="approvals:removefilter"
-                                       asp-route-key="@filterKey"
-                                       asp-route-value="@val"
-                                       class="search-filter-summary__remove-filter">
+                                    asp-route-key="@filterKey"
+                                    asp-route-value="@val"
+                                    class="search-filter-summary__remove-filter">
                                         <span class="search-filter-summary__remove-filter-text">
                                             <span class="govuk-visually-hidden">Remove filter</span>
                                             @if (filterKey.Contains("date", StringComparison.OrdinalIgnoreCase))
@@ -378,14 +380,17 @@
                     </div>
                 </div>
             }
+            else if (showNoResultsMessage)
+            {
+                <div class="search-filter-line-break"></div>
+            }
         </div>
     </div>
 </authorized>
 
 @{
-    @if (!Model.Modifications.Any() 
-         && Model.Search is { IrasId: not null, Filters.Count: > 1 })
-    {
+    @if (showNoResultsMessage)
+	{
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds search-filter-error-border">
                 <h2 class="govuk-heading-l">There are no matching results</h2>
