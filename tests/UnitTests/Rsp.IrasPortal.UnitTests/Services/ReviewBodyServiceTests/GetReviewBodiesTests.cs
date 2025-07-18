@@ -17,7 +17,7 @@ public class GetReviewBodiesTests : TestServiceBase<ReviewBodyService>
                            apiResponse.StatusCode == HttpStatusCode.BadRequest);
 
         var client = Mocker.GetMock<IReviewBodyServiceClient>();
-        client.Setup(c => c.GetAllReviewBodies(1, 100, null))
+        client.Setup(c => c.GetAllReviewBodies(1, 100, nameof(ReviewBodyDto.RegulatoryBodyName), "asc", null))
             .ReturnsAsync(apiResponse);
 
         var sut = new ReviewBodyService(client.Object);
@@ -31,7 +31,7 @@ public class GetReviewBodiesTests : TestServiceBase<ReviewBodyService>
         result.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
 
         // Verify
-        client.Verify(c => c.GetAllReviewBodies(1, 100, null), Times.Once());
+        client.Verify(c => c.GetAllReviewBodies(1, 100, nameof(ReviewBodyDto.RegulatoryBodyName), "asc",null), Times.Once());
     }
 
     [Theory, AutoData]
@@ -45,7 +45,7 @@ public class GetReviewBodiesTests : TestServiceBase<ReviewBodyService>
                            apiResponse.Content == new AllReviewBodiesResponse { ReviewBodies = reviewBodies });
 
         var client = Mocker.GetMock<IReviewBodyServiceClient>();
-        client.Setup(c => c.GetAllReviewBodies(1, 100, null))
+        client.Setup(c => c.GetAllReviewBodies(1, 100, nameof(ReviewBodyDto.RegulatoryBodyName), "asc", null))
             .ReturnsAsync(apiResponse);
 
         var sut = new ReviewBodyService(client.Object);
@@ -60,6 +60,6 @@ public class GetReviewBodiesTests : TestServiceBase<ReviewBodyService>
         result.Content!.ReviewBodies.ShouldBeEquivalentTo(reviewBodies);
 
         // Verify
-        client.Verify(c => c.GetAllReviewBodies(1, 100, null), Times.Once());
+        client.Verify(c => c.GetAllReviewBodies(1, 100, nameof(ReviewBodyDto.RegulatoryBodyName), "asc", null), Times.Once());
     }
 }

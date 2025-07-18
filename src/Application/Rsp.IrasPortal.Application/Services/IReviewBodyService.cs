@@ -1,4 +1,5 @@
-﻿using Rsp.IrasPortal.Application.DTOs;
+﻿using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
@@ -12,7 +13,7 @@ namespace Rsp.IrasPortal.Application.Services;
 /// </summary>
 public interface IReviewBodyService : IInterceptable
 {
-    Task<ServiceResponse<AllReviewBodiesResponse>> GetAllReviewBodies(ReviewBodySearchRequest? searchQuery = null, int pageNumber = 1, int pageSize = 20);
+    Task<ServiceResponse<AllReviewBodiesResponse>> GetAllReviewBodies(ReviewBodySearchRequest? searchQuery = null, int pageNumber = 1, int pageSize = 20, string? sortField = nameof(ReviewBodyDto.RegulatoryBodyName), string? sortDirection = SortDirections.Ascending);
 
     Task<ServiceResponse<ReviewBodyDto>> GetReviewBodyById(Guid id);
 

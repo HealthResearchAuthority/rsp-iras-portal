@@ -47,6 +47,8 @@ public class ReviewBodyController(
     public async Task<IActionResult> ViewReviewBodies(
         int pageNumber = 1,
         int pageSize = 20,
+        string? sortField = nameof(ReviewBodyDto.RegulatoryBodyName),
+        string? sortDirection = SortDirections.Ascending,
         [FromForm] ReviewBodySearchViewModel? model = null,
         [FromQuery] string? complexSearchQuery = null,
         [FromQuery] bool fromPagination = false)
@@ -74,12 +76,14 @@ public class ReviewBodyController(
             Status = model.Search.Status
         };
 
-        var response = await reviewBodyService.GetAllReviewBodies(request, pageNumber, pageSize);
+        var response = await reviewBodyService.GetAllReviewBodies(request, pageNumber, pageSize, sortField, sortDirection);
 
         var paginationModel = new PaginationViewModel(pageNumber, pageSize, response.Content?.TotalCount ?? 0)
         {
             RouteName = "rbc:viewreviewbodies",
-            ComplexSearchQuery = model.Search
+            ComplexSearchQuery = model.Search,
+            SortField = sortField,
+            SortDirection = sortDirection
         };
 
         var reviewBodySearchViewModel = new ReviewBodySearchViewModel
