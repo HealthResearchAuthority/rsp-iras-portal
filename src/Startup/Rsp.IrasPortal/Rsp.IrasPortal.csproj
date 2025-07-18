@@ -10,16 +10,16 @@
 
     <ItemGroup>
         <PackageReference Include="AspNetCore.HealthChecks.Uris" Version="9.0.0" />
-        <PackageReference Include="Azure.Identity" Version="1.13.2" />
-        <PackageReference Include="Azure.Storage.Blobs" Version="12.24.0" />
+        <PackageReference Include="Azure.Identity" Version="1.14.2" />
+        <PackageReference Include="Azure.Storage.Blobs" Version="12.25.0" />
         <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
         <PackageReference Include="Mapster" Version="7.4.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.4" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="9.0.4" />
-        <PackageReference Include="Microsoft.AspNetCore.HeaderPropagation" Version="9.0.4" />
-        <PackageReference Include="Microsoft.Azure.AppConfiguration.AspNetCore" Version="8.1.2" />
-        <PackageReference Include="Microsoft.Extensions.Azure" Version="1.11.0" />
-        <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.9.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.7" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="9.0.7" />
+        <PackageReference Include="Microsoft.AspNetCore.HeaderPropagation" Version="9.0.7" />
+        <PackageReference Include="Microsoft.Azure.AppConfiguration.AspNetCore" Version="8.2.0" />
+        <PackageReference Include="Microsoft.Extensions.Azure" Version="1.12.0" />
+        <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.12.1" />
     </ItemGroup>
 
     <ItemGroup>
