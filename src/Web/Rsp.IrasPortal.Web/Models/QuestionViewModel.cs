@@ -7,6 +7,7 @@ public class QuestionViewModel
 {
     public int Index { get; set; }
     public string QuestionId { get; set; } = null!;
+    public string VersionId { get; set; } = null!;
     public string Category { get; set; } = null!;
     public string SectionId { get; set; } = null!;
     public string Section { get; set; } = null!;

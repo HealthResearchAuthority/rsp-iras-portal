@@ -752,6 +752,7 @@ public class QuestionnaireController
             request.RespondentAnswers.Add(new RespondentAnswerDto
             {
                 QuestionId = question.QuestionId,
+                VersionId = question.VersionId ?? string.Empty,
                 AnswerText = question.AnswerText,
                 CategoryId = question.Category,
                 SectionId = question.SectionId,
@@ -805,6 +806,7 @@ public class QuestionnaireController
             request.ModificationAnswers.Add(new RespondentAnswerDto
             {
                 QuestionId = question.QuestionId,
+                VersionId = question.VersionId ?? string.Empty,
                 AnswerText = question.AnswerText,
                 CategoryId = question.Category,
                 SectionId = question.SectionId,
@@ -957,6 +959,7 @@ public class QuestionnaireController
             {
                 Index = index,
                 QuestionId = question.QuestionId,
+                VersionId = question.VersionId ?? string.Empty,
                 Category = question.Category,
                 SectionId = question.SectionId,
                 Section = question.Section,

@@ -27,8 +27,6 @@ public class ApprovalsSearchModel
     public List<string> ModificationTypes { get; set; } = [];
     public OrganisationSearchViewModel SponsorOrgSearch { get; set; } = new();
 
-
-
     public Dictionary<string, List<string>> Filters
     {
         get
@@ -78,7 +76,6 @@ public class ApprovalsSearchModel
             return filters;
         }
     }
-
 
     private static DateTime? ParseDate(string? day, string? month, string? year)
     {

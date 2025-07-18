@@ -245,6 +245,7 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
             {
                 Index = q.index,
                 QuestionId = q.question.QuestionId,
+                VersionId = q.question.VersionId ?? string.Empty,
                 Category = q.question.Category,
                 SectionId = q.question.SectionId,
                 Section = q.question.Section,

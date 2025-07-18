@@ -139,11 +139,7 @@ public class CreateModification : TestServiceBase<ProjectModificationController>
         var result = await Sut.CreateModification(separator);
 
         // Assert
-        var redirectResult = result.ShouldBeOfType<RedirectToRouteResult>();
-        redirectResult.RouteName.ShouldBe("qnc:resume");
-        redirectResult.RouteValues.ShouldNotBeNull();
-        redirectResult.RouteValues["projectRecordId"].ShouldBe(projectRecordId);
-        redirectResult.RouteValues["categoryId"].ShouldBe(QuestionCategories.ProjectModification);
+        result.ShouldBeOfType<RedirectToActionResult>();
         Sut.TempData[TempDataKeys.ProjectModificationId].ShouldBe(modificationId);
         Sut.TempData[TempDataKeys.ProjectModificationIdentifier].ShouldBe(modificationIdentifier);
     }

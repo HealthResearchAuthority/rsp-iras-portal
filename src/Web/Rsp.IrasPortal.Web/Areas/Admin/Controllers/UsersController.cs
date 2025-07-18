@@ -617,10 +617,25 @@ public class UsersController(IUserManagementService userManagementService, IVali
     }
 
     [HttpGet]
-    public IActionResult ClearFilters()
+    [Route("/admin/clearfilters", Name = "admin:clearfilters")]
+    public IActionResult ClearFilters([FromQuery] string? searchQuery = null)
     {
-        return RedirectToAction("Index");
+        var cleanedSearch = new UserSearchModel
+        {
+            SearchQuery = searchQuery
+        };
+
+        var searchJson = JsonSerializer.Serialize(cleanedSearch);
+
+        return RedirectToRoute("admin:users", new
+        {
+            pageNumber = 1,
+            pageSize = 20,
+            complexSearchQuery = searchJson,
+            fromPagination = true
+        });
     }
+
 
     [HttpGet]
     [Route("/admin/users/removefilter", Name = "admin:removefilter")]

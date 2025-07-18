@@ -73,4 +73,18 @@ public class ProjectModificationsService(IProjectModificationsServiceClient proj
         var apiResponse = await projectModificationsServiceClient.CreateModificationChange(projectModificationChangeRequest);
         return apiResponse.ToServiceResponse();
     }
+
+    /// <summary>
+    /// Gets all the area of changes and specific area of changes for the modification.
+    /// </summary>
+    /// /// <returns>
+    /// An asynchronous operation that returns a <see cref="ServiceResponse{GetAreaOfChangesResponse}"/>
+    /// containing the result of the area of changes.
+    /// </returns>
+    public async Task<ServiceResponse<IEnumerable<GetAreaOfChangesResponse>>> GetAreaOfChanges()
+    {
+        var apiResponse = await projectModificationsServiceClient.GetAreaOfChanges();
+
+        return apiResponse.ToServiceResponse();
+    }
 }

@@ -650,6 +650,12 @@ dialog[open] {
   border-bottom: 1px solid #b1b4b6;
 }
 
+.search-filter-line-break {
+  padding-bottom: 20px;
+  margin-bottom: 40px;
+  border-bottom: 1px solid #b1b4b6;
+}
+
 .search-filter-summary__heading {
   margin-bottom: 10px;
   font-family: "GDS Transport", arial, sans-serif;
