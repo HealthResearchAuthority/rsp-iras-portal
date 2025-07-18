@@ -38,6 +38,7 @@
 }
 
 <rsp-gds-autocomplete asp-for="Questions[index].AnswerText"
+                      label-html-class="js-hidden"
                       field-id="@(question.QuestionId)_Text"
                       label-text="@question.QuestionText"
                       api-url="/organisation/getorganisations"

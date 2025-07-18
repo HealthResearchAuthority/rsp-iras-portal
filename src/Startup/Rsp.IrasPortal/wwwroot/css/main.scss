@@ -858,3 +858,7 @@ button.govuk-pagination__item--current {
         flex-grow: 1;
     }
 }
+
+.govuk-label.js-hidden {
+    display: none;
+}
