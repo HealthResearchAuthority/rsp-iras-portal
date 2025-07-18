@@ -111,11 +111,11 @@ public class ProjectModificationController
             {
                 AreaOfChangeOptions = new List<SelectListItem>
                 {
-                    new() { Text = "Select", Value = "" }
+                    new() { Text = "Select area of change", Value = "" }
                 },
                 SpecificChangeOptions = new List<SelectListItem>
                 {
-                    new() { Text = "Select", Value = "" }
+                    new() { Text = "Select specific change", Value = "" }
                 }
             });
         }
@@ -131,8 +131,8 @@ public class ProjectModificationController
             ModificationIdentifier = TempData.Peek(TempDataKeys.ProjectModificationIdentifier) as string ?? string.Empty,
             AreaOfChangeOptions = response.Content
                 .Select(a => new SelectListItem { Value = a.Id.ToString(), Text = a.Name })
-                .Prepend(new SelectListItem { Value = "", Text = "Select" }),
-            SpecificChangeOptions = new List<SelectListItem> { new SelectListItem { Value = "", Text = "Select" } }
+                .Prepend(new SelectListItem { Value = "", Text = "Select area of change" }),
+            SpecificChangeOptions = new List<SelectListItem> { new SelectListItem { Value = "", Text = "Select specific change" } }
         };
 
         // Populate the dropdown options based on any existing selections
@@ -163,7 +163,7 @@ public class ProjectModificationController
         var specificChanges = selectedArea?.ModificationSpecificAreaOfChanges?.ToList() ?? new List<ModificationSpecificAreaOfChangeDto>();
 
         // Create a SelectListItem list for the specific changes
-        var selectList = new List<SelectListItem> { new SelectListItem { Value = "", Text = "Select" } };
+        var selectList = new List<SelectListItem> { new SelectListItem { Value = "", Text = "Select specific change" } };
 
         // Add each specific change to the SelectListItem list
         selectList.AddRange(specificChanges.Select(sc => new SelectListItem
@@ -292,7 +292,7 @@ public class ProjectModificationController
                 Text = a.Name,
                 Selected = a.Id == model.AreaOfChangeId
             })
-            .Prepend(new SelectListItem { Value = "", Text = "Select" });
+            .Prepend(new SelectListItem { Value = "", Text = "Select area of change" });
 
         if (model.AreaOfChangeId.HasValue && model.AreaOfChangeId.Value != 0)
         {
@@ -304,12 +304,12 @@ public class ProjectModificationController
                     Text = sc.Name,
                     Selected = sc.Id == model.SpecificChangeId
                 })
-                .Prepend(new SelectListItem { Value = "", Text = "Select" })
-                ?? [new() { Value = "", Text = "Select" }];
+                .Prepend(new SelectListItem { Value = "", Text = "Select specific change" })
+                ?? [new() { Value = "", Text = "Select specific change" }];
         }
         else
         {
-            model.SpecificChangeOptions = [new SelectListItem { Value = "", Text = "Select" }];
+            model.SpecificChangeOptions = [new SelectListItem { Value = "", Text = "Select specific change" }];
         }
     }
 
