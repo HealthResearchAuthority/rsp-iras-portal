@@ -168,9 +168,12 @@
                     }
                 </ul>
                 <div>
-                    <a asp-route="rbc:clearfilters" class="search-filter-summary__clear-filters govuk-link govuk-link--no-visited-state">
+                    <a asp-route="rbc:clearfilters"
+                       asp-route-searchQuery="@Model.Search?.SearchQuery"
+                       class="search-filter-summary__clear-filters govuk-link govuk-link--no-visited-state">
                         Clear all filters
                     </a>
+
                 </div>
             </div>
         }

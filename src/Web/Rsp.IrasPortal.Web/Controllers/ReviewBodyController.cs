@@ -543,9 +543,23 @@ public class ReviewBodyController(
     }
 
     [HttpGet]
-    public IActionResult ClearFilters()
+    [Route("/reviewbody/clearfilters", Name = "rbc:clearfilters")]
+    public IActionResult ClearFilters([FromQuery] string? searchQuery = null)
     {
-        return RedirectToAction(ViewReviewBodiesView);
+        var cleanedSearch = new ReviewBodySearchModel
+        {
+            SearchQuery = searchQuery
+        };
+
+        var searchJson = JsonSerializer.Serialize(cleanedSearch);
+
+        return RedirectToRoute("rbc:viewreviewbodies", new
+        {
+            pageNumber = 1,
+            pageSize = 20,
+            complexSearchQuery = searchJson,
+            fromPagination = true
+        });
     }
 
     [HttpGet]
