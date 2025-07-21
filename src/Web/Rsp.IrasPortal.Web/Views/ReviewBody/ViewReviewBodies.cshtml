@@ -80,7 +80,7 @@
 
                 <div class="search-filter-panel__header">
                     <label for="toggle-filter" class="search-filter-panel__button govuk-link" role="button" aria-controls="filter-panel">
-                        <span class="search-filter-panel__button-inner">Advanced filter</span>
+                        <span class="search-filter-panel__button-inner">Advanced filters</span>
                     </label>
                     <h2 id="js-result-count" class="search-filter-panel__count">@(Model.Pagination?.TotalCount ?? 0) results</h2>
                 </div>
@@ -98,7 +98,6 @@
                                     <rsp-gds-checkbox-group asp-for="Search.Country"
                                                             label-text="Select all that apply"
                                                             options="UkCountryNames.Countries"
-                                                            label-css-class="role-checkbox"
                                                             conditional-field="false"
                                                             legend-class="govuk-label govuk-label--s"
                                                             hint-id="country-hint"
@@ -118,12 +117,12 @@
                             <div class="govuk-form-group govuk-!-margin-bottom-2">
                                 <fieldset class="govuk-fieldset">
                                     <rsp-gds-radio-group asp-for="Search.Status"
-                                                         label-text="Select one option"
+                                                         label-text=""
                                                          options="statusOptions"
                                                          conditional-field="false"
                                                          legend-class="govuk-label govuk-label--s"
                                                          hint-id="status-hint"
-                                                         hint-html="Select whether the status is active or disabled"
+														 hint-html="Select one option"
                                                          label-html-class="font-weight-none"/>
                                 </fieldset>
                             </div>
@@ -133,7 +132,7 @@
 
                     <!-- Apply -->
                     <div class="search-filter-panel__actions">
-                        <button class="govuk-button search-filter-panel__action search-filter-panel__action--submit">Apply</button>
+                        <button class="govuk-button search-filter-panel__action search-filter-panel__action--submit">Apply filters</button>
                     </div>
                 </div>
             </div>
