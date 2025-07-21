@@ -25,7 +25,6 @@ public static class ControllerExtensions
         return response.StatusCode switch
         {
             HttpStatusCode.Forbidden => controller.Forbid(),
-            HttpStatusCode.NotFound => controller.NotFound(),
             _ => controller.View("Error", ProblemResult(controller, response))
         };
     }
