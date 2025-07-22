@@ -1,4 +1,6 @@
-﻿using Rsp.IrasPortal.Application.DTOs;
+﻿using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
@@ -9,9 +11,10 @@ namespace Rsp.IrasPortal.Services;
 
 public class ReviewBodyService(IReviewBodyServiceClient client) : IReviewBodyService
 {
-    public async Task<ServiceResponse<AllReviewBodiesResponse>> GetAllReviewBodies(int pageNumber = 1, int pageSize = 20, string? searchQuery = null)
+    public async Task<ServiceResponse<AllReviewBodiesResponse>> GetAllReviewBodies(ReviewBodySearchRequest searchQuery,
+        int pageNumber = 1, int pageSize = 20, string? sortField = nameof(ReviewBodyDto.RegulatoryBodyName), string? sortDirection = SortDirections.Ascending)
     {
-        var apiResponse = await client.GetAllReviewBodies(pageNumber, pageSize, searchQuery);
+        var apiResponse = await client.GetAllReviewBodies(pageNumber, pageSize,sortField,sortDirection, searchQuery);
 
         return apiResponse.ToServiceResponse();
     }

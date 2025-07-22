@@ -18,6 +18,25 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.QuestionnaireControllerTests;
 
 public class ConfirmProjectDetaisTests : TestServiceBase<QuestionnaireController>
 {
+    public ConfirmProjectDetaisTests()
+    {
+        var mockSession = new Mock<ISession>();
+
+        var httpContext = new DefaultHttpContext
+        {
+            Session = mockSession.Object
+        };
+
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = httpContext
+        };
+
+        var tempDataProvider = new Mock<ITempDataProvider>();
+
+        Sut.TempData = new TempDataDictionary(httpContext, tempDataProvider.Object);
+    }
+
     [Fact]
     public async Task ConfirmProjectDetails_Should_ReturnServiceError_When_RespondentServiceFails()
     {
@@ -26,7 +45,7 @@ public class ConfirmProjectDetaisTests : TestServiceBase<QuestionnaireController
 
         Mocker
             .GetMock<IRespondentService>()
-            .Setup(s => s.GetRespondentAnswers(It.IsAny<string>()))
+            .Setup(s => s.GetRespondentAnswers(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>>
             {
                 StatusCode = HttpStatusCode.InternalServerError
@@ -47,7 +66,7 @@ public class ConfirmProjectDetaisTests : TestServiceBase<QuestionnaireController
 
         Mocker
             .GetMock<IRespondentService>()
-            .Setup(s => s.GetRespondentAnswers(It.IsAny<string>()))
+            .Setup(s => s.GetRespondentAnswers(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>>
             {
                 StatusCode = HttpStatusCode.OK
@@ -55,7 +74,7 @@ public class ConfirmProjectDetaisTests : TestServiceBase<QuestionnaireController
 
         Mocker
             .GetMock<IQuestionSetService>()
-            .Setup(s => s.GetQuestions())
+            .Setup(s => s.GetQuestions(It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<QuestionsResponse>>
             {
                 StatusCode = HttpStatusCode.InternalServerError
@@ -92,12 +111,12 @@ public class ConfirmProjectDetaisTests : TestServiceBase<QuestionnaireController
 
         Mocker
             .GetMock<IRespondentService>()
-            .Setup(s => s.GetRespondentAnswers(It.IsAny<string>()))
+            .Setup(s => s.GetRespondentAnswers(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(respondentServiceResponse);
 
         Mocker
             .GetMock<IQuestionSetService>()
-            .Setup(s => s.GetQuestions())
+            .Setup(s => s.GetQuestions(It.IsAny<string>()))
             .ReturnsAsync(questionSetServiceResponse);
 
         Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
@@ -140,12 +159,12 @@ public class ConfirmProjectDetaisTests : TestServiceBase<QuestionnaireController
 
         Mocker
             .GetMock<IRespondentService>()
-            .Setup(s => s.GetRespondentAnswers(It.IsAny<string>()))
+            .Setup(s => s.GetRespondentAnswers(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(respondentServiceResponse);
 
         Mocker
             .GetMock<IQuestionSetService>()
-            .Setup(s => s.GetQuestions())
+            .Setup(s => s.GetQuestions(It.IsAny<string>()))
             .ReturnsAsync(questionSetServiceResponse);
 
         Mocker.GetMock<IValidator<QuestionnaireViewModel>>()

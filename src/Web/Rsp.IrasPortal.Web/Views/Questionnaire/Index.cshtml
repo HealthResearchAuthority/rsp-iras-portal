@@ -9,25 +9,30 @@
 @inject IFeatureManager featureManager
 
 @{
-	(string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
-	var previousStage = TempData[TempDataKeys.PreviousStage] as string;
-	var previousCategory = TempData[TempDataKeys.PreviousCategory] as string;
-	var currentStage = TempData[TempDataKeys.CurrentStage] as string;
-	var errorSummaryTitle = "There is a problem";
-	var applicationId = TempData[TempDataKeys.ProjectApplicationId] as string;
-	var projectOverview = TempData[TempDataKeys.ProjectOverview] as bool? ?? false;
+    (string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
+    var previousStage = TempData[TempDataKeys.PreviousStage] as string;
+    var previousCategory = TempData[TempDataKeys.PreviousCategory] as string;
+    var currentStage = TempData[TempDataKeys.CurrentStage] as string;
+    var errorSummaryTitle = "There is a problem";
+    var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
+    var projectOverview = TempData[TempDataKeys.ProjectOverview] as bool? ?? false;
 
-	Model.CurrentStage = currentStage!;
+    var IrasId = TempData.Peek(TempDataKeys.IrasId)?.ToString();
+    var shortProjectTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string;
+    var modificationId = TempData.Peek(TempDataKeys.ProjectModificationIdentifier) as string;
+    var specificArea = TempData.Peek(TempDataKeys.ProjectModificationSpecificArea) as string;
+
+    Model.CurrentStage = currentStage!;
 }
 
 @if (await featureManager.IsEnabledAsync(Features.ProgressiveEnhancement))
 {
-	<script src="~/lib/jquery/dist/jquery.js"></script>
+    <script src="~/lib/jquery/dist/jquery.js"></script>
 
-	// Collect all rules for conditional questions
-	var conditionalRules = Model.GetConditionalRules();
+    // Collect all rules for conditional questions
+    var conditionalRules = Model.GetConditionalRules();
 
-	<script>
+    <script>
 		$(document).ready(function () {
 		const conditionalRules = @Html.Raw(JsonSerializer.Serialize(conditionalRules));
 
@@ -36,47 +41,44 @@
 		sessionStorage.setItem(rule.QuestionId, JSON.stringify(rule.Rules));
 		});
 		});
-	</script>
+    </script>
 
-	<script src="~/js/questionnaire.js"></script>
-	<script src="~/js/rules.js"></script>
+    <script src="~/js/questionnaire.js"></script>
+    <script src="~/js/rules.js"></script>
 }
 
 @{
-	if (Model.ReviewAnswers)
-	{
-		navModel = ("qnc:submitapplication", "Back", new()
-		{
-			{ "projectApplicationId", applicationId }
-		});
-	}
-	else if (!string.IsNullOrEmpty(previousStage))
-	{
-		// If there is a previous stage, navigate to that stage in the questionnaire
-		navModel = ("qnc:displayquestionnaire", "Back", new()
-		{
-			{ "categoryId", previousCategory },
-			{ "sectionId", previousStage }
+    if (Model.ReviewAnswers)
+    {
+        navModel = ("qnc:submitapplication", "Back", new()
+{
+            { "projectRecordId", projectRecordId }
+        });
+    }
+    else if (!string.IsNullOrEmpty(previousStage))
+    {
+        // If there is a previous stage, navigate to that stage in the questionnaire
+        navModel = ("qnc:displayquestionnaire", "Back", new()
+{
+            { "categoryId", previousCategory },
+            { "sectionId", previousStage }
                                                                                                                                                                                                                                             });
-	}
-	else if (projectOverview)
-	{
-		TempData[TempDataKeys.ShortProjectTitle] = Model.GetShortProjectTitle();
-		TempData[TempDataKeys.CategoryId] = Model.GetFirstCategory();
-		TempData[TempDataKeys.ProjectApplicationId] = applicationId;
-		// If the project overview is true, navigate to the project overview page
-		navModel = ("app:projectoverview", "Back", new());
-	}
+    }
+    else if (projectOverview)
+    {
+        // If the project overview is true, navigate to the project overview page
+        navModel = ("app:projectoverview", "Back", new());
+    }
 }
 
 @if (navModel != null)
 {
-	@* @section is added for the back button, so that we can render something below the back button
-	    and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
-	    the named section *@
-	@section BackNavigation {
-		<partial name="_BackNavigation" model="navModel.Value" />
-	}
+    @* @section is added for the back button, so that we can render something below the back button
+        and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
+        the named section *@
+    @section BackNavigation {
+        <partial name="_BackNavigation" model="navModel.Value" />
+    }
 }
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
@@ -98,9 +100,21 @@
                 <govuk-fieldset class="sections">
                     <govuk-fieldset-legend class="govuk-fieldset__legend--l">
                         <h2 class="govuk-heading-l" id="title">
-                            @(Model.Questions.FirstOrDefault()?.Section)
+                            @if (specificArea != null)
+                            {
+                                @specificArea;
+                            }
+                            else
+                            {
+                                @(Model.Questions.FirstOrDefault()?.Section)
+                            }
                         </h2>
                     </govuk-fieldset-legend>
+
+                    @if (modificationId is not null)
+                    {
+                        <partial name="_ProjectModificationSummary" model="(IrasId, shortProjectTitle, modificationId)" />
+                    }
 
                     <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
 
@@ -143,7 +157,10 @@
                             ("look-up list", "checkbox") => "CheckboxTemplate",
                             ("look-up list", "radio button") => "RadioButtonTemplate",
                             ("boolean", "boolean") => "RadioButtonTemplate",
-                            ("rts:org_lookup", "text") => "AutoSuggestTemplate",
+                            ("rts:org_lookup", "text") => modificationId == null ?
+                                "AutoSuggestTemplate" :
+                                "OrgSearchTemplate",
+                            ("look-up list", "dropdown") => "DropdownTemplate",
                             _ => string.Empty
                         };
 
@@ -170,6 +187,13 @@
                     <partial name="_SubmitButton" model="@("qnc:saveresponses", "Save changes", new Dictionary<string, string> { { "submit", bool.TrueString } })" />
                 }
             </div>
+
+            @if (modificationId is not null)
+            {
+                <div class="govuk-form-group">
+                    <a href="#" class="govuk-link">Remove this change</a>
+                </div>
+            }
         </form>
     </div>
 </div>

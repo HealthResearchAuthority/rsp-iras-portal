@@ -1,8 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿namespace Rsp.IrasPortal.Web.Models;
 
-namespace Rsp.IrasPortal.Web.Models;
-
-[ExcludeFromCodeCoverage]
 public class ModificationsModel
 {
     public string ModificationId { get; set; } = null!;
@@ -12,4 +9,5 @@ public class ModificationsModel
     public string LeadNation { get; set; } = null!;
     public string SponsorOrganisation { get; set; } = null!;
     public DateTime CreatedAt { get; set; }
+    public int DaysSinceSubmission => (DateTime.UtcNow - CreatedAt).Days;
 }

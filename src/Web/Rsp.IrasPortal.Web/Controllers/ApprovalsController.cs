@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using System.Text.Json;
+﻿using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,38 +11,42 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
-[ExcludeFromCodeCoverage]
 [Route("[controller]/[action]", Name = "approvals:[action]")]
 [Authorize(Policy = "IsUser")]
-public class ApprovalsController(
+public class ApprovalsController
+(
     IApplicationsService applicationsService,
     IRtsService rtsService,
     IValidator<ApprovalsSearchModel> validator
 ) : Controller
 {
-    private const string TempDataKey_ApprovalsSearch = "ApprovalsSearchModel";
-
     [Route("/approvals", Name = "approvals:welcome")]
     public IActionResult Welcome()
     {
-        TempData.Remove(TempDataKey_ApprovalsSearch);
+        TempData.Remove(TempDataKeys.ApprovalsSearchModel);
         return View(nameof(Index));
     }
 
     [HttpGet]
-    public async Task<IActionResult> Search(int pageNumber = 1, int pageSize = 20)
+    public async Task<IActionResult> Search
+    (
+        int pageNumber = 1,
+        int pageSize = 20,
+        string? sortField = nameof(ModificationsModel.ModificationId),
+        string? sortDirection = SortDirections.Descending
+    )
     {
         var model = new ApprovalsSearchViewModel();
 
-        if (TempData.ContainsKey(TempDataKey_ApprovalsSearch))
+       if (TempData.ContainsKey(TempDataKeys.ApprovalsSearchModel))
         {
-            var json = TempData.Peek(TempDataKey_ApprovalsSearch)?.ToString();
+            var json = TempData.Peek(TempDataKeys.ApprovalsSearchModel)?.ToString();
             if (!string.IsNullOrEmpty(json))
             {
                 var search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json)!;
                 model.Search = search;
 
-                if (search.Filters.Count == 0)
+                if (search.Filters.Count == 0 && string.IsNullOrEmpty(search.IrasId))
                 {
                     model.EmptySearchPerformed = true;
                     return View(model);
@@ -59,10 +61,10 @@ public class ApprovalsController(
                     ToDate = search.ToDate,
                     ModificationTypes = search.ModificationTypes,
                     ShortProjectTitle = search.ShortProjectTitle,
-                    SponsorOrganisation = search.SponsorOrganisation
+                    SponsorOrganisation = search.SponsorOrganisation,
                 };
 
-                var result = await applicationsService.GetModifications(searchQuery, pageNumber, pageSize);
+                var result = await applicationsService.GetModifications(searchQuery, pageNumber, pageSize, sortField, sortDirection);
 
                 model.Modifications = result?.Content?.Modifications?
                     .Select(dto => new ModificationsModel
@@ -77,13 +79,19 @@ public class ApprovalsController(
                     })
                     .ToList() ?? [];
 
-                model.Pagination = new PaginationViewModel(pageNumber, pageSize, result?.Content?.TotalCount ?? 0);
+                model.Pagination = new PaginationViewModel(pageNumber, pageSize, result?.Content?.TotalCount ?? 0)
+                {
+                    SortDirection = sortDirection,
+                    SortField = sortField
+                };
             }
         }
 
+        model.SortField = sortField;
+        model.SortDirection = sortDirection;
+
         return View(model);
     }
-
 
     [HttpPost]
     public async Task<IActionResult> ApplyFilters(ApprovalsSearchViewModel model)
@@ -100,105 +108,105 @@ public class ApprovalsController(
             return View(nameof(Search), model);
         }
 
-        TempData[TempDataKey_ApprovalsSearch] = JsonSerializer.Serialize(model.Search);
+        TempData[TempDataKeys.ApprovalsSearchModel] = JsonSerializer.Serialize(model.Search);
         return RedirectToAction(nameof(Search));
     }
 
     [HttpGet]
     public IActionResult ClearFilters()
     {
-        TempData.Remove(TempDataKey_ApprovalsSearch);
+        if (!TempData.TryGetValue(TempDataKeys.ApprovalsSearchModel, out var tempDataValue))
+        {
+            return RedirectToAction(nameof(Search));
+        }
+
+        var json = tempDataValue?.ToString();
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return RedirectToAction(nameof(Search));
+        }
+
+        var search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json);
+        if (search == null)
+        {
+            return RedirectToAction(nameof(Search));
+        }
+
+        // Retain only the IRAS Project ID
+        var cleanedSearch = new ApprovalsSearchModel
+        {
+            IrasId = search.IrasId
+        };
+
+        TempData[TempDataKeys.ApprovalsSearchModel] = JsonSerializer.Serialize(cleanedSearch);
+
         return RedirectToAction(nameof(Search));
     }
 
     [HttpGet]
     public async Task<IActionResult> RemoveFilter(string key, string? value)
     {
-        var model = new ApprovalsSearchViewModel();
-
-        if (TempData.ContainsKey(TempDataKey_ApprovalsSearch))
+        if (!TempData.TryGetValue(TempDataKeys.ApprovalsSearchModel, out var tempDataValue))
         {
-            var json = TempData.Peek(TempDataKey_ApprovalsSearch)?.ToString();
-            if (!string.IsNullOrEmpty(json))
-            {
-                var search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json)!;
-                model.Search = search;
-
-                if (search.Filters.TryGetValue(key, out var existingValue))
-                {
-                    var updatedValues = existingValue
-                        .Split(",", StringSplitOptions.RemoveEmptyEntries)
-                        .Select(v => v.Trim())
-                        .Where(v => !string.Equals(v, value, StringComparison.OrdinalIgnoreCase))
-                        .ToList();
-
-                    if (updatedValues.Count != 0)
-                    {
-                        search.Filters[key] = string.Join(", ", updatedValues);
-                    }
-                    else
-                    {
-                        search.Filters.Remove(key);
-                    }
-
-                    switch (key.ToLowerInvariant().Replace(" ", ""))
-                    {
-                        case "irasid":
-                            search.IrasId = null;
-                            break;
-
-                        case "chiefinvestigatorname":
-                            search.ChiefInvestigatorName = null;
-                            break;
-
-                        case "projecttitle":
-                            search.ShortProjectTitle = null;
-                            break;
-
-                        case "sponsororganisation":
-                            search.SponsorOrganisation = null;
-                            search.SponsorOrgSearch = new OrganisationSearchViewModel();
-                            break;
-
-                        case "fromdate":
-                            search.FromDay = search.FromMonth = search.FromYear = null;
-                            break;
-
-                        case "todate":
-                            search.ToDay = search.ToMonth = search.ToYear = null;
-                            break;
-
-                        case "leadnation":
-                            if (!string.IsNullOrEmpty(value) && search.Country != null)
-                            {
-                                search.Country =
-                                [
-                                    .. search.Country.Where(c =>
-                                        !string.Equals(c, value, StringComparison.OrdinalIgnoreCase))
-                                ];
-                            }
-
-                            break;
-
-                        case "modificationtype":
-                            if (!string.IsNullOrEmpty(value) && search.ModificationTypes != null)
-                            {
-                                search.ModificationTypes =
-                                [
-                                    .. search.ModificationTypes.Where(m =>
-                                        !string.Equals(m, value, StringComparison.OrdinalIgnoreCase))
-                                ];
-                            }
-
-                            break;
-                    }
-
-                    return await ApplyFilters(new ApprovalsSearchViewModel { Search = search });
-                }
-            }
+            return RedirectToAction(nameof(Search));
         }
 
-        return RedirectToAction(nameof(Search));
+        var json = tempDataValue?.ToString();
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return RedirectToAction(nameof(Search));
+        }
+
+        var search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json)!;
+
+        var keyNormalized = key?.ToLowerInvariant().Replace(" ", "");
+
+        switch (keyNormalized)
+        {
+            case "chiefinvestigatorname":
+                search.ChiefInvestigatorName = null;
+                break;
+
+            case "shortprojecttitle":
+                search.ShortProjectTitle = null;
+                break;
+
+            case "sponsororganisation":
+                search.SponsorOrganisation = null;
+                search.SponsorOrgSearch = new OrganisationSearchViewModel();
+                break;
+
+            case "datemodificationsubmitted-from":
+                search.FromDay = search.FromMonth = search.FromYear = null;
+                break;
+
+            case "datemodificationsubmitted-to":
+                search.ToDay = search.ToMonth = search.ToYear = null;
+                break;
+
+            case "leadnation":
+                if (!string.IsNullOrEmpty(value) && search.Country?.Count > 0)
+                {
+                    search.Country = search.Country
+                        .Where(c => !string.Equals(c, value, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
+                break;
+
+            case "modificationtype":
+                if (!string.IsNullOrEmpty(value) && search.ModificationTypes?.Count > 0)
+                {
+                    search.ModificationTypes = search.ModificationTypes
+                        .Where(m => !string.Equals(m, value, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
+                break;
+        }
+
+        // Write the updated search model back to TempData
+        TempData[TempDataKeys.ApprovalsSearchModel] = JsonSerializer.Serialize(search);
+
+        return await ApplyFilters(new ApprovalsSearchViewModel { Search = search });
     }
 
     /// <summary>
@@ -257,7 +265,7 @@ public class ApprovalsController(
 
         TempData.TryAdd(TempDataKeys.SponsorOrganisations, sponsorOrganisations, true);
 
-        TempData[TempDataKey_ApprovalsSearch] = JsonSerializer.Serialize(model.Search);
+        TempData[TempDataKeys.ApprovalsSearchModel] = JsonSerializer.Serialize(model.Search);
 
         return Redirect(returnUrl!);
     }
