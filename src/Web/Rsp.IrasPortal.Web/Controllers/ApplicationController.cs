@@ -1,8 +1,5 @@
-using System.ComponentModel.DataAnnotations;
-using System.Data;
 using System.Diagnostics;
 using System.Globalization;
-using System.Security.Claims;
 using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
@@ -260,7 +257,12 @@ public class ApplicationController
         return this.ServiceError(applicationServiceResponse);
     }
 
-    public IActionResult ProjectOverview(string? CategoryId = null, string? ApplicationId = null)
+    /// <summary>
+    /// Displays the project overview page. Shows a notification banner if a project modification change exists,
+    /// clears related TempData keys, and populates the ProjectOverviewModel with project details from TempData.
+    /// </summary>
+    /// <returns>The ProjectOverview view with the populated model.</returns>
+    public IActionResult ProjectOverview()
     {
         // If there is a project modification change, show the notification banner
         if (TempData.Peek(TempDataKeys.ProjectModificationId) is not null)
@@ -277,38 +279,14 @@ public class ApplicationController
         // Build the model using values from TempData, falling back to defaults if not present
         var model = new ProjectOverviewModel
         {
-            ProjectTitle = TempData[TempDataKeys.ShortProjectTitle] as string ?? string.Empty,
-            CategoryId = TempData[TempDataKeys.CategoryId] as string ?? CategoryId ?? string.Empty,
-            ApplicationId = TempData[TempDataKeys.ApplicationId] as string ?? ApplicationId ?? string.Empty
+            ProjectTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
+            CategoryId = QuestionCategories.ProjectRecrod, //TempData.Peek(TempDataKeys.CategoryId) as string ?? string.Empty,
+            ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty
         };
 
         // Indicate that the project overview is being shown
         TempData[TempDataKeys.ProjectOverview] = true;
         return View(model);
-    }
-
-    [Route("{applicationId}", Name = "app:ViewApplication")]
-    public async Task<IActionResult> ViewApplication(string applicationId)
-    {
-        // if the ModelState is invalid, return the view
-        // with the null model. The view shouldn't display any
-        // data as model is null
-        if (!ModelState.IsValid)
-        {
-            return View("ApplicationView");
-        }
-
-        // get the pending application by id
-        var applicationServiceResponse = await applicationsService.GetApplication(applicationId);
-
-        // return the view if successfull
-        if (applicationServiceResponse.IsSuccessStatusCode)
-        {
-            return View("ApplicationView", applicationServiceResponse.Content);
-        }
-
-        // return the generic error page
-        return this.ServiceError(applicationServiceResponse);
     }
 
     public IActionResult ReviewAnswers()
