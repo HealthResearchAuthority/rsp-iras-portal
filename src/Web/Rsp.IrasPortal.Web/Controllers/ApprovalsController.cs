@@ -38,7 +38,7 @@ public class ApprovalsController
     {
         var model = new ApprovalsSearchViewModel();
 
-       if (TempData.ContainsKey(TempDataKeys.ApprovalsSearchModel))
+        if (TempData.ContainsKey(TempDataKeys.ApprovalsSearchModel))
         {
             var json = TempData.Peek(TempDataKeys.ApprovalsSearchModel)?.ToString();
             if (!string.IsNullOrEmpty(json))

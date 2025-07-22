@@ -307,10 +307,8 @@ button.govuk-link {
   width: 25%;
 }
 
-@media (max-width: 550px) {
-  .govuk-table-wrapper {
-    overflow-x: scroll;
-  }
+.govuk-table-wrapper {
+  overflow-x: auto;
 }
 
 .govuk-table-users {
