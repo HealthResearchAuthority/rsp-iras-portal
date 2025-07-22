@@ -31,6 +31,10 @@ public class ModificationsTasklistController(IApplicationsService applicationsSe
         if (TempData.Peek(TempDataKeys.ApprovalsSearchModel) is string json)
         {
             model.Search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json)!;
+            if (model.Search.Filters.Count != 0 || !string.IsNullOrEmpty(model.Search.IrasId))
+            {
+                model.EmptySearchPerformed = false;
+            }
         }
 
         var searchQuery = new ModificationSearchRequest()
