@@ -24,7 +24,8 @@ public class ModificationsTasklistController(IApplicationsService applicationsSe
     {
         var model = new ModificationsTasklistViewModel
         {
-            SelectedModificationIds = selectedModificationIds ?? []
+            SelectedModificationIds = selectedModificationIds ?? [],
+            EmptySearchPerformed = true // Set to true to check if search bar should be hidden on view
         };
 
         if (TempData.Peek(TempDataKeys.ApprovalsSearchModel) is string json)
