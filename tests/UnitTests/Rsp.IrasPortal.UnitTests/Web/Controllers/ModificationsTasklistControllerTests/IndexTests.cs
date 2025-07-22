@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
@@ -10,6 +12,14 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ModificationsTasklistControll
 
 public class IndexTests : TestServiceBase<ModificationsTasklistController>
 {
+    private const string TempDataKey = "td:ApprovalsSearchModel";
+
+    public IndexTests()
+    {
+        var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
+        Sut.TempData = tempData;
+    }
+
     [Fact]
     public async Task Welcome_ReturnsViewResult_WithIndexViewName()
     {

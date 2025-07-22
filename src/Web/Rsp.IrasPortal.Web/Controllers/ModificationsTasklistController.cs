@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Text.Json;
+using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
@@ -10,7 +12,7 @@ namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "tasklist:[action]")]
 [Authorize(Policy = "IsUser")]
-public class ModificationsTasklistController(IApplicationsService applicationsService) : Controller
+public class ModificationsTasklistController(IApplicationsService applicationsService, IValidator<ApprovalsSearchModel> validator) : Controller
 {
     [HttpGet]
     public async Task<IActionResult> Index(
@@ -25,9 +27,18 @@ public class ModificationsTasklistController(IApplicationsService applicationsSe
             SelectedModificationIds = selectedModificationIds ?? []
         };
 
-        var modQuery = new ModificationSearchRequest()
+        if (TempData.Peek(TempDataKeys.ApprovalsSearchModel) is string json)
+        {
+            model.Search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json)!;
+        }
+
+        var searchQuery = new ModificationSearchRequest()
         {
             Country = ["England"],
+            ShortProjectTitle = model.Search.ShortProjectTitle,
+            FromDate = model.Search.FromDate,
+            ToDate = model.Search.ToDate,
+            IrasId = model.Search.IrasId,
         };
 
         var querySortField = sortField;
@@ -41,7 +52,7 @@ public class ModificationsTasklistController(IApplicationsService applicationsSe
                 : SortDirections.Ascending;
         }
 
-        var result = await applicationsService.GetModifications(modQuery, pageNumber, pageSize, querySortField, querySortDirection);
+        var result = await applicationsService.GetModifications(searchQuery, pageNumber, pageSize, querySortField, querySortDirection);
         model.Modifications = result?.Content?.Modifications?
             .Select(dto => new TaskListModificationViewModel
             {
@@ -82,5 +93,90 @@ public class ModificationsTasklistController(IApplicationsService applicationsSe
     {
         // logic for assigning modifications
         throw new NotImplementedException();
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> ApplyFilters(ModificationsTasklistViewModel model)
+    {
+        var validationResult = await validator.ValidateAsync(model.Search);
+
+        if (!validationResult.IsValid)
+        {
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
+
+            return View(nameof(Index), model);
+        }
+
+        TempData[TempDataKeys.ApprovalsSearchModel] = JsonSerializer.Serialize(model.Search);
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> RemoveFilter(string key)
+    {
+        if (!TempData.TryGetValue(TempDataKeys.ApprovalsSearchModel, out var tempDataValue))
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        var json = tempDataValue?.ToString();
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        var search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json)!;
+
+        switch (key?.ToLowerInvariant().Replace(" ", ""))
+        {
+            case "shortprojecttitle":
+                search.ShortProjectTitle = null;
+                break;
+
+            case "datemodificationsubmitted-from":
+                search.FromDay = search.FromMonth = search.FromYear = null;
+                break;
+
+            case "datemodificationsubmitted-to":
+                search.ToDay = search.ToMonth = search.ToYear = null;
+                break;
+        }
+
+        TempData[TempDataKeys.ApprovalsSearchModel] = JsonSerializer.Serialize(search);
+
+        return await ApplyFilters(new ModificationsTasklistViewModel { Search = search });
+    }
+
+    [HttpGet]
+    public IActionResult ClearFilters()
+    {
+        if (!TempData.TryGetValue(TempDataKeys.ApprovalsSearchModel, out var tempDataValue))
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        var json = tempDataValue?.ToString();
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        var search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json);
+        if (search == null)
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        var cleanedSearch = new ApprovalsSearchModel
+        {
+            IrasId = search.IrasId
+        };
+
+        TempData[TempDataKeys.ApprovalsSearchModel] = JsonSerializer.Serialize(cleanedSearch);
+
+        return RedirectToAction(nameof(Index));
     }
 }

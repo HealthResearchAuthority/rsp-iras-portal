@@ -322,9 +322,7 @@ button.govuk-link {
 }
 
 .govuk-table-wrapper {
-    @media(max-width: 550px) {
-        overflow-x: scroll;
-    }
+    overflow-x: auto;
 }
 
 .govuk-table-users {
