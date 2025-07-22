@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using Rsp.IrasPortal.Application.Constants;
 
 namespace Rsp.IrasPortal.Web.Models;
@@ -79,14 +80,29 @@ public class ApprovalsSearchModel
 
     private static DateTime? ParseDate(string? day, string? month, string? year)
     {
-        return int.TryParse(day, out var d) &&
-               int.TryParse(month, out var m) &&
-               int.TryParse(year, out var y) &&
-               DateTime.TryParse(
-                   $"{y:D4}-{m:D2}-{d:D2}",
-                   CultureInfo.InvariantCulture,
-                   DateTimeStyles.None,
-                   out var result
-               ) ? result : null;
+        if (string.IsNullOrWhiteSpace(day) || string.IsNullOrWhiteSpace(month) || string.IsNullOrWhiteSpace(year))
+            return null;
+
+        // Ensure year is 4 digits
+        if (!Regex.IsMatch(year, @"^\d{4}$"))
+            return null;
+
+        if (!int.TryParse(day, out var d) ||
+            !int.TryParse(month, out var m) ||
+            !int.TryParse(year, out var y))
+            return null;
+
+        // Optionally enforce a year range (e.g., 1900–2100)
+        if (y < 1900 || y > 2100)
+            return null;
+
+        return DateTime.TryParseExact(
+            $"{y:D4}-{m:D2}-{d:D2}",
+            "yyyy-MM-dd",
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.None,
+            out var result)
+            ? result
+            : null;
     }
 }
