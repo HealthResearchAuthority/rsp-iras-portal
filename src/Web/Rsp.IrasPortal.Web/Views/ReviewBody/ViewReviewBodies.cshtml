@@ -4,20 +4,20 @@
 @model ReviewBodySearchViewModel
 
 @{
-	ViewData["Title"] = "View review bodies";
+    ViewData["Title"] = "View review bodies";
 
-	var statusOptions = new List<GdsOption>
+    var statusOptions = new List<GdsOption>
     {
         new() { Value = "true", Label = "Active" },
         new() { Value = "false", Label = "Disabled" }
     };
 
-	var sortableHeaders = new[]
-	{
-		new { Field = nameof(ReviewBodyDto.RegulatoryBodyName), Label = "Organisation name" },
-		new { Field = nameof(ReviewBodyDto.Countries), Label = "Country" },
-		new { Field = nameof(ReviewBodyDto.IsActive), Label = "Status" }
-	};
+    var sortableHeaders = new[]
+    {
+        new { Field = nameof(ReviewBodyDto.RegulatoryBodyName), Label = "Organisation name" },
+        new { Field = nameof(ReviewBodyDto.Countries), Label = "Country" },
+        new { Field = nameof(ReviewBodyDto.IsActive), Label = "Status" }
+    };
     var tableId = "usersTable";
 }
 
@@ -26,25 +26,25 @@
     the named section *@
 
 @section BackNavigation {
-	<partial name="_BackNavigation" model="@("systemadmin:view", "Back", new Dictionary<string, string>())"/>
+    <partial name="_BackNavigation" model="@("systemadmin:view", "Back", new Dictionary<string, string>())"/>
 }
 
 @functions {
 
-	private bool CanOpenPanelForField(string fieldName)
-	{
-		return ViewData.ModelState.TryGetValue(fieldName, out var state) && state.Errors.Any();
-	}
+    private bool CanOpenPanelForField(string fieldName)
+    {
+        return ViewData.ModelState.TryGetValue(fieldName, out var state) && state.Errors.Any();
+    }
 
-	private bool CanOpenPanelForAnyField(params string[] fieldNames)
-	{
-		return fieldNames.Any(CanOpenPanelForField);
-	}
+    private bool CanOpenPanelForAnyField(params string[] fieldNames)
+    {
+        return fieldNames.Any(CanOpenPanelForField);
+    }
 
-	private bool CanOpenFilterPanel()
-	{
-		return ViewData.ModelState.Values.Any(v => v.Errors.Count > 0);
-	}
+    private bool CanOpenFilterPanel()
+    {
+        return ViewData.ModelState.Values.Any(v => v.Errors.Count > 0);
+    }
 }
 
 <div class="govuk-grid-row">
@@ -59,7 +59,7 @@
 <div class="govuk-grid-row">
 
     <div class="govuk-grid-column-two-thirds">
-		<form method="post" class="govuk-form-group" asp-route-fromPagination="false">
+        <form method="post" class="govuk-form-group" asp-route-fromPagination="false">
             <label class="govuk-label" for="Search.SearchQuery">
                 <b>Find a review body</b>
             </label>
@@ -68,7 +68,7 @@
                 <input class="govuk-input" id="Search.SearchQuery" name="Search.SearchQuery" type="text"
                        value="@(Model.Search?.SearchQuery ?? string.Empty)"/>
 
-                <partial name="_SubmitButton" 
+                <partial name="_SubmitButton"
                          model="@("rbc:viewreviewbodies", "Search", new Dictionary<string, string>())"/>
             </div>
             <input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize"/>
@@ -99,10 +99,11 @@
                                                             label-text="Select all that apply"
                                                             options="UkCountryNames.Countries"
                                                             conditional-field="false"
-                                                            legend-class="govuk-label govuk-label--s"
+                                                            legend-class="govuk-label govuk-label--s font-weight-none"
                                                             hint-id="country-hint"
-                                                            hint-html="@($"{Model.Search.Country?.Count ?? 0} selected")"
-                                                            label-html-class="font-weight-none"/>
+                                                            hint-html="@($"{Model.Search.Country?.Count ?? 0} selected")"/>
+
+
                                 </fieldset>
                             </div>
                         </div>
@@ -117,13 +118,10 @@
                             <div class="govuk-form-group govuk-!-margin-bottom-2">
                                 <fieldset class="govuk-fieldset">
                                     <rsp-gds-radio-group asp-for="Search.Status"
-                                                         label-text=""
+                                                         label-text="Select one option"
                                                          options="statusOptions"
                                                          conditional-field="false"
-                                                         legend-class="govuk-label govuk-label--s"
-                                                         hint-id="status-hint"
-														 hint-html="Select one option"
-                                                         label-html-class="font-weight-none"/>
+                                                         legend-class="govuk-label govuk-label--s font-weight-none"/>
                                 </fieldset>
                             </div>
                         </div>
