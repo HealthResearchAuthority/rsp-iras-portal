@@ -15,6 +15,8 @@ namespace Rsp.IrasPortal.Web.Controllers;
 [Authorize(Policy = "IsUser")]
 public class ModificationsTasklistController(IApplicationsService applicationsService, IValidator<ApprovalsSearchModel> validator) : Controller
 {
+    private const string ModificationToAssignNotSelectedErrorMessage = "You have not selected a modification to assign. Select at least one modification before you can continue.";
+
     [HttpGet]
     public async Task<IActionResult> Index(
         int pageNumber = 1,
@@ -99,7 +101,7 @@ public class ModificationsTasklistController(IApplicationsService applicationsSe
     {
         if (selectedModificationIds == null || !selectedModificationIds.Any())
         {
-            ModelState.AddModelError("ModificationToAssignNotSelected", "You have not selected a modification to assign. Select at least one modification before you can continue.");
+            ModelState.AddModelError(ModificationsTasklist.ModificationToAssignNotSelected, ModificationToAssignNotSelectedErrorMessage);
             TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
             return RedirectToAction(nameof(Index));
         }
