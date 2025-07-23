@@ -83,10 +83,6 @@ public class ApprovalsSearchModel
         if (string.IsNullOrWhiteSpace(day) || string.IsNullOrWhiteSpace(month) || string.IsNullOrWhiteSpace(year))
             return null;
 
-        // Ensure year is 4 digits
-        if (!Regex.IsMatch(year, @"^\d{4}$"))
-            return null;
-
         if (!int.TryParse(day, out var d) ||
             !int.TryParse(month, out var m) ||
             !int.TryParse(year, out var y))
