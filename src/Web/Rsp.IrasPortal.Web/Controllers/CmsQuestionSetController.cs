@@ -105,9 +105,6 @@ public class CmsQuestionSetController(ICmsQuestionSetServiceClient questionSetSe
         // save the list of QuestionViewModel in session to get it later
         HttpContext.Session.SetString($"{SessionKeys.Questionnaire}:{sectionId}", JsonSerializer.Serialize(questionnaire.Questions));
 
-        // add the applicationId in the TempData to be retrieved in the view
-        TempData.TryAdd(TempDataKeys.ApplicationId, applicationId);
-
         // this is where the questionnaire will resume
         var navigationDto = await SetStage(sectionIdOrDefault);
 
@@ -172,12 +169,6 @@ public class CmsQuestionSetController(ICmsQuestionSetServiceClient questionSetSe
 
         if (!isValid)
         {
-            // store the applicationId in the TempData to get in the view
-            TempData.TryAdd(TempDataKeys.ApplicationId, application.ApplicationId);
-
-            // store the irasId in the TempData to get in the view
-            TempData.TryAdd(TempDataKeys.IrasId, application.IrasId);
-
             // set the previous, current and next stages
             await SetStage(model.CurrentStage!);
             model.ReviewAnswers = submit;
@@ -192,8 +183,8 @@ public class CmsQuestionSetController(ICmsQuestionSetServiceClient questionSetSe
         // populate the RespondentAnswers
         var request = new RespondentAnswersRequest
         {
-            ApplicationId = application.ApplicationId,
-            RespondentId = respondentId
+            Id = respondentId,
+            ProjectRecordId = application.Id
         };
 
         foreach (var question in questions)
@@ -233,12 +224,6 @@ public class CmsQuestionSetController(ICmsQuestionSetServiceClient questionSetSe
             await respondentService.SaveRespondentAnswers(request);
         }
 
-        // add the applicationId in the tempdata
-        TempData.TryAdd(TempDataKeys.ApplicationId, application.ApplicationId);
-
-        // store the irasId in the TempData to get in the view
-        TempData.TryAdd(TempDataKeys.IrasId, application.IrasId);
-
         // set the previous, current and next stages
         var navigation = await SetStage(model.CurrentStage);
 
@@ -248,7 +233,7 @@ public class CmsQuestionSetController(ICmsQuestionSetServiceClient questionSetSe
         // user clicks on Proceed to submit button
         if (submit)
         {
-            return RedirectToAction(nameof(SubmitApplication), new { applicationId = application.ApplicationId });
+            return RedirectToAction(nameof(SubmitApplication), new { projectRecordId = application.Id });
         }
 
         // user clicks on the SaveAndContinue button
@@ -258,13 +243,13 @@ public class CmsQuestionSetController(ICmsQuestionSetServiceClient questionSetSe
             // if the user is at the last stage and clicks on Save and Continue
             if (string.IsNullOrWhiteSpace(navigation.NextStage))
             {
-                return RedirectToAction(nameof(SubmitApplication), new { applicationId = application.ApplicationId });
+                return RedirectToAction(nameof(SubmitApplication), new { projectRecordId = application.Id });
             }
 
             // otherwise resume from the NextStage in sequence
             return RedirectToAction(nameof(Resume), new
             {
-                applicationId = application.ApplicationId,
+                projectRecordId = application.Id,
                 categoryId = navigation.NextCategory,
                 sectionId = navigation.NextStage
             });
@@ -272,10 +257,6 @@ public class CmsQuestionSetController(ICmsQuestionSetServiceClient questionSetSe
 
         if (saveForLater == bool.TrueString)
         {
-            TempData[TempDataKeys.ShortProjectTitle] = model.GetShortProjectTitle();
-            TempData[TempDataKeys.CategoryId] = model.GetFirstCategory();
-            TempData[TempDataKeys.ApplicationId] = application.ApplicationId;
-
             return RedirectToAction("ProjectOverview", "Application");
         }
         // user jumps to the next stage by clicking on the link
@@ -284,7 +265,7 @@ public class CmsQuestionSetController(ICmsQuestionSetServiceClient questionSetSe
         {
             return RedirectToAction(nameof(Resume), new
             {
-                applicationId = application.ApplicationId,
+                projectRecordId = application.Id,
                 categoryId = navigation.NextCategory,
                 sectionId = navigation.NextStage
             });
@@ -298,10 +279,10 @@ public class CmsQuestionSetController(ICmsQuestionSetServiceClient questionSetSe
         });
     }
 
-    public async Task<IActionResult> SubmitApplication(string applicationId)
+    public async Task<IActionResult> SubmitApplication(string projectRecordId)
     {
         // get the responent answers for the category
-        var respondentServiceResponse = await respondentService.GetRespondentAnswers(applicationId);
+        var respondentServiceResponse = await respondentService.GetRespondentAnswers(projectRecordId);
 
         // get the questions for all categories
         var questionSetServiceResponse = await questionSetService.GetQuestionSet();
@@ -379,7 +360,6 @@ public class CmsQuestionSetController(ICmsQuestionSetServiceClient questionSetSe
         // store the first categoryId and applicationId in the TempData to get in the view
         TempData[TempDataKeys.CategoryId] = (questionnaire.Questions.GroupBy(q => q.Category)
         .OrderBy(g => g.First().Sequence).FirstOrDefault()?.Key);
-        TempData[TempDataKeys.ApplicationId] = application.ApplicationId;
 
         return View("ReviewAnswers", questionnaire);
     }
@@ -391,7 +371,7 @@ public class CmsQuestionSetController(ICmsQuestionSetServiceClient questionSetSe
         var application = this.GetApplicationFromSession();
 
         // get the respondent answers for the category
-        var respondentServiceResponse = await respondentService.GetRespondentAnswers(application.ApplicationId);
+        var respondentServiceResponse = await respondentService.GetRespondentAnswers(application.Id);
 
         // return the error view if unsuccessfull
         if (!respondentServiceResponse.IsSuccessStatusCode)
@@ -452,7 +432,6 @@ public class CmsQuestionSetController(ICmsQuestionSetServiceClient questionSetSe
             // store the first categoryId and applicationId in the TempData to get in the view
             TempData[TempDataKeys.CategoryId] = (questionnaire.Questions.GroupBy(q => q.Category)
             .OrderBy(g => g.First().Sequence).FirstOrDefault()?.Key);
-            TempData[TempDataKeys.ApplicationId] = application.ApplicationId;
 
             // call the ValidateAsync to execute the validation
             // this will trigger the fluentvalidation using the injected validator if configured
@@ -474,10 +453,10 @@ public class CmsQuestionSetController(ICmsQuestionSetServiceClient questionSetSe
         return RedirectToAction("ProjectOverview", "Application");
     }
 
-    private async Task<IrasApplicationResponse?> LoadApplication(string applicationId)
+    private async Task<IrasApplicationResponse?> LoadApplication(string projectApplicationId)
     {
         // get the application by id
-        var response = await applicationsService.GetApplication(applicationId);
+        var response = await applicationsService.GetApplication(projectApplicationId);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -487,7 +466,7 @@ public class CmsQuestionSetController(ICmsQuestionSetServiceClient questionSetSe
         var irasApplication = response.Content!;
 
         // save the application in session
-        HttpContext.Session.SetString(SessionKeys.Application, JsonSerializer.Serialize(irasApplication));
+        HttpContext.Session.SetString(SessionKeys.ProjectRecord, JsonSerializer.Serialize(irasApplication));
 
         return irasApplication;
     }

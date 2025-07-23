@@ -33,8 +33,6 @@
 				})
 		: ("app:createapplication", "Back", new Dictionary<string, string>());
 
-	TempData[TempDataKeys.ShortProjectTitle] = Model.GetShortProjectTitle();
-	TempData[TempDataKeys.CategoryId] = Model.GetFirstCategory();
 }
 
 @if (await featureManager.IsEnabledAsync(Features.ProgressiveEnhancement))
