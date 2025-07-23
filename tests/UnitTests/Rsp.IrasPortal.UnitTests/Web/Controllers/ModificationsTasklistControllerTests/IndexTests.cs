@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
@@ -48,5 +49,26 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
         var viewResult = result.ShouldBeOfType<ViewResult>();
         var model = viewResult.Model.ShouldBeAssignableTo<ModificationsTasklistViewModel>();
         var modifications = model?.Modifications.ShouldBeOfType<List<TaskListModificationViewModel>>();
+    }
+
+    [Theory]
+    [InlineData("{\"IrasId\":\"123456\"}", false)]
+    [InlineData("{\"ChiefInvestigatorName\":\"Dr. Smith\"}", false)]
+    [InlineData("{\"FromDay\":\"01\",\"FromMonth\":\"01\",\"FromYear\":\"2020\"}", false)]
+    [InlineData("{\"ToDay\":\"31\",\"ToMonth\":\"12\",\"ToYear\":\"2025\"}", false)]
+    [InlineData("{}", true)]
+    public async Task Index_SearchModel_FromTempData_SetsCorrectEmptySearchPerformed(string json, bool expectedEmptySearchPerformed)
+    {
+        var tempDataMock = Mocker.GetMock<ITempDataDictionary>();
+        tempDataMock.Setup(td => td.Peek(TempDataKeys.ApprovalsSearchModel)).Returns(json);
+
+        Sut.TempData = tempDataMock.Object;
+
+        var result = await Sut.Index(1, 20, null, "CreatedAt", "asc");
+
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.Model.ShouldNotBeNull();
+        var viewModel = viewResult.Model.ShouldBeAssignableTo<ModificationsTasklistViewModel>();
+        viewModel.EmptySearchPerformed.ShouldBe(expectedEmptySearchPerformed);
     }
 }

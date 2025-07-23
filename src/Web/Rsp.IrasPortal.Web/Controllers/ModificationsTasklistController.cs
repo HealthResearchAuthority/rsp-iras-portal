@@ -6,6 +6,7 @@ using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
+using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers;
@@ -96,8 +97,17 @@ public class ModificationsTasklistController(IApplicationsService applicationsSe
     [HttpGet]
     public async Task<IActionResult> AssignModifications(List<string> selectedModificationIds)
     {
-        // logic for assigning modifications
-        throw new NotImplementedException();
+        if (selectedModificationIds == null || !selectedModificationIds.Any())
+        {
+            ModelState.AddModelError("ModificationToAssignNotSelected", "You have not selected a modification to assign. Select at least one modification before you can continue.");
+            TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
+            return RedirectToAction(nameof(Index));
+        }
+        else
+        {
+            // logic for assigning modifications
+            throw new NotImplementedException();
+        }
     }
 
     [HttpPost]
