@@ -1,26 +1,29 @@
 ﻿using System.Collections.Immutable;
 using System.Net;
+using System.Text.Json;
 using FluentValidation;
+using FluentValidation.Results;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Identity;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
-using Rsp.IrasPortal.Web.Validators;
+using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Areas.Admin.Controllers;
 
 [Area("Admin")]
 [Route("[area]/[controller]/[action]", Name = "admin:[action]")]
-[Authorize(Policy = "IsAdmin")]
-[FeatureGate(Features.Admin)]
-public class UsersController(IUserManagementService userManagementService, IValidator<UserViewModel> validator) : Controller
+//[Authorize(Policy = "IsSystemAdministrator")]
+//[FeatureGate(Features.Admin)]
+public class UsersController(IUserManagementService userManagementService, IValidator<UserViewModel> validator, IValidator<UserSearchModel> searchValidator) : Controller
 {
     private const string Error = nameof(Error);
     private const string EditUserView = nameof(EditUserView);
@@ -33,6 +36,7 @@ public class UsersController(IUserManagementService userManagementService, IVali
     private const string ConfirmDisableUser = nameof(ConfirmDisableUser);
     private const string EnableUserSuccessMessage = nameof(EnableUserSuccessMessage);
     private const string ConfirmEnableUser = nameof(ConfirmEnableUser);
+    private const string OperationsRole = "operations";
 
     private const string EditMode = "edit";
     private const string CreateMode = "create";
@@ -43,42 +47,72 @@ public class UsersController(IUserManagementService userManagementService, IVali
     /// </summary>
     [Route("/admin/users", Name = "admin:users")]
     [HttpGet]
-    public async Task<IActionResult> Index(string? searchQuery = null, int pageNumber = 1, int pageSize = 20)
+    [HttpPost]
+    public async Task<IActionResult> Index(int pageNumber = 1,
+        int pageSize = 20,
+        string? sortField = nameof(UserViewModel.GivenName),
+        string? sortDirection = SortDirections.Ascending,
+        [FromForm] UserSearchViewModel? model = null,
+        [FromQuery] string? complexSearchQuery = null,
+        [FromQuery] bool fromPagination = false)
     {
+        if (fromPagination && !string.IsNullOrWhiteSpace(complexSearchQuery))
+        {
+            model ??= new UserSearchViewModel();
+            model.Search = JsonSerializer.Deserialize<UserSearchModel>(complexSearchQuery);
+        }
+        else
+        {
+            // RESET ON SEARCH AND REMOVE FILTERS
+            pageNumber = 1;
+            pageSize = 20;
+        }
+
+        model ??= new UserSearchViewModel();
+        model.Search ??= new UserSearchModel();
+
+        var request = new SearchUserRequest()
+        {
+            SearchQuery = model.Search.SearchQuery,
+            Country = model.Search.Country,
+            Status = model.Search.Status,
+            FromDate = model.Search.FromDate,
+            ToDate = model.Search.ToDate
+        };
+
         // get the users
-        var response = await userManagementService.GetUsers(searchQuery, pageNumber, pageSize);
+        var response = await userManagementService.GetUsers(request, pageNumber, pageSize, sortField, sortDirection);
 
         // return the view if successfull
         if (response.IsSuccessStatusCode)
         {
-            var users = response.Content?.Users.Select(user => new UserViewModel
-            {
-                Id = user.Id,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email,
-                Status = user.Status,
-                LastLogin = user.LastLogin
-            }) ?? [];
+            var users = response.Content?.Users.Select(user => new UserViewModel(user)) ?? [];
 
             var paginationModel = new PaginationViewModel(pageNumber, pageSize, response.Content?.TotalCount ?? 0)
             {
                 RouteName = "admin:users",
-                SearchQuery = searchQuery
+                ComplexSearchQuery = model.Search,
+                SortField = sortField,
+                SortDirection = sortDirection
             };
 
-            return View((users, paginationModel));
+            var reviewBodySearchViewModel = new UserSearchViewModel()
+            {
+                Pagination = paginationModel,
+                Users = users,
+                Search = model.Search
+            };
+
+      
+
+            return View("Index", reviewBodySearchViewModel);
         }
 
-        // if status is forbidden
-        // return the appropriate response otherwise
-        // return the generic error page
-        return response.StatusCode switch
-        {
-            HttpStatusCode.Forbidden => Forbid(),
-            _ => View(Error, this.ProblemResult(response))
-        };
+        // return error page as api wasn't successful
+        return this.ServiceError(response);
     }
+
+
 
     /// <summary>
     /// Displays the empty UserView to create a user
@@ -135,13 +169,25 @@ public class UsersController(IUserManagementService userManagementService, IVali
     {
         ViewBag.Mode = string.IsNullOrEmpty(model.Id) ? CreateMode : EditMode;
 
+        if (model.UserRoles.Any(r => r.Name.Equals(OperationsRole, StringComparison.OrdinalIgnoreCase) && !r.IsSelected))
+        {
+            model.AccessRequired = [];
+            model.Country = [];
+        }
+
         var context = new ValidationContext<UserViewModel>(model);
         var validationResult = await validator.ValidateAsync(context);
 
-        var u = userManagementService.GetUser(null, model.Email);
+        var response = await userManagementService.GetUser(null, model.Email);
 
-        if (!validationResult.IsValid)
+        var emailExists = response.IsSuccessStatusCode && response.Content != null;
+
+        if (!validationResult.IsValid || emailExists)
         {
+            if (emailExists)
+            {
+                validationResult.Errors.Add(new ValidationFailure("Email", "This user already exists", null));
+            }
             // Copy the validation results into ModelState.
             // ASP.NET uses the ModelState collection to populate
             // error messages in the View.
@@ -190,6 +236,12 @@ public class UsersController(IUserManagementService userManagementService, IVali
     {
         var mode = string.IsNullOrEmpty(model.Id) ? CreateMode : EditMode;
         ViewBag.Mode = mode;
+
+        if (model.UserRoles.Any(r => r.Name.Equals(OperationsRole, StringComparison.OrdinalIgnoreCase) && !r.IsSelected))
+        {
+            model.AccessRequired = [];
+            model.Country = [];
+        }
 
         var context = new ValidationContext<UserViewModel>(model);
         var validationResult = await validator.ValidateAsync(context);
@@ -299,14 +351,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
             return View(EditUserView, model);
         }
 
-        // if status is forbidden
-        // return the appropriate response otherwise
-        // return the generic error page
-        return response.StatusCode switch
-        {
-            HttpStatusCode.Forbidden => Forbid(),
-            _ => View(Error, this.ProblemResult(response))
-        };
+        // return error page as api wasn't successful
+        return this.ServiceError(response);
     }
 
     /// <summary>
@@ -326,14 +372,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
             return View(ConfirmDisableUser, model);
         }
 
-        // if status is forbidden
-        // return the appropriate response otherwise
-        // return the generic error page
-        return response.StatusCode switch
-        {
-            HttpStatusCode.Forbidden => Forbid(),
-            _ => View(Error, this.ProblemResult(response))
-        };
+        // return error page as api wasn't successful
+        return this.ServiceError(response);
     }
 
     [HttpPost]
@@ -357,14 +397,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
             }
         }
 
-        // if status is forbidden
-        // return the appropriate response otherwise
-        // return the generic error page
-        return userResponse.StatusCode switch
-        {
-            HttpStatusCode.Forbidden => Forbid(),
-            _ => View(Error, this.ProblemResult(userResponse))
-        };
+        // return error page as api wasn't successful
+        return this.ServiceError(userResponse);
     }
 
     [HttpGet]
@@ -379,14 +413,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
             return View(ConfirmEnableUser, model);
         }
 
-        // if status is forbidden
-        // return the appropriate response otherwise
-        // return the generic error page
-        return response.StatusCode switch
-        {
-            HttpStatusCode.Forbidden => Forbid(),
-            _ => View(Error, this.ProblemResult(response))
-        };
+        // return error page as api wasn't successful
+        return this.ServiceError(response);
     }
 
     [HttpPost]
@@ -410,14 +438,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
             }
         }
 
-        // if status is forbidden
-        // return the appropriate response otherwise
-        // return the generic error page
-        return userResponse.StatusCode switch
-        {
-            HttpStatusCode.Forbidden => Forbid(),
-            _ => View(Error, this.ProblemResult(userResponse))
-        };
+        // return error page as api wasn't successful
+        return this.ServiceError(userResponse);
     }
 
     /// <summary>
@@ -502,14 +524,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
             return View(UserRolesView, model);
         }
 
-        // if status is forbidden
-        // return the appropriate response otherwise
-        // return the generic error page
-        return response.StatusCode switch
-        {
-            HttpStatusCode.Forbidden => Forbid(),
-            _ => View(Error, this.ProblemResult(response))
-        };
+        // return error page as api wasn't successful
+        return this.ServiceError(response);
     }
 
     /// <summary>
@@ -576,6 +592,101 @@ public class UsersController(IUserManagementService userManagementService, IVali
         }
 
         return View(model);
+    }
+
+    [Route("/admin/applyfilters", Name = "admin:applyfilters")]
+    [HttpPost]
+    public async Task<IActionResult> ApplyFilters(UserSearchViewModel model,
+        string? sortField = nameof(UserViewModel.GivenName),
+        string? sortDirection = SortDirections.Descending)
+    {
+        var validationResult = await searchValidator.ValidateAsync(model.Search);
+
+        if (!validationResult.IsValid)
+        {
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
+
+            return View(nameof(Index), model); // Return with validation errors
+        }
+
+        // Call the Index action directly, passing the model and default paging values
+        return await Index(1, 20, sortField,sortDirection, model, null, false);
+    }
+
+    [HttpGet]
+    [Route("/admin/clearfilters", Name = "admin:clearfilters")]
+    public IActionResult ClearFilters([FromQuery] string? searchQuery = null)
+    {
+        var cleanedSearch = new UserSearchModel
+        {
+            SearchQuery = searchQuery
+        };
+
+        var searchJson = JsonSerializer.Serialize(cleanedSearch);
+
+        return RedirectToRoute("admin:users", new
+        {
+            pageNumber = 1,
+            pageSize = 20,
+            complexSearchQuery = searchJson,
+            fromPagination = true
+        });
+    }
+
+
+    [HttpGet]
+    [Route("/admin/users/removefilter", Name = "admin:removefilter")]
+    public IActionResult RemoveFilter(string key, string? value, [FromQuery] string? model = null)
+    {
+        var viewModel = new UserSearchViewModel();
+
+        if (!string.IsNullOrWhiteSpace(model))
+        {
+            viewModel.Search = JsonSerializer.Deserialize<UserSearchModel>(model);
+        }
+        else
+        {
+            viewModel.Search = new UserSearchModel();
+        }
+
+        switch (key)
+        {
+            case UsersSearch.CountryKey:
+                if (!string.IsNullOrEmpty(value) && viewModel.Search.Country != null)
+                {
+                    viewModel.Search.Country = viewModel.Search.Country
+                        .Where(c => !string.Equals(c, value, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
+
+                break;
+            case UsersSearch.FromDateKey:
+                viewModel.Search.FromDay = viewModel.Search.FromMonth = viewModel.Search.FromYear = null;
+                break;
+
+            case UsersSearch.ToDateKey:
+                viewModel.Search.ToDay = viewModel.Search.ToMonth = viewModel.Search.ToYear = null;
+                break;
+
+            case UsersSearch.StatusKey:
+                viewModel.Search.Status = null;
+                break;
+        }
+
+        // Serialize modified search model to JSON for complexSearchQuery parameter
+        var searchJson = JsonSerializer.Serialize(viewModel.Search);
+
+        // Redirect to ViewReviewBodies with query parameters
+        return RedirectToRoute("admin:users", new
+        {
+            pageNumber = 1,
+            pageSize = 20,
+            complexSearchQuery = searchJson,
+            fromPagination = true
+        });
     }
 
     private async Task<IList<Role>> GetAlluserRoles()

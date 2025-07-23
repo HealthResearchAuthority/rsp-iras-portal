@@ -1,8 +1,7 @@
 ﻿using FluentValidation;
 using Mapster;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.FeatureManagement;
 using Rsp.IrasPortal.Application.Configuration;
@@ -13,6 +12,7 @@ using Rsp.IrasPortal.Configuration.Dependencies;
 using Rsp.IrasPortal.Configuration.Health;
 using Rsp.IrasPortal.Configuration.HttpClients;
 using Rsp.IrasPortal.Web;
+using Rsp.IrasPortal.Web.Attributes;
 using Rsp.IrasPortal.Web.Mapping;
 using Rsp.Logging.ActionFilters;
 using Rsp.Logging.Extensions;
@@ -51,6 +51,8 @@ builder.Services.Configure<AppSettings>(builder.Configuration.GetSection(nameof(
 
 var appSettingsSection = configuration.GetSection(nameof(AppSettings));
 var appSettings = appSettingsSection.Get<AppSettings>()!;
+
+services.AddSingleton(appSettings);
 
 // Creating a feature manager without the use of DI. Injecting IFeatureManager
 // via DI is appropriate in consturctor methods. At the startup, it's
@@ -94,6 +96,8 @@ services
         {
             options.Filters.Add<LogActionFilter>();
         }
+
+        options.Filters.Add<ModelStateMergeAttribute>();
     })
     .AddSessionStateTempDataProvider();
 
@@ -113,6 +117,11 @@ services.AddCustomHealthChecks(appSettings);
 // header to be propagated to the httpclient
 // to be sent in the request for external api calls
 services.AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
+
+services.AddAzureClients(azure =>
+{
+    azure.AddBlobServiceClient(builder.Configuration.GetRequiredSection("AppSettings:Azure:DocumentStorage:Blob"));
+});
 
 services
     .AddJwksManager()
@@ -167,26 +176,6 @@ app
     .UseRouting()
     .UseSession()
     .UseAuthentication()
-    .Use(async (context, next) =>
-    {
-        var user = context.User;
-
-        var isAuthenticated = user?.Identity?.IsAuthenticated ?? false;
-
-        // if the user is authenticated, check if the session is alive
-        // this scenario is when the user is authenticated but the session has expired
-        // because the AuthCookieTimeout is longer than the session timeout
-        if (isAuthenticated && !context.Session.TryGetValue(SessionKeys.Alive, out _))
-        {
-            // Session expired - redirect to signout
-            await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-
-            context.Response.Redirect("/");
-            return;
-        }
-
-        await next();
-    })
     .UseAuthorization()
     .UseEndpoints
     (

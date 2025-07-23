@@ -8,12 +8,12 @@ public class PaginationViewModel
     /// <summary>
     /// Gets or sets the page number.
     /// </summary>
-    public int PageNumber { get; set; }
+    public int PageNumber { get; set; } = 1;
 
     /// <summary>
     /// Gets or sets the page size.
     /// </summary>
-    public int PageSize { get; set; }
+    public int PageSize { get; set; } = 20;
 
     /// <summary>
     /// Gets or sets the route name.
@@ -22,13 +22,33 @@ public class PaginationViewModel
 
     /// <summary>
     /// Gets or sets the total count.
-    /// </summary>s
+    /// </summary>
     public int TotalCount { get; set; }
+
+    /// <summary>
+    /// Gets or sets the field to sort by if available.
+    /// </summary>
+    public string? SortField { get; set; }
+
+    /// <summary>
+    /// Gets or sets the sort direction if available (e.g., "asc" or "desc").
+    /// </summary>
+    public string? SortDirection { get; set; }
 
     /// <summary>
     /// Gets or sets the search query if available
     /// </summary>
     public string? SearchQuery { get; set; }
+
+    /// <summary>
+    /// Gets or sets a complex object for advanced filtering.
+    /// </summary>
+    public object? ComplexSearchQuery { get; set; }
+
+    /// <summary>
+    /// Name of the form being submitted.
+    /// </summary>
+    public string FormName { get; set; }
 
     /// <summary>
     /// Gets or sets any additional parameters that should be part of the pagination URL

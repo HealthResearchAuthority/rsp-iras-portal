@@ -11,7 +11,7 @@ namespace Rsp.IrasPortal.Web.Areas.Admin.Controllers;
 
 [Area("Admin")]
 [Route("[area]/[controller]/[action]", Name = "admin:[action]")]
-[Authorize(Policy = "IsAdmin")]
+[Authorize(Policy = "IsSystemAdministrator")]
 [FeatureGate(Features.Admin)]
 public class RolesController(IUserManagementService userManagementService) : Controller
 {
@@ -42,14 +42,8 @@ public class RolesController(IUserManagementService userManagementService) : Con
             return View((roles, paginationModel));
         }
 
-        // if status is forbidden
-        // return the appropriate response otherwise
-        // return the generic error page
-        return response.StatusCode switch
-        {
-            HttpStatusCode.Forbidden => Forbid(),
-            _ => View("Error", this.ProblemResult(response))
-        };
+        // return error page as api wasn't successful
+        return this.ServiceError(response);
     }
 
     /// <summary>

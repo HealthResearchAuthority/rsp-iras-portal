@@ -35,11 +35,18 @@
 
             <rsp-gds-input asp-for="Title" label-text="Title" width-class="govuk-!-width-one-quarter"/>
 
-            <rsp-gds-input asp-for="FirstName" label-text="First name" width-class="govuk-!-width-one-half"/>
+            <rsp-gds-input asp-for="GivenName" label-text="First name" width-class="govuk-!-width-one-half"/>
 
-            <rsp-gds-input asp-for="LastName" label-text="Last name" width-class="govuk-!-width-one-half"/>
-
-            <rsp-gds-input asp-for="Email" label-text="Email address" input-type="email" width-class="govuk-!-width-two-thirds"/>
+            <rsp-gds-input asp-for="FamilyName" label-text="Last name" width-class="govuk-!-width-one-half"/>
+            
+            @if (ViewBag.Mode == "edit")
+            {
+                <input hidden readonly name="Email" asp-for="Email" value="@(Model.Email ?? string.Empty)"/>
+            }
+            else
+            {
+                <rsp-gds-input asp-for="Email" input-type="email" label-text="Email address" width-class="govuk-!-width-two-thirds" />
+            }
 
             <rsp-gds-input asp-for="Telephone" label-text="Telephone" input-type="tel" width-class="govuk-!-width-two-thirds"/>
 
@@ -49,10 +56,9 @@
 
             <rsp-gds-checkbox-group asp-for="UserRoles"
                                     label-text="Role"
-                                    item-label-property="Name"
+									item-label-property="DisplayName"
                                     item-value-property="IsSelected"
                                     item-hidden-properties="Id,Name"
-                                    label-css-class="role-checkbox"
 									legend-class="govuk-label govuk-label--s" />
 
 
@@ -77,7 +83,6 @@
             <rsp-gds-checkbox-group asp-for="AccessRequired"
                                     label-text="Access required"
                                     options="AccessRequiredOptions.Options"
-                                    label-css-class="role-checkbox"
                                     conditional-field="true"
 									legend-class="govuk-label govuk-label--s" />
 

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "systemadmin:[action]")]
-[Authorize(Policy = "IsAdmin")]
+[Authorize(Policy = "IsSystemAdministrator")]
 public class SystemAdminController : Controller
 {
     private const string SystemAdminView = nameof(Index);

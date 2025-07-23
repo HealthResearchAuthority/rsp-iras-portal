@@ -1,11 +1,13 @@
-﻿namespace Rsp.IrasPortal.Application.DTOs.Responses;
+﻿using System.Text.Json.Serialization;
+
+namespace Rsp.IrasPortal.Application.DTOs.Responses;
 
 public class IrasApplicationResponse
 {
     /// <summary>
     /// The public key for the application database record
     /// </summary>
-    public string ApplicationId { get; set; } = null!;
+    public string Id { get; set; } = null!;
 
     /// <summary>
     /// The title of the project

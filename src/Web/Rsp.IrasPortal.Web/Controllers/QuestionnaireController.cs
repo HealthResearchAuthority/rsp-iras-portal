@@ -16,12 +16,14 @@ namespace Rsp.IrasPortal.Web.Controllers;
 [Route("[controller]/[action]", Name = "qnc:[action]")]
 [Authorize(Policy = "IsUser")]
 public class QuestionnaireController
-    (
+(
     IApplicationsService applicationsService,
     IRespondentService respondentService,
     IQuestionSetService questionSetService,
+    IRtsService rtsService,
+    IProjectModificationsService projectModificationsService,
     IValidator<QuestionnaireViewModel> validator
-    ) : Controller
+) : Controller
 {
     // Index view name
     private const string Index = nameof(Index);
@@ -29,19 +31,24 @@ public class QuestionnaireController
     /// <summary>
     /// Resumes the application for the categoryId
     /// </summary>
-    /// <param name="applicationId">Application Id</param>
+    /// <param name="projectRecordId">Application Id</param>
     /// <param name="categoryId">CategoryId to resume from</param>
     /// <param name="validate">Indicates whether to validate or not</param>
-    public async Task<IActionResult> Resume(string applicationId, string categoryId, string validate = "False", string? sectionId = null)
+    public async Task<IActionResult> Resume(string projectRecordId, string categoryId, string validate = "False", string? sectionId = null)
     {
         // load existing application in session
-        if (await LoadApplication(applicationId) == null)
+        if (await LoadApplication(projectRecordId) == null)
         {
             return NotFound();
         }
 
+        // check if we are in the modification journey, so only get the modfication questions
+        var (projectModificationId, projectModificationChangeId) = CheckModification();
+
         // get the responent answers for the category
-        var respondentServiceResponse = await respondentService.GetRespondentAnswers(applicationId, categoryId);
+        var respondentServiceResponse = projectModificationChangeId == Guid.Empty ?
+            await respondentService.GetRespondentAnswers(projectRecordId, categoryId) :
+            await respondentService.GetModificationAnswers(projectModificationChangeId, categoryId);
 
         if (!respondentServiceResponse.IsSuccessStatusCode)
         {
@@ -60,17 +67,18 @@ public class QuestionnaireController
                 return this.ServiceError(questionSectionsResponse);
             }
 
-            var questionSections = questionSectionsResponse.Content;
+            var questionSections = questionSectionsResponse
+                .Content?
+                .Where(section => section.QuestionCategoryId.Equals(categoryId, StringComparison.OrdinalIgnoreCase))
+                .OrderBy(section => section.SectionId);
+
             // Ensure questionSections is not null and has elements
-            if (questionSections != null && questionSections.Any())
+            if (questionSections?.Any() == true)
             {
                 // Get the first question section for the given categoryId
-                var firstSection = questionSections.FirstOrDefault(qs => qs.QuestionCategoryId == categoryId);
+                var firstSection = questionSections.First();
 
-                if (firstSection != null)
-                {
-                    sectionId = firstSection.SectionId;
-                }
+                sectionId = firstSection.SectionId;
             }
         }
 
@@ -88,6 +96,11 @@ public class QuestionnaireController
         var respondentAnswers = respondentServiceResponse.Content!;
         var questions = questionsSetServiceResponse.Content!;
 
+        if (projectModificationId != Guid.Empty)
+        {
+            questions = questions.Where(question => question.IsModificationQuestion);
+        }
+
         // convert the questions response to QuestionnaireViewModel
         var questionnaire = BuildQuestionnaireViewModel(questions);
 
@@ -99,9 +112,6 @@ public class QuestionnaireController
 
         // save the list of QuestionViewModel in session to get it later
         HttpContext.Session.SetString($"{SessionKeys.Questionnaire}:{sectionId}", JsonSerializer.Serialize(questionnaire.Questions));
-
-        // add the applicationId in the TempData to be retrieved in the view
-        TempData.TryAdd(TempDataKeys.ApplicationId, applicationId);
 
         // this is where the questionnaire will resume
         var navigationDto = await SetStage(sectionIdOrDefault);
@@ -134,13 +144,8 @@ public class QuestionnaireController
     /// </summary>
     /// <param name="categoryId">CategoryId of the questions to be rendered</param>
     ///<param name="sectionId">sectionId of the questions to be rendered</param>
-    public async Task<IActionResult> DisplayQuestionnaire(string? categoryId, string? sectionId, bool reviewAnswers = false)
+    public async Task<IActionResult> DisplayQuestionnaire(string categoryId, string sectionId, bool reviewAnswers = false)
     {
-        if (categoryId == null && sectionId == null)
-        {
-            return RedirectToAction("MyApplications", "Application");
-        }
-
         // get the questions for the category
         var questionSectionsResponse = await questionSetService.GetQuestionSections();
 
@@ -161,34 +166,21 @@ public class QuestionnaireController
             // get questions from the database for the category
             if (questions == null || questions.Count == 0)
             {
-                // If section id is null get the first section id
+                var response = await questionSetService.GetQuestions(categoryId, sectionId);
 
-                if (sectionId == null)
-                {
-                    var questionSections = questionSectionsResponse.Content;
-                    // Ensure questionSections is not null and has elements
-                    if (questionSections != null && questionSections.Any())
-                    {
-                        // Get the first question section for the given categoryId
-                        var firstSection = questionSections.FirstOrDefault(qs => qs.QuestionCategoryId == categoryId);
-
-                        if (firstSection != null)
-                        {
-                            sectionId = firstSection.SectionId;
-                        }
-                    }
-                }
-
-                // get the questions for the category
-                var categoryIdOrDefault = categoryId ?? string.Empty; // Default to an empty string if categoryId is null
-                var sectionIdOrDefault = sectionId ?? string.Empty;   // Default to an empty string if sectionId is null
-
-                var response = await questionSetService.GetQuestions(categoryIdOrDefault, sectionIdOrDefault);
                 // return the view if successfull
                 if (response.IsSuccessStatusCode)
                 {
+                    // check if we are in the modification journey, so only get the modfication questions
+                    var (projectModificationId, _) = CheckModification();
+
                     // set the active stage for the category
-                    await SetStage(sectionId!);
+                    await SetStage(sectionId);
+
+                    if (projectModificationId != Guid.Empty)
+                    {
+                        response.Content = response.Content!.Where(question => question.IsModificationQuestion);
+                    }
 
                     var questionnaire = BuildQuestionnaireViewModel(response.Content!);
 
@@ -200,11 +192,6 @@ public class QuestionnaireController
 
                 // return error page as api wasn't successful
                 return this.ServiceError(response);
-            }
-
-            if (string.IsNullOrEmpty(sectionId))
-            {
-                return RedirectToAction("MyApplications", "Application"); // Safe fallback
             }
 
             // set the active stage for the category
@@ -226,8 +213,10 @@ public class QuestionnaireController
 
     [RequestFormLimits(ValueCountLimit = int.MaxValue)]
     [HttpPost]
-    public async Task<IActionResult> SaveResponses(QuestionnaireViewModel model, string categoryId = "", bool submit = false, string saveAndContinue = "False", string saveForLater = "False")
+    public async Task<IActionResult> SaveResponses(QuestionnaireViewModel model, string searchedPerformed, bool autoSearchEnabled, bool submit = false, string saveAndContinue = "False", string saveForLater = "False")
     {
+        var (projectModificationId, projectModificationChangeId) = CheckModification();
+
         // get the questionnaire from the session
         // and deserialize it
         var questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(HttpContext.Session.GetString($"{SessionKeys.Questionnaire}:{model.CurrentStage}")!)!;
@@ -242,8 +231,61 @@ public class QuestionnaireController
 
             // update the question with provided answers
             question.SelectedOption = response?.SelectedOption;
-            question.Answers = response?.Answers ?? [];
+            if (question.DataType != "Dropdown")
+            {
+                question.Answers = response?.Answers ?? [];
+            }
+
             question.AnswerText = response?.AnswerText;
+            // update the date fields if they are present
+            question.Day = response?.Day;
+            question.Month = response?.Month;
+            question.Year = response?.Year;
+        }
+
+        if (!autoSearchEnabled)
+        {
+            var sponsorOrgInput = questions.FirstOrDefault(q => string.Equals(q.QuestionType, "rts:org_lookup", StringComparison.OrdinalIgnoreCase));
+
+            // Check if the sponsor organisation input is null or empty.
+            if (sponsorOrgInput is not null)
+            {
+                var searchPerformed = searchedPerformed == "searched:true";
+                var selectedOrg = model.SponsorOrgSearch.SelectedOrganisation;
+                var searchedText = model.SponsorOrgSearch.SearchText;
+
+                if (searchPerformed)
+                {
+                    // If a search was performed, only assign if a selection was made
+                    sponsorOrgInput.AnswerText = string.IsNullOrWhiteSpace(selectedOrg) ? string.Empty : selectedOrg;
+                }
+                else
+                {
+                    // No search was performed, check if we have a selected org previously
+                    if (!string.IsNullOrWhiteSpace(selectedOrg))
+                    {
+                        // searched text was cleared or changed
+                        if
+                        (
+                            string.IsNullOrWhiteSpace(searchedText) ||
+                            !selectedOrg.Equals(searchedText, StringComparison.OrdinalIgnoreCase)
+                        )
+                        {
+                            // Cleared search or mismatch
+                            sponsorOrgInput.AnswerText = string.Empty;
+                            model.SponsorOrgSearch.SelectedOrganisation = string.Empty;
+                        }
+                        else
+                        {
+                            sponsorOrgInput.AnswerText = selectedOrg;
+                        }
+                    }
+                    else
+                    {
+                        sponsorOrgInput.AnswerText = string.Empty;
+                    }
+                }
+            }
         }
 
         // override the submitted model
@@ -256,77 +298,53 @@ public class QuestionnaireController
         ViewData[ViewDataKeys.IsQuestionnaireValid] = isValid;
 
         // get the application from the session
-        // to get the applicationId
+        // to get the projectApplicationId
         var application = this.GetApplicationFromSession();
 
         if (!isValid)
         {
-            // store the applicationId in the TempData to get in the view
-            TempData.TryAdd(TempDataKeys.ApplicationId, application.ApplicationId);
-
-            // store the irasId in the TempData to get in the view
-            TempData.TryAdd(TempDataKeys.IrasId, application.IrasId);
-
             // set the previous, current and next stages
             await SetStage(model.CurrentStage!);
             model.ReviewAnswers = submit;
             return View(Index, model);
         }
 
-        // save the responses
-        var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
-
-        // to save the responses
-        // we need to build the RespondentAnswerRequest
-        // populate the RespondentAnswers
-        var request = new RespondentAnswersRequest
+        // ------------------Save Project Record Answers or Modification Answers-------------------------
+        if (projectModificationId == Guid.Empty)
         {
-            ApplicationId = application.ApplicationId,
-            RespondentId = respondentId
-        };
-
-        foreach (var question in questions)
-        {
-            // we need to identify if it's a
-            // multiple choice or a single choice question
-            // this is to determine if the responses
-            // should be saved as comma seprated values
-            // or a single value
-            var optionType = question.DataType switch
-            {
-                "Boolean" or "Radio button" or "Look-up list" => "Single",
-                "Checkbox" => "Multiple",
-                _ => null
-            };
-
-            // build RespondentAnswers model
-            request.RespondentAnswers.Add(new RespondentAnswerDto
-            {
-                QuestionId = question.QuestionId,
-                AnswerText = question.AnswerText,
-                CategoryId = question.Category,
-                SectionId = question.SectionId,
-                SelectedOption = question.SelectedOption,
-                OptionType = optionType,
-                Answers = question.Answers
-                                .Where(a => a.IsSelected)
-                                .Select(ans => ans.AnswerId)
-                                .ToList()
-            });
+            await SaveProjectRecordAnswers(application.Id, questions);
         }
-
-        // if user has answered some or all of the questions
-        // call the api to save the responses
-        if (request.RespondentAnswers.Count > 0)
+        else
         {
-            await respondentService.SaveRespondentAnswers(request);
+            var respondent = this.GetRespondentFromContext();
+
+            var name = $"{respondent.GivenName} {respondent.FamilyName}";
+
+            if (projectModificationChangeId == Guid.Empty)
+            {
+                var modificationChangeResponse = await projectModificationsService.CreateModificationChange(new ProjectModificationChangeRequest
+                {
+                    AreaOfChange = questions[0].SelectedOption!,
+                    SpecificAreaOfChange = questions[1].SelectedOption!,
+                    ProjectModificationId = projectModificationId,
+                    Status = "OPEN",
+                    CreatedBy = name,
+                    UpdatedBy = name
+                });
+
+                if (modificationChangeResponse.IsSuccessStatusCode)
+                {
+                    var modificationChange = modificationChangeResponse.Content!;
+
+                    projectModificationChangeId = modificationChange.Id;
+
+                    TempData[TempDataKeys.ProjectModificationChangeId] = projectModificationChangeId;
+                    TempData[TempDataKeys.ProjectModificationSpecificArea] = questions[1].Answers.First(a => a.AnswerId == questions[1].SelectedOption).AnswerText;
+                }
+            }
+
+            await SaveModificationAnswers(projectModificationChangeId, application.Id, questions);
         }
-
-        // add the applicationId in the tempdata
-        TempData.TryAdd(TempDataKeys.ApplicationId, application.ApplicationId);
-
-        // store the irasId in the TempData to get in the view
-        TempData.TryAdd(TempDataKeys.IrasId, application.IrasId);
 
         // set the previous, current and next stages
         var navigation = await SetStage(model.CurrentStage);
@@ -337,23 +355,58 @@ public class QuestionnaireController
         // user clicks on Proceed to submit button
         if (submit)
         {
-            return RedirectToAction(nameof(SubmitApplication), new { applicationId = application.ApplicationId });
+            return RedirectToAction(nameof(SubmitApplication), new { projectRecordId = application.Id });
+        }
+
+        // get the question sections
+        var questionSectionsResponse = await questionSetService.GetQuestionSections();
+        var questionSections = questionSectionsResponse.Content;
+        // Ensure questionSections is not null and has elements
+        if (questionSections?.Any() == true)
+        {
+            // Get the first question section
+            var firstSection = questionSections.First();
+
+            if (firstSection != null && model.CurrentStage == firstSection.SectionId)
+            {
+                TempData[TempDataKeys.ShortProjectTitle] = model.GetShortProjectTitle();
+            }
         }
 
         // user clicks on the SaveAndContinue button
         // so we need to resume from the next stage
         if (saveAndContinue == bool.TrueString)
         {
+            if (projectModificationId != Guid.Empty)
+            {
+                // validate the questionnaire and save the result in tempdata
+                // this is so we display the validation passed message or not
+                isValid = await ValidateQuestionnaire(model, true);
+                ViewData[ViewDataKeys.IsQuestionnaireValid] = isValid;
+
+                // get the application from the session
+                // to get the projectApplicationId
+                application = this.GetApplicationFromSession();
+
+                if (!isValid)
+                {
+                    // set the previous, current and next stages
+                    await SetStage(model.CurrentStage!);
+                    model.ReviewAnswers = submit;
+                    return View(Index, model);
+                }
+            }
+
             // if the user is at the last stage and clicks on Save and Continue
             if (string.IsNullOrWhiteSpace(navigation.NextStage))
             {
-                return RedirectToAction(nameof(SubmitApplication), new { applicationId = application.ApplicationId });
+                return RedirectToAction(nameof(SubmitApplication), new { projectRecordId = application.Id });
             }
 
             // otherwise resume from the NextStage in sequence
             return RedirectToAction(nameof(Resume), new
             {
-                applicationId = application.ApplicationId,
+                projectRecordId = application.Id,
                 categoryId = navigation.NextCategory,
                 sectionId = navigation.NextStage
             });
@@ -361,22 +414,7 @@ public class QuestionnaireController
 
         if (saveForLater == bool.TrueString)
         {
-            TempData[TempDataKeys.ShortProjectTitle] = model.GetShortProjectTitle();
-            TempData[TempDataKeys.CategoryId] = model.GetFirstCategory();
-            TempData[TempDataKeys.ApplicationId] = application.ApplicationId;
-
             return RedirectToAction("ProjectOverview", "Application");
-        }
-        // user jumps to the next stage by clicking on the link
-        // so we need to resume the application from there
-        if (!string.IsNullOrWhiteSpace(navigation.NextStage))
-        {
-            return RedirectToAction(nameof(Resume), new
-            {
-                applicationId = application.ApplicationId,
-                categoryId = navigation.NextCategory,
-                sectionId = navigation.NextStage
-            });
         }
 
         // continue rendering the questionnaire if the above conditions are not true
@@ -399,38 +437,17 @@ public class QuestionnaireController
     [HttpPost]
     public async Task<IActionResult> Validate(QuestionnaireViewModel model)
     {
-        // get the questionnaire from the session
-        // and deserialize it
-        var questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(HttpContext.Session.GetString($"{SessionKeys.Questionnaire}:{model.CurrentStage}")!)!;
-
-        // update the model with the answeres
-        // provided by the applicant
-        foreach (var question in questions)
-        {
-            var response = model.Questions.Find(q => q.Index == question.Index);
-
-            question.SelectedOption = response?.SelectedOption;
-            question.Answers = response?.Answers ?? [];
-            question.AnswerText = response?.AnswerText;
-        }
-
         // override the submitted model
         // with the updated model with answers
-        model.Questions = questions;
+        model.Questions = GetQuestionsFromSession(model);
 
         // validate the questionnaire and save the result in tempdata
         // this is so we display the validation passed message or not
         ViewData[ViewDataKeys.IsQuestionnaireValid] = await ValidateQuestionnaire(model);
 
         // get the application from the session
-        // to get the applicationId
+        // to get the projectApplicationId
         var application = this.GetApplicationFromSession();
-
-        // store the applicationId in the TempData to get in the view
-        TempData.TryAdd(TempDataKeys.ApplicationId, application.ApplicationId);
-
-        // store the irasId in the TempData to get in the view
-        TempData.TryAdd(TempDataKeys.IrasId, application.IrasId);
 
         // set the previous, current and next stages
         await SetStage(model.CurrentStage!);
@@ -442,15 +459,21 @@ public class QuestionnaireController
     /// Gets all questions for the application. Validates for each category
     /// and display the progress of the application
     /// </summary>
-    /// <param name="applicationId">ApplicationId to submit</param>
+    /// <param name="projectRecordId">ApplicationId to submit</param>
     [FeatureGate("Action.ProceedToSubmit")]
-    public async Task<IActionResult> SubmitApplication(string applicationId)
+    public async Task<IActionResult> SubmitApplication(string projectRecordId)
     {
+        var (projectModificationId, projectModificationChangeId) = CheckModification();
+
+        var categoryId = (TempData.Peek(TempDataKeys.CategoryId) as string)!;
+
         // get the responent answers for the category
-        var respondentServiceResponse = await respondentService.GetRespondentAnswers(applicationId);
+        var respondentServiceResponse = projectModificationChangeId == Guid.Empty ?
+            await respondentService.GetRespondentAnswers(projectRecordId, categoryId) :
+            await respondentService.GetModificationAnswers(projectModificationChangeId, categoryId);
 
         // get the questions for all categories
-        var questionSetServiceResponse = await questionSetService.GetQuestions();
+        var questionSetServiceResponse = await questionSetService.GetQuestions(categoryId);
 
         // return the error view if unsuccessfull
         if (!respondentServiceResponse.IsSuccessStatusCode)
@@ -514,18 +537,6 @@ public class QuestionnaireController
             }
         }
 
-        // get the application from the session
-        // to get the applicationId
-        var application = this.GetApplicationFromSession();
-
-        // store the irasId in the TempData to get in the view
-        TempData.TryAdd(TempDataKeys.IrasId, application.IrasId);
-
-        // store the first categoryId and applicationId in the TempData to get in the view
-        TempData[TempDataKeys.CategoryId] = (questionnaire.Questions.GroupBy(q => q.Category)
-        .OrderBy(g => g.First().Sequence).FirstOrDefault()?.Key);
-        TempData[TempDataKeys.ApplicationId] = application.ApplicationId;
-
         return View("ReviewAnswers", questionnaire);
     }
 
@@ -535,12 +546,18 @@ public class QuestionnaireController
     /// </summary>
     public async Task<IActionResult> ConfirmProjectDetails()
     {
+        var (projectModificationId, projectModificationChangeId) = CheckModification();
+
+        var categoryId = (TempData.Peek(TempDataKeys.CategoryId) as string)!;
+
         // get the application from the session
-        // to get the applicationId
+        // to get the projectApplicationId
         var application = this.GetApplicationFromSession();
 
         // get the respondent answers for the category
-        var respondentServiceResponse = await respondentService.GetRespondentAnswers(application.ApplicationId);
+        var respondentServiceResponse = projectModificationChangeId == Guid.Empty ?
+            await respondentService.GetRespondentAnswers(application.Id, categoryId) :
+            await respondentService.GetModificationAnswers(projectModificationChangeId, categoryId);
 
         // return the error view if unsuccessfull
         if (!respondentServiceResponse.IsSuccessStatusCode)
@@ -550,7 +567,7 @@ public class QuestionnaireController
         }
 
         // get the questions for all categories
-        var questionSetServiceResponse = await questionSetService.GetQuestions();
+        var questionSetServiceResponse = await questionSetService.GetQuestions(categoryId);
 
         // return the error view if unsuccessfull
         if (!questionSetServiceResponse.IsSuccessStatusCode)
@@ -594,14 +611,6 @@ public class QuestionnaireController
             context.RootContextData["questions"] = questionnaire.Questions;
             context.RootContextData["ValidateMandatoryOnly"] = true;
 
-            // store the irasId in the TempData to get in the view
-            TempData.TryAdd(TempDataKeys.IrasId, application.IrasId);
-
-            // store the first categoryId and applicationId in the TempData to get in the view
-            TempData[TempDataKeys.CategoryId] = (questionnaire.Questions.GroupBy(q => q.Category)
-            .OrderBy(g => g.First().Sequence).FirstOrDefault()?.Key);
-            TempData[TempDataKeys.ApplicationId] = application.ApplicationId;
-
             // call the ValidateAsync to execute the validation
             // this will trigger the fluentvalidation using the injected validator if configured
             var result = await validator.ValidateAsync(context);
@@ -623,13 +632,242 @@ public class QuestionnaireController
     }
 
     /// <summary>
+    /// Retrieves a list of organisations based on the provided name, role, and optional page size.
+    /// </summary>
+    /// <param name="role">The role of the organisation. Defaults to SponsorRole if not provided.</param>
+    /// <param name="pageSize">Optional page size for pagination.</param>
+    /// <returns>A list of organisation names or an error response.</returns>
+    public async Task<IActionResult> SearchOrganisations(QuestionnaireViewModel model, string? role, int? pageSize)
+    {
+        var returnUrl = TempData.Peek(TempDataKeys.OrgSearchReturnUrl) as string;
+
+        // override the submitted model
+        // with the updated model with answers
+        model.Questions = GetQuestionsFromSession(model);
+
+        // get the application from the session
+        // to get the applicationId
+        var application = this.GetApplicationFromSession();
+
+        // set the previous, current and next stages
+        await SetStage(model.CurrentStage!);
+
+        TempData.TryAdd(TempDataKeys.SponsorOrgSearched, "searched:true");
+
+        // when search is performed, empty the currently selected organisation
+        model.SponsorOrgSearch.SelectedOrganisation = string.Empty;
+
+        // save the list of QuestionViewModel in session to get it later
+        HttpContext.Session.SetString($"{SessionKeys.Questionnaire}:{model.CurrentStage}", JsonSerializer.Serialize(model.Questions));
+
+        // add the search model to temp data to use in the view
+        TempData.TryAdd(TempDataKeys.OrgSearch, model.SponsorOrgSearch, true);
+
+        if (string.IsNullOrEmpty(model.SponsorOrgSearch.SearchText) || model.SponsorOrgSearch.SearchText.Length < 3)
+        {
+            // add model validation error if search text is empty
+            ModelState.AddModelError("sponsor_org_search", "Please provide 3 or more characters to search sponsor organisation.");
+
+            // save the model state in temp data, to use it on redirects to show validation errors
+            // the modelstate will be merged using the action filter ModelStateMergeAttribute
+            // only if the TempData has ModelState stored
+            TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
+
+            // Return the view with the model state errors.
+            return Redirect(returnUrl);
+        }
+
+        // Use the default sponsor role if no role is provided.
+        role ??= OrganisationRoles.Sponsor;
+
+        // Fetch organisations from the RTS service, with or without pagination.
+        var searchResponse = pageSize is null ?
+            await rtsService.GetOrganisations(model.SponsorOrgSearch.SearchText!, role) :
+            await rtsService.GetOrganisations(model.SponsorOrgSearch.SearchText, role, pageSize.Value);
+
+        // Handle error response from the service.
+        if (!searchResponse.IsSuccessStatusCode || searchResponse.Content == null)
+        {
+            return this.ServiceError(searchResponse);
+        }
+
+        // Convert the response content to a list of organisation names.
+        var sponsorOrganisations = searchResponse.Content;
+
+        TempData.TryAdd(TempDataKeys.SponsorOrganisations, sponsorOrganisations, true);
+
+        return Redirect(returnUrl);
+    }
+
+    private (Guid ModificationId, Guid ModificationChangeId) CheckModification()
+    {
+        // check if we are in the modification journey, so only get the modfication questions
+        var modificationId = TempData.Peek(TempDataKeys.ProjectModificationId);
+        var modificationChangeId = TempData.Peek(TempDataKeys.ProjectModificationChangeId);
+
+        var modification = (Guid.Empty, Guid.Empty);
+
+        if (modificationId is not null)
+        {
+            modification.Item1 = (Guid)modificationId;
+        }
+
+        if (modificationChangeId is not null)
+        {
+            modification.Item2 = (Guid)modificationChangeId;
+        }
+
+        return modification;
+    }
+
+    private async Task SaveProjectRecordAnswers(string projectRecordId, List<QuestionViewModel> questions)
+    {
+        // save the responses
+        var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
+
+        // to save the responses
+        // we need to build the RespondentAnswerRequest
+        // populate the RespondentAnswers
+        var request = new RespondentAnswersRequest
+        {
+            ProjectRecordId = projectRecordId,
+            Id = respondentId
+        };
+
+        foreach (var question in questions)
+        {
+            // we need to identify if it's a
+            // multiple choice or a single choice question
+            // this is to determine if the responses
+            // should be saved as comma seprated values
+            // or a single value
+            var optionType = question.DataType switch
+            {
+                "Boolean" or "Radio button" or "Look-up list" or "Dropdown" => "Single",
+                "Checkbox" => "Multiple",
+                _ => null
+            };
+
+            // build RespondentAnswers model
+            request.RespondentAnswers.Add(new RespondentAnswerDto
+            {
+                QuestionId = question.QuestionId,
+                VersionId = question.VersionId ?? string.Empty,
+                AnswerText = question.AnswerText,
+                CategoryId = question.Category,
+                SectionId = question.SectionId,
+                SelectedOption = question.SelectedOption,
+                OptionType = optionType,
+                Answers = question.Answers
+                                .Where(a => a.IsSelected)
+                                .Select(ans => ans.AnswerId)
+                                .ToList()
+            });
+        }
+
+        // if user has answered some or all of the questions
+        // call the api to save the responses
+        if (request.RespondentAnswers.Count > 0)
+        {
+            await respondentService.SaveRespondentAnswers(request);
+        }
+    }
+
+    private async Task SaveModificationAnswers(Guid projectModificationChangeId, string projectRecordId, List<QuestionViewModel> questions)
+    {
+        // save the responses
+        var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
+
+        // to save the responses
+        // we need to build the RespondentAnswerRequest
+        // populate the RespondentAnswers
+        var request = new ProjectModificationAnswersRequest
+        {
+            ProjectModificationChangeId = projectModificationChangeId,
+            ProjectRecordId = projectRecordId,
+            ProjectPersonnelId = respondentId
+        };
+
+        foreach (var question in questions)
+        {
+            // we need to identify if it's a
+            // multiple choice or a single choice question
+            // this is to determine if the responses
+            // should be saved as comma seprated values
+            // or a single value
+            var optionType = question.DataType switch
+            {
+                "Boolean" or "Radio button" or "Look-up list" or "Dropdown" => "Single",
+                "Checkbox" => "Multiple",
+                _ => null
+            };
+
+            // build RespondentAnswers model
+            request.ModificationAnswers.Add(new RespondentAnswerDto
+            {
+                QuestionId = question.QuestionId,
+                VersionId = question.VersionId ?? string.Empty,
+                AnswerText = question.AnswerText,
+                CategoryId = question.Category,
+                SectionId = question.SectionId,
+                SelectedOption = question.SelectedOption,
+                OptionType = optionType,
+                Answers = question.Answers
+                                .Where(a => a.IsSelected)
+                                .Select(ans => ans.AnswerId)
+                                .ToList()
+            });
+        }
+
+        // if user has answered some or all of the questions
+        // call the api to save the responses
+        if (request.ModificationAnswers.Count > 0)
+        {
+            await respondentService.SaveModificationAnswers(request);
+        }
+    }
+
+    private List<QuestionViewModel> GetQuestionsFromSession(QuestionnaireViewModel model)
+    {
+        // get the questionnaire from the session
+        // and deserialize it
+        var questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(HttpContext.Session.GetString($"{SessionKeys.Questionnaire}:{model.CurrentStage}")!)!;
+
+        // update the model with the answeres
+        // provided by the applicant
+        foreach (var question in questions)
+        {
+            // find the question in the submitted model
+            // that matches the index
+            var response = model.Questions.Find(q => q.Index == question.Index);
+
+            // update the question with provided answers
+            question.SelectedOption = response?.SelectedOption;
+            question.Answers = response?.Answers ?? [];
+            question.AnswerText = response?.AnswerText;
+        }
+
+        return questions;
+    }
+
+    /// <summary>
     /// Validates the passed QuestionnaireViewModel and return ture or false
     /// </summary>
     /// <param name="model"><see cref="QuestionnaireViewModel"/> to validate</param>
-    private async Task<bool> ValidateQuestionnaire(QuestionnaireViewModel model)
+    private async Task<bool> ValidateQuestionnaire(QuestionnaireViewModel model, bool validateMandatory = false)
     {
         // using the FluentValidation, create a new context for the model
         var context = new ValidationContext<QuestionnaireViewModel>(model);
+
+        if (validateMandatory)
+        {
+            var (projectModificationId, _) = CheckModification();
+
+            if (projectModificationId != Guid.Empty)
+            {
+                context.RootContextData["ValidateMandatoryOnly"] = true;
+            }
+        }
 
         // this is required to get the questions in the validator
         // before the validation cicks in
@@ -721,6 +959,7 @@ public class QuestionnaireController
             {
                 Index = index,
                 QuestionId = question.QuestionId,
+                VersionId = question.VersionId ?? string.Empty,
                 Category = question.Category,
                 SectionId = question.SectionId,
                 Section = question.Section,
@@ -747,11 +986,11 @@ public class QuestionnaireController
     /// <summary>
     /// Loads the existing application from the database
     /// </summary>
-    /// <param name="applicationId">Application Id</param>
-    private async Task<IrasApplicationResponse?> LoadApplication(string applicationId)
+    /// <param name="projectApplicationId">Application Id</param>
+    private async Task<IrasApplicationResponse?> LoadApplication(string projectApplicationId)
     {
         // get the application by id
-        var response = await applicationsService.GetApplication(applicationId);
+        var response = await applicationsService.GetApplication(projectApplicationId);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -761,7 +1000,7 @@ public class QuestionnaireController
         var irasApplication = response.Content!;
 
         // save the application in session
-        HttpContext.Session.SetString(SessionKeys.Application, JsonSerializer.Serialize(irasApplication));
+        HttpContext.Session.SetString(SessionKeys.ProjectRecord, JsonSerializer.Serialize(irasApplication));
 
         return irasApplication;
     }
@@ -770,30 +1009,62 @@ public class QuestionnaireController
     /// Sets the Previous, Current, and Next stages required for navigation.
     /// </summary>
     /// <param name="section">Section of the current stage</param>
+    /// <returns>A <see cref="NavigationDto"/> containing previous, current, and next stage/category information for navigation.</returns>
+    /// <remarks>
+    /// This method retrieves the previous, current, and next question sections for the given section and category.
+    /// It uses the QuestionSetService to fetch section details and stores navigation state in TempData for use in the UI.
+    /// </remarks>
     private async Task<NavigationDto> SetStage(string section)
     {
+        // Get the current categoryId from TempData
+        var categoryId = (TempData.Peek(TempDataKeys.CategoryId) as string)!;
+
+        // Fetch previous, current, and next section responses from the question set service
         var previousResponse = await questionSetService.GetPreviousQuestionSection(section);
         var currentResponse = await questionSetService.GetQuestionSections();
         var nextResponse = await questionSetService.GetNextQuestionSection(section);
 
-        // Extracting previous stage and category
-        string previousStage = previousResponse.IsSuccessStatusCode ? previousResponse.Content?.SectionId ?? "" : "";
-        string previousCategory = previousResponse.IsSuccessStatusCode ? previousResponse.Content?.QuestionCategoryId ?? "" : "";
+        // Extract previous stage and category if available and matches the current category
+        string previousStage = (previousResponse.IsSuccessStatusCode, previousResponse.Content?.SectionId) switch
+        {
+            (true, null) => string.Empty,
+            (true, not null) => previousResponse.Content.QuestionCategoryId.Equals(categoryId, StringComparison.OrdinalIgnoreCase) ? previousResponse.Content.SectionId : string.Empty,
+            _ => string.Empty
+        };
 
-        // Extracting current stage and category
-        var currentSection = currentResponse?.Content?.FirstOrDefault(s => s.SectionId == section);
+        string previousCategory = (previousResponse.IsSuccessStatusCode, previousResponse.Content?.QuestionCategoryId) switch
+        {
+            (true, null) => string.Empty,
+            (true, not null) => previousResponse.Content.QuestionCategoryId.Equals(categoryId, StringComparison.OrdinalIgnoreCase) ? previousResponse.Content.QuestionCategoryId : string.Empty,
+            _ => string.Empty
+        };
+
+        // Find the current section in the list of all sections for the current category
+        var currentSection = currentResponse?.Content?.FirstOrDefault(s => s.SectionId == section && s.QuestionCategoryId == categoryId);
         string currentStage = currentSection?.SectionId ?? section;
         string currentCategory = currentSection?.QuestionCategoryId ?? "";
 
-        // Extracting next stage and category
-        string nextStage = nextResponse.IsSuccessStatusCode ? nextResponse.Content?.SectionId ?? "" : "";
-        string nextCategory = nextResponse.IsSuccessStatusCode ? nextResponse.Content?.QuestionCategoryId ?? "" : "";
+        // Extract next stage and category if available and matches the current category
+        string nextStage = (nextResponse.IsSuccessStatusCode, nextResponse.Content?.SectionId) switch
+        {
+            (true, null) => string.Empty,
+            (true, not null) => nextResponse.Content.QuestionCategoryId == categoryId ? nextResponse.Content.SectionId : string.Empty,
+            _ => string.Empty
+        };
 
-        // Store in TempData
+        string nextCategory = (nextResponse.IsSuccessStatusCode, nextResponse.Content?.QuestionCategoryId) switch
+        {
+            (true, null) => string.Empty,
+            (true, not null) => nextResponse.Content.QuestionCategoryId == categoryId ? nextResponse.Content.QuestionCategoryId : string.Empty,
+            _ => string.Empty
+        };
+
+        // Store navigation state in TempData for use in the UI
         TempData[TempDataKeys.PreviousStage] = previousStage;
         TempData[TempDataKeys.PreviousCategory] = previousCategory;
         TempData[TempDataKeys.CurrentStage] = currentStage;
 
+        // Return the navigation DTO with all relevant navigation information
         return new NavigationDto
         {
             PreviousCategory = previousCategory,

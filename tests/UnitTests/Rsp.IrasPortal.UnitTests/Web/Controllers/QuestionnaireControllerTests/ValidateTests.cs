@@ -33,13 +33,13 @@ public class ValidateTests : TestServiceBase<QuestionnaireController>
 
         var application = new IrasApplicationResponse
         {
-            ApplicationId = "App1"
+            Id = "App1"
         };
         var session = new Mock<ISession>();
 
         var sessionData = new Dictionary<string, byte[]?>
         {
-            { $"{SessionKeys.Application}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(application) },
+            { $"{SessionKeys.ProjectRecord}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(application) },
             { $"{SessionKeys.Questionnaire}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(questions) }
         };
 
@@ -108,14 +108,14 @@ public class ValidateTests : TestServiceBase<QuestionnaireController>
 
         var application = new IrasApplicationResponse
         {
-            ApplicationId = "App1"
+            Id = "App1"
         };
 
         var session = new Mock<ISession>();
 
         var sessionData = new Dictionary<string, byte[]?>
         {
-            { $"{SessionKeys.Application}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(application) },
+            { $"{SessionKeys.ProjectRecord}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(application) },
             { $"{SessionKeys.Questionnaire}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(questions) }
         };
 

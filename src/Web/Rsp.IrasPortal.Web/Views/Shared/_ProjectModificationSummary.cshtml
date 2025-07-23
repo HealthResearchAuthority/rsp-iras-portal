@@ -1,0 +1,23 @@
+﻿@model Rsp.IrasPortal.Web.Models.BaseProjectModificationViewModel
+
+@Html.HiddenFor(m => m.IrasId)
+@Html.HiddenFor(m => m.ShortTitle)
+@Html.HiddenFor(m => m.ModificationIdentifier)
+@Html.HiddenFor(m => m.PageTitle)
+
+<h1 class="govuk-heading-l">@Model.PageTitle</h1>
+
+<dl class="govuk-summary-list">
+	<div class="govuk-summary-list__row">
+		<dt class="govuk-summary-list__key">IRAS ID</dt>
+		<dd class="govuk-summary-list__value">@Model.IrasId</dd>
+	</div>
+	<div class="govuk-summary-list__row">
+		<dt class="govuk-summary-list__key">Short project title</dt>
+		<dd class="govuk-summary-list__value">@Model.ShortTitle</dd>
+	</div>
+	<div class="govuk-summary-list__row">
+		<dt class="govuk-summary-list__key">Modification ID</dt>
+		<dd class="govuk-summary-list__value">@Model.ModificationIdentifier</dd>
+	</div>
+</dl>

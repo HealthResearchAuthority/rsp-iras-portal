@@ -2,5 +2,5 @@
 
 public static class AccessRequiredOptions
 {
-    public static readonly string[] Options = { "Study Wide Review", "Research Ethics Committee", "CAG", "Technical Assurance" };
+    public static readonly string[] Options = { "Study wide review", "Research ethics committee", "CAG", "Technical assurance" };
 }

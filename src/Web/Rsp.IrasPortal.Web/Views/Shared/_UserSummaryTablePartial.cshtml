@@ -1,5 +1,6 @@
 ﻿@using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Web.Areas.Admin.Models
+@using Rsp.IrasPortal.Web.Extensions
 @model UserViewModel
 
 @{
@@ -33,8 +34,8 @@
 		<tr class="govuk-table__row">
 			<td class="govuk-table__cell"><b>First name</b></td>
 			<td class="govuk-table__cell">
-				@Model.FirstName
-				<input type="hidden" asp-for="FirstName" name="FirstName" value="@Model.FirstName" />
+				@Model.GivenName
+				<input type="hidden" asp-for="GivenName" name="GivenName" value="@Model.GivenName" />
 			</td>
 			<td class="govuk-table__cell govuk-table__cell--numeric">
 				@{
@@ -46,8 +47,8 @@
 		<tr class="govuk-table__row">
 			<td class="govuk-table__cell"><b>Last name</b></td>
 			<td class="govuk-table__cell">
-				@Model.LastName
-				<input type="hidden" asp-for="LastName" name="LastName" value="@Model.LastName" />
+				@Model.FamilyName
+				<input type="hidden" asp-for="FamilyName" name="FamilyName" value="@Model.FamilyName" />
 			</td>
 			<td class="govuk-table__cell govuk-table__cell--numeric">
 				@{
@@ -63,7 +64,8 @@
 				<input type="hidden" asp-for="Email" name="Email" value="@Model.Email" />
 			</td>
 			<td class="govuk-table__cell govuk-table__cell--numeric">
-				@{
+				@if (!edit)
+				{
 					await RenderEditLink();
 				}
 			</td>
@@ -110,10 +112,10 @@
 
 		<tr class="govuk-table__row">
 			<td class="govuk-table__cell"><b>Role</b></td>
-			<td class="govuk-table__cell text-capitalize">
+			<td class="govuk-table__cell">
 				@{
 					var selectedRoles = Model.UserRoles != null
-					? string.Join(", ", Model.UserRoles.Where(r => r.IsSelected).Select(r => r?.Name?.Replace("_", " ")))
+					? string.Join(", ", Model.UserRoles.Where(r => r.IsSelected).Select(r => r?.DisplayName))
 					: string.Empty;
 				}
 
@@ -203,15 +205,13 @@
 			<tr class="govuk-table__row">
 				<td class="govuk-table__cell"><b>Audit</b></td>
 				<td class="govuk-table__cell">
-                    <a 
-                        class="govuk-link"
-                        asp-route="admin:useraudittrail" 
-                        asp-route-email="@Model.Email" 
-                        asp-route-userId="@Model.Id" 
-                        asp-route-name="@Model.FirstName @Model.LastName" 
-                    >
-                        View this user's audit history
-                    </a>
+					<a class="govuk-link"
+					   asp-route="admin:useraudittrail"
+					   asp-route-email="@Model.Email"
+					   asp-route-userId="@Model.Id"
+					   asp-route-name="@Model.GivenName @Model.FamilyName">
+						View this user's audit history
+					</a>
 				</td>
 				<td class="govuk-table__cell govuk-table__cell--numeric"></td>
 			</tr>

@@ -7,10 +7,16 @@
 	ViewBag.Title = "View review body";
 }
 
-<partial name="_BackNavigation" model="@("rbc:viewreviewbody", "Back to review body profile", new Dictionary<string, string> { { "Id", Model.ReviewBody.Id.ToString() } })" />
+@* @section is added for the back button, so that we can render something below the back button
+    and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
+    the named section *@
+@section BackNavigation {
+	<partial name="_BackNavigation" model="@("rbc:viewreviewbody", "Back to review body profile", new Dictionary<string, string> { { "Id", Model.ReviewBody.Id.ToString() } })" />
+}
+
 <div class="govuk-grid-row">
-	<div class="govuk-grid-column-two-thirds">		
-		<h1 class="govuk-heading-l">Users for @Model.ReviewBody.OrganisationName</h1>
+	<div class="govuk-grid-column-two-thirds">
+		<h1 class="govuk-heading-l">Users for @Model.ReviewBody.RegulatoryBodyName</h1>
 		<p class="govuk-body">Search, assign or remove users from this review body</p>
 	</div>
 
@@ -50,8 +56,8 @@
 						@foreach (var user in Model.Users)
 						{
 							<tr class="govuk-table__row">
-								<td class="govuk-table__cell">@user.FirstName</td>
-								<td class="govuk-table__cell">@user.LastName</td>
+								<td class="govuk-table__cell">@user.GivenName</td>
+								<td class="govuk-table__cell">@user.FamilyName</td>
 								<td class="govuk-table__cell line-break-anywhere">@user.Email</td>
 								<td class="govuk-table__cell">
 									@if (!string.IsNullOrEmpty(user.Status))
@@ -61,15 +67,27 @@
 										<strong class="govuk-tag @statusClass">@user.Status</strong>
 									}
 								</td>
-								<td class="govuk-table__cell">@(user.LastLogin.HasValue ? user.LastLogin.Value.ToString("dd MMM yyyy") : string.Empty)</td>
 								<td class="govuk-table__cell">
-                                    <a 
-                                        class="govuk-link" 
-                                        asp-route="rbc:confirmremoveuser" 
-                                        asp-route-reviewBodyId="@Model.ReviewBody.Id" 
-                                        asp-route-userId="@user.Id">
-                                        Remove
-                                    </a>
+									@if (user.CurrentLogin.HasValue)
+									{
+										var dateString = user.CurrentLogin.Value.ToString("dd MMM yyyy");
+										var timeString = user.CurrentLogin.Value.ToString("hh:mm");
+										var amPm = user.CurrentLogin.Value.ToString("tt").ToLower();
+
+										var currentLoginDate = $"{dateString} at ";
+										var currentLoginTime = $"{timeString}{amPm}";
+
+										<p class="margin-zero">@currentLoginDate</p>
+										<p class="margin-zero">@currentLoginTime</p>
+									}
+								</td>
+								<td class="govuk-table__cell">
+									<a class="govuk-link"
+									   asp-route="rbc:confirmremoveuser"
+									   asp-route-reviewBodyId="@Model.ReviewBody.Id"
+									   asp-route-userId="@user.Id">
+										Remove
+									</a>
 								</td>
 							</tr>
 						}
@@ -87,7 +105,7 @@
 				Check your spelling or enter another search term and try again. If no results are found, go to Manage users where you can check if a user profile exists and create one if needed.
 			</p>
 			<p class="govuk-body">
-				<a class="govuk-link" asp-route="rbc:viewreviewbodyusers" asp-all-route-data="@(new Dictionary<string, string> { { "ReviewBodyId", Model.ReviewBody.Id.ToString() } })">Back to Users for @Model.ReviewBody.OrganisationName</a>
+				<a class="govuk-link" asp-route="rbc:viewreviewbodyusers" asp-all-route-data="@(new Dictionary<string, string> { { "ReviewBodyId", Model.ReviewBody.Id.ToString() } })">Back to Users for @Model.ReviewBody.RegulatoryBodyName</a>
 			</p>
 			<p class="govuk-body">
 				<a class="govuk-link" asp-route="admin:users">Manage users</a>

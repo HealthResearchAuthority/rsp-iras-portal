@@ -1,6 +1,5 @@
 ﻿@model ApplicationsViewModel
 
-
 @{
     var applications = Model?.Applications.OrderByDescending(m => m.CreatedDate);
 }
@@ -24,79 +23,78 @@
         <a class="govuk-button" asp-route="app:startnewapplication">Create new application</a>
     </div>
     @* <div class="govuk-grid-column-full" style="text-align:right">
-        <a class="govuk-button" asp-route="app:startnewapplication">Create New Application</a>
-    </div> *@
+            <a class="govuk-button" asp-route="app:startnewapplication">Create New Application</a>
+        </div> *@
 </div>
 
 @if (applications is null)
 {
-    <partial name="_NoData"/>
+    <partial name="_NoData" />
 
     return;
 }
 
 <table class="govuk-table">
     <thead class="govuk-table__head">
-    <tr class="govuk-table__row">
-        <th class="govuk-table__header">Application Id</th>
-        <th class="govuk-table__header">Title</th>
-        <th class="govuk-table__header">Description</th>
-        <th class="govuk-table__header">Status</th>
-        <th class="govuk-table__header">Created By</th>
-        <th class="govuk-table__header">Actions</th>
-    </tr>
+        <tr class="govuk-table__row">
+            <th class="govuk-table__header">Application Id</th>
+            <th class="govuk-table__header">Title</th>
+            <th class="govuk-table__header">Description</th>
+            <th class="govuk-table__header">Status</th>
+            <th class="govuk-table__header">Created By</th>
+            <th class="govuk-table__header">Actions</th>
+        </tr>
     </thead>
     <tbody class="govuk-table__body">
 
-    @foreach (var app in applications)
-    {
-        <tr class="govuk-table__row">
-            <td class="govuk-table__cell">@app.ApplicationId</td>
-            <td class="govuk-table__cell">@app.Title</td>
-            <td class="govuk-table__cell">@app.Description</td>
-            <td class="govuk-table__cell">@app.Status</td>
-            <td class="govuk-table__cell">@app.CreatedBy</td>
-            <td class="govuk-table__cell">
-                <a asp-route="app:editapplication" asp-route-applicationId="@app.ApplicationId" class="govuk-link">Edit</a>
-            </td>
-        </tr>
+        @foreach (var app in applications)
+        {
+            <tr class="govuk-table__row">
+                <td class="govuk-table__cell">@app.Id</td>
+                <td class="govuk-table__cell">@app.Title</td>
+                <td class="govuk-table__cell">@app.Description</td>
+                <td class="govuk-table__cell">@app.Status</td>
+                <td class="govuk-table__cell">@app.CreatedBy</td>
+                <td class="govuk-table__cell">
+                    <a asp-route="app:editapplication" asp-route-projectApplicationId="@app.Id" class="govuk-link">Edit</a>
+                </td>
+            </tr>
 
-        <tr class="govuk-table__row">
-            <td colspan="5" class="govuk-table__cell">
-                @if (Model is not null && Model.Categories.Any())
-                {
-                    var count = 0;
+            <tr class="govuk-table__row">
+                <td colspan="5" class="govuk-table__cell">
+                    @if (Model is not null && Model.Categories.Any())
+                    {
+                        var count = 0;
 
-                    <p>
-                        @foreach (var category in Model.Categories)
-                        {
-                            <a class="govuk-link" asp-route="qnc:resume"
-                               asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", category.CategoryId }, { "applicationId", app.ApplicationId } })">
-                                @category.CategoryName
-                            </a>
-                            count++;
-
-                            if (count % 5 == 0)
+                        <p>
+                            @foreach (var category in Model.Categories)
                             {
-                                @:</p><p> @* Move to a new line after every 5 categories *@
+                                <a class="govuk-link" asp-route="qnc:resume"
+                                   asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", category.CategoryId }, { "projectRecordId", app.Id } })">
+                                    @category.CategoryName
+                                </a>
+                                count++;
+
+                                if (count % 5 == 0)
+                                {
+                                @:</p><p>
+                                    @* Move to a new line after every 5 categories *@
+                                }
+                                else
+                                {
+                                    <text> | </text> @* Add separator only if it's not the last item in a row *@
+                                }
                             }
-                            else
-                            {
-                                <text> | </text> @* Add separator only if it's not the last item in a row *@
-                            }
-                        }
-                    </p> @* Close the last paragraph correctly *@
-                }
-            </td>
+                        </p> @* Close the last paragraph correctly *@
+                    }
+                </td>
 
-
-            <td class="govuk-table__cell">
-                <a class="govuk-button" asp-route="qnc:submitapplication" asp-route-applicationId="@app.ApplicationId">
-                    Proceed to Submit
-                </a>
-            </td>
-        </tr>
-    }
-
+                <td class="govuk-table__cell">
+                    <a class="govuk-button" asp-route="qnc:submitapplication" asp-route-projectApplicationId="@app.Id">
+                        Proceed to Submit
+                    </a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>

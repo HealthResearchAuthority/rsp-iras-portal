@@ -2,8 +2,8 @@
 
 public record User(string? Id,
     string? Title,
-    string FirstName,
-    string LastName,
+    string GivenName,
+    string FamilyName,
     string Email,
     string? JobTitle,
     string? Organisation,

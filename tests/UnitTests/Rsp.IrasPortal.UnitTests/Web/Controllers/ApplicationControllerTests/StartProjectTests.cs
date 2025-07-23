@@ -2,6 +2,7 @@
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
@@ -27,6 +28,10 @@ public class StartProjectTests : TestServiceBase<ApplicationController>
         {
             HttpContext = httpContext
         };
+
+        var tempDataProvider = new Mock<ITempDataProvider>();
+
+        Sut.TempData = new TempDataDictionary(httpContext, tempDataProvider.Object);
     }
 
     [Fact]
@@ -105,7 +110,7 @@ public class StartProjectTests : TestServiceBase<ApplicationController>
         var model = new IrasIdViewModel { IrasId = "1234" };
         var existingApps = new List<IrasApplicationResponse>
         {
-            new() { IrasId = 1234, ApplicationId = "a1", Title = "Test" }
+            new() { IrasId = 1234, Id = "a1", Title = "Test" }
         };
 
         Mocker
@@ -166,15 +171,8 @@ public class StartProjectTests : TestServiceBase<ApplicationController>
     public async Task StartProject_RedirectsToResume_IfEverythingSucceeds()
     {
         // Arrange
-        var mockSession = new Mock<ISession>();
-
-        var httpContext = new DefaultHttpContext
-        {
-            Session = mockSession.Object
-        };
-
         var model = new IrasIdViewModel { IrasId = "5678" };
-        var createdApp = new IrasApplicationResponse { ApplicationId = "abc", IrasId = 5678, Title = "Test" };
+        var createdApp = new IrasApplicationResponse { Id = "abc", IrasId = 5678, Title = "Test" };
 
         Mocker
             .GetMock<IValidator<IrasIdViewModel>>()
@@ -215,6 +213,6 @@ public class StartProjectTests : TestServiceBase<ApplicationController>
         result.ShouldBeOfType<RedirectToActionResult>();
         var redirect = result as RedirectToActionResult;
         redirect!.ActionName.ShouldBe(nameof(QuestionnaireController.Resume));
-        redirect.RouteValues!["ApplicationId"].ShouldBe("abc");
+        redirect.RouteValues!["projectRecordId"].ShouldBe("abc");
     }
 }
