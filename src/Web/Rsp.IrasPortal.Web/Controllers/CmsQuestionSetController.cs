@@ -105,9 +105,7 @@ public class CmsQuestionSetController(ICmsQuestionSetServiceClient questionSetSe
         // save the list of QuestionViewModel in session to get it later
         HttpContext.Session.SetString($"{SessionKeys.Questionnaire}:{sectionId}", JsonSerializer.Serialize(questionnaire.Questions));
 
-        // add the applicationId in the TempData to be retrieved in the view
         TempData.TryAdd(TempDataKeys.ProjectRecordId, applicationId);
-
         // this is where the questionnaire will resume
         var navigationDto = await SetStage(sectionIdOrDefault);
 
@@ -172,12 +170,7 @@ public class CmsQuestionSetController(ICmsQuestionSetServiceClient questionSetSe
 
         if (!isValid)
         {
-            // store the applicationId in the TempData to get in the view
             TempData.TryAdd(TempDataKeys.ProjectRecordId, application.Id);
-
-            // store the irasId in the TempData to get in the view
-            TempData.TryAdd(TempDataKeys.IrasId, application.IrasId);
-
             // set the previous, current and next stages
             await SetStage(model.CurrentStage!);
             model.ReviewAnswers = submit;
@@ -233,12 +226,7 @@ public class CmsQuestionSetController(ICmsQuestionSetServiceClient questionSetSe
             await respondentService.SaveRespondentAnswers(request);
         }
 
-        // add the applicationId in the tempdata
         TempData.TryAdd(TempDataKeys.ProjectRecordId, application.Id);
-
-        // store the irasId in the TempData to get in the view
-        TempData.TryAdd(TempDataKeys.IrasId, application.IrasId);
-
         // set the previous, current and next stages
         var navigation = await SetStage(model.CurrentStage);
 
@@ -258,13 +246,13 @@ public class CmsQuestionSetController(ICmsQuestionSetServiceClient questionSetSe
             // if the user is at the last stage and clicks on Save and Continue
             if (string.IsNullOrWhiteSpace(navigation.NextStage))
             {
-                return RedirectToAction(nameof(SubmitApplication), new { applicationId = application.Id });
+                return RedirectToAction(nameof(SubmitApplication), new { projectRecordId = application.Id });
             }
 
             // otherwise resume from the NextStage in sequence
             return RedirectToAction(nameof(Resume), new
             {
-                applicationId = application.Id,
+                projectRecordId = application.Id,
                 categoryId = navigation.NextCategory,
                 sectionId = navigation.NextStage
             });
@@ -272,10 +260,6 @@ public class CmsQuestionSetController(ICmsQuestionSetServiceClient questionSetSe
 
         if (saveForLater == bool.TrueString)
         {
-            //TempData[TempDataKeys.ShortProjectTitle] = model.GetShortProjectTitle();
-            //TempData[TempDataKeys.CategoryId] = model.GetFirstCategory();
-            //TempData[TempDataKeys.ProjectRecordId] = application.Id;
-
             return RedirectToAction("ProjectOverview", "Application");
         }
         // user jumps to the next stage by clicking on the link
@@ -284,7 +268,7 @@ public class CmsQuestionSetController(ICmsQuestionSetServiceClient questionSetSe
         {
             return RedirectToAction(nameof(Resume), new
             {
-                applicationId = application.Id,
+                projectRecordId = application.Id,
                 categoryId = navigation.NextCategory,
                 sectionId = navigation.NextStage
             });
@@ -298,10 +282,10 @@ public class CmsQuestionSetController(ICmsQuestionSetServiceClient questionSetSe
         });
     }
 
-    public async Task<IActionResult> SubmitApplication(string applicationId)
+    public async Task<IActionResult> SubmitApplication(string projectRecordId)
     {
         // get the responent answers for the category
-        var respondentServiceResponse = await respondentService.GetRespondentAnswers(applicationId);
+        var respondentServiceResponse = await respondentService.GetRespondentAnswers(projectRecordId);
 
         // get the questions for all categories
         var questionSetServiceResponse = await questionSetService.GetQuestionSet();
@@ -474,7 +458,7 @@ public class CmsQuestionSetController(ICmsQuestionSetServiceClient questionSetSe
         return RedirectToAction("ProjectOverview", "Application");
     }
 
-    private async Task<IrasApplicationResponse?> LoadApplication(string applicationId)
+    private async Task<IrasApplicationResponse?> LoadApplication(string projectApplicationId)
     {
         // get the application by id
         var response = await applicationsService.GetProjectRecord(applicationId);
