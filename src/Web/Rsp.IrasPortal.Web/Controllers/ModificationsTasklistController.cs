@@ -6,6 +6,7 @@ using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
+using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers;
@@ -14,6 +15,8 @@ namespace Rsp.IrasPortal.Web.Controllers;
 [Authorize(Policy = "IsUser")]
 public class ModificationsTasklistController(IApplicationsService applicationsService, IValidator<ApprovalsSearchModel> validator) : Controller
 {
+    private const string ModificationToAssignNotSelectedErrorMessage = "You have not selected a modification to assign. Select at least one modification before you can continue.";
+
     [HttpGet]
     public async Task<IActionResult> Index(
         int pageNumber = 1,
@@ -24,12 +27,17 @@ public class ModificationsTasklistController(IApplicationsService applicationsSe
     {
         var model = new ModificationsTasklistViewModel
         {
-            SelectedModificationIds = selectedModificationIds ?? []
+            SelectedModificationIds = selectedModificationIds ?? [],
+            EmptySearchPerformed = true // Set to true to check if search bar should be hidden on view
         };
 
         if (TempData.Peek(TempDataKeys.ApprovalsSearchModel) is string json)
         {
             model.Search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json)!;
+            if (model.Search.Filters.Count != 0 || !string.IsNullOrEmpty(model.Search.IrasId))
+            {
+                model.EmptySearchPerformed = false;
+            }
         }
 
         var searchQuery = new ModificationSearchRequest()
@@ -91,8 +99,17 @@ public class ModificationsTasklistController(IApplicationsService applicationsSe
     [HttpGet]
     public async Task<IActionResult> AssignModifications(List<string> selectedModificationIds)
     {
-        // logic for assigning modifications
-        throw new NotImplementedException();
+        if (selectedModificationIds == null || !selectedModificationIds.Any())
+        {
+            ModelState.AddModelError(ModificationsTasklist.ModificationToAssignNotSelected, ModificationToAssignNotSelectedErrorMessage);
+            TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
+            return RedirectToAction(nameof(Index));
+        }
+        else
+        {
+            // logic for assigning modifications
+            throw new NotImplementedException();
+        }
     }
 
     [HttpPost]
