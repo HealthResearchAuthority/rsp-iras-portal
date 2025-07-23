@@ -216,7 +216,7 @@
                     <div class="govuk-form-group govuk-!-margin-bottom-2">
                         <fieldset class="govuk-fieldset">
                             <rsp-gds-autocomplete asp-for="Search.SponsorOrganisation"
-                                                  label-html-class="js-hidden"
+															  label-html-class="js-hidden font-weight-none"
                                                   field-id="SponsorOrganisation_Text"
                                                   label-text="Type the name of the organisation or scroll through the list"
                                                   api-url="/organisation/getorganisations"
@@ -276,6 +276,7 @@
 
                                 <div class="govuk-form-group" error-class-property="sponsor_org_search">
                                     <label class="govuk-label govuk-label--s font-weight-none" for="sponsor_org_search" aria-describedby="SponsorOrganisation">
+                                        Type the name of the organisation or scroll through the list
                                     </label>
 
                                     @Html.ValidationMessage("sponsor_org_search", new { @class = "govuk-error-message" })
