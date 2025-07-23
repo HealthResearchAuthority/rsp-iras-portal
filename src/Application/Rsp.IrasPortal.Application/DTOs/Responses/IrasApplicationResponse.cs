@@ -1,4 +1,6 @@
-﻿namespace Rsp.IrasPortal.Application.DTOs.Responses;
+﻿using System.Text.Json.Serialization;
+
+namespace Rsp.IrasPortal.Application.DTOs.Responses;
 
 public class IrasApplicationResponse
 {

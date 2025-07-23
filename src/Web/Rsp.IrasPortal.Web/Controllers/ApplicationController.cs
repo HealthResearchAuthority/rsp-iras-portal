@@ -1,13 +1,17 @@
 using System.Diagnostics;
+using System.Globalization;
 using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Entities;
+using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
 
@@ -19,13 +23,84 @@ public class ApplicationController
 (
     IApplicationsService applicationsService,
     IValidator<IrasIdViewModel> irasIdValidator,
-    IQuestionSetService questionSetService
-) : Controller
+    IRespondentService respondentService,
+    IQuestionSetService questionSetService,
+    IFeatureManager featureManager) : Controller
 {
     // ApplicationInfo view name
     private const string ApplicationInfo = nameof(ApplicationInfo);
 
-    public IActionResult Welcome() => View(nameof(Index));
+    public async Task<IActionResult> Welcome(string? searchQuery = null, int pageNumber = 1, int pageSize = 5)
+    {
+        var myResearhPageEnabled = await featureManager.IsEnabledAsync(Features.MyResearchPage);
+        if (!myResearhPageEnabled)
+        {
+            return View(nameof(Index));
+        }
+
+        // getting respondentID from Http context
+        var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
+
+        // getting research applications by respondent ID
+        var applicationServiceResponse = await applicationsService.GetPaginatedApplicationsByRespondent(respondentId, searchQuery, pageNumber, pageSize);
+
+        var applications = applicationServiceResponse?.Content?.Items.ToList() ?? new List<IrasApplicationResponse>();
+
+        var researchApplications = applications
+            .Where(app => app != null)
+            .Select(app => new ResearchApplicationSummaryModel
+            {
+                IrasId = app.IrasId,
+                ApplicatonId = app.Id,
+                Title = "Empty", // temporary default
+                ProjectEndDate = new DateTime(2025, 12, 10, 0, 0, 0, DateTimeKind.Utc), // temporary default
+                PrimarySponsorOrganisation = "Unknown", // default value
+                IsNew = app.CreatedDate >= DateTime.UtcNow.AddDays(-2)
+            })
+            .ToList();
+
+        var categoryId = "project record v1";
+
+        foreach (var researchApp in researchApplications)
+        {
+            var respondentServiceResponse = await respondentService.GetRespondentAnswers(researchApp.ApplicatonId, categoryId);
+
+            if (!respondentServiceResponse.IsSuccessStatusCode)
+            {
+                // return the generic error page
+                return this.ServiceError(respondentServiceResponse);
+            }
+
+            var answers = respondentServiceResponse.Content;
+
+            var titleAnswer = answers.FirstOrDefault(a => a.QuestionId == "IQA0002")?.AnswerText;
+            var endDateAnswer = answers.FirstOrDefault(a => a.QuestionId == "IQA0003")?.AnswerText;
+            var sponsorAnswer = answers.FirstOrDefault(a => a.QuestionId == "IQA0312")?.AnswerText;
+
+            if (!string.IsNullOrWhiteSpace(titleAnswer))
+            {
+                researchApp.Title = titleAnswer;
+            }
+
+            var ukCulture = new CultureInfo("en-GB");
+            if (DateTime.TryParse(endDateAnswer, ukCulture, DateTimeStyles.None, out var parsedDate))
+            {
+                researchApp.ProjectEndDate = parsedDate;
+            }
+
+            if (!string.IsNullOrWhiteSpace(sponsorAnswer))
+            {
+                researchApp.PrimarySponsorOrganisation = sponsorAnswer;
+            }
+        }
+        var paginationModel = new PaginationViewModel(pageNumber, pageSize, applicationServiceResponse?.Content?.TotalCount ?? 0)
+        {
+            RouteName = "app:welcome",
+            SearchQuery = searchQuery
+        };
+
+        return View(nameof(Index), (researchApplications, paginationModel));
+    }
 
     public IActionResult StartProject() => View(nameof(StartProject));
 

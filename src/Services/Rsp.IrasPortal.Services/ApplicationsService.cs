@@ -52,6 +52,14 @@ public class ApplicationsService(IApplicationsServiceClient applicationsClient) 
     }
 
     /// <inheritdoc/>
+    public async Task<ServiceResponse<PaginatedResponse<IrasApplicationResponse>>> GetPaginatedApplicationsByRespondent(string respondentId, string? searchQuery, int pageIndex, int pageSize)
+    {
+        var apiResponse = await applicationsClient.GetPaginatedApplicationsByRespondent(respondentId, searchQuery, pageIndex, pageSize);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    /// <inheritdoc/>
     public async Task<ServiceResponse<IrasApplicationResponse>> CreateApplication(IrasApplicationRequest irasApplication)
     {
         var apiResponse = await applicationsClient.CreateApplication(irasApplication);

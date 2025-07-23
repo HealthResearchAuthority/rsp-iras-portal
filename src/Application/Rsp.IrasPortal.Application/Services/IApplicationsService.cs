@@ -49,6 +49,16 @@ public interface IApplicationsService : IInterceptable
     public Task<ServiceResponse<IEnumerable<IrasApplicationResponse>>> GetApplicationsByRespondent(string respondentId);
 
     /// <summary>
+    /// Gets all the saved applications for a respondent with pagination
+    /// </summary>
+    /// <param name="respondentId">Respondent Id associated with the application</param>
+    /// <param name="searchQuery">Optional search query to filter projects by title or description.</param>
+    /// <param name="pageIndex">Page number (1-based). Must be greater than 0.</param>
+    /// <param name="pageSize">Number of records per page. Must be greater than 0.</param>
+    /// <returns>An asynchronous operation that returns all the saved applications for a given respondent.</returns>
+    public Task<ServiceResponse<PaginatedResponse<IrasApplicationResponse>>> GetPaginatedApplicationsByRespondent(string respondentId, string? searchQuery, int pageIndex, int pageSize);
+
+    /// <summary>
     /// Creates a new application
     /// </summary>
     /// <param name="irasApplication">IrasApplication to be creadated</param>
