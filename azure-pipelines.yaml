@@ -1,7 +1,7 @@
 name: $(Build.DefinitionName)_$(Build.SourceBranchName)_$(date:yyyyMMdd)$(rev:.r)
 
 pool:
-  vmImage: "Ubuntu-latest"
+  name: "rsp-manageddevopspool"
 
 trigger:
   - main
