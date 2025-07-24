@@ -28,7 +28,8 @@ public class ProjectModificationController
     IRespondentService respondentService,
     IValidator<AreaOfChangeViewModel> areaofChangeValidator,
     IValidator<SearchOrganisationViewModel> searchOrganisationValidator,
-    IValidator<DateViewModel> dateViewModelValidator
+    IValidator<DateViewModel> dateViewModelValidator,
+    IValidator<PlannedEndDateOrganisationTypeViewModel> organisationTypeValidator
 ) : Controller
 {
     /// <summary>
@@ -352,6 +353,45 @@ public class ProjectModificationController
         {
             // Return a service error view if saving fails
             return this.ServiceError(saveModificationAnswersResponse);
+        }
+
+        return RedirectToAction(nameof(PlannedEndDateOrganisationType));
+    }
+
+    /// <summary>
+    /// Returns the view to select the organisation types for the planned end date change of the project.
+    /// Populates metadata from TempData.
+    /// </summary>
+    [HttpGet]
+    public IActionResult PlannedEndDateOrganisationType()
+    {
+        var viewModel = new PlannedEndDateOrganisationTypeViewModel
+        {
+            ShortTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
+            IrasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty,
+            ModificationIdentifier = TempData.Peek(TempDataKeys.ProjectModificationIdentifier) as string ?? string.Empty,
+            PageTitle = TempData.Peek(TempDataKeys.SpecificAreaOfChangeText) as string ?? string.Empty
+        };
+
+        // Redirect to the PlannedEndDateOrganisationType view with the populated view model
+        return View(nameof(PlannedEndDateOrganisationType), viewModel);
+    }
+
+    /// <summary>
+    /// Returns the view to select the organisation types for the planned end date change of the project.
+    /// Populates metadata from TempData.
+    /// </summary>
+    [HttpPost]
+    public async Task<IActionResult> SubmitOrganisationTypes(PlannedEndDateOrganisationTypeViewModel model)
+    {
+        var validationResult = await organisationTypeValidator.ValidateAsync(new ValidationContext<PlannedEndDateOrganisationTypeViewModel>(model));
+        if (!validationResult.IsValid)
+        {
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
+            return View(nameof(PlannedEndDateOrganisationType), model);
         }
 
         // Redirect to the project overview on success

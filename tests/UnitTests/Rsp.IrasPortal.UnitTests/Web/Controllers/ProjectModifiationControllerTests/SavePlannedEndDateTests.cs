@@ -173,7 +173,7 @@ public class SavePlannedEndDateTests : TestServiceBase<ProjectModificationContro
         var result = await Sut.SavePlannedEndDate(model);
 
         // Assert
-        var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
-        redirect.RouteName.ShouldBe("app:projectoverview");
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe("PlannedEndDateOrganisationType");
     }
 }

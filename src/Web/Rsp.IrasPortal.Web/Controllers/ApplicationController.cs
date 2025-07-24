@@ -295,6 +295,30 @@ public class ApplicationController
             ProjectPlannedEndDate = TempData.Peek(TempDataKeys.ProjectPlannedEndDate) as string ?? string.Empty
         };
 
+        // Get all respondent answers for the project and category
+        var respondentAnswersResponse = await respondentService.GetRespondentAnswers(model.ProjectRecordId, model.CategoryId);
+
+        if (!respondentAnswersResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(respondentAnswersResponse);
+        }
+
+        var answers = respondentAnswersResponse.Content;
+
+        if (answers == null)
+        {
+            // Return a 404 error view if no responses are found for the project record
+            return View("Error", new ProblemDetails()
+            {
+                Title = ReasonPhrases.GetReasonPhrase(StatusCodes.Status404NotFound),
+                Detail = "No responses found for the project record",
+                Status = StatusCodes.Status404NotFound,
+                Instance = Request.Path
+            });
+        }
+
+        TempData.TryAdd(TempDataKeys.ProjectRecordResponses, answers, true);
+
         return View(model);
     }
 
