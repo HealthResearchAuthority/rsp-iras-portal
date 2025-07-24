@@ -5,7 +5,7 @@
 /// </summary>
 public static class ModificationJourneyTypes
 {
-    public const string ParticipatingOrganisation = "Participating organisation";
+    public const string ParticipatingOrganisation = "Participating organisations";
     public const string PlannedEndDate = "Planned end date";
-    public const string ProjectDocument = "Project document";
+    public const string ProjectDocument = "Project documents";
 }
