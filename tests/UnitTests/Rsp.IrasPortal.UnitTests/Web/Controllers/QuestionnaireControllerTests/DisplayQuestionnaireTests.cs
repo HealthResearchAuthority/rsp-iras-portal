@@ -308,7 +308,7 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
 
         Mocker
             .GetMock<IApplicationsService>()
-            .Setup(s => s.GetApplication(applicationId))
+            .Setup(s => s.GetProjectRecord(applicationId))
             .ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -394,7 +394,7 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
 
         Mocker
             .GetMock<IApplicationsService>()
-            .Setup(s => s.GetApplication(applicationId))
+            .Setup(s => s.GetProjectRecord(applicationId))
             .ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
             {
                 StatusCode = HttpStatusCode.OK,

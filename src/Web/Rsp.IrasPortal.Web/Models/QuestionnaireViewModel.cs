@@ -1,4 +1,7 @@
-﻿namespace Rsp.IrasPortal.Web.Models;
+﻿using System.Globalization;
+using Rsp.IrasPortal.Application.Constants;
+
+namespace Rsp.IrasPortal.Web.Models;
 
 /// <summary>
 /// ViewModel representing a questionnaire, including its questions and related state.
@@ -47,6 +50,26 @@ public class QuestionnaireViewModel
     public string? GetShortProjectTitle()
     {
         return Questions
-            .FirstOrDefault(q => q.QuestionText.Equals("Short project title", StringComparison.OrdinalIgnoreCase))?.AnswerText;
+            .FirstOrDefault(q => q.QuestionId.Equals(QuestionIds.ShortProjectTitle, StringComparison.OrdinalIgnoreCase))?.AnswerText;
+    }
+
+    /// <summary>
+    /// Gets the answer text for the question with QuestionId "IQA0003", which represents the planned end date of the project.
+    /// </summary>
+    /// <returns>
+    /// The answer text for the planned end date of the project, or null if the question is not found.
+    /// </returns>
+    public string? GetProjectPlannedEndDate()
+    {
+        var ukCulture = new CultureInfo("en-GB");
+
+        var plannedEndDate = Questions.FirstOrDefault(q => q.QuestionId.Equals(QuestionIds.ProjectPlannedEndDate, StringComparison.OrdinalIgnoreCase))?.AnswerText;
+
+        if (DateTime.TryParse(plannedEndDate, ukCulture, DateTimeStyles.None, out var parsedDate))
+        {
+            return parsedDate.ToString("dd MMMM yyyy");
+        }
+
+        return null;
     }
 }

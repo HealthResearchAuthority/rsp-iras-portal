@@ -30,6 +30,24 @@ public static class ControllerExtensions
     }
 
     /// <summary>
+    /// Returns an appropriate IActionResult based on the ServiceResponse status code.
+    /// If Forbidden or NotFound, returns Forbid or NotFound result.
+    /// Otherwise, returns the generic error view with problem details.
+    /// </summary>
+    public static IActionResult ServiceError(this Controller controller, ServiceResponse response)
+    {
+        // return the generic error page
+        // if status is forbidden or not found
+        // return the appropriate response otherwise
+        // return the generic error page
+        return response.StatusCode switch
+        {
+            HttpStatusCode.Forbidden => controller.Forbid(),
+            _ => controller.View("Error", ProblemResult(controller, response))
+        };
+    }
+
+    /// <summary>
     /// Retrieves the IrasApplicationResponse object from the session.
     /// Returns a new IrasApplicationResponse if not found in session.
     /// </summary>
