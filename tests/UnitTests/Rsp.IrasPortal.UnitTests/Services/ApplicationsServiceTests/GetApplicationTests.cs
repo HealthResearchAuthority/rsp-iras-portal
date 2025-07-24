@@ -27,11 +27,11 @@ public class GetApplicationTests : TestServiceBase<ApplicationsService>
         );
 
         _applicationsServiceClient
-            .Setup(c => c.GetApplication(applicationId))
+            .Setup(c => c.GetProjectRecord(applicationId))
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.GetApplication(applicationId);
+        var result = await Sut.GetProjectRecord(applicationId);
 
         // Assert
         result.ShouldBeOfType<ServiceResponse<IrasApplicationResponse>>();
@@ -39,7 +39,7 @@ public class GetApplicationTests : TestServiceBase<ApplicationsService>
         result.StatusCode.ShouldBe(HttpStatusCode.OK);
 
         // Verify
-        _applicationsServiceClient.Verify(c => c.GetApplication(applicationId), Times.Once());
+        _applicationsServiceClient.Verify(c => c.GetProjectRecord(applicationId), Times.Once());
     }
 
     [Theory, AutoData]
@@ -54,11 +54,11 @@ public class GetApplicationTests : TestServiceBase<ApplicationsService>
         );
 
         _applicationsServiceClient
-            .Setup(c => c.GetApplication(applicationId))
+            .Setup(c => c.GetProjectRecord(applicationId))
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.GetApplication(applicationId);
+        var result = await Sut.GetProjectRecord(applicationId);
 
         // Assert
         result.ShouldBeOfType<ServiceResponse<IrasApplicationResponse>>();
@@ -66,6 +66,6 @@ public class GetApplicationTests : TestServiceBase<ApplicationsService>
         result.StatusCode.ShouldBe(HttpStatusCode.NotFound);
 
         // Verify
-        _applicationsServiceClient.Verify(c => c.GetApplication(applicationId), Times.Once());
+        _applicationsServiceClient.Verify(c => c.GetProjectRecord(applicationId), Times.Once());
     }
 }

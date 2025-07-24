@@ -12,9 +12,9 @@ namespace Rsp.IrasPortal.Services;
 public class ApplicationsService(IApplicationsServiceClient applicationsClient) : IApplicationsService
 {
     /// <inheritdoc/>
-    public async Task<ServiceResponse<IrasApplicationResponse>> GetApplication(string applicationId)
+    public async Task<ServiceResponse<IrasApplicationResponse>> GetProjectRecord(string projectRecordId)
     {
-        var apiResponse = await applicationsClient.GetApplication(applicationId);
+        var apiResponse = await applicationsClient.GetProjectRecord(projectRecordId);
 
         return apiResponse.ToServiceResponse();
     }

@@ -10,10 +10,10 @@ public class PlannedEndDateViewModel : BaseProjectModificationViewModel
     /// <summary>
     /// Gets or sets the current planned end date of the project.
     /// </summary>
-    public DateTime? CurrentPlannedEndDate { get; set; }
+    public string CurrentPlannedEndDate { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the new proposed planned end date for the project modification.
     /// </summary>
-    public DateTime? NewPlannedEndDate { get; set; }
+    public DateViewModel NewPlannedEndDate { get; set; } = new DateViewModel();
 }
