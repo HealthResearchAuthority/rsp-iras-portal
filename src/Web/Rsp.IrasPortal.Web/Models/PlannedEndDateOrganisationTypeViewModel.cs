@@ -9,13 +9,14 @@ public class PlannedEndDateOrganisationTypeViewModel : BaseProjectModificationVi
     public List<string> SelectedOrganisationTypes { get; set; } = [];
 
     /// <summary>
-    /// A static dictionary that defines the available organisation types that a user can select from.
+    /// A static, immutable dictionary that defines the available organisation types that a user can select from.
     /// The key represents a unique identifier (e.g., "OPT0025"), and the value is the human-readable name
     /// shown on the user interface (e.g., "NHS/HSC").
     /// </summary>
-    public static readonly Dictionary<string, string> OrganisationTypes = new()
-{
-    { "OPT0025", "NHS/HSC" },
-    { "OPT0026", "Non-NHS/HSC" }
-};
+    public static IReadOnlyDictionary<string, string> OrganisationTypes { get; } =
+        new Dictionary<string, string>
+        {
+            { "OPT0025", "NHS/HSC" },
+            { "OPT0026", "Non-NHS/HSC" }
+        };
 }
