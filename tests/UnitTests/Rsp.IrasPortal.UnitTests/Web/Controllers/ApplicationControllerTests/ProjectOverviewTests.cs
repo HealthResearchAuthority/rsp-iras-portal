@@ -164,4 +164,33 @@ public class ProjectOverview : TestServiceBase<ApplicationController>
         // Assert
         tempData[TempDataKeys.ProjectOverview].ShouldBe(true);
     }
+
+    [Fact]
+    public async Task ProjectOverview_SetsProjectOverviewProblemDetails()
+    {
+        // Arrange
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var respondentService = Mocker.GetMock<IRespondentService>();
+        respondentService
+            .Setup(s => s.GetRespondentAnswers(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = null });
+
+        // Ensure HttpContext/Request is set up
+        var httpContext = new DefaultHttpContext();
+
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = httpContext
+        };
+
+        var tempData = new TempDataDictionary(new DefaultHttpContext(), tempDataProvider.Object);
+        Sut.TempData = tempData;
+
+        // Act
+        var result = await Sut.ProjectOverview(null, null);
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var model = viewResult.Model.ShouldBeOfType<Microsoft.AspNetCore.Mvc.ProblemDetails>();
+    }
 }
