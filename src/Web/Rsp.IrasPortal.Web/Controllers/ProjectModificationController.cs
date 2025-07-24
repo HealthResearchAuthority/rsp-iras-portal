@@ -299,6 +299,91 @@ public class ProjectModificationController
     }
 
     /// <summary>
+    /// Returns the view for uploading project documents.
+    /// Populates metadata from TempData.
+    /// </summary>
+    [HttpGet]
+    public IActionResult ProjectDocument()
+    {
+        var specificAreaOfChange = TempData.Peek(TempDataKeys.SpecificAreaOfChangeText) as string;
+
+        var viewModel = new ModificationUploadDocumentsViewModel
+        {
+            ShortTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
+            IrasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty,
+            ModificationIdentifier = TempData.Peek(TempDataKeys.ProjectModificationIdentifier) as string ?? string.Empty,
+            PageTitle = !string.IsNullOrEmpty(specificAreaOfChange)
+            ? $"Add documents for {specificAreaOfChange}"
+            : string.Empty
+        };
+
+        // Retrieve the current organisation search term from TempData
+        return View("UploadDocuments", viewModel);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> UploadDocuments(ModificationUploadDocumentsViewModel model)
+    {
+        if (!ModelState.IsValid)
+            return View(model);
+
+        var uploaded = new List<DocumentSummaryItem>();
+
+        foreach (var file in model.Files)
+        {
+            using var ms = new MemoryStream();
+            await file.CopyToAsync(ms);
+
+            uploaded.Add(new DocumentSummaryItem
+            {
+                FileName = file.FileName,
+                FileSize = file.Length
+            });
+        }
+
+        TempData[TempDataKeys.UploadedDocuments] = JsonSerializer.Serialize(uploaded);
+
+        return RedirectToAction(nameof(Review));
+    }
+
+    [HttpGet]
+    public IActionResult Review()
+    {
+        var specificAreaOfChange = TempData.Peek(TempDataKeys.SpecificAreaOfChangeText) as string;
+
+        var viewModel = new ModificationReviewDocumentsViewModel
+        {
+            ShortTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
+            IrasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty,
+            ModificationIdentifier = TempData.Peek(TempDataKeys.ProjectModificationIdentifier) as string ?? string.Empty,
+            PageTitle = !string.IsNullOrEmpty(specificAreaOfChange)
+            ? $"Documents added for  {specificAreaOfChange}"
+            : string.Empty
+        };
+
+        if (TempData[TempDataKeys.UploadedDocuments] != null)
+        {
+            var docsJson = TempData.Peek(TempDataKeys.AreaOfChanges) as string;
+            TempData.Keep(TempDataKeys.UploadedDocuments); // Needed for navigating forward/backward
+            viewModel.UploadedDocuments = JsonSerializer.Deserialize<List<DocumentSummaryItem>>(docsJson);
+        }
+
+        return View("ModificationReviewDocuments", viewModel);
+    }
+
+    [HttpPost]
+    public IActionResult AddAnotherDocument()
+    {
+        return RedirectToAction(nameof(UploadDocuments));
+    }
+
+    [HttpPost]
+    public IActionResult ContinueToDetails()
+    {
+        return RedirectToAction("DocumentDetails");
+    }
+
+    /// <summary>
     /// Handles search form submission for participant organisation lookup.
     /// Validates the search model and returns the view with errors if needed.
     /// </summary>
@@ -563,7 +648,7 @@ public class ProjectModificationController
         {
             ModificationJourneyTypes.ParticipatingOrganisation => RedirectToAction(nameof(ParticipatingOrganisation)),
             ModificationJourneyTypes.PlannedEndDate => RedirectToAction(nameof(PlannedEndDate)),
-            ModificationJourneyTypes.ProjectDocument => RedirectToAction("ProjectDocument", "ProjectModification"),
+            ModificationJourneyTypes.ProjectDocument => RedirectToAction(nameof(ProjectDocument)),
             _ => View(nameof(AreaOfChange), model)
         };
     }
