@@ -56,7 +56,8 @@ public class ApprovalsController
                 {
                     IrasId = search.IrasId,
                     ChiefInvestigatorName = search.ChiefInvestigatorName,
-                    Country = search.Country,
+                    LeadNation = search.LeadNation,
+                    ParticipatingNation = search.ParticipatingNation,
                     FromDate = search.FromDate,
                     ToDate = search.ToDate,
                     ModificationTypes = search.ModificationTypes,
@@ -185,14 +186,21 @@ public class ApprovalsController
                 break;
 
             case "leadnation":
-                if (!string.IsNullOrEmpty(value) && search.Country?.Count > 0)
+                if (!string.IsNullOrEmpty(value) && search.LeadNation?.Count > 0)
                 {
-                    search.Country = search.Country
+                    search.LeadNation = search.LeadNation
                         .Where(c => !string.Equals(c, value, StringComparison.OrdinalIgnoreCase))
                         .ToList();
                 }
                 break;
-
+            case "participatingnation":
+                if (!string.IsNullOrEmpty(value) && search.ParticipatingNation?.Count > 0)
+                {
+                    search.ParticipatingNation = search.ParticipatingNation
+                        .Where(c => !string.Equals(c, value, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
+                break;
             case "modificationtype":
                 if (!string.IsNullOrEmpty(value) && search.ModificationTypes?.Count > 0)
                 {

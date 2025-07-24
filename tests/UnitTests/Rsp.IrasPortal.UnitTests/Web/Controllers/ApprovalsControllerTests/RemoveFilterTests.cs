@@ -129,7 +129,7 @@ public class RemoveFiltersTests : TestServiceBase<ApprovalsController>
     {
         var model = new ApprovalsSearchModel
         {
-            Country = new List<string> { "England", "Wales" }
+            LeadNation = new List<string> { "England", "Wales" }
         };
         SetTempData(new Dictionary<string, object?>
         {
@@ -144,7 +144,7 @@ public class RemoveFiltersTests : TestServiceBase<ApprovalsController>
         var updated =
             JsonSerializer.Deserialize<ApprovalsSearchModel>(
                 Sut.TempData[TempDataKeys.ApprovalsSearchModel]!.ToString()!)!;
-        updated.Country.ShouldBe(new List<string> { "England" });
+        updated.LeadNation.ShouldBe(new List<string> { "England" });
     }
 
     [Fact]

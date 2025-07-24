@@ -24,7 +24,8 @@ public class ApprovalsSearchModel
     public string? ToMonth { get; set; }
     public string? ToYear { get; set; }
 
-    public List<string> Country { get; set; } = [];
+    public List<string> LeadNation { get; set; } = [];
+    public List<string> ParticipatingNation { get; set; } = [];
     public List<string> ModificationTypes { get; set; } = [];
     public OrganisationSearchViewModel SponsorOrgSearch { get; set; } = new();
 
@@ -64,9 +65,14 @@ public class ApprovalsSearchModel
                 filters.Add(ApprovalsSearch.ToDateKey, [ToDate.Value.ToString("d MMM yyyy")]);
             }
 
-            if (Country.Count != 0)
+            if (LeadNation.Count != 0)
             {
-                filters.Add(ApprovalsSearch.LeadNationKey, Country);
+                filters.Add(ApprovalsSearch.LeadNationKey, LeadNation);
+            }
+
+            if (ParticipatingNation.Count != 0)
+            {
+                filters.Add(ApprovalsSearch.ParticipatingNationKey, ParticipatingNation);
             }
 
             if (ModificationTypes.Count != 0)

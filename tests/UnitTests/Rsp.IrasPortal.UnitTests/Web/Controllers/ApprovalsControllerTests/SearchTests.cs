@@ -188,7 +188,7 @@ public class SearchTests : TestServiceBase<ApprovalsController>
     {
         var searchModel = new ApprovalsSearchModel
         {
-            Country = new List<string> { "England", "Wales" }
+            LeadNation = new List<string> { "England", "Wales" }
         };
 
         Sut.TempData[TempDataKey] = JsonSerializer.Serialize(searchModel);
