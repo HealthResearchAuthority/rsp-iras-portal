@@ -24,7 +24,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         // Arrange
         Mocker
             .GetMock<IApplicationsService>()
-            .Setup(s => s.GetApplication(applicationId))
+            .Setup(s => s.GetProjectRecord(applicationId))
             .ReturnsAsync(new ServiceResponse<IrasApplicationResponse> { StatusCode = HttpStatusCode.NotFound });
 
         // Act
@@ -36,7 +36,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         // Verify
         Mocker
             .GetMock<IApplicationsService>()
-            .Verify(s => s.GetApplication(applicationId), Times.Once);
+            .Verify(s => s.GetProjectRecord(applicationId), Times.Once);
     }
 
     [Theory]
@@ -53,7 +53,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<IApplicationsService>()
-            .Setup(s => s.GetApplication(applicationId))
+            .Setup(s => s.GetProjectRecord(applicationId))
             .ReturnsAsync(applicationResponse);
 
         var unsuccessfulResponse = new ServiceResponse<IEnumerable<RespondentAnswerDto>>
@@ -120,7 +120,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<IApplicationsService>()
-            .Setup(x => x.GetApplication(applicationId))
+            .Setup(x => x.GetProjectRecord(applicationId))
             .ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
             { StatusCode = HttpStatusCode.OK, Content = new IrasApplicationResponse() });
 
@@ -216,7 +216,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<IApplicationsService>()
-            .Setup(x => x.GetApplication(applicationId))
+            .Setup(x => x.GetProjectRecord(applicationId))
             .ReturnsAsync(applicationResponse);
 
         Mocker
@@ -302,7 +302,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<IApplicationsService>()
-            .Setup(x => x.GetApplication(applicationId))
+            .Setup(x => x.GetProjectRecord(applicationId))
             .ReturnsAsync(applicationResponse);
 
         Mocker
@@ -409,7 +409,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<IApplicationsService>()
-            .Setup(s => s.GetApplication(applicationId))
+            .Setup(s => s.GetProjectRecord(applicationId))
             .ReturnsAsync(applicationResponse);
 
         Mocker
@@ -468,7 +468,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         // Arrange
         Mocker
             .GetMock<IApplicationsService>()
-            .Setup(s => s.GetApplication(applicationId))
+            .Setup(s => s.GetProjectRecord(applicationId))
             .ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -517,7 +517,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         // Arrange
         Mocker
             .GetMock<IApplicationsService>()
-            .Setup(s => s.GetApplication(applicationId))
+            .Setup(s => s.GetProjectRecord(applicationId))
             .ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -561,7 +561,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         // Arrange
         Mocker
             .GetMock<IApplicationsService>()
-            .Setup(s => s.GetApplication(applicationId))
+            .Setup(s => s.GetProjectRecord(applicationId))
             .ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -643,7 +643,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         // Arrange
         Mocker
             .GetMock<IApplicationsService>()
-            .Setup(s => s.GetApplication(applicationId))
+            .Setup(s => s.GetProjectRecord(applicationId))
             .ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -723,7 +723,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         // Arrange
         Mocker
             .GetMock<IApplicationsService>()
-            .Setup(s => s.GetApplication(applicationId))
+            .Setup(s => s.GetProjectRecord(applicationId))
             .ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -796,7 +796,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         // Arrange
         Mocker
             .GetMock<IApplicationsService>()
-            .Setup(s => s.GetApplication(applicationId))
+            .Setup(s => s.GetProjectRecord(applicationId))
             .ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -876,7 +876,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<IApplicationsService>()
-            .Setup(s => s.GetApplication(applicationId))
+            .Setup(s => s.GetProjectRecord(applicationId))
             .ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -956,7 +956,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         // Arrange
         Mocker
             .GetMock<IApplicationsService>()
-            .Setup(s => s.GetApplication(applicationId))
+            .Setup(s => s.GetProjectRecord(applicationId))
             .ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
             {
                 StatusCode = HttpStatusCode.OK,

@@ -370,6 +370,7 @@ public class QuestionnaireController
             if (firstSection != null && model.CurrentStage == firstSection.SectionId)
             {
                 TempData[TempDataKeys.ShortProjectTitle] = model.GetShortProjectTitle();
+                TempData[TempDataKeys.ProjectPlannedEndDate] = model.GetProjectPlannedEndDate();
             }
         }
 
@@ -990,7 +991,7 @@ public class QuestionnaireController
     private async Task<IrasApplicationResponse?> LoadApplication(string projectApplicationId)
     {
         // get the application by id
-        var response = await applicationsService.GetApplication(projectApplicationId);
+        var response = await applicationsService.GetProjectRecord(projectApplicationId);
 
         if (!response.IsSuccessStatusCode)
         {

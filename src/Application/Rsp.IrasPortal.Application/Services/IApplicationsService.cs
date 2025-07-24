@@ -16,9 +16,9 @@ public interface IApplicationsService : IInterceptable
     /// <summary>
     /// Gets the saved application by Id
     /// </summary>
-    /// <param name="applicationId">Application Id</param>
+    /// <param name="projectRecordId">Application Id</param>
     /// <returns>An asynchronous operation that returns a saved application.</returns>
-    public Task<ServiceResponse<IrasApplicationResponse>> GetApplication(string applicationId);
+    public Task<ServiceResponse<IrasApplicationResponse>> GetProjectRecord(string projectRecordId);
 
     /// <summary>
     /// Gets all the saved applications

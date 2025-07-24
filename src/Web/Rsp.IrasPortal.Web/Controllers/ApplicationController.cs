@@ -4,11 +4,11 @@ using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Entities;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
@@ -44,7 +44,7 @@ public class ApplicationController
         // getting research applications by respondent ID
         var applicationServiceResponse = await applicationsService.GetPaginatedApplicationsByRespondent(respondentId, searchQuery, pageNumber, pageSize);
 
-        var applications = applicationServiceResponse?.Content?.Items.ToList() ?? new List<IrasApplicationResponse>();
+        var applications = applicationServiceResponse?.Content?.Items.ToList() ?? [];
 
         var researchApplications = applications
             .Where(app => app != null)
@@ -56,8 +56,7 @@ public class ApplicationController
                 ProjectEndDate = new DateTime(2025, 12, 10, 0, 0, 0, DateTimeKind.Utc), // temporary default
                 PrimarySponsorOrganisation = "Unknown", // default value
                 IsNew = app.CreatedDate >= DateTime.UtcNow.AddDays(-2)
-            })
-            .ToList();
+            }).ToList();
 
         var categoryId = "project record v1";
 
@@ -73,9 +72,9 @@ public class ApplicationController
 
             var answers = respondentServiceResponse.Content;
 
-            var titleAnswer = answers.FirstOrDefault(a => a.QuestionId == "IQA0002")?.AnswerText;
-            var endDateAnswer = answers.FirstOrDefault(a => a.QuestionId == "IQA0003")?.AnswerText;
-            var sponsorAnswer = answers.FirstOrDefault(a => a.QuestionId == "IQA0312")?.AnswerText;
+            var titleAnswer = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.ShortProjectTitle)?.AnswerText;
+            var endDateAnswer = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.ProjectPlannedEndDate)?.AnswerText;
+            var sponsorAnswer = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.PrimarySponsorOrganisation)?.AnswerText;
 
             if (!string.IsNullOrWhiteSpace(titleAnswer))
             {
@@ -93,6 +92,7 @@ public class ApplicationController
                 researchApp.PrimarySponsorOrganisation = sponsorAnswer;
             }
         }
+
         var paginationModel = new PaginationViewModel(pageNumber, pageSize, applicationServiceResponse?.Content?.TotalCount ?? 0)
         {
             RouteName = "app:welcome",
@@ -262,7 +262,7 @@ public class ApplicationController
     /// clears related TempData keys, and populates the ProjectOverviewModel with project details from TempData.
     /// </summary>
     /// <returns>The ProjectOverview view with the populated model.</returns>
-    public IActionResult ProjectOverview()
+    public async Task<IActionResult> ProjectOverview(string? projectRecordId, string? categoryId)
     {
         // If there is a project modification change, show the notification banner
         if (TempData.Peek(TempDataKeys.ProjectModificationId) is not null)
@@ -275,17 +275,26 @@ public class ApplicationController
         TempData.Remove(TempDataKeys.ProjectModificationIdentifier);
         TempData.Remove(TempDataKeys.ProjectModificationChangeId);
         TempData.Remove(TempDataKeys.ProjectModificationSpecificArea);
+        TempData.Remove(TempDataKeys.AreaOfChangeId);
+        TempData.Remove(TempDataKeys.SpecificAreaOfChangeId);
+
+        // Indicate that the project overview is being shown
+        TempData[TempDataKeys.ProjectOverview] = true;
+
+        if (projectRecordId is not null && categoryId is not null)
+        {
+            return await GetProjectOverview(projectRecordId, categoryId);
+        }
 
         // Build the model using values from TempData, falling back to defaults if not present
         var model = new ProjectOverviewModel
         {
             ProjectTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
             CategoryId = QuestionCategories.ProjectRecrod, //TempData.Peek(TempDataKeys.CategoryId) as string ?? string.Empty,
-            ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty
+            ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty,
+            ProjectPlannedEndDate = TempData.Peek(TempDataKeys.ProjectPlannedEndDate) as string ?? string.Empty
         };
 
-        // Indicate that the project overview is being shown
-        TempData[TempDataKeys.ProjectOverview] = true;
         return View(model);
     }
 
@@ -305,5 +314,97 @@ public class ApplicationController
     public IActionResult Error()
     {
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+    }
+
+    /// <summary>
+    /// Retrieves and displays the project overview for a given project record and category.
+    /// Fetches the project record and respondent answers, populates TempData with key details,
+    /// and returns the ProjectOverview view with a populated model.
+    /// </summary>
+    /// <param name="projectRecordId">The unique identifier for the project record.</param>
+    /// <param name="categoryId">The unique identifier for the question category.</param>
+    /// <returns>
+    /// An <see cref="IActionResult"/> that renders the ProjectOverview view with the project details,
+    /// or an error view if the project record or answers are not found or a service error occurs.
+    /// </returns>
+    [NonAction]
+    public async Task<IActionResult> GetProjectOverview(string projectRecordId, string categoryId)
+    {
+        // Retrieve the project record by its ID
+        var projectRecordResponse = await applicationsService.GetProjectRecord(projectRecordId);
+
+        // If the service call failed, return a generic service error view
+        if (!projectRecordResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(projectRecordResponse);
+        }
+
+        var projectRecord = projectRecordResponse.Content;
+
+        if (projectRecord == null)
+        {
+            // Return a 404 error view if the project record is not found
+            return View("Error", new ProblemDetails()
+            {
+                Title = ReasonPhrases.GetReasonPhrase(StatusCodes.Status404NotFound),
+                Detail = "Project record not found",
+                Status = StatusCodes.Status404NotFound,
+                Instance = Request.Path
+            });
+        }
+
+        // Get all respondent answers for the project and category
+        var respondentAnswersResponse = await respondentService.GetRespondentAnswers(projectRecordId, categoryId);
+
+        if (!respondentAnswersResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(respondentAnswersResponse);
+        }
+
+        var answers = respondentAnswersResponse.Content;
+
+        if (answers == null)
+        {
+            // Return a 404 error view if no responses are found for the project record
+            return View("Error", new ProblemDetails()
+            {
+                Title = ReasonPhrases.GetReasonPhrase(StatusCodes.Status404NotFound),
+                Detail = "No responses found for the project record",
+                Status = StatusCodes.Status404NotFound,
+                Instance = Request.Path
+            });
+        }
+
+        TempData.TryAdd(TempDataKeys.ProjectRecordResponses, answers, true);
+
+        // Extract key answers from the respondent answers
+        var titleAnswer = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.ShortProjectTitle)?.AnswerText;
+        var endDateAnswer = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.ProjectPlannedEndDate)?.AnswerText;
+
+        // Populate TempData with project details
+        TempData[TempDataKeys.IrasId] = projectRecord.IrasId;
+        TempData[TempDataKeys.ProjectRecordId] = projectRecord.Id;
+
+        if (!string.IsNullOrWhiteSpace(titleAnswer))
+        {
+            TempData[TempDataKeys.ShortProjectTitle] = titleAnswer;
+        }
+
+        var ukCulture = new CultureInfo("en-GB");
+        if (DateTime.TryParse(endDateAnswer, ukCulture, DateTimeStyles.None, out var parsedDate))
+        {
+            TempData[TempDataKeys.ProjectPlannedEndDate] = parsedDate.ToString("dd MMMM yyyy");
+        }
+
+        // Build the model using values from TempData, falling back to defaults if not present
+        var model = new ProjectOverviewModel
+        {
+            ProjectTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
+            CategoryId = QuestionCategories.ProjectRecrod,
+            ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty,
+            ProjectPlannedEndDate = TempData.Peek(TempDataKeys.ProjectPlannedEndDate) as string ?? string.Empty
+        };
+
+        return View("ProjectOverview", model);
     }
 }

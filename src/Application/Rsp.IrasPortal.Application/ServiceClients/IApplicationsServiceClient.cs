@@ -17,7 +17,7 @@ public interface IApplicationsServiceClient
     /// <param name="applicationId">Application Id</param>
     /// <returns>An asynchronous operation that returns a saved application.</returns>
     [Get("/applications/{applicationId}")]
-    public Task<ApiResponse<IrasApplicationResponse>> GetApplication(string applicationId);
+    public Task<ApiResponse<IrasApplicationResponse>> GetProjectRecord(string applicationId);
 
     /// <summary>
     /// Gets all the saved applications

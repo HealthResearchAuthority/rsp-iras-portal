@@ -19,4 +19,9 @@ public class ProjectOverviewModel
     /// Gets or sets the unique record identifier for the project.
     /// </summary>
     public string? ProjectRecordId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the planned end date of the project.
+    /// </summary>
+    public string? ProjectPlannedEndDate { get; set; }
 }

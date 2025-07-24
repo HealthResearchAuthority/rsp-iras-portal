@@ -1,10 +1,10 @@
 ﻿using System.Net;
 using System.Text.Json;
 using FluentValidation;
-using FluentValidation.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.WebUtilities;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
@@ -13,6 +13,7 @@ using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
+using ValidationResult = FluentValidation.Results.ValidationResult;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
@@ -24,8 +25,10 @@ namespace Rsp.IrasPortal.Web.Controllers;
 public class ProjectModificationController
 (
     IProjectModificationsService projectModificationsService,
+    IRespondentService respondentService,
     IValidator<AreaOfChangeViewModel> areaofChangeValidator,
-    IValidator<SearchOrganisationViewModel> searchOrganisationValidator
+    IValidator<SearchOrganisationViewModel> searchOrganisationValidator,
+    IValidator<DateViewModel> dateViewModelValidator
 ) : Controller
 {
     /// <summary>
@@ -132,7 +135,7 @@ public class ProjectModificationController
             AreaOfChangeOptions = response.Content
                 .Select(a => new SelectListItem { Value = a.Id.ToString(), Text = a.Name })
                 .Prepend(new SelectListItem { Value = "", Text = "Select area of change" }),
-            SpecificChangeOptions = new List<SelectListItem> { new SelectListItem { Value = "", Text = "Select specific change" } }
+            SpecificChangeOptions = [new SelectListItem { Value = "", Text = "Select specific change" }]
         };
 
         // Populate the dropdown options based on any existing selections
@@ -195,6 +198,9 @@ public class ProjectModificationController
         if (modificationId is Guid newGuid && newGuid != Guid.Empty)
         {
             await SaveModificationChange(model, newGuid);
+
+            TempData[TempDataKeys.AreaOfChangeId] = model.AreaOfChangeId;
+            TempData[TempDataKeys.SpecificAreaOfChangeId] = model.SpecificChangeId;
         }
 
         // Retrieve the journey type from the selected specific change
@@ -235,7 +241,8 @@ public class ProjectModificationController
             ShortTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
             IrasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty,
             ModificationIdentifier = TempData.Peek(TempDataKeys.ProjectModificationIdentifier) as string ?? string.Empty,
-            PageTitle = TempData.Peek(TempDataKeys.SpecificAreaOfChangeText) as string ?? string.Empty
+            PageTitle = TempData.Peek(TempDataKeys.SpecificAreaOfChangeText) as string ?? string.Empty,
+            CurrentPlannedEndDate = TempData.Peek(TempDataKeys.ProjectPlannedEndDate) as string ?? string.Empty
         };
 
         // Retrieve the current planned end date from TempData
@@ -260,6 +267,99 @@ public class ProjectModificationController
 
         // If there are validation errors, repopulate dropdowns from session
         return View(nameof(SearchOrganisation), model);
+    }
+
+    /// <summary>
+    /// Handles the POST request to save the new planned end date for a project modification.
+    /// Validates the input date, builds the modification answers request, and saves the response.
+    /// Returns an error view if validation fails or the original response cannot be found.
+    /// </summary>
+    /// <param name="model">The view model containing the new planned end date.</param>
+    /// <returns>Redirects to the project overview on success, or returns the planned end date view with errors.</returns>
+    [HttpPost]
+    public async Task<IActionResult> SavePlannedEndDate(PlannedEndDateViewModel model)
+    {
+        // Create a validation context for the new planned end date
+        var validationContext = new ValidationContext<DateViewModel>(model.NewPlannedEndDate);
+
+        // Override the property name for validation messages
+        validationContext.RootContextData[ValidationKeys.PropertyName] = "NewPlannedEndDate.Date";
+
+        // Validate the date if any date component was provided
+        if (model.NewPlannedEndDate.Day is not null ||
+            model.NewPlannedEndDate.Month is not null ||
+            model.NewPlannedEndDate.Year is not null)
+        {
+            var validationResult = await dateViewModelValidator.ValidateAsync(validationContext);
+
+            if (!validationResult.IsValid)
+            {
+                foreach (var error in validationResult.Errors)
+                {
+                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                }
+
+                // Return the view with validation errors
+                return View(nameof(PlannedEndDate), model);
+            }
+        }
+
+        // Retrieve previous respondent answers from TempData
+        TempData.TryGetValue(TempDataKeys.ProjectRecordResponses, out IEnumerable<RespondentAnswerDto>? projectRecordResponses, true);
+
+        // Get required modification data for saving the planned end date
+        var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
+        var projectModificationChangeId = TempData.Peek(TempDataKeys.ProjectModificationChangeId);
+        var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty;
+
+        // Build the request to save modification answers
+        var request = new ProjectModificationAnswersRequest
+        {
+            ProjectModificationChangeId = projectModificationChangeId == null ? Guid.Empty : (Guid)projectModificationChangeId!,
+            ProjectRecordId = projectRecordId,
+            ProjectPersonnelId = respondentId
+        };
+
+        // Find the original response for the planned end date question
+        var respondedAnswer = projectRecordResponses?.FirstOrDefault(r => r.QuestionId == QuestionIds.ProjectPlannedEndDate);
+
+        if (respondedAnswer == null)
+        {
+            // Return an error view if the original response cannot be found
+            return View("Error", new ProblemDetails
+            {
+                Title = ReasonPhrases.GetReasonPhrase(StatusCodes.Status400BadRequest),
+                Detail = "Unable to save the new planned end date. Couldn't find the original response",
+                Status = StatusCodes.Status400BadRequest,
+                Instance = Request.Path
+            });
+        }
+
+        // Add the new planned end date answer to the request
+        request.ModificationAnswers.Add(new RespondentAnswerDto
+        {
+            QuestionId = respondedAnswer.QuestionId,
+            VersionId = respondedAnswer.VersionId,
+            AnswerText = model.NewPlannedEndDate.Date?.ToString("dd MMMM yyyy"),
+            CategoryId = QuestionCategories.ProjectModification,
+            SectionId = respondedAnswer.SectionId
+        });
+
+        // Save the modification answers using the respondent service
+        var saveModificationAnswersResponse = await respondentService.SaveModificationAnswers(request);
+
+        if (!saveModificationAnswersResponse.IsSuccessStatusCode)
+        {
+            // Return a service error view if saving fails
+            return this.ServiceError(saveModificationAnswersResponse);
+        }
+
+        // Redirect to the project overview on success
+        // TODO: Implement next steps for "Save and continue"
+        // At the moment both "Save and continue" and "Save for later" redirect to
+        // ProjectOverview. Further steps for "Save and continue" will be implemented in next
+        // story
+        return RedirectToRoute("app:projectoverview");
     }
 
     /// <summary>
