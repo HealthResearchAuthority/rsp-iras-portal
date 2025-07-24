@@ -643,6 +643,28 @@ dialog[open] {
   transform: rotate(-135deg);
 }
 
+.search-filter-section__summary:hover .search-filter-section__summary-heading {
+  text-decoration: underline;
+  text-underline-offset: 0.1578em;
+  text-decoration-thickness: max(3px, 0.1875rem, 0.12em);
+  -webkit-text-decoration-skip-ink: none;
+  text-decoration-skip-ink: none;
+  -webkit-text-decoration-skip: none;
+  text-decoration-skip: none;
+}
+
+.search-filter-section__summary:focus .search-filter-section__summary-heading {
+  background-color: #fd0;
+  outline: 3px solid rgba(0, 0, 0, 0);
+  color: #0b0c0c;
+  box-shadow: 0 -2px #fd0, 0 4px #0b0c0c;
+  text-decoration: none;
+}
+
+.search-filter-section__summary:focus-visible {
+  outline: none;
+}
+
 .search-filter-section__summary-heading {
   font-weight: 700;
   font-size: 1.1875rem;
