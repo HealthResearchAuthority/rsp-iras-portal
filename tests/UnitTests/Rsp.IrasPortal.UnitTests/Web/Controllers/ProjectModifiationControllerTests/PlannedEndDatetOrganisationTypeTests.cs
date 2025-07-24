@@ -38,6 +38,17 @@ public class PlannedEndDatetOrganisationTypeTests : TestServiceBase<ProjectModif
         model.IrasId.ShouldBe(expectedIrasId);
         model.ModificationIdentifier.ShouldBe(expectedModId);
         model.PageTitle.ShouldBe(expectedPageTitle);
+
+        // Ensure OrganisationTypes dictionary contains expected keys and values
+        PlannedEndDateOrganisationTypeViewModel.OrganisationTypes.ShouldContainKey("OPT0025");
+        PlannedEndDateOrganisationTypeViewModel.OrganisationTypes["OPT0025"].ShouldBe("NHS/HSC");
+
+        PlannedEndDateOrganisationTypeViewModel.OrganisationTypes.ShouldContainKey("OPT0026");
+        PlannedEndDateOrganisationTypeViewModel.OrganisationTypes["OPT0026"].ShouldBe("Non-NHS/HSC");
+
+        // Validate default SelectedOrganisationTypes list is initialized
+        model.SelectedOrganisationTypes.ShouldNotBeNull();
+        model.SelectedOrganisationTypes.ShouldBeEmpty();
     }
 
     [Fact]
