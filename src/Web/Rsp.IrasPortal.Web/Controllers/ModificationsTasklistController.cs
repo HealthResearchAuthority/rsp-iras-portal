@@ -42,7 +42,7 @@ public class ModificationsTasklistController(IApplicationsService applicationsSe
 
         var searchQuery = new ModificationSearchRequest()
         {
-            Country = ["England"],
+            LeadNation = ["England"],
             ShortProjectTitle = model.Search.ShortProjectTitle,
             FromDate = model.Search.FromDate,
             ToDate = model.Search.ToDate,

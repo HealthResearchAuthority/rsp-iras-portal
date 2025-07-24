@@ -8,6 +8,7 @@ public class ModificationSearchRequest
     public string? SponsorOrganisation { get; set; }
     public DateTime? FromDate { get; set; }
     public DateTime? ToDate { get; set; }
-    public List<string> Country { get; set; } = [];
+    public List<string> LeadNation { get; set; } = [];
+    public List<string> ParticipatingNation { get; set; } = [];
     public List<string> ModificationTypes { get; set; } = [];
 }
