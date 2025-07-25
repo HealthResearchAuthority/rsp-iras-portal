@@ -682,9 +682,7 @@ public class QuestionnaireController
         role ??= OrganisationRoles.Sponsor;
 
         // Fetch organisations from the RTS service, with or without pagination.
-        var searchResponse = pageSize is null ?
-            await rtsService.GetOrganisations(model.SponsorOrgSearch.SearchText!, role) :
-            await rtsService.GetOrganisations(model.SponsorOrgSearch.SearchText, role, pageSize.Value);
+        var searchResponse = await rtsService.GetOrganisationsByName(model.SponsorOrgSearch.SearchText, role, null, pageSize);
 
         // Handle error response from the service.
         if (!searchResponse.IsSuccessStatusCode || searchResponse.Content == null)

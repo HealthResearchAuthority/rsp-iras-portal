@@ -13,11 +13,8 @@ public class SearchOrganisationViewModel : BaseProjectModificationViewModel
     /// </summary>
     public string? SearchTerm { get; set; }
 
-    // TEMP - FOR CHANGE TO ORGANIZATIONS
-    public List<string> SelectedModificationIds { get; set; } = [];
-
-    public UserSearchModel Search { get; set; } = new();
-
-    public IEnumerable<UserViewModel> Organisations { get; set; } = [];
+    public ApprovalsSearchModel Search { get; set; } = new();
+    public IEnumerable<TaskListOrganisationViewModel> Organisations { get; set; } = [];
+    public List<string> SelectedOrganisationIds { get; set; } = [];
     public PaginationViewModel? Pagination { get; set; }
 }

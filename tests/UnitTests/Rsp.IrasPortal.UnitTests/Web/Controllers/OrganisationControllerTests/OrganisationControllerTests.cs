@@ -12,7 +12,7 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.OrganisationControllerTests;
 public class OrganisationControllerTests : TestServiceBase<OrganisationController>
 {
     [Fact]
-    public async Task GetOrganisations_ShouldReturnOk_WhenServiceReturnsSuccess()
+    public async Task GetOrganisationsByName_ShouldReturnOk_WhenServiceReturnsSuccess()
     {
         // Arrange
         var name = "TestOrg";
@@ -28,7 +28,7 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
 
         Mocker
             .GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisations(name, role))
+            .Setup(s => s.GetOrganisationsByName(name, role, null, null))
             .ReturnsAsync
             (
                 new ServiceResponse<OrganisationSearchResponse>()
@@ -36,15 +36,15 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
             );
 
         // Act
-        var result = await Sut.GetOrganisations(name, role, null);
+        var result = await Sut.GetOrganisationsByName(name, role, null, null);
 
         // Assert
         var okResult = result.ShouldBeOfType<OkObjectResult>();
-        okResult.Value.ShouldBe(searchResponse.Organisations.Select(o => o.Name));
+        okResult.Value.ShouldBe(searchResponse);
     }
 
     [Fact]
-    public async Task GetOrganisations_ShouldReturnServiceError_WhenServiceFails()
+    public async Task GetOrganisationsByName_ShouldReturnServiceError_WhenServiceFails()
     {
         // Arrange
         var name = "TestOrg";
@@ -52,7 +52,7 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
 
         Mocker
             .GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisations(name, role))
+            .Setup(s => s.GetOrganisationsByName(name, role, null, null))
             .ReturnsAsync
             (
                 new ServiceResponse<OrganisationSearchResponse>()
@@ -68,7 +68,7 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
         };
 
         // Act
-        var result = await Sut.GetOrganisations(name, role, null);
+        var result = await Sut.GetOrganisationsByName(name, role, null, null);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
