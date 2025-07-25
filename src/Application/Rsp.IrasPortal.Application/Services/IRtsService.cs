@@ -12,21 +12,23 @@ namespace Rsp.IrasPortal.Application.Services;
 public interface IRtsService : IInterceptable
 {
     /// <summary>
-    /// Gets the organisations by name and role
+    /// Gets the organisations by name and role with optional pagination
     /// </summary>
-    /// <param name="name">Organisation name</param>
-    /// <param name="role">Role of the Organisation</param>
+    /// <param name="name">The name or partial name of the organisation to search for.</param>
+    /// <param name="role">Optional role to filter organisations by.</param>
+    /// <param name="pageIndex">Index (1-based) of page for paginated results.</param>
+    /// <param name="pageSize">Optional maximum number of results to return.</param>
     /// <returns>An asynchronous operation that returns organisations.</returns>
-    public Task<ServiceResponse<OrganisationSearchResponse>> GetOrganisations(string name, string? role);
+    public Task<ServiceResponse<OrganisationSearchResponse>> GetOrganisationsByName(string name, string? role, int? pageIndex = 1, int? pageSize = 10);
 
     /// <summary>
-    /// Gets the specified number of organisations by name and role
+    /// Gets all organisations, with optional role filtering and paging.
     /// </summary>
-    /// <param name="name">Organisation name</param>
-    /// <param name="role">Role of the Organisation</param>
-    /// <param name="pageSize">Page size</param>
+    /// <param name="role">Optional role to filter organisations by.</param>
+    /// <param name="pageIndex">Index (1-based) of page for paginated results.</param>
+    /// <param name="pageSize">Optional maximum number of results to return.</param>
     /// <returns>An asynchronous operation that returns organisations.</returns>
-    public Task<ServiceResponse<OrganisationSearchResponse>> GetOrganisations(string name, string? role, int pageSize);
+    public Task<ServiceResponse<OrganisationSearchResponse>> GetOrganisations(string? role, int? pageIndex = 1, int? pageSize = 10);
 
     /// <summary>
     /// Gets the organisation by Id

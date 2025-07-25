@@ -26,28 +26,30 @@ public class RtsService(IRtsServiceClient rtsServiceClient) : IRtsService
     }
 
     /// <summary>
-    /// Retrieves a list of organisations filtered by name and optionally by role.
+    /// Gets all organisations, with optional role filtering and paging.
     /// </summary>
-    /// <param name="name">The name of the organisation to search for.</param>
-    /// <param name="role">The optional role of the organisation to filter by.</param>
-    /// <returns>A service response containing a list of organisations.</returns>
-    public async Task<ServiceResponse<OrganisationSearchResponse>> GetOrganisations(string name, string? role)
+    /// <param name="role">Optional role to filter organisations by.</param>
+    /// <param name="pageIndex">Index (1-based) of page for paginated results.</param>
+    /// <param name="pageSize">Optional maximum number of results to return.</param>
+    /// <returns>An asynchronous operation that returns organisations.</returns>
+    public async Task<ServiceResponse<OrganisationSearchResponse>> GetOrganisations(string? role, int? pageIndex, int? pageSize)
     {
-        var apiResponse = await rtsServiceClient.GetOrganisations(name, role);
+        var apiResponse = await rtsServiceClient.GetOrganisations(role, pageIndex, pageSize);
 
         return apiResponse.ToServiceResponse();
     }
 
     /// <summary>
-    /// Retrieves a paginated list of organisations filtered by name and optionally by role.
+    /// Gets the organisations by name and role with optional pagination
     /// </summary>
-    /// <param name="name">The name of the organisation to search for.</param>
-    /// <param name="role">The optional role of the organisation to filter by.</param>
-    /// <param name="pageSize">The number of organisations to retrieve per page.</param>
-    /// <returns>A service response containing a paginated list of organisations.</returns>
-    public async Task<ServiceResponse<OrganisationSearchResponse>> GetOrganisations(string name, string? role, int pageSize)
+    /// <param name="name">The name or partial name of the organisation to search for.</param>
+    /// <param name="role">Optional role to filter organisations by.</param>
+    /// <param name="pageIndex">Index (1-based) of page for paginated results.</param>
+    /// <param name="pageSize">Optional maximum number of results to return.</param>
+    /// <returns>An asynchronous operation that returns organisations.</returns>
+    public async Task<ServiceResponse<OrganisationSearchResponse>> GetOrganisationsByName(string name, string? role, int? pageIndex, int? pageSize)
     {
-        var apiResponse = await rtsServiceClient.GetOrganisations(name, role, pageSize);
+        var apiResponse = await rtsServiceClient.GetOrganisationsByName(name, role, pageIndex, pageSize);
 
         return apiResponse.ToServiceResponse();
     }
