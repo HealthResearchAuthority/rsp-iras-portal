@@ -148,6 +148,29 @@ public class RemoveFiltersTests : TestServiceBase<ApprovalsController>
     }
 
     [Fact]
+    public async Task RemoveFilter_ParticipatingNation_ShouldRemoveValue_AndRedirect()
+    {
+        var model = new ApprovalsSearchModel
+        {
+            ParticipatingNation = new List<string> { "England", "Wales" }
+        };
+        SetTempData(new Dictionary<string, object?>
+        {
+            { TempDataKeys.ApprovalsSearchModel, JsonSerializer.Serialize(model) }
+        });
+        SetupValidValidator();
+
+        var result = await Sut.RemoveFilter("participatingnation", "Wales");
+
+        result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Search");
+
+        var updated =
+            JsonSerializer.Deserialize<ApprovalsSearchModel>(
+                Sut.TempData[TempDataKeys.ApprovalsSearchModel]!.ToString()!)!;
+        updated.ParticipatingNation.ShouldBe(new List<string> { "England" });
+    }
+
+    [Fact]
     public async Task RemoveFilter_ModificationType_ShouldRemoveValue_AndRedirect()
     {
         var model = new ApprovalsSearchModel
