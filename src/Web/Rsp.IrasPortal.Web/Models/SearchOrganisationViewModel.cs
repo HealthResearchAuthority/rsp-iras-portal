@@ -8,13 +8,8 @@ namespace Rsp.IrasPortal.Web.Models;
 /// </summary>
 public class SearchOrganisationViewModel : BaseProjectModificationViewModel
 {
-    /// <summary>
-    /// Gets or sets the search term entered by the user to find an organisation.
-    /// </summary>
-    public string? SearchTerm { get; set; }
-
-    public ApprovalsSearchModel Search { get; set; } = new();
-    public IEnumerable<TaskListOrganisationViewModel> Organisations { get; set; } = [];
+    public OrganisationSearchModel Search { get; set; } = new();
+    public IEnumerable<SelectableOrganisationViewModel> Organisations { get; set; } = [];
     public List<string> SelectedOrganisationIds { get; set; } = [];
     public PaginationViewModel? Pagination { get; set; }
 }
