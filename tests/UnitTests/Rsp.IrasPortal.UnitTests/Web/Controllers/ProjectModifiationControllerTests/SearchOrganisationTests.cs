@@ -16,14 +16,14 @@ public class SearchOrganisationTests : TestServiceBase<ProjectModificationContro
         {
             Search = new OrganisationSearchModel
             {
-                SearchNameTerm = ""
+                SearchNameTerm = "ab"
             }
         };
 
         Mocker
             .GetMock<IValidator<SearchOrganisationViewModel>>()
             .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<SearchOrganisationViewModel>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new FluentValidation.Results.ValidationResult(new[] { new ValidationFailure(nameof(model.Search.SearchNameTerm), "Search term is required") }));
+            .ReturnsAsync(new FluentValidation.Results.ValidationResult(new[] { new ValidationFailure(nameof(model.Search.SearchNameTerm), "Provide 3 or more characters to search") }));
 
         // Act
         var result = await Sut.SearchOrganisation(model);
@@ -36,6 +36,6 @@ public class SearchOrganisationTests : TestServiceBase<ProjectModificationContro
         returnedModel.Search.SearchNameTerm.ShouldBe("");
 
         Sut.ModelState.ContainsKey(nameof(model.Search.SearchNameTerm)).ShouldBeTrue();
-        Sut.ModelState[nameof(model.Search.SearchNameTerm)]!.Errors.ShouldContain(e => e.ErrorMessage == "Search term is required");
+        Sut.ModelState[nameof(model.Search.SearchNameTerm)]!.Errors.ShouldContain(e => e.ErrorMessage == "Provide 3 or more characters to search");
     }
 }
