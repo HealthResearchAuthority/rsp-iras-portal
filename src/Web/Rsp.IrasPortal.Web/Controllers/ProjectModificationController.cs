@@ -316,7 +316,7 @@ public class ProjectModificationController
         }
 
         TempData[TempDataKeys.OrganisationSearchModel] = JsonSerializer.Serialize(model.Search);
-        return RedirectToAction(nameof(SearchOrganisation));
+        return RedirectToAction(nameof(ParticipatingOrganisation));
     }
 
     /// <summary>
