@@ -99,13 +99,13 @@
                                         <div class="search-filter-section__content">
                                             <div class="govuk-form-group govuk-!-margin-bottom-2">
                                                 <fieldset class="govuk-fieldset">                                                    
-                                                    <rsp-gds-checkbox-group asp-for="Search.Country"
+                                                    <rsp-gds-checkbox-group asp-for="Search.LeadNation"
                                                                             label-text="Select all that apply"
                                                                             options="OrganisationTypes.Types"
                                                                             conditional-field="false"
                                                                             legend-class="govuk-label govuk-label--s font-weight-none"
                                                                             hint-id="country-hint"
-                                                                            hint-html="@($"{Model.Search.Country?.Count ?? 0} selected")" />
+                                                                            hint-html="@($"{Model.Search.LeadNation?.Count ?? 0} selected")" />
                                                 </fieldset>
                                             </div>
                                         </div>
@@ -119,13 +119,13 @@
                                         <div class="search-filter-section__content">
                                             <div class="govuk-form-group govuk-!-margin-bottom-2">
                                                 <fieldset class="govuk-fieldset">
-                                                    <rsp-gds-checkbox-group asp-for="Search.Country"
+                                                    <rsp-gds-checkbox-group asp-for="Search.LeadNation"
                                                                             label-text="Select all that apply"
                                                                             options="UkCountryNames.Countries"
                                                                             conditional-field="false"
                                                                             legend-class="govuk-label govuk-label--s font-weight-none"
                                                                             hint-id="country-hint"
-                                                                            hint-html="@($"{Model.Search.Country?.Count ?? 0} selected")" />
+                                                                            hint-html="@($"{Model.Search.LeadNation?.Count ?? 0} selected")" />
                                                 </fieldset>
                                             </div>
                                         </div>
