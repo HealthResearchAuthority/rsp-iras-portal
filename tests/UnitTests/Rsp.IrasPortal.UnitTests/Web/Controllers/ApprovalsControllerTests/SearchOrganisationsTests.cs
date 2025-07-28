@@ -84,7 +84,7 @@ public class SearchOrganisationsTests : TestServiceBase<ApprovalsController>
             TotalCount = 2
         };
 
-        _mockRtsService.Setup(x => x.GetOrganisations("Health Org", OrganisationRoles.Sponsor))
+        _mockRtsService.Setup(x => x.GetOrganisationsByName("Health Org", OrganisationRoles.Sponsor, null, null))
             .ReturnsAsync(new ServiceResponse<OrganisationSearchResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -102,7 +102,6 @@ public class SearchOrganisationsTests : TestServiceBase<ApprovalsController>
         var redirect = result.ShouldBeOfType<RedirectResult>();
         redirect.Url.ShouldBe("/approvals/search");
 
-    
         Sut.TempData[TempDataKeys.SponsorOrgSearched].ShouldBe("searched:true");
 
         var deserialized = JsonSerializer.Deserialize<ApprovalsSearchModel>(
@@ -131,7 +130,7 @@ public class SearchOrganisationsTests : TestServiceBase<ApprovalsController>
             }
         };
 
-        _mockRtsService.Setup(x => x.GetOrganisations("FailOrg", OrganisationRoles.Sponsor))
+        _mockRtsService.Setup(x => x.GetOrganisationsByName("FailOrg", OrganisationRoles.Sponsor, null, null))
             .ReturnsAsync(new ServiceResponse<OrganisationSearchResponse>
             {
                 StatusCode = HttpStatusCode.InternalServerError,
