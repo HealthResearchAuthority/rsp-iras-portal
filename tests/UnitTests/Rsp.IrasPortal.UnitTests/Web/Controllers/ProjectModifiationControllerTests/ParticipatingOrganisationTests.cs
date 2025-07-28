@@ -2,6 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.Responses;
+using Rsp.IrasPortal.Application.Responses;
+using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Controllers;
 using Rsp.IrasPortal.Web.Models;
 
@@ -27,7 +31,7 @@ public class ParticipatingOrganisationTests : TestServiceBase<ProjectModificatio
         };
 
         // Act
-        var result = Sut.ParticipatingOrganisation();
+        var result = await Sut.ParticipatingOrganisation();
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -47,7 +51,7 @@ public class ParticipatingOrganisationTests : TestServiceBase<ProjectModificatio
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
 
         // Act
-        var result = Sut.ParticipatingOrganisation();
+        var result = await Sut.ParticipatingOrganisation();
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -58,5 +62,105 @@ public class ParticipatingOrganisationTests : TestServiceBase<ProjectModificatio
         model.IrasId.ShouldBeEmpty();
         model.ModificationIdentifier.ShouldBeEmpty();
         model.PageTitle.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task ParticipatingOrganisation_ReturnsCorrectView_WithSearchTerm_UsingMockedJson()
+    {
+        // Arrange
+        const string expectedSearchTerm = "Hospital";
+        const string mockedJson = """
+        {
+            "SearchNameTerm": "Hospital"
+        }
+        """;
+
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ShortProjectTitle] = "ASPIRE",
+            [TempDataKeys.IrasId] = "220360",
+            [TempDataKeys.ProjectModificationIdentifier] = "220360/1",
+            [TempDataKeys.SpecificAreaOfChangeText] = "Addition of new sites",
+            [TempDataKeys.OrganisationSearchModel] = mockedJson
+        };
+
+        var searchResponse = new OrganisationSearchResponse
+        {
+            Organisations = new List<OrganisationDto>
+            {
+                new() { Id = "1", Name = "Hospital A", Address = "Address A", CountryName = "PL", Type = "Site" }
+            },
+            TotalCount = 1
+        };
+
+        Mocker
+            .GetMock<IRtsService>()
+            .Setup(s => s.GetOrganisationsByName(expectedSearchTerm, null, 1, 10))
+            .ReturnsAsync(
+                new ServiceResponse<OrganisationSearchResponse>()
+                    .WithContent(searchResponse, HttpStatusCode.OK)
+            );
+
+        // Act
+        var result = await Sut.ParticipatingOrganisation();
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.ViewName.ShouldBe("SearchOrganisation");
+
+        var model = viewResult.Model.ShouldBeOfType<SearchOrganisationViewModel>();
+        model.Search.SearchNameTerm.ShouldBe(expectedSearchTerm);
+        model.Organisations.First().Organisation.Name.ShouldBe("Hospital A");
+        model.Pagination!.TotalCount.ShouldBe(1);
+    }
+
+    [Theory]
+    [AutoData]
+    public async Task ParticipatingOrganisation_SetsPaginationCorrectly(
+    int totalCount,
+    int pageNumber,
+    int pageSize)
+    {
+        // Arrange
+        pageNumber = Math.Max(1, pageNumber % 10);
+        pageSize = Math.Max(1, pageSize % 50);
+
+        const string mockedJson = """
+        {
+            "SearchNameTerm": "Hospital"
+        }
+        """;
+
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.OrganisationSearchModel] = mockedJson
+        };
+
+        var response = new OrganisationSearchResponse
+        {
+            Organisations = new List<OrganisationDto>(),
+            TotalCount = totalCount
+        };
+
+        Mocker
+            .GetMock<IRtsService>()
+            .Setup(s => s.GetOrganisationsByName("Hospital", null, pageNumber, pageSize))
+            .ReturnsAsync(
+                new ServiceResponse<OrganisationSearchResponse>()
+                    .WithContent(response, HttpStatusCode.OK)
+            );
+
+        // Act
+        var result = await Sut.ParticipatingOrganisation(pageNumber, pageSize);
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var model = viewResult.Model.ShouldBeOfType<SearchOrganisationViewModel>();
+
+        model.Pagination.ShouldNotBeNull();
+        model.Pagination.PageNumber.ShouldBe(pageNumber);
+        model.Pagination.PageSize.ShouldBe(pageSize);
+        model.Pagination.TotalCount.ShouldBe(totalCount);
+        model.Pagination.FormName.ShouldBe("organisation-selection");
     }
 }

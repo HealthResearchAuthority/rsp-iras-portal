@@ -8,7 +8,7 @@ public class SearchOrganisationViewModelValidator : AbstractValidator<SearchOrga
     public SearchOrganisationViewModelValidator()
     {
         RuleFor(x => x.Search.SearchNameTerm)
-            .MinimumLength(3)
+            .Must(term => string.IsNullOrEmpty(term) || term.Length >= 3)
             .WithMessage("Provide 3 or more characters to search");
     }
 }
