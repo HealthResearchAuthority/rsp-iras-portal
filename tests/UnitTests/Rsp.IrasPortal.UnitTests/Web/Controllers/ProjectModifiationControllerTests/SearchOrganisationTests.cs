@@ -14,13 +14,16 @@ public class SearchOrganisationTests : TestServiceBase<ProjectModificationContro
         // Arrange
         var model = new SearchOrganisationViewModel
         {
-            SearchTerm = ""
+            Search = new OrganisationSearchModel
+            {
+                SearchNameTerm = ""
+            }
         };
 
         Mocker
             .GetMock<IValidator<SearchOrganisationViewModel>>()
             .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<SearchOrganisationViewModel>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new FluentValidation.Results.ValidationResult(new[] { new ValidationFailure(nameof(model.SearchTerm), "Search term is required") }));
+            .ReturnsAsync(new FluentValidation.Results.ValidationResult(new[] { new ValidationFailure(nameof(model.Search.SearchNameTerm), "Search term is required") }));
 
         // Act
         var result = await Sut.SearchOrganisation(model);
@@ -30,9 +33,9 @@ public class SearchOrganisationTests : TestServiceBase<ProjectModificationContro
         viewResult.ViewName.ShouldBe("SearchOrganisation");
 
         var returnedModel = viewResult.Model.ShouldBeOfType<SearchOrganisationViewModel>();
-        returnedModel.SearchTerm.ShouldBe("");
+        returnedModel.Search.SearchNameTerm.ShouldBe("");
 
-        Sut.ModelState.ContainsKey(nameof(model.SearchTerm)).ShouldBeTrue();
-        Sut.ModelState[nameof(model.SearchTerm)]!.Errors.ShouldContain(e => e.ErrorMessage == "Search term is required");
+        Sut.ModelState.ContainsKey(nameof(model.Search.SearchNameTerm)).ShouldBeTrue();
+        Sut.ModelState[nameof(model.Search.SearchNameTerm)]!.Errors.ShouldContain(e => e.ErrorMessage == "Search term is required");
     }
 }

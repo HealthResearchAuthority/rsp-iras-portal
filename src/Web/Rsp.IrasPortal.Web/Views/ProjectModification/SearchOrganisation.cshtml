@@ -58,9 +58,9 @@
 
                         <form asp-action="SearchOrganisation" method="post" novalidate>
 
-                            <div class="govuk-form-group govuk-!-margin-bottom-0 @(ViewData.ModelState.ContainsKey(nameof(Model.SearchTerm)) && ViewData.ModelState[nameof(Model.SearchTerm)]?.Errors?.Any() == true ? "govuk-form-group--error" : "")">
+                            <div class="govuk-form-group govuk-!-margin-bottom-0 @(ViewData.ModelState.ContainsKey(nameof(Model.Search.SearchNameTerm)) && ViewData.ModelState[nameof(Model.Search.SearchNameTerm)]?.Errors?.Any() == true ? "govuk-form-group--error" : "")">
 
-                                @if (ViewData.ModelState.TryGetValue(nameof(Model.SearchTerm), out var searchError) && searchError.Errors.Any())
+                                @if (ViewData.ModelState.TryGetValue(nameof(Model.Search.SearchNameTerm), out var searchError) && searchError.Errors.Any())
                                 {
                                     <p class="govuk-error-message">
                                         <span class="govuk-visually-hidden">Error:</span> @searchError.Errors.First().ErrorMessage
@@ -68,7 +68,7 @@
                                 }
 
                                 <div class="govuk-input__wrapper">
-                                    <input asp-for="SearchTerm" class="govuk-input" type="text" id="SearchTerm" />
+                                    <input asp-for="Search.SearchNameTerm" class="govuk-input" type="text" id="SearchTerm" />
                                     <button class="govuk-button mb-0 govuk-button--secondary" style="margin-left:10px" type="submit" name="action" value="search">
                                         Search
                                     </button>
@@ -99,13 +99,13 @@
                                         <div class="search-filter-section__content">
                                             <div class="govuk-form-group govuk-!-margin-bottom-2">
                                                 <fieldset class="govuk-fieldset">                                                    
-                                                    <rsp-gds-checkbox-group asp-for="Search.LeadNation"
+                                                    <rsp-gds-checkbox-group asp-for="Search.Country"
                                                                             label-text="Select all that apply"
                                                                             options="OrganisationTypes.Types"
                                                                             conditional-field="false"
                                                                             legend-class="govuk-label govuk-label--s font-weight-none"
                                                                             hint-id="country-hint"
-                                                                            hint-html="@($"{Model.Search.LeadNation?.Count ?? 0} selected")" />
+                                                                            hint-html="@($"{Model.Search.Country?.Count ?? 0} selected")" />
                                                 </fieldset>
                                             </div>
                                         </div>
@@ -119,13 +119,13 @@
                                         <div class="search-filter-section__content">
                                             <div class="govuk-form-group govuk-!-margin-bottom-2">
                                                 <fieldset class="govuk-fieldset">
-                                                    <rsp-gds-checkbox-group asp-for="Search.LeadNation"
+                                                    <rsp-gds-checkbox-group asp-for="Search.Country"
                                                                             label-text="Select all that apply"
                                                                             options="UkCountryNames.Countries"
                                                                             conditional-field="false"
                                                                             legend-class="govuk-label govuk-label--s font-weight-none"
                                                                             hint-id="country-hint"
-                                                                            hint-html="@($"{Model.Search.LeadNation?.Count ?? 0} selected")" />
+                                                                            hint-html="@($"{Model.Search.Country?.Count ?? 0} selected")" />
                                                 </fieldset>
                                             </div>
                                         </div>
@@ -141,8 +141,82 @@
                 </div>    
                 <div class="govuk-grid-row">
                     <div class="govuk-grid-column-full">
-                        @* TODO: TABLE *@
-                        @* <partial name="_PaginationForm" model="@Model.Pagination" />    *@
+                    @if (Model.Organisations != null && Model.Organisations.Any())
+                    {
+                        <div class="govuk-table-wrapper">
+                            <table class="govuk-table modifications-tasklist-table" id="organisationsTasklistTable">
+                                <thead class="govuk-table__head">
+                                    <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+                                        <th scope="col" class="govuk-table__header govuk-!-text-align-right checkbox-cell">
+                                            <div class="govuk-checkboxes__item govuk-checkboxes--small">
+                                                <input id="select-all-organisations" name="" class="govuk-checkboxes__input select-all-modifications" type="checkbox">
+                                                <label for="select-all-organisations" class="govuk-label govuk-checkboxes__label"></label>
+                                            </div>
+                                        </th>
+                                        @{
+                                            var sortableHeaders = new[]
+                                            {                                            
+                                                new { Field = nameof(OrganisationModel.Name), Label = "Name" },
+                                                new { Field = nameof(OrganisationModel.Address), Label = "Address" },
+                                                new { Field = nameof(OrganisationModel.Type), Label = "Organisation type" },
+                                                new { Field = nameof(OrganisationModel.CountryName), Label = "Country" }
+                                            };
+                                            var tableId = "organisationsTasklistTable";
+                                        }
+                                        @foreach (var header in sortableHeaders)
+                                        {
+                                            <th scope="col" class="govuk-table__header govuk-table__header-sortable">
+                                                <partial name="_SortableHeaderButton" model="new SortableHeaderModel
+                                                {
+                                                    FieldName = header.Field,
+                                                    DisplayText = header.Label,
+                                                    CurrentSortField = Model.Pagination?.SortField,
+                                                    CurrentSortDirection = Model.Pagination?.SortDirection,
+                                                    TableId = tableId,
+                                                }" />
+                                            </th>
+                                        }
+                                    </tr>
+                                </thead>
+                                <form method="get" id="organisation-selection">
+                                    <input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
+                                    <input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
+
+                                    <!--Keep track of selected organisations that are not displayed on this page for continuity-->
+                                    @foreach (var selectedMod in Model.SelectedOrganisationIds.Except(Model.Organisations.Select(m => m.Organisation.Id)))
+                                    {
+                                        <input hidden="hidden" type="text" value="@selectedMod" name="selectedOrganisationIds" />
+                                    }
+                                    <tbody class="govuk-table__body govuk-body-s">
+                                        @{
+                                            foreach (var organisation in Model.Organisations)
+                                            {
+                                                <tr class="govuk-table__row">
+                                                    <td class="govuk-table__cell checkbox-cell">
+                                                        <div class="govuk-checkboxes__item govuk-checkboxes--small">
+                                                            <input id="@organisation.Organisation.Id"
+                                                                        name="selectedOrganisationIds"
+                                                                        value="@organisation.Organisation.Id"
+                                                                        class="govuk-checkboxes__input child-checkbox"
+                                                                        type="checkbox"
+                                                                    @(organisation.IsSelected ? "checked" : "")>
+                                                            <label for="@organisation.Organisation.Id" class="govuk-label govuk-checkboxes__label modification-checkbox-label"></label>
+                                                        </div>
+                                                    </td>
+                                                    <td class="govuk-table__cell">@organisation.Organisation.Name</td>
+                                                    <td class="govuk-table__cell">@organisation.Organisation.Address</td>
+                                                    <td class="govuk-table__cell">@organisation.Organisation.Type</td>
+                                                    <td class="govuk-table__cell">@organisation.Organisation.CountryName</td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </form>
+                            </table>
+                        </div>
+                        <partial name="_PaginationForm" model="@Model.Pagination" />
+                    }                        
+
                         <details class="govuk-details mb-0">
                             <summary class="govuk-details__summary">
                                 <span class="govuk-details__summary-text">

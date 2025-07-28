@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Data;
+using System.Net;
 using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
@@ -11,6 +12,7 @@ using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
 using ValidationResult = FluentValidation.Results.ValidationResult;
@@ -26,6 +28,7 @@ public class ProjectModificationController
 (
     IProjectModificationsService projectModificationsService,
     IRespondentService respondentService,
+    IRtsService rtsService,
     IValidator<AreaOfChangeViewModel> areaofChangeValidator,
     IValidator<SearchOrganisationViewModel> searchOrganisationValidator,
     IValidator<DateViewModel> dateViewModelValidator,
@@ -216,17 +219,62 @@ public class ProjectModificationController
     /// Populates metadata from TempData.
     /// </summary>
     [HttpGet]
-    public IActionResult ParticipatingOrganisation()
+    public async Task<IActionResult> ParticipatingOrganisation(
+        int pageNumber = 1,
+        int pageSize = 10,
+        List<string>? selectedOrganisationIds = null)
     {
         var viewModel = new SearchOrganisationViewModel
         {
             ShortTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
             IrasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty,
             ModificationIdentifier = TempData.Peek(TempDataKeys.ProjectModificationIdentifier) as string ?? string.Empty,
-            PageTitle = TempData.Peek(TempDataKeys.SpecificAreaOfChangeText) as string ?? string.Empty
+            PageTitle = TempData.Peek(TempDataKeys.SpecificAreaOfChangeText) as string ?? string.Empty,
+            SelectedOrganisationIds = selectedOrganisationIds ?? []
         };
 
-        // Retrieve the current organisation search term from TempData
+        if (TempData.Peek(TempDataKeys.OrganisationSearchModel) is string json)
+        {
+            viewModel.Search = JsonSerializer.Deserialize<OrganisationSearchModel>(json)!;
+        }
+
+        ServiceResponse<OrganisationSearchResponse> response;
+        if (String.IsNullOrEmpty(viewModel.Search.SearchNameTerm))
+        {
+            response = await rtsService.GetOrganisations(null, pageNumber, pageSize);
+        }
+        else
+        {
+            response = await rtsService.GetOrganisationsByName(viewModel.Search.SearchNameTerm, null, pageNumber, pageSize);
+        }
+        viewModel.Organisations = response?.Content?.Organisations?.Select(dto => new SelectableOrganisationViewModel
+        {
+            Organisation = new OrganisationModel
+            {
+                Id = dto.Id,
+                Name = dto.Name,
+                Address = dto.Address,
+                CountryName = dto.CountryName,
+                Type = dto.Type
+            }
+        })
+        .ToList() ?? [];
+
+        foreach (var org in viewModel.Organisations)
+        {
+            if (selectedOrganisationIds?.Contains(org.Organisation.Id) == true)
+            {
+                org.IsSelected = true;
+            }
+        }
+
+        viewModel.Pagination = new PaginationViewModel(pageNumber, pageSize, response?.Content?.TotalCount ?? 0)
+        {
+            SortDirection = SortDirections.Ascending,
+            SortField = nameof(OrganisationModel.Name),
+            FormName = "organisation-selection"
+        };
+
         return View(nameof(SearchOrganisation), viewModel);
     }
 
@@ -264,10 +312,11 @@ public class ProjectModificationController
             {
                 ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
             }
+            return View(nameof(SearchOrganisation), model);
         }
 
-        // If there are validation errors, repopulate dropdowns from session
-        return View(nameof(SearchOrganisation), model);
+        TempData[TempDataKeys.OrganisationSearchModel] = JsonSerializer.Serialize(model.Search);
+        return RedirectToAction(nameof(SearchOrganisation));
     }
 
     /// <summary>

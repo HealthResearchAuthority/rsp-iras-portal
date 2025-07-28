@@ -7,7 +7,7 @@ public class SearchOrganisationViewModelValidator : AbstractValidator<SearchOrga
 {
     public SearchOrganisationViewModelValidator()
     {
-        RuleFor(x => x.SearchTerm)
+        RuleFor(x => x.Search.SearchNameTerm)
             .NotEmpty()
             .WithMessage("No participant organisations have been selected. Select at least one participant organisation before clicking 'Save and continue'.");
     }
