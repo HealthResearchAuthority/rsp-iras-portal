@@ -33,7 +33,7 @@ public class SearchOrganisationTests : TestServiceBase<ProjectModificationContro
         viewResult.ViewName.ShouldBe("SearchOrganisation");
 
         var returnedModel = viewResult.Model.ShouldBeOfType<SearchOrganisationViewModel>();
-        returnedModel.Search.SearchNameTerm.ShouldBe("");
+        returnedModel.Search.SearchNameTerm.ShouldBe("ab");
 
         Sut.ModelState.ContainsKey(nameof(model.Search.SearchNameTerm)).ShouldBeTrue();
         Sut.ModelState[nameof(model.Search.SearchNameTerm)]!.Errors.ShouldContain(e => e.ErrorMessage == "Provide 3 or more characters to search");
