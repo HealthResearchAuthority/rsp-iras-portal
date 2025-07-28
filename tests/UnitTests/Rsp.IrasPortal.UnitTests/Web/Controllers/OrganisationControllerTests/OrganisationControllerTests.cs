@@ -77,6 +77,71 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
     }
 
     [Fact]
+    public async Task GetOrganisations_ShouldReturnOk_WhenServiceReturnsSuccess()
+    {
+        // Arrange
+        var name = "TestOrg";
+        var role = "TestRole";
+
+        var searchResponse = new OrganisationSearchResponse
+        {
+            Organisations = [
+                new() { Id = "1", Name = "TestOrg1" },
+                new() { Id = "2", Name = "TestOrg2" }],
+            TotalCount = 2
+        };
+
+        Mocker
+            .GetMock<IRtsService>()
+            .Setup(s => s.GetOrganisations(role, null, null))
+            .ReturnsAsync
+            (
+                new ServiceResponse<OrganisationSearchResponse>()
+                    .WithContent(searchResponse, HttpStatusCode.OK)
+            );
+
+        // Act
+        var result = await Sut.GetOrganisations(role, null, null);
+
+        // Assert
+        var okResult = result.ShouldBeOfType<OkObjectResult>();
+        okResult.Value.ShouldBe(searchResponse);
+    }
+
+    [Fact]
+    public async Task GetOrganisations_ShouldReturnServiceError_WhenServiceFails()
+    {
+        // Arrange
+        var name = "TestOrg";
+        var role = "TestRole";
+
+        Mocker
+            .GetMock<IRtsService>()
+            .Setup(s => s.GetOrganisations(role, null, null))
+            .ReturnsAsync
+            (
+                new ServiceResponse<OrganisationSearchResponse>()
+                    .WithError("Error", "Service failed", HttpStatusCode.InternalServerError)
+            );
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Path = "/GetOrganisations";
+
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = httpContext
+        };
+
+        // Act
+        var result = await Sut.GetOrganisations(role, null, null);
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var problemDetails = viewResult.Model.ShouldBeOfType<ProblemDetails>();
+        problemDetails?.Status.ShouldBe((int)HttpStatusCode.InternalServerError);
+    }
+
+    [Fact]
     public async Task GetOrganisation_ShouldReturnOk_WhenServiceReturnsSuccess()
     {
         // OrganisationSearchResponse?ange
