@@ -87,4 +87,22 @@ public class ProjectModificationsService(IProjectModificationsServiceClient proj
 
         return apiResponse.ToServiceResponse();
     }
+
+    /// <summary>
+    /// Creates one or more project modification documents based on the provided request data.
+    /// </summary>
+    /// <param name="projectModificationDocumentRequest">
+    /// A list of <see cref="ProjectModificationDocumentRequest"/> objects containing the details of each document to be created,
+    /// such as file metadata, modification change identifiers, and document type associations.
+    /// </param>
+    /// <returns>
+    /// A <see cref="Task"/> representing the asynchronous operation,
+    /// containing a <see cref="ServiceResponse"/> indicating success or failure of the creation process.
+    /// </returns>
+    public async Task<ServiceResponse> CreateDocumentModification(List<ProjectModificationDocumentRequest> projectModificationDocumentRequest)
+    {
+        var apiResponse = await projectModificationsServiceClient.CreateModificationDocument(projectModificationDocumentRequest);
+
+        return apiResponse.ToServiceResponse();
+    }
 }
