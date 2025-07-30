@@ -31,6 +31,11 @@ public record QuestionsResponse
     public int Sequence { get; set; }
 
     /// <summary>
+    /// Indicates if the question is a modification question
+    /// </summary>
+    public bool IsModificationQuestion { get; set; }
+
+    /// <summary>
     /// Heading of the question e.g. 1, 2, 2a, 2b..
     /// </summary>
     public string Heading { get; set; } = null!;
@@ -83,7 +88,7 @@ public record QuestionsResponse
     /// <summary>
     /// Version of the question
     /// </summary>
-    public string? Version { get; set; }
+    public string? VersionId { get; set; }
 
     /// <summary>
     /// Short question text to display to the user

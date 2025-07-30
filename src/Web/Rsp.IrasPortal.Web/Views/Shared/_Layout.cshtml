@@ -35,6 +35,7 @@
     <link rel="stylesheet" href="~/css/main.css" asp-append-version="true" />
     <script src="~/lib/jquery/dist/jquery.js"></script>
     <script src="~/js/sessionTimeout.js"></script>
+    <script src="~/js/checkbox-counter.js"></script>
 </head>
 
 <body class="govuk-template__body">
@@ -64,6 +65,7 @@
         </script>
     </authorized>
 
+    <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">Skip to main content</a>
     <header class="govuk-header govuk-header--full-width-border" data-module="govuk-header">
         <div class="govuk-header__container govuk-width-container">
             <div class="govuk-header__logo">
@@ -198,7 +200,6 @@
 	<script src="~/lib/jquery/dist/jquery.js"></script>
 	<script src="~/assets/js/accessible-autocomplete.min.js"></script>
 	<script src="~/js/accessible-autocomplete-wrapper.js"></script>
-
 </body>
 
 @await RenderSectionAsync("FooterResources", false)

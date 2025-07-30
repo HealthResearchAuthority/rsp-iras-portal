@@ -45,7 +45,7 @@ public class MyApplicationsTests : TestServiceBase<ApplicationController>
             {
                 new()
                 {
-                    ApplicationId = "1234567890"
+                    Id = "1234567890"
                 }
             }
         };
@@ -158,6 +158,6 @@ public class MyApplicationsTests : TestServiceBase<ApplicationController>
         await Sut.MyApplications();
 
         // Assert
-        session.Verify(s => s.Remove(SessionKeys.Application), Times.Once);
+        session.Verify(s => s.Remove(SessionKeys.ProjectRecord), Times.Once);
     }
 }

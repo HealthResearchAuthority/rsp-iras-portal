@@ -1,4 +1,6 @@
-﻿using Rsp.IrasPortal.Application.DTOs.Requests;
+﻿using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.Logging.Interceptors;
@@ -14,9 +16,9 @@ public interface IApplicationsService : IInterceptable
     /// <summary>
     /// Gets the saved application by Id
     /// </summary>
-    /// <param name="applicationId">Application Id</param>
+    /// <param name="projectRecordId">Application Id</param>
     /// <returns>An asynchronous operation that returns a saved application.</returns>
-    public Task<ServiceResponse<IrasApplicationResponse>> GetApplication(string applicationId);
+    public Task<ServiceResponse<IrasApplicationResponse>> GetProjectRecord(string projectRecordId);
 
     /// <summary>
     /// Gets all the saved applications
@@ -47,6 +49,16 @@ public interface IApplicationsService : IInterceptable
     public Task<ServiceResponse<IEnumerable<IrasApplicationResponse>>> GetApplicationsByRespondent(string respondentId);
 
     /// <summary>
+    /// Gets all the saved applications for a respondent with pagination
+    /// </summary>
+    /// <param name="respondentId">Respondent Id associated with the application</param>
+    /// <param name="searchQuery">Optional search query to filter projects by title or description.</param>
+    /// <param name="pageIndex">Page number (1-based). Must be greater than 0.</param>
+    /// <param name="pageSize">Number of records per page. Must be greater than 0.</param>
+    /// <returns>An asynchronous operation that returns all the saved applications for a given respondent.</returns>
+    public Task<ServiceResponse<PaginatedResponse<IrasApplicationResponse>>> GetPaginatedApplicationsByRespondent(string respondentId, string? searchQuery, int pageIndex, int pageSize);
+
+    /// <summary>
     /// Creates a new application
     /// </summary>
     /// <param name="irasApplication">IrasApplication to be creadated</param>
@@ -59,4 +71,13 @@ public interface IApplicationsService : IInterceptable
     /// <param name="irasApplication">IrasApplication to be updated</param>
     /// <returns>An asynchronous operation that updates the existing application.</returns>
     public Task<ServiceResponse<IrasApplicationResponse>> UpdateApplication(IrasApplicationRequest irasApplication);
+
+    public Task<ServiceResponse<GetModificationsResponse>> GetModifications
+    (
+        ModificationSearchRequest searchQuery,
+        int pageNumber = 1,
+        int pageSize = 20,
+        string? sortField = nameof(ModificationsDto.ModificationId),
+        string? sortDirection = SortDirections.Descending
+    );
 }

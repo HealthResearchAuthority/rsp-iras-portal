@@ -13,7 +13,7 @@
         </div>
 
         <p class="govuk-body">
-            @Model.User.FirstName @Model.User.LastName has been sent an email confirming that they have been @(!Model.IsRemove ? "added to" : "removed from") @Model.ReviewBody.OrganisationName.
+            @Model.User.GivenName @Model.User.FamilyName has been sent an email confirming that they have been @(!Model.IsRemove ? "added to" : "removed from") @Model.ReviewBody.RegulatoryBodyName.
         </p>
 
         <p class="govuk-body">

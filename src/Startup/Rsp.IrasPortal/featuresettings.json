@@ -7,6 +7,7 @@
     "Action.ProceedToSubmit": true, // Show/Hide Proceed to Submit button
     "Logging.InterceptedLogging": true, // Intercepts the start/end of method calls if enabled
     "Auth.UseOneLogin": false, // Use OneLogin for authentication
-    "Auth.UseOneLoginClientSecret": true // Use OneLogin for authentication with Client Secret
+    "Auth.UseOneLoginClientSecret": true, // Use OneLogin for authentication with Client Secret
+    "UI.MyResearchPage": false // Show projects added to new service
   }
 }

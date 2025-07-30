@@ -10,23 +10,24 @@ namespace Rsp.IrasPortal.Application.ServiceClients;
 public interface IRtsServiceClient
 {
     /// <summary>
-    /// Gets the organisations by name and role
+    /// Gets all organisations, with optional role filtering and paging.
     /// </summary>
-    /// <param name="name">Organisation name</param>
-    /// <param name="role">Role of the Organisation</param>
+    /// <param name="role">Optional role to filter organisations by.</param>
+    /// <param name="pageIndex">Index (1-based) of page for paginated results.</param>
+    /// <param name="pageSize">Optional maximum number of results to return.</param>
     /// <returns>An asynchronous operation that returns organisations.</returns>
-    [Get("/organisations/searchbyname")]
-    public Task<ApiResponse<OrganisationSearchResponse>> GetOrganisations(string name, string? role);
+    [Get("/organisations/getall")]
+    public Task<ApiResponse<OrganisationSearchResponse>> GetOrganisations(string? role, int pageIndex = 1, int? pageSize = null);
 
     /// <summary>
-    /// Gets the specified number of organisations by name and role
+    /// Searches for organisations by name, with optional role filtering and paging.
     /// </summary>
-    /// <param name="name">Organisation name</param>
-    /// <param name="role">Role of the Organisation</param>
-    /// <param name="pageSize">Page size</param>
-    /// <returns>An asynchronous operation that returns organisations.</returns>
+    /// <param name="name">The name or partial name of the organisation to search for.</param>
+    /// <param name="role">Optional role to filter organisations by.</param>
+    /// <param name="pageIndex">Index (1-based) of page for paginated results.</param>
+    /// <param name="pageSize">Optional maximum number of results to return.</param>
     [Get("/organisations/searchbyname")]
-    public Task<ApiResponse<OrganisationSearchResponse>> GetOrganisations(string name, string? role, int pageSize);
+    public Task<ApiResponse<OrganisationSearchResponse>> GetOrganisationsByName(string name, string? role, int pageIndex = 1, int? pageSize = null);
 
     /// <summary>
     /// Gets the organisation by Id

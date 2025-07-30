@@ -1,15 +1,50 @@
-﻿@using Rsp.IrasPortal.Web.Areas.Admin.Models
-@model (IEnumerable<Rsp.IrasPortal.Application.DTOs.ReviewBodyDto> ReviewBodies, PaginationViewModel Pagination)
+﻿@using Rsp.Gds.Component.Models
+@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Application.DTOs
+@model ReviewBodySearchViewModel
 
 @{
     ViewData["Title"] = "View review bodies";
+
+    var statusOptions = new List<GdsOption>
+    {
+        new() { Value = "true", Label = "Active" },
+        new() { Value = "false", Label = "Disabled" }
+    };
+
+    var sortableHeaders = new[]
+    {
+        new { Field = nameof(ReviewBodyDto.RegulatoryBodyName), Label = "Organisation name" },
+        new { Field = nameof(ReviewBodyDto.Countries), Label = "Country" },
+        new { Field = nameof(ReviewBodyDto.IsActive), Label = "Status" }
+    };
+    var tableId = "usersTable";
 }
 
 @* @section is added for the back button, so that we can render something below the back button
     and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
     the named section *@
+
 @section BackNavigation {
-    <partial name="_BackNavigation" model="@("systemadmin:view", "Back", new Dictionary<string, string>())" />
+    <partial name="_BackNavigation" model="@("systemadmin:view", "Back", new Dictionary<string, string>())"/>
+}
+
+@functions {
+
+    private bool CanOpenPanelForField(string fieldName)
+    {
+        return ViewData.ModelState.TryGetValue(fieldName, out var state) && state.Errors.Any();
+    }
+
+    private bool CanOpenPanelForAnyField(params string[] fieldNames)
+    {
+        return fieldNames.Any(CanOpenPanelForField);
+    }
+
+    private bool CanOpenFilterPanel()
+    {
+        return ViewData.ModelState.Values.Any(v => v.Errors.Count > 0);
+    }
 }
 
 <div class="govuk-grid-row">
@@ -23,60 +58,193 @@
 
 <div class="govuk-grid-row">
 
-    <div class="govuk-grid-column-full">
-
-        <form method="get">
-            <label class="govuk-label" for="SearchQuery"><b>Find a review body</b></label>
-            <input class="govuk-input govuk-!-width-two-thirds" id="SearchQuery" name="SearchQuery" type="text" value="@(Model.Pagination?.SearchQuery ?? string.Empty)">
-            <input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize" />
-            <partial name="_SubmitButton" model="@("rbc:viewreviewbodies", "Search", new Dictionary<string, string>())" />
-        </form>
-    </div>
-
-    @if (Model.ReviewBodies != null && Model.ReviewBodies.Any())
-    {
-        <div class="govuk-grid-column-full">
-            <div class="govuk-table-wrapper">
-                <table class="govuk-table">
-                    <thead class="govuk-table__head">
-                        <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
-                            <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Organisation name</th>
-                            <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Country</th>
-                            <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Status</th>
-                            <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="govuk-table__body">
-                        @{
-                            foreach (var reviewBody in Model.ReviewBodies)
-                            {
-                                <tr class="govuk-table__row">
-                                    <td class="govuk-table__cell">@reviewBody.OrganisationName</td>
-                                    <td class="govuk-table__cell">@String.Join(", ", reviewBody.Countries)</td>
-                                    <td class="govuk-table__cell">
-                                        <span class="govuk-tag @(reviewBody.IsActive ? "govuk-tag--green" : "govuk-tag--red")">
-                                            @(reviewBody.IsActive ? "Active" : "Disabled")
-                                        </span>
-                                    </td>
-                                    <td class="govuk-table__cell">
-                                        <a class="govuk-link" asp-route="rbc:viewreviewbody" asp-route-id="@reviewBody.Id">View/Edit</a>
-                                    </td>
-                                </tr>
-                            }
-                        }
-                    </tbody>
-                </table>
-                <partial name="_Pagination" model="@Model.Pagination" />
+    <div class="govuk-grid-column-two-thirds">
+        <form method="post" class="govuk-form-group" asp-route-fromPagination="false">
+            <label class="govuk-label" for="Search.SearchQuery">
+                <b>Find a review body</b>
+            </label>
+            <div class="govuk-hint">
+                Search for an organisation name
             </div>
-        </div>
-    }
-    else if (!string.IsNullOrEmpty(Model.Pagination?.SearchQuery))
-    {
-        <div class="govuk-grid-column-two-thirds">
-            <h1 class="govuk-heading-l">No results found</h1>
-            <p class="govuk-body">
-                Check your spelling or enter another search term and try again. If no results are found, you can create a new review body record.
-            </p>
-        </div>
-    }
+
+            <div class="review-body-search">
+                <input class="govuk-input" id="Search.SearchQuery" name="Search.SearchQuery" type="text"
+                       value="@(Model.Search?.SearchQuery ?? string.Empty)"/>
+
+                <partial name="_SubmitButton"
+                         model="@("rbc:viewreviewbodies", "Search", new Dictionary<string, string>())"/>
+            </div>
+            <input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize"/>
+
+
+            <!-- Filter Panel -->
+            <div class="search-filter-panel">
+                <input type="checkbox" id="toggle-filter" class="search-filter-toggle" hidden @(CanOpenFilterPanel() ? "checked" : null)>
+
+                <div class="search-filter-panel__header">
+                    <label for="toggle-filter" class="search-filter-panel__button govuk-link" role="button" aria-controls="filter-panel">
+                        <span class="search-filter-panel__button-inner">Advanced filters</span>
+                    </label>
+                    <h2 id="js-result-count" class="search-filter-panel__count">@(Model.Pagination?.TotalCount ?? 0) results</h2>
+                </div>
+
+                <div class="search-filter-panel__content" id="filter-panel" role="region" aria-labelledby="toggle-filter">
+
+                    <!-- Country -->
+                    <details class="search-filter-section" @(CanOpenPanelForField("Country") ? "open" : null)>
+                        <summary class="search-filter-section__summary">
+                            <h2 class="search-filter-section__summary-heading">Country</h2>
+                        </summary>
+                        <div class="search-filter-section__content">
+                            <div class="govuk-form-group govuk-!-margin-bottom-2">
+                                <fieldset class="govuk-fieldset">
+                                    <rsp-gds-checkbox-group asp-for="Search.Country"
+                                                            label-text="Select all that apply"
+                                                            options="UkCountryNames.Countries"
+                                                            conditional-field="false"
+                                                            legend-class="govuk-label govuk-label--s font-weight-none"
+                                                            hint-id="country-hint"
+                                                            hint-html="@($"{Model.Search.Country?.Count ?? 0} selected")"/>
+
+
+                                </fieldset>
+                            </div>
+                        </div>
+                    </details>
+
+                    <!-- Status -->
+                    <details class="search-filter-section" @(CanOpenPanelForField("Status") ? "open" : null)>
+                        <summary class="search-filter-section__summary">
+                            <h2 class="search-filter-section__summary-heading">Status</h2>
+                        </summary>
+                        <div class="search-filter-section__content">
+                            <div class="govuk-form-group govuk-!-margin-bottom-2">
+                                <fieldset class="govuk-fieldset">
+                                    <rsp-gds-radio-group asp-for="Search.Status"
+                                                         label-text="Select one option"
+                                                         options="statusOptions"
+                                                         conditional-field="false"
+                                                         legend-class="govuk-label govuk-label--s font-weight-none"/>
+                                </fieldset>
+                            </div>
+                        </div>
+                    </details>
+
+
+                    <!-- Apply -->
+                    <div class="search-filter-panel__actions">
+                        <button class="govuk-button search-filter-panel__action search-filter-panel__action--submit">Apply filters</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <!-- Active Filters Panel -->
+        @if (Model.Search.Filters.Any())
+        {
+            <div class="search-filter-summary">
+                <h3 class="search-filter-summary__heading">Active filters</h3>
+                <ul class="search-filter-summary__remove-filters">
+                    @foreach (var filter in Model.Search.Filters)
+                    {
+                        var filterKey = filter.Key;
+                        var filterValues = filter.Value?.Split(",") ?? [];
+
+                        foreach (var val in filterValues)
+                        {
+                            <li>
+                                <a asp-route="rbc:removefilter"
+                                   asp-route-key="@filterKey"
+                                   asp-route-value="@val.Trim()"
+                                   asp-route-model="@System.Text.Json.JsonSerializer.Serialize(Model.Search)"
+                                   class="search-filter-summary__remove-filter">
+                                    <span class="search-filter-summary__remove-filter-text">
+                                        <span class="govuk-visually-hidden">Remove filter</span>
+                                        @filterKey: @val.Trim()
+                                    </span>
+                                </a>
+                            </li>
+                        }
+                    }
+                </ul>
+                <div>
+                    <a asp-route="rbc:clearfilters"
+                       asp-route-searchQuery="@Model.Search?.SearchQuery"
+                       class="search-filter-summary__clear-filters govuk-link govuk-link--no-visited-state">
+                        Clear all filters
+                    </a>
+
+                </div>
+            </div>
+        }
+    </div>
 </div>
+
+
+<div class="govuk-grid-row">
+
+    <div class="govuk-grid-column-full">
+        @if (Model.ReviewBodies != null && Model.ReviewBodies.Any())
+        {
+            <div class="govuk-grid-column-full">
+                <div class="govuk-table-wrapper">
+                    <table class="govuk-table govuk-table-users" id="@tableId">
+                        <thead>
+                        <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+                            @foreach (var header in sortableHeaders)
+                            {
+                                <th scope="col" class="govuk-table__header govuk-table__header-sortable">
+                                    <partial name="_SortableHeaderButton"
+                                             model="new SortableHeaderModel {
+                                                 FieldName = header.Field,
+                                                 DisplayText = header.Label,
+                                                 CurrentSortField = Model.Pagination?.SortField,
+                                                 CurrentSortDirection = Model.Pagination?.SortDirection,
+                                                 TableId = tableId
+                                             }" />
+                                </th>
+                            }
+                            <th scope="col" class="govuk-table__header">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody class="govuk-table__body">
+                        @foreach (var reviewBody in Model.ReviewBodies)
+                        {
+                            <tr class="govuk-table__row">
+                                <td class="govuk-table__cell">@reviewBody.RegulatoryBodyName</td>
+                                <td class="govuk-table__cell">@string.Join(", ", reviewBody.Countries)</td>
+                                <td class="govuk-table__cell">
+                                    <span class="govuk-tag @(reviewBody.IsActive ? "govuk-tag--green" : "govuk-tag--red")">
+                                        @(reviewBody.IsActive ? "Active" : "Disabled")
+                                    </span>
+                                </td>
+                                <td class="govuk-table__cell">
+                                    <a class="govuk-link" asp-route="rbc:viewreviewbody" asp-route-id="@reviewBody.Id">View/Edit</a>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                    <partial name="_Pagination" model="@Model.Pagination"/>
+                </div>
+            </div>
+        }
+        else if ((Model.Search.Filters.Any() && !Model.ReviewBodies.Any()) || !string.IsNullOrEmpty(Model.Search?.SearchQuery))
+        {
+            <div class="govuk-grid-row">
+                <div class="govuk-grid-column-two-thirds search-filter-error-border">
+                    <h2 class="govuk-heading-l">There are no matching results</h2>
+                    <p class="govuk-body">Improve your search results by:</p>
+                    <ul class="govuk-list govuk-list--bullet">
+                        <li>removing filters</li>
+                        <li>double-checking your spelling</li>
+                        <li>using fewer keywords</li>
+                        <li>searching for something less specific</li>
+                    </ul>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<script src="~/js/manageReviewBodies.js"></script>

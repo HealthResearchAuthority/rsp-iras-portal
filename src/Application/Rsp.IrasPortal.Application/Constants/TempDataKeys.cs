@@ -6,8 +6,14 @@
 /// </summary>
 public struct TempDataKeys
 {
-    public const string ApplicationId = "td:application_id";
+    public const string ProjectRecordId = "td:project_record_id";
+    public const string ProjectModificationId = "td:project_modification_id";
+    public const string ProjectModificationIdentifier = "td:project_modification_identifier";
+    public const string ProjectModificationSpecificArea = "td:project_modification_specific_area";
+    public const string ProjectModificationChangeId = "td:project_modification_change_id";
+    public const string ProjectRecordResponses = "td:project_record_responses";
     public const string ShortProjectTitle = "td:short_project_title";
+    public const string ProjectPlannedEndDate = "td:project_planned_enddate";
     public const string CategoryId = "td:category_id";
     public const string IrasId = "td:iras_id";
     public const string PreviousStage = "td:app_previousstage";
@@ -24,4 +30,11 @@ public struct TempDataKeys
     public const string OrgSearch = "td:org_search";
     public const string OrgSearchReturnUrl = "td:org_search_return_url";
     public const string ModelState = "td:model_state";
+    public const string ShowNotificationBanner = "td:show_notification_banner";
+    public const string ApprovalsSearchModel = "td:approvalsSearchModel";
+    public const string SpecificAreaOfChangeText = "td:specificAreaOfChangeText";
+    public const string AreaOfChanges = "td:areaofchanges";
+    public const string AreaOfChangeId = "td:area_of_change_id";
+    public const string SpecificAreaOfChangeId = "td:specific_area_of_change_id";
+    public const string OrganisationSearchModel = "td:organisationSearchModel";
 }

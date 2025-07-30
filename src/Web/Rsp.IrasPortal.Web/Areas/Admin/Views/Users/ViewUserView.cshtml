@@ -10,7 +10,7 @@
 
 <div class="govuk-grid-row">
 	<div class="govuk-grid-column-full">
-		<h1 class="govuk-heading-l">User profile: @Model.FirstName @Model.LastName</h1>
+		<h1 class="govuk-heading-l">User profile: @Model.GivenName @Model.FamilyName</h1>
 		<form method="post" id="submit-user-form">
 			<partial name="_UserSummaryTablePartial" model="Model" />
 		</form>

@@ -12,11 +12,13 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.OrganisationControllerTests;
 public class OrganisationControllerTests : TestServiceBase<OrganisationController>
 {
     [Fact]
-    public async Task GetOrganisations_ShouldReturnOk_WhenServiceReturnsSuccess()
+    public async Task GetOrganisationsByName_ShouldReturnOk_WhenServiceReturnsSuccess()
     {
         // Arrange
         var name = "TestOrg";
         var role = "TestRole";
+        int pageIndex = 1;
+        int? pageSize = null;
 
         var searchResponse = new OrganisationSearchResponse
         {
@@ -28,7 +30,7 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
 
         Mocker
             .GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisations(name, role))
+            .Setup(s => s.GetOrganisationsByName(name, role, pageIndex, pageSize))
             .ReturnsAsync
             (
                 new ServiceResponse<OrganisationSearchResponse>()
@@ -36,23 +38,25 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
             );
 
         // Act
-        var result = await Sut.GetOrganisations(name, role, null);
+        var result = await Sut.GetOrganisationsByName(name, role, pageIndex, pageSize);
 
         // Assert
         var okResult = result.ShouldBeOfType<OkObjectResult>();
-        okResult.Value.ShouldBe(searchResponse.Organisations.Select(o => o.Name));
+        okResult.Value.ShouldBe(searchResponse);
     }
 
     [Fact]
-    public async Task GetOrganisations_ShouldReturnServiceError_WhenServiceFails()
+    public async Task GetOrganisationsByName_ShouldReturnServiceError_WhenServiceFails()
     {
         // Arrange
         var name = "TestOrg";
         var role = "TestRole";
+        int pageIndex = 1;
+        int? pageSize = null;
 
         Mocker
             .GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisations(name, role))
+            .Setup(s => s.GetOrganisationsByName(name, role, pageIndex, pageSize))
             .ReturnsAsync
             (
                 new ServiceResponse<OrganisationSearchResponse>()
@@ -68,7 +72,76 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
         };
 
         // Act
-        var result = await Sut.GetOrganisations(name, role, null);
+        var result = await Sut.GetOrganisationsByName(name, role, pageIndex, pageSize);
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var problemDetails = viewResult.Model.ShouldBeOfType<ProblemDetails>();
+        problemDetails?.Status.ShouldBe((int)HttpStatusCode.InternalServerError);
+    }
+
+    [Fact]
+    public async Task GetOrganisations_ShouldReturnOk_WhenServiceReturnsSuccess()
+    {
+        // Arrange
+        var name = "TestOrg";
+        var role = "TestRole";
+        int pageIndex = 1;
+        int? pageSize = null;
+
+        var searchResponse = new OrganisationSearchResponse
+        {
+            Organisations = [
+                new() { Id = "1", Name = "TestOrg1" },
+                new() { Id = "2", Name = "TestOrg2" }],
+            TotalCount = 2
+        };
+
+        Mocker
+            .GetMock<IRtsService>()
+            .Setup(s => s.GetOrganisations(role, pageIndex, pageSize))
+            .ReturnsAsync
+            (
+                new ServiceResponse<OrganisationSearchResponse>()
+                    .WithContent(searchResponse, HttpStatusCode.OK)
+            );
+
+        // Act
+        var result = await Sut.GetOrganisations(role, pageIndex, pageSize);
+
+        // Assert
+        var okResult = result.ShouldBeOfType<OkObjectResult>();
+        okResult.Value.ShouldBe(searchResponse);
+    }
+
+    [Fact]
+    public async Task GetOrganisations_ShouldReturnServiceError_WhenServiceFails()
+    {
+        // Arrange
+        var name = "TestOrg";
+        var role = "TestRole";
+        int pageIndex = 1;
+        int? pageSize = null;
+
+        Mocker
+            .GetMock<IRtsService>()
+            .Setup(s => s.GetOrganisations(role, pageIndex, pageSize))
+            .ReturnsAsync
+            (
+                new ServiceResponse<OrganisationSearchResponse>()
+                    .WithError("Error", "Service failed", HttpStatusCode.InternalServerError)
+            );
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Path = "/GetOrganisations";
+
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = httpContext
+        };
+
+        // Act
+        var result = await Sut.GetOrganisations(role, pageIndex, pageSize);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();

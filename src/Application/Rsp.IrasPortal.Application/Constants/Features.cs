@@ -26,6 +26,9 @@ public static class Features
     // Use OneLogin authentication
     public const string OneLogin = "Auth.UseOneLogin";
 
+    // Show projects added to new service
+    public const string MyResearchPage = "UI.MyResearchPage";
+
     // Use OneLogin authentication
     public const string OneLoginClientSecret = "Auth.UseOneLoginClientSecret";
 }

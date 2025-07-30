@@ -1,0 +1,57 @@
+﻿@model Rsp.IrasPortal.Web.Models.PlannedEndDateViewModel
+
+@{
+    ViewData["Title"] = "Planned End Date";
+    var errorSummaryTitle = "There is a problem";
+
+    var navModel = ("pmc:areaofchange", "Back", new Dictionary<string, string>());
+}
+
+@section BackNavigation {
+    <partial name="_BackNavigation" model="navModel" />
+}
+
+<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+        <form asp-action="PlannedEndDate" method="post">
+
+            <partial name="_ProjectModificationSummary" model="Model" />
+
+            <div class="govuk-!-margin-bottom-3" style="display: flex; gap: 2rem;">
+                <span class="govuk-label">Current planned end date</span>
+                <span class="govuk-body govuk-!-font-weight-bold">@Model.CurrentPlannedEndDate</span>
+            </div>
+
+            <input type="hidden" asp-for="CurrentPlannedEndDate" />
+
+            <rsp-gds-date-input id="NewPlannedEndDate.Date"
+                                asp-for="NewPlannedEndDate.Date"
+                                day-name="NewPlannedEndDate.Day"
+                                day-value="@Model.NewPlannedEndDate.Day"
+                                month-name="NewPlannedEndDate.Month"
+                                month-value="@Model.NewPlannedEndDate.Month"
+                                year-name="NewPlannedEndDate.Year"
+                                year-value="@Model.NewPlannedEndDate.Year"
+                                label-text="New planned end date"
+                                label-html-class="font-weight-none"
+                                hint-html="For example, 27 March 2029" />
+
+            <div class="save-buttons">
+                <partial name="_SubmitButton" model="@("pmc:saveplannedenddate", "Save and continue", new Dictionary<string, string> { })" />
+
+                @{
+                    ViewBag.Style = "govuk-button govuk-button--secondary";
+                }
+
+				<partial name="_SubmitButton" model="@("app:projectoverview", "Save for later", new Dictionary<string, string> { })" />
+            </div>
+
+            <p>
+                <a href="#" class="govuk-link">Remove this change</a>
+            </p>
+        </form>
+    </div>
+</div>

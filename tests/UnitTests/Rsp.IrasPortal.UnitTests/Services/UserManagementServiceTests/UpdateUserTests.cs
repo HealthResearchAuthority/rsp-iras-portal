@@ -40,8 +40,8 @@ public class UpdateUserTests : TestServiceBase<UserManagementService>
         {
             OriginalEmail = originalEmail,
             Title = title,
-            FirstName = firstName,
-            LastName = lastName,
+            GivenName = firstName,
+            FamilyName = lastName,
             Email = email,
             JobTitle = jobTitle,
             Organisation = organisation,
@@ -90,8 +90,8 @@ public class UpdateUserTests : TestServiceBase<UserManagementService>
         {
             OriginalEmail = originalEmail,
             Title = title,
-            FirstName = firstName,
-            LastName = lastName,
+            GivenName = firstName,
+            FamilyName = lastName,
             Email = email,
             JobTitle = jobTitle,
             Organisation = organisation,

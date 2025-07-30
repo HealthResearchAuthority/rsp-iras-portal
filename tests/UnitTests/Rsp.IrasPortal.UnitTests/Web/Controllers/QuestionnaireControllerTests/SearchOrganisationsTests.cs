@@ -29,7 +29,7 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
 
         var application = new IrasApplicationResponse
         {
-            ApplicationId = "App1",
+            Id = "App1",
             IrasId = 123
         };
 
@@ -44,7 +44,7 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
         var sessionData = new Dictionary<string, byte[]?>
         {
             { $"{SessionKeys.Questionnaire}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(questions) },
-            { SessionKeys.Application, JsonSerializer.SerializeToUtf8Bytes(application) }
+            { SessionKeys.ProjectRecord, JsonSerializer.SerializeToUtf8Bytes(application) }
         };
 
         session
@@ -88,7 +88,7 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisations(It.IsAny<string>(), It.IsAny<string?>()))
+            .Setup(s => s.GetOrganisationsByName(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<int?>()))
             .ReturnsAsync(new ServiceResponse<OrganisationSearchResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -135,7 +135,7 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
 
         var application = new IrasApplicationResponse
         {
-            ApplicationId = "App1",
+            Id = "App1",
             IrasId = 123
         };
 
@@ -150,7 +150,7 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
         var sessionData = new Dictionary<string, byte[]?>
         {
             { $"{SessionKeys.Questionnaire}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(questions) },
-            { SessionKeys.Application, JsonSerializer.SerializeToUtf8Bytes(application) }
+            { SessionKeys.ProjectRecord, JsonSerializer.SerializeToUtf8Bytes(application) }
         };
 
         session
@@ -201,7 +201,7 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
         Sut.ControllerContext = new ControllerContext { HttpContext = context };
 
         Mocker.GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisations(It.IsAny<string>(), It.IsAny<string?>()))
+            .Setup(s => s.GetOrganisationsByName(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<int?>()))
             .ReturnsAsync(new ServiceResponse<OrganisationSearchResponse>
             {
                 StatusCode = HttpStatusCode.InternalServerError
@@ -236,7 +236,7 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
 
         var application = new IrasApplicationResponse
         {
-            ApplicationId = "App1",
+            Id = "App1",
             IrasId = 123
         };
 
@@ -251,7 +251,7 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
         var sessionData = new Dictionary<string, byte[]?>
         {
             { $"{SessionKeys.Questionnaire}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(questions) },
-            { SessionKeys.Application, JsonSerializer.SerializeToUtf8Bytes(application) }
+            { SessionKeys.ProjectRecord, JsonSerializer.SerializeToUtf8Bytes(application) }
         };
 
         var responseQuestionSections = new ServiceResponse<IEnumerable<QuestionSectionsResponse>>
@@ -313,15 +313,7 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
         };
 
         Mocker.GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisations(It.IsAny<string>(), It.IsAny<string?>()))
-            .ReturnsAsync(new ServiceResponse<OrganisationSearchResponse>
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = orgResponse
-            });
-
-        Mocker.GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisations(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<int>()))
+            .Setup(s => s.GetOrganisationsByName(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<int?>()))
             .ReturnsAsync(new ServiceResponse<OrganisationSearchResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -337,8 +329,6 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
         var viewResult = result.ShouldBeOfType<RedirectResult>();
         model.SponsorOrgSearch.SelectedOrganisation.ShouldBeNullOrEmpty();
         Sut.TempData[TempDataKeys.SponsorOrgSearched].ShouldBe("searched:true");
-        Sut.TempData[TempDataKeys.ApplicationId].ShouldBe(application.ApplicationId);
-        Sut.TempData[TempDataKeys.IrasId].ShouldBe(application.IrasId);
         Sut.TempData.ContainsKey(TempDataKeys.SponsorOrganisations).ShouldBeTrue();
     }
 }

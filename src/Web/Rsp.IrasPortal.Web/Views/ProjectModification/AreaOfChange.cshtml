@@ -1,0 +1,125 @@
+﻿@using Rsp.Gds.Component.Models
+@using Rsp.IrasPortal.Application.Constants
+@model Rsp.IrasPortal.Web.Models.AreaOfChangeViewModel
+@{
+    ViewData["Title"] = "Select area of change";
+
+    // Title used in the validation error summary
+    var errorSummaryTitle = "There is a problem";
+
+    var navModel = ("app:projectoverview", "Back", new Dictionary<string, string>());
+
+    var area = TempData.Peek(TempDataKeys.AreaOfChangeId);
+    var specificArea = TempData.Peek(TempDataKeys.SpecificAreaOfChangeId);
+    var areaId = 0;
+    var specificAreaId = 0;
+
+    if (area != null)
+    {
+        areaId = (int)area;
+    }
+
+    if (specificArea != null)
+    {
+        specificAreaId = (int)specificArea;
+    }
+}
+
+<div class="govuk-width-container">
+    @section BackNavigation {
+        <partial name="_BackNavigation" model="navModel" />
+    }
+
+    <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
+
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <form asp-action="ConfirmModificationJourney" method="post">
+
+                <partial name="_ProjectModificationSummary" model="Model" />
+
+                <div class="govuk-form-group" error-class-for="AreaOfChangeId">
+
+                    @Html.ValidationMessage("AreaOfChangeId", new { @class = "govuk-error-message" })
+
+                    <select asp-for="AreaOfChangeId" asp-items="Model.AreaOfChangeOptions" class="govuk-select govuk-!-width-two-thirds" id="AreaOfChangeId"></select>
+                </div>
+
+                <div class="govuk-form-group" error-class-for="SpecificChangeId">
+
+                    @Html.ValidationMessage("SpecificChangeId", new { @class = "govuk-error-message" })
+
+                    <select asp-for="SpecificChangeId" asp-items="Model.SpecificChangeOptions" class="govuk-select govuk-!-width-two-thirds" id="SpecificChangeId"></select>
+                </div>
+
+                <div class="save-buttons">
+                    <button type="submit" class="govuk-button">Save and continue</button>
+                    @{
+                        ViewBag.Style = "govuk-button govuk-button--secondary";
+                    }
+                    <partial name="_SubmitButton" model="@("app:projectoverview", "Save for later", new Dictionary<string, string> { })" />
+                </div>
+                <p>
+                    <a href="#" class="govuk-link">Remove this change</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    @* store the previously select areaId and specificAreaId in hidden fields *@
+    <input id="areaOfChangeId" type="hidden" value="@areaId" />
+    <input id="specificAreaOfChangeId" type="hidden" value="@specificAreaId" />
+</div>
+
+<script>
+    $(document).ready(function () {
+
+        $('#AreaOfChangeId').on('change', function () {
+            const areaId = $(this).val();
+            const $specificChangeDropdown = $('#SpecificChangeId');
+
+            // if the selection is changed from the previously
+            // selected value, reset the hidden value to 0
+            if (areaId != $areaOfChangeId.val()) {
+                $areaOfChangeId.val('0');
+                $specificAreaOfChangeId.val('0');
+            }
+
+            // Clear existing options
+            $specificChangeDropdown.empty();
+
+            // Fetch specific changes from controller
+            $.getJSON(`/ProjectModification/GetSpecificChangesByAreaId`, { areaOfChangeId: areaId })
+                .done(function (data) {
+                    $.each(data, function (index, item) {
+                        $specificChangeDropdown.append($('<option>', {
+                            value: item.value,
+                            text: item.text
+                        }));
+                    });
+
+                    // if previously selected specificAreaOfChangeId != 0, then select it
+                    if ($specificAreaOfChangeId.val() != '0') {
+                        $specificChangeDropdown.val($specificAreaOfChangeId.val());
+                    }
+
+                })
+                .fail(function () {
+                    $specificChangeDropdown.empty().append($('<option>', {
+                        value: '',
+                        text: 'Error loading changes'
+                    }));
+                });
+        });
+
+        const $areaOfChangeId = $("#areaOfChangeId");
+        const $specificAreaOfChangeId = $("#specificAreaOfChangeId");
+
+        // if previously selected areaOfChangeId != 0, then select it
+        // and manaually trigger the change event, so specificAreaId can be selected
+        if ($areaOfChangeId.val() != '0') {
+            $("#AreaOfChangeId").val($areaOfChangeId.val());
+            $("#AreaOfChangeId").trigger("change");
+        }
+    });
+</script>

@@ -1,5 +1,7 @@
 ﻿using Refit;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 
 namespace Rsp.IrasPortal.Application.ServiceClients;
@@ -12,8 +14,8 @@ public interface IReviewBodyServiceClient
     /// <summary>
     /// Gets all review bodies
     /// </summary>
-    [Get("/reviewbody/all")]
-    public Task<IApiResponse<AllReviewBodiesResponse>> GetAllReviewBodies(int pageNumber = 1, int pageSize = 20, string? searchQuery = null);
+    [Post("/reviewbody/all")]
+    public Task<IApiResponse<AllReviewBodiesResponse>> GetAllReviewBodies(int pageNumber = 1, int pageSize = 20, string? sortField = nameof(ReviewBodyDto.RegulatoryBodyName), string? sortDirection = SortDirections.Ascending, ReviewBodySearchRequest? searchQuery = null);
 
     /// <summary>
     /// Gets review bodies by Id
@@ -25,13 +27,13 @@ public interface IReviewBodyServiceClient
     ///     Creates a new review body in the database
     /// </summary>
     [Post("/reviewbody/create")]
-    public Task<IApiResponse> CreateReviewBody(ReviewBodyDto reviewBodyDto);
+    public Task<IApiResponse<ReviewBodyDto>> CreateReviewBody(ReviewBodyDto reviewBodyDto);
 
     /// <summary>
     ///     Updates a review body in the database
     /// </summary>
     [Post("/reviewbody/update")]
-    public Task<IApiResponse> UpdateReviewBody(ReviewBodyDto reviewBodyDto);
+    public Task<IApiResponse<ReviewBodyDto>> UpdateReviewBody(ReviewBodyDto reviewBodyDto);
 
     /// <summary>
     /// Gets review bodies by Id

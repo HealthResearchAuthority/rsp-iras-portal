@@ -38,9 +38,10 @@
 }
 
 <rsp-gds-autocomplete asp-for="Questions[index].AnswerText"
+                      label-html-class="js-hidden"
                       field-id="@(question.QuestionId)_Text"
                       label-text="@question.QuestionText"
-                      api-url="/organisation/getorganisations"
+                      api-url="/organisation/getsponsororganisations"
                       hint-html="@Html.Raw(hintContent)"
                       dataparents-attr="@parents"
                       dataquestionid-attr="@questionId"

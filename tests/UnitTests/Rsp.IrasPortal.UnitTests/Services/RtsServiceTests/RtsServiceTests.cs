@@ -47,10 +47,12 @@ public class RtsServiceTests : TestServiceBase<RtsService>
     }
 
     [Fact]
-    public async Task GetOrganisations_ShouldReturnListOfOrganisations_WhenNameIsValid()
+    public async Task GetOrganisationsByName_ShouldReturnListOfOrganisations_WhenNameIsValid()
     {
         // Arrange
         var organisationName = "Test";
+        int pageIndex = 1;
+        int? pageSize = null;
         var expectedResponse = new ApiResponse<OrganisationSearchResponse>
         (
             new HttpResponseMessage(HttpStatusCode.OK),
@@ -66,11 +68,11 @@ public class RtsServiceTests : TestServiceBase<RtsService>
 
         Mocker
             .GetMock<IRtsServiceClient>()
-            .Setup(client => client.GetOrganisations(organisationName, null))
+            .Setup(client => client.GetOrganisationsByName(organisationName, null, pageIndex, pageSize))
             .ReturnsAsync(expectedResponse);
 
         // Act
-        var result = await Sut.GetOrganisations(organisationName, null);
+        var result = await Sut.GetOrganisationsByName(organisationName, null, pageIndex, pageSize);
 
         // Assert
         result.ShouldBeOfType<ServiceResponse<OrganisationSearchResponse>>();
@@ -81,10 +83,11 @@ public class RtsServiceTests : TestServiceBase<RtsService>
     }
 
     [Fact]
-    public async Task GetOrganisations_WithPagination_ShouldReturnPaginatedListOfOrganisations()
+    public async Task GetOrganisationsByName_WithPagination_ShouldReturnPaginatedListOfOrganisations()
     {
         // Arrange
         var organisationName = "Test";
+        var pageIndex = 1;
         var pageSize = 2;
         var expectedResponse = new ApiResponse<OrganisationSearchResponse>
        (
@@ -101,11 +104,81 @@ public class RtsServiceTests : TestServiceBase<RtsService>
 
         Mocker
             .GetMock<IRtsServiceClient>()
-            .Setup(client => client.GetOrganisations(organisationName, null, pageSize))
+            .Setup(client => client.GetOrganisationsByName(organisationName, null, pageIndex, pageSize))
             .ReturnsAsync(expectedResponse);
 
         // Act
-        var result = await Sut.GetOrganisations(organisationName, null, pageSize);
+        var result = await Sut.GetOrganisationsByName(organisationName, null, pageIndex, pageSize);
+
+        // Assert
+        result.ShouldBeOfType<ServiceResponse<OrganisationSearchResponse>>();
+        result.IsSuccessStatusCode.ShouldBeTrue();
+        result.Content.ShouldNotBeNull();
+        result.Content.Organisations.Count.ShouldBe(2);
+        result.Content.Organisations.ShouldContain(o => o.Name.Contains("Test Organisation"));
+    }
+
+    [Fact]
+    public async Task GetOrganisations_ShouldReturnListOfOrganisations_WhenNameIsValid()
+    {
+        // Arrange
+        int pageIndex = 1;
+        int? pageSize = null;
+        var expectedResponse = new ApiResponse<OrganisationSearchResponse>
+        (
+            new HttpResponseMessage(HttpStatusCode.OK),
+            new()
+            {
+                Organisations = [
+                    new() { Id = "123", Name = "Test Organisation 1" },
+                    new() { Id = "456", Name = "Test Organisation 2" }],
+                TotalCount = 2
+            },
+            new()
+        );
+
+        Mocker
+            .GetMock<IRtsServiceClient>()
+            .Setup(client => client.GetOrganisations(null, pageIndex, pageSize))
+            .ReturnsAsync(expectedResponse);
+
+        // Act
+        var result = await Sut.GetOrganisations(null, pageIndex, pageSize);
+
+        // Assert
+        result.ShouldBeOfType<ServiceResponse<OrganisationSearchResponse>>();
+        result.IsSuccessStatusCode.ShouldBeTrue();
+        result.Content.ShouldNotBeNull();
+        result.Content.Organisations.Count.ShouldBe(2);
+        result.Content.Organisations.ShouldContain(o => o.Name.Contains("Test Organisation"));
+    }
+
+    [Fact]
+    public async Task GetOrganisations_WithPagination_ShouldReturnPaginatedListOfOrganisations()
+    {
+        // Arrange
+        var pageIndex = 1;
+        var pageSize = 2;
+        var expectedResponse = new ApiResponse<OrganisationSearchResponse>
+       (
+          new HttpResponseMessage(HttpStatusCode.OK),
+           new()
+           {
+               Organisations = [
+                    new() { Id = "123", Name = "Test Organisation 1" },
+                    new() { Id = "456", Name = "Test Organisation 2" }],
+               TotalCount = 2
+           },
+            new()
+       );
+
+        Mocker
+            .GetMock<IRtsServiceClient>()
+            .Setup(client => client.GetOrganisations(null, pageIndex, pageSize))
+            .ReturnsAsync(expectedResponse);
+
+        // Act
+        var result = await Sut.GetOrganisations(null, pageIndex, pageSize);
 
         // Assert
         result.ShouldBeOfType<ServiceResponse<OrganisationSearchResponse>>();
