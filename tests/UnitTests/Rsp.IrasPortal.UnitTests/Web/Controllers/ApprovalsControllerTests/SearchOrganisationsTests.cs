@@ -59,6 +59,8 @@ public class SearchOrganisationsTests : TestServiceBase<ApprovalsController>
     [Fact]
     public async Task SearchOrganisations_ShouldRedirectWithResults_WhenSearchIsSuccessful()
     {
+        int pageIndex = 1;
+        int? pageSize = null;
         var model = new ApprovalsSearchViewModel
         {
             Search = new ApprovalsSearchModel
@@ -84,7 +86,7 @@ public class SearchOrganisationsTests : TestServiceBase<ApprovalsController>
             TotalCount = 2
         };
 
-        _mockRtsService.Setup(x => x.GetOrganisationsByName("Health Org", OrganisationRoles.Sponsor, null, null))
+        _mockRtsService.Setup(x => x.GetOrganisationsByName("Health Org", OrganisationRoles.Sponsor, pageIndex, pageSize))
             .ReturnsAsync(new ServiceResponse<OrganisationSearchResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -97,7 +99,7 @@ public class SearchOrganisationsTests : TestServiceBase<ApprovalsController>
             [TempDataKeys.OrgSearchReturnUrl] = "/approvals/search"
         };
 
-        var result = await Sut.SearchOrganisations(model, null, null);
+        var result = await Sut.SearchOrganisations(model, null, pageSize, pageIndex);
 
         var redirect = result.ShouldBeOfType<RedirectResult>();
         redirect.Url.ShouldBe("/approvals/search");
@@ -115,6 +117,8 @@ public class SearchOrganisationsTests : TestServiceBase<ApprovalsController>
     [Fact]
     public async Task SearchOrganisations_ShouldReturnErrorResult_WhenServiceFails()
     {
+        int pageIndex = 1;
+        int? pageSize = null;
         var model = new ApprovalsSearchViewModel
         {
             Search = new ApprovalsSearchModel
@@ -130,7 +134,7 @@ public class SearchOrganisationsTests : TestServiceBase<ApprovalsController>
             }
         };
 
-        _mockRtsService.Setup(x => x.GetOrganisationsByName("FailOrg", OrganisationRoles.Sponsor, null, null))
+        _mockRtsService.Setup(x => x.GetOrganisationsByName("FailOrg", OrganisationRoles.Sponsor, pageIndex, pageSize))
             .ReturnsAsync(new ServiceResponse<OrganisationSearchResponse>
             {
                 StatusCode = HttpStatusCode.InternalServerError,
@@ -143,7 +147,7 @@ public class SearchOrganisationsTests : TestServiceBase<ApprovalsController>
             [TempDataKeys.OrgSearchReturnUrl] = "/approvals/search"
         };
 
-        var result = await Sut.SearchOrganisations(model, null, null);
+        var result = await Sut.SearchOrganisations(model, null, pageSize, pageIndex);
 
         result.ShouldBeOfType<ViewResult>();
     }

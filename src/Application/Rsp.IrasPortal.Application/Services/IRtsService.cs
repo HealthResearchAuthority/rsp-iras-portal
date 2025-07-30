@@ -19,7 +19,7 @@ public interface IRtsService : IInterceptable
     /// <param name="pageIndex">Index (1-based) of page for paginated results.</param>
     /// <param name="pageSize">Optional maximum number of results to return.</param>
     /// <returns>An asynchronous operation that returns organisations.</returns>
-    public Task<ServiceResponse<OrganisationSearchResponse>> GetOrganisationsByName(string name, string? role, int? pageIndex = 1, int? pageSize = 10);
+    public Task<ServiceResponse<OrganisationSearchResponse>> GetOrganisationsByName(string name, string? role, int pageIndex = 1, int? pageSize = null);
 
     /// <summary>
     /// Gets all organisations, with optional role filtering and paging.
@@ -28,7 +28,7 @@ public interface IRtsService : IInterceptable
     /// <param name="pageIndex">Index (1-based) of page for paginated results.</param>
     /// <param name="pageSize">Optional maximum number of results to return.</param>
     /// <returns>An asynchronous operation that returns organisations.</returns>
-    public Task<ServiceResponse<OrganisationSearchResponse>> GetOrganisations(string? role, int? pageIndex = 1, int? pageSize = 10);
+    public Task<ServiceResponse<OrganisationSearchResponse>> GetOrganisations(string? role, int pageIndex = 1, int? pageSize = null);
 
     /// <summary>
     /// Gets the organisation by Id
