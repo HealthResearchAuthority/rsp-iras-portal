@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
@@ -70,5 +71,40 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
         viewResult.Model.ShouldNotBeNull();
         var viewModel = viewResult.Model.ShouldBeAssignableTo<ModificationsTasklistViewModel>();
         viewModel.EmptySearchPerformed.ShouldBe(expectedEmptySearchPerformed);
+    }
+
+    [Theory, AutoData]
+    public async Task Index_Calculates_FromDate_And_ToDate_Correctly_From_StringSubmissionFields(int fromDays, int toDays, GetModificationsResponse modificationResponse)
+    {
+        fromDays = Math.Clamp(fromDays % 100, 1, 99);
+        toDays = Math.Clamp(toDays % 100, 1, 99);
+
+        var model = new ApprovalsSearchModel
+        {
+            FromDaysSinceSubmission = fromDays.ToString(),
+            ToDaysSinceSubmission = toDays.ToString(),
+        };
+
+        var json = JsonSerializer.Serialize(model);
+        var tempDataMock = new Mock<ITempDataDictionary>();
+        tempDataMock.Setup(td => td.Peek(TempDataKeys.ApprovalsSearchModel)).Returns(json);
+
+        Sut.TempData = tempDataMock.Object;
+
+        var serviceResponse = new ServiceResponse<GetModificationsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = modificationResponse
+        };
+
+        Mocker.GetMock<IApplicationsService>()
+            .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, "CreatedAt", "asc"))
+            .ReturnsAsync(serviceResponse);
+
+        var result = await Sut.Index(1, 20, null, "CreatedAt", "asc");
+
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var modelResult = viewResult.Model.ShouldBeAssignableTo<ModificationsTasklistViewModel>();
+        var modifications = modelResult?.Modifications.ShouldBeOfType<List<TaskListModificationViewModel>>();
     }
 }

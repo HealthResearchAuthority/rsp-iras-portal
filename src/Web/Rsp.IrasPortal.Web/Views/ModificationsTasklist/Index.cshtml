@@ -128,6 +128,31 @@
                             </div>
                         </details>
 
+                        <!-- Days since submission -->
+                        <details class="search-filter-section" @(CanOpenPanelForAnyField("FromSubmission", "ToSubmission") ? "open" : null)>
+                            <summary class="search-filter-section__summary">
+                                <h2 class="search-filter-section__summary-heading">Days since submission</h2>
+                            </summary>
+                            <div class="search-filter-section__content">
+                                <p class="govuk-body">Enter the number of days you want to search from</p>
+                                <p class="govuk-hint govuk-!-margin-bottom-0">For example, 23 to 45 days</p>
+                                <div class="govuk-form-group govuk-!-margin-bottom-2">
+                                    <div class="display-inline-block govuk-!-padding-right-4">
+                                        <rsp-gds-input asp-for="Search.FromDaysSinceSubmission" width-class="govuk-input--width-4" label-text=" " label-html-class="font-weight-none" />
+                                    </div>
+                                    <div class="govuk-body govuk-!-padding-top-7 govuk-!-margin-bottom-0 govuk-!-padding-right-4 display-inline-block">
+                                        to
+                                    </div>
+                                    <div class="display-inline-block govuk-!-padding-right-4">
+                                        <rsp-gds-input asp-for="Search.ToDaysSinceSubmission" width-class="govuk-input--width-4" label-text=" " label-html-class="font-weight-none" />
+                                    </div>
+                                    <div class="govuk-body govuk-!-padding-top-7 govuk-!-margin-bottom-0 display-inline-block">
+                                        days
+                                    </div>
+                                </div>
+                            </div>
+                        </details>
+
                         <!-- Short project title -->
                         <details class="search-filter-section" @(CanOpenPanelForField("ShortProjectTitle") ? "open" : null)>
                             <summary class="search-filter-section__summary">
@@ -169,7 +194,8 @@
                                     class="search-filter-summary__remove-filter">
                                         <span class="search-filter-summary__remove-filter-text">
                                             <span class="govuk-visually-hidden">Remove filter</span>
-                                            @if (filterKey.Contains("date", StringComparison.OrdinalIgnoreCase))
+                                            @if (filterKey.Contains("date", StringComparison.OrdinalIgnoreCase)
+                                            || filterKey.Contains("submission", StringComparison.OrdinalIgnoreCase))
                                             {
                                                 @($"{filterKey} {val}")
                                             }

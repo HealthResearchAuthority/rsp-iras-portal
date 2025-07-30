@@ -49,6 +49,19 @@ public class ModificationsTasklistController(IApplicationsService applicationsSe
             IrasId = model.Search.IrasId,
         };
 
+        // Since we are searching backwards from the current date, we need to reverse the logic for the date range.
+        if (model.Search.FromSubmission != null)
+        {
+            var fromDaysSinceSubmission = DateTime.UtcNow.AddDays(-model.Search.FromSubmission.Value);
+            searchQuery.ToDate = fromDaysSinceSubmission;
+        }
+        if (model.Search.ToSubmission != null)
+        {
+            var toDaysSinceSubmisison = DateTime.UtcNow.AddDays(-model.Search.ToSubmission.Value);
+            toDaysSinceSubmisison = toDaysSinceSubmisison.AddDays(-1).AddTicks(1);
+            searchQuery.FromDate = toDaysSinceSubmisison;
+        }
+
         var querySortField = sortField;
         var querySortDirection = sortDirection;
 
@@ -61,6 +74,7 @@ public class ModificationsTasklistController(IApplicationsService applicationsSe
         }
 
         var result = await applicationsService.GetModifications(searchQuery, pageNumber, pageSize, querySortField, querySortDirection);
+
         model.Modifications = result?.Content?.Modifications?
             .Select(dto => new TaskListModificationViewModel
             {
@@ -73,18 +87,10 @@ public class ModificationsTasklistController(IApplicationsService applicationsSe
                     LeadNation = dto.LeadNation,
                     SponsorOrganisation = dto.SponsorOrganisation,
                     CreatedAt = dto.CreatedAt
-                }
+                },
+                IsSelected = selectedModificationIds?.Contains(dto.ModificationId) == true
             })
             .ToList() ?? [];
-
-        // mark selected modifications as such in the view model
-        foreach (var mod in model.Modifications)
-        {
-            if (selectedModificationIds?.Contains(mod.Modification.ModificationId) == true)
-            {
-                mod.IsSelected = true;
-            }
-        }
 
         model.Pagination = new PaginationViewModel(pageNumber, pageSize, result?.Content?.TotalCount ?? 0)
         {
@@ -159,6 +165,14 @@ public class ModificationsTasklistController(IApplicationsService applicationsSe
 
             case "datemodificationsubmitted-to":
                 search.ToDay = search.ToMonth = search.ToYear = null;
+                break;
+
+            case "dayssincesubmission-from":
+                search.FromDaysSinceSubmission = null;
+                break;
+
+            case "dayssincesubmission-to":
+                search.ToDaysSinceSubmission = null;
                 break;
         }
 
