@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Text.RegularExpressions;
 using Rsp.IrasPortal.Application.Constants;
 
 namespace Rsp.IrasPortal.Web.Models;
@@ -23,6 +22,13 @@ public class ApprovalsSearchModel
     public string? ToDay { get; set; }
     public string? ToMonth { get; set; }
     public string? ToYear { get; set; }
+
+    public int? FromSubmission => int.TryParse(FromDaysSinceSubmission, out var days) ? days : null;
+
+    public int? ToSubmission => int.TryParse(ToDaysSinceSubmission, out var days) ? days : null;
+
+    public string? FromDaysSinceSubmission { get; set; }
+    public string? ToDaysSinceSubmission { get; set; }
 
     public List<string> LeadNation { get; set; } = [];
     public List<string> ParticipatingNation { get; set; } = [];
@@ -63,6 +69,16 @@ public class ApprovalsSearchModel
             if (ToDate.HasValue)
             {
                 filters.Add(ApprovalsSearch.ToDateKey, [ToDate.Value.ToString("d MMM yyyy")]);
+            }
+
+            if (FromSubmission.HasValue)
+            {
+                filters.Add(ApprovalsSearch.FromSubmissionKey, [FromDaysSinceSubmission]);
+            }
+
+            if (ToSubmission.HasValue)
+            {
+                filters.Add(ApprovalsSearch.ToSubmissionKey, [ToDaysSinceSubmission]);
             }
 
             if (LeadNation.Count != 0)
