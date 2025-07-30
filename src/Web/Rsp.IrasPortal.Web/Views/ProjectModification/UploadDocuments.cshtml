@@ -15,17 +15,19 @@
 			<partial name="_BackNavigation" model="navModel.Value" />
 		}
 
+		<form asp-action="UploadDocuments" method="post" enctype="multipart/form-data">
 		<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
 		<partial name="_ProjectModificationSummary" model="Model" />
 
 		<p class="govuk-body">
 			Upload your documents here. You’ll add document details in the next step. <br />
-			Documents must be a <strong>PDF, DOC, or XLS</strong> and smaller than <strong>25MB</strong>.
+				Documents must be a XXX or XXX and smaller than XXXMB.
 		</p>
 
-		<form asp-action="UploadDocuments" method="post" enctype="multipart/form-data">
-			<div class="govuk-form-group @(Html.ViewData.ModelState.ContainsKey(nameof(Model.Files)) ? "govuk-form-group--error" : "")">
-				<label class="govuk-label" for="Files">Upload documents</label>
+			<label class="govuk-label" for="Files">Upload documents</label>
+			<div class="govuk-drop-zone @(Html.ViewData.ModelState.ContainsKey(nameof(Model.Files)) ? "govuk-form-group--error" : "")"
+				 data-module="govuk-file-upload">
+
 				<input asp-for="Files"
 					   class="govuk-file-upload"
 					   id="Files"
@@ -35,6 +37,7 @@
 
 				@Html.ValidationMessageFor(m => m.Files, "", new { @class = "govuk-error-message" })
 			</div>
+
 			<div class="govuk-button-group govuk-!-margin-top-4">
 				<button class="govuk-button" data-module="govuk-button" name="action" value="continue">Save and continue</button>
 				@{

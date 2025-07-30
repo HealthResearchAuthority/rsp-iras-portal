@@ -58,4 +58,16 @@ public interface IProjectModificationsServiceClient
     /// <returns>An asynchronous operation that returns all area of changes and specific area of changes.</returns>
     [Get("/projectmodifications/areaofchanges")]
     public Task<ApiResponse<IEnumerable<GetAreaOfChangesResponse>>> GetAreaOfChanges();
+
+    /// <summary>
+    /// Creates one or more modification documents associated with a project modification change.
+    /// </summary>
+    /// <param name="projectModificationChangeRequest">
+    /// A list of <see cref="ProjectModificationDocumentRequest"/> representing the documents to be created.
+    /// </param>
+    /// <returns>
+    /// A task representing the asynchronous operation. The task result contains the API response indicating success or failure.
+    /// </returns>
+    [Post("/projectmodifications/createdocument")]
+    public Task<IApiResponse> CreateModificationDocument(List<ProjectModificationDocumentRequest> projectModificationChangeRequest);
 }
