@@ -638,7 +638,7 @@ public class QuestionnaireController
     /// <param name="role">The role of the organisation. Defaults to SponsorRole if not provided.</param>
     /// <param name="pageSize">Optional page size for pagination.</param>
     /// <returns>A list of organisation names or an error response.</returns>
-    public async Task<IActionResult> SearchOrganisations(QuestionnaireViewModel model, string? role, int? pageSize)
+    public async Task<IActionResult> SearchOrganisations(QuestionnaireViewModel model, string? role, int? pageSize, int pageIndex = 1)
     {
         var returnUrl = TempData.Peek(TempDataKeys.OrgSearchReturnUrl) as string;
 
@@ -682,7 +682,7 @@ public class QuestionnaireController
         role ??= OrganisationRoles.Sponsor;
 
         // Fetch organisations from the RTS service, with or without pagination.
-        var searchResponse = await rtsService.GetOrganisationsByName(model.SponsorOrgSearch.SearchText, role, null, pageSize);
+        var searchResponse = await rtsService.GetOrganisationsByName(model.SponsorOrgSearch.SearchText, role, pageIndex, pageSize);
 
         // Handle error response from the service.
         if (!searchResponse.IsSuccessStatusCode || searchResponse.Content == null)

@@ -17,6 +17,8 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
         // Arrange
         var name = "TestOrg";
         var role = "TestRole";
+        int pageIndex = 1;
+        int? pageSize = null;
 
         var searchResponse = new OrganisationSearchResponse
         {
@@ -28,7 +30,7 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
 
         Mocker
             .GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisationsByName(name, role, null, null))
+            .Setup(s => s.GetOrganisationsByName(name, role, pageIndex, pageSize))
             .ReturnsAsync
             (
                 new ServiceResponse<OrganisationSearchResponse>()
@@ -36,7 +38,7 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
             );
 
         // Act
-        var result = await Sut.GetOrganisationsByName(name, role, null, null);
+        var result = await Sut.GetOrganisationsByName(name, role, pageIndex, pageSize);
 
         // Assert
         var okResult = result.ShouldBeOfType<OkObjectResult>();
@@ -49,10 +51,12 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
         // Arrange
         var name = "TestOrg";
         var role = "TestRole";
+        int pageIndex = 1;
+        int? pageSize = null;
 
         Mocker
             .GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisationsByName(name, role, null, null))
+            .Setup(s => s.GetOrganisationsByName(name, role, pageIndex, pageSize))
             .ReturnsAsync
             (
                 new ServiceResponse<OrganisationSearchResponse>()
@@ -68,7 +72,7 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
         };
 
         // Act
-        var result = await Sut.GetOrganisationsByName(name, role, null, null);
+        var result = await Sut.GetOrganisationsByName(name, role, pageIndex, pageSize);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -82,6 +86,8 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
         // Arrange
         var name = "TestOrg";
         var role = "TestRole";
+        int pageIndex = 1;
+        int? pageSize = null;
 
         var searchResponse = new OrganisationSearchResponse
         {
@@ -93,7 +99,7 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
 
         Mocker
             .GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisations(role, null, null))
+            .Setup(s => s.GetOrganisations(role, pageIndex, pageSize))
             .ReturnsAsync
             (
                 new ServiceResponse<OrganisationSearchResponse>()
@@ -101,7 +107,7 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
             );
 
         // Act
-        var result = await Sut.GetOrganisations(role, null, null);
+        var result = await Sut.GetOrganisations(role, pageIndex, pageSize);
 
         // Assert
         var okResult = result.ShouldBeOfType<OkObjectResult>();
@@ -114,10 +120,12 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
         // Arrange
         var name = "TestOrg";
         var role = "TestRole";
+        int pageIndex = 1;
+        int? pageSize = null;
 
         Mocker
             .GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisations(role, null, null))
+            .Setup(s => s.GetOrganisations(role, pageIndex, pageSize))
             .ReturnsAsync
             (
                 new ServiceResponse<OrganisationSearchResponse>()
@@ -133,7 +141,7 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
         };
 
         // Act
-        var result = await Sut.GetOrganisations(role, null, null);
+        var result = await Sut.GetOrganisations(role, pageIndex, pageSize);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();

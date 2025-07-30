@@ -193,6 +193,7 @@ public class ApprovalsController
                         .ToList();
                 }
                 break;
+
             case "participatingnation":
                 if (!string.IsNullOrEmpty(value) && search.ParticipatingNation?.Count > 0)
                 {
@@ -201,6 +202,7 @@ public class ApprovalsController
                         .ToList();
                 }
                 break;
+
             case "modificationtype":
                 if (!string.IsNullOrEmpty(value) && search.ModificationTypes?.Count > 0)
                 {
@@ -223,7 +225,7 @@ public class ApprovalsController
     /// <param name="role">The role of the organisation. Defaults to SponsorRole if not provided.</param>
     /// <param name="pageSize">Optional page size for pagination.</param>
     /// <returns>A list of organisation names or an error response.</returns>
-    public async Task<IActionResult> SearchOrganisations(ApprovalsSearchViewModel model, string? role, int? pageSize)
+    public async Task<IActionResult> SearchOrganisations(ApprovalsSearchViewModel model, string? role, int? pageSize, int pageIndex = 1)
     {
         var returnUrl = TempData.Peek(TempDataKeys.OrgSearchReturnUrl) as string;
 
@@ -258,7 +260,7 @@ public class ApprovalsController
         role ??= OrganisationRoles.Sponsor;
 
         // Fetch organisations from the RTS service, with or without pagination.
-        var searchResponse = await rtsService.GetOrganisationsByName(model.Search.SponsorOrgSearch.SearchText, role, null, pageSize);
+        var searchResponse = await rtsService.GetOrganisationsByName(model.Search.SponsorOrgSearch.SearchText, role, pageIndex, pageSize);
 
         // Handle error response from the service.
         if (!searchResponse.IsSuccessStatusCode || searchResponse.Content == null)

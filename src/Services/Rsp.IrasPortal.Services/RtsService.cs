@@ -32,7 +32,7 @@ public class RtsService(IRtsServiceClient rtsServiceClient) : IRtsService
     /// <param name="pageIndex">Index (1-based) of page for paginated results.</param>
     /// <param name="pageSize">Optional maximum number of results to return.</param>
     /// <returns>An asynchronous operation that returns organisations.</returns>
-    public async Task<ServiceResponse<OrganisationSearchResponse>> GetOrganisations(string? role, int? pageIndex, int? pageSize)
+    public async Task<ServiceResponse<OrganisationSearchResponse>> GetOrganisations(string? role, int pageIndex = 1, int? pageSize = null)
     {
         var apiResponse = await rtsServiceClient.GetOrganisations(role, pageIndex, pageSize);
 
@@ -47,7 +47,7 @@ public class RtsService(IRtsServiceClient rtsServiceClient) : IRtsService
     /// <param name="pageIndex">Index (1-based) of page for paginated results.</param>
     /// <param name="pageSize">Optional maximum number of results to return.</param>
     /// <returns>An asynchronous operation that returns organisations.</returns>
-    public async Task<ServiceResponse<OrganisationSearchResponse>> GetOrganisationsByName(string name, string? role, int? pageIndex, int? pageSize)
+    public async Task<ServiceResponse<OrganisationSearchResponse>> GetOrganisationsByName(string name, string? role, int pageIndex = 1, int? pageSize = null)
     {
         var apiResponse = await rtsServiceClient.GetOrganisationsByName(name, role, pageIndex, pageSize);
 

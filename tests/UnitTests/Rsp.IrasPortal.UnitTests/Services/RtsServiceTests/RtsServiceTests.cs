@@ -51,6 +51,8 @@ public class RtsServiceTests : TestServiceBase<RtsService>
     {
         // Arrange
         var organisationName = "Test";
+        int pageIndex = 1;
+        int? pageSize = null;
         var expectedResponse = new ApiResponse<OrganisationSearchResponse>
         (
             new HttpResponseMessage(HttpStatusCode.OK),
@@ -66,11 +68,11 @@ public class RtsServiceTests : TestServiceBase<RtsService>
 
         Mocker
             .GetMock<IRtsServiceClient>()
-            .Setup(client => client.GetOrganisationsByName(organisationName, null, null, null))
+            .Setup(client => client.GetOrganisationsByName(organisationName, null, pageIndex, pageSize))
             .ReturnsAsync(expectedResponse);
 
         // Act
-        var result = await Sut.GetOrganisationsByName(organisationName, null, null, null);
+        var result = await Sut.GetOrganisationsByName(organisationName, null, pageIndex, pageSize);
 
         // Assert
         result.ShouldBeOfType<ServiceResponse<OrganisationSearchResponse>>();
@@ -120,6 +122,8 @@ public class RtsServiceTests : TestServiceBase<RtsService>
     public async Task GetOrganisations_ShouldReturnListOfOrganisations_WhenNameIsValid()
     {
         // Arrange
+        int pageIndex = 1;
+        int? pageSize = null;
         var expectedResponse = new ApiResponse<OrganisationSearchResponse>
         (
             new HttpResponseMessage(HttpStatusCode.OK),
@@ -135,11 +139,11 @@ public class RtsServiceTests : TestServiceBase<RtsService>
 
         Mocker
             .GetMock<IRtsServiceClient>()
-            .Setup(client => client.GetOrganisations(null, null, null))
+            .Setup(client => client.GetOrganisations(null, pageIndex, pageSize))
             .ReturnsAsync(expectedResponse);
 
         // Act
-        var result = await Sut.GetOrganisations(null, null, null);
+        var result = await Sut.GetOrganisations(null, pageIndex, pageSize);
 
         // Assert
         result.ShouldBeOfType<ServiceResponse<OrganisationSearchResponse>>();

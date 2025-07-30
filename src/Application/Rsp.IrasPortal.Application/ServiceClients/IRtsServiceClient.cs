@@ -17,7 +17,7 @@ public interface IRtsServiceClient
     /// <param name="pageSize">Optional maximum number of results to return.</param>
     /// <returns>An asynchronous operation that returns organisations.</returns>
     [Get("/organisations/getall")]
-    public Task<ApiResponse<OrganisationSearchResponse>> GetOrganisations(string? role, int? pageIndex, int? pageSize);
+    public Task<ApiResponse<OrganisationSearchResponse>> GetOrganisations(string? role, int pageIndex = 1, int? pageSize = null);
 
     /// <summary>
     /// Searches for organisations by name, with optional role filtering and paging.
@@ -27,7 +27,7 @@ public interface IRtsServiceClient
     /// <param name="pageIndex">Index (1-based) of page for paginated results.</param>
     /// <param name="pageSize">Optional maximum number of results to return.</param>
     [Get("/organisations/searchbyname")]
-    public Task<ApiResponse<OrganisationSearchResponse>> GetOrganisationsByName(string name, string? role, int? pageIndex, int? pageSize);
+    public Task<ApiResponse<OrganisationSearchResponse>> GetOrganisationsByName(string name, string? role, int pageIndex = 1, int? pageSize = null);
 
     /// <summary>
     /// Gets the organisation by Id

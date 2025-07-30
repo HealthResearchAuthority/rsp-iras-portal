@@ -24,13 +24,13 @@ public class OrganisationController
     /// <param name="role">The role of the organisation. Defaults to SponsorRole if not provided.</param>
     /// <param name="pageSize">Optional page size for pagination.</param>
     /// <returns>A list of organisation names or an error response.</returns>
-    public async Task<IActionResult> GetSponsorOrganisationsNames(string name, string? role, int? pageSize)
+    public async Task<IActionResult> GetSponsorOrganisationsNames(string name, string? role, int? pageSize, int pageIndex = 1)
     {
         // Use the default sponsor role if no role is provided.
         role ??= OrganisationRoles.Sponsor;
 
         // Fetch organisations from the RTS service, with or without pagination.
-        var response = await rtsService.GetOrganisationsByName(name, role, null, pageSize);
+        var response = await rtsService.GetOrganisationsByName(name, role, pageIndex, pageSize);
 
         // Handle error response from the service.
         if (!response.IsSuccessStatusCode || response.Content == null)
@@ -52,7 +52,7 @@ public class OrganisationController
     /// <param name="pageIndex">1-based index of the page to retrieve. Must be greater than 0. If null, will be set to 1 by default.</param>
     /// <param name="pageSize">Optional number of items per page. If null, all matching organisations are returned. Must be greater than 0 if specified.</param>
     /// <returns></returns>
-    public async Task<IActionResult> GetOrganisationsByName(string name, string? role, int? pageIndex = 1, int? pageSize = 10)
+    public async Task<IActionResult> GetOrganisationsByName(string name, string? role, int pageIndex = 1, int? pageSize = 10)
     {
         // Fetch organisations from the RTS service, with or without pagination.
         var response = await rtsService.GetOrganisationsByName(name, role, pageIndex, pageSize);
@@ -73,7 +73,7 @@ public class OrganisationController
     /// <param name="pageIndex">1-based index of the page to retrieve. Must be greater than 0. If null, will be set to 1 by default.</param>
     /// <param name="pageSize">Optional number of items per page. If null, all matching organisations are returned. Must be greater than 0 if specified.</param>
     /// <returns></returns>
-    public async Task<IActionResult> GetOrganisations(string? role, int? pageIndex = 1, int? pageSize = 10)
+    public async Task<IActionResult> GetOrganisations(string? role, int pageIndex = 1, int? pageSize = 10)
     {
         // Fetch organisations from the RTS service, with or without pagination.
         var response = await rtsService.GetOrganisations(role, pageIndex, pageSize);
