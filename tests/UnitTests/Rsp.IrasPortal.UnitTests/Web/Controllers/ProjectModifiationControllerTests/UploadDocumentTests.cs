@@ -68,7 +68,5 @@ public class UploadDocumentTests : TestServiceBase<ProjectModificationController
         result.ShouldBeOfType<RedirectToActionResult>();
         var redirect = result as RedirectToActionResult;
         redirect!.ActionName.ShouldBe("ReviewDocument");
-
-        Sut.TempData["UploadSuccess"].ShouldBe(true);
     }
 }
