@@ -9,8 +9,15 @@ namespace Rsp.IrasPortal.Services;
 /// Service responsible for managing file uploads and retrievals from Azure Blob Storage.
 /// </summary>
 /// <param name="blobServiceClient">Injected Azure BlobServiceClient for interacting with the Blob service.</param>
-public class BlobStorageService(BlobServiceClient blobServiceClient) : IBlobStorageService
+public class BlobStorageService : IBlobStorageService
 {
+    private readonly BlobServiceClient _blobServiceClient;
+
+    public BlobStorageService(BlobServiceClient blobServiceClient)
+    {
+        _blobServiceClient = blobServiceClient;
+    }
+
     /// <summary>
     /// Uploads a collection of files to the specified Azure Blob Storage container and folder path.
     /// </summary>
@@ -24,7 +31,7 @@ public class BlobStorageService(BlobServiceClient blobServiceClient) : IBlobStor
         if (files == null || !files.Any())
             throw new ArgumentException("No files to upload.", nameof(files));
 
-        var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+        var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
         await containerClient.CreateIfNotExistsAsync();
 
         var uploadedBlobs = new List<DocumentSummaryItemDto>();
@@ -57,7 +64,7 @@ public class BlobStorageService(BlobServiceClient blobServiceClient) : IBlobStor
     /// <returns>A list of <see cref="DocumentSummaryItemDto"/> representing the files found.</returns>
     public async Task<List<DocumentSummaryItemDto>> ListFilesAsync(string containerName, string folderPrefix)
     {
-        var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+        var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
         var results = new List<DocumentSummaryItemDto>();
 
         await foreach (var blobItem in containerClient.GetBlobsAsync(prefix: folderPrefix))
