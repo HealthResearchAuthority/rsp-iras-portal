@@ -1,0 +1,125 @@
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.Responses;
+using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Web.Controllers;
+using Rsp.IrasPortal.Web.Models;
+
+namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModifiationControllerTests;
+
+public class ReviewDocumentTests : TestServiceBase<ProjectModificationController>
+{
+    [Theory, AutoData]
+    public async Task Review_WithDocuments_ReturnsViewWithDocuments(
+        string shortTitle,
+        string irasId,
+        string modificationIdentifier,
+        string specificAreaOfChange,
+        Guid changeId,
+        string projectRecordId,
+        string respondentId,
+        List<ProjectModificationDocumentRequest> documentResponses
+    )
+    {
+        // Arrange
+        Mocker
+            .GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationChangesDocuments(changeId, projectRecordId, respondentId))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = documentResponses
+            });
+
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ShortProjectTitle] = shortTitle,
+            [TempDataKeys.IrasId] = irasId,
+            [TempDataKeys.ProjectModificationIdentifier] = modificationIdentifier,
+            [TempDataKeys.SpecificAreaOfChangeText] = specificAreaOfChange,
+            [TempDataKeys.ProjectModificationChangeId] = changeId,
+            [TempDataKeys.ProjectRecordId] = projectRecordId
+        };
+
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext
+            {
+                Items = { [ContextItemKeys.RespondentId] = respondentId }
+            }
+        };
+
+        // Act
+        var result = await Sut.Review();
+
+        // Assert
+        result.ShouldBeOfType<ViewResult>();
+        var viewResult = result as ViewResult;
+        viewResult!.ViewName.ShouldBe("ModificationReviewDocuments");
+
+        var model = viewResult.Model.ShouldBeOfType<ModificationReviewDocumentsViewModel>();
+        model.ShortTitle.ShouldBe(shortTitle);
+        model.IrasId.ShouldBe(irasId);
+        model.ModificationIdentifier.ShouldBe(modificationIdentifier);
+        model.PageTitle.ShouldBe($"Documents added for {specificAreaOfChange}");
+
+        model.UploadedDocuments.Count.ShouldBe(documentResponses.Count);
+    }
+
+    [Theory, AutoData]
+    public async Task Review_ResponseFails_AddsModelErrorAndReturnsEmptyDocuments(
+        string shortTitle,
+        string irasId,
+        string modificationIdentifier,
+        string specificAreaOfChange,
+        Guid changeId,
+        string projectRecordId,
+        string respondentId
+    )
+    {
+        // Arrange
+        Mocker
+            .GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationChangesDocuments(changeId, projectRecordId, respondentId))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
+            {
+                StatusCode = HttpStatusCode.InternalServerError,
+                Content = null
+            });
+
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ShortProjectTitle] = shortTitle,
+            [TempDataKeys.IrasId] = irasId,
+            [TempDataKeys.ProjectModificationIdentifier] = modificationIdentifier,
+            [TempDataKeys.SpecificAreaOfChangeText] = specificAreaOfChange,
+            [TempDataKeys.ProjectModificationChangeId] = changeId,
+            [TempDataKeys.ProjectRecordId] = projectRecordId
+        };
+
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext
+            {
+                Items = { [ContextItemKeys.RespondentId] = respondentId }
+            }
+        };
+
+        // Act
+        var result = await Sut.Review();
+
+        // Assert
+        result.ShouldBeOfType<ViewResult>();
+        var viewResult = result as ViewResult;
+        viewResult!.ViewName.ShouldBe("ModificationReviewDocuments");
+
+        var model = viewResult.Model.ShouldBeOfType<ModificationReviewDocumentsViewModel>();
+        model.UploadedDocuments.ShouldBeEmpty();
+        Sut.ModelState.IsValid.ShouldBeFalse();
+        Sut.ModelState[string.Empty].Errors.ShouldContain(e =>
+            e.ErrorMessage == "No documents found or an error occurred while retrieving documents.");
+    }
+}
