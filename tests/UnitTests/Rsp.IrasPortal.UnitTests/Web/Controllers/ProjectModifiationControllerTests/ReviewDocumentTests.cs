@@ -53,7 +53,7 @@ public class ReviewDocumentTests : TestServiceBase<ProjectModificationController
         };
 
         // Act
-        var result = await Sut.Review();
+        var result = await Sut.ReviewDocument();
 
         // Assert
         result.ShouldBeOfType<ViewResult>();
@@ -109,7 +109,7 @@ public class ReviewDocumentTests : TestServiceBase<ProjectModificationController
         };
 
         // Act
-        var result = await Sut.Review();
+        var result = await Sut.ReviewDocument();
 
         // Assert
         result.ShouldBeOfType<ViewResult>();
