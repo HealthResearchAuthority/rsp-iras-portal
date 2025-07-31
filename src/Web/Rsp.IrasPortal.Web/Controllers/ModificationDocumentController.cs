@@ -80,7 +80,6 @@ public partial class ProjectModificationController : Controller
         // Save uploaded document metadata to the backend service
         await projectModificationsService.CreateDocumentModification(uploadedDocuments);
 
-        TempData["UploadSuccess"] = true;
         return RedirectToAction(nameof(ReviewDocument));
     }
 
