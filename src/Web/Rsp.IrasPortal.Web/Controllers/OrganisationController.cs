@@ -24,7 +24,7 @@ public class OrganisationController
     /// <param name="role">The role of the organisation. Defaults to SponsorRole if not provided.</param>
     /// <param name="pageSize">Optional page size for pagination.</param>
     /// <returns>A list of organisation names or an error response.</returns>
-    public async Task<IActionResult> GetSponsorOrganisationsNames(string name, string? role, int? pageSize, int pageIndex = 1)
+    public async Task<IActionResult> GetSponsorOrganisationsNames(string name, string? role, int? pageSize = 5, int pageIndex = 1)
     {
         // Use the default sponsor role if no role is provided.
         role ??= OrganisationRoles.Sponsor;
