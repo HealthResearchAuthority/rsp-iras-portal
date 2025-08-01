@@ -2,7 +2,9 @@
 
 @{
     ViewBag.Active = "reviewBodies";
-    ViewBag.Title = "View review body";
+    var addUserTitle = "Check and add user profile - Manage review bodies - System Administration";
+    var removeUserTitle = "Check and remove user profile - Manage review bodies - System Administration";
+    ViewBag.Title = !Model.IsRemove ? addUserTitle : removeUserTitle;
     var submitButtonModel = !Model.IsRemove ?
         ("rbc:submitadduser", "Add user profile", new Dictionary<string, string>()) :
         ("rbc:submitremoveuser", "Remove user profile", new Dictionary<string, string>());
