@@ -252,15 +252,14 @@
                                 @if (user.CurrentLogin.HasValue)
                                 {
                                     var dateString = user.CurrentLogin.Value.ToString("dd MMM yyyy");
-                                    var timeString = user.CurrentLogin.Value.ToString("hh:mm");
+                                    var timeString = user.CurrentLogin.Value.ToString("h:mm");
                                     var amPm = user.CurrentLogin.Value.ToString("tt").ToLower();
 
                                     var currentLoginDate = $"{dateString} at ";
                                     var currentLoginTime = $"{timeString}{amPm}";
 
 
-                                        <p class="margin-zero">@currentLoginDate</p>
-                                        <p class="margin-zero">@currentLoginTime</p>
+										<p class="margin-zero">@currentLoginDate @currentLoginTime</p>                                        
                                 }
                             </td>
                             <td class="govuk-table__cell">
