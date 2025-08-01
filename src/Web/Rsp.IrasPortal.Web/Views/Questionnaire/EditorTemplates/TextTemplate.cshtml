@@ -18,12 +18,14 @@
         : "";
 
     var validationMessage = "Provide an answer for this question";
+    var types = (question.QuestionType.ToLower(), question.DataType.ToLower());
+    var inputType = types == ("text", "email") ? "email" : "text";
 }
 
 <rsp-gds-input asp-for="Questions[index].AnswerText"
                id="Questions[@index].AnswerText"
                field-id="@(question.QuestionId)_Text"
-               input-type="text"
+               input-type=@inputType
                label-text="@question.QuestionText"
                hint-html="@Html.Raw(hintHtml)"
                error-key="Questions[@index].AnswerText"
