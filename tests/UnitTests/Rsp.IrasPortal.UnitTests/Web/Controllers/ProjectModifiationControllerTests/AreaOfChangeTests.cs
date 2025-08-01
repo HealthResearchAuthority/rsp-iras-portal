@@ -40,20 +40,20 @@ public class AreaOfChangeTests : TestServiceBase<ProjectModificationController>
         {
             new GetAreaOfChangesResponse
             {
-                Id = 1,
+                Id = "1",
                 Name = "Test Area of Change",
                 ModificationSpecificAreaOfChanges = new List<ModificationSpecificAreaOfChangeDto>
                 {
                     new ModificationSpecificAreaOfChangeDto
                     {
-                        Id = 1,
+                        Id = "1",
                         Name = "Specific Area 1",
                         JourneyType = "specific area 1",
                         ModificationAreaOfChangeId = 1
                     },
                     new ModificationSpecificAreaOfChangeDto
                     {
-                        Id = 2,
+                        Id = "2",
                         Name = "Specific Area 2",
                         JourneyType = "specific area 2",
                         ModificationAreaOfChangeId = 1
