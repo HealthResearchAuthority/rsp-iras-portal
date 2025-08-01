@@ -620,18 +620,18 @@ public class CmsQuestionSetController(ICmsQuestionsetService questionSetService,
         // get the application by id
         var response = await applicationsService.GetProjectRecord(projectApplicationId);
 
-        if (!response.IsSuccessStatusCode)
-        {
-            return null;
-        }
+        // override the submitted model
+        // with the updated model with answers
+        model.Questions = GetQuestionsFromSession(model);
 
-        var irasApplication = response.Content!;
+        // get the application from the session
+        // to get the applicationId
+        var application = this.GetApplicationFromSession();
 
-        // save the application in session
-        HttpContext.Session.SetString(SessionKeys.ProjectRecord, JsonSerializer.Serialize(irasApplication));
+        // set the previous, current and next stages
+        await SetStage(model.CurrentStage!);
 
-        return irasApplication;
-    }
+        TempData.TryAdd(TempDataKeys.SponsorOrgSearched, "searched:true");
 
     private static void UpdateWithAnswers(IEnumerable<RespondentAnswerDto> respondentAnswers, List<QuestionViewModel> questionAnswers)
     {

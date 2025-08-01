@@ -9,11 +9,10 @@
 @model QuestionnaireViewModel
 
 @{
-    var index = (int)ViewBag.Index;
-    var question = Model.Questions[index];
-    var errorKey = $"Questions[{index}].AnswerText";
-    var validationMessage = "Provide an answer for this question";
-    var fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
+	var index = (int)ViewBag.Index;
+	var question = Model.Questions[index];
+	var errorKey = $"Questions[{index}].AnswerText";
+	var fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
 
     var rules = question.Rules;
     var conditional = !question.IsMandatory && rules.Count > 0;
