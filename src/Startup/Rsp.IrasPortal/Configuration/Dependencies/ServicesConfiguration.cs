@@ -27,6 +27,7 @@ public static class ServicesConfiguration
         services.AddTransient<IReviewBodyService, ReviewBodyService>();
         services.AddTransient<IRtsService, RtsService>();
         services.AddTransient<IProjectModificationsService, ProjectModificationsService>();
+        services.AddTransient<ICmsQuestionsetService, CmsQuestionsetService>();
 
         // add message handlers
         services.AddTransient<AuthHeadersHandler>();

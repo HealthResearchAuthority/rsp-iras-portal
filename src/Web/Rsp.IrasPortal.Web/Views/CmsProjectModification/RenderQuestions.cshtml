@@ -51,7 +51,7 @@
 @{
 	if (Model.ReviewAnswers)
 	{
-		navModel = ("cmsqnc:submitapplication", "Back", new()
+		navModel = ("qnc:submitapplication", "Back", new()
 {
 			{ "projectRecordId", projectRecordId }
 		});
@@ -59,7 +59,7 @@
 	else if (!string.IsNullOrEmpty(previousStage))
 	{
 		// If there is a previous stage, navigate to that stage in the questionnaire
-		navModel = ("cmsqnc:displayquestionnaire", "Back", new()
+		navModel = ("qnc:displayquestionnaire", "Back", new()
 {
 			{ "categoryId", previousCategory },
 			{ "sectionId", previousStage }
@@ -119,7 +119,6 @@
 						<input type="hidden" asp-for="Questions[index].Index" />
 						<input type="hidden" asp-for="Questions[index].QuestionId" />
 						<input type="hidden" asp-for="Questions[index].Category" />
-						<input type="hidden" asp-for="Questions[index].VersionId" />
 						<input type="hidden" asp-for="Questions[index].SectionId" />
 						<input type="hidden" asp-for="Questions[index].Section" />
 						<input type="hidden" asp-for="Questions[index].Heading" />
@@ -132,7 +131,7 @@
 
 						if (!question.IsMandatory)
 						{
-							if (question.Rules.Count > 0)
+							if (question.Rules.Count == 0)
 							{
 								<div class="govuk-inset-text">
 									This question is conditional:
@@ -152,10 +151,7 @@
 							("look-up list", "checkbox") => "CheckboxTemplate",
 							("look-up list", "radio button") => "RadioButtonTemplate",
 							("boolean", "boolean") => "RadioButtonTemplate",
-							("rts:org_lookup", "text") => modificationId == null ?
-								"AutoSuggestTemplate" :
-								"OrgSearchTemplate",
-							("look-up list", "dropdown") => "DropdownTemplate",
+							("rts:org_lookup", "text") => "AutoSuggestTemplate",
 							_ => string.Empty
 						};
 

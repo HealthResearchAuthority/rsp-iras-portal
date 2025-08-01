@@ -24,7 +24,7 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApplicationControllerTests
             Sut.TempData = tempData;
 
             // Act
-            var result = Sut.ProjectOverview();
+            var result = Sut.ProjectOverview("1");
 
             // Assert
             var viewResult = Assert.IsType<ViewResult>(result);

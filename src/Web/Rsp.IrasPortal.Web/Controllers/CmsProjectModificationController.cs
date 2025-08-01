@@ -10,8 +10,10 @@ using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
+using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Extensions;
+using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers;
@@ -19,13 +21,14 @@ namespace Rsp.IrasPortal.Web.Controllers;
 /// <summary>
 /// Controller responsible for handling project modification related actions.
 /// </summary>
-[Route("[controller]/[action]", Name = "pmc:[action]")]
+[Route("[controller]/[action]", Name = "cmspmc:[action]")]
 [Authorize(Policy = "IsUser")]
-public class ProjectModificationController
+public class CmsProjectModificationController
 (
     IProjectModificationsService projectModificationsService,
     IValidator<AreaOfChangeViewModel> areaofChangeValidator,
-    IValidator<SearchOrganisationViewModel> searchOrganisationValidator
+    IValidator<SearchOrganisationViewModel> searchOrganisationValidator,
+    ICmsQuestionSetServiceClient cmsQuestionsetClient
 ) : Controller
 {
     /// <summary>
@@ -97,7 +100,7 @@ public class ProjectModificationController
     [HttpGet]
     public async Task<IActionResult> AreaOfChange()
     {
-        var response = await projectModificationsService.GetAreaOfChanges();
+        var response = await projectModificationsService.GetInitialQuestions();
 
         // If the service call failed, return a generic error page
         if (!response.IsSuccessStatusCode)
@@ -105,24 +108,8 @@ public class ProjectModificationController
             return this.ServiceError(response);
         }
 
-        // Handle case when no area of change data is returned from service
-        if (response.Content == null)
-        {
-            return View(new AreaOfChangeViewModel
-            {
-                AreaOfChangeOptions = new List<SelectListItem>
-                {
-                    new() { Text = "Select area of change", Value = "" }
-                },
-                SpecificChangeOptions = new List<SelectListItem>
-                {
-                    new() { Text = "Select specific change", Value = "" }
-                }
-            });
-        }
-
         // Store the list of area of changes in TempData (as serialized JSON string)
-        TempData[TempDataKeys.AreaOfChanges] = JsonSerializer.Serialize(response.Content);
+        //TempData[TempDataKeys.AreaOfChanges] = JsonSerializer.Serialize(response.Content);
 
         var viewModel = new AreaOfChangeViewModel
         {
@@ -130,10 +117,12 @@ public class ProjectModificationController
             ShortTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
             IrasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty,
             ModificationIdentifier = TempData.Peek(TempDataKeys.ProjectModificationIdentifier) as string ?? string.Empty,
-            AreaOfChangeOptions = response.Content
-                .Select(a => new SelectListItem { Value = a.Id.ToString(), Text = a.Name })
+            AreaOfChangeOptions = response.Content.AreaOfChange.Answers
+                .Select(a => new SelectListItem { Value = a.Key.ToString(), Text = a.OptionName })
                 .Prepend(new SelectListItem { Value = "", Text = "Select area of change" }),
-            SpecificChangeOptions = new List<SelectListItem> { new SelectListItem { Value = "", Text = "Select specific change" } }
+            SpecificChangeOptions = response.Content.SpecificChange.Answers
+                .Select(a => new SelectListItem { Value = a.Key.ToString(), Text = a.OptionName })
+                .Prepend(new SelectListItem { Value = "", Text = "Select specific change" })
         };
 
         // Populate the dropdown options based on any existing selections
@@ -199,10 +188,13 @@ public class ProjectModificationController
         }
 
         // Retrieve the journey type from the selected specific change
-        var journeyType = GetJourneyTypeFromSession(model);
+        var journeyQuestionset = await cmsQuestionsetClient.GetModificationsJourney(model.SpecificChangeId);
+        var questionsetObject = QuestionsetHelpers.BuildQuestionnaireViewModel(journeyQuestionset.Content);
 
         // If no journey type is specified, return the AreaOfChange view
-        return RedirectBasedOnJourneyType(journeyType, model);
+
+        // TODO handle questionset
+        return View("RenderQuestions", questionsetObject);
     }
 
     /// <summary>
@@ -342,35 +334,11 @@ public class ProjectModificationController
     }
 
     /// <summary>
-    /// Retrieves the JourneyType of the selected specific change from session.
-    /// </summary>
-    private string? GetJourneyTypeFromSession(AreaOfChangeViewModel model)
-    {
-        var tempDataString = TempData.Peek(TempDataKeys.AreaOfChanges) as string;
-        if (string.IsNullOrWhiteSpace(tempDataString))
-        {
-            return null;
-        }
-
-        // Deserialize the area of changes from TempData
-        var areaOfChanges = JsonSerializer.Deserialize<List<GetAreaOfChangesResponse>>(tempDataString)!;
-        // Find the specific change based on the selected area and specific change IDs
-        var selectedChange = areaOfChanges
-            .FirstOrDefault(a => a.Id == model.AreaOfChangeId)?
-            .ModificationSpecificAreaOfChanges?
-            .FirstOrDefault(sc => sc.Id.ToString() == model.SpecificChangeId);
-
-        // Store the name of the specific area of change in TempData for later use
-        TempData[TempDataKeys.SpecificAreaOfChangeText] = selectedChange?.Name ?? string.Empty;
-        return selectedChange?.JourneyType;
-    }
-
-    /// <summary>
     /// Redirects user to the appropriate screen based on the journey type of their selection.
     /// </summary>
     private IActionResult RedirectBasedOnJourneyType(string? journeyType, AreaOfChangeViewModel model)
     {
-        // If no journey type is specified, return the AreaOfChange view
+        // Handle questionset based on section
         return journeyType switch
         {
             ModificationJourneyTypes.ParticipatingOrganisation => RedirectToAction(nameof(ParticipatingOrganisation)),

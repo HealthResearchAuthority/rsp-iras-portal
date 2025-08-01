@@ -1,4 +1,5 @@
-﻿using Rsp.IrasPortal.Application.DTOs.Requests;
+﻿using Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
+using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.Logging.Interceptors;
@@ -52,4 +53,6 @@ public interface IProjectModificationsService : IInterceptable
     /// Gets all the area of changes and specific area of changes for the modification.
     /// </summary>
     Task<ServiceResponse<IEnumerable<GetAreaOfChangesResponse>>> GetAreaOfChanges();
+
+    Task<ServiceResponse<StartingQuestionsModel>> GetInitialQuestions();
 }

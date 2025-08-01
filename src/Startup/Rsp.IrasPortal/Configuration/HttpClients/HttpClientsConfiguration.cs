@@ -66,7 +66,7 @@ public static class HttpClientsConfiguration
 
         services
             .AddRefitClient<ICmsQuestionSetServiceClient>(refitSettings)
-            .ConfigureHttpClient(client => client.BaseAddress = new Uri("https://localhost:44357/"))
+            .ConfigureHttpClient(client => client.BaseAddress = new Uri("https://localhost:44345/"))
             .AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
 
         services

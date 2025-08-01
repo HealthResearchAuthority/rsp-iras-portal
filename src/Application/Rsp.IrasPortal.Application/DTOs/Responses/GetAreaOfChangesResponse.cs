@@ -5,7 +5,7 @@ public class GetAreaOfChangesResponse
     /// <summary>
     /// Gets or sets the unique identifier for this area of change.
     /// </summary>
-    public int Id { get; set; }
+    public string Id { get; set; }
 
     /// <summary>
     /// Gets or sets the name of the area of change.

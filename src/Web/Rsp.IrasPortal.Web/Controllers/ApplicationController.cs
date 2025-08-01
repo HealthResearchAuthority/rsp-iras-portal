@@ -9,12 +9,12 @@ using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
+using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Entities;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
-using Rsp.IrasPortal.Application.ServiceClients;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
@@ -184,15 +184,13 @@ public class ApplicationController
         HttpContext.Session.SetString(SessionKeys.ProjectRecord, JsonSerializer.Serialize(irasApplication));
 
         // Get question category
-        //var questionCategoriesResponse = await questionSetService.GetQuestionCategories();
         var questionCategoriesResponse = await cmsSevice.GetQuestionCategories();
-        var categoryId = questionCategoriesResponse.IsSuccessStatusCode && questionCategoriesResponse.Content != null
-            ? questionCategoriesResponse.Content.FirstOrDefault()?.CategoryId ?? string.Empty
-            : string.Empty;
+        var categoryId = questionCategoriesResponse.IsSuccessStatusCode && questionCategoriesResponse.Content?.FirstOrDefault() != null
+            ? questionCategoriesResponse.Content.FirstOrDefault()?.CategoryId : QuestionCategories.A;
 
         return RedirectToAction(nameof(CmsQuestionSetController.Resume), "CmsQuestionSet", new
         {
-            categoryId = QuestionCategories.ProjectRecrod,
+            categoryId = categoryId,
             projectRecordId = irasApplication.Id
         });
     }
@@ -265,8 +263,17 @@ public class ApplicationController
     /// clears related TempData keys, and populates the ProjectOverviewModel with project details from TempData.
     /// </summary>
     /// <returns>The ProjectOverview view with the populated model.</returns>
-    public IActionResult ProjectOverview()
+    public async Task<IActionResult> ProjectOverview(string applicationId)
     {
+        var project = await applicationsService.GetApplication(applicationId);
+
+        if (project.IsSuccessStatusCode && project.Content != null)
+        {
+            TempData[TempDataKeys.ShortProjectTitle] = project.Content.Title;
+            TempData[TempDataKeys.ProjectRecordId] = project.Content.Id;
+            TempData[TempDataKeys.IrasId] = project.Content.IrasId;
+        }
+
         // If there is a project modification change, show the notification banner
         if (TempData.Peek(TempDataKeys.ProjectModificationId) is not null)
         {
@@ -283,7 +290,7 @@ public class ApplicationController
         var model = new ProjectOverviewModel
         {
             ProjectTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
-            CategoryId = QuestionCategories.ProjectRecrod, //TempData.Peek(TempDataKeys.CategoryId) as string ?? string.Empty,
+            CategoryId = QuestionCategories.A, //TempData.Peek(TempDataKeys.CategoryId) as string ?? string.Empty,
             ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty
         };
 
