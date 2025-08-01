@@ -1,5 +1,6 @@
 ﻿using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
@@ -14,7 +15,8 @@ namespace Rsp.IrasPortal.Services;
 /// Handles retrieval and creation of project modifications and their changes
 /// by delegating to the IProjectModificationsServiceClient and mapping responses.
 /// </summary>
-public class ProjectModificationsService(IProjectModificationsServiceClient projectModificationsServiceClient) : IProjectModificationsService
+public class ProjectModificationsService(IProjectModificationsServiceClient projectModificationsServiceClient,
+    ICmsQuestionSetServiceClient cmsQuestionsetClient) : IProjectModificationsService
 {
     /// <summary>
     /// Gets the saved application by Id.
@@ -163,6 +165,17 @@ public class ProjectModificationsService(IProjectModificationsServiceClient proj
     public async Task<ServiceResponse<GetModificationsResponse>> GetModificationsByIds(List<string> Ids)
     {
         var apiResponse = await projectModificationsServiceClient.GetModificationsByIds(Ids);
+        return apiResponse.ToServiceResponse();
+    }
+
+    /// <summary>
+    /// Retrieves modifications by a list of modification IDs.
+    /// </summary>
+    /// <param name="Ids">A list of IDs relating to modifications</param>
+    /// <returns>A list of modifications corresponding to the provided IDs</returns>
+    public async Task<ServiceResponse<StartingQuestionsModel>> GetInitialQuestions()
+    {
+        var apiResponse = await cmsQuestionsetClient.GetInitialModificationQuestions();
         return apiResponse.ToServiceResponse();
     }
 

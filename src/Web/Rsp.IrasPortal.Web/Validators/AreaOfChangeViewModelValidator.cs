@@ -8,11 +8,11 @@ public class AreaOfChangeViewModelValidator : AbstractValidator<AreaOfChangeView
     public AreaOfChangeViewModelValidator()
     {
         RuleFor(x => x.AreaOfChangeId)
-            .Must(id => id.HasValue && id.Value != 0)
+            .Must(id => id != null)
             .WithMessage("Select area of change");
 
         RuleFor(x => x.SpecificChangeId)
-            .Must(id => id.HasValue && id.Value != 0)
+            .Must(id => id != null)
             .WithMessage("Select specific change");
     }
 }
