@@ -88,4 +88,49 @@ public class AreaOfChangeTests : TestServiceBase<ProjectModificationController>
         var viewResult = result.ShouldBeOfType<ViewResult>();
         viewResult.Model.ShouldBeOfType<AreaOfChangeViewModel>();
     }
+
+    [Theory, AutoData]
+    public async Task AreaOfChange_RedirectsToAreaOfChange_WhenContentIsNullOrEmpty
+   (
+       string projectRecordId,
+       int irasId
+   )
+    {
+        // Arrange
+        var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectRecordId] = projectRecordId
+        };
+
+        tempData[TempDataKeys.IrasId] = irasId;
+
+        // Mock GetRespondentFromContext extension
+        var respondent = new { GivenName = "John", FamilyName = "Doe" };
+
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext
+            {
+                Items = { ["Respondent"] = respondent }
+            }
+        };
+
+        var serviceResponse = new ServiceResponse<IEnumerable<GetAreaOfChangesResponse>>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = null
+        };
+
+        Mocker
+            .GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetAreaOfChanges())
+            .ReturnsAsync(serviceResponse);
+
+        // Act
+        var result = await Sut.AreaOfChange();
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.Model.ShouldBeOfType<AreaOfChangeViewModel>();
+    }
 }

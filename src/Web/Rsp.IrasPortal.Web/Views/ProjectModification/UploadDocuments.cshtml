@@ -1,0 +1,50 @@
+﻿@model Rsp.IrasPortal.Web.Models.ModificationUploadDocumentsViewModel
+
+@{
+	ViewData["Title"] = "Add documents";
+	var errorSummaryTitle = "There is a problem";
+
+	(string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
+	navModel = ("pmc:areaofchange", "Back", new());
+}
+
+<govuk-header />
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-two-thirds">
+		@section BackNavigation {
+			<partial name="_BackNavigation" model="navModel.Value" />
+		}
+
+		<form asp-action="UploadDocuments" method="post" enctype="multipart/form-data">
+		<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
+		<partial name="_ProjectModificationSummary" model="Model" />
+
+		<p class="govuk-body">
+			Upload your documents here. You’ll add document details in the next step. <br />
+				Documents must be a XXX or XXX and smaller than XXXMB.
+		</p>
+
+			<label class="govuk-label" for="Files">Upload documents</label>
+			<div class="govuk-drop-zone @(Html.ViewData.ModelState.ContainsKey(nameof(Model.Files)) ? "govuk-form-group--error" : "")"
+				 data-module="govuk-file-upload">
+
+				<input asp-for="Files"
+					   class="govuk-file-upload"
+					   id="Files"
+					   name="Files"
+					   type="file"
+					   multiple />
+
+				@Html.ValidationMessageFor(m => m.Files, "", new { @class = "govuk-error-message" })
+			</div>
+
+			<div class="govuk-button-group govuk-!-margin-top-4">
+				<button class="govuk-button" data-module="govuk-button" name="action" value="continue">Save and continue</button>
+				@{
+					ViewBag.Style = "govuk-button govuk-button--secondary";
+				}
+				<partial name="_SubmitButton" model="@("app:projectoverview", "Save for later", new Dictionary<string, string> { })" />
+			</div>
+		</form>
+	</div>
+</div>

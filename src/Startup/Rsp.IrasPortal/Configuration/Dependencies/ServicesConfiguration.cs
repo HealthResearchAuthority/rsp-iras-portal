@@ -27,6 +27,7 @@ public static class ServicesConfiguration
         services.AddTransient<IReviewBodyService, ReviewBodyService>();
         services.AddTransient<IRtsService, RtsService>();
         services.AddTransient<IProjectModificationsService, ProjectModificationsService>();
+        services.AddScoped<IBlobStorageService, BlobStorageService>();
 
         // add message handlers
         services.AddTransient<AuthHeadersHandler>();

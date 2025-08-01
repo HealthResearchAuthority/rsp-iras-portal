@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using System.Net;
 using System.Text.Json;
+using Azure.Core;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +25,7 @@ namespace Rsp.IrasPortal.Web.Controllers;
 /// </summary>
 [Route("[controller]/[action]", Name = "pmc:[action]")]
 [Authorize(Policy = "IsUser")]
-public class ProjectModificationController
+public partial class ProjectModificationController
 (
     IProjectModificationsService projectModificationsService,
     IRespondentService respondentService,
@@ -32,8 +33,10 @@ public class ProjectModificationController
     IValidator<AreaOfChangeViewModel> areaofChangeValidator,
     IValidator<SearchOrganisationViewModel> searchOrganisationValidator,
     IValidator<DateViewModel> dateViewModelValidator,
-    IValidator<PlannedEndDateOrganisationTypeViewModel> organisationTypeValidator
+    IValidator<PlannedEndDateOrganisationTypeViewModel> organisationTypeValidator,
+    IBlobStorageService blobStorageService
 ) : Controller
+
 {
     /// <summary>
     /// Initiates the creation of a new project modification.
@@ -563,7 +566,7 @@ public class ProjectModificationController
         {
             ModificationJourneyTypes.ParticipatingOrganisation => RedirectToAction(nameof(ParticipatingOrganisation)),
             ModificationJourneyTypes.PlannedEndDate => RedirectToAction(nameof(PlannedEndDate)),
-            ModificationJourneyTypes.ProjectDocument => RedirectToAction("ProjectDocument", "ProjectModification"),
+            ModificationJourneyTypes.ProjectDocument => RedirectToAction(nameof(ProjectDocument)),
             _ => View(nameof(AreaOfChange), model)
         };
     }
