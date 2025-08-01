@@ -13,6 +13,8 @@ public struct TempDataKeys
     public const string ProjectModificationChangeId = "td:project_modification_change_id";
     public const string ProjectRecordResponses = "td:project_record_responses";
     public const string ShortProjectTitle = "td:short_project_title";
+    public const string RemainingDocuments = "td:remaining_documents";
+    public const string NextDocumentToShow = "td:next_document_to_show";
     public const string ProjectPlannedEndDate = "td:project_planned_enddate";
     public const string CategoryId = "td:category_id";
     public const string IrasId = "td:iras_id";

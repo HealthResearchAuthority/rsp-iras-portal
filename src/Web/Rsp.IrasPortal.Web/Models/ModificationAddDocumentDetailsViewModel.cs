@@ -6,7 +6,7 @@ namespace Rsp.IrasPortal.Web.Models;
 /// <summary>
 /// ViewModel for capturing details of a document being added during a modification process.
 /// </summary>
-public class ModificationAddDocumentDetailsViewModel
+public class ModificationAddDocumentDetailsViewModel : BaseProjectModificationViewModel
 {
     /// <summary>
     /// Unique identifier for the uploaded document.
@@ -26,12 +26,24 @@ public class ModificationAddDocumentDetailsViewModel
     /// <summary>
     /// Selected document type ID.
     /// </summary>
-    public int? DocumentTypeId { get; set; }
+    public Guid? DocumentTypeId { get; set; }
 
     /// <summary>
     /// Dropdown options for selecting the document type.
     /// </summary>
-    public List<SelectListItem> DocumentTypeOptions { get; set; } = [];
+    public List<SelectListItem> DocumentTypeOptions { get; set; } =
+    [
+         new SelectListItem
+            {
+                Text = "Select document type",
+                Value = null
+            },
+            new SelectListItem
+            {
+                Text = "Protocol / Clinical Investigation Plan",
+                Value = "8d5c4d33-963b-4e52-a2ee-0f1cb97ba6d3"
+            }
+    ];
 
     /// <summary>
     /// Optional version label provided by the sponsor for the document.
@@ -59,9 +71,31 @@ public class ModificationAddDocumentDetailsViewModel
     public int? SponsorDocumentDateYear { get; set; }
 
     /// <summary>
+    /// Month part of the sponsor-provided document date.
+    /// </summary>
+    public DateTime? SponsorDocumentDate { get; set; }
+
+    /// <summary>
     /// Indicates whether a previous version of the document has been approved.
     /// </summary>
     public bool? HasPreviousVersionApproved { get; set; }
+
+    /// <summary>
+    /// Dropdown options for selecting the document type.
+    /// </summary>
+    public List<SelectListItem> HasPreviousVersionOptions { get; set; } =
+    [
+        new SelectListItem
+            {
+                Text = "Yes",
+                Value = "OPT0004"
+            },
+        new SelectListItem
+            {
+                Text = "No",
+                Value = "OPT0005"
+            }
+    ];
 
     /// <summary>
     /// Dropdown list of months (1–12) with full month names, based on the current culture.

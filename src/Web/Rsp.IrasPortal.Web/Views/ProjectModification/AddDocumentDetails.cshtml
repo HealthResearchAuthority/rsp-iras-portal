@@ -2,91 +2,115 @@
 
 @{
 	ViewData["Title"] = "Add document details";
+	var errorSummaryTitle = "There is a problem";
+	(string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
+	navModel = ("pmc:adddocumentdetailslist", "Back", new());
 }
-
-@await Html.PartialAsync("_ValidationSummary")
-
 <div class="govuk-grid-row">
 	<div class="govuk-grid-column-two-thirds">
-		<a class="govuk-back-link" href="@Url.Action("Index")">Back</a>
-
-		<h1 class="govuk-heading-l">
-			Add document details for<br />
-			<span class="govuk-!-font-weight-bold">@Model.FileName</span>
-		</h1>
-
-		<p>
-			<a href="#">@Model.FileName</a> &nbsp; <span class="govuk-body govuk-!-font-weight-bold">@Model.FileSize</span> &nbsp;
-			<a class="govuk-link" href="@Url.Action("DeleteDocument", new { id = Model.DocumentId })">Delete</a>
-		</p>
+		@section BackNavigation {
+			<partial name="_BackNavigation" model="navModel.Value" />
+		}
 
 		<form method="post" asp-action="SaveDocumentDetails">
+			<h1 class="govuk-heading-l">
+				Add document details for<br />
+				<span class="govuk-!-font-weight-bold">@Model.FileName</span>
+			</h1>
+
+			<table class="govuk-table">
+				<thead class="govuk-visually-hidden">
+					<tr>
+						<th>Document name</th>
+						<th>Size</th>
+						<th class="govuk-!-text-align-right">Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell" style="width: 60%;">
+							<a href="#" class="govuk-link" target="_blank">@Model.FileName</a>
+						</td>
+						<td class="govuk-table__cell" style="width: 20%;">
+							<span class="govuk-body">@Model.FileSize</span>
+						</td>
+						<td class="govuk-table__cell govuk-!-text-align-right" style="width: 20%;">
+							<a asp-action="Delete" asp-route-id="@Model.FileName" class="govuk-link govuk-link--destructive">Delete</a>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
 			<div class="govuk-form-group @(Html.ViewData.ModelState.ContainsKey(nameof(Model.DocumentTypeId)) ? "govuk-form-group--error" : "")">
+				@Html.ValidationMessageFor(m => m.DocumentTypeId, "", new { @class = "govuk-error-message" })
 				<label class="govuk-label" for="DocumentTypeId">Document type</label>
 				<select asp-for="DocumentTypeId"
 						asp-items="Model.DocumentTypeOptions"
 						class="govuk-select"
 						id="DocumentTypeId"></select>
-				@Html.ValidationMessageFor(m => m.DocumentTypeId, "", new { @class = "govuk-error-message" })
 			</div>
 
 			<div class="govuk-form-group @(Html.ViewData.ModelState.ContainsKey(nameof(Model.SponsorDocumentVersion)) ? "govuk-form-group--error" : "")">
 				<label class="govuk-label" for="SponsorDocumentVersion">Sponsor document version</label>
+				@Html.ValidationMessageFor(m => m.SponsorDocumentVersion, "", new { @class = "govuk-error-message" })
 				<div id="SponsorDocumentVersion-hint" class="govuk-hint">
 					For example, 1.5
 				</div>
-				<input asp-for="SponsorDocumentVersion" class="govuk-input" />
-				@Html.ValidationMessageFor(m => m.SponsorDocumentVersion, "", new { @class = "govuk-error-message" })
+				<input asp-for="SponsorDocumentVersion" class="govuk-input govuk-!-width-one-quarter" />
 			</div>
 
-			<fieldset class="govuk-fieldset">
-				<legend class="govuk-fieldset__legend govuk-fieldset__legend--m">Sponsor document date</legend>
-				<div class="govuk-hint">
-					For example, 19 September 2025
-				</div>
+			<div class="govuk-form-group @(ViewData.ModelState.ContainsKey("SponsorDocumentDate") ? "govuk-form-group--error" : "")">
+				<fieldset class="govuk-fieldset">
+					<legend class="govuk-fieldset__legend">Sponsor document date</legend>
+					<div class="govuk-hint">For example, 19 September 2025</div>
+					@Html.ValidationMessage("SponsorDocumentDate", null, new { @class = "govuk-error-message" })
 
-				<div class="govuk-date-input" id="SponsorDocumentDate">
-					<div class="govuk-date-input__item">
-						<div class="govuk-form-group">
-							<label class="govuk-label govuk-date-input__label" for="SponsorDocumentDateDay">Day</label>
-							<input class="govuk-input govuk-date-input__input govuk-input--width-2"
-								   asp-for="SponsorDocumentDateDay"
-								   id="SponsorDocumentDateDay"
-								   name="SponsorDocumentDateDay"
-								   type="text" inputmode="numeric" />
+					<div class="govuk-date-input" id="SponsorDocumentDate">
+						<!-- Day -->
+						<div class="govuk-date-input__item">
+							<div class="govuk-form-group">
+								<label class="govuk-label govuk-date-input__label" for="SponsorDocumentDateDay">Day</label>
+								<input class="govuk-input govuk-date-input__input govuk-input--width-2"
+									   asp-for="SponsorDocumentDateDay"
+									   id="SponsorDocumentDateDay"
+									   name="SponsorDocumentDateDay"
+									   type="text" inputmode="numeric" />
+							</div>
+						</div>
+						<!-- Month -->
+						<div class="govuk-date-input__item">
+							<div class="govuk-form-group">
+								<label class="govuk-label govuk-date-input__label" for="SponsorDocumentDateMonth">Month</label>
+								<select class="govuk-select govuk-input--width-5"
+										asp-for="SponsorDocumentDateMonth"
+										asp-items="Model.MonthOptions"
+										id="SponsorDocumentDateMonth">
+									<option value="">Select month</option>
+								</select>
+							</div>
+						</div>
+						<!-- Year -->
+						<div class="govuk-date-input__item">
+							<div class="govuk-form-group">
+								<label class="govuk-label govuk-date-input__label" for="SponsorDocumentDateYear">Year</label>
+								<input class="govuk-input govuk-date-input__input govuk-input--width-4"
+									   asp-for="SponsorDocumentDateYear"
+									   id="SponsorDocumentDateYear"
+									   name="SponsorDocumentDateYear"
+									   type="text" inputmode="numeric" />
+							</div>
 						</div>
 					</div>
+				</fieldset>
+			</div>
 
-					<div class="govuk-date-input__item">
-						<div class="govuk-form-group">
-							<label class="govuk-label govuk-date-input__label" for="SponsorDocumentDateMonth">Month</label>
-							<select class="govuk-select govuk-input--width-5"
-									asp-for="SponsorDocumentDateMonth"
-									asp-items="Model.MonthOptions"
-									id="SponsorDocumentDateMonth">
-								<option value="">Select month</option>
-							</select>
-						</div>
-					</div>
-
-					<div class="govuk-date-input__item">
-						<div class="govuk-form-group">
-							<label class="govuk-label govuk-date-input__label" for="SponsorDocumentDateYear">Year</label>
-							<input class="govuk-input govuk-date-input__input govuk-input--width-4"
-								   asp-for="SponsorDocumentDateYear"
-								   id="SponsorDocumentDateYear"
-								   name="SponsorDocumentDateYear"
-								   type="text" inputmode="numeric" />
-						</div>
-					</div>
-				</div>
-			</fieldset>
-
-			<div class="govuk-form-group">
+			<div class="govuk-form-group @(Html.ViewData.ModelState.ContainsKey(nameof(Model.HasPreviousVersionApproved)) ? "govuk-form-group--error" : "")">
 				<fieldset class="govuk-fieldset" aria-describedby="ApprovedBefore-hint">
-					<legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+					<legend class="govuk-fieldset__legend">
 						Has a previous version of this document been approved?
 					</legend>
+					@Html.ValidationMessageFor(m => m.HasPreviousVersionApproved, "", new { @class = "govuk-error-message" })
 					<div class="govuk-radios govuk-radios--inline">
 						<div class="govuk-radios__item">
 							<input asp-for="HasPreviousVersionApproved" class="govuk-radios__input" type="radio" value="true" id="HasPreviousVersionApproved-Yes" />
@@ -100,8 +124,17 @@
 				</fieldset>
 			</div>
 
-			<button type="submit" class="govuk-button">Save and continue</button>
-			<button type="submit" name="saveForLater" value="true" class="govuk-button govuk-button--secondary">Save for later</button>
+			<partial name="_SubmitButton" model="@("pmc:savedocumentdetails", "Save and continue", new Dictionary<string, string>{})" />
+			@{
+				ViewBag.Style = "govuk-button govuk-button--secondary";
+			}
+			<partial name="_SubmitButton" model="@("app:projectoverview", "Save for later", new Dictionary<string, string> { })" />
+
 		</form>
 	</div>
+	@* store the previously select areaId and specificAreaId in hidden fields *@
+	<input id="documentId" type="hidden" value="@Model.DocumentId" />
+	<input id="documentStoragePath" type="hidden" value="@Model.DocumentStoragePath" />
+	<input id="fileSize" type="hidden" value="@Model.FileSize" />
+	<input id="fileName" type="hidden" value="@Model.FileName" />
 </div>

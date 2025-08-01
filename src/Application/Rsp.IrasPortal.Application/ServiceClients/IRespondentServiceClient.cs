@@ -70,4 +70,16 @@ public interface IRespondentServiceClient
     /// </returns>
     [Get("/respondent/modificationdocument/{modificationChangeId}/{projectRecordId}/{projectPersonnelId}")]
     public Task<ApiResponse<IEnumerable<ProjectModificationDocumentRequest>>> GetModificationChangesDocuments(Guid modificationChangeId, string projectRecordId, string projectPersonnelId);
+
+    /// <summary>
+    /// Retrieves all modification documents associated with a specific project modification change and respondent.
+    /// </summary>
+    /// <param name="modificationChangeId">The unique identifier for the project modification change.</param>
+    /// <param name="projectRecordId">The identifier of the associated project record.</param>
+    /// <param name="projectPersonnelId">The identifier of the personnel who uploaded or is associated with the documents.</param>
+    /// <returns>
+    /// A task representing the asynchronous operation. The task result contains a list of <see cref="ProjectModificationDocumentRequest"/> wrapped in an <see cref="ApiResponse{T}"/>.
+    /// </returns>
+    [Post("/respondent/modificationdocument")]
+    public Task<IApiResponse> SaveModificationDocuments(List<ProjectModificationDocumentRequest> projectModificationDocumentRequest);
 }

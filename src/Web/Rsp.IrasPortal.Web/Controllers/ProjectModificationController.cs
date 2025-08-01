@@ -34,7 +34,8 @@ public partial class ProjectModificationController
     IValidator<SearchOrganisationViewModel> searchOrganisationValidator,
     IValidator<DateViewModel> dateViewModelValidator,
     IValidator<PlannedEndDateOrganisationTypeViewModel> organisationTypeValidator,
-    IBlobStorageService blobStorageService
+    IBlobStorageService blobStorageService,
+    IValidator<ModificationAddDocumentDetailsViewModel> documentDetailValidator
 ) : Controller
 
 {

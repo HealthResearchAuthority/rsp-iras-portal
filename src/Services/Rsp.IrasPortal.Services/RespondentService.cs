@@ -98,4 +98,11 @@ public class RespondentService(IRespondentServiceClient respondentServiceClient)
 
         return apiResponse.ToServiceResponse();
     }
+
+    public async Task<ServiceResponse> SaveModificationDocuments(List<ProjectModificationDocumentRequest> request)
+    {
+        var apiResponse = await respondentServiceClient.SaveModificationDocuments(request);
+
+        return apiResponse.ToServiceResponse();
+    }
 }
