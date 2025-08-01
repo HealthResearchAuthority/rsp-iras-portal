@@ -33,4 +33,15 @@
       <Folder Include="Models\CmsContent\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Content Update="Views\CmsQuestionSet\EditorTemplates\DropdownTemplate.cshtml">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
+      <Content Update="Views\CmsQuestionSet\EditorTemplates\OrgSearchTemplate.cshtml">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
+    </ItemGroup>
+
 </Project>

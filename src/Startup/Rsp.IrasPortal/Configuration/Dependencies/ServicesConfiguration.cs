@@ -29,6 +29,7 @@ public static class ServicesConfiguration
         services.AddTransient<IRtsService, RtsService>();
         services.AddTransient<IProjectModificationsService, ProjectModificationsService>();
         services.AddScoped<IBlobStorageService, BlobStorageService>();
+        services.AddTransient<ICmsQuestionsetService, CmsQuestionsetService>();
         services.AddScoped<ICmsContentService, CmsContentService>();
 
         // add message handlers

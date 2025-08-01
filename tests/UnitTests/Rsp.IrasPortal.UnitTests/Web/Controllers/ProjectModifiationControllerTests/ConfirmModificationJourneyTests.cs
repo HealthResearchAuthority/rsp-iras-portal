@@ -56,8 +56,8 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ProjectModificati
         // Arrange
         var model = new AreaOfChangeViewModel
         {
-            AreaOfChangeId = 1,
-            SpecificChangeId = 101
+            AreaOfChangeId = "1",
+            SpecificChangeId = "101"
         };
         string action = "saveAndContinue";
 
@@ -72,10 +72,10 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ProjectModificati
     {
         new()
         {
-            Id = 1,
+            Id = "1",
             ModificationSpecificAreaOfChanges = new List<ModificationSpecificAreaOfChangeDto>
             {
-                new() { Id = 101, JourneyType = journeyType, Name = "Some Change" }
+                new() { Id = "101", JourneyType = journeyType, Name = "Some Change" }
             }
         }
     };
@@ -113,8 +113,8 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ProjectModificati
         // Arrange
         var model = new AreaOfChangeViewModel
         {
-            AreaOfChangeId = 1,
-            SpecificChangeId = 999
+            AreaOfChangeId = "1",
+            SpecificChangeId = "999"
         };
         string action = "saveAndContinue";
 
