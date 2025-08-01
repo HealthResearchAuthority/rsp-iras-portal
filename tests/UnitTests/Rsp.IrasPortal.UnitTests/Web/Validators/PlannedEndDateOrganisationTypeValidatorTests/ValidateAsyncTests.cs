@@ -21,6 +21,6 @@ public class ValidateAsyncTests : TestServiceBase<PlannedEndDateOrganisationType
         // Assert
         result
             .ShouldHaveValidationErrorFor(x => x.SelectedOrganisationTypes)
-            .WithErrorMessage("Select at least one organisation type.");
+            .WithErrorMessage("Select at least one organisation type");
     }
 }

@@ -19,8 +19,8 @@
 
     var IrasId = TempData.Peek(TempDataKeys.IrasId)?.ToString();
     var shortProjectTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string;
-    var modificationId = TempData.Peek(TempDataKeys.ProjectModificationIdentifier) as string;
-    var specificArea = TempData.Peek(TempDataKeys.ProjectModificationSpecificArea) as string;
+    var modificationId = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string;
+    var specificArea = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationSpecificArea) as string;
 
     Model.CurrentStage = currentStage!;
 }

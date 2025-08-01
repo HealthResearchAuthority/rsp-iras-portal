@@ -12,7 +12,7 @@ public class ValidateAsyncTests : TestServiceBase<DateViewModelValidator>
     public async Task ShouldNotHaveValidationError_WhenDateIsTodayOrFuture()
     {
         // Arrange
-        var today = DateTime.Now.Date;
+        var today = DateTime.Now.Date.AddDays(1);
         var model = new DateViewModel
         {
             Day = today.Day.ToString(),
@@ -25,6 +25,27 @@ public class ValidateAsyncTests : TestServiceBase<DateViewModelValidator>
 
         // Assert
         result.ShouldNotHaveAnyValidationErrors();
+    }
+
+    [Fact]
+    public async Task ShouldHaveValidationError_WhenDateIsToday()
+    {
+        // Arrange
+        var yesterday = DateTime.Now.Date;
+        var model = new DateViewModel
+        {
+            Day = yesterday.Day.ToString(),
+            Month = yesterday.Month.ToString(),
+            Year = yesterday.Year.ToString()
+        };
+
+        // Act
+        var result = await Sut.TestValidateAsync(model);
+
+        // Assert
+        result
+            .ShouldHaveValidationErrorFor(x => x.Date)
+            .WithErrorMessage("The date should be a valid date and in future");
     }
 
     [Fact]

@@ -33,7 +33,7 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ProjectModificati
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.AreaOfChanges] = JsonSerializer.Serialize(areaChanges)
+            [TempDataKeys.ProjectModification.AreaOfChanges] = JsonSerializer.Serialize(areaChanges)
         };
 
         // Act
@@ -80,8 +80,8 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ProjectModificati
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.AreaOfChanges] = JsonSerializer.Serialize(areaChanges),
-            [TempDataKeys.ProjectModificationId] = Guid.NewGuid()
+            [TempDataKeys.ProjectModification.AreaOfChanges] = JsonSerializer.Serialize(areaChanges),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid()
         };
 
         var httpContext = new DefaultHttpContext();
@@ -122,7 +122,7 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ProjectModificati
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.AreaOfChanges] = JsonSerializer.Serialize(areaChanges)
+            [TempDataKeys.ProjectModification.AreaOfChanges] = JsonSerializer.Serialize(areaChanges)
         };
 
         var httpContext = new DefaultHttpContext();
@@ -131,7 +131,7 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ProjectModificati
         Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
         Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModificationId] = Guid.NewGuid()
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid()
         };
 
         Mocker.GetMock<IProjectModificationsService>()

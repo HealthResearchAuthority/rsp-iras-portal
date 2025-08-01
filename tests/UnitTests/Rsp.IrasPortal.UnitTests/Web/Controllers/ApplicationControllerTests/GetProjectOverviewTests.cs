@@ -184,6 +184,6 @@ public class GetProjectOverview : TestServiceBase<ApplicationController>
         await Sut.GetProjectOverview("rec-1", "cat-1");
 
         // Assert
-        Sut.TempData[TempDataKeys.ProjectPlannedEndDate].ShouldBe("01 January 2025");
+        Sut.TempData[TempDataKeys.PlannedProjectEndDate].ShouldBe("01 January 2025");
     }
 }

@@ -22,8 +22,8 @@ public class PlannedEndDateTests : TestServiceBase<ProjectModificationController
         {
             [TempDataKeys.ShortProjectTitle] = expectedShortTitle,
             [TempDataKeys.IrasId] = expectedIrasId,
-            [TempDataKeys.ProjectModificationIdentifier] = expectedModId,
-            [TempDataKeys.SpecificAreaOfChangeText] = expectedPageTitle
+            [TempDataKeys.ProjectModification.ProjectModificationIdentifier] = expectedModId,
+            [TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = expectedPageTitle
         };
 
         // Act

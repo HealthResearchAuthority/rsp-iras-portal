@@ -9,6 +9,6 @@ public class PlannedEndDateOrganisationTypeValidator : AbstractValidator<Planned
     {
         RuleFor(x => x.SelectedOrganisationTypes)
             .NotEmpty()
-            .WithMessage("Select at least one organisation type.");
+            .WithMessage("Select at least one organisation type");
     }
 }

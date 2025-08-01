@@ -9,8 +9,8 @@
 
     var navModel = ("app:projectoverview", "Back", new Dictionary<string, string>());
 
-    var area = TempData.Peek(TempDataKeys.AreaOfChangeId);
-    var specificArea = TempData.Peek(TempDataKeys.SpecificAreaOfChangeId);
+    var area = TempData.Peek(TempDataKeys.ProjectModification.AreaOfChangeId);
+    var specificArea = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeId);
     var areaId = 0;
     var specificAreaId = 0;
 
@@ -42,6 +42,9 @@
 
                     @Html.ValidationMessage("AreaOfChangeId", new { @class = "govuk-error-message" })
 
+                    <label for="AreaOfChangeId" class="govuk-label">
+                        Select your area of change
+                    </label>
                     <select asp-for="AreaOfChangeId" asp-items="Model.AreaOfChangeOptions" class="govuk-select govuk-!-width-two-thirds" id="AreaOfChangeId"></select>
                 </div>
 
@@ -49,6 +52,9 @@
 
                     @Html.ValidationMessage("SpecificChangeId", new { @class = "govuk-error-message" })
 
+                    <label for="SpecificChangeId" class="govuk-label">
+                        Select your specific area of change
+                    </label>
                     <select asp-for="SpecificChangeId" asp-items="Model.SpecificChangeOptions" class="govuk-select govuk-!-width-two-thirds" id="SpecificChangeId"></select>
                 </div>
 

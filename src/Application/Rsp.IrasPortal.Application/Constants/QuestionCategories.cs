@@ -19,4 +19,5 @@ public struct QuestionCategories
 
     public const string ProjectRecrod = "project record v1";
     public const string ProjectModification = "project modification";
+    public const string PlannedEndDate = "planned project end date";
 }

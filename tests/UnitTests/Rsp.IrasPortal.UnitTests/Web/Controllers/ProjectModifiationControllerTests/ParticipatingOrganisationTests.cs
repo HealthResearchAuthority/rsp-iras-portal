@@ -26,8 +26,8 @@ public class ParticipatingOrganisationTests : TestServiceBase<ProjectModificatio
         {
             [TempDataKeys.ShortProjectTitle] = expectedShortTitle,
             [TempDataKeys.IrasId] = expectedIrasId,
-            [TempDataKeys.ProjectModificationIdentifier] = expectedModId,
-            [TempDataKeys.SpecificAreaOfChangeText] = expectedPageTitle
+            [TempDataKeys.ProjectModification.ProjectModificationIdentifier] = expectedModId,
+            [TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = expectedPageTitle
         };
 
         // Act
@@ -79,8 +79,8 @@ public class ParticipatingOrganisationTests : TestServiceBase<ProjectModificatio
         {
             [TempDataKeys.ShortProjectTitle] = "ASPIRE",
             [TempDataKeys.IrasId] = "220360",
-            [TempDataKeys.ProjectModificationIdentifier] = "220360/1",
-            [TempDataKeys.SpecificAreaOfChangeText] = "Addition of new sites",
+            [TempDataKeys.ProjectModification.ProjectModificationIdentifier] = "220360/1",
+            [TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = "Addition of new sites",
             [TempDataKeys.OrganisationSearchModel] = mockedJson
         };
 
