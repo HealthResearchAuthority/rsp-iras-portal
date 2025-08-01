@@ -24,4 +24,9 @@ public class DocumentSummaryItemDto
     /// Gets the display size in megabytes (MB), rounded to 2 decimal places.
     /// </summary>
     public string DisplaySize => $"{Math.Round((double)FileSize / (1024 * 1024), 2)} MB";
+
+    /// <summary>
+    /// Gets or sets the status of the document details.
+    /// </summary>
+    public string Status { get; set; } = string.Empty;
 }

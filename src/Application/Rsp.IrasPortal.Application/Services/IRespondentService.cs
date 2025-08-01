@@ -67,4 +67,11 @@ public interface IRespondentService : IInterceptable
     /// representing the associated documents.
     /// </returns>
     Task<ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>> GetModificationChangesDocuments(Guid modificationChangeId, string projectRecordId, string projectPersonnelId);
+
+    /// <summary>
+    /// Saves all the respondent's answers for a project modification document.
+    /// </summary>
+    /// <param name="request">The request containing all answers for the project modification document.</param>
+    /// <returns>A service response indicating the result of the save operation.</returns>
+    Task<ServiceResponse> SaveModificationDocuments(List<ProjectModificationDocumentRequest> request);
 }

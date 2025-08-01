@@ -1,9 +1,9 @@
 ﻿@model Rsp.IrasPortal.Web.Models.ModificationReviewDocumentsViewModel
 
 @{
-	ViewData["Title"] = "Review uploaded documents";
+	ViewData["Title"] = "Add document details list";
 	(string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
-	navModel = ("pmc:projectdocument", "Back", new());
+	navModel = ("pmc:reviewdocument", "Back", new());
 }
 
 <div class="govuk-width-container">
@@ -31,41 +31,24 @@
 						{
 							<tr class="govuk-table__row">
 								<td class="govuk-table__cell" style="width: 60%;">
-									<a href="@doc.BlobUri" class="govuk-link" target="_blank">@doc.FileName</a>
-								</td>
-								<td class="govuk-table__cell" style="width: 20%;">
-									<span class="govuk-body">@doc.DisplaySize</span>
+									<a asp-action="ContinueToDetails" asp-controller="ProjectModification" class="govuk-link">@doc.FileName</a>
 								</td>
 								<td class="govuk-table__cell govuk-!-text-align-right" style="width: 20%;">
-									<a asp-action="Delete" asp-route-id="@doc.FileName" class="govuk-link govuk-link--destructive">Delete</a>
+									<strong class="govuk-tag">
+										@doc.Status
+									</strong>
 								</td>
 							</tr>
 						}
 					</tbody>
 				</table>
-
-				<div class="govuk-!-text-align-right govuk-!-margin-top-1">
-					<a asp-action="DeleteAll" asp-route-modificationId="#" class="govuk-link govuk-link--destructive">Delete all</a>
-				</div>
 			}
 			else
 			{
 				<p class="govuk-body">No documents uploaded.</p>
 			}
-
-			<form asp-action="ProjectDocument" method="get">
-				<button class="govuk-button govuk-button--secondary" type="submit">Add another document</button>
-			</form>
-
-			<hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible" />
-
-			<h2 class="govuk-heading-m">Now add your document details</h2>
-			<p class="govuk-body">
-				Some of the documents you've added need additional details which you'll add in the next step.
-			</p>
-
-			<form asp-action="AddDocumentDetailsList" method="get">
-				<partial name="_SubmitButton" model="@("pmc:AddDocumentDetailsList", "Save and continue", new Dictionary<string, string>{})" />
+			<form asp-action="continuetodetails" method="get">
+				<partial name="_SubmitButton" model="@("pmc:continuetodetails", "Save and continue", new Dictionary<string, string>{})" />
 			</form>
 			@{
 				ViewBag.Style = "govuk-button govuk-button--secondary";
