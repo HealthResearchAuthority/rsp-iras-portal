@@ -6,6 +6,7 @@ using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Entities;
@@ -147,11 +148,9 @@ public class ApplicationController
         HttpContext.Session.SetString(SessionKeys.ProjectRecord, JsonSerializer.Serialize(irasApplication));
 
         // Store relevant information in TempData for use in subsequent requests
-        //var questionCategoriesResponse = await questionSetService.GetQuestionCategories();
         var questionCategoriesResponse = await cmsSevice.GetQuestionCategories();
-        var categoryId = questionCategoriesResponse.IsSuccessStatusCode && questionCategoriesResponse.Content != null
-            ? questionCategoriesResponse.Content.FirstOrDefault()?.CategoryId ?? string.Empty
-            : string.Empty;
+        var categoryId = questionCategoriesResponse.IsSuccessStatusCode && questionCategoriesResponse.Content?.FirstOrDefault() != null
+            ? questionCategoriesResponse.Content.FirstOrDefault()?.CategoryId : QuestionCategories.A;
         TempData[TempDataKeys.CategoryId] = categoryId;
         TempData[TempDataKeys.ProjectRecordId] = irasApplication.Id;
         TempData[TempDataKeys.IrasId] = irasApplication.IrasId;
@@ -238,6 +237,7 @@ public class ApplicationController
         // return the generic error page
         return this.ServiceError(applicationServiceResponse);
     }
+
 
     public IActionResult ReviewAnswers()
     {

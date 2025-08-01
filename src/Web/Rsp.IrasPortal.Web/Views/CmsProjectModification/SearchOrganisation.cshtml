@@ -20,13 +20,15 @@
 
 <govuk-header />
 
-<div class="govuk-width-container">
-    @section BackNavigation {
+<div class="govuk-width-container">	
+	@section BackNavigation {
         <partial name="_BackNavigation" model="navModel.Value" />
     }
     <main class="govuk-main-wrapper pt-0">
-        <div class="govuk-grid-row">
-            <div class="govuk-grid-column-two-thirds">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+
+				<form asp-action="SearchOrganisation" method="post" novalidate>
 					<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
 					<partial name="_ProjectModificationSummary" model="Model" />
 			</div>
@@ -213,7 +215,7 @@
                                     </tbody>
                                 </form>
                             </table>
-                        </div>
+					</div>
                         <partial name="_PaginationForm" model="@Model.Pagination" />
                     }
                     else
@@ -287,5 +289,8 @@
 					</div>
 
 					<p class="govuk-!-margin-top-4"><a href="#" class="govuk-link">Remove this change</a></p>
+				</form>
+			</div>
+		</div>
     </main>
 </div>
