@@ -1,0 +1,118 @@
+﻿@model Rsp.IrasPortal.Web.Models.PlannedEndDateViewModel
+
+@{
+	ViewData["Title"] = "Planned End Date";
+	var errorSummaryTitle = "There is a problem";
+
+	(string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
+	navModel = ("pmc:areaofchange", "Back", new());
+}
+
+<govuk-header />
+
+<div class="govuk-width-container">
+	@section BackNavigation {
+		<partial name="_BackNavigation" model="navModel.Value" />
+	}
+
+	@if (!ViewData.ModelState.IsValid)
+	{
+		<div class="govuk-error-summary" role="alert" aria-labelledby="error-summary-title" tabindex="-1">
+			<h2 class="govuk-error-summary__title" id="error-summary-title">@errorSummaryTitle</h2>
+			<div class="govuk-error-summary__body">
+				<ul class="govuk-list govuk-error-summary__list">
+					@foreach (var modelError in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+					{
+						<li>@modelError.ErrorMessage</li>
+					}
+				</ul>
+			</div>
+		</div>
+	}
+
+	<main class="govuk-main-wrapper">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<form asp-action="PlannedEndDate" method="post">
+					<partial name="_ProjectModificationSummary" model="Model" />
+					<dl class="govuk-summary-list">
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Current planned end date</dt>
+							<dd class="govuk-summary-list__value govuk-!-font-weight-bold">
+								@Model.CurrentPlannedEndDate?.ToString("dd MMMM yyyy")
+							</dd>
+						</div>
+					</dl>
+
+					<div class="govuk-form-group @(ViewData.ModelState.ContainsKey("NewPlannedEndDate") ? "govuk-form-group--error" : "")">
+						<fieldset class="govuk-fieldset" role="group" aria-describedby="new-end-date-hint">
+							<legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+								<h2 class="govuk-fieldset__heading">New planned end date</h2>
+							</legend>
+
+							<div id="new-end-date-hint" class="govuk-hint">
+								For example, 27 March 2029
+							</div>
+
+							@if (ViewData.ModelState.TryGetValue("NewPlannedEndDate", out var dateError) && dateError.Errors.Any())
+							{
+								<p class="govuk-error-message">
+									<span class="govuk-visually-hidden">Error:</span> @dateError.Errors.First().ErrorMessage
+								</p>
+							}
+
+							<div class="govuk-date-input" id="NewPlannedEndDate">
+								<div class="govuk-date-input__item">
+									<div class="govuk-form-group">
+										<label class="govuk-label govuk-date-input__label" for="NewPlannedEndDate_Day">Day</label>
+										<input class="govuk-input govuk-date-input__input govuk-input--width-2"
+											   id="NewPlannedEndDate_Day"
+											   name="NewPlannedEndDate.Day"
+											   type="text"
+											   pattern="[0-9]*"
+											   inputmode="numeric"
+											   value="@(Model.NewPlannedEndDate?.Day.ToString() ?? "")" />
+									</div>
+								</div>
+
+								<div class="govuk-date-input__item">
+									<div class="govuk-form-group">
+										<label class="govuk-label govuk-date-input__label" for="NewPlannedEndDate_Month">Month</label>
+										<select class="govuk-select govuk-date-input__input" id="NewPlannedEndDate_Month" name="NewPlannedEndDate.Month">
+											<option value="">Select</option>
+										</select>
+									</div>
+								</div>
+
+								<div class="govuk-date-input__item">
+									<div class="govuk-form-group">
+										<label class="govuk-label govuk-date-input__label" for="NewPlannedEndDate_Year">Year</label>
+										<input class="govuk-input govuk-date-input__input govuk-input--width-4"
+											   id="NewPlannedEndDate_Year"
+											   name="NewPlannedEndDate.Year"
+											   type="text"
+											   pattern="[0-9]*"
+											   inputmode="numeric"
+											   value="@(Model.NewPlannedEndDate?.Year.ToString() ?? "")" />
+									</div>
+								</div>
+							</div>
+						</fieldset>
+					</div>
+
+					<div class="save-buttons">
+						<button class="govuk-button" data-module="govuk-button" type="submit">Save and continue</button>
+						@{
+							ViewBag.Style = "govuk-button govuk-button--secondary";
+						}
+						<partial name="_SubmitButton" model="@("app:projectoverview", "Save for later", new Dictionary<string, string> { })" />
+					</div>
+
+					<p>
+						<a href="#" class="govuk-link">Remove this change</a>
+					</p>
+				</form>
+			</div>
+		</div>
+	</main>
+</div>

@@ -17,12 +17,13 @@ public class QuestionnaireViewModel
     /// <summary>
     /// The current stage of the questionnaire.
     /// </summary>
-    public string CurrentStage { get; set; } = "";
+    public string? CurrentStage { get; set; } = "";
 
     /// <summary>
     /// List of questions in the questionnaire.
     /// </summary>
     public List<QuestionViewModel> Questions { get; set; } = [];
+
     public List<ContentComponent> GuidanceContent { get; set; } = [];
 
     /// <summary>
