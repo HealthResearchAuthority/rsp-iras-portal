@@ -3,8 +3,10 @@
 @model ReviewBodyListUsersModel
 
 @{
-	ViewBag.Active = "reviewBodies";
-	ViewBag.Title = "View review body";
+    ViewBag.Active = "reviewBodies";
+    string errorPrefix = "";
+    if ((Model.Users == null || !Model.Users.Any()) && !string.IsNullOrEmpty(Model.Pagination?.SearchQuery)) { errorPrefix = "Error - "; }
+    ViewBag.Title = $"{errorPrefix}Users - Manage review bodies - System Administration";
 }
 
 @* @section is added for the back button, so that we can render something below the back button

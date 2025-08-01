@@ -1,7 +1,9 @@
 ﻿@model ConfirmAddRemoveReviewBodyUserModel
 @{
     ViewBag.Active = "reviewBodies";
-    ViewBag.Title = "View review body";
+    string addedUserTitle = "User successfully added- Manage review bodies - System Administration";
+    string removedUserTitle = "User successfully removed- Manage review bodies - System Administration";
+    ViewBag.Title = !Model.IsRemove ? addedUserTitle : removedUserTitle;
 }
 
 <div class="govuk-grid-row">
