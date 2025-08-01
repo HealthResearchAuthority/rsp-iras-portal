@@ -820,8 +820,8 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
         // Set TempData keys for modification journey
         var tempData = new TempDataDictionary(context, Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModificationId] = modificationId,
-            [TempDataKeys.ProjectModificationChangeId] = modificationChangeId
+            [TempDataKeys.ProjectModification.ProjectModificationId] = modificationId,
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = modificationChangeId
         };
         Sut.TempData = tempData;
 
@@ -917,8 +917,8 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
         var context = new DefaultHttpContext { Session = session.Object };
         var tempData = new TempDataDictionary(context, Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModificationId] = modificationId,
-            [TempDataKeys.ProjectModificationChangeId] = modificationChangeId
+            [TempDataKeys.ProjectModification.ProjectModificationId] = modificationId,
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = modificationChangeId
         };
         Sut.TempData = tempData;
         context.Items[ContextItemKeys.RespondentId] = "RespondentId1";
@@ -1000,8 +1000,8 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
         var context = new DefaultHttpContext { Session = session.Object };
         var tempData = new TempDataDictionary(context, Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModificationId] = modificationId,
-            [TempDataKeys.ProjectModificationChangeId] = modificationChangeId
+            [TempDataKeys.ProjectModification.ProjectModificationId] = modificationId,
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = modificationChangeId
         };
         Sut.TempData = tempData;
         context.Items[ContextItemKeys.RespondentId] = "RespondentId1";
@@ -1082,8 +1082,8 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
         var context = new DefaultHttpContext { Session = session.Object };
         var tempData = new TempDataDictionary(context, Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModificationId] = modificationId,
-            [TempDataKeys.ProjectModificationChangeId] = modificationChangeId
+            [TempDataKeys.ProjectModification.ProjectModificationId] = modificationId,
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = modificationChangeId
         };
 
         Sut.TempData = tempData;

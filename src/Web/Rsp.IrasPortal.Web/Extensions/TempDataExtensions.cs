@@ -1,5 +1,7 @@
 ﻿using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Extensions;
 
@@ -63,5 +65,17 @@ public static class TempDataExtensions
         };
 
         return true;
+    }
+
+    /// <summary>
+    /// Populates the base properties of a BaseProjectModificationViewModel (or derived) from TempData.
+    /// </summary>
+    public static T PopulateBaseProjectModificationProperties<T>(this ITempDataDictionary tempData, T model) where T : BaseProjectModificationViewModel
+    {
+        model.ShortTitle = tempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty;
+        model.IrasId = tempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty;
+        model.ModificationIdentifier = tempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string ?? string.Empty;
+        model.PageTitle = tempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeText) as string ?? string.Empty;
+        return model;
     }
 }

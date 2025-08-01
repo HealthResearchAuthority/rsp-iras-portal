@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers;
@@ -18,17 +19,13 @@ public partial class ProjectModificationController : Controller
     [HttpGet]
     public IActionResult ProjectDocument()
     {
-        var specificAreaOfChange = TempData.Peek(TempDataKeys.SpecificAreaOfChangeText) as string;
+        var specificAreaOfChange = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeText) as string;
 
-        var viewModel = new ModificationUploadDocumentsViewModel
-        {
-            ShortTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
-            IrasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty,
-            ModificationIdentifier = TempData.Peek(TempDataKeys.ProjectModificationIdentifier) as string ?? string.Empty,
-            PageTitle = !string.IsNullOrEmpty(specificAreaOfChange)
-            ? $"Add documents for {specificAreaOfChange}"
-            : string.Empty
-        };
+        var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationUploadDocumentsViewModel());
+
+        viewModel.PageTitle = !string.IsNullOrEmpty(specificAreaOfChange) ?
+            $"Add documents for {specificAreaOfChange}"
+            : string.Empty;
 
         // Retrieve the current organisation search term from TempData
         return View(nameof(UploadDocuments), viewModel);
@@ -44,7 +41,7 @@ public partial class ProjectModificationController : Controller
     public async Task<IActionResult> UploadDocuments(ModificationUploadDocumentsViewModel model)
     {
         // Validate file input
-        if (!ModelState.IsValid || model.Files == null || !model.Files.Any())
+        if (!ModelState.IsValid || model.Files is null or { Count: 0 })
         {
             ModelState.AddModelError("Files", "Please upload at least one document.");
             return View(model);
@@ -57,7 +54,7 @@ public partial class ProjectModificationController : Controller
             model.IrasId.ToString());
 
         // Retrieve contextual identifiers from TempData and HttpContext
-        var projectModificationChangeId = TempData.Peek(TempDataKeys.ProjectModificationChangeId);
+        var projectModificationChangeId = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationChangeId);
         var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
         var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty;
 
@@ -92,13 +89,13 @@ public partial class ProjectModificationController : Controller
     public async Task<IActionResult> ReviewDocument()
     {
         // Fetch contextual data for the view
-        var specificAreaOfChange = TempData.Peek(TempDataKeys.SpecificAreaOfChangeText) as string;
+        var specificAreaOfChange = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeText) as string;
 
         var viewModel = new ModificationReviewDocumentsViewModel
         {
             ShortTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
             IrasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty,
-            ModificationIdentifier = TempData.Peek(TempDataKeys.ProjectModificationIdentifier) as string ?? string.Empty,
+            ModificationIdentifier = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string ?? string.Empty,
             PageTitle = !string.IsNullOrEmpty(specificAreaOfChange)
                 ? $"Documents added for {specificAreaOfChange}"
                 : string.Empty
@@ -107,7 +104,7 @@ public partial class ProjectModificationController : Controller
         // Create request for fetching documents
         var documentChangeRequest = new ProjectModificationDocumentRequest
         {
-            ProjectModificationChangeId = (Guid)TempData.Peek(TempDataKeys.ProjectModificationChangeId)!,
+            ProjectModificationChangeId = (Guid)TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationChangeId)!,
             ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty,
             ProjectPersonnelId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!,
         };
@@ -120,7 +117,8 @@ public partial class ProjectModificationController : Controller
 
         if (response?.StatusCode == HttpStatusCode.OK && response.Content != null)
         {
-            viewModel.UploadedDocuments = response.Content.Select(
+            viewModel.UploadedDocuments = response.Content.Select
+            (
                 a => new DocumentSummaryItemDto
                 {
                     FileName = a.FileName,
@@ -131,7 +129,7 @@ public partial class ProjectModificationController : Controller
         else
         {
             // Handle the case where no documents were returned or service failed
-            viewModel.UploadedDocuments = new List<DocumentSummaryItemDto>();
+            viewModel.UploadedDocuments = [];
             ModelState.AddModelError(string.Empty, "No documents found or an error occurred while retrieving documents.");
         }
 

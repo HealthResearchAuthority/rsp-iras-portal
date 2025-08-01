@@ -79,7 +79,7 @@ public class ProjectOverview : TestServiceBase<ApplicationController>
 
         var tempData = new TempDataDictionary(new DefaultHttpContext(), tempDataProvider.Object)
         {
-            [TempDataKeys.ProjectModificationId] = "mod-1"
+            [TempDataKeys.ProjectModification.ProjectModificationId] = "mod-1"
         };
         Sut.TempData = tempData;
 
@@ -115,10 +115,10 @@ public class ProjectOverview : TestServiceBase<ApplicationController>
 
         var tempData = new TempDataDictionary(new DefaultHttpContext(), tempDataProvider.Object)
         {
-            [TempDataKeys.ProjectModificationId] = "mod-1",
-            [TempDataKeys.ProjectModificationIdentifier] = "ident-1",
-            [TempDataKeys.ProjectModificationChangeId] = "chg-1",
-            [TempDataKeys.ProjectModificationSpecificArea] = "area-1"
+            [TempDataKeys.ProjectModification.ProjectModificationId] = "mod-1",
+            [TempDataKeys.ProjectModification.ProjectModificationIdentifier] = "ident-1",
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = "chg-1",
+            [TempDataKeys.ProjectModification.ProjectModificationSpecificArea] = "area-1"
         };
         Sut.TempData = tempData;
 
@@ -126,10 +126,10 @@ public class ProjectOverview : TestServiceBase<ApplicationController>
         await Sut.ProjectOverview(null, null);
 
         // Assert
-        tempData.ContainsKey(TempDataKeys.ProjectModificationId).ShouldBeFalse();
-        tempData.ContainsKey(TempDataKeys.ProjectModificationIdentifier).ShouldBeFalse();
-        tempData.ContainsKey(TempDataKeys.ProjectModificationChangeId).ShouldBeFalse();
-        tempData.ContainsKey(TempDataKeys.ProjectModificationSpecificArea).ShouldBeFalse();
+        tempData.ContainsKey(TempDataKeys.ProjectModification.ProjectModificationId).ShouldBeFalse();
+        tempData.ContainsKey(TempDataKeys.ProjectModification.ProjectModificationIdentifier).ShouldBeFalse();
+        tempData.ContainsKey(TempDataKeys.ProjectModification.ProjectModificationChangeId).ShouldBeFalse();
+        tempData.ContainsKey(TempDataKeys.ProjectModification.ProjectModificationSpecificArea).ShouldBeFalse();
     }
 
     [Fact]

@@ -44,7 +44,7 @@ public class GetSpecificChangeByIdTests : TestServiceBase<ProjectModificationCon
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.AreaOfChanges] = JsonSerializer.Serialize(modificationResponse)
+            [TempDataKeys.ProjectModification.AreaOfChanges] = JsonSerializer.Serialize(modificationResponse)
         };
 
         // Act

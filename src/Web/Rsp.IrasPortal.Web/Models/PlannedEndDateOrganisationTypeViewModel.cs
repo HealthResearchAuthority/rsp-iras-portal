@@ -13,7 +13,7 @@ public class PlannedEndDateOrganisationTypeViewModel : BaseProjectModificationVi
     /// The key represents a unique identifier (e.g., "OPT0025"), and the value is the human-readable name
     /// shown on the user interface (e.g., "NHS/HSC").
     /// </summary>
-    public static IReadOnlyDictionary<string, string> OrganisationTypes { get; } =
+    public IReadOnlyDictionary<string, string> OrganisationTypes { get; } =
         new Dictionary<string, string>
         {
             { "OPT0025", "NHS/HSC" },

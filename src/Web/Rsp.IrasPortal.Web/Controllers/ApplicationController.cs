@@ -265,18 +265,25 @@ public class ApplicationController
     public async Task<IActionResult> ProjectOverview(string? projectRecordId, string? categoryId)
     {
         // If there is a project modification change, show the notification banner
-        if (TempData.Peek(TempDataKeys.ProjectModificationId) is not null)
+        if (TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId) is not null)
         {
             TempData[TempDataKeys.ShowNotificationBanner] = true;
         }
 
         // Remove modification-related TempData keys to reset state
-        TempData.Remove(TempDataKeys.ProjectModificationId);
-        TempData.Remove(TempDataKeys.ProjectModificationIdentifier);
-        TempData.Remove(TempDataKeys.ProjectModificationChangeId);
-        TempData.Remove(TempDataKeys.ProjectModificationSpecificArea);
-        TempData.Remove(TempDataKeys.AreaOfChangeId);
-        TempData.Remove(TempDataKeys.SpecificAreaOfChangeId);
+        TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationId);
+        TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationIdentifier);
+        TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationChangeId);
+        TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationSpecificArea);
+        TempData.Remove(TempDataKeys.ProjectModification.AreaOfChangeId);
+        TempData.Remove(TempDataKeys.ProjectModification.SpecificAreaOfChangeId);
+        TempData.Remove(TempDataKeys.ProjectModificationPlannedEndDate.NewPlannedProjectEndDate);
+        TempData.Remove(TempDataKeys.ProjectModificationPlannedEndDate.AffectingOrganisationsType);
+        TempData.Remove(TempDataKeys.ProjectModificationPlannedEndDate.AffectedOrganisationsLocations);
+        TempData.Remove(TempDataKeys.ProjectModificationPlannedEndDate.AffectedAllOrSomeOrganisations);
+        TempData.Remove(TempDataKeys.ProjectModificationPlannedEndDate.AffectedOrganisationsRequireAdditionalResources);
+        TempData.Remove(TempDataKeys.ProjectModificationPlannedEndDate.ReviewChanges);
+        TempData.Remove(TempDataKeys.QuestionSetPublishedVersionId);
 
         // Indicate that the project overview is being shown
         TempData[TempDataKeys.ProjectOverview] = true;
@@ -292,7 +299,7 @@ public class ApplicationController
             ProjectTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
             CategoryId = QuestionCategories.ProjectRecrod, //TempData.Peek(TempDataKeys.CategoryId) as string ?? string.Empty,
             ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty,
-            ProjectPlannedEndDate = TempData.Peek(TempDataKeys.ProjectPlannedEndDate) as string ?? string.Empty
+            ProjectPlannedEndDate = TempData.Peek(TempDataKeys.PlannedProjectEndDate) as string ?? string.Empty
         };
 
         // Get all respondent answers for the project and category
@@ -417,7 +424,7 @@ public class ApplicationController
         var ukCulture = new CultureInfo("en-GB");
         if (DateTime.TryParse(endDateAnswer, ukCulture, DateTimeStyles.None, out var parsedDate))
         {
-            TempData[TempDataKeys.ProjectPlannedEndDate] = parsedDate.ToString("dd MMMM yyyy");
+            TempData[TempDataKeys.PlannedProjectEndDate] = parsedDate.ToString("dd MMMM yyyy");
         }
 
         // Build the model using values from TempData, falling back to defaults if not present
@@ -426,7 +433,7 @@ public class ApplicationController
             ProjectTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
             CategoryId = QuestionCategories.ProjectRecrod,
             ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty,
-            ProjectPlannedEndDate = TempData.Peek(TempDataKeys.ProjectPlannedEndDate) as string ?? string.Empty
+            ProjectPlannedEndDate = TempData.Peek(TempDataKeys.PlannedProjectEndDate) as string ?? string.Empty
         };
 
         return View("ProjectOverview", model);

@@ -295,8 +295,8 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
         // Set TempData to simulate modification journey
         var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModificationId] = modificationId,
-            [TempDataKeys.ProjectModificationChangeId] = modificationChangeId
+            [TempDataKeys.ProjectModification.ProjectModificationId] = modificationId,
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = modificationChangeId
         };
 
         Sut.TempData = tempData;

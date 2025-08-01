@@ -338,8 +338,8 @@ public class QuestionnaireController
 
                     projectModificationChangeId = modificationChange.Id;
 
-                    TempData[TempDataKeys.ProjectModificationChangeId] = projectModificationChangeId;
-                    TempData[TempDataKeys.ProjectModificationSpecificArea] = questions[1].Answers.First(a => a.AnswerId == questions[1].SelectedOption).AnswerText;
+                    TempData[TempDataKeys.ProjectModification.ProjectModificationChangeId] = projectModificationChangeId;
+                    TempData[TempDataKeys.ProjectModification.ProjectModificationSpecificArea] = questions[1].Answers.First(a => a.AnswerId == questions[1].SelectedOption).AnswerText;
                 }
             }
 
@@ -370,7 +370,7 @@ public class QuestionnaireController
             if (firstSection != null && model.CurrentStage == firstSection.SectionId)
             {
                 TempData[TempDataKeys.ShortProjectTitle] = model.GetShortProjectTitle();
-                TempData[TempDataKeys.ProjectPlannedEndDate] = model.GetProjectPlannedEndDate();
+                TempData[TempDataKeys.PlannedProjectEndDate] = model.GetProjectPlannedEndDate();
             }
         }
 
@@ -701,8 +701,8 @@ public class QuestionnaireController
     private (Guid ModificationId, Guid ModificationChangeId) CheckModification()
     {
         // check if we are in the modification journey, so only get the modfication questions
-        var modificationId = TempData.Peek(TempDataKeys.ProjectModificationId);
-        var modificationChangeId = TempData.Peek(TempDataKeys.ProjectModificationChangeId);
+        var modificationId = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId);
+        var modificationChangeId = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationChangeId);
 
         var modification = (Guid.Empty, Guid.Empty);
 

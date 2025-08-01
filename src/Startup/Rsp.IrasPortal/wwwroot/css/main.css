@@ -866,3 +866,8 @@ button.govuk-pagination__item--current {
 .display-inline-block {
   display: inline-block;
 }
+
+.flex-gap-2 {
+  display: flex;
+  gap: 2rem;
+}

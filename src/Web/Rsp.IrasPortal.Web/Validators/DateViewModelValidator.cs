@@ -36,7 +36,7 @@ public class DateViewModelValidator : AbstractValidator<DateViewModel>
             .Custom((date, context) =>
             {
                 // date must be in future
-                if (date!.Value < DateTime.Now.Date)
+                if (date!.Value <= DateTime.Now.Date)
                 {
                     AddFailures(context);
                 }
