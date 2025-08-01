@@ -22,8 +22,21 @@
     var modificationId = TempData.Peek(TempDataKeys.ProjectModificationIdentifier) as string;
     var specificArea = TempData.Peek(TempDataKeys.ProjectModificationSpecificArea) as string;
 
-    Model.CurrentStage = currentStage!;
+    Model.CurrentStage = currentStage!;    
 }
+
+@{
+    var prefix = ViewData.ModelState.IsValid ? "" : "Error - ";
+    if (specificArea != null)
+    {
+        ViewBag.Title = $"{prefix}{specificArea} - Make changes to research";
+    }
+    else
+    {
+        ViewBag.Title = $"{prefix}{Model.Questions.FirstOrDefault()?.Section} - Make changes to research";
+    }
+}
+
 
 @if (await featureManager.IsEnabledAsync(Features.ProgressiveEnhancement))
 {
