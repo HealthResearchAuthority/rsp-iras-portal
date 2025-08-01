@@ -1,4 +1,5 @@
-﻿using Rsp.IrasPortal.Application.DTOs.Requests;
+﻿using Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
+using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.Logging.Interceptors;
@@ -53,7 +54,7 @@ public interface IProjectModificationsService : IInterceptable
     /// </summary>
     Task<ServiceResponse<IEnumerable<GetAreaOfChangesResponse>>> GetAreaOfChanges();
 
-    /// <summary>
+    Task<ServiceResponse<StartingQuestionsModel>> GetInitialQuestions();
     /// Creates one or more project modification documents based on the provided request data.
     /// </summary>
     /// <param name="projectModificationDocumentRequest">
