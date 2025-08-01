@@ -20,15 +20,17 @@
 
 <govuk-header />
 
-<div class="govuk-width-container">
-    @section BackNavigation {
+<div class="govuk-width-container">	
+	@section BackNavigation {
 		<partial name="_BackNavigation" model="navModel.Value" />
 	}
     <main class="govuk-main-wrapper pt-0">
-        <div class="govuk-grid-row">
-            <div class="govuk-grid-column-two-thirds">
-                <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
-                <partial name="_ProjectModificationSummary" model="Model" />				
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+
+				<form asp-action="SearchOrganisation" method="post" novalidate>
+					<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
+					<partial name="_ProjectModificationSummary" model="Model" />
 			</div>
 		</div>
 
@@ -61,18 +63,18 @@
                             <div class="govuk-form-group govuk-!-margin-bottom-0 @(ViewData.ModelState.ContainsKey(nameof(Model.Search.SearchNameTerm)) && ViewData.ModelState[nameof(Model.Search.SearchNameTerm)]?.Errors?.Any() == true ? "govuk-form-group--error" : "")">
 
                                 @if (ViewData.ModelState.TryGetValue(nameof(Model.Search.SearchNameTerm), out var searchError) && searchError.Errors.Any())
-                                {
-                                    <p class="govuk-error-message">
-                                        <span class="govuk-visually-hidden">Error:</span> @searchError.Errors.First().ErrorMessage
-                                    </p>
-                                }
+						{
+							<p class="govuk-error-message">
+								<span class="govuk-visually-hidden">Error:</span> @searchError.Errors.First().ErrorMessage
+							</p>
+						}
 
-                                <div class="govuk-input__wrapper">
+						<div class="govuk-input__wrapper">
                                     <input asp-for="Search.SearchNameTerm" class="govuk-input" type="text" id="SearchTerm" />
                                     <button class="govuk-button mb-0 govuk-button--secondary" style="margin-left:10px" type="submit" name="action" value="search">
-                                        Search
-                                    </button>
-                                </div>
+								Search
+							</button>
+						</div>
                             </div>
 
                             <input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize" />
@@ -213,7 +215,7 @@
                                     </tbody>
                                 </form>
                             </table>
-                        </div>
+					</div>
                         <partial name="_PaginationForm" model="@Model.Pagination" />
                     }
                     else
@@ -234,12 +236,12 @@
                     }
 
                         <details class="govuk-details mb-0">
-                            <summary class="govuk-details__summary">
+						<summary class="govuk-details__summary">
                                 <span class="govuk-details__summary-text">
                                     Can't find your organisation?
                                 </span>
-                            </summary>
-                            <div class="govuk-details__text">
+						</summary>
+						<div class="govuk-details__text">
                                 <p>
                                     This section is asking for details of the organisation responsible for the research at a certain location. This may be different from the actual location the research is taking place. For example, in the case of an NHS hospital in England you should search for the Trust responsible for that hospital.
                                 </p>
@@ -265,8 +267,8 @@
                                     If the link is not working you can enter it manually:<br>
                                     www.XYZ.com
                                 </p>
-                            </div>
-                        </details>
+						</div>
+					</details>
                     </div>
                 </div>
             </div>
@@ -278,14 +280,17 @@
             </div>            
         </div>
 
-        <div class="govuk-button-group govuk-!-margin-top-4">
-            <button class="govuk-button" data-module="govuk-button" name="action" value="continue">Save and continue</button>
-            @{
-                ViewBag.Style = "govuk-button govuk-button--secondary";
-            }
-            <partial name="_SubmitButton" model="@("app:projectoverview", "Save for later", new Dictionary<string, string> { })" />
-        </div>
+					<div class="govuk-button-group govuk-!-margin-top-4">
+						<button class="govuk-button" data-module="govuk-button" name="action" value="continue">Save and continue</button>
+						@{
+							ViewBag.Style = "govuk-button govuk-button--secondary";
+						}
+						<partial name="_SubmitButton" model="@("app:projectoverview", "Save for later", new Dictionary<string, string> { })" />
+					</div>
 
-        <p class="govuk-!-margin-top-4"><a href="#" class="govuk-link">Remove this change</a></p>
+					<p class="govuk-!-margin-top-4"><a href="#" class="govuk-link">Remove this change</a></p>
+				</form>
+			</div>
+		</div>
 	</main>
 </div>

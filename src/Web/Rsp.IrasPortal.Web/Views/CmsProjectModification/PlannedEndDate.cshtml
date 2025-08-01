@@ -2,22 +2,36 @@
 @model Rsp.IrasPortal.Web.Models.PlannedEndDateViewModel
 
 @{
-    ViewData["Title"] = "Planned End Date";
-    var errorSummaryTitle = "There is a problem";
+	ViewData["Title"] = "Planned End Date";
+	var errorSummaryTitle = "There is a problem";
 
     var isReviewInProgress = TempData.Peek(TempDataKeys.ProjectModificationPlannedEndDate.ReviewChanges) is true;
 
     var navModel = (isReviewInProgress ? "pmc:modificationchangesreview" : "pmc:areaofchange", "Back", new Dictionary<string, string>());
 }
 
-@section BackNavigation {
+<govuk-header />
+
+<div class="govuk-width-container">
+	@section BackNavigation {
     <partial name="_BackNavigation" model="navModel" />
-}
+	}
 
 <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
 
-<div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
+	<main class="govuk-main-wrapper">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<form asp-action="PlannedEndDate" method="post">
+					<partial name="_ProjectModificationSummary" model="Model" />
+					<dl class="govuk-summary-list">
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Current planned end date</dt>
+							<dd class="govuk-summary-list__value govuk-!-font-weight-bold">
+								@Model.CurrentPlannedEndDate?.ToString("dd MMMM yyyy")
+							</dd>
+						</div>
+					</dl>
 
         <form method="post">
 
@@ -26,7 +40,7 @@
             <div class="govuk-!-margin-bottom-3 flex-gap-2">
                 <span class="govuk-label">Current planned project end date</span>
                 <span class="govuk-body govuk-!-font-weight-bold">@Model.CurrentPlannedEndDate</span>
-            </div>
+								</div>
 
             <input type="hidden" asp-for="CurrentPlannedEndDate" />
 
@@ -42,9 +56,9 @@
                                 label-html-class="font-weight-none"
                                 hint-html="For example, 27 March 2029" />
 
-            <div class="save-buttons">
+					<div class="save-buttons">
 
-                @{
+						@{
                     var buttonText = isReviewInProgress ? "Save changes" : "Save and continue";
                 }
 
@@ -52,15 +66,18 @@
 
                 @if (!isReviewInProgress)
                 {
-                    ViewBag.Style = "govuk-button govuk-button--secondary";
+							ViewBag.Style = "govuk-button govuk-button--secondary";
 
                     <partial name="_SubmitButton" model="@("pmc:saveplannedenddate", "Save for later", new Dictionary<string, string> {{ "saveForLater", bool.TrueString }})" />
-                }
-            </div>
+						}
+						<partial name="_SubmitButton" model="@("app:projectoverview", "Save for later", new Dictionary<string, string> { })" />
+					</div>
 
-            <p>
-                <a href="#" class="govuk-link">Remove this change</a>
-            </p>
-        </form>
-    </div>
+					<p>
+						<a href="#" class="govuk-link">Remove this change</a>
+					</p>
+				</form>
+			</div>
+		</div>
+	</main>
 </div>
