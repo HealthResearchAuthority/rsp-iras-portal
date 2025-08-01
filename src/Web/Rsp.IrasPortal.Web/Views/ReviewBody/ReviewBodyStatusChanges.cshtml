@@ -1,8 +1,8 @@
 ﻿@model AddUpdateReviewBodyModel
 
 @{
-    string disableTitle = "Confirm to disable - Manage review bodies - System Administration";
-    string enableTitle = "Confirm to enable- Manage review bodies - System Administration";
+    var disableTitle = "Confirm to disable - Manage review bodies - System Administration";
+    var enableTitle = "Confirm to enable- Manage review bodies - System Administration";
     ViewData["Title"] = ViewBag.Mode == "disable" ? disableTitle : enableTitle;
     var buttonText = "Confirm";
     var heading = ViewBag.Mode == "disable" ? "Confirm that you want to disable" : "Confirm that you want to enable";

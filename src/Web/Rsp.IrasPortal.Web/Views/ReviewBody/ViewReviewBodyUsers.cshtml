@@ -4,8 +4,8 @@
 
 @{
     ViewBag.Active = "reviewBodies";
-    string errorPrefix = "";
-    if ((Model.Users == null || !Model.Users.Any()) && !string.IsNullOrEmpty(Model.Pagination?.SearchQuery)) { errorPrefix = "Error - "; }
+    var errorPrefix = "";
+    if ((Model.Users is null || !Model.Users.Any()) && !string.IsNullOrEmpty(Model.Pagination?.SearchQuery)) { errorPrefix = "Error - "; }
     ViewBag.Title = $"{errorPrefix}Users - Manage review bodies - System Administration";
 }
 
