@@ -1,8 +1,8 @@
 ﻿@model ConfirmAddRemoveReviewBodyUserModel
 @{
     ViewBag.Active = "reviewBodies";
-    string addedUserTitle = "User successfully added- Manage review bodies - System Administration";
-    string removedUserTitle = "User successfully removed- Manage review bodies - System Administration";
+    var addedUserTitle = "User successfully added- Manage review bodies - System Administration";
+    var removedUserTitle = "User successfully removed- Manage review bodies - System Administration";
     ViewBag.Title = !Model.IsRemove ? addedUserTitle : removedUserTitle;
 }
 

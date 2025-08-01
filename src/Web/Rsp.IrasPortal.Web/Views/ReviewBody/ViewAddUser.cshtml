@@ -5,7 +5,7 @@
 @{
     ViewBag.Active = "reviewBodies";
     string errorPrefix = "";
-    if ((Model.Users == null || !Model.Users.Any()) && !string.IsNullOrEmpty(Model.Pagination?.SearchQuery)) { errorPrefix = "Error - "; }
+    if ((Model.Users is null || !Model.Users.Any()) && !string.IsNullOrEmpty(Model.Pagination?.SearchQuery)) { errorPrefix = "Error - "; }
     ViewBag.Title = $"{errorPrefix}Search for user to add to review body - Manage review bodies - System Administration";
 }
 
