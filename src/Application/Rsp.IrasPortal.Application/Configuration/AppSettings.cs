@@ -5,6 +5,8 @@
 /// </summary>
 public class AppSettings
 {
+    public string AllowedHosts { get; set; } = null!;
+
     /// <summary>
     /// Label to use when reading App Configuration from AzureAppConfiguration
     /// </summary>

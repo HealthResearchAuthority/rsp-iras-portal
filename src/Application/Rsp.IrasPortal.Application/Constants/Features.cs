@@ -27,5 +27,8 @@ public static class Features
     public const string OneLogin = "Auth.UseOneLogin";
 
     // Show projects added to new service
-    public const string MyResearchPage = "UI.MyResearchPage";
+    public const string MyResearchPage = "UX.MyResearchPage";
+
+    // Use Azure Front Door for web application routing
+    public const string UseFrontDoor = "WebApp.UseFrontDoor";
 }
