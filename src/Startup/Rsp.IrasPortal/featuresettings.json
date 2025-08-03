@@ -7,6 +7,7 @@
     "Action.ProceedToSubmit": true, // Show/Hide Proceed to Submit button
     "Logging.InterceptedLogging": true, // Intercepts the start/end of method calls if enabled
     "Auth.UseOneLogin": false, // Use OneLogin for authentication
-    "UI.MyResearchPage": true // Show projects added to new service
+    "UX.MyResearchPage": true, // Show projects added to new service
+    "WebApp.UseFrontDoor": false // If enbaled, will use the configured AllowedHosts for front door.
   }
 }
