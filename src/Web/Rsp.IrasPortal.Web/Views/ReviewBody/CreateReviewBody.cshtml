@@ -16,7 +16,10 @@
             filteredModelState.AddModelError(state.Key, error.ErrorMessage);
         }
     }
-
+    var errorPrefix = ViewData.ModelState.IsValid ? "" : "Error - ";
+    var editTitle = $"{errorPrefix}Edit review body details - Manage review bodies - System Administration";
+    var createTitle = $"{errorPrefix}Add a new review body - Manage review bodies - System Administration";
+    ViewBag.Title = ViewBag.Mode == "update" ? editTitle : createTitle;
 }
 
 <form method="get">

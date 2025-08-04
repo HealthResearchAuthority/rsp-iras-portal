@@ -10,7 +10,11 @@
     var submitActionName = ViewBag.Mode == "edit" ? "admin:submituser" : "admin:confirmusersubmission";
 
     ViewBag.Active = "manageUsers";
-    ViewBag.Title = "Manage users";
+
+    string errorPrefix = ViewData.ModelState.IsValid ? "" : "Error - ";
+    string editTitle = $"{errorPrefix}Edit user profile record - Manage Users - System Administration";
+    string createTitle = $"{errorPrefix}Add a new user profile record - Manage Users - System Administration";
+    ViewBag.Title = ViewBag.Mode == "edit" ? editTitle : createTitle;
 
     ViewBag.DefaultOptions = new List<GdsOption>();
 }
