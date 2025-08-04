@@ -86,8 +86,8 @@ public class CmsProjectModificationController
         var projectModification = projectModificationServiceResponse.Content!;
 
         // Store relevant IDs in TempData for later use
-        TempData[TempDataKeys.ProjectModificationId] = projectModification.Id;
-        TempData[TempDataKeys.ProjectModificationIdentifier] = projectModification.ModificationIdentifier;
+        TempData[TempDataKeys.ProjectModification.ProjectModificationId] = projectModification.Id;
+        TempData[TempDataKeys.ProjectModification.ProjectModificationIdentifier] = projectModification.ModificationIdentifier;
         TempData[TempDataKeys.CategoryId] = QuestionCategories.ProjectModification;
 
         return RedirectToAction(nameof(AreaOfChange));
@@ -116,7 +116,7 @@ public class CmsProjectModificationController
             PageTitle = "Select area of change",
             ShortTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
             IrasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty,
-            ModificationIdentifier = TempData.Peek(TempDataKeys.ProjectModificationIdentifier) as string ?? string.Empty,
+            ModificationIdentifier = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string ?? string.Empty,
             AreaOfChangeOptions = response.Content.AreaOfChange.Answers
                 .Select(a => new SelectListItem { Value = a.Key.ToString(), Text = a.OptionName })
                 .Prepend(new SelectListItem { Value = "", Text = "Select area of change" }),
@@ -136,7 +136,7 @@ public class CmsProjectModificationController
     [HttpGet]
     public IActionResult GetSpecificChangesByAreaId(string areaOfChangeId)
     {
-        var tempDataString = TempData.Peek(TempDataKeys.AreaOfChanges) as string;
+        var tempDataString = TempData.Peek(TempDataKeys.ProjectModification.AreaOfChanges) as string;
 
         if (string.IsNullOrWhiteSpace(tempDataString))
         {
@@ -181,7 +181,7 @@ public class CmsProjectModificationController
             return View(nameof(AreaOfChange), model);
         }
 
-        var modificationId = TempData.Peek(TempDataKeys.ProjectModificationId);
+        var modificationId = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId);
         if (modificationId is Guid newGuid && newGuid != Guid.Empty)
         {
             await SaveModificationChange(model, newGuid);
@@ -208,8 +208,8 @@ public class CmsProjectModificationController
         {
             ShortTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
             IrasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty,
-            ModificationIdentifier = TempData.Peek(TempDataKeys.ProjectModificationIdentifier) as string ?? string.Empty,
-            PageTitle = TempData.Peek(TempDataKeys.SpecificAreaOfChangeText) as string ?? string.Empty
+            ModificationIdentifier = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string ?? string.Empty,
+            PageTitle = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeText) as string ?? string.Empty
         };
 
         // Retrieve the current organisation search term from TempData
@@ -227,8 +227,8 @@ public class CmsProjectModificationController
         {
             ShortTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
             IrasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty,
-            ModificationIdentifier = TempData.Peek(TempDataKeys.ProjectModificationIdentifier) as string ?? string.Empty,
-            PageTitle = TempData.Peek(TempDataKeys.SpecificAreaOfChangeText) as string ?? string.Empty
+            ModificationIdentifier = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string ?? string.Empty,
+            PageTitle = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeText) as string ?? string.Empty
         };
 
         // Retrieve the current planned end date from TempData
@@ -265,7 +265,7 @@ public class CmsProjectModificationController
             ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
         }
 
-        var tempDataString = TempData.Peek(TempDataKeys.AreaOfChanges) as string;
+        var tempDataString = TempData.Peek(TempDataKeys.ProjectModification.AreaOfChanges) as string;
         if (!string.IsNullOrWhiteSpace(tempDataString))
         {
             var areaOfChanges = JsonSerializer.Deserialize<List<GetAreaOfChangesResponse>>(tempDataString)!;
@@ -329,7 +329,7 @@ public class CmsProjectModificationController
         if (modificationChangeResponse.IsSuccessStatusCode)
         {
             var modificationChange = modificationChangeResponse.Content!;
-            TempData[TempDataKeys.ProjectModificationChangeId] = modificationChange.Id;
+            TempData[TempDataKeys.ProjectModification.ProjectModificationChangeId] = modificationChange.Id;
         }
     }
 

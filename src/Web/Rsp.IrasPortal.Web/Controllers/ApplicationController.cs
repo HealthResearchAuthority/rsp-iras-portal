@@ -149,7 +149,8 @@ public class ApplicationController
         // Store relevant information in TempData for use in subsequent requests
         var questionCategoriesResponse = await cmsSevice.GetQuestionCategories();
         var categoryId = questionCategoriesResponse.IsSuccessStatusCode && questionCategoriesResponse.Content?.FirstOrDefault() != null
-            ? questionCategoriesResponse.Content.FirstOrDefault()?.CategoryId : QuestionCategories.A;
+            ? questionCategoriesResponse.Content.FirstOrDefault()?.CategoryId : QuestionCategories.ProjectRecrod;
+
         TempData[TempDataKeys.CategoryId] = categoryId;
         TempData[TempDataKeys.ProjectRecordId] = irasApplication.Id;
         TempData[TempDataKeys.IrasId] = irasApplication.IrasId;

@@ -106,7 +106,7 @@ public class CmsQuestionSetController(ICmsQuestionsetService questionSetService,
         // save the list of QuestionViewModel in session to get it later
         HttpContext.Session.SetString($"{SessionKeys.Questionnaire}:{sectionId}", JsonSerializer.Serialize(questionnaire.Questions));
 
-        TempData.TryAdd(TempDataKeys.ProjectRecordId, applicationId);
+        TempData.TryAdd(TempDataKeys.ProjectRecordId, projectRecordId);
         // this is where the questionnaire will resume
         var navigationDto = await SetStage(sectionIdOrDefault);
 
@@ -573,8 +573,8 @@ public class CmsQuestionSetController(ICmsQuestionsetService questionSetService,
 
         // Fetch organisations from the RTS service, with or without pagination.
         var searchResponse = pageSize is null ?
-            await rtsService.GetOrganisations(model.SponsorOrgSearch.SearchText!, role) :
-            await rtsService.GetOrganisations(model.SponsorOrgSearch.SearchText, role, pageSize.Value);
+            await rtsService.GetOrganisationsByName(model.SponsorOrgSearch.SearchText!, role) :
+            await rtsService.GetOrganisationsByName(model.SponsorOrgSearch.SearchText, role, pageSize.Value);
 
         // Handle error response from the service.
         if (!searchResponse.IsSuccessStatusCode || searchResponse.Content == null)
@@ -616,7 +616,7 @@ public class CmsQuestionSetController(ICmsQuestionsetService questionSetService,
     private async Task<IrasApplicationResponse?> LoadApplication(string projectApplicationId)
     {
         // get the application by id
-        var response = await applicationsService.GetProjectRecord(applicationId);
+        var response = await applicationsService.GetProjectRecord(projectApplicationId);
 
         if (!response.IsSuccessStatusCode)
         {
