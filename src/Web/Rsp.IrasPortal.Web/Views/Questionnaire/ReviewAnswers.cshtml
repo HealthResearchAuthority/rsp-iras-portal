@@ -78,6 +78,11 @@
     <partial name="_BackNavigation" model="navModel" />
 }
 
+@{
+    var prefix = ViewData.ModelState.IsValid ? "" : "Error - ";
+    ViewBag.Title = $"{prefix}Review your answers - Make changes to research";
+}
+
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
         <h1 class="govuk-heading-l">Review your answers</h1>

@@ -3,7 +3,7 @@
 
 @{
 	ViewBag.Active = "manageUsers";
-	ViewBag.Title = "Manage users";
+    ViewBag.Title = "Confirm - Manage Users - System Administration";
 }
 
 <a asp-route="admin:viewuser" asp-all-route-data="@(new Dictionary<string, string>{{"email", Model.Email}, {"userId", Model.Id!}})" class="govuk-back-link">Back</a>
