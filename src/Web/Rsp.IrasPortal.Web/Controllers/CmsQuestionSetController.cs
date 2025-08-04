@@ -573,8 +573,8 @@ public class CmsQuestionSetController(ICmsQuestionsetService questionSetService,
 
         // Fetch organisations from the RTS service, with or without pagination.
         var searchResponse = pageSize is null ?
-            await rtsService.GetOrganisations(role) :
-            await rtsService.GetOrganisations(role, pageSize.Value);
+            await rtsService.GetOrganisationsByName(model.SponsorOrgSearch.SearchText!, role) :
+            await rtsService.GetOrganisationsByName(model.SponsorOrgSearch.SearchText, role, pageSize.Value);
 
         // Handle error response from the service.
         if (!searchResponse.IsSuccessStatusCode || searchResponse.Content == null)
