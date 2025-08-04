@@ -20,6 +20,8 @@
 		   asp-route-pageNumber="@previousPage"
 		   asp-route-pageSize="@Model.PageSize"
            asp-route-searchQuery="@Model.SearchQuery"
+		   asp-route-sortDirection="@Model.SortDirection"
+		   asp-route-sortField="@Model.SortField"
            asp-route-fromPagination="true"
 		   asp-route-complexSearchQuery="@System.Text.Json.JsonSerializer.Serialize(Model.ComplexSearchQuery)"
            rel="prev">
