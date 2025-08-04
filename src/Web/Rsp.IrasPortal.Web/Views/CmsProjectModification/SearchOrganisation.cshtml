@@ -20,8 +20,8 @@
 
 <govuk-header />
 
-<div class="govuk-width-container">	
-	@section BackNavigation {
+<div class="govuk-width-container">
+    @section BackNavigation {
 		<partial name="_BackNavigation" model="navModel.Value" />
 	}
     <main class="govuk-main-wrapper pt-0">
@@ -280,17 +280,14 @@
             </div>            
         </div>
 
-					<div class="govuk-button-group govuk-!-margin-top-4">
-						<button class="govuk-button" data-module="govuk-button" name="action" value="continue">Save and continue</button>
-						@{
-							ViewBag.Style = "govuk-button govuk-button--secondary";
-						}
-						<partial name="_SubmitButton" model="@("app:projectoverview", "Save for later", new Dictionary<string, string> { })" />
-					</div>
+        <div class="govuk-button-group govuk-!-margin-top-4">
+            <button class="govuk-button" data-module="govuk-button" name="action" value="continue">Save and continue</button>
+            @{
+                ViewBag.Style = "govuk-button govuk-button--secondary";
+            }
+            <partial name="_SubmitButton" model="@("app:projectoverview", "Save for later", new Dictionary<string, string> { })" />
+        </div>
 
-					<p class="govuk-!-margin-top-4"><a href="#" class="govuk-link">Remove this change</a></p>
-				</form>
-			</div>
-		</div>
+        <p class="govuk-!-margin-top-4"><a href="#" class="govuk-link">Remove this change</a></p>
 	</main>
 </div>

@@ -10,30 +10,30 @@
 @inject IFeatureManager featureManager
 
 @{
-	(string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
-	var previousStage = TempData[TempDataKeys.PreviousStage] as string;
-	var previousCategory = TempData[TempDataKeys.PreviousCategory] as string;
-	var currentStage = TempData[TempDataKeys.CurrentStage] as string;
-	var errorSummaryTitle = "There is a problem";
-	var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
-	var projectOverview = TempData[TempDataKeys.ProjectOverview] as bool? ?? false;
+    (string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
+    var previousStage = TempData[TempDataKeys.PreviousStage] as string;
+    var previousCategory = TempData[TempDataKeys.PreviousCategory] as string;
+    var currentStage = TempData[TempDataKeys.CurrentStage] as string;
+    var errorSummaryTitle = "There is a problem";
+    var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
+    var projectOverview = TempData[TempDataKeys.ProjectOverview] as bool? ?? false;
 
 	var IrasId = TempData.Peek(TempDataKeys.IrasId)?.ToString();
 	var shortProjectTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string;
     var modificationId = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string;
     var specificArea = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationSpecificArea) as string;
 
-	Model.CurrentStage = currentStage!;
+    Model.CurrentStage = currentStage!;
 }
 
 @if (await featureManager.IsEnabledAsync(Features.ProgressiveEnhancement))
 {
-	<script src="~/lib/jquery/dist/jquery.js"></script>
+    <script src="~/lib/jquery/dist/jquery.js"></script>
 
-	// Collect all rules for conditional questions
-	var conditionalRules = Model.GetConditionalRules();
+    // Collect all rules for conditional questions
+    var conditionalRules = Model.GetConditionalRules();
 
-	<script>
+    <script>
 		$(document).ready(function () {
 		const conditionalRules = @Html.Raw(JsonSerializer.Serialize(conditionalRules));
 
@@ -42,143 +42,143 @@
 		sessionStorage.setItem(rule.QuestionId, JSON.stringify(rule.Rules));
 		});
 		});
-	</script>
+    </script>
 
-	<script src="~/js/questionnaire.js"></script>
-	<script src="~/js/rules.js"></script>
+    <script src="~/js/questionnaire.js"></script>
+    <script src="~/js/rules.js"></script>
 }
 
 @{
-	if (Model.ReviewAnswers)
-	{
-		navModel = ("qnc:submitapplication", "Back", new()
+    if (Model.ReviewAnswers)
+    {
+        navModel = ("qnc:submitapplication", "Back", new()
 {
-			{ "projectRecordId", projectRecordId }
-		});
-	}
-	else if (!string.IsNullOrEmpty(previousStage))
-	{
-		// If there is a previous stage, navigate to that stage in the questionnaire
-		navModel = ("qnc:displayquestionnaire", "Back", new()
+            { "projectRecordId", projectRecordId }
+        });
+    }
+    else if (!string.IsNullOrEmpty(previousStage))
+    {
+        // If there is a previous stage, navigate to that stage in the questionnaire
+        navModel = ("qnc:displayquestionnaire", "Back", new()
 {
-			{ "categoryId", previousCategory },
-			{ "sectionId", previousStage }
-																																																											});
-	}
-	else if (projectOverview)
-	{
-		// If the project overview is true, navigate to the project overview page
-		navModel = ("app:projectoverview", "Back", new());
-	}
+            { "categoryId", previousCategory },
+            { "sectionId", previousStage }
+                                                                                                                                                                                                                                            });
+    }
+    else if (projectOverview)
+    {
+        // If the project overview is true, navigate to the project overview page
+        navModel = ("app:projectoverview", "Back", new());
+    }
 }
 
 @if (navModel != null)
 {
-	<partial name="_BackNavigation" model="navModel.Value" />
+    <partial name="_BackNavigation" model="navModel.Value" />
 }
 
 <div class="govuk-grid-row">
-	<div class="govuk-grid-column-two-thirds">
-		<form method="post">
+    <div class="govuk-grid-column-two-thirds">
+        <form method="post">
 
-			@if (ViewData[ViewDataKeys.IsQuestionnaireValid] is true)
-			{
-				<div class="govuk-panel govuk-panel--confirmation">
-					<div class="govuk-panel__body">
-						Validation Passed
-					</div>
-				</div>
-			}
+            @if (ViewData[ViewDataKeys.IsQuestionnaireValid] is true)
+            {
+                <div class="govuk-panel govuk-panel--confirmation">
+                    <div class="govuk-panel__body">
+                        Validation Passed
+                    </div>
+                </div>
+            }
 
-			<div class="govuk-form-group">
+            <div class="govuk-form-group">
 
-				<input hidden asp-for="CurrentStage" value="@currentStage" />
+                <input hidden asp-for="CurrentStage" value="@currentStage" />
 
-				<govuk-fieldset class="sections">
-					<govuk-fieldset-legend class="govuk-fieldset__legend--l">
-						<h2 class="govuk-heading-l" id="title">
-							@if (specificArea != null)
-							{
-								@specificArea								
-							}
-							else
-							{
-								@(Model.Questions.FirstOrDefault()?.Section)
-							}
-						</h2>
-					</govuk-fieldset-legend>
+                <govuk-fieldset class="sections">
+                    <govuk-fieldset-legend class="govuk-fieldset__legend--l">
+                        <h2 class="govuk-heading-l" id="title">
+                            @if (specificArea != null)
+                            {
+                                @specificArea
+                            }
+                            else
+                            {
+                                @(Model.Questions.FirstOrDefault()?.Section)
+                            }
+                        </h2>
+                    </govuk-fieldset-legend>
 
-					<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
+                    <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
 
-					<partial name="~/Views/CmsQuestionSet/GuidanceContent.cshtml" model="Model.GuidanceContent" />
+                    <partial name="~/Views/CmsQuestionSet/GuidanceContent.cshtml" model="Model.GuidanceContent" />
 
-					@foreach (var question in Model.Questions)
-					{
-						var index = question.Index;
+                    @foreach (var question in Model.Questions)
+                    {
+                        var index = question.Index;
 
-						<input type="hidden" asp-for="Questions[index].Index" />
-						<input type="hidden" asp-for="Questions[index].QuestionId" />
-						<input type="hidden" asp-for="Questions[index].Category" />
-						<input type="hidden" asp-for="Questions[index].SectionId" />
-						<input type="hidden" asp-for="Questions[index].Section" />
-						<input type="hidden" asp-for="Questions[index].Heading" />
-						<input type="hidden" asp-for="Questions[index].QuestionText" />
-						<input type="hidden" asp-for="Questions[index].ShortQuestionText" />
-						<input type="hidden" asp-for="Questions[index].QuestionType" />
-						<input type="hidden" asp-for="Questions[index].DataType" />
-						<input type="hidden" asp-for="Questions[index].IsMandatory" checked="@question.IsMandatory" />
-						<input type="hidden" asp-for="Questions[index].IsOptional" checked="@question.IsOptional" />
+                        <input type="hidden" asp-for="Questions[index].Index" />
+                        <input type="hidden" asp-for="Questions[index].QuestionId" />
+                        <input type="hidden" asp-for="Questions[index].Category" />
+                        <input type="hidden" asp-for="Questions[index].SectionId" />
+                        <input type="hidden" asp-for="Questions[index].Section" />
+                        <input type="hidden" asp-for="Questions[index].Heading" />
+                        <input type="hidden" asp-for="Questions[index].QuestionText" />
+                        <input type="hidden" asp-for="Questions[index].ShortQuestionText" />
+                        <input type="hidden" asp-for="Questions[index].QuestionType" />
+                        <input type="hidden" asp-for="Questions[index].DataType" />
+                        <input type="hidden" asp-for="Questions[index].IsMandatory" checked="@question.IsMandatory" />
+                        <input type="hidden" asp-for="Questions[index].IsOptional" checked="@question.IsOptional" />
 
-						if (!question.IsMandatory)
-						{
-							if (question.Rules.Count == 0)
-							{
-								<div class="govuk-inset-text">
-									This question is conditional:
-								</div>
-							}
-						}
+                        if (!question.IsMandatory)
+                        {
+                            if (question.Rules.Count == 0)
+                            {
+                                <div class="govuk-inset-text">
+                                    This question is conditional:
+                                </div>
+                            }
+                        }
 
-						var types = (question.QuestionType.ToLower(), question.DataType.ToLower());
+                        var types = (question.QuestionType.ToLower(), question.DataType.ToLower());
 
-						ViewBag.Index = index;
+                        ViewBag.Index = index;
 
-						// this will be used in the template
-						var templateName = types switch
-						{
-							("date", "date") => "DateTemplate",
-							("text", "text" or "email") => "TextTemplate",
-							("look-up list", "checkbox") => "CheckboxTemplate",
-							("look-up list", "radio button") => "RadioButtonTemplate",
-							("boolean", "boolean") => "RadioButtonTemplate",
-							("rts:org_lookup", "text") => "AutoSuggestTemplate",
-							_ => string.Empty
-						};
+                        // this will be used in the template
+                        var templateName = types switch
+                        {
+                            ("date", "date") => "DateTemplate",
+                            ("text", "text" or "email") => "TextTemplate",
+                            ("look-up list", "checkbox") => "CheckboxTemplate",
+                            ("look-up list", "radio button") => "RadioButtonTemplate",
+                            ("boolean", "boolean") => "RadioButtonTemplate",
+                            ("rts:org_lookup", "text") => "AutoSuggestTemplate",
+                            _ => string.Empty
+                        };
 
-						<partial name="~/Views/CmsQuestionSet/GuidanceContent.cshtml" model="question.GuidanceComponents" />
-						if (!string.IsNullOrWhiteSpace(templateName))
-						{
-							// plese note the @ is necessary before Html so that Template is rendered, otherwise it won't render
-							@Html.EditorForModel(templateName, ViewData)
-						}
+                        <partial name="~/Views/CmsQuestionSet/GuidanceContent.cshtml" model="question.GuidanceComponents" />
+                        if (!string.IsNullOrWhiteSpace(templateName))
+                        {
+                            // plese note the @ is necessary before Html so that Template is rendered, otherwise it won't render
+                            @Html.EditorForModel(templateName, ViewData)
+                        }
 
-					}
-				</govuk-fieldset>
-			</div>
+                    }
+                </govuk-fieldset>
+            </div>
 
-			<div class="save-buttons">
-				@if (!Model.ReviewAnswers)
-				{
-					<partial name="_SubmitButton" model="@("cmsqnc:saveresponses", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } })" />
+            <div class="save-buttons">
+                @if (!Model.ReviewAnswers)
+                {
+                    <partial name="_SubmitButton" model="@("cmsqnc:saveresponses", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } })" />
 
-					ViewBag.Style = "govuk-button govuk-button--secondary";
-					<partial name="_SubmitButton" model="@("cmsqnc:saveresponses", "Save for later", new Dictionary<string, string> { { "saveForLater", bool.TrueString } })" />
-				}
-				else
-				{
-					<partial name="_SubmitButton" model="@("cmsqnc:saveresponses", "Save changes", new Dictionary<string, string> { { "submit", bool.TrueString } })" />
-				}
-			</div>
-		</form>
-	</div>
+                    ViewBag.Style = "govuk-button govuk-button--secondary";
+                    <partial name="_SubmitButton" model="@("cmsqnc:saveresponses", "Save for later", new Dictionary<string, string> { { "saveForLater", bool.TrueString } })" />
+                }
+                else
+                {
+                    <partial name="_SubmitButton" model="@("cmsqnc:saveresponses", "Save changes", new Dictionary<string, string> { { "submit", bool.TrueString } })" />
+                }
+            </div>
+        </form>
+    </div>
 </div>
