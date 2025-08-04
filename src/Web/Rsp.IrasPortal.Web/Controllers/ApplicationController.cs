@@ -151,7 +151,8 @@ public class ApplicationController
         // Store relevant information in TempData for use in subsequent requests
         var questionCategoriesResponse = await cmsSevice.GetQuestionCategories();
         var categoryId = questionCategoriesResponse.IsSuccessStatusCode && questionCategoriesResponse.Content?.FirstOrDefault() != null
-            ? questionCategoriesResponse.Content.FirstOrDefault()?.CategoryId : QuestionCategories.A;
+            ? questionCategoriesResponse.Content.FirstOrDefault()?.CategoryId : QuestionCategories.ProjectRecrod;
+
         TempData[TempDataKeys.CategoryId] = categoryId;
         TempData[TempDataKeys.ProjectRecordId] = irasApplication.Id;
         TempData[TempDataKeys.IrasId] = irasApplication.IrasId;
@@ -245,7 +246,6 @@ public class ApplicationController
     /// <returns>The ProjectOverview view with the populated model.</returns>
     public async Task<IActionResult> ProjectOverview(string? projectRecordId, string? categoryId)
     {
-
         // If there is a project modification change, show the notification banner
         if (TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId) is not null)
         {
