@@ -1,4 +1,5 @@
-﻿@model Rsp.IrasPortal.Web.Models.SearchOrganisationViewModel
+﻿@using Rsp.IrasPortal.Application.Constants
+@model Rsp.IrasPortal.Web.Models.SearchOrganisationViewModel
 
 @{
 	ViewData["Title"] = "Search participating organisation";
@@ -8,58 +9,283 @@
 	navModel = ("pmc:areaofchange", "Back", new());
 }
 
+@functions {
+
+    private bool CanOpenPanelForField(string fieldName) =>
+        ViewData.ModelState.TryGetValue(fieldName, out var state) && state.Errors.Any();    
+
+    private bool CanOpenFilterPanel() =>
+        ViewData.ModelState.Values.Any(v => v.Errors.Count > 0);
+}
+
 <govuk-header />
 
-<div class="govuk-width-container">	
-	@section BackNavigation {
+<div class="govuk-width-container">
+    @section BackNavigation {
 		<partial name="_BackNavigation" model="navModel.Value" />
 	}
-	<main class="govuk-main-wrapper">
-		<div class="govuk-grid-row">
-			<div class="govuk-grid-column-two-thirds">
-
-				<form asp-action="SearchOrganisation" method="post" novalidate>
-					<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
-					<partial name="_ProjectModificationSummary" model="Model" />
-
-					<div class="govuk-form-group @(ViewData.ModelState.ContainsKey(nameof(Model.SearchTerm)) && ViewData.ModelState[nameof(Model.SearchTerm)]?.Errors?.Any() == true ? "govuk-form-group--error" : "")">
-						<label class="govuk-label" for="SearchTerm">Organisation name</label>
-
-						@if (ViewData.ModelState.TryGetValue(nameof(Model.SearchTerm), out var searchError) && searchError.Errors.Any())
-						{
-							<p class="govuk-error-message">
-								<span class="govuk-visually-hidden">Error:</span> @searchError.Errors.First().ErrorMessage
-							</p>
-						}
-
-						<div class="govuk-input__wrapper">
-							<input asp-for="SearchTerm" class="govuk-input" type="text" id="SearchTerm" />
-							<button class="govuk-button govuk-button--secondary" style="margin-left:10px" type="submit" name="action" value="search">
-								Search
-							</button>
-						</div>
-					</div>
-
-					<details class="govuk-details govuk-!-margin-top-3">
-						<summary class="govuk-details__summary">
-							<span class="govuk-details__summary-text">Advanced filter</span>
-						</summary>
-						<div class="govuk-details__text">
-							<p>0 results</p>
-						</div>
-					</details>
-
-					<div class="govuk-button-group govuk-!-margin-top-4">
-						<button class="govuk-button" data-module="govuk-button" name="action" value="continue">Save and continue</button>
-						@{
-							ViewBag.Style = "govuk-button govuk-button--secondary";
-						}
-						<partial name="_SubmitButton" model="@("app:projectoverview", "Save for later", new Dictionary<string, string> { })" />
-					</div>
-
-					<p class="govuk-!-margin-top-4"><a href="#" class="govuk-link">Remove this change</a></p>
-				</form>
+    <main class="govuk-main-wrapper pt-0">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
+                <partial name="_ProjectModificationSummary" model="Model" />				
 			</div>
 		</div>
+
+        <div class="govuk-tabs" data-module="govuk-tabs">
+            <h2 class="govuk-tabs__title">
+                Contents
+            </h2>
+            <ul class="govuk-tabs__list">
+                <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+                    <a class="govuk-tabs__tab" href="#all-organisations">
+                        All organisations
+                    </a>
+                </li>
+                <li class="govuk-tabs__list-item">
+                    <a class="govuk-tabs__tab" href="#selected-organisations">
+                        Selected organisations (0)
+                    </a>
+                </li>                
+            </ul>
+            <div class="govuk-tabs__panel" id="all-organisations">
+                <h2 class="govuk-heading-m">All organisations</h2>
+                <p class="govuk-body">
+                    This list displays all available UK organisations. Search by name and address and use the advanced filter to narrow it down.
+                </p>
+                <div class="govuk-grid-row">
+                    <div class="govuk-grid-column-two-thirds">
+
+                        <form asp-action="SearchOrganisation" method="post" novalidate>
+
+                            <div class="govuk-form-group govuk-!-margin-bottom-0 @(ViewData.ModelState.ContainsKey(nameof(Model.Search.SearchNameTerm)) && ViewData.ModelState[nameof(Model.Search.SearchNameTerm)]?.Errors?.Any() == true ? "govuk-form-group--error" : "")">
+
+                                @if (ViewData.ModelState.TryGetValue(nameof(Model.Search.SearchNameTerm), out var searchError) && searchError.Errors.Any())
+                                {
+                                    <p class="govuk-error-message">
+                                        <span class="govuk-visually-hidden">Error:</span> @searchError.Errors.First().ErrorMessage
+                                    </p>
+                                }
+
+                                <div class="govuk-input__wrapper">
+                                    <input asp-for="Search.SearchNameTerm" class="govuk-input" type="text" id="SearchTerm" />
+                                    <button class="govuk-button mb-0 govuk-button--secondary" style="margin-left:10px" type="submit" name="action" value="search">
+                                        Search
+                                    </button>
+                                </div>
+                            </div>
+
+                            <input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize" />
+                            <input hidden readonly name="PageNumber" value="@Model.Pagination?.PageNumber" />
+
+                            <!-- Filter Panel -->
+                            <div class="search-filter-panel">
+                                <input type="checkbox" id="toggle-filter" class="search-filter-toggle" hidden @(CanOpenFilterPanel() ? "checked" : null)>
+
+                                <div class="search-filter-panel__header">
+                                    <label for="toggle-filter" class="search-filter-panel__button govuk-link" role="button" aria-controls="filter-panel">
+                                        <span class="search-filter-panel__button-inner">Advanced filter</span>
+                                    </label>
+                                    <h2 id="js-result-count" class="search-filter-panel__count">@(Model.Pagination?.TotalCount ?? 0) results</h2>
+                                </div>
+
+                                <div class="search-filter-panel__content" id="filter-panel" role="region" aria-labelledby="toggle-filter">                                                                      
+
+                                    <!-- Organisation type -->
+                                    <details class="search-filter-section" @(CanOpenPanelForField("Search.OrganisationType") ? "open" : null)>
+                                        <summary class="search-filter-section__summary">
+                                            <h2 class="search-filter-section__summary-heading">Organisation type</h2>
+                                        </summary>
+                                        <div class="search-filter-section__content">
+                                            <div class="govuk-form-group govuk-!-margin-bottom-2">
+                                                <fieldset class="govuk-fieldset">                                                    
+                                                    <rsp-gds-checkbox-group asp-for="Search.Country"
+                                                                            label-text="Select all that apply"
+                                                                            options="OrganisationTypes.Types"
+                                                                            conditional-field="false"
+                                                                            legend-class="govuk-label govuk-label--s font-weight-none"
+                                                                            hint-id="country-hint"
+                                                                            hint-html="@($"{Model.Search.Country?.Count ?? 0} selected")" />
+                                                </fieldset>
+                                            </div>
+                                        </div>
+                                    </details>
+
+                                    <!-- Country -->
+                                    <details class="search-filter-section" @(CanOpenPanelForField("Search.Country") ? "open" : null)>
+                                        <summary class="search-filter-section__summary">
+                                            <h2 class="search-filter-section__summary-heading">Country</h2>
+                                        </summary>
+                                        <div class="search-filter-section__content">
+                                            <div class="govuk-form-group govuk-!-margin-bottom-2">
+                                                <fieldset class="govuk-fieldset">
+                                                    <rsp-gds-checkbox-group asp-for="Search.Country"
+                                                                            label-text="Select all that apply"
+                                                                            options="UkCountryNames.Countries"
+                                                                            conditional-field="false"
+                                                                            legend-class="govuk-label govuk-label--s font-weight-none"
+                                                                            hint-id="country-hint"
+                                                                            hint-html="@($"{Model.Search.Country?.Count ?? 0} selected")" />
+                                                </fieldset>
+                                            </div>
+                                        </div>
+                                    </details>
+
+                                    <div class="search-filter-panel__actions">
+                                        <button type="submit" class="govuk-button search-filter-panel__action search-filter-panel__action--submit">Apply</button>
+                                    </div>
+                                </div>
+                            </div>               
+                        </form>
+                    </div>
+                </div>    
+                <div class="govuk-grid-row">
+                    <div class="govuk-grid-column-full">
+                    @if (Model.Organisations != null && Model.Organisations.Any())
+                    {
+                        <div class="govuk-table-wrapper">
+                            <table class="govuk-table modifications-tasklist-table" id="organisationsTasklistTable">
+                                <thead class="govuk-table__head">
+                                    <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+                                        <th scope="col" class="govuk-table__header govuk-!-text-align-right checkbox-cell">
+                                            <div class="govuk-checkboxes__item govuk-checkboxes--small">
+                                                <input id="select-all-organisations" name="" class="govuk-checkboxes__input select-all-modifications" type="checkbox">
+                                                <label for="select-all-organisations" class="govuk-label govuk-checkboxes__label"></label>
+                                            </div>
+                                        </th>
+                                        @{
+                                            var sortableHeaders = new[]
+                                            {                                            
+                                                new { Field = nameof(OrganisationModel.Name), Label = "Name" },
+                                                new { Field = nameof(OrganisationModel.Address), Label = "Address" },
+                                                new { Field = nameof(OrganisationModel.Type), Label = "Organisation type" },
+                                                new { Field = nameof(OrganisationModel.CountryName), Label = "Country" }
+                                            };
+                                            var tableId = "organisationsTasklistTable";
+                                        }
+                                        @foreach (var header in sortableHeaders)
+                                        {
+                                            <th scope="col" class="govuk-table__header govuk-table__header-sortable">
+                                                <partial name="_SortableHeaderButton" model="new SortableHeaderModel
+                                                {
+                                                    FieldName = header.Field,
+                                                    DisplayText = header.Label,
+                                                    CurrentSortField = Model.Pagination?.SortField,
+                                                    CurrentSortDirection = Model.Pagination?.SortDirection,
+                                                    TableId = tableId,
+                                                }" />
+                                            </th>
+                                        }
+                                    </tr>
+                                </thead>
+                                <form method="get" id="organisation-selection">
+                                    <input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
+                                    <input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
+
+                                    <!--Keep track of selected organisations that are not displayed on this page for continuity-->
+                                    @foreach (var selectedMod in Model.SelectedOrganisationIds.Except(Model.Organisations.Select(m => m.Organisation.Id)))
+                                    {
+                                        <input hidden="hidden" type="text" value="@selectedMod" name="selectedOrganisationIds" />
+                                    }
+                                    <tbody class="govuk-table__body govuk-body-s">
+                                        @{
+                                            foreach (var organisation in Model.Organisations)
+                                            {
+                                                <tr class="govuk-table__row">
+                                                    <td class="govuk-table__cell checkbox-cell">
+                                                        <div class="govuk-checkboxes__item govuk-checkboxes--small">
+                                                            <input id="@organisation.Organisation.Id"
+                                                                        name="selectedOrganisationIds"
+                                                                        value="@organisation.Organisation.Id"
+                                                                        class="govuk-checkboxes__input child-checkbox"
+                                                                        type="checkbox"
+                                                                    @(organisation.IsSelected ? "checked" : "")>
+                                                            <label for="@organisation.Organisation.Id" class="govuk-label govuk-checkboxes__label modification-checkbox-label"></label>
+                                                        </div>
+                                                    </td>
+                                                    <td class="govuk-table__cell">@organisation.Organisation.Name</td>
+                                                    <td class="govuk-table__cell">@organisation.Organisation.Address</td>
+                                                    <td class="govuk-table__cell">@organisation.Organisation.Type</td>
+                                                    <td class="govuk-table__cell">@organisation.Organisation.CountryName</td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </form>
+                            </table>
+                        </div>
+                        <partial name="_PaginationForm" model="@Model.Pagination" />
+                    }
+                    else
+                    {
+                        <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible govuk-grid-column-two-thirds">
+                        <div class="govuk-grid-row">
+                            <div class="govuk-grid-column-two-thirds search-filter-error-border">
+                                <h2 class="govuk-heading-m">There are no matching results</h2>
+                                <p class="govuk-body">Improve your search results by:</p>
+                                <ul class="govuk-list govuk-list--bullet">
+                                    <li>removing filters</li>
+                                    <li>double-checking your spelling</li>
+                                    <li>using fewer keywords</li>
+                                    <li>searching for something less specific</li>
+                                </ul>
+                            </div>
+                        </div>
+                    }
+
+                        <details class="govuk-details mb-0">
+                            <summary class="govuk-details__summary">
+                                <span class="govuk-details__summary-text">
+                                    Can't find your organisation?
+                                </span>
+                            </summary>
+                            <div class="govuk-details__text">
+                                <p>
+                                    This section is asking for details of the organisation responsible for the research at a certain location. This may be different from the actual location the research is taking place. For example, in the case of an NHS hospital in England you should search for the Trust responsible for that hospital.
+                                </p>
+                                <p>You can improve your search results by:</p>
+                                <ul class="govuk-list govuk-list--bullet">
+                                    <li>adding or removing filters</li>
+                                    <li>double-checking your spelling</li>
+                                    <li>using fewer keywords</li>
+                                    <li>searching for something less specific</li>
+                                </ul>
+                                <p>
+                                    If you still can't find what you're looking for, contact the Service Desk with your IRAS ID and the name and address of the organisations you want to add. Service Desk will notify you on the outcome. It can take up to 2 weeks for an organisation to be added.
+                                </p>
+                                <p>
+                                    You can either save this change and its modification to submit later once the organisation has been added, or submit the modification now without the organisation and create a separate one once the organisation is available.
+                                </p>
+                                <a href="https://www.XYZ.com"
+                                   class="govuk-link"
+                                   onclick="window.open(this.href, '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,width=600,height=400'); return false;">
+                                    Click here for the request page (opens in a new window).
+                                </a>
+                                <p>
+                                    If the link is not working you can enter it manually:<br>
+                                    www.XYZ.com
+                                </p>
+                            </div>
+                        </details>
+                    </div>
+                </div>
+            </div>
+            <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="selected-organisations">
+                <h2 class="govuk-heading-m">Selected organisations (0)</h2>
+                <p class="govuk-body">
+                    This list shows all the organisations you have selected. Change your selections here or return to the All items tab.
+                </p>
+            </div>            
+        </div>
+
+        <div class="govuk-button-group govuk-!-margin-top-4">
+            <button class="govuk-button" data-module="govuk-button" name="action" value="continue">Save and continue</button>
+            @{
+                ViewBag.Style = "govuk-button govuk-button--secondary";
+            }
+            <partial name="_SubmitButton" model="@("app:projectoverview", "Save for later", new Dictionary<string, string> { })" />
+        </div>
+
+        <p class="govuk-!-margin-top-4"><a href="#" class="govuk-link">Remove this change</a></p>
 	</main>
 </div>
