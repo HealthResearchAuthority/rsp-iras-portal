@@ -27,7 +27,11 @@ public class AreaOfChangeTests : TestServiceBase<ProjectModificationController>
             [TempDataKeys.ProjectRecordId] = projectRecordId
         };
 
-        tempData[TempDataKeys.IrasId] = irasId;
+        // Set all required TempData keys with correct namespacing and types
+        tempData[TempDataKeys.IrasId] = irasId.ToString();
+        tempData[TempDataKeys.ShortProjectTitle] = "Test Project";
+        tempData[TempDataKeys.ProjectModification.ProjectModificationIdentifier] = "MOD-123";
+        tempData[TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid();
 
         // Mock GetRespondentFromContext extension
         var respondent = new { GivenName = "John", FamilyName = "Doe" };
@@ -58,7 +62,7 @@ public class AreaOfChangeTests : TestServiceBase<ProjectModificationController>
             }
         };
 
-        tempData[TempDataKeys.AreaOfChanges] = JsonSerializer.Serialize(modificationResponse);
+        tempData[TempDataKeys.ProjectModification.AreaOfChanges] = JsonSerializer.Serialize(modificationResponse);
 
         Sut.TempData = tempData;
 
@@ -81,6 +85,22 @@ public class AreaOfChangeTests : TestServiceBase<ProjectModificationController>
             .Setup(s => s.GetAreaOfChanges())
             .ReturnsAsync(serviceResponse);
 
+        // Mock IQuestionSetService.GetVersions to return a published version
+        var publishedVersionId = "v1.0";
+        var versions = new List<VersionDto>
+        {
+            new VersionDto { VersionId = publishedVersionId, IsPublished = true }
+        };
+        var versionsResponse = new ServiceResponse<IEnumerable<VersionDto>>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = versions
+        };
+        Mocker
+            .GetMock<IQuestionSetService>()
+            .Setup(s => s.GetVersions())
+            .ReturnsAsync(versionsResponse);
+
         // Act
         var result = await Sut.AreaOfChange();
 
@@ -102,10 +122,16 @@ public class AreaOfChangeTests : TestServiceBase<ProjectModificationController>
             [TempDataKeys.ProjectRecordId] = projectRecordId
         };
 
-        tempData[TempDataKeys.IrasId] = irasId;
+        // Set all required TempData keys with correct namespacing and types
+        tempData[TempDataKeys.IrasId] = irasId.ToString();
+        tempData[TempDataKeys.ShortProjectTitle] = "Test Project";
+        tempData[TempDataKeys.ProjectModification.ProjectModificationIdentifier] = "MOD-123";
+        tempData[TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid();
 
         // Mock GetRespondentFromContext extension
         var respondent = new { GivenName = "John", FamilyName = "Doe" };
+
+        Sut.TempData = tempData;
 
         Sut.ControllerContext = new ControllerContext
         {
@@ -125,6 +151,23 @@ public class AreaOfChangeTests : TestServiceBase<ProjectModificationController>
             .GetMock<IProjectModificationsService>()
             .Setup(s => s.GetAreaOfChanges())
             .ReturnsAsync(serviceResponse);
+
+        // Mock IQuestionSetService.GetVersions to return a published version
+        var publishedVersionId = "v1.0";
+        var versions = new List<VersionDto>
+        {
+            new() { VersionId = publishedVersionId, IsPublished = true }
+        };
+        var versionsResponse = new ServiceResponse<IEnumerable<VersionDto>>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = versions
+        };
+
+        Mocker
+            .GetMock<IQuestionSetService>()
+            .Setup(s => s.GetVersions())
+            .ReturnsAsync(versionsResponse);
 
         // Act
         var result = await Sut.AreaOfChange();

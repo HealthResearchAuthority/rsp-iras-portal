@@ -114,7 +114,7 @@ public class SavePlannedEndDateTests : TestServiceBase<ProjectModificationContro
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
             [TempDataKeys.ProjectRecordResponses] = JsonSerializer.Serialize(new List<RespondentAnswerDto> { respondentAnswer }),
-            [TempDataKeys.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "recId"
         };
 
@@ -162,7 +162,7 @@ public class SavePlannedEndDateTests : TestServiceBase<ProjectModificationContro
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
             [TempDataKeys.ProjectRecordResponses] = JsonSerializer.Serialize(new List<RespondentAnswerDto> { respondentAnswer }),
-            [TempDataKeys.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "recId"
         };
 
@@ -173,7 +173,7 @@ public class SavePlannedEndDateTests : TestServiceBase<ProjectModificationContro
         var result = await Sut.SavePlannedEndDate(model);
 
         // Assert
-        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
-        redirect.ActionName.ShouldBe("PlannedEndDateOrganisationType");
+        var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirect.RouteName.ShouldBe("pmc:plannedenddateorganisationtype");
     }
 }

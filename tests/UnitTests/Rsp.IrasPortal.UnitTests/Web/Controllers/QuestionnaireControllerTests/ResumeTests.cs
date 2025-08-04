@@ -771,8 +771,8 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         var httpContext = new DefaultHttpContext { Session = session.Object };
         Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModificationId] = Guid.Empty,
-            [TempDataKeys.ProjectModificationChangeId] = modificationChangeId,
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.Empty,
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = modificationChangeId,
         };
 
         Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
@@ -929,8 +929,8 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         var httpContext = new DefaultHttpContext { Session = session.Object };
         Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModificationId] = modificationId,
-            [TempDataKeys.ProjectModificationChangeId] = modificationChangeId,
+            [TempDataKeys.ProjectModification.ProjectModificationId] = modificationId,
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = modificationChangeId,
         };
 
         Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };

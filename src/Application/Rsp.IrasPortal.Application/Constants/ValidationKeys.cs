@@ -14,4 +14,9 @@ public struct ValidationKeys
     /// The key representing the validation message.
     /// </summary>
     public const string ValidationMessage = nameof(ValidationMessage);
+
+    public struct ProjectModificationPlannedEndDate
+    {
+        public const string AffectedOrganisations = nameof(AffectedOrganisations);
+    }
 }

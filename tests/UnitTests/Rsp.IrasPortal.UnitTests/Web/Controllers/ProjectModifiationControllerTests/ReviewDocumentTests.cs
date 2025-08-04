@@ -13,7 +13,8 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModifiationControllerT
 public class ReviewDocumentTests : TestServiceBase<ProjectModificationController>
 {
     [Theory, AutoData]
-    public async Task Review_WithDocuments_ReturnsViewWithDocuments(
+    public async Task Review_WithDocuments_ReturnsViewWithDocuments
+    (
         string shortTitle,
         string irasId,
         string modificationIdentifier,
@@ -38,9 +39,9 @@ public class ReviewDocumentTests : TestServiceBase<ProjectModificationController
         {
             [TempDataKeys.ShortProjectTitle] = shortTitle,
             [TempDataKeys.IrasId] = irasId,
-            [TempDataKeys.ProjectModificationIdentifier] = modificationIdentifier,
-            [TempDataKeys.SpecificAreaOfChangeText] = specificAreaOfChange,
-            [TempDataKeys.ProjectModificationChangeId] = changeId,
+            [TempDataKeys.ProjectModification.ProjectModificationIdentifier] = modificationIdentifier,
+            [TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = specificAreaOfChange,
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = changeId,
             [TempDataKeys.ProjectRecordId] = projectRecordId
         };
 
@@ -94,9 +95,9 @@ public class ReviewDocumentTests : TestServiceBase<ProjectModificationController
         {
             [TempDataKeys.ShortProjectTitle] = shortTitle,
             [TempDataKeys.IrasId] = irasId,
-            [TempDataKeys.ProjectModificationIdentifier] = modificationIdentifier,
-            [TempDataKeys.SpecificAreaOfChangeText] = specificAreaOfChange,
-            [TempDataKeys.ProjectModificationChangeId] = changeId,
+            [TempDataKeys.ProjectModification.ProjectModificationIdentifier] = modificationIdentifier,
+            [TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = specificAreaOfChange,
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = changeId,
             [TempDataKeys.ProjectRecordId] = projectRecordId
         };
 

@@ -140,7 +140,7 @@ public class CreateModification : TestServiceBase<ProjectModificationController>
 
         // Assert
         result.ShouldBeOfType<RedirectToActionResult>();
-        Sut.TempData[TempDataKeys.ProjectModificationId].ShouldBe(modificationId);
-        Sut.TempData[TempDataKeys.ProjectModificationIdentifier].ShouldBe(modificationIdentifier);
+        Sut.TempData[TempDataKeys.ProjectModification.ProjectModificationId].ShouldBe(modificationId);
+        Sut.TempData[TempDataKeys.ProjectModification.ProjectModificationIdentifier].ShouldBe(modificationIdentifier);
     }
 }

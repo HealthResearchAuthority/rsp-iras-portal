@@ -22,8 +22,8 @@ public class PlannedEndDatetOrganisationTypeTests : TestServiceBase<ProjectModif
         {
             [TempDataKeys.ShortProjectTitle] = expectedShortTitle,
             [TempDataKeys.IrasId] = expectedIrasId,
-            [TempDataKeys.ProjectModificationIdentifier] = expectedModId,
-            [TempDataKeys.SpecificAreaOfChangeText] = expectedPageTitle
+            [TempDataKeys.ProjectModification.ProjectModificationIdentifier] = expectedModId,
+            [TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = expectedPageTitle
         };
 
         // Act
@@ -31,7 +31,7 @@ public class PlannedEndDatetOrganisationTypeTests : TestServiceBase<ProjectModif
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("PlannedEndDateOrganisationType");
+        viewResult.ViewName.ShouldBeNull();
 
         var model = viewResult.Model.ShouldBeOfType<PlannedEndDateOrganisationTypeViewModel>();
         model.ShortTitle.ShouldBe(expectedShortTitle);
@@ -40,11 +40,11 @@ public class PlannedEndDatetOrganisationTypeTests : TestServiceBase<ProjectModif
         model.PageTitle.ShouldBe(expectedPageTitle);
 
         // Ensure OrganisationTypes dictionary contains expected keys and values
-        PlannedEndDateOrganisationTypeViewModel.OrganisationTypes.ShouldContainKey("OPT0025");
-        PlannedEndDateOrganisationTypeViewModel.OrganisationTypes["OPT0025"].ShouldBe("NHS/HSC");
+        model.OrganisationTypes.ShouldContainKey("OPT0025");
+        model.OrganisationTypes["OPT0025"].ShouldBe("NHS/HSC");
 
-        PlannedEndDateOrganisationTypeViewModel.OrganisationTypes.ShouldContainKey("OPT0026");
-        PlannedEndDateOrganisationTypeViewModel.OrganisationTypes["OPT0026"].ShouldBe("Non-NHS/HSC");
+        model.OrganisationTypes.ShouldContainKey("OPT0026");
+        model.OrganisationTypes["OPT0026"].ShouldBe("Non-NHS/HSC");
 
         // Validate default SelectedOrganisationTypes list is initialized
         model.SelectedOrganisationTypes.ShouldNotBeNull();
@@ -52,7 +52,7 @@ public class PlannedEndDatetOrganisationTypeTests : TestServiceBase<ProjectModif
     }
 
     [Fact]
-    public async Task PlannedEndDatetOrganisationType_ReturnsView_WithEmptyStrings_WhenTempDataMissing()
+    public void PlannedEndDatetOrganisationType_ReturnsView_WithEmptyStrings_WhenTempDataMissing()
     {
         // Arrange
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
@@ -62,7 +62,7 @@ public class PlannedEndDatetOrganisationTypeTests : TestServiceBase<ProjectModif
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("PlannedEndDateOrganisationType");
+        viewResult.ViewName.ShouldBeNull();
 
         var model = viewResult.Model.ShouldBeOfType<PlannedEndDateOrganisationTypeViewModel>();
         model.ShortTitle.ShouldBeEmpty();

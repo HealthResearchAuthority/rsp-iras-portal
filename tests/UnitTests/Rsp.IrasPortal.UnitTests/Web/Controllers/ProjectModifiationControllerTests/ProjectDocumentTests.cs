@@ -22,8 +22,8 @@ public class ProjectDocumentTests : TestServiceBase<ProjectModificationControlle
         {
             [TempDataKeys.ShortProjectTitle] = shortTitle,
             [TempDataKeys.IrasId] = irasId,
-            [TempDataKeys.ProjectModificationIdentifier] = modificationId,
-            [TempDataKeys.SpecificAreaOfChangeText] = specificAreaOfChange
+            [TempDataKeys.ProjectModification.ProjectModificationIdentifier] = modificationId,
+            [TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = specificAreaOfChange
         };
 
         Sut.TempData = tempData;
@@ -53,7 +53,7 @@ public class ProjectDocumentTests : TestServiceBase<ProjectModificationControlle
         {
             [TempDataKeys.IrasId] = null,
             [TempDataKeys.ShortProjectTitle] = null,
-            [TempDataKeys.ProjectModificationIdentifier] = null
+            [TempDataKeys.ProjectModification.ProjectModificationIdentifier] = null
         };
 
         Sut.TempData = tempData;

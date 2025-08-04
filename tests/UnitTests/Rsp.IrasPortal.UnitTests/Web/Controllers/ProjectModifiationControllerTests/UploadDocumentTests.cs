@@ -12,8 +12,8 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModifiationControllerT
 public class UploadDocumentTests : TestServiceBase<ProjectModificationController>
 {
     [Theory, AutoData]
-    public async Task UploadDocuments_ValidInput_UploadsFilesAndRedirects(
-        string containerName,
+    public async Task UploadDocuments_ValidInput_UploadsFilesAndRedirects
+    (
         string irasId,
         string respondentId,
         Guid changeId,
@@ -49,7 +49,7 @@ public class UploadDocumentTests : TestServiceBase<ProjectModificationController
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModificationChangeId] = changeId,
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = changeId,
             [TempDataKeys.ProjectRecordId] = projectRecordId
         };
 
