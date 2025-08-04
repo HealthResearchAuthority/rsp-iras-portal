@@ -2,8 +2,8 @@
 @model Rsp.IrasPortal.Web.Models.PlannedEndDateViewModel
 
 @{
-	ViewData["Title"] = "Planned End Date";
-	var errorSummaryTitle = "There is a problem";
+    ViewData["Title"] = "Planned End Date";
+    var errorSummaryTitle = "There is a problem";
 
     var isReviewInProgress = TempData.Peek(TempDataKeys.ProjectModificationPlannedEndDate.ReviewChanges) is true;
 
@@ -19,19 +19,8 @@
 
 <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
 
-	<main class="govuk-main-wrapper">
-		<div class="govuk-grid-row">
-			<div class="govuk-grid-column-two-thirds">
-				<form asp-action="PlannedEndDate" method="post">
-					<partial name="_ProjectModificationSummary" model="Model" />
-					<dl class="govuk-summary-list">
-						<div class="govuk-summary-list__row">
-							<dt class="govuk-summary-list__key">Current planned end date</dt>
-							<dd class="govuk-summary-list__value govuk-!-font-weight-bold">
-								@Model.CurrentPlannedEndDate?.ToString("dd MMMM yyyy")
-							</dd>
-						</div>
-					</dl>
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
 
         <form method="post">
 
@@ -73,11 +62,9 @@
 						<partial name="_SubmitButton" model="@("app:projectoverview", "Save for later", new Dictionary<string, string> { })" />
 					</div>
 
-					<p>
-						<a href="#" class="govuk-link">Remove this change</a>
-					</p>
-				</form>
-			</div>
-		</div>
-	</main>
+            <p>
+                <a href="#" class="govuk-link">Remove this change</a>
+            </p>
+        </form>
+    </div>
 </div>
