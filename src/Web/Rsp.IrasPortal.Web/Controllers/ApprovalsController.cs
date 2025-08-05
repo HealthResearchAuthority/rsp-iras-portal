@@ -228,9 +228,9 @@ public class ApprovalsController
     ///     Retrieves a list of organisations based on the provided name, role, and optional page size.
     /// </summary>
     /// <param name="role">The role of the organisation. Defaults to SponsorRole if not provided.</param>
-    /// <param name="pageSize">Optional page size for pagination.</param>
+    /// <param name="pageSize">Optional page size for pagination. Defults to 5 if not provided.</param>
     /// <returns>A list of organisation names or an error response.</returns>
-    public async Task<IActionResult> SearchOrganisations(ApprovalsSearchViewModel model, string? role, int? pageSize, int pageIndex = 1)
+    public async Task<IActionResult> SearchOrganisations(ApprovalsSearchViewModel model, string? role, int? pageSize = 5, int pageIndex = 1)
     {
         var returnUrl = TempData.Peek(TempDataKeys.OrgSearchReturnUrl) as string;
 
