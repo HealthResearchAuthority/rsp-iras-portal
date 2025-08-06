@@ -42,7 +42,7 @@ public class WelcomeTests : TestServiceBase<ApplicationController>
                 Id = "App1",
                 CreatedDate = mockDate,
                 Status = "Created",
-                Title = "My Study Title"
+                Title = "My Title"
             }
         };
 
@@ -87,7 +87,7 @@ public class WelcomeTests : TestServiceBase<ApplicationController>
         var item = viewModel.Applications.First();
         item.IrasId.ShouldBe(123);
         item.Id.ShouldBe("App1");
-        item.Title.ShouldBe("My Study Title");
+        item.Title.ShouldBe("My Title");
         item.CreatedDate.ShouldBe(mockDate);
         item.Status.ShouldBe("Created");
     }
