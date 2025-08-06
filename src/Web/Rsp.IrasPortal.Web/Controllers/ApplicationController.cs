@@ -4,7 +4,6 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
@@ -23,19 +22,16 @@ public class ApplicationController
     IApplicationsService applicationsService,
     IValidator<IrasIdViewModel> irasIdValidator,
     IRespondentService respondentService,
-    IQuestionSetService questionSetService,
-    IFeatureManager featureManager) : Controller
+    IQuestionSetService questionSetService) : Controller
 {
     // ApplicationInfo view name
     private const string ApplicationInfo = nameof(ApplicationInfo);
 
-    public async Task<IActionResult> Welcome(string? searchQuery = null, int pageNumber = 1, int pageSize = 5)
+    private const string ApplicationsTitleCategory = "project record v1";
+
+    public async Task<IActionResult> Welcome(string? searchQuery = null, int pageNumber = 1, int pageSize = 20)
     {
-        var myResearhPageEnabled = await featureManager.IsEnabledAsync(Features.MyResearchPage);
-        if (!myResearhPageEnabled)
-        {
-            return View(nameof(Index));
-        }
+        var model = new ApplicationsViewModel();
 
         // getting respondentID from Http context
         var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
@@ -43,62 +39,39 @@ public class ApplicationController
         // getting research applications by respondent ID
         var applicationServiceResponse = await applicationsService.GetPaginatedApplicationsByRespondent(respondentId, searchQuery, pageNumber, pageSize);
 
-        var applications = applicationServiceResponse?.Content?.Items.ToList() ?? [];
-
-        var researchApplications = applications
-            .Where(app => app != null)
-            .Select(app => new ResearchApplicationSummaryModel
+        model.Applications = applicationServiceResponse.Content?.Items
+            .Select(dto => new ApplicationModel
             {
-                IrasId = app.IrasId,
-                ApplicatonId = app.Id,
-                Title = "Empty", // temporary default
-                ProjectEndDate = new DateTime(2025, 12, 10, 0, 0, 0, DateTimeKind.Utc), // temporary default
-                PrimarySponsorOrganisation = "Unknown", // default value
-                IsNew = app.CreatedDate >= DateTime.UtcNow.AddDays(-2)
-            }).ToList();
+                Id = dto.Id,
+                Title = dto.Title,
+                Status = dto.Status,
+                CreatedDate = dto.CreatedDate,
+                IrasId = dto.IrasId
+            })
+            .ToList() ?? [];
 
-        var categoryId = "project record v1";
-
-        foreach (var researchApp in researchApplications)
+        foreach (var researchApp in model.Applications)
         {
-            var respondentServiceResponse = await respondentService.GetRespondentAnswers(researchApp.ApplicatonId, categoryId);
-
+            var respondentServiceResponse = await respondentService.GetRespondentAnswers(researchApp.Id, ApplicationsTitleCategory);
             if (!respondentServiceResponse.IsSuccessStatusCode)
             {
                 // return the generic error page
                 return this.ServiceError(respondentServiceResponse);
             }
-
-            var answers = respondentServiceResponse.Content;
-
-            var titleAnswer = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.ShortProjectTitle)?.AnswerText;
-            var endDateAnswer = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.ProjectPlannedEndDate)?.AnswerText;
-            var sponsorAnswer = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.PrimarySponsorOrganisation)?.AnswerText;
-
-            if (!string.IsNullOrWhiteSpace(titleAnswer))
-            {
-                researchApp.Title = titleAnswer;
-            }
-
-            var ukCulture = new CultureInfo("en-GB");
-            if (DateTime.TryParse(endDateAnswer, ukCulture, DateTimeStyles.None, out var parsedDate))
-            {
-                researchApp.ProjectEndDate = parsedDate;
-            }
-
-            if (!string.IsNullOrWhiteSpace(sponsorAnswer))
-            {
-                researchApp.PrimarySponsorOrganisation = sponsorAnswer;
-            }
+            var titleAnswer = respondentServiceResponse.Content?.FirstOrDefault(a => a.QuestionId == QuestionIds.ShortProjectTitle)?.AnswerText;
+            researchApp.Title = string.IsNullOrWhiteSpace(titleAnswer) ? "Project Title" : titleAnswer;
         }
 
-        var paginationModel = new PaginationViewModel(pageNumber, pageSize, applicationServiceResponse?.Content?.TotalCount ?? 0)
+        model.Pagination = new PaginationViewModel(pageNumber, pageSize, applicationServiceResponse.Content?.TotalCount ?? 0)
         {
             RouteName = "app:welcome",
-            SearchQuery = searchQuery
+            SearchQuery = searchQuery,
+            SortDirection = SortDirections.Descending,
+            SortField = nameof(ApplicationModel.CreatedDate),
+            FormName = "applications-selection"
         };
 
-        return View(nameof(Index), (researchApplications, paginationModel));
+        return View(nameof(Index), model);
     }
 
     public IActionResult StartProject() => View(nameof(StartProject));
@@ -238,7 +211,18 @@ public class ApplicationController
         // return the view if successful
         if (applicationServiceResponse is { IsSuccessStatusCode: true, Content: not null })
         {
-            avm.Applications = applicationServiceResponse.Content;
+            avm.Applications = applicationServiceResponse.Content
+            .Select(dto => new ApplicationModel
+            {
+                Id = dto.Id,
+                Title = dto.Title,
+                Status = dto.Status,
+                CreatedDate = dto.CreatedDate,
+                IrasId = dto.IrasId,
+                Description = dto.Description,
+                CreatedBy = dto.CreatedBy
+            })
+            .ToList();
 
             var questionSetServiceResponse = await questionSetService.GetQuestionCategories();
 
