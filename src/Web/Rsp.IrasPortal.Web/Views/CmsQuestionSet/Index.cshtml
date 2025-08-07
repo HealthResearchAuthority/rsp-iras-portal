@@ -185,14 +185,14 @@
             <div class="save-buttons">
                 @if (!Model.ReviewAnswers)
                 {
-                    <partial name="_SubmitButton" model="@("qnc:saveresponses", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } })" />
+					<partial name="_SubmitButton" model="@("cmsqnc:saveresponses", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } })" />
 
                     ViewBag.Style = "govuk-button govuk-button--secondary";
-                    <partial name="_SubmitButton" model="@("qnc:saveresponses", "Save for later", new Dictionary<string, string> { { "saveForLater", bool.TrueString } })" />
+					<partial name="_SubmitButton" model="@("cmsqnc:saveresponses", "Save for later", new Dictionary<string, string> { { "saveForLater", bool.TrueString } })" />
                 }
                 else
                 {
-                    <partial name="_SubmitButton" model="@("qnc:saveresponses", "Save changes", new Dictionary<string, string> { { "submit", bool.TrueString } })" />
+					<partial name="_SubmitButton" model="@("cmsqnc:saveresponses", "Save changes", new Dictionary<string, string> { { "submit", bool.TrueString } })" />
                 }
             </div>
 
