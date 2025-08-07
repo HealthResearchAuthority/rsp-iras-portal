@@ -65,9 +65,95 @@
 
                     @if (ViewData.ModelState.TryGetValue(nameof(Model.Search.SearchNameTerm), out var searchError) && searchError.Errors.Any())
                     {
-                        <p class="govuk-error-message">
-                            <span class="govuk-visually-hidden">Error:</span> @searchError.Errors.First().ErrorMessage
-                        </p>
+                        <div class="govuk-table-wrapper">
+                            <table class="govuk-table modifications-tasklist-table" id="organisationsTasklistTable">
+                                <thead class="govuk-table__head">
+                                    <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+                                        <th scope="col" class="govuk-table__header govuk-!-text-align-right checkbox-cell">
+                                            <div class="govuk-checkboxes__item govuk-checkboxes--small">
+                                                <input id="select-all-organisations" name="" class="govuk-checkboxes__input select-all-modifications" type="checkbox">
+                                                <label for="select-all-organisations" class="govuk-label govuk-checkboxes__label"></label>
+                                            </div>
+                                        </th>
+                                        @{
+                                            var sortableHeaders = new[]
+                                            {                                            
+                                                new { Field = nameof(OrganisationModel.Name), Label = "Name" },
+                                                new { Field = nameof(OrganisationModel.Address), Label = "Address" },
+                                                new { Field = nameof(OrganisationModel.Type), Label = "Organisation type" },
+                                                new { Field = nameof(OrganisationModel.CountryName), Label = "Country" }
+                                            };
+                                            var tableId = "organisationsTasklistTable";
+                                        }
+                                        @foreach (var header in sortableHeaders)
+                                        {
+                                            <th scope="col" class="govuk-table__header govuk-table__header-sortable">
+                                                <partial name="_SortableHeaderButton" model="new SortableHeaderModel
+                                                {
+                                                    FieldName = header.Field,
+                                                    DisplayText = header.Label,
+                                                    CurrentSortField = Model.Pagination?.SortField,
+                                                    CurrentSortDirection = Model.Pagination?.SortDirection,
+                                                    TableId = tableId,
+                                                    ComplexSearchQuery = Model.Search,
+                                                }" />
+                                            </th>
+                                        }
+                                    </tr>
+                                </thead>
+                                <form method="get" id="organisation-selection">
+                                    <input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
+                                    <input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
+
+                                    <!--Keep track of selected organisations that are not displayed on this page for continuity-->
+                                    @foreach (var selectedMod in Model.SelectedOrganisationIds.Except(Model.Organisations.Select(m => m.Organisation.Id)))
+                                    {
+                                        <input hidden="hidden" type="text" value="@selectedMod" name="selectedOrganisationIds" />
+                                    }
+                                    <tbody class="govuk-table__body govuk-body-s">
+                                        @{
+                                            foreach (var organisation in Model.Organisations)
+                                            {
+                                                <tr class="govuk-table__row">
+                                                    <td class="govuk-table__cell checkbox-cell">
+                                                        <div class="govuk-checkboxes__item govuk-checkboxes--small">
+                                                            <input id="@organisation.Organisation.Id"
+                                                                        name="selectedOrganisationIds"
+                                                                        value="@organisation.Organisation.Id"
+                                                                        class="govuk-checkboxes__input child-checkbox"
+                                                                        type="checkbox"
+                                                                    @(organisation.IsSelected ? "checked" : "")>
+                                                            <label for="@organisation.Organisation.Id" class="govuk-label govuk-checkboxes__label modification-checkbox-label"></label>
+                                                        </div>
+                                                    </td>
+                                                    <td class="govuk-table__cell">@organisation.Organisation.Name</td>
+                                                    <td class="govuk-table__cell">@organisation.Organisation.Address</td>
+                                                    <td class="govuk-table__cell">@organisation.Organisation.Type</td>
+                                                    <td class="govuk-table__cell">@organisation.Organisation.CountryName</td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </form>
+                            </table>
+                        </div>
+                        <partial name="_PaginationForm" model="@Model.Pagination" />
+                    }
+                    else
+                    {
+                        <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible govuk-grid-column-two-thirds">
+                        <div class="govuk-grid-row">
+                            <div class="govuk-grid-column-two-thirds search-filter-error-border">
+                                <h2 class="govuk-heading-m">There are no matching results</h2>
+                                <p class="govuk-body">Improve your search results by:</p>
+                                <ul class="govuk-list govuk-list--bullet">
+                                    <li>removing filters</li>
+                                    <li>double-checking your spelling</li>
+                                    <li>using fewer keywords</li>
+                                    <li>searching for something less specific</li>
+                                </ul>
+                            </div>
+                        </div>
                     }
 
                     <div class="govuk-input__wrapper">
