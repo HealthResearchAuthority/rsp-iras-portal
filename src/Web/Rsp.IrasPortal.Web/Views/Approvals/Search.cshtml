@@ -462,13 +462,14 @@ else if (showNoResultsMessage)
                             @foreach (var header in sortableHeaders)
                             {
                                 <th scope="col" class="govuk-table__header govuk-table__header-sortable">
-                                        <partial name="_SortableHeaderButton" model="new SortableHeaderModel 
-                                        {
-                                            FieldName = header.Field,
-                                            DisplayText = header.Label,
-                                            CurrentSortField = Model.SortField,
-                                            CurrentSortDirection = Model.SortDirection,
-                                            TableId = tableId,
+                                    <partial name="_SortableHeaderButton" model="new SortableHeaderModel 
+                                             {
+                                                 FieldName = header.Field,
+                                                 DisplayText = header.Label,
+                                                 CurrentSortField = Model.SortField,
+                                                 CurrentSortDirection = Model.SortDirection,
+                                                 TableId = tableId,
+                                                 ComplexSearchQuery = Model.Search,
                                         }"
                                         />
                                 </th>

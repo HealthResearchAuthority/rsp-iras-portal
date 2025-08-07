@@ -281,12 +281,13 @@ else
                             {
                                 <th scope="col" class="govuk-table__header govuk-table__header-sortable">
                                     <partial name="_SortableHeaderButton" model="new SortableHeaderModel
-                                    {
-                                        FieldName = header.Field,
-                                        DisplayText = header.Label,
-                                        CurrentSortField = Model.Pagination?.SortField,
-                                        CurrentSortDirection = Model.Pagination?.SortDirection,
-                                        TableId = tableId,
+                                             {
+                                                 FieldName = header.Field,
+                                                 DisplayText = header.Label,
+                                                 CurrentSortField = Model.Pagination?.SortField,
+                                                 CurrentSortDirection = Model.Pagination?.SortDirection,
+                                                 TableId = tableId,
+                                                 ComplexSearchQuery = Model.Search,
                                     }" />
                                 </th>
                             }
