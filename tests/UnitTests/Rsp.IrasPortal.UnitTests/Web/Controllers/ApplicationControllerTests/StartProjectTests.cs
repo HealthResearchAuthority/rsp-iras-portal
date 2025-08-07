@@ -7,6 +7,7 @@ using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
+using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Controllers;
 using Rsp.IrasPortal.Web.Models;
@@ -205,6 +206,14 @@ public class StartProjectTests : TestServiceBase<ApplicationController>
                 StatusCode = HttpStatusCode.OK,
                 Content = [new() { CategoryId = "cat1" }]
             });
+
+        Mocker
+           .GetMock<ICmsQuestionSetServiceClient>()
+           .Setup(s => s.GetQuestionCategories())
+           .ReturnsAsync(new ApiResponse<IEnumerable<CategoryDto>>(
+               new HttpResponseMessage(HttpStatusCode.OK),
+               new List<CategoryDto> { new() { CategoryId = "cat1" } },
+               null));
 
         // Act
         var result = await Sut.StartProject(model);
