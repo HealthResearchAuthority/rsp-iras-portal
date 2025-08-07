@@ -287,13 +287,19 @@
             <partial name="_Pagination" model="@Model.Pagination"/>
         </div>
     }
-    else if (!string.IsNullOrEmpty(Model.Pagination?.SearchQuery))
+    else if ((Model.Search.Filters.Any() && !Model.Users.Any()) || !string.IsNullOrEmpty(Model.Search?.SearchQuery))
     {
-        <div class="govuk-grid-column-two-thirds">
-            <h1 class="govuk-heading-l">No results found</h1>
-            <p class="govuk-body">
-                Check your spelling or enter another search term and try again. If no results are found, you can create a new user profile record.
-            </p>
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds search-filter-error-border">
+                <h2 class="govuk-heading-l">There are no matching results</h2>
+                <p class="govuk-body">Improve your search results by:</p>
+                <ul class="govuk-list govuk-list--bullet">
+                    <li>removing filters</li>
+                    <li>double-checking your spelling</li>
+                    <li>using fewer keywords</li>
+                    <li>searching for something less specific</li>
+                </ul>
+            </div>
         </div>
     }
 </div>
