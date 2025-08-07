@@ -26,7 +26,7 @@
 
     // Prepare the navigation model depending on whether we have a lastQuestion
     var navModel = lastQuestion != null
-        ? ("qnc:displayquestionnaire", "Back", new Dictionary<string, string>
+		? ("cmsqnc:displayquestionnaire", "Back", new Dictionary<string, string>
                 {
             { "sectionId", lastQuestion.SectionId },
             { "categoryId", lastQuestion.Category }
@@ -115,7 +115,7 @@
                         <dd class="govuk-summary-list__value @(fieldHasErrors ? "govuk-error-summary__list" : "")">
                             @if (question.IsMissingAnswer())
                             {
-                                <a class="govuk-link" href="@Url.RouteUrl("qnc:displayquestionnaire", new { sectionId = question.SectionId, categoryId = question.Category, reviewAnswers = true })">
+								<a class="govuk-link" href="@Url.RouteUrl("cmsqnc:displayquestionnaire", new { sectionId = question.SectionId, categoryId = question.Category, reviewAnswers = true })">
                                     @question.GetActionText()<span class="govuk-visually-hidden"> @questionText</span>
                                 </a>
                             }
@@ -129,7 +129,7 @@
                         <dd class="govuk-summary-list__actions">
                             @if (!question.IsMissingAnswer())
                             {
-                                <a class="govuk-link" href="@Url.RouteUrl("qnc:displayquestionnaire", new { sectionId = question.SectionId, categoryId = question.Category, reviewAnswers = true })">
+								<a class="govuk-link" href="@Url.RouteUrl("cmsqnc:displayquestionnaire", new { sectionId = question.SectionId, categoryId = question.Category, reviewAnswers = true })">
                                     @question.GetActionText()<span class="govuk-visually-hidden"> @questionText</span>
                                 </a>
                             }
@@ -144,7 +144,7 @@
 
         <form method="post">
             <div class="save-buttons">
-                <partial name="_SubmitButton" model="@("qnc:confirmprojectdetails", "Confirm project details", new Dictionary<string, string>())" />
+				<partial name="_SubmitButton" model="@("cmsqnc:confirmprojectdetails", "Confirm project details", new Dictionary<string, string>())" />
 
                 @{
                     ViewBag.Style = "govuk-button govuk-button--secondary";
