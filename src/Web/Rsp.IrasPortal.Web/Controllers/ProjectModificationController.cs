@@ -49,10 +49,10 @@ public partial class ProjectModificationController
     {
         // Retrieve IRAS ID from TempData
         var IrasId = TempData.Peek(TempDataKeys.IrasId) as int?;
-        var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId).ToString();
+        var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId);
 
         // Check if required TempData values are present
-        if (string.IsNullOrEmpty(projectRecordId) || IrasId == null)
+        if (string.IsNullOrEmpty((string?)projectRecordId) || IrasId == null)
         {
             // Return a problem response if data is missing
             var problemDetails = this.ProblemResult(new ServiceResponse
@@ -74,7 +74,7 @@ public partial class ProjectModificationController
         // Create a new project modification request
         var modificationRequest = new ProjectModificationRequest
         {
-            ProjectRecordId = projectRecordId,
+            ProjectRecordId = (string)projectRecordId,
             ModificationIdentifier = IrasId + separator,
             Status = "OPEN",
             CreatedBy = name,
