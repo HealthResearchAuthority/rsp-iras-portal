@@ -58,7 +58,7 @@
 @{
     if (Model.ReviewAnswers)
     {
-        navModel = ("qnc:submitapplication", "Back", new()
+		navModel = ("cmsqnc:submitapplication", "Back", new()
 {
             { "projectRecordId", projectRecordId }
         });
@@ -66,7 +66,7 @@
     else if (!string.IsNullOrEmpty(previousStage))
     {
         // If there is a previous stage, navigate to that stage in the questionnaire
-        navModel = ("qnc:displayquestionnaire", "Back", new()
+		navModel = ("cmsqnc:displayquestionnaire", "Back", new()
 {
             { "categoryId", previousCategory },
             { "sectionId", previousStage }
@@ -185,14 +185,14 @@
             <div class="save-buttons">
                 @if (!Model.ReviewAnswers)
                 {
-                    <partial name="_SubmitButton" model="@("qnc:saveresponses", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } })" />
+					<partial name="_SubmitButton" model="@("cmsqnc:saveresponses", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } })" />
 
                     ViewBag.Style = "govuk-button govuk-button--secondary";
-                    <partial name="_SubmitButton" model="@("qnc:saveresponses", "Save for later", new Dictionary<string, string> { { "saveForLater", bool.TrueString } })" />
+					<partial name="_SubmitButton" model="@("cmsqnc:saveresponses", "Save for later", new Dictionary<string, string> { { "saveForLater", bool.TrueString } })" />
                 }
                 else
                 {
-                    <partial name="_SubmitButton" model="@("qnc:saveresponses", "Save changes", new Dictionary<string, string> { { "submit", bool.TrueString } })" />
+					<partial name="_SubmitButton" model="@("cmsqnc:saveresponses", "Save changes", new Dictionary<string, string> { { "submit", bool.TrueString } })" />
                 }
             </div>
 
