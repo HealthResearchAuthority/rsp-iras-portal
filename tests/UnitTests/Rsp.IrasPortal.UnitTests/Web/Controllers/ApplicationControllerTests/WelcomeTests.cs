@@ -41,31 +41,15 @@ public class WelcomeTests : TestServiceBase<ApplicationController>
                 IrasId = 123,
                 Id = "App1",
                 CreatedDate = mockDate,
-                Status = "Created"
+                Status = "Created",
+                Title = "My Study Title"
             }
-        };
-
-        var answers = new List<RespondentAnswerDto>
-        {
-            new() { QuestionId = "IQA0002", AnswerText = "My Study Title" },
         };
 
         var appResponse = new ServiceResponse<IEnumerable<IrasApplicationResponse>>
         {
             Content = mockApplications
         };
-
-        var answerResponse = new ServiceResponse<IEnumerable<RespondentAnswerDto>>
-        {
-            Content = answers
-        };
-
-        var apiRespondent = new ApiResponse<IEnumerable<RespondentAnswerDto>>
-        (
-            new HttpResponseMessage(HttpStatusCode.OK),
-            answerResponse.Content,
-            new RefitSettings()
-        );
 
         Mocker
             .GetMock<IApplicationsService>()
@@ -76,7 +60,9 @@ public class WelcomeTests : TestServiceBase<ApplicationController>
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<int>(),
-                    It.IsAny<int>()
+                    It.IsAny<int?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>()
                 )
             )
             .ReturnsAsync(new ServiceResponse<PaginatedResponse<IrasApplicationResponse>>
@@ -87,17 +73,6 @@ public class WelcomeTests : TestServiceBase<ApplicationController>
                     TotalCount = mockApplications.Count
                 }
             });
-
-        Mocker
-            .GetMock<IRespondentService>()
-            .Setup
-            (x => x.GetRespondentAnswers
-                (
-                    It.IsAny<string>(),
-                    It.IsAny<string>()
-                )
-            )
-            .ReturnsAsync(apiRespondent.ToServiceResponse());
 
         // Act
         var result = await Sut.Welcome();

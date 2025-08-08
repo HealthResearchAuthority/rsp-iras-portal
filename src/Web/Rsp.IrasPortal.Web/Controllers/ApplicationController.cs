@@ -27,9 +27,12 @@ public class ApplicationController
     // ApplicationInfo view name
     private const string ApplicationInfo = nameof(ApplicationInfo);
 
-    private const string ApplicationsTitleCategory = "project record v1";
-
-    public async Task<IActionResult> Welcome(string? searchQuery = null, int pageNumber = 1, int pageSize = 20)
+    public async Task<IActionResult> Welcome(
+        string? searchQuery = null,
+        int pageNumber = 1,
+        int pageSize = 20,
+        string? sortField = nameof(ApplicationModel.CreatedDate),
+        string? sortDirection = SortDirections.Descending)
     {
         var model = new ApplicationsViewModel();
 
@@ -37,37 +40,25 @@ public class ApplicationController
         var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
 
         // getting research applications by respondent ID
-        var applicationServiceResponse = await applicationsService.GetPaginatedApplicationsByRespondent(respondentId, searchQuery, pageNumber, pageSize);
+        var applicationServiceResponse = await applicationsService.GetPaginatedApplicationsByRespondent(respondentId, searchQuery, pageNumber, pageSize, sortField, sortDirection);
 
         model.Applications = applicationServiceResponse.Content?.Items
             .Select(dto => new ApplicationModel
             {
                 Id = dto.Id,
-                Title = dto.Title,
+                Title = string.IsNullOrWhiteSpace(dto.Title) ? "Project title" : dto.Title,
                 Status = dto.Status,
                 CreatedDate = dto.CreatedDate,
                 IrasId = dto.IrasId
             })
             .ToList() ?? [];
 
-        foreach (var researchApp in model.Applications)
-        {
-            var respondentServiceResponse = await respondentService.GetRespondentAnswers(researchApp.Id, ApplicationsTitleCategory);
-            if (!respondentServiceResponse.IsSuccessStatusCode)
-            {
-                // return the generic error page
-                return this.ServiceError(respondentServiceResponse);
-            }
-            var titleAnswer = respondentServiceResponse.Content?.FirstOrDefault(a => a.QuestionId == QuestionIds.ShortProjectTitle)?.AnswerText;
-            researchApp.Title = string.IsNullOrWhiteSpace(titleAnswer) ? "Project Title" : titleAnswer;
-        }
-
         model.Pagination = new PaginationViewModel(pageNumber, pageSize, applicationServiceResponse.Content?.TotalCount ?? 0)
         {
             RouteName = "app:welcome",
             SearchQuery = searchQuery,
-            SortDirection = SortDirections.Descending,
-            SortField = nameof(ApplicationModel.CreatedDate),
+            SortDirection = sortDirection,
+            SortField = sortField,
             FormName = "applications-selection"
         };
 
