@@ -32,16 +32,13 @@
 	private bool CanOpenFilterPanel()
 	{
 		return ViewData.ModelState.Values.Any(v => v.Errors.Count > 0)
-			   || Model.Search.Filters?.Any() == true
-			   || !string.IsNullOrWhiteSpace(Model.Search.SponsorOrgSearch?.SearchText)
-			   || !string.IsNullOrWhiteSpace(Model.Search.SponsorOrgSearch?.SelectedOrganisation);
+			   || !string.IsNullOrWhiteSpace(Model.Search.SponsorOrgSearch?.SearchText);
 	}
 
 	private bool CanOpenSponsorOrgSection()
 	{
 		return CanOpenPanelForField("SponsorOrganisation")
-			   || !string.IsNullOrWhiteSpace(Model.Search.SponsorOrgSearch?.SearchText)
-			   || !string.IsNullOrWhiteSpace(Model.Search.SponsorOrgSearch?.SelectedOrganisation);
+			   || !string.IsNullOrWhiteSpace(Model.Search.SponsorOrgSearch?.SearchText);
 	}
 }
 

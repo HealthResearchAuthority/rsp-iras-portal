@@ -23,11 +23,10 @@
 @functions {
 	private bool HasFilterErrors()
 	{
-		bool hasFilterErrors = ViewData.ModelState
+		return ViewData.ModelState
 			.Where(kvp => kvp.Key != ModificationsTasklist.ModificationToAssignNotSelected && kvp.Value != null)
 			.SelectMany(kvp => kvp.Value!.Errors)
 			.Any();
-		return hasFilterErrors;
 	}
 
 	private bool CanOpenPanelForField(string fieldName)
@@ -41,19 +40,9 @@
 	}
 
 	private bool CanOpenFilterPanel()
-	{
-		return HasFilterErrors()
-			   || Model.Search.Filters?.Any() == true
-			   || !string.IsNullOrWhiteSpace(Model.Search.SponsorOrgSearch?.SearchText)
-			   || !string.IsNullOrWhiteSpace(Model.Search.SponsorOrgSearch?.SelectedOrganisation);
-	}
-
-	private bool CanOpenSponsorOrgSection()
-	{
-		return CanOpenPanelForField("SponsorOrganisation")
-			   || !string.IsNullOrWhiteSpace(Model.Search.SponsorOrgSearch?.SearchText)
-			   || !string.IsNullOrWhiteSpace(Model.Search.SponsorOrgSearch?.SelectedOrganisation);
-	}
+    {
+        return HasFilterErrors();
+    }
 }
 
 <div class="govuk-grid-row">
