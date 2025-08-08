@@ -484,16 +484,7 @@ else if (showNoResultsMessage)
                                 };
 
                                 <th scope="col" class="govuk-table__header govuk-table__header-sortable">
-                                    <partial name="_SortableHeaderButton" model="new SortableHeaderModel 
-                                             {
-                                                 FieldName = header.Field,
-                                                 DisplayText = header.Label,
-                                                 CurrentSortField = Model.SortField,
-                                                 CurrentSortDirection = Model.SortDirection,
-                                                 TableId = tableId,
-                                                 ComplexSearchQuery = Model.Search,
-                                        }"
-                                        />
+                                    <partial name="_SortableHeaderButton" model="@sortableHeaderModel" />
                                 </th>
                             }
                             <th scope="col" class="govuk-table__header govuk-table__header-sortable govuk-!-text-align-right">
