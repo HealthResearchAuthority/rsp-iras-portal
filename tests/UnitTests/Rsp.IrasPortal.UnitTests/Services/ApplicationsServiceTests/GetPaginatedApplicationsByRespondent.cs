@@ -20,7 +20,9 @@ public class GetPaginatedApplicationsByRespondentTests : TestServiceBase<Applica
         string respondentId,
         string? searchQuery,
         int pageIndex,
-        int pageSize
+        int? pageSize,
+        string? sortField,
+        string? sortDirection
     )
     {
         // Arrange
@@ -37,11 +39,11 @@ public class GetPaginatedApplicationsByRespondentTests : TestServiceBase<Applica
         );
 
         _applicationsServiceClient
-            .Setup(c => c.GetPaginatedApplicationsByRespondent(respondentId, searchQuery, pageIndex, pageSize))
+            .Setup(c => c.GetPaginatedApplicationsByRespondent(respondentId, searchQuery, pageIndex, pageSize, sortField, sortDirection))
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.GetPaginatedApplicationsByRespondent(respondentId, searchQuery, pageIndex, pageSize);
+        var result = await Sut.GetPaginatedApplicationsByRespondent(respondentId, searchQuery, pageIndex, pageSize, sortField, sortDirection);
 
         // Assert
         result.ShouldBeOfType<ServiceResponse<PaginatedResponse<IrasApplicationResponse>>>();
@@ -52,12 +54,19 @@ public class GetPaginatedApplicationsByRespondentTests : TestServiceBase<Applica
 
         // Verify
         _applicationsServiceClient.Verify(c =>
-            c.GetPaginatedApplicationsByRespondent(respondentId, searchQuery, pageIndex, pageSize), Times.Once);
+            c.GetPaginatedApplicationsByRespondent(respondentId, searchQuery, pageIndex, pageSize, sortField, sortDirection), Times.Once);
     }
 
     [Theory, AutoData]
-    public async Task GetPaginatedApplicationsByRespondent_Should_Return_Failure_Response_When_Client_Returns_Failure(
-        string respondentId, string? searchQuery, int pageIndex, int pageSize)
+    public async Task GetPaginatedApplicationsByRespondent_Should_Return_Failure_Response_When_Client_Returns_Failure
+    (
+        string respondentId,
+        string? searchQuery,
+        int pageIndex,
+        int? pageSize,
+        string? sortField,
+        string? sortDirection
+    )
     {
         // Arrange
         var apiResponse = new ApiResponse<PaginatedResponse<IrasApplicationResponse>>(
@@ -67,11 +76,11 @@ public class GetPaginatedApplicationsByRespondentTests : TestServiceBase<Applica
         );
 
         _applicationsServiceClient
-            .Setup(c => c.GetPaginatedApplicationsByRespondent(respondentId, searchQuery, pageIndex, pageSize))
+            .Setup(c => c.GetPaginatedApplicationsByRespondent(respondentId, searchQuery, pageIndex, pageSize, sortField, sortDirection))
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.GetPaginatedApplicationsByRespondent(respondentId, searchQuery, pageIndex, pageSize);
+        var result = await Sut.GetPaginatedApplicationsByRespondent(respondentId, searchQuery, pageIndex, pageSize, sortField, sortDirection);
 
         // Assert
         result.ShouldBeOfType<ServiceResponse<PaginatedResponse<IrasApplicationResponse>>>();
@@ -81,6 +90,6 @@ public class GetPaginatedApplicationsByRespondentTests : TestServiceBase<Applica
 
         // Verify
         _applicationsServiceClient.Verify(c =>
-            c.GetPaginatedApplicationsByRespondent(respondentId, searchQuery, pageIndex, pageSize), Times.Once);
+            c.GetPaginatedApplicationsByRespondent(respondentId, searchQuery, pageIndex, pageSize, sortField, sortDirection), Times.Once);
     }
 }
