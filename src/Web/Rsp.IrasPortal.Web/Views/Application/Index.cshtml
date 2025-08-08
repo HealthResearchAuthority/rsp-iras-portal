@@ -29,7 +29,7 @@
 
                         <form asp-action="SearchApplication" method="post" novalidate>
 
-                            <div class="govuk-form-group govuk-!-margin-bottom-0" error-class-for="Search.SearchTitleTerm" error-class="govuk-form-group--error">
+                            <div class="govuk-form-group govuk-!-margin-bottom-0" error-class-for="Search.SearchTitleTerm">
 
                                 @Html.ValidationMessageFor(model => model.Search.SearchTitleTerm, "", new { @class = "govuk-error-message" })
 
