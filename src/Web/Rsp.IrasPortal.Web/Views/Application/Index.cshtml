@@ -20,46 +20,46 @@
     <div class="govuk-grid-column-full">
         <authorized auth-params="@new(Roles:"user,system_administrator,reviewer")">
 
-            <h2 class="govuk-heading-l" id="title">My research</h2>            
-            <div class="govuk-grid-row">
-                <div class="govuk-grid-column-two-thirds">
-
-                    <form asp-action="SearchApplication" method="post" novalidate>
-
-                        <div class="govuk-form-group govuk-!-margin-bottom-0 @(ViewData.ModelState.ContainsKey(nameof(Model.Search.SearchTitleTerm)) && ViewData.ModelState[nameof(Model.Search.SearchTitleTerm)]?.Errors?.Any() == true ? "govuk-form-group--error" : "")">
-
-                            @if (ViewData.ModelState.TryGetValue(nameof(Model.Search.SearchTitleTerm), out var searchError) && searchError.Errors.Any())
-                            {
-                                <p class="govuk-error-message">
-                                    <span class="govuk-visually-hidden">Error:</span> @searchError.Errors.First().ErrorMessage
-                                </p>
-                            }
-
-                            <div class="govuk-input__wrapper">
-                                <input asp-for="Search.SearchTitleTerm" class="govuk-input" type="text" id="SearchTerm" />
-                                <button class="govuk-button mb-0" style="margin-left:10px" type="submit" name="action" value="search">
-                                    Search
-                                </button>
-                            </div>
-                        </div>
-
-                        <input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize" />
-                        <input hidden readonly name="PageNumber" value="@Model.Pagination?.PageNumber" />
-
-                        <!-- Filter Panel -->
-                        <div class="search-filter-panel">
-                            <div class="search-filter-panel__header">
-                                <label for="toggle-filter" class="search-filter-panel__button govuk-link" role="button" aria-controls="filter-panel">
-                                    <span class="search-filter-panel__button-inner">Advanced filter</span>
-                                </label>                                
-                            </div>                            
-                        </div>
-                    </form>
-                </div>
-            </div>            
-
+            <h2 class="govuk-heading-l" id="title">My research</h2>    
+            
             @if (Model.Applications != null && Model.Applications.Any())
             {
+                <div class="govuk-grid-row">
+                    <div class="govuk-grid-column-two-thirds">
+
+                        <form asp-action="SearchApplication" method="post" novalidate>
+
+                            <div class="govuk-form-group govuk-!-margin-bottom-0 @(ViewData.ModelState.ContainsKey(nameof(Model.Search.SearchTitleTerm)) && ViewData.ModelState[nameof(Model.Search.SearchTitleTerm)]?.Errors?.Any() == true ? "govuk-form-group--error" : "")">
+
+                                @if (ViewData.ModelState.TryGetValue(nameof(Model.Search.SearchTitleTerm), out var searchError) && searchError.Errors.Any())
+                                {
+                                    <p class="govuk-error-message">
+                                        <span class="govuk-visually-hidden">Error:</span> @searchError.Errors.First().ErrorMessage
+                                    </p>
+                                }
+
+                                <div class="govuk-input__wrapper">
+                                    <input asp-for="Search.SearchTitleTerm" class="govuk-input" type="text" id="SearchTerm" />
+                                    <button class="govuk-button mb-0" style="margin-left:10px" type="submit" name="action" value="search">
+                                        Search
+                                    </button>
+                                </div>
+                            </div>
+
+                            <input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize" />
+                            <input hidden readonly name="PageNumber" value="@Model.Pagination?.PageNumber" />
+
+                            <!-- Filter Panel -->
+                            <div class="search-filter-panel">
+                                <div class="search-filter-panel__header">
+                                    <label for="toggle-filter" class="search-filter-panel__button govuk-link" role="button" aria-controls="filter-panel">
+                                        <span class="search-filter-panel__button-inner">Advanced filter</span>
+                                    </label>                                
+                                </div>                            
+                            </div>
+                        </form>
+                    </div>
+                </div>  
                 <div class="govuk-grid-row">
                     <div class="govuk-grid-column-full">
                         <div class="govuk-table-wrapper">
