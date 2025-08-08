@@ -42,7 +42,7 @@ public class RemoveFiltersTests : TestServiceBase<ModificationsTasklistControlle
         });
         SetupValidValidator();
 
-        var result = await Sut.RemoveFilter("datemodificationsubmitted-from");
+        var result = await Sut.RemoveFilter("datesubmitted-from");
 
         result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Index");
 
@@ -64,7 +64,7 @@ public class RemoveFiltersTests : TestServiceBase<ModificationsTasklistControlle
         });
         SetupValidValidator();
 
-        var result = await Sut.RemoveFilter("datemodificationsubmitted-to");
+        var result = await Sut.RemoveFilter("datesubmitted-to");
 
         result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Index");
 

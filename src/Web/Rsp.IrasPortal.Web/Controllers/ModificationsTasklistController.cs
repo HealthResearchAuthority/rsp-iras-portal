@@ -159,11 +159,16 @@ public class ModificationsTasklistController(IApplicationsService applicationsSe
                 search.ShortProjectTitle = null;
                 break;
 
-            case "datemodificationsubmitted-from":
+            case "datesubmitted":
+                search.FromDay = search.FromMonth = search.FromYear = null;
+                search.ToDay = search.ToMonth = search.ToYear = null;
+                break;
+
+            case "datesubmitted-from":
                 search.FromDay = search.FromMonth = search.FromYear = null;
                 break;
 
-            case "datemodificationsubmitted-to":
+            case "datesubmitted-to":
                 search.ToDay = search.ToMonth = search.ToYear = null;
                 break;
 
