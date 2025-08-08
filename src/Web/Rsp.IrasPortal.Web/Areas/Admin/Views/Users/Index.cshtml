@@ -235,7 +235,7 @@
                         @foreach (var header in sortableHeaders)
                         {
                             <th scope="col" class="govuk-table__header govuk-table__header-sortable @(header.Label.Contains("name") ? "govuk-table--name" : "") @(header.Label == "Email address" ? "line-break-anywhere" : "")">
-                                <partial name="_SortableHeaderButton" model="new SortableHeaderModel { FieldName = header.Field, DisplayText = header.Label, CurrentSortField = Model.Pagination?.SortField, CurrentSortDirection = Model.Pagination?.SortDirection, TableId = tableId }"/>
+                                <partial name="_SortableHeaderButton" model="new SortableHeaderModel { FieldName = header.Field, DisplayText = header.Label, CurrentSortField = Model.Pagination?.SortField, CurrentSortDirection = Model.Pagination?.SortDirection,  TableId = tableId, ComplexSearchQuery = Model.Search, }"/>
                             </th>
                         }
                         <th scope="col" class="govuk-table__header">Action</th>

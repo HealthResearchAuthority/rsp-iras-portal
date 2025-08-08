@@ -144,50 +144,57 @@
                                 </div>
                             </details>
 
-                            <div class="search-filter-panel__actions">
-                                <button type="submit" class="govuk-button search-filter-panel__action search-filter-panel__action--submit">Apply</button>
-                            </div>
-                        </div>
-                    </details>
-                </div>
-            </form>
-        </div>
-    </div>
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-full">
-            @if (Model.Organisations != null && Model.Organisations.Any())
-            {
-                <div class="govuk-table-wrapper">
-                    <table class="govuk-table modifications-tasklist-table" id="organisationsTasklistTable">
-                        <thead class="govuk-table__head">
-                        <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
-                            <th scope="col" class="govuk-table__header govuk-!-text-align-right checkbox-cell">
-                                <div class="govuk-checkboxes__item govuk-checkboxes--small">
-                                    <input id="select-all-organisations" name="" class="govuk-checkboxes__input select-all-modifications" type="checkbox">
-                                    <label for="select-all-organisations" class="govuk-label govuk-checkboxes__label"></label>
+                                    <div class="search-filter-panel__actions">
+                                        <button type="submit" class="govuk-button search-filter-panel__action search-filter-panel__action--submit">Apply</button>
+                                    </div>
                                 </div>
-                            </th>
-                            @{
-                                var sortableHeaders = new[]
-                                {
-                                    new { Field = nameof(OrganisationModel.Name), Label = "Name" },
-                                    new { Field = nameof(OrganisationModel.Address), Label = "Address" },
-                                    new { Field = nameof(OrganisationModel.Type), Label = "Organisation type" },
-                                    new { Field = nameof(OrganisationModel.CountryName), Label = "Country" }
-                                };
-                                var tableId = "organisationsTasklistTable";
-                            }
-                            @foreach (var header in sortableHeaders)
-                            {
-                                <th scope="col" class="govuk-table__header govuk-table__header-sortable">
-                                    <partial name="_SortableHeaderButton" model="new SortableHeaderModel { FieldName = header.Field, DisplayText = header.Label, CurrentSortField = Model.Pagination?.SortField, CurrentSortDirection = Model.Pagination?.SortDirection, TableId = tableId, }"/>
-                                </th>
-                            }
-                        </tr>
-                        </thead>
-                        <form method="get" id="organisation-selection">
-                            <input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField"/>
-                            <input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection"/>
+                            </div>               
+                        </form>
+                    </div>
+                </div>    
+                <div class="govuk-grid-row">
+                    <div class="govuk-grid-column-full">
+                    @if (Model.Organisations != null && Model.Organisations.Any())
+                    {
+                        <div class="govuk-table-wrapper">
+                            <table class="govuk-table modifications-tasklist-table" id="organisationsTasklistTable">
+                                <thead class="govuk-table__head">
+                                    <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+                                        <th scope="col" class="govuk-table__header govuk-!-text-align-right checkbox-cell">
+                                            <div class="govuk-checkboxes__item govuk-checkboxes--small">
+                                                <input id="select-all-organisations" name="" class="govuk-checkboxes__input select-all-modifications" type="checkbox">
+                                                <label for="select-all-organisations" class="govuk-label govuk-checkboxes__label"></label>
+                                            </div>
+                                        </th>
+                                        @{
+                                            var sortableHeaders = new[]
+                                            {                                            
+                                                new { Field = nameof(OrganisationModel.Name), Label = "Name" },
+                                                new { Field = nameof(OrganisationModel.Address), Label = "Address" },
+                                                new { Field = nameof(OrganisationModel.Type), Label = "Organisation type" },
+                                                new { Field = nameof(OrganisationModel.CountryName), Label = "Country" }
+                                            };
+                                            var tableId = "organisationsTasklistTable";
+                                        }
+                                        @foreach (var header in sortableHeaders)
+                                        {
+                                            <th scope="col" class="govuk-table__header govuk-table__header-sortable">
+                                                <partial name="_SortableHeaderButton" model="new SortableHeaderModel
+                                                {
+                                                    FieldName = header.Field,
+                                                    DisplayText = header.Label,
+                                                    CurrentSortField = Model.Pagination?.SortField,
+                                                    CurrentSortDirection = Model.Pagination?.SortDirection,
+                                                    TableId = tableId,
+                                                    ComplexSearchQuery = Model.Search,
+                                                }" />
+                                            </th>
+                                        }
+                                    </tr>
+                                </thead>
+                                <form method="get" id="organisation-selection">
+                                    <input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
+                                    <input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
 
                             <!--Keep track of selected organisations that are not displayed on this page for continuity-->
                             @foreach (var selectedMod in Model.SelectedOrganisationIds.Except(Model.Organisations.Select(m => m.Organisation.Id)))
