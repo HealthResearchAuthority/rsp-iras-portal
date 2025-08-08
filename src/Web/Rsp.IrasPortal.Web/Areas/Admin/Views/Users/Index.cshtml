@@ -234,8 +234,18 @@
                     <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
                         @foreach (var header in sortableHeaders)
                         {
+                            var sortableHeaderModel = new SortableHeaderModel
+                            {
+                                FieldName = header.Field,
+                                DisplayText = header.Label,
+                                CurrentSortField = Model.Pagination?.SortField,
+                                CurrentSortDirection = Model.Pagination?.SortDirection,
+                                TableId = tableId,
+                                ComplexSearchQuery = Model.Search
+                            };
+                            
                             <th scope="col" class="govuk-table__header govuk-table__header-sortable @(header.Label.Contains("name") ? "govuk-table--name" : "") @(header.Label == "Email address" ? "line-break-anywhere" : "")">
-                                <partial name="_SortableHeaderButton" model="new SortableHeaderModel { FieldName = header.Field, DisplayText = header.Label, CurrentSortField = Model.Pagination?.SortField, CurrentSortDirection = Model.Pagination?.SortDirection,  TableId = tableId, ComplexSearchQuery = Model.Search, }"/>
+                                <partial name="_SortableHeaderButton" model="@sortableHeaderModel" />
                             </th>
                         }
                         <th scope="col" class="govuk-table__header">Action</th>
