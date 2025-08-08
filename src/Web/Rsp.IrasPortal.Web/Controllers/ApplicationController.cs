@@ -8,6 +8,7 @@ using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Entities;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
@@ -24,7 +25,8 @@ public class ApplicationController
     IValidator<IrasIdViewModel> irasIdValidator,
     IRespondentService respondentService,
     IQuestionSetService questionSetService,
-    IFeatureManager featureManager) : Controller
+    IFeatureManager featureManager,
+    ICmsQuestionSetServiceClient cmsSevice) : Controller
 {
     // ApplicationInfo view name
     private const string ApplicationInfo = nameof(ApplicationInfo);
@@ -181,14 +183,18 @@ public class ApplicationController
         HttpContext.Session.SetString(SessionKeys.ProjectRecord, JsonSerializer.Serialize(irasApplication));
 
         // Store relevant information in TempData for use in subsequent requests
-        TempData[TempDataKeys.CategoryId] = QuestionCategories.ProjectRecrod;
+        var questionCategoriesResponse = await cmsSevice.GetQuestionCategories();
+        var categoryId = questionCategoriesResponse.IsSuccessStatusCode && questionCategoriesResponse.Content?.FirstOrDefault() != null
+            ? questionCategoriesResponse.Content.FirstOrDefault()?.CategoryId : QuestionCategories.A;
+
+        TempData[TempDataKeys.CategoryId] = categoryId;
         TempData[TempDataKeys.ProjectRecordId] = irasApplication.Id;
         TempData[TempDataKeys.IrasId] = irasApplication.IrasId;
 
         // Redirect to the Questionnaire Resume action to continue the application process
-        return RedirectToAction(nameof(QuestionnaireController.Resume), "Questionnaire", new
+        return RedirectToAction(nameof(CmsQuestionSetController.Resume), "CmsQuestionSet", new
         {
-            categoryId = QuestionCategories.ProjectRecrod,
+            categoryId = categoryId,
             projectRecordId = irasApplication.Id
         });
     }
