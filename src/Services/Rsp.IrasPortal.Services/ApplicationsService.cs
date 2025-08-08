@@ -52,9 +52,17 @@ public class ApplicationsService(IApplicationsServiceClient applicationsClient) 
     }
 
     /// <inheritdoc/>
-    public async Task<ServiceResponse<PaginatedResponse<IrasApplicationResponse>>> GetPaginatedApplicationsByRespondent(string respondentId, string? searchQuery, int pageIndex, int pageSize)
+    public async Task<ServiceResponse<PaginatedResponse<IrasApplicationResponse>>> GetPaginatedApplicationsByRespondent
+    (
+        string respondentId,
+        string? searchQuery,
+        int pageIndex = 1,
+        int? pageSize = 20,
+        string? sortField = nameof(IrasApplicationResponse.CreatedDate),
+        string? sortDirection = SortDirections.Descending
+    )
     {
-        var apiResponse = await applicationsClient.GetPaginatedApplicationsByRespondent(respondentId, searchQuery, pageIndex, pageSize);
+        var apiResponse = await applicationsClient.GetPaginatedApplicationsByRespondent(respondentId, searchQuery, pageIndex, pageSize, sortField, sortDirection);
 
         return apiResponse.ToServiceResponse();
     }

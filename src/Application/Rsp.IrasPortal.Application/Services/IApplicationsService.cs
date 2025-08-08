@@ -55,8 +55,18 @@ public interface IApplicationsService : IInterceptable
     /// <param name="searchQuery">Optional search query to filter projects by title or description.</param>
     /// <param name="pageIndex">Page number (1-based). Must be greater than 0.</param>
     /// <param name="pageSize">Number of records per page. Must be greater than 0.</param>
+    /// <param name="sortField">Optional field name to sort the results by. Defaults to CreatedDate.</param>
+    /// <param name="sortDirection">Optional sort direction: Ascending or Descending. Defaults to Descending.</param>
     /// <returns>An asynchronous operation that returns all the saved applications for a given respondent.</returns>
-    public Task<ServiceResponse<PaginatedResponse<IrasApplicationResponse>>> GetPaginatedApplicationsByRespondent(string respondentId, string? searchQuery, int pageIndex, int pageSize);
+    public Task<ServiceResponse<PaginatedResponse<IrasApplicationResponse>>> GetPaginatedApplicationsByRespondent
+    (
+        string respondentId,
+        string? searchQuery,
+        int pageIndex = 1,
+        int? pageSize = 20,
+        string? sortField = nameof(IrasApplicationResponse.CreatedDate),
+        string? sortDirection = SortDirections.Descending
+    );
 
     /// <summary>
     /// Creates a new application

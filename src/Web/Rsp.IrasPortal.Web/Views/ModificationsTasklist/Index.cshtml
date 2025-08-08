@@ -23,11 +23,10 @@
 @functions {
 	private bool HasFilterErrors()
 	{
-		bool hasFilterErrors = ViewData.ModelState
+		return ViewData.ModelState
 			.Where(kvp => kvp.Key != ModificationsTasklist.ModificationToAssignNotSelected && kvp.Value != null)
 			.SelectMany(kvp => kvp.Value!.Errors)
 			.Any();
-		return hasFilterErrors;
 	}
 
 	private bool CanOpenPanelForField(string fieldName)
