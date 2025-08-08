@@ -61,14 +61,24 @@ public class ApprovalsSearchModel
                 filters.Add(ApprovalsSearch.SponsorOrganisationKey, [SponsorOrganisation]);
             }
 
-            if (FromDate.HasValue)
+            if (FromDate.HasValue && ToDate.HasValue)
             {
-                filters.Add(ApprovalsSearch.FromDateKey, [FromDate.Value.ToString("d MMM yyyy")]);
+                // Both dates entered — show combined range only
+                filters.Add(ApprovalsSearch.DateRangeKey,
+                    [$"{FromDate.Value:d MMM yyyy} to {ToDate.Value:d MMM yyyy}"]);
             }
-
-            if (ToDate.HasValue)
+            else
             {
-                filters.Add(ApprovalsSearch.ToDateKey, [ToDate.Value.ToString("d MMM yyyy")]);
+                // Only one date entered — show individual filter
+                if (FromDate.HasValue)
+                {
+                    filters.Add(ApprovalsSearch.FromDateKey, [FromDate.Value.ToString("d MMM yyyy")]);
+                }
+
+                if (ToDate.HasValue)
+                {
+                    filters.Add(ApprovalsSearch.ToDateKey, [ToDate.Value.ToString("d MMM yyyy")]);
+                }
             }
 
             if (FromSubmission.HasValue)

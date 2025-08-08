@@ -29,7 +29,7 @@
 		return fieldNames.Any(CanOpenPanelForField);
 	}
 
-	private bool CanOpenFilterPanel()
+	private bool HasFilterErrors()
 	{
 		return ViewData.ModelState.Values.Any(v => v.Errors.Count > 0)
 			   || Model.Search.Filters?.Any() == true
@@ -88,12 +88,12 @@
 
 				<!-- Filter Panel -->
 				<div class="search-filter-panel">
-					<details class="search-filter-toggle" @(CanOpenFilterPanel() ? "open" : null)>
+					<details class="search-filter-toggle" @(HasFilterErrors() ? "open" : null)>
 						<summary class="search-filter-panel__header"
 								 tabindex="-1"
 								 role="button"
 								 aria-controls="filter-panel"
-								 aria-expanded="@(CanOpenFilterPanel().ToString().ToLower())">
+								 aria-expanded="@(HasFilterErrors().ToString().ToLower())">
 
 							<span class="search-filter-panel__button-inner govuk-link"
 								  tabindex="0">
@@ -120,10 +120,10 @@
 								</div>
 							</details>
 
-							<!-- Date modification submitted -->
+							<!-- Date submitted -->
 							<details class="search-filter-section" @(CanOpenPanelForAnyField("FromDate", "ToDate") ? "open" : null)>
 								<summary class="search-filter-section__summary">
-									<h2 class="search-filter-section__summary-heading">Date modification submitted</h2>
+									<h2 class="search-filter-section__summary-heading">Date submitted</h2>
 								</summary>
 								<div class="search-filter-section__content">
 									<div class="govuk-form-group govuk-!-margin-bottom-2">
@@ -404,14 +404,7 @@
 									   class="search-filter-summary__remove-filter">
 										<span class="search-filter-summary__remove-filter-text">
 											<span class="govuk-visually-hidden">Remove filter</span>
-											@if (filterKey.Contains("date", StringComparison.OrdinalIgnoreCase))
-											{
-												@($"{filterKey} {val}")
-											}
-											else
-											{
 												@($"{filterKey} - {val}")
-											}
 										</span>
 									</a>
 								</li>
