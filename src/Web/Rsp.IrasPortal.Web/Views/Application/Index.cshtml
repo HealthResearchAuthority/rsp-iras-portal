@@ -29,14 +29,9 @@
 
                         <form asp-action="SearchApplication" method="post" novalidate>
 
-                            <div class="govuk-form-group govuk-!-margin-bottom-0 @(ViewData.ModelState.ContainsKey(nameof(Model.Search.SearchTitleTerm)) && ViewData.ModelState[nameof(Model.Search.SearchTitleTerm)]?.Errors?.Any() == true ? "govuk-form-group--error" : "")">
+                            <div class="govuk-form-group govuk-!-margin-bottom-0" error-class-for="Search.SearchTitleTerm" error-class="govuk-form-group--error">
 
-                                @if (ViewData.ModelState.TryGetValue(nameof(Model.Search.SearchTitleTerm), out var searchError) && searchError.Errors.Any())
-                                {
-                                    <p class="govuk-error-message">
-                                        <span class="govuk-visually-hidden">Error:</span> @searchError.Errors.First().ErrorMessage
-                                    </p>
-                                }
+                                @Html.ValidationMessageFor(model => model.Search.SearchTitleTerm, "", new { @class = "govuk-error-message" })
 
                                 <div class="govuk-input__wrapper">
                                     <input asp-for="Search.SearchTitleTerm" class="govuk-input" type="text" id="SearchTerm" />
