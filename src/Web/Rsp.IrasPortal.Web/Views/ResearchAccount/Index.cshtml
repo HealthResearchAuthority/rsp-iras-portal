@@ -19,7 +19,7 @@
     </div>
 </authorized>
 
-<authorized auth-params="@new(Roles:"user,system_administrator,reviewer")">
+<authorized auth-params="@new()">
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
             <h1 class="govuk-heading-l">My Account homepage</h1>
@@ -45,72 +45,104 @@
         </div>
     </div>
 
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-one-third">
-            <partial name="_ActionItem"
-                     model="@("Approvals",
-                        "Workspace for approvals service staff to receive and process applications and post approval activity for review.",
-                        "approvals:welcome")" />
+    @{
+        var cards = new[]
+        {
+            new 
+            {
+                Roles = "study_wide_reviewer,team_manager,system_administrator,workflow_co-ordinator",
+                Title = "Approvals",
+                Desc = "Workspace for approvals service staff to receive and process applications and post approval activity for review.",
+                Link = "approvals:welcome"
+            },
+            new 
+            { 
+                Roles = "system_administrator",
+                Title = "CAG members",
+                Desc = "Workspace for members to review applications and post approval activity.",
+                Link = ""
+            },
+            new 
+            { 
+                Roles = "system_administrator",
+                Title = "CAT",
+                Desc = "Workspace for CAT staff to receive and process applications and post approval activity for review.",
+                Link = ""
+            },
+            new 
+            { 
+                Roles = "study_wide_reviewer,team_manager,system_administrator",
+                Title = "Member management",
+                Desc = "Workspace for staff to view and update committee member records.",
+                Link = ""
+            },
+            new 
+            { 
+                Roles = "applicant",
+                Title = "My research",
+                Desc = "Workspace to view and manage the research I am responsible for.",
+                Link = "app:welcome"
+            },
+            new 
+            { 
+                Roles = "system_administrator",
+                Title = "REC members",
+                Desc = "Workspace for members to review applications and post approval activity.",
+                Link = ""
+            },
+            new 
+            { 
+                Roles = "---ROLE_NOT_IMPLEMENTED---",
+                Title = "Sponsor",
+                Desc = "Workspace to view, manage and authorise the research I am responsible for.",
+                Link = ""
+            },
+            new 
+            { 
+                Roles = "system_administrator",
+                Title = "System administration",
+                Desc = "Workspace for system administrators to view and manage system administration functions.",
+                Link = "systemadmin:view"
+            },
+            new 
+            { 
+                Roles = "system_administrator",
+                Title = "Technical Assurance",
+                Desc = "Workspace for Technical Assurance staff to receive and process applications and post approval activity for review.",
+                Link = ""
+            },
+            new 
+            { 
+                Roles = "system_administrator",
+                Title = "Technical Assurance reviewers",
+                Desc = "Workspace for Technical Assurance reviewers to review applications and post approval activity.",
+                Link = ""
+            }
+        };
+
+        var authorizedChunks = cards
+            .Where(item =>
+            {
+                var roles = item.Roles?.Split(',') ?? [];
+                return roles.Any(role => User.IsInRole(role));
+            })
+            .Select((card, index) => new { card, index })
+            .GroupBy(x => x.index / 3)
+            .Select(g => g.Select(x => x.card).ToList())
+            .ToList();
+    }
+
+    @foreach (var row in authorizedChunks)
+    {
+        <div class="govuk-grid-row">
+            @foreach (var item in row)
+            {
+                <authorized auth-params="@new(Roles: item.Roles)">
+                    <div class="govuk-grid-column-one-third">
+                        <partial name="_ActionItem" model="@((item.Title, item.Desc, item.Link))" />
+                    </div>
+                </authorized>
+            }
         </div>
-        <div class="govuk-grid-column-one-third">
-            <partial name="_ActionItem"
-                     model="@("CAG members",
-                        " Workspace for members to review applications and post approval activity.",
-                        "")" />
-        </div>
-        <div class="govuk-grid-column-one-third">
-            <partial name="_ActionItem"
-                     model="@("CAT",
-                        "Workspace for CAT staff to receive and process applications and post approval activity for review.",
-                        "")" />
-        </div>
-    </div>
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-one-third">
-            <partial name="_ActionItem"
-                     model="@("Member management",
-                        "Workspace for staff to view and update committee member records.",
-                        "")" />
-        </div>
-        <div class="govuk-grid-column-one-third">
-            <partial name="_ActionItem"
-                     model="@("My research",
-                        "Workspace to view and manage the research I am responsible for.",
-                        "app:welcome")" />
-        </div>
-        <div class="govuk-grid-column-one-third">
-            <partial name="_ActionItem"
-                     model="@("REC members",
-                        "Workspace for members to review applications and post approval activity.",
-                        "")" />
-        </div>
-    </div>
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-one-third">
-            <partial name="_ActionItem"
-                     model="@("Sponsor",
-                        "Workspace to view, manage and authorise the research I am responsible for.",
-                        "")" />
-        </div>
-        <authorized auth-params="@new(Roles:"system_administrator")">
-            <div class="govuk-grid-column-one-third">
-                <partial name="_ActionItem"
-                         model="@("System administration",
-                            "Workspace for system administrators to view and manage system administration functions.",
-                            "systemadmin:view")" />
-            </div>
-        </authorized>
-        <div class="govuk-grid-column-one-third">
-            <partial name="_ActionItem"
-                     model="@("Technical Assurance",
-                        "Workspace for Technical Assurance staff to receive and process applications and post approval activity for review.",
-                        "")" />
-        </div>
-        <div class="govuk-grid-column-one-third">
-            <partial name="_ActionItem"
-                     model="@("Technical Assurance reviewers",
-                        "Workspace for Technical Assurance reviewers to review applications and post approval activity.",
-                        "")" />
-        </div>
-    </div>
+    }
 </authorized>
