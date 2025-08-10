@@ -19,8 +19,11 @@ public static class AuthConfiguration
     private struct Roles
     {
         public const string systemAdministrator = "system_administrator";
-        public const string user = nameof(user);
+        public const string applicant = nameof(applicant);
         public const string reviewer = nameof(reviewer);
+        public const string studyWideReviewer = "study_wide_reviewer";
+        public const string teamManager = "team_manager";
+        public const string workflowCoordinator = "workflow_co-ordinator";
     };
 
     /// <summary>
@@ -247,7 +250,10 @@ public static class AuthConfiguration
             .AddAuthorizationBuilder()
             .AddPolicy("IsReviewer", policy => policy.RequireRole(Roles.reviewer))
             .AddPolicy("IsSystemAdministrator", policy => policy.RequireRole(Roles.systemAdministrator))
-            .AddPolicy("IsUser", policy => policy.RequireRole(Roles.user))
+            .AddPolicy("IsApplicant", policy => policy.RequireRole(Roles.applicant))
+            .AddPolicy("IsStudyWideReviewer", policy => policy.RequireRole(Roles.studyWideReviewer))
+            .AddPolicy("IsTeamManager", policy => policy.RequireRole(Roles.teamManager))
+            .AddPolicy("IsWorkflowCoordinator", policy => policy.RequireRole(Roles.workflowCoordinator))
             .SetDefaultPolicy(policy);
     }
 }

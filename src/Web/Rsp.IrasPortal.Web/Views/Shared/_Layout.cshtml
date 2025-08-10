@@ -110,7 +110,7 @@
                         </feature>
 
                         <feature name="@Features.Admin">
-                            <authorized auth-params="@new(Roles:"")">
+                            <authorized auth-params="@new(Roles:"system_administrator")">
                                 <li class="govuk-service-navigation__item">
                                     <a class="govuk-service-navigation__link"
                                        asp-route="admin:home">
@@ -130,7 +130,7 @@
                         </authorized>
 
                         <feature name="@Features.MyApplications">
-                            <authorized auth-params="@new(Roles:"user")">
+                            <authorized auth-params="@new(Roles:"applicant")">
                                 <li class="govuk-service-navigation__item">
                                     <a class="govuk-service-navigation__link"
                                        asp-route="app:myapplications">

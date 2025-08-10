@@ -16,7 +16,7 @@ using Rsp.IrasPortal.Web.Models;
 namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "app:[action]")]
-[Authorize(Policy = "IsUser")]
+[Authorize(Policy = "IsApplicant")]
 public class ApplicationController
 (
     IApplicationsService applicationsService,

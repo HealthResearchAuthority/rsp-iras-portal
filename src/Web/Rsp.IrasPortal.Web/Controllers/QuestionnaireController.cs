@@ -14,7 +14,7 @@ using Rsp.IrasPortal.Web.Models;
 namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "qnc:[action]")]
-[Authorize(Policy = "IsUser")]
+[Authorize(Policy = "IsApplicant")]
 public class QuestionnaireController
 (
     IApplicationsService applicationsService,

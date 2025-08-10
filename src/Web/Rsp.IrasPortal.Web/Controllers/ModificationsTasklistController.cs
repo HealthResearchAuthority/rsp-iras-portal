@@ -12,7 +12,7 @@ using Rsp.IrasPortal.Web.Models;
 namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "tasklist:[action]")]
-[Authorize(Policy = "IsUser")]
+[Authorize(Roles = "system_administrator,workflow_co-ordinator,team_manager,study_wide_reviewer")]
 public class ModificationsTasklistController(IApplicationsService applicationsService, IValidator<ApprovalsSearchModel> validator) : Controller
 {
     private const string ModificationToAssignNotSelectedErrorMessage = "You have not selected a modification to assign. Select at least one modification before you can continue.";

@@ -20,7 +20,7 @@ namespace Rsp.IrasPortal.Web.Controllers;
 /// Controller responsible for handling project modification related actions.
 /// </summary>
 [Route("[controller]/[action]", Name = "pmc:[action]")]
-[Authorize(Policy = "IsUser")]
+[Authorize(Policy = "IsApplicant")]
 public partial class ProjectModificationController
 (
     IProjectModificationsService projectModificationsService,
