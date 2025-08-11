@@ -35,7 +35,7 @@
 	private bool CanOpenPanelForAnyField(params string[] fieldNames) =>
 		fieldNames.Any(CanOpenPanelForField);
 
-	private bool CanOpenFilterPanel() =>
+	private bool HasFilterErrors() =>
 		ViewData.ModelState.Values.Any(v => v.Errors.Count > 0);
 
 }
@@ -74,12 +74,12 @@
 
 			<!-- Filter Panel -->
 			<div class="search-filter-panel">
-				<details class="search-filter-toggle" @(CanOpenFilterPanel() ? "open" : null)>
+				<details class="search-filter-toggle" @(HasFilterErrors() ? "open" : null)>
 					<summary class="search-filter-panel__header"
 							 tabindex="-1"
 							 role="button"
 							 aria-controls="filter-panel"
-							 aria-expanded="@(CanOpenFilterPanel().ToString().ToLower())">
+							 aria-expanded="@(HasFilterErrors().ToString().ToLower())">
 
 						<span class="search-filter-panel__button-inner govuk-link"
 							  tabindex="0">

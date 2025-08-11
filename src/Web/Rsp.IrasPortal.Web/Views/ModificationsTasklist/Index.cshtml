@@ -38,11 +38,6 @@
 	{
 		return fieldNames.Any(CanOpenPanelForField);
 	}
-
-	private bool CanOpenFilterPanel()
-    {
-        return HasFilterErrors();
-    }
 }
 
 <div class="govuk-grid-row">
@@ -69,12 +64,12 @@
 
 				<!-- Filter Panel -->
 				<div class="search-filter-panel">
-					<details class="search-filter-toggle" @(CanOpenFilterPanel() ? "open" : null)>
+					<details class="search-filter-toggle" @(HasFilterErrors() ? "open" : null)>
 						<summary class="search-filter-panel__header"
 								 tabindex="-1"
 								 role="button"
 								 aria-controls="filter-panel"
-								 aria-expanded="@(CanOpenFilterPanel().ToString().ToLower())">
+								 aria-expanded="@(HasFilterErrors().ToString().ToLower())">
 
 							<span class="search-filter-panel__button-inner govuk-link"
 								  tabindex="0">
@@ -87,10 +82,10 @@
 						</summary>
 
 						<div class="search-filter-panel__content" id="filter-panel" role="region" aria-labelledby="toggle-filter">
-							<!-- Date modification submitted -->
+							<!-- Date submitted -->
 							<details class="search-filter-section" @(CanOpenPanelForAnyField("FromDate", "ToDate") ? "open" : null)>
 								<summary class="search-filter-section__summary">
-									<h2 class="search-filter-section__summary-heading">Date modification submitted</h2>
+									<h2 class="search-filter-section__summary-heading">Date submitted</h2>
 								</summary>
 								<div class="search-filter-section__content">
 									<div class="govuk-form-group govuk-!-margin-bottom-2">
@@ -192,8 +187,7 @@
 									   class="search-filter-summary__remove-filter">
 										<span class="search-filter-summary__remove-filter-text">
 											<span class="govuk-visually-hidden">Remove filter</span>
-											@if (filterKey.Contains("date", StringComparison.OrdinalIgnoreCase)
-																		|| filterKey.Contains("submission", StringComparison.OrdinalIgnoreCase))
+											@if (filterKey.Contains("submission", StringComparison.OrdinalIgnoreCase))
 											{
 												@($"{filterKey} {val}")
 											}
@@ -269,7 +263,6 @@ else
 								{
 												new { Field = nameof(ModificationsModel.ModificationId), Label = "Modification ID" },
 												new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
-												new { Field = nameof(ModificationsModel.ModificationType), Label = "Modification type" },
 												new { Field = nameof(ModificationsModel.CreatedAt), Label = "Date submitted" },
 												new { Field = nameof(ModificationsModel.DaysSinceSubmission), Label = "Days since submission" }
 												};
@@ -322,7 +315,6 @@ else
 									</td>
 									<td class="govuk-table__cell">@modification.Modification.ModificationId</td>
 									<td class="govuk-table__cell"><a href="?@modification.Modification.ModificationId" class="govuk-link"><strong>@modification.Modification.ShortProjectTitle</strong></a></td>
-									<td class="govuk-table__cell">@modification.Modification.ModificationType</td>
 									<td class="govuk-table__cell">@modification.Modification.CreatedAt.ToString("dd MMM yyyy")</td>
 									<td class="govuk-table__cell">@modification.Modification.DaysSinceSubmission @daysText</td>
 								</tr>
