@@ -29,7 +29,7 @@
 		return fieldNames.Any(CanOpenPanelForField);
 	}
 
-	private bool CanOpenFilterPanel()
+	private bool HasFilterErrors()
 	{
 		return ViewData.ModelState.Values.Any(v => v.Errors.Count > 0)
 			   || !string.IsNullOrWhiteSpace(Model.Search.SponsorOrgSearch?.SearchText);
@@ -82,14 +82,14 @@
 				</div>
 			</div>
 
-			<!-- Filter Panel -->
-			<div class="search-filter-panel">
-				<details class="search-filter-toggle" @(CanOpenFilterPanel() ? "open" : null)>
-					<summary class="search-filter-panel__header"
-								tabindex="-1"
-								role="button"
-								aria-controls="filter-panel"
-								aria-expanded="@(CanOpenFilterPanel().ToString().ToLower())">
+				<!-- Filter Panel -->
+				<div class="search-filter-panel">
+					<details class="search-filter-toggle" @(HasFilterErrors() ? "open" : null)>
+						<summary class="search-filter-panel__header"
+								 tabindex="-1"
+								 role="button"
+								 aria-controls="filter-panel"
+								 aria-expanded="@(HasFilterErrors().ToString().ToLower())">
 
 						<span class="search-filter-panel__button-inner govuk-link"
 								tabindex="0">
@@ -116,26 +116,26 @@
 							</div>
 						</details>
 
-						<!-- Date modification submitted -->
-						<details class="search-filter-section" @(CanOpenPanelForAnyField("FromDate", "ToDate") ? "open" : null)>
-							<summary class="search-filter-section__summary">
-								<h2 class="search-filter-section__summary-heading">Date modification submitted</h2>
-							</summary>
-							<div class="search-filter-section__content">
-								<div class="govuk-form-group govuk-!-margin-bottom-2">
-									<fieldset class="govuk-fieldset">
-										<rsp-gds-date-input asp-for="Search.FromDate"
-															day-name="Search.FromDay"
-															day-value="@Model.Search.FromDay"
-															month-name="Search.FromMonth"
-															month-value="@Model.Search.FromMonth"
-															year-name="Search.FromYear"
-															year-value="@Model.Search.FromYear"
-															label-text="Enter the date you want to search from"
-															hint-html="For example, 28 February 2023"
-															error-key="FromDate"
-															id="FromDate"
-															label-html-class="font-weight-none" />
+							<!-- Date submitted -->
+							<details class="search-filter-section" @(CanOpenPanelForAnyField("FromDate", "ToDate") ? "open" : null)>
+								<summary class="search-filter-section__summary">
+									<h2 class="search-filter-section__summary-heading">Date submitted</h2>
+								</summary>
+								<div class="search-filter-section__content">
+									<div class="govuk-form-group govuk-!-margin-bottom-2">
+										<fieldset class="govuk-fieldset">
+											<rsp-gds-date-input asp-for="Search.FromDate"
+																day-name="Search.FromDay"
+																day-value="@Model.Search.FromDay"
+																month-name="Search.FromMonth"
+																month-value="@Model.Search.FromMonth"
+																year-name="Search.FromYear"
+																year-value="@Model.Search.FromYear"
+																label-text="Enter the date you want to search from"
+																hint-html="For example, 28 February 2023"
+																error-key="FromDate"
+																id="FromDate"
+																label-html-class="font-weight-none" />
 
 										<rsp-gds-date-input asp-for="Search.ToDate"
 															day-name="Search.ToDay"
@@ -391,42 +391,36 @@
 						var filterKey = filter.Key;
 						var filterValues = filter.Value ?? [];
 
-						foreach (var val in filterValues)
-						{
-							<li>
-								<a asp-route="approvals:removefilter"
-									asp-route-key="@filterKey"
-									asp-route-value="@val"
-									class="search-filter-summary__remove-filter">
-									<span class="search-filter-summary__remove-filter-text">
-										<span class="govuk-visually-hidden">Remove filter</span>
-										@if (filterKey.Contains("date", StringComparison.OrdinalIgnoreCase))
-										{
-											@($"{filterKey} {val}")
-										}
-										else
-										{
-											@($"{filterKey} - {val}")
-										}
-									</span>
-								</a>
-							</li>
+							foreach (var val in filterValues)
+							{
+								<li>
+									<a asp-route="approvals:removefilter"
+									   asp-route-key="@filterKey"
+									   asp-route-value="@val"
+									   class="search-filter-summary__remove-filter">
+										<span class="search-filter-summary__remove-filter-text">
+											<span class="govuk-visually-hidden">Remove filter</span>
+												@($"{filterKey} - {val}")
+										</span>
+									</a>
+								</li>
+							}
 						}
-					}
-				</ul>
-				<div>
-					<a asp-route="approvals:clearfilters" class="search-filter-summary__clear-filters govuk-link govuk-link--no-visited-state">
-						Clear all filters
-					</a>
+					</ul>
+					<div>
+						<a asp-route="approvals:clearfilters" class="search-filter-summary__clear-filters govuk-link govuk-link--no-visited-state">
+							Clear all filters
+						</a>
+					</div>
 				</div>
-			</div>
-		}
-		else if (showNoResultsMessage)
-		{
-			<div class="search-filter-line-break"></div>
-		}
+			}
+			else if (showNoResultsMessage)
+			{
+				<div class="search-filter-line-break"></div>
+			}
+		</div>
 	</div>
-</div>
+</authorized>
 
 @{
 	@if (showNoResultsMessage)
