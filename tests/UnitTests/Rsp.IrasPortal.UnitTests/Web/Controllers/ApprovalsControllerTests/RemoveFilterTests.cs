@@ -125,6 +125,28 @@ public class RemoveFiltersTests : TestServiceBase<ApprovalsController>
     }
 
     [Fact]
+    public async Task RemoveFilter_FroAndTomDate_ShouldBeCleared_AndRedirect()
+    {
+        var model = new ApprovalsSearchModel { FromDay = "01", FromMonth = "01", FromYear = "2023", ToDay = "31", ToMonth = "12", ToYear = "2026" };
+        SetTempData(new Dictionary<string, object?>
+        {
+            { TempDataKeys.ApprovalsSearchModel, JsonSerializer.Serialize(model) }
+        });
+        SetupValidValidator();
+
+        var result = await Sut.RemoveFilter("datesubmitted", null);
+
+        result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Search");
+
+        var updated =
+            JsonSerializer.Deserialize<ApprovalsSearchModel>(
+                Sut.TempData[TempDataKeys.ApprovalsSearchModel]!.ToString()!)!;
+        updated.FromDay.ShouldBeNull();
+        updated.FromMonth.ShouldBeNull();
+        updated.FromYear.ShouldBeNull();
+    }
+
+    [Fact]
     public async Task RemoveFilter_LeadNation_ShouldRemoveValue_AndRedirect()
     {
         var model = new ApprovalsSearchModel

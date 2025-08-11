@@ -76,6 +76,74 @@ public class RemoveFiltersTests : TestServiceBase<ModificationsTasklistControlle
         updated.ToYear.ShouldBeNull();
     }
 
+
+    [Fact]
+    public async Task RemoveFilter_FromAndToDate_ShouldBeCleared_AndRedirect()
+    {
+        var model = new ApprovalsSearchModel { FromDay = "01", FromMonth = "01", FromYear = "2023",ToDay = "31", ToMonth = "12", ToYear = "2026" };
+        SetTempData(new Dictionary<string, object?>
+        {
+            { TempDataKeys.ApprovalsSearchModel, JsonSerializer.Serialize(model) }
+        });
+        SetupValidValidator();
+
+        var result = await Sut.RemoveFilter("datesubmitted");
+
+        result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Index");
+
+        var updated =
+            JsonSerializer.Deserialize<ApprovalsSearchModel>(
+                Sut.TempData[TempDataKeys.ApprovalsSearchModel]!.ToString()!)!;
+        updated.ToDay.ShouldBeNull();
+        updated.ToMonth.ShouldBeNull();
+        updated.ToYear.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task RemoveFilter_DaysSinceSubmissionFrom_ShouldBeCleared_AndRedirect()
+    {
+        var model = new ApprovalsSearchModel { FromDaysSinceSubmission = "01" };
+        SetTempData(new Dictionary<string, object?>
+        {
+            { TempDataKeys.ApprovalsSearchModel, JsonSerializer.Serialize(model) }
+        });
+        SetupValidValidator();
+
+        var result = await Sut.RemoveFilter("dayssincesubmission-from");
+
+        result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Index");
+
+        var updated =
+            JsonSerializer.Deserialize<ApprovalsSearchModel>(
+                Sut.TempData[TempDataKeys.ApprovalsSearchModel]!.ToString()!)!;
+        updated.ToDay.ShouldBeNull();
+        updated.ToMonth.ShouldBeNull();
+        updated.ToYear.ShouldBeNull();
+    }
+
+
+    [Fact]
+    public async Task RemoveFilter_DaysSinceSubmissionTo_ShouldBeCleared_AndRedirect()
+    {
+        var model = new ApprovalsSearchModel { FromDaysSinceSubmission = "01" };
+        SetTempData(new Dictionary<string, object?>
+        {
+            { TempDataKeys.ApprovalsSearchModel, JsonSerializer.Serialize(model) }
+        });
+        SetupValidValidator();
+
+        var result = await Sut.RemoveFilter("dayssincesubmission-to");
+
+        result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Index");
+
+        var updated =
+            JsonSerializer.Deserialize<ApprovalsSearchModel>(
+                Sut.TempData[TempDataKeys.ApprovalsSearchModel]!.ToString()!)!;
+        updated.ToDay.ShouldBeNull();
+        updated.ToMonth.ShouldBeNull();
+        updated.ToYear.ShouldBeNull();
+    }
+
     private void SetTempData(IDictionary<string, object?> values)
     {
         var httpContext = new DefaultHttpContext();
