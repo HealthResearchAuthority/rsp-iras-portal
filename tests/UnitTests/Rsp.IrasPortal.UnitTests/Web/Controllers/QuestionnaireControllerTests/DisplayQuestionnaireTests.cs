@@ -58,7 +58,7 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
             .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>())).ReturnsAsync(responseQuestionSection);
 
         Mocker
-            .GetMock<IQuestionSetService>()
+            .GetMock<ICmsQuestionsetService>()
             .Setup(q => q.GetNextQuestionSection(It.IsAny<string>())).ReturnsAsync(responseQuestionSection);
 
         Mocker
