@@ -2,30 +2,14 @@
 @using Rsp.IrasPortal.Application.DTOs.Responses;
 @model ProjectOverviewModel
 
-@if (TempData[TempDataKeys.ShowNotificationBanner] is not null)
-{
-    <partial name="_NotificationBanner" model="@("Success", "Modification progress successfully saved")" />
-}
 @{
     ViewBag.Title = "Project overview";
+    ViewBag.Active = ProjectOverview.ProjectDetails;
 }
 
-<div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-        <h1 class="govuk-heading-l">Project overview</h1>
-        <div class="govuk-inset-text">
-            <p>
-                <strong>IRAS ID:</strong> @Model.IrasId
-            </p>
-            <p>
-                <strong>Short project title:</strong> @Model.ProjectTitle
-            </p>
-        </div>
-    </div>
-    <div class="govuk-grid-column-one-third govuk-!-text-align-right">
-        <strong class="govuk-tag govuk-tag--blue">@Model.Status</strong>
-    </div>
-</div>
+<partial name="_NavigationHeaderPartial" model="@Model" />
+
+
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-one-third">
         <div class="govuk-inset-text" style="border: 1px solid #b1b4b6; padding: 20px;">

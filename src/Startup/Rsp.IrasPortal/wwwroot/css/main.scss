@@ -333,6 +333,10 @@ button.govuk-link {
     background: #fff !important;
 }
 
+.govuk-service-navigation__item.small-margin {
+    margin-right: 20px !important;
+}
+
 .govuk-back-link {
     @media(min-width: 40.0625em) {
         margin-bottom: 45px;
@@ -803,8 +807,6 @@ dialog[open] {
     }
 }
 /* End Filter Panel */
-
-
 
 .margin-zero {
     margin: 0;

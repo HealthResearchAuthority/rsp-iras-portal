@@ -164,13 +164,13 @@
 
         <form method="post">
             <div class="save-buttons">
-                <partial name="_SubmitButton" model="@("app:projectoverview", "Save and continue" , new Dictionary<string, string>())" />
+                <partial name="_SubmitButton" model="@("pov:projectdetails", "Save and continue" , new Dictionary<string, string>())" />
 
                 @{
                     ViewBag.Style = "govuk-button govuk-button--secondary";
                 }
 
-                <partial name="_SubmitButton" model="@("app:projectoverview", "Save for later", new Dictionary<string, string> { })" />
+                <partial name="_SubmitButton" model="@("pov:projectdetails", "Save for later", new Dictionary<string, string> { })" />
             </div>
         </form>
     </div>

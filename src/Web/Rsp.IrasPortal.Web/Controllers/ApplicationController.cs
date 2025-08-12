@@ -407,7 +407,9 @@ public class ApplicationController
             ProjectTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
             CategoryId = QuestionCategories.ProjectRecrod,
             ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty,
-            ProjectPlannedEndDate = TempData.Peek(TempDataKeys.PlannedProjectEndDate) as string ?? string.Empty
+            ProjectPlannedEndDate = TempData.Peek(TempDataKeys.PlannedProjectEndDate) as string ?? string.Empty,
+            IrasId = projectRecord.IrasId,
+            Status = projectRecord.Status
         };
 
         return View("ProjectOverview", model);

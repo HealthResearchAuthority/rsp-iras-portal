@@ -24,4 +24,14 @@ public class ProjectOverviewModel
     /// Gets or sets the planned end date of the project.
     /// </summary>
     public string? ProjectPlannedEndDate { get; set; }
+
+    // <summary>
+    /// Gets current project IrasId
+    /// </summary>
+    public int? IrasId { get; set; }
+
+    // <summary>
+    /// Gets current project status
+    /// </summary>
+    public string Status { get; set; } = null!;
 }

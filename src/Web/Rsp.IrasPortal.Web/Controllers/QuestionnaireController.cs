@@ -415,7 +415,7 @@ public class QuestionnaireController
 
         if (saveForLater == bool.TrueString)
         {
-            return RedirectToAction("ProjectOverview", "Application");
+            return RedirectToAction("ProjectDetails", "ProjectOverview");
         }
 
         // continue rendering the questionnaire if the above conditions are not true
@@ -629,7 +629,7 @@ public class QuestionnaireController
             }
         }
 
-        return RedirectToAction("ProjectOverview", "Application");
+        return RedirectToAction("ProjectDetails", "ProjectOverview");
     }
 
     /// <summary>

@@ -76,7 +76,7 @@ public partial class ProjectModificationController
             TempData[TempDataKeys.ProjectModificationPlannedEndDate.AffectingOrganisationsType] = JsonSerializer.Serialize(model.SelectedOrganisationTypes);
         }
 
-        var routeName = saveForLater ? "app:projectoverview" : "pmc:affectingorganisations";
+        var routeName = saveForLater ? "pov:projectdetails" : "pmc:affectingorganisations";
 
         // Save the respondent's answers and redirect to the next step
         return await SaveModificationAnswers([new RespondentAnswerDto
