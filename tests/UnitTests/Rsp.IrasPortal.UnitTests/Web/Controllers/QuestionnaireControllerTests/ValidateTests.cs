@@ -63,10 +63,10 @@ public class ValidateTests : TestServiceBase<QuestionnaireController>
             Content = questionSectionsResponse[0]
         };
 
-        Mocker.GetMock<IQuestionSetService>()
+        Mocker.GetMock<ICmsQuestionsetService>()
             .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>())).ReturnsAsync(responseQuestionSection);
 
-        Mocker.GetMock<IQuestionSetService>()
+        Mocker.GetMock<ICmsQuestionsetService>()
             .Setup(q => q.GetNextQuestionSection(It.IsAny<string>())).ReturnsAsync(responseQuestionSection);
 
         var context = new DefaultHttpContext
@@ -139,12 +139,11 @@ public class ValidateTests : TestServiceBase<QuestionnaireController>
             Content = questionSectionsResponse[0]
         };
 
-        Mocker.GetMock<IQuestionSetService>()
+        Mocker.GetMock<ICmsQuestionsetService>()
             .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>())).ReturnsAsync(responseQuestionSection);
 
-        Mocker.GetMock<IQuestionSetService>()
+        Mocker.GetMock<ICmsQuestionsetService>()
             .Setup(q => q.GetNextQuestionSection(It.IsAny<string>())).ReturnsAsync(responseQuestionSection);
-
 
         var context = new DefaultHttpContext
         {
