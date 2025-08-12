@@ -1,0 +1,64 @@
+﻿@using Rsp.IrasPortal.Application.Constants;
+@model ProjectOverviewModel
+
+@{
+    var active = ViewBag.Active as string;
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">Project overview</h1>
+        <div class="govuk-inset-text">
+            <p>
+                <strong>IRAS ID:</strong> @Model.IrasId
+            </p>
+            <p>
+                <strong>Short project title:</strong> @Model.ProjectTitle
+            </p>
+        </div>
+    </div>
+    <div class="govuk-grid-column-one-third govuk-!-text-align-right">
+        <strong class="govuk-tag govuk-tag--blue">@Model.Status</strong>
+    </div>
+</div>
+
+<div class="govuk-service-navigation">
+    <div class="govuk-width-container">
+        <div class="govuk-service-navigation__container">
+            <nav class="govuk-service-navigation__wrapper">
+                <ul class="govuk-service-navigation__list">
+                    <li class="govuk-service-navigation__item small-margin @(active == ProjectOverview.ProjectDetails ? "govuk-service-navigation__item--active" : "")">
+                        <a class="govuk-service-navigation__link" asp-route="pov:projectdetails" asp-route-projectRecordId="@Model.ProjectRecordId">
+                            @ProjectOverview.ProjectDetails
+                        </a>
+                    </li>
+                    <li class="govuk-service-navigation__item small-margin @(active == ProjectOverview.ProjectDocuments ? "govuk-service-navigation__item--active" : "")">
+                        <a class="govuk-service-navigation__link" asp-route="pov:projectdocuments" asp-route-projectRecordId="@Model.ProjectRecordId">
+                            @ProjectOverview.ProjectDocuments
+                        </a>
+                    </li>
+                    <li class="govuk-service-navigation__item small-margin @(active == ProjectOverview.KeyProjectRoles ? "govuk-service-navigation__item--active" : "")">
+                        <a class="govuk-service-navigation__link" asp-route="pov:keyprojectroles" asp-route-projectRecordId="@Model.ProjectRecordId">
+                            @ProjectOverview.KeyProjectRoles
+                        </a>
+                    </li>
+                    <li class="govuk-service-navigation__item small-margin @(active == ProjectOverview.ResearchLocations ? "govuk-service-navigation__item--active" : "")">
+                        <a class="govuk-service-navigation__link" asp-route="pov:researchlocations" asp-route-projectRecordId="@Model.ProjectRecordId">
+                            @ProjectOverview.ResearchLocations
+                        </a>
+                    </li>
+                    <li class="govuk-service-navigation__item small-margin @(active == ProjectOverview.PostApproval ? "govuk-service-navigation__item--active" : "")">
+                        <a class="govuk-service-navigation__link" asp-route="pov:postapproval" asp-route-projectRecordId="@Model.ProjectRecordId">
+                            @ProjectOverview.PostApproval
+                        </a>
+                    </li>
+                    <li class="govuk-service-navigation__item small-margin @(active == ProjectOverview.ProjectHistory ? "govuk-service-navigation__item--active" : "")">
+                        <a class="govuk-service-navigation__link" asp-route="pov:projecthistory" asp-route-projectRecordId="@Model.ProjectRecordId">
+                            @ProjectOverview.ProjectHistory
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>

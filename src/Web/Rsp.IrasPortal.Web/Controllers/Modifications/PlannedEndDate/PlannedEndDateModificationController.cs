@@ -105,7 +105,7 @@ public partial class ProjectModificationController
         {
             (true, _) => "pmc:modificationchangesreview",
             (false, false) => "pmc:plannedenddateorganisationtype",
-            (false, true) => "app:projectoverview"
+            (false, true) => "pov:projectdetails"
         };
 
         // Add the new planned end date answer to the request
