@@ -1,5 +1,4 @@
-﻿using Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
-using Rsp.IrasPortal.Application.DTOs.Requests;
+﻿using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
@@ -104,13 +103,6 @@ public class ProjectModificationsService(IProjectModificationsServiceClient proj
     public async Task<ServiceResponse> CreateDocumentModification(List<ProjectModificationDocumentRequest> projectModificationDocumentRequest)
     {
         var apiResponse = await projectModificationsServiceClient.CreateModificationDocument(projectModificationDocumentRequest);
-
-        return apiResponse.ToServiceResponse();
-    }
-	
-    public async Task<ServiceResponse<StartingQuestionsModel>> GetInitialQuestions()
-    {
-        var apiResponse = await cmsQuestionsetClient.GetInitialModificationQuestions();
 
         return apiResponse.ToServiceResponse();
     }

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
@@ -1103,5 +1104,59 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
         redirectResult.ActionName.ShouldBe(nameof(QuestionnaireController.SubmitApplication));
         redirectResult.RouteValues!["projectRecordId"].ShouldBe(application.Id);
+    }
+
+    [Theory, AutoData]
+    public async Task Index_ShouldReturnView_WithValidQuestionSet(
+        string categoryId,
+        string sectionId,
+        string questionSetId)
+    {
+        // Arrange
+        var questionSetServiceResponse = new ServiceResponse<CmsQuestionSetResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new CmsQuestionSetResponse
+            {
+                Id = "123",
+                Version = "1.0",
+                Sections = new List<SectionModel>
+                {
+                    new SectionModel
+                    {
+                        SectionId = "section-1",
+                        Questions = new List<QuestionModel>
+                        {
+                            new QuestionModel
+                            {
+                                QuestionId = "Q1"
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        Mocker
+            .GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(questionSetServiceResponse);
+
+        var context = new DefaultHttpContext();
+
+        var tempData = new TempDataDictionary(context, Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.CurrentStage] = "currentStage"
+        };
+        Sut.TempData = tempData;
+
+        Sut.ControllerContext = new ControllerContext { HttpContext = context };
+
+        // Act
+        var result = await Sut.Index(It.IsAny<string>(), It.IsAny<string>(), false, It.IsAny<string>());
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.Model.ShouldBeOfType<QuestionnaireViewModel>();
     }
 }
