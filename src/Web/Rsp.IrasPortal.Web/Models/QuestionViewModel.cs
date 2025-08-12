@@ -24,6 +24,7 @@ public class QuestionViewModel
     public List<AnswerViewModel> Answers { get; set; } = [];
     public IList<RuleDto> Rules { get; set; } = [];
     public string ShortQuestionText { get; set; } = null!;
+    public bool IsModificationQuestion { get; set; }
     public IList<ContentComponent> GuidanceComponents { get; set; } = [];
 
     private string? _day, _month, _year;

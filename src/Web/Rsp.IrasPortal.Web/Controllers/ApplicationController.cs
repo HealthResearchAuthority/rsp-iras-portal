@@ -24,7 +24,6 @@ public class ApplicationController
     IValidator<IrasIdViewModel> irasIdValidator,
     IRespondentService respondentService,
     IQuestionSetService questionSetService,
-    IFeatureManager featureManager,
     ICmsQuestionSetServiceClient cmsSevice) : Controller
 {
     // ApplicationInfo view name
@@ -157,7 +156,7 @@ public class ApplicationController
         TempData[TempDataKeys.IrasId] = irasApplication.IrasId;
 
         // Redirect to the Questionnaire Resume action to continue the application process
-        return RedirectToAction(nameof(CmsQuestionSetController.Resume), "CmsQuestionSet", new
+        return RedirectToAction(nameof(QuestionnaireController.Resume), "Questionnaire", new
         {
             categoryId = categoryId,
             projectRecordId = irasApplication.Id
