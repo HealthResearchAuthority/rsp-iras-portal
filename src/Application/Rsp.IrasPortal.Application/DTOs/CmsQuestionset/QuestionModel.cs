@@ -3,6 +3,7 @@
 public class QuestionModel
 {
     public string? Name { get; set; }
+    public string? ShortName { get; set; }
 
     /// <summary>
     /// Auto generate Id by the CMS
