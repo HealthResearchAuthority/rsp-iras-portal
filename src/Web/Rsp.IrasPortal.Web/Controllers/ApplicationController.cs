@@ -159,15 +159,16 @@ public class ApplicationController
 
     public IActionResult CreateApplication() => View(nameof(CreateApplication));
 
-    public IActionResult DocumentUpload()
+    public IActionResult DocumentUpload(string projectRecordId)
     {
         TempData.TryGetValue<List<Document>>(TempDataKeys.UploadedDocuments, out var documents, true);
+        ViewBag.ProjectRecordId = projectRecordId;
 
         return View(documents);
     }
 
     [HttpPost]
-    public IActionResult Upload(IFormFileCollection formFiles)
+    public IActionResult Upload(IFormFileCollection formFiles, string projectRecordId)
     {
         List<Document> documents = [];
 
@@ -183,7 +184,7 @@ public class ApplicationController
 
         TempData.TryAdd(TempDataKeys.UploadedDocuments, documents, true);
 
-        return RedirectToAction(nameof(DocumentUpload));
+        return RedirectToAction(nameof(DocumentUpload), new { projectRecordId });
     }
 
     [HttpGet]
