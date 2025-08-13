@@ -1,9 +1,7 @@
-using System.Globalization;
 using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
@@ -232,78 +230,6 @@ public class ApplicationController
         return this.ServiceError(applicationServiceResponse);
     }
 
-    /// <summary>
-    /// Displays the project overview page. Shows a notification banner if a project modification change exists,
-    /// clears related TempData keys, and populates the ProjectOverviewModel with project details from TempData.
-    /// </summary>
-    /// <returns>The ProjectOverview view with the populated model.</returns>
-    public async Task<IActionResult> ProjectOverview(string? projectRecordId, string? categoryId)
-    {
-        // If there is a project modification change, show the notification banner
-        if (TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId) is not null)
-        {
-            TempData[TempDataKeys.ShowNotificationBanner] = true;
-        }
-
-        // Remove modification-related TempData keys to reset state
-        TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationId);
-        TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationIdentifier);
-        TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationChangeId);
-        TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationSpecificArea);
-        TempData.Remove(TempDataKeys.ProjectModification.AreaOfChangeId);
-        TempData.Remove(TempDataKeys.ProjectModification.SpecificAreaOfChangeId);
-        TempData.Remove(TempDataKeys.ProjectModificationPlannedEndDate.NewPlannedProjectEndDate);
-        TempData.Remove(TempDataKeys.ProjectModificationPlannedEndDate.AffectingOrganisationsType);
-        TempData.Remove(TempDataKeys.ProjectModificationPlannedEndDate.AffectedOrganisationsLocations);
-        TempData.Remove(TempDataKeys.ProjectModificationPlannedEndDate.AffectedAllOrSomeOrganisations);
-        TempData.Remove(TempDataKeys.ProjectModificationPlannedEndDate.AffectedOrganisationsRequireAdditionalResources);
-        TempData.Remove(TempDataKeys.ProjectModificationPlannedEndDate.ReviewChanges);
-        TempData.Remove(TempDataKeys.QuestionSetPublishedVersionId);
-
-        // Indicate that the project overview is being shown
-        TempData[TempDataKeys.ProjectOverview] = true;
-
-        if (projectRecordId is not null && categoryId is not null)
-        {
-            return await GetProjectOverview(projectRecordId, categoryId);
-        }
-
-        // Build the model using values from TempData, falling back to defaults if not present
-        var model = new ProjectOverviewModel
-        {
-            ProjectTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
-            CategoryId = QuestionCategories.ProjectRecrod, //TempData.Peek(TempDataKeys.CategoryId) as string ?? string.Empty,
-            ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty,
-            ProjectPlannedEndDate = TempData.Peek(TempDataKeys.PlannedProjectEndDate) as string ?? string.Empty
-        };
-
-        // Get all respondent answers for the project and category
-        var respondentAnswersResponse = await respondentService.GetRespondentAnswers(model.ProjectRecordId, model.CategoryId);
-
-        if (!respondentAnswersResponse.IsSuccessStatusCode)
-        {
-            return this.ServiceError(respondentAnswersResponse);
-        }
-
-        var answers = respondentAnswersResponse.Content;
-
-        if (answers == null)
-        {
-            // Return a 404 error view if no responses are found for the project record
-            return View("Error", new ProblemDetails()
-            {
-                Title = ReasonPhrases.GetReasonPhrase(StatusCodes.Status404NotFound),
-                Detail = "No responses found for the project record",
-                Status = StatusCodes.Status404NotFound,
-                Instance = Request.Path
-            });
-        }
-
-        TempData.TryAdd(TempDataKeys.ProjectRecordResponses, answers, true);
-
-        return View(model);
-    }
-
     public IActionResult ReviewAnswers()
     {
         return View(this.GetApplicationFromSession());
@@ -320,99 +246,5 @@ public class ApplicationController
     public IActionResult Error()
     {
         return View(new ProblemDetails());
-    }
-
-    /// <summary>
-    /// Retrieves and displays the project overview for a given project record and category.
-    /// Fetches the project record and respondent answers, populates TempData with key details,
-    /// and returns the ProjectOverview view with a populated model.
-    /// </summary>
-    /// <param name="projectRecordId">The unique identifier for the project record.</param>
-    /// <param name="categoryId">The unique identifier for the question category.</param>
-    /// <returns>
-    /// An <see cref="IActionResult"/> that renders the ProjectOverview view with the project details,
-    /// or an error view if the project record or answers are not found or a service error occurs.
-    /// </returns>
-    [NonAction]
-    public async Task<IActionResult> GetProjectOverview(string projectRecordId, string categoryId)
-    {
-        // Retrieve the project record by its ID
-        var projectRecordResponse = await applicationsService.GetProjectRecord(projectRecordId);
-
-        // If the service call failed, return a generic service error view
-        if (!projectRecordResponse.IsSuccessStatusCode)
-        {
-            return this.ServiceError(projectRecordResponse);
-        }
-
-        var projectRecord = projectRecordResponse.Content;
-
-        if (projectRecord == null)
-        {
-            // Return a 404 error view if the project record is not found
-            return View("Error", new ProblemDetails()
-            {
-                Title = ReasonPhrases.GetReasonPhrase(StatusCodes.Status404NotFound),
-                Detail = "Project record not found",
-                Status = StatusCodes.Status404NotFound,
-                Instance = Request.Path
-            });
-        }
-
-        // Get all respondent answers for the project and category
-        var respondentAnswersResponse = await respondentService.GetRespondentAnswers(projectRecordId, categoryId);
-
-        if (!respondentAnswersResponse.IsSuccessStatusCode)
-        {
-            return this.ServiceError(respondentAnswersResponse);
-        }
-
-        var answers = respondentAnswersResponse.Content;
-
-        if (answers == null)
-        {
-            // Return a 404 error view if no responses are found for the project record
-            return View("Error", new ProblemDetails()
-            {
-                Title = ReasonPhrases.GetReasonPhrase(StatusCodes.Status404NotFound),
-                Detail = "No responses found for the project record",
-                Status = StatusCodes.Status404NotFound,
-                Instance = Request.Path
-            });
-        }
-
-        TempData.TryAdd(TempDataKeys.ProjectRecordResponses, answers, true);
-
-        // Extract key answers from the respondent answers
-        var titleAnswer = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.ShortProjectTitle)?.AnswerText;
-        var endDateAnswer = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.ProjectPlannedEndDate)?.AnswerText;
-
-        // Populate TempData with project details
-        TempData[TempDataKeys.IrasId] = projectRecord.IrasId;
-        TempData[TempDataKeys.ProjectRecordId] = projectRecord.Id;
-
-        if (!string.IsNullOrWhiteSpace(titleAnswer))
-        {
-            TempData[TempDataKeys.ShortProjectTitle] = titleAnswer;
-        }
-
-        var ukCulture = new CultureInfo("en-GB");
-        if (DateTime.TryParse(endDateAnswer, ukCulture, DateTimeStyles.None, out var parsedDate))
-        {
-            TempData[TempDataKeys.PlannedProjectEndDate] = parsedDate.ToString("dd MMMM yyyy");
-        }
-
-        // Build the model using values from TempData, falling back to defaults if not present
-        var model = new ProjectOverviewModel
-        {
-            ProjectTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
-            CategoryId = QuestionCategories.ProjectRecrod,
-            ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty,
-            ProjectPlannedEndDate = TempData.Peek(TempDataKeys.PlannedProjectEndDate) as string ?? string.Empty,
-            IrasId = projectRecord.IrasId,
-            Status = projectRecord.Status
-        };
-
-        return View("ProjectOverview", model);
     }
 }

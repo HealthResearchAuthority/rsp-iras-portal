@@ -14,37 +14,39 @@
 <partial name="_NavigationHeaderPartial" model="@Model" />
 
 <div class="govuk-grid-row">
-    <h2 class="govuk-heading-m govuk-!-margin-top-4">Project Details</h2>
-    <dl class="govuk-summary-list">
-        <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">
-                IRAS ID
-            </dt>
-            <dd class="govuk-summary-list__value">
-                @Model.IrasId
-            </dd>
-        </div>
-        <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">
-                Short project title
-            </dt>
-            <dd class="govuk-summary-list__value">
-                @Model.ProjectTitle
-            </dd>
-        </div>
-        <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">
-                Full project title
-            </dt>
-            <dd class="govuk-summary-list__value">               
-            </dd>
-        </div>
-        <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">
-                REC name
-            </dt>
-            <dd class="govuk-summary-list__value">                
-            </dd>
-        </div>
-    </dl>
+    <div class="govuk-width-container govuk-!-margin-top-4">
+        <h2 class="govuk-heading-m">Project Details</h2>
+        <dl class="govuk-summary-list">
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    IRAS ID
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    @Model.IrasId
+                </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    Short project title
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    @Model.ProjectTitle
+                </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    Full project title
+                </dt>
+                <dd class="govuk-summary-list__value">               
+                </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    REC name
+                </dt>
+                <dd class="govuk-summary-list__value">                
+                </dd>
+            </div>
+        </dl>
+    </div>
 </div>

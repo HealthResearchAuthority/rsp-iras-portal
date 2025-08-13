@@ -71,7 +71,7 @@ public class SubmitOrganisationTypesTests : TestServiceBase<ProjectModificationC
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
-        redirect.RouteName.ShouldBe("app:projectoverview");
+        redirect.RouteName.ShouldBe("pov:projectdetails");
     }
 
     [Fact]
