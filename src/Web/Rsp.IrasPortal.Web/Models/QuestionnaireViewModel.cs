@@ -26,8 +26,6 @@ public class QuestionnaireViewModel
 
     public List<ContentComponent> GuidanceContent { get; set; } = [];
 
-    public List<ContentComponent> GuidanceContent { get; set; } = [];
-
     /// <summary>
     /// ViewModel for searching and selecting a sponsor organisation.
     /// </summary>
