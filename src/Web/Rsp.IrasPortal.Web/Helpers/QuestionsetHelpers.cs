@@ -17,17 +17,18 @@ public static class QuestionsetHelpers
                 .ThenBy(q => q.Sequence)
                 .Select((question, index) => (question, index));
 
+        var firstSection = response?.Sections?.FirstOrDefault();
+        var guidanceContent = firstSection?.GuidanceComponents?.ToList() ?? [];
+
         var questionnaire = new QuestionnaireViewModel
         {
-            GuidanceContent = response?.Sections?.FirstOrDefault()?.GuidanceComponents?.ToList() != null ?
-            response.Sections.FirstOrDefault().GuidanceComponents.ToList() :
-            []
+            GuidanceContent = guidanceContent
         };
 
         // build the questionnaire view model
         // we need to order the questions by section and sequence
         // and also need to assign the index to the question so the multiple choice
-        // answsers can be linked back to the question
+        // answers can be linked back to the question
         foreach (var (question, index) in questions)
         {
             questionnaire.Questions.Add(new QuestionViewModel
@@ -69,18 +70,18 @@ public static class QuestionsetHelpers
                 IsMandatory = (question.Conformance == "Mandatory"),
                 Heading = (i + 1).ToString(),
                 Sequence = i + 1,
-                Section = section.SectionName,
+                Section = section.SectionName ?? string.Empty,
                 SectionId = section.Id,
                 QuestionId = question.Id,
-                QuestionText = question.Name,
-                ShortQuestionText = question.ShortName,
-                DataType = question.AnswerDataType,
-                QuestionType = question.QuestionFormat,
-                Category = question.CategoryId,
+                QuestionText = question.Name ?? string.Empty,
+                ShortQuestionText = question.ShortName ?? string.Empty,
+                DataType = question.AnswerDataType ?? string.Empty,
+                QuestionType = question.QuestionFormat ?? string.Empty,
+                Category = question.CategoryId ?? string.Empty,
                 Answers = new List<AnswerDto>(),
                 Rules = new List<RuleDto>(),
                 GuidanceComponents = question.GuidanceComponents,
-                VersionId = question.Version
+                VersionId = question.Version ?? string.Empty
             };
 
             if (question.Answers != null && question.Answers.Any())
@@ -89,8 +90,8 @@ public static class QuestionsetHelpers
                 {
                     questionTransformed.Answers.Add(new AnswerDto
                     {
-                        AnswerId = answer.Id,
-                        AnswerText = answer.OptionName
+                        AnswerId = answer.Id ?? string.Empty,
+                        AnswerText = answer.OptionName ?? string.Empty,
                     });
                 }
             }
