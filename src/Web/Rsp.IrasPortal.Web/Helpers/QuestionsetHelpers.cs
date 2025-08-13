@@ -73,6 +73,7 @@ public static class QuestionsetHelpers
                 SectionId = section.Id,
                 QuestionId = question.Id,
                 QuestionText = question.Name,
+                ShortQuestionText = question.ShortName,
                 DataType = question.AnswerDataType,
                 QuestionType = question.QuestionFormat,
                 Category = question.CategoryId,
