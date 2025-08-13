@@ -93,10 +93,8 @@ public class ReviewBodyController(
             Search = model.Search
         };
 
-
         return View(reviewBodySearchViewModel);
     }
-
 
     /// <summary>
     ///     Displays a single review body

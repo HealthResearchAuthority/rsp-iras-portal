@@ -1,5 +1,49 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@using Rsp.IrasPortal.Application.Constants;
+@model ProjectOverviewModel
+
 @{
+    ViewBag.Title = "Project overview";
+    ViewBag.Active = ProjectOverview.ResearchLocations;
 }
+
+@section BackNavigation {
+    <partial name="_BackNavigation" model="@("app:Welcome","Back", new Dictionary<string, string>())" />
+}
+
+<partial name="_NavigationHeaderPartial" model="@Model" />
+
+<div class="govuk-grid-row">
+    <h2 class="govuk-heading-m govuk-!-margin-top-4">Key Project Roles</h2>
+    <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">
+                Participating nations
+            </dt>
+            @if (Model.ParticipatingNations is { Count: > 0 })
+            {
+                <dd class="govuk-summary-list__value">
+                    @foreach (var nation in Model.ParticipatingNations)
+                    {
+                        @nation<br/>
+                    }
+                </dd>
+            }
+        </div>
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">
+                NHS / HSC organisations
+            </dt>
+            <dd class="govuk-summary-list__value">
+                @Model.NhsOrHscOrganisations
+            </dd>
+        </div>
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">
+                Lead nation
+            </dt>
+            <dd class="govuk-summary-list__value">
+                @Model.LeadNation
+            </dd>
+        </div>
+    </dl>
+</div>

@@ -157,6 +157,7 @@ public partial class ProjectModificationController
         var viewModel = new AreaOfChangeViewModel
         {
             PageTitle = SelectAreaOfChange,
+            ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty,
             ShortTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
             IrasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty,
             ModificationIdentifier = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string ?? string.Empty,
@@ -317,6 +318,11 @@ public partial class ProjectModificationController
         {
             // Return a service error view if saving fails
             return this.ServiceError(saveModificationAnswersResponse);
+        }
+
+        if (routeName == "pov:projectdetails")
+        {
+            return RedirectToRoute(routeName, new { projectRecordId });
         }
 
         return RedirectToRoute(routeName);

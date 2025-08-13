@@ -384,7 +384,7 @@
 	@{
 		ViewBag.Style = "govuk-button govuk-button--secondary";
 	}
-	<partial name="_SubmitButton" model="@("pov:projectdetails", "Save for later", new Dictionary<string, string> { })" />
+    <partial name="_SubmitButton" model="@("pov:projectdetails", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId })" />
 </div>
 
 <p class="govuk-!-margin-top-4">
