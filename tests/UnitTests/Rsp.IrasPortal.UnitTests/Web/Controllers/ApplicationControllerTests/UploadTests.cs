@@ -14,6 +14,7 @@ public class UploadTests : TestServiceBase<ApplicationController>
     public void Upload_WithValidFiles_AddsDocumentsToTempDataAndRedirects()
     {
         // Arrange
+        var projectRecordId = "123";
         var formFiles = new FormFileCollection();
         var file1 = new Mock<IFormFile>();
         file1
@@ -41,7 +42,7 @@ public class UploadTests : TestServiceBase<ApplicationController>
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
 
         // Act
-        var result = Sut.Upload(formFiles);
+        var result = Sut.Upload(formFiles, projectRecordId);
 
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
@@ -74,12 +75,13 @@ public class UploadTests : TestServiceBase<ApplicationController>
     public void Upload_WithNoFiles_RedirectsWithoutAddingToTempData()
     {
         // Arrange
+        var projectRecordId = "123";
         var formFiles = new FormFileCollection();
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
 
         // Act
-        var result = Sut.Upload(formFiles);
+        var result = Sut.Upload(formFiles, projectRecordId);
 
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();

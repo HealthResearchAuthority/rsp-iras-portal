@@ -14,6 +14,7 @@ public class DocumentUploadTests : TestServiceBase<ApplicationController>
     public void DocumentUpload_WithDocumentsInTempData_ReturnsViewWithDocuments()
     {
         // Arrange
+        var projectRecordId = "123";
         var documents = new List<Document>
         {
             new() { Name = "doc1.pdf", Size = 1024, Type = ".pdf" },
@@ -26,7 +27,7 @@ public class DocumentUploadTests : TestServiceBase<ApplicationController>
         };
 
         // Act
-        var result = Sut.DocumentUpload();
+        var result = Sut.DocumentUpload(projectRecordId);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -38,13 +39,14 @@ public class DocumentUploadTests : TestServiceBase<ApplicationController>
     public void DocumentUpload_WithoutDocumentsInTempData_ReturnsViewWithNullModel()
     {
         // Arrange
+        var projectRecordId = "123";
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
             [TempDataKeys.UploadedDocuments] = null
         };
 
         // Act
-        var result = Sut.DocumentUpload();
+        var result = Sut.DocumentUpload(projectRecordId);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();

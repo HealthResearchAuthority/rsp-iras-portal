@@ -176,8 +176,8 @@ public class ConfirmProjectDetaisTests : TestServiceBase<QuestionnaireController
 
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
-        redirectResult.ActionName.ShouldBe("ProjectOverview");
-        redirectResult.ControllerName.ShouldBe("Application");
+        redirectResult.ActionName.ShouldBe("ProjectDetails");
+        redirectResult.ControllerName.ShouldBe("ProjectOverview");
     }
 
     [Theory]

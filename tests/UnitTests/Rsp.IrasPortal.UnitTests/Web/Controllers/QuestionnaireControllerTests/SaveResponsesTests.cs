@@ -12,6 +12,7 @@ using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Controllers;
+using Rsp.IrasPortal.Web.Controllers.ProjectOverview;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.QuestionnaireControllerTests;
@@ -412,7 +413,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
 
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
-        redirectResult.ActionName.ShouldBe(nameof(ApplicationController.ProjectOverview));
+        redirectResult.ActionName.ShouldBe(nameof(ProjectOverviewController.ProjectDetails));
 
         Mocker
            .GetMock<IRespondentService>()
