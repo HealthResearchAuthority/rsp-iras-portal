@@ -30,9 +30,4 @@
     <ItemGroup>
         <ProjectReference Include="..\..\Application\Rsp.IrasPortal.Application\Rsp.IrasPortal.Application.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Models\CmsContent\" />
-    </ItemGroup>
-
 </Project>
