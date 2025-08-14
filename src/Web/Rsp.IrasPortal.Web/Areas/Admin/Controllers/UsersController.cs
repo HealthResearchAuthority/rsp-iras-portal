@@ -192,27 +192,7 @@ public class UsersController(
     {
         ViewBag.Mode = string.IsNullOrEmpty(model.Id) ? CreateMode : EditMode;
 
-        if (model.UserRoles.Any(r =>
-                r.Name.Equals(TeamManagerRole, StringComparison.OrdinalIgnoreCase) && !r.IsSelected))
-        {
-            model.Country = [];
-        }
-
-        // Is either role selected?
-        var hasEitherRoleSelected = model.UserRoles.Any(r =>
-            (r.Name.Equals(StudyWideReviewerRole, StringComparison.OrdinalIgnoreCase) ||
-             r.Name.Equals(WorkflowCoordinatorRole, StringComparison.OrdinalIgnoreCase))
-            && r.IsSelected
-        );
-
-        // If neither role is selected and any review bodies are selected, clear them
-        if (!hasEitherRoleSelected && (model.ReviewBodies?.Any(rb => rb.IsSelected) == true))
-        {
-            foreach (var rb in model.ReviewBodies)
-            {
-                rb.IsSelected = false;
-            }
-        }
+        ValidateUserViewModel(model);
 
         var context = new ValidationContext<UserViewModel>(model);
         var validationResult = await validator.ValidateAsync(context);
@@ -240,6 +220,31 @@ public class UsersController(
         }
 
         return View(ConfirmUser, model);
+    }
+
+    private static void ValidateUserViewModel(UserViewModel model)
+    {
+        if (model.UserRoles.Any(r =>
+                r.Name.Equals(TeamManagerRole, StringComparison.OrdinalIgnoreCase) && !r.IsSelected))
+        {
+            model.Country = [];
+        }
+
+        // Is either role selected?
+        var hasEitherRoleSelected = model.UserRoles.Any(r =>
+            (r.Name.Equals(StudyWideReviewerRole, StringComparison.OrdinalIgnoreCase) ||
+             r.Name.Equals(WorkflowCoordinatorRole, StringComparison.OrdinalIgnoreCase))
+            && r.IsSelected
+        );
+
+        // If neither role is selected and any review bodies are selected, clear them
+        if (!hasEitherRoleSelected && (model.ReviewBodies?.Any(rb => rb.IsSelected) == true))
+        {
+            foreach (var rb in model.ReviewBodies)
+            {
+                rb.IsSelected = false;
+            }
+        }
     }
 
     [HttpGet]
@@ -280,27 +285,7 @@ public class UsersController(
         var mode = string.IsNullOrEmpty(model.Id) ? CreateMode : EditMode;
         ViewBag.Mode = mode;
 
-        if (model.UserRoles.Any(r =>
-                r.Name.Equals(TeamManagerRole, StringComparison.OrdinalIgnoreCase) && !r.IsSelected))
-        {
-            model.Country = [];
-        }
-
-        // Is either role selected?
-        var hasEitherRoleSelected = model.UserRoles.Any(r =>
-            (r.Name.Equals(StudyWideReviewerRole, StringComparison.OrdinalIgnoreCase) ||
-             r.Name.Equals(WorkflowCoordinatorRole, StringComparison.OrdinalIgnoreCase))
-            && r.IsSelected
-        );
-
-        // If neither role is selected and any review bodies are selected, clear them
-        if (!hasEitherRoleSelected && (model.ReviewBodies?.Any(rb => rb.IsSelected) == true))
-        {
-            foreach (var rb in model.ReviewBodies)
-            {
-                rb.IsSelected = false;
-            }
-        }
+        ValidateUserViewModel(model);
 
         var context = new ValidationContext<UserViewModel>(model);
         var validationResult = await validator.ValidateAsync(context);
