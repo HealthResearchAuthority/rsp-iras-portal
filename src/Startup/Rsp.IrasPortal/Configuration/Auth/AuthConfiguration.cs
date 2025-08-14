@@ -21,7 +21,7 @@ public static class AuthConfiguration
         public const string systemAdministrator = "system_administrator";
         public const string applicant = nameof(applicant);
         public const string reviewer = nameof(reviewer);
-        public const string studyWideReviewer = "study_wide_reviewer";
+        public const string studyWideReviewer = "study-wide_reviewer";
         public const string teamManager = "team_manager";
         public const string workflowCoordinator = "workflow_co-ordinator";
     };

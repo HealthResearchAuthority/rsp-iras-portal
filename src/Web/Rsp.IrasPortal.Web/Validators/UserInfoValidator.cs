@@ -16,8 +16,10 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
     private const string FamilyNameMandatoryErrorMessage = "Enter a last name";
     private const string EmailFormatErrorMessage = "Enter an email address in the correct format";
     private const string ConditionalCountryMandatoryErrorMessage = "You must provide a country";
-    private const string ConditionalAccessRequiredMandatoryErrorMessage = "You must provide the access required";
-    private const string OperationsRole = "operations";
+    private const string ConditionalReviewBodyMandatoryErrorMessage = "Enter a review body to continue";
+    private const string TeamManagerRole = "team_manager";
+    private const string StudyWideReviewerRole = "study-wide_reviewer";
+    private const string WorkflowCoordinatorRole = "workflow_co-ordinator";
     private const string EmailMaxCharactersErrorMessage = "Email address must be 254 characters or less";
     private const string EmailMandatoryErrorMessage = "Enter an email address";
 
@@ -65,11 +67,15 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
         RuleFor(x => x.Country)
             .NotEmpty()
             .WithMessage(ConditionalCountryMandatoryErrorMessage)
-            .When(x => x.UserRoles != null && x.UserRoles.Any(role => role.Name == OperationsRole && role.IsSelected));
+            .When(x => x.UserRoles.Any(role => role is { Name: TeamManagerRole, IsSelected: true }));
 
-        RuleFor(x => x.AccessRequired)
-            .NotEmpty()
-            .WithMessage(ConditionalAccessRequiredMandatoryErrorMessage)
-            .When(x => x.UserRoles != null && x.UserRoles.Any(role => role.Name == OperationsRole && role.IsSelected));
+        RuleFor(x => x.ReviewBodies)
+            .Must(rbs => rbs != null && rbs.Any(rb => rb.IsSelected))
+            .WithMessage(ConditionalReviewBodyMandatoryErrorMessage)
+            .When(x => x.UserRoles.Any(role =>
+                role.IsSelected &&
+                (string.Equals(role.Name, StudyWideReviewerRole, StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(role.Name, WorkflowCoordinatorRole, StringComparison.OrdinalIgnoreCase))
+            ));
     }
 }

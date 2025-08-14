@@ -15,6 +15,8 @@ public interface IReviewBodyService : IInterceptable
 {
     Task<ServiceResponse<AllReviewBodiesResponse>> GetAllReviewBodies(ReviewBodySearchRequest? searchQuery = null, int pageNumber = 1, int pageSize = 20, string? sortField = nameof(ReviewBodyDto.RegulatoryBodyName), string? sortDirection = SortDirections.Ascending);
 
+    Task<ServiceResponse<AllReviewBodiesResponse>> GetAllActiveReviewBodies(string? sortField = nameof(ReviewBodyDto.RegulatoryBodyName), string? sortDirection = SortDirections.Ascending);
+
     Task<ServiceResponse<ReviewBodyDto>> GetReviewBodyById(Guid id);
 
     Task<ServiceResponse<ReviewBodyDto>> CreateReviewBody(ReviewBodyDto reviewBodyDto);
@@ -30,4 +32,6 @@ public interface IReviewBodyService : IInterceptable
     Task<ServiceResponse<ReviewBodyUserDto>> AddUserToReviewBody(ReviewBodyUserDto reviewBodyUser);
 
     Task<ServiceResponse<ReviewBodyUserDto>> RemoveUserFromReviewBody(Guid reviewBodyId, Guid userId);
+
+    Task<ServiceResponse<List<ReviewBodyUserDto>>> GetUserReviewBodies(Guid userId);
 }

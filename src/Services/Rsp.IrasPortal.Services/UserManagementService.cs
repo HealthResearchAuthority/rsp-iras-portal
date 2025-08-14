@@ -134,61 +134,6 @@ public class UserManagementService(IUserManagementServiceClient client) : IUserM
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse> UpdateUserAccess(string userEmail, IEnumerable<string> accessRequired)
-    {
-        // Get all user claims
-        var allUserClaims = await client.GetUserClaims(null, userEmail);
-
-        var currentAccessClaims = allUserClaims.Content?
-            .Where(x => x.Type == UserClaimTypes.AccessRequired)
-            .Select(x => x.Value)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase) ?? new HashSet<string>();
-
-        var desiredAccessClaims = accessRequired?.ToHashSet(StringComparer.OrdinalIgnoreCase) ?? new HashSet<string>();
-
-        // Determine claims to remove (present now but not required)
-        var claimsToRemove = currentAccessClaims.Except(desiredAccessClaims).ToList();
-
-        // Determine claims to add (required but not currently present)
-        var claimsToAdd = desiredAccessClaims.Except(currentAccessClaims).ToList();
-
-        // Remove only claims that are not required anymore
-        if (claimsToRemove.Any())
-        {
-            var deleteClaimsRequest = new UserClaimsRequest
-            {
-                Email = userEmail,
-                Claims = claimsToRemove
-                    .Select(value => new KeyValuePair<string, string>(UserClaimTypes.AccessRequired, value))
-                    .ToList()
-            };
-
-            await client.RemoveUserClaims(deleteClaimsRequest);
-        }
-
-        // Add only new claims that the user doesn't already have
-        if (claimsToAdd.Any())
-        {
-            var addClaimsRequest = new UserClaimsRequest
-            {
-                Email = userEmail,
-                Claims = claimsToAdd
-                    .Select(value => new KeyValuePair<string, string>(UserClaimTypes.AccessRequired, value))
-                    .ToList()
-            };
-
-            var apiResponse = await client.AddUserClaims(addClaimsRequest);
-            return apiResponse.ToServiceResponse();
-        }
-
-        // No changes needed
-        return new ServiceResponse
-        {
-            ReasonPhrase = "No changes needed",
-            StatusCode = HttpStatusCode.OK
-        };
-    }
-
     public async Task<ServiceResponse> UpdateLastLogin(string email)
     {
         var getUserResponse = await GetUser(null, email);

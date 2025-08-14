@@ -4,35 +4,35 @@
 // for details on configuring this project to bundle and minify static web assets.
 $(function () {
     function toggleConditionalField() {
-        let showConditionalFields = false;
+        // Hide all conditional fields first
+        $(".conditional-field").hide();
 
-        // get all the checked checkboxes with name starting with UserRoles
+        // Get selected roles in lowercase
+        let selectedRoles = [];
         $("input:checked[name^='UserRoles']").each(function () {
-            // get the label for the checkbox
-            const label = $("label[for='" + $(this).attr('id') + "']");
-
-            // check if the label text is 'Operations'
-            if (label.text().toLowerCase() === 'operations') {
-                $(".conditional-field").show();
-                showConditionalFields = true;
-                return false;
-            }
+            const labelText = $("label[for='" + $(this).attr('id') + "']").text().trim().toLowerCase();
+            selectedRoles.push(labelText);
         });
 
-        // if no checkbox with label 'Operations' is checked, hide the conditional field
-        if (!showConditionalFields) {
-            $(".conditional-field").hide();
-        }
+        // Show any conditional field where data-role contains one of the selected roles
+        $(".conditional-field").each(function () {
+            const rolesAttr = $(this).data("role"); // already lowercase in HTML
+            if (!rolesAttr) return;
+
+            const rolesList = rolesAttr.split(",").map(r => r.trim());
+            if (rolesList.some(r => selectedRoles.includes(r))) {
+                $(this).show();
+            }
+        });
     }
 
-    // Initial check on page load
+    // Run on page load
     toggleConditionalField();
 
-    // Bind change event to all checkboxes with name starting with UserRoles
-    $("input[type='checkbox'][name^='UserRoles']").on('change', function () {
-        toggleConditionalField();
-    });
+    // Run on change
+    $("input[type='checkbox'][name^='UserRoles']").on('change', toggleConditionalField);
 });
+
 
 function submitFormWithAction(formId, url) {
     let form = document.getElementById(formId);
