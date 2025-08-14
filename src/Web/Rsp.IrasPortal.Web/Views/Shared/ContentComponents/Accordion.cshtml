@@ -1,0 +1,24 @@
+﻿@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
+@model AccordionProperties
+
+@if (Model != null)
+{
+	<div class="govuk-accordion" data-module="govuk-accordion" id="accordion-default">
+		@foreach (var accordionItem in Model.Items.Items)
+		{
+			<div class="govuk-accordion__section">
+				<div class="govuk-accordion__section-header">
+					<h2 class="govuk-accordion__section-heading">
+						<span class="govuk-accordion__section-button" id="accordion-default-heading-1">
+							@accordionItem.Content.Properties.Title
+						</span>
+					</h2>
+				</div>
+				<div id="accordion-default-content-1" class="govuk-accordion__section-content">
+					<p class="govuk-body">@Html.Raw(accordionItem.Content.Properties.Value)</p>
+				</div>
+			</div>
+		}
+	</div>
+}
+
