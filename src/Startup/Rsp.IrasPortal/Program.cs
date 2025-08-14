@@ -208,6 +208,9 @@ app
         {
             endpoints.MapHealthChecks("/probes/liveness");
             endpoints.MapControllers();
+
+            // Fallback route for CMS content
+            endpoints.MapFallbackToController("Index", "CmsContent");
         }
 );
 
