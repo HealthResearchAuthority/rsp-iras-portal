@@ -123,9 +123,20 @@ public class CustomClaimsTransformation
             return;
         }
 
-        context.Items.TryGetValue(ContextItemKeys.BearerToken, out var bearerToken);
+        var oneLoginEnabled = await featureManager.IsEnabledAsync(Features.OneLogin);
 
-        if (string.IsNullOrWhiteSpace(bearerToken as string))
+        //var bearerToken = await context.GetTokenAsync(CookieAuthenticationDefaults.AuthenticationScheme, ContextItemKeys.IdToken);
+
+        object? idToken = null;
+        object? accessToken = null;
+
+        _ = oneLoginEnabled ?
+                context.Items.TryGetValue(ContextItemKeys.IdToken, out idToken) :
+                context.Items.TryGetValue(ContextItemKeys.AcessToken, out accessToken);
+
+        var bearerToken = (idToken ?? accessToken) as string;
+
+        if (string.IsNullOrWhiteSpace(bearerToken))
         {
             return;
         }
@@ -135,15 +146,13 @@ public class CustomClaimsTransformation
         // get the original access token
         var jsonToken = handler.ReadJwtToken(bearerToken as string);
 
-        // configure the new token using the existing
-        // bearer_token properties but with newly added
-        // claims.
-
-        var oneLoginEnabled = await featureManager.IsEnabledAsync(Features.OneLogin);
-
         var audience = oneLoginEnabled ?
                                 appSettings.Value.OneLogin.ClientId :
                                 appSettings.Value.AuthSettings.ClientId;
+
+        // configure the new token using the existing
+        // bearer_token properties but with newly added
+        // claims.
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {

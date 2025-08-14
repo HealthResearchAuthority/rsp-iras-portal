@@ -58,7 +58,7 @@ public static class AuthConfiguration
                         {
                             // save the original access_token in the memory, this will be needed
                             // to regenerate the JwtToken with additional claims
-                            context.HttpContext.Items[ContextItemKeys.BearerToken] = context.Properties.GetTokenValue(ContextItemKeys.AcessToken);
+                            context.HttpContext.Items[ContextItemKeys.AcessToken] = context.Properties.GetTokenValue(ContextItemKeys.AcessToken);
 
                             return Task.CompletedTask;
                         },
@@ -98,6 +98,8 @@ public static class AuthConfiguration
 
                     options.Events.OnTokenValidated = context =>
                     {
+                        //context.HttpContext.Items[ContextItemKeys.AcessToken] = context.SecurityToken.RawData;
+
                         // this key is used to indicate that the user is logged in for the first time
                         // will be used to update the LastLogin during the claims transformation
                         // to indicate when the user was logged in last time.
@@ -145,7 +147,7 @@ public static class AuthConfiguration
                     {
                         // save the original access_token in the memory, this will be needed
                         // to regenerate the JwtToken with additional claims
-                        context.HttpContext.Items[ContextItemKeys.BearerToken] = context.Properties.GetTokenValue(ContextItemKeys.IdToken);
+                        context.HttpContext.Items[ContextItemKeys.IdToken] = context.Properties.GetTokenValue(ContextItemKeys.IdToken);
 
                         return Task.CompletedTask;
                     },
@@ -159,7 +161,7 @@ public static class AuthConfiguration
 
                 options.LoginPath = "/";
                 options.LogoutPath = "/";
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(appSettings.OneLogin.AuthCookieTimeout);
+                options.ExpireTimeSpan = TimeSpan.FromSeconds(appSettings.OneLogin.AuthCookieTimeout);
                 options.SlidingExpiration = true;
                 options.AccessDeniedPath = "/Forbidden";
             })
@@ -207,9 +209,11 @@ public static class AuthConfiguration
                             new Claim("sub", appSettings.OneLogin.ClientId),
                             new Claim(ClaimTypes.Role, "iras_portal_user"),
                         ],
-                        expires: DateTime.UtcNow.AddMinutes(5),
+                        expires: DateTime.UtcNow.AddSeconds(appSettings.OneLogin.AuthCookieTimeout),
                         signingCredentials: signingCredentials
                     );
+
+                    context.HttpContext.Items[ContextItemKeys.IdToken] = jwt.RawData;
 
                     // Set the client assertion on the token request.
                     var clientAssertion = tokenHandler.WriteToken(jwt);
@@ -221,6 +225,9 @@ public static class AuthConfiguration
 
                 options.Events.OnTokenValidated = context =>
                 {
+                    // original token returned from Gov UK One Login
+                    //context.HttpContext.Items[ContextItemKeys.IdToken] = context.SecurityToken.RawData;
+
                     // this key is used to indicate that the user is logged in for the first time
                     // will be used to update the LastLogin during the claims transformation
                     // to indicate when the user was logged in last time.
