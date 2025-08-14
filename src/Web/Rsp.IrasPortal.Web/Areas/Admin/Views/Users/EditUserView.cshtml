@@ -65,41 +65,26 @@
                                     item-hidden-properties="Id,Name"
 									legend-class="govuk-label govuk-label--s" />
 
-
-            <rsp-gds-select
-                asp-for="Committee"
-                label-text="Committee"
-                options="ViewBag.DefaultOptions"
-                include-default-option="true"
-                default-option-text="Please select..."
-                conditional-field="true"
-                class="role-list-dropdown govuk-!-width-three-quarters">
-            </rsp-gds-select>
-
-
             <rsp-gds-checkbox-group asp-for="Country"
                                     label-text="Country"
                                     options="UkCountryNames.Countries"
                                     label-css-class="role-checkbox"
                                     conditional-field="true"
-									legend-class="govuk-label govuk-label--s" />
+                                    data-role="team manager"
+                                    legend-class="govuk-label govuk-label--s">
+            </rsp-gds-checkbox-group>
 
-            <rsp-gds-checkbox-group asp-for="AccessRequired"
-                                    label-text="Access required"
-                                    options="AccessRequiredOptions.Options"
-                                    conditional-field="true"
-									legend-class="govuk-label govuk-label--s" />
-
-            <rsp-gds-select
-                asp-for="ReviewBody"
+            <rsp-gds-checkbox-group
+                asp-for="ReviewBodies"
                 label-text="Review body"
-                options="ViewBag.DefaultOptions"
-                include-default-option="true"
-                default-option-text="Please select..."
+                item-label-property="RegulatoryBodyName"
+                item-value-property="IsSelected"
+                item-hidden-properties="Id,RegulatoryBodyName"
                 conditional-field="true"
-                class="role-list-dropdown govuk-!-width-three-quarters">
-            </rsp-gds-select>
-
+                class="conditional-field"
+                data-role="study-wide reviewer, workflow co-ordinator"
+                legend-class="govuk-label govuk-label--s">
+            </rsp-gds-checkbox-group>
 
             <partial name="_SubmitButton" model="@(submitActionName, buttonText, new Dictionary<string, string>())"/>
             @{

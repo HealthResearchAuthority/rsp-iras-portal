@@ -12,7 +12,7 @@ using Rsp.IrasPortal.Web.Models;
 namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "approvals:[action]")]
-[Authorize(Roles = "system_administrator,workflow_co-ordinator,team_manager,study_wide_reviewer")]
+[Authorize(Roles = "system_administrator,workflow_co-ordinator,team_manager,study-wide_reviewer")]
 public class ApprovalsController
 (
     IApplicationsService applicationsService,

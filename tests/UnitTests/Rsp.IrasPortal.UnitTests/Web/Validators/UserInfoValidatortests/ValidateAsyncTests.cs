@@ -66,14 +66,14 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
     }
 
     [Fact]
-    public async Task ShouldHaveValidationErrorForCountryWhenRoleOperationsIsSelected()
+    public async Task ShouldHaveValidationErrorForCountryWhenRoleTeamManagerIsSelected()
     {
         // Arrange
         var model = new UserViewModel
         {
             UserRoles = [ new()
             {
-                 Name = "operations",
+                 Name = "team_manager",
                  IsSelected = true
             }],
             Country = null!
@@ -89,7 +89,7 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
     }
 
     [Fact]
-    public async Task ShouldHaveValidationErrorForCountryWhenRoleOperationsIsNotSelected()
+    public async Task ShouldHaveValidationErrorForCountryWhenRoleTeamManagerIsNotSelected()
     {
         // Arrange
         var model = new UserViewModel
@@ -97,7 +97,7 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
             UserRoles =
             [ new()
                 {
-                    Name = "admin"
+                    Name = "team_manager",
                 }
             ],
             Country = null!
@@ -214,4 +214,93 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
         // Assert
         result.ShouldHaveValidationErrorFor(x => x.Email);
     }
+
+    [Fact]
+    public async Task ShouldHaveValidationErrorForReviewBodies_When_StudyWideReviewer_Selected_And_NoneChosen()
+    {
+        // Arrange
+        var model = new UserViewModel
+        {
+            UserRoles =
+            [
+                new() { Name = "study-wide_reviewer", IsSelected = true }
+            ],
+            ReviewBodies = [] // none selected
+        };
+
+        // Act
+        var result = await Sut.TestValidateAsync(model);
+
+        // Assert
+        result
+            .ShouldHaveValidationErrorFor(x => x.ReviewBodies)
+            .WithErrorMessage("Enter a review body to continue");
+    }
+
+    [Fact]
+    public async Task ShouldHaveValidationErrorForReviewBodies_When_WorkflowCoordinator_Selected_And_NoneChosen()
+    {
+        // Arrange
+        var model = new UserViewModel
+        {
+            UserRoles =
+            [
+                new() { Name = "workflow_co-ordinator", IsSelected = true }
+            ],
+            ReviewBodies = [] // none selected
+        };
+
+        // Act
+        var result = await Sut.TestValidateAsync(model);
+
+        // Assert
+        result
+            .ShouldHaveValidationErrorFor(x => x.ReviewBodies)
+            .WithErrorMessage("Enter a review body to continue");
+    }
+
+    [Fact]
+    public async Task ShouldNotHaveValidationErrorForReviewBodies_When_RelevantRole_Selected_And_AtLeastOneChosen()
+    {
+        // Arrange
+        var model = new UserViewModel
+        {
+            UserRoles =
+            [
+                new() { Name = "study-wide_reviewer", IsSelected = true }
+            ],
+            ReviewBodies =
+            [
+                new() { IsSelected = false },
+            new() { IsSelected = true } // at least one selected
+            ]
+        };
+
+        // Act
+        var result = await Sut.TestValidateAsync(model);
+
+        // Assert
+        result.ShouldNotHaveValidationErrorFor(x => x.ReviewBodies);
+    }
+
+    [Fact]
+    public async Task ShouldNotHaveValidationErrorForReviewBodies_When_No_Relevant_Role_Selected()
+    {
+        // Arrange
+        var model = new UserViewModel
+        {
+            UserRoles =
+            [
+                new() { Name = "team_manager", IsSelected = true } // not one of the conditional roles
+            ],
+            ReviewBodies = [] // shouldn’t matter if none chosen
+        };
+
+        // Act
+        var result = await Sut.TestValidateAsync(model);
+
+        // Assert
+        result.ShouldNotHaveValidationErrorFor(x => x.ReviewBodies);
+    }
+
 }
