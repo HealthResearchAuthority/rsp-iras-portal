@@ -46,13 +46,13 @@
 		<h2 class="govuk-heading-xl" id="title">Modifications ready to assign</h2>
 		<p class="govuk-body">
 			This page shows all the modifications that are ready for you to assign, where the lead nation is England.
-		</p>
-		<p class="govuk-body">
-			Enter the IRAS ID to search for all modifications received, including those submitted for notification only
-		</p>
+		</p>		
 
 		@if (!Model.EmptySearchPerformed || (Model.Modifications != null && Model.Modifications.Any()))
 		{
+            <p class="govuk-body">
+			Enter the IRAS ID to search for all modifications received, including those submitted for notification only
+		    </p>
 			<form asp-route="tasklist:applyfilters" method="post" class="govuk-form-group govuk-!-margin-bottom-0">
 				<div class="search-flex-container">
 					<span id="iras-id-label" class="govuk-visually-hidden">IRAS ID</span>
@@ -222,7 +222,7 @@
 		<div class="govuk-grid-row">
 			<div class="govuk-grid-column-two-thirds">
 				<h2 class="govuk-heading-l">No modifications to assign</h2>
-				<p class="govuk-body">This may be because:</p>
+				<p class="govuk-body mb-0">This may be because:</p>
 				<ul class="govuk-list govuk-list--bullet">
 					<li>you have already assigned all of the modifications</li>
 					<li>there are no new modifications that have been submitted that need to be assigned</li>
