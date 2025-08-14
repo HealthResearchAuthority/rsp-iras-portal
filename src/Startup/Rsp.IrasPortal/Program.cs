@@ -229,7 +229,11 @@ app
             endpoints.MapControllers();
 
             // Fallback route for CMS content
-            endpoints.MapFallbackToController("Index", "CmsContent");
+            endpoints.MapControllerRoute(
+                name: "cms",
+                pattern: "pages/{*slug}",
+                defaults: new { controller = "CmsContent", action = "Index" }
+            );
         }
 );
 
