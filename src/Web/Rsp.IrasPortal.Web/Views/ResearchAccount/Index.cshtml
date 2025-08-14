@@ -6,9 +6,8 @@
 
 <authorized auth-params="@new(ShowWhenAuthenticated: false)">
     <div class="govuk-body">
-        <p>
-            To make changes to an approved project, Sign In using the following link
-        </p>
+
+		@await Component.InvokeAsync("LoginLandingPage")
 
         <a class="gem-c-button govuk-button govuk-button--start" asp-route="auth:signin">
             Sign In
