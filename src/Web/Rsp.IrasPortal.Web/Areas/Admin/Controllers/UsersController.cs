@@ -818,7 +818,7 @@ public class UsersController(
                 .Select(x => x.Id) // FK to ReviewBody
                 .ToHashSet();
 
-            var currentlySelectedIds = (userReviewBodyViewModels ?? Enumerable.Empty<UserReviewBodyViewModel>())
+            var currentlySelectedIds = userReviewBodyViewModels
                 .Where(x => x.IsSelected)
                 .Select(x => x.Id)
                 .ToHashSet();
