@@ -2,3 +2,21 @@
 // for details on configuring this project to bundle and minify static web assets.
 
 // Write your JavaScript code.
+
+// Runs on EVERY page
+(function () {
+    const onTaskListPage = window.location.pathname.toLowerCase().includes('/modificationstasklist');
+
+    if (onTaskListPage) return;
+
+    // Remove any keys related to select-all-modifications
+    for (let i = sessionStorage.length - 1; i >= 0; i--) {
+        const key = sessionStorage.key(i);
+        if (!key) continue;
+
+        const k = key.toLowerCase();
+        if (k.includes('selectallmodifications') || k.includes('select-all-modifications')) {
+            sessionStorage.removeItem(key);
+        }
+    }
+})();
