@@ -1,37 +1,38 @@
 ﻿/// <reference path="../lib/jquery/dist/jquery.js" />
 
 $(function () {
-    const STORAGE_KEY = 'selectAllModifications';
-    const $selectAll = $('#select-all-modifications');
+    const KEY_PREFIX = 'selectAllModifications:page=';
+    const onTaskListPage = window.location.pathname.toLowerCase().includes('/modificationstasklist');
+    if (!onTaskListPage) return; // cleaner handles non-tasklist pages
 
+    // Derive current page number (?pageNumber= or ?page=), default 1
+    const params = new URLSearchParams(window.location.search);
+    let pageNumber = parseInt(params.get('pageNumber') || params.get('page') || '1', 10);
+    if (!Number.isFinite(pageNumber) || pageNumber < 1) pageNumber = 1;
+
+    const STORAGE_KEY = `${KEY_PREFIX}${pageNumber}`;
+    const $selectAll = $('#select-all-modifications');
     if (!$selectAll.length) return;
 
     function applyState() {
         const saved = sessionStorage.getItem(STORAGE_KEY);
         const isChecked = saved === 'true';
         $selectAll.prop('checked', isChecked);
-        // Re-select children each time in case pagination re-rendered them
-        const $children = $('.child-checkbox');
-        $children.prop('checked', isChecked);
+        $('.child-checkbox').prop('checked', isChecked);
     }
 
-    // Apply on initial load
     applyState();
 
-    // Also apply when navigating back/forward (bfcache)
     window.addEventListener('pageshow', function () {
         applyState();
     });
 
-    // When master changes: apply to all + persist
     $(document).on('change', '#select-all-modifications', function () {
         const isChecked = this.checked;
         sessionStorage.setItem(STORAGE_KEY, String(isChecked));
-        const $children = $('.child-checkbox');
-        $children.prop('checked', isChecked);
+        $('.child-checkbox').prop('checked', isChecked);
     });
 
-    // When any child changes: update master + persist
     $(document).on('change', '.child-checkbox', function () {
         const $children = $('.child-checkbox');
         const allChecked = $children.length > 0 && $children.filter(':checked').length === $children.length;
@@ -39,8 +40,9 @@ $(function () {
         sessionStorage.setItem(STORAGE_KEY, String(allChecked));
     });
 
-    // Optional: clear the remembered state when you “Clear filters”
     $(document).on('click', '.js-clear-select-all', function () {
         sessionStorage.removeItem(STORAGE_KEY);
+        $selectAll.prop('checked', false);
+        $('.child-checkbox').prop('checked', false);
     });
 });
