@@ -165,7 +165,7 @@
          && Model.UserRoles.Any(role =>
              role.IsSelected &&
              !string.IsNullOrWhiteSpace(role.DisplayName) &&
-             (role.DisplayName.Equals("study wide reviewer", StringComparison.OrdinalIgnoreCase) ||
+             (role.DisplayName.Equals("study-wide reviewer", StringComparison.OrdinalIgnoreCase) ||
               role.DisplayName.Equals("workflow co-ordinator", StringComparison.OrdinalIgnoreCase)))
          && Model.ReviewBodies != null
          && Model.ReviewBodies.Any(rb => rb.IsSelected))
