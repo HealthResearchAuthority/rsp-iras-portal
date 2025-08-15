@@ -2,6 +2,7 @@
 using Mapster;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.FeatureManagement;
@@ -101,6 +102,9 @@ services
         options.Filters.Add<ModelStateMergeAttribute>();
     })
     .AddSessionStateTempDataProvider();
+
+// Lift the MVC model-binding collection cap (default is 1024)
+services.Configure<MvcOptions>(o => o.MaxModelBindingCollectionSize = int.MaxValue);
 
 services.Configure<HealthCheckPublisherOptions>(options => options.Period = TimeSpan.FromSeconds(300));
 
