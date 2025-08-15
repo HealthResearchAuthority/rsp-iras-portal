@@ -49,9 +49,10 @@ public partial class ProjectModificationController
     {
         // Retrieve IRAS ID from TempData
         var IrasId = TempData.Peek(TempDataKeys.IrasId) as int?;
+        var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId);
 
         // Check if required TempData values are present
-        if (TempData.Peek(TempDataKeys.ProjectRecordId) is not string projectRecordId || IrasId == null)
+        if (string.IsNullOrEmpty((string?)projectRecordId) || IrasId == null)
         {
             // Return a problem response if data is missing
             var problemDetails = this.ProblemResult(new ServiceResponse
@@ -73,7 +74,7 @@ public partial class ProjectModificationController
         // Create a new project modification request
         var modificationRequest = new ProjectModificationRequest
         {
-            ProjectRecordId = projectRecordId,
+            ProjectRecordId = (string)projectRecordId,
             ModificationIdentifier = IrasId + separator,
             Status = "OPEN",
             CreatedBy = name,
@@ -175,7 +176,7 @@ public partial class ProjectModificationController
     /// Pulls data from session cache for performance.
     /// </summary>
     [HttpGet]
-    public IActionResult GetSpecificChangesByAreaId(int areaOfChangeId)
+    public IActionResult GetSpecificChangesByAreaId(string areaOfChangeId)
     {
         var tempDataString = TempData.Peek(TempDataKeys.ProjectModification.AreaOfChanges) as string;
 
@@ -272,15 +273,15 @@ public partial class ProjectModificationController
             })
             .Prepend(new SelectListItem { Value = "", Text = SelectAreaOfChange });
 
-        if (model.AreaOfChangeId.HasValue && model.AreaOfChangeId.Value != 0)
+        if (model.AreaOfChangeId != null)
         {
-            var selectedArea = areaOfChanges.FirstOrDefault(a => a.Id == model.AreaOfChangeId.Value);
+            var selectedArea = areaOfChanges.FirstOrDefault(a => a.Id == model.AreaOfChangeId);
             model.SpecificChangeOptions = selectedArea?.ModificationSpecificAreaOfChanges?
                 .Select(sc => new SelectListItem
                 {
                     Value = sc.Id.ToString(),
                     Text = sc.Name,
-                    Selected = sc.Id == model.SpecificChangeId
+                    Selected = sc.Id.ToString() == model.SpecificChangeId
                 })
                 .Prepend(new SelectListItem { Value = "", Text = SelectSpecificAreaOfChange })
                 ?? [new() { Value = "", Text = SelectSpecificAreaOfChange }];
@@ -371,7 +372,7 @@ public partial class ProjectModificationController
         var selectedChange = areaOfChanges
             .FirstOrDefault(a => a.Id == model.AreaOfChangeId)?
             .ModificationSpecificAreaOfChanges?
-            .FirstOrDefault(sc => sc.Id == model.SpecificChangeId);
+            .FirstOrDefault(sc => sc.Id.ToString() == model.SpecificChangeId);
 
         // Store the name of the specific area of change in TempData for later use
         TempData[TempDataKeys.ProjectModification.AreaOfChangeText] = areaOfChange?.Name ?? string.Empty;
