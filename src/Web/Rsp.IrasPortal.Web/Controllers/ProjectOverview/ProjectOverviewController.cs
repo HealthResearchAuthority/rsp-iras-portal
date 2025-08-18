@@ -30,6 +30,8 @@ public class ProjectOverviewController
 
     public async Task<IActionResult> PostApproval(string projectRecordId)
     {
+        UpdateModificationRelatedTempData();
+
         var response = await GetProjectOverview(projectRecordId);
         if (response.Error is not null)
         {
