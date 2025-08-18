@@ -85,7 +85,7 @@ public class SaveAffectedOrganisationsResponsesTests : TestServiceBase<ProjectMo
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
-        redirect.RouteName.ShouldBe("pov:projectdetails");
+        redirect.RouteName.ShouldBe("pov:postapproval");
     }
 
     [Fact]
