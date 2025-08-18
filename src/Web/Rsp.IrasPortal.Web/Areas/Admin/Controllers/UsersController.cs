@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Net;
-using System.Reflection;
 using System.Text.Json;
 using FluentValidation;
 using FluentValidation.Results;
@@ -11,7 +9,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
@@ -24,8 +21,8 @@ namespace Rsp.IrasPortal.Web.Areas.Admin.Controllers;
 
 [Area("Admin")]
 [Route("[area]/[controller]/[action]", Name = "admin:[action]")]
-//[Authorize(Policy = "IsSystemAdministrator")]
-//[FeatureGate(Features.Admin)]
+[Authorize(Policy = "IsSystemAdministrator")]
+[FeatureGate(Features.Admin)]
 public class UsersController(
     IUserManagementService userManagementService,
     IValidator<UserViewModel> validator,
@@ -86,7 +83,7 @@ public class UsersController(
             Country = model.Search.Country,
             Status = model.Search.Status,
             FromDate = model.Search.FromDate,
-            ToDate = model.Search.ToDate
+            ToDate = model.Search.ToDate?.AddDays(1).AddTicks(-1) // Inclusive end date
         };
 
         // get the users
@@ -112,14 +109,12 @@ public class UsersController(
                 Search = model.Search
             };
 
-
             return View("Index", reviewBodySearchViewModel);
         }
 
         // return error page as api wasn't successful
         return this.ServiceError(response);
     }
-
 
     /// <summary>
     /// Displays the empty UserView to create a user
@@ -640,7 +635,7 @@ public class UsersController(
     public async Task<IActionResult> ApplyFilters(
         UserSearchViewModel model,
         string? sortField = nameof(UserViewModel.GivenName),
-        string? sortDirection = SortDirections.Descending,
+        string? sortDirection = SortDirections.Ascending,
         [FromQuery] string? complexSearchQuery = null,
         [FromQuery] bool fromPagination = false)
     {
@@ -687,7 +682,6 @@ public class UsersController(
         });
     }
 
-
     [HttpGet]
     [Route("/admin/users/removefilter", Name = "admin:removefilter")]
     public IActionResult RemoveFilter(string key, string? value, [FromQuery] string? model = null)
@@ -714,6 +708,7 @@ public class UsersController(
                 }
 
                 break;
+
             case UsersSearch.FromDateKey:
                 viewModel.Search.FromDay = viewModel.Search.FromMonth = viewModel.Search.FromYear = null;
                 break;
@@ -764,7 +759,6 @@ public class UsersController(
         return [];
     }
 
-
     private async Task<IList<UserReviewBodyViewModel>> GetUserReviewBodies(Guid id)
     {
         var activeReviewBodies = await GetActiveReviewBodies(); // IList<ReviewBodyDto>
@@ -779,7 +773,8 @@ public class UsersController(
             return (activeReviewBodies ?? Enumerable.Empty<ReviewBodyDto>()).Select(reviewBody =>
                 new UserReviewBodyViewModel
                 {
-                    IsSelected = selectedIds.Contains(reviewBody.Id), Id = reviewBody.Id,
+                    IsSelected = selectedIds.Contains(reviewBody.Id),
+                    Id = reviewBody.Id,
                     RegulatoryBodyName = reviewBody.RegulatoryBodyName
                 }).ToList();
         }
