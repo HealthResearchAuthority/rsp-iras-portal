@@ -7,7 +7,11 @@
     // Title used in the validation error summary
     var errorSummaryTitle = "There is a problem";
 
-    var navModel = ("app:projectoverview", "Back", new Dictionary<string, string>());
+    var navModel = ("pov:projectdetails", "Back", new Dictionary<string, string>
+    {
+        { "projectRecordId", Model.ProjectRecordId }
+    });
+
 
     var area = TempData.Peek(TempDataKeys.ProjectModification.AreaOfChangeId);
     var specificArea = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeId);
@@ -62,8 +66,8 @@
                     <button type="submit" class="govuk-button">Save and continue</button>
                     @{
                         ViewBag.Style = "govuk-button govuk-button--secondary";
-                    }
-                    <partial name="_SubmitButton" model="@("app:projectoverview", "Save for later", new Dictionary<string, string> { })" />
+                    }                    
+                    <partial name="_SubmitButton" model="@("pov:projectdetails", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId })" />
                 </div>
                 <p>
                     <a href="#" class="govuk-link">Remove this change</a>

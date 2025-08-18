@@ -19,6 +19,13 @@ public class ReviewBodyService(IReviewBodyServiceClient client) : IReviewBodySer
         return apiResponse.ToServiceResponse();
     }
 
+    public async Task<ServiceResponse<AllReviewBodiesResponse>> GetAllActiveReviewBodies(string? sortField = nameof(ReviewBodyDto.RegulatoryBodyName), string? sortDirection = SortDirections.Ascending)
+    {
+        var apiResponse = await client.GetAllActiveReviewBodies( sortField, sortDirection);
+
+        return apiResponse.ToServiceResponse();
+    }
+
     public async Task<ServiceResponse<ReviewBodyDto>> GetReviewBodyById(Guid id)
     {
         var apiResponse = await client.GetReviewBodyById(id);
@@ -71,6 +78,14 @@ public class ReviewBodyService(IReviewBodyServiceClient client) : IReviewBodySer
     public async Task<ServiceResponse<ReviewBodyUserDto>> RemoveUserFromReviewBody(Guid reviewBodyId, Guid userId)
     {
         var apiResponse = await client.RemoveUserFromReviewBody(reviewBodyId, userId);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+
+    public async Task<ServiceResponse<List<ReviewBodyUserDto>>> GetUserReviewBodies(Guid userId)
+    {
+        var apiResponse = await client.GetUserReviewBodies(userId);
 
         return apiResponse.ToServiceResponse();
     }

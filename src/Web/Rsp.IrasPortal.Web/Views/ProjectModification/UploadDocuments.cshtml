@@ -42,8 +42,8 @@
 				<button class="govuk-button" data-module="govuk-button" name="action" value="continue">Save and continue</button>
 				@{
 					ViewBag.Style = "govuk-button govuk-button--secondary";
-				}
-				<partial name="_SubmitButton" model="@("app:projectoverview", "Save for later", new Dictionary<string, string> { })" />
+				}				
+                <partial name="_SubmitButton" model="@("pov:projectdetails", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId })" />
 			</div>
 		</form>
 	</div>

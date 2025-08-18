@@ -6,13 +6,13 @@ using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Web.Controllers;
+using Rsp.IrasPortal.Web.Controllers.ProjectOverview;
 using Rsp.IrasPortal.Web.Models;
 using ProblemDetails = Microsoft.AspNetCore.Mvc.ProblemDetails;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApplicationControllerTests;
+namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectOverviewControllerTests;
 
-public class GetProjectOverview : TestServiceBase<ApplicationController>
+public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 {
     [Fact]
     public async Task GetProjectOverview_ReturnsErrorView_WhenProjectRecordServiceFails()
@@ -27,10 +27,10 @@ public class GetProjectOverview : TestServiceBase<ApplicationController>
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
 
         // Act
-        var result = await Sut.GetProjectOverview("rec-1", "cat-1");
+        var result = await Sut.GetProjectOverview("rec-1");
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var viewResult = result.Error.ShouldBeOfType<ViewResult>();
         viewResult.ViewName.ShouldBe("Error");
     }
 
@@ -48,10 +48,10 @@ public class GetProjectOverview : TestServiceBase<ApplicationController>
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
 
         // Act
-        var result = await Sut.GetProjectOverview("rec-1", "cat-1");
+        var result = await Sut.GetProjectOverview("rec-1");
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var viewResult = result.Error.ShouldBeOfType<ViewResult>();
         viewResult.ViewName.ShouldBe("Error");
 
         // The model should be of type Microsoft.AspNetCore.Mvc.ProblemDetails
@@ -70,17 +70,17 @@ public class GetProjectOverview : TestServiceBase<ApplicationController>
             .ReturnsAsync(new ServiceResponse<IrasApplicationResponse> { StatusCode = HttpStatusCode.OK, Content = new IrasApplicationResponse { Id = "rec-1", IrasId = 1 } });
 
         respondentService
-            .Setup(s => s.GetRespondentAnswers("rec-1", "cat-1"))
+            .Setup(s => s.GetRespondentAnswers("rec-1", QuestionCategories.ProjectRecrod))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.InternalServerError });
 
         // Ensure HttpContext/Request is set up
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
 
         // Act
-        var result = await Sut.GetProjectOverview("rec-1", "cat-1");
+        var result = await Sut.GetProjectOverview("rec-1");
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var viewResult = result.Error.ShouldBeOfType<ViewResult>();
         viewResult.ViewName.ShouldBe("Error");
     }
 
@@ -96,17 +96,17 @@ public class GetProjectOverview : TestServiceBase<ApplicationController>
             .ReturnsAsync(new ServiceResponse<IrasApplicationResponse> { StatusCode = HttpStatusCode.OK, Content = new IrasApplicationResponse { Id = "rec-1", IrasId = 1 } });
 
         respondentService
-            .Setup(s => s.GetRespondentAnswers("rec-1", "cat-1"))
+            .Setup(s => s.GetRespondentAnswers("rec-1", QuestionCategories.ProjectRecrod))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = null });
 
         // Ensure HttpContext/Request is set up
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
 
         // Act
-        var result = await Sut.GetProjectOverview("rec-1", "cat-1");
+        var result = await Sut.GetProjectOverview("rec-1");
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var viewResult = result.Error.ShouldBeOfType<ViewResult>();
         viewResult.ViewName.ShouldBe("Error");
     }
 
@@ -128,7 +128,7 @@ public class GetProjectOverview : TestServiceBase<ApplicationController>
             .ReturnsAsync(new ServiceResponse<IrasApplicationResponse> { StatusCode = HttpStatusCode.OK, Content = new IrasApplicationResponse { Id = "rec-1", IrasId = 1 } });
 
         respondentService
-            .Setup(s => s.GetRespondentAnswers("rec-1", "cat-1"))
+            .Setup(s => s.GetRespondentAnswers("rec-1", QuestionCategories.ProjectRecrod))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = answers });
 
         // Initialize TempData for the controller
@@ -138,13 +138,12 @@ public class GetProjectOverview : TestServiceBase<ApplicationController>
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
 
         // Act
-        var result = await Sut.GetProjectOverview("rec-1", "cat-1");
+        var result = await Sut.GetProjectOverview("rec-1");
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("ProjectOverview");
+        result.Error.ShouldBeNull();
 
-        var model = viewResult.Model.ShouldBeOfType<ProjectOverviewModel>();
+        var model = result.Model.ShouldBeOfType<ProjectOverviewModel>();
         model.ProjectTitle.ShouldBe("Project X");
         model.ProjectRecordId.ShouldBe("rec-1");
         model.CategoryId.ShouldBe(QuestionCategories.ProjectRecrod);
@@ -171,7 +170,7 @@ public class GetProjectOverview : TestServiceBase<ApplicationController>
             .ReturnsAsync(new ServiceResponse<IrasApplicationResponse> { StatusCode = HttpStatusCode.OK, Content = new IrasApplicationResponse { Id = "rec-1", IrasId = 1 } });
 
         respondentService
-            .Setup(s => s.GetRespondentAnswers("rec-1", "cat-1"))
+            .Setup(s => s.GetRespondentAnswers("rec-1", QuestionCategories.ProjectRecrod))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = answers });
 
         // Initialize TempData for the controller
@@ -181,9 +180,71 @@ public class GetProjectOverview : TestServiceBase<ApplicationController>
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
 
         // Act
-        await Sut.GetProjectOverview("rec-1", "cat-1");
+        await Sut.GetProjectOverview("rec-1");
 
         // Assert
         Sut.TempData[TempDataKeys.PlannedProjectEndDate].ShouldBe("01 January 2025");
+    }
+
+    [Fact]
+    public async Task GetProjectOverview_ReturnsFullyPopulatedModel_WhenDataIsPresent()
+    {
+        // Arrange
+        var applicationService = Mocker.GetMock<IApplicationsService>();
+        var respondentService = Mocker.GetMock<IRespondentService>();
+
+        var answers = new List<RespondentAnswerDto>
+        {
+            new() { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "Project X" },
+            new() { QuestionId = QuestionIds.ProjectPlannedEndDate, AnswerText = "01/01/2025" },
+            new() { QuestionId = QuestionIds.ParticipatingNations, Answers = new List<string> { QuestionAnswersOptionsIds.England, QuestionAnswersOptionsIds.Scotland } },
+            new() { QuestionId = QuestionIds.NhsOrHscOrganisations, SelectedOption = QuestionAnswersOptionsIds.Yes },
+            new() { QuestionId = QuestionIds.LeadNation, SelectedOption = QuestionAnswersOptionsIds.Wales },
+            new() { QuestionId = QuestionIds.ChiefInvestigator, AnswerText = "Dr. Jane Doe" },
+            new() { QuestionId = QuestionIds.PrimarySponsorOrganisation, AnswerText = "University of Example" },
+            new() { QuestionId = QuestionIds.SponsorContact, AnswerText = "jane.doe@example.com" }
+        };
+
+        applicationService
+            .Setup(s => s.GetProjectRecord("rec-1"))
+            .ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new IrasApplicationResponse { Id = "rec-1", IrasId = 1, Status = "Draft" }
+            });
+
+        respondentService
+            .Setup(s => s.GetRespondentAnswers("rec-1", QuestionCategories.ProjectRecrod))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = answers
+            });
+
+        // Initialize TempData for the controller
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
+
+        // Ensure HttpContext/Request is set up
+        Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+
+        // Act
+        var result = await Sut.GetProjectOverview("rec-1");
+
+        // Assert
+        result.Error.ShouldBeNull();
+
+        var model = result.Model.ShouldBeOfType<ProjectOverviewModel>();
+        model.ProjectTitle.ShouldBe("Project X");
+        model.ProjectRecordId.ShouldBe("rec-1");
+        model.CategoryId.ShouldBe(QuestionCategories.ProjectRecrod);
+        model.ProjectPlannedEndDate.ShouldBe("01 January 2025");
+        model.Status.ShouldBe("Draft");
+        model.IrasId.ShouldBe(1);
+        model.ParticipatingNations.ShouldBe(new List<string> { "England", "Scotland" });
+        model.NhsOrHscOrganisations.ShouldBe("Yes");
+        model.LeadNation.ShouldBe("Wales");
+        model.ChiefInvestigator.ShouldBe("Dr. Jane Doe");
+        model.PrimarySponsorOrganisation.ShouldBe("University of Example");
+        model.SponsorContact.ShouldBe("jane.doe@example.com");
     }
 }

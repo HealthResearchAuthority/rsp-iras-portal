@@ -1,7 +1,17 @@
-﻿@model ProblemDetails
+﻿@using Microsoft.AspNetCore.Http.Features
+@model ProblemDetails
+
+@{
+    var correlationId = Context.TraceIdentifier;
+}
 
 <h1 class="text-danger">Error.</h1>
 <h2 class="text-danger">An error occurred while processing your request.</h2>
+
+@if (correlationId != null)
+{
+    <p><strong>Correlation ID:</strong> <code>@correlationId</code></p>
+}
 
 @if (Model != null)
 {

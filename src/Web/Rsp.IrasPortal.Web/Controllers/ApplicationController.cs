@@ -1,11 +1,7 @@
-using System.Diagnostics;
-using System.Globalization;
 using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
@@ -18,88 +14,53 @@ using Rsp.IrasPortal.Web.Models;
 namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "app:[action]")]
-[Authorize(Policy = "IsUser")]
+[Authorize(Policy = "IsApplicant")]
 public class ApplicationController
 (
     IApplicationsService applicationsService,
     IValidator<IrasIdViewModel> irasIdValidator,
     IRespondentService respondentService,
-    IQuestionSetService questionSetService,
-    IFeatureManager featureManager) : Controller
+    IQuestionSetService questionSetService) : Controller
 {
     // ApplicationInfo view name
     private const string ApplicationInfo = nameof(ApplicationInfo);
 
-    public async Task<IActionResult> Welcome(string? searchQuery = null, int pageNumber = 1, int pageSize = 5)
+    public async Task<IActionResult> Welcome(
+        string? searchQuery = null,
+        int pageNumber = 1,
+        int pageSize = 20,
+        string? sortField = nameof(ApplicationModel.CreatedDate),
+        string? sortDirection = SortDirections.Descending)
     {
-        var myResearhPageEnabled = await featureManager.IsEnabledAsync(Features.MyResearchPage);
-        if (!myResearhPageEnabled)
-        {
-            return View(nameof(Index));
-        }
+        var model = new ApplicationsViewModel();
 
         // getting respondentID from Http context
         var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
 
         // getting research applications by respondent ID
-        var applicationServiceResponse = await applicationsService.GetPaginatedApplicationsByRespondent(respondentId, searchQuery, pageNumber, pageSize);
+        var applicationServiceResponse = await applicationsService.GetPaginatedApplicationsByRespondent(respondentId, searchQuery, pageNumber, pageSize, sortField, sortDirection);
 
-        var applications = applicationServiceResponse?.Content?.Items.ToList() ?? [];
-
-        var researchApplications = applications
-            .Where(app => app != null)
-            .Select(app => new ResearchApplicationSummaryModel
+        model.Applications = applicationServiceResponse.Content?.Items
+            .Select(dto => new ApplicationModel
             {
-                IrasId = app.IrasId,
-                ApplicatonId = app.Id,
-                Title = "Empty", // temporary default
-                ProjectEndDate = new DateTime(2025, 12, 10, 0, 0, 0, DateTimeKind.Utc), // temporary default
-                PrimarySponsorOrganisation = "Unknown", // default value
-                IsNew = app.CreatedDate >= DateTime.UtcNow.AddDays(-2)
-            }).ToList();
+                Id = dto.Id,
+                Title = string.IsNullOrWhiteSpace(dto.Title) ? "Project title" : dto.Title,
+                Status = dto.Status,
+                CreatedDate = dto.CreatedDate,
+                IrasId = dto.IrasId
+            })
+            .ToList() ?? [];
 
-        var categoryId = "project record v1";
-
-        foreach (var researchApp in researchApplications)
-        {
-            var respondentServiceResponse = await respondentService.GetRespondentAnswers(researchApp.ApplicatonId, categoryId);
-
-            if (!respondentServiceResponse.IsSuccessStatusCode)
-            {
-                // return the generic error page
-                return this.ServiceError(respondentServiceResponse);
-            }
-
-            var answers = respondentServiceResponse.Content;
-
-            var titleAnswer = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.ShortProjectTitle)?.AnswerText;
-            var endDateAnswer = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.ProjectPlannedEndDate)?.AnswerText;
-            var sponsorAnswer = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.PrimarySponsorOrganisation)?.AnswerText;
-
-            if (!string.IsNullOrWhiteSpace(titleAnswer))
-            {
-                researchApp.Title = titleAnswer;
-            }
-
-            var ukCulture = new CultureInfo("en-GB");
-            if (DateTime.TryParse(endDateAnswer, ukCulture, DateTimeStyles.None, out var parsedDate))
-            {
-                researchApp.ProjectEndDate = parsedDate;
-            }
-
-            if (!string.IsNullOrWhiteSpace(sponsorAnswer))
-            {
-                researchApp.PrimarySponsorOrganisation = sponsorAnswer;
-            }
-        }
-
-        var paginationModel = new PaginationViewModel(pageNumber, pageSize, applicationServiceResponse?.Content?.TotalCount ?? 0)
+        model.Pagination = new PaginationViewModel(pageNumber, pageSize, applicationServiceResponse.Content?.TotalCount ?? 0)
         {
             RouteName = "app:welcome",
-            SearchQuery = searchQuery
+            SearchQuery = searchQuery,
+            SortDirection = sortDirection,
+            SortField = sortField,
+            FormName = "applications-selection"
         };
 
-        return View(nameof(Index), (researchApplications, paginationModel));
+        return View(nameof(Index), model);
     }
 
     public IActionResult StartProject() => View(nameof(StartProject));
@@ -196,15 +157,16 @@ public class ApplicationController
 
     public IActionResult CreateApplication() => View(nameof(CreateApplication));
 
-    public IActionResult DocumentUpload()
+    public IActionResult DocumentUpload(string projectRecordId)
     {
         TempData.TryGetValue<List<Document>>(TempDataKeys.UploadedDocuments, out var documents, true);
+        ViewBag.ProjectRecordId = projectRecordId;
 
         return View(documents);
     }
 
     [HttpPost]
-    public IActionResult Upload(IFormFileCollection formFiles)
+    public IActionResult Upload(IFormFileCollection formFiles, string projectRecordId)
     {
         List<Document> documents = [];
 
@@ -220,7 +182,7 @@ public class ApplicationController
 
         TempData.TryAdd(TempDataKeys.UploadedDocuments, documents, true);
 
-        return RedirectToAction(nameof(DocumentUpload));
+        return RedirectToAction(nameof(DocumentUpload), new { projectRecordId });
     }
 
     [HttpGet]
@@ -239,7 +201,18 @@ public class ApplicationController
         // return the view if successful
         if (applicationServiceResponse is { IsSuccessStatusCode: true, Content: not null })
         {
-            avm.Applications = applicationServiceResponse.Content;
+            avm.Applications = applicationServiceResponse.Content
+            .Select(dto => new ApplicationModel
+            {
+                Id = dto.Id,
+                Title = dto.Title,
+                Status = dto.Status,
+                CreatedDate = dto.CreatedDate,
+                IrasId = dto.IrasId,
+                Description = dto.Description,
+                CreatedBy = dto.CreatedBy
+            })
+            .ToList();
 
             var questionSetServiceResponse = await questionSetService.GetQuestionCategories();
 
@@ -257,78 +230,6 @@ public class ApplicationController
         return this.ServiceError(applicationServiceResponse);
     }
 
-    /// <summary>
-    /// Displays the project overview page. Shows a notification banner if a project modification change exists,
-    /// clears related TempData keys, and populates the ProjectOverviewModel with project details from TempData.
-    /// </summary>
-    /// <returns>The ProjectOverview view with the populated model.</returns>
-    public async Task<IActionResult> ProjectOverview(string? projectRecordId, string? categoryId)
-    {
-        // If there is a project modification change, show the notification banner
-        if (TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId) is not null)
-        {
-            TempData[TempDataKeys.ShowNotificationBanner] = true;
-        }
-
-        // Remove modification-related TempData keys to reset state
-        TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationId);
-        TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationIdentifier);
-        TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationChangeId);
-        TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationSpecificArea);
-        TempData.Remove(TempDataKeys.ProjectModification.AreaOfChangeId);
-        TempData.Remove(TempDataKeys.ProjectModification.SpecificAreaOfChangeId);
-        TempData.Remove(TempDataKeys.ProjectModificationPlannedEndDate.NewPlannedProjectEndDate);
-        TempData.Remove(TempDataKeys.ProjectModificationPlannedEndDate.AffectingOrganisationsType);
-        TempData.Remove(TempDataKeys.ProjectModificationPlannedEndDate.AffectedOrganisationsLocations);
-        TempData.Remove(TempDataKeys.ProjectModificationPlannedEndDate.AffectedAllOrSomeOrganisations);
-        TempData.Remove(TempDataKeys.ProjectModificationPlannedEndDate.AffectedOrganisationsRequireAdditionalResources);
-        TempData.Remove(TempDataKeys.ProjectModificationPlannedEndDate.ReviewChanges);
-        TempData.Remove(TempDataKeys.QuestionSetPublishedVersionId);
-
-        // Indicate that the project overview is being shown
-        TempData[TempDataKeys.ProjectOverview] = true;
-
-        if (projectRecordId is not null && categoryId is not null)
-        {
-            return await GetProjectOverview(projectRecordId, categoryId);
-        }
-
-        // Build the model using values from TempData, falling back to defaults if not present
-        var model = new ProjectOverviewModel
-        {
-            ProjectTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
-            CategoryId = QuestionCategories.ProjectRecrod, //TempData.Peek(TempDataKeys.CategoryId) as string ?? string.Empty,
-            ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty,
-            ProjectPlannedEndDate = TempData.Peek(TempDataKeys.PlannedProjectEndDate) as string ?? string.Empty
-        };
-
-        // Get all respondent answers for the project and category
-        var respondentAnswersResponse = await respondentService.GetRespondentAnswers(model.ProjectRecordId, model.CategoryId);
-
-        if (!respondentAnswersResponse.IsSuccessStatusCode)
-        {
-            return this.ServiceError(respondentAnswersResponse);
-        }
-
-        var answers = respondentAnswersResponse.Content;
-
-        if (answers == null)
-        {
-            // Return a 404 error view if no responses are found for the project record
-            return View("Error", new ProblemDetails()
-            {
-                Title = ReasonPhrases.GetReasonPhrase(StatusCodes.Status404NotFound),
-                Detail = "No responses found for the project record",
-                Status = StatusCodes.Status404NotFound,
-                Instance = Request.Path
-            });
-        }
-
-        TempData.TryAdd(TempDataKeys.ProjectRecordResponses, answers, true);
-
-        return View(model);
-    }
-
     public IActionResult ReviewAnswers()
     {
         return View(this.GetApplicationFromSession());
@@ -344,98 +245,6 @@ public class ApplicationController
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-    }
-
-    /// <summary>
-    /// Retrieves and displays the project overview for a given project record and category.
-    /// Fetches the project record and respondent answers, populates TempData with key details,
-    /// and returns the ProjectOverview view with a populated model.
-    /// </summary>
-    /// <param name="projectRecordId">The unique identifier for the project record.</param>
-    /// <param name="categoryId">The unique identifier for the question category.</param>
-    /// <returns>
-    /// An <see cref="IActionResult"/> that renders the ProjectOverview view with the project details,
-    /// or an error view if the project record or answers are not found or a service error occurs.
-    /// </returns>
-    [NonAction]
-    public async Task<IActionResult> GetProjectOverview(string projectRecordId, string categoryId)
-    {
-        // Retrieve the project record by its ID
-        var projectRecordResponse = await applicationsService.GetProjectRecord(projectRecordId);
-
-        // If the service call failed, return a generic service error view
-        if (!projectRecordResponse.IsSuccessStatusCode)
-        {
-            return this.ServiceError(projectRecordResponse);
-        }
-
-        var projectRecord = projectRecordResponse.Content;
-
-        if (projectRecord == null)
-        {
-            // Return a 404 error view if the project record is not found
-            return View("Error", new ProblemDetails()
-            {
-                Title = ReasonPhrases.GetReasonPhrase(StatusCodes.Status404NotFound),
-                Detail = "Project record not found",
-                Status = StatusCodes.Status404NotFound,
-                Instance = Request.Path
-            });
-        }
-
-        // Get all respondent answers for the project and category
-        var respondentAnswersResponse = await respondentService.GetRespondentAnswers(projectRecordId, categoryId);
-
-        if (!respondentAnswersResponse.IsSuccessStatusCode)
-        {
-            return this.ServiceError(respondentAnswersResponse);
-        }
-
-        var answers = respondentAnswersResponse.Content;
-
-        if (answers == null)
-        {
-            // Return a 404 error view if no responses are found for the project record
-            return View("Error", new ProblemDetails()
-            {
-                Title = ReasonPhrases.GetReasonPhrase(StatusCodes.Status404NotFound),
-                Detail = "No responses found for the project record",
-                Status = StatusCodes.Status404NotFound,
-                Instance = Request.Path
-            });
-        }
-
-        TempData.TryAdd(TempDataKeys.ProjectRecordResponses, answers, true);
-
-        // Extract key answers from the respondent answers
-        var titleAnswer = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.ShortProjectTitle)?.AnswerText;
-        var endDateAnswer = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.ProjectPlannedEndDate)?.AnswerText;
-
-        // Populate TempData with project details
-        TempData[TempDataKeys.IrasId] = projectRecord.IrasId;
-        TempData[TempDataKeys.ProjectRecordId] = projectRecord.Id;
-
-        if (!string.IsNullOrWhiteSpace(titleAnswer))
-        {
-            TempData[TempDataKeys.ShortProjectTitle] = titleAnswer;
-        }
-
-        var ukCulture = new CultureInfo("en-GB");
-        if (DateTime.TryParse(endDateAnswer, ukCulture, DateTimeStyles.None, out var parsedDate))
-        {
-            TempData[TempDataKeys.PlannedProjectEndDate] = parsedDate.ToString("dd MMMM yyyy");
-        }
-
-        // Build the model using values from TempData, falling back to defaults if not present
-        var model = new ProjectOverviewModel
-        {
-            ProjectTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
-            CategoryId = QuestionCategories.ProjectRecrod,
-            ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty,
-            ProjectPlannedEndDate = TempData.Peek(TempDataKeys.PlannedProjectEndDate) as string ?? string.Empty
-        };
-
-        return View("ProjectOverview", model);
+        return View(new ProblemDetails());
     }
 }

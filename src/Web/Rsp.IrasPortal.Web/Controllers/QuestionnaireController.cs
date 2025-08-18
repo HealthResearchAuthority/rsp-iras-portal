@@ -14,7 +14,7 @@ using Rsp.IrasPortal.Web.Models;
 namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "qnc:[action]")]
-[Authorize(Policy = "IsUser")]
+[Authorize(Policy = "IsApplicant")]
 public class QuestionnaireController
 (
     IApplicationsService applicationsService,
@@ -415,7 +415,7 @@ public class QuestionnaireController
 
         if (saveForLater == bool.TrueString)
         {
-            return RedirectToAction("ProjectOverview", "Application");
+            return RedirectToAction("ProjectDetails", "ProjectOverview", new { projectRecordId = application.Id });
         }
 
         // continue rendering the questionnaire if the above conditions are not true
@@ -629,7 +629,7 @@ public class QuestionnaireController
             }
         }
 
-        return RedirectToAction("ProjectOverview", "Application");
+        return RedirectToAction("ProjectDetails", "ProjectOverview", new { projectRecordId = application.Id });
     }
 
     /// <summary>

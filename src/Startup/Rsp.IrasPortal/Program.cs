@@ -1,6 +1,8 @@
 ﻿using FluentValidation;
 using Mapster;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.FeatureManagement;
@@ -101,6 +103,9 @@ services
     })
     .AddSessionStateTempDataProvider();
 
+// Lift the MVC model-binding collection cap (default is 1024)
+services.Configure<MvcOptions>(o => o.MaxModelBindingCollectionSize = int.MaxValue);
+
 services.Configure<HealthCheckPublisherOptions>(options => options.Period = TimeSpan.FromSeconds(300));
 
 // Increase the value count limit for FormOptions to allow
@@ -122,13 +127,7 @@ services.AddAzureClients(azure =>
 {
     var connectionString = builder.Configuration["AppSettings:Azure:DocumentStorage:Blob:ConnectionString"];
 
-    if (string.IsNullOrWhiteSpace(connectionString))
-    {
-        throw new InvalidOperationException("Blob storage connection string is not configured.");
-    }
-
     azure.AddBlobServiceClient(connectionString);
-    //azure.AddBlobServiceClient(builder.Configuration.GetRequiredSection("AppSettings:Azure:DocumentStorage:Blob"));
 });
 
 services
@@ -147,7 +146,29 @@ if (await featureManager.IsEnabledAsync(Features.InterceptedLogging))
     services.AddLoggingInterceptor<LoggingInterceptor>();
 }
 
+// If the "UseFrontDoor" feature is enabled, configure forwarded headers options
+if (await featureManager.IsEnabledAsync(Features.UseFrontDoor))
+{
+    // Configure ForwardedHeadersOptions to handle proxy headers
+    services.Configure<ForwardedHeadersOptions>(options =>
+    {
+        // Specify which forwarded headers should be processed
+        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor |
+                                  ForwardedHeaders.XForwardedProto |
+                                  ForwardedHeaders.XForwardedHost;
+
+        // Clear known networks and proxies to allow forwarding from any source
+        options.KnownNetworks.Clear();
+        options.KnownProxies.Clear();
+
+        // Set allowed hosts from the AppSettings configuration, splitting by semicolon
+        options.AllowedHosts = appSettings.AllowedHosts.Split(';', StringSplitOptions.RemoveEmptyEntries);
+    });
+}
+
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 app.MapDefaultEndpoints();
 

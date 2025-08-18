@@ -49,9 +49,11 @@
             @{
                 ViewBag.Style = "govuk-button govuk-button--secondary";
             }
-
-            <partial name="_SubmitButton" model="@("app:upload", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } })" />
-            <a class="govuk-button" asp-route="app:ProjectOverview">Save for later</a>
+            <partial name="_SubmitButton" model="@("app:upload", "Save and continue", new Dictionary<string, string> { 
+                 { "saveAndContinue", bool.TrueString },
+                 { "projectRecordId", ViewBag.ProjectRecordId }
+             })" />
+            <a class="govuk-button" asp-route="pov:projectdetails" asp-route-projectRecordId="@ViewBag.ProjectRecordId">Save for later</a>
         </div>
     </div>
 </main>

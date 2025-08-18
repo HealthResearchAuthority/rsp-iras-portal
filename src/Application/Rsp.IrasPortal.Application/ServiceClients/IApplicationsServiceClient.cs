@@ -57,7 +57,15 @@ public interface IApplicationsServiceClient
     /// <param name="respondentId">Respondent Id associated with the application</param>
     /// <returns>An asynchronous operation that returns all the saved applications for a given respondent.</returns>
     [Get("/applications/respondent/paginated")]
-    public Task<ApiResponse<PaginatedResponse<IrasApplicationResponse>>> GetPaginatedApplicationsByRespondent(string respondentId, string? searchQuery = null, int pageIndex = 0, int pageSize = 0);
+    public Task<ApiResponse<PaginatedResponse<IrasApplicationResponse>>> GetPaginatedApplicationsByRespondent
+    (
+        string respondentId,
+        string? searchQuery = null,
+        int pageIndex = 1,
+        int? pageSize = 20,
+        string? sortField = nameof(IrasApplicationResponse.CreatedDate),
+        string? sortDirection = SortDirections.Descending
+    );
 
     /// <summary>
     /// Creates a new application

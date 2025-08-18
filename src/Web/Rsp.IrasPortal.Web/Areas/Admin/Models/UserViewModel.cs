@@ -29,10 +29,9 @@ public class UserViewModel
     public string? JobTitle { get; set; } = null;
 
     public IList<UserRoleViewModel> UserRoles { get; set; } = [];
+    public IList<UserReviewBodyViewModel> ReviewBodies { get; set; } = [];
 
     public IList<string>? Country { get; set; } = null;
-
-    public IList<string> AccessRequired { get; set; } = [];
 
     public DateTime? LastUpdated { get; set; } = null;
 
@@ -59,8 +58,6 @@ public class UserViewModel
 
     public DateTime? LastLogin { get; set; } = null;
     public DateTime? CurrentLogin { get; set; } = null;
-    public string Committee { get; set; } = null;
-    public string ReviewBody { get; set; } = null;
 
     public UserViewModel()
     { }
@@ -69,7 +66,7 @@ public class UserViewModel
     {
         var user = identityUserResponse?.User;
         var roles = identityUserResponse?.Roles;
-        var accessRequired = identityUserResponse?.AccessRequired;
+        //var accessRequired = identityUserResponse?.AccessRequired;
 
         if (user != null)
         {
@@ -88,7 +85,6 @@ public class UserViewModel
             LastUpdated = user.LastUpdated;
             OriginalEmail = user.Email;
             Status = user.Status;
-            AccessRequired = accessRequired != null ? accessRequired.ToList() : [];
             CurrentLogin = user.CurrentLogin.HasValue ? TimeZoneInfo.ConvertTimeFromUtc((DateTime)user.CurrentLogin, ukTimeZone) : null;
         }
     }

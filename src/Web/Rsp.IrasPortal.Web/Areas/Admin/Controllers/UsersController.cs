@@ -1,5 +1,7 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Net;
+using System.Reflection;
 using System.Text.Json;
 using FluentValidation;
 using FluentValidation.Results;
@@ -8,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
 using Rsp.IrasPortal.Application.Responses;
@@ -23,7 +26,11 @@ namespace Rsp.IrasPortal.Web.Areas.Admin.Controllers;
 [Route("[area]/[controller]/[action]", Name = "admin:[action]")]
 //[Authorize(Policy = "IsSystemAdministrator")]
 //[FeatureGate(Features.Admin)]
-public class UsersController(IUserManagementService userManagementService, IValidator<UserViewModel> validator, IValidator<UserSearchModel> searchValidator) : Controller
+public class UsersController(
+    IUserManagementService userManagementService,
+    IValidator<UserViewModel> validator,
+    IValidator<UserSearchModel> searchValidator,
+    IReviewBodyService reviewBodyService) : Controller
 {
     private const string Error = nameof(Error);
     private const string EditUserView = nameof(EditUserView);
@@ -36,7 +43,9 @@ public class UsersController(IUserManagementService userManagementService, IVali
     private const string ConfirmDisableUser = nameof(ConfirmDisableUser);
     private const string EnableUserSuccessMessage = nameof(EnableUserSuccessMessage);
     private const string ConfirmEnableUser = nameof(ConfirmEnableUser);
-    private const string OperationsRole = "operations";
+    private const string TeamManagerRole = "team_manager";
+    private const string StudyWideReviewerRole = "study-wide_reviewer";
+    private const string WorkflowCoordinatorRole = "workflow_co-ordinator";
 
     private const string EditMode = "edit";
     private const string CreateMode = "create";
@@ -103,7 +112,6 @@ public class UsersController(IUserManagementService userManagementService, IVali
                 Search = model.Search
             };
 
-      
 
             return View("Index", reviewBodySearchViewModel);
         }
@@ -111,7 +119,6 @@ public class UsersController(IUserManagementService userManagementService, IVali
         // return error page as api wasn't successful
         return this.ServiceError(response);
     }
-
 
 
     /// <summary>
@@ -123,6 +130,7 @@ public class UsersController(IUserManagementService userManagementService, IVali
         ViewBag.Mode = CreateMode;
 
         var availableRoles = await GetAlluserRoles();
+        var activeReviewBodies = await GetActiveReviewBodies();
 
         var model = new UserViewModel
         {
@@ -130,6 +138,11 @@ public class UsersController(IUserManagementService userManagementService, IVali
             {
                 Id = role.Id,
                 Name = role.Name
+            }).ToList(),
+            ReviewBodies = activeReviewBodies.Select(rb => new UserReviewBodyViewModel()
+            {
+                Id = rb.Id,
+                RegulatoryBodyName = rb.RegulatoryBodyName
             }).ToList()
         };
 
@@ -147,6 +160,7 @@ public class UsersController(IUserManagementService userManagementService, IVali
 
         // get all available roles to be presented on the FE
         var availableRoles = await GetAlluserRoles();
+        var activeReviewBodies = await GetActiveReviewBodies();
 
         if (model.UserRoles.Count == 0)
         {
@@ -154,6 +168,15 @@ public class UsersController(IUserManagementService userManagementService, IVali
             {
                 Id = role.Id,
                 Name = role.Name
+            }).ToList();
+        }
+
+        if (model.ReviewBodies.Count == 0)
+        {
+            model.ReviewBodies = activeReviewBodies.Select(rb => new UserReviewBodyViewModel()
+            {
+                Id = rb.Id,
+                RegulatoryBodyName = rb.RegulatoryBodyName
             }).ToList();
         }
 
@@ -169,11 +192,7 @@ public class UsersController(IUserManagementService userManagementService, IVali
     {
         ViewBag.Mode = string.IsNullOrEmpty(model.Id) ? CreateMode : EditMode;
 
-        if (model.UserRoles.Any(r => r.Name.Equals(OperationsRole, StringComparison.OrdinalIgnoreCase) && !r.IsSelected))
-        {
-            model.AccessRequired = [];
-            model.Country = [];
-        }
+        ValidateUserViewModel(model);
 
         var context = new ValidationContext<UserViewModel>(model);
         var validationResult = await validator.ValidateAsync(context);
@@ -188,6 +207,7 @@ public class UsersController(IUserManagementService userManagementService, IVali
             {
                 validationResult.Errors.Add(new ValidationFailure("Email", "This user already exists", null));
             }
+
             // Copy the validation results into ModelState.
             // ASP.NET uses the ModelState collection to populate
             // error messages in the View.
@@ -202,6 +222,31 @@ public class UsersController(IUserManagementService userManagementService, IVali
         return View(ConfirmUser, model);
     }
 
+    private static void ValidateUserViewModel(UserViewModel model)
+    {
+        if (model.UserRoles.Any(r =>
+                r.Name.Equals(TeamManagerRole, StringComparison.OrdinalIgnoreCase) && !r.IsSelected))
+        {
+            model.Country = [];
+        }
+
+        // Is either role selected?
+        var hasEitherRoleSelected = model.UserRoles.Any(r =>
+            (r.Name.Equals(StudyWideReviewerRole, StringComparison.OrdinalIgnoreCase) ||
+             r.Name.Equals(WorkflowCoordinatorRole, StringComparison.OrdinalIgnoreCase))
+            && r.IsSelected
+        );
+
+        // If neither role is selected and any review bodies are selected, clear them
+        if (!hasEitherRoleSelected && (model.ReviewBodies?.Any(rb => rb.IsSelected) == true))
+        {
+            foreach (var rb in model.ReviewBodies)
+            {
+                rb.IsSelected = false;
+            }
+        }
+    }
+
     [HttpGet]
     public async Task<IActionResult> ViewUser(string userId, string email)
     {
@@ -212,6 +257,9 @@ public class UsersController(IUserManagementService userManagementService, IVali
         if (response.IsSuccessStatusCode)
         {
             var model = new UserViewModel(response.Content!);
+
+            // GET THE REVIEW BODIES HERE
+            model.ReviewBodies = await GetUserReviewBodies(Guid.Parse(model.Id));
 
             return View(ViewUserView, model);
         }
@@ -237,11 +285,7 @@ public class UsersController(IUserManagementService userManagementService, IVali
         var mode = string.IsNullOrEmpty(model.Id) ? CreateMode : EditMode;
         ViewBag.Mode = mode;
 
-        if (model.UserRoles.Any(r => r.Name.Equals(OperationsRole, StringComparison.OrdinalIgnoreCase) && !r.IsSelected))
-        {
-            model.AccessRequired = [];
-            model.Country = [];
-        }
+        ValidateUserViewModel(model);
 
         var context = new ValidationContext<UserViewModel>(model);
         var validationResult = await validator.ValidateAsync(context);
@@ -294,17 +338,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
             }
         }
 
-        // assign access required claims to user
-        var updateAccessRequired = await UpdateUserAccessRequired(model);
-
-        if (!updateAccessRequired.IsSuccessStatusCode)
-        {
-            return updateAccessRequired.StatusCode switch
-            {
-                HttpStatusCode.Forbidden => Forbid(),
-                _ => View(Error, this.ProblemResult(updateAccessRequired))
-            };
-        }
+        // assign to selected review bodies here
+        await AddUpdateUsersToReviewBodies(model, model.ReviewBodies?.ToList());
 
         return mode switch
         {
@@ -331,6 +366,7 @@ public class UsersController(IUserManagementService userManagementService, IVali
         {
             var model = new UserViewModel(response.Content!);
             var availableRoles = await GetAlluserRoles();
+            var activeReviewBodies = await GetActiveReviewBodies();
 
             foreach (var role in availableRoles)
             {
@@ -347,6 +383,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
                     });
                 }
             }
+
+            model.ReviewBodies = await GetUserReviewBodies(Guid.Parse(model.Id));
 
             return View(EditUserView, model);
         }
@@ -553,7 +591,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
             .ToList();
 
         // call update roles that will delete and add apprpriate roles
-        var response = await userManagementService.UpdateRoles(model.Email, string.Join(',', rolesToDelete), string.Join(',', rolesToAdd));
+        var response = await userManagementService.UpdateRoles(model.Email, string.Join(',', rolesToDelete),
+            string.Join(',', rolesToAdd));
 
         // return the view if successfull
         if (response.IsSuccessStatusCode)
@@ -575,7 +614,8 @@ public class UsersController(IUserManagementService userManagementService, IVali
     /// Displays the user audit trail
     /// </summary>
     [HttpGet]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Email is needed for backlink in view")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter",
+        Justification = "Email is needed for backlink in view")]
     public async Task<IActionResult> UserAuditTrail(string userId, string email, string name)
     {
         var userAuditTrail = await userManagementService.GetUserAuditTrail(userId);
@@ -596,9 +636,13 @@ public class UsersController(IUserManagementService userManagementService, IVali
 
     [Route("/admin/applyfilters", Name = "admin:applyfilters")]
     [HttpPost]
-    public async Task<IActionResult> ApplyFilters(UserSearchViewModel model,
+    [HttpGet]
+    public async Task<IActionResult> ApplyFilters(
+        UserSearchViewModel model,
         string? sortField = nameof(UserViewModel.GivenName),
-        string? sortDirection = SortDirections.Descending)
+        string? sortDirection = SortDirections.Descending,
+        [FromQuery] string? complexSearchQuery = null,
+        [FromQuery] bool fromPagination = false)
     {
         var validationResult = await searchValidator.ValidateAsync(model.Search);
 
@@ -612,8 +656,15 @@ public class UsersController(IUserManagementService userManagementService, IVali
             return View(nameof(Index), model); // Return with validation errors
         }
 
-        // Call the Index action directly, passing the model and default paging values
-        return await Index(1, 20, sortField,sortDirection, model, null, false);
+        // Call Index with matching parameter set
+        return await Index(
+            1, // pageNumber
+            20, // pageSize
+            sortField,
+            sortDirection,
+            model,
+            complexSearchQuery,
+            fromPagination);
     }
 
     [HttpGet]
@@ -695,10 +746,104 @@ public class UsersController(IUserManagementService userManagementService, IVali
 
         if (availableRoles.IsSuccessStatusCode && availableRoles.Content?.Roles != null)
         {
-            return availableRoles.Content.Roles.ToList();
+            return availableRoles.Content.Roles.OrderBy(x => x.Name).ToList();
         }
 
         return [];
+    }
+
+    private async Task<IList<ReviewBodyDto>> GetActiveReviewBodies()
+    {
+        var activeReviewBodies = await reviewBodyService.GetAllActiveReviewBodies();
+
+        if (activeReviewBodies.IsSuccessStatusCode && activeReviewBodies.Content?.ReviewBodies != null)
+        {
+            return activeReviewBodies.Content.ReviewBodies.ToList();
+        }
+
+        return [];
+    }
+
+
+    private async Task<IList<UserReviewBodyViewModel>> GetUserReviewBodies(Guid id)
+    {
+        var activeReviewBodies = await GetActiveReviewBodies(); // IList<ReviewBodyDto>
+        var userReviewBodiesResponse = await reviewBodyService.GetUserReviewBodies(id);
+
+        if (userReviewBodiesResponse is { IsSuccessStatusCode: true, Content: not null })
+        {
+            var selectedIds = userReviewBodiesResponse.Content.Select(x => x.Id).ToHashSet();
+
+            // (Re)build the model list in the required shape
+
+            return (activeReviewBodies ?? Enumerable.Empty<ReviewBodyDto>()).Select(reviewBody =>
+                new UserReviewBodyViewModel
+                {
+                    IsSelected = selectedIds.Contains(reviewBody.Id), Id = reviewBody.Id,
+                    RegulatoryBodyName = reviewBody.RegulatoryBodyName
+                }).ToList();
+        }
+
+        return [];
+    }
+
+    private async Task AddUpdateUsersToReviewBodies(UserViewModel model,
+        List<UserReviewBodyViewModel>? userReviewBodyViewModels)
+    {
+        if (userReviewBodyViewModels != null)
+        {
+            var userId = Guid.Empty;
+
+            if (!string.IsNullOrEmpty(model.Id))
+            {
+                userId = Guid.Parse(model.Id);
+            }
+            else
+            {
+                // Get user as it's a new user and don't need to remove review bodies user
+                var userResponse = await userManagementService.GetUser(null, model.Email);
+
+                if (userResponse.IsSuccessStatusCode && userResponse.Content?.User != null)
+                {
+                    userId = Guid.Parse(userResponse.Content?.User?.Id ?? string.Empty);
+                }
+            }
+
+            // existingSelections: previously assigned review bodies for the user
+            var existingSelections = await GetUserReviewBodies(userId);
+
+            // Build fast lookup sets
+            var existingIds = existingSelections
+                .Where(x => x.IsSelected)
+                .Select(x => x.Id) // FK to ReviewBody
+                .ToHashSet();
+
+            var currentlySelectedIds = userReviewBodyViewModels
+                .Where(x => x.IsSelected)
+                .Select(x => x.Id)
+                .ToHashSet();
+
+            // Compute deltas
+            var toRemove = existingIds.Except(currentlySelectedIds);   // previously selected, now unselected -> remove
+            var toAdd = currentlySelectedIds.Except(existingIds);   // newly selected, not already assigned -> add
+
+            // Remove only those that were previously selected but are no longer selected
+            foreach (var rbId in toRemove)
+            {
+                await reviewBodyService.RemoveUserFromReviewBody(rbId, userId);
+            }
+
+            // Add only those newly selected that aren't already in existing selections
+            foreach (var rbId in toAdd)
+            {
+                await reviewBodyService.AddUserToReviewBody(new ReviewBodyUserDto
+                {
+                    DateAdded = DateTime.UtcNow,
+                    UserId = userId,
+                    Id = rbId
+                });
+            }
+        }
     }
 
     private async Task<ServiceResponse> CreateOrUpdateUser(UserViewModel model, string mode)
@@ -730,18 +875,13 @@ public class UsersController(IUserManagementService userManagementService, IVali
 
         // Collect all selected roles
         var selectedRoles = model
-                                .UserRoles!
-                                .Where(ur => ur.IsSelected)
-                                .Select(ur => ur.Name);
+            .UserRoles!
+            .Where(ur => ur.IsSelected)
+            .Select(ur => ur.Name);
 
         // Convert to a comma-separated string
         string userRoles = string.Join(",", selectedRoles);
 
         return await userManagementService.UpdateRoles(model.Email, rolesToRemove, userRoles);
-    }
-
-    private async Task<ServiceResponse> UpdateUserAccessRequired(UserViewModel model)
-    {
-        return await userManagementService.UpdateUserAccess(model.Email, model.AccessRequired);
     }
 }

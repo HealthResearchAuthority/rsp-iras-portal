@@ -18,6 +18,12 @@ public interface IReviewBodyServiceClient
     public Task<IApiResponse<AllReviewBodiesResponse>> GetAllReviewBodies(int pageNumber = 1, int pageSize = 20, string? sortField = nameof(ReviewBodyDto.RegulatoryBodyName), string? sortDirection = SortDirections.Ascending, ReviewBodySearchRequest? searchQuery = null);
 
     /// <summary>
+    /// Gets all review bodies
+    /// </summary>
+    [Post("/reviewbody/allactive")]
+    public Task<IApiResponse<AllReviewBodiesResponse>> GetAllActiveReviewBodies(string? sortField = nameof(ReviewBodyDto.RegulatoryBodyName), string? sortDirection = SortDirections.Ascending);
+
+    /// <summary>
     /// Gets review bodies by Id
     /// </summary>
     [Get("/reviewbody/{id}")]
@@ -58,4 +64,11 @@ public interface IReviewBodyServiceClient
 
     [Post("/reviewbody/removeuser")]
     public Task<IApiResponse<ReviewBodyUserDto>> RemoveUserFromReviewBody(Guid reviewBodyId, Guid userId);
+
+    /// <summary>
+    /// Gets review bodies by Id
+    /// </summary>
+    [Get("/reviewbody/allbyuser/{id}")]
+    public Task<IApiResponse<List<ReviewBodyUserDto>>> GetUserReviewBodies(Guid id);
+
 }

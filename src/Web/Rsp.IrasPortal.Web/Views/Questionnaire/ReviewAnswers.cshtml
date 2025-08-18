@@ -6,8 +6,9 @@
 @model QuestionnaireViewModel
 @inject IFeatureManager featureManager
 @{
-    // Try to read the IRAS ID from TempData, default to 0 if missing
+    // Try to read the IRAS ID from TempData, default to 0 if missing and Project Record Id default to empty string if missing
     var irasId = TempData.Peek(TempDataKeys.IrasId) as int? ?? 0;
+    var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty;
 
     // Group questions by their Section and order them by Sequence
     var groupedSections = Model.Questions
@@ -149,7 +150,7 @@
                 @{
                     ViewBag.Style = "govuk-button govuk-button--secondary";
                 }
-                <partial name="_SubmitButton" model="@("app:projectoverview", "Save for later", new Dictionary<string, string> { })" />
+                <partial name="_SubmitButton" model="@("pov:projectdetails", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = projectRecordId })" />
             </div>
         </form>
     </div>

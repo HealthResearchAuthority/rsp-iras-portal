@@ -39,7 +39,5 @@ public interface IUserManagementService : IInterceptable
 
     Task<ServiceResponse<UserAuditTrailResponse>> GetUserAuditTrail(string userId);
 
-    Task<ServiceResponse> UpdateUserAccess(string userEmail, IEnumerable<string> accessRequired);
-
     Task<ServiceResponse> UpdateLastLogin(string email);
 }

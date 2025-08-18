@@ -7,7 +7,6 @@ using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Services.Extensions;
 using Rsp.IrasPortal.Web.Controllers;
-using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApplicationControllerTests;
 
@@ -39,23 +38,14 @@ public class MyApplicationsTests : TestServiceBase<ApplicationController>
     [Fact]
     public async Task MyApplications_WhenFeatureEnabled_AndServiceReturnsSuccess_ReturnsViewWithApplications()
     {
-        var avm = new ApplicationsViewModel
-        {
-            Applications = new List<IrasApplicationResponse>
-            {
-                new()
-                {
-                    Id = "1234567890"
-                }
-            }
-        };
-
-
         // Arrange
         var apiResponse = new ApiResponse<IEnumerable<IrasApplicationResponse>>
         (
             new HttpResponseMessage(HttpStatusCode.OK),
-            avm.Applications,
+            new List<IrasApplicationResponse>
+            {
+                new IrasApplicationResponse { Id = "1234567890" }
+            },
             new RefitSettings()
         );
 
@@ -63,7 +53,6 @@ public class MyApplicationsTests : TestServiceBase<ApplicationController>
             .GetMock<IApplicationsService>()
             .Setup(s => s.GetApplicationsByRespondent(It.IsAny<string>()))
             .ReturnsAsync(apiResponse.ToServiceResponse());
-
 
         var apiResponseQuestions = new ApiResponse<IEnumerable<CategoryDto>>
         (
@@ -101,12 +90,10 @@ public class MyApplicationsTests : TestServiceBase<ApplicationController>
             new RefitSettings()
         );
 
-
         Mocker
             .GetMock<IApplicationsService>()
             .Setup(s => s.GetApplicationsByRespondent(It.IsAny<string>()))
             .ReturnsAsync(apiResponse.ToServiceResponse());
-
 
         // Act
         var result = await Sut.MyApplications();
@@ -120,7 +107,6 @@ public class MyApplicationsTests : TestServiceBase<ApplicationController>
     public async Task MyApplications_ClearsSessionValues()
     {
         // Arrange
-        // Arrange
         var apiResponse = new ApiResponse<IEnumerable<IrasApplicationResponse>>
         (
             new HttpResponseMessage(HttpStatusCode.OK),
@@ -132,7 +118,6 @@ public class MyApplicationsTests : TestServiceBase<ApplicationController>
             .GetMock<IApplicationsService>()
             .Setup(s => s.GetApplicationsByRespondent(It.IsAny<string>()))
             .ReturnsAsync(apiResponse.ToServiceResponse());
-
 
         var apiResponseQuestions = new ApiResponse<IEnumerable<CategoryDto>>
         (

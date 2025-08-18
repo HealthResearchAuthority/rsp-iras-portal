@@ -1,0 +1,45 @@
+﻿@using Rsp.IrasPortal.Application.Constants;
+@model ProjectOverviewModel
+
+@{
+    ViewBag.Title = "Project overview";
+    ViewBag.Active = ProjectOverview.KeyProjectRoles;
+}
+
+@section BackNavigation {
+    <partial name="_BackNavigation" model="@("app:Welcome","Back", new Dictionary<string, string>())" />
+}
+
+<partial name="_NavigationHeaderPartial" model="@Model" />
+
+<div class="govuk-grid-row">
+    <div class="govuk-width-container govuk-!-margin-top-4">
+        <h2 class="govuk-heading-m">Key Project Roles</h2>
+        <dl class="govuk-summary-list">
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    Chief Investigator
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    @Model.ChiefInvestigator
+                </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    Primary sponsor organisation
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    @Model.PrimarySponsorOrganisation
+                </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    Sponsor contact
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    @Model.SponsorContact
+                </dd>
+            </div>        
+        </dl>
+    </div>
+</div>

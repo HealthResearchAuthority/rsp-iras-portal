@@ -59,7 +59,7 @@
 
 		<tr class="govuk-table__row">
 			<td class="govuk-table__cell"><b>Email address</b></td>
-			<td class="govuk-table__cell">
+			<td class="govuk-table__cell line-break-anywhere">
 				@Model.Email
 				<input type="hidden" asp-for="Email" name="Email" value="@Model.Email" />
 			</td>
@@ -134,21 +134,15 @@
 			</td>
 		</tr>
 
-		@if (Model.UserRoles != null && Model.UserRoles.Any(role => role.Name == "operations"))
-		{
-			<tr class="govuk-table__row">
-				<td class="govuk-table__cell"><b>Committee</b></td>
-				<td class="govuk-table__cell">
-				</td>
-				<td class="govuk-table__cell govuk-table__cell--numeric">
-					@{
-						await RenderEditLink();
-					}
-				</td>
-			</tr>
-		}
 
-		@if (Model.UserRoles != null && Model.UserRoles.Any(role => role.Name == "operations") && Model.Country != null && Model.Country.Any())
+
+    @if (Model.UserRoles != null
+         && Model.UserRoles.Any(role =>
+             role.IsSelected &&
+             !string.IsNullOrWhiteSpace(role.DisplayName) &&
+             role.DisplayName.Equals("team manager", StringComparison.OrdinalIgnoreCase))
+         && Model.Country != null
+         && Model.Country.Any())
 		{
 			<tr class="govuk-table__row">
 				<td class="govuk-table__cell"><b>Country</b></td>
@@ -167,38 +161,44 @@
 			</tr>
 		}
 
-		@if (Model.UserRoles != null && Model.UserRoles.Any(role => role.Name == "operations") && Model.AccessRequired != null && Model.AccessRequired.Any())
-		{
-			<tr class="govuk-table__row">
-				<td class="govuk-table__cell"><b>Access required</b></td>
-				<td class="govuk-table__cell">
-					@string.Join(", ", Model.AccessRequired)
-					@for (int i = 0; i <= Model.AccessRequired.Count - 1; i++)
-					{
-						<input type="hidden" asp-for="AccessRequired[@i]" name="AccessRequired[@i]" value="@Model.AccessRequired[i]" />
-					}
-				</td>
-				<td class="govuk-table__cell govuk-table__cell--numeric">
-					@{
-						await RenderEditLink();
-					}
-				</td>
-			</tr>
-		}
+    @if (Model.UserRoles != null
+         && Model.UserRoles.Any(role =>
+             role.IsSelected &&
+             !string.IsNullOrWhiteSpace(role.DisplayName) &&
+             (role.DisplayName.Equals("study-wide reviewer", StringComparison.OrdinalIgnoreCase) ||
+              role.DisplayName.Equals("workflow co-ordinator", StringComparison.OrdinalIgnoreCase)))
+         && Model.ReviewBodies != null
+         && Model.ReviewBodies.Any(rb => rb.IsSelected))
+        {
+            <tr class="govuk-table__row">
+                <td class="govuk-table__cell"><b>Review body</b></td>
+                <td class="govuk-table__cell">
+                    @{
+                        var selectedReviewBodies = string.Join(", ",
+                            Model.ReviewBodies
+                                .Where(r => r.IsSelected)
+                                .Select(r => r?.RegulatoryBodyName));
+                    }
 
-		@if (Model.UserRoles != null && Model.UserRoles.Any(role => role.Name == "operations"))
-		{
-			<tr class="govuk-table__row">
-				<td class="govuk-table__cell"><b>Review body</b></td>
-				<td class="govuk-table__cell">
-				</td>
-				<td class="govuk-table__cell govuk-table__cell--numeric">
-					@{
-						await RenderEditLink();
-					}
-				</td>
-			</tr>
-		}
+                    @selectedReviewBodies
+
+                    @foreach (var (rb, index) in Model.ReviewBodies.Select((rb, index) => (rb, index)))
+                    {
+                        <input type="hidden" asp-for="ReviewBodies![index].Id" />
+                        <input type="hidden" asp-for="ReviewBodies![index].RegulatoryBodyName" />
+                        <input type="hidden" asp-for="ReviewBodies![index].IsSelected" />
+                    }
+                </td>
+                <td class="govuk-table__cell govuk-table__cell--numeric">
+                    @{
+                        await RenderEditLink();
+                    }
+                </td>
+            </tr>
+        }
+
+
+
 
 		@if (edit)
 		{
