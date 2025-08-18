@@ -11,6 +11,11 @@
     <partial name="_BackNavigation" model="@("app:Welcome","Back", new Dictionary<string, string>())" />
 }
 
+@if (TempData[TempDataKeys.ShowNotificationBanner] is not null)
+{
+    <partial name="_NotificationBanner" model="@("Success", "Modification progress successfully saved")" />
+}
+
 <partial name="_NavigationHeaderPartial" model="@Model" />
 
 <div class="govuk-grid-row">
@@ -32,21 +37,7 @@
                 <dd class="govuk-summary-list__value">
                     @Model.ProjectTitle
                 </dd>
-            </div>
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key">
-                    Full project title
-                </dt>
-                <dd class="govuk-summary-list__value">               
-                </dd>
-            </div>
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key">
-                    REC name
-                </dt>
-                <dd class="govuk-summary-list__value">                
-                </dd>
-            </div>
+            </div>            
         </dl>
     </div>
 </div>
