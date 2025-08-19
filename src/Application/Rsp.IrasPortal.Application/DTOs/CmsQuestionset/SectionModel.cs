@@ -15,6 +15,11 @@ public class SectionModel
     public string? SectionId { get; set; }
 
     /// <summary>
+    /// Category for the section, manually assigned by a CMS user
+    /// </summary>
+    public string? CategoryId { get; set; }
+
+    /// <summary>
     /// Contains the questions in this section
     /// </summary>
     public IList<QuestionModel> Questions { get; set; } = new List<QuestionModel>();

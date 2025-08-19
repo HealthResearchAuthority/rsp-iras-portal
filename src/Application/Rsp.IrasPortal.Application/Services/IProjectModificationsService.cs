@@ -100,7 +100,6 @@ public interface IProjectModificationsService : IInterceptable
     Task<ServiceResponse<IEnumerable<GetAreaOfChangesResponse>>> GetAreaOfChanges();
 
 
-    ///<summary>
     /// Creates one or more project modification documents based on the provided request data.
     /// </summary>
     /// <param name="projectModificationDocumentRequest">

@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
 using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Extensions;
@@ -27,6 +27,7 @@ public partial class ProjectModificationController
     IRespondentService respondentService,
     IQuestionSetService questionSetService,
     IRtsService rtsService,
+    ICmsQuestionsetService cmsQuestionsetService,
     IValidator<AreaOfChangeViewModel> areaofChangeValidator,
     IValidator<SearchOrganisationViewModel> searchOrganisationValidator,
     IValidator<DateViewModel> dateViewModelValidator,
@@ -36,8 +37,8 @@ public partial class ProjectModificationController
 ) : Controller
 
 {
-    private const string SelectAreaOfChange = "Select area of change";
-    private const string SelectSpecificAreaOfChange = "Select specific change";
+    private const string SelectAreaOfChange = "Select Area of change";
+    private const string SelectSpecificAreaOfChange = "Select Specific change";
 
     /// <summary>
     /// Initiates the creation of a new project modification.
@@ -108,36 +109,38 @@ public partial class ProjectModificationController
     [HttpGet]
     public async Task<IActionResult> AreaOfChange()
     {
-        var versionsResponse = await questionSetService.GetVersions();
+        var questionSetResponse = await cmsQuestionsetService.GetModificationQuestionSet();
 
         // a published version of question set must exist
         // so that it can be used when saving the modification/changes
-        if (!versionsResponse.IsSuccessStatusCode)
+        if (!questionSetResponse.IsSuccessStatusCode)
         {
-            return this.ServiceError(versionsResponse);
+            return this.ServiceError(questionSetResponse);
         }
 
-        var versions = versionsResponse.Content!;
+        var questionSet = questionSetResponse.Content!;
 
-        var publishedVersion = versions.SingleOrDefault(version => version.IsPublished)?.VersionId;
+        var publishedVersion = questionSet.Version;
 
         if (publishedVersion == null)
         {
-            return this.ServiceError(versionsResponse);
+            return this.ServiceError(questionSetResponse);
         }
 
         TempData[TempDataKeys.QuestionSetPublishedVersionId] = publishedVersion;
 
-        var response = await projectModificationsService.GetAreaOfChanges();
+        // get the initial modification questions from CMS
+        var startingQuestionsResponse = await cmsQuestionsetService.GetInitialModificationQuestions();
 
-        // If the service call failed, return a generic error page
-        if (!response.IsSuccessStatusCode)
+        if (!startingQuestionsResponse.IsSuccessStatusCode)
         {
-            return this.ServiceError(response);
+            return this.ServiceError(startingQuestionsResponse);
         }
 
+        var startingQuestions = startingQuestionsResponse.Content!;
+
         // Handle case when no area of change data is returned from service
-        if (response.Content == null)
+        if (startingQuestions == null)
         {
             return View(new AreaOfChangeViewModel
             {
@@ -153,7 +156,7 @@ public partial class ProjectModificationController
         }
 
         // Store the list of area of changes in TempData (as serialized JSON string)
-        TempData[TempDataKeys.ProjectModification.AreaOfChanges] = JsonSerializer.Serialize(response.Content);
+        TempData[TempDataKeys.ProjectModification.AreaOfChanges] = JsonSerializer.Serialize(startingQuestions.AreasOfChange);
 
         // Set the modification change marker to an empty GUID only if no change has been applied yet.
         if (!(TempData[TempDataKeys.ProjectModification.ProjectModificationChangeMarker] is Guid))
@@ -161,22 +164,90 @@ public partial class ProjectModificationController
             TempData[TempDataKeys.ProjectModification.ProjectModificationChangeMarker] = Guid.Empty;
         }
 
-        var viewModel = new AreaOfChangeViewModel
+        var viewModel = TempData.PopulateBaseProjectModificationProperties(new AreaOfChangeViewModel
         {
-            PageTitle = SelectAreaOfChange,
-            ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty,
-            ShortTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
-            IrasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty,
-            ModificationIdentifier = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string ?? string.Empty,
-            AreaOfChangeOptions = response.Content
-                .Select(a => new SelectListItem { Value = a.Id.ToString(), Text = a.Name })
+            AreaOfChangeOptions = startingQuestions.AreasOfChange
+                .Select(a => new SelectListItem { Value = a.AutoGeneratedId, Text = a.OptionName })
                 .Prepend(new SelectListItem { Value = "", Text = SelectAreaOfChange }),
-            SpecificChangeOptions = [new SelectListItem { Value = "", Text = SelectSpecificAreaOfChange }]
-        };
+            SpecificChangeOptions = [new SelectListItem { Value = "", Text = SelectSpecificAreaOfChange }],
+        });
+
+        viewModel.PageTitle = SelectAreaOfChange;
 
         // Populate the dropdown options based on any existing selections
-        return View(viewModel);
+        return View("AreaOfChange", viewModel);
     }
+
+    ///// <summary>
+    ///// Displays the Area of Change selection screen.
+    ///// Retrieves area of change data and stores it in session for later reuse.
+    ///// </summary>
+    //[HttpGet]
+    //public async Task<IActionResult> AreaOfChange()
+    //{
+    //    var versionsResponse = await questionSetService.GetVersions();
+
+    //    // a published version of question set must exist
+    //    // so that it can be used when saving the modification/changes
+    //    if (!versionsResponse.IsSuccessStatusCode)
+    //    {
+    //        return this.ServiceError(versionsResponse);
+    //    }
+
+    //    var versions = versionsResponse.Content!;
+
+    //    var publishedVersion = versions.SingleOrDefault(version => version.IsPublished)?.VersionId;
+
+    //    if (publishedVersion == null)
+    //    {
+    //        return this.ServiceError(versionsResponse);
+    //    }
+
+    //    TempData[TempDataKeys.QuestionSetPublishedVersionId] = publishedVersion;
+
+    //    var response = await projectModificationsService.GetAreaOfChanges();
+
+    //    // If the service call failed, return a generic error page
+    //    if (!response.IsSuccessStatusCode)
+    //    {
+    //        return this.ServiceError(response);
+    //    }
+
+    //    // Handle case when no area of change data is returned from service
+    //    if (response.Content == null)
+    //    {
+    //        return View(new AreaOfChangeViewModel
+    //        {
+    //            AreaOfChangeOptions =
+    //            [
+    //                new() { Text = SelectAreaOfChange, Value = "" }
+    //            ],
+    //            SpecificChangeOptions =
+    //            [
+    //                new() { Text = SelectSpecificAreaOfChange, Value = "" }
+    //            ]
+    //        });
+    //    }
+
+    //    // Store the list of area of changes in TempData (as serialized JSON string)
+    //    TempData[TempDataKeys.ProjectModification.AreaOfChanges] = JsonSerializer.Serialize(response.Content);
+
+    //    var viewModel = new AreaOfChangeViewModel
+    //    {
+    //        PageTitle = SelectAreaOfChange,
+    //        ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty,
+    //        ShortTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
+    //        IrasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty,
+    //        ModificationIdentifier = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string ?? string.Empty,
+    //        AreaOfChangeOptions = response.Content
+    //            .Select(a => new SelectListItem { Value = a.Id.ToString(), Text = a.Name })
+    //            .Prepend(new SelectListItem { Value = "", Text = SelectAreaOfChange }),
+    //        SpecificChangeOptions = [new SelectListItem { Value = "", Text = SelectSpecificAreaOfChange }]
+    //    };
+
+    //    // Populate the dropdown options based on any existing selections
+    //    return View(viewModel);
+    //}
 
     /// <summary>
     /// Returns the specific changes related to a selected Area of Change.
@@ -193,13 +264,13 @@ public partial class ProjectModificationController
         }
 
         // Deserialize the area of changes from TempData
-        var areaOfChanges = JsonSerializer.Deserialize<List<GetAreaOfChangesResponse>>(tempDataString)!;
+        var areaOfChanges = JsonSerializer.Deserialize<List<AreaOfChangeDto>>(tempDataString)!;
 
         // Find the specific area of change based on the provided ID
-        var selectedArea = areaOfChanges.FirstOrDefault(a => a.Id == areaOfChangeId);
+        var selectedArea = areaOfChanges.FirstOrDefault(a => a.AutoGeneratedId == areaOfChangeId);
 
         // If no area is found, return an empty list
-        var specificChanges = selectedArea?.ModificationSpecificAreaOfChanges?.ToList() ?? [];
+        var specificChanges = selectedArea?.SpecificAreasOfChange ?? [];
 
         // Create a SelectListItem list for the specific changes
         var selectList = new List<SelectListItem> { new() { Value = "", Text = SelectSpecificAreaOfChange } };
@@ -207,8 +278,8 @@ public partial class ProjectModificationController
         // Add each specific change to the SelectListItem list
         selectList.AddRange(specificChanges.Select(sc => new SelectListItem
         {
-            Value = sc.Id.ToString(),
-            Text = sc.Name
+            Value = sc.AutoGeneratedId,
+            Text = sc.OptionName
         }));
 
         // Return the list as a JSON result
@@ -248,11 +319,33 @@ public partial class ProjectModificationController
             return RedirectToRoute("pov:postapproval", new { model.ProjectRecordId });
         }
 
-        // Retrieve the journey type from the selected specific change
-        var journeyType = GetJourneyTypeFromSession(model);
+        var tempDataString = TempData.Peek(TempDataKeys.ProjectModification.AreaOfChanges) as string;
 
-        // If no journey type is specified, return the AreaOfChange view
-        return RedirectBasedOnJourneyType(journeyType, model);
+        // Deserialize the area of changes from TempData
+        var areaOfChanges = JsonSerializer.Deserialize<List<AreaOfChangeDto>>(tempDataString)!;
+
+        // Find the change based on the selected area and specific change IDs
+        var areaOfChange = areaOfChanges
+            .FirstOrDefault(a => a.AutoGeneratedId == model.AreaOfChangeId);
+
+        // Find the specific change based on the selected area and specific change IDs
+        var selectedChange = areaOfChange.SpecificAreasOfChange
+            .FirstOrDefault(sc => sc.AutoGeneratedId == model.SpecificChangeId);
+
+        var modificationJourney = await cmsQuestionsetService.GetModificationsJourney(selectedChange.AutoGeneratedId);
+
+        var sections = modificationJourney.Content.Sections;
+
+        return RedirectToRoute("mqc:displayquestionnaire", new
+        {
+            sectionId = sections[0].Id
+        });
+
+        //// Retrieve the journey type from the selected specific change
+        //var journeyType = GetJourneyTypeFromSession(model);
+
+        //// If no journey type is specified, return the AreaOfChange view
+        //return RedirectBasedOnJourneyType(journeyType, model);
     }
 
     /// <summary>
@@ -269,7 +362,7 @@ public partial class ProjectModificationController
 
         if (!string.IsNullOrWhiteSpace(tempDataString))
         {
-            var areaOfChanges = JsonSerializer.Deserialize<List<GetAreaOfChangesResponse>>(tempDataString)!;
+            var areaOfChanges = JsonSerializer.Deserialize<List<AreaOfChangeDto>>(tempDataString)!;
             PopulateDropdownOptions(model, areaOfChanges);
         }
     }
@@ -277,26 +370,26 @@ public partial class ProjectModificationController
     /// <summary>
     /// Populates AreaOfChange and SpecificChange dropdowns based on current selection.
     /// </summary>
-    private static void PopulateDropdownOptions(AreaOfChangeViewModel model, List<GetAreaOfChangesResponse> areaOfChanges)
+    private static void PopulateDropdownOptions(AreaOfChangeViewModel model, List<AreaOfChangeDto> areaOfChanges)
     {
         model.AreaOfChangeOptions = areaOfChanges
             .Select(a => new SelectListItem
             {
-                Value = a.Id.ToString(),
-                Text = a.Name,
-                Selected = a.Id == model.AreaOfChangeId
+                Value = a.AutoGeneratedId,
+                Text = a.OptionName,
+                Selected = a.AutoGeneratedId == model.AreaOfChangeId
             })
             .Prepend(new SelectListItem { Value = "", Text = SelectAreaOfChange });
 
         if (model.AreaOfChangeId != null)
         {
             var selectedArea = areaOfChanges.FirstOrDefault(a => a.Id == model.AreaOfChangeId);
-            model.SpecificChangeOptions = selectedArea?.ModificationSpecificAreaOfChanges?
+            model.SpecificChangeOptions = selectedArea?.SpecificAreasOfChange?
                 .Select(sc => new SelectListItem
                 {
-                    Value = sc.Id.ToString(),
-                    Text = sc.Name,
-                    Selected = sc.Id.ToString() == model.SpecificChangeId
+                    Value = sc.AutoGeneratedId,
+                    Text = sc.OptionName,
+                    Selected = sc.AutoGeneratedId == model.SpecificChangeId
                 })
                 .Prepend(new SelectListItem { Value = "", Text = SelectSpecificAreaOfChange })
                 ?? [new() { Value = "", Text = SelectSpecificAreaOfChange }];
@@ -383,7 +476,7 @@ public partial class ProjectModificationController
         }
 
         // Deserialize the area of changes from TempData
-        var areaOfChanges = JsonSerializer.Deserialize<List<GetAreaOfChangesResponse>>(tempDataString)!;
+        var areaOfChanges = JsonSerializer.Deserialize<List<AreaOfChangeDto>>(tempDataString)!;
 
         // Find the change based on the selected area and specific change IDs
         var areaOfChange = areaOfChanges
@@ -392,13 +485,13 @@ public partial class ProjectModificationController
         // Find the specific change based on the selected area and specific change IDs
         var selectedChange = areaOfChanges
             .FirstOrDefault(a => a.Id == model.AreaOfChangeId)?
-            .ModificationSpecificAreaOfChanges?
-            .FirstOrDefault(sc => sc.Id.ToString() == model.SpecificChangeId);
+            .SpecificAreasOfChange?
+            .FirstOrDefault(sc => sc.Id == model.SpecificChangeId);
 
         // Store the name of the specific area of change in TempData for later use
-        TempData[TempDataKeys.ProjectModification.AreaOfChangeText] = areaOfChange?.Name ?? string.Empty;
-        TempData[TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = selectedChange?.Name ?? string.Empty;
-        return selectedChange?.JourneyType;
+        TempData[TempDataKeys.ProjectModification.AreaOfChangeText] = areaOfChange?.OptionName ?? string.Empty;
+        TempData[TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = selectedChange?.OptionName ?? string.Empty;
+        return selectedChange?.ToString();
     }
 
     /// <summary>
