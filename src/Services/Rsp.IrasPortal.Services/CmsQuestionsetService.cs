@@ -10,22 +10,6 @@ namespace Rsp.IrasPortal.Services;
 
 public class CmsQuestionsetService(ICmsQuestionSetServiceClient client) : ICmsQuestionsetService
 {
-    public async Task<ServiceResponse<StartingQuestionsModel>> GetInitialModificationQuestions()
-    {
-        var responce = await client.GetInitialModificationQuestions();
-
-        // convert to service response
-        return responce.ToServiceResponse();
-    }
-
-    public async Task<ServiceResponse<CmsQuestionSetResponse>> GetModificationsJourney(string specificChangeId)
-    {
-        var responce = await client.GetModificationsJourney(specificChangeId);
-
-        // convert to service response
-        return responce.ToServiceResponse();
-    }
-
     public async Task<ServiceResponse<QuestionSectionsResponse>> GetNextQuestionSection(string currentSectionId)
     {
         var responce = await client.GetNextQuestionSection(currentSectionId);
@@ -61,6 +45,46 @@ public class CmsQuestionsetService(ICmsQuestionSetServiceClient client) : ICmsQu
     public async Task<ServiceResponse<CmsQuestionSetResponse>> GetQuestionSet(string? sectionId = null, string? questionSetId = null)
     {
         var responce = await client.GetQuestionSet(sectionId, questionSetId);
+
+        // convert to service response
+        return responce.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse<StartingQuestionsDto>> GetInitialModificationQuestions()
+    {
+        var responce = await client.GetInitialModificationQuestions();
+
+        // convert to service response
+        return responce.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse<QuestionSectionsResponse>> GetModificationNextQuestionSection(string currentSectionId)
+    {
+        var responce = await client.GetModificationNextQuestionSection(currentSectionId);
+
+        // convert to service response
+        return responce.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse<QuestionSectionsResponse>> GetModificationPreviousQuestionSection(string currentSectionId)
+    {
+        var responce = await client.GetModificationPreviousQuestionSection(currentSectionId);
+
+        // convert to service response
+        return responce.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse<CmsQuestionSetResponse>> GetModificationQuestionSet(string? sectionId = null, string? questionSetId = null)
+    {
+        var responce = await client.GetModificationQuestionSet(sectionId, questionSetId);
+
+        // convert to service response
+        return responce.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse<CmsQuestionSetResponse>> GetModificationsJourney(string specificChangeId)
+    {
+        var responce = await client.GetModificationsJourney(specificChangeId);
 
         // convert to service response
         return responce.ToServiceResponse();
