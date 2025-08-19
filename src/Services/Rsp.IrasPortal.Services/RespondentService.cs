@@ -60,23 +60,23 @@ public class RespondentService(IRespondentServiceClient respondentServiceClient)
     /// <summary>
     /// Gets all respondent answers for a specific project modification change.
     /// </summary>
-    /// <param name="projectModificationChangeId">The unique identifier for the project modification change.</param>
+    /// <param name="modificationChangeId">The unique identifier for the project modification change.</param>
     /// <returns>A service response containing a collection of respondent answers.</returns>
-    public async Task<ServiceResponse<IEnumerable<RespondentAnswerDto>>> GetModificationAnswers(Guid projectModificationChangeId)
+    public async Task<ServiceResponse<IEnumerable<RespondentAnswerDto>>> GetModificationAnswers(Guid modificationChangeId, string projectRecordId)
     {
-        var apiResponse = await respondentServiceClient.GetModificationAnswers(projectModificationChangeId);
+        var apiResponse = await respondentServiceClient.GetModificationAnswers(modificationChangeId, projectRecordId);
         return apiResponse.ToServiceResponse();
     }
 
     /// <summary>
     /// Gets all respondent answers for a specific project modification change and category.
     /// </summary>
-    /// <param name="projectModificationChangeId">The unique identifier for the project modification change.</param>
+    /// <param name="modificationChangeId">The unique identifier for the project modification change.</param>
     /// <param name="categoryId">The unique identifier for the question category.</param>
     /// <returns>A service response containing a collection of respondent answers.</returns>
-    public async Task<ServiceResponse<IEnumerable<RespondentAnswerDto>>> GetModificationAnswers(Guid projectModificationChangeId, string categoryId)
+    public async Task<ServiceResponse<IEnumerable<RespondentAnswerDto>>> GetModificationAnswers(Guid modificationChangeId, string projectRecordId, string categoryId)
     {
-        var apiResponse = await respondentServiceClient.GetModificationAnswers(projectModificationChangeId, categoryId);
+        var apiResponse = await respondentServiceClient.GetModificationAnswers(modificationChangeId, projectRecordId, categoryId);
         return apiResponse.ToServiceResponse();
     }
 
