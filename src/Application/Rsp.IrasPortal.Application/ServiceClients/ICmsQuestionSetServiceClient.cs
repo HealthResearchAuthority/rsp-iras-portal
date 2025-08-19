@@ -7,24 +7,33 @@ namespace Rsp.IrasPortal.Application.ServiceClients;
 
 public interface ICmsQuestionSetServiceClient
 {
-    [Get("/umbraco/api/projectRecordQuestionset/getQuestionSet?sectionId={sectionId}&questionSetId={questionSetId}")]
+    [Get("/projectRecordQuestionset/getQuestionSet")]
     public Task<ApiResponse<CmsQuestionSetResponse>> GetQuestionSet(string? sectionId = null, string? questionSetId = null);
 
-    [Get("/umbraco/api/projectRecordQuestionset/getQuestionCategories")]
+    [Get("/projectRecordQuestionset/getQuestionCategories")]
     public Task<ApiResponse<IEnumerable<CategoryDto>>> GetQuestionCategories();
 
-    [Get("/umbraco/api/projectRecordQuestionset/getQuestionSections")]
+    [Get("/projectRecordQuestionset/getQuestionSections")]
     public Task<ApiResponse<IEnumerable<QuestionSectionsResponse>>> GetQuestionSections();
 
-    [Get("/umbraco/api/projectRecordQuestionset/getPreviousQuestionSection?currentSectionId={currentSectionId}")]
+    [Get("/projectRecordQuestionset/getPreviousQuestionSection")]
     public Task<ApiResponse<QuestionSectionsResponse>> GetPreviousQuestionSection(string currentSectionId);
 
-    [Get("/umbraco/api/projectRecordQuestionset/getNextQuestionSection?currentSectionId={currentSectionId}")]
+    [Get("/projectRecordQuestionset/getNextQuestionSection")]
     public Task<ApiResponse<QuestionSectionsResponse>> GetNextQuestionSection(string currentSectionId);
 
-    [Get("/umbraco/api/modificationsquestionset/getstartingquestions")]
-    public Task<ApiResponse<StartingQuestionsModel>> GetInitialModificationQuestions();
+    [Get("/modificationsquestionset/getstartingquestions")]
+    public Task<ApiResponse<StartingQuestionsDto>> GetInitialModificationQuestions();
 
-    [Get("/umbraco/api/modificationsquestionset/GetModificationsJourney?specificChangeId={specificChangeId}")]
+    [Get("/modificationsquestionset/GetModificationsJourney")]
     public Task<ApiResponse<CmsQuestionSetResponse>> GetModificationsJourney(string specificChangeId);
+
+    [Get("/modificationsquestionset/getQuestionSet")]
+    public Task<ApiResponse<CmsQuestionSetResponse>> GetModificationQuestionSet(string? sectionId = null, string? questionSetId = null);
+
+    [Get("/modificationsquestionset/getPreviousQuestionSection")]
+    public Task<ApiResponse<QuestionSectionsResponse>> GetModificationPreviousQuestionSection(string currentSectionId);
+
+    [Get("/modificationsquestionset/getNextQuestionSection")]
+    public Task<ApiResponse<QuestionSectionsResponse>> GetModificationNextQuestionSection(string currentSectionId);
 }

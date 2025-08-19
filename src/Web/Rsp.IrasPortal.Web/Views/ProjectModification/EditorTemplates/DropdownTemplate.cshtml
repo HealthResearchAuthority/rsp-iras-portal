@@ -1,0 +1,34 @@
+﻿@using Microsoft.AspNetCore.Html
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Rsp.Gds.Component.Models
+@model QuestionnaireViewModel
+
+@{
+    var index = (int)ViewBag.Index;
+    var question = Model.Questions[index];
+    var errorKey = $"Questions[{index}].SelectedOption";
+    var fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
+
+    var rules = question.Rules;
+    var conditional = !question.IsMandatory && rules.Count > 0;
+    var parents = conditional ? string.Join(',', rules.Select(rule => rule.ParentQuestionId)) : "";
+    var questionId = conditional ? question.QuestionId : "";
+
+    var hintHtml = rules.Count > 0
+        ? new HtmlString("<div class='govuk-hint'>" +
+                         string.Join("", rules.Select(r => $"<p>{r.Description}</p>")) +
+                         "</div>")
+        : HtmlString.Empty;
+}
+
+<rsp-gds-select asp-for="Questions[@index].SelectedOption"
+                label-text="@question.QuestionText"
+                label-html-class="govuk-label"
+                options="@(question.Answers.Select(a => new GdsOption { Value = a.AnswerId.ToString(), Label = a.AnswerText }))"
+                conditional-field="conditional"
+                conditional-class="conditional-field govuk-select__conditional"
+                dataquestionid-attr="@questionId"
+                dataparents-attr="@parents"
+                include-default-option="true"
+                hint-html="@hintHtml">
+</rsp-gds-select>

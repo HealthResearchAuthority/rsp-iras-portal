@@ -145,6 +145,10 @@ public class CustomClaimsTransformation
                                 appSettings.Value.OneLogin.ClientId :
                                 appSettings.Value.AuthSettings.ClientId;
 
+        var expires = oneLoginEnabled ?
+            appSettings.Value.OneLogin.AuthCookieTimeout :
+            appSettings.Value.AuthSettings.AuthCookieTimeout;
+
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Issuer = jsonToken.Issuer, // Add this line
@@ -152,7 +156,7 @@ public class CustomClaimsTransformation
             IssuedAt = jsonToken.IssuedAt,
             NotBefore = jsonToken.ValidFrom,
             Subject = (ClaimsIdentity)principal.Identity!,
-            Expires = jsonToken.ValidTo,
+            Expires = DateTime.UtcNow.AddSeconds(expires),
             SigningCredentials = signingCredentials
         };
 

@@ -33,6 +33,11 @@ public class AppSettings
     public Uri RtsServiceUri { get; set; } = null!;
 
     /// <summary>
+    /// Gets or sets the base URI of the CMS service.
+    /// </summary>
+    public Uri CmsUri { get; set; } = null!;
+
+    /// <summary>
     /// Authentication settings for the application
     /// </summary>
     public AuthSettings AuthSettings { get; set; } = null!;

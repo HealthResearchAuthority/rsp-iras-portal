@@ -28,17 +28,17 @@ public interface IRespondentService : IInterceptable
     /// <summary>
     /// Gets all the respondent's answers for a specific project modification change.
     /// </summary>
-    /// <param name="projectModificationChangeId">The unique identifier for the project modification change.</param>
+    /// <param name="modificationChangeId">The unique identifier for the project modification change.</param>
     /// <returns>A service response containing a collection of respondent answers.</returns>
-    Task<ServiceResponse<IEnumerable<RespondentAnswerDto>>> GetModificationAnswers(Guid projectModificationChangeId);
+    Task<ServiceResponse<IEnumerable<RespondentAnswerDto>>> GetModificationAnswers(Guid modificationChangeId, string projectRecordId);
 
     /// <summary>
     /// Gets all the respondent's answers for a specific project modification change and category.
     /// </summary>
-    /// <param name="projectModificationChangeId">The unique identifier for the project modification change.</param>
+    /// <param name="modificationChangeId">The unique identifier for the project modification change.</param>
     /// <param name="categoryId">The unique identifier for the question category.</param>
     /// <returns>A service response containing a collection of respondent answers.</returns>
-    Task<ServiceResponse<IEnumerable<RespondentAnswerDto>>> GetModificationAnswers(Guid projectModificationChangeId, string categoryId);
+    Task<ServiceResponse<IEnumerable<RespondentAnswerDto>>> GetModificationAnswers(Guid modificationChangeId, string projectRecordId, string categoryId);
 
     /// <summary>
     /// Saves all the respondent's answers for a project modification.
