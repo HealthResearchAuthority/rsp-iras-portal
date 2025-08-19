@@ -108,6 +108,7 @@ public class ProjectOverviewController
         {
             TempData[TempDataKeys.ShowNotificationBanner] = true;
         }
+
         // Remove modification-related TempData keys to reset state
         TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationId);
         TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationIdentifier);
@@ -123,6 +124,13 @@ public class ProjectOverviewController
         TempData.Remove(TempDataKeys.ProjectModificationPlannedEndDate.AffectedOrganisationsRequireAdditionalResources);
         TempData.Remove(TempDataKeys.ProjectModificationPlannedEndDate.ReviewChanges);
         TempData.Remove(TempDataKeys.QuestionSetPublishedVersionId);
+
+        var keys = TempData.Keys.Where(key => key.StartsWith(TempDataKeys.ProjectModification.Questionnaire));
+
+        foreach (var key in keys)
+        {
+            TempData.Remove(key);
+        }
 
         // Indicate that the project overview is being shown
         TempData[TempDataKeys.ProjectOverview] = true;

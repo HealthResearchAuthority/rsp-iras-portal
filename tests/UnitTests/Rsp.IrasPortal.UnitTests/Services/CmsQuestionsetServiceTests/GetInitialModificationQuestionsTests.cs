@@ -10,10 +10,10 @@ public class GetInitialModificationQuestionsTests : TestServiceBase<CmsQuestions
     public async Task GetInitialModificationQuestions_ShouldReturnSuccess_WhenApiReturnsOk()
     {
         // Arrange
-        var apiResponse = new ApiResponse<StartingQuestionsModel>
+        var apiResponse = new ApiResponse<StartingQuestionsDto>
         (
             new HttpResponseMessage(HttpStatusCode.OK),
-            new StartingQuestionsModel(),
+            new StartingQuestionsDto(),
             new()
         );
 

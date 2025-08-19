@@ -45,19 +45,20 @@ public interface IRespondentServiceClient
     /// <summary>
     /// Gets the modification answers by project modification change Id.
     /// </summary>
-    /// <param name="projectModificationChangeId">The project modification change identifier.</param>
+    /// <param name="modificationChangeId">The project modification change identifier.</param>
     /// <returns>An asynchronous operation that gets the modification answers.</returns>
-    [Get("/respondent/modification/{projectModificationChangeId}")]
-    public Task<ApiResponse<IEnumerable<RespondentAnswerDto>>> GetModificationAnswers(Guid projectModificationChangeId);
+    [Get("/respondent/modification/{modificationChangeId}/{projectRecordId}")]
+
+    public Task<ApiResponse<IEnumerable<RespondentAnswerDto>>> GetModificationAnswers(Guid modificationChangeId, string projectRecordId);
 
     /// <summary>
     /// Gets the modification answers by project modification change Id and categoryId.
     /// </summary>
-    /// <param name="projectModificationChangeId">The project modification change identifier.</param>
+    /// <param name="modificationChangeId">The project modification change identifier.</param>
     /// <param name="categoryId">The category identifier.</param>
     /// <returns>An asynchronous operation that gets the modification answers.</returns>
-    [Get("/respondent/{projectModificationChangeId}/{categoryId}")]
-    public Task<ApiResponse<IEnumerable<RespondentAnswerDto>>> GetModificationAnswers(Guid projectModificationChangeId, string categoryId);
+    [Get("/respondent/modification/{modificationChangeId}/{projectRecordId}/{categoryId}")]
+    public Task<ApiResponse<IEnumerable<RespondentAnswerDto>>> GetModificationAnswers(Guid modificationChangeId, string projectRecordId, string categoryId);
 
     /// <summary>
     /// Retrieves all modification documents associated with a specific project modification change and respondent.

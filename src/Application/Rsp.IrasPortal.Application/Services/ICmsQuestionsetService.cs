@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Refit;
-using Rsp.IrasPortal.Application.DTOs;
+﻿using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
 using Rsp.IrasPortal.Application.Responses;
@@ -23,7 +17,13 @@ public interface ICmsQuestionsetService
 
     Task<ServiceResponse<QuestionSectionsResponse>> GetNextQuestionSection(string currentSectionId);
 
-    Task<ServiceResponse<StartingQuestionsModel>> GetInitialModificationQuestions();
+    Task<ServiceResponse<StartingQuestionsDto>> GetInitialModificationQuestions();
 
     Task<ServiceResponse<CmsQuestionSetResponse>> GetModificationsJourney(string specificChangeId);
+
+    Task<ServiceResponse<CmsQuestionSetResponse>> GetModificationQuestionSet(string? sectionId = null, string? questionSetId = null);
+
+    Task<ServiceResponse<QuestionSectionsResponse>> GetModificationPreviousQuestionSection(string currentSectionId);
+
+    Task<ServiceResponse<QuestionSectionsResponse>> GetModificationNextQuestionSection(string currentSectionId);
 }
