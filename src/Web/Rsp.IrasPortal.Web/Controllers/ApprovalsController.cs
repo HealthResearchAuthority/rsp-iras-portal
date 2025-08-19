@@ -4,10 +4,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
+using Rsp.IrasPortal.Web.Models.CmsContent;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
@@ -17,14 +19,25 @@ public class ApprovalsController
 (
     IApplicationsService applicationsService,
     IRtsService rtsService,
-    IValidator<ApprovalsSearchModel> validator
+    IValidator<ApprovalsSearchModel> validator,
+    ICmsContentServiceClient cms
 ) : Controller
 {
     [Route("/approvals", Name = "approvals:welcome")]
-    public IActionResult Welcome()
+    public async Task<IActionResult> Welcome()
     {
+        var model = new MixedContentPageResponse();
+
+        // get content from CMS
+        var cmsContent = await cms.GetMixedPageContentByUrl("/approvals/");
+
+        if (cmsContent.IsSuccessStatusCode && cmsContent.Content != null)
+        {
+            model = cmsContent.Content;
+        }
+
         TempData.Remove(TempDataKeys.ApprovalsSearchModel);
-        return View(nameof(Index));
+        return View(nameof(Index), model);
     }
 
     [HttpGet]

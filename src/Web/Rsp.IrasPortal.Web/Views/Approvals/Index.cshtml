@@ -1,16 +1,31 @@
-﻿@using Rsp.IrasPortal.Application.DTOs.Responses;
+﻿@using Rsp.IrasPortal.Application.DTOs.Responses
+@using Rsp.IrasPortal.Web.Models.CmsContent
+@using Rsp.IrasPortal.Web.Extensions;
+@model MixedContentPageResponse
 
 @* @section is added for the back button, so that we can render something below the back button
     and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
     the named section *@
 @section BackNavigation {
-    <partial name="_BackNavigation" model="@("acc:home", "Back", new Dictionary<string, string>())" />
+	<partial name="_BackNavigation" model="@("acc:home", "Back", new Dictionary<string, string>())" />
+}
+
+@{
+	var searchTileTitle = Model.ContentItems.GetValueOrDefault("Approvals.SearchTitle", "");
+	var searchTileDescription = Model.ContentItems.GetValueOrDefault("Approvals.SearchDescription", "");
+
+	var tasklistTileTitle = Model.ContentItems.GetValueOrDefault("Approvals.TasklistTitle", "");
+	var tasklistTileDescription = Model.ContentItems.GetValueOrDefault("Approvals.TasklistDescription", "");
+
+	var headline = Model.ContentItems.GetValueOrDefault("Approvals.Headline", "");
+	var bodyText = Model.ContentItems.GetValueOrDefault("Approvals.BodyText", "");
 }
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-full">
-        <h1 class="govuk-heading-xl">Approvals</h1>
-        <partial name="_ActionItem" model="@("Search","Search modifications received for approval.", "approvals:search")" />
-		<partial name="_ActionItem" model="@("Modifications tasklist","See modifications tasklist.", "tasklist:index")" />
-    </div>
+	<div class="govuk-grid-column-full">
+		<h1 class="govuk-heading-xl">@headline</h1>
+		<p><pre class="govuk-body">@bodyText</pre></p>
+		<partial name="_ActionItem" model="@(searchTileTitle,searchTileDescription, "approvals:search")" />
+		<partial name="_ActionItem" model="@(tasklistTileTitle, tasklistTileDescription, "tasklist:index")" />
+	</div>
 </div>
