@@ -15,8 +15,8 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
     private const string GivenNameMandatoryErrorMessage = "Enter a first name";
     private const string FamilyNameMandatoryErrorMessage = "Enter a last name";
     private const string EmailFormatErrorMessage = "Enter an email address in the correct format";
-    private const string ConditionalCountryMandatoryErrorMessage = "You must provide a country";
-    private const string ConditionalReviewBodyMandatoryErrorMessage = "Enter a review body to continue";
+    private const string ConditionalCountryMandatoryErrorMessage = "Select at least one country";
+    private const string ConditionalReviewBodyMandatoryErrorMessage = "Select at least one review body";
     private const string TeamManagerRole = "team_manager";
     private const string StudyWideReviewerRole = "study-wide_reviewer";
     private const string WorkflowCoordinatorRole = "workflow_co-ordinator";
