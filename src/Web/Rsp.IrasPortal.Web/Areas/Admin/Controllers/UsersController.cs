@@ -308,6 +308,10 @@ public class UsersController(
             // GET THE REVIEW BODIES HERE
             model.ReviewBodies = await GetUserReviewBodies(Guid.Parse(model.Id));
 
+            model.UserRoles = model.UserRoles
+                .OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
             return View(ViewUserView, model);
         }
 
@@ -430,6 +434,10 @@ public class UsersController(
                     });
                 }
             }
+
+            model.UserRoles = model.UserRoles
+                .OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
+                .ToList();
 
             model.ReviewBodies = await GetUserReviewBodies(Guid.Parse(model.Id));
 
