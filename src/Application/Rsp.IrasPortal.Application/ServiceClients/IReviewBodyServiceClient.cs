@@ -71,4 +71,10 @@ public interface IReviewBodyServiceClient
     [Get("/reviewbody/allbyuser/{id}")]
     public Task<IApiResponse<List<ReviewBodyUserDto>>> GetUserReviewBodies(Guid id);
 
+    /// <summary>
+    /// Gets review bodies by Id
+    /// </summary>
+    [Post("/reviewbody/reviewbodyusersbyids")]
+    public Task<IApiResponse<List<ReviewBodyUserDto>>> GetUserReviewBodiesByIds([Body]  List<Guid> reviewBodyIdsByReviewBodyIds);
+
 }
