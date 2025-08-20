@@ -19,6 +19,8 @@ public class SectionModel
     /// </summary>
     public string? CategoryId { get; set; }
 
+    public string? StaticViewName { get; set; }
+
     /// <summary>
     /// Contains the questions in this section
     /// </summary>
