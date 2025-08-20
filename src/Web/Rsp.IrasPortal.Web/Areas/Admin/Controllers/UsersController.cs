@@ -96,7 +96,7 @@ public class UsersController(
         {
             var users = response.Content?.Users.Select(user => new UserViewModel(user))?? [];
 
-            var totalCount = users?.Count() ?? 0;
+            var totalCount = users.Count();
 
             if (totalCount > 0)
             {
