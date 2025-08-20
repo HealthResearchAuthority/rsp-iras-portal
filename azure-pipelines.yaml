@@ -110,6 +110,8 @@ stages:
     displayName: "Deploy to Development"
     variables: 
       - group: 'DevelopmentEnvironment'
+      - name: AppServiceName
+        value: "irasportal-dev"
     condition: and(eq('${{ parameters.env }}', 'dev'), eq('${{ parameters.skip_deployment }}', 'false'))
     jobs:
       - template: jobs/deployPortal.yaml@library
@@ -121,6 +123,8 @@ stages:
     displayName: "System Test (Auto)"
     variables: 
     - group: 'STAutoEnvironment'
+    - name: AppServiceName
+      value: "irasportal-automationtest"
     condition: eq('${{ parameters.env }}', 'systemtest_auto')
     jobs:
       - template: jobs/deployPortal.yaml@library
@@ -144,6 +148,8 @@ stages:
     displayName: "System Test (Manual)"
     variables:
     - group: 'STManualEnvironment'
+    - name: AppServiceName
+      value: "irasportal-manualtest"
     condition: eq('${{ parameters.env }}', 'systemtest_manual') 
     jobs:
       - template: jobs/deployPortal.yaml@library
