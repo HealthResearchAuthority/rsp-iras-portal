@@ -13,28 +13,28 @@
      * @param {string} hintId - ID of the hint element to update
      */
     function initCheckboxCount(groupName, hintId) {
-        var hint = document.getElementById(hintId);
+        let hint = document.getElementById(hintId);
         if (!hint) return;
 
-        var property = "IsSelected"; // fixed; handles MVC complex lists
+        let property = "IsSelected"; // fixed; handles MVC complex lists
 
         // Matches either:
         //  - Simple:  input[name="Roles"]
         //  - Complex: input[name^="Search.ReviewBodies["][name$=".IsSelected"]
-        var simpleSel = 'input[type="checkbox"][name="' + groupName + '"]';
-        var complexSel = 'input[type="checkbox"][name^="' + groupName + '["][name$=".' + property + '"]';
-        var allSel = simpleSel + ", " + complexSel;
+        let simpleSel = 'input[type="checkbox"][name="' + groupName + '"]';
+        let complexSel = 'input[type="checkbox"][name^="' + groupName + '["][name$=".' + property + '"]';
+        let allSel = simpleSel + ", " + complexSel;
 
         function getCheckboxes() {
-            var nodes = document.querySelectorAll(allSel);
+            let nodes = document.querySelectorAll(allSel);
             return Array.from(new Set(Array.from(nodes)));
         }
 
-        var boxes = getCheckboxes();
+        let boxes = getCheckboxes();
         if (!boxes.length) return;
 
         function updateHint() {
-            var count = getCheckboxes().filter(function (cb) { return cb.checked; }).length;
+            let count = getCheckboxes().filter(function (cb) { return cb.checked; }).length;
             hint.textContent = count + " selected";
         }
 
