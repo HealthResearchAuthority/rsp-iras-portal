@@ -320,7 +320,7 @@ public partial class ProjectModificationController
             return this.ServiceError(saveModificationAnswersResponse);
         }
 
-        if (routeName == "pov:projectdetails")
+        if (routeName == "pov:postapproval")
         {
             return RedirectToRoute(routeName, new { projectRecordId });
         }

@@ -22,17 +22,21 @@ public class ProjectOverviewController
 
         var response = await GetProjectOverview(projectRecordId);
         if (response.Error is not null)
+        {
             return response.Error;
-
+        }
         return View(response.Model);
     }
 
     public async Task<IActionResult> PostApproval(string projectRecordId)
     {
+        UpdateModificationRelatedTempData();
+
         var response = await GetProjectOverview(projectRecordId);
         if (response.Error is not null)
+        {
             return response.Error;
-
+        }
         return View(response.Model);
     }
 
@@ -40,8 +44,9 @@ public class ProjectOverviewController
     {
         var response = await GetProjectOverview(projectRecordId);
         if (response.Error is not null)
+        {
             return response.Error;
-
+        }
         return View(response.Model);
     }
 
@@ -49,13 +54,19 @@ public class ProjectOverviewController
     {
         var response = await GetProjectOverview(projectRecordId);
         if (response.Error is not null)
+        {
             return response.Error;
-
+        }
         return View(response.Model);
     }
 
     private void UpdateModificationRelatedTempData()
     {
+        // If there is a project modification change, show the notification banner
+        if (TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId) is not null)
+        {
+            TempData[TempDataKeys.ShowNotificationBanner] = true;
+        }
         // Remove modification-related TempData keys to reset state
         TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationId);
         TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationIdentifier);

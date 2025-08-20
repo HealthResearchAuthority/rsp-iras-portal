@@ -7,7 +7,7 @@
     // Title used in the validation error summary
     var errorSummaryTitle = "There is a problem";
 
-    var navModel = ("pov:projectdetails", "Back", new Dictionary<string, string>
+    var navModel = ("pov:postapproval", "Back", new Dictionary<string, string>
     {
         { "projectRecordId", Model.ProjectRecordId }
     });
@@ -67,7 +67,7 @@
                     @{
                         ViewBag.Style = "govuk-button govuk-button--secondary";
                     }                    
-                    <partial name="_SubmitButton" model="@("pov:projectdetails", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId })" />
+                    <partial name="_SubmitButton" model="@("pov:postapproval", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId })" />
                 </div>
                 <p>
                     <a href="#" class="govuk-link">Remove this change</a>
