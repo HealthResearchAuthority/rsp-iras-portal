@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Web.Areas.Admin.Models;
 
 namespace Rsp.IrasPortal.Web.Models;
 
@@ -9,6 +10,8 @@ public class UserSearchModel
 {
     public string? SearchQuery { get; set; }
     public List<string> Country { get; set; } = [];
+    public IList<UserRoleViewModel> UserRoles { get; set; } = [];
+    public IList<UserReviewBodyViewModel> ReviewBodies { get; set; } = [];
     public bool? Status { get; set; }
     public DateTime? FromDate => ParseDate(FromDay, FromMonth, FromYear);
     public DateTime? ToDate => ParseDate(ToDay, ToMonth, ToYear);
@@ -30,6 +33,24 @@ public class UserSearchModel
             if (Country?.Count > 0)
             {
                 filters.Add(UsersSearch.CountryKey, string.Join(", ", Country));
+            }
+
+            if (ReviewBodies?.Any(rb => rb.IsSelected) == true)
+            {
+                var selectedReviewBodies = ReviewBodies
+                    .Where(rb => rb.IsSelected)
+                    .Select(rb => rb.RegulatoryBodyName.ToString()); // or rb.RegulatoryBodyName if you prefer
+
+                filters.Add(UsersSearch.ReviewBodyKey, string.Join(", ", selectedReviewBodies));
+            }
+
+            if (UserRoles?.Any(r => r.IsSelected) == true)
+            {
+                var selectedRoles = UserRoles
+                    .Where(r => r.IsSelected)
+                    .Select(r => r.DisplayName?.ToString()); // or r.Name if you prefer
+
+                filters.Add(UsersSearch.RoleKey, string.Join(", ", selectedRoles));
             }
 
             if (FromDate.HasValue)

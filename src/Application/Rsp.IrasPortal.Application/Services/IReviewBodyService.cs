@@ -34,4 +34,6 @@ public interface IReviewBodyService : IInterceptable
     Task<ServiceResponse<ReviewBodyUserDto>> RemoveUserFromReviewBody(Guid reviewBodyId, Guid userId);
 
     Task<ServiceResponse<List<ReviewBodyUserDto>>> GetUserReviewBodies(Guid userId);
+
+    Task<ServiceResponse<List<ReviewBodyUserDto>>> GetUserReviewBodiesByReviewBodyIds(List<Guid> reviewBodyIdsByReviewBodyIds);
 }
