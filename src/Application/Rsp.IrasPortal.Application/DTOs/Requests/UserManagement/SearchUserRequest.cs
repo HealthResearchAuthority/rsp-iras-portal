@@ -8,4 +8,5 @@ public class SearchUserRequest
     public bool? Status { get; set; }
     public DateTime? FromDate { get; set; } = null;
     public DateTime? ToDate { get; set; } = null;
+    public List<string> UserIds { get; set; } = [];
 }

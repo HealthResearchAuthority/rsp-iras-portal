@@ -43,5 +43,5 @@ function submitFormWithAction(formId, url) {
 document.addEventListener("DOMContentLoaded", function () {
     initCheckboxCount("Search.Country", "country-hint");
     initCheckboxCount("Search.ReviewBodies", "reviewbody-hint");
-    initCheckboxCount("Search.Country", "country-hint");
+    initCheckboxCount("Search.UserRoles", "userroles-hint");
 });
