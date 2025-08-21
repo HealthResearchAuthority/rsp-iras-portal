@@ -38,7 +38,7 @@ public class RemoveUserFromReviewBodyTests : TestServiceBase<ReviewBodyControlle
         };
 
         Mocker.GetMock<IUserManagementService>()
-           .Setup(s => s.GetUser(userId.ToString(), null))
+           .Setup(s => s.GetUser(userId.ToString(), null, null))
            .ReturnsAsync(userServiceResponse);
 
         // Act
@@ -53,7 +53,7 @@ public class RemoveUserFromReviewBodyTests : TestServiceBase<ReviewBodyControlle
             .Verify(s => s.GetReviewBodyById(reviewBodyId), Times.Once);
 
         Mocker.GetMock<IUserManagementService>()
-            .Verify(s => s.GetUser(userId.ToString(), null), Times.Once);
+            .Verify(s => s.GetUser(userId.ToString(), null, null), Times.Once);
     }
 
     [Theory, AutoData]
@@ -90,7 +90,7 @@ public class RemoveUserFromReviewBodyTests : TestServiceBase<ReviewBodyControlle
         };
 
         Mocker.GetMock<IUserManagementService>()
-           .Setup(s => s.GetUser(userId.ToString(), null))
+           .Setup(s => s.GetUser(userId.ToString(), null, null))
            .ReturnsAsync(userServiceResponse);
 
         var submitRemoveUserServiceResponse = new ServiceResponse<ReviewBodyUserDto>
@@ -115,6 +115,6 @@ public class RemoveUserFromReviewBodyTests : TestServiceBase<ReviewBodyControlle
             .Verify(s => s.GetReviewBodyById(reviewBodyId), Times.Once);
 
         Mocker.GetMock<IUserManagementService>()
-            .Verify(s => s.GetUser(userId.ToString(), null), Times.Once);
+            .Verify(s => s.GetUser(userId.ToString(), null, null), Times.Once);
     }
 }

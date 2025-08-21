@@ -1,12 +1,7 @@
-﻿using System.Net;
-using AutoFixture.Xunit2;
-using Moq;
-using Refit;
-using Rsp.IrasPortal.Application.DTOs;
+﻿using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Services;
-using Shouldly;
 
 namespace Rsp.IrasPortal.UnitTests.Services.UserManagementServiceTests;
 
@@ -21,7 +16,7 @@ public class GetUserTests : TestServiceBase<UserManagementService>
 
         var client = Mocker.GetMock<IUserManagementServiceClient>();
         client
-            .Setup(c => c.GetUser(userId, email))
+            .Setup(c => c.GetUser(userId, email, null))
             .ReturnsAsync(apiResponse);
 
         // Act
@@ -34,7 +29,7 @@ public class GetUserTests : TestServiceBase<UserManagementService>
         result.Content.ShouldBe(userResponse);
 
         // Verify
-        client.Verify(c => c.GetUser(userId, email), Times.Once());
+        client.Verify(c => c.GetUser(userId, email, null), Times.Once());
     }
 
     [Theory, AutoData]
@@ -46,7 +41,7 @@ public class GetUserTests : TestServiceBase<UserManagementService>
 
         var client = Mocker.GetMock<IUserManagementServiceClient>();
         client
-            .Setup(c => c.GetUser(userId, email))
+            .Setup(c => c.GetUser(userId, email, null))
             .ReturnsAsync(apiResponse);
 
         // Act
@@ -58,6 +53,6 @@ public class GetUserTests : TestServiceBase<UserManagementService>
         result.StatusCode.ShouldBe(HttpStatusCode.NotFound);
 
         // Verify
-        client.Verify(c => c.GetUser(userId, email), Times.Once());
+        client.Verify(c => c.GetUser(userId, email, null), Times.Once());
     }
 }

@@ -77,7 +77,7 @@ public class TransformAsyncTests : TestServiceBase<CustomClaimsTransformation>
         var serviceResponse = apiResponse.ToServiceResponse();
 
         _userManagementService
-            .Setup(c => c.GetUser(null, email))
+            .Setup(c => c.GetUser(null, email, null))
             .ReturnsAsync(serviceResponse);
 
         // Act
@@ -130,7 +130,7 @@ public class TransformAsyncTests : TestServiceBase<CustomClaimsTransformation>
         var serviceResponse = apiResponse.ToServiceResponse();
 
         _userManagementService
-            .Setup(x => x.GetUser(null, email))
+            .Setup(x => x.GetUser(null, email, null))
             .ReturnsAsync(serviceResponse);
 
         // Act

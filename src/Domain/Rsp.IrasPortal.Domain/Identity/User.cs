@@ -1,6 +1,7 @@
 ﻿namespace Rsp.IrasPortal.Domain.Identity;
 
 public record User(string? Id,
+    string? IdentityProviderId,
     string? Title,
     string GivenName,
     string FamilyName,

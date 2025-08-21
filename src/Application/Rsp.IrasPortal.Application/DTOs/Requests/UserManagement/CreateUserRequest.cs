@@ -12,6 +12,7 @@ public class CreateUserRequest
     public string? Organisation { get; set; } = null;
     public string? Telephone { get; set; } = null;
     public string? Country { get; set; } = null;
+    public string? IdentityProviderId { get; set; }
     private string? _status;
 
     public string Status
