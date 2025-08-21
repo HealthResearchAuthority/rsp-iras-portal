@@ -107,6 +107,8 @@ public static class AuthConfiguration
                         // and signout the user if the session is expired
                         context.HttpContext.Session.SetString(SessionKeys.Alive, bool.TrueString);
 
+                        var claims = context.Result.Principal;
+
                         return Task.CompletedTask;
                     };
                 }
@@ -229,6 +231,10 @@ public static class AuthConfiguration
                     // this key is used to check if the session is alive in the middleware
                     // and signout the user if the session is expired
                     context.HttpContext.Session.SetString(SessionKeys.Alive, bool.TrueString);
+
+                    // this key lets the CustomClaimsTransformation know if the session is the one
+                    // where the user has signed in
+                    context.HttpContext.Session.SetString(SessionKeys.SignInSession, bool.TrueString);
 
                     return Task.CompletedTask;
                 };

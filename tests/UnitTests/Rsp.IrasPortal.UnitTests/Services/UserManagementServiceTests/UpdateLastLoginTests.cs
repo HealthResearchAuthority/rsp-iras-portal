@@ -30,7 +30,7 @@ public class UpdateLastLoginTests : TestServiceBase<UserManagementService>
         );
 
         _userManagementServiceClient
-            .Setup(c => c.GetUser(null, It.IsAny<string>()))
+            .Setup(c => c.GetUser(null, It.IsAny<string>(), null))
             .ReturnsAsync(getUserResponse);
 
         _userManagementServiceClient
@@ -56,7 +56,7 @@ public class UpdateLastLoginTests : TestServiceBase<UserManagementService>
         var httpResponse = new HttpResponseMessage(HttpStatusCode.NotFound);
         var getUserResponse = new ApiResponse<UserResponse>(httpResponse, null, new());
 
-        _userManagementServiceClient.Setup(x => x.GetUser(null, email))
+        _userManagementServiceClient.Setup(x => x.GetUser(null, email, null))
             .ReturnsAsync(getUserResponse);
 
         // Act

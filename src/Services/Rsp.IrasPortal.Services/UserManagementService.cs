@@ -1,5 +1,4 @@
-﻿using System.Net;
-using Mapster;
+﻿using Mapster;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
@@ -44,7 +43,7 @@ public class UserManagementService(IUserManagementServiceClient client) : IUserM
 
     public async Task<ServiceResponse<UsersResponse>> GetUsers(SearchUserRequest? searchQuery = null, int pageNumber = 1, int pageSize = 10, string? sortField = "GivenName", string? sortDirection = SortDirections.Ascending)
     {
-        var apiResponse = await client.GetUsers(searchQuery, pageNumber, pageSize, sortField,sortDirection);
+        var apiResponse = await client.GetUsers(searchQuery, pageNumber, pageSize, sortField, sortDirection);
 
         return apiResponse.ToServiceResponse();
     }
@@ -80,9 +79,9 @@ public class UserManagementService(IUserManagementServiceClient client) : IUserM
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse<UserResponse>> GetUser(string? userId, string? email)
+    public async Task<ServiceResponse<UserResponse>> GetUser(string? userId, string? email, string? identityProviderId = null)
     {
-        var apiResponse = await client.GetUser(userId, email);
+        var apiResponse = await client.GetUser(userId, email, identityProviderId);
 
         return apiResponse.ToServiceResponse();
     }
@@ -156,5 +155,59 @@ public class UserManagementService(IUserManagementServiceClient client) : IUserM
         {
             StatusCode = getUserResponse.StatusCode
         };
+    }
+
+    public async Task<ServiceResponse> HandlePostLoginActivities(PostLoginOperationRequest userClaims)
+    {
+        var response = await client.HandlePostLoginActivities(userClaims);
+
+        return response.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse> UpdateUserEmailAndPhoneNumber(User user, string? email, string? telephoneNumber)
+    {
+        var updateNeeded = false;
+        var updateRequest = user.Adapt<UpdateUserRequest>();
+
+        if (user.Email != email)
+        {
+            updateRequest.Email = email;
+            updateNeeded = true;
+        }
+
+        if (user.Telephone != telephoneNumber)
+        {
+            updateRequest.Telephone = telephoneNumber;
+            updateNeeded = true;
+        }
+
+        if (updateNeeded)
+        {
+            updateRequest.OriginalEmail = updateRequest.Email!;
+            var response = await UpdateUser(updateRequest);
+            return response;
+        }
+
+        return new ServiceResponse
+        {
+            StatusCode = System.Net.HttpStatusCode.NoContent
+        };
+    }
+
+    public async Task<ServiceResponse> UpdateUserIdentityProviderId(User user, string identityProviderId)
+    {
+        if (string.IsNullOrEmpty(identityProviderId))
+        {
+            return new ServiceResponse
+            {
+                StatusCode = System.Net.HttpStatusCode.BadRequest,
+                Error = "identityProviderId parameter cannot be empty string."
+            };
+        }
+        var updateRequest = user.Adapt<UpdateUserRequest>();
+        updateRequest.IdentityProviderId = identityProviderId;
+        updateRequest.OriginalEmail = user.Email;
+
+        return await UpdateUser(updateRequest);
     }
 }

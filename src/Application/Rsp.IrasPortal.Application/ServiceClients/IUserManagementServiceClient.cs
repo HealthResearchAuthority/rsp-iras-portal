@@ -55,7 +55,7 @@ public interface IUserManagementServiceClient
     /// <param name="email">Email of the user</param>
     /// <returns>List of users</returns>
     [Get("/users")]
-    public Task<ApiResponse<UserResponse>> GetUser(string? id, string? email);
+    public Task<ApiResponse<UserResponse>> GetUser(string? id, string? email, string? identityProviderId);
 
     /// <summary>
     /// Registers a new user
@@ -136,4 +136,11 @@ public interface IUserManagementServiceClient
     /// </summary>
     [Get("/users/claims")]
     public Task<IApiResponse<IEnumerable<UserClaimDto>>> GetUserClaims(string? id, string? email);
+
+    /// <summary>
+    /// Deals with post login operations for the user
+    /// </summary>
+    /// <param name="user">Request Body</param>
+    [Post("/users/post-login")]
+    public Task<IApiResponse> HandlePostLoginActivities([Body] PostLoginOperationRequest userClaims);
 }
