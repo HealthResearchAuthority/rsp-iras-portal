@@ -164,23 +164,27 @@ public class UserManagementService(IUserManagementServiceClient client) : IUserM
         return response.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse> UpdateUserEmailAndPhoneNumber(User user, string? email, string? telephoneNumber)
+    public async Task<ServiceResponse> UpdateUserEmailAndPhoneNumber(User user, string email, string? telephoneNumber)
     {
         var updateNeeded = false;
         var updateRequest = user.Adapt<UpdateUserRequest>();
 
-        if (user.Email != email)
+        // check if email from govUk is different than one stored in our DB
+        if (!user.Email.Equals(email, StringComparison.InvariantCultureIgnoreCase))
         {
             updateRequest.Email = email;
             updateNeeded = true;
         }
 
-        if (user.Telephone != telephoneNumber)
+        // check if telephone from govUk is different than one stored in our DB
+        if (!string.IsNullOrEmpty(telephoneNumber) &&
+            user.Telephone != telephoneNumber)
         {
             updateRequest.Telephone = telephoneNumber;
             updateNeeded = true;
         }
 
+        // update the user record only if there are changes
         if (updateNeeded)
         {
             updateRequest.OriginalEmail = updateRequest.Email!;
