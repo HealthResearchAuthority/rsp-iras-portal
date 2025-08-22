@@ -28,8 +28,6 @@ public class CustomClaimsTransformation
         // find email claim
         var emailClaim = principal.FindFirst(ClaimTypes.Email);
         var mobilePhone = principal.FindFirst(ClaimTypes.MobilePhone)?.Value;
-        var homePhone = principal.FindFirst(ClaimTypes.HomePhone)?.Value;
-        var telephone = !string.IsNullOrEmpty(mobilePhone) ? mobilePhone : homePhone;
         var identityProviderId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         // if there is no email claim, return the current principal
@@ -57,20 +55,15 @@ public class CustomClaimsTransformation
         // now we can call the usermanagement api
         var context = httpContextAccessor.HttpContext!;
 
-        var signSession = context.Session.GetString(SessionKeys.SignInSession) == bool.TrueString;
-
-        // check if this session is the one where the user is signing in
-        // if it is then execute some post login operations
-        if (signSession)
+        var userResponse = await userManagementService.GetUser(null, null, identityProviderId);
+        if (context.Session.GetString(SessionKeys.FirstLogin) == bool.TrueString)
         {
-            var getUserResponseById = await userManagementService.GetUser(null, null, identityProviderId);
-
-            if (getUserResponseById.IsSuccessStatusCode && getUserResponseById.Content != null)
+            if (userResponse.IsSuccessStatusCode && userResponse.Content != null)
             {
                 // user with provider ID exists
                 // let's update their email and telephone number from the claims
-                var currentUser = getUserResponseById.Content;
-                await userManagementService.UpdateUserEmailAndPhoneNumber(currentUser.User, email, "");
+                var currentUser = userResponse.Content;
+                await userManagementService.UpdateUserEmailAndPhoneNumber(currentUser.User, email, mobilePhone);
             }
             else
             {
@@ -80,38 +73,45 @@ public class CustomClaimsTransformation
                 if (getUserResponseEmail.IsSuccessStatusCode && getUserResponseEmail.Content != null)
                 {
                     // user found so let's update their providerID
+
+                    userResponse = getUserResponseEmail;
+
                     if (!string.IsNullOrEmpty(identityProviderId))
                     {
-                        var r = await userManagementService.UpdateUserIdentityProviderId(getUserResponseEmail.Content.User, identityProviderId);
+                        await userManagementService.UpdateUserIdentityProviderId(getUserResponseEmail.Content.User, identityProviderId);
                     }
                 }
                 else
                 {
-                    // user cannot be found by their email so let's create a new user entity
+                    // user cannot be found by their email or provider ID so let's create a new user entity
                     // and assign them applicant role
                     var createUserStatus = await userManagementService.CreateUser(new CreateUserRequest
                     {
                         Email = email,
-                        Telephone = telephone,
+                        Telephone = mobilePhone,
                         IdentityProviderId = identityProviderId,
                         Status = IrasUserStatus.Active
                     });
 
                     if (createUserStatus.IsSuccessStatusCode)
                     {
-                        var assignRoleStatus = await userManagementService.UpdateRoles(email, null, "applicant");
+                        // user was created succesfully so let's assign them the 'applicant' role
+                        await userManagementService.UpdateRoles(email, null, "applicant");
+                    }
+
+                    var newlyCreatedUser = await userManagementService.GetUser(null, null, identityProviderId);
+
+                    if (newlyCreatedUser.IsSuccessStatusCode)
+                    {
+                        userResponse = newlyCreatedUser;
                     }
                 }
             }
-        }
 
-        if (context.Session.GetString(SessionKeys.FirstLogin) == bool.TrueString)
-        {
             await userManagementService.UpdateLastLogin(email);
             context.Session.Remove(SessionKeys.FirstLogin);
         }
 
-        var userResponse = await userManagementService.GetUser(null, null, identityProviderId);
         if (userResponse.IsSuccessStatusCode && userResponse.Content != null)
         {
             var respondentId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;

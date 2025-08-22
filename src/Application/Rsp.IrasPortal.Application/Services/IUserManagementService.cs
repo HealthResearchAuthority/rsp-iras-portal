@@ -42,7 +42,7 @@ public interface IUserManagementService : IInterceptable
 
     Task<ServiceResponse> UpdateLastLogin(string email);
 
-    Task<ServiceResponse> UpdateUserEmailAndPhoneNumber(User user, string? email, string? telephoneNumber);
+    Task<ServiceResponse> UpdateUserEmailAndPhoneNumber(User user, string email, string? telephoneNumber);
 
     Task<ServiceResponse> UpdateUserIdentityProviderId(User user, string identityProviderId);
 

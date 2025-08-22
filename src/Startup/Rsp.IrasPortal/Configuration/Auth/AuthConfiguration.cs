@@ -183,6 +183,7 @@ public static class AuthConfiguration
                 options.GetClaimsFromUserInfoEndpoint = true;
                 options.UsePkce = false;
                 options.ClaimActions.MapUniqueJsonKey(ClaimTypes.Email, "email");
+                options.ClaimActions.MapUniqueJsonKey(ClaimTypes.MobilePhone, "phone_number");
 
                 // GOV.UK One Login used a client assertion to secure the token exchange instead of a client secret.
                 // This is a JWT signed with the client's private key.
@@ -231,10 +232,6 @@ public static class AuthConfiguration
                     // this key is used to check if the session is alive in the middleware
                     // and signout the user if the session is expired
                     context.HttpContext.Session.SetString(SessionKeys.Alive, bool.TrueString);
-
-                    // this key lets the CustomClaimsTransformation know if the session is the one
-                    // where the user has signed in
-                    context.HttpContext.Session.SetString(SessionKeys.SignInSession, bool.TrueString);
 
                     return Task.CompletedTask;
                 };
