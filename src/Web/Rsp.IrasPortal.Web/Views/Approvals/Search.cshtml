@@ -69,7 +69,7 @@
 			Enter the IRAS ID to search for all modifications received, including those submitted for notification only
 		</p>
 
-		<form asp-route="approvals:applyfilters" method="post" class="govuk-form-group govuk-!-margin-bottom-0">
+		<form asp-route="approvals:applyfilters" method="post" class="govuk-form-group govuk-!-margin-bottom-0" id="applyFiltersForm">
 			<div class="search-flex-container">
 				<span id="iras-id-label" class="govuk-visually-hidden">IRAS ID</span>
 				<input class="govuk-input search-flex-input"
@@ -305,16 +305,21 @@
 												@Html.ValidationMessage("sponsor_org_search", new { @class = "govuk-error-message" })
 
 												<div class="sponsor-org-search">
-													<input id="sponsor_org_search"
-															type="text"
-															name="Search.SponsorOrgSearch.SearchText"
-															class="govuk-input govuk-!-width-three-quarters"
-															value="@searchText"
-															form="sponsorOrgSearchForm" />
+                                                <input id="sponsor_org_search"
+                                                       type="text"
+                                                       name="Search.SponsorOrgSearch.SearchText"
+                                                       class="govuk-input govuk-!-width-three-quarters"
+                                                       value="@searchText"
+                                                       form="applyFiltersForm" />
 
-													<button type="submit" class="govuk-button govuk-button--primary" form="sponsorOrgSearchForm">
-														Search
-													</button>
+                                                <input type="hidden" name="pageSize" value="5" form="applyFiltersForm" />
+                                                <input type="hidden" name="pageIndex" value="1" form="applyFiltersForm" />
+
+                                                <button type="submit" class="govuk-button govuk-button--primary" form="applyFiltersForm"
+                                                        formaction='@Url.RouteUrl("approvals:searchorganisations")'
+                                                        formmethod="post">
+                                                    Search
+                                                </button>
 												</div>
 											</div>
 

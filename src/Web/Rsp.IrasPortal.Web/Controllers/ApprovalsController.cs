@@ -278,6 +278,8 @@ public class ApprovalsController
 
         TempData.TryAdd(TempDataKeys.SponsorOrganisations, sponsorOrganisations, true);
 
+        model.Search.Filters = new Dictionary<string, List<string>>();
+
         TempData[TempDataKeys.ApprovalsSearchModel] = JsonSerializer.Serialize(model.Search);
 
         return Redirect(returnUrl!);
