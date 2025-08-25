@@ -71,11 +71,8 @@ public class SavePlannedEndDateTests : TestServiceBase<ProjectModificationContro
         var result = await Sut.SavePlannedEndDate(model);
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Error");
-        var problem = viewResult.Model.ShouldBeOfType<Microsoft.AspNetCore.Mvc.ProblemDetails>();
-        problem.Detail.ShouldContain("Couldn't find the original response");
-        problem.Status.ShouldBe(StatusCodes.Status400BadRequest);
+        var redirectToRouteResult = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirectToRouteResult.RouteName.ShouldBe("exc:ServiceException");
     }
 
     [Fact]
@@ -125,8 +122,8 @@ public class SavePlannedEndDateTests : TestServiceBase<ProjectModificationContro
         var result = await Sut.SavePlannedEndDate(model);
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Error");
+        var redirectToRouteResult = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirectToRouteResult.RouteName.ShouldBe("exc:ServiceException");
     }
 
     [Fact]

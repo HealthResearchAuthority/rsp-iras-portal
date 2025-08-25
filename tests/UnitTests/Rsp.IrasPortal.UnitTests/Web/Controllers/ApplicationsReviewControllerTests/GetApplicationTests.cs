@@ -88,8 +88,8 @@ public class GetApplicationTests : TestServiceBase<ApplicationsReviewController>
         var result = await Sut.GetApplication(applicationId);
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Error");
+        var redirectToRouteResult = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirectToRouteResult.RouteName.ShouldBe("exc:ServiceException");
 
         // Verify
         Mocker
