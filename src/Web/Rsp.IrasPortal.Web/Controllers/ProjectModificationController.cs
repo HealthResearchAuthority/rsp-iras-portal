@@ -61,7 +61,7 @@ public partial class ProjectModificationController
                 ReasonPhrase = "Bad Request"
             });
 
-            return Problem(problemDetails.Detail, problemDetails.Instance, problemDetails.Status, problemDetails.Title, problemDetails.Type);
+            return RedirectToRoute("exc:ServiceException", problemDetails);
         }
 
         // Get respondent information from the current context

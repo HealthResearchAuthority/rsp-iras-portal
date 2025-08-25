@@ -18,14 +18,17 @@ public static class ControllerExtensions
     /// </summary>
     public static IActionResult ServiceError<T>(this Controller controller, ServiceResponse<T> response)
     {
-        // return the generic error page
-        // if status is forbidden or not found
-        // return the appropriate response otherwise
-        // return the generic error page
+        /// <summary>
+        /// Returns an appropriate IActionResult based on the ServiceResponse status code.
+        /// - If Forbidden, returns Forbid.
+        /// - If NotFound, redirects to ExceptionsController.NotFound.
+        /// - Otherwise, redirects to ExceptionsController.ServiceException with problem details.
+        /// </summary>
         return response.StatusCode switch
         {
             HttpStatusCode.Forbidden => controller.Forbid(),
-            _ => controller.View("Error", ProblemResult(controller, response))
+            HttpStatusCode.NotFound => controller.RedirectToRoute("exc:NotFound"),
+            _ => controller.RedirectToRoute("exc:ServiceException", new { problemDetails = ProblemResult(controller, response) })
         };
     }
 
@@ -36,14 +39,17 @@ public static class ControllerExtensions
     /// </summary>
     public static IActionResult ServiceError(this Controller controller, ServiceResponse response)
     {
-        // return the generic error page
-        // if status is forbidden or not found
-        // return the appropriate response otherwise
-        // return the generic error page
+        /// <summary>
+        /// Returns an appropriate IActionResult based on the ServiceResponse status code.
+        /// - If Forbidden, returns Forbid.
+        /// - If NotFound, redirects to ExceptionsController.NotFound.
+        /// - Otherwise, redirects to ExceptionsController.ServiceException with problem details.
+        /// </summary>
         return response.StatusCode switch
         {
             HttpStatusCode.Forbidden => controller.Forbid(),
-            _ => controller.View("Error", ProblemResult(controller, response))
+            HttpStatusCode.NotFound => controller.RedirectToRoute("exc:NotFound"),
+            _ => controller.RedirectToRoute("exc:ServiceException", new { problemDetails = ProblemResult(controller, response) })
         };
     }
 

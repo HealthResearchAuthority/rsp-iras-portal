@@ -42,7 +42,7 @@ public class HomeController(IUserManagementService userManagementService) : Cont
             return Forbid();
         }
 
-        return View("Error", new ProblemDetails
+        return RedirectToRoute("exc:ServiceException", new ProblemDetails
         {
             Title = "An unexpected error has occured, please try again",
             Detail = "Error getting the count of users and roles",

@@ -86,7 +86,7 @@ public partial class ProjectModificationController
         if (respondedAnswer == null)
         {
             // Return an error view if the original response cannot be found
-            return View("Error", new ProblemDetails
+            return RedirectToRoute("exc:ServiceException", new ProblemDetails
             {
                 Title = ReasonPhrases.GetReasonPhrase(StatusCodes.Status400BadRequest),
                 Detail = "Unable to save the new planned end date. Couldn't find the original response",

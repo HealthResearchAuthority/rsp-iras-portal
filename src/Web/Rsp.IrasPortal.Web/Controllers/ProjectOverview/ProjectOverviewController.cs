@@ -111,7 +111,7 @@ public class ProjectOverviewController
         if (projectRecord == null)
         {
             // Return a 404 error view if the project record is not found
-            return (View("Error", new ProblemDetails()
+            return (RedirectToRoute("exc:ServiceException", new ProblemDetails()
             {
                 Title = ReasonPhrases.GetReasonPhrase(StatusCodes.Status404NotFound),
                 Detail = "Project record not found",
@@ -133,7 +133,7 @@ public class ProjectOverviewController
         if (answers == null)
         {
             // Return a 404 error view if no responses are found for the project record
-            return (View("Error", new ProblemDetails()
+            return (RedirectToRoute("exc:ServiceException", new ProblemDetails()
             {
                 Title = ReasonPhrases.GetReasonPhrase(StatusCodes.Status404NotFound),
                 Detail = "No responses found for the project record",
