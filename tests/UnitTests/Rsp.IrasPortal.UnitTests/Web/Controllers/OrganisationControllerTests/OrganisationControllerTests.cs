@@ -5,7 +5,6 @@ using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Controllers;
-using ProblemDetails = Microsoft.AspNetCore.Mvc.ProblemDetails;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.OrganisationControllerTests;
 
@@ -75,9 +74,8 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
         var result = await Sut.GetOrganisationsByName(name, role, pageIndex, pageSize);
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        var problemDetails = viewResult.Model.ShouldBeOfType<ProblemDetails>();
-        problemDetails?.Status.ShouldBe((int)HttpStatusCode.InternalServerError);
+        var redirectToRouteResult = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirectToRouteResult.RouteName.ShouldBe("exc:ServiceException");
     }
 
     [Fact]
@@ -144,9 +142,8 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
         var result = await Sut.GetOrganisations(role, pageIndex, pageSize);
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        var problemDetails = viewResult.Model.ShouldBeOfType<ProblemDetails>();
-        problemDetails?.Status.ShouldBe((int)HttpStatusCode.InternalServerError);
+        var redirectToRouteResult = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirectToRouteResult.RouteName.ShouldBe("exc:ServiceException");
     }
 
     [Fact]
@@ -197,8 +194,7 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
         var result = await Sut.GetOrganisation(id);
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        var problemDetails = viewResult.Model.ShouldBeOfType<ProblemDetails>();
-        problemDetails?.Status.ShouldBe((int)HttpStatusCode.InternalServerError);
+        var redirectToRouteResult = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirectToRouteResult.RouteName.ShouldBe("exc:ServiceException");
     }
 }

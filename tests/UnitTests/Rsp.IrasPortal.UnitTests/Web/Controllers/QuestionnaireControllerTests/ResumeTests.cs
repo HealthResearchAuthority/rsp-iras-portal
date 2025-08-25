@@ -83,9 +83,8 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         var result = await Sut.Resume(applicationId, categoryId);
 
         // Assert
-        result.ShouldBeOfType<ViewResult>();
-        var viewResult = result as ViewResult;
-        viewResult!.ViewName.ShouldBe("Error");
+        var redirectToRouteResult = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirectToRouteResult.RouteName.ShouldBe("exc:ServiceException");
     }
 
     [Theory]
@@ -156,9 +155,8 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         var result = await Sut.Resume(applicationId, categoryId);
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Error");
-        viewResult.Model.ShouldBeOfType<Microsoft.AspNetCore.Mvc.ProblemDetails>();
+        var redirectToRouteResult = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirectToRouteResult.RouteName.ShouldBe("exc:ServiceException");
     }
 
     [Theory]
@@ -501,9 +499,8 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         var result = await Sut.Resume(applicationId, categoryId);
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Error");
-        viewResult.Model.ShouldBeOfType<Microsoft.AspNetCore.Mvc.ProblemDetails>();
+        var redirectToRouteResult = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirectToRouteResult.RouteName.ShouldBe("exc:ServiceException");
     }
 
     [Theory, AutoData]
@@ -548,8 +545,8 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         var result = await Sut.Resume(applicationId, categoryId);
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Error");
+        var redirectToRouteResult = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirectToRouteResult.RouteName.ShouldBe("exc:ServiceException");
     }
 
     [Theory, AutoData]

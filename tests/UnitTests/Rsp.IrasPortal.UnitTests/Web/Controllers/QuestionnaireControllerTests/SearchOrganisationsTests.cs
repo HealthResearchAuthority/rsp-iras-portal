@@ -9,7 +9,6 @@ using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Controllers;
 using Rsp.IrasPortal.Web.Models;
-using ProblemDetails = Microsoft.AspNetCore.Mvc.ProblemDetails;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.QuestionnaireControllerTests;
 
@@ -213,9 +212,8 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
         var result = await Sut.SearchOrganisations(model, null, null);
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        var problem = viewResult.Model.ShouldBeOfType<ProblemDetails>();
-        problem.Status.ShouldBe(StatusCodes.Status500InternalServerError);
+        var redirectToRouteResult = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirectToRouteResult.RouteName.ShouldBe("exc:ServiceException");
     }
 
     [Theory]

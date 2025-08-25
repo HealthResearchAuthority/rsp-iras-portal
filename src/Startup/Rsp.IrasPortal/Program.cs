@@ -13,6 +13,7 @@ using Rsp.IrasPortal.Configuration.Auth;
 using Rsp.IrasPortal.Configuration.Dependencies;
 using Rsp.IrasPortal.Configuration.Health;
 using Rsp.IrasPortal.Configuration.HttpClients;
+using Rsp.IrasPortal.Infrastructure.ExceptionHandlers;
 using Rsp.IrasPortal.Web;
 using Rsp.IrasPortal.Web.Attributes;
 using Rsp.IrasPortal.Web.Mapping;
@@ -141,6 +142,9 @@ var config = TypeAdapterConfig.GlobalSettings;
 // register the mapping configuration
 config.Scan(typeof(MappingRegister).Assembly);
 
+services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 if (await featureManager.IsEnabledAsync(Features.InterceptedLogging))
 {
     services.AddLoggingInterceptor<LoggingInterceptor>();
@@ -177,7 +181,7 @@ app.UseStaticFiles(); // this will serve the static files from wwwroot folder
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Application/Error");
+    app.UseExceptionHandler();
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 
