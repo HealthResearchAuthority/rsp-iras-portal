@@ -182,8 +182,8 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var result = await Sut.ProjectDetails(DefaultProjectRecordId);
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        var model = viewResult.Model.ShouldBeOfType<Microsoft.AspNetCore.Mvc.ProblemDetails>();
+        var redirectToRouteResult = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirectToRouteResult.RouteName.ShouldBe("exc:ServiceException");
     }
 
     [Fact]

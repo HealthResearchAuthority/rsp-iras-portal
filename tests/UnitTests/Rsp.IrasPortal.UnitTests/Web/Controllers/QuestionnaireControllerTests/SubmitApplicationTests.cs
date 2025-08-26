@@ -54,8 +54,8 @@ public class SubmitApplicationTests : TestServiceBase<QuestionnaireController>
         var result = await Sut.SubmitApplication(applicationId);
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Error");
+        var redirectToRouteResult = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirectToRouteResult.RouteName.ShouldBe("exc:ServiceException");
     }
 
     [Theory, AutoData]
@@ -95,8 +95,8 @@ public class SubmitApplicationTests : TestServiceBase<QuestionnaireController>
         var result = await Sut.SubmitApplication(applicationId);
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Error");
+        var redirectToRouteResult = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirectToRouteResult.RouteName.ShouldBe("exc:ServiceException");
     }
 
     [Theory, AutoData]

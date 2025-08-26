@@ -158,8 +158,8 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
         var result = await Sut.DisplayQuestionnaire(categoryId, sectionId);
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Error");
+        var redirectToRouteResult = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirectToRouteResult.RouteName.ShouldBe("exc:ServiceException");
     }
 
     [Theory]

@@ -7,7 +7,6 @@ using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Controllers;
-using ProblemDetails = Microsoft.AspNetCore.Mvc.ProblemDetails;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModifiationControllerTests;
 
@@ -27,12 +26,8 @@ public class CreateModification : TestServiceBase<ProjectModificationController>
         var result = await Sut.CreateModification(separator);
 
         // Assert
-        var objResult = result.ShouldBeOfType<ObjectResult>();
-        var problem = objResult.Value.ShouldBeOfType<ProblemDetails>();
-
-        problem.Detail.ShouldNotBeNull();
-        problem.Status.ShouldBe(StatusCodes.Status400BadRequest);
-        problem.Detail.ShouldContain("ProjectRecordId and/or IrasId missing");
+        var redirectToRouteResult = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirectToRouteResult.RouteName.ShouldBe("exc:ServiceException");
     }
 
     [Theory, AutoData]
@@ -78,8 +73,8 @@ public class CreateModification : TestServiceBase<ProjectModificationController>
         var result = await Sut.CreateModification(separator);
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Error");
+        var redirectToRouteResult = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirectToRouteResult.RouteName.ShouldBe("exc:ServiceException");
     }
 
     [Theory, AutoData]

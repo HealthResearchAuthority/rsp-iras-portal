@@ -149,6 +149,7 @@ public class SearchOrganisationsTests : TestServiceBase<ApprovalsController>
 
         var result = await Sut.SearchOrganisations(model, null, pageSize, pageIndex);
 
-        result.ShouldBeOfType<ViewResult>();
+        var redirectToRouteResult = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirectToRouteResult.RouteName.ShouldBe("exc:ServiceException");
     }
 }

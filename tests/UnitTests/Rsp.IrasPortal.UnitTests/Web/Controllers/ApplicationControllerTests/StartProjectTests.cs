@@ -100,7 +100,8 @@ public class StartProjectTests : TestServiceBase<ApplicationController>
         var result = await Sut.StartProject(model);
 
         // Assert
-        result.ShouldBeOfType<ViewResult>();
+        var redirectToRouteResult = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirectToRouteResult.RouteName.ShouldBe("exc:ServiceException");
     }
 
     [Fact]
@@ -164,7 +165,8 @@ public class StartProjectTests : TestServiceBase<ApplicationController>
         var result = await Sut.StartProject(model);
 
         // Assert
-        result.ShouldBeOfType<ViewResult>();
+        var redirectToRouteResult = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirectToRouteResult.RouteName.ShouldBe("exc:ServiceException");
     }
 
     [Fact]

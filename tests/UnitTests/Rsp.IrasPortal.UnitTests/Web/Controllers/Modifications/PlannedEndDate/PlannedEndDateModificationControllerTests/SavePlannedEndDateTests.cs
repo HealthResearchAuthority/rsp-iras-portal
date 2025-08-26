@@ -64,7 +64,7 @@ public class SavePlannedEndDateTests : TestServiceBase<ProjectModificationContro
         var result = await Sut.SavePlannedEndDate(model);
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Error");
+        var redirectToRouteResult = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirectToRouteResult.RouteName.ShouldBe("exc:ServiceException");
     }
 }

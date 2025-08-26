@@ -69,8 +69,8 @@ public class SubmitReviewBodyTests : TestServiceBase<ReviewBodyController>
         var result = await Sut.SubmitReviewBody(model);
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Error");
+        var redirectToRouteResult = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirectToRouteResult.RouteName.ShouldBe("exc:ServiceException");
 
         // Verify the service method was called once
         Mocker.GetMock<IReviewBodyService>()

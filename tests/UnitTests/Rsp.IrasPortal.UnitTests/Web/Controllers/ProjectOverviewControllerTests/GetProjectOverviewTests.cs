@@ -8,7 +8,6 @@ using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Controllers.ProjectOverview;
 using Rsp.IrasPortal.Web.Models;
-using ProblemDetails = Microsoft.AspNetCore.Mvc.ProblemDetails;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectOverviewControllerTests;
 
@@ -30,8 +29,8 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
         var result = await Sut.GetProjectOverview("rec-1");
 
         // Assert
-        var viewResult = result.Error.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Error");
+        var redirectToRouteResult = result.Error.ShouldBeOfType<RedirectToRouteResult>();
+        redirectToRouteResult.RouteName.ShouldBe("exc:ServiceException");
     }
 
     [Fact]
@@ -51,11 +50,8 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
         var result = await Sut.GetProjectOverview("rec-1");
 
         // Assert
-        var viewResult = result.Error.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Error");
-
-        // The model should be of type Microsoft.AspNetCore.Mvc.ProblemDetails
-        viewResult.Model.ShouldBeOfType<ProblemDetails>();
+        var redirectToRouteResult = result.Error.ShouldBeOfType<RedirectToRouteResult>();
+        redirectToRouteResult.RouteName.ShouldBe("exc:ServiceException");
     }
 
     [Fact]
@@ -80,8 +76,8 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
         var result = await Sut.GetProjectOverview("rec-1");
 
         // Assert
-        var viewResult = result.Error.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Error");
+        var redirectToRouteResult = result.Error.ShouldBeOfType<RedirectToRouteResult>();
+        redirectToRouteResult.RouteName.ShouldBe("exc:ServiceException");
     }
 
     [Fact]
@@ -106,8 +102,8 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
         var result = await Sut.GetProjectOverview("rec-1");
 
         // Assert
-        var viewResult = result.Error.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Error");
+        var redirectToRouteResult = result.Error.ShouldBeOfType<RedirectToRouteResult>();
+        redirectToRouteResult.RouteName.ShouldBe("exc:ServiceException");
     }
 
     [Fact]
