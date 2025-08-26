@@ -98,4 +98,32 @@ public class RespondentService(IRespondentServiceClient respondentServiceClient)
 
         return apiResponse.ToServiceResponse();
     }
+
+    public async Task<ServiceResponse<ProjectModificationDocumentRequest>> GetModificationDocumentDetails(Guid documentId)
+    {
+        var apiResponse = await respondentServiceClient.GetModificationDocumentDetails(documentId);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse> SaveModificationDocuments(List<ProjectModificationDocumentRequest> request)
+    {
+        var apiResponse = await respondentServiceClient.SaveModificationDocuments(request);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse> SaveModificationDocumentAnswers(ProjectModificationDocumentRequest request)
+    {
+        var apiResponse = await respondentServiceClient.SaveModificationDocumentAnswers(request);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse<ProjectModificationDocumentRequest>> GetModificationDocumentAnswers(Guid documentId)
+    {
+        var apiResponse = await respondentServiceClient.GetModificationDocumentAnswers(documentId);
+
+        return apiResponse.ToServiceResponse();
+    }
 }

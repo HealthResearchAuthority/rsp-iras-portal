@@ -19,17 +19,17 @@ public class GetModificationAnswers : TestServiceBase<RespondentService>
 
         var respondentServiceClient = Mocker.GetMock<IRespondentServiceClient>();
         respondentServiceClient
-            .Setup(c => c.GetModificationAnswers(projectModificationChangeId))
+            .Setup(c => c.GetModificationAnswers(projectModificationChangeId, It.IsAny<string>()))
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.GetModificationAnswers(projectModificationChangeId);
+        var result = await Sut.GetModificationAnswers(projectModificationChangeId, It.IsAny<string>());
 
         // Assert
         respondentServiceClient
             .Verify
             (
-                c => c.GetModificationAnswers(projectModificationChangeId),
+                c => c.GetModificationAnswers(projectModificationChangeId, It.IsAny<string>()),
                 Times.Once
             );
 

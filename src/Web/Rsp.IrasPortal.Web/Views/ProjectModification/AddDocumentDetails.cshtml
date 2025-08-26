@@ -1,107 +1,168 @@
-﻿@model Rsp.IrasPortal.Web.Models.ModificationAddDocumentDetailsViewModel
+﻿@using System.Text.Json
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Microsoft.FeatureManagement
+@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Application.DTOs
+@using Rsp.IrasPortal.Web.TagHelpers
+@using System.Globalization
+@model ModificationAddDocumentDetailsViewModel
+@inject IFeatureManager featureManager
 
 @{
-	ViewData["Title"] = "Add document details";
+	(string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
+	ViewBag.Title = $"Add document details for {Model.FileName}";
+	var errorSummaryTitle = "There is a problem";
+}
+@if (await featureManager.IsEnabledAsync(Features.ProgressiveEnhancement))
+{
+	<script src="~/lib/jquery/dist/jquery.js"></script>
+
+	// Collect all rules for conditional questions
+	var conditionalRules = Model.Questionnaire.GetConditionalRules();
+
+	<script>
+		$(document).ready(function () {
+		const conditionalRules = @Html.Raw(JsonSerializer.Serialize(conditionalRules));
+
+		// Loop through each rule and store it individually by QuestionId
+		conditionalRules.forEach(rule => {
+		sessionStorage.setItem(rule.QuestionId, JSON.stringify(rule.Rules));
+		});
+		});
+	</script>
+
+	<script src="~/js/questionnaire.js"></script>
+	<script src="~/js/rules.js"></script>
 }
 
-@await Html.PartialAsync("_ValidationSummary")
+@{
+	if (Model.ReviewAnswers)
+	{
+		navModel = ("mqc:submitapplication", "Back", new()
+{
+			{ "projectRecordId", "projectRecordId" }
+		});
+	}
+	else if (!string.IsNullOrEmpty("previousStage"))
+	{
+		// If there is a previous stage, navigate to that stage in the questionnaire
+		navModel = ("mqc:displayquestionnaire", "Back", new()
+{
+			{ "categoryId", "previousCategory" },
+			{ "sectionId", "previousStage" }
+		});
+	}
+	else
+	{
+		// back to the area of changes view as that's where the jouney started from
+		navModel = ("pmc:areaofchange", "Back", new());
+	}
+}
 
+@if (navModel != null)
+{
+	@* @section is added for the back button, so that we can render something below the back button
+        and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
+        the named section *@
+	@section BackNavigation {
+	<partial name="_BackNavigation" model="navModel.Value" />
+	}
+}
 <div class="govuk-grid-row">
 	<div class="govuk-grid-column-two-thirds">
-		<a class="govuk-back-link" href="@Url.Action("Index")">Back</a>
+		<form method="post">
+			<h1 class="govuk-heading-l">
+				Add document details for @Model.FileName
+			</h1>
 
-		<h1 class="govuk-heading-l">
-			Add document details for<br />
-			<span class="govuk-!-font-weight-bold">@Model.FileName</span>
-		</h1>
-
-		<p>
-			<a href="#">@Model.FileName</a> &nbsp; <span class="govuk-body govuk-!-font-weight-bold">@Model.FileSize</span> &nbsp;
-			<a class="govuk-link" href="@Url.Action("DeleteDocument", new { id = Model.DocumentId })">Delete</a>
-		</p>
-
-		<form method="post" asp-action="SaveDocumentDetails">
-			<div class="govuk-form-group @(Html.ViewData.ModelState.ContainsKey(nameof(Model.DocumentTypeId)) ? "govuk-form-group--error" : "")">
-				<label class="govuk-label" for="DocumentTypeId">Document type</label>
-				<select asp-for="DocumentTypeId"
-						asp-items="Model.DocumentTypeOptions"
-						class="govuk-select"
-						id="DocumentTypeId"></select>
-				@Html.ValidationMessageFor(m => m.DocumentTypeId, "", new { @class = "govuk-error-message" })
+			<div class="govuk-summary-list">
+				<div class="govuk-summary-list__row">
+					<dt class="govuk-summary-list__key">
+						<a href="@Model.DocumentStoragePath" target="_blank">@Model.FileName</a>
+					</dt>
+					<dd class="govuk-summary-list__value">@Model.FileSize</dd>
+					<dd class="govuk-summary-list__actions">
+						<a asp-action="DeleteDocument"
+						   asp-route-id="@Model.DocumentId"
+						   class="govuk-link">Delete</a>
+					</dd>
+				</div>
 			</div>
 
-			<div class="govuk-form-group @(Html.ViewData.ModelState.ContainsKey(nameof(Model.SponsorDocumentVersion)) ? "govuk-form-group--error" : "")">
-				<label class="govuk-label" for="SponsorDocumentVersion">Sponsor document version</label>
-				<div id="SponsorDocumentVersion-hint" class="govuk-hint">
-					For example, 1.5
-				</div>
-				<input asp-for="SponsorDocumentVersion" class="govuk-input" />
-				@Html.ValidationMessageFor(m => m.SponsorDocumentVersion, "", new { @class = "govuk-error-message" })
+			<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
+
+			<govuk-fieldset class="sections">
+				<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
+
+				@foreach (var question in Model.Questionnaire.Questions)
+				{
+					var index = question.Index;
+
+					<input type="hidden" asp-for="Questionnaire.Questions[index].Index" />
+					<input type="hidden" asp-for="Questionnaire.Questions[index].QuestionId" />
+					<input type="hidden" asp-for="Questionnaire.Questions[index].Category" />
+					<input type="hidden" asp-for="Questionnaire.Questions[index].SectionId" />
+					<input type="hidden" asp-for="Questionnaire.Questions[index].Section" />
+					<input type="hidden" asp-for="Questionnaire.Questions[index].Heading" />
+					<input type="hidden" asp-for="Questionnaire.Questions[index].QuestionText" />
+					<input type="hidden" asp-for="Questionnaire.Questions[index].ShortQuestionText" />
+					<input type="hidden" asp-for="Questionnaire.Questions[index].QuestionType" />
+					<input type="hidden" asp-for="Questionnaire.Questions[index].DataType" />
+					<input type="hidden" asp-for="Questionnaire.Questions[index].IsMandatory" checked="@question.IsMandatory" />
+					<input type="hidden" asp-for="Questionnaire.Questions[index].IsOptional" checked="@question.IsOptional" />
+
+					if (!question.IsMandatory)
+					{
+						if (question.Rules.Count == 0)
+						{
+							<div class="govuk-inset-text">
+								This question is conditional:
+							</div>
+						}
+					}
+
+					var types = (question.QuestionType.ToLower(), question.DataType.ToLower());
+
+					ViewBag.Index = index;
+
+					// this will be used in the template
+					var templateName = types switch
+					{
+						("date", "date") => "DateTemplate",
+						("text", "text" or "email") => "TextTemplate",
+						("look-up list", "checkbox") => "CheckboxTemplate",
+						("look-up list", "radio button") => "RadioButtonTemplate",
+						("boolean", "boolean") => "RadioButtonTemplate",
+						("look-up list", "dropdown") => "DropdownTemplate",
+						_ => string.Empty
+					};
+
+					if (!string.IsNullOrWhiteSpace(templateName))
+					{
+						// plese note the @ is necessary before Html so that Template is rendered, otherwise it won't render
+						@Html.EditorFor(m => m.Questionnaire, $"~/Views/ProjectModification/EditorTemplates/{templateName}.cshtml", ViewData)
+					}
+				}
+			</govuk-fieldset>
+			<div class="save-buttons">
+				@if (!Model.ReviewAnswers)
+				{
+					<partial name="_SubmitButton" model="@("pmc:savedocumentdetails", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } })" />
+
+					ViewBag.Style = "govuk-button govuk-button--secondary";
+					<partial name="_SubmitButton" model="@("mqc:saveresponses", "Save for later", new Dictionary<string, string> { { "saveForLater", bool.TrueString } })" />
+				}
+				else
+				{
+					<partial name="_SubmitButton" model="@("mqc:saveresponses", "Save changes", new Dictionary<string, string> { { "submit", bool.TrueString } })" />
+				}
 			</div>
 
-			<fieldset class="govuk-fieldset">
-				<legend class="govuk-fieldset__legend govuk-fieldset__legend--m">Sponsor document date</legend>
-				<div class="govuk-hint">
-					For example, 19 September 2025
-				</div>
-
-				<div class="govuk-date-input" id="SponsorDocumentDate">
-					<div class="govuk-date-input__item">
-						<div class="govuk-form-group">
-							<label class="govuk-label govuk-date-input__label" for="SponsorDocumentDateDay">Day</label>
-							<input class="govuk-input govuk-date-input__input govuk-input--width-2"
-								   asp-for="SponsorDocumentDateDay"
-								   id="SponsorDocumentDateDay"
-								   name="SponsorDocumentDateDay"
-								   type="text" inputmode="numeric" />
-						</div>
-					</div>
-
-					<div class="govuk-date-input__item">
-						<div class="govuk-form-group">
-							<label class="govuk-label govuk-date-input__label" for="SponsorDocumentDateMonth">Month</label>
-							<select class="govuk-select govuk-input--width-5"
-									asp-for="SponsorDocumentDateMonth"
-									asp-items="Model.MonthOptions"
-									id="SponsorDocumentDateMonth">
-								<option value="">Select month</option>
-							</select>
-						</div>
-					</div>
-
-					<div class="govuk-date-input__item">
-						<div class="govuk-form-group">
-							<label class="govuk-label govuk-date-input__label" for="SponsorDocumentDateYear">Year</label>
-							<input class="govuk-input govuk-date-input__input govuk-input--width-4"
-								   asp-for="SponsorDocumentDateYear"
-								   id="SponsorDocumentDateYear"
-								   name="SponsorDocumentDateYear"
-								   type="text" inputmode="numeric" />
-						</div>
-					</div>
-				</div>
-			</fieldset>
-
-			<div class="govuk-form-group">
-				<fieldset class="govuk-fieldset" aria-describedby="ApprovedBefore-hint">
-					<legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
-						Has a previous version of this document been approved?
-					</legend>
-					<div class="govuk-radios govuk-radios--inline">
-						<div class="govuk-radios__item">
-							<input asp-for="HasPreviousVersionApproved" class="govuk-radios__input" type="radio" value="true" id="HasPreviousVersionApproved-Yes" />
-							<label class="govuk-label govuk-radios__label" for="HasPreviousVersionApproved-Yes">Yes</label>
-						</div>
-						<div class="govuk-radios__item">
-							<input asp-for="HasPreviousVersionApproved" class="govuk-radios__input" type="radio" value="false" id="HasPreviousVersionApproved-No" />
-							<label class="govuk-label govuk-radios__label" for="HasPreviousVersionApproved-No">No</label>
-						</div>
-					</div>
-				</fieldset>
-			</div>
-
-			<button type="submit" class="govuk-button">Save and continue</button>
-			<button type="submit" name="saveForLater" value="true" class="govuk-button govuk-button--secondary">Save for later</button>
 		</form>
 	</div>
 </div>
+<script>
+	$(document).on("change", "select[name='Questions[0].SelectedOption']", function () {
+		$("div.govuk-form-group.conditional").removeAttr("style");
+	});
+</script>
