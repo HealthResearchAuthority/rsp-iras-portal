@@ -12,7 +12,6 @@
     <ItemGroup>
       <Compile Remove="Controllers\CmsProjectModificationController.cs" />
       <Compile Remove="Controllers\CmsQuestionSetController.cs" />
-      <Compile Remove="Models\ModificationAddDocumentDetailsViewModel.cs" />
     </ItemGroup>
 
     <ItemGroup>
@@ -30,7 +29,6 @@
       <Content Remove="Views\CmsQuestionSet\GuidanceContent.cshtml" />
       <Content Remove="Views\CmsQuestionSet\Index.cshtml" />
       <Content Remove="Views\CmsQuestionSet\ReviewAnswers.cshtml" />
-      <Content Remove="Views\ProjectModification\AddDocumentDetails.cshtml" />
     </ItemGroup>
 
     <ItemGroup>

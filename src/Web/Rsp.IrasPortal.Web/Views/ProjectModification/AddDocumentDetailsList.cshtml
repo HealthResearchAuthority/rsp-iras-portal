@@ -1,0 +1,61 @@
+﻿@model Rsp.IrasPortal.Web.Models.ModificationReviewDocumentsViewModel
+
+@{
+	ViewData["Title"] = "Add document details list";
+	(string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
+	navModel = ("pmc:reviewdocument", "Back", new());
+}
+
+<div class="govuk-width-container">
+	@section BackNavigation {
+		<partial name="_BackNavigation" model="navModel.Value" />
+	}
+
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-two-thirds">
+
+			<partial name="_ProjectModificationSummary" model="Model" />
+
+			@if (Model.UploadedDocuments.Any())
+			{
+				<table class="govuk-table">
+					<thead class="govuk-visually-hidden">
+						<tr>
+							<th>Document name</th>
+							<th>Size</th>
+							<th class="govuk-!-text-align-right">Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var doc in Model.UploadedDocuments)
+						{
+							<tr class="govuk-table__row">
+								<td class="govuk-table__cell" style="width: 60%;">
+									<a asp-action="ContinueToDetails" asp-controller="ProjectModification" asp-route-documentId="@doc.DocumentId" class="govuk-link">@doc.FileName</a>
+								</td>
+								<td class="govuk-table__cell govuk-!-text-align-right" style="width: 20%;">
+									<strong class="govuk-tag">
+										@doc.Status
+									</strong>
+								</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			}
+			else
+			{
+				<p class="govuk-body">No documents uploaded.</p>
+			}
+			<form asp-action="continuetodetails" method="get">
+				<partial name="_SubmitButton" model="@("pmc:continuetodetails", "Save and continue", new Dictionary<string, string>{})" />
+			</form>
+			@{
+				ViewBag.Style = "govuk-button govuk-button--secondary";
+			}
+			<form asp-action="ProjectOverview" method="post">
+				<partial name="_SubmitButton" model="@("app:projectoverview", "Save for later", new Dictionary<string, string> { })" />
+			</form>
+		</div>
+	</div>
+</div>
