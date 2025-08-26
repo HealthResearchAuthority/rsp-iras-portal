@@ -64,7 +64,10 @@
 				Some of the documents you've added need additional details which you'll add in the next step.
 			</p>
 
-			<button class="govuk-button" data-module="govuk-button" name="action" value="continue">Save and continue</button>
+			<form asp-action="AddDocumentDetailsList" method="get">
+				<partial name="_SubmitButton" model="@("pmc:AddDocumentDetailsList", "Save and continue", new Dictionary<string, string>{})" />
+			</form>
+
 			@{
 				ViewBag.Style = "govuk-button govuk-button--secondary";
 			}

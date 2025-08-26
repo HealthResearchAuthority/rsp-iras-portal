@@ -48,7 +48,6 @@ public interface IRespondentServiceClient
     /// <param name="modificationChangeId">The project modification change identifier.</param>
     /// <returns>An asynchronous operation that gets the modification answers.</returns>
     [Get("/respondent/modification/{modificationChangeId}/{projectRecordId}")]
-
     public Task<ApiResponse<IEnumerable<RespondentAnswerDto>>> GetModificationAnswers(Guid modificationChangeId, string projectRecordId);
 
     /// <summary>
@@ -71,4 +70,25 @@ public interface IRespondentServiceClient
     /// </returns>
     [Get("/respondent/modificationdocument/{modificationChangeId}/{projectRecordId}/{projectPersonnelId}")]
     public Task<ApiResponse<IEnumerable<ProjectModificationDocumentRequest>>> GetModificationChangesDocuments(Guid modificationChangeId, string projectRecordId, string projectPersonnelId);
+
+    [Get("/respondent/modificationdocumentdetails/{documentId}")]
+    public Task<ApiResponse<ProjectModificationDocumentRequest>> GetModificationDocumentDetails(Guid documentId);
+
+    /// <summary>
+    /// Retrieves all modification documents associated with a specific project modification change and respondent.
+    /// </summary>
+    /// <param name="modificationChangeId">The unique identifier for the project modification change.</param>
+    /// <param name="projectRecordId">The identifier of the associated project record.</param>
+    /// <param name="projectPersonnelId">The identifier of the personnel who uploaded or is associated with the documents.</param>
+    /// <returns>
+    /// A task representing the asynchronous operation. The task result contains a list of <see cref="ProjectModificationDocumentRequest"/> wrapped in an <see cref="ApiResponse{T}"/>.
+    /// </returns>
+    [Post("/respondent/modificationdocument")]
+    public Task<IApiResponse> SaveModificationDocuments(List<ProjectModificationDocumentRequest> projectModificationDocumentRequest);
+
+    [Get("/respondent/modificationdocumentanswers/{documentId}")]
+    public Task<ApiResponse<ProjectModificationDocumentRequest>> GetModificationDocumentAnswers(Guid documentId);
+
+    [Post("/respondent/modificationdocumentanswer")]
+    public Task<IApiResponse> SaveModificationDocumentAnswers(ProjectModificationDocumentRequest projectModificationDocumentRequest);
 }

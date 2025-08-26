@@ -27,6 +27,7 @@
 			<label class="govuk-label" for="Files">Upload documents</label>
 			<div class="govuk-drop-zone @(Html.ViewData.ModelState.ContainsKey(nameof(Model.Files)) ? "govuk-form-group--error" : "")"
 				 data-module="govuk-file-upload">
+				@Html.ValidationMessageFor(m => m.Files, "", new { @class = "govuk-error-message" })
 
 				<input asp-for="Files"
 					   class="govuk-file-upload"
@@ -34,8 +35,6 @@
 					   name="Files"
 					   type="file"
 					   multiple />
-
-				@Html.ValidationMessageFor(m => m.Files, "", new { @class = "govuk-error-message" })
 			</div>
 
 			<div class="govuk-button-group govuk-!-margin-top-4">
