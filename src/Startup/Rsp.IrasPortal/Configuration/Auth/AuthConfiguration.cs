@@ -107,8 +107,6 @@ public static class AuthConfiguration
                         // and signout the user if the session is expired
                         context.HttpContext.Session.SetString(SessionKeys.Alive, bool.TrueString);
 
-                        var claims = context.Result.Principal;
-
                         return Task.CompletedTask;
                     };
                 }

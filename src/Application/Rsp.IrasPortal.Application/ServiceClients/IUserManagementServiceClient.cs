@@ -136,11 +136,4 @@ public interface IUserManagementServiceClient
     /// </summary>
     [Get("/users/claims")]
     public Task<IApiResponse<IEnumerable<UserClaimDto>>> GetUserClaims(string? id, string? email);
-
-    /// <summary>
-    /// Deals with post login operations for the user
-    /// </summary>
-    /// <param name="user">Request Body</param>
-    [Post("/users/post-login")]
-    public Task<IApiResponse> HandlePostLoginActivities([Body] PostLoginOperationRequest userClaims);
 }

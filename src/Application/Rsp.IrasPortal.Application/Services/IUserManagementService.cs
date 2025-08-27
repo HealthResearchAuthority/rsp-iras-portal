@@ -45,6 +45,4 @@ public interface IUserManagementService : IInterceptable
     Task<ServiceResponse> UpdateUserEmailAndPhoneNumber(User user, string email, string? telephoneNumber);
 
     Task<ServiceResponse> UpdateUserIdentityProviderId(User user, string identityProviderId);
-
-    Task<ServiceResponse> HandlePostLoginActivities(PostLoginOperationRequest userClaims);
 }
