@@ -63,7 +63,9 @@ public class ProjectOverviewController
     private void UpdateModificationRelatedTempData()
     {
         // If there is a project modification change, show the notification banner
-        if (TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId) is not null)
+        if (TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId) is not null &&
+            TempData[TempDataKeys.ProjectModification.ProjectModificationChangeMarker] is Guid marker &&
+            marker != Guid.Empty)
         {
             TempData[TempDataKeys.ShowNotificationBanner] = true;
         }
@@ -74,6 +76,7 @@ public class ProjectOverviewController
         TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationSpecificArea);
         TempData.Remove(TempDataKeys.ProjectModification.AreaOfChangeId);
         TempData.Remove(TempDataKeys.ProjectModification.SpecificAreaOfChangeId);
+        TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationChangeMarker);
         TempData.Remove(TempDataKeys.ProjectModificationPlannedEndDate.NewPlannedProjectEndDate);
         TempData.Remove(TempDataKeys.ProjectModificationPlannedEndDate.AffectingOrganisationsType);
         TempData.Remove(TempDataKeys.ProjectModificationPlannedEndDate.AffectedOrganisationsLocations);
