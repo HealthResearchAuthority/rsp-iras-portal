@@ -85,7 +85,7 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
         // Assert
         result
             .ShouldHaveValidationErrorFor(x => x.Country)
-            .WithErrorMessage("You must provide a country");
+            .WithErrorMessage("Select at least one country");
     }
 
     [Fact]
@@ -234,7 +234,7 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
         // Assert
         result
             .ShouldHaveValidationErrorFor(x => x.ReviewBodies)
-            .WithErrorMessage("Enter a review body to continue");
+            .WithErrorMessage("Select at least one review body");
     }
 
     [Fact]
@@ -256,7 +256,7 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
         // Assert
         result
             .ShouldHaveValidationErrorFor(x => x.ReviewBodies)
-            .WithErrorMessage("Enter a review body to continue");
+            .WithErrorMessage("Select at least one review body");
     }
 
     [Fact]

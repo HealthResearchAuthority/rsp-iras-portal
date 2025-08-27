@@ -1,5 +1,4 @@
-﻿using System.Collections.Immutable;
-using System.Net;
+﻿using System.Net;
 using System.Text.Json;
 using FluentValidation;
 using FluentValidation.Results;
@@ -83,8 +82,25 @@ public class UsersController(
             Country = model.Search.Country,
             Status = model.Search.Status,
             FromDate = model.Search.FromDate,
-            ToDate = model.Search.ToDate?.AddDays(1).AddTicks(-1) // Inclusive end date
+            ToDate = model.Search.ToDate?.AddDays(1).AddTicks(-1), // Inclusive end date
+            Role = model.Search.UserRoles.Where(x => x.IsSelected).Select(x => x.Id).ToList(),
         };
+
+        if (model.Search.ReviewBodies.Any(x => x.IsSelected))
+        {
+            var selectedReviewBodyIds = model.Search.ReviewBodies
+                .Where(x => x.IsSelected)
+                .Select(x => x.Id)
+                .ToList();
+
+            var userReviewBodies = await GetUserReviewBodiesByIds(selectedReviewBodyIds);
+
+            var allowedUserIds = userReviewBodies
+                .Select(urb => urb.UserId.ToString().ToUpperInvariant()) // adjust if property name differs
+                .ToHashSet();
+
+            request.UserIds = allowedUserIds.ToList();
+        }
 
         // get the users
         var response = await userManagementService.GetUsers(request, pageNumber, pageSize, sortField, sortDirection);
@@ -93,6 +109,8 @@ public class UsersController(
         if (response.IsSuccessStatusCode)
         {
             var users = response.Content?.Users.Select(user => new UserViewModel(user)) ?? [];
+            var availableRoles = await GetAlluserRoles();
+            var activeReviewBodies = await GetActiveReviewBodies();
 
             var paginationModel = new PaginationViewModel(pageNumber, pageSize, response.Content?.TotalCount ?? 0)
             {
@@ -106,8 +124,35 @@ public class UsersController(
             {
                 Pagination = paginationModel,
                 Users = users,
-                Search = model.Search
+                Search = model.Search,
             };
+
+            if (model.Search.UserRoles.Count == 0)
+            {
+                reviewBodySearchViewModel.Search.UserRoles = availableRoles.Select(role => new UserRoleViewModel
+                {
+                    Id = role.Id,
+                    Name = role.Name
+                }).ToList();
+            }
+            else
+            {
+                reviewBodySearchViewModel.Search.UserRoles = model.Search.UserRoles;
+            }
+
+            if (model.Search.ReviewBodies.Count == 0)
+            {
+                reviewBodySearchViewModel.Search.ReviewBodies = activeReviewBodies.Select(role =>
+                    new UserReviewBodyViewModel()
+                    {
+                        Id = role.Id,
+                        RegulatoryBodyName = role.RegulatoryBodyName,
+                    }).ToList();
+            }
+            else
+            {
+                reviewBodySearchViewModel.Search.ReviewBodies = model.Search.ReviewBodies;
+            }
 
             return View("Index", reviewBodySearchViewModel);
         }
@@ -256,6 +301,10 @@ public class UsersController(
             // GET THE REVIEW BODIES HERE
             model.ReviewBodies = await GetUserReviewBodies(Guid.Parse(model.Id));
 
+            model.UserRoles = model.UserRoles
+                .OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
             return View(ViewUserView, model);
         }
 
@@ -378,6 +427,10 @@ public class UsersController(
                     });
                 }
             }
+
+            model.UserRoles = model.UserRoles
+                .OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
+                .ToList();
 
             model.ReviewBodies = await GetUserReviewBodies(Guid.Parse(model.Id));
 
@@ -720,6 +773,46 @@ public class UsersController(
             case UsersSearch.StatusKey:
                 viewModel.Search.Status = null;
                 break;
+            // NEW: turn off selected Review Bodies
+            case UsersSearch.ReviewBodyKey:
+            {
+                // if value is empty -> clear all selections
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    foreach (var rb in viewModel.Search.ReviewBodies) rb.IsSelected = false;
+                    break;
+                }
+
+                var tokens = value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+                foreach (var token in tokens)
+                {
+                    if (Guid.TryParse(token, out var id))
+                    {
+                        foreach (var rb in viewModel.Search.ReviewBodies.Where(x => x.Id == id))
+                            rb.IsSelected = false;
+                    }
+                    else
+                    {
+                        foreach (var rb in viewModel.Search.ReviewBodies.Where(x =>
+                                     string.Equals(x.RegulatoryBodyName, token, StringComparison.OrdinalIgnoreCase) ||
+                                     string.Equals(x.DisplayName, token, StringComparison.OrdinalIgnoreCase)))
+                            rb.IsSelected = false;
+                    }
+                }
+
+                break;
+            }
+
+            // NEW: turn off selected Roles
+            case UsersSearch.RoleKey:
+            {
+                foreach (var r in viewModel.Search.UserRoles.Where(x => x.DisplayName == value))
+                {
+                    r.IsSelected = false;
+                }
+            }
+                break;
         }
 
         // Serialize modified search model to JSON for complexSearchQuery parameter
@@ -770,7 +863,7 @@ public class UsersController(
 
             // (Re)build the model list in the required shape
 
-            return (activeReviewBodies ?? Enumerable.Empty<ReviewBodyDto>()).Select(reviewBody =>
+            return activeReviewBodies.Select(reviewBody =>
                 new UserReviewBodyViewModel
                 {
                     IsSelected = selectedIds.Contains(reviewBody.Id),
@@ -780,6 +873,14 @@ public class UsersController(
         }
 
         return [];
+    }
+
+    private async Task<IList<ReviewBodyUserDto>> GetUserReviewBodiesByIds(List<Guid> ids)
+    {
+        var userReviewBodiesResponse = await reviewBodyService.GetUserReviewBodiesByReviewBodyIds(ids);
+        return userReviewBodiesResponse is { IsSuccessStatusCode: true, Content: not null }
+            ? userReviewBodiesResponse.Content
+            : [];
     }
 
     private async Task AddUpdateUsersToReviewBodies(UserViewModel model,
@@ -819,8 +920,8 @@ public class UsersController(
                 .ToHashSet();
 
             // Compute deltas
-            var toRemove = existingIds.Except(currentlySelectedIds);   // previously selected, now unselected -> remove
-            var toAdd = currentlySelectedIds.Except(existingIds);   // newly selected, not already assigned -> add
+            var toRemove = existingIds.Except(currentlySelectedIds); // previously selected, now unselected -> remove
+            var toAdd = currentlySelectedIds.Except(existingIds); // newly selected, not already assigned -> add
 
             // Remove only those that were previously selected but are no longer selected
             foreach (var rbId in toRemove)

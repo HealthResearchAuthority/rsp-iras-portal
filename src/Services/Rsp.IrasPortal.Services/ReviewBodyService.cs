@@ -89,4 +89,11 @@ public class ReviewBodyService(IReviewBodyServiceClient client) : IReviewBodySer
 
         return apiResponse.ToServiceResponse();
     }
+
+    public async Task<ServiceResponse<List<ReviewBodyUserDto>>> GetUserReviewBodiesByReviewBodyIds(List<Guid> reviewBodyIdsByReviewBodyIds)
+    {
+        var apiResponse = await client.GetUserReviewBodiesByIds(reviewBodyIdsByReviewBodyIds);
+
+        return apiResponse.ToServiceResponse();
+    }
 }

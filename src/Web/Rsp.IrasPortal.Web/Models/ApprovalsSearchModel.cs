@@ -35,10 +35,14 @@ public class ApprovalsSearchModel
     public List<string> ModificationTypes { get; set; } = [];
     public OrganisationSearchViewModel SponsorOrgSearch { get; set; } = new();
 
-    public Dictionary<string, List<string>> Filters
+    public Dictionary<string, List<string>>? Filters
     {
         get
         {
+            // If a setter has been used, respect that
+            if (_filtersOverride != null)
+                return _filtersOverride;
+
             var filters = new Dictionary<string, List<string>>();
 
             if (!string.IsNullOrWhiteSpace(ChiefInvestigatorName))
@@ -108,7 +112,14 @@ public class ApprovalsSearchModel
 
             return filters;
         }
+        set
+        {
+            // Allow suppressing filters by explicitly setting null or empty
+            _filtersOverride = value;
+        }
     }
+
+    private Dictionary<string, List<string>>? _filtersOverride;
 
     private static DateTime? ParseDate(string? day, string? month, string? year)
     {

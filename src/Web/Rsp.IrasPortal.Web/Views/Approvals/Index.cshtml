@@ -11,6 +11,8 @@
     <div class="govuk-grid-column-full">
         <h1 class="govuk-heading-xl">Approvals</h1>
         <partial name="_ActionItem" model="@("Search","Search modifications received for approval.", "approvals:search")" />
-		<partial name="_ActionItem" model="@("Modifications tasklist","See modifications tasklist.", "tasklist:index")" />
+		<authorized auth-params="@new(Roles:"system_administrator,workflow_co-ordinator")">
+            <partial name="_ActionItem" model="@("Modifications tasklist","See modifications tasklist.", "tasklist:index")" />
+        </authorized>
     </div>
 </div>
