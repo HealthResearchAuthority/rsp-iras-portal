@@ -40,6 +40,8 @@
         <div class="govuk-grid-column-two-thirds">
             <form asp-action="ConfirmModificationJourney" method="post">
 
+                <input type="hidden" asp-for="ProjectRecordId" />
+
                 <partial name="_ProjectModificationSummary" model="Model" />
 
                 <div class="govuk-form-group" error-class-for="AreaOfChangeId">
@@ -60,14 +62,16 @@
                         Select your specific area of change
                     </label>
                     <select asp-for="SpecificChangeId" asp-items="Model.SpecificChangeOptions" class="govuk-select govuk-!-width-two-thirds" id="SpecificChangeId"></select>
-                </div>
+                </div>                              
 
                 <div class="save-buttons">
-                    <button type="submit" class="govuk-button">Save and continue</button>
-                    @{
-                        ViewBag.Style = "govuk-button govuk-button--secondary";
-                    }                    
-                    <partial name="_SubmitButton" model="@("pov:postapproval", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId })" />
+                    <button type="submit" name="action" value="saveAndContinue" class="govuk-button">
+                        Save and continue
+                    </button>
+
+                    <button type="submit" name="action" value="saveForLater" class="govuk-button govuk-button--secondary">
+                        Save for later
+                    </button>
                 </div>
                 <p>
                     <a href="#" class="govuk-link">Remove this change</a>

@@ -154,6 +154,12 @@ public partial class ProjectModificationController
         // Store the list of area of changes in TempData (as serialized JSON string)
         TempData[TempDataKeys.ProjectModification.AreaOfChanges] = JsonSerializer.Serialize(response.Content);
 
+        // Set the modification change marker to an empty GUID only if no change has been applied yet.
+        if (!(TempData[TempDataKeys.ProjectModification.ProjectModificationChangeMarker] is Guid))
+        {
+            TempData[TempDataKeys.ProjectModification.ProjectModificationChangeMarker] = Guid.Empty;
+        }
+
         var viewModel = new AreaOfChangeViewModel
         {
             PageTitle = SelectAreaOfChange,
@@ -213,7 +219,7 @@ public partial class ProjectModificationController
     /// Saves the modification change to backend and handles validation.
     /// </summary>
     [HttpPost]
-    public async Task<IActionResult> ConfirmModificationJourney(AreaOfChangeViewModel model)
+    public async Task<IActionResult> ConfirmModificationJourney(AreaOfChangeViewModel model, string action)
     {
         var validationResult = await areaofChangeValidator.ValidateAsync(new ValidationContext<AreaOfChangeViewModel>(model));
 
@@ -231,6 +237,11 @@ public partial class ProjectModificationController
 
             TempData[TempDataKeys.ProjectModification.AreaOfChangeId] = model.AreaOfChangeId;
             TempData[TempDataKeys.ProjectModification.SpecificAreaOfChangeId] = model.SpecificChangeId;
+        }
+
+        if (action == "saveForLater")
+        {
+            return RedirectToRoute("pov:postapproval", new { model.ProjectRecordId });
         }
 
         // Retrieve the journey type from the selected specific change
@@ -352,6 +363,7 @@ public partial class ProjectModificationController
         {
             var modificationChange = modificationChangeResponse.Content!;
             TempData[TempDataKeys.ProjectModification.ProjectModificationChangeId] = modificationChange.Id;
+            TempData[TempDataKeys.ProjectModification.ProjectModificationChangeMarker] = Guid.NewGuid();
         }
     }
 
