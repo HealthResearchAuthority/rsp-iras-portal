@@ -93,7 +93,7 @@ public class CustomClaimsTransformation
                         Status = IrasUserStatus.Active
                     });
 
-                    if (createUserStatus.IsSuccessStatusCode)
+                    if (createUserStatus != null && createUserStatus.IsSuccessStatusCode)
                     {
                         // user was created succesfully so let's assign them the 'applicant' role
                         await userManagementService.UpdateRoles(email, null, "applicant");
