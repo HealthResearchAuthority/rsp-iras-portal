@@ -56,4 +56,9 @@ public class AppSettings
     /// Number of minutes before the session expires to show a warning to the user.
     /// </summary>
     public uint WarningBeforeSeconds { get; set; }
+
+    /// <summary>
+    /// Microsoft clarity project id
+    /// </summary>
+    public string? ClarityProjectId { get; set; }
 }
