@@ -157,13 +157,6 @@ public class UserManagementService(IUserManagementServiceClient client) : IUserM
         };
     }
 
-    public async Task<ServiceResponse> HandlePostLoginActivities(PostLoginOperationRequest userClaims)
-    {
-        var response = await client.HandlePostLoginActivities(userClaims);
-
-        return response.ToServiceResponse();
-    }
-
     public async Task<ServiceResponse> UpdateUserEmailAndPhoneNumber(User user, string email, string? telephoneNumber)
     {
         var updateNeeded = false;
