@@ -1,15 +1,15 @@
 ﻿@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
-@model SiteSettingsModel
+@model IList<LinkModel>
 
 <footer class="govuk-footer " role="contentinfo">
 	<div class="govuk-width-container">
 		<svg focusable="false"
-			 role="presentation"
-			 xmlns="http://www.w3.org/2000/svg"
-			 viewBox="0 0 64 60"
-			 height="30"
-			 width="32"
-			 fill="currentcolor" class="govuk-footer__crown">
+		role="presentation"
+		xmlns="http://www.w3.org/2000/svg"
+		viewBox="0 0 64 60"
+		height="30"
+		width="32"
+		fill="currentcolor" class="govuk-footer__crown">
 			<g>
 				<circle cx="20" cy="17.6" r="3.7" />
 				<circle cx="10.2" cy="23.5" r="3.7" />
@@ -27,12 +27,14 @@
 				<h2 class="govuk-visually-hidden">Support links</h2>
 				<ul class="govuk-footer__inline-list">
 
-					@if (Model.FooterLinks != null)
+					@if (Model != null)
 					{
-						foreach (var link in Model.FooterLinks)
+						foreach (var link in Model)
 						{
+							var url = link?.Route?.Path != null ? link.Route.Path : link?.Url;
+
 							<li class="govuk-footer__inline-list-item">
-								<a class="govuk-footer__link" href="@link.Url" target="@link.Target">@link.Name</a>
+								<a class="govuk-footer__link" href="@url" target="@link.Target">@link.Title</a>
 							</li>
 						}
 					}

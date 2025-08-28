@@ -9,8 +9,8 @@ public interface ICmsContentServiceClient
     [Get("/umbraco/delivery/api/v2/content/item/{pageUrl}")]
     public Task<ApiResponse<GenericPageResponse>> GetPageContentByUrl(string pageUrl);
 
-    [Get("/umbraco/api/siteSettings/getsitefooter")]
-    public Task<ApiResponse<SiteSettingsModel>> GetSiteSettings();
+    [Get("/umbraco/api/siteSettings/getsitesettings")]
+    public Task<ApiResponse<GenericPageResponse>> GetSiteSettings();
 
     [Get("/umbraco/api/mixedcontentpage/getcontentbyurl")]
     public Task<ApiResponse<MixedContentPageResponse>> GetMixedPageContentByUrl(string url);

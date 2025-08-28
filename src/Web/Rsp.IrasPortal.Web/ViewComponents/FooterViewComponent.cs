@@ -5,8 +5,6 @@ namespace Rsp.IrasPortal.Web.ViewComponents;
 
 public class FooterViewComponent(ICmsContentServiceClient cms) : ViewComponent
 {
-    private static string HomeUrl = "future-iras/";
-
     public async Task<IViewComponentResult> InvokeAsync()
     {
         var footerData = await cms.GetSiteSettings();
@@ -16,6 +14,6 @@ public class FooterViewComponent(ICmsContentServiceClient cms) : ViewComponent
             throw new NotImplementedException();
         }
 
-        return View("~/Views/Shared/Footer.cshtml", footerData.Content);
+        return View("~/Views/Shared/Footer.cshtml", footerData.Content.Properties.FooterLinks);
     }
 }
