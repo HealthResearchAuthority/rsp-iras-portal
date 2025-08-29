@@ -23,6 +23,7 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ProjectModificati
         List<GetAreaOfChangesResponse> areaChanges)
     {
         // Arrange
+        string action = "saveAndContinue";
         var validator = Mocker.GetMock<IValidator<AreaOfChangeViewModel>>();
         validator
             .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<AreaOfChangeViewModel>>(), default))
@@ -37,7 +38,7 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ProjectModificati
         };
 
         // Act
-        var result = await Sut.ConfirmModificationJourney(model);
+        var result = await Sut.ConfirmModificationJourney(model, action);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -58,6 +59,7 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ProjectModificati
             AreaOfChangeId = 1,
             SpecificChangeId = 101
         };
+        string action = "saveAndContinue";
 
         var validator = Mocker.GetMock<IValidator<AreaOfChangeViewModel>>();
         validator
@@ -98,7 +100,7 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ProjectModificati
             });
 
         // Act
-        var result = await Sut.ConfirmModificationJourney(model);
+        var result = await Sut.ConfirmModificationJourney(model, action);
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
@@ -114,6 +116,7 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ProjectModificati
             AreaOfChangeId = 1,
             SpecificChangeId = 999
         };
+        string action = "saveAndContinue";
 
         var validator = Mocker.GetMock<IValidator<AreaOfChangeViewModel>>();
         validator
@@ -143,10 +146,56 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ProjectModificati
             });
 
         // Act
-        var result = await Sut.ConfirmModificationJourney(model);
+        var result = await Sut.ConfirmModificationJourney(model, action);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
         viewResult.ViewName.ShouldBe("AreaOfChange");
+    }
+
+    [Theory, AutoData]
+    public async Task ConfirmModificationJourney_RedirectsToPostApproval_WhenActionIsSaveForLater_AndValidationPasses(
+        AreaOfChangeViewModel model,
+        List<GetAreaOfChangesResponse> areaChanges)
+    {
+        // Arrange
+        string action = "saveForLater";
+
+        var validator = Mocker.GetMock<IValidator<AreaOfChangeViewModel>>();
+        validator
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<AreaOfChangeViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult());
+
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.AreaOfChanges] = JsonSerializer.Serialize(areaChanges)
+        };
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Items["Respondent"] = new { GivenName = "Test", FamilyName = "User" };
+
+        Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
+        Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid()
+        };
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.CreateModificationChange(It.IsAny<ProjectModificationChangeRequest>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationChangeResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectModificationChangeResponse { Id = Guid.NewGuid() }
+            });
+
+        // Act
+        var result = await Sut.ConfirmModificationJourney(model, action);
+
+        // Assert
+        var redirectResult = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirectResult.RouteName.ShouldBe("pov:postapproval");
+        redirectResult.RouteValues.ShouldNotBeNull();
+        redirectResult.RouteValues["projectRecordId"].ShouldBe(model.ProjectRecordId);
+        validator.Verify();
     }
 }

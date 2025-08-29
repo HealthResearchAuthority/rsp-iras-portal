@@ -55,7 +55,7 @@ public interface IUserManagementServiceClient
     /// <param name="email">Email of the user</param>
     /// <returns>List of users</returns>
     [Get("/users")]
-    public Task<ApiResponse<UserResponse>> GetUser(string? id, string? email);
+    public Task<ApiResponse<UserResponse>> GetUser(string? id, string? email, string? identityProviderId);
 
     /// <summary>
     /// Registers a new user

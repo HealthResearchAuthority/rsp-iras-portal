@@ -3,6 +3,7 @@ using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
+using Rsp.IrasPortal.Domain.Identity;
 using Rsp.Logging.Interceptors;
 
 namespace Rsp.IrasPortal.Application.Services;
@@ -27,7 +28,7 @@ public interface IUserManagementService : IInterceptable
 
     Task<ServiceResponse<UsersResponse>> GetUsersByIds(IEnumerable<string> ids, string? searchQuery = null, int pageNumber = 1, int pageSize = 10);
 
-    Task<ServiceResponse<UserResponse>> GetUser(string? userId, string? email);
+    Task<ServiceResponse<UserResponse>> GetUser(string? userId, string? email, string? identityProviderId = null);
 
     Task<ServiceResponse> CreateUser(CreateUserRequest request);
 
@@ -40,4 +41,8 @@ public interface IUserManagementService : IInterceptable
     Task<ServiceResponse<UserAuditTrailResponse>> GetUserAuditTrail(string userId);
 
     Task<ServiceResponse> UpdateLastLogin(string email);
+
+    Task<ServiceResponse> UpdateUserEmailAndPhoneNumber(User user, string email, string? telephoneNumber);
+
+    Task<ServiceResponse> UpdateUserIdentityProviderId(User user, string identityProviderId);
 }

@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using NetDevPack.Security.Jwt.Core.Interfaces;
 using Rsp.IrasPortal.Application.Configuration;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
 using Rsp.IrasPortal.Application.Services;
 
 namespace Rsp.IrasPortal.Infrastructure.Claims;
@@ -26,6 +27,8 @@ public class CustomClaimsTransformation
         // To be able to assign additional roles based on the email we need to
         // find email claim
         var emailClaim = principal.FindFirst(ClaimTypes.Email);
+        var mobilePhone = principal.FindFirst(ClaimTypes.MobilePhone)?.Value;
+        var identityProviderId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         // if there is no email claim, return the current principal
         if (emailClaim is null)
@@ -51,20 +54,70 @@ public class CustomClaimsTransformation
 
         // now we can call the usermanagement api
         var context = httpContextAccessor.HttpContext!;
+
+        var userResponse = await userManagementService.GetUser(null, null, identityProviderId);
         if (context.Session.GetString(SessionKeys.FirstLogin) == bool.TrueString)
         {
+            if (userResponse.IsSuccessStatusCode && userResponse.Content != null)
+            {
+                // user with provider ID exists
+                // let's update their email and telephone number from the claims
+                var currentUser = userResponse.Content;
+                await userManagementService.UpdateUserEmailAndPhoneNumber(currentUser.User, email, mobilePhone);
+            }
+            else
+            {
+                // user cannot be found by provider ID so let's try find them by their email
+                var getUserResponseEmail = await userManagementService.GetUser(null, email);
+
+                if (getUserResponseEmail.IsSuccessStatusCode && getUserResponseEmail.Content != null)
+                {
+                    // user found so let's update their providerID
+
+                    userResponse = getUserResponseEmail;
+
+                    if (!string.IsNullOrEmpty(identityProviderId))
+                    {
+                        await userManagementService.UpdateUserIdentityProviderId(getUserResponseEmail.Content.User, identityProviderId);
+                    }
+                }
+                else
+                {
+                    // user cannot be found by their email or provider ID so let's create a new user entity
+                    // and assign them applicant role
+                    var createUserStatus = await userManagementService.CreateUser(new CreateUserRequest
+                    {
+                        Email = email,
+                        Telephone = mobilePhone,
+                        IdentityProviderId = identityProviderId,
+                        Status = IrasUserStatus.Active
+                    });
+
+                    if (createUserStatus != null && createUserStatus.IsSuccessStatusCode)
+                    {
+                        // user was created succesfully so let's assign them the 'applicant' role
+                        await userManagementService.UpdateRoles(email, null, "applicant");
+                    }
+
+                    var newlyCreatedUser = await userManagementService.GetUser(null, null, identityProviderId);
+
+                    if (newlyCreatedUser.IsSuccessStatusCode)
+                    {
+                        userResponse = newlyCreatedUser;
+                    }
+                }
+            }
+
             await userManagementService.UpdateLastLogin(email);
             context.Session.Remove(SessionKeys.FirstLogin);
         }
 
-        var getUserResponse = await userManagementService.GetUser(null, email);
-
-        if (getUserResponse.IsSuccessStatusCode && getUserResponse.Content != null)
+        if (userResponse.IsSuccessStatusCode && userResponse.Content != null)
         {
             var respondentId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var firstName = principal.FindFirst(ClaimTypes.GivenName)?.Value;
             var surName = principal.FindFirst(ClaimTypes.Surname)?.Value;
-            var lastLogin = getUserResponse.Content.User?.LastLogin;
+            var lastLogin = userResponse.Content.User?.LastLogin;
 
             context.Items.Add(ContextItemKeys.RespondentId, respondentId);
             context.Items.Add(ContextItemKeys.Email, email);
@@ -72,7 +125,7 @@ public class CustomClaimsTransformation
             context.Items.Add(ContextItemKeys.LastName, surName);
             context.Items.Add(ContextItemKeys.LastLogin, lastLogin);
 
-            var user = getUserResponse.Content;
+            var user = userResponse.Content;
 
             if (!string.IsNullOrWhiteSpace(user.User?.Id))
             {
@@ -88,9 +141,8 @@ public class CustomClaimsTransformation
             // for one login
             var oneLoginEnabled = await featureManager.IsEnabledAsync(Features.OneLogin);
 
-            if (oneLoginEnabled)
+            if (oneLoginEnabled && !string.IsNullOrEmpty(user.User?.GivenName))
             {
-                // these claims are not available in Gov UK One Login implementation, so we have to manually add them
                 claimsIdentity.AddClaim(new Claim(ClaimTypes.GivenName, user.User.GivenName));
                 claimsIdentity.AddClaim(new Claim(ClaimTypes.Name, user.User.GivenName));
             }

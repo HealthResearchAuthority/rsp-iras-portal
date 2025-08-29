@@ -47,12 +47,13 @@ public class TransformAsyncTests : TestServiceBase<CustomClaimsTransformation>
     }
 
     [Theory, AutoData]
-    public async Task TransformAsync_Should_Add_Default_Role_When_EmailClaim_Is_Present(string email)
+    public async Task TransformAsync_Should_Add_Default_Role_When_EmailClaim_Is_Present(string email, string identityProviderId)
     {
         // Arrange
         var claims = new List<Claim>
         {
-            new(ClaimTypes.Email, email)
+            new(ClaimTypes.Email, email),
+            new Claim(ClaimTypes.NameIdentifier, identityProviderId)
         };
 
         var principal = new ClaimsPrincipal(new ClaimsIdentity(claims));
@@ -77,8 +78,12 @@ public class TransformAsyncTests : TestServiceBase<CustomClaimsTransformation>
         var serviceResponse = apiResponse.ToServiceResponse();
 
         _userManagementService
-            .Setup(c => c.GetUser(null, email))
+            .Setup(c => c.GetUser(null, email, null))
             .ReturnsAsync(serviceResponse);
+
+        _userManagementService
+           .Setup(c => c.GetUser(null, null, identityProviderId))
+           .ReturnsAsync(serviceResponse);
 
         // Act
         var result = await Sut.TransformAsync(principal);
@@ -90,13 +95,13 @@ public class TransformAsyncTests : TestServiceBase<CustomClaimsTransformation>
 
     [Theory, AutoData]
     public async Task TransformAsync_Should_Add_Roles_From_UserManagementService_When_EmailClaim_Is_Present(
-        string email, string userId, string firstName, string lastName, List<string> roles)
+        string email, string firstName, string lastName, string identityProviderId, List<string> roles)
     {
         // Arrange
         var claims = new List<Claim>
         {
             new(ClaimTypes.Email, email),
-            new(ClaimTypes.NameIdentifier, userId),
+            new(ClaimTypes.NameIdentifier, identityProviderId),
             new(ClaimTypes.GivenName, firstName),
             new(ClaimTypes.Surname, lastName)
         };
@@ -130,8 +135,12 @@ public class TransformAsyncTests : TestServiceBase<CustomClaimsTransformation>
         var serviceResponse = apiResponse.ToServiceResponse();
 
         _userManagementService
-            .Setup(x => x.GetUser(null, email))
+            .Setup(x => x.GetUser(null, email, null))
             .ReturnsAsync(serviceResponse);
+
+        _userManagementService
+           .Setup(x => x.GetUser(null, null, identityProviderId))
+           .ReturnsAsync(serviceResponse);
 
         // Act
         var result = await Sut.TransformAsync(principal);
