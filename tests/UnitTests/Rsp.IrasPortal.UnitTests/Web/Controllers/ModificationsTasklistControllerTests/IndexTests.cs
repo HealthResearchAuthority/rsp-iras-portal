@@ -14,12 +14,22 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ModificationsTasklistControll
 
 public class IndexTests : TestServiceBase<ModificationsTasklistController>
 {
-    private const string TempDataKey = "td:ApprovalsSearchModel";
+    private readonly DefaultHttpContext _http;
 
     public IndexTests()
     {
-        var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
-        Sut.TempData = tempData;
+        _http = new DefaultHttpContext
+        {
+            Session = new InMemorySession()
+        };
+
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = _http
+        };
+
+        // TempData still available for other short-lived flags if controller uses them elsewhere
+        Sut.TempData = new TempDataDictionary(_http, Mock.Of<ITempDataProvider>());
     }
 
     [Fact]
@@ -58,12 +68,9 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
     [InlineData("{\"FromDay\":\"01\",\"FromMonth\":\"01\",\"FromYear\":\"2020\"}", false)]
     [InlineData("{\"ToDay\":\"31\",\"ToMonth\":\"12\",\"ToYear\":\"2025\"}", false)]
     [InlineData("{}", true)]
-    public async Task Index_SearchModel_FromTempData_SetsCorrectEmptySearchPerformed(string json, bool expectedEmptySearchPerformed)
+    public async Task Index_SearchModel_FromSession_SetsCorrectEmptySearchPerformed(string json, bool expectedEmptySearchPerformed)
     {
-        var tempDataMock = Mocker.GetMock<ITempDataDictionary>();
-        tempDataMock.Setup(td => td.Peek(TempDataKeys.ApprovalsSearchModel)).Returns(json);
-
-        Sut.TempData = tempDataMock.Object;
+        _http.Session.SetString(SessionKeys.ModificationsTasklist, json);
 
         var result = await Sut.Index(1, 20, null, "CreatedAt", "asc");
 
@@ -74,7 +81,8 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
     }
 
     [Theory, AutoData]
-    public async Task Index_Calculates_FromDate_And_ToDate_Correctly_From_StringSubmissionFields(int fromDays, int toDays, GetModificationsResponse modificationResponse)
+    public async Task Index_Calculates_FromDate_And_ToDate_Correctly_From_StringSubmissionFields(
+        int fromDays, int toDays, GetModificationsResponse modificationResponse)
     {
         fromDays = Math.Clamp(fromDays % 100, 1, 99);
         toDays = Math.Clamp(toDays % 100, 1, 99);
@@ -86,10 +94,7 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
         };
 
         var json = JsonSerializer.Serialize(model);
-        var tempDataMock = new Mock<ITempDataDictionary>();
-        tempDataMock.Setup(td => td.Peek(TempDataKeys.ApprovalsSearchModel)).Returns(json);
-
-        Sut.TempData = tempDataMock.Object;
+        _http.Session.SetString(SessionKeys.ModificationsTasklist, json);
 
         var serviceResponse = new ServiceResponse<GetModificationsResponse>
         {

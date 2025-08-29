@@ -14,6 +14,7 @@ using Rsp.IrasPortal.Configuration.Dependencies;
 using Rsp.IrasPortal.Configuration.Health;
 using Rsp.IrasPortal.Configuration.HttpClients;
 using Rsp.IrasPortal.Web;
+using Rsp.IrasPortal.Web.ActionFilters;
 using Rsp.IrasPortal.Web.Attributes;
 using Rsp.IrasPortal.Web.Mapping;
 using Rsp.Logging.ActionFilters;
@@ -89,19 +90,32 @@ services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// add controllers and views
 services
     .AddControllersWithViews(async options =>
     {
         options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
+
         if (await featureManager.IsEnabledAsync(Features.InterceptedLogging))
         {
             options.Filters.Add<LogActionFilter>();
         }
 
         options.Filters.Add<ModelStateMergeAttribute>();
+
+        // Map controllers to their filter session keys
+        options.Filters.Add(new AdvancedFiltersSessionFilter(
+            new Dictionary<string, string[]>
+            {
+                { "Users", [SessionKeys.UsersSearch] },
+                { "ReviewBody", [SessionKeys.ReviewBodiesSearch] },
+                { "Approvals", [SessionKeys.ApprovalsSearch] },
+                { "ModificationsTasklist", [SessionKeys.ModificationsTasklist] },
+            }
+        ));
     })
     .AddSessionStateTempDataProvider();
+
+
 
 // Lift the MVC model-binding collection cap (default is 1024)
 services.Configure<MvcOptions>(o => o.MaxModelBindingCollectionSize = int.MaxValue);

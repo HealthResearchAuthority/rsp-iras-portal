@@ -76,6 +76,13 @@ public class UsersController(
         model ??= new UserSearchViewModel();
         model.Search ??= new UserSearchModel();
 
+        // If no filters passed in, try to restore from session
+        var savedSearch = HttpContext.Session.GetString(SessionKeys.UsersSearch);
+        if (!string.IsNullOrWhiteSpace(savedSearch))
+        {
+            model.Search = JsonSerializer.Deserialize<UserSearchModel>(savedSearch);
+        }
+
         var request = new SearchUserRequest()
         {
             SearchQuery = model.Search.SearchQuery,
@@ -153,6 +160,9 @@ public class UsersController(
             {
                 reviewBodySearchViewModel.Search.ReviewBodies = model.Search.ReviewBodies;
             }
+
+            // Save the current search filters to the session
+            HttpContext.Session.SetString(SessionKeys.UsersSearch, JsonSerializer.Serialize(reviewBodySearchViewModel.Search));
 
             return View("Index", reviewBodySearchViewModel);
         }
@@ -704,6 +714,10 @@ public class UsersController(
             return View(nameof(Index), model); // Return with validation errors
         }
 
+        // Save applied filters to session
+        HttpContext.Session.SetString(SessionKeys.UsersSearch, JsonSerializer.Serialize(model.Search));
+
+
         // Call Index with matching parameter set
         return await Index(
             1, // pageNumber
@@ -725,6 +739,9 @@ public class UsersController(
         };
 
         var searchJson = JsonSerializer.Serialize(cleanedSearch);
+
+        // Clear any saved filters from session
+        HttpContext.Session.Remove(SessionKeys.UsersSearch);
 
         return RedirectToRoute("admin:users", new
         {
@@ -817,6 +834,9 @@ public class UsersController(
 
         // Serialize modified search model to JSON for complexSearchQuery parameter
         var searchJson = JsonSerializer.Serialize(viewModel.Search);
+
+        // Save applied filters to session
+        HttpContext.Session.SetString(SessionKeys.UsersSearch, JsonSerializer.Serialize(viewModel.Search));
 
         // Redirect to ViewReviewBodies with query parameters
         return RedirectToRoute("admin:users", new

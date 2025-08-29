@@ -3,7 +3,6 @@ using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Web.Controllers;
 using Rsp.IrasPortal.Web.Models;
@@ -21,8 +20,11 @@ public class ApplyFiltersTests : TestServiceBase<ApprovalsController>
 
         SetupValidatorResult(new ValidationResult()); // Valid
 
-        var httpContext = new DefaultHttpContext();
-        Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
+        var httpContext = new DefaultHttpContext
+        {
+            Session = new InMemorySession()
+        };
+        Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
 
         // Act
         var result = await Sut.ApplyFilters(viewModel);
@@ -31,7 +33,9 @@ public class ApplyFiltersTests : TestServiceBase<ApprovalsController>
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
         redirect.ActionName.ShouldBe("Search");
 
-        var storedJson = Sut.TempData[TempDataKeys.ApprovalsSearchModel]!.ToString();
+        var storedJson = httpContext.Session.GetString(SessionKeys.ApprovalsSearch);
+        storedJson.ShouldNotBeNullOrWhiteSpace();
+
         var storedModel = JsonSerializer.Deserialize<ApprovalsSearchModel>(storedJson!);
         storedModel!.ChiefInvestigatorName.ShouldBe("Dr. Valid");
     }

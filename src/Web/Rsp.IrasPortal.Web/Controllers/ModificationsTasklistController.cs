@@ -31,7 +31,8 @@ public class ModificationsTasklistController(IApplicationsService applicationsSe
             EmptySearchPerformed = true // Set to true to check if search bar should be hidden on view
         };
 
-        if (TempData.Peek(TempDataKeys.ApprovalsSearchModel) is string json)
+        var json = HttpContext.Session.GetString(SessionKeys.ModificationsTasklist);
+        if (!string.IsNullOrEmpty(json))
         {
             model.Search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json)!;
             if (model.Search.Filters.Count != 0 || !string.IsNullOrEmpty(model.Search.IrasId))
@@ -73,7 +74,8 @@ public class ModificationsTasklistController(IApplicationsService applicationsSe
                 : SortDirections.Ascending;
         }
 
-        var result = await applicationsService.GetModifications(searchQuery, pageNumber, pageSize, querySortField, querySortDirection);
+        var result = await applicationsService.GetModifications(
+            searchQuery, pageNumber, pageSize, querySortField, querySortDirection);
 
         model.Modifications = result?.Content?.Modifications?
             .Select(dto => new TaskListModificationViewModel
@@ -133,19 +135,14 @@ public class ModificationsTasklistController(IApplicationsService applicationsSe
             return View(nameof(Index), model);
         }
 
-        TempData[TempDataKeys.ApprovalsSearchModel] = JsonSerializer.Serialize(model.Search);
+        HttpContext.Session.SetString(SessionKeys.ModificationsTasklist, JsonSerializer.Serialize(model.Search));
         return RedirectToAction(nameof(Index));
     }
 
     [HttpGet]
     public async Task<IActionResult> RemoveFilter(string key)
     {
-        if (!TempData.TryGetValue(TempDataKeys.ApprovalsSearchModel, out var tempDataValue))
-        {
-            return RedirectToAction(nameof(Index));
-        }
-
-        var json = tempDataValue?.ToString();
+        var json = HttpContext.Session.GetString(SessionKeys.ModificationsTasklist);
         if (string.IsNullOrWhiteSpace(json))
         {
             return RedirectToAction(nameof(Index));
@@ -181,7 +178,7 @@ public class ModificationsTasklistController(IApplicationsService applicationsSe
                 break;
         }
 
-        TempData[TempDataKeys.ApprovalsSearchModel] = JsonSerializer.Serialize(search);
+        HttpContext.Session.SetString(SessionKeys.ModificationsTasklist, JsonSerializer.Serialize(search));
 
         return await ApplyFilters(new ModificationsTasklistViewModel { Search = search });
     }
@@ -189,12 +186,7 @@ public class ModificationsTasklistController(IApplicationsService applicationsSe
     [HttpGet]
     public IActionResult ClearFilters()
     {
-        if (!TempData.TryGetValue(TempDataKeys.ApprovalsSearchModel, out var tempDataValue))
-        {
-            return RedirectToAction(nameof(Index));
-        }
-
-        var json = tempDataValue?.ToString();
+        var json = HttpContext.Session.GetString(SessionKeys.ModificationsTasklist);
         if (string.IsNullOrWhiteSpace(json))
         {
             return RedirectToAction(nameof(Index));
@@ -211,7 +203,8 @@ public class ModificationsTasklistController(IApplicationsService applicationsSe
             IrasId = search.IrasId
         };
 
-        TempData[TempDataKeys.ApprovalsSearchModel] = JsonSerializer.Serialize(cleanedSearch);
+        HttpContext.Session.SetString(SessionKeys.ModificationsTasklist,
+            JsonSerializer.Serialize(cleanedSearch));
 
         return RedirectToAction(nameof(Index));
     }

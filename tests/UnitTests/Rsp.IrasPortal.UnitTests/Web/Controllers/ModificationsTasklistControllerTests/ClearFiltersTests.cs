@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -10,15 +11,26 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ModificationsTasklistControll
 
 public class ClearFiltersTests : TestServiceBase<ModificationsTasklistController>
 {
+    private readonly DefaultHttpContext _http;
+
+    public ClearFiltersTests()
+    {
+        _http = new DefaultHttpContext
+        {
+            Session = new InMemorySession()
+        };
+
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = _http
+        };
+    }
+
     [Fact]
     public void ClearFilters_ShouldRedirectToSearch()
     {
-        // Arrange
-        var controller = Sut;
-        controller.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
-
         // Act
-        var result = controller.ClearFilters();
+        var result = Sut.ClearFilters();
 
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
@@ -29,32 +41,31 @@ public class ClearFiltersTests : TestServiceBase<ModificationsTasklistController
     public void ClearFilters_ShouldRetainOnlyIrasIdAndRedirect()
     {
         // Arrange
-        var controller = Sut;
-        var tempDataProvider = Mock.Of<ITempDataProvider>();
-        controller.TempData = new TempDataDictionary(new DefaultHttpContext(), tempDataProvider);
-
         var originalSearch = new ApprovalsSearchModel
         {
             IrasId = "IRAS123",
             ShortProjectTitle = "TestOrg",
         };
 
-        controller.TempData[TempDataKeys.ApprovalsSearchModel] = JsonSerializer.Serialize(originalSearch);
+        _http.Session.SetString(SessionKeys.ModificationsTasklist, JsonSerializer.Serialize(originalSearch));
 
         // Act
-        var result = controller.ClearFilters();
+        var result = Sut.ClearFilters();
 
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
         redirectResult.ActionName.ShouldBe(nameof(Sut.Index));
 
-        // Check that TempData only contains the IrasId and nothing else
-        controller.TempData.TryGetValue(TempDataKeys.ApprovalsSearchModel, out var updatedJson).ShouldBeTrue();
+        var updatedJson = _http.Session.GetString(SessionKeys.ModificationsTasklist);
         updatedJson.ShouldNotBeNull();
 
-        var updatedSearch = JsonSerializer.Deserialize<ApprovalsSearchModel>(updatedJson!.ToString()!);
+        var updatedSearch = JsonSerializer.Deserialize<ApprovalsSearchModel>(updatedJson!);
         updatedSearch.ShouldNotBeNull();
         updatedSearch!.IrasId.ShouldBe("IRAS123");
         updatedSearch.ShortProjectTitle.ShouldBeNull();
     }
 }
+
+
+
+

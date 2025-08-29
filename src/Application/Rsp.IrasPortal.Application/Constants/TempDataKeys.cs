@@ -50,7 +50,6 @@ public struct TempDataKeys
     public const string OrgSearchReturnUrl = "td:org_search_return_url";
     public const string ModelState = "td:model_state";
     public const string ShowNotificationBanner = "td:show_notification_banner";
-    public const string ApprovalsSearchModel = "td:approvalsSearchModel";
     public const string OrganisationSearchModel = "td:organisationSearchModel";
     public const string Status = "td:status";
 }
