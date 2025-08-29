@@ -1,17 +1,18 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.ServiceClients;
+using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
+using Rsp.IrasPortal.Application.Services;
 
 namespace Rsp.IrasPortal.Web.ViewComponents;
 
-public class FooterViewComponent(ICmsContentServiceClient cms) : ViewComponent
+public class FooterViewComponent(ICmsContentService contentService) : ViewComponent
 {
     public async Task<IViewComponentResult> InvokeAsync()
     {
-        var footerData = await cms.GetSiteSettings();
+        var footerData = await contentService.GetSiteFooter();
 
-        if (!footerData.IsSuccessful)
+        if (!footerData.IsSuccessStatusCode || footerData.Content == null)
         {
-            throw new NotImplementedException();
+            return View("~/Views/Shared/Footer.cshtml", new List<LinkModel>());
         }
 
         return View("~/Views/Shared/Footer.cshtml", footerData.Content.Properties.FooterLinks);

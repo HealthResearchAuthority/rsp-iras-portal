@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication;
+using Rsp.IrasPortal.Application;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Infrastructure.Claims;
 using Rsp.IrasPortal.Infrastructure.HttpMessageHandlers;
@@ -28,9 +29,17 @@ public static class ServicesConfiguration
         services.AddTransient<IRtsService, RtsService>();
         services.AddTransient<IProjectModificationsService, ProjectModificationsService>();
         services.AddScoped<IBlobStorageService, BlobStorageService>();
+        services.AddScoped<ICmsContentService, CmsContentService>();
 
         // add message handlers
         services.AddTransient<AuthHeadersHandler>();
+
+        services.AddMemoryCache();
+
+        services.AddControllersWithViews(options =>
+        {
+            options.Filters.Add<SiteChromeFilter>();
+        });
 
         return services;
     }
