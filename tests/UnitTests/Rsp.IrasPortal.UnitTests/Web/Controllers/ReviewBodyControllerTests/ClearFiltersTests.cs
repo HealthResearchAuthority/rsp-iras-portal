@@ -1,12 +1,27 @@
 ﻿using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Rsp.IrasPortal.UnitTests;
 using Rsp.IrasPortal.Web.Controllers;
 using Rsp.IrasPortal.Web.Models;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ReviewBodyControllerTests;
-
 public class ClearFiltersTests : TestServiceBase<ReviewBodyController>
 {
+    private readonly DefaultHttpContext _http;
+
+    public ClearFiltersTests()
+    {
+        _http = new DefaultHttpContext
+        {
+            Session = new InMemorySession()
+        };
+
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = _http
+        };
+    }
+
     [Fact]
     public void ClearFilters_WithoutSearchQuery_ShouldRedirectWithEmptySearch()
     {

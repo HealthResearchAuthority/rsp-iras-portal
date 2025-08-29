@@ -3,7 +3,6 @@ using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Web.Controllers;
 using Rsp.IrasPortal.Web.Models;
@@ -12,45 +11,50 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApprovalsControllerTests;
 
 public class RemoveFiltersTests : TestServiceBase<ApprovalsController>
 {
+    private readonly DefaultHttpContext _http;
+
+    public RemoveFiltersTests()
+    {
+        _http = new DefaultHttpContext
+        {
+            Session = new InMemorySession()
+        };
+
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = _http
+        };
+
+        // Default: validator succeeds unless overridden per-test
+        SetupValidValidator();
+    }
+
     [Fact]
     public async Task RemoveFilter_ChiefInvestigatorName_ShouldBeCleared_AndRedirect()
     {
         var model = new ApprovalsSearchModel { ChiefInvestigatorName = "Dr. X" };
-        SetTempData(new Dictionary<string, object?>
-        {
-            { TempDataKeys.ApprovalsSearchModel, JsonSerializer.Serialize(model) }
-        });
-        SetupValidValidator();
+        SetSessionModel(model);
 
         var result = await Sut.RemoveFilter("chiefinvestigatorname", null);
 
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
         redirect.ActionName.ShouldBe("Search");
 
-        var updated =
-            JsonSerializer.Deserialize<ApprovalsSearchModel>(
-                Sut.TempData[TempDataKeys.ApprovalsSearchModel]!.ToString()!)!;
+        var updated = GetSessionModel();
         updated.ChiefInvestigatorName.ShouldBeNull();
     }
-
 
     [Fact]
     public async Task RemoveFilter_ProjectTitle_ShouldBeCleared_AndRedirect()
     {
         var model = new ApprovalsSearchModel { ShortProjectTitle = "Cancer Study" };
-        SetTempData(new Dictionary<string, object?>
-        {
-            { TempDataKeys.ApprovalsSearchModel, JsonSerializer.Serialize(model) }
-        });
-        SetupValidValidator();
+        SetSessionModel(model);
 
         var result = await Sut.RemoveFilter("shortprojecttitle", null);
 
         result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Search");
 
-        var updated =
-            JsonSerializer.Deserialize<ApprovalsSearchModel>(
-                Sut.TempData[TempDataKeys.ApprovalsSearchModel]!.ToString()!)!;
+        var updated = GetSessionModel();
         updated.ShortProjectTitle.ShouldBeNull();
     }
 
@@ -62,19 +66,13 @@ public class RemoveFiltersTests : TestServiceBase<ApprovalsController>
             SponsorOrganisation = "Org X",
             SponsorOrgSearch = new OrganisationSearchViewModel { SearchText = "Search" }
         };
-        SetTempData(new Dictionary<string, object?>
-        {
-            { TempDataKeys.ApprovalsSearchModel, JsonSerializer.Serialize(model) }
-        });
-        SetupValidValidator();
+        SetSessionModel(model);
 
         var result = await Sut.RemoveFilter("sponsororganisation", null);
 
         result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Search");
 
-        var updated =
-            JsonSerializer.Deserialize<ApprovalsSearchModel>(
-                Sut.TempData[TempDataKeys.ApprovalsSearchModel]!.ToString()!)!;
+        var updated = GetSessionModel();
         updated.SponsorOrganisation.ShouldBeNull();
         updated.SponsorOrgSearch.ShouldNotBeNull();
         updated.SponsorOrgSearch.SearchText.ShouldBeNull();
@@ -84,19 +82,13 @@ public class RemoveFiltersTests : TestServiceBase<ApprovalsController>
     public async Task RemoveFilter_FromDate_ShouldBeCleared_AndRedirect()
     {
         var model = new ApprovalsSearchModel { FromDay = "01", FromMonth = "01", FromYear = "2023" };
-        SetTempData(new Dictionary<string, object?>
-        {
-            { TempDataKeys.ApprovalsSearchModel, JsonSerializer.Serialize(model) }
-        });
-        SetupValidValidator();
+        SetSessionModel(model);
 
         var result = await Sut.RemoveFilter("datesubmitted-from", null);
 
         result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Search");
 
-        var updated =
-            JsonSerializer.Deserialize<ApprovalsSearchModel>(
-                Sut.TempData[TempDataKeys.ApprovalsSearchModel]!.ToString()!)!;
+        var updated = GetSessionModel();
         updated.FromDay.ShouldBeNull();
         updated.FromMonth.ShouldBeNull();
         updated.FromYear.ShouldBeNull();
@@ -106,19 +98,13 @@ public class RemoveFiltersTests : TestServiceBase<ApprovalsController>
     public async Task RemoveFilter_ToDate_ShouldBeCleared_AndRedirect()
     {
         var model = new ApprovalsSearchModel { ToDay = "31", ToMonth = "12", ToYear = "2023" };
-        SetTempData(new Dictionary<string, object?>
-        {
-            { TempDataKeys.ApprovalsSearchModel, JsonSerializer.Serialize(model) }
-        });
-        SetupValidValidator();
+        SetSessionModel(model);
 
         var result = await Sut.RemoveFilter("datesubmitted-to", null);
 
         result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Search");
 
-        var updated =
-            JsonSerializer.Deserialize<ApprovalsSearchModel>(
-                Sut.TempData[TempDataKeys.ApprovalsSearchModel]!.ToString()!)!;
+        var updated = GetSessionModel();
         updated.ToDay.ShouldBeNull();
         updated.ToMonth.ShouldBeNull();
         updated.ToYear.ShouldBeNull();
@@ -127,23 +113,30 @@ public class RemoveFiltersTests : TestServiceBase<ApprovalsController>
     [Fact]
     public async Task RemoveFilter_FroAndTomDate_ShouldBeCleared_AndRedirect()
     {
-        var model = new ApprovalsSearchModel { FromDay = "01", FromMonth = "01", FromYear = "2023", ToDay = "31", ToMonth = "12", ToYear = "2026" };
-        SetTempData(new Dictionary<string, object?>
+        var model = new ApprovalsSearchModel
         {
-            { TempDataKeys.ApprovalsSearchModel, JsonSerializer.Serialize(model) }
-        });
-        SetupValidValidator();
+            FromDay = "01",
+            FromMonth = "01",
+            FromYear = "2023",
+            ToDay = "31",
+            ToMonth = "12",
+            ToYear = "2026"
+        };
+        SetSessionModel(model);
 
         var result = await Sut.RemoveFilter("datesubmitted", null);
 
         result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Search");
 
-        var updated =
-            JsonSerializer.Deserialize<ApprovalsSearchModel>(
-                Sut.TempData[TempDataKeys.ApprovalsSearchModel]!.ToString()!)!;
+        var updated = GetSessionModel();
         updated.FromDay.ShouldBeNull();
         updated.FromMonth.ShouldBeNull();
         updated.FromYear.ShouldBeNull();
+
+        // (Controller clears both ranges for 'datesubmitted')
+        updated.ToDay.ShouldBeNull();
+        updated.ToMonth.ShouldBeNull();
+        updated.ToYear.ShouldBeNull();
     }
 
     [Fact]
@@ -153,19 +146,13 @@ public class RemoveFiltersTests : TestServiceBase<ApprovalsController>
         {
             LeadNation = new List<string> { "England", "Wales" }
         };
-        SetTempData(new Dictionary<string, object?>
-        {
-            { TempDataKeys.ApprovalsSearchModel, JsonSerializer.Serialize(model) }
-        });
-        SetupValidValidator();
+        SetSessionModel(model);
 
         var result = await Sut.RemoveFilter("leadnation", "Wales");
 
         result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Search");
 
-        var updated =
-            JsonSerializer.Deserialize<ApprovalsSearchModel>(
-                Sut.TempData[TempDataKeys.ApprovalsSearchModel]!.ToString()!)!;
+        var updated = GetSessionModel();
         updated.LeadNation.ShouldBe(new List<string> { "England" });
     }
 
@@ -176,19 +163,13 @@ public class RemoveFiltersTests : TestServiceBase<ApprovalsController>
         {
             ParticipatingNation = new List<string> { "England", "Wales" }
         };
-        SetTempData(new Dictionary<string, object?>
-        {
-            { TempDataKeys.ApprovalsSearchModel, JsonSerializer.Serialize(model) }
-        });
-        SetupValidValidator();
+        SetSessionModel(model);
 
         var result = await Sut.RemoveFilter("participatingnation", "Wales");
 
         result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Search");
 
-        var updated =
-            JsonSerializer.Deserialize<ApprovalsSearchModel>(
-                Sut.TempData[TempDataKeys.ApprovalsSearchModel]!.ToString()!)!;
+        var updated = GetSessionModel();
         updated.ParticipatingNation.ShouldBe(new List<string> { "England" });
     }
 
@@ -199,34 +180,30 @@ public class RemoveFiltersTests : TestServiceBase<ApprovalsController>
         {
             ModificationTypes = new List<string> { "Type A", "Type B" }
         };
-        SetTempData(new Dictionary<string, object?>
-        {
-            { TempDataKeys.ApprovalsSearchModel, JsonSerializer.Serialize(model) }
-        });
-        SetupValidValidator();
+        SetSessionModel(model);
 
         var result = await Sut.RemoveFilter("modificationtype", "Type B");
 
         result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Search");
 
-        var updated =
-            JsonSerializer.Deserialize<ApprovalsSearchModel>(
-                Sut.TempData[TempDataKeys.ApprovalsSearchModel]!.ToString()!)!;
+        var updated = GetSessionModel();
         updated.ModificationTypes.ShouldBe(new List<string> { "Type A" });
     }
 
+    // ----------------------
+    // Helpers
+    // ----------------------
 
-    private void SetTempData(IDictionary<string, object?> values)
+    private void SetSessionModel(ApprovalsSearchModel model)
     {
-        var httpContext = new DefaultHttpContext();
-        var tempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
+        _http.Session.SetString(SessionKeys.ApprovalsSearch, JsonSerializer.Serialize(model));
+    }
 
-        foreach (var kvp in values)
-        {
-            tempData[kvp.Key] = kvp.Value;
-        }
-
-        Sut.TempData = tempData;
+    private ApprovalsSearchModel GetSessionModel()
+    {
+        var json = _http.Session.GetString(SessionKeys.ApprovalsSearch);
+        json.ShouldNotBeNullOrWhiteSpace();
+        return JsonSerializer.Deserialize<ApprovalsSearchModel>(json!)!;
     }
 
     private void SetupValidValidator()

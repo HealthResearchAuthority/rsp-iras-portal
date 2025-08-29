@@ -24,6 +24,7 @@ public class SearchOrganisationsTests : TestServiceBase<ApprovalsController>
     [Fact]
     public async Task SearchOrganisations_ShouldRedirectWithValidationError_WhenSearchTextTooShort()
     {
+        // Arrange
         var model = new ApprovalsSearchViewModel
         {
             Search = new ApprovalsSearchModel
@@ -34,19 +35,26 @@ public class SearchOrganisationsTests : TestServiceBase<ApprovalsController>
                 FromYear = "2024",
                 SponsorOrgSearch = new OrganisationSearchViewModel
                 {
-                    SearchText = "ab"
+                    SearchText = "ab" // too short
                 }
             }
         };
 
-        var httpContext = new DefaultHttpContext();
+        var httpContext = new DefaultHttpContext
+        {
+            Session = new InMemorySession()
+        };
+
+        Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
         Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>())
         {
             [TempDataKeys.OrgSearchReturnUrl] = "/approvals/search"
         };
 
+        // Act
         var result = await Sut.SearchOrganisations(model, null, null);
 
+        // Assert
         var redirect = result.ShouldBeOfType<RedirectResult>();
         redirect.Url.ShouldBe("/approvals/search");
 
@@ -59,8 +67,10 @@ public class SearchOrganisationsTests : TestServiceBase<ApprovalsController>
     [Fact]
     public async Task SearchOrganisations_ShouldRedirectWithResults_WhenSearchIsSuccessful()
     {
+        // Arrange
         int pageIndex = 1;
         int? pageSize = null;
+
         var model = new ApprovalsSearchViewModel
         {
             Search = new ApprovalsSearchModel
@@ -86,39 +96,51 @@ public class SearchOrganisationsTests : TestServiceBase<ApprovalsController>
             TotalCount = 2
         };
 
-        _mockRtsService.Setup(x => x.GetOrganisationsByName("Health Org", OrganisationRoles.Sponsor, pageIndex, pageSize))
+        _mockRtsService
+            .Setup(x => x.GetOrganisationsByName("Health Org", OrganisationRoles.Sponsor, pageIndex, pageSize))
             .ReturnsAsync(new ServiceResponse<OrganisationSearchResponse>
             {
                 StatusCode = HttpStatusCode.OK,
                 Content = responseContent
             });
 
-        var httpContext = new DefaultHttpContext();
+        var httpContext = new DefaultHttpContext
+        {
+            Session = new InMemorySession()
+        };
+
+        Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
         Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>())
         {
             [TempDataKeys.OrgSearchReturnUrl] = "/approvals/search"
         };
 
+        // Act
         var result = await Sut.SearchOrganisations(model, null, pageSize, pageIndex);
 
+        // Assert
         var redirect = result.ShouldBeOfType<RedirectResult>();
         redirect.Url.ShouldBe("/approvals/search");
 
+        // short-lived flags remain in TempData
         Sut.TempData[TempDataKeys.SponsorOrgSearched].ShouldBe("searched:true");
 
-        var deserialized = JsonSerializer.Deserialize<ApprovalsSearchModel>(
-            Sut.TempData[TempDataKeys.ApprovalsSearchModel]!.ToString()!
-        );
+        // the persisted search model is now in Session (not TempData)
+        var json = httpContext.Session.GetString(SessionKeys.ApprovalsSearch);
+        json.ShouldNotBeNullOrWhiteSpace();
 
-        deserialized!.IrasId.ShouldBe("IRA123");
+        var deserialized = JsonSerializer.Deserialize<ApprovalsSearchModel>(json!)!;
+        deserialized.IrasId.ShouldBe("IRA123");
         deserialized.FromDate.ShouldBe(new DateTime(2024, 6, 1));
     }
 
     [Fact]
     public async Task SearchOrganisations_ShouldReturnErrorResult_WhenServiceFails()
     {
+        // Arrange
         int pageIndex = 1;
         int? pageSize = null;
+
         var model = new ApprovalsSearchViewModel
         {
             Search = new ApprovalsSearchModel
@@ -134,21 +156,29 @@ public class SearchOrganisationsTests : TestServiceBase<ApprovalsController>
             }
         };
 
-        _mockRtsService.Setup(x => x.GetOrganisationsByName("FailOrg", OrganisationRoles.Sponsor, pageIndex, pageSize))
+        _mockRtsService
+            .Setup(x => x.GetOrganisationsByName("FailOrg", OrganisationRoles.Sponsor, pageIndex, pageSize))
             .ReturnsAsync(new ServiceResponse<OrganisationSearchResponse>
             {
                 StatusCode = HttpStatusCode.InternalServerError,
                 Content = null
             });
 
-        var httpContext = new DefaultHttpContext();
+        var httpContext = new DefaultHttpContext
+        {
+            Session = new InMemorySession()
+        };
+
+        Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
         Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>())
         {
             [TempDataKeys.OrgSearchReturnUrl] = "/approvals/search"
         };
 
+        // Act
         var result = await Sut.SearchOrganisations(model, null, pageSize, pageIndex);
 
-        result.ShouldBeOfType<ViewResult>();
+        // Assert
+        result.ShouldBeOfType<ViewResult>(); // ServiceError(...) returns a View result in your codebase
     }
 }

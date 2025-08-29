@@ -3,6 +3,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
@@ -14,11 +15,11 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApprovalsControllerTests;
 
 public class SearchTests : TestServiceBase<ApprovalsController>
 {
-    private const string TempDataKey = "td:ApprovalsSearchModel";
-
     private readonly Mock<IApplicationsService> _applicationsService;
     private readonly Mock<IRtsService> _rtsService;
     private readonly Mock<IValidator<ApprovalsSearchModel>> _validator;
+
+    private readonly DefaultHttpContext _http;
 
     public SearchTests()
     {
@@ -26,12 +27,19 @@ public class SearchTests : TestServiceBase<ApprovalsController>
         _rtsService = Mocker.GetMock<IRtsService>();
         _validator = Mocker.GetMock<IValidator<ApprovalsSearchModel>>();
 
-        var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
-        Sut.TempData = tempData;
+        _http = new DefaultHttpContext
+        {
+            Session = new InMemorySession()
+        };
+
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = _http
+        };
     }
 
     [Fact]
-    public async Task Search_ShouldReturnDefaultView_WhenNoTempDataExists()
+    public async Task Search_ShouldReturnDefaultView_WhenNoSessionExists()
     {
         // Act
         var result = await Sut.Search();
@@ -49,7 +57,7 @@ public class SearchTests : TestServiceBase<ApprovalsController>
     {
         // Arrange
         var searchModel = new ApprovalsSearchModel();
-        Sut.TempData[TempDataKey] = JsonSerializer.Serialize(searchModel);
+        _http.Session.SetString(SessionKeys.ApprovalsSearch, JsonSerializer.Serialize(searchModel)); // <-- fixed
 
         // Act
         var result = await Sut.Search();
@@ -66,12 +74,8 @@ public class SearchTests : TestServiceBase<ApprovalsController>
     public async Task Search_ShouldReturnModifications_WhenSearchModelIsValid(GetModificationsResponse mockResponse)
     {
         // Arrange
-        var searchModel = new ApprovalsSearchModel
-        {
-            ChiefInvestigatorName = "Dr. Test"
-        };
-
-        Sut.TempData[TempDataKey] = JsonSerializer.Serialize(searchModel);
+        var searchModel = new ApprovalsSearchModel { ChiefInvestigatorName = "Dr. Test" };
+        _http.Session.SetString(SessionKeys.ApprovalsSearch, JsonSerializer.Serialize(searchModel));
 
         var serviceResponse = new ServiceResponse<GetModificationsResponse>
         {
@@ -97,12 +101,8 @@ public class SearchTests : TestServiceBase<ApprovalsController>
     public async Task Search_ShouldReturnModifications_WhenShortProjectTitleIsSet(GetModificationsResponse mockResponse)
     {
         // Arrange
-        var searchModel = new ApprovalsSearchModel
-        {
-            ShortProjectTitle = "Cancer Research"
-        };
-
-        Sut.TempData[TempDataKey] = JsonSerializer.Serialize(searchModel);
+        var searchModel = new ApprovalsSearchModel { ShortProjectTitle = "Cancer Research" };
+        _http.Session.SetString(SessionKeys.ApprovalsSearch, JsonSerializer.Serialize(searchModel));
 
         var serviceResponse = new ServiceResponse<GetModificationsResponse>
         {
@@ -126,12 +126,9 @@ public class SearchTests : TestServiceBase<ApprovalsController>
     [Theory, AutoData]
     public async Task Search_ShouldReturnModifications_WhenSponsorOrganisationIsSet(GetModificationsResponse mockResponse)
     {
-        var searchModel = new ApprovalsSearchModel
-        {
-            SponsorOrganisation = "University College London"
-        };
-
-        Sut.TempData[TempDataKey] = JsonSerializer.Serialize(searchModel);
+        // Arrange
+        var searchModel = new ApprovalsSearchModel { SponsorOrganisation = "University College London" };
+        _http.Session.SetString(SessionKeys.ApprovalsSearch, JsonSerializer.Serialize(searchModel));
 
         var serviceResponse = new ServiceResponse<GetModificationsResponse>
         {
@@ -143,8 +140,10 @@ public class SearchTests : TestServiceBase<ApprovalsController>
             .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(serviceResponse);
 
+        // Act
         var result = await Sut.Search();
 
+        // Assert
         var view = Assert.IsType<ViewResult>(result);
         var model = Assert.IsType<ApprovalsSearchViewModel>(view.Model);
         Assert.Equal(mockResponse.Modifications.Count(), model.Modifications.Count());
@@ -153,6 +152,7 @@ public class SearchTests : TestServiceBase<ApprovalsController>
     [Theory, AutoData]
     public async Task Search_ShouldReturnModifications_WhenDateRangeIsSet(GetModificationsResponse mockResponse)
     {
+        // Arrange
         var searchModel = new ApprovalsSearchModel
         {
             FromDay = "01",
@@ -162,8 +162,7 @@ public class SearchTests : TestServiceBase<ApprovalsController>
             ToMonth = "12",
             ToYear = "2024"
         };
-
-        Sut.TempData[TempDataKey] = JsonSerializer.Serialize(searchModel);
+        _http.Session.SetString(SessionKeys.ApprovalsSearch, JsonSerializer.Serialize(searchModel));
 
         var serviceResponse = new ServiceResponse<GetModificationsResponse>
         {
@@ -175,23 +174,24 @@ public class SearchTests : TestServiceBase<ApprovalsController>
             .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(serviceResponse);
 
+        // Act
         var result = await Sut.Search();
 
+        // Assert
         var view = Assert.IsType<ViewResult>(result);
         var model = Assert.IsType<ApprovalsSearchViewModel>(view.Model);
         Assert.Equal(mockResponse.Modifications.Count(), model.Modifications.Count());
     }
 
-
     [Theory, AutoData]
     public async Task Search_ShouldReturnModifications_WhenCountryFilterIsSet(GetModificationsResponse mockResponse)
     {
+        // Arrange
         var searchModel = new ApprovalsSearchModel
         {
             LeadNation = new List<string> { "England", "Wales" }
         };
-
-        Sut.TempData[TempDataKey] = JsonSerializer.Serialize(searchModel);
+        _http.Session.SetString(SessionKeys.ApprovalsSearch, JsonSerializer.Serialize(searchModel));
 
         var serviceResponse = new ServiceResponse<GetModificationsResponse>
         {
@@ -203,8 +203,10 @@ public class SearchTests : TestServiceBase<ApprovalsController>
             .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(serviceResponse);
 
+        // Act
         var result = await Sut.Search();
 
+        // Assert
         var view = Assert.IsType<ViewResult>(result);
         var model = Assert.IsType<ApprovalsSearchViewModel>(view.Model);
         Assert.Equal(mockResponse.Modifications.Count(), model.Modifications.Count());
@@ -213,12 +215,12 @@ public class SearchTests : TestServiceBase<ApprovalsController>
     [Theory, AutoData]
     public async Task Search_ShouldReturnModifications_WhenModificationTypeIsSet(GetModificationsResponse mockResponse)
     {
+        // Arrange
         var searchModel = new ApprovalsSearchModel
         {
             ModificationTypes = new List<string> { "Substantial", "Non-substantial" }
         };
-
-        Sut.TempData[TempDataKey] = JsonSerializer.Serialize(searchModel);
+        _http.Session.SetString(SessionKeys.ApprovalsSearch, JsonSerializer.Serialize(searchModel));
 
         var serviceResponse = new ServiceResponse<GetModificationsResponse>
         {
@@ -230,19 +232,20 @@ public class SearchTests : TestServiceBase<ApprovalsController>
             .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(serviceResponse);
 
+        // Act
         var result = await Sut.Search();
 
+        // Assert
         var view = Assert.IsType<ViewResult>(result);
         var model = Assert.IsType<ApprovalsSearchViewModel>(view.Model);
         Assert.Equal(mockResponse.Modifications.Count(), model.Modifications.Count());
     }
 
-
     [Fact]
-    public async Task Search_ShouldThrow_WhenTempDataIsInvalidJson()
+    public async Task Search_ShouldThrow_WhenSessionJsonIsInvalid()
     {
         // Arrange
-        Sut.TempData[TempDataKey] = "Not a JSON string";
+        _http.Session.SetString(SessionKeys.ApprovalsSearch, "Not a JSON string");
 
         // Act & Assert
         await Assert.ThrowsAsync<JsonException>(() => Sut.Search());

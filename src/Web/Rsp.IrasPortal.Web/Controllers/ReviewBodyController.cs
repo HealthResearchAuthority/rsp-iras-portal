@@ -69,6 +69,13 @@ public class ReviewBodyController(
         model ??= new ReviewBodySearchViewModel();
         model.Search ??= new ReviewBodySearchModel();
 
+        // If no filters passed in, try to restore from session
+        var savedSearch = HttpContext.Session.GetString(SessionKeys.ReviewBodiesSearch);
+        if (!string.IsNullOrWhiteSpace(savedSearch))
+        {
+            model.Search = JsonSerializer.Deserialize<ReviewBodySearchModel>(savedSearch);
+        }
+
         var request = new ReviewBodySearchRequest
         {
             SearchQuery = model.Search.SearchQuery,
@@ -76,7 +83,8 @@ public class ReviewBodyController(
             Status = model.Search.Status
         };
 
-        var response = await reviewBodyService.GetAllReviewBodies(request, pageNumber, pageSize, sortField, sortDirection);
+        var response =
+            await reviewBodyService.GetAllReviewBodies(request, pageNumber, pageSize, sortField, sortDirection);
 
         var paginationModel = new PaginationViewModel(pageNumber, pageSize, response.Content?.TotalCount ?? 0)
         {
@@ -92,6 +100,16 @@ public class ReviewBodyController(
             ReviewBodies = response.Content?.ReviewBodies,
             Search = model.Search
         };
+
+        // Save applied filters to session
+        // Only persist if search has any real values
+        if (!string.IsNullOrWhiteSpace(model.Search.SearchQuery) ||
+            model.Search.Country.Count > 0 ||
+            model.Search.Status.HasValue
+        )
+        {
+            HttpContext.Session.SetString(SessionKeys.ReviewBodiesSearch, JsonSerializer.Serialize(model.Search));
+        }
 
         return View(reviewBodySearchViewModel);
     }
@@ -551,6 +569,9 @@ public class ReviewBodyController(
 
         var searchJson = JsonSerializer.Serialize(cleanedSearch);
 
+        // Clear any saved filters from session
+        HttpContext.Session.Remove(SessionKeys.ReviewBodiesSearch);
+
         return RedirectToRoute("rbc:viewreviewbodies", new
         {
             pageNumber = 1,
@@ -584,6 +605,7 @@ public class ReviewBodyController(
                         .Where(c => !string.Equals(c, value, StringComparison.OrdinalIgnoreCase))
                         .ToList();
                 }
+
                 break;
 
             case "status":
@@ -593,6 +615,9 @@ public class ReviewBodyController(
 
         // Serialize modified search model to JSON for complexSearchQuery parameter
         var searchJson = JsonSerializer.Serialize(viewModel.Search);
+
+        // Save applied filters to session
+        HttpContext.Session.SetString(SessionKeys.ReviewBodiesSearch, JsonSerializer.Serialize(viewModel.Search));
 
         // Redirect to ViewReviewBodies with query parameters
         return RedirectToRoute("rbc:viewreviewbodies", new

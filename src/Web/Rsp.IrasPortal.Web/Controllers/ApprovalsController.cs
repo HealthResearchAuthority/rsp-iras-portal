@@ -23,7 +23,6 @@ public class ApprovalsController
     [Route("/approvals", Name = "approvals:welcome")]
     public IActionResult Welcome()
     {
-        TempData.Remove(TempDataKeys.ApprovalsSearchModel);
         return View(nameof(Index));
     }
 
@@ -38,54 +37,51 @@ public class ApprovalsController
     {
         var model = new ApprovalsSearchViewModel();
 
-        if (TempData.ContainsKey(TempDataKeys.ApprovalsSearchModel))
+        var json = HttpContext.Session.GetString(SessionKeys.ApprovalsSearch);
+        if (!string.IsNullOrEmpty(json))
         {
-            var json = TempData.Peek(TempDataKeys.ApprovalsSearchModel)?.ToString();
-            if (!string.IsNullOrEmpty(json))
+            var search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json)!;
+            model.Search = search;
+
+            if (search.Filters.Count == 0 && string.IsNullOrEmpty(search.IrasId))
             {
-                var search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json)!;
-                model.Search = search;
-
-                if (search.Filters.Count == 0 && string.IsNullOrEmpty(search.IrasId))
-                {
-                    model.EmptySearchPerformed = true;
-                    return View(model);
-                }
-
-                var searchQuery = new ModificationSearchRequest
-                {
-                    IrasId = search.IrasId,
-                    ChiefInvestigatorName = search.ChiefInvestigatorName,
-                    LeadNation = search.LeadNation,
-                    ParticipatingNation = search.ParticipatingNation,
-                    FromDate = search.FromDate,
-                    ToDate = search.ToDate,
-                    ModificationTypes = search.ModificationTypes,
-                    ShortProjectTitle = search.ShortProjectTitle,
-                    SponsorOrganisation = search.SponsorOrganisation,
-                };
-
-                var result = await applicationsService.GetModifications(searchQuery, pageNumber, pageSize, sortField, sortDirection);
-
-                model.Modifications = result?.Content?.Modifications?
-                    .Select(dto => new ModificationsModel
-                    {
-                        ModificationId = dto.ModificationId,
-                        ShortProjectTitle = dto.ShortProjectTitle,
-                        ModificationType = dto.ModificationType,
-                        ChiefInvestigator = dto.ChiefInvestigator,
-                        LeadNation = dto.LeadNation,
-                        SponsorOrganisation = dto.SponsorOrganisation,
-                        CreatedAt = dto.CreatedAt
-                    })
-                    .ToList() ?? [];
-
-                model.Pagination = new PaginationViewModel(pageNumber, pageSize, result?.Content?.TotalCount ?? 0)
-                {
-                    SortDirection = sortDirection,
-                    SortField = sortField
-                };
+                model.EmptySearchPerformed = true;
+                return View(model);
             }
+
+            var searchQuery = new ModificationSearchRequest
+            {
+                IrasId = search.IrasId,
+                ChiefInvestigatorName = search.ChiefInvestigatorName,
+                LeadNation = search.LeadNation,
+                ParticipatingNation = search.ParticipatingNation,
+                FromDate = search.FromDate,
+                ToDate = search.ToDate,
+                ModificationTypes = search.ModificationTypes,
+                ShortProjectTitle = search.ShortProjectTitle,
+                SponsorOrganisation = search.SponsorOrganisation,
+            };
+
+            var result = await applicationsService.GetModifications(searchQuery, pageNumber, pageSize, sortField, sortDirection);
+
+            model.Modifications = result?.Content?.Modifications?
+                .Select(dto => new ModificationsModel
+                {
+                    ModificationId = dto.ModificationId,
+                    ShortProjectTitle = dto.ShortProjectTitle,
+                    ModificationType = dto.ModificationType,
+                    ChiefInvestigator = dto.ChiefInvestigator,
+                    LeadNation = dto.LeadNation,
+                    SponsorOrganisation = dto.SponsorOrganisation,
+                    CreatedAt = dto.CreatedAt
+                })
+                .ToList() ?? [];
+
+            model.Pagination = new PaginationViewModel(pageNumber, pageSize, result?.Content?.TotalCount ?? 0)
+            {
+                SortDirection = sortDirection,
+                SortField = sortField
+            };
         }
 
         model.SortField = sortField;
@@ -109,19 +105,14 @@ public class ApprovalsController
             return View(nameof(Search), model);
         }
 
-        TempData[TempDataKeys.ApprovalsSearchModel] = JsonSerializer.Serialize(model.Search);
+        HttpContext.Session.SetString(SessionKeys.ApprovalsSearch, JsonSerializer.Serialize(model.Search));
         return RedirectToAction(nameof(Search));
     }
 
     [HttpGet]
     public IActionResult ClearFilters()
     {
-        if (!TempData.TryGetValue(TempDataKeys.ApprovalsSearchModel, out var tempDataValue))
-        {
-            return RedirectToAction(nameof(Search));
-        }
-
-        var json = tempDataValue?.ToString();
+        var json = HttpContext.Session.GetString(SessionKeys.ApprovalsSearch);
         if (string.IsNullOrWhiteSpace(json))
         {
             return RedirectToAction(nameof(Search));
@@ -139,7 +130,7 @@ public class ApprovalsController
             IrasId = search.IrasId
         };
 
-        TempData[TempDataKeys.ApprovalsSearchModel] = JsonSerializer.Serialize(cleanedSearch);
+        HttpContext.Session.SetString(SessionKeys.ApprovalsSearch, JsonSerializer.Serialize(cleanedSearch));
 
         return RedirectToAction(nameof(Search));
     }
@@ -147,12 +138,7 @@ public class ApprovalsController
     [HttpGet]
     public async Task<IActionResult> RemoveFilter(string key, string? value)
     {
-        if (!TempData.TryGetValue(TempDataKeys.ApprovalsSearchModel, out var tempDataValue))
-        {
-            return RedirectToAction(nameof(Search));
-        }
-
-        var json = tempDataValue?.ToString();
+        var json = HttpContext.Session.GetString(SessionKeys.ApprovalsSearch);
         if (string.IsNullOrWhiteSpace(json))
         {
             return RedirectToAction(nameof(Search));
@@ -167,29 +153,23 @@ public class ApprovalsController
             case "chiefinvestigatorname":
                 search.ChiefInvestigatorName = null;
                 break;
-
             case "shortprojecttitle":
                 search.ShortProjectTitle = null;
                 break;
-
             case "sponsororganisation":
                 search.SponsorOrganisation = null;
                 search.SponsorOrgSearch = new OrganisationSearchViewModel();
                 break;
-
             case "datesubmitted":
                 search.FromDay = search.FromMonth = search.FromYear = null;
                 search.ToDay = search.ToMonth = search.ToYear = null;
                 break;
-
             case "datesubmitted-from":
                 search.FromDay = search.FromMonth = search.FromYear = null;
                 break;
-
             case "datesubmitted-to":
                 search.ToDay = search.ToMonth = search.ToYear = null;
                 break;
-
             case "leadnation":
                 if (!string.IsNullOrEmpty(value) && search.LeadNation?.Count > 0)
                 {
@@ -198,7 +178,6 @@ public class ApprovalsController
                         .ToList();
                 }
                 break;
-
             case "participatingnation":
                 if (!string.IsNullOrEmpty(value) && search.ParticipatingNation?.Count > 0)
                 {
@@ -207,7 +186,6 @@ public class ApprovalsController
                         .ToList();
                 }
                 break;
-
             case "modificationtype":
                 if (!string.IsNullOrEmpty(value) && search.ModificationTypes?.Count > 0)
                 {
@@ -218,8 +196,7 @@ public class ApprovalsController
                 break;
         }
 
-        // Write the updated search model back to TempData
-        TempData[TempDataKeys.ApprovalsSearchModel] = JsonSerializer.Serialize(search);
+        HttpContext.Session.SetString(SessionKeys.ApprovalsSearch, JsonSerializer.Serialize(search));
 
         return await ApplyFilters(new ApprovalsSearchViewModel { Search = search });
     }
@@ -242,13 +219,10 @@ public class ApprovalsController
 
         // when search is performed, empty the currently selected organisation
         model.Search.SponsorOrgSearch.SelectedOrganisation = string.Empty;
-
-        // add the search model to temp data to use in the view
         TempData.TryAdd(TempDataKeys.OrgSearch, model.Search.SponsorOrgSearch, true);
 
         if (string.IsNullOrEmpty(model.Search.SponsorOrgSearch.SearchText) || model.Search.SponsorOrgSearch.SearchText.Length < 3)
         {
-            // add model validation error if search text is empty
             ModelState.AddModelError("sponsor_org_search",
                 "Please provide 3 or more characters to search sponsor organisation.");
 
@@ -264,23 +238,20 @@ public class ApprovalsController
         // Use the default sponsor role if no role is provided.
         role ??= OrganisationRoles.Sponsor;
 
-        // Fetch organisations from the RTS service, with or without pagination.
         var searchResponse = await rtsService.GetOrganisationsByName(model.Search.SponsorOrgSearch.SearchText, role, pageIndex, pageSize);
 
-        // Handle error response from the service.
         if (!searchResponse.IsSuccessStatusCode || searchResponse.Content == null)
         {
             return this.ServiceError(searchResponse);
         }
 
-        // Convert the response content to a list of organisation names.
         var sponsorOrganisations = searchResponse.Content;
 
         TempData.TryAdd(TempDataKeys.SponsorOrganisations, sponsorOrganisations, true);
 
         model.Search.Filters = new Dictionary<string, List<string>>();
 
-        TempData[TempDataKeys.ApprovalsSearchModel] = JsonSerializer.Serialize(model.Search);
+        HttpContext.Session.SetString(SessionKeys.ApprovalsSearch, JsonSerializer.Serialize(model.Search));
 
         return Redirect(returnUrl!);
     }
