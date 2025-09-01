@@ -46,7 +46,7 @@ public interface IProjectModificationsServiceClient
     /// <param name="sortField">The field name by which the results should be sorted.</param>
     /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
     /// <returns>Returns a paginated list of modifications matching the search criteria.</returns>
-    [Get("/projectmodifications")]
+    [Post("/projectmodifications/getallmodifications")]
     public Task<ApiResponse<GetModificationsResponse>> GetModifications
     (
         [Body] ModificationSearchRequest searchQuery,
@@ -66,7 +66,7 @@ public interface IProjectModificationsServiceClient
     /// <param name="sortField">The field name by which the results should be sorted.</param>
     /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
     /// <returns>Returns a paginated list of modifications related to the specified project record.</returns>
-    [Get("/projectmodifications/modificationsforproject")]
+    [Post("/projectmodifications/getmodificationsforproject")]
     public Task<ApiResponse<GetModificationsResponse>> GetModificationsForProject
     (
         string projectRecordId,
