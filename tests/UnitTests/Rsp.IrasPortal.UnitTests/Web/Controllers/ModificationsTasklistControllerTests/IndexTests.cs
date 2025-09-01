@@ -51,7 +51,7 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
             Content = modificationResponse
         };
 
-        Mocker.GetMock<IApplicationsService>()
+        Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, "CreatedAt", "asc"))
             .ReturnsAsync(serviceResponse);
 
@@ -102,7 +102,7 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
             Content = modificationResponse
         };
 
-        Mocker.GetMock<IApplicationsService>()
+        Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, "CreatedAt", "asc"))
             .ReturnsAsync(serviceResponse);
 
