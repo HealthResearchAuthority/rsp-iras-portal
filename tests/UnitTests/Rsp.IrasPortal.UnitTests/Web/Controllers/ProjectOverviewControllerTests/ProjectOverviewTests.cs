@@ -2,10 +2,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Services;
 using Rsp.IrasPortal.Web.Controllers.ProjectOverview;
 using Rsp.IrasPortal.Web.Models;
 
@@ -259,10 +261,15 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
     }
 
     [Fact]
-    public async Task PostApproval_ReturnsViewResult()
+    public async Task PostApproval_ReturnsViewResult_WithExpectedModel()
     {
         // Arrange
         var projectRecordId = "123";
+        var pageNumber = 1;
+        var pageSize = 20;
+        var sortField = nameof(ModificationsModel.CreatedAt);
+        var sortDirection = SortDirections.Ascending;
+
         var httpContext = new DefaultHttpContext();
         var tempDataProvider = new Mock<ITempDataProvider>();
         var tempData = CreateTempData(tempDataProvider, httpContext);
@@ -276,10 +283,43 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupRespondentAnswers(projectRecordId, answers);
         SetupControllerContext(httpContext, tempData);
 
+        var modifications = new List<ModificationsDto>
+        {
+            new() { ModificationId = "mod1", ModificationType = "TypeA" },
+            new() { ModificationId = "mod2", ModificationType = "TypeB" }
+        };
+
+        var modificationsResponse = new GetModificationsResponse
+        {
+            Modifications = modifications,
+            TotalCount = modifications.Count
+        };
+
+        var serviceResponse = new ServiceResponse<GetModificationsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = modificationsResponse
+        };
+
+        var projectModificationsService = Mocker.GetMock<IProjectModificationsService>();
+
+        projectModificationsService
+                .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), pageNumber, pageSize, sortField, sortDirection))
+                .ReturnsAsync(serviceResponse);
+
         // Act
-        var result = await Sut.PostApproval(projectRecordId);
+        var result = await Sut.PostApproval(projectRecordId, pageNumber, pageSize, sortField, sortDirection);
 
         // Assert
-        result.ShouldBeOfType<ViewResult>();
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var model = viewResult.Model.ShouldBeOfType<PostApprovalViewModel>();
+
+        model.ProjectOverviewModel.ShouldNotBeNull();
+        model.Modifications.Count().ShouldBe(modifications.Count);
+        model.Pagination.ShouldNotBeNull();
+        model.Pagination.PageNumber.ShouldBe(pageNumber);
+        model.Pagination.PageSize.ShouldBe(pageSize);
+        model.Pagination.SortField.ShouldBe(sortField);
+        model.Pagination.SortDirection.ShouldBe(sortDirection);
     }
 }

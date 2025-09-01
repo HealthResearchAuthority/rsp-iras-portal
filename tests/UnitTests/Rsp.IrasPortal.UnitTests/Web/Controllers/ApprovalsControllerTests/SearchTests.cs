@@ -15,7 +15,7 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApprovalsControllerTests;
 
 public class SearchTests : TestServiceBase<ApprovalsController>
 {
-    private readonly Mock<IApplicationsService> _applicationsService;
+    private readonly Mock<IProjectModificationsService> _projectModificationsService;
     private readonly Mock<IRtsService> _rtsService;
     private readonly Mock<IValidator<ApprovalsSearchModel>> _validator;
 
@@ -23,7 +23,7 @@ public class SearchTests : TestServiceBase<ApprovalsController>
 
     public SearchTests()
     {
-        _applicationsService = Mocker.GetMock<IApplicationsService>();
+        _projectModificationsService = Mocker.GetMock<IProjectModificationsService>();
         _rtsService = Mocker.GetMock<IRtsService>();
         _validator = Mocker.GetMock<IValidator<ApprovalsSearchModel>>();
 
@@ -83,7 +83,7 @@ public class SearchTests : TestServiceBase<ApprovalsController>
             Content = mockResponse
         };
 
-        _applicationsService
+        _projectModificationsService
             .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(serviceResponse);
 
@@ -110,7 +110,7 @@ public class SearchTests : TestServiceBase<ApprovalsController>
             Content = mockResponse
         };
 
-        _applicationsService
+        _projectModificationsService
             .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(serviceResponse);
 
@@ -136,7 +136,7 @@ public class SearchTests : TestServiceBase<ApprovalsController>
             Content = mockResponse
         };
 
-        _applicationsService
+        _projectModificationsService
             .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(serviceResponse);
 
@@ -170,7 +170,7 @@ public class SearchTests : TestServiceBase<ApprovalsController>
             Content = mockResponse
         };
 
-        _applicationsService
+        _projectModificationsService
             .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(serviceResponse);
 
@@ -199,7 +199,7 @@ public class SearchTests : TestServiceBase<ApprovalsController>
             Content = mockResponse
         };
 
-        _applicationsService
+        _projectModificationsService
             .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(serviceResponse);
 
@@ -228,7 +228,7 @@ public class SearchTests : TestServiceBase<ApprovalsController>
             Content = mockResponse
         };
 
-        _applicationsService
+        _projectModificationsService
             .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(serviceResponse);
 
