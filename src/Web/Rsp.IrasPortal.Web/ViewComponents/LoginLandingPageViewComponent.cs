@@ -7,7 +7,7 @@ public class LoginLandingPageViewComponent(ICmsContentServiceClient cms) : ViewC
 {
     public async Task<IViewComponentResult> InvokeAsync()
     {
-        var footerData = await cms.GetSiteSettings();
+        var footerData = await cms.GetHomeContent();
 
         if (!footerData.IsSuccessful)
         {

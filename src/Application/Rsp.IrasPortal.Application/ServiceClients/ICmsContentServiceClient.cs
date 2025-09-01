@@ -6,12 +6,15 @@ namespace Rsp.IrasPortal.Application.ServiceClients;
 
 public interface ICmsContentServiceClient
 {
-    [Get("/umbraco/delivery/api/v2/content/item/{pageUrl}")]
-    public Task<ApiResponse<GenericPageResponse>> GetPageContentByUrl(string pageUrl);
+    [Get("/umbraco/api/genericContentPage/getByUrl")]
+    public Task<ApiResponse<GenericPageResponse>> GetPageContentByUrl(string url);
 
-    [Get("/umbraco/api/siteSettings/getsitesettings")]
-    public Task<ApiResponse<GenericPageResponse>> GetSiteSettings();
+    [Get("/umbraco/api/siteSettings/getSiteSettings")]
+    public Task<ApiResponse<SiteSettingsModel>> GetSiteSettings();
 
-    [Get("/umbraco/api/mixedcontentpage/getcontentbyurl")]
+    [Get("/umbraco/api/mixedcontentpage/getByUrl")]
     public Task<ApiResponse<MixedContentPageResponse>> GetMixedPageContentByUrl(string url);
+
+    [Get("/umbraco/api/genericContentPage/getHomeContent")]
+    public Task<ApiResponse<GenericPageResponse>> GetHomeContent();
 }
