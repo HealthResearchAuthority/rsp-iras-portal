@@ -1,5 +1,5 @@
 ﻿@using Rsp.IrasPortal.Application.Constants;
-@model ProjectOverviewModel
+@model PostApprovalViewModel
 
 @{
     ViewBag.Title = "Project overview";
@@ -15,15 +15,83 @@
     <partial name="_NotificationBanner" model="@("Success", "Modification progress successfully saved")" />
 }
 
-<partial name="_NavigationHeaderPartial" model="@Model" />
-
+<partial name="_NavigationHeaderPartial" model="@Model.ProjectOverviewModel" />
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds govuk-!-margin-top-4">
-        <h2 class="govuk-heading-m">Post approval</h2>        
-        <a asp-route="pmc:createmodification"
-           class="govuk-button">
-            Create new modification
-        </a>
+        <h2 class="govuk-heading-m">Post approval</h2>
+    </div>
+    <div class="govuk-grid-column-full">
+        <authorized auth-params="@new(Roles:"applicant,system_administrator,reviewer")">
+            <div class="govuk-table-wrapper">
+                <table class="govuk-table modifications-tasklist-table" id="postApprovalTable">
+                    <thead class="govuk-table__head">
+                        <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+                            @{
+                                var sortableHeaders = new[]
+                                {
+                                                    new { Field = nameof(PostApprovalModificationsModel.ModificationId), Label = "Modification ID" },
+                                                    new { Field = nameof(PostApprovalModificationsModel.ModificationType), Label = "Modification type" },
+                                                    new { Field = nameof(PostApprovalModificationsModel.ReviewType), Label = "Review type" },
+                                                    new { Field = nameof(PostApprovalModificationsModel.Category), Label = "Category" },
+                                                    // new { Field = nameof(PostApprovalModificationsModel.DateSubmitted), Label = "Date submitted" },
+                                                    new { Field = nameof(PostApprovalModificationsModel.Status), Label = "Status" }
+                                                    };
+                                var tableId = "postApprovalTable";
+                            }
+                            @foreach (var header in sortableHeaders)
+                            {
+                                <th scope="col" class="govuk-table__header govuk-table__header-sortable">
+                                    @await Html.PartialAsync("_SortableHeaderButton", new SortableHeaderModel
+                                    {
+                                        FieldName = header.Field,
+                                        DisplayText = header.Label,
+                                        CurrentSortField = Model.Pagination?.SortField,
+                                        CurrentSortDirection = Model.Pagination?.SortDirection,
+                                        TableId = tableId,
+                                        AdditionalParameters = new Dictionary<string, string>
+                                        {
+                                            { "projectRecordId", Model.ProjectOverviewModel.ProjectRecordId }
+                                        }
+                                    })
+                            </th>
+                            }
+                        </tr>
+                    </thead>
+
+                    <form method="get" id="postapproval-selection">
+                        <input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
+                        <input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
+
+                    <tbody class="govuk-table__body govuk-body-s">
+                        @{
+                            foreach (var modification in Model.Modifications)
+                            {
+                                <tr class="govuk-table__row">
+                                    <td class="govuk-table__cell">
+                                        <a class="govuk-link" href="#">
+                                            <strong>@modification.ModificationId</strong>
+                                        </a>
+                                    </td>
+                                    <td class="govuk-table__cell">@modification.ModificationType</td>
+                                    <td class="govuk-table__cell">@modification.ReviewType</td>
+                                    <td class="govuk-table__cell">@modification.Category</td>
+                                    @{
+                                        //<td class="govuk-table__cell">@modification.DateSubmitted?.ToString("dd MMM yyyy")</td>
+                                    }
+                                    <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">@modification.Status</strong></td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                    </form>
+                </table>
+            </div>
+            <partial name="_Pagination" model="@Model.Pagination" />
+            <a asp-route="pmc:createmodification"
+               class="govuk-button govuk-button--secondary">
+                Create new modification
+            </a>
+        </authorized>
     </div>
 </div>
