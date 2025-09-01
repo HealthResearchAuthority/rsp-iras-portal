@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication;
-using Rsp.IrasPortal.Application;
+using Rsp.IrasPortal.Application.Filters;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Infrastructure.Claims;
 using Rsp.IrasPortal.Infrastructure.HttpMessageHandlers;
@@ -38,7 +38,7 @@ public static class ServicesConfiguration
 
         services.AddControllersWithViews(options =>
         {
-            options.Filters.Add<SiteChromeFilter>();
+            options.Filters.Add<SiteContentFilter>();
         });
 
         return services;

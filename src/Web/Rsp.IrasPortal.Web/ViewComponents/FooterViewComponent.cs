@@ -8,13 +8,13 @@ public class FooterViewComponent(ICmsContentService contentService) : ViewCompon
 {
     public async Task<IViewComponentResult> InvokeAsync()
     {
-        var footerData = await contentService.GetSiteFooter();
+        var footerData = await contentService.GetSiteSettings();
 
         if (!footerData.IsSuccessStatusCode || footerData.Content == null)
         {
             return View("~/Views/Shared/Footer.cshtml", new List<LinkModel>());
         }
 
-        return View("~/Views/Shared/Footer.cshtml", footerData.Content.Properties.FooterLinks);
+        return View("~/Views/Shared/Footer.cshtml", footerData.Content.FooterLinks);
     }
 }
