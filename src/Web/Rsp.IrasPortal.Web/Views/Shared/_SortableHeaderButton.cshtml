@@ -11,6 +11,10 @@
 }
 
 <form method="get" action="@formAction">
+    @foreach (var param in Model.AdditionalParameters)
+    {
+        <input type="hidden" name="@param.Key" value="@param.Value" />
+    }
     <input type="hidden" name="sortField" value="@Model.FieldName" />
     <input type="hidden" name="sortDirection" value="@nextSortDirection" />
 	<input type="hidden" name="complexSearchQuery" value="@System.Text.Json.JsonSerializer.Serialize(Model.ComplexSearchQuery)" />

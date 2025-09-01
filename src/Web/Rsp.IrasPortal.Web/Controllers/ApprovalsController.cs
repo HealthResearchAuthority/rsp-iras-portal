@@ -15,7 +15,7 @@ namespace Rsp.IrasPortal.Web.Controllers;
 [Authorize(Roles = "system_administrator,workflow_co-ordinator,team_manager,study-wide_reviewer")]
 public class ApprovalsController
 (
-    IApplicationsService applicationsService,
+    IProjectModificationsService projectModificationsService,
     IRtsService rtsService,
     IValidator<ApprovalsSearchModel> validator
 ) : Controller
@@ -31,8 +31,8 @@ public class ApprovalsController
     (
         int pageNumber = 1,
         int pageSize = 20,
-        string? sortField = nameof(ModificationsModel.ModificationId),
-        string? sortDirection = SortDirections.Descending
+        string sortField = nameof(ModificationsModel.ModificationId),
+        string sortDirection = SortDirections.Descending
     )
     {
         var model = new ApprovalsSearchViewModel();
@@ -62,7 +62,7 @@ public class ApprovalsController
                 SponsorOrganisation = search.SponsorOrganisation,
             };
 
-            var result = await applicationsService.GetModifications(searchQuery, pageNumber, pageSize, sortField, sortDirection);
+            var result = await projectModificationsService.GetModifications(searchQuery, pageNumber, pageSize, sortField, sortDirection);
 
             model.Modifications = result?.Content?.Modifications?
                 .Select(dto => new ModificationsModel
