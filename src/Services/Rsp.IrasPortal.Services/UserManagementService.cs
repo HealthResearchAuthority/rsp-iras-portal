@@ -180,7 +180,7 @@ public class UserManagementService(IUserManagementServiceClient client) : IUserM
         // update the user record only if there are changes
         if (updateNeeded)
         {
-            updateRequest.OriginalEmail = updateRequest.Email!;
+            updateRequest.OriginalEmail = user.Email!;
             var response = await UpdateUser(updateRequest);
             return response;
         }
