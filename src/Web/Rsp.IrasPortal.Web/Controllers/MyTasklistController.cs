@@ -23,55 +23,42 @@ public class MyTasklistController(IProjectModificationsService projectModificati
         string? sortField = nameof(ModificationsModel.CreatedAt),
         string? sortDirection = SortDirections.Ascending)
     {
+        var json = HttpContext.Session.GetString(SessionKeys.MyTasklist);
+
+        var search = string.IsNullOrWhiteSpace(json)
+            ? new ApprovalsSearchModel()
+            : JsonSerializer.Deserialize<ApprovalsSearchModel>(json) ?? new();
+
         var model = new MyTasklistViewModel
         {
-            EmptySearchPerformed = true // Set to true to check if search bar should be hidden on view
+            Search = search,
+            EmptySearchPerformed = (search.Filters?.Count ?? 0) == 0 && string.IsNullOrEmpty(search.IrasId)
         };
 
-        var json = HttpContext.Session.GetString(SessionKeys.MyTasklist);
-        if (!string.IsNullOrEmpty(json))
-        {
-            model.Search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json)!;
-            if (model.Search.Filters.Count != 0 || !string.IsNullOrEmpty(model.Search.IrasId))
-            {
-                model.EmptySearchPerformed = false;
-            }
-        }
-
-        var searchQuery = new ModificationSearchRequest()
+        var searchQuery = new ModificationSearchRequest
         {
             LeadNation = ["England"],
-            FromDate = model.Search.FromDate,
-            ToDate = model.Search.ToDate,
-            IrasId = model.Search.IrasId,
+            FromDate = search.FromDate,
+            ToDate = search.ToDate,
+            IrasId = search.IrasId
         };
 
-        // Since we are searching backwards from the current date, we need to reverse the logic for the date range.
-        if (model.Search.FromSubmission != null)
-        {
-            var fromDaysSinceSubmission = DateTime.UtcNow.AddDays(-model.Search.FromSubmission.Value);
-            searchQuery.ToDate = fromDaysSinceSubmission;
-        }
-        if (model.Search.ToSubmission != null)
-        {
-            var toDaysSinceSubmisison = DateTime.UtcNow.AddDays(-model.Search.ToSubmission.Value);
-            toDaysSinceSubmisison = toDaysSinceSubmisison.AddDays(-1).AddTicks(1);
-            searchQuery.FromDate = toDaysSinceSubmisison;
-        }
+        // Reverse date logic when searching by "days since submission"
+        if (search.FromSubmission is int fromSub)
+            searchQuery.ToDate = DateTime.UtcNow.AddDays(-fromSub);
 
-        var querySortField = sortField;
-        var querySortDirection = sortDirection;
+        if (search.ToSubmission is int toSub)
+            searchQuery.FromDate = DateTime.UtcNow.AddDays(-toSub).AddDays(-1).AddTicks(1);
 
-        if (sortField == nameof(ModificationsModel.DaysSinceSubmission))
-        {
-            querySortField = nameof(ModificationsModel.CreatedAt);
-            querySortDirection = sortDirection == SortDirections.Ascending
-                ? SortDirections.Descending
-                : SortDirections.Ascending;
-        }
+        // Map sort for DaysSinceSubmission -> CreatedAt with flipped direction
+        (string qSortField, string qSortDir) =
+            sortField == nameof(ModificationsModel.DaysSinceSubmission)
+                ? (nameof(ModificationsModel.CreatedAt),
+                   sortDirection == SortDirections.Ascending ? SortDirections.Descending : SortDirections.Ascending)
+                : (sortField!, sortDirection!);
 
         var result = await projectModificationsService.GetModifications(
-            searchQuery, pageNumber, pageSize, querySortField, querySortDirection);
+            searchQuery, pageNumber, pageSize, qSortField, qSortDir);
 
         model.Modifications = result?.Content?.Modifications?
             .Select(dto => new ModificationsModel
@@ -83,18 +70,16 @@ public class MyTasklistController(IProjectModificationsService projectModificati
                 LeadNation = dto.LeadNation,
                 SponsorOrganisation = dto.SponsorOrganisation,
                 CreatedAt = dto.CreatedAt
-            }).ToList();
+            }).ToList() ?? new();
 
         model.Pagination = new PaginationViewModel(pageNumber, pageSize, result?.Content?.TotalCount ?? 0)
         {
-            SortDirection = sortDirection,
-            SortField = sortField,
+            SortField = sortField!,
+            SortDirection = sortDirection!
         };
 
         return View(model);
     }
-
-
 
     [HttpPost]
     public async Task<IActionResult> ApplyFilters(MyTasklistViewModel model)
@@ -119,42 +104,29 @@ public class MyTasklistController(IProjectModificationsService projectModificati
     public async Task<IActionResult> RemoveFilter(string key)
     {
         var json = HttpContext.Session.GetString(SessionKeys.MyTasklist);
-        if (string.IsNullOrWhiteSpace(json))
-        {
+        if (string.IsNullOrWhiteSpace(json) ||
+            JsonSerializer.Deserialize<ApprovalsSearchModel>(json) is not { } search)
             return RedirectToAction(nameof(Index));
-        }
 
-        var search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json)!;
+        var k = key?.ToLowerInvariant().Replace(" ", "");
 
-        switch (key?.ToLowerInvariant().Replace(" ", ""))
+        void ClearFromDate() => search.FromDay = search.FromMonth = search.FromYear = null;
+        void ClearToDate() => search.ToDay = search.ToMonth = search.ToYear = null;
+
+        var actions = new Dictionary<string, Action>(StringComparer.Ordinal)
         {
-            case "datesubmitted":
-                search.FromDay = search.FromMonth = search.FromYear = null;
-                search.ToDay = search.ToMonth = search.ToYear = null;
-                break;
+            ["datesubmitted"] = () => { ClearFromDate(); ClearToDate(); },
+            ["datesubmitted-from"] = ClearFromDate,
+            ["datesubmitted-to"] = ClearToDate,
+            ["dayssincesubmission-from"] = () => search.FromDaysSinceSubmission = null,
+            ["dayssincesubmission-to"] = () => search.ToDaysSinceSubmission = null,
+            ["shortprojecttitle"] = () => search.ShortProjectTitle = null
+        };
 
-            case "datesubmitted-from":
-                search.FromDay = search.FromMonth = search.FromYear = null;
-                break;
-
-            case "datesubmitted-to":
-                search.ToDay = search.ToMonth = search.ToYear = null;
-                break;
-
-            case "dayssincesubmission-from":
-                search.FromDaysSinceSubmission = null;
-                break;
-
-            case "dayssincesubmission-to":
-                search.ToDaysSinceSubmission = null;
-                break;
-            case "shortprojecttitle":
-                search.ShortProjectTitle = null;
-                break;
-        }
+        if (k is not null && actions.TryGetValue(k, out var act))
+            act();
 
         HttpContext.Session.SetString(SessionKeys.MyTasklist, JsonSerializer.Serialize(search));
-
         return await ApplyFilters(new MyTasklistViewModel { Search = search });
     }
 
@@ -162,17 +134,16 @@ public class MyTasklistController(IProjectModificationsService projectModificati
     public IActionResult ClearFilters()
     {
         var json = HttpContext.Session.GetString(SessionKeys.MyTasklist);
-        var search = string.IsNullOrWhiteSpace(json)
-            ? null
-            : JsonSerializer.Deserialize<ApprovalsSearchModel>(json);
-
-        if (search is null)
+        if (string.IsNullOrWhiteSpace(json))
             return RedirectToAction(nameof(Index));
 
-        HttpContext.Session.SetString(
-            SessionKeys.MyTasklist,
-            JsonSerializer.Serialize(new ApprovalsSearchModel { IrasId = search.IrasId })
-        );
+        if (JsonSerializer.Deserialize<ApprovalsSearchModel>(json) is { } search)
+        {
+            HttpContext.Session.SetString(
+                SessionKeys.MyTasklist,
+                JsonSerializer.Serialize(new ApprovalsSearchModel { IrasId = search.IrasId })
+            );
+        }
 
         return RedirectToAction(nameof(Index));
     }
