@@ -110,6 +110,7 @@ services
                 { "ReviewBody", [SessionKeys.ReviewBodiesSearch] },
                 { "Approvals", [SessionKeys.ApprovalsSearch] },
                 { "ModificationsTasklist", [SessionKeys.ModificationsTasklist] },
+                { "MyTasklist", [SessionKeys.MyTasklist] },
             }
         ));
     })

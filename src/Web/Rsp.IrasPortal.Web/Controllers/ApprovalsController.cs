@@ -20,14 +20,8 @@ public class ApprovalsController
     IValidator<ApprovalsSearchModel> validator
 ) : Controller
 {
-    [Route("/approvals", Name = "approvals:welcome")]
-    public IActionResult Welcome()
-    {
-        return View(nameof(Index));
-    }
-
     [HttpGet]
-    public async Task<IActionResult> Search
+    public async Task<IActionResult> Index
     (
         int pageNumber = 1,
         int pageSize = 20,
@@ -102,11 +96,11 @@ public class ApprovalsController
                 ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
             }
 
-            return View(nameof(Search), model);
+            return View(nameof(Index), model);
         }
 
         HttpContext.Session.SetString(SessionKeys.ApprovalsSearch, JsonSerializer.Serialize(model.Search));
-        return RedirectToAction(nameof(Search));
+        return RedirectToAction(nameof(Index));
     }
 
     [HttpGet]
@@ -115,13 +109,13 @@ public class ApprovalsController
         var json = HttpContext.Session.GetString(SessionKeys.ApprovalsSearch);
         if (string.IsNullOrWhiteSpace(json))
         {
-            return RedirectToAction(nameof(Search));
+            return RedirectToAction(nameof(Index));
         }
 
         var search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json);
         if (search == null)
         {
-            return RedirectToAction(nameof(Search));
+            return RedirectToAction(nameof(Index));
         }
 
         // Retain only the IRAS Project ID
@@ -132,7 +126,7 @@ public class ApprovalsController
 
         HttpContext.Session.SetString(SessionKeys.ApprovalsSearch, JsonSerializer.Serialize(cleanedSearch));
 
-        return RedirectToAction(nameof(Search));
+        return RedirectToAction(nameof(Index));
     }
 
     [HttpGet]
@@ -141,7 +135,7 @@ public class ApprovalsController
         var json = HttpContext.Session.GetString(SessionKeys.ApprovalsSearch);
         if (string.IsNullOrWhiteSpace(json))
         {
-            return RedirectToAction(nameof(Search));
+            return RedirectToAction(nameof(Index));
         }
 
         var search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json)!;
@@ -249,7 +243,8 @@ public class ApprovalsController
 
         TempData.TryAdd(TempDataKeys.SponsorOrganisations, sponsorOrganisations, true);
 
-        model.Search.Filters = new Dictionary<string, List<string>>();
+        //THIS IS ONLY USED HERE TO NOT SHOW THE FILTERS IF WE RUN A NON JAVASCRIPT ORG SEARCH
+        model.Search.IgnoreFilters = true;
 
         HttpContext.Session.SetString(SessionKeys.ApprovalsSearch, JsonSerializer.Serialize(model.Search));
 

@@ -15,4 +15,5 @@ public static class SessionKeys
     public const string UsersSearch = "session:userssearch";
     public const string ReviewBodiesSearch = "session:reviewbodiessearch";
     public const string ModificationsTasklist = "session:modificationstasklist";
+    public const string MyTasklist = "session:mytasklist";
 }
