@@ -14,7 +14,7 @@
 		<authorized auth-params="@new(Roles:"system_administrator,workflow_co-ordinator")">
 			<partial name="_ActionItem" model="@("Modifications tasklist","See modifications tasklist.", "tasklist:index")" />
 		</authorized>
-		<authorized auth-params="@new(Roles:"system_administrator,workflow_co-ordinator")">
+		<authorized auth-params="@new(Roles:"study-wide_reviewer")">
 			<partial name="_ActionItem" model="@("My tasklist","See my tasklist.", "mytasklist:index")" />
 		</authorized>
 	</div>
