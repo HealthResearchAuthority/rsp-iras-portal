@@ -293,14 +293,14 @@ else
 						@{
 							foreach (var modification in Model.Modifications)
 							{
-								var daysText = modification.Modification.DaysSinceSubmission == 1 ? "day" : "days";
+								var daysText = modification.DaysSinceSubmission == 1 ? "day" : "days";
 
 								<tr class="govuk-table__row">
-									<td class="govuk-table__cell">@modification.Modification.ModificationId</td>
-									<td class="govuk-table__cell"><a href="?@modification.Modification.ModificationId" class="govuk-link"><strong>@modification.Modification.ShortProjectTitle</strong></a></td>
-									<td class="govuk-table__cell">@modification.Modification.CreatedAt.ToString("dd MMM yyyy")</td>
-									<td class="govuk-table__cell">@modification.Modification.DaysSinceSubmission @daysText</td>
-									<td class="govuk-table__cell">@modification.Modification.Status</td>
+									<td class="govuk-table__cell">@modification.ModificationId</td>
+									<td class="govuk-table__cell"><a href="?@modification.ModificationId" class="govuk-link"><strong>@modification.ShortProjectTitle</strong></a></td>
+									<td class="govuk-table__cell">@modification.CreatedAt.ToString("dd MMM yyyy")</td>
+									<td class="govuk-table__cell">@modification.DaysSinceSubmission @daysText</td>
+									<td class="govuk-table__cell">@modification.Status</td>
 								</tr>
 							}
 						}

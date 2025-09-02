@@ -25,7 +25,7 @@ public class RemoveFiltersTests : TestServiceBase<MyTasklistController>
     [Fact]
     public async Task RemoveFilter_ProjectTitle_ShouldBeCleared_AndRedirect()
     {
-        var model = new ApprovalsSearchModel { ShortProjectTitle = "Cancer Study" };
+        var model = new MyTasklistSearchModel { ShortProjectTitle = "Cancer Study" };
         SetSessionModel(model);
 
         var result = await Sut.RemoveFilter("shortprojecttitle");
@@ -39,7 +39,7 @@ public class RemoveFiltersTests : TestServiceBase<MyTasklistController>
     [Fact]
     public async Task RemoveFilter_FromDate_ShouldBeCleared_AndRedirect()
     {
-        var model = new ApprovalsSearchModel { FromDay = "01", FromMonth = "01", FromYear = "2023" };
+        var model = new MyTasklistSearchModel { FromDay = "01", FromMonth = "01", FromYear = "2023" };
         SetSessionModel(model);
 
         var result = await Sut.RemoveFilter("datesubmitted-from");
@@ -55,7 +55,7 @@ public class RemoveFiltersTests : TestServiceBase<MyTasklistController>
     [Fact]
     public async Task RemoveFilter_ToDate_ShouldBeCleared_AndRedirect()
     {
-        var model = new ApprovalsSearchModel { ToDay = "31", ToMonth = "12", ToYear = "2023" };
+        var model = new MyTasklistSearchModel { ToDay = "31", ToMonth = "12", ToYear = "2023" };
         SetSessionModel(model);
 
         var result = await Sut.RemoveFilter("datesubmitted-to");
@@ -71,7 +71,7 @@ public class RemoveFiltersTests : TestServiceBase<MyTasklistController>
     [Fact]
     public async Task RemoveFilter_FromAndToDate_ShouldBeCleared_AndRedirect()
     {
-        var model = new ApprovalsSearchModel
+        var model = new MyTasklistSearchModel
         {
             FromDay = "01",
             FromMonth = "01",
@@ -98,7 +98,7 @@ public class RemoveFiltersTests : TestServiceBase<MyTasklistController>
     [Fact]
     public async Task RemoveFilter_DaysSinceSubmissionFrom_ShouldBeCleared_AndRedirect()
     {
-        var model = new ApprovalsSearchModel { FromDaysSinceSubmission = "01" };
+        var model = new MyTasklistSearchModel { FromDaysSinceSubmission = "01" };
         SetSessionModel(model);
 
         var result = await Sut.RemoveFilter("dayssincesubmission-from");
@@ -112,7 +112,7 @@ public class RemoveFiltersTests : TestServiceBase<MyTasklistController>
     [Fact]
     public async Task RemoveFilter_DaysSinceSubmissionTo_ShouldBeCleared_AndRedirect()
     {
-        var model = new ApprovalsSearchModel { ToDaysSinceSubmission = "10" };
+        var model = new MyTasklistSearchModel { ToDaysSinceSubmission = "10" };
         SetSessionModel(model);
 
         var result = await Sut.RemoveFilter("dayssincesubmission-to");
@@ -127,23 +127,23 @@ public class RemoveFiltersTests : TestServiceBase<MyTasklistController>
     // Helpers
     // ----------------------
 
-    private void SetSessionModel(ApprovalsSearchModel model)
+    private void SetSessionModel(MyTasklistSearchModel model)
     {
         _http.Session.SetString(SessionKeys.MyTasklist, JsonSerializer.Serialize(model));
     }
 
-    private ApprovalsSearchModel GetSessionModel()
+    private MyTasklistSearchModel GetSessionModel()
     {
         var json = _http.Session.GetString(SessionKeys.MyTasklist);
         json.ShouldNotBeNullOrWhiteSpace();
-        return JsonSerializer.Deserialize<ApprovalsSearchModel>(json!)!;
+        return JsonSerializer.Deserialize<MyTasklistSearchModel>(json!)!;
     }
 
     private void SetupValidValidator()
     {
-        var mockValidator = Mocker.GetMock<IValidator<ApprovalsSearchModel>>();
+        var mockValidator = Mocker.GetMock<IValidator<MyTasklistSearchModel>>();
         mockValidator
-            .Setup(v => v.ValidateAsync(It.IsAny<ApprovalsSearchModel>(), default))
+            .Setup(v => v.ValidateAsync(It.IsAny<MyTasklistSearchModel>(), default))
             .ReturnsAsync(new ValidationResult()); // Valid
     }
 }

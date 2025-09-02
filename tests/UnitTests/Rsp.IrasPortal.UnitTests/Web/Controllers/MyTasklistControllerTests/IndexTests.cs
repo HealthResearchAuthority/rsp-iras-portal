@@ -59,12 +59,11 @@ public class IndexTests : TestServiceBase<MyTasklistController>
 
         var viewResult = result.ShouldBeOfType<ViewResult>();
         var model = viewResult.Model.ShouldBeAssignableTo<MyTasklistViewModel>();
-        var modifications = model?.Modifications.ShouldBeOfType<List<TaskListModificationViewModel>>();
+        var modifications = model?.Modifications.ShouldBeOfType<List<ModificationsModel>>();
     }
 
     [Theory]
     [InlineData("{\"IrasId\":\"123456\"}", false)]
-    [InlineData("{\"ChiefInvestigatorName\":\"Dr. Smith\"}", false)]
     [InlineData("{\"FromDay\":\"01\",\"FromMonth\":\"01\",\"FromYear\":\"2020\"}", false)]
     [InlineData("{\"ToDay\":\"31\",\"ToMonth\":\"12\",\"ToYear\":\"2025\"}", false)]
     [InlineData("{}", true)]
@@ -87,7 +86,7 @@ public class IndexTests : TestServiceBase<MyTasklistController>
         fromDays = Math.Clamp(fromDays % 100, 1, 99);
         toDays = Math.Clamp(toDays % 100, 1, 99);
 
-        var model = new ApprovalsSearchModel
+        var model = new MyTasklistSearchModel
         {
             FromDaysSinceSubmission = fromDays.ToString(),
             ToDaysSinceSubmission = toDays.ToString(),
@@ -110,6 +109,6 @@ public class IndexTests : TestServiceBase<MyTasklistController>
 
         var viewResult = result.ShouldBeOfType<ViewResult>();
         var modelResult = viewResult.Model.ShouldBeAssignableTo<MyTasklistViewModel>();
-        var modifications = modelResult?.Modifications.ShouldBeOfType<List<TaskListModificationViewModel>>();
+        var modifications = modelResult?.Modifications.ShouldBeOfType<List<ModificationsModel>>();
     }
 }
