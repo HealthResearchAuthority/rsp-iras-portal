@@ -31,7 +31,7 @@ public class ClearFiltersTests : TestServiceBase<ApprovalsController>
         var result = Sut.ClearFilters();
 
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
-        redirectResult.ActionName.ShouldBe(nameof(Sut.Search));
+        redirectResult.ActionName.ShouldBe(nameof(Sut.Index));
     }
 
     [Fact]
@@ -51,7 +51,7 @@ public class ClearFiltersTests : TestServiceBase<ApprovalsController>
 
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
-        redirectResult.ActionName.ShouldBe(nameof(Sut.Search));
+        redirectResult.ActionName.ShouldBe(nameof(Sut.Index));
 
         var updatedJson = _http.Session.GetString(SessionKeys.ApprovalsSearch);
         updatedJson.ShouldNotBeNull();

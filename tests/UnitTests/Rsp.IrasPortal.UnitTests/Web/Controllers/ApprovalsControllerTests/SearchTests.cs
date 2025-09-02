@@ -42,7 +42,7 @@ public class SearchTests : TestServiceBase<ApprovalsController>
     public async Task Search_ShouldReturnDefaultView_WhenNoSessionExists()
     {
         // Act
-        var result = await Sut.Search();
+        var result = await Sut.Index();
 
         // Assert
         var view = Assert.IsType<ViewResult>(result);
@@ -60,7 +60,7 @@ public class SearchTests : TestServiceBase<ApprovalsController>
         _http.Session.SetString(SessionKeys.ApprovalsSearch, JsonSerializer.Serialize(searchModel)); // <-- fixed
 
         // Act
-        var result = await Sut.Search();
+        var result = await Sut.Index();
 
         // Assert
         var view = Assert.IsType<ViewResult>(result);
@@ -88,7 +88,7 @@ public class SearchTests : TestServiceBase<ApprovalsController>
             .ReturnsAsync(serviceResponse);
 
         // Act
-        var result = await Sut.Search();
+        var result = await Sut.Index();
 
         // Assert
         var view = Assert.IsType<ViewResult>(result);
@@ -115,7 +115,7 @@ public class SearchTests : TestServiceBase<ApprovalsController>
             .ReturnsAsync(serviceResponse);
 
         // Act
-        var result = await Sut.Search();
+        var result = await Sut.Index();
 
         // Assert
         var view = Assert.IsType<ViewResult>(result);
@@ -141,7 +141,7 @@ public class SearchTests : TestServiceBase<ApprovalsController>
             .ReturnsAsync(serviceResponse);
 
         // Act
-        var result = await Sut.Search();
+        var result = await Sut.Index();
 
         // Assert
         var view = Assert.IsType<ViewResult>(result);
@@ -175,7 +175,7 @@ public class SearchTests : TestServiceBase<ApprovalsController>
             .ReturnsAsync(serviceResponse);
 
         // Act
-        var result = await Sut.Search();
+        var result = await Sut.Index();
 
         // Assert
         var view = Assert.IsType<ViewResult>(result);
@@ -204,7 +204,7 @@ public class SearchTests : TestServiceBase<ApprovalsController>
             .ReturnsAsync(serviceResponse);
 
         // Act
-        var result = await Sut.Search();
+        var result = await Sut.Index();
 
         // Assert
         var view = Assert.IsType<ViewResult>(result);
@@ -233,7 +233,7 @@ public class SearchTests : TestServiceBase<ApprovalsController>
             .ReturnsAsync(serviceResponse);
 
         // Act
-        var result = await Sut.Search();
+        var result = await Sut.Index();
 
         // Assert
         var view = Assert.IsType<ViewResult>(result);
@@ -248,6 +248,6 @@ public class SearchTests : TestServiceBase<ApprovalsController>
         _http.Session.SetString(SessionKeys.ApprovalsSearch, "Not a JSON string");
 
         // Act & Assert
-        await Assert.ThrowsAsync<JsonException>(() => Sut.Search());
+        await Assert.ThrowsAsync<JsonException>(() => Sut.Index());
     }
 }

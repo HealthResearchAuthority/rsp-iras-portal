@@ -31,7 +31,7 @@ public class ApplyFiltersTests : TestServiceBase<ApprovalsController>
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
-        redirect.ActionName.ShouldBe("Search");
+        redirect.ActionName.ShouldBe("Index");
 
         var storedJson = httpContext.Session.GetString(SessionKeys.ApprovalsSearch);
         storedJson.ShouldNotBeNullOrWhiteSpace();
@@ -59,7 +59,7 @@ public class ApplyFiltersTests : TestServiceBase<ApprovalsController>
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Search");
+        viewResult.ViewName.ShouldBe("Index");
         viewResult.Model.ShouldBe(viewModel);
 
         Sut.ModelState.IsValid.ShouldBeFalse();
@@ -86,7 +86,7 @@ public class ApplyFiltersTests : TestServiceBase<ApprovalsController>
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Search");
+        viewResult.ViewName.ShouldBe("Index");
 
         Sut.ModelState.IsValid.ShouldBeFalse();
         Sut.ModelState["ChiefInvestigatorName"]!.Errors.Single().ErrorMessage.ShouldBe("Required");

@@ -38,7 +38,7 @@ public class RemoveFiltersTests : TestServiceBase<ApprovalsController>
         var result = await Sut.RemoveFilter("chiefinvestigatorname", null);
 
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
-        redirect.ActionName.ShouldBe("Search");
+        redirect.ActionName.ShouldBe("Index");
 
         var updated = GetSessionModel();
         updated.ChiefInvestigatorName.ShouldBeNull();
@@ -52,7 +52,7 @@ public class RemoveFiltersTests : TestServiceBase<ApprovalsController>
 
         var result = await Sut.RemoveFilter("shortprojecttitle", null);
 
-        result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Search");
+        result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Index");
 
         var updated = GetSessionModel();
         updated.ShortProjectTitle.ShouldBeNull();
@@ -64,13 +64,13 @@ public class RemoveFiltersTests : TestServiceBase<ApprovalsController>
         var model = new ApprovalsSearchModel
         {
             SponsorOrganisation = "Org X",
-            SponsorOrgSearch = new OrganisationSearchViewModel { SearchText = "Search" }
+            SponsorOrgSearch = new OrganisationSearchViewModel { SearchText = "Index" }
         };
         SetSessionModel(model);
 
         var result = await Sut.RemoveFilter("sponsororganisation", null);
 
-        result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Search");
+        result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Index");
 
         var updated = GetSessionModel();
         updated.SponsorOrganisation.ShouldBeNull();
@@ -86,7 +86,7 @@ public class RemoveFiltersTests : TestServiceBase<ApprovalsController>
 
         var result = await Sut.RemoveFilter("datesubmitted-from", null);
 
-        result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Search");
+        result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Index");
 
         var updated = GetSessionModel();
         updated.FromDay.ShouldBeNull();
@@ -102,7 +102,7 @@ public class RemoveFiltersTests : TestServiceBase<ApprovalsController>
 
         var result = await Sut.RemoveFilter("datesubmitted-to", null);
 
-        result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Search");
+        result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Index");
 
         var updated = GetSessionModel();
         updated.ToDay.ShouldBeNull();
@@ -126,7 +126,7 @@ public class RemoveFiltersTests : TestServiceBase<ApprovalsController>
 
         var result = await Sut.RemoveFilter("datesubmitted", null);
 
-        result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Search");
+        result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Index");
 
         var updated = GetSessionModel();
         updated.FromDay.ShouldBeNull();
@@ -150,7 +150,7 @@ public class RemoveFiltersTests : TestServiceBase<ApprovalsController>
 
         var result = await Sut.RemoveFilter("leadnation", "Wales");
 
-        result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Search");
+        result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Index");
 
         var updated = GetSessionModel();
         updated.LeadNation.ShouldBe(new List<string> { "England" });
@@ -167,7 +167,7 @@ public class RemoveFiltersTests : TestServiceBase<ApprovalsController>
 
         var result = await Sut.RemoveFilter("participatingnation", "Wales");
 
-        result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Search");
+        result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Index");
 
         var updated = GetSessionModel();
         updated.ParticipatingNation.ShouldBe(new List<string> { "England" });
@@ -184,7 +184,7 @@ public class RemoveFiltersTests : TestServiceBase<ApprovalsController>
 
         var result = await Sut.RemoveFilter("modificationtype", "Type B");
 
-        result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Search");
+        result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Index");
 
         var updated = GetSessionModel();
         updated.ModificationTypes.ShouldBe(new List<string> { "Type A" });
