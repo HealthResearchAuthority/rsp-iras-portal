@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
 
@@ -13,7 +15,8 @@ namespace Rsp.IrasPortal.Web.Controllers.ProjectOverview;
 [Authorize(Policy = "IsApplicant")]
 public class ProjectOverviewController
 (
-    IApplicationsService applicationsService,
+    IApplicationsService applicationService,
+    IProjectModificationsService projectModificationsService,
     IRespondentService respondentService) : Controller
 {
     public async Task<IActionResult> ProjectDetails(string projectRecordId)
@@ -28,7 +31,14 @@ public class ProjectOverviewController
         return View(response.Model);
     }
 
-    public async Task<IActionResult> PostApproval(string projectRecordId)
+    public async Task<IActionResult> PostApproval
+    (
+        string projectRecordId,
+        int pageNumber = 1,
+        int pageSize = 20,
+        string sortField = nameof(ModificationsModel.CreatedAt),
+        string sortDirection = SortDirections.Ascending
+    )
     {
         UpdateModificationRelatedTempData();
 
@@ -37,7 +47,36 @@ public class ProjectOverviewController
         {
             return response.Error;
         }
-        return View(response.Model);
+
+        var model = new PostApprovalViewModel();
+        model.ProjectOverviewModel = response.Model;
+
+        ModificationSearchRequest searchQuery = new ModificationSearchRequest();
+
+        var modificationsResponseResult = await projectModificationsService.GetModificationsForProject(projectRecordId, searchQuery, pageNumber, pageSize, sortField, sortDirection);
+
+        model.Modifications = modificationsResponseResult?.Content?.Modifications?
+                    .Select(dto => new PostApprovalModificationsModel
+                    {
+                        ModificationId = dto.ModificationId,
+                        ModificationType = dto.ModificationType,
+                        ReviewType = null,
+                        Category = null,
+                        DateSubmitted = null,
+                        Status = "Draft"
+                    })
+                    .ToList() ?? [];
+
+        model.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationsResponseResult?.Content?.TotalCount ?? 0)
+        {
+            SortDirection = sortDirection,
+            SortField = sortField,
+            FormName = "postapproval-selection",
+            RouteName = "pov:postapproval",
+            AdditionalParameters = new Dictionary<string, string>() { { "projectRecordId", projectRecordId } }
+        };
+
+        return View(model);
     }
 
     public async Task<IActionResult> KeyProjectRoles(string projectRecordId)
@@ -101,7 +140,7 @@ public class ProjectOverviewController
     public async Task<(IActionResult Error, ProjectOverviewModel? Model)> GetProjectOverview(string projectRecordId)
     {
         // Retrieve the project record by its ID
-        var projectRecordResponse = await applicationsService.GetProjectRecord(projectRecordId);
+        var projectRecordResponse = await applicationService.GetProjectRecord(projectRecordId);
 
         // If the service call failed, return a generic service error view
         if (!projectRecordResponse.IsSuccessStatusCode)

@@ -1,6 +1,5 @@
 ﻿using Refit;
 using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 
@@ -80,14 +79,4 @@ public interface IApplicationsServiceClient
     /// <returns>An asynchronous operation that updates the existing application.</returns>
     [Put("/applications")]
     public Task<ApiResponse<IrasApplicationResponse>> UpdateApplication(IrasApplicationRequest irasApplication);
-
-    [Get("/applications/modifications")]
-    public Task<ApiResponse<GetModificationsResponse>> GetModifications
-    (
-        [Body] ModificationSearchRequest searchQuery,
-        int pageNumber = 1,
-        int pageSize = 20,
-        string sortField = nameof(ModificationsDto.ModificationId),
-        string sortDirection = SortDirections.Descending
-    );
 }

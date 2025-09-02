@@ -1,5 +1,4 @@
 ﻿using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
@@ -79,20 +78,6 @@ public class ApplicationsService(IApplicationsServiceClient applicationsClient) 
     public async Task<ServiceResponse<IrasApplicationResponse>> UpdateApplication(IrasApplicationRequest irasApplication)
     {
         var apiResponse = await applicationsClient.UpdateApplication(irasApplication);
-
-        return apiResponse.ToServiceResponse();
-    }
-
-    public async Task<ServiceResponse<GetModificationsResponse>> GetModifications
-    (
-        ModificationSearchRequest searchQuery,
-        int pageNumber = 1,
-        int pageSize = 20,
-        string? sortField = nameof(ModificationsDto.ModificationId),
-        string? sortDirection = SortDirections.Descending
-    )
-    {
-        var apiResponse = await applicationsClient.GetModifications(searchQuery, pageNumber, pageSize, sortField, sortDirection);
 
         return apiResponse.ToServiceResponse();
     }

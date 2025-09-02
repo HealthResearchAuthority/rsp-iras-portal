@@ -1,4 +1,6 @@
-﻿using Rsp.IrasPortal.Application.DTOs.Requests;
+﻿using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
@@ -102,6 +104,53 @@ public class ProjectModificationsService(IProjectModificationsServiceClient proj
     public async Task<ServiceResponse> CreateDocumentModification(List<ProjectModificationDocumentRequest> projectModificationDocumentRequest)
     {
         var apiResponse = await projectModificationsServiceClient.CreateModificationDocument(projectModificationDocumentRequest);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    /// <summary>
+    /// Gets all modifications with filtering, sorting and pagination
+    /// <param name="searchQuery">Object containing filtering criteria for modifications.</param>
+    /// <param name="pageNumber">The number of the page to retrieve (used for pagination - 1-based).</param>
+    /// <param name="pageSize">The number of items per page (used for pagination).</param>
+    /// <param name="sortField">The field name by which the results should be sorted.</param>
+    /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
+    /// <returns>Returns a paginated list of modifications matching the search criteria.</returns>
+    public async Task<ServiceResponse<GetModificationsResponse>> GetModifications
+    (
+        ModificationSearchRequest searchQuery,
+        int pageNumber = 1,
+        int pageSize = 20,
+        string sortField = nameof(ModificationsDto.ModificationId),
+        string sortDirection = SortDirections.Descending
+    )
+    {
+        var apiResponse = await projectModificationsServiceClient.GetModifications(searchQuery, pageNumber, pageSize, sortField, sortDirection);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    /// <summary>
+    /// Gets modifications for specific ProjectRecordId with filtering, sorting and pagination
+    /// </summary>
+    /// <param name="projectRecordId">The unique identifier of the project record for which modifications are requested.</param>
+    /// <param name="searchQuery">Object containing filtering criteria for modifications.</param>
+    /// <param name="pageNumber">The number of the page to retrieve (used for pagination - 1-based).</param>
+    /// <param name="pageSize">The number of items per page (used for pagination).</param>
+    /// <param name="sortField">The field name by which the results should be sorted.</param>
+    /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
+    /// <returns>Returns a paginated list of modifications related to the specified project record.</returns>
+    public async Task<ServiceResponse<GetModificationsResponse>> GetModificationsForProject
+    (
+        string projectRecordId,
+        ModificationSearchRequest searchQuery,
+        int pageNumber = 1,
+        int pageSize = 20,
+        string sortField = nameof(ModificationsDto.ModificationId),
+        string sortDirection = SortDirections.Descending
+    )
+    {
+        var apiResponse = await projectModificationsServiceClient.GetModificationsForProject(projectRecordId, searchQuery, pageNumber, pageSize, sortField, sortDirection);
 
         return apiResponse.ToServiceResponse();
     }
