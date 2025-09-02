@@ -10,4 +10,5 @@ public class ModificationsModel
     public string SponsorOrganisation { get; set; } = null!;
     public DateTime CreatedAt { get; set; }
     public int DaysSinceSubmission => (DateTime.UtcNow - CreatedAt).Days;
+    public string Status { get; set; } = null!;
 }

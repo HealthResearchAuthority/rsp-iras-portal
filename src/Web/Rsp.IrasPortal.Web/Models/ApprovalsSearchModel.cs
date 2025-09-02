@@ -39,9 +39,11 @@ public class ApprovalsSearchModel
     {
         get
         {
-            // If a setter has been used, respect that
-            if (_filtersOverride != null)
-                return _filtersOverride;
+            if (IgnoreFilters)
+            {
+                IgnoreFilters = false;
+                return null;
+            }
 
             var filters = new Dictionary<string, List<string>>();
 
@@ -112,14 +114,10 @@ public class ApprovalsSearchModel
 
             return filters;
         }
-        set
-        {
-            // Allow suppressing filters by explicitly setting null or empty
-            _filtersOverride = value;
-        }
+      
     }
 
-    private Dictionary<string, List<string>>? _filtersOverride;
+    public bool IgnoreFilters { get; set; }
 
     private static DateTime? ParseDate(string? day, string? month, string? year)
     {

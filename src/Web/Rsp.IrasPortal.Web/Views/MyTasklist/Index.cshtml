@@ -7,12 +7,12 @@
 @using Rsp.IrasPortal.Application.DTOs.Responses
 @using Rsp.IrasPortal.Web.Extensions
 @using Rsp.IrasPortal.Web.TagHelpers.Models
-@model ModificationsTasklistViewModel
+@model MyTasklistViewModel
 @inject IFeatureManager featureManager
 @using Rsp.IrasPortal.Application.Constants
 
 @{
-	ViewData["Title"] = "Modifications ready to assign - Modifications - Approvals - System Administration";
+	ViewData["Title"] = "My changes to review - Modifications - Approvals - System Administration";
 	var errorSummaryTitle = "There is a problem";
 }
 
@@ -43,17 +43,17 @@
 <div class="govuk-grid-row">
 	<div class="govuk-grid-column-two-thirds search-filter-bottom-border">
 		<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
-		<h2 class="govuk-heading-xl" id="title">Modifications ready to assign</h2>
+		<h2 class="govuk-heading-xl" id="title">My changes to review</h2>
 		<p class="govuk-body">
-			This page shows all the modifications that are ready for you to assign, where the lead nation is England.
+            This page shows all the modifications that are ready for you to review
 		</p>		
 
 		@if (!Model.EmptySearchPerformed || (Model.Modifications != null && Model.Modifications.Any()))
 		{
             <p class="govuk-body">
-			Enter the IRAS ID to search for all modifications received, including those submitted for notification only
+                Enter the IRAS ID to search for all modifications received.
 		    </p>
-			<form asp-route="tasklist:applyfilters" method="post" class="govuk-form-group govuk-!-margin-bottom-0">
+			<form asp-route="mytasklist:applyfilters" method="post" class="govuk-form-group govuk-!-margin-bottom-0">
 				<div class="search-flex-container">
 					<span id="iras-id-label" class="govuk-visually-hidden">IRAS ID</span>
 					<input class="govuk-input search-flex-input" asp-for="Search.IrasId" type="text" aria-labelledby="iras-id-label" />
@@ -182,7 +182,7 @@
 							foreach (var val in filterValues)
 							{
 								<li>
-									<a asp-route="tasklist:removefilter"
+									<a asp-route="mytasklist:removefilter"
 									   asp-route-key="@filterKey"
 									   class="search-filter-summary__remove-filter">
 										<span class="search-filter-summary__remove-filter-text">
@@ -204,7 +204,7 @@
 						}
 					</ul>
 					<div>
-						<a asp-route="tasklist:clearfilters" class="search-filter-summary__clear-filters govuk-link govuk-link--no-visited-state">
+						<a asp-route="mytasklist:clearfilters" class="search-filter-summary__clear-filters govuk-link govuk-link--no-visited-state">
 							Clear all filters
 						</a>
 					</div>
@@ -251,24 +251,20 @@ else
 	<div class="govuk-grid-row">
 		<div class="govuk-grid-column-full">
 			<div class="govuk-table-wrapper">
-				<table class="govuk-table modifications-tasklist-table" id="modificationsTasklistTable">
+				<table class="govuk-table modifications-tasklist-table" id="myTasklistTable">
 					<thead class="govuk-table__head">
 						<tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
-							<th scope="col" class="govuk-table__header govuk-!-text-align-right checkbox-cell">
-								<div class="govuk-checkboxes__item govuk-checkboxes--small">
-									<input id="select-all-modifications" name="" class="govuk-checkboxes__input select-all-modifications" type="checkbox">
-									<label for="select-all-modifications" class="govuk-label govuk-checkboxes__label"></label>
-								</div>
-							</th>
+					
 							@{
 								var sortableHeaders = new[]
 								{
 												new { Field = nameof(ModificationsModel.ModificationId), Label = "Modification ID" },
 												new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
 												new { Field = nameof(ModificationsModel.CreatedAt), Label = "Date submitted" },
-												new { Field = nameof(ModificationsModel.DaysSinceSubmission), Label = "Days since submission" }
+												new { Field = nameof(ModificationsModel.DaysSinceSubmission), Label = "Days since submission" },
+												new { Field = nameof(ModificationsModel.Status), Label = "Status" }
 												};
-								var tableId = "modificationsTasklistTable";
+								var tableId = "myTasklistTable";
 							}
 							@foreach (var header in sortableHeaders)
 							{
@@ -288,15 +284,11 @@ else
 							}
 						</tr>
 					</thead>
-					<form method="get" id="tasklist-selection">
+					<form method="get">
 						<input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
 						<input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
 
-						<!--Keep track of selected modifications that are not displayed on this page for continuity-->
-						@foreach (var selectedMod in Model.SelectedModificationIds.Except(Model.Modifications.Select(m => m.Modification.ModificationId)))
-						{
-							<input hidden="hidden" type="text" value="@selectedMod" name="selectedModificationIds" />
-						}
+				
 					<tbody class="govuk-table__body govuk-body-s">
 						@{
 							foreach (var modification in Model.Modifications)
@@ -304,21 +296,11 @@ else
 								var daysText = modification.Modification.DaysSinceSubmission == 1 ? "day" : "days";
 
 								<tr class="govuk-table__row">
-									<td class="govuk-table__cell checkbox-cell">
-										<div class="govuk-checkboxes__item govuk-checkboxes--small">
-											<input id="@modification.Modification.ModificationId"
-												   name="selectedModificationIds"
-												   value="@modification.Modification.ModificationId"
-												   class="govuk-checkboxes__input child-checkbox"
-												   type="checkbox"
-												   @(modification.IsSelected ? "checked" : "")>
-											<label for="@modification.Modification.ModificationId" class="govuk-label govuk-checkboxes__label modification-checkbox-label"></label>
-										</div>
-									</td>
 									<td class="govuk-table__cell">@modification.Modification.ModificationId</td>
 									<td class="govuk-table__cell"><a href="?@modification.Modification.ModificationId" class="govuk-link"><strong>@modification.Modification.ShortProjectTitle</strong></a></td>
 									<td class="govuk-table__cell">@modification.Modification.CreatedAt.ToString("dd MMM yyyy")</td>
 									<td class="govuk-table__cell">@modification.Modification.DaysSinceSubmission @daysText</td>
+									<td class="govuk-table__cell">@modification.Modification.Status</td>
 								</tr>
 							}
 						}
@@ -327,18 +309,6 @@ else
 				</table>
 			</div>
 			<partial name="_PaginationForm" model="@Model.Pagination" />
-			<div class="search-flex-button">
-				<button type="submit" class="govuk-button" asp-route="tasklist:AssignModifications" form="tasklist-selection">Continue to assign modifications</button>
-			</div>
 		</div>
 	</div>
-}
-
-<!--Use javascript only when progressive enhancement feature is enabled-->
-@if (await featureManager.IsEnabledAsync(Features.ProgressiveEnhancement))
-{
-	@section FooterResources {
-		<script src="~/lib/jquery/dist/jquery.js"></script>
-		<script src="~/js/modificationsTasklist.js"></script>
-	}
 }
