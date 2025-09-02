@@ -13,7 +13,7 @@ namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "mytasklist:[action]")]
 [Authorize(Roles = "study-wide_reviewer")]
-public class MyTasklistController(IApplicationsService applicationsService, IValidator<ApprovalsSearchModel> validator) : Controller
+public class MyTasklistController(IProjectModificationsService projectModificationsService, IValidator<ApprovalsSearchModel> validator) : Controller
 {
     [HttpGet]
     public async Task<IActionResult> Index(
@@ -72,7 +72,7 @@ public class MyTasklistController(IApplicationsService applicationsService, IVal
                 : SortDirections.Ascending;
         }
 
-        var result = await applicationsService.GetMyTasklistModifications(
+        var result = await projectModificationsService.GetModifications(
             searchQuery, pageNumber, pageSize, querySortField, querySortDirection);
 
         model.Modifications = result?.Content?.Modifications?
