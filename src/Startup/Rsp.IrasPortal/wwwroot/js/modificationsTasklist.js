@@ -17,8 +17,12 @@ $(function () {
     function applyState() {
         const saved = sessionStorage.getItem(STORAGE_KEY);
         const isChecked = saved === 'true';
-        $selectAll.prop('checked', isChecked);
-        $('.child-checkbox').prop('checked', isChecked);
+        if (isChecked) {
+            $selectAll.prop('checked', isChecked);
+            $('.child-checkbox').prop('checked', isChecked);
+        } else {
+            sessionStorage.removeItem(STORAGE_KEY);
+        }
     }
 
     applyState();
