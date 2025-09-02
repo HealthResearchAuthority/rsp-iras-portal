@@ -27,7 +27,8 @@ public class UpdateAccessTokenTests : TestServiceBase<CustomClaimsTransformation
             .Setup(x => x.Value)
             .Returns(new AppSettings
             {
-                AuthSettings = new AuthSettings { ClientId = "test-client-id" }
+                AuthSettings = new AuthSettings { ClientId = "test-client-id", AuthCookieTimeout = 900 },
+                OneLogin = new OneLoginConfiguration { AuthCookieTimeout = 900 }
             });
     }
 

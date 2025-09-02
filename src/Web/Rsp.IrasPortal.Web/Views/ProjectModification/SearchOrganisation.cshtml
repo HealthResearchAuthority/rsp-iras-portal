@@ -71,7 +71,8 @@
                                 }
 
                                 <div class="govuk-input__wrapper">
-                                    <input asp-for="Search.SearchNameTerm" class="govuk-input" type="text" id="Search.SearchNameTerm" name="Search.SearchNameTerm" value="@(Model.Search?.SearchNameTerm ?? string.Empty)" />                                    
+                                    <span id="find-organisation-label" class="govuk-visually-hidden">Find an organisation</span>
+                                    <input asp-for="Search.SearchNameTerm" class="govuk-input" type="text" id="Search.SearchNameTerm" aria-labelledby="find-organisation-label" value="@(Model.Search?.SearchNameTerm ?? string.Empty)" />
                                     <button class="govuk-button mb-0 govuk-button--secondary" style="margin-left:10px" type="submit" name="action" value="search">
                                         Search
                                     </button>

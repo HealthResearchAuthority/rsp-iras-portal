@@ -13,7 +13,7 @@ namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "tasklist:[action]")]
 [Authorize(Roles = "system_administrator,workflow_co-ordinator,team_manager,study-wide_reviewer")]
-public class ModificationsTasklistController(IApplicationsService applicationsService, IValidator<ApprovalsSearchModel> validator) : Controller
+public class ModificationsTasklistController(IProjectModificationsService projectModificationsService, IValidator<ApprovalsSearchModel> validator) : Controller
 {
     private const string ModificationToAssignNotSelectedErrorMessage = "You have not selected a modification to assign. Select at least one modification before you can continue.";
 
@@ -22,8 +22,8 @@ public class ModificationsTasklistController(IApplicationsService applicationsSe
         int pageNumber = 1,
         int pageSize = 20,
         List<string>? selectedModificationIds = null,
-        string? sortField = nameof(ModificationsModel.CreatedAt),
-        string? sortDirection = SortDirections.Ascending)
+        string sortField = nameof(ModificationsModel.CreatedAt),
+        string sortDirection = SortDirections.Ascending)
     {
         var model = new ModificationsTasklistViewModel
         {
@@ -74,7 +74,7 @@ public class ModificationsTasklistController(IApplicationsService applicationsSe
                 : SortDirections.Ascending;
         }
 
-        var result = await applicationsService.GetModifications(
+        var result = await projectModificationsService.GetModifications(
             searchQuery, pageNumber, pageSize, querySortField, querySortDirection);
 
         model.Modifications = result?.Content?.Modifications?
