@@ -4,7 +4,7 @@ namespace Rsp.IrasPortal.Web.Models;
 
 public class MyTasklistViewModel
 {
-    public MyTasklistSearchModel Search { get; set; } = new();
+    public ApprovalsSearchModel Search { get; set; } = new();
     public IEnumerable<ModificationsModel>? Modifications { get; set; } = [];
     public PaginationViewModel? Pagination { get; set; }
     public bool EmptySearchPerformed { get; set; } = false;

@@ -41,7 +41,7 @@ public class ClearFiltersTests : TestServiceBase<MyTasklistController>
     public void ClearFilters_ShouldRetainOnlyIrasIdAndRedirect()
     {
         // Arrange
-        var originalSearch = new MyTasklistSearchModel
+        var originalSearch = new ApprovalsSearchModel
         {
             IrasId = "IRAS123",
             ShortProjectTitle = "TestOrg",
@@ -59,7 +59,7 @@ public class ClearFiltersTests : TestServiceBase<MyTasklistController>
         var updatedJson = _http.Session.GetString(SessionKeys.MyTasklist);
         updatedJson.ShouldNotBeNull();
 
-        var updatedSearch = JsonSerializer.Deserialize<MyTasklistSearchModel>(updatedJson!);
+        var updatedSearch = JsonSerializer.Deserialize<ApprovalsSearchModel>(updatedJson!);
         updatedSearch.ShouldNotBeNull();
         updatedSearch!.IrasId.ShouldBe("IRAS123");
         updatedSearch.ShortProjectTitle.ShouldBeNull();

@@ -86,7 +86,7 @@ public class IndexTests : TestServiceBase<MyTasklistController>
         fromDays = Math.Clamp(fromDays % 100, 1, 99);
         toDays = Math.Clamp(toDays % 100, 1, 99);
 
-        var model = new MyTasklistSearchModel
+        var model = new ApprovalsSearchModel
         {
             FromDaysSinceSubmission = fromDays.ToString(),
             ToDaysSinceSubmission = toDays.ToString(),

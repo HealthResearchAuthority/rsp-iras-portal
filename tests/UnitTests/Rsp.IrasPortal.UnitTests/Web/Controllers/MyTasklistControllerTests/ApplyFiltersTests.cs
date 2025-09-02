@@ -12,7 +12,7 @@ public class ApplyFiltersTests : TestServiceBase<MyTasklistController>
     public async Task ApplyFilters_ShouldAddAllValidationErrors_WhenModelIsInvalid()
     {
         // Arrange
-        var searchModel = new MyTasklistSearchModel() { FromYear = "not-a-year" };
+        var searchModel = new ApprovalsSearchModel() { FromYear = "not-a-year" };
         var viewModel = new MyTasklistViewModel() { Search = searchModel };
 
         var validationResult = new ValidationResult(
@@ -35,9 +35,9 @@ public class ApplyFiltersTests : TestServiceBase<MyTasklistController>
 
     private void SetupValidatorResult(ValidationResult result)
     {
-        var mockValidator = Mocker.GetMock<IValidator<MyTasklistSearchModel>>();
-        mockValidator
-            .Setup(v => v.ValidateAsync(It.IsAny<MyTasklistSearchModel>(), default))
+        var mockValidator = Mocker.GetMock<IValidator<ApprovalsSearchModel>>();
+        mockValidator   
+            .Setup(v => v.ValidateAsync(It.IsAny<ApprovalsSearchModel>(), default))
             .ReturnsAsync(result);
     }
 }

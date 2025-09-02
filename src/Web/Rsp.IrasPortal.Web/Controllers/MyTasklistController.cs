@@ -13,7 +13,7 @@ namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "mytasklist:[action]")]
 [Authorize(Roles = "study-wide_reviewer")]
-public class MyTasklistController(IProjectModificationsService projectModificationsService, IValidator<MyTasklistSearchModel> validator) : Controller
+public class MyTasklistController(IProjectModificationsService projectModificationsService, IValidator<ApprovalsSearchModel> validator) : Controller
 {
     [HttpGet]
     public async Task<IActionResult> Index(
@@ -31,7 +31,7 @@ public class MyTasklistController(IProjectModificationsService projectModificati
         var json = HttpContext.Session.GetString(SessionKeys.MyTasklist);
         if (!string.IsNullOrEmpty(json))
         {
-            model.Search = JsonSerializer.Deserialize<MyTasklistSearchModel>(json)!;
+            model.Search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json)!;
             if (model.Search.Filters.Count != 0 || !string.IsNullOrEmpty(model.Search.IrasId))
             {
                 model.EmptySearchPerformed = false;
@@ -124,7 +124,7 @@ public class MyTasklistController(IProjectModificationsService projectModificati
             return RedirectToAction(nameof(Index));
         }
 
-        var search = JsonSerializer.Deserialize<MyTasklistSearchModel>(json)!;
+        var search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json)!;
 
         switch (key?.ToLowerInvariant().Replace(" ", ""))
         {
@@ -162,24 +162,17 @@ public class MyTasklistController(IProjectModificationsService projectModificati
     public IActionResult ClearFilters()
     {
         var json = HttpContext.Session.GetString(SessionKeys.MyTasklist);
-        if (string.IsNullOrWhiteSpace(json))
-        {
+        var search = string.IsNullOrWhiteSpace(json)
+            ? null
+            : JsonSerializer.Deserialize<ApprovalsSearchModel>(json);
+
+        if (search is null)
             return RedirectToAction(nameof(Index));
-        }
 
-        var search = JsonSerializer.Deserialize<MyTasklistSearchModel>(json);
-        if (search == null)
-        {
-            return RedirectToAction(nameof(Index));
-        }
-
-        var cleanedSearch = new MyTasklistSearchModel
-        {
-            IrasId = search.IrasId
-        };
-
-        HttpContext.Session.SetString(SessionKeys.MyTasklist,
-            JsonSerializer.Serialize(cleanedSearch));
+        HttpContext.Session.SetString(
+            SessionKeys.MyTasklist,
+            JsonSerializer.Serialize(new ApprovalsSearchModel { IrasId = search.IrasId })
+        );
 
         return RedirectToAction(nameof(Index));
     }
