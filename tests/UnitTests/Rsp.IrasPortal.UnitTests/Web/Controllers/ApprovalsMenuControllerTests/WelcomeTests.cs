@@ -5,7 +5,7 @@ using Rsp.IrasPortal.Web.Controllers;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApprovalsControllerTests;
 
-public class WelcomeTests : TestServiceBase<ApprovalsController>
+public class WelcomeTests : TestServiceBase<ApprovalsMenuController>
 {
     public WelcomeTests()
     {
