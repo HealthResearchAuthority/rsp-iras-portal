@@ -13,7 +13,7 @@ namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "mytasklist:[action]")]
 [Authorize(Roles = "study-wide_reviewer")]
-public class MyTasklistController(IProjectModificationsService projectModificationsService, IValidator<ApprovalsSearchModel> validator) : Controller
+public class MyTasklistController(IProjectModificationsService projectModificationsService, IValidator<MyTasklistSearchModel> validator) : Controller
 {
     [HttpGet]
     public async Task<IActionResult> Index(
@@ -25,14 +25,13 @@ public class MyTasklistController(IProjectModificationsService projectModificati
     {
         var model = new MyTasklistViewModel
         {
-            SelectedModificationIds = selectedModificationIds ?? [],
             EmptySearchPerformed = true // Set to true to check if search bar should be hidden on view
         };
 
         var json = HttpContext.Session.GetString(SessionKeys.MyTasklist);
         if (!string.IsNullOrEmpty(json))
         {
-            model.Search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json)!;
+            model.Search = JsonSerializer.Deserialize<MyTasklistSearchModel>(json)!;
             if (model.Search.Filters.Count != 0 || !string.IsNullOrEmpty(model.Search.IrasId))
             {
                 model.EmptySearchPerformed = false;
@@ -42,7 +41,6 @@ public class MyTasklistController(IProjectModificationsService projectModificati
         var searchQuery = new ModificationSearchRequest()
         {
             LeadNation = ["England"],
-            ShortProjectTitle = model.Search.ShortProjectTitle,
             FromDate = model.Search.FromDate,
             ToDate = model.Search.ToDate,
             IrasId = model.Search.IrasId,
@@ -76,21 +74,16 @@ public class MyTasklistController(IProjectModificationsService projectModificati
             searchQuery, pageNumber, pageSize, querySortField, querySortDirection);
 
         model.Modifications = result?.Content?.Modifications?
-            .Select(dto => new TaskListModificationViewModel
+            .Select(dto => new ModificationsModel
             {
-                Modification = new ModificationsModel
-                {
-                    ModificationId = dto.ModificationId,
-                    ShortProjectTitle = dto.ShortProjectTitle,
-                    ModificationType = dto.ModificationType,
-                    ChiefInvestigator = dto.ChiefInvestigator,
-                    LeadNation = dto.LeadNation,
-                    SponsorOrganisation = dto.SponsorOrganisation,
-                    CreatedAt = dto.CreatedAt
-                },
-                IsSelected = selectedModificationIds?.Contains(dto.ModificationId) == true
-            })
-            .ToList() ?? [];
+                ModificationId = dto.ModificationId,
+                ShortProjectTitle = dto.ShortProjectTitle,
+                ModificationType = dto.ModificationType,
+                ChiefInvestigator = dto.ChiefInvestigator,
+                LeadNation = dto.LeadNation,
+                SponsorOrganisation = dto.SponsorOrganisation,
+                CreatedAt = dto.CreatedAt
+            }).ToList();
 
         model.Pagination = new PaginationViewModel(pageNumber, pageSize, result?.Content?.TotalCount ?? 0)
         {
@@ -131,14 +124,10 @@ public class MyTasklistController(IProjectModificationsService projectModificati
             return RedirectToAction(nameof(Index));
         }
 
-        var search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json)!;
+        var search = JsonSerializer.Deserialize<MyTasklistSearchModel>(json)!;
 
         switch (key?.ToLowerInvariant().Replace(" ", ""))
         {
-            case "shortprojecttitle":
-                search.ShortProjectTitle = null;
-                break;
-
             case "datesubmitted":
                 search.FromDay = search.FromMonth = search.FromYear = null;
                 search.ToDay = search.ToMonth = search.ToYear = null;
@@ -159,6 +148,9 @@ public class MyTasklistController(IProjectModificationsService projectModificati
             case "dayssincesubmission-to":
                 search.ToDaysSinceSubmission = null;
                 break;
+            case "shortprojecttitle":
+                search.ShortProjectTitle = null;
+                break;
         }
 
         HttpContext.Session.SetString(SessionKeys.MyTasklist, JsonSerializer.Serialize(search));
@@ -175,13 +167,13 @@ public class MyTasklistController(IProjectModificationsService projectModificati
             return RedirectToAction(nameof(Index));
         }
 
-        var search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json);
+        var search = JsonSerializer.Deserialize<MyTasklistSearchModel>(json);
         if (search == null)
         {
             return RedirectToAction(nameof(Index));
         }
 
-        var cleanedSearch = new ApprovalsSearchModel
+        var cleanedSearch = new MyTasklistSearchModel
         {
             IrasId = search.IrasId
         };
