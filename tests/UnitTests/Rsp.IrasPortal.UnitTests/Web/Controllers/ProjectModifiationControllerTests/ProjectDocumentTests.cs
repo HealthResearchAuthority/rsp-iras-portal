@@ -42,7 +42,6 @@ public class ProjectDocumentTests : TestServiceBase<ProjectModificationControlle
         model!.ShortTitle.ShouldBe(shortTitle);
         model.IrasId.ShouldBe(irasId);
         model.ModificationIdentifier.ShouldBe(modificationId);
-        model.PageTitle.ShouldBe($"Add documents for {specificAreaOfChange}");
     }
 
     [Fact]

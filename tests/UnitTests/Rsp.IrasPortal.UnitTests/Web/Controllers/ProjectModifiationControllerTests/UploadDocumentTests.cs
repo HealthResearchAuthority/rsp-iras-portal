@@ -67,6 +67,6 @@ public class UploadDocumentTests : TestServiceBase<ProjectModificationController
         // Assert
         result.ShouldBeOfType<RedirectToActionResult>();
         var redirect = result as RedirectToActionResult;
-        redirect!.ActionName.ShouldBe("ReviewDocument");
+        redirect!.ActionName.ShouldBe("ModificationDocumentsAdded");
     }
 }

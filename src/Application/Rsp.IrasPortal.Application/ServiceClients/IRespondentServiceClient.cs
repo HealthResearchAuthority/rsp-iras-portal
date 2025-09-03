@@ -86,9 +86,9 @@ public interface IRespondentServiceClient
     [Post("/respondent/modificationdocument")]
     public Task<IApiResponse> SaveModificationDocuments(List<ProjectModificationDocumentRequest> projectModificationDocumentRequest);
 
-    [Get("/respondent/modificationdocumentanswers/{documentId}")]
-    public Task<ApiResponse<ProjectModificationDocumentRequest>> GetModificationDocumentAnswers(Guid documentId);
+    [Get("/respondent/modificationdocumentanswer/{documentId}")]
+    public Task<ApiResponse<IEnumerable<ProjectModificationDocumentAnswerDto>>> GetModificationDocumentAnswers(Guid documentId);
 
     [Post("/respondent/modificationdocumentanswer")]
-    public Task<IApiResponse> SaveModificationDocumentAnswers(ProjectModificationDocumentRequest projectModificationDocumentRequest);
+    public Task<IApiResponse> SaveModificationDocumentAnswer(List<ProjectModificationDocumentAnswerDto> projectModificationDocumentRequest);
 }
