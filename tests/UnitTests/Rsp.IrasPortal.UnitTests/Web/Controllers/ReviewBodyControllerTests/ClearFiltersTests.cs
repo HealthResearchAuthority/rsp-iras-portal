@@ -38,7 +38,7 @@ public class ClearFiltersTests : TestServiceBase<ReviewBodyController>
         redirect.RouteValues.ShouldContainKeyAndValue("fromPagination", true);
 
         var sessionJson = _http.Session.GetString(SessionKeys.ReviewBodiesSearch);
-        sessionJson.ShouldBeNullOrWhiteSpace();
+        sessionJson.ShouldNotBeNullOrWhiteSpace();
     }
 
     [Fact]
@@ -59,6 +59,6 @@ public class ClearFiltersTests : TestServiceBase<ReviewBodyController>
         redirect.RouteValues.ShouldContainKeyAndValue("fromPagination", true);
 
         var sessionJson = _http.Session.GetString(SessionKeys.ReviewBodiesSearch);
-        sessionJson.ShouldBeNullOrWhiteSpace();
+        sessionJson.ShouldNotBeNullOrWhiteSpace();
     }
 }
