@@ -19,6 +19,7 @@ public struct TempDataKeys
         public const string SpecificAreaOfChangeText = "td:specific_area_of_changeText";
         public const string Questionnaire = "td:modification_questionnaire";
         public const string ProjectModificationChangeMarker = "td:project_modification_change_marker";
+        public const string JourneyType = "td:journey_type";
     }
 
     public struct ProjectModificationChange
