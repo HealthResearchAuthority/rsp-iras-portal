@@ -455,11 +455,8 @@ public partial class ProjectModificationController : Controller
 
     private async Task SaveModificationDocumentAnswers(Guid modificationDocumentId, List<QuestionViewModel> questions)
     {
-        // save the responses
-        var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
-
         // to save the responses
-        // we need to build the RespondentAnswerRequest
+        // we need to build the ProjectModificationDocumentAnswerDto
         // populate the RespondentAnswers
         var request = new List<ProjectModificationDocumentAnswerDto>();
 
