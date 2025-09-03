@@ -113,14 +113,14 @@ public class RespondentService(IRespondentServiceClient respondentServiceClient)
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse> SaveModificationDocumentAnswers(ProjectModificationDocumentRequest request)
+    public async Task<ServiceResponse> SaveModificationDocumentAnswers(List<ProjectModificationDocumentAnswerDto> request)
     {
-        var apiResponse = await respondentServiceClient.SaveModificationDocumentAnswers(request);
+        var apiResponse = await respondentServiceClient.SaveModificationDocumentAnswer(request);
 
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse<ProjectModificationDocumentRequest>> GetModificationDocumentAnswers(Guid documentId)
+    public async Task<ServiceResponse<IEnumerable<ProjectModificationDocumentAnswerDto>>> GetModificationDocumentAnswers(Guid documentId)
     {
         var apiResponse = await respondentServiceClient.GetModificationDocumentAnswers(documentId);
 

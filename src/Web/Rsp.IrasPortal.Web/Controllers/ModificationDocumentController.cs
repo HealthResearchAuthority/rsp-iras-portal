@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
@@ -195,30 +196,39 @@ public partial class ProjectModificationController : Controller
 
         if (response?.StatusCode == HttpStatusCode.OK && response.Content != null)
         {
-            viewModel.UploadedDocuments = response.Content.Select(a =>
-            {
-                var isIncomplete =
-                    string.IsNullOrWhiteSpace(a.SponsorDocumentVersion) ||
-                    string.IsNullOrWhiteSpace(a.DocumentStoragePath) ||
-                    !a.FileSize.HasValue ||
-                    !a.SponsorDocumentDate.HasValue ||
-                    !a.HasPreviousVersion.HasValue;
+            var uploadedDocuments = new List<DocumentSummaryItemDto>();
 
-                return new DocumentSummaryItemDto
+            foreach (var a in response.Content)
+            {
+                // Get answers for this document (async)
+                var answersResponse = await respondentService.GetModificationDocumentAnswers(a.Id);
+                var answers = answersResponse?.StatusCode == HttpStatusCode.OK
+                    ? answersResponse.Content ?? new List<ProjectModificationDocumentAnswerDto>()
+                    : new List<ProjectModificationDocumentAnswerDto>();
+
+                // Base incomplete checks
+                var isIncomplete = false;
+
+                // Check answers — if ANY answer is missing data, mark as incomplete
+                if (answers.Any(ans =>
+                    string.IsNullOrWhiteSpace(ans.AnswerText) &&
+                    string.IsNullOrWhiteSpace(ans.OptionType) &&
+                    string.IsNullOrWhiteSpace(ans.SelectedOption)))
+                {
+                    isIncomplete = true;
+                }
+
+                uploadedDocuments.Add(new DocumentSummaryItemDto
                 {
                     DocumentId = a.Id,
                     FileName = $"Add details for {a.FileName}",
                     FileSize = a.FileSize ?? 0,
                     BlobUri = a.DocumentStoragePath,
                     Status = (isIncomplete ? DocumentDetailStatus.Incomplete : DocumentDetailStatus.Completed).ToString(),
-                };
-            }).ToList();
-        }
-        else
-        {
-            // Handle the case where no documents were returned or service failed
-            viewModel.UploadedDocuments = new List<DocumentSummaryItemDto>();
-            ModelState.AddModelError(string.Empty, "No documents found or an error occurred while retrieving documents.");
+                });
+            }
+
+            viewModel.UploadedDocuments = uploadedDocuments;
         }
 
         return View(nameof(AddDocumentDetailsList), viewModel);
@@ -234,7 +244,7 @@ public partial class ProjectModificationController : Controller
             return RedirectToAction(nameof(AddDocumentDetailsList));
         }
 
-        // Populate the view model with document details
+        // Populate base document details
         var viewModel = new ModificationAddDocumentDetailsViewModel
         {
             ShortTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
@@ -242,87 +252,254 @@ public partial class ProjectModificationController : Controller
             ModificationIdentifier = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string ?? string.Empty,
             DocumentId = documentDetailsResponse.Content.Id,
             FileName = documentDetailsResponse.Content.FileName,
-            //FileSize = FormatFileSize(documentDetailsResponse.Content.FileSize),
-            //DocumentTypeId = documentDetailsResponse.Content.DocumentTypeId,
+            FileSize = documentDetailsResponse.Content.FileSize?.ToString() ?? string.Empty,
             DocumentStoragePath = documentDetailsResponse.Content.DocumentStoragePath
         };
 
+        // Get CMS question set
         var additionalQuestionsResponse = await cmsQuestionsetService
             .GetModificationQuestionSet("pdm-document-metadata");
 
-        // convert the questions response to QuestionnaireViewModel
-        viewModel.Questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(additionalQuestionsResponse.Content!);
+        // Build questionnaire (all questions)
+        var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(additionalQuestionsResponse.Content!);
+
+        // Get existing answers
+        var answersResponse = await respondentService.GetModificationDocumentAnswers(documentId);
+        var answers = answersResponse?.StatusCode == HttpStatusCode.OK
+    ? answersResponse.Content ?? new List<ProjectModificationDocumentAnswerDto>()
+    : new List<ProjectModificationDocumentAnswerDto>();
+
+        if (answers.Any())
+        {
+            foreach (var ans in answers)
+            {
+                // Find the matching question in questionnaire and update with answer
+                var matchingQuestion = questionnaire.Questions.FirstOrDefault(q => q.QuestionId == ans.QuestionId);
+                if (matchingQuestion != null)
+                {
+                    matchingQuestion.AnswerText = ans.AnswerText;
+                    matchingQuestion.SelectedOption = ans.SelectedOption;
+                    matchingQuestion.Answers = ans.Answers?.Select(a => new AnswerViewModel
+                    {
+                        AnswerId = a,
+                        AnswerText = a
+                    }).ToList() ?? new List<AnswerViewModel>();
+                }
+            }
+        }
+
+        viewModel.Questionnaire = questionnaire;
 
         return View("AddDocumentDetails", viewModel);
     }
 
     [HttpPost]
-    public async Task<IActionResult> SaveDocumentDetails(ModificationAddDocumentDetailsViewModel viewModel)
+    public async Task<IActionResult> SaveDocumentDetails(ModificationAddDocumentDetailsViewModel viewModel, bool validateMandatory = false)
     {
-        // var validationResult = await documentDetailValidator.ValidateAsync(new ValidationContext<ModificationAddDocumentDetailsViewModel>(viewModel));
-        // if (!validationResult.IsValid)
-        // {
-        //     foreach (var error in validationResult.Errors)
-        //     {
-        //         ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
-        //     }
-        //     return View("AddDocumentDetails", viewModel);
-        // }
+        // using the FluentValidation, create a new context for the model
+        var context = new ValidationContext<QuestionnaireViewModel>(viewModel.Questionnaire);
 
-        // var documentsRequest = new List<ProjectModificationDocumentRequest>();
-        // var documentRequest = new ProjectModificationDocumentRequest
-        // {
-        //     Id = viewModel.DocumentId,
-        //     ProjectModificationChangeId = (Guid)TempData.Peek(TempDataKeys.ProjectModificationChangeId)!,
-        //     ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty,
-        //     ProjectPersonnelId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!,
-        //     DocumentTypeId = viewModel.DocumentTypeId ?? Guid.Empty,
-        //     FileName = viewModel.FileName,
-        //     DocumentStoragePath = viewModel.DocumentStoragePath,
-        //     FileSize = viewModel.FileSize != null ? long.Parse(viewModel.FileSize) : null,
-        //     SponsorDocumentVersion = viewModel.SponsorDocumentVersion,
-        //     HasPreviousVersion = viewModel.HasPreviousVersionApproved,
-        //     SponsorDocumentDate = new DateTime(
-        //         viewModel.SponsorDocumentDateYear ?? DateTime.Now.Year,
-        //         viewModel.SponsorDocumentDateMonth ?? 1,
-        //         viewModel.SponsorDocumentDateDay ?? 1)
-        // };
-        // documentsRequest.Add(documentRequest);
+        if (validateMandatory)
+        {
+            context.RootContextData["ValidateMandatoryOnly"] = true;
+        }
 
-        // Call the service to save the document details
-        // var saveResponse = respondentService.SaveModificationDocuments(documentsRequest);
+        // call the ValidateAsync to execute the validation
+        // this will trigger the fluentvalidation using the injected validator if configured
+        var result = await validator.ValidateAsync(context);
 
-        // Get the next document to show from TempData
-        //var remainingJson = TempData.Peek(TempDataKeys.RemainingDocuments) as string;
-        // var remainingDocs = string.IsNullOrWhiteSpace(remainingJson)
-        //     ? new List<ProjectModificationDocumentRequest>()
-        //     : JsonSerializer.Deserialize<List<ProjectModificationDocumentRequest>>(remainingJson)!;
+        if (!result.IsValid)
+        {
+            // Copy the validation results into ModelState.
+            // ASP.NET uses the ModelState collection to populate
+            // error messages in the View.
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
 
-        // if (remainingDocs.Any())
-        // {
-        //     var next = remainingDocs.First();
-        //     TempData[TempDataKeys.RemainingDocuments] = JsonSerializer.Serialize(remainingDocs.Skip(1).ToList());
+            return View("AddDocumentDetails", viewModel);
+        }
 
-        //     Redirect to ContinueToDetails to handle next doc
-        //    TempData[TempDataKeys.NextDocumentToShow] = JsonSerializer.Serialize(next);
-        //     return RedirectToAction(nameof(ContinueToDetails));
-        // }
+        // Get CMS question set
+        var additionalQuestionsResponse = await cmsQuestionsetService
+            .GetModificationQuestionSet("pdm-document-metadata");
+
+        // Build questionnaire (all questions)
+        var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(additionalQuestionsResponse.Content!);
+
+        // update the model with the answeres
+        // provided by the applicant
+        foreach (var question in questionnaire.Questions)
+        {
+            // find the question in the submitted model
+            // that matches the index
+            var response = viewModel.Questionnaire.Questions.Find(q => q.Index == question.Index);
+
+            // update the question with provided answers
+            question.SelectedOption = response?.SelectedOption;
+            if (question.DataType != "Dropdown")
+            {
+                question.Answers = response?.Answers ?? [];
+            }
+
+            question.AnswerText = response?.AnswerText;
+            // update the date fields if they are present
+            question.Day = response?.Day;
+            question.Month = response?.Month;
+            question.Year = response?.Year;
+        }
+
+        viewModel.Questionnaire = questionnaire;
+
+        await SaveModificationDocumentAnswers(viewModel.DocumentId, viewModel.Questionnaire.Questions);
+
+        if (validateMandatory)
+        {
+            return RedirectToAction(nameof(AddDocumentDetailsList));
+        }
 
         // All done — go to review
-        return RedirectToAction("ReviewDocumentsAnswers");
+        return RedirectToAction(nameof(ReviewDocumentDetails));
     }
 
-    //private string FormatFileSize(long? bytes)
-    //{
-    //    if (bytes == null) return "0 B";
-    //    double size = (double)bytes;
-    //    string[] sizes = { "B", "KB", "MB", "GB", "TB" };
-    //    int order = 0;
-    //    while (size >= 1024 && order < sizes.Length - 1)
-    //    {
-    //        order++;
-    //        size = size / 1024;
-    //    }
-    //    return $"{size:0.#} {sizes[order]}";
-    //}
+    [HttpGet]
+    public async Task<IActionResult> ReviewDocumentDetails()
+    {
+        var documentChangeRequest = new ProjectModificationDocumentRequest
+        {
+            ProjectModificationChangeId = (Guid)TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationChangeId)!,
+            ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty,
+            ProjectPersonnelId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!,
+        };
+
+        // Get uploaded documents
+        var response = await respondentService.GetModificationChangesDocuments(
+            documentChangeRequest.ProjectModificationChangeId,
+            documentChangeRequest.ProjectRecordId,
+            documentChangeRequest.ProjectPersonnelId);
+
+        if (response?.StatusCode != HttpStatusCode.OK || response.Content == null)
+        {
+            return View("ServiceError");
+        }
+
+        // Get CMS question set (all possible questions for a document)
+        var additionalQuestionsResponse = await cmsQuestionsetService
+            .GetModificationQuestionSet("pdm-document-metadata");
+        var cmsQuestions = QuestionsetHelpers.BuildQuestionnaireViewModel(additionalQuestionsResponse.Content!);
+
+        var viewModels = new List<ModificationAddDocumentDetailsViewModel>();
+
+        foreach (var doc in response.Content)
+        {
+            // Get answers for this document (may be empty or partial)
+            var answersResponse = await respondentService.GetModificationDocumentAnswers(doc.Id);
+            var answers = answersResponse?.StatusCode == HttpStatusCode.OK
+             ? answersResponse.Content ?? new List<ProjectModificationDocumentAnswerDto>()
+             : new List<ProjectModificationDocumentAnswerDto>();
+
+            // Build VM
+            var vm = new ModificationAddDocumentDetailsViewModel
+            {
+                DocumentId = doc.Id,
+                FileName = doc.FileName,
+                DocumentStoragePath = doc.DocumentStoragePath,
+                ReviewAnswers = true,
+                Questionnaire = new QuestionnaireViewModel
+                {
+                    ReviewAnswers = true,
+                    CurrentStage = "Review",
+                    Questions = cmsQuestions.Questions.Select((cmsQ, index) =>
+                    {
+                        // Find the answer for this CMS question (if any)
+                        var matchingAnswer = answers.FirstOrDefault(a => a.QuestionId == cmsQ.QuestionId);
+
+                        return new QuestionViewModel
+                        {
+                            Index = index,
+                            QuestionId = cmsQ.QuestionId,
+                            VersionId = cmsQ.VersionId,
+                            Category = cmsQ.Category,
+                            SectionId = cmsQ.SectionId,
+                            Section = cmsQ.Section,
+                            Sequence = cmsQ.Sequence,
+                            Heading = cmsQ.Heading,
+                            QuestionText = cmsQ.QuestionText,
+                            QuestionType = cmsQ.QuestionType,
+                            DataType = cmsQ.DataType,
+                            IsMandatory = cmsQ.IsMandatory,
+                            IsOptional = cmsQ.IsOptional,
+                            AnswerText = matchingAnswer?.AnswerText,
+                            SelectedOption = matchingAnswer?.SelectedOption,
+                            Answers = matchingAnswer?.Answers?.Select(ans => new AnswerViewModel
+                            {
+                                AnswerId = ans,
+                                AnswerText = ans
+                            }).ToList() ?? new List<AnswerViewModel>(),
+                            Rules = cmsQ.Rules,
+                            ShortQuestionText = cmsQ.ShortQuestionText,
+                            IsModificationQuestion = true,
+                            GuidanceComponents = cmsQ.GuidanceComponents
+                        };
+                    }).ToList()
+                }
+            };
+
+            viewModels.Add(vm);
+        }
+
+        // No need to group again since each doc already has its own Questionnaire
+        return View("ReviewDocumentDetails", viewModels);
+    }
+
+    private async Task SaveModificationDocumentAnswers(Guid modificationDocumentId, List<QuestionViewModel> questions)
+    {
+        // save the responses
+        var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
+
+        // to save the responses
+        // we need to build the RespondentAnswerRequest
+        // populate the RespondentAnswers
+        var request = new List<ProjectModificationDocumentAnswerDto>();
+
+        foreach (var question in questions)
+        {
+            // we need to identify if it's a
+            // multiple choice or a single choice question
+            // this is to determine if the responses
+            // should be saved as comma seprated values
+            // or a single value
+            var optionType = question.DataType switch
+            {
+                "Boolean" or "Radio button" or "Look-up list" or "Dropdown" => "Single",
+                "Checkbox" => "Multiple",
+                _ => null
+            };
+
+            // build RespondentAnswers model
+            request.Add(new ProjectModificationDocumentAnswerDto
+            {
+                ModificationDocumentId = modificationDocumentId,
+                QuestionId = question.QuestionId,
+                VersionId = question.VersionId ?? string.Empty,
+                AnswerText = question.AnswerText,
+                CategoryId = question.Category,
+                SectionId = question.SectionId,
+                SelectedOption = question.SelectedOption,
+                OptionType = optionType,
+                Answers = question.Answers
+                                .Where(a => a.IsSelected)
+                                .Select(ans => ans.AnswerId)
+                                .ToList()
+            });
+        }
+
+        // if user has answered some or all of the questions
+        // call the api to save the responses
+        if (request.Count > 0)
+        {
+            await respondentService.SaveModificationDocumentAnswers(request);
+        }
+    }
 }

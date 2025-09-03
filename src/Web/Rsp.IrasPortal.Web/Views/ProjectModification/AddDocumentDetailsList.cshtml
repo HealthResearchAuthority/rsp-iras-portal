@@ -47,8 +47,8 @@
 			{
 				<p class="govuk-body">No documents uploaded.</p>
 			}
-			<form asp-action="continuetodetails" method="get">
-				<partial name="_SubmitButton" model="@("pmc:continuetodetails", "Save and continue", new Dictionary<string, string>{})" />
+			<form asp-action="reviewdocumentdetails" method="get">
+				<partial name="_SubmitButton" model="@("pmc:reviewdocumentdetails", "Save and continue", new Dictionary<string, string>{})" />
 			</form>
 			@{
 				ViewBag.Style = "govuk-button govuk-button--secondary";

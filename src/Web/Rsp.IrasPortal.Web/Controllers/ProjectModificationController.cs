@@ -33,6 +33,7 @@ public partial class ProjectModificationController
     IValidator<DateViewModel> dateViewModelValidator,
     IValidator<PlannedEndDateOrganisationTypeViewModel> organisationTypeValidator,
     IValidator<AffectingOrganisationsViewModel> affectingOrgsValidator,
+    IValidator<QuestionnaireViewModel> validator,
     IBlobStorageService blobStorageService
 ) : Controller
 

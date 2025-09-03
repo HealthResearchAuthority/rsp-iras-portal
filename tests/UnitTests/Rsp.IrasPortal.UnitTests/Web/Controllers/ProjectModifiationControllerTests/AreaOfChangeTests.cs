@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
@@ -101,6 +102,29 @@ public class AreaOfChangeTests : TestServiceBase<ProjectModificationController>
             .Setup(s => s.GetVersions())
             .ReturnsAsync(versionsResponse);
 
+        var questionSetResponse = new ServiceResponse<Application.DTOs.CmsQuestionset.CmsQuestionSetResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new Application.DTOs.CmsQuestionset.CmsQuestionSetResponse
+            {
+                Version = publishedVersionId,
+            }
+        };
+
+        Mocker
+            .GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(questionSetResponse);
+
+        Mocker
+            .GetMock<ICmsQuestionsetService>()
+            .Setup(c => c.GetInitialModificationQuestions())
+            .ReturnsAsync(new ServiceResponse<StartingQuestionsDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StartingQuestionsDto()
+            });
+
         // Act
         var result = await Sut.AreaOfChange();
 
@@ -168,6 +192,29 @@ public class AreaOfChangeTests : TestServiceBase<ProjectModificationController>
             .GetMock<IQuestionSetService>()
             .Setup(s => s.GetVersions())
             .ReturnsAsync(versionsResponse);
+
+        var questionSetResponse = new ServiceResponse<Application.DTOs.CmsQuestionset.CmsQuestionSetResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new Application.DTOs.CmsQuestionset.CmsQuestionSetResponse
+            {
+                Version = publishedVersionId,
+            }
+        };
+
+        Mocker
+            .GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(questionSetResponse);
+
+        Mocker
+            .GetMock<ICmsQuestionsetService>()
+            .Setup(c => c.GetInitialModificationQuestions())
+            .ReturnsAsync(new ServiceResponse<StartingQuestionsDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StartingQuestionsDto()
+            });
 
         // Act
         var result = await Sut.AreaOfChange();
