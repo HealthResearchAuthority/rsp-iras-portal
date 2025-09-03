@@ -154,4 +154,21 @@ public class ProjectModificationsService(IProjectModificationsServiceClient proj
 
         return apiResponse.ToServiceResponse();
     }
+
+    /// <summary>
+    /// Retrieves modifications by a list of modification IDs.
+    /// </summary>
+    /// <param name="Ids">A list of IDs relating to modifications</param>
+    /// <returns>A list of modifications corresponding to the provided IDs</returns>
+    public async Task<ServiceResponse<GetModificationsResponse>> GetModificationsByIds(List<string> Ids)
+    {
+        var apiResponse = await projectModificationsServiceClient.GetModificationsByIds(Ids);
+        return apiResponse.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse> AssignModificationsToReviewer(List<string> modificationIds, string reviewerId)
+    {
+        var apiResponse = await projectModificationsServiceClient.AssignModificationsToReviewer(modificationIds, reviewerId);
+        return apiResponse.ToServiceResponse();
+    }
 }
