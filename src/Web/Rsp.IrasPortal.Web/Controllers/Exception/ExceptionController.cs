@@ -2,15 +2,17 @@
 
 namespace Rsp.IrasPortal.Web.Controllers.Exceptions;
 
-[Route("[controller]/[action]", Name = "exc:[action]")]
-public class ExceptionsController(ILogger<ExceptionsController> logger) : Controller
+[Route("[controller]")]
+public class ExceptionController(ILogger<ExceptionController> logger) : Controller
 {
+    [HttpGet(Name = "exc:Index")]
     public IActionResult Index(string exceptionId)
     {
         ViewData["exceptionId"] = exceptionId;
-        return View();
+        return View("Exception");
     }
 
+    [HttpPost("ServiceException", Name = "exc:ServiceException")]
     public IActionResult ServiceException(ProblemDetails problemDetails)
     {
         var exceptionId = Guid.NewGuid().ToString();
@@ -21,6 +23,7 @@ public class ExceptionsController(ILogger<ExceptionsController> logger) : Contro
         return RedirectToAction(nameof(Index), new { exceptionId });
     }
 
+    [HttpGet("NotFound", Name = "exc:NotFound")]
     public IActionResult NotFound()
     {
         throw new NotImplementedException();

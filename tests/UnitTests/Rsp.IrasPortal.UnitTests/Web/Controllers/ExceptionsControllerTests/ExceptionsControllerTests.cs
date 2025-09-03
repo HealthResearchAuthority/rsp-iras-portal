@@ -10,8 +10,8 @@ public class ExceptionsControllerTests
     public void Index_ShouldSetViewDataAndReturnView()
     {
         // Arrange
-        var loggerMock = new Mock<ILogger<ExceptionsController>>();
-        var controller = new ExceptionsController(loggerMock.Object);
+        var loggerMock = new Mock<ILogger<ExceptionController>>();
+        var controller = new ExceptionController(loggerMock.Object);
 
         var exceptionId = "test-exception-id";
 
@@ -27,8 +27,8 @@ public class ExceptionsControllerTests
     public void ServiceException_ShouldLogAndRedirectToIndex()
     {
         // Arrange
-        var loggerMock = new Mock<ILogger<ExceptionsController>>();
-        var controller = new ExceptionsController(loggerMock.Object);
+        var loggerMock = new Mock<ILogger<ExceptionController>>();
+        var controller = new ExceptionController(loggerMock.Object);
 
         var problemDetails = new Microsoft.AspNetCore.Mvc.ProblemDetails
         {
