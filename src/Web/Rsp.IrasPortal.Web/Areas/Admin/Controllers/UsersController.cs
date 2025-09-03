@@ -731,6 +731,9 @@ public class UsersController(
         // Clear any saved filters from session
         HttpContext.Session.Remove(SessionKeys.UsersSearch);
 
+        // Save the current search filters to the session
+        HttpContext.Session.SetString(SessionKeys.UsersSearch, JsonSerializer.Serialize(cleanedSearch));
+
         return RedirectToRoute("admin:users", new
         {
             pageNumber = 1,

@@ -583,6 +583,9 @@ public class ReviewBodyController(
         // Clear any saved filters from session
         HttpContext.Session.Remove(SessionKeys.ReviewBodiesSearch);
 
+        // Save the current search filters to the session
+        HttpContext.Session.SetString(SessionKeys.ReviewBodiesSearch, JsonSerializer.Serialize(cleanedSearch));
+
         return RedirectToRoute("rbc:viewreviewbodies", new
         {
             pageNumber = 1,
