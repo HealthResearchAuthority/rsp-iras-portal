@@ -74,6 +74,13 @@ public interface IProjectModificationsService : IInterceptable
    );
 
     /// <summary>
+    /// Retrieves modifications by a list of modification IDs.
+    /// </summary>
+    /// <param name="Ids">A list of IDs relating to modifications</param>
+    /// <returns>A list of modifications corresponding to the provided IDs</returns>
+    Task<ServiceResponse<GetModificationsResponse>> GetModificationsByIds(List<string> Ids);
+
+    /// <summary>
     /// Creates a new project modification.
     /// </summary>
     /// <param name="projectModificationRequest">The request object containing details for the new modification.</param>
@@ -104,4 +111,6 @@ public interface IProjectModificationsService : IInterceptable
     /// containing a <see cref="ServiceResponse"/> indicating success or failure of the creation process.
     /// </returns>
     Task<ServiceResponse> CreateDocumentModification(List<ProjectModificationDocumentRequest> projectModificationDocumentRequest);
+
+    Task<ServiceResponse> AssignModificationsToReviewer(List<string> modificationIds, string reviewerId);
 }

@@ -53,4 +53,6 @@ public struct TempDataKeys
     public const string ShowNotificationBanner = "td:show_notification_banner";
     public const string OrganisationSearchModel = "td:organisationSearchModel";
     public const string Status = "td:status";
+    public const string SelectedProjectModifications = "td:selected_project_modifications";
+    public const string ModificationTasklistReviewerId = "td:reviewer_id";
 }

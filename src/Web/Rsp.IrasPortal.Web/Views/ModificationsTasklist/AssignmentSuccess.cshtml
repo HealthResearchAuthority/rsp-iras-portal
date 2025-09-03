@@ -1,0 +1,20 @@
+﻿@using Rsp.IrasPortal.Domain.Identity
+@model User
+
+@{
+    ViewData["Title"] = "Modifications successfully assigned - Modifications - Approvals - System Administration";
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <div class="govuk-panel govuk-panel--confirmation">
+            <h1 class="govuk-panel__title">
+                Modifications have been successfully assigned
+            </h1>
+        </div>
+
+        <h2 class="govuk-heading-m">What happens next</h2>
+        <p class="govuk-body">@Model.GivenName @Model.FamilyName will be notified that they have been assigned modifications</p>
+        <a asp-route="tasklist:index" class="govuk-link">Back to Tasklist</a>
+    </div>
+</div>

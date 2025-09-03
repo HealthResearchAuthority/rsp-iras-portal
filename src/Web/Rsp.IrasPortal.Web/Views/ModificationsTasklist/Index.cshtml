@@ -9,11 +9,10 @@
 @using Rsp.IrasPortal.Web.TagHelpers.Models
 @model ModificationsTasklistViewModel
 @inject IFeatureManager featureManager
-@using Rsp.IrasPortal.Application.Constants
 
 @{
-	ViewData["Title"] = "Modifications ready to assign - Modifications - Approvals - System Administration";
-	var errorSummaryTitle = "There is a problem";
+    ViewData["Title"] = "Modifications ready to assign - Modifications - Approvals - System Administration";
+    var errorSummaryTitle = "There is a problem";
 }
 
 @section BackNavigation {
@@ -21,174 +20,174 @@
 }
 
 @functions {
-	private bool HasFilterErrors()
-	{
-		return ViewData.ModelState
-			.Where(kvp => kvp.Key != ModificationsTasklist.ModificationToAssignNotSelected && kvp.Value != null)
-			.SelectMany(kvp => kvp.Value!.Errors)
-			.Any();
-	}
+    private bool HasFilterErrors()
+    {
+        return ViewData.ModelState
+            .Where(kvp => kvp.Key != ModificationsTasklist.ModificationToAssignNotSelected && kvp.Value != null)
+            .SelectMany(kvp => kvp.Value!.Errors)
+            .Any();
+    }
 
-	private bool CanOpenPanelForField(string fieldName)
-	{
-		return ViewData.ModelState.TryGetValue(fieldName, out var state) && HasFilterErrors();
-	}
+    private bool CanOpenPanelForField(string fieldName)
+    {
+        return ViewData.ModelState.TryGetValue(fieldName, out var state) && HasFilterErrors();
+    }
 
-	private bool CanOpenPanelForAnyField(params string[] fieldNames)
-	{
-		return fieldNames.Any(CanOpenPanelForField);
-	}
+    private bool CanOpenPanelForAnyField(params string[] fieldNames)
+    {
+        return fieldNames.Any(CanOpenPanelForField);
+    }
 }
 
 <div class="govuk-grid-row">
-	<div class="govuk-grid-column-two-thirds search-filter-bottom-border">
-		<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
-		<h2 class="govuk-heading-xl" id="title">Modifications ready to assign</h2>
-		<p class="govuk-body">
-			This page shows all the modifications that are ready for you to assign, where the lead nation is England.
-		</p>		
+    <div class="govuk-grid-column-two-thirds search-filter-bottom-border">
+        <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
+        <h2 class="govuk-heading-xl" id="title">Modifications ready to assign</h2>
+        <p class="govuk-body">
+            This page shows all the modifications that are ready for you to assign, where the lead nation is England.
+        </p>		
 
-		@if (!Model.EmptySearchPerformed || (Model.Modifications != null && Model.Modifications.Any()))
-		{
+        @if (!Model.EmptySearchPerformed || (Model.Modifications != null && Model.Modifications.Any()))
+        {
             <p class="govuk-body">
-			Enter the IRAS ID to search for all modifications received, including those submitted for notification only
-		    </p>
-			<form asp-route="tasklist:applyfilters" method="post" class="govuk-form-group govuk-!-margin-bottom-0">
-				<div class="search-flex-container">
-					<span id="iras-id-label" class="govuk-visually-hidden">IRAS ID</span>
-					<input class="govuk-input search-flex-input" asp-for="Search.IrasId" type="text" aria-labelledby="iras-id-label" />
-					<div class="search-flex-button">
-						<button type="submit" class="govuk-button">Search</button>
-					</div>
-				</div>
+            Enter the IRAS ID to search for all modifications received, including those submitted for notification only
+            </p>
+            <form asp-route="tasklist:applyfilters" method="post" class="govuk-form-group govuk-!-margin-bottom-0">
+                <div class="search-flex-container">
+                    <span id="iras-id-label" class="govuk-visually-hidden">IRAS ID</span>
+                    <input class="govuk-input search-flex-input" asp-for="Search.IrasId" type="text" aria-labelledby="iras-id-label" />
+                    <div class="search-flex-button">
+                        <button type="submit" class="govuk-button">Search</button>
+                    </div>
+                </div>
 
-				<!-- Filter Panel -->
-				<div class="search-filter-panel">
-					<details class="search-filter-toggle" @(HasFilterErrors() ? "open" : null)>
-						<summary class="search-filter-panel__header"
-								 tabindex="-1"
-								 role="button"
-								 aria-controls="filter-panel"
-								 aria-expanded="@(HasFilterErrors().ToString().ToLower())">
+                <!-- Filter Panel -->
+                <div class="search-filter-panel">
+                    <details class="search-filter-toggle" @(HasFilterErrors() ? "open" : null)>
+                        <summary class="search-filter-panel__header"
+                                 tabindex="-1"
+                                 role="button"
+                                 aria-controls="filter-panel"
+                                 aria-expanded="@(HasFilterErrors().ToString().ToLower())">
 
-							<span class="search-filter-panel__button-inner govuk-link"
-								  tabindex="0">
-								Advanced filters
-							</span>
+                            <span class="search-filter-panel__button-inner govuk-link"
+                                  tabindex="0">
+                                Advanced filters
+                            </span>
 
-							<span class="search-filter-panel__count" aria-hidden="true" tabindex="-1">
-								@(Model.Pagination?.TotalCount ?? 0) results
-							</span>
-						</summary>
+                            <span class="search-filter-panel__count" aria-hidden="true" tabindex="-1">
+                                @(Model.Pagination?.TotalCount ?? 0) results
+                            </span>
+                        </summary>
 
-						<div class="search-filter-panel__content" id="filter-panel" role="region" aria-labelledby="toggle-filter">
-							<!-- Date submitted -->
-							<details class="search-filter-section" @(CanOpenPanelForAnyField("FromDate", "ToDate") ? "open" : null)>
-								<summary class="search-filter-section__summary">
-									<h2 class="search-filter-section__summary-heading">Date submitted</h2>
-								</summary>
-								<div class="search-filter-section__content">
-									<div class="govuk-form-group govuk-!-margin-bottom-2">
-										<fieldset class="govuk-fieldset">
-											<rsp-gds-date-input asp-for="Search.FromDate"
-																day-name="Search.FromDay"
-																day-value="@Model.Search.FromDay"
-																month-name="Search.FromMonth"
-																month-value="@Model.Search.FromMonth"
-																year-name="Search.FromYear"
-																year-value="@Model.Search.FromYear"
-																label-text="Enter the date you want to search from"
-																hint-html="For example, 28 February 2023"
-																error-key="FromDate"
-																id="FromDate"
-																label-html-class="font-weight-none" />
+                        <div class="search-filter-panel__content" id="filter-panel" role="region" aria-labelledby="toggle-filter">
+                            <!-- Date submitted -->
+                            <details class="search-filter-section" @(CanOpenPanelForAnyField("FromDate", "ToDate") ? "open" : null)>
+                                <summary class="search-filter-section__summary">
+                                    <h2 class="search-filter-section__summary-heading">Date submitted</h2>
+                                </summary>
+                                <div class="search-filter-section__content">
+                                    <div class="govuk-form-group govuk-!-margin-bottom-2">
+                                        <fieldset class="govuk-fieldset">
+                                            <rsp-gds-date-input asp-for="Search.FromDate"
+                                                                day-name="Search.FromDay"
+                                                                day-value="@Model.Search.FromDay"
+                                                                month-name="Search.FromMonth"
+                                                                month-value="@Model.Search.FromMonth"
+                                                                year-name="Search.FromYear"
+                                                                year-value="@Model.Search.FromYear"
+                                                                label-text="Enter the date you want to search from"
+                                                                hint-html="For example, 28 February 2023"
+                                                                error-key="FromDate"
+                                                                id="FromDate"
+                                                                label-html-class="font-weight-none" />
 
-											<rsp-gds-date-input asp-for="Search.ToDate"
-																day-name="Search.ToDay"
-																day-value="@Model.Search.ToDay"
-																month-name="Search.ToMonth"
-																month-value="@Model.Search.ToMonth"
-																year-name="Search.ToYear"
-																year-value="@Model.Search.ToYear"
-																label-text="Enter the date you want to search to"
-																hint-html="For example, 12 October 2024"
-																error-key="ToDate"
-																id="ToDate"
-																label-html-class="font-weight-none" />
-										</fieldset>
-									</div>
-								</div>
-							</details>
+                                            <rsp-gds-date-input asp-for="Search.ToDate"
+                                                                day-name="Search.ToDay"
+                                                                day-value="@Model.Search.ToDay"
+                                                                month-name="Search.ToMonth"
+                                                                month-value="@Model.Search.ToMonth"
+                                                                year-name="Search.ToYear"
+                                                                year-value="@Model.Search.ToYear"
+                                                                label-text="Enter the date you want to search to"
+                                                                hint-html="For example, 12 October 2024"
+                                                                error-key="ToDate"
+                                                                id="ToDate"
+                                                                label-html-class="font-weight-none" />
+                                        </fieldset>
+                                    </div>
+                                </div>
+                            </details>
 
-							<!-- Days since submission -->
-							<details class="search-filter-section" @(CanOpenPanelForAnyField("FromSubmission", "ToSubmission") ? "open" : null)>
-								<summary class="search-filter-section__summary">
-									<h2 class="search-filter-section__summary-heading">Days since submission</h2>
-								</summary>
-								<div class="search-filter-section__content">
-									<p class="govuk-body">Enter the number of days you want to search from</p>
-									<p class="govuk-hint govuk-!-margin-bottom-0">For example, 23 to 45 days</p>
-									<div class="govuk-form-group govuk-!-margin-bottom-2">
-										<div class="display-inline-block govuk-!-padding-right-4">
-											<rsp-gds-input asp-for="Search.FromDaysSinceSubmission" width-class="govuk-input--width-4" label-text=" " label-html-class="font-weight-none" />
-										</div>
-										<div class="govuk-body govuk-!-padding-top-7 govuk-!-margin-bottom-0 govuk-!-padding-right-4 display-inline-block">
-											to
-										</div>
-										<div class="display-inline-block govuk-!-padding-right-4">
-											<rsp-gds-input asp-for="Search.ToDaysSinceSubmission" width-class="govuk-input--width-4" label-text=" " label-html-class="font-weight-none" />
-										</div>
-										<div class="govuk-body govuk-!-padding-top-7 govuk-!-margin-bottom-0 display-inline-block">
-											days
-										</div>
-									</div>
-								</div>
-							</details>
+                            <!-- Days since submission -->
+                            <details class="search-filter-section" @(CanOpenPanelForAnyField("FromSubmission", "ToSubmission") ? "open" : null)>
+                                <summary class="search-filter-section__summary">
+                                    <h2 class="search-filter-section__summary-heading">Days since submission</h2>
+                                </summary>
+                                <div class="search-filter-section__content">
+                                    <p class="govuk-body">Enter the number of days you want to search from</p>
+                                    <p class="govuk-hint govuk-!-margin-bottom-0">For example, 23 to 45 days</p>
+                                    <div class="govuk-form-group govuk-!-margin-bottom-2">
+                                        <div class="display-inline-block govuk-!-padding-right-4">
+                                            <rsp-gds-input asp-for="Search.FromDaysSinceSubmission" width-class="govuk-input--width-4" label-text=" " label-html-class="font-weight-none" />
+                                        </div>
+                                        <div class="govuk-body govuk-!-padding-top-7 govuk-!-margin-bottom-0 govuk-!-padding-right-4 display-inline-block">
+                                            to
+                                        </div>
+                                        <div class="display-inline-block govuk-!-padding-right-4">
+                                            <rsp-gds-input asp-for="Search.ToDaysSinceSubmission" width-class="govuk-input--width-4" label-text=" " label-html-class="font-weight-none" />
+                                        </div>
+                                        <div class="govuk-body govuk-!-padding-top-7 govuk-!-margin-bottom-0 display-inline-block">
+                                            days
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
 
-							<!-- Short project title -->
-							<details class="search-filter-section" @(CanOpenPanelForField("ShortProjectTitle") ? "open" : null)>
-								<summary class="search-filter-section__summary">
-									<h2 class="search-filter-section__summary-heading">Short project title</h2>
-								</summary>
-								<div class="search-filter-section__content">
-									<div class="govuk-form-group govuk-!-margin-bottom-2">
-										<fieldset class="govuk-fieldset">
-											<rsp-gds-input asp-for="Search.ShortProjectTitle" label-text="Enter the name of the short project title" width-class="govuk-!-width-three-quarters" label-html-class="font-weight-none" />
-										</fieldset>
-									</div>
-								</div>
-							</details>
+                            <!-- Short project title -->
+                            <details class="search-filter-section" @(CanOpenPanelForField("ShortProjectTitle") ? "open" : null)>
+                                <summary class="search-filter-section__summary">
+                                    <h2 class="search-filter-section__summary-heading">Short project title</h2>
+                                </summary>
+                                <div class="search-filter-section__content">
+                                    <div class="govuk-form-group govuk-!-margin-bottom-2">
+                                        <fieldset class="govuk-fieldset">
+                                            <rsp-gds-input asp-for="Search.ShortProjectTitle" label-text="Enter the name of the short project title" width-class="govuk-!-width-three-quarters" label-html-class="font-weight-none" />
+                                        </fieldset>
+                                    </div>
+                                </div>
+                            </details>
 
-							<!-- Apply -->
-							<div class="search-filter-panel__actions">
-								<button class="govuk-button search-filter-panel__action search-filter-panel__action--submit">Apply filters</button>
-							</div>
-						</div>
-					</details>
-				</div>
-			</form>
+                            <!-- Apply -->
+                            <div class="search-filter-panel__actions">
+                                <button class="govuk-button search-filter-panel__action search-filter-panel__action--submit">Apply filters</button>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </form>
 
-			<!-- Active Filters Panel -->
-			@if (Model.Search.Filters.Any())
-			{
-				<div class="search-filter-summary">
-					<h3 class="search-filter-summary__heading">Active filters</h3>
-					<ul class="search-filter-summary__remove-filters">
-						@foreach (var filter in Model.Search.Filters)
-						{
-							var filterKey = filter.Key;
-							var filterValues = filter.Value ?? [];
+            <!-- Active Filters Panel -->
+            @if (Model.Search.Filters.Any())
+            {
+                <div class="search-filter-summary">
+                    <h3 class="search-filter-summary__heading">Active filters</h3>
+                    <ul class="search-filter-summary__remove-filters">
+                        @foreach (var filter in Model.Search.Filters)
+                        {
+                            var filterKey = filter.Key;
+                            var filterValues = filter.Value ?? [];
 
-							foreach (var val in filterValues)
-							{
-								<li>
-									<a asp-route="tasklist:removefilter"
-									   asp-route-key="@filterKey"
-									   class="search-filter-summary__remove-filter">
-										<span class="search-filter-summary__remove-filter-text">
-											<span class="govuk-visually-hidden">Remove filter</span>
-											@if (filterKey.Contains("submission", StringComparison.OrdinalIgnoreCase)
-														||  filterKey.Contains("date submitted - from", StringComparison.OrdinalIgnoreCase)
+                            foreach (var val in filterValues)
+                            {
+                                <li>
+                                    <a asp-route="tasklist:removefilter"
+                                       asp-route-key="@filterKey"
+                                       class="search-filter-summary__remove-filter">
+                                        <span class="search-filter-summary__remove-filter-text">
+                                            <span class="govuk-visually-hidden">Remove filter</span>
+                                            @if (filterKey.Contains("submission", StringComparison.OrdinalIgnoreCase)
+                                                        ||  filterKey.Contains("date submitted - from", StringComparison.OrdinalIgnoreCase)
                                                      || filterKey.Contains("date submitted - to", StringComparison.OrdinalIgnoreCase))
                                                 {
                                                     @($"{filterKey} {val}")
@@ -197,147 +196,148 @@
                                                 {
                                                     @($"{filterKey} - {val}")
                                                 }
-										</span>
-									</a>
-								</li>
-							}
-						}
-					</ul>
-					<div>
-						<a asp-route="tasklist:clearfilters" class="search-filter-summary__clear-filters govuk-link govuk-link--no-visited-state">
-							Clear all filters
-						</a>
-					</div>
-				</div>
-			}
-		}
-	</div>
+                                        </span>
+                                    </a>
+                                </li>
+                            }
+                        }
+                    </ul>
+                    <div>
+                        <a asp-route="tasklist:clearfilters" class="search-filter-summary__clear-filters govuk-link govuk-link--no-visited-state">
+                            Clear all filters
+                        </a>
+                    </div>
+                </div>
+            }
+        }
+    </div>
 </div>
 
 @if (Model.Modifications == null || !Model.Modifications.Any())
 {
-	@if (Model.EmptySearchPerformed)
-	{
-		<hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
-		<div class="govuk-grid-row">
-			<div class="govuk-grid-column-two-thirds">
-				<h2 class="govuk-heading-l">No modifications to assign</h2>
-				<p class="govuk-body mb-0">This may be because:</p>
-				<ul class="govuk-list govuk-list--bullet">
-					<li>you have already assigned all of the modifications</li>
-					<li>there are no new modifications that have been submitted that need to be assigned</li>
-				</ul>
-			</div>
-		</div>
-	}
-	else
-	{
-		<div class="govuk-grid-row">
-			<div class="govuk-grid-column-two-thirds search-filter-error-border">
-				<h2 class="govuk-heading-l">There are no matching results</h2>
-				<p class="govuk-body">Improve your search results by:</p>
-				<ul class="govuk-list govuk-list--bullet">
-					<li>removing filters</li>
-					<li>double-checking your spelling</li>
-					<li>using fewer keywords</li>
-					<li>searching for something less specific</li>
-				</ul>
-			</div>
-		</div>
-	}
+    @if (Model.EmptySearchPerformed)
+    {
+        <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <h2 class="govuk-heading-l">No modifications to assign</h2>
+                <p class="govuk-body mb-0">This may be because:</p>
+                <ul class="govuk-list govuk-list--bullet">
+                    <li>you have already assigned all of the modifications</li>
+                    <li>there are no new modifications that have been submitted that need to be assigned</li>
+                </ul>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds search-filter-error-border">
+                <h2 class="govuk-heading-l">There are no matching results</h2>
+                <p class="govuk-body">Improve your search results by:</p>
+                <ul class="govuk-list govuk-list--bullet">
+                    <li>removing filters</li>
+                    <li>double-checking your spelling</li>
+                    <li>using fewer keywords</li>
+                    <li>searching for something less specific</li>
+                </ul>
+            </div>
+        </div>
+    }
 }
 else
 {
-	<div class="govuk-grid-row">
-		<div class="govuk-grid-column-full">
-			<div class="govuk-table-wrapper">
-				<table class="govuk-table modifications-tasklist-table" id="modificationsTasklistTable">
-					<thead class="govuk-table__head">
-						<tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
-							<th scope="col" class="govuk-table__header govuk-!-text-align-right checkbox-cell">
-								<div class="govuk-checkboxes__item govuk-checkboxes--small">
-									<input id="select-all-modifications" name="" class="govuk-checkboxes__input select-all-modifications" type="checkbox">
-									<label for="select-all-modifications" class="govuk-label govuk-checkboxes__label"></label>
-								</div>
-							</th>
-							@{
-								var sortableHeaders = new[]
-								{
-												new { Field = nameof(ModificationsModel.ModificationId), Label = "Modification ID" },
-												new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
-												new { Field = nameof(ModificationsModel.CreatedAt), Label = "Date submitted" },
-												new { Field = nameof(ModificationsModel.DaysSinceSubmission), Label = "Days since submission" }
-												};
-								var tableId = "modificationsTasklistTable";
-							}
-							@foreach (var header in sortableHeaders)
-							{
-								var sortableHeaderModel = new SortableHeaderModel
-								{
-									FieldName = header.Field,
-									DisplayText = header.Label,
-									CurrentSortField = Model.Pagination?.SortField,
-									CurrentSortDirection = Model.Pagination?.SortDirection,
-									TableId = tableId,
-								};
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+            <div class="govuk-table-wrapper">
+                <table class="govuk-table modifications-tasklist-table" id="modificationsTasklistTable">
+                    <thead class="govuk-table__head">
+                        <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+                            <th scope="col" class="govuk-table__header govuk-!-text-align-right checkbox-cell">
+                                <div class="govuk-checkboxes__item govuk-checkboxes--small">
+                                    <input id="select-all-modifications" name="" class="govuk-checkboxes__input select-all-modifications" type="checkbox">
+                                    <label for="select-all-modifications" class="govuk-label govuk-checkboxes__label"></label>
+                                </div>
+                            </th>
+                            @{
+                                var sortableHeaders = new[]
+                                {
+                                    new { Field = nameof(ModificationsModel.ModificationId), Label = "Modification ID" },
+                                    new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
+                                    new { Field = nameof(ModificationsModel.CreatedAt), Label = "Date submitted" },
+                                    new { Field = nameof(ModificationsModel.DaysSinceSubmission), Label = "Days since submission" }
+                                };
+                                var tableId = "modificationsTasklistTable";
+                            }
+                            @foreach (var header in sortableHeaders)
+                            {
+                                var sortableHeaderModel = new SortableHeaderModel
+                                {
+                                    FieldName = header.Field,
+                                    DisplayText = header.Label,
+                                    CurrentSortField = Model.Pagination?.SortField,
+                                    CurrentSortDirection = Model.Pagination?.SortDirection,
+                                    TableId = tableId,
+                                    ComplexSearchQuery = Model.Search
+                                };
 
-								<th scope="col" class="govuk-table__header govuk-table__header-sortable">
-									<partial name="_SortableHeaderButton" model="@sortableHeaderModel" />
-								</th>
-							}
-						</tr>
-					</thead>
-					<form method="get" id="tasklist-selection">
-						<input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
-						<input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
+                                <th scope="col" class="govuk-table__header govuk-table__header-sortable">
+                                    <partial name="_SortableHeaderButton" model="@sortableHeaderModel" />
+                                </th>
+                            }
+                        </tr>
+                    </thead>
+                    <form method="get" id="tasklist-selection">
+                        <!--Keep track of selected modifications that are not displayed on this page for continuity-->
+                        @foreach (var selectedMod in Model.SelectedModificationIds.Except(Model.Modifications.Select(m => m.Modification.ModificationId)))
+                        {
+                            <input hidden="hidden" type="text" value="@selectedMod" name="selectedModificationIds" />
+                        }
 
-						<!--Keep track of selected modifications that are not displayed on this page for continuity-->
-						@foreach (var selectedMod in Model.SelectedModificationIds.Except(Model.Modifications.Select(m => m.Modification.ModificationId)))
-						{
-							<input hidden="hidden" type="text" value="@selectedMod" name="selectedModificationIds" />
-						}
-					<tbody class="govuk-table__body govuk-body-s">
-						@{
-							foreach (var modification in Model.Modifications)
-							{
-								var daysText = modification.Modification.DaysSinceSubmission == 1 ? "day" : "days";
+                        <tbody class="govuk-table__body govuk-body-s">
+                            @foreach (var modification in Model.Modifications)
+                            {
+                                var daysText = modification.Modification.DaysSinceSubmission == 1 ? "day" : "days";
 
-								<tr class="govuk-table__row">
-									<td class="govuk-table__cell checkbox-cell">
-										<div class="govuk-checkboxes__item govuk-checkboxes--small">
-											<input id="@modification.Modification.ModificationId"
-												   name="selectedModificationIds"
-												   value="@modification.Modification.ModificationId"
-												   class="govuk-checkboxes__input child-checkbox"
-												   type="checkbox"
-												   @(modification.IsSelected ? "checked" : "")>
-											<label for="@modification.Modification.ModificationId" class="govuk-label govuk-checkboxes__label modification-checkbox-label"></label>
-										</div>
-									</td>
-									<td class="govuk-table__cell">@modification.Modification.ModificationId</td>
-									<td class="govuk-table__cell"><a href="?@modification.Modification.ModificationId" class="govuk-link"><strong>@modification.Modification.ShortProjectTitle</strong></a></td>
-									<td class="govuk-table__cell">@modification.Modification.CreatedAt.ToString("dd MMM yyyy")</td>
-									<td class="govuk-table__cell">@modification.Modification.DaysSinceSubmission @daysText</td>
-								</tr>
-							}
-						}
-					</tbody>
-					</form>
-				</table>
-			</div>
-			<partial name="_PaginationForm" model="@Model.Pagination" />
-			<div class="search-flex-button">
-				<button type="submit" class="govuk-button" asp-route="tasklist:AssignModifications" form="tasklist-selection">Continue to assign modifications</button>
-			</div>
-		</div>
-	</div>
+                                <tr class="govuk-table__row">
+                                    <td class="govuk-table__cell checkbox-cell">
+                                        <div class="govuk-checkboxes__item govuk-checkboxes--small">
+                                            <input id="@modification.Modification.ModificationId"
+                                                    name="selectedModificationIds"
+                                                    value="@modification.Modification.Id"
+                                                    class="govuk-checkboxes__input child-checkbox"
+                                                    type="checkbox"
+                                                    @(modification.IsSelected ? "checked" : "")>
+                                            <label for="@modification.Modification.ModificationId" class="govuk-label govuk-checkboxes__label modification-checkbox-label"></label>
+                                        </div>
+                                    </td>
+                                    <td class="govuk-table__cell">@modification.Modification.ModificationId</td>
+                                    <td class="govuk-table__cell">
+                                        <a href="?@modification.Modification.ModificationId" class="govuk-link">
+                                            <strong>@modification.Modification.ShortProjectTitle</strong>
+                                        </a>
+                                    </td>
+                                    <td class="govuk-table__cell">@modification.Modification.CreatedAt.ToString("dd MMM yyyy")</td>
+                                    <td class="govuk-table__cell">@modification.Modification.DaysSinceSubmission @daysText</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </form>
+                </table>
+            </div>
+            <partial name="_PaginationForm" model="@Model.Pagination" />
+            <div class="search-flex-button">
+                <button type="submit" class="govuk-button" asp-route="tasklist:AssignModifications" form="tasklist-selection">Continue to assign modifications</button>
+            </div>
+        </div>
+    </div>
 }
 
 <!--Use javascript only when progressive enhancement feature is enabled-->
 @if (await featureManager.IsEnabledAsync(Features.ProgressiveEnhancement))
 {
-	@section FooterResources {
-		<script src="~/lib/jquery/dist/jquery.js"></script>
-		<script src="~/js/modificationsTasklist.js"></script>
-	}
+    @section FooterResources {
+        <script src="~/lib/jquery/dist/jquery.js"></script>
+        <script src="~/js/modificationsTasklist.js"></script>
+    }
 }
