@@ -93,6 +93,14 @@
 
 			<govuk-fieldset class="sections">
 				<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
+				
+				<input type="hidden" asp-for="@Model.ShortTitle" />
+				<input type="hidden" asp-for="@Model.IrasId" />
+				<input type="hidden" asp-for="@Model.ModificationIdentifier" />
+				<input type="hidden" asp-for="@Model.DocumentId" />
+				<input type="hidden" asp-for="@Model.FileName" />
+				<input type="hidden" asp-for="@Model.FileSize" />
+				<input type="hidden" asp-for="@Model.DocumentStoragePath" />
 
 				@foreach (var question in Model.Questionnaire.Questions)
 				{
