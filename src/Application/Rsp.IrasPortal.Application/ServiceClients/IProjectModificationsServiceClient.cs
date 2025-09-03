@@ -78,6 +78,14 @@ public interface IProjectModificationsServiceClient
     );
 
     /// <summary>
+    /// Retrieves modifications by a list of modification IDs.
+    /// </summary>
+    /// <param name="Ids">A list of IDs relating to modifications</param>
+    /// <returns>A list of modifications corresponding to the provided IDs</returns>
+    [Post("/projectmodifications/getmodificationsbyids")]
+    public Task<ApiResponse<GetModificationsResponse>> GetModificationsByIds(List<string> Ids);
+
+    /// <summary>
     /// Creates a new project modification.
     /// </summary>
     /// <param name="projectModificationRequest">The request object containing details for the new project modification.</param>
@@ -111,4 +119,13 @@ public interface IProjectModificationsServiceClient
     /// </returns>
     [Post("/projectmodifications/createdocument")]
     public Task<IApiResponse> CreateModificationDocument(List<ProjectModificationDocumentRequest> projectModificationChangeRequest);
+
+    /// <summary>
+    /// Assigns a list of modifications to a study-wide reviewer.
+    /// </summary>
+    /// <param name="modificationIds">A list of modification IDs</param>
+    /// <param name="reviewerId">The user ID of the study-wide reviewer</param>
+    /// <returns></returns>
+    [Post("/projectmodifications/assignmodificationstoreviewer")]
+    public Task<IApiResponse> AssignModificationsToReviewer(List<string> modificationIds, string reviewerId);
 }

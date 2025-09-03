@@ -2,6 +2,8 @@
 
 public class ModificationsModel
 {
+    public string Id { get; set; } = null!;
+    public string ProjectRecordId { get; set; } = null!;
     public string ModificationId { get; set; } = null!;
     public string ShortProjectTitle { get; set; } = null!;
     public string? ModificationType { get; set; } = null!;

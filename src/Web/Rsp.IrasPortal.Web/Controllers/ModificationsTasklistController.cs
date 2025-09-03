@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
@@ -13,9 +14,12 @@ namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "tasklist:[action]")]
 [Authorize(Roles = "system_administrator,workflow_co-ordinator,team_manager,study-wide_reviewer")]
-public class ModificationsTasklistController(IProjectModificationsService projectModificationsService, IValidator<ApprovalsSearchModel> validator) : Controller
+public class ModificationsTasklistController(
+    IProjectModificationsService projectModificationsService,
+    IUserManagementService userManagementService,
+    IValidator<ApprovalsSearchModel> validator) : Controller
 {
-    private const string ModificationToAssignNotSelectedErrorMessage = "You have not selected a modification to assign. Select at least one modification before you can continue.";
+    private const string ModificationToAssignNotSelectedErrorMessage = "Select at least one modification";
 
     [HttpGet]
     public async Task<IActionResult> Index(
@@ -82,6 +86,8 @@ public class ModificationsTasklistController(IProjectModificationsService projec
             {
                 Modification = new ModificationsModel
                 {
+                    Id = dto.Id,
+                    ProjectRecordId = dto.ProjectRecordId,
                     ModificationId = dto.ModificationId,
                     ShortProjectTitle = dto.ShortProjectTitle,
                     ModificationType = dto.ModificationType,
@@ -90,7 +96,7 @@ public class ModificationsTasklistController(IProjectModificationsService projec
                     SponsorOrganisation = dto.SponsorOrganisation,
                     CreatedAt = dto.CreatedAt
                 },
-                IsSelected = selectedModificationIds?.Contains(dto.ModificationId) == true
+                IsSelected = selectedModificationIds?.Contains(dto.Id) ?? false,
             })
             .ToList() ?? [];
 
@@ -107,17 +113,82 @@ public class ModificationsTasklistController(IProjectModificationsService projec
     [HttpGet]
     public async Task<IActionResult> AssignModifications(List<string> selectedModificationIds)
     {
-        if (selectedModificationIds == null || !selectedModificationIds.Any())
+        if (selectedModificationIds == null || selectedModificationIds.Count == 0)
         {
             ModelState.AddModelError(ModificationsTasklist.ModificationToAssignNotSelected, ModificationToAssignNotSelectedErrorMessage);
             TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
             return RedirectToAction(nameof(Index));
         }
-        else
+
+        var getModificationsResponse = await projectModificationsService.GetModificationsByIds(selectedModificationIds);
+
+        if (!getModificationsResponse.IsSuccessStatusCode)
         {
-            // logic for assigning modifications
-            throw new NotImplementedException();
+            ModelState.AddModelError(string.Empty, "There was a problem retrieving the selected modifications");
+            TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
+            return RedirectToAction(nameof(Index));
         }
+
+        var modifications = getModificationsResponse.Content?.Modifications?
+            .Select(dto => new ModificationsModel
+            {
+                Id = dto.Id,
+                ModificationId = dto.ModificationId,
+                ShortProjectTitle = dto.ShortProjectTitle,
+            })
+            .ToList() ?? [];
+
+        var getUsersResponse = await userManagementService.GetUsers(new SearchUserRequest
+        {
+            Role = ["043aca8e-f88e-473e-974c-262f846285ea"] // Search for users with Study-wide reviewer role
+        });
+
+        if (!getUsersResponse.IsSuccessStatusCode)
+        {
+            ModelState.AddModelError(string.Empty, "There was a problem retrieving the list of reviewers");
+            TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
+            return RedirectToAction(nameof(Index));
+        }
+
+        var reviewers = getUsersResponse.Content?.Users;
+
+        return View((modifications, reviewers));
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> AssignModifications(List<string> modificationIds, string reviewerId)
+    {
+        if (modificationIds == null || modificationIds.Count == 0 || string.IsNullOrEmpty(reviewerId))
+        {
+            ModelState.AddModelError(string.Empty, "There was a problem assigning the modifications");
+            TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
+            return RedirectToAction(nameof(Index));
+        }
+
+        var serviceResponse = await projectModificationsService.AssignModificationsToReviewer(modificationIds, reviewerId);
+
+        if (!serviceResponse.IsSuccessStatusCode)
+        {
+            ModelState.AddModelError(string.Empty, "There was a problem assigning the modifications");
+            TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
+            return RedirectToAction(nameof(Index));
+        }
+
+        TempData.TryAdd(TempDataKeys.ModificationTasklistReviewerId, reviewerId);
+
+        return RedirectToAction(nameof(AssignmentSuccess));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> AssignmentSuccess()
+    {
+        TempData.TryGetValue(TempDataKeys.ModificationTasklistReviewerId, out var reviewerId);
+
+        var getUserResponse = await userManagementService.GetUser(reviewerId?.ToString(), null);
+
+        var reviewer = getUserResponse.Content?.User;
+
+        return View(reviewer);
     }
 
     [HttpPost]
