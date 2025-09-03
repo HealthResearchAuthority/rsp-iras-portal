@@ -55,7 +55,7 @@
 <div class="govuk-grid-row">
 
 	<div class="govuk-grid-column-two-thirds">
-		<form method="post" class="govuk-form-group" asp-route-fromPagination="false">
+		<form method="post" class="govuk-form-group" asp-route="rbc:applyfilters" asp-route-fromPagination="false">
 			<label class="govuk-label" for="Search.SearchQuery">
 				<b>Find a review body</b>
 			</label>
@@ -68,7 +68,7 @@
 					   value="@(Model.Search?.SearchQuery ?? string.Empty)" />
 
 				<partial name="_SubmitButton"
-						 model="@("rbc:viewreviewbodies", "Search", new Dictionary<string, string>())" />
+						 model="@("rbc:applyfilters", "Search", new Dictionary<string, string>())" />
 			</div>
 			<input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize" />
 
@@ -205,7 +205,6 @@
 										CurrentSortField = Model.Pagination?.SortField,
 										CurrentSortDirection = Model.Pagination?.SortDirection,
 										TableId = tableId,
-										ComplexSearchQuery = Model.Search
 									};
 
 									<th scope="col" class="govuk-table__header govuk-table__header-sortable">
