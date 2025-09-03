@@ -906,3 +906,7 @@ button.govuk-pagination__item--current {
     display: flex;
     gap: 2rem
 }
+
+.govuk-label.govuk-label--s[for="MainChangesDescription"] {
+    font-weight: normal;
+}

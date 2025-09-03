@@ -30,6 +30,7 @@ public partial class ProjectModificationController
     IValidator<AreaOfChangeViewModel> areaofChangeValidator,
     IValidator<SearchOrganisationViewModel> searchOrganisationValidator,
     IValidator<DateViewModel> dateViewModelValidator,
+    IValidator<SponsorReferenceViewModel> sponsorReferenceViewModelValidator,
     IValidator<PlannedEndDateOrganisationTypeViewModel> organisationTypeValidator,
     IValidator<AffectingOrganisationsViewModel> affectingOrgsValidator,
     IBlobStorageService blobStorageService
@@ -394,6 +395,7 @@ public partial class ProjectModificationController
         // Store the name of the specific area of change in TempData for later use
         TempData[TempDataKeys.ProjectModification.AreaOfChangeText] = areaOfChange?.Name ?? string.Empty;
         TempData[TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = selectedChange?.Name ?? string.Empty;
+        TempData[TempDataKeys.ProjectModification.JourneyType] = selectedChange?.JourneyType ?? string.Empty;
         return selectedChange?.JourneyType;
     }
 

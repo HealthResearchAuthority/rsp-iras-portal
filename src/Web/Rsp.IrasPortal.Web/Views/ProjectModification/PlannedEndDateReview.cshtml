@@ -162,9 +162,9 @@
             </div>
         </dl>
 
-        <form method="post">
+        <form method="get">
             <div class="save-buttons">
-                <partial name="_SubmitButton" model="@("pov:postapproval", "Save and continue" , new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId })" />
+                <partial name="_SubmitButton" model="@("pmc:modificationdetailspage", "Save and continue" , new Dictionary<string, string>())" />
 
                 @{
                     ViewBag.Style = "govuk-button govuk-button--secondary";
