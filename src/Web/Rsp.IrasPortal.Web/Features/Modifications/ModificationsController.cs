@@ -26,7 +26,8 @@ public class ModificationsController
     IProjectModificationsService projectModificationsService,
     IRespondentService respondentService,
     ICmsQuestionsetService cmsQuestionsetService,
-    IValidator<AreaOfChangeViewModel> areaofChangeValidator
+    IValidator<AreaOfChangeViewModel> areaofChangeValidator,
+    IValidator<SponsorReferenceViewModel> sponsorReferenceViewModelValidator,
 ) : Controller
 
 {
