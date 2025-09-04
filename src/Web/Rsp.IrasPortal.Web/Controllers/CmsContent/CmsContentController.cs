@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.ServiceClients;
+using Rsp.IrasPortal.Application.Services;
 
 namespace Rsp.IrasPortal.Web.Controllers.CmsContent;
 
-public class CmsContentController(ICmsContentServiceClient cms) : Controller
+public class CmsContentController(ICmsContentService cms) : Controller
 {
     private static readonly string[] PathsToIgnore = { "jwks" };
 
