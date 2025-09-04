@@ -41,11 +41,6 @@ public class PaginationViewModel
     public string? SearchQuery { get; set; }
 
     /// <summary>
-    /// Gets or sets a complex object for advanced filtering.
-    /// </summary>
-    public object? ComplexSearchQuery { get; set; }
-
-    /// <summary>
     /// Name of the form being submitted.
     /// </summary>
     public string FormName { get; set; }

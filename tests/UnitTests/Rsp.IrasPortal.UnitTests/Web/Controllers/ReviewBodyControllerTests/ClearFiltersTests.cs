@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.UnitTests;
 using Rsp.IrasPortal.Web.Controllers;
 using Rsp.IrasPortal.Web.Models;
@@ -36,12 +37,8 @@ public class ClearFiltersTests : TestServiceBase<ReviewBodyController>
         redirect.RouteValues.ShouldContainKeyAndValue("pageSize", 20);
         redirect.RouteValues.ShouldContainKeyAndValue("fromPagination", true);
 
-        var complexSearchQuery = redirect.RouteValues["complexSearchQuery"]?.ToString();
-        complexSearchQuery.ShouldNotBeNull();
-
-        var deserialized = JsonSerializer.Deserialize<ReviewBodySearchModel>(complexSearchQuery!);
-        deserialized.ShouldNotBeNull();
-        deserialized!.SearchQuery.ShouldBeNull(); // No value was passed
+        var sessionJson = _http.Session.GetString(SessionKeys.ReviewBodiesSearch);
+        sessionJson.ShouldBeNullOrWhiteSpace();
     }
 
     [Fact]
@@ -61,11 +58,7 @@ public class ClearFiltersTests : TestServiceBase<ReviewBodyController>
         redirect.RouteValues.ShouldContainKeyAndValue("pageSize", 20);
         redirect.RouteValues.ShouldContainKeyAndValue("fromPagination", true);
 
-        var complexSearchQuery = redirect.RouteValues["complexSearchQuery"]?.ToString();
-        complexSearchQuery.ShouldNotBeNull();
-
-        var deserialized = JsonSerializer.Deserialize<ReviewBodySearchModel>(complexSearchQuery!);
-        deserialized.ShouldNotBeNull();
-        deserialized!.SearchQuery.ShouldBe(testQuery);
+        var sessionJson = _http.Session.GetString(SessionKeys.ReviewBodiesSearch);
+        sessionJson.ShouldBeNullOrWhiteSpace();
     }
 }
