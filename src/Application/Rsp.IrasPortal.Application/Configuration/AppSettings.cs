@@ -61,4 +61,14 @@ public class AppSettings
     /// Microsoft clarity project id
     /// </summary>
     public string? ClarityProjectId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the URI of the CMS
+    /// </summary>
+    public Uri CmsUrl { get; set; } = null!;
+
+    /// <summary>
+    /// Number of minutes the CMS content is cached
+    /// </summary>
+    public int? ContentCacheDurationMinutes { get; set; }
 }
