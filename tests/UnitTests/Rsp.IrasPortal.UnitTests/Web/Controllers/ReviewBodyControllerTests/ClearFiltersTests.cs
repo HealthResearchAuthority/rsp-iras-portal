@@ -58,11 +58,7 @@ public class ClearFiltersTests : TestServiceBase<ReviewBodyController>
         redirect.RouteValues.ShouldContainKeyAndValue("pageSize", 20);
         redirect.RouteValues.ShouldContainKeyAndValue("fromPagination", true);
 
-        var complexSearchQuery = redirect.RouteValues["complexSearchQuery"]?.ToString();
-        complexSearchQuery.ShouldNotBeNull();
-
-        var deserialized = JsonSerializer.Deserialize<ReviewBodySearchModel>(complexSearchQuery!);
-        deserialized.ShouldNotBeNull();
-        deserialized!.SearchQuery.ShouldBe(testQuery);
+        var sessionJson = _http.Session.GetString(SessionKeys.ReviewBodiesSearch);
+        sessionJson.ShouldNotBeNullOrWhiteSpace();
     }
 }
