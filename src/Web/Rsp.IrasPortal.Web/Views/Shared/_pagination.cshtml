@@ -23,7 +23,6 @@
 		   asp-route-sortDirection="@Model.SortDirection"
 		   asp-route-sortField="@Model.SortField"
            asp-route-fromPagination="true"
-		   asp-route-complexSearchQuery="@System.Text.Json.JsonSerializer.Serialize(Model.ComplexSearchQuery)"
            rel="prev">
 			<svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg"
 				 height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
@@ -65,8 +64,7 @@
 					   asp-route-pageNumber="@index"
 					   asp-route-pageSize="@Model.PageSize"
                        asp-route-searchQuery="@Model.SearchQuery"
-                       asp-route-fromPagination="true"
-					   asp-route-complexSearchQuery="@System.Text.Json.JsonSerializer.Serialize(Model.ComplexSearchQuery)">
+                       asp-route-fromPagination="true">
 						@index
 					</a>
 				</li>
@@ -82,7 +80,6 @@
 		   asp-route-pageSize="@Model.PageSize"
            asp-route-searchQuery="@Model.SearchQuery"
            asp-route-fromPagination="true"
-		   asp-route-complexSearchQuery="@System.Text.Json.JsonSerializer.Serialize(Model.ComplexSearchQuery)"
            rel="next">
 			<span class="govuk-pagination__link-title">
 				Next<span class="govuk-visually-hidden"> page</span>
