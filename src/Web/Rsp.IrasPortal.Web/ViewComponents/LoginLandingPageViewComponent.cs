@@ -1,19 +1,22 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.ServiceClients;
+using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
+using Rsp.IrasPortal.Application.Services;
 
 namespace Rsp.IrasPortal.Web.ViewComponents;
 
-public class LoginLandingPageViewComponent(ICmsContentServiceClient cms) : ViewComponent
+public class LoginLandingPageViewComponent(ICmsContentService cms) : ViewComponent
 {
     public async Task<IViewComponentResult> InvokeAsync()
     {
-        var footerData = await cms.GetHomeContent();
+        var viewName = "~/Views/Shared/LoginLandingPageContent.cshtml";
 
-        if (!footerData.IsSuccessful)
+        var landingPageContent = await cms.GetHomeContent();
+
+        if (!landingPageContent.IsSuccessStatusCode || landingPageContent?.Content?.Properties?.LoginLandingPageContent == null)
         {
-            throw new NotImplementedException();
+            return View(viewName, new PageContent());
         }
 
-        return View("~/Views/Shared/LoginLandingPageContent.cshtml", footerData.Content.Properties.LoginLandingPageBodyText);
+        return View(viewName, landingPageContent.Content.Properties.LoginLandingPageContent);
     }
 }

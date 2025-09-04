@@ -16,7 +16,7 @@ public class GetGenericPageContentTests : TestServiceBase<CmsContentService>
     }
 
     [Fact]
-    public async Task GetGenericPageContentByUrl_ShouldReturnResponse_WhenPageIsFound()
+    public async Task GetContent_ShouldReturnResponse_From_Service_Not_Cache()
     {
         // Arrange
         var requestUrl = "/pages/destination-url/";
@@ -55,7 +55,7 @@ public class GetGenericPageContentTests : TestServiceBase<CmsContentService>
     }
 
     [Fact]
-    public async Task GetGenericPageContentByUrl_ShouldReturnResponseFromCache_WhenPageIsFoundInCache()
+    public async Task GetContent_ShouldReturnResponseFromCache_WhenPageIsFoundInCache()
     {
         // Arrange
         var requestUrl = "/pages/destination-url-cached/";

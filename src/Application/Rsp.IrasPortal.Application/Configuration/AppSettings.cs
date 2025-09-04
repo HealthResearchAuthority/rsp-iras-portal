@@ -68,7 +68,12 @@ public class AppSettings
     public Uri CmsUrl { get; set; } = null!;
 
     /// <summary>
-    /// Number of minutes the CMS content is cached
+    /// Number of minutes the general page CMS content is cached
     /// </summary>
-    public int? ContentCacheDurationMinutes { get; set; }
+    public int? GeneralContentCacheDurationMinutes { get; set; }
+
+    /// <summary>
+    /// Number of minutes the global page CMS content is cached (eg. footer)
+    /// </summary>
+    public int? GlobalContentCacheDurationMinutes { get; set; }
 }
