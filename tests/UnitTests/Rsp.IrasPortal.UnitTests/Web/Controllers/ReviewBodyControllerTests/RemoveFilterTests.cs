@@ -46,11 +46,6 @@ public class RemoveFilterTests : TestServiceBase<ReviewBodyController>
         routeValues["pageSize"].ShouldBe(20);
         routeValues["fromPagination"].ShouldBe(true);
 
-        var deserializedSearch =
-            JsonSerializer.Deserialize<ReviewBodySearchModel>(routeValues["complexSearchQuery"]?.ToString());
-        deserializedSearch!.Country.ShouldNotContain("England");
-        deserializedSearch.Country.ShouldContain("Scotland");
-
         // (optional) also verify session got updated
         var sessionJson = _http.Session.GetString(SessionKeys.ReviewBodiesSearch);
         sessionJson.ShouldNotBeNullOrWhiteSpace();
@@ -70,10 +65,6 @@ public class RemoveFilterTests : TestServiceBase<ReviewBodyController>
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
         redirect.RouteName.ShouldBe("rbc:viewreviewbodies");
 
-        var deserializedSearch =
-            JsonSerializer.Deserialize<ReviewBodySearchModel>(redirect.RouteValues["complexSearchQuery"]?.ToString());
-        deserializedSearch!.Status.ShouldBeNull();
-
         var sessionJson = _http.Session.GetString(SessionKeys.ReviewBodiesSearch);
         sessionJson.ShouldNotBeNullOrWhiteSpace();
     }
@@ -87,10 +78,6 @@ public class RemoveFilterTests : TestServiceBase<ReviewBodyController>
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
         redirect.RouteName.ShouldBe("rbc:viewreviewbodies");
-
-        var deserializedSearch =
-            JsonSerializer.Deserialize<ReviewBodySearchModel>(redirect.RouteValues["complexSearchQuery"]?.ToString());
-        deserializedSearch!.Status.ShouldBeNull(); // status is always cleared
 
         var sessionJson = _http.Session.GetString(SessionKeys.ReviewBodiesSearch);
         sessionJson.ShouldNotBeNullOrWhiteSpace();

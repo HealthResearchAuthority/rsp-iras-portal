@@ -11,6 +11,5 @@ public class SortableHeaderModel
     public string? CurrentSortDirection { get; set; }
     public string? FormAction { get; set; }
     public string? TableId { get; set; }
-    public object? ComplexSearchQuery { get; set; }
     public IDictionary<string, string> AdditionalParameters { get; set; } = new Dictionary<string, string>();
 }

@@ -50,26 +50,18 @@ public class ReviewBodyController(
         string? sortField = nameof(ReviewBodyDto.RegulatoryBodyName),
         string? sortDirection = SortDirections.Ascending,
         [FromForm] ReviewBodySearchViewModel? model = null,
-        [FromQuery] string? complexSearchQuery = null,
         [FromQuery] bool fromPagination = false)
     {
-        if (fromPagination && !string.IsNullOrWhiteSpace(complexSearchQuery))
-        {
-            model ??= new ReviewBodySearchViewModel();
-            model.Search = JsonSerializer.Deserialize<ReviewBodySearchModel>(complexSearchQuery);
-        }
-        else
+        if (!fromPagination)
         {
             // RESET ON SEARCH AND REMOVE FILTERS
             pageNumber = 1;
             pageSize = 20;
         }
 
-        // Ensure model and model.Search are not null
         model ??= new ReviewBodySearchViewModel();
-        model.Search ??= new ReviewBodySearchModel();
 
-        // If no filters passed in, try to restore from session
+        // Always attempt to restore from session if nothing is currently set
         var savedSearch = HttpContext.Session.GetString(SessionKeys.ReviewBodiesSearch);
         if (!string.IsNullOrWhiteSpace(savedSearch))
         {
@@ -89,7 +81,6 @@ public class ReviewBodyController(
         var paginationModel = new PaginationViewModel(pageNumber, pageSize, response.Content?.TotalCount ?? 0)
         {
             RouteName = "rbc:viewreviewbodies",
-            ComplexSearchQuery = model.Search,
             SortField = sortField,
             SortDirection = sortDirection
         };
@@ -111,7 +102,29 @@ public class ReviewBodyController(
             HttpContext.Session.SetString(SessionKeys.ReviewBodiesSearch, JsonSerializer.Serialize(model.Search));
         }
 
-        return View(reviewBodySearchViewModel);
+        return View("ViewReviewBodies", reviewBodySearchViewModel);
+    }
+
+    [Route("/reviewbody/applyfilters", Name = "rbc:applyfilters")]
+    [HttpPost]
+    [HttpGet]
+    public async Task<IActionResult> ApplyFilters(
+        ReviewBodySearchViewModel model,
+        string? sortField = nameof(UserViewModel.GivenName),
+        string? sortDirection = SortDirections.Ascending,
+        [FromQuery] bool fromPagination = false)
+    {
+        // Save applied filters to session
+        HttpContext.Session.SetString(SessionKeys.ReviewBodiesSearch, JsonSerializer.Serialize(model.Search));
+
+        // Call Index with matching parameter set
+        return await ViewReviewBodies(
+            1, // pageNumber
+            20, // pageSize
+            sortField,
+            sortDirection,
+            model,
+            fromPagination);
     }
 
     /// <summary>
@@ -567,16 +580,16 @@ public class ReviewBodyController(
             SearchQuery = searchQuery
         };
 
-        var searchJson = JsonSerializer.Serialize(cleanedSearch);
-
         // Clear any saved filters from session
         HttpContext.Session.Remove(SessionKeys.ReviewBodiesSearch);
+
+        // Save the current search filters to the session
+        HttpContext.Session.SetString(SessionKeys.ReviewBodiesSearch, JsonSerializer.Serialize(cleanedSearch));
 
         return RedirectToRoute("rbc:viewreviewbodies", new
         {
             pageNumber = 1,
             pageSize = 20,
-            complexSearchQuery = searchJson,
             fromPagination = true
         });
     }
@@ -613,9 +626,6 @@ public class ReviewBodyController(
                 break;
         }
 
-        // Serialize modified search model to JSON for complexSearchQuery parameter
-        var searchJson = JsonSerializer.Serialize(viewModel.Search);
-
         // Save applied filters to session
         HttpContext.Session.SetString(SessionKeys.ReviewBodiesSearch, JsonSerializer.Serialize(viewModel.Search));
 
@@ -624,7 +634,6 @@ public class ReviewBodyController(
         {
             pageNumber = 1,
             pageSize = 20,
-            complexSearchQuery = searchJson,
             fromPagination = true
         });
     }
