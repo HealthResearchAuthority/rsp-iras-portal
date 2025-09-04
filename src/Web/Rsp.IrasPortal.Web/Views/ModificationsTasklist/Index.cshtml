@@ -247,38 +247,38 @@
 }
 else
 {
-	<div class="govuk-grid-row">
-		<div class="govuk-grid-column-full">
-			<div class="govuk-table-wrapper">
-				<table class="govuk-table modifications-tasklist-table" id="modificationsTasklistTable">
-					<thead class="govuk-table__head">
-						<tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
-							<th scope="col" class="govuk-table__header govuk-!-text-align-right checkbox-cell">
-								<div class="govuk-checkboxes__item govuk-checkboxes--small">
-									<input id="select-all-modifications" name="" class="govuk-checkboxes__input select-all-modifications" type="checkbox">
-									<label for="select-all-modifications" class="govuk-label govuk-checkboxes__label"></label>
-								</div>
-							</th>
-							@{
-								var sortableHeaders = new[]
-								{
-												new { Field = nameof(ModificationsModel.ModificationId), Label = "Modification ID" },
-												new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
-												new { Field = nameof(ModificationsModel.CreatedAt), Label = "Date submitted" },
-												new { Field = nameof(ModificationsModel.DaysSinceSubmission), Label = "Days since submission" }
-												};
-								var tableId = "modificationsTasklistTable";
-							}
-							@foreach (var header in sortableHeaders)
-							{
-								var sortableHeaderModel = new SortableHeaderModel
-								{
-									FieldName = header.Field,
-									DisplayText = header.Label,
-									CurrentSortField = Model.Pagination?.SortField,
-									CurrentSortDirection = Model.Pagination?.SortDirection,
-									TableId = tableId,
-								};
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+            <div class="govuk-table-wrapper">
+                <table class="govuk-table modifications-tasklist-table" id="modificationsTasklistTable">
+                    <thead class="govuk-table__head">
+                        <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+                            <th scope="col" class="govuk-table__header govuk-!-text-align-right checkbox-cell">
+                                <div class="govuk-checkboxes__item govuk-checkboxes--small">
+                                    <input id="select-all-modifications" name="" class="govuk-checkboxes__input select-all-modifications" type="checkbox">
+                                    <label for="select-all-modifications" class="govuk-label govuk-checkboxes__label"></label>
+                                </div>
+                            </th>
+                            @{
+                                var sortableHeaders = new[]
+                                {
+                                    new { Field = nameof(ModificationsModel.ModificationId), Label = "Modification ID" },
+                                    new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
+                                    new { Field = nameof(ModificationsModel.CreatedAt), Label = "Date submitted" },
+                                    new { Field = nameof(ModificationsModel.DaysSinceSubmission), Label = "Days since submission" }
+                                };
+                                var tableId = "modificationsTasklistTable";
+                            }
+                            @foreach (var header in sortableHeaders)
+                            {
+                                var sortableHeaderModel = new SortableHeaderModel
+                                {
+                                    FieldName = header.Field,
+                                    DisplayText = header.Label,
+                                    CurrentSortField = Model.Pagination?.SortField,
+                                    CurrentSortDirection = Model.Pagination?.SortDirection,
+                                    TableId = tableId,
+                                };
 
                                 <th scope="col" class="govuk-table__header govuk-table__header-sortable">
                                     <partial name="_SortableHeaderButton" model="@sortableHeaderModel" />
