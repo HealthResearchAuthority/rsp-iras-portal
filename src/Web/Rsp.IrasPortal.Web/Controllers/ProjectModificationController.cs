@@ -140,22 +140,6 @@ public partial class ProjectModificationController
 
         var startingQuestions = startingQuestionsResponse.Content!;
 
-        // Handle case when no area of change data is returned from service
-        if (startingQuestions == null)
-        {
-            return View(new AreaOfChangeViewModel
-            {
-                AreaOfChangeOptions =
-                [
-                    new() { Text = SelectAreaOfChange, Value = "" }
-                ],
-                SpecificChangeOptions =
-                [
-                    new() { Text = SelectSpecificAreaOfChange, Value = "" }
-                ]
-            });
-        }
-
         // Store the list of area of changes in TempData (as serialized JSON string)
         TempData[TempDataKeys.ProjectModification.AreaOfChanges] = JsonSerializer.Serialize(startingQuestions.AreasOfChange);
 

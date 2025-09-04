@@ -206,16 +206,16 @@ public partial class ProjectModificationController : Controller
                     ? answersResponse.Content ?? new List<ProjectModificationDocumentAnswerDto>()
                     : new List<ProjectModificationDocumentAnswerDto>();
 
-                // Base incomplete checks
-                var isIncomplete = false;
+                // Default to incomplete
+                var isIncomplete = true;
 
-                // Check answers — if ANY answer is missing data, mark as incomplete
-                if (answers.Any(ans =>
-                    string.IsNullOrWhiteSpace(ans.AnswerText) &&
-                    string.IsNullOrWhiteSpace(ans.OptionType) &&
-                    string.IsNullOrWhiteSpace(ans.SelectedOption)))
+                // Only mark as complete if there are answers AND all are filled properly
+                if (answers.Any() && answers.All(ans =>
+                        !string.IsNullOrWhiteSpace(ans.AnswerText) ||
+                        !string.IsNullOrWhiteSpace(ans.OptionType) ||
+                        !string.IsNullOrWhiteSpace(ans.SelectedOption)))
                 {
-                    isIncomplete = true;
+                    isIncomplete = false;
                 }
 
                 uploadedDocuments.Add(new DocumentSummaryItemDto
