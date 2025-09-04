@@ -32,7 +32,6 @@ public class UsersController(
     private const string EditUserView = nameof(EditUserView);
     private const string ConfirmUser = nameof(ConfirmUser);
     private const string ViewUserView = nameof(ViewUserView);
-    private const string DeleteUserView = nameof(DeleteUserView);
     private const string UserRolesView = nameof(UserRolesView);
     private const string CreateUserSuccessMessage = nameof(CreateUserSuccessMessage);
     private const string DisableUserSuccessMessage = nameof(DisableUserSuccessMessage);
@@ -58,15 +57,9 @@ public class UsersController(
         string? sortField = nameof(UserViewModel.GivenName),
         string? sortDirection = SortDirections.Ascending,
         [FromForm] UserSearchViewModel? model = null,
-        [FromQuery] string? complexSearchQuery = null,
         [FromQuery] bool fromPagination = false)
     {
-        if (fromPagination && !string.IsNullOrWhiteSpace(complexSearchQuery))
-        {
-            model ??= new UserSearchViewModel();
-            model.Search = JsonSerializer.Deserialize<UserSearchModel>(complexSearchQuery);
-        }
-        else
+        if (!fromPagination)
         {
             // RESET ON SEARCH AND REMOVE FILTERS
             pageNumber = 1;
@@ -76,7 +69,7 @@ public class UsersController(
         model ??= new UserSearchViewModel();
         model.Search ??= new UserSearchModel();
 
-        // If no filters passed in, try to restore from session
+        // Always attempt to restore from session if nothing is currently set
         var savedSearch = HttpContext.Session.GetString(SessionKeys.UsersSearch);
         if (!string.IsNullOrWhiteSpace(savedSearch))
         {
@@ -122,7 +115,6 @@ public class UsersController(
             var paginationModel = new PaginationViewModel(pageNumber, pageSize, response.Content?.TotalCount ?? 0)
             {
                 RouteName = "admin:users",
-                ComplexSearchQuery = model.Search,
                 SortField = sortField,
                 SortDirection = sortDirection
             };
@@ -699,7 +691,6 @@ public class UsersController(
         UserSearchViewModel model,
         string? sortField = nameof(UserViewModel.GivenName),
         string? sortDirection = SortDirections.Ascending,
-        [FromQuery] string? complexSearchQuery = null,
         [FromQuery] bool fromPagination = false)
     {
         var validationResult = await searchValidator.ValidateAsync(model.Search);
@@ -725,7 +716,6 @@ public class UsersController(
             sortField,
             sortDirection,
             model,
-            complexSearchQuery,
             fromPagination);
     }
 
@@ -738,17 +728,17 @@ public class UsersController(
             SearchQuery = searchQuery
         };
 
-        var searchJson = JsonSerializer.Serialize(cleanedSearch);
-
         // Clear any saved filters from session
         HttpContext.Session.Remove(SessionKeys.UsersSearch);
+
+        // Save the current search filters to the session
+        HttpContext.Session.SetString(SessionKeys.UsersSearch, JsonSerializer.Serialize(cleanedSearch));
 
         return RedirectToRoute("admin:users", new
         {
             pageNumber = 1,
             pageSize = 20,
-            complexSearchQuery = searchJson,
-            fromPagination = true
+            fromPagination = false
         });
     }
 
@@ -832,9 +822,6 @@ public class UsersController(
                 break;
         }
 
-        // Serialize modified search model to JSON for complexSearchQuery parameter
-        var searchJson = JsonSerializer.Serialize(viewModel.Search);
-
         // Save applied filters to session
         HttpContext.Session.SetString(SessionKeys.UsersSearch, JsonSerializer.Serialize(viewModel.Search));
 
@@ -843,7 +830,6 @@ public class UsersController(
         {
             pageNumber = 1,
             pageSize = 20,
-            complexSearchQuery = searchJson,
             fromPagination = true
         });
     }
