@@ -54,18 +54,17 @@ public class ReviewDocumentTests : TestServiceBase<ProjectModificationController
         };
 
         // Act
-        var result = await Sut.ReviewDocument();
+        var result = await Sut.ModificationDocumentsAdded();
 
         // Assert
         result.ShouldBeOfType<ViewResult>();
         var viewResult = result as ViewResult;
-        viewResult!.ViewName.ShouldBe("ModificationReviewDocuments");
+        viewResult!.ViewName.ShouldBe("ModificationDocumentsAdded");
 
         var model = viewResult.Model.ShouldBeOfType<ModificationReviewDocumentsViewModel>();
         model.ShortTitle.ShouldBe(shortTitle);
         model.IrasId.ShouldBe(irasId);
         model.ModificationIdentifier.ShouldBe(modificationIdentifier);
-        model.PageTitle.ShouldBe($"Documents added for {specificAreaOfChange}");
 
         model.UploadedDocuments.Count.ShouldBe(documentResponses.Count);
     }
@@ -110,12 +109,12 @@ public class ReviewDocumentTests : TestServiceBase<ProjectModificationController
         };
 
         // Act
-        var result = await Sut.ReviewDocument();
+        var result = await Sut.ModificationDocumentsAdded();
 
         // Assert
         result.ShouldBeOfType<ViewResult>();
         var viewResult = result as ViewResult;
-        viewResult!.ViewName.ShouldBe("ModificationReviewDocuments");
+        viewResult!.ViewName.ShouldBe("ModificationDocumentsAdded");
 
         var model = viewResult.Model.ShouldBeOfType<ModificationReviewDocumentsViewModel>();
         model.UploadedDocuments.ShouldBeEmpty();

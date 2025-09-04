@@ -10,11 +10,25 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Compile Remove="Models\ModificationAddDocumentDetailsViewModel.cs" />
+      <Compile Remove="Controllers\CmsProjectModificationController.cs" />
+      <Compile Remove="Controllers\CmsQuestionSetController.cs" />
     </ItemGroup>
 
     <ItemGroup>
-      <Content Remove="Views\ProjectModification\AddDocumentDetails.cshtml" />
+      <Content Remove="Views\CmsProjectModification\AreaOfChange.cshtml" />
+      <Content Remove="Views\CmsProjectModification\PlannedEndDate.cshtml" />
+      <Content Remove="Views\CmsProjectModification\RenderQuestions.cshtml" />
+      <Content Remove="Views\CmsProjectModification\SearchOrganisation.cshtml" />
+      <Content Remove="Views\CmsQuestionSet\EditorTemplates\AutoSuggestTemplate.cshtml" />
+      <Content Remove="Views\CmsQuestionSet\EditorTemplates\CheckboxTemplate.cshtml" />
+      <Content Remove="Views\CmsQuestionSet\EditorTemplates\DateTemplate.cshtml" />
+      <Content Remove="Views\CmsQuestionSet\EditorTemplates\DropdownTemplate.cshtml" />
+      <Content Remove="Views\CmsQuestionSet\EditorTemplates\OrgSearchTemplate.cshtml" />
+      <Content Remove="Views\CmsQuestionSet\EditorTemplates\RadioButtonTemplate.cshtml" />
+      <Content Remove="Views\CmsQuestionSet\EditorTemplates\TextTemplate.cshtml" />
+      <Content Remove="Views\CmsQuestionSet\GuidanceContent.cshtml" />
+      <Content Remove="Views\CmsQuestionSet\Index.cshtml" />
+      <Content Remove="Views\CmsQuestionSet\ReviewAnswers.cshtml" />
     </ItemGroup>
 
     <ItemGroup>
@@ -27,6 +41,11 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\Application\Rsp.IrasPortal.Application\Rsp.IrasPortal.Application.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Views\CmsProjectModification\" />
+      <Folder Include="Views\CmsQuestionSet\EditorTemplates\" />
     </ItemGroup>
 
 </Project>

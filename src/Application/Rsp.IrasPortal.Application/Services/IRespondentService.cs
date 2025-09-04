@@ -28,17 +28,17 @@ public interface IRespondentService : IInterceptable
     /// <summary>
     /// Gets all the respondent's answers for a specific project modification change.
     /// </summary>
-    /// <param name="projectModificationChangeId">The unique identifier for the project modification change.</param>
+    /// <param name="modificationChangeId">The unique identifier for the project modification change.</param>
     /// <returns>A service response containing a collection of respondent answers.</returns>
-    Task<ServiceResponse<IEnumerable<RespondentAnswerDto>>> GetModificationAnswers(Guid projectModificationChangeId);
+    Task<ServiceResponse<IEnumerable<RespondentAnswerDto>>> GetModificationAnswers(Guid modificationChangeId, string projectRecordId);
 
     /// <summary>
     /// Gets all the respondent's answers for a specific project modification change and category.
     /// </summary>
-    /// <param name="projectModificationChangeId">The unique identifier for the project modification change.</param>
+    /// <param name="modificationChangeId">The unique identifier for the project modification change.</param>
     /// <param name="categoryId">The unique identifier for the question category.</param>
     /// <returns>A service response containing a collection of respondent answers.</returns>
-    Task<ServiceResponse<IEnumerable<RespondentAnswerDto>>> GetModificationAnswers(Guid projectModificationChangeId, string categoryId);
+    Task<ServiceResponse<IEnumerable<RespondentAnswerDto>>> GetModificationAnswers(Guid modificationChangeId, string projectRecordId, string categoryId);
 
     /// <summary>
     /// Saves all the respondent's answers for a project modification.
@@ -67,4 +67,22 @@ public interface IRespondentService : IInterceptable
     /// representing the associated documents.
     /// </returns>
     Task<ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>> GetModificationChangesDocuments(Guid modificationChangeId, string projectRecordId, string projectPersonnelId);
+
+    Task<ServiceResponse<ProjectModificationDocumentRequest>> GetModificationDocumentDetails(Guid documentId);
+
+    /// <summary>
+    /// Saves all the respondent's answers for a project modification document.
+    /// </summary>
+    /// <param name="request">The request containing all answers for the project modification document.</param>
+    /// <returns>A service response indicating the result of the save operation.</returns>
+    Task<ServiceResponse> SaveModificationDocumentAnswers(List<ProjectModificationDocumentAnswerDto> request);
+
+    Task<ServiceResponse<IEnumerable<ProjectModificationDocumentAnswerDto>>> GetModificationDocumentAnswers(Guid documentId);
+
+    /// <summary>
+    /// Saves all the respondent's answers for a project modification document.
+    /// </summary>
+    /// <param name="request">The request containing all answers for the project modification document.</param>
+    /// <returns>A service response indicating the result of the save operation.</returns>
+    Task<ServiceResponse> SaveModificationDocuments(List<ProjectModificationDocumentRequest> request);
 }

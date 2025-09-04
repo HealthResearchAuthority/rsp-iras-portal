@@ -6,6 +6,11 @@
 public class DocumentSummaryItemDto
 {
     /// <summary>
+    /// Unique identifier for the uploaded document.
+    /// </summary>
+    public Guid DocumentId { get; set; }
+
+    /// <summary>
     /// Gets or sets the name of the uploaded file.
     /// </summary>
     public string FileName { get; set; } = string.Empty;
@@ -21,7 +26,27 @@ public class DocumentSummaryItemDto
     public long FileSize { get; set; }
 
     /// <summary>
-    /// Gets the display size in megabytes (MB), rounded to 2 decimal places.
+    /// Gets or sets the status of the document details.
     /// </summary>
-    public string DisplaySize => $"{Math.Round((double)FileSize / (1024 * 1024), 2)} MB";
+    public string Status { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets the display size in KB, MB or GB, rounded to 2 decimal places.
+    /// </summary>
+    public string DisplaySize
+    {
+        get
+        {
+            const double KB = 1024;
+            const double MB = KB * 1024;
+            const double GB = MB * 1024;
+
+            if (FileSize >= GB)
+                return $"{Math.Round(FileSize / GB, 2)} GB";
+            else if (FileSize >= MB)
+                return $"{Math.Round(FileSize / MB, 2)} MB";
+            else
+                return $"{Math.Round(FileSize / KB, 2)} KB";
+        }
+    }
 }

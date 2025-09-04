@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 
 namespace Rsp.IrasPortal.Web.Models;
 
@@ -16,12 +17,14 @@ public class QuestionnaireViewModel
     /// <summary>
     /// The current stage of the questionnaire.
     /// </summary>
-    public string CurrentStage { get; set; } = "";
+    public string? CurrentStage { get; set; } = "";
 
     /// <summary>
     /// List of questions in the questionnaire.
     /// </summary>
     public List<QuestionViewModel> Questions { get; set; } = [];
+
+    public List<ContentComponent> GuidanceContent { get; set; } = [];
 
     /// <summary>
     /// ViewModel for searching and selecting a sponsor organisation.

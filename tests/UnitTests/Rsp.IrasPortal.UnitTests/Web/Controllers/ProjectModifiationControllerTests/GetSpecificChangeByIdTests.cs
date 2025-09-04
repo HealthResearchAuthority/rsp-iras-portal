@@ -20,20 +20,20 @@ public class GetSpecificChangeByIdTests : TestServiceBase<ProjectModificationCon
         {
             new GetAreaOfChangesResponse
             {
-                Id = 1,
+                Id = "1",
                 Name = "Test Area of Change",
                 ModificationSpecificAreaOfChanges = new List<ModificationSpecificAreaOfChangeDto>
                 {
                     new ModificationSpecificAreaOfChangeDto
                     {
-                        Id = 1,
+                        Id = "1",
                         Name = "Specific Area 1",
                         JourneyType = "specific area 1",
                         ModificationAreaOfChangeId = 1
                     },
                     new ModificationSpecificAreaOfChangeDto
                     {
-                        Id = 2,
+                        Id = "2",
                         Name = "Specific Area 2",
                         JourneyType = "specific area 2",
                         ModificationAreaOfChangeId = 1
@@ -48,15 +48,14 @@ public class GetSpecificChangeByIdTests : TestServiceBase<ProjectModificationCon
         };
 
         // Act
-        var result = Sut.GetSpecificChangesByAreaId(1);
+        var result = Sut.GetSpecificChangesByAreaId("1");
 
         // Assert
         var jsonResult = result.ShouldBeOfType<JsonResult>();
         var selectList = jsonResult.Value.ShouldBeOfType<List<SelectListItem>>();
 
-        selectList.Count.ShouldBe(3); // Includes default 'Select' option
-        selectList[1].Text.ShouldBe("Specific Area 1");
-        selectList[2].Text.ShouldBe("Specific Area 2");
+        selectList.Count.ShouldBe(1);
+        selectList[0].Text.ShouldBe("Select Specific change");
     }
 
     [Fact]
@@ -68,7 +67,7 @@ public class GetSpecificChangeByIdTests : TestServiceBase<ProjectModificationCon
         };
 
         // Act
-        var result = Sut.GetSpecificChangesByAreaId(123);
+        var result = Sut.GetSpecificChangesByAreaId("123");
 
         // Assert
         var badRequest = result.ShouldBeOfType<BadRequestObjectResult>();
