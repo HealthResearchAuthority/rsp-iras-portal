@@ -15,10 +15,14 @@ public class CmsContentService(
     IMemoryCache cache,
     AppSettings appSettings) : ICmsContentService
 {
-    private readonly int ContentCacheDuration = appSettings.ContentCacheDurationMinutes.HasValue
-        ? appSettings.ContentCacheDurationMinutes.Value : 1;
+    private readonly int GeneralContentCacheDuration = appSettings.GeneralContentCacheDurationMinutes.HasValue
+        ? appSettings.GeneralContentCacheDurationMinutes.Value : 1;
+
+    private readonly int GlobalContentCacheDuration = appSettings.GlobalContentCacheDurationMinutes.HasValue
+        ? appSettings.GlobalContentCacheDurationMinutes.Value : 1;
 
     private const string FooterCacheKey = "FooterContent";
+    private const string LoginLandingCacheKey = "LoginLandingContent";
 
     public async Task<ServiceResponse<MixedContentPageResponse>> GetMixedPageContentByUrl(string url)
     {
@@ -34,7 +38,7 @@ public class CmsContentService(
         if (response.IsSuccessStatusCode && response.Content != null)
         {
             // Store in cache with an absolute expiration
-            cache.Set(url, response, TimeSpan.FromMinutes(ContentCacheDuration));
+            cache.Set(url, response, TimeSpan.FromMinutes(GeneralContentCacheDuration));
         }
 
         return response.ToServiceResponse();
@@ -54,7 +58,7 @@ public class CmsContentService(
         if (response.IsSuccessStatusCode && response.Content != null)
         {
             // Store in cache with an absolute expiration
-            cache.Set(url, response, TimeSpan.FromMinutes(ContentCacheDuration));
+            cache.Set(url, response, TimeSpan.FromMinutes(GeneralContentCacheDuration));
         }
 
         return response.ToServiceResponse();
@@ -73,8 +77,26 @@ public class CmsContentService(
         var siteSettings = await cmsClient.GetSiteSettings();
 
         // Store in cache with an absolute expiration
-        cache.Set(FooterCacheKey, siteSettings, TimeSpan.FromMinutes(5));
+        cache.Set(FooterCacheKey, siteSettings, TimeSpan.FromMinutes(GlobalContentCacheDuration));
 
         return siteSettings.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse<GenericPageResponse>> GetHomeContent()
+    {
+        // cehck if content is in cache
+        if (cache.TryGetValue(LoginLandingCacheKey, out ApiResponse<GenericPageResponse>? cachedFooter) && cachedFooter != null)
+        {
+            // return from cache
+            return cachedFooter.ToServiceResponse();
+        }
+
+        // content is not in cache so get it from the CMS
+        var loginLandingPage = await cmsClient.GetHomeContent();
+
+        // Store in cache with an absolute expiration
+        cache.Set(LoginLandingCacheKey, loginLandingPage, TimeSpan.FromMinutes(GeneralContentCacheDuration));
+
+        return loginLandingPage.ToServiceResponse();
     }
 }

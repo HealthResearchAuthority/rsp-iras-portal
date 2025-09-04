@@ -1,16 +1,16 @@
 using Microsoft.Extensions.Caching.Memory;
+using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Services;
-using Rsp.IrasPortal.Web.Models.CmsContent;
 
 namespace Rsp.IrasPortal.UnitTests.Services.RtsServiceTests;
 
-public class GetMixedPageContentTests : TestServiceBase<CmsContentService>
+public class GeLoginLandingPageContentTests : TestServiceBase<CmsContentService>
 {
     private readonly Mock<ICmsContentServiceClient> _cmsClient;
 
-    public GetMixedPageContentTests()
+    public GeLoginLandingPageContentTests()
     {
         _cmsClient = Mocker.GetMock<ICmsContentServiceClient>();
     }
@@ -19,17 +19,17 @@ public class GetMixedPageContentTests : TestServiceBase<CmsContentService>
     public async Task GetContent_ShouldReturnResponse_From_Service_Not_Cache()
     {
         // Arrange
-        var requestUrl = "/pages/destination-url/";
-        var apiResponse = new ApiResponse<MixedContentPageResponse>
+        var requestUrl = "LoginLandingContent";
+        var apiResponse = new ApiResponse<GenericPageResponse>
         (
             new HttpResponseMessage(HttpStatusCode.OK),
-            new MixedContentPageResponse(),
+            new GenericPageResponse(),
             new()
         );
 
         Mocker
             .GetMock<ICmsContentServiceClient>()
-            .Setup(client => client.GetMixedPageContentByUrl(requestUrl))
+            .Setup(client => client.GetHomeContent())
             .ReturnsAsync(apiResponse);
 
         object value;
@@ -43,26 +43,26 @@ public class GetMixedPageContentTests : TestServiceBase<CmsContentService>
            .Returns(mockEntry.Object);
 
         // Act
-        var result = await Sut.GetMixedPageContentByUrl(requestUrl);
+        var result = await Sut.GetHomeContent();
 
         // Assert
-        result.ShouldBeOfType<ServiceResponse<MixedContentPageResponse>>();
+        result.ShouldBeOfType<ServiceResponse<GenericPageResponse>>();
         result.IsSuccessStatusCode.ShouldBeTrue();
         result.StatusCode.ShouldBe(HttpStatusCode.OK);
 
         // Verify
-        _cmsClient.Verify(client => client.GetMixedPageContentByUrl(requestUrl), Times.Once());
+        _cmsClient.Verify(client => client.GetHomeContent(), Times.Once());
     }
 
     [Fact]
     public async Task GetContent_ShouldReturnResponseFromCache_WhenPageIsFoundInCache()
     {
         // Arrange
-        var requestUrl = "/pages/destination-url-cached/";
-        var apiResponse = new ApiResponse<MixedContentPageResponse>
+        var requestUrl = "LoginLandingContent";
+        var apiResponse = new ApiResponse<GenericPageResponse>
         (
             new HttpResponseMessage(HttpStatusCode.OK),
-            new MixedContentPageResponse(),
+            new GenericPageResponse(),
             new()
         );
 
@@ -80,14 +80,14 @@ public class GetMixedPageContentTests : TestServiceBase<CmsContentService>
            .Returns(mockEntry.Object);
 
         // Act
-        var result = await Sut.GetMixedPageContentByUrl(requestUrl);
+        var result = await Sut.GetHomeContent();
 
         // Assert
-        result.ShouldBeOfType<ServiceResponse<MixedContentPageResponse>>();
+        result.ShouldBeOfType<ServiceResponse<GenericPageResponse>>();
         result.IsSuccessStatusCode.ShouldBeTrue();
         result.StatusCode.ShouldBe(HttpStatusCode.OK);
 
         // Verify
-        _cmsClient.Verify(client => client.GetMixedPageContentByUrl(requestUrl), Times.Never);
+        _cmsClient.Verify(client => client.GetHomeContent(), Times.Never);
     }
 }
