@@ -28,8 +28,8 @@ public class RenderLoginLandingContentTests : TestServiceBase<LoginLandingPageVi
         var componentResult = result.ShouldBeOfType<ViewViewComponentResult>();
 
         // Verify
-        var model = componentResult?.ViewData?.Model.ShouldBeOfType<PageContent>();
-        model?.Items.ShouldBeNull();
+        var model = componentResult?.ViewData?.Model.ShouldBeOfType<GenericPageResponse>();
+        model?.Properties?.ShouldBeNull();
 
         Mocker.GetMock<ICmsContentService>()
             .Verify(s => s.GetHomeContent(), Times.Once);
@@ -56,8 +56,8 @@ public class RenderLoginLandingContentTests : TestServiceBase<LoginLandingPageVi
         var componentResult = result.ShouldBeOfType<ViewViewComponentResult>();
 
         // Verify
-        var viewModel = componentResult?.ViewData?.Model.ShouldBeOfType<PageContent>();
-        viewModel?.Items.Count.ShouldBeGreaterThan(0);
+        var viewModel = componentResult?.ViewData?.Model.ShouldBeOfType<GenericPageResponse>();
+        viewModel?.Properties.LoginLandingPageAboveTheFold.ShouldNotBeNull();
 
         Mocker.GetMock<ICmsContentService>()
             .Verify(s => s.GetHomeContent(), Times.Once);
