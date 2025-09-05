@@ -2,9 +2,10 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.UnitTests;
 using Rsp.IrasPortal.Web.Controllers;
 using Rsp.IrasPortal.Web.Models;
+
+namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ReviewBodyControllerTests;
 
 public class ClearFiltersTests : TestServiceBase<ReviewBodyController>
 {

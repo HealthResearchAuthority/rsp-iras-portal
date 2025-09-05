@@ -85,7 +85,7 @@ else
 
 services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromSeconds(appSettings.SessionTimeout);
+    options.IdleTimeout = TimeSpan.FromSeconds(appSettings.SessionTimeout + 60);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
@@ -115,8 +115,6 @@ services
         ));
     })
     .AddSessionStateTempDataProvider();
-
-
 
 // Lift the MVC model-binding collection cap (default is 1024)
 services.Configure<MvcOptions>(o => o.MaxModelBindingCollectionSize = int.MaxValue);

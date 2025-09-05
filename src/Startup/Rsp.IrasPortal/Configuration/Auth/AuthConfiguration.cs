@@ -72,7 +72,7 @@ public static class AuthConfiguration
 
                     options.LoginPath = "/";
                     options.LogoutPath = "/";
-                    options.ExpireTimeSpan = TimeSpan.FromSeconds(appSettings.AuthSettings.AuthCookieTimeout);
+                    options.ExpireTimeSpan = TimeSpan.FromSeconds(appSettings.AuthSettings.AuthCookieTimeout + 60);
                     options.SlidingExpiration = true;
                     options.AccessDeniedPath = "/Forbidden";
                 }
@@ -98,6 +98,8 @@ public static class AuthConfiguration
 
                     options.Events.OnTokenValidated = context =>
                     {
+                        context.HttpContext.Session.SetString(ContextItemKeys.AcessToken, context.SecurityToken.RawData);
+
                         // this key is used to indicate that the user is logged in for the first time
                         // will be used to update the LastLogin during the claims transformation
                         // to indicate when the user was logged in last time.
@@ -135,6 +137,7 @@ public static class AuthConfiguration
                 // cookie timeout using the cookie authentication handler
                 options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             })
+
             .AddCookie(options =>
             {
                 options.Events = new CookieAuthenticationEvents
@@ -159,7 +162,7 @@ public static class AuthConfiguration
 
                 options.LoginPath = "/";
                 options.LogoutPath = "/";
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(appSettings.OneLogin.AuthCookieTimeout);
+                options.ExpireTimeSpan = TimeSpan.FromSeconds(appSettings.OneLogin.AuthCookieTimeout + 60);
                 options.SlidingExpiration = true;
                 options.AccessDeniedPath = "/Forbidden";
             })
@@ -208,7 +211,7 @@ public static class AuthConfiguration
                             new Claim("sub", appSettings.OneLogin.ClientId),
                             new Claim(ClaimTypes.Role, "iras_portal_user"),
                         ],
-                        expires: DateTime.UtcNow.AddMinutes(5),
+                        expires: DateTime.UtcNow.AddSeconds(appSettings.OneLogin.AuthCookieTimeout),
                         signingCredentials: signingCredentials
                     );
 
@@ -222,6 +225,8 @@ public static class AuthConfiguration
 
                 options.Events.OnTokenValidated = context =>
                 {
+                    context.HttpContext.Session.SetString(ContextItemKeys.IdToken, context.SecurityToken.RawData);
+
                     // this key is used to indicate that the user is logged in for the first time
                     // will be used to update the LastLogin during the claims transformation
                     // to indicate when the user was logged in last time.

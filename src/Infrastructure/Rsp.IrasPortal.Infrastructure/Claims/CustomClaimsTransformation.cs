@@ -187,10 +187,6 @@ public class CustomClaimsTransformation
         // get the original access token
         var jsonToken = handler.ReadJwtToken(bearerToken as string);
 
-        // configure the new token using the existing
-        // bearer_token properties but with newly added
-        // claims.
-
         var oneLoginEnabled = await featureManager.IsEnabledAsync(Features.OneLogin);
 
         var audience = oneLoginEnabled ?
@@ -200,6 +196,10 @@ public class CustomClaimsTransformation
         var expires = oneLoginEnabled ?
             appSettings.Value.OneLogin.AuthCookieTimeout :
             appSettings.Value.AuthSettings.AuthCookieTimeout;
+
+        // configure the new token using the existing
+        // bearer_token properties but with newly added
+        // claims.
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {

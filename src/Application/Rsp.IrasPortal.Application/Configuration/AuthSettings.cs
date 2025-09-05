@@ -18,6 +18,11 @@ public class AuthSettings
     public string ClientSecret { get; set; } = null!;
 
     /// <summary>
+    /// The Logout Url.
+    /// </summary>
+    public string LogoutUrl { get; set; } = null!;
+
+    /// <summary>
     /// Timeout for the authentication cookie in seconds.
     /// </summary>
     public uint AuthCookieTimeout { get; set; }
