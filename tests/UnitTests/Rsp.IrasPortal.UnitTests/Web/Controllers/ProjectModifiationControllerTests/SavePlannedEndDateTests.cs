@@ -13,7 +13,7 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModifiationControllerTests;
 
-public class SavePlannedEndDateTests : TestServiceBase<ProjectModificationController>
+public class SavePlannedEndDateTests : TestServiceBase<ModificationsController>
 {
     [Fact]
     public async Task SavePlannedEndDate_ReturnsViewWithErrors_WhenDateIsInvalid()
@@ -108,7 +108,7 @@ public class SavePlannedEndDateTests : TestServiceBase<ProjectModificationContro
             .ReturnsAsync(failResponse);
 
         Mocker
-            .GetMock<ProjectModificationController>()
+            .GetMock<ModificationsController>()
             .CallBase = true;
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())

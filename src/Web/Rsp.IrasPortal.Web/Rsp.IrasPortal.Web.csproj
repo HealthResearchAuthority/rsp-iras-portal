@@ -10,12 +10,26 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Compile Remove="Controllers\CmsProjectModificationController.cs" />
-      <Compile Remove="Controllers\CmsQuestionSetController.cs" />
-      <Compile Remove="Models\ModificationAddDocumentDetailsViewModel.cs" />
+      <Compile Remove="Views\Questionnaire\EditorTemplates\**" />
+      <Content Remove="Views\Questionnaire\EditorTemplates\**" />
+      <EmbeddedResource Remove="Views\Questionnaire\EditorTemplates\**" />
+      <None Remove="Views\Questionnaire\EditorTemplates\**" />
     </ItemGroup>
 
     <ItemGroup>
+      <Compile Remove="Controllers\CmsProjectModificationController.cs" />
+      <Compile Remove="Controllers\CmsQuestionSetController.cs" />
+      <Compile Remove="Controllers\Modifications\PlannedEndDate\AffectingOrganisationsController.cs" />
+      <Compile Remove="Controllers\Modifications\PlannedEndDate\ModificationChangesReviewController.cs" />
+      <Compile Remove="Controllers\Modifications\PlannedEndDate\OrganisationTypeModificationController.cs" />
+      <Compile Remove="Controllers\Modifications\PlannedEndDate\PlannedEndDateModificationController.cs" />
+      <Compile Remove="Features\Modifications\PlannedEndDate\Controllers\AffectingOrganisationsController.cs" />
+      <Compile Remove="Features\Modifications\PlannedEndDate\Controllers\OrganisationTypeController.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Remove="Features\Modifications\PlannedEndDate\Views\AffectingOrganisationsOld.cshtml" />
+      <Content Remove="Features\Modifications\PlannedEndDate\Views\PlannedEndDateOrganisationType.cshtml" />
       <Content Remove="Views\CmsProjectModification\AreaOfChange.cshtml" />
       <Content Remove="Views\CmsProjectModification\PlannedEndDate.cshtml" />
       <Content Remove="Views\CmsProjectModification\RenderQuestions.cshtml" />
@@ -30,7 +44,11 @@
       <Content Remove="Views\CmsQuestionSet\GuidanceContent.cshtml" />
       <Content Remove="Views\CmsQuestionSet\Index.cshtml" />
       <Content Remove="Views\CmsQuestionSet\ReviewAnswers.cshtml" />
-      <Content Remove="Views\ProjectModification\AddDocumentDetails.cshtml" />
+      <Content Remove="Views\ProjectModification\AffectingOrganisations.cshtml" />
+      <Content Remove="Views\ProjectModification\AreaOfChange.cshtml" />
+      <Content Remove="Views\ProjectModification\PlannedEndDate.cshtml" />
+      <Content Remove="Views\ProjectModification\PlannedEndDateOrganisationType.cshtml" />
+      <Content Remove="Views\Shared\_ProjectModificationSummary.cshtml" />
     </ItemGroup>
 
     <ItemGroup>
@@ -46,6 +64,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Controllers\Modifications\PlannedEndDate\" />
       <Folder Include="Views\CmsProjectModification\" />
       <Folder Include="Views\CmsQuestionSet\EditorTemplates\" />
     </ItemGroup>

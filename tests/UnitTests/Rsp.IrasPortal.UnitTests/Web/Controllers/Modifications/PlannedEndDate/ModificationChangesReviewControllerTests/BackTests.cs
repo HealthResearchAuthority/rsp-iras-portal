@@ -6,7 +6,7 @@ using Rsp.IrasPortal.Web.Controllers;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.Modifications.PlannedEndDate.ModificationChangesReviewControllerTests;
 
-public class BackTests : TestServiceBase<ProjectModificationController>
+public class BackTests : TestServiceBase<ModificationsController>
 {
     [Fact]
     public void Back_RemovesReviewChangesFlagAndRedirects()

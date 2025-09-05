@@ -1,4 +1,6 @@
-﻿using Rsp.IrasPortal.Application.DTOs.Requests;
+﻿using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
@@ -162,6 +164,12 @@ public class ProjectModificationsService(IProjectModificationsServiceClient proj
     public async Task<ServiceResponse<GetModificationsResponse>> GetModificationsByIds(List<string> Ids)
     {
         var apiResponse = await projectModificationsServiceClient.GetModificationsByIds(Ids);
+        return apiResponse.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse> AssignModificationsToReviewer(List<string> modificationIds, string reviewerId)
+    {
+        var apiResponse = await projectModificationsServiceClient.AssignModificationsToReviewer(modificationIds, reviewerId);
         return apiResponse.ToServiceResponse();
     }
 }

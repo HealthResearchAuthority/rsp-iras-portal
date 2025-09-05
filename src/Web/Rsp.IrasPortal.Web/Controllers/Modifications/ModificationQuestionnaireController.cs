@@ -14,7 +14,7 @@ using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
 
-namespace Rsp.IrasPortal.Web.Controllers;
+namespace Rsp.IrasPortal.Web.Controllers.Modifications;
 
 [Route("[controller]/[action]", Name = "mqc:[action]")]
 [Authorize(Policy = "IsApplicant")]
@@ -42,7 +42,7 @@ public class ModificationQuestionnaireController
     /// </summary>
     /// <param name="projectRecordId">Application Id</param>
     /// <param name="categoryId">CategoryId to resume from</param>
-    public async Task<IActionResult> Resume(string projectRecordId, string categoryId, string? sectionId = null)
+    public async Task<IActionResult> Resume(string projectRecordId, string categoryId, string? sectionId = null, bool reviewAnswers = false)
     {
         // load existing application in session
         if (await LoadApplication(projectRecordId) == null)
@@ -72,8 +72,10 @@ public class ModificationQuestionnaireController
             return this.ServiceError(respondentServiceResponse);
         }
 
+        var specificAreaOfChangeId = GetSpecificAreaOfChangeId();
+
         var sectionIdOrDefault = sectionId ?? string.Empty;
-        var questionsSetServiceResponse = await questionSetService.GetModificationQuestionSet(sectionIdOrDefault);
+        var questionsSetServiceResponse = await questionSetService.GetModificationsJourney(specificAreaOfChangeId.ToString());
 
         // return error page if unsuccessfull
         if (!questionsSetServiceResponse.IsSuccessStatusCode)
@@ -107,7 +109,8 @@ public class ModificationQuestionnaireController
         // continue to resume for the category Id &
         return RedirectToAction(nameof(DisplayQuestionnaire), new
         {
-            sectionId
+            sectionId,
+            reviewAnswers
         });
     }
 
@@ -168,7 +171,7 @@ public class ModificationQuestionnaireController
 
     [RequestFormLimits(ValueCountLimit = int.MaxValue)]
     [HttpPost]
-    public async Task<IActionResult> SaveResponses(QuestionnaireViewModel model, string searchedPerformed, bool autoSearchEnabled, string saveAndContinue = "False", string saveForLater = "False")
+    public async Task<IActionResult> SaveResponses(QuestionnaireViewModel model, string saveAndContinue = "False", string saveForLater = "False", string reviewAnswers = "False")
     {
         var (projectModificationId, projectModificationChangeId) = CheckModification();
 
@@ -198,51 +201,6 @@ public class ModificationQuestionnaireController
             question.Day = response?.Day;
             question.Month = response?.Month;
             question.Year = response?.Year;
-        }
-
-        if (!autoSearchEnabled)
-        {
-            var sponsorOrgInput = questions.FirstOrDefault(q => string.Equals(q.QuestionType, "rts:org_lookup", StringComparison.OrdinalIgnoreCase));
-
-            // Check if the sponsor organisation input is null or empty.
-            if (sponsorOrgInput is not null)
-            {
-                var searchPerformed = searchedPerformed == "searched:true";
-                var selectedOrg = model.SponsorOrgSearch.SelectedOrganisation;
-                var searchedText = model.SponsorOrgSearch.SearchText;
-
-                if (searchPerformed)
-                {
-                    // If a search was performed, only assign if a selection was made
-                    sponsorOrgInput.AnswerText = string.IsNullOrWhiteSpace(selectedOrg) ? string.Empty : selectedOrg;
-                }
-                else
-                {
-                    // No search was performed, check if we have a selected org previously
-                    if (!string.IsNullOrWhiteSpace(selectedOrg))
-                    {
-                        // searched text was cleared or changed
-                        if
-                        (
-                            string.IsNullOrWhiteSpace(searchedText) ||
-                            !selectedOrg.Equals(searchedText, StringComparison.OrdinalIgnoreCase)
-                        )
-                        {
-                            // Cleared search or mismatch
-                            sponsorOrgInput.AnswerText = string.Empty;
-                            model.SponsorOrgSearch.SelectedOrganisation = string.Empty;
-                        }
-                        else
-                        {
-                            sponsorOrgInput.AnswerText = selectedOrg;
-                        }
-                    }
-                    else
-                    {
-                        sponsorOrgInput.AnswerText = string.Empty;
-                    }
-                }
-            }
         }
 
         // override the submitted model
@@ -279,6 +237,21 @@ public class ModificationQuestionnaireController
         // so we need to resume from the next stage
         if (saveAndContinue == bool.TrueString)
         {
+            if (navigation.CurrentSection?.IsMandatory is true)
+            {
+                var answers = questions.FindAll(question => !question.IsMissingAnswer());
+
+                // if all the answers are missing redirect to Review page,
+                // current section is mandatory for the next section
+                if (answers.Count == 0)
+                {
+                    TempData[TempDataKeys.PreviousStage] = navigation.CurrentStage;
+                    TempData[TempDataKeys.PreviousCategory] = navigation.CurrentCategory;
+
+                    return RedirectToAction(nameof(SubmitApplication), new { projectRecordId = application.Id });
+                }
+            }
+
             // if the user is at the last stage and clicks on Save and Continue
             if (string.IsNullOrWhiteSpace(navigation.NextStage))
             {
@@ -305,10 +278,42 @@ public class ModificationQuestionnaireController
             return RedirectToRoute(PostApprovalRoute, new { projectRecordId = application.Id });
         }
 
+        if (reviewAnswers == bool.TrueString)
+        {
+            if (navigation.CurrentSection?.IsMandatory is true)
+            {
+                var answers = questions.FindAll(question => !question.IsMissingAnswer());
+
+                // if all the answers are missing redirect to Review page,
+                // current section is mandatory for the next section
+                if (answers.Count == 0)
+                {
+                    TempData[TempDataKeys.PreviousStage] = navigation.CurrentStage;
+                    TempData[TempDataKeys.PreviousCategory] = navigation.CurrentCategory;
+
+                    return RedirectToAction(nameof(SubmitApplication), new { projectRecordId = application.Id });
+                }
+                else
+                {
+                    // otherwise resume from the NextStage in sequence
+                    return RedirectToAction(nameof(Resume), new
+                    {
+                        projectRecordId = application.Id,
+                        categoryId = navigation.NextCategory,
+                        sectionId = navigation.NextStage,
+                        reviewAnswers
+                    });
+                }
+            }
+
+            return RedirectToAction(nameof(SubmitApplication), new { projectRecordId = application.Id });
+        }
+
         // continue rendering the questionnaire if the above conditions are not true
         return RedirectToAction(nameof(DisplayQuestionnaire), new
         {
-            navigation.NextStage
+            sectionId = navigation.NextStage,
+            reviewAnswers
         });
     }
 
@@ -324,14 +329,7 @@ public class ModificationQuestionnaireController
         // get the responent answers for the category
         var respondentServiceResponse = await respondentService.GetModificationAnswers(projectModificationChangeId, projectRecordId);
 
-        var specificAreaOfChange = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeId);
-
-        var specificAreaOfChangeId = Guid.Empty;
-
-        if (specificAreaOfChange is not null)
-        {
-            specificAreaOfChangeId = (Guid)specificAreaOfChange;
-        }
+        var specificAreaOfChangeId = GetSpecificAreaOfChangeId();
 
         // get the questions for all categories
         var questionSetServiceResponse = await questionSetService.GetModificationsJourney(specificAreaOfChangeId.ToString());
@@ -379,90 +377,83 @@ public class ModificationQuestionnaireController
     /// Gets all questions for the application. Validates for each category
     /// and display the progress of the application
     /// </summary>
-    public async Task<IActionResult> ConfirmModificationChanges()
-    {
-        var (projectModificationId, projectModificationChangeId) = CheckModification();
+    //public async Task<IActionResult> ConfirmModificationChanges()
+    //{
+    //    var (projectModificationId, projectModificationChangeId) = CheckModification();
 
-        // get the application from the session
-        // to get the projectApplicationId
-        var application = await LoadApplication();
+    //    // get the application from the session
+    //    // to get the projectApplicationId
+    //    var application = await LoadApplication();
 
-        // get the respondent answers for the category
-        var respondentServiceResponse = await respondentService.GetModificationAnswers(projectModificationChangeId, application!.Id);
+    //    // get the respondent answers for the category
+    //    var respondentServiceResponse = await respondentService.GetModificationAnswers(projectModificationChangeId, application!.Id);
 
-        // return the error view if unsuccessfull
-        if (!respondentServiceResponse.IsSuccessStatusCode)
-        {
-            // return the error page
-            return this.ServiceError(respondentServiceResponse);
-        }
+    //    // return the error view if unsuccessfull
+    //    if (!respondentServiceResponse.IsSuccessStatusCode)
+    //    {
+    //        // return the error page
+    //        return this.ServiceError(respondentServiceResponse);
+    //    }
 
-        var specificAreaOfChange = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeId);
+    //    var specificAreaOfChangeId = GetSpecificAreaOfChangeId();
 
-        var specificAreaOfChangeId = Guid.Empty;
+    //    // get the questions for all categories
+    //    var questionSetServiceResponse = await questionSetService.GetModificationsJourney(specificAreaOfChangeId.ToString());
 
-        if (specificAreaOfChange is not null)
-        {
-            specificAreaOfChangeId = (Guid)specificAreaOfChange;
-        }
+    //    // return the error view if unsuccessfull
+    //    if (!questionSetServiceResponse.IsSuccessStatusCode)
+    //    {
+    //        // return the error page
+    //        return this.ServiceError(questionSetServiceResponse);
+    //    }
 
-        // get the questions for all categories
-        var questionSetServiceResponse = await questionSetService.GetModificationsJourney(specificAreaOfChangeId.ToString());
+    //    var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(questionSetServiceResponse.Content!);
+    //    var questions = questionnaire.Questions;
 
-        // return the error view if unsuccessfull
-        if (!questionSetServiceResponse.IsSuccessStatusCode)
-        {
-            // return the error page
-            return this.ServiceError(questionSetServiceResponse);
-        }
+    //    var respondentAnswers = respondentServiceResponse.Content!;
 
-        var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(questionSetServiceResponse.Content!);
-        var questions = questionnaire.Questions;
+    //    // validate each category
+    //    foreach (var questionsGroup in questions.ToLookup(q => q.Category))
+    //    {
+    //        var category = questionsGroup.Key;
 
-        var respondentAnswers = respondentServiceResponse.Content!;
+    //        // get the answers for the category
+    //        var answers = respondentAnswers.Where(r => r.CategoryId == category).ToList();
 
-        // validate each category
-        foreach (var questionsGroup in questions.ToLookup(q => q.Category))
-        {
-            var category = questionsGroup.Key;
+    //        ValidationContext<QuestionnaireViewModel> context;
 
-            // get the answers for the category
-            var answers = respondentAnswers.Where(r => r.CategoryId == category).ToList();
+    //        // if we have answers, update the model with the provided answers
+    //        UpdateWithAnswers(answers, [.. questionsGroup.Select(q => q)]);
 
-            ValidationContext<QuestionnaireViewModel> context;
+    //        // using the FluentValidation, create a new context for the model
+    //        context = new ValidationContext<QuestionnaireViewModel>(questionnaire);
 
-            // if we have answers, update the model with the provided answers
-            UpdateWithAnswers(answers, [.. questionsGroup.Select(q => q)]);
+    //        // this is required to get the questions in the validator
+    //        // before the validation cicks in
+    //        context.RootContextData["questions"] = questionnaire.Questions;
+    //        context.RootContextData["ValidateMandatoryOnly"] = true;
 
-            // using the FluentValidation, create a new context for the model
-            context = new ValidationContext<QuestionnaireViewModel>(questionnaire);
+    //        // call the ValidateAsync to execute the validation
+    //        // this will trigger the fluentvalidation using the injected validator if configured
+    //        var result = await validator.ValidateAsync(context);
+    //        if (!result.IsValid)
+    //        {
+    //            // Copy the validation results into ModelState.
+    //            // ASP.NET uses the ModelState collection to populate
+    //            // error messages in the View.
+    //            foreach (var error in result.Errors)
+    //            {
+    //                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+    //            }
 
-            // this is required to get the questions in the validator
-            // before the validation cicks in
-            context.RootContextData["questions"] = questionnaire.Questions;
-            context.RootContextData["ValidateMandatoryOnly"] = true;
+    //            return View(ModificationChangesReview, questionnaire);
+    //        }
+    //    }
 
-            // call the ValidateAsync to execute the validation
-            // this will trigger the fluentvalidation using the injected validator if configured
-            var result = await validator.ValidateAsync(context);
-            if (!result.IsValid)
-            {
-                // Copy the validation results into ModelState.
-                // ASP.NET uses the ModelState collection to populate
-                // error messages in the View.
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
-                }
-
-                return View(ModificationChangesReview, questionnaire);
-            }
-        }
-
-        // TODO: When we have the requirements ready,
-        // change it to go to the confirmation page i.e. submitted to sponsor
-        return RedirectToRoute(PostApprovalRoute, new { projectRecordId = application.Id });
-    }
+    //    // TODO: When we have the requirements ready,
+    //    // change it to go to the confirmation page i.e. submitted to sponsor
+    //    return RedirectToRoute(PostApprovalRoute, new { projectRecordId = application.Id });
+    //}
 
     /// <summary>
     /// Retrieves a list of organisations based on the provided name, role, and optional page size.
@@ -738,18 +729,25 @@ public class ModificationQuestionnaireController
     /// <summary>
     /// Sets the Previous, Current, and Next stages required for navigation.
     /// </summary>
-    /// <param name="section">Section of the current stage</param>
+    /// <param name="sectionId">Section Id of the current stage</param>
     /// <returns>A <see cref="NavigationDto"/> containing previous, current, and next stage/category information for navigation.</returns>
     /// <remarks>
     /// This method retrieves the previous, current, and next question sections for the given section and category.
     /// It uses the QuestionSetService to fetch section details and stores navigation state in TempData for use in the UI.
     /// </remarks>
-    private async Task<NavigationDto> SetStage(string section)
+    private async Task<NavigationDto> SetStage(string sectionId)
     {
+        var specificAreaOfChangeId = GetSpecificAreaOfChangeId();
+
+        if (specificAreaOfChangeId == Guid.Empty)
+        {
+            return new();
+        }
+
         // Fetch previous, current, and next section responses from the question set service
-        var previousResponse = await questionSetService.GetModificationPreviousQuestionSection(section);
-        var currentResponse = await questionSetService.GetModificationQuestionSet();
-        var nextResponse = await questionSetService.GetModificationNextQuestionSection(section);
+        var currentResponse = await questionSetService.GetModificationsJourney(specificAreaOfChangeId.ToString());
+        var previousResponse = await questionSetService.GetModificationPreviousQuestionSection(sectionId);
+        var nextResponse = await questionSetService.GetModificationNextQuestionSection(sectionId);
 
         // Extract previous stage and category if available and matches the current category
         string previousStage = (previousResponse.IsSuccessStatusCode, previousResponse.Content?.SectionId) switch
@@ -767,8 +765,8 @@ public class ModificationQuestionnaireController
         };
 
         // Find the current section in the list of all sections for the current category
-        var currentSection = currentResponse?.Content?.Sections.FirstOrDefault();
-        string currentStage = currentSection?.SectionId ?? section;
+        var currentSection = currentResponse?.Content?.Sections.FirstOrDefault(section => section.Id == sectionId);
+        string currentStage = currentSection?.SectionId ?? sectionId;
         string currentCategory = currentSection?.CategoryId ?? "";
 
         // Extract next stage and category if available and matches the current category
@@ -792,7 +790,7 @@ public class ModificationQuestionnaireController
         TempData[TempDataKeys.CurrentStage] = currentStage;
 
         // Return the navigation DTO with all relevant navigation information
-        return new NavigationDto
+        var navigationDto = new NavigationDto
         {
             PreviousCategory = previousCategory,
             PreviousStage = previousStage,
@@ -801,5 +799,38 @@ public class ModificationQuestionnaireController
             NextCategory = nextCategory,
             NextStage = nextStage
         };
+
+        if (previousResponse.IsSuccessStatusCode)
+        {
+            navigationDto.PreviousSection = previousResponse.Content;
+        }
+
+        if (currentSection != null)
+        {
+            navigationDto.CurrentSection = new QuestionSectionsResponse
+            {
+                SectionId = currentSection.SectionId,
+                SectionName = currentSection.SectionName,
+                QuestionCategoryId = currentSection.CategoryId,
+                StaticViewName = currentSection.StaticViewName,
+                IsMandatory = currentSection.IsMandatory
+            };
+        }
+
+        if (nextResponse.IsSuccessStatusCode)
+        {
+            navigationDto.NextSection = nextResponse.Content;
+        }
+
+        return navigationDto;
+    }
+
+    private Guid GetSpecificAreaOfChangeId()
+    {
+        var specificAreaOfChange = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeId);
+
+        return specificAreaOfChange is not null ?
+            (Guid)specificAreaOfChange :
+            Guid.Empty;
     }
 }

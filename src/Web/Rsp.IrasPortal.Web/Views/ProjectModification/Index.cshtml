@@ -32,7 +32,7 @@
             $"{prefix}{Model.Questions.FirstOrDefault()?.Section} - Make changes to research";
 }
 
-@if (await featureManager.IsEnabledAsync(Features.ProgressiveEnhancement))
+@if (await featureManager.IsEnabledAsync(FeatureFlags.ProgressiveEnhancement))
 {
     <script src="~/lib/jquery/dist/jquery.js"></script>
 
@@ -127,7 +127,7 @@
 
                     <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
 
-                    @foreach (var question in Model.Questions)
+                    @foreach (var question in Model.Questions.Where(question => question.SectionId == currentStage))
                     {
                         var index = question.Index;
 
@@ -193,7 +193,7 @@
                 }
                 else
                 {
-                    <partial name="_SubmitButton" model="@("mqc:saveresponses", "Save changes", new Dictionary<string, string> { { "submit", bool.TrueString } })" />
+                    <partial name="_SubmitButton" model="@("mqc:saveresponses", "Save changes", new Dictionary<string, string> { { "reviewAnswers", bool.TrueString } })" />
                 }
             </div>
 

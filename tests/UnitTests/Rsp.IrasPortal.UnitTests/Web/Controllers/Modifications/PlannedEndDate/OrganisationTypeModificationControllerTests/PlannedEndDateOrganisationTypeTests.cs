@@ -8,7 +8,7 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.Modifications.PlannedEndDate.OrganisationTypeModificationControllerTests;
 
-public class PlannedEndDateOrganisationTypeTests : TestServiceBase<ProjectModificationController>
+public class PlannedEndDateOrganisationTypeTests : TestServiceBase<ModificationsController>
 {
     [Fact]
     public void PlannedEndDateOrganisationType_ReturnsView_WithPopulatedModelFromTempData()
@@ -33,7 +33,7 @@ public class PlannedEndDateOrganisationTypeTests : TestServiceBase<ProjectModifi
         model.ShortTitle.ShouldBe("Test Project");
         model.IrasId.ShouldBe("12345");
         model.ModificationIdentifier.ShouldBe("MOD-1");
-        model.PageTitle.ShouldBe("Test Area");
+        model.SpecificAreaOfChange.ShouldBe("Test Area");
         model.SelectedOrganisationTypes.ShouldContain("NHS/HSC");
     }
 
@@ -52,7 +52,7 @@ public class PlannedEndDateOrganisationTypeTests : TestServiceBase<ProjectModifi
         model.ShortTitle.ShouldBeEmpty();
         model.IrasId.ShouldBeEmpty();
         model.ModificationIdentifier.ShouldBeEmpty();
-        model.PageTitle.ShouldBeEmpty();
+        model.SpecificAreaOfChange.ShouldBeEmpty();
         model.SelectedOrganisationTypes.ShouldBeEmpty();
     }
 }

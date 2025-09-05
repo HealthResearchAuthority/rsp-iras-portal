@@ -13,19 +13,20 @@
     });
 
 
-    var area = TempData.Peek(TempDataKeys.ProjectModification.AreaOfChangeId) as string;
-    var specificArea = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeId) as string;
-    var areaId = default(string);
-    var specificAreaId = default(string);
+    var area = TempData.Peek(TempDataKeys.ProjectModification.AreaOfChangeId);
+    var specificArea = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeId);
+
+    var areaId = Guid.Empty;
+    var specificAreaId = Guid.Empty;
 
     if (area != null)
     {
-        areaId = area;
+        areaId = (Guid)area;
     }
 
     if (specificArea != null)
     {
-        specificAreaId = specificArea;
+        specificAreaId = (Guid)specificArea;
     }
 }
 

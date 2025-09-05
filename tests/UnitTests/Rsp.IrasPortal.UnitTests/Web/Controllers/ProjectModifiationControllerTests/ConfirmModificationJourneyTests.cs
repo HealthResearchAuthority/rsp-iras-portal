@@ -15,7 +15,7 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModifiationControllerTests;
 
-public class ConfirmModificationJourneyTests : TestServiceBase<ProjectModificationController>
+public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsController>
 {
     [Theory, AutoData]
     public async Task ConfirmModificationJourney_ReturnsView_WhenValidationFails(

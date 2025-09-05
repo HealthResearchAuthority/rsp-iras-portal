@@ -24,7 +24,7 @@ public class BaseProjectModificationViewModel
     /// <summary>
     /// Gets or sets the title displayed on the page for context.
     /// </summary>
-    public string? PageTitle { get; set; }
+    public string? SpecificAreaOfChange { get; set; }
 
     /// <summary>
     /// Gets or sets the Project Record Id.

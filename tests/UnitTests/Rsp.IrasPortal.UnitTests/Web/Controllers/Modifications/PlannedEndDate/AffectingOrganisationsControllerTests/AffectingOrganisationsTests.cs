@@ -8,7 +8,7 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.Modifications.PlannedEndDate.AffectingOrganisationsControllerTests;
 
-public class AffectingOrganisationsTests : TestServiceBase<ProjectModificationController>
+public class AffectingOrganisationsTests : TestServiceBase<ModificationsController>
 {
     [Fact]
     public void AffectingOrganisations_ReturnsView_WithPopulatedModelFromTempData()
@@ -36,7 +36,7 @@ public class AffectingOrganisationsTests : TestServiceBase<ProjectModificationCo
         model.ShortTitle.ShouldBe("Test Project");
         model.IrasId.ShouldBe("12345");
         model.ModificationIdentifier.ShouldBe("MOD-1");
-        model.PageTitle.ShouldBe("Test Area");
+        model.SpecificAreaOfChange.ShouldBe("Test Area");
         model.SelectedLocations.ShouldContain("England");
         model.SelectedAffectedOrganisations.ShouldBe("OPT0323");
         model.SelectedAdditionalResources.ShouldBe("OPT0004");
@@ -57,7 +57,7 @@ public class AffectingOrganisationsTests : TestServiceBase<ProjectModificationCo
         model.ShortTitle.ShouldBeEmpty();
         model.IrasId.ShouldBeEmpty();
         model.ModificationIdentifier.ShouldBeEmpty();
-        model.PageTitle.ShouldBeEmpty();
+        model.SpecificAreaOfChange.ShouldBeEmpty();
         model.SelectedLocations.ShouldBeEmpty();
         model.SelectedAffectedOrganisations.ShouldBeNull();
         model.SelectedAdditionalResources.ShouldBeNull();

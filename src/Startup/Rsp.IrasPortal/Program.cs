@@ -11,6 +11,7 @@ using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Configuration.AppConfiguration;
 using Rsp.IrasPortal.Configuration.Auth;
 using Rsp.IrasPortal.Configuration.Dependencies;
+using Rsp.IrasPortal.Configuration.FeatureFolders;
 using Rsp.IrasPortal.Configuration.Health;
 using Rsp.IrasPortal.Configuration.HttpClients;
 using Rsp.IrasPortal.Web;
@@ -74,7 +75,7 @@ services.AddHttpClients(appSettings!);
 // routing configuration
 services.AddRouting(options => options.LowercaseUrls = true);
 
-if (await featureManager.IsEnabledAsync(Features.OneLogin))
+if (await featureManager.IsEnabledAsync(FeatureFlags.OneLogin))
 {
     services.AddOneLoginAuthentication(appSettings);
 }
@@ -90,12 +91,16 @@ services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+
+var featureFolderOptions = new FeatureFolderOptions();
+
 services
     .AddControllersWithViews(async options =>
     {
+        options.Conventions.Add(new FeatureControllerModelConvention(featureFolderOptions));
         options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
 
-        if (await featureManager.IsEnabledAsync(Features.InterceptedLogging))
+        if (await featureManager.IsEnabledAsync(FeatureFlags.InterceptedLogging))
         {
             options.Filters.Add<LogActionFilter>();
         }
@@ -114,6 +119,7 @@ services
             }
         ));
     })
+    .AddRazorOptions(options => options.ConfigureFeatureFolders(featureFolderOptions))
     .AddSessionStateTempDataProvider();
 
 
@@ -156,13 +162,13 @@ var config = TypeAdapterConfig.GlobalSettings;
 // register the mapping configuration
 config.Scan(typeof(MappingRegister).Assembly);
 
-if (await featureManager.IsEnabledAsync(Features.InterceptedLogging))
+if (await featureManager.IsEnabledAsync(FeatureFlags.InterceptedLogging))
 {
     services.AddLoggingInterceptor<LoggingInterceptor>();
 }
 
 // If the "UseFrontDoor" feature is enabled, configure forwarded headers options
-if (await featureManager.IsEnabledAsync(Features.UseFrontDoor))
+if (await featureManager.IsEnabledAsync(FeatureFlags.UseFrontDoor))
 {
     // Configure ForwardedHeadersOptions to handle proxy headers
     services.Configure<ForwardedHeadersOptions>(options =>

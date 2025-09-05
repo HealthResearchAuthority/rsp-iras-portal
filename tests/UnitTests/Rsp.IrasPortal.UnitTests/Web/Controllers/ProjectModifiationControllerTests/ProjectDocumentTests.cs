@@ -7,7 +7,7 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModifiationControllerTests;
 
-public class ProjectDocumentTests : TestServiceBase<ProjectModificationController>
+public class ProjectDocumentTests : TestServiceBase<ModificationsController>
 {
     [Theory, AutoData]
     public void ProjectDocument_ReturnsView_WithCorrectViewModel(
@@ -42,7 +42,7 @@ public class ProjectDocumentTests : TestServiceBase<ProjectModificationControlle
         model!.ShortTitle.ShouldBe(shortTitle);
         model.IrasId.ShouldBe(irasId);
         model.ModificationIdentifier.ShouldBe(modificationId);
-        model.PageTitle.ShouldBe($"Add documents for {specificAreaOfChange}");
+        model.SpecificAreaOfChange.ShouldBe($"Add documents for {specificAreaOfChange}");
     }
 
     [Fact]
@@ -72,6 +72,6 @@ public class ProjectDocumentTests : TestServiceBase<ProjectModificationControlle
         model!.ShortTitle.ShouldBeEmpty();
         model.IrasId.ShouldBeEmpty();
         model.ModificationIdentifier.ShouldBeEmpty();
-        model.PageTitle.ShouldBeEmpty();
+        model.SpecificAreaOfChange.ShouldBeEmpty();
     }
 }

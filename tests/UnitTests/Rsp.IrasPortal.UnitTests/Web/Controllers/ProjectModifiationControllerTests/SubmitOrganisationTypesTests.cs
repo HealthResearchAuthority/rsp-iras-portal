@@ -11,7 +11,7 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModifiationControllerTests;
 
-public class SubmitOrganisationTypesTests : TestServiceBase<ProjectModificationController>
+public class SubmitOrganisationTypesTests : TestServiceBase<ModificationsController>
 {
     [Fact]
     public async Task SubmitOrganisationTypes_ReturnsRedirect_WhenModelIsValid()
@@ -35,7 +35,7 @@ public class SubmitOrganisationTypesTests : TestServiceBase<ProjectModificationC
         Sut.HttpContext.Items["RespondentId"] = "test-respondent-id";
 
         // Mock SaveModificationAnswers to avoid null reference on HttpContext/TempData
-        Mocker.GetMock<ProjectModificationController>().CallBase = true;
+        Mocker.GetMock<ModificationsController>().CallBase = true;
         Mocker
             .GetMock<IRespondentService>()
             .Setup(s => s.SaveModificationAnswers(It.IsAny<ProjectModificationAnswersRequest>()))

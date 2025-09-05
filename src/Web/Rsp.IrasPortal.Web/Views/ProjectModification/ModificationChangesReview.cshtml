@@ -9,32 +9,46 @@
 @inject IFeatureManager featureManager
 @{
     // Try to read the IRAS ID from TempData, default to 0 if missing and Project Record Id default to empty string if missing
-    var irasId = TempData.Peek(TempDataKeys.IrasId) as int? ?? 0;
+    (string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
+    var previousStage = TempData[TempDataKeys.PreviousStage] as string;
+    //var previousCategory = TempData[TempDataKeys.PreviousCategory] as string;
+    //var currentStage = TempData[TempDataKeys.CurrentStage] as string;
+    var errorSummaryTitle = "There is a problem";
     var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty;
     var specificAreaOfChange = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeText) as string;
 
+    //Model.CurrentStage = currentStage!;
+
     // Group questions by their Section and order them by Sequence
     var groupedSections = Model.Questions
-.GroupBy(q => q.Section)
-.OrderBy(g => g.First().Sequence)
-.ToList();
+        .GroupBy(q => q.Section)
+        .OrderBy(g => g.First().Sequence)
+        .ToList();
 
-    // Get the key of the first section (e.g., for special handling like IRAS ID)
-    var firstSectionKey = groupedSections.FirstOrDefault()?.Key;
+    //    // Get the key of the first section (e.g., for special handling like IRAS ID)
+    //    var firstSectionKey = groupedSections.FirstOrDefault()?.Key;
 
-    // Get the last question from the last section for back navigation
-    var lastQuestion = groupedSections.LastOrDefault()?.FirstOrDefault();
+    //    // Get the last question from the last section for back navigation
+    //    var lastQuestion = groupedSections.LastOrDefault()?.FirstOrDefault();
 
-    // Title used in the validation error summary
-    var errorSummaryTitle = "There is a problem";
+    //    // Prepare the navigation model depending on whether we have a lastQuestion
+    //    var navModel = lastQuestion != null ?
+    //        ("mqc:displayquestionnaire", "Back", new Dictionary<string, string> { { "sectionId", lastQuestion.SectionId } }) :
+    //        ("pov:postapproval", "Back", new Dictionary<string, string> { { "projectRecordId", projectRecordId } });
 
-    // Prepare the navigation model depending on whether we have a lastQuestion
-    var navModel = lastQuestion != null ?
-        ("mqc:displayquestionnaire", "Back", new Dictionary<string, string> { { "sectionId", lastQuestion.SectionId } }) :
-        ("pov:postapproval", "Back", new Dictionary<string, string> { { "projectRecordId", projectRecordId } });
+    if (!string.IsNullOrEmpty(previousStage))
+    {
+        // If there is a previous stage, navigate to that stage in the questionnaire
+        navModel = ("mqc:displayquestionnaire", "Back", new() { { "sectionId", previousStage } });
+    }
+    else
+    {
+        // back to the area of changes view as that's where the jouney started from
+        navModel = ("pov:postapproval", "Back", new Dictionary<string, string> { { "projectRecordId", projectRecordId } });
+    }
 }
 
-@if (await featureManager.IsEnabledAsync(Features.ProgressiveEnhancement))
+@if (await featureManager.IsEnabledAsync(FeatureFlags.ProgressiveEnhancement))
 {
     // If progressive enhancement is enabled, add jQuery and custom JavaScript
     <script src="~/lib/jquery/dist/jquery.js"></script>
@@ -139,7 +153,7 @@
                         <dd class="govuk-summary-list__actions">
                             @if (!question.IsMissingAnswer())
                             {
-                                <a class="govuk-link" href="@Url.RouteUrl("qnc:displayquestionnaire", new { sectionId = question.SectionId, reviewAnswers = true })">
+                                <a class="govuk-link" href="@Url.RouteUrl("mqc:displayquestionnaire", new { sectionId = question.SectionId, reviewAnswers = true })">
                                     @question.GetActionText()<span class="govuk-visually-hidden"> @questionText</span>
                                 </a>
                             }

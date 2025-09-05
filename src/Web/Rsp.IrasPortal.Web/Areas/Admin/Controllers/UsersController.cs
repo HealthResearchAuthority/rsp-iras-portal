@@ -15,14 +15,13 @@ using Rsp.IrasPortal.Domain.Identity;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
-using Rsp.IrasPortal.Web.Validators;
 
 namespace Rsp.IrasPortal.Web.Areas.Admin.Controllers;
 
 [Area("Admin")]
 [Route("[area]/[controller]/[action]", Name = "admin:[action]")]
 [Authorize(Policy = "IsSystemAdministrator")]
-[FeatureGate(Features.Admin)]
+[FeatureGate(FeatureFlags.Admin)]
 public class UsersController(
     IUserManagementService userManagementService,
     IValidator<UserViewModel> validator,
@@ -709,7 +708,6 @@ public class UsersController(
         // Save applied filters to session
         HttpContext.Session.SetString(SessionKeys.UsersSearch, JsonSerializer.Serialize(model.Search));
 
-
         // Call Index with matching parameter set
         return await Index(
             1, // pageNumber
@@ -783,43 +781,43 @@ public class UsersController(
                 break;
             // NEW: turn off selected Review Bodies
             case UsersSearch.ReviewBodyKey:
-            {
-                // if value is empty -> clear all selections
-                if (string.IsNullOrWhiteSpace(value))
                 {
-                    foreach (var rb in viewModel.Search.ReviewBodies) rb.IsSelected = false;
+                    // if value is empty -> clear all selections
+                    if (string.IsNullOrWhiteSpace(value))
+                    {
+                        foreach (var rb in viewModel.Search.ReviewBodies) rb.IsSelected = false;
+                        break;
+                    }
+
+                    var tokens = value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+                    foreach (var token in tokens)
+                    {
+                        if (Guid.TryParse(token, out var id))
+                        {
+                            foreach (var rb in viewModel.Search.ReviewBodies.Where(x => x.Id == id))
+                                rb.IsSelected = false;
+                        }
+                        else
+                        {
+                            foreach (var rb in viewModel.Search.ReviewBodies.Where(x =>
+                                            string.Equals(x.RegulatoryBodyName, token, StringComparison.OrdinalIgnoreCase) ||
+                                            string.Equals(x.DisplayName, token, StringComparison.OrdinalIgnoreCase)))
+                                rb.IsSelected = false;
+                        }
+                    }
+
                     break;
                 }
 
-                var tokens = value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
-                foreach (var token in tokens)
-                {
-                    if (Guid.TryParse(token, out var id))
-                    {
-                        foreach (var rb in viewModel.Search.ReviewBodies.Where(x => x.Id == id))
-                            rb.IsSelected = false;
-                    }
-                    else
-                    {
-                        foreach (var rb in viewModel.Search.ReviewBodies.Where(x =>
-                                     string.Equals(x.RegulatoryBodyName, token, StringComparison.OrdinalIgnoreCase) ||
-                                     string.Equals(x.DisplayName, token, StringComparison.OrdinalIgnoreCase)))
-                            rb.IsSelected = false;
-                    }
-                }
-
-                break;
-            }
-
             // NEW: turn off selected Roles
             case UsersSearch.RoleKey:
-            {
-                foreach (var r in viewModel.Search.UserRoles.Where(x => x.DisplayName == value))
                 {
-                    r.IsSelected = false;
+                    foreach (var r in viewModel.Search.UserRoles.Where(x => x.DisplayName == value))
+                    {
+                        r.IsSelected = false;
+                    }
                 }
-            }
                 break;
         }
 

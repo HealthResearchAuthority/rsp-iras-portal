@@ -10,7 +10,7 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModifiationControllerTests;
 
-public class ReviewDocumentTests : TestServiceBase<ProjectModificationController>
+public class ReviewDocumentTests : TestServiceBase<ModificationsController>
 {
     [Theory, AutoData]
     public async Task Review_WithDocuments_ReturnsViewWithDocuments
@@ -65,7 +65,7 @@ public class ReviewDocumentTests : TestServiceBase<ProjectModificationController
         model.ShortTitle.ShouldBe(shortTitle);
         model.IrasId.ShouldBe(irasId);
         model.ModificationIdentifier.ShouldBe(modificationIdentifier);
-        model.PageTitle.ShouldBe($"Documents added for {specificAreaOfChange}");
+        model.SpecificAreaOfChange.ShouldBe($"Documents added for {specificAreaOfChange}");
 
         model.UploadedDocuments.Count.ShouldBe(documentResponses.Count);
     }

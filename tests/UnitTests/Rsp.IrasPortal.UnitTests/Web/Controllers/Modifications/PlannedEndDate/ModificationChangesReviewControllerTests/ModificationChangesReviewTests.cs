@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.Modifications.PlannedEndDate.ModificationChangesReviewControllerTests;
 
-public class ModificationChangesReviewTests : TestServiceBase<ProjectModificationController>
+public class ModificationChangesReviewTests : TestServiceBase<ModificationsController>
 {
     [Fact]
     public void ModificationChangesReview_ReturnsView_WithPopulatedModelFromTempData()
@@ -33,6 +33,6 @@ public class ModificationChangesReviewTests : TestServiceBase<ProjectModificatio
         model.ShortTitle.ShouldBe("Test Project");
         model.IrasId.ShouldBe("12345");
         model.ModificationIdentifier.ShouldBe("MOD-1");
-        model.PageTitle.ShouldBe("Test Area");
+        model.SpecificAreaOfChange.ShouldBe("Test Area");
     }
 }

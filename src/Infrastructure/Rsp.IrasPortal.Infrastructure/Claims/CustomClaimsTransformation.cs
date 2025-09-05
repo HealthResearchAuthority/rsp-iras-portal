@@ -139,7 +139,7 @@ public class CustomClaimsTransformation
             }
 
             // for one login
-            var oneLoginEnabled = await featureManager.IsEnabledAsync(Features.OneLogin);
+            var oneLoginEnabled = await featureManager.IsEnabledAsync(FeatureFlags.OneLogin);
 
             if (oneLoginEnabled && !string.IsNullOrEmpty(user.User?.GivenName))
             {
@@ -191,7 +191,7 @@ public class CustomClaimsTransformation
         // bearer_token properties but with newly added
         // claims.
 
-        var oneLoginEnabled = await featureManager.IsEnabledAsync(Features.OneLogin);
+        var oneLoginEnabled = await featureManager.IsEnabledAsync(FeatureFlags.OneLogin);
 
         var audience = oneLoginEnabled ?
             appSettings.Value.OneLogin.ClientId :

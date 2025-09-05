@@ -15,7 +15,7 @@ using Xunit;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.Modifications.PlannedEndDate.PlannedEndDateModificationControllerTests;
 
-public class SavePlannedEndDateTests : TestServiceBase<ProjectModificationController>
+public class SavePlannedEndDateTests : TestServiceBase<ModificationsController>
 {
     [Fact]
     public async Task SavePlannedEndDate_ReturnsViewWithErrors_WhenValidationFails()

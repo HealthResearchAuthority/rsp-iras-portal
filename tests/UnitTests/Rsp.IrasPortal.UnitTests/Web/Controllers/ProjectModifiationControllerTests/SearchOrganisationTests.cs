@@ -6,7 +6,7 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModifiationControllerTests;
 
-public class SearchOrganisationTests : TestServiceBase<ProjectModificationController>
+public class SearchOrganisationTests : TestServiceBase<ModificationsController>
 {
     [Fact]
     public async Task SearchOrganisation_Post_ReturnsView_WithValidationErrors()

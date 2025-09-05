@@ -11,7 +11,7 @@ using ProblemDetails = Microsoft.AspNetCore.Mvc.ProblemDetails;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModifiationControllerTests;
 
-public class CreateModification : TestServiceBase<ProjectModificationController>
+public class CreateModification : TestServiceBase<ModificationsController>
 {
     [Theory, AutoData]
     public async Task CreateModification_ReturnsProblem_WhenTempDataMissing

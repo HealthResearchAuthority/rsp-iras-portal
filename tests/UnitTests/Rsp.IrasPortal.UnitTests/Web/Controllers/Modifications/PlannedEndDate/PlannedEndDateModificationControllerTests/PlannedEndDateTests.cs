@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.Modifications.PlannedEndDate.PlannedEndDateModificationControllerTests;
 
-public class PlannedEndDateTests : TestServiceBase<ProjectModificationController>
+public class PlannedEndDateTests : TestServiceBase<ModificationsController>
 {
     [Fact]
     public void PlannedEndDate_ReturnsView_WithPopulatedModelFromTempData()
@@ -37,7 +37,7 @@ public class PlannedEndDateTests : TestServiceBase<ProjectModificationController
         model.ShortTitle.ShouldBe("Test Project");
         model.IrasId.ShouldBe("12345");
         model.ModificationIdentifier.ShouldBe("MOD-1");
-        model.PageTitle.ShouldBe("Test Area");
+        model.SpecificAreaOfChange.ShouldBe("Test Area");
         model.CurrentPlannedEndDate.ShouldBe("01 January 2025");
         model.NewPlannedEndDate.Day.ShouldBe("02");
         model.NewPlannedEndDate.Month.ShouldBe("02");
@@ -60,7 +60,7 @@ public class PlannedEndDateTests : TestServiceBase<ProjectModificationController
         model.ShortTitle.ShouldBeEmpty();
         model.IrasId.ShouldBeEmpty();
         model.ModificationIdentifier.ShouldBeEmpty();
-        model.PageTitle.ShouldBeEmpty();
+        model.SpecificAreaOfChange.ShouldBeEmpty();
         model.CurrentPlannedEndDate.ShouldBeEmpty();
         model.NewPlannedEndDate.Day.ShouldBeNull();
         model.NewPlannedEndDate.Month.ShouldBeNull();

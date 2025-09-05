@@ -3,12 +3,18 @@ using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
-public partial class ProjectModificationController : Controller
+public partial class ProjectModificationController
+    (
+        IProjectModificationsService projectModificationsService,
+        IRespondentService respondentService,
+        IBlobStorageService blobStorageService
+    ) : Controller
 {
     private const string ContainerName = "staging";
 
@@ -23,7 +29,7 @@ public partial class ProjectModificationController : Controller
 
         var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationUploadDocumentsViewModel());
 
-        viewModel.PageTitle = !string.IsNullOrEmpty(specificAreaOfChange) ?
+        viewModel.SpecificAreaOfChange = !string.IsNullOrEmpty(specificAreaOfChange) ?
             $"Add documents for {specificAreaOfChange}"
             : string.Empty;
 
@@ -96,7 +102,7 @@ public partial class ProjectModificationController : Controller
             ShortTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
             IrasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty,
             ModificationIdentifier = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string ?? string.Empty,
-            PageTitle = !string.IsNullOrEmpty(specificAreaOfChange)
+            SpecificAreaOfChange = !string.IsNullOrEmpty(specificAreaOfChange)
                 ? $"Documents added for {specificAreaOfChange}"
                 : string.Empty
         };

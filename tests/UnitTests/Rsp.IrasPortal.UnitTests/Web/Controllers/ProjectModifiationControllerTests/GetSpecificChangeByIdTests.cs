@@ -10,7 +10,7 @@ using Rsp.IrasPortal.Web.Controllers;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModifiationControllerTests;
 
-public class GetSpecificChangeByIdTests : TestServiceBase<ProjectModificationController>
+public class GetSpecificChangeByIdTests : TestServiceBase<ModificationsController>
 {
     [Fact]
     public void GetSpecificChangesByAreaId_ReturnsSpecificChanges_WhenValidAreaOfChangeId()

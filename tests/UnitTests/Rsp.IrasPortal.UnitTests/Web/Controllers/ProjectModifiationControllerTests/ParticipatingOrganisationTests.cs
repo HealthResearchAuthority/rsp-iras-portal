@@ -11,7 +11,7 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModifiationControllerTests;
 
-public class ParticipatingOrganisationTests : TestServiceBase<ProjectModificationController>
+public class ParticipatingOrganisationTests : TestServiceBase<ModificationsController>
 {
     [Fact]
     public async Task ParticipatingOrganisation_ReturnsCorrectView_WithPopulatedViewModel()
@@ -41,7 +41,7 @@ public class ParticipatingOrganisationTests : TestServiceBase<ProjectModificatio
         model.ShortTitle.ShouldBe(expectedShortTitle);
         model.IrasId.ShouldBe(expectedIrasId);
         model.ModificationIdentifier.ShouldBe(expectedModId);
-        model.PageTitle.ShouldBe(expectedPageTitle);
+        model.SpecificAreaOfChange.ShouldBe(expectedPageTitle);
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public class ParticipatingOrganisationTests : TestServiceBase<ProjectModificatio
         model.ShortTitle.ShouldBeEmpty();
         model.IrasId.ShouldBeEmpty();
         model.ModificationIdentifier.ShouldBeEmpty();
-        model.PageTitle.ShouldBeEmpty();
+        model.SpecificAreaOfChange.ShouldBeEmpty();
     }
 
     [Fact]

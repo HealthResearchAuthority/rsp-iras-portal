@@ -19,12 +19,20 @@ public class SectionModel
     /// </summary>
     public string? CategoryId { get; set; }
 
+    /// <summary>
+    /// Static view/action name to render/call
+    /// </summary>
     public string? StaticViewName { get; set; }
+
+    /// <summary>
+    /// Indicates if this section is mandatory for the next section
+    /// </summary>
+    public bool IsMandatory { get; set; }
 
     /// <summary>
     /// Contains the questions in this section
     /// </summary>
-    public IList<QuestionModel> Questions { get; set; } = new List<QuestionModel>();
+    public IList<QuestionModel> Questions { get; set; } = [];
 
     /// <summary>
     /// Contains UI content components in this section

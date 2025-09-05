@@ -9,7 +9,7 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModifiationControllerTests;
 
-public class UploadDocumentTests : TestServiceBase<ProjectModificationController>
+public class UploadDocumentTests : TestServiceBase<ModificationsController>
 {
     [Theory, AutoData]
     public async Task UploadDocuments_ValidInput_UploadsFilesAndRedirects

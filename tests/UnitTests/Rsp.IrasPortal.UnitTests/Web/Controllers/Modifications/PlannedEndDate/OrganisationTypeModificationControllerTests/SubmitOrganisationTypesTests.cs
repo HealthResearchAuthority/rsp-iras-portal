@@ -12,7 +12,7 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.Modifications.PlannedEndDate.OrganisationTypeModificationControllerTests;
 
-public class SubmitOrganisationTypesTests : TestServiceBase<ProjectModificationController>
+public class SubmitOrganisationTypesTests : TestServiceBase<ModificationsController>
 {
     [Fact]
     public async Task SubmitOrganisationTypes_ReturnsViewWithErrors_WhenValidationFails()

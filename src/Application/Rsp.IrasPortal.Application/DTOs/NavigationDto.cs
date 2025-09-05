@@ -8,4 +8,8 @@ public class NavigationDto
     public string CurrentStage { get; set; } = null!;
     public string NextCategory { get; set; } = null!;
     public string NextStage { get; set; } = null!;
+
+    public QuestionSectionsResponse? PreviousSection { get; set; }
+    public QuestionSectionsResponse? CurrentSection { get; set; }
+    public QuestionSectionsResponse? NextSection { get; set; }
 }

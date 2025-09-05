@@ -2,6 +2,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
@@ -11,7 +12,11 @@ namespace Rsp.IrasPortal.Web.Controllers;
 /// <summary>
 /// Controller responsible for handling project modification related actions.
 /// </summary>
-public partial class ProjectModificationController
+public class ParticipatingOrganisationsController
+(
+    IRtsService rtsService,
+    IValidator<SearchOrganisationViewModel> searchOrganisationValidator
+) : Controller
 {
     /// <summary>
     /// Returns the view for selecting a participating organisation.

@@ -13,7 +13,7 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.Modifications.PlannedEndDate.AffectingOrganisationsControllerTests;
 
-public class SaveAffectedOrganisationsResponsesTests : TestServiceBase<ProjectModificationController>
+public class SaveAffectedOrganisationsResponsesTests : TestServiceBase<ModificationsController>
 {
     [Fact]
     public async Task SaveAffectedOrganisationsResponses_ReturnsViewWithErrors_WhenValidationFails()

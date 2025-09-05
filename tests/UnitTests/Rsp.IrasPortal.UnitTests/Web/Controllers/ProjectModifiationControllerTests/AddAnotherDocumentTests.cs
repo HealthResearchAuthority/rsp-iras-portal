@@ -3,7 +3,7 @@ using Rsp.IrasPortal.Web.Controllers;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModifiationControllerTests;
 
-public class AddAnotherDocumentTests : TestServiceBase<ProjectModificationController>
+public class AddAnotherDocumentTests : TestServiceBase<ModificationsController>
 {
     [Fact]
     public void AddAnotherDocument_RedirectsToUploadDocuments()
@@ -14,6 +14,6 @@ public class AddAnotherDocumentTests : TestServiceBase<ProjectModificationContro
         // Assert
         result.ShouldBeOfType<RedirectToActionResult>();
         var redirectResult = result as RedirectToActionResult;
-        redirectResult!.ActionName.ShouldBe(nameof(ProjectModificationController.UploadDocuments));
+        redirectResult!.ActionName.ShouldBe(nameof(ModificationsController.UploadDocuments));
     }
 }

@@ -7,7 +7,7 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModifiationControllerTests;
 
-public class PlannedEndDateTests : TestServiceBase<ProjectModificationController>
+public class PlannedEndDateTests : TestServiceBase<ModificationsController>
 {
     [Fact]
     public async Task PlannedEndDate_ReturnsCorrectView_WithPopulatedViewModel()
@@ -37,7 +37,7 @@ public class PlannedEndDateTests : TestServiceBase<ProjectModificationController
         model.ShortTitle.ShouldBe(expectedShortTitle);
         model.IrasId.ShouldBe(expectedIrasId);
         model.ModificationIdentifier.ShouldBe(expectedModId);
-        model.PageTitle.ShouldBe(expectedPageTitle);
+        model.SpecificAreaOfChange.ShouldBe(expectedPageTitle);
     }
 
     [Fact]
@@ -57,6 +57,6 @@ public class PlannedEndDateTests : TestServiceBase<ProjectModificationController
         model.ShortTitle.ShouldBeEmpty();
         model.IrasId.ShouldBeEmpty();
         model.ModificationIdentifier.ShouldBeEmpty();
-        model.PageTitle.ShouldBeEmpty();
+        model.SpecificAreaOfChange.ShouldBeEmpty();
     }
 }

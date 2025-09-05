@@ -7,7 +7,7 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModifiationControllerTests;
 
-public class PlannedEndDatetOrganisationTypeTests : TestServiceBase<ProjectModificationController>
+public class PlannedEndDatetOrganisationTypeTests : TestServiceBase<ModificationsController>
 {
     [Fact]
     public async Task PlannedEndDatetOrganisationType_ReturnsCorrectView_WithPopulatedViewModel()
@@ -37,7 +37,7 @@ public class PlannedEndDatetOrganisationTypeTests : TestServiceBase<ProjectModif
         model.ShortTitle.ShouldBe(expectedShortTitle);
         model.IrasId.ShouldBe(expectedIrasId);
         model.ModificationIdentifier.ShouldBe(expectedModId);
-        model.PageTitle.ShouldBe(expectedPageTitle);
+        model.SpecificAreaOfChange.ShouldBe(expectedPageTitle);
 
         // Ensure OrganisationTypes dictionary contains expected keys and values
         model.OrganisationTypes.ShouldContainKey("OPT0025");
@@ -68,6 +68,6 @@ public class PlannedEndDatetOrganisationTypeTests : TestServiceBase<ProjectModif
         model.ShortTitle.ShouldBeEmpty();
         model.IrasId.ShouldBeEmpty();
         model.ModificationIdentifier.ShouldBeEmpty();
-        model.PageTitle.ShouldBeEmpty();
+        model.SpecificAreaOfChange.ShouldBeEmpty();
     }
 }

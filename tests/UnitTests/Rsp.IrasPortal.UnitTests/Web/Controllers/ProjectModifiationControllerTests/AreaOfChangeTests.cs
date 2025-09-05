@@ -12,7 +12,7 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModifiationControllerTests;
 
-public class AreaOfChangeTests : TestServiceBase<ProjectModificationController>
+public class AreaOfChangeTests : TestServiceBase<ModificationsController>
 {
     [Theory, AutoData]
     public async Task AreaOfChange_RedirectsToAreaOfChange_WhenSuccessful
