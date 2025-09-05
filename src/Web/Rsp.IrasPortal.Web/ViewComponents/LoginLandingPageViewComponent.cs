@@ -12,11 +12,11 @@ public class LoginLandingPageViewComponent(ICmsContentService cms) : ViewCompone
 
         var landingPageContent = await cms.GetHomeContent();
 
-        if (!landingPageContent.IsSuccessStatusCode || landingPageContent?.Content?.Properties?.LoginLandingPageContent == null)
+        if (!landingPageContent.IsSuccessStatusCode || landingPageContent?.Content == null)
         {
-            return View(viewName, new PageContent());
+            return View(viewName, new GenericPageResponse());
         }
 
-        return View(viewName, landingPageContent.Content.Properties.LoginLandingPageContent);
+        return View(viewName, landingPageContent.Content);
     }
 }

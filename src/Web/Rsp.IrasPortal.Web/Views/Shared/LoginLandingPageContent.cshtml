@@ -1,35 +1,20 @@
 ﻿@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
-@model PageContent
+@model GenericPageResponse
 
-@if (Model != null)
+
+@if (Model != null && Model.Properties.LoginLandingPageAboveTheFold != null)
 {
-	@foreach (var item in Model.Items)
-	{
-		@switch (item.Content.Properties)
-		{
-			case BodyTextProperties body:
-				@await Html.PartialAsync("~/Views/Shared/ContentComponents/BodyText.cshtml", body)
-				break;
+	<partial name="_ContentComponents.cshtml" model="@Model.Properties.LoginLandingPageAboveTheFold" />
+}
 
-			case AccordionProperties accordion:
-				@await Html.PartialAsync("~/Views/Shared/ContentComponents/Accordion.cshtml", accordion)
-				break;
+<a class="gem-c-button govuk-button govuk-button--start" asp-route="auth:signin">
+	Sign In
+	<svg class="govuk-button__start-icon govuk-!-display-none-print" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19" viewBox="0 0 33 40" focusable="false" aria-hidden="true">
+		<path fill="currentColor" d="M0 0h13l20 20-20 20H0l20-20z"></path>
+	</svg>
+</a>
 
-			case TabsProperties tabs:
-				@await Html.PartialAsync("~/Views/Shared/ContentComponents/Tabs.cshtml", tabs)
-				break;
-
-			case DetailsProperties details:
-				@await Html.PartialAsync("~/Views/Shared/ContentComponents/Details.cshtml", details)
-				break;
-
-			case HeadlineProperties headline:
-				@await Html.PartialAsync("~/Views/Shared/ContentComponents/Headline.cshtml", headline)
-				break;
-
-			case RichTextProperties rte:
-				@await Html.PartialAsync("~/Views/Shared/ContentComponents/RichText.cshtml", rte)
-				break;
-		}
-	}
+@if (Model != null && Model.Properties.LoginLandingPageBelowTheFold != null)
+{
+	<partial name="_ContentComponents.cshtml" model="@Model.Properties.LoginLandingPageBelowTheFold" />
 }
