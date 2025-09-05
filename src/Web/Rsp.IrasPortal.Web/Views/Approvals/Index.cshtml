@@ -25,7 +25,7 @@
 	}
 
 	private bool CanOpenPanelForAnyField(params string[] fieldNames)
-	{
+	{ 
 		return fieldNames.Any(CanOpenPanelForField);
 	}
 
@@ -479,7 +479,6 @@
 										CurrentSortField = Model.Pagination?.SortField,
 										CurrentSortDirection = Model.Pagination?.SortDirection,
 										TableId = tableId,
-										ComplexSearchQuery = Model.Search
 									};
 
 									<th scope="col" class="govuk-table__header govuk-table__header-sortable">
