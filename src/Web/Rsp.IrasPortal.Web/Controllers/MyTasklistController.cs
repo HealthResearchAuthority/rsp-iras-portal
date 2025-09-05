@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Security.Claims;
+using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -40,7 +41,8 @@ public class MyTasklistController(IProjectModificationsService projectModificati
             LeadNation = ["England"],
             FromDate = search.FromDate,
             ToDate = search.ToDate,
-            IrasId = search.IrasId
+            IrasId = search.IrasId,
+            ReviewerId = User?.FindFirst("userId")?.Value
         };
 
         // Reverse date logic when searching by "days since submission"
