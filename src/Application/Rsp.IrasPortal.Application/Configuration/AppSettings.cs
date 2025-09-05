@@ -33,6 +33,11 @@ public class AppSettings
     public Uri RtsServiceUri { get; set; } = null!;
 
     /// <summary>
+    /// Gets or sets the base URI of the CMS service.
+    /// </summary>
+    public Uri CmsUri { get; set; } = null!;
+
+    /// <summary>
     /// Authentication settings for the application
     /// </summary>
     public AuthSettings AuthSettings { get; set; } = null!;
@@ -61,4 +66,14 @@ public class AppSettings
     /// Microsoft clarity project id
     /// </summary>
     public string? ClarityProjectId { get; set; }
+
+    /// <summary>
+    /// Number of seconds the general page CMS content is cached
+    /// </summary>
+    public int? GeneralContentCacheDurationSeconds { get; set; }
+
+    /// <summary>
+    /// Number of seconds the global page CMS content is cached (eg. footer)
+    /// </summary>
+    public int? GlobalContentCacheDurationSeconds { get; set; }
 }
