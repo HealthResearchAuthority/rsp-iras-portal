@@ -170,7 +170,7 @@ public class ContinueToDetailsTests : TestServiceBase<ProjectModificationControl
         var viewResult = Assert.IsType<ViewResult>(result);
         var model = Assert.IsType<ModificationAddDocumentDetailsViewModel>(viewResult.Model);
 
-        var q = model.Questionnaire.Questions;
+        var q = model.Questions;
         Assert.NotNull(q);
     }
 
@@ -244,7 +244,7 @@ public class ContinueToDetailsTests : TestServiceBase<ProjectModificationControl
         var viewResult = Assert.IsType<ViewResult>(result);
         var model = Assert.IsType<ModificationAddDocumentDetailsViewModel>(viewResult.Model);
 
-        var q = model.Questionnaire.Questions;
+        var q = model.Questions;
         Assert.NotNull(q);
     }
 }

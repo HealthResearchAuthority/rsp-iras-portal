@@ -235,7 +235,7 @@ public partial class ProjectModificationController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> ContinueToDetails(Guid documentId)
+    public async Task<IActionResult> ContinueToDetails(Guid documentId, bool reviewAnswers = false)
     {
         var documentDetailsResponse = await respondentService.GetModificationDocumentDetails(documentId);
         if (documentDetailsResponse?.StatusCode != HttpStatusCode.OK || documentDetailsResponse.Content == null)
@@ -253,7 +253,8 @@ public partial class ProjectModificationController : Controller
             DocumentId = documentDetailsResponse.Content.Id,
             FileName = documentDetailsResponse.Content.FileName,
             FileSize = documentDetailsResponse.Content.FileSize?.ToString() ?? string.Empty,
-            DocumentStoragePath = documentDetailsResponse.Content.DocumentStoragePath
+            DocumentStoragePath = documentDetailsResponse.Content.DocumentStoragePath,
+            ReviewAnswers = reviewAnswers
         };
 
         // Get CMS question set
@@ -266,8 +267,8 @@ public partial class ProjectModificationController : Controller
         // Get existing answers
         var answersResponse = await respondentService.GetModificationDocumentAnswers(documentId);
         var answers = answersResponse?.StatusCode == HttpStatusCode.OK
-    ? answersResponse.Content ?? new List<ProjectModificationDocumentAnswerDto>()
-    : new List<ProjectModificationDocumentAnswerDto>();
+        ? answersResponse.Content ?? new List<ProjectModificationDocumentAnswerDto>()
+        : new List<ProjectModificationDocumentAnswerDto>();
 
         if (answers.Any())
         {
@@ -279,16 +280,11 @@ public partial class ProjectModificationController : Controller
                 {
                     matchingQuestion.AnswerText = ans.AnswerText;
                     matchingQuestion.SelectedOption = ans.SelectedOption;
-                    matchingQuestion.Answers = ans.Answers?.Select(a => new AnswerViewModel
-                    {
-                        AnswerId = a,
-                        AnswerText = a
-                    }).ToList() ?? new List<AnswerViewModel>();
                 }
             }
         }
 
-        viewModel.Questionnaire = questionnaire;
+        viewModel.Questions = questionnaire.Questions;
 
         return View("AddDocumentDetails", viewModel);
     }
@@ -297,7 +293,7 @@ public partial class ProjectModificationController : Controller
     public async Task<IActionResult> SaveDocumentDetails(ModificationAddDocumentDetailsViewModel viewModel, bool validateMandatory = false)
     {
         // using the FluentValidation, create a new context for the model
-        var context = new ValidationContext<QuestionnaireViewModel>(viewModel.Questionnaire);
+        var context = new ValidationContext<QuestionnaireViewModel>(viewModel);
 
         if (validateMandatory)
         {
@@ -334,7 +330,7 @@ public partial class ProjectModificationController : Controller
         {
             // find the question in the submitted model
             // that matches the index
-            var response = viewModel.Questionnaire.Questions.Find(q => q.Index == question.Index);
+            var response = viewModel.Questions.Find(q => q.Index == question.Index);
 
             // update the question with provided answers
             question.SelectedOption = response?.SelectedOption;
@@ -350,9 +346,9 @@ public partial class ProjectModificationController : Controller
             question.Year = response?.Year;
         }
 
-        viewModel.Questionnaire = questionnaire;
+        viewModel.Questions = questionnaire.Questions;
 
-        await SaveModificationDocumentAnswers(viewModel.DocumentId, viewModel.Questionnaire.Questions);
+        await SaveModificationDocumentAnswers(viewModel.DocumentId, viewModel.Questions);
 
         if (validateMandatory)
         {
@@ -396,8 +392,8 @@ public partial class ProjectModificationController : Controller
             // Get answers for this document (may be empty or partial)
             var answersResponse = await respondentService.GetModificationDocumentAnswers(doc.Id);
             var answers = answersResponse?.StatusCode == HttpStatusCode.OK
-             ? answersResponse.Content ?? new List<ProjectModificationDocumentAnswerDto>()
-             : new List<ProjectModificationDocumentAnswerDto>();
+                ? answersResponse.Content ?? new List<ProjectModificationDocumentAnswerDto>()
+                : new List<ProjectModificationDocumentAnswerDto>();
 
             // Build VM
             var vm = new ModificationAddDocumentDetailsViewModel
@@ -406,50 +402,44 @@ public partial class ProjectModificationController : Controller
                 FileName = doc.FileName,
                 DocumentStoragePath = doc.DocumentStoragePath,
                 ReviewAnswers = true,
-                Questionnaire = new QuestionnaireViewModel
+                Questions = cmsQuestions.Questions.Select((cmsQ, index) =>
                 {
-                    ReviewAnswers = true,
-                    CurrentStage = "Review",
-                    Questions = cmsQuestions.Questions.Select((cmsQ, index) =>
-                    {
-                        // Find the answer for this CMS question (if any)
-                        var matchingAnswer = answers.FirstOrDefault(a => a.QuestionId == cmsQ.QuestionId);
+                    // Find the answer for this CMS question (if any)
+                    var matchingAnswer = answers.FirstOrDefault(a => a.QuestionId == cmsQ.QuestionId);
 
-                        return new QuestionViewModel
+                    return new QuestionViewModel
+                    {
+                        Index = index,
+                        QuestionId = cmsQ.QuestionId,
+                        VersionId = cmsQ.VersionId,
+                        Category = cmsQ.Category,
+                        SectionId = cmsQ.SectionId,
+                        Section = cmsQ.Section,
+                        Sequence = cmsQ.Sequence,
+                        Heading = cmsQ.Heading,
+                        QuestionText = cmsQ.QuestionText,
+                        QuestionType = cmsQ.QuestionType,
+                        DataType = cmsQ.DataType,
+                        IsMandatory = cmsQ.IsMandatory,
+                        IsOptional = cmsQ.IsOptional,
+                        AnswerText = matchingAnswer?.AnswerText,
+                        SelectedOption = matchingAnswer?.SelectedOption,
+                        Answers = cmsQ?.Answers?.Select(ans => new AnswerViewModel
                         {
-                            Index = index,
-                            QuestionId = cmsQ.QuestionId,
-                            VersionId = cmsQ.VersionId,
-                            Category = cmsQ.Category,
-                            SectionId = cmsQ.SectionId,
-                            Section = cmsQ.Section,
-                            Sequence = cmsQ.Sequence,
-                            Heading = cmsQ.Heading,
-                            QuestionText = cmsQ.QuestionText,
-                            QuestionType = cmsQ.QuestionType,
-                            DataType = cmsQ.DataType,
-                            IsMandatory = cmsQ.IsMandatory,
-                            IsOptional = cmsQ.IsOptional,
-                            AnswerText = matchingAnswer?.AnswerText,
-                            SelectedOption = matchingAnswer?.SelectedOption,
-                            Answers = matchingAnswer?.Answers?.Select(ans => new AnswerViewModel
-                            {
-                                AnswerId = ans,
-                                AnswerText = ans
-                            }).ToList() ?? new List<AnswerViewModel>(),
-                            Rules = cmsQ.Rules,
-                            ShortQuestionText = cmsQ.ShortQuestionText,
-                            IsModificationQuestion = true,
-                            GuidanceComponents = cmsQ.GuidanceComponents
-                        };
-                    }).ToList()
-                }
+                            AnswerId = ans.AnswerId,
+                            AnswerText = ans.AnswerText
+                        }).ToList() ?? new List<AnswerViewModel>(),
+                        Rules = cmsQ.Rules,
+                        ShortQuestionText = cmsQ.ShortQuestionText,
+                        IsModificationQuestion = true,
+                        GuidanceComponents = cmsQ.GuidanceComponents
+                    };
+                }).ToList()
             };
 
             viewModels.Add(vm);
         }
 
-        // No need to group again since each doc already has its own Questionnaire
         return View("ReviewDocumentDetails", viewModels);
     }
 
@@ -496,7 +486,7 @@ public partial class ProjectModificationController : Controller
         // call the api to save the responses
         if (request.Count > 0)
         {
-            await respondentService.SaveModificationDocumentAnswers(request);
+            var waitforresponse = await respondentService.SaveModificationDocumentAnswers(request);
         }
     }
 }

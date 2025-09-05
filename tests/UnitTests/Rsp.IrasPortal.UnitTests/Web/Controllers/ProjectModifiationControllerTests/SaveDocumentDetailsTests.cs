@@ -18,13 +18,11 @@ public class SaveDocumentDetailsTests : TestServiceBase<ProjectModificationContr
         var viewModel = new ModificationAddDocumentDetailsViewModel
         {
             DocumentId = Guid.NewGuid(),
-            Questionnaire = new QuestionnaireViewModel
-            {
-                Questions = new List<QuestionViewModel>
+
+            Questions = new List<QuestionViewModel>
                 {
                     new QuestionViewModel { Index = 0, QuestionId = "Q1" }
                 }
-            }
         };
 
         Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
@@ -52,7 +50,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<ProjectModificationContr
         var viewModel = new ModificationAddDocumentDetailsViewModel
         {
             DocumentId = Guid.NewGuid(),
-            Questionnaire = new QuestionnaireViewModel { Questions = [] }
+            Questions = []
         };
 
         Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
@@ -82,7 +80,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<ProjectModificationContr
         var viewModel = new ModificationAddDocumentDetailsViewModel
         {
             DocumentId = Guid.NewGuid(),
-            Questionnaire = new QuestionnaireViewModel { Questions = [] }
+            Questions = []
         };
 
         Mocker.GetMock<IValidator<QuestionnaireViewModel>>()

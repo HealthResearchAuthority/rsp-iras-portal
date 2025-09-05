@@ -18,7 +18,7 @@
 	<script src="~/lib/jquery/dist/jquery.js"></script>
 
 	// Collect all rules for conditional questions
-	var conditionalRules = Model.Questionnaire.GetConditionalRules();
+	var conditionalRules = Model.GetConditionalRules();
 
 	<script>
 		$(document).ready(function () {
@@ -102,22 +102,22 @@
 				<input type="hidden" asp-for="@Model.FileSize" />
 				<input type="hidden" asp-for="@Model.DocumentStoragePath" />
 
-				@foreach (var question in Model.Questionnaire.Questions)
+				@foreach (var question in Model.Questions)
 				{
 					var index = question.Index;
 
-					<input type="hidden" asp-for="Questionnaire.Questions[index].Index" />
-					<input type="hidden" asp-for="Questionnaire.Questions[index].QuestionId" />
-					<input type="hidden" asp-for="Questionnaire.Questions[index].Category" />
-					<input type="hidden" asp-for="Questionnaire.Questions[index].SectionId" />
-					<input type="hidden" asp-for="Questionnaire.Questions[index].Section" />
-					<input type="hidden" asp-for="Questionnaire.Questions[index].Heading" />
-					<input type="hidden" asp-for="Questionnaire.Questions[index].QuestionText" />
-					<input type="hidden" asp-for="Questionnaire.Questions[index].ShortQuestionText" />
-					<input type="hidden" asp-for="Questionnaire.Questions[index].QuestionType" />
-					<input type="hidden" asp-for="Questionnaire.Questions[index].DataType" />
-					<input type="hidden" asp-for="Questionnaire.Questions[index].IsMandatory" checked="@question.IsMandatory" />
-					<input type="hidden" asp-for="Questionnaire.Questions[index].IsOptional" checked="@question.IsOptional" />
+					<input type="hidden" asp-for="Questions[index].Index" />
+					<input type="hidden" asp-for="Questions[index].QuestionId" />
+					<input type="hidden" asp-for="Questions[index].Category" />
+					<input type="hidden" asp-for="Questions[index].SectionId" />
+					<input type="hidden" asp-for="Questions[index].Section" />
+					<input type="hidden" asp-for="Questions[index].Heading" />
+					<input type="hidden" asp-for="Questions[index].QuestionText" />
+					<input type="hidden" asp-for="Questions[index].ShortQuestionText" />
+					<input type="hidden" asp-for="Questions[index].QuestionType" />
+					<input type="hidden" asp-for="Questions[index].DataType" />
+					<input type="hidden" asp-for="Questions[index].IsMandatory" checked="@question.IsMandatory" />
+					<input type="hidden" asp-for="Questions[index].IsOptional" checked="@question.IsOptional" />
 
 					if (!question.IsMandatory)
 					{
@@ -148,7 +148,7 @@
 					if (!string.IsNullOrWhiteSpace(templateName))
 					{
 						// plese note the @ is necessary before Html so that Template is rendered, otherwise it won't render
-						@Html.EditorFor(m => m.Questionnaire, $"~/Views/ProjectModification/EditorTemplates/{templateName}.cshtml", ViewData)
+						@Html.EditorFor(m => m, $"~/Views/ProjectModification/EditorTemplates/{templateName}.cshtml", ViewData)
 					}
 				}
 			</govuk-fieldset>
@@ -162,7 +162,7 @@
 				}
 				else
 				{
-					<partial name="_SubmitButton" model="@("mqc:saveresponses", "Save changes", new Dictionary<string, string> { { "submit", bool.TrueString } })" />
+					<partial name="_SubmitButton" model="@("pmc:savedocumentdetails", "Save changes", new Dictionary<string, string>())" />
 				}
 			</div>
 
@@ -170,7 +170,30 @@
 	</div>
 </div>
 <script>
-	$(document).on("change", "select[name='Questions[0].SelectedOption']", function () {
-		$("div.govuk-form-group.conditional").removeAttr("style");
+	$(document).ready(function () {
+		var $dropdown = $("select[name='Questions[0].SelectedOption']");
+		var $conditionalDiv = $("div.govuk-form-group.conditional");
+
+		function updateConditionalVisibility() {
+			if ($dropdown.val() && $dropdown.val() !== "default") {
+				$conditionalDiv.removeAttr("style");
+
+				// Force reflow so that input values render properly
+				$conditionalDiv.find("input, textarea, select").each(function () {
+					var $field = $(this);
+					$field.val($field.val());
+				});
+			} else {
+				$conditionalDiv.attr("style", "display:none;");
+			}
+		}
+
+		// Run on load
+		updateConditionalVisibility();
+
+		// Run on change
+		$dropdown.on("change", function () {
+			updateConditionalVisibility();
+		});
 	});
 </script>

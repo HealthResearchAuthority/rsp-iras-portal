@@ -6,8 +6,33 @@ namespace Rsp.IrasPortal.Web.Models;
 /// <summary>
 /// ViewModel for capturing details of a document being added during a modification process.
 /// </summary>
-public class ModificationAddDocumentDetailsViewModel : BaseProjectModificationViewModel
+public class ModificationAddDocumentDetailsViewModel : QuestionnaireViewModel
 {
+    /// <summary>
+    /// Gets or sets the IRAS (Integrated Research Application System) identifier for the project.
+    /// </summary>
+    public string IrasId { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the short title of the project.
+    /// </summary>
+    public string? ShortTitle { get; set; }
+
+    /// <summary>
+    /// Gets or sets the identifier associated with the current project modification.
+    /// </summary>
+    public string ModificationIdentifier { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the title displayed on the page for context.
+    /// </summary>
+    public string? PageTitle { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Project Record Id.
+    /// </summary>
+    public string ProjectRecordId { get; set; } = null!;
+
     /// <summary>
     /// Unique identifier for the uploaded document.
     /// </summary>
@@ -42,9 +67,4 @@ public class ModificationAddDocumentDetailsViewModel : BaseProjectModificationVi
     /// Indicates if the answers are being reviewed.
     /// </summary>
     public bool ReviewAnswers { get; set; }
-
-    /// <summary>
-    /// Questionnaire view model containing dynamic questions/answers.
-    /// </summary>
-    public QuestionnaireViewModel Questionnaire { get; set; } = new();
 }

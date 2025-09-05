@@ -44,7 +44,7 @@
 		@foreach (var docu in Model)
 		{
 				// Group questions by their Section and order them
-				var groupedSections = docu.Questionnaire.Questions
+				var groupedSections = docu.Questions
 				.GroupBy(q => q.Section)
 				.OrderBy(g => g.First().Sequence)
 				.ToList();
@@ -65,7 +65,7 @@
 					$(document).ready(function () {
 						// Serialize conditional rules and store them in sessionStorage
 						const conditionalRules = @Html.Raw(JsonSerializer.Serialize(
-						docu.Questionnaire.Questions
+						docu.Questions
 						.Where(q => !q.IsMandatory && q.Rules.Any())
 						.Select(q => new { q.QuestionId, q.Rules })
 					));
@@ -117,12 +117,12 @@
 							? question.QuestionText 
 							: question.ShortQuestionText;
 
-						<div class="@conditionalClass govuk-summary-list__row" id="@questionKey" @Html.Raw(parentAttributes)>
+						<div class="govuk-summary-list__row" id="@questionKey" @Html.Raw(parentAttributes)>
 							<dt class="govuk-summary-list__key">@questionText</dt>
 							<dd class="govuk-summary-list__value @(fieldHasErrors ? "govuk-error-summary__list" : "")">
 								@if (question.IsMissingAnswer())
 								{
-									<a class="govuk-link" href="@Url.RouteUrl("pmc:continuetodetails", new { documentId = docu.DocumentId })">
+									<a class="govuk-link" href="@Url.RouteUrl("pmc:continuetodetails", new { documentId = docu.DocumentId, reviewAnswers = true })">
 										@question.GetActionText()<span class="govuk-visually-hidden"> @questionText</span>
 									</a>
 								}
@@ -135,7 +135,7 @@
 							<dd class="govuk-summary-list__actions">
 								@if (!question.IsMissingAnswer())
 								{
-									<a class="govuk-link" href="@Url.RouteUrl("pmc:continuetodetails", new { documentId = docu.DocumentId })">
+									<a class="govuk-link" href="@Url.RouteUrl("pmc:continuetodetails", new { documentId = docu.DocumentId, reviewAnswers = true })">
 										@question.GetActionText()<span class="govuk-visually-hidden"> @questionText</span>
 									</a>
 								}

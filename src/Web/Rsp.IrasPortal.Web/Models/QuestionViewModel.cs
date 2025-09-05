@@ -69,7 +69,8 @@ public class QuestionViewModel
         }
 
         if ((DataType.Equals("radio button", StringComparison.OrdinalIgnoreCase) ||
-             DataType.Equals("boolean", StringComparison.OrdinalIgnoreCase)) &&
+             DataType.Equals("boolean", StringComparison.OrdinalIgnoreCase) ||
+             DataType.Equals("dropdown", StringComparison.OrdinalIgnoreCase)) &&
             !string.IsNullOrWhiteSpace(SelectedOption))
         {
             return Answers.FirstOrDefault(a => a.AnswerId == SelectedOption)?.AnswerText
