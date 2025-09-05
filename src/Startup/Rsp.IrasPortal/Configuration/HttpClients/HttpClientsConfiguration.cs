@@ -60,7 +60,7 @@ public static class HttpClientsConfiguration
 
         services
             .AddRestClient<ICmsContentServiceClient>()
-            .ConfigureHttpClient(client => client.BaseAddress = appSettings.CmsUrl)
+            .ConfigureHttpClient(client => client.BaseAddress = appSettings.CmsUri)
             .AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
 
         return services;

@@ -15,11 +15,11 @@ public class CmsContentService(
     IMemoryCache cache,
     AppSettings appSettings) : ICmsContentService
 {
-    private readonly int GeneralContentCacheDuration = appSettings.GeneralContentCacheDurationMinutes.HasValue
-        ? appSettings.GeneralContentCacheDurationMinutes.Value : 1;
+    private readonly int GeneralContentCacheDuration = appSettings.GeneralContentCacheDurationSeconds.HasValue
+        ? appSettings.GeneralContentCacheDurationSeconds.Value : 1;
 
-    private readonly int GlobalContentCacheDuration = appSettings.GlobalContentCacheDurationMinutes.HasValue
-        ? appSettings.GlobalContentCacheDurationMinutes.Value : 1;
+    private readonly int GlobalContentCacheDuration = appSettings.GlobalContentCacheDurationSeconds.HasValue
+        ? appSettings.GlobalContentCacheDurationSeconds.Value : 1;
 
     private const string FooterCacheKey = "FooterContent";
     private const string LoginLandingCacheKey = "LoginLandingContent";
@@ -38,7 +38,7 @@ public class CmsContentService(
         if (response.IsSuccessStatusCode && response.Content != null)
         {
             // Store in cache with an absolute expiration
-            cache.Set(url, response, TimeSpan.FromMinutes(GeneralContentCacheDuration));
+            cache.Set(url, response, TimeSpan.FromSeconds(GeneralContentCacheDuration));
         }
 
         return response.ToServiceResponse();
@@ -58,7 +58,7 @@ public class CmsContentService(
         if (response.IsSuccessStatusCode && response.Content != null)
         {
             // Store in cache with an absolute expiration
-            cache.Set(url, response, TimeSpan.FromMinutes(GeneralContentCacheDuration));
+            cache.Set(url, response, TimeSpan.FromSeconds(GeneralContentCacheDuration));
         }
 
         return response.ToServiceResponse();
