@@ -14,6 +14,7 @@ namespace Rsp.IrasPortal.Web.Controllers;
 public partial class ProjectModificationController : Controller
 {
     private const string ContainerName = "staging";
+    private const string DocumentDetailsSection = "pdm-document-metadata";
 
     /// <summary>
     /// Returns the view for uploading project documents.
@@ -118,7 +119,7 @@ public partial class ProjectModificationController : Controller
 
         // Get CMS question set
         var additionalQuestionsResponse = await cmsQuestionsetService
-            .GetModificationQuestionSet("pdm-document-metadata");
+            .GetModificationQuestionSet(DocumentDetailsSection);
 
         // Build questionnaire (all questions)
         var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(additionalQuestionsResponse.Content!);
@@ -140,14 +141,14 @@ public partial class ProjectModificationController : Controller
                     ? answersResponse.Content ?? new List<ProjectModificationDocumentAnswerDto>()
                     : new List<ProjectModificationDocumentAnswerDto>();
 
-                var isIncomplete = answers.Count() == 0 || questionnaire.Questions.Count != answers.Count();
+                var isIncomplete = !answers.Any() || questionnaire.Questions.Count != answers.Count();
 
                 return new DocumentSummaryItemDto
                 {
                     DocumentId = a.Id,
                     FileName = $"Add details for {a.FileName}",
                     FileSize = a.FileSize ?? 0,
-                    BlobUri = a.DocumentStoragePath,
+                    BlobUri = a.DocumentStoragePath ?? string.Empty,
                     Status = (isIncomplete ? DocumentDetailStatus.Incomplete : DocumentDetailStatus.Completed).ToString(),
                 };
             });
@@ -184,7 +185,7 @@ public partial class ProjectModificationController : Controller
 
         // Get CMS question set
         var additionalQuestionsResponse = await cmsQuestionsetService
-            .GetModificationQuestionSet("pdm-document-metadata");
+            .GetModificationQuestionSet(DocumentDetailsSection);
 
         // Build questionnaire (all questions)
         var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(additionalQuestionsResponse.Content!);
@@ -309,7 +310,7 @@ public partial class ProjectModificationController : Controller
         else if (response?.StatusCode != HttpStatusCode.OK)
         {
             // Show a service error page
-            return this.ServiceError(response);
+            return this.ServiceError(response!);
         }
         else if (response.Content != null && response.Content.Any())
         {
@@ -329,7 +330,7 @@ public partial class ProjectModificationController : Controller
     {
         // Get CMS question set
         var additionalQuestionsResponse = await cmsQuestionsetService
-            .GetModificationQuestionSet("pdm-document-metadata");
+            .GetModificationQuestionSet(DocumentDetailsSection);
 
         // Build questionnaire (all questions)
         var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(additionalQuestionsResponse.Content!);
@@ -358,9 +359,6 @@ public partial class ProjectModificationController : Controller
         }
 
         viewModel.Questions = questionnaire.Questions;
-
-        // using the FluentValidation, create a new context for the model
-        var context = new ValidationContext<QuestionnaireViewModel>(viewModel);
 
         // validate the questionnaire and save the result in tempdata
         // this is so we display the validation passed message or not
@@ -426,7 +424,7 @@ public partial class ProjectModificationController : Controller
         // call the api to save the responses
         if (request.Count > 0)
         {
-            var waitforresponse = await respondentService.SaveModificationDocumentAnswers(request);
+            await respondentService.SaveModificationDocumentAnswers(request);
         }
     }
 
@@ -447,12 +445,12 @@ public partial class ProjectModificationController : Controller
 
         // Get CMS question set (all possible questions for a document)
         var additionalQuestionsResponse = await cmsQuestionsetService
-            .GetModificationQuestionSet("pdm-document-metadata");
+            .GetModificationQuestionSet(DocumentDetailsSection);
         var cmsQuestions = QuestionsetHelpers.BuildQuestionnaireViewModel(additionalQuestionsResponse.Content!);
 
         var viewModels = new List<ModificationAddDocumentDetailsViewModel>();
 
-        foreach (var doc in response.Content.OrderBy(d => d.FileName, StringComparer.OrdinalIgnoreCase))
+        foreach (var doc in response!.Content.OrderBy(d => d.FileName, StringComparer.OrdinalIgnoreCase))
         {
             // Get answers for this document (may be empty or partial)
             var answersResponse = await respondentService.GetModificationDocumentAnswers(doc.Id);
@@ -495,11 +493,11 @@ public partial class ProjectModificationController : Controller
                             AnswerId = ans.AnswerId,
                             AnswerText = ans.AnswerText,
                             IsSelected = ans.IsSelected
-                        }).ToList() ?? new List<AnswerViewModel>(),
-                        Rules = cmsQ.Rules,
-                        ShortQuestionText = cmsQ.ShortQuestionText,
+                        }).ToList() ?? [],
+                        Rules = cmsQ?.Rules ?? [],
+                        ShortQuestionText = cmsQ?.ShortQuestionText ?? string.Empty,
                         IsModificationQuestion = true,
-                        GuidanceComponents = cmsQ.GuidanceComponents
+                        GuidanceComponents = cmsQ?.GuidanceComponents ?? []
                     };
                 }).ToList()
             };
