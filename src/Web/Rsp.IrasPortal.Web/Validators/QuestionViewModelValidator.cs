@@ -87,8 +87,7 @@ public class QuestionViewModelValidator : QuestionViewModelValidatorBase
 
         // now process all the results to see if
         // rule is applicable
-        var test = ProcessEvaluations(evaluations);
-        return test;
+        return ProcessEvaluations(evaluations);
     }
 
     /// <summary>
@@ -153,8 +152,7 @@ public class QuestionViewModelValidator : QuestionViewModelValidatorBase
 
         // now process all the results to see if
         // condition is applicable
-        var test = ProcessEvaluations(evaluations);
-        return test;
+        return ProcessEvaluations(evaluations);
     }
 
     /// <summary>
@@ -217,8 +215,7 @@ public class QuestionViewModelValidator : QuestionViewModelValidatorBase
                         return (selectedOptions.Count() == selectedAnswers.Count(), false);
                     }
 
-                    var test = (selectedOptions.Any(), false);
-                    return test;
+                    return (selectedOptions.Any(), false);
                 }
                 break;
 
