@@ -5,6 +5,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.WebUtilities;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
@@ -260,14 +261,25 @@ public partial class ProjectModificationController
 
         var sections = modificationJourney?.Content?.Sections;
 
-        if (sections != null && sections.Any() && !string.IsNullOrEmpty(sections[0]?.StaticViewName))
+        if (sections?.Any() == true && !string.IsNullOrEmpty(sections[0]?.StaticViewName))
         {
             return RedirectToAction(sections[0].StaticViewName);
         }
 
-        return RedirectToRoute("mqc:displayquestionnaire", new
+        if (sections?.Any() == true && sections[0] != null)
         {
-            sectionId = sections[0].Id
+            return RedirectToRoute("mqc:displayquestionnaire", new
+            {
+                sectionId = sections[0].Id
+            });
+        }
+
+        // Optional fallback if sections are null or empty
+        return this.ServiceError(new ServiceResponse
+        {
+            Error = "section not found",
+            ReasonPhrase = ReasonPhrases.GetReasonPhrase(StatusCodes.Status400BadRequest),
+            StatusCode = HttpStatusCode.BadRequest
         });
     }
 
