@@ -6,6 +6,11 @@
 public class ProjectModificationDocumentAnswerDto
 {
     /// <summary>
+    /// Gets or sets the unique identifier for the modification.
+    /// </summary>
+    public Guid? Id { get; set; }
+
+    /// <summary>
     /// Modification Document Id
     /// </summary>
     public Guid ModificationDocumentId { get; set; }

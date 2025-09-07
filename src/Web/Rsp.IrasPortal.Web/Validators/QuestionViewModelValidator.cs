@@ -87,7 +87,8 @@ public class QuestionViewModelValidator : QuestionViewModelValidatorBase
 
         // now process all the results to see if
         // rule is applicable
-        return ProcessEvaluations(evaluations);
+        var test = ProcessEvaluations(evaluations);
+        return test;
     }
 
     /// <summary>
@@ -152,7 +153,8 @@ public class QuestionViewModelValidator : QuestionViewModelValidatorBase
 
         // now process all the results to see if
         // condition is applicable
-        return ProcessEvaluations(evaluations);
+        var test = ProcessEvaluations(evaluations);
+        return test;
     }
 
     /// <summary>
@@ -172,7 +174,7 @@ public class QuestionViewModelValidator : QuestionViewModelValidatorBase
 
                 // if question data type is boolean or radio
                 // only one option can be selected
-                if (question.DataType is "Boolean" or "Radio button")
+                if (question.DataType is "Boolean" or "Radio button" or "Dropdown")
                 {
                     // if no selection has been made
                     // condition is not satisfied
@@ -215,7 +217,8 @@ public class QuestionViewModelValidator : QuestionViewModelValidatorBase
                         return (selectedOptions.Count() == selectedAnswers.Count(), false);
                     }
 
-                    return (selectedOptions.Any(), false);
+                    var test = (selectedOptions.Any(), false);
+                    return test;
                 }
                 break;
 

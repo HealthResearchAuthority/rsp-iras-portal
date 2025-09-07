@@ -25,6 +25,14 @@ public class SaveDocumentDetailsTests : TestServiceBase<ProjectModificationContr
                 }
         };
 
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet("pdm-document-metadata", It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse { }
+            });
+
         Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
             .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), default))
             .ReturnsAsync(new ValidationResult(new[]
@@ -33,7 +41,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<ProjectModificationContr
             }));
 
         // Act
-        var result = await Sut.SaveDocumentDetails(viewModel, validateMandatory: false);
+        var result = await Sut.SaveDocumentDetails(viewModel);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -66,7 +74,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<ProjectModificationContr
             });
 
         // Act
-        var result = await Sut.SaveDocumentDetails(viewModel, validateMandatory: true);
+        var result = await Sut.SaveDocumentDetails(viewModel);
 
         // Assert
         var redirect = Assert.IsType<RedirectToActionResult>(result);
@@ -96,10 +104,10 @@ public class SaveDocumentDetailsTests : TestServiceBase<ProjectModificationContr
             });
 
         // Act
-        var result = await Sut.SaveDocumentDetails(viewModel, validateMandatory: false);
+        var result = await Sut.SaveDocumentDetails(viewModel);
 
         // Assert
         var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal(nameof(ProjectModificationController.ReviewDocumentDetails), redirect.ActionName);
+        Assert.Equal(nameof(ProjectModificationController.AddDocumentDetailsList), redirect.ActionName);
     }
 }

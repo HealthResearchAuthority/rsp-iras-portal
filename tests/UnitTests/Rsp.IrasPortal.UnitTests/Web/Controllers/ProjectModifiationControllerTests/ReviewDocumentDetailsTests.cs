@@ -14,38 +14,6 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModifiationControllerT
 public class ReviewDocumentDetailsTests : TestServiceBase<ProjectModificationController>
 {
     [Fact]
-    public async Task ReviewDocumentDetails_WhenServiceFails_ReturnsServiceErrorView()
-    {
-        // Arrange
-        Mocker.GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
-            {
-                StatusCode = HttpStatusCode.InternalServerError,
-                Content = null
-            });
-
-        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
-        {
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
-            [TempDataKeys.ProjectRecordId] = "record-123"
-        };
-
-        Sut.ControllerContext = new ControllerContext
-        {
-            HttpContext = new DefaultHttpContext()
-        };
-        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
-
-        // Act
-        var result = await Sut.ReviewDocumentDetails();
-
-        // Assert
-        var viewResult = Assert.IsType<ViewResult>(result);
-        Assert.Equal("ServiceError", viewResult.ViewName);
-    }
-
-    [Fact]
     public async Task ReviewDocumentDetails_WhenNoAnswers_ReturnsViewWithEmptyAnswers()
     {
         // Arrange

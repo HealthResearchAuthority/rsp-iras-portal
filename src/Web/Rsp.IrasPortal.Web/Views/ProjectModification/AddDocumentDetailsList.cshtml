@@ -3,7 +3,7 @@
 @{
 	ViewData["Title"] = "Add document details list";
 	(string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
-	navModel = ("pmc:reviewdocument", "Back", new());
+	navModel = ("pmc:modificationdocumentsadded", "Back", new());
 }
 
 <div class="govuk-width-container">
@@ -47,15 +47,18 @@
 			{
 				<p class="govuk-body">No documents uploaded.</p>
 			}
-			<form asp-action="reviewdocumentdetails" method="get">
-				<partial name="_SubmitButton" model="@("pmc:reviewdocumentdetails", "Save and continue", new Dictionary<string, string>{})" />
-			</form>
-			@{
-				ViewBag.Style = "govuk-button govuk-button--secondary";
-			}
-			<form asp-action="ProjectOverview" method="post">
-				<partial name="_SubmitButton" model="@("app:projectoverview", "Save for later", new Dictionary<string, string> { })" />
-			</form>
+			<div class="govuk-button-group">
+				<form asp-action="reviewdocumentdetails" method="get">
+					<partial name="_SubmitButton" model="@("pmc:reviewdocumentdetails", "Save and continue", new Dictionary<string, string>{})" />
+				</form>
+				<form asp-action="postapproval" method="get">
+					<input type="hidden" name="projectRecordId" value="@Model.ProjectRecordId" />
+					@{
+						ViewBag.Style = "govuk-button govuk-button--secondary";
+					}
+					<partial name="_SubmitButton" model="@("pov:postapproval", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId })" />
+				</form>
+			</div>
 		</div>
 	</div>
 </div>

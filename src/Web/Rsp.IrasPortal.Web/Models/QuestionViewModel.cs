@@ -6,6 +6,7 @@ namespace Rsp.IrasPortal.Web.Models;
 
 public class QuestionViewModel
 {
+    public Guid? Id { get; set; }
     public int Index { get; set; }
     public string QuestionId { get; set; } = null!;
     public string VersionId { get; set; } = null!;
@@ -51,7 +52,7 @@ public class QuestionViewModel
     {
         "date" or "text" or "email" => $"Questions[{Index}].AnswerText",
         "checkbox" => $"Questions[{Index}].Answers",
-        "radio button" or "boolean" or "look-up list" => $"Questions[{Index}].SelectedOption",
+        "radio button" or "boolean" or "look-up list" or "dropdown" => $"Questions[{Index}].SelectedOption",
         _ => ""
     };
 

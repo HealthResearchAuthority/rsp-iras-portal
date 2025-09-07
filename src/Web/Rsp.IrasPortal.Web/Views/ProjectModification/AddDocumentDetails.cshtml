@@ -31,39 +31,27 @@
 		});
 	</script>
 
-	<script src="~/js/questionnaire.js"></script>
-	<script src="~/js/rules.js"></script>
+	@* <script src="~/js/questionnaire.js"></script>
+	<script src="~/js/rules.js"></script> *@
 }
 
 @{
 	if (Model.ReviewAnswers)
 	{
-		navModel = ("mqc:submitapplication", "Back", new()
-{
-			{ "projectRecordId", "projectRecordId" }
-		});
-	}
-	else if (!string.IsNullOrEmpty("previousStage"))
-	{
-		// If there is a previous stage, navigate to that stage in the questionnaire
-		navModel = ("mqc:displayquestionnaire", "Back", new()
-{
-			{ "categoryId", "previousCategory" },
-			{ "sectionId", "previousStage" }
-		});
+		navModel = ("pmc:reviewdocumentdetails", "Back", new());
 	}
 	else
 	{
-		// back to the area of changes view as that's where the jouney started from
-		navModel = ("pmc:areaofchange", "Back", new());
+		// back to the add document details view as that's where the jouney started from
+		navModel = ("pmc:adddocumentdetailslist", "Back", new());
 	}
 }
 
 @if (navModel != null)
 {
 	@* @section is added for the back button, so that we can render something below the back button
-        and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
-        the named section *@
+		and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
+		the named section *@
 	@section BackNavigation {
 	<partial name="_BackNavigation" model="navModel.Value" />
 	}
@@ -93,7 +81,7 @@
 
 			<govuk-fieldset class="sections">
 				<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
-				
+
 				<input type="hidden" asp-for="@Model.ShortTitle" />
 				<input type="hidden" asp-for="@Model.IrasId" />
 				<input type="hidden" asp-for="@Model.ModificationIdentifier" />
@@ -101,11 +89,13 @@
 				<input type="hidden" asp-for="@Model.FileName" />
 				<input type="hidden" asp-for="@Model.FileSize" />
 				<input type="hidden" asp-for="@Model.DocumentStoragePath" />
+				<input type="hidden" asp-for="@Model.ReviewAnswers" />
 
 				@foreach (var question in Model.Questions)
 				{
 					var index = question.Index;
 
+					<input type="hidden" asp-for="Questions[index].Id" />
 					<input type="hidden" asp-for="Questions[index].Index" />
 					<input type="hidden" asp-for="Questions[index].QuestionId" />
 					<input type="hidden" asp-for="Questions[index].Category" />
@@ -141,6 +131,7 @@
 						("look-up list", "checkbox") => "CheckboxTemplate",
 						("look-up list", "radio button") => "RadioButtonTemplate",
 						("boolean", "boolean") => "RadioButtonTemplate",
+						("boolean", "radio button") => "RadioButtonTemplate",
 						("look-up list", "dropdown") => "DropdownTemplate",
 						_ => string.Empty
 					};
@@ -158,7 +149,7 @@
 					<partial name="_SubmitButton" model="@("pmc:savedocumentdetails", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } })" />
 
 					ViewBag.Style = "govuk-button govuk-button--secondary";
-					<partial name="_SubmitButton" model="@("mqc:saveresponses", "Save for later", new Dictionary<string, string> { { "saveForLater", bool.TrueString } })" />
+					<partial name="_SubmitButton" model="@("pov:postapproval", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId })" />
 				}
 				else
 				{
@@ -171,12 +162,16 @@
 </div>
 <script>
 	$(document).ready(function () {
+	// Hide all conditional questions initially
+	$(".conditional, .conditional-field").hide();
+
 		var $dropdown = $("select[name='Questions[0].SelectedOption']");
 		var $conditionalDiv = $("div.govuk-form-group.conditional");
 
 		function updateConditionalVisibility() {
 			if ($dropdown.val() && $dropdown.val() !== "default") {
-				$conditionalDiv.removeAttr("style");
+				// Show with animation
+				$conditionalDiv.stop(true, true).slideDown();
 
 				// Force reflow so that input values render properly
 				$conditionalDiv.find("input, textarea, select").each(function () {
@@ -184,7 +179,8 @@
 					$field.val($field.val());
 				});
 			} else {
-				$conditionalDiv.attr("style", "display:none;");
+				// Hide with animation
+				$conditionalDiv.stop(true, true).slideUp();
 			}
 		}
 

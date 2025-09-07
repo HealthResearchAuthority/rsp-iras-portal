@@ -64,15 +64,18 @@
 				Some of the documents you've added need additional details which you'll add in the next step.
 			</p>
 
-			<form asp-action="AddDocumentDetailsList" method="get">
-				<partial name="_SubmitButton" model="@("pmc:AddDocumentDetailsList", "Save and continue", new Dictionary<string, string>{})" />
-			</form>
-
-			@{
-				ViewBag.Style = "govuk-button govuk-button--secondary";
-			}
-			<partial name="_SubmitButton" model="@("pov:postapproval", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId })" />
-
+			<div class="govuk-button-group">
+				<form asp-action="AddDocumentDetailsList" method="get">
+					<partial name="_SubmitButton" model="@("pmc:AddDocumentDetailsList", "Save and continue", new Dictionary<string, string>{})" />
+				</form>
+				<form asp-action="PostApproval" method="get">
+					<input type="hidden" name="projectRecordId" value="@Model.ProjectRecordId" />
+					@{
+						ViewBag.Style = "govuk-button govuk-button--secondary";
+					}
+					<partial name="_SubmitButton" model="@("pov:postapproval", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId })" />
+				</form>
+			</div>
 		</div>
 	</div>
 </div>

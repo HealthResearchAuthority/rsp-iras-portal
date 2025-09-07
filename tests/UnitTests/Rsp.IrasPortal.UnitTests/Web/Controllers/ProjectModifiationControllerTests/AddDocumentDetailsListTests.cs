@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
@@ -25,6 +26,14 @@ public class AddDocumentDetailsListTests : TestServiceBase<ProjectModificationCo
             {
                 StatusCode = HttpStatusCode.OK,
                 Content = new List<ProjectModificationDocumentRequest>()
+            });
+
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet("pdm-document-metadata", It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse()
             });
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
@@ -61,6 +70,14 @@ public class AddDocumentDetailsListTests : TestServiceBase<ProjectModificationCo
             {
                 StatusCode = HttpStatusCode.OK,
                 Content = new List<ProjectModificationDocumentRequest>()
+            });
+
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet("pdm-document-metadata", It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse()
             });
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
@@ -107,6 +124,14 @@ public class AddDocumentDetailsListTests : TestServiceBase<ProjectModificationCo
                 }
             });
 
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet("pdm-document-metadata", It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse()
+            });
+
         Mocker
             .GetMock<IRespondentService>()
             .Setup(s => s.GetModificationDocumentAnswers(docId))
@@ -139,7 +164,7 @@ public class AddDocumentDetailsListTests : TestServiceBase<ProjectModificationCo
         var viewResult = Assert.IsType<ViewResult>(result);
         var model = Assert.IsType<ModificationReviewDocumentsViewModel>(viewResult.Model);
         Assert.Single(model.UploadedDocuments);
-        Assert.Equal(DocumentDetailStatus.Completed.ToString(), model.UploadedDocuments[0].Status);
+        Assert.Equal(DocumentDetailStatus.Incomplete.ToString(), model.UploadedDocuments[0].Status);
     }
 
     [Fact]
@@ -160,6 +185,14 @@ public class AddDocumentDetailsListTests : TestServiceBase<ProjectModificationCo
                         Id = docId, FileName = "doc1.pdf", FileSize = 123, DocumentStoragePath = "path"
                     }
                 }
+            });
+
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet("pdm-document-metadata", It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse()
             });
 
         Mocker
@@ -209,6 +242,14 @@ public class AddDocumentDetailsListTests : TestServiceBase<ProjectModificationCo
             {
                 StatusCode = HttpStatusCode.InternalServerError,
                 Content = null
+            });
+
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet("pdm-document-metadata", It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse()
             });
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
