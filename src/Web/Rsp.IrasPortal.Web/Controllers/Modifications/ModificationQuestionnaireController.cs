@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
@@ -16,6 +17,7 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
+[ExcludeFromCodeCoverage]
 [Route("[controller]/[action]", Name = "mqc:[action]")]
 [Authorize(Policy = "IsApplicant")]
 public class ModificationQuestionnaireController
