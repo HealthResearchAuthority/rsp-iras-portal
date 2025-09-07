@@ -12,6 +12,7 @@
     <ItemGroup>
       <Compile Remove="Controllers\CmsProjectModificationController.cs" />
       <Compile Remove="Controllers\CmsQuestionSetController.cs" />
+      <Compile Remove="Controllers\Modifications\ModificationQuestionnaireController.cs" />
     </ItemGroup>
 
     <ItemGroup>
