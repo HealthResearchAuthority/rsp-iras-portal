@@ -226,7 +226,7 @@ public partial class ProjectModificationController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> ReviewAllDocumentDetailsForMandatoryFields()
+    public async Task<IActionResult> ReviewAllDocumentDetails()
     {
         var allDocumentDetails = await GetAllDocumentsWithResponses();
         var hasErrors = false;

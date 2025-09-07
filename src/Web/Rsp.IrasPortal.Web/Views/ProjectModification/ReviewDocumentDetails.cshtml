@@ -143,7 +143,7 @@
 				When you’ve checked that all the document details are correct, select Save and continue
 			</p>
 			<div class="govuk-button-group">
-				<partial name="_SubmitButton" model="@("pmc:reviewalldocumentdetailsformandatoryfields", "Save and continue", new Dictionary<string, string>{})" />
+				<partial name="_SubmitButton" model="@("pmc:reviewalldocumentdetails", "Save and continue", new Dictionary<string, string>{})" />
 
 				<input type="hidden" name="projectRecordId" value="@projectRecordId" />
 				@{
