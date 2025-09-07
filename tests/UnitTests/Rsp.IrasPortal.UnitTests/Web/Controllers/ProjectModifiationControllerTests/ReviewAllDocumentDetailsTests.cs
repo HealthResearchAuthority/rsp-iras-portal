@@ -49,7 +49,27 @@ public class ReviewAllDocumentDetailsTests : TestServiceBase<ProjectModification
                 {
                     Sections = new List<SectionModel>
                     {
-                        new SectionModel { Id = "Q1" }
+                        new SectionModel
+                        {
+                            Id = "Q1",
+                            Questions = new List<QuestionModel>()
+                            {
+                                new QuestionModel
+                                {
+                                    Id = "1",
+                                    QuestionId = "Test",
+                                    AnswerDataType = "Dropdown",
+                                    Answers = new List<AnswerModel>()
+                                    {
+                                        new AnswerModel
+                                        {
+                                            Id = "2",
+                                            OptionName = "Test",
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             });
