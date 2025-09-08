@@ -873,6 +873,14 @@ button.govuk-pagination__item--current {
   font-weight: normal;
 }
 
+.govuk-tag.non-max-width-govuk-tag {
+  max-width: none;
+}
+
+.govuk-summary-card__title-wrapper.prevent-action-stretch .govuk-summary-card__action {
+  height: 1.5em;
+}
+
 .line-separator {
   width: 100%;
   padding-top: 15px;

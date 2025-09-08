@@ -1,0 +1,34 @@
+﻿@using System.Text.Json
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Microsoft.FeatureManagement
+@using Rsp.IrasPortal.Application.Constants
+@using System.Globalization
+@model ModificationDetailsPageViewModel
+
+@{   
+    ViewData["ReviewChanges"] = true;    
+}
+
+@section BackNavigation {
+    <form method="get">
+        <partial name="_BackNavigation" model="@("pmc:modificationdetailspage", "Back", new Dictionary<string, string>())" />
+    </form>
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">        
+        <h1 class="govuk-heading-l">You cannot proceed with ‘Unfinished’ changes</h1>
+        <partial name="_ProjectModificationSummary" model="Model"/>        
+        <p class="govuk-body">
+            All changes must have the status 'ready for submission' before you can
+            continue. For any changes with the status 'Unfinished', either select Change
+            to enter missing information, or select Remove if that change is no longer
+            needed.
+        </p>
+        <div class="save-buttons">           
+            <form method="get">
+                <partial name="_SubmitButton" model="@("pmc:modificationdetailspage", "Return to modification details", new Dictionary<string, string>())" />
+            </form>
+        </div>
+    </div>
+</div>
