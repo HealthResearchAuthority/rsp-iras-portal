@@ -102,7 +102,6 @@ public static class QuestionsetHelpers
                 {
                     var ruleConditions = new List<ConditionDto>();
                     var transformedRule = validationRule.Adapt<RuleDto>();
-                    transformedRule.Sequence = y;
                     transformedRule.ParentQuestionId = validationRule.ParentQuestion?.Id?.ToString();
 
                     foreach (var condition in validationRule.Conditions)

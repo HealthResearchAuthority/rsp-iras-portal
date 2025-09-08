@@ -60,10 +60,10 @@
 						$(document).ready(function () {
 							// Serialize conditional rules and store them in sessionStorage
 							const conditionalRules = @Html.Raw(JsonSerializer.Serialize(
-										docu.Questions
-										.Where(q => !q.IsMandatory && q.Rules.Any())
-										.Select(q => new { q.QuestionId, q.Rules })
-									));
+											docu.Questions
+											.Where(q => !q.IsMandatory && q.Rules.Any())
+											.Select(q => new { q.QuestionId, q.Rules })
+										));
 
 							// Save each conditional rule by QuestionId
 							conditionalRules.forEach(rule => {
@@ -73,17 +73,22 @@
 							// Initially hide all elements with 'conditional' class
 							$(".conditional").hide();
 
-							// For each conditional div, check its parent hidden input value
-							document.querySelectorAll('div.conditional').forEach(div => {
-								const parentId = div.getAttribute('data-parents');
-								const hiddenInput = document.getElementById(parentId);
+													// For each conditional div, check its parent hidden input value
+						document.querySelectorAll('div.conditional').forEach(div => {
+							const parentId = div.getAttribute('data-parents');
 
-								// If the hidden input value is "yes", unhide the conditional div
-								if (hiddenInput?.value.trim().toLowerCase() === 'yes') {
-									div.classList.remove('conditional');
-									div.style.display = '';
-								}
-							});
+							// Find the closest dl ancestor
+							const dl = div.closest('dl');
+
+							// Within that dl, look for the hidden input with the matching id
+							const hiddenInput = dl?.querySelector(`input[type="hidden"]#${parentId}`);
+
+							// If the hidden input has any value, unhide the conditional div
+							if (hiddenInput?.value.trim()) {
+								div.classList.remove('conditional');
+								div.style.display = '';
+							}
+						});
 						});
 					</script>
 				}
@@ -108,7 +113,7 @@
 							string parentAttributes = conditionalClass != "" ? $"data-parents=\"{string.Join(',', question.Rules.Select(r => r.ParentQuestionId))}\" data-questionid=\"{question.QuestionId}\"" : "";
 							string questionText = string.IsNullOrWhiteSpace(question.ShortQuestionText) ? question.QuestionText : question.ShortQuestionText;
 
-							<div class="govuk-summary-list__row" id="@questionKey" @Html.Raw(parentAttributes)>
+							<div class="@conditionalClass govuk-summary-list__row" id="@questionKey" @Html.Raw(parentAttributes)>
 								<dt class="govuk-summary-list__key">@questionText</dt>
 								<dd class="govuk-summary-list__value @(fieldHasErrors ? "govuk-error-summary__list" : "")">
 									@if (question.IsMissingAnswer())

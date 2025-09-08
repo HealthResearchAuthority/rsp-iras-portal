@@ -286,18 +286,17 @@ public partial class ProjectModificationController : Controller
         // Fetch all documents along with their existing responses.
         var allDocumentDetails = await GetAllDocumentsWithResponses();
 
-        // Merge all questions from each document into a single QuestionnaireViewModel
-        // for combined validation.
-        var mergedQuestions = new QuestionnaireViewModel();
+        bool hasFailures = false;
         foreach (var documentDetail in allDocumentDetails)
         {
-            mergedQuestions.Questions.AddRange(documentDetail.Questions);
+            var isValid = await ValidateQuestionnaire(documentDetail, validateMandatory: true);
+            if (!isValid)
+            {
+                hasFailures = true;
+            }
         }
 
-        // Validate all merged questions, including mandatory fields.
-        var isValid = await ValidateQuestionnaire(mergedQuestions, validateMandatory: true);
-
-        if (!isValid)
+        if (hasFailures)
         {
             // Return the view with the invalid models and ModelState errors
             return View("ReviewDocumentDetails", allDocumentDetails);
@@ -636,7 +635,18 @@ public partial class ProjectModificationController : Controller
             // Populate ModelState with errors for display in the view
             foreach (var error in result.Errors)
             {
-                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                if (error.CustomState is QuestionViewModel qvm)
+                {
+                    var propertyName = System.Text.RegularExpressions.Regex.Replace(
+                    error.PropertyName,
+                    @"Questions\[\d+\]",
+                    $"Questions[{qvm.Index}]");
+                    ModelState.AddModelError(propertyName, error.ErrorMessage);
+                }
+                else
+                {
+                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                }
             }
 
             return false;

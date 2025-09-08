@@ -27,7 +27,6 @@
     label-text="@question.QuestionText"
     options="@(question.Answers.Select(a => new GdsOption { Value = a.AnswerId.ToString(), Label = a.AnswerText }))"
     conditional-field="conditional"
-    conditional-class="conditional-field govuk-radios__conditional"
     dataquestionid-attr="@questionId"
     dataparents-attr="@parents"
     div-inline-class="@(conditional ? "govuk-radios" : "govuk-radios govuk-radios--inline")"
