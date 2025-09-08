@@ -2,5 +2,5 @@
 
 public class TabItem
 {
-    public TabItemContent Content { get; set; }
+    public TabItemContent? Content { get; set; }
 }

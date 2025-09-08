@@ -2,5 +2,5 @@
 
 public class AccordionItemContent : BaseContentItem
 {
-    public TabItemProperties Properties { get; set; }
+    public TabItemProperties? Properties { get; set; }
 }

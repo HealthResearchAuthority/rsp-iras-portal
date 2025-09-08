@@ -30,6 +30,14 @@
 			case RichTextProperties rte:
 				@await Html.PartialAsync("~/Views/Shared/ContentComponents/RichText.cshtml", rte)
 				break;
+
+			case HintTextProperties hint:
+				@await Html.PartialAsync("~/Views/Shared/ContentComponents/HintText.cshtml", hint)
+				break;
+
+			case LineSeparatorProperties line:
+				@await Html.PartialAsync("~/Views/Shared/ContentComponents/LineSeparator.cshtml", line)
+				break;
 		}
 	}
 }

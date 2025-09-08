@@ -18,6 +18,8 @@ public class ComponentContentConverter : JsonConverter<ComponentContent>
 
         object properties = contentType switch
         {
+            "hintTextComponent" => JsonSerializer.Deserialize<HintTextProperties>(propertiesElement.GetRawText(), options),
+            "lineSeparatorComponent" => JsonSerializer.Deserialize<LineSeparatorProperties>(propertiesElement.GetRawText(), options),
             "richTextComponent" => JsonSerializer.Deserialize<RichTextProperties>(propertiesElement.GetRawText(), options),
             "headlineComponent" => JsonSerializer.Deserialize<HeadlineProperties>(propertiesElement.GetRawText(), options),
             "bodyTextComponent" => JsonSerializer.Deserialize<BodyTextProperties>(propertiesElement.GetRawText(), options),

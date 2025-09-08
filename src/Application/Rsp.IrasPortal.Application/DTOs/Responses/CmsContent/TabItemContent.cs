@@ -2,5 +2,5 @@
 
 public class TabItemContent : BaseContentItem
 {
-    public TabItemProperties Properties { get; set; }
+    public TabItemProperties? Properties { get; set; }
 }

@@ -906,3 +906,9 @@ button.govuk-pagination__item--current {
     display: flex;
     gap: 2rem
 }
+
+.line-separator {
+    width: 100%;
+    padding-top: 15px;
+    border-top: 2px solid #b1b4b6;
+}

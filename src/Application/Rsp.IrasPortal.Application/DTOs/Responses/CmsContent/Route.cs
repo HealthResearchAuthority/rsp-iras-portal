@@ -2,7 +2,7 @@
 
 public class Route
 {
-    public string Path { get; set; }
+    public string? Path { get; set; }
 
-    public StartItem StartItem { get; set; }
+    public StartItem? StartItem { get; set; }
 }

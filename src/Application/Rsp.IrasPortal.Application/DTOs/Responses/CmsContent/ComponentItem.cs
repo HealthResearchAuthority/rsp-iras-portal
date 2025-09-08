@@ -2,6 +2,6 @@
 
 public class ComponentItem
 {
-    public ComponentContent Content { get; set; }
-    public object Settings { get; set; }
+    public ComponentContent? Content { get; set; }
+    public object? Settings { get; set; }
 }
