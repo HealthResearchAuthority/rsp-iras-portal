@@ -72,7 +72,7 @@ public static class AuthConfiguration
 
                     options.LoginPath = "/";
                     options.LogoutPath = "/";
-                    options.ExpireTimeSpan = TimeSpan.FromSeconds(appSettings.AuthSettings.AuthCookieTimeout);
+                    options.ExpireTimeSpan = TimeSpan.FromSeconds(appSettings.AuthSettings.AuthCookieTimeout + 60);
                     options.SlidingExpiration = true;
                     options.AccessDeniedPath = "/Forbidden";
                 }
@@ -159,7 +159,7 @@ public static class AuthConfiguration
 
                 options.LoginPath = "/";
                 options.LogoutPath = "/";
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(appSettings.OneLogin.AuthCookieTimeout);
+                options.ExpireTimeSpan = TimeSpan.FromSeconds(appSettings.OneLogin.AuthCookieTimeout + 60);
                 options.SlidingExpiration = true;
                 options.AccessDeniedPath = "/Forbidden";
             })
@@ -208,7 +208,7 @@ public static class AuthConfiguration
                             new Claim("sub", appSettings.OneLogin.ClientId),
                             new Claim(ClaimTypes.Role, "iras_portal_user"),
                         ],
-                        expires: DateTime.UtcNow.AddMinutes(5),
+                        expires: DateTime.UtcNow.AddSeconds(appSettings.OneLogin.AuthCookieTimeout),
                         signingCredentials: signingCredentials
                     );
 
