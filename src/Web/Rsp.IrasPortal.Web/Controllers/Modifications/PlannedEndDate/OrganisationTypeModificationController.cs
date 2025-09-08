@@ -45,19 +45,22 @@ public partial class ProjectModificationController
     [HttpPost]
     public async Task<IActionResult> SubmitOrganisationTypes(PlannedEndDateOrganisationTypeViewModel model, bool saveForLater = false)
     {
-        // Validate the incoming model using the injected validator
-        var validationResult = await organisationTypeValidator.ValidateAsync(new ValidationContext<PlannedEndDateOrganisationTypeViewModel>(model));
-
-        if (!validationResult.IsValid)
+        if (!saveForLater)
         {
-            // Add validation errors to the ModelState to display them in the view
-            foreach (var error in validationResult.Errors)
-            {
-                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
-            }
+            // Validate the incoming model using the injected validator
+            var validationResult = await organisationTypeValidator.ValidateAsync(new ValidationContext<PlannedEndDateOrganisationTypeViewModel>(model));
 
-            // Return the view with the model and validation errors
-            return View(nameof(PlannedEndDateOrganisationType), model);
+            if (!validationResult.IsValid)
+            {
+                // Add validation errors to the ModelState to display them in the view
+                foreach (var error in validationResult.Errors)
+                {
+                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                }
+
+                // Return the view with the model and validation errors
+                return View(nameof(PlannedEndDateOrganisationType), model);
+            }
         }
 
         // Map the selected organisation type display values back to their unique keys

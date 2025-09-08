@@ -294,11 +294,16 @@
         </div>        
 
 <div class="govuk-button-group govuk-!-margin-top-4">
-	<button class="govuk-button" data-module="govuk-button" name="action" value="continue">Save and continue</button>
-	@{
-		ViewBag.Style = "govuk-button govuk-button--secondary";
-	}
-    <partial name="_SubmitButton" model="@("pov:postapproval", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId })" />
+    
+    <div class="save-buttons">
+        <form method="post">
+            <partial name="_SubmitButton" model="@("pmc:saveselection", "Save and continue", new Dictionary<string, string>())" />
+            @{
+                ViewBag.Style = "govuk-button govuk-button--secondary";
+            }
+            <partial name="_SubmitButton" model="@("pmc:saveselection", "Save for later", new Dictionary<string, string> { { "saveForLater", bool.TrueString } })" />
+        </form>        
+    </div>
 </div>
 
 <p class="govuk-!-margin-top-4">
