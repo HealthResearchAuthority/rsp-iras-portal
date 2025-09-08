@@ -2,5 +2,5 @@
 
 public class PageContent
 {
-    public List<ComponentItem> Items { get; set; }
+    public List<ComponentItem> Items { get; set; } = [];
 }

@@ -2,5 +2,5 @@
 
 public class TabItemsCollection
 {
-    public List<TabItem> Items { get; set; }
+    public List<TabItem> Items { get; set; } = [];
 }

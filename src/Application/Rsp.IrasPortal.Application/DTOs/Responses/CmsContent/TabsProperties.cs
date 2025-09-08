@@ -2,5 +2,5 @@
 
 public class TabsProperties
 {
-    public TabItemsCollection Items { get; set; }
+    public TabItemsCollection? Items { get; set; }
 }

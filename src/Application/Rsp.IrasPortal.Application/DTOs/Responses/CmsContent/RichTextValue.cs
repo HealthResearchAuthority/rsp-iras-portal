@@ -2,5 +2,5 @@
 
 public class RichTextValue
 {
-    public string Markup { get; set; }
+    public string? Markup { get; set; }
 }

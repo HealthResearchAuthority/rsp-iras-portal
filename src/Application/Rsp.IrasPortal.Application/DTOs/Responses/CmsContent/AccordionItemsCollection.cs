@@ -2,5 +2,5 @@
 
 public class AccordionItemsCollection
 {
-    public List<AccordionItem> Items { get; set; }
+    public List<AccordionItem> Items { get; set; } = [];
 }

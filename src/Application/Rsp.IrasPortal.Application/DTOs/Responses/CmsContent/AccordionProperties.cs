@@ -2,5 +2,5 @@
 
 public class AccordionProperties
 {
-    public AccordionItemsCollection Items { get; set; }
+    public AccordionItemsCollection? Items { get; set; }
 }

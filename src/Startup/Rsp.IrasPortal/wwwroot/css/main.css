@@ -284,7 +284,7 @@ button.govuk-link {
 }
 
 .govuk-back-link-button--inverse:active, .govuk-back-link-button--inverse:hover {
-  color: hsla(0, 0%, 100%, 0.99);
+  color: hsla(0deg, 0%, 100%, 0.99);
 }
 
 .govuk-back-link-button--inverse:focus {
@@ -867,4 +867,10 @@ button.govuk-pagination__item--current {
 .flex-gap-2 {
   display: flex;
   gap: 2rem;
+}
+
+.line-separator {
+  width: 100%;
+  padding-top: 15px;
+  border-top: 2px solid #b1b4b6;
 }

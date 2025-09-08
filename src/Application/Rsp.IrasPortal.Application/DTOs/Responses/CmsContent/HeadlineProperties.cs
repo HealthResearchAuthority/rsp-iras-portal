@@ -2,6 +2,6 @@
 
 public class HeadlineProperties
 {
-    public string Title { get; set; }
-    public string HeadlineType { get; set; }
+    public string? Title { get; set; }
+    public string? HeadlineType { get; set; }
 }

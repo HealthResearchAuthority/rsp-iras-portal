@@ -2,5 +2,5 @@
 
 public class AccordionItem
 {
-    public AccordionItemContent Content { get; set; }
+    public AccordionItemContent? Content { get; set; }
 }
