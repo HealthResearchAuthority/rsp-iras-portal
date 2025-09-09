@@ -15,5 +15,22 @@ public class UserSearchModelValidator : AbstractValidator<UserSearchModel>
                 .WithMessage("'Search to' date must be after 'Search from' date")
                 .WithName("Search.ToDate");
         });
+
+        // Rules for when the day month and year arent in the correct
+        When(x => !string.IsNullOrEmpty(x.FromDay) || !string.IsNullOrEmpty(x.FromMonth) || !string.IsNullOrEmpty(x.FromYear), () =>
+        {
+            RuleFor(x => x)
+                .Must(x => x.FromDate.HasValue)
+                .WithMessage("'Search from' date must be in the correct format")
+                .WithName("Search.FromDate");
+        });
+
+        When(x => !string.IsNullOrEmpty(x.ToDay) || !string.IsNullOrEmpty(x.ToMonth) || !string.IsNullOrEmpty(x.ToYear), () =>
+        {
+            RuleFor(x => x)
+                .Must(x => x.ToDate.HasValue)
+                .WithMessage("'Search to' date must be in the correct format")
+                .WithName("Search.ToDate");
+        });
     }
 }

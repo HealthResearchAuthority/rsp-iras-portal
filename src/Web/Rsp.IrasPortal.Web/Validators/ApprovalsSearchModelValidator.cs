@@ -7,6 +7,15 @@ public class ApprovalsSearchModelValidator : AbstractValidator<ApprovalsSearchMo
 {
     public ApprovalsSearchModelValidator()
     {
+        // Validate when both Date Submitted and Days Since Submission ranges are entered
+        When(x => (x.FromDate.HasValue || x.ToDate.HasValue) && (x.FromSubmission.HasValue || x.ToSubmission.HasValue), () =>
+        {
+            RuleFor(x => x)
+                .Must(_ => false) // Always false to trigger the message when both filters are applied
+                .WithMessage("'Date submitted' and 'Days since submission' filters can't be applied at the same time - remove one to continue.")
+                .WithName("ToDaysSinceSubmission");
+        });
+
         // Validate "From" date is valid if any part entered
         When(AnyFromDateFieldEntered, () =>
         {
