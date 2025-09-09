@@ -28,8 +28,8 @@ public class HomeController(IUserManagementService userManagementService) : Cont
         // return the view if successfull
         if (usersResult.IsSuccessStatusCode && rolesResult.IsSuccessStatusCode)
         {
-            var users = usersResult.Content!.Users.Count();
-            var roles = rolesResult.Content!.Roles.Count();
+            var users = usersResult.Content!.TotalCount;
+            var roles = rolesResult.Content!.TotalCount;
 
             (int UserCount, int RoleCount) data = (users, roles);
 
