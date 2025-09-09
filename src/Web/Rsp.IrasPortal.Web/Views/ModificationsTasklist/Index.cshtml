@@ -1,12 +1,6 @@
 ﻿﻿@using System.Text.RegularExpressions
-@using Microsoft.AspNetCore.Http.Extensions
-@using Microsoft.AspNetCore.Mvc.ModelBinding
 @using Microsoft.FeatureManagement
-@using Rsp.Gds.Component.Models
 @using Rsp.IrasPortal.Application.Constants
-@using Rsp.IrasPortal.Application.DTOs.Responses
-@using Rsp.IrasPortal.Web.Extensions
-@using Rsp.IrasPortal.Web.TagHelpers.Models
 @model ModificationsTasklistViewModel
 @inject IFeatureManager featureManager
 
@@ -44,7 +38,7 @@
         <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
         <h2 class="govuk-heading-xl" id="title">Modifications ready to assign</h2>
         <p class="govuk-body">
-            This page shows all the modifications that are ready for you to assign, where the lead nation is England.
+            This page shows all the modifications that are ready for you to assign, where the lead nation is @Model.LeadNation.
         </p>		
 
         @if (!Model.EmptySearchPerformed || (Model.Modifications != null && Model.Modifications.Any()))

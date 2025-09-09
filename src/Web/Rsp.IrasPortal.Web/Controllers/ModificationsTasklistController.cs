@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Security.Claims;
+using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +18,7 @@ namespace Rsp.IrasPortal.Web.Controllers;
 public class ModificationsTasklistController(
     IProjectModificationsService projectModificationsService,
     IUserManagementService userManagementService,
+    IReviewBodyService reviewBodyService,
     IValidator<ApprovalsSearchModel> validator) : Controller
 {
     private const string ModificationToAssignNotSelectedErrorMessage = "Select at least one modification";
@@ -29,10 +31,28 @@ public class ModificationsTasklistController(
         string sortField = nameof(ModificationsModel.CreatedAt),
         string sortDirection = SortDirections.Ascending)
     {
+        var leadNation = "England";
+        if (Guid.TryParse(User?.FindFirstValue("userId"), out var userId))
+        {
+            var bodiesResp = await reviewBodyService.GetUserReviewBodies(userId);
+            var reviewBodyId = bodiesResp.IsSuccessStatusCode
+                ? bodiesResp.Content?.FirstOrDefault()?.Id
+                : null;
+
+            if (reviewBodyId is { } rbId)
+            {
+                var rbResp = await reviewBodyService.GetReviewBodyById(rbId);
+                leadNation = rbResp.IsSuccessStatusCode
+                    ? rbResp.Content?.Countries?.FirstOrDefault() ?? leadNation
+                    : leadNation;
+            }
+        }
+
         var model = new ModificationsTasklistViewModel
         {
             SelectedModificationIds = selectedModificationIds ?? [],
-            EmptySearchPerformed = true // Set to true to check if search bar should be hidden on view
+            EmptySearchPerformed = true, // Set to true to check if search bar should be hidden on view
+            LeadNation = leadNation
         };
 
         var json = HttpContext.Session.GetString(SessionKeys.ModificationsTasklist);
@@ -47,7 +67,7 @@ public class ModificationsTasklistController(
 
         var searchQuery = new ModificationSearchRequest()
         {
-            LeadNation = ["England"],
+            LeadNation = [leadNation],
             ShortProjectTitle = model.Search.ShortProjectTitle,
             FromDate = model.Search.FromDate,
             ToDate = model.Search.ToDate,
