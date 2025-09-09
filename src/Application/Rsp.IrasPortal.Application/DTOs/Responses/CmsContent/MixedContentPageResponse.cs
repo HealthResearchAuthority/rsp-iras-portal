@@ -2,11 +2,11 @@
 
 public class MixedContentPageResponse
 {
-    public IDictionary<string, string?> ContentItems { get; set; } = new Dictionary<string, string?>();
+    public IDictionary<string, MixedContentPageItem?> ContentItems { get; set; } = new Dictionary<string, MixedContentPageItem?>();
 }
 
 public class MixedContentPageItem
 {
-    public string? ContentPlaceholderAlias { get; set; }
-    public string? ContentValue { get; set; }
+    public string? ValueType { get; set; }
+    public string? Value { get; set; }
 }
