@@ -227,6 +227,13 @@ app
         {
             endpoints.MapHealthChecks("/probes/liveness");
             endpoints.MapControllers();
+
+            // Fallback route for CMS content
+            endpoints.MapControllerRoute(
+                name: "cms",
+                pattern: "pages/{*slug}",
+                defaults: new { controller = "CmsContent", action = "Index" }
+            );
         }
 );
 

@@ -5,8 +5,15 @@
 @inject IFeatureManager featureManager
 
 @{
-    ViewData["Title"] = "Modifications ready to assign - Modifications - Approvals - System Administration";
     var errorSummaryTitle = "There is a problem";
+
+    var pageTitle = "Modifications ready to assign";
+    if (User.IsInRole("study-wide_reviewer"))
+    {
+        pageTitle = "Assign modifications task list";
+    }
+
+    ViewData["Title"] = pageTitle + " - Modifications - Approvals - System Administration";
 }
 
 @section BackNavigation {
@@ -36,7 +43,7 @@
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds search-filter-bottom-border">
         <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
-        <h2 class="govuk-heading-xl" id="title">Modifications ready to assign</h2>
+        <h2 class="govuk-heading-xl" id="title">@pageTitle</h2>
         <p class="govuk-body">
             This page shows all the modifications that are ready for you to assign, where the lead nation is @Model.LeadNation.
         </p>		

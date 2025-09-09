@@ -84,4 +84,18 @@ public partial class ProjectModificationController
         TempData[TempDataKeys.OrganisationSearchModel] = JsonSerializer.Serialize(model.Search);
         return RedirectToAction(nameof(ParticipatingOrganisation));
     }
+
+    [HttpPost]
+    public IActionResult SaveSelection(bool saveForLater)
+    {
+        var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty;
+        if (saveForLater)
+        {
+            return RedirectToRoute("pov:postapproval", new { projectRecordId });
+        }
+        else
+        {
+            return RedirectToAction("ParticipatingOrganisation");
+        }
+    }
 }
