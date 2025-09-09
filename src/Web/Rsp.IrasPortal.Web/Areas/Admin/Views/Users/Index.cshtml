@@ -41,6 +41,12 @@
 }
 
 <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
+    </div>
+</div>
+
+<div class="govuk-grid-row">
 	<div class="govuk-grid-column-one-half">
 		<h1 class="govuk-heading-l">Manage users</h1>
 	</div>
