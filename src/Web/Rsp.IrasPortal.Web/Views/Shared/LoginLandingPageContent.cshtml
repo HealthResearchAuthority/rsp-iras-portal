@@ -3,7 +3,7 @@
 
 <div class="govuk-grid-row">
 	<div class="govuk-grid-column-two-thirds">
-		@if (Model != null && Model.Properties.LoginLandingPageAboveTheFold != null)
+		@if (Model?.Properties?.LoginLandingPageAboveTheFold != null)
 		{
 			<partial name="_ContentComponents.cshtml" model="@Model.Properties.LoginLandingPageAboveTheFold" />
 		}
@@ -15,13 +15,13 @@
 			</svg>
 		</a>
 
-		@if (Model != null && Model.Properties.LoginLandingPageBelowTheFold != null)
+		@if (Model?.Properties?.LoginLandingPageBelowTheFold != null)
 		{
 			<partial name="_ContentComponents.cshtml" model="@Model.Properties.LoginLandingPageBelowTheFold" />
 		}
 	</div>
 	<div class="govuk-grid-column-one-third">
-		@if (Model?.Properties.RightSideMenuLinks != null && Model.Properties.RightSideMenuLinks.Any())
+		@if (Model?.Properties?.RightSideMenuLinks != null && Model.Properties.RightSideMenuLinks.Any())
 		{
 			<p>
 				<b>About this service</b>
@@ -31,7 +31,7 @@
 				var url = !string.IsNullOrEmpty(link?.Route?.Path) ? link.Route.Path : link?.Url;
 
 				<p>
-					<a class="govuk-link" href="@url" target="@link.Target">@link.Title</a>
+					<a class="govuk-link" href="@url" target="@link?.Target">@link?.Title</a>
 				</p>
 			}
 		}
