@@ -164,6 +164,7 @@
 
         <form method="get">
             <div class="save-buttons">
+                <input type="hidden" name="projectRecordId" value="@Model.ProjectRecordId" />
                 <partial name="_SubmitButton" model="@("pmc:modificationdetailspage", "Save and continue" , new Dictionary<string, string>())" />
 
                 @{

@@ -9,4 +9,5 @@ public class ModificationDetailsPageViewModel : BaseProjectModificationViewModel
     public string? ReviewType { get; set; }
     public IEnumerable<ModificationChangeModel> ModificationChanges { get; set; } = new List<ModificationChangeModel>();
     public bool ChangesReadyForSubmission { get; set; } = false;
+    public SponsorReferenceViewModel? SponsorReference { get; set; }
 }

@@ -141,7 +141,7 @@
         </p>
         <form method="get">
             <div class="save-buttons">
-                  
+            <input type="hidden" name="projectRecordId" value="@Model.ProjectRecordId" />
             @if (@Model.ChangesReadyForSubmission)
             {
                 <partial name="_SubmitButton" model="@("pmc:sponsorreference", "Save and continue" , new Dictionary<string, string>())" />

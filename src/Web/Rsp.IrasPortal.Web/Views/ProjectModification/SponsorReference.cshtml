@@ -53,6 +53,7 @@
                                               width-class="govuk-!-width-full" />
 
             <div class="save-buttons">
+                <input type="hidden" name="projectRecordId" value="@Model.ProjectRecordId" />
                 <partial name="_SubmitButton" model="@("pmc:savesponsorreference", "Save and continue" , new Dictionary<string, string>())" />
 
                 @{
