@@ -221,12 +221,15 @@ public partial class ProjectModificationController
     [HttpPost]
     public async Task<IActionResult> ConfirmModificationJourney(AreaOfChangeViewModel model, string action)
     {
-        var validationResult = await areaofChangeValidator.ValidateAsync(new ValidationContext<AreaOfChangeViewModel>(model));
-
-        if (!validationResult.IsValid)
+        if (action == "saveAndContinue")
         {
-            HandleValidationErrors(validationResult, model);
-            return View(nameof(AreaOfChange), model);
+            var validationResult = await areaofChangeValidator.ValidateAsync(new ValidationContext<AreaOfChangeViewModel>(model));
+
+            if (!validationResult.IsValid)
+            {
+                HandleValidationErrors(validationResult, model);
+                return View(nameof(AreaOfChange), model);
+            }
         }
 
         var modificationId = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId);
