@@ -17,19 +17,24 @@ public partial class ProjectModificationController
     [HttpPost]
     public async Task<IActionResult> SaveSponsorReference(SponsorReferenceViewModel model, bool saveForLater = false)
     {
-        var validationResult = await sponsorReferenceViewModelValidator.ValidateAsync(new ValidationContext<SponsorReferenceViewModel>(model));
-
-        if (!validationResult.IsValid)
+        if (!saveForLater)
         {
-            // Add validation errors to the ModelState
-            foreach (var error in validationResult.Errors)
-            {
-                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
-            }
+            var validationResult = await sponsorReferenceViewModelValidator.ValidateAsync(new ValidationContext<SponsorReferenceViewModel>(model));
 
-            // Return the view with validation errors
-            return View(nameof(SponsorReference), model);
+            if (!validationResult.IsValid)
+            {
+                // Add validation errors to the ModelState
+                foreach (var error in validationResult.Errors)
+                {
+                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                }
+
+                // Return the view with validation errors
+                return View(nameof(SponsorReference), model);
+            }
         }
+
+        // save service implementation
 
         if (saveForLater)
         {

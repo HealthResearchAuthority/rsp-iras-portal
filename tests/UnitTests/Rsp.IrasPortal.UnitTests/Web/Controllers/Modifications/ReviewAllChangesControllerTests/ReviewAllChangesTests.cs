@@ -5,12 +5,12 @@ using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Web.Controllers;
 using Rsp.IrasPortal.Web.Models;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModificationControllerTests;
+namespace Rsp.IrasPortal.UnitTests.Web.Controllers.Modifications.ReviewAllChangesControllerTests;
 
-public class ModificationDetailsPageTests : TestServiceBase<ProjectModificationController>
+public class ReviewAllChangesTests : TestServiceBase<ProjectModificationController>
 {
     [Fact]
-    public void ModificationDetailsPage_ReturnsViewWithPopulatedModel()
+    public void ReviewAllChangesPage_ReturnsViewWithPopulatedModel()
     {
         var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
@@ -23,7 +23,7 @@ public class ModificationDetailsPageTests : TestServiceBase<ProjectModificationC
         Sut.TempData = tempData;
 
         // Act
-        var result = Sut.ModificationDetailsPage();
+        var result = Sut.ReviewAllChanges();
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
