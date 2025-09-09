@@ -501,10 +501,14 @@ public class ReviewBodyController(
     [HttpPost]
     public async Task<IActionResult> SubmitAddUser(Guid reviewBodyId, Guid userId)
     {
+        // get selected user
+        var user = await userService.GetUser(userId.ToString(), null);
+
         var reviewBodyUserDto = new ReviewBodyUserDto
         {
             Id = reviewBodyId,
             UserId = userId,
+            Email = user.Content?.User.Email,
             DateAdded = DateTime.UtcNow
         };
 
@@ -513,9 +517,6 @@ public class ReviewBodyController(
         // get review body
         var reviewBody = await reviewBodyService.GetReviewBodyById(reviewBodyId);
         var reviewBodyModel = reviewBody.Content?.Adapt<AddUpdateReviewBodyModel>();
-
-        // get selected user
-        var user = await userService.GetUser(userId.ToString(), null);
 
         var model = new ConfirmAddRemoveReviewBodyUserModel
         {
