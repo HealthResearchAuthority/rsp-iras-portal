@@ -77,7 +77,7 @@ public class CmsContentService(
         var siteSettings = await cmsClient.GetSiteSettings();
 
         // Store in cache with an absolute expiration
-        cache.Set(FooterCacheKey, siteSettings, TimeSpan.FromMinutes(GlobalContentCacheDuration));
+        cache.Set(FooterCacheKey, siteSettings, TimeSpan.FromSeconds(GlobalContentCacheDuration));
 
         return siteSettings.ToServiceResponse();
     }
@@ -95,7 +95,7 @@ public class CmsContentService(
         var loginLandingPage = await cmsClient.GetHomeContent();
 
         // Store in cache with an absolute expiration
-        cache.Set(LoginLandingCacheKey, loginLandingPage, TimeSpan.FromMinutes(GeneralContentCacheDuration));
+        cache.Set(LoginLandingCacheKey, loginLandingPage, TimeSpan.FromSeconds(GeneralContentCacheDuration));
 
         return loginLandingPage.ToServiceResponse();
     }
