@@ -9,6 +9,7 @@ using Rsp.IrasPortal.Domain.Enums;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
+using Rsp.IrasPortal.Web.Validators.Helpers;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
@@ -637,11 +638,8 @@ public partial class ProjectModificationController : Controller
             {
                 if (error.CustomState is QuestionViewModel qvm)
                 {
-                    var propertyName = System.Text.RegularExpressions.Regex.Replace(
-                    error.PropertyName,
-                    @"Questions\[\d+\]",
-                    $"Questions[{qvm.Index}]");
-                    ModelState.AddModelError(propertyName, error.ErrorMessage);
+                    var adjustedPropertyName = PropertyNameHelper.AdjustPropertyName(error.PropertyName, qvm.Index);
+                    ModelState.AddModelError(adjustedPropertyName, error.ErrorMessage);
                 }
                 else
                 {
