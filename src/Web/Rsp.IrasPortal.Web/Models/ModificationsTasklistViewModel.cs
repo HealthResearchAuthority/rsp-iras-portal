@@ -9,4 +9,5 @@ public class ModificationsTasklistViewModel
     public List<string> SelectedModificationIds { get; set; } = [];
     public PaginationViewModel? Pagination { get; set; }
     public bool EmptySearchPerformed { get; set; } = false;
+    public string LeadNation { get; set; }
 }
