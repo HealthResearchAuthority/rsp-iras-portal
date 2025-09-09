@@ -363,8 +363,7 @@ public class ReviewBodyController(
     public async Task<IActionResult> AuditTrail(Guid reviewBodyId, int pageNumber = 1, int pageSize = 20)
     {
         var skip = (pageNumber - 1) * pageSize;
-        var take = pageNumber * pageSize;
-        var response = await reviewBodyService.ReviewBodyAuditTrail(reviewBodyId, skip, take);
+        var response = await reviewBodyService.ReviewBodyAuditTrail(reviewBodyId, skip, pageSize);
 
         var auditTrailResponse = response?.Content;
         var items = auditTrailResponse?.Items;
