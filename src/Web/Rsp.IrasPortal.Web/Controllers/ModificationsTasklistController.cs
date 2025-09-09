@@ -17,6 +17,7 @@ namespace Rsp.IrasPortal.Web.Controllers;
 public class ModificationsTasklistController(
     IProjectModificationsService projectModificationsService,
     IUserManagementService userManagementService,
+    IReviewBodyService reviewBodyService,
     IValidator<ApprovalsSearchModel> validator) : Controller
 {
     private const string ModificationToAssignNotSelectedErrorMessage = "Select at least one modification";
@@ -139,10 +140,16 @@ public class ModificationsTasklistController(
             })
             .ToList() ?? [];
 
-        var getUsersResponse = await userManagementService.GetUsers(new SearchUserRequest
-        {
-            Role = ["043aca8e-f88e-473e-974c-262f846285ea"] // Search for users with Study-wide reviewer role
-        });
+        var getUsersResponse = await userManagementService.GetUsers
+        (
+            new SearchUserRequest
+            {
+                Role = ["043aca8e-f88e-473e-974c-262f846285ea"], // Study-wide reviewer role ID
+                Status = true
+            },
+            pageNumber: 1,
+            pageSize: int.MaxValue
+        );
 
         if (!getUsersResponse.IsSuccessStatusCode)
         {
@@ -151,7 +158,43 @@ public class ModificationsTasklistController(
             return RedirectToAction(nameof(Index));
         }
 
-        var reviewers = getUsersResponse.Content?.Users;
+        var getReviewBodiesResponse = await reviewBodyService.GetAllReviewBodies
+        (
+            new ReviewBodySearchRequest
+            {
+                Country = ["England"],
+                Status = true
+            },
+            pageSize: int.MaxValue
+        );
+
+        if (!getReviewBodiesResponse.IsSuccessStatusCode)
+        {
+            ModelState.AddModelError(string.Empty, "There was a problem retrieving the list of reviewers");
+            TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
+            return RedirectToAction(nameof(Index));
+        }
+
+        List<Guid> englishReviewBodyIds = getReviewBodiesResponse
+            .Content?
+            .ReviewBodies?
+            .Select(rb => rb.Id).ToList() ?? [];
+
+        var reviewBodyUsersResponse = await reviewBodyService.GetUserReviewBodiesByReviewBodyIds(englishReviewBodyIds);
+
+        if (!reviewBodyUsersResponse.IsSuccessStatusCode)
+        {
+            ModelState.AddModelError(string.Empty, "There was a problem retrieving the list of reviewers");
+            TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
+            return RedirectToAction(nameof(Index));
+        }
+
+        var reviewBodyUserIds = reviewBodyUsersResponse.Content?
+            .Select(rbu => rbu.UserId.ToString().ToLowerInvariant())
+            .Distinct()
+            .ToList() ?? [];
+
+        var reviewers = getUsersResponse.Content?.Users?.Where(user => reviewBodyUserIds.Contains(user.Id!.ToLowerInvariant()));
 
         return View((modifications, reviewers));
     }
