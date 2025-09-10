@@ -12,6 +12,9 @@ public class CmsPreviewHeadersHandler : DelegatingHandler
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
+        // Default = false
+        var previewHeaderValue = "false";
+
         var uri = request.RequestUri;
         if (uri is not null)
         {
@@ -19,13 +22,17 @@ public class CmsPreviewHeadersHandler : DelegatingHandler
 
             if (query.TryGetValue("preview", out var previewValue))
             {
-                // Add the Preview header if not already present
-                if (!request.Headers.Contains("Preview"))
+                // Only flip to true if the query string explicitly equals "true"
+                if (string.Equals(previewValue.ToString(), "true", StringComparison.OrdinalIgnoreCase))
                 {
-                    request.Headers.Add("Preview", previewValue.ToString());
+                    previewHeaderValue = "true";
                 }
             }
         }
+
+        // Always set (or overwrite) the Preview header
+        request.Headers.Remove("Preview");
+        request.Headers.Add("Preview", previewHeaderValue);
 
         return base.SendAsync(request, cancellationToken);
     }

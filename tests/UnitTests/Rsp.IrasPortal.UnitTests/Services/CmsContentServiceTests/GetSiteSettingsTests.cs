@@ -29,7 +29,7 @@ public class GetSiteSettingsTests : TestServiceBase<CmsContentService>
 
         Mocker
             .GetMock<ICmsContentServiceClient>()
-            .Setup(client => client.GetSiteSettings())
+            .Setup(client => client.GetSiteSettings(false))
             .ReturnsAsync(apiResponse);
 
         object value;
@@ -51,7 +51,7 @@ public class GetSiteSettingsTests : TestServiceBase<CmsContentService>
         result.StatusCode.ShouldBe(HttpStatusCode.OK);
 
         // Verify
-        _cmsClient.Verify(client => client.GetSiteSettings(), Times.Once());
+        _cmsClient.Verify(client => client.GetSiteSettings(false), Times.Once());
     }
 
     [Fact]
@@ -88,6 +88,6 @@ public class GetSiteSettingsTests : TestServiceBase<CmsContentService>
         result.StatusCode.ShouldBe(HttpStatusCode.OK);
 
         // Verify
-        _cmsClient.Verify(client => client.GetSiteSettings(), Times.Never);
+        _cmsClient.Verify(client => client.GetSiteSettings(false), Times.Never);
     }
 }

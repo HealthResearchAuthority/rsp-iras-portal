@@ -18,7 +18,7 @@ public class RenderLoginLandingContentTests : TestServiceBase<LoginLandingPageVi
         };
 
         Mocker.GetMock<ICmsContentService>()
-            .Setup(s => s.GetHomeContent())
+            .Setup(s => s.GetHomeContent(false))
             .ReturnsAsync(serviceResponse);
 
         // Act
@@ -32,7 +32,7 @@ public class RenderLoginLandingContentTests : TestServiceBase<LoginLandingPageVi
         model?.Properties?.ShouldBeNull();
 
         Mocker.GetMock<ICmsContentService>()
-            .Verify(s => s.GetHomeContent(), Times.Once);
+            .Verify(s => s.GetHomeContent(false), Times.Once);
     }
 
     [Theory, AutoData]
@@ -46,7 +46,7 @@ public class RenderLoginLandingContentTests : TestServiceBase<LoginLandingPageVi
         };
 
         Mocker.GetMock<ICmsContentService>()
-            .Setup(s => s.GetHomeContent())
+            .Setup(s => s.GetHomeContent(false))
             .ReturnsAsync(serviceResponse);
 
         // Act
@@ -60,6 +60,6 @@ public class RenderLoginLandingContentTests : TestServiceBase<LoginLandingPageVi
         viewModel?.Properties.LoginLandingPageAboveTheFold.ShouldNotBeNull();
 
         Mocker.GetMock<ICmsContentService>()
-            .Verify(s => s.GetHomeContent(), Times.Once);
+            .Verify(s => s.GetHomeContent(false), Times.Once);
     }
 }
