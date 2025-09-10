@@ -27,7 +27,7 @@ public static class QuestionsetHelpers
                 .GroupBy(q => q.SectionId)
                 .SelectMany(g => g.Select((question, index) => (question, index))) :
 
-            // order the questions by SectionId and Sequence
+        // order the questions by SectionId and Sequence
             model
                 .OrderBy(q => q.SectionId)
                 .ThenBy(q => q.SectionSequence)

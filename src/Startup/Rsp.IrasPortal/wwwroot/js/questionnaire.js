@@ -22,7 +22,7 @@ $(function () {
         // Set up event listeners for parent questions
         parentQuestionIds.forEach(function (parentQuestionId) {
             // Select both radio button inputs and drop-down lists whose id starts with parentQuestionId
-            const $parentInputs = $(`input[id^="${parentQuestionId}"], select[id^="${parentQuestionId}"]`);
+            const $parentInputs = $(`input[id^="${parentQuestionId}"], select[id^="${parentQuestionId}"], div[id^="${parentQuestionId}"] > select`);
 
             // Evaluate rules initially and set visibility
             updateConditionalVisibility(questionId, $conditionalElement);
