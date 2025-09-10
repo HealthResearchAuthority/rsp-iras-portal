@@ -4,12 +4,12 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Web.Controllers;
+using Rsp.IrasPortal.Web.Features.Modifications.Documents.Controllers;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModifiationControllerTests;
 
-public class UploadDocumentTests : TestServiceBase<ProjectModificationController>
+public class UploadDocumentTests : TestServiceBase<DocumentsController>
 {
     [Theory, AutoData]
     public async Task UploadDocuments_ValidInput_UploadsFilesAndRedirects

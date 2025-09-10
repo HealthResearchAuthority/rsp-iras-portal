@@ -12,6 +12,7 @@
     <ItemGroup>
       <Compile Remove="Controllers\CmsProjectModificationController.cs" />
       <Compile Remove="Controllers\CmsQuestionSetController.cs" />
+      <Compile Remove="Controllers\ModificationDocumentController.cs" />
       <Compile Remove="Controllers\Modifications\ModificationQuestionnaireController.cs" />
     </ItemGroup>
 
@@ -30,6 +31,11 @@
       <Content Remove="Views\CmsQuestionSet\GuidanceContent.cshtml" />
       <Content Remove="Views\CmsQuestionSet\Index.cshtml" />
       <Content Remove="Views\CmsQuestionSet\ReviewAnswers.cshtml" />
+      <Content Remove="Views\ProjectModification\AddDocumentDetails.cshtml" />
+      <Content Remove="Views\ProjectModification\AddDocumentDetailsList.cshtml" />
+      <Content Remove="Views\ProjectModification\ModificationDocumentsAdded.cshtml" />
+      <Content Remove="Views\ProjectModification\ReviewDocumentDetails.cshtml" />
+      <Content Remove="Views\ProjectModification\UploadDocuments.cshtml" />
     </ItemGroup>
 
     <ItemGroup>

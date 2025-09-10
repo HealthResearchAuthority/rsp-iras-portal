@@ -6,12 +6,12 @@ using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Web.Controllers;
+using Rsp.IrasPortal.Web.Features.Modifications.Documents.Controllers;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModifiationControllerTests;
 
-public class ReviewDocumentDetailsTests : TestServiceBase<ProjectModificationController>
+public class ReviewDocumentDetailsTests : TestServiceBase<DocumentsController>
 {
     [Fact]
     public async Task ReviewDocumentDetails_WhenNoAnswers_ReturnsViewWithEmptyAnswers()

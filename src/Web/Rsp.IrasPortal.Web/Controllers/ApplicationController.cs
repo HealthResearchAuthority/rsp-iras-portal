@@ -192,7 +192,7 @@ public class ApplicationController
     }
 
     [HttpGet]
-    [FeatureGate(Features.MyApplications)]
+    [FeatureGate(FeatureFlags.MyApplications)]
     public async Task<IActionResult> MyApplications()
     {
         var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
@@ -235,7 +235,6 @@ public class ApplicationController
         // return the generic error page
         return this.ServiceError(applicationServiceResponse);
     }
-
 
     public IActionResult ReviewAnswers()
     {

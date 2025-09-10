@@ -7,12 +7,12 @@ using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Web.Controllers;
+using Rsp.IrasPortal.Web.Features.Modifications.Documents.Controllers;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModifiationControllerTests;
 
-public class ContinueToDetailsTests : TestServiceBase<ProjectModificationController>
+public class ContinueToDetailsTests : TestServiceBase<DocumentsController>
 {
     [Fact]
     public async Task ContinueToDetails_WhenDocumentNotFound_RedirectsToAddDocumentDetailsList()
@@ -32,7 +32,7 @@ public class ContinueToDetailsTests : TestServiceBase<ProjectModificationControl
 
         // Assert
         var redirectResult = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal(nameof(ProjectModificationController.AddDocumentDetailsList), redirectResult.ActionName);
+        Assert.Equal(nameof(DocumentsController.AddDocumentDetailsList), redirectResult.ActionName);
         Assert.False(Sut.ModelState.IsValid);
         Assert.Contains(Sut.ModelState[string.Empty].Errors, e => e.ErrorMessage.Contains("Document details not found"));
     }

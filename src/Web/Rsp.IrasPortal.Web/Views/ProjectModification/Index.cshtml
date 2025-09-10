@@ -32,7 +32,7 @@
             $"{prefix}{Model.Questions.FirstOrDefault()?.Section} - Make changes to research";
 }
 
-@if (await featureManager.IsEnabledAsync(Features.ProgressiveEnhancement))
+@if (await featureManager.IsEnabledAsync(FeatureFlags.ProgressiveEnhancement))
 {
     <script src="~/lib/jquery/dist/jquery.js"></script>
 

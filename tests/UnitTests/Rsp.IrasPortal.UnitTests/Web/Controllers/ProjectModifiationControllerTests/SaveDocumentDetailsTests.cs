@@ -4,12 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Web.Controllers;
+using Rsp.IrasPortal.Web.Features.Modifications.Documents.Controllers;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModifiationControllerTests;
 
-public class SaveDocumentDetailsTests : TestServiceBase<ProjectModificationController>
+public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
 {
     [Fact]
     public async Task SaveDocumentDetails_WhenValidationFails_ReturnsAddDocumentDetailsView()
@@ -107,7 +107,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<ProjectModificationContr
 
         // Assert
         var viewResult = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal(nameof(ProjectModificationController.AddDocumentDetailsList), viewResult.ActionName);
+        Assert.Equal(nameof(DocumentsController.AddDocumentDetailsList), viewResult.ActionName);
         Assert.True(Sut.ModelState.IsValid);
     }
 
@@ -138,7 +138,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<ProjectModificationContr
 
         // Assert
         var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal(nameof(ProjectModificationController.AddDocumentDetailsList), redirect.ActionName);
+        Assert.Equal(nameof(DocumentsController.AddDocumentDetailsList), redirect.ActionName);
     }
 
     [Fact]
@@ -168,6 +168,6 @@ public class SaveDocumentDetailsTests : TestServiceBase<ProjectModificationContr
 
         // Assert
         var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal(nameof(ProjectModificationController.AddDocumentDetailsList), redirect.ActionName);
+        Assert.Equal(nameof(DocumentsController.AddDocumentDetailsList), redirect.ActionName);
     }
 }

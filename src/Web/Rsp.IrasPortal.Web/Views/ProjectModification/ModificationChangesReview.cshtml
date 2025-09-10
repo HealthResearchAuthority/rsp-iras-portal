@@ -34,7 +34,7 @@
         ("pov:postapproval", "Back", new Dictionary<string, string> { { "projectRecordId", projectRecordId } });
 }
 
-@if (await featureManager.IsEnabledAsync(Features.ProgressiveEnhancement))
+@if (await featureManager.IsEnabledAsync(FeatureFlags.ProgressiveEnhancement))
 {
     // If progressive enhancement is enabled, add jQuery and custom JavaScript
     <script src="~/lib/jquery/dist/jquery.js"></script>

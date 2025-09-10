@@ -7,12 +7,12 @@ using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Enums;
-using Rsp.IrasPortal.Web.Controllers;
+using Rsp.IrasPortal.Web.Features.Modifications.Documents.Controllers;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModifiationControllerTests;
 
-public class AddDocumentDetailsListTests : TestServiceBase<ProjectModificationController>
+public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
 {
     [Fact]
     public async Task AddDocumentDetailsList_WhenSpecificAreaOfChangeProvided_SetsPageTitle()

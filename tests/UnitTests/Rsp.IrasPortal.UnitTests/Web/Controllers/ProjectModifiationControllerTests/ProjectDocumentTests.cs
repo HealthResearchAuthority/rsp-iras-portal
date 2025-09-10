@@ -2,12 +2,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Web.Controllers;
+using Rsp.IrasPortal.Web.Features.Modifications.Documents.Controllers;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModifiationControllerTests;
 
-public class ProjectDocumentTests : TestServiceBase<ProjectModificationController>
+public class ProjectDocumentTests : TestServiceBase<DocumentsController>
 {
     [Theory, AutoData]
     public void ProjectDocument_ReturnsView_WithCorrectViewModel(

@@ -15,14 +15,13 @@ using Rsp.IrasPortal.Domain.Identity;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
-using Rsp.IrasPortal.Web.Validators;
 
 namespace Rsp.IrasPortal.Web.Areas.Admin.Controllers;
 
 [Area("Admin")]
 [Route("[area]/[controller]/[action]", Name = "admin:[action]")]
 [Authorize(Policy = "IsSystemAdministrator")]
-[FeatureGate(Features.Admin)]
+[FeatureGate(FeatureFlags.Admin)]
 public class UsersController(
     IUserManagementService userManagementService,
     IValidator<UserViewModel> validator,

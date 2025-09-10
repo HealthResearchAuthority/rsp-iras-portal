@@ -259,27 +259,31 @@ public partial class ProjectModificationController
         TempData[TempDataKeys.ProjectModification.AreaOfChangeText] = areaOfChange?.OptionName ?? string.Empty;
         TempData[TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = selectedChange.OptionName ?? string.Empty;
 
-        var sections = modificationJourney?.Content?.Sections;
+        // if we have sections then grab the first section
+        var sections = modificationJourney.Content?.Sections ?? [];
 
-        if (sections?.Any() == true && !string.IsNullOrEmpty(sections[0]?.StaticViewName))
+        // section shouldn't be null here, this is a defensive
+        // check
+        if (sections is { Count: 0 } || string.IsNullOrEmpty(sections[0].StaticViewName))
         {
-            return RedirectToAction(sections[0].StaticViewName);
-        }
-
-        if (sections?.Any() == true && sections[0] != null)
-        {
-            return RedirectToRoute("mqc:displayquestionnaire", new
+            return this.ServiceError(new ServiceResponse
             {
-                sectionId = sections[0].Id
+                StatusCode = HttpStatusCode.BadRequest,
+                Error = $"Unable to load questionnaire for the selected specific area of change: {selectedChange.OptionName}",
             });
         }
 
-        // Optional fallback if sections are null or empty
-        return this.ServiceError(new ServiceResponse
+        var section = sections[0];
+
+        model.ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId)?.ToString() ?? string.Empty;
+
+        TempData[TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = selectedChange.OptionName;
+
+        return RedirectToRoute($"pmc:{section.StaticViewName}", new
         {
-            Error = "section not found",
-            ReasonPhrase = ReasonPhrases.GetReasonPhrase(StatusCodes.Status400BadRequest),
-            StatusCode = HttpStatusCode.BadRequest
+            projectRecordId = model.ProjectRecordId,
+            categoryId = section.CategoryId,
+            sectionId = section.Id,
         });
     }
 

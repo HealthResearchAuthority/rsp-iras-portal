@@ -112,7 +112,7 @@
                                 Home
                             </a>
                         </li>
-                        <feature name="@Features.ReviewApplications">
+                        <feature name="@FeatureFlags.ReviewApplications">
                             <authorized auth-params="@new(Roles:"reviewer")">
 
                                 <li class="govuk-service-navigation__item">
@@ -123,7 +123,7 @@
                             </authorized>
                         </feature>
 
-                        <feature name="@Features.Admin">
+                        <feature name="@FeatureFlags.Admin">
                             <authorized auth-params="@new(Roles:"system_administrator")">
                                 <li class="govuk-service-navigation__item">
                                     <a class="govuk-service-navigation__link"
@@ -143,7 +143,7 @@
                             </li>
                         </authorized>
 
-                        <feature name="@Features.MyApplications">
+                        <feature name="@FeatureFlags.MyApplications">
                             <authorized auth-params="@new(Roles:"applicant")">
                                 <li class="govuk-service-navigation__item">
                                     <a class="govuk-service-navigation__link"

@@ -5,12 +5,12 @@ using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Web.Controllers;
+using Rsp.IrasPortal.Web.Features.Modifications.Documents.Controllers;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModifiationControllerTests;
 
-public class ReviewDocumentTests : TestServiceBase<ProjectModificationController>
+public class ReviewDocumentTests : TestServiceBase<DocumentsController>
 {
     [Theory, AutoData]
     public async Task Review_WithDocuments_ReturnsViewWithDocuments

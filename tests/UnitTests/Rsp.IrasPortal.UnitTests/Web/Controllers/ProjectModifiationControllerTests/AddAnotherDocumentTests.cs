@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Web.Controllers;
+using Rsp.IrasPortal.Web.Features.Modifications.Documents.Controllers;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModifiationControllerTests;
 
-public class AddAnotherDocumentTests : TestServiceBase<ProjectModificationController>
+public class AddAnotherDocumentTests : TestServiceBase<DocumentsController>
 {
     [Fact]
     public void AddAnotherDocument_RedirectsToUploadDocuments()
@@ -14,6 +14,6 @@ public class AddAnotherDocumentTests : TestServiceBase<ProjectModificationContro
         // Assert
         result.ShouldBeOfType<RedirectToActionResult>();
         var redirectResult = result as RedirectToActionResult;
-        redirectResult!.ActionName.ShouldBe(nameof(ProjectModificationController.UploadDocuments));
+        redirectResult!.ActionName.ShouldBe(nameof(DocumentsController.UploadDocuments));
     }
 }

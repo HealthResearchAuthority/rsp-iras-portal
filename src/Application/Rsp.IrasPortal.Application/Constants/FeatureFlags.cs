@@ -3,7 +3,7 @@
 /// <summary>
 /// Defines constants for feature names.
 /// </summary>
-public static class Features
+public static class FeatureFlags
 {
     // Enhanced user experience when javascript is enabled
     public const string ProgressiveEnhancement = "UX.ProgressiveEnhancement";
