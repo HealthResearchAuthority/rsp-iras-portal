@@ -29,7 +29,7 @@ public class GetGenericPageContentTests : TestServiceBase<CmsContentService>
 
         Mocker
             .GetMock<ICmsContentServiceClient>()
-            .Setup(client => client.GetPageContentByUrl(requestUrl))
+            .Setup(client => client.GetPageContentByUrl(requestUrl, false))
             .ReturnsAsync(apiResponse);
 
         object value;
@@ -51,7 +51,7 @@ public class GetGenericPageContentTests : TestServiceBase<CmsContentService>
         result.StatusCode.ShouldBe(HttpStatusCode.OK);
 
         // Verify
-        _cmsClient.Verify(client => client.GetPageContentByUrl(requestUrl), Times.Once());
+        _cmsClient.Verify(client => client.GetPageContentByUrl(requestUrl, false), Times.Once());
     }
 
     [Fact]
@@ -88,6 +88,6 @@ public class GetGenericPageContentTests : TestServiceBase<CmsContentService>
         result.StatusCode.ShouldBe(HttpStatusCode.OK);
 
         // Verify
-        _cmsClient.Verify(client => client.GetPageContentByUrl(requestUrl), Times.Never);
+        _cmsClient.Verify(client => client.GetPageContentByUrl(requestUrl, false), Times.Never);
     }
 }

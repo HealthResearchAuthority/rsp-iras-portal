@@ -7,6 +7,7 @@
 @using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.DTOs.Responses
 @using Rsp.IrasPortal.Web.Extensions
+@using Rsp.IrasPortal.Web.Models.CmsContent
 @using Rsp.IrasPortal.Web.TagHelpers.Models
 @model ApprovalsSearchViewModel
 @inject IHttpContextAccessor httpContextAccessor
@@ -57,6 +58,16 @@
 	}
 
 	var showNoResultsMessage = !Model.Modifications.Any() && Model.Search is { IrasId: not null } or { Filters.Count: > 0 };
+
+	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData["PageContent"];
+	var pageContent = pageContentData != null
+		? pageContentData
+		: new Dictionary<string, MixedContentPageItem?>();
+
+	var title = pageContent.GetValueOrDefault("Approvals.Search.Title", null);
+	var searchHint = pageContent.GetValueOrDefault("Approvals.Search.SearchHint", null);
+	var noResultsTitle = pageContent.GetValueOrDefault("Approvals.Search.NoResultsTitle", null);
+	var noResultsBody = pageContent.GetValueOrDefault("Approvals.Search.NoResultsBody", null);
 }
 
 <div class="govuk-grid-row">
@@ -64,10 +75,9 @@
 
 		<partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
 
-		<h2 class="govuk-heading-l" id="title">Search</h2>
-		<p class="govuk-body">
-			Enter the IRAS ID to search for all modifications received, including those submitted for notification only
-		</p>
+		<h2 class="govuk-heading-l" id="title">@Html.Raw(title?.Value)</h2>
+		
+		@Html.Raw(searchHint?.Value)
 
 		<form asp-route="approvals:applyfilters" method="post" class="govuk-form-group govuk-!-margin-bottom-0" id="applyFiltersForm">
 			<div class="search-flex-container">
@@ -440,14 +450,8 @@
 	{
 		<div class="govuk-grid-row">
 			<div class="govuk-grid-column-two-thirds search-filter-error-border">
-				<h2 class="govuk-heading-l">There are no matching results</h2>
-				<p class="govuk-body">Improve your search results by:</p>
-				<ul class="govuk-list govuk-list--bullet">
-					<li>removing filters</li>
-					<li>double-checking your spelling</li>
-					<li>using fewer keywords</li>
-					<li>searching for something less specific</li>
-				</ul>
+				<h2 class="govuk-heading-l">@Html.Raw(noResultsTitle?.Value)</h2>
+				@Html.Raw(noResultsBody?.Value)
 			</div>
 		</div>
 	}

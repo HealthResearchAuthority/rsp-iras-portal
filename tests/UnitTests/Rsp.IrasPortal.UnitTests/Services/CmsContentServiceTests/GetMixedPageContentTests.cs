@@ -29,7 +29,7 @@ public class GetMixedPageContentTests : TestServiceBase<CmsContentService>
 
         Mocker
             .GetMock<ICmsContentServiceClient>()
-            .Setup(client => client.GetMixedPageContentByUrl(requestUrl))
+            .Setup(client => client.GetMixedPageContentByUrl(requestUrl, false))
             .ReturnsAsync(apiResponse);
 
         object value;
@@ -43,7 +43,7 @@ public class GetMixedPageContentTests : TestServiceBase<CmsContentService>
            .Returns(mockEntry.Object);
 
         // Act
-        var result = await Sut.GetMixedPageContentByUrl(requestUrl);
+        var result = await Sut.GetMixedPageContentByUrl(requestUrl, false);
 
         // Assert
         result.ShouldBeOfType<ServiceResponse<MixedContentPageResponse>>();
@@ -51,7 +51,7 @@ public class GetMixedPageContentTests : TestServiceBase<CmsContentService>
         result.StatusCode.ShouldBe(HttpStatusCode.OK);
 
         // Verify
-        _cmsClient.Verify(client => client.GetMixedPageContentByUrl(requestUrl), Times.Once());
+        _cmsClient.Verify(client => client.GetMixedPageContentByUrl(requestUrl, false), Times.Once());
     }
 
     [Fact]
@@ -80,7 +80,7 @@ public class GetMixedPageContentTests : TestServiceBase<CmsContentService>
            .Returns(mockEntry.Object);
 
         // Act
-        var result = await Sut.GetMixedPageContentByUrl(requestUrl);
+        var result = await Sut.GetMixedPageContentByUrl(requestUrl, false);
 
         // Assert
         result.ShouldBeOfType<ServiceResponse<MixedContentPageResponse>>();
@@ -88,6 +88,6 @@ public class GetMixedPageContentTests : TestServiceBase<CmsContentService>
         result.StatusCode.ShouldBe(HttpStatusCode.OK);
 
         // Verify
-        _cmsClient.Verify(client => client.GetMixedPageContentByUrl(requestUrl), Times.Never);
+        _cmsClient.Verify(client => client.GetMixedPageContentByUrl(requestUrl, false), Times.Never);
     }
 }

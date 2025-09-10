@@ -27,7 +27,7 @@ public class RenderCmsContentTests : TestServiceBase<CmsContentController>
         };
 
         Mocker.GetMock<ICmsContentService>()
-            .Setup(s => s.GetPageContentByUrl(It.IsAny<string>()))
+            .Setup(s => s.GetPageContentByUrl(It.IsAny<string>(), false))
             .ReturnsAsync(serviceResponse);
 
         var nonExistingUrl = "/page-does-not-exist/";
@@ -41,7 +41,7 @@ public class RenderCmsContentTests : TestServiceBase<CmsContentController>
 
         // Verify
         Mocker.GetMock<ICmsContentService>()
-            .Verify(s => s.GetPageContentByUrl(It.IsAny<string>()), Times.Once);
+            .Verify(s => s.GetPageContentByUrl(It.IsAny<string>(), false), Times.Once);
     }
 
     [Fact]
@@ -54,7 +54,7 @@ public class RenderCmsContentTests : TestServiceBase<CmsContentController>
         };
 
         Mocker.GetMock<ICmsContentService>()
-            .Setup(s => s.GetPageContentByUrl(It.IsAny<string>()))
+            .Setup(s => s.GetPageContentByUrl(It.IsAny<string>(), false))
             .ReturnsAsync(serviceResponse);
 
         // Act
@@ -65,7 +65,7 @@ public class RenderCmsContentTests : TestServiceBase<CmsContentController>
 
         // Verify
         Mocker.GetMock<ICmsContentService>()
-            .Verify(s => s.GetPageContentByUrl(It.IsAny<string>()), Times.Never);
+            .Verify(s => s.GetPageContentByUrl(It.IsAny<string>(), false), Times.Never);
     }
 
     [Theory, AutoData]
@@ -79,7 +79,7 @@ public class RenderCmsContentTests : TestServiceBase<CmsContentController>
         };
 
         Mocker.GetMock<ICmsContentService>()
-            .Setup(s => s.GetPageContentByUrl(It.IsAny<string>()))
+            .Setup(s => s.GetPageContentByUrl(It.IsAny<string>(), false))
             .ReturnsAsync(serviceResponse);
 
         var nonExistingUrl = "/page-does-exist/";
@@ -93,6 +93,6 @@ public class RenderCmsContentTests : TestServiceBase<CmsContentController>
 
         // Verify
         Mocker.GetMock<ICmsContentService>()
-            .Verify(s => s.GetPageContentByUrl(It.IsAny<string>()), Times.Once);
+            .Verify(s => s.GetPageContentByUrl(It.IsAny<string>(), false), Times.Once);
     }
 }
