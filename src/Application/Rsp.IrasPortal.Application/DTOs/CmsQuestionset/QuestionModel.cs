@@ -22,6 +22,10 @@ public class QuestionModel
     public string? AnswerDataType { get; set; }
     public string? CategoryId { get; set; }
     public string? Version { get; set; }
+    public bool ShowOriginalAnswer { get; set; }
+    public int Sequence { get; set; }
+    public int SectionSequence { get; set; }
+
     public IList<AnswerModel> Answers { get; set; } = [];
     public IList<RuleModel> ValidationRules { get; set; } = [];
     public IList<ContentComponent> GuidanceComponents { get; set; } = [];

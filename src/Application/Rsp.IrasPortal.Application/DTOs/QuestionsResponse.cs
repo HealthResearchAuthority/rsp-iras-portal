@@ -68,6 +68,16 @@ public record QuestionsResponse
     public bool IsOptional { get; set; }
 
     /// <summary>
+    /// If true then it indicates to fetch the original answer
+    /// </summary>
+    public bool ShowOriginalAnswer { get; set; }
+
+    /// <summary>
+    /// If true then it indicates to fetch the original answer
+    /// </summary>
+    public int SectionSequence { get; set; }
+
+    /// <summary>
     /// Potential answers of the question for single or multiple choice type question
     /// </summary>
     public IList<AnswerDto> Answers { get; set; } = [];

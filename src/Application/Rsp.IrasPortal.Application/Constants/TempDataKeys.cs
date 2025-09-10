@@ -31,6 +31,12 @@ public struct TempDataKeys
         public const string ReviewChanges = "td:planned_enddate_review_changes";
     }
 
+    public struct ProjectModificationChange
+    {
+        public const string ReviewChanges = "td:modification_review_changes";
+        public const string Navigation = "td:modification_change_navigation";
+    }
+
     public const string ProjectRecordId = "td:project_record_id";
     public const string ProjectRecordResponses = "td:project_record_responses";
     public const string ShortProjectTitle = "td:short_project_title";

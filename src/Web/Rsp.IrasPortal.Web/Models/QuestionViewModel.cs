@@ -12,6 +12,7 @@ public class QuestionViewModel
     public string Category { get; set; } = null!;
     public string SectionId { get; set; } = null!;
     public string Section { get; set; } = null!;
+    public int SectionSequence { get; set; }
     public int Sequence { get; set; }
     public string? Heading { get; set; }
     public string QuestionText { get; set; } = null!;
@@ -25,6 +26,7 @@ public class QuestionViewModel
     public IList<RuleDto> Rules { get; set; } = [];
     public string ShortQuestionText { get; set; } = null!;
     public bool IsModificationQuestion { get; set; }
+    public bool ShowOriginalAnswer { get; set; }
     public IList<ContentComponent> GuidanceComponents { get; set; } = [];
 
     private string? _day, _month, _year;
@@ -104,7 +106,7 @@ public class QuestionViewModel
     {
         return string.IsNullOrWhiteSpace(AnswerText)
                && string.IsNullOrWhiteSpace(SelectedOption)
-               && !(Answers?.Any(a => a.IsSelected) ?? false);
+               && Answers?.Count(a => a.IsSelected) == 0;
     }
 
     private void SetValue(ref string? field, string? value)

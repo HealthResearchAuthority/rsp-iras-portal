@@ -12,7 +12,7 @@ namespace Rsp.IrasPortal.Web.Areas.Admin.Controllers;
 [Area("Admin")]
 [Route("[area]/[controller]/[action]", Name = "admin:[action]")]
 [Authorize(Policy = "IsSystemAdministrator")]
-[FeatureGate(Features.Admin)]
+[FeatureGate(FeatureFlags.Admin)]
 public class RolesController(IUserManagementService userManagementService) : Controller
 {
     /// <summary>

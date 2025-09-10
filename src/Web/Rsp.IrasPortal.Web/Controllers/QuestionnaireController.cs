@@ -27,22 +27,7 @@ public class QuestionnaireController
 ) : Controller
 {
     // Index view name
-    [HttpGet]
-    public async Task<IActionResult> Index(string? categoryId, string? sectionId, bool reviewAnswers = false, string? questionSetId = null)
-    {
-        var questionSet = await questionSetService.GetQuestionSet(sectionId, questionSetId);
-
-        var questionsObject = questionSet.Content;
-
-        var viewModelData = QuestionsetHelpers.BuildQuestionnaireViewModel(questionsObject);
-        if (viewModelData != null)
-        {
-            viewModelData.CurrentStage = viewModelData.Questions?.FirstOrDefault()?.SectionId;
-            TempData[TempDataKeys.CurrentStage] = viewModelData.Questions?.FirstOrDefault()?.SectionId;
-        }
-
-        return View(viewModelData);
-    }
+    private const string Index = nameof(Index);
 
     /// <summary>
     /// Resumes the application for the categoryId
@@ -93,10 +78,7 @@ public class QuestionnaireController
             {
                 // Get the first question section for the given categoryId
                 var firstSection = questionSections.First();
-                if (firstSection != null)
-                {
-                    sectionId = firstSection.SectionId;
-                }
+                sectionId = firstSection.SectionId;
             }
         }
 
@@ -131,7 +113,6 @@ public class QuestionnaireController
         // save the list of QuestionViewModel in session to get it later
         HttpContext.Session.SetString($"{SessionKeys.Questionnaire}:{sectionId}", JsonSerializer.Serialize(questionnaire.Questions));
 
-        TempData.TryAdd(TempDataKeys.ProjectRecordId, projectRecordId);
         // this is where the questionnaire will resume
         var navigationDto = await SetStage(sectionIdOrDefault);
 
@@ -147,7 +128,7 @@ public class QuestionnaireController
             await ValidateQuestionnaire(questionnaire);
 
             // return the view with errors
-            return View("Index", questionnaire);
+            return View(Index, questionnaire);
         }
 
         // continue to resume for the category Id &
@@ -207,7 +188,7 @@ public class QuestionnaireController
                     // store the questions to load again if there are validation errors on the page
                     HttpContext.Session.SetString($"{SessionKeys.Questionnaire}:{sectionId}", JsonSerializer.Serialize(questionnaire.Questions));
 
-                    return View("Index", questionnaire);
+                    return View(Index, questionnaire);
                 }
 
                 // return error page as api wasn't successful
@@ -219,7 +200,7 @@ public class QuestionnaireController
 
             // if we have questions in the session
             // then return the view with the model
-            return View("Index", new QuestionnaireViewModel
+            return View(Index, new QuestionnaireViewModel
             {
                 CurrentStage = sectionId,
                 Questions = questions,
@@ -323,11 +304,10 @@ public class QuestionnaireController
 
         if (!isValid)
         {
-            TempData.TryAdd(TempDataKeys.ProjectRecordId, application.Id);
             // set the previous, current and next stages
             await SetStage(model.CurrentStage!);
             model.ReviewAnswers = submit;
-            return View("Index", model);
+            return View(Index, model);
         }
 
         // ------------------Save Project Record Answers or Modification Answers-------------------------
@@ -367,7 +347,6 @@ public class QuestionnaireController
             await SaveModificationAnswers(projectModificationChangeId, application.Id, questions);
         }
 
-        TempData.TryAdd(TempDataKeys.ProjectRecordId, application.Id);
         // set the previous, current and next stages
         var navigation = await SetStage(model.CurrentStage);
 
@@ -413,11 +392,10 @@ public class QuestionnaireController
 
                 if (!isValid)
                 {
-                    TempData.TryAdd(TempDataKeys.ProjectRecordId, application.Id);
                     // set the previous, current and next stages
                     await SetStage(model.CurrentStage!);
                     model.ReviewAnswers = submit;
-                    return View("Index", model);
+                    return View(Index, model);
                 }
             }
 
@@ -439,18 +417,6 @@ public class QuestionnaireController
         if (saveForLater == bool.TrueString)
         {
             return RedirectToAction("ProjectDetails", "ProjectOverview", new { projectRecordId = application.Id });
-        }
-
-        // user jumps to the next stage by clicking on the link
-        // so we need to resume the application from there
-        if (!string.IsNullOrWhiteSpace(navigation.NextStage))
-        {
-            return RedirectToAction(nameof(Resume), new
-            {
-                projectRecordId = application.Id,
-                categoryId = navigation.NextCategory,
-                sectionId = navigation.NextStage
-            });
         }
 
         // continue rendering the questionnaire if the above conditions are not true
@@ -488,7 +454,7 @@ public class QuestionnaireController
         // set the previous, current and next stages
         await SetStage(model.CurrentStage!);
 
-        return View("Index", model);
+        return View(Index, model);
     }
 
     /// <summary>
@@ -531,21 +497,12 @@ public class QuestionnaireController
         var respondentAnswers = respondentServiceResponse.Content!;
         var questions = questionSetServiceResponse.Content!;
 
-        //var questionnaire = new QuestionnaireViewModel
-        //{
-        //    CurrentStage = string.Empty,
-        //    Questions = new List<QuestionViewModel>()
-        //};
-
         // convert the questions response to QuestionnaireViewModel
         var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(questions);
 
         // validate each category
         foreach (var questionsResponse in questionnaire.Questions.GroupBy(x => x.Category))
         {
-            // build the QuestionnaireViewModel for each category
-            //questionnaire = BuildQuestionnaireViewModel(questionsResponse);
-
             if (questionnaire.Questions.Count == 0)
             {
                 continue;
@@ -575,18 +532,6 @@ public class QuestionnaireController
                 var result = await validator.ValidateAsync(context);
             }
         }
-
-        // get the application from the session
-        // to get the applicationId
-        var application = this.GetApplicationFromSession();
-
-        // store the irasId in the TempData to get in the view
-        TempData.TryAdd(TempDataKeys.IrasId, application.IrasId);
-
-        // store the first categoryId and applicationId in the TempData to get in the view
-        TempData[TempDataKeys.CategoryId] = (questionnaire.Questions.GroupBy(q => q.Category)
-        .OrderBy(g => g.First().Sequence).FirstOrDefault()?.Key);
-        TempData[TempDataKeys.ProjectRecordId] = application.Id;
 
         return View("ReviewAnswers", questionnaire);
     }
@@ -633,14 +578,10 @@ public class QuestionnaireController
         var questionnaireValidationState = new Dictionary<string, string>();
 
         var respondentAnswers = respondentServiceResponse.Content!;
-        //var questions = questionSetServiceResponse.Content!;
 
         // validate each category
         foreach (var questionsResponse in questionnaire.Questions.GroupBy(x => x.Category))
         {
-            // build the QuestionnaireViewModel for each category
-            //var questionnaire = BuildQuestionnaireViewModel(questionsResponse);
-
             if (questionnaire.Questions.Count == 0)
             {
                 continue;
@@ -663,14 +604,6 @@ public class QuestionnaireController
             // before the validation cicks in
             context.RootContextData["questions"] = questionnaire.Questions;
             context.RootContextData["ValidateMandatoryOnly"] = true;
-
-            // store the irasId in the TempData to get in the view
-            TempData.TryAdd(TempDataKeys.IrasId, application.IrasId);
-
-            // store the first categoryId and applicationId in the TempData to get in the view
-            TempData[TempDataKeys.CategoryId] = (questionnaire.Questions.GroupBy(q => q.Category)
-            .OrderBy(g => g.First().Sequence).FirstOrDefault()?.Key);
-            TempData[TempDataKeys.ProjectRecordId] = application.Id;
 
             // call the ValidateAsync to execute the validation
             // this will trigger the fluentvalidation using the injected validator if configured

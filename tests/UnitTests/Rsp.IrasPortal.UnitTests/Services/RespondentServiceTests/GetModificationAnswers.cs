@@ -10,6 +10,7 @@ public class GetModificationAnswers : TestServiceBase<RespondentService>
     public async Task GetModificationAnswers_ByChangeId_DelegatesToClient_AndReturnsMappedResult
     (
         Guid projectModificationChangeId,
+        string projectRecordId,
         List<RespondentAnswerDto> apiResponseContent
     )
     {
@@ -19,17 +20,17 @@ public class GetModificationAnswers : TestServiceBase<RespondentService>
 
         var respondentServiceClient = Mocker.GetMock<IRespondentServiceClient>();
         respondentServiceClient
-            .Setup(c => c.GetModificationAnswers(projectModificationChangeId))
+            .Setup(c => c.GetModificationAnswers(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.GetModificationAnswers(projectModificationChangeId);
+        var result = await Sut.GetModificationAnswers(projectModificationChangeId, projectRecordId);
 
         // Assert
         respondentServiceClient
             .Verify
             (
-                c => c.GetModificationAnswers(projectModificationChangeId),
+                c => c.GetModificationAnswers(projectModificationChangeId, projectRecordId),
                 Times.Once
             );
 

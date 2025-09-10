@@ -1,0 +1,9 @@
+﻿@model (string RouteName, string DisplayText, Dictionary<string, string>? Params)
+
+@{
+    var model = Model;
+}
+
+<a class="govuk-back-link" asp-route="@Model.RouteName" asp-all-route-data="@Model.Params">
+    @Model.DisplayText
+</a>

@@ -7,13 +7,30 @@ namespace Rsp.IrasPortal.Web.Helpers;
 
 public static class QuestionsetHelpers
 {
-    public static QuestionnaireViewModel BuildQuestionnaireViewModel(CmsQuestionSetResponse response)
+    // Pseudocode:
+    // - Convert CMS response to a flat list of QuestionsResponse.
+    // - Order questions by SectionId then by Sequence to maintain desired order.
+    // - Group by SectionId so we can assign an index that resets per section.
+    // - Within each group, use Select with index to create (question, indexPerSection) tuples.
+    // - Build QuestionnaireViewModel and add QuestionViewModel items using the per-section index.
+
+    public static QuestionnaireViewModel BuildQuestionnaireViewModel(CmsQuestionSetResponse response, bool resetIndexPerSection = false)
     {
         var model = ConvertToQuestionResponse(response);
 
-        // order the questions by SectionId and Sequence
-        var questions = model
+        IEnumerable<(QuestionsResponse, int)> questions = resetIndexPerSection ?
+            // reset index for each unique SectionId
+            model
                 .OrderBy(q => q.SectionId)
+                .ThenBy(q => q.SectionSequence)
+                .ThenBy(q => q.Sequence)
+                .GroupBy(q => q.SectionId)
+                .SelectMany(g => g.Select((question, index) => (question, index))) :
+
+            // order the questions by SectionId and Sequence
+            model
+                .OrderBy(q => q.SectionId)
+                .ThenBy(q => q.SectionSequence)
                 .ThenBy(q => q.Sequence)
                 .Select((question, index) => (question, index));
 
@@ -25,10 +42,7 @@ public static class QuestionsetHelpers
             GuidanceContent = guidanceContent
         };
 
-        // build the questionnaire view model
-        // we need to order the questions by section and sequence
-        // and also need to assign the index to the question so the multiple choice
-        // answers can be linked back to the question
+        // build the questionnaire view model with per-section index
         foreach (var (question, index) in questions)
         {
             questionnaire.Questions.Add(new QuestionViewModel
@@ -48,12 +62,14 @@ public static class QuestionsetHelpers
                 IsOptional = question.IsOptional,
                 Rules = question.Rules,
                 IsMandatory = question.IsMandatory,
+                ShowOriginalAnswer = question.ShowOriginalAnswer,
+                SectionSequence = question.SectionSequence,
                 GuidanceComponents = question.GuidanceComponents,
-                Answers = question.Answers.Select(ans => new AnswerViewModel
+                Answers = [.. question.Answers.Select(ans => new AnswerViewModel
                 {
                     AnswerId = ans.AnswerId,
                     AnswerText = ans.AnswerText
-                }).ToList()
+                })]
             });
         }
 
@@ -69,7 +85,7 @@ public static class QuestionsetHelpers
             {
                 IsMandatory = (question.Conformance == "Mandatory"),
                 Heading = (i + 1).ToString(),
-                Sequence = i + 1,
+                Sequence = question.Sequence == 0 ? i + 1 : question.Sequence,
                 Section = section.SectionName ?? string.Empty,
                 SectionId = section.Id,
                 QuestionId = question.Id,
@@ -78,8 +94,10 @@ public static class QuestionsetHelpers
                 DataType = question.AnswerDataType ?? string.Empty,
                 QuestionType = question.QuestionFormat ?? string.Empty,
                 Category = question.CategoryId ?? string.Empty,
-                Answers = new List<AnswerDto>(),
-                Rules = new List<RuleDto>(),
+                ShowOriginalAnswer = question.ShowOriginalAnswer,
+                SectionSequence = question.SectionSequence,
+                Answers = [],
+                Rules = [],
                 GuidanceComponents = question.GuidanceComponents,
                 VersionId = question.Version ?? string.Empty
             };

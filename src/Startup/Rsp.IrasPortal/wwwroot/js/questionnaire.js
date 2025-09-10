@@ -42,7 +42,7 @@ $(function () {
  * @param {jQuery} $conditionalElement - The jQuery object for the conditional question element.
  */
 function updateConditionalVisibility(questionId, $conditionalElement) {
-    const isApplicable = isRuleApplicable(questionId);
+    const isApplicable = isRuleApplicable(questionId) || isRuleApplicable(questionId, true);
     const scrollPosition = $(window).scrollTop();
 
     if (isApplicable) {

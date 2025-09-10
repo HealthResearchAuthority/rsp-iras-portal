@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Web.Controllers;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApprovalsControllerTests;
+namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApprovalsMenuControllerTests;
 
 public class WelcomeTests : TestServiceBase<ApprovalsMenuController>
 {

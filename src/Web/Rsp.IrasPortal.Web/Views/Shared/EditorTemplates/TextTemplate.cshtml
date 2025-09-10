@@ -1,0 +1,37 @@
+﻿@model QuestionnaireViewModel
+
+@{
+    var index = (int)ViewBag.Index;
+    var question = Model.Questions[index];
+
+    var rules = question.Rules;
+    var conditional = !question.IsMandatory && rules.Count > 0;
+    var parents = conditional ? string.Join(',', rules.Select(rule => rule.ParentQuestionId)) : "";
+    var questionId = conditional ? question.QuestionId : "";
+
+    var sizeRule = rules.FirstOrDefault(x => x.Conditions.SingleOrDefault(y => y.Operator == "SIZE") != null);
+    var condition = sizeRule?.Conditions.FirstOrDefault(x => x.Operator == "SIZE");
+    var conditionValue = condition?.Value;
+
+    var hintHtml = rules.Count > 0
+        ? string.Join("", rules.Select(r => $"<p>{r.Description}</p>"))
+        : "";
+
+    var validationMessage = "Provide an answer for this question";
+    var types = (question.QuestionType.ToLower(), question.DataType.ToLower());
+    var inputType = types == ("text", "email") ? "email" : "text";
+}
+
+<rsp-gds-input asp-for="Questions[index].AnswerText"
+               id="Questions[@index].AnswerText"
+               field-id="@(question.QuestionId)_Text"
+               input-type=@inputType
+               label-text="@question.QuestionText"
+               hint-html="@Html.Raw(hintHtml)"
+               error-key="Questions[@index].AnswerText"
+               conditional="@conditional"
+               width-class="@conditionValue"
+               dataparents-attr="@parents"
+               dataquestionid-attr="@questionId"
+			   hint-id="@($"{question.QuestionText.ToLowerInvariant().Replace(" ", "-")}-hint")"
+			   label-aria-describedby="@($"{question.QuestionText.ToLowerInvariant().Replace(" ", "-")}-hint")" />
