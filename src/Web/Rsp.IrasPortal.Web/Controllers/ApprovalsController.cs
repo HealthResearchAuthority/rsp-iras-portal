@@ -54,6 +54,7 @@ public class ApprovalsController
                 ModificationTypes = search.ModificationTypes,
                 ShortProjectTitle = search.ShortProjectTitle,
                 SponsorOrganisation = search.SponsorOrganisation,
+                IncludeReviewerId = false
             };
 
             var result = await projectModificationsService.GetModifications(searchQuery, pageNumber, pageSize, sortField, sortDirection);

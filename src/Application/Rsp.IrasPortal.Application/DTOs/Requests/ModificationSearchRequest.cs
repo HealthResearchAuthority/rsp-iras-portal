@@ -12,4 +12,5 @@ public class ModificationSearchRequest
     public List<string> ParticipatingNation { get; set; } = [];
     public List<string> ModificationTypes { get; set; } = [];
     public string? ReviewerId { get; set; } = null;
+    public bool IncludeReviewerId { get; set; }
 }
