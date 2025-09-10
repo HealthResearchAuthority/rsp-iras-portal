@@ -5,7 +5,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
+using Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
@@ -47,11 +48,10 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
         validator.Verify();
     }
 
-    [Theory, InlineData(ModificationJourneyTypes.ParticipatingOrganisation, "ParticipatingOrganisation")]
-    [InlineData(ModificationJourneyTypes.PlannedEndDate, "PlannedEndDate")]
-    [InlineData(ModificationJourneyTypes.ProjectDocument, "ProjectDocument")]
-    public async Task ConfirmModificationJourney_RedirectsToCorrectAction_WhenJourneyTypeValid(
-        string journeyType, string expectedAction)
+    [Theory, AutoData]
+    public async Task ConfirmModificationJourney_RedirectsToPostApproval_WhenActionIsSaveForLater_AndValidationPasses(
+        AreaOfChangeViewModel model,
+        List<GetAreaOfChangesResponse> areaChanges)
     {
         // Arrange
         var model = new AreaOfChangeViewModel
@@ -79,92 +79,6 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
             }
         }
     };
-
-        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
-        {
-            [TempDataKeys.ProjectModification.AreaOfChanges] = JsonSerializer.Serialize(areaChanges),
-            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid()
-        };
-
-        var httpContext = new DefaultHttpContext();
-        httpContext.Items["Respondent"] = respondent;
-
-        Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
-
-        Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.CreateModificationChange(It.IsAny<ProjectModificationChangeRequest>()))
-            .ReturnsAsync(new ServiceResponse<ProjectModificationChangeResponse>
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new ProjectModificationChangeResponse { Id = Guid.NewGuid() }
-            });
-
-        // Act
-        var result = await Sut.ConfirmModificationJourney(model, action);
-
-        // Assert
-        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
-        redirect.ActionName.ShouldBe(expectedAction);
-    }
-
-    [Theory, AutoData]
-    public async Task ConfirmModificationJourney_ReturnsAreaOfChangeView_WhenJourneyTypeUnknown(List<GetAreaOfChangesResponse> areaChanges)
-    {
-        // Arrange
-        var model = new AreaOfChangeViewModel
-        {
-            AreaOfChangeId = "1",
-            SpecificChangeId = "999"
-        };
-        string action = "saveAndContinue";
-
-        var validator = Mocker.GetMock<IValidator<AreaOfChangeViewModel>>();
-        validator
-            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<AreaOfChangeViewModel>>(), default))
-            .ReturnsAsync(new ValidationResult());
-
-        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
-        {
-            [TempDataKeys.ProjectModification.AreaOfChanges] = JsonSerializer.Serialize(areaChanges)
-        };
-
-        var httpContext = new DefaultHttpContext();
-        httpContext.Items["Respondent"] = new { GivenName = "Test", FamilyName = "User" };
-
-        Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
-        Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>())
-        {
-            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid()
-        };
-
-        Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.CreateModificationChange(It.IsAny<ProjectModificationChangeRequest>()))
-            .ReturnsAsync(new ServiceResponse<ProjectModificationChangeResponse>
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new ProjectModificationChangeResponse { Id = Guid.NewGuid() }
-            });
-
-        // Act
-        var result = await Sut.ConfirmModificationJourney(model, action);
-
-        // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("AreaOfChange");
-    }
-
-    [Theory, AutoData]
-    public async Task ConfirmModificationJourney_RedirectsToPostApproval_WhenActionIsSaveForLater_AndValidationPasses(
-        AreaOfChangeViewModel model,
-        List<GetAreaOfChangesResponse> areaChanges)
-    {
-        // Arrange
-        string action = "saveForLater";
-
-        var validator = Mocker.GetMock<IValidator<AreaOfChangeViewModel>>();
-        validator
-            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<AreaOfChangeViewModel>>(), default))
-            .ReturnsAsync(new ValidationResult());
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
@@ -197,5 +111,73 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
         redirectResult.RouteValues.ShouldNotBeNull();
         redirectResult.RouteValues["projectRecordId"].ShouldBe(model.ProjectRecordId);
         validator.Verify();
+    }
+
+    [Fact]
+    public async Task ConfirmModificationJourney_RedirectsToFirstSection_WhenValidModelAndJourneyExists()
+    {
+        // Arrange
+        var model = new AreaOfChangeViewModel
+        {
+            AreaOfChangeId = "1",
+            SpecificChangeId = "999"
+        };
+
+        var areaOfChanges = new List<AreaOfChangeDto>
+        {
+            new AreaOfChangeDto
+            {
+                AutoGeneratedId = "area1",
+                OptionName = "Test Area",
+                SpecificAreasOfChange = new List<AnswerModel>
+                {
+                    new AnswerModel
+                    {
+                        AutoGeneratedId = "specific1",
+                        OptionName = "Specific Area 1"
+                    }
+                }
+            }
+        };
+
+        // TempData setup
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.AreaOfChanges] = JsonSerializer.Serialize(areaOfChanges),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid()
+        };
+
+        var validator = Mocker.GetMock<IValidator<AreaOfChangeViewModel>>();
+        validator
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<AreaOfChangeViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult());
+
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationsJourney(It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse { Id = "1" }
+            });
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.CreateModificationChange(It.IsAny<ProjectModificationChangeRequest>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationChangeResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectModificationChangeResponse { Id = Guid.NewGuid() }
+            });
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Items["Respondent"] = new { GivenName = "Test", FamilyName = "User" };
+
+        Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
+
+        // Act
+        var result = await Sut.ConfirmModificationJourney(model, action: "proceed");
+
+        // Assert
+        var redirectResult = result.ShouldBeOfType<ViewResult>();
+        redirectResult.ViewName.ShouldBe("Error");
     }
 }

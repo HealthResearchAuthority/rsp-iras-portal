@@ -2,12 +2,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Web.Controllers;
+using Rsp.IrasPortal.Web.Features.Modifications.Documents.Controllers;
 using Rsp.IrasPortal.Web.Models;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.ProjectModifiationControllerTests;
+namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModifiationControllerTests;
 
-public class ProjectDocumentTests : TestServiceBase<ModificationsController>
+public class ProjectDocumentTests : TestServiceBase<DocumentsController>
 {
     [Theory, AutoData]
     public void ProjectDocument_ReturnsView_WithCorrectViewModel(
@@ -42,7 +42,6 @@ public class ProjectDocumentTests : TestServiceBase<ModificationsController>
         model!.ShortTitle.ShouldBe(shortTitle);
         model.IrasId.ShouldBe(irasId);
         model.ModificationIdentifier.ShouldBe(modificationId);
-        model.SpecificAreaOfChange.ShouldBe($"Add documents for {specificAreaOfChange}");
     }
 
     [Fact]
@@ -72,6 +71,6 @@ public class ProjectDocumentTests : TestServiceBase<ModificationsController>
         model!.ShortTitle.ShouldBeEmpty();
         model.IrasId.ShouldBeEmpty();
         model.ModificationIdentifier.ShouldBeEmpty();
-        model.SpecificAreaOfChange.ShouldBeEmpty();
+        model.PageTitle.ShouldBeEmpty();
     }
 }

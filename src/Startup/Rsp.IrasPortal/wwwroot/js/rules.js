@@ -90,7 +90,7 @@ function evaluateCondition(condition, parentQuestionId) {
     const selectedRadioAnswers = radioInputs.filter(":checked");
 
     // Gather drop-down (select) elements whose IDs start with the parentQuestionId
-    const selectInputs = $(`select[id^="${parentQuestionId}"]`);
+    const selectInputs = $(`select[id^="${parentQuestionId}"], div[id^="${parentQuestionId}"] > select`);
 
     let selectedIds = [];
 

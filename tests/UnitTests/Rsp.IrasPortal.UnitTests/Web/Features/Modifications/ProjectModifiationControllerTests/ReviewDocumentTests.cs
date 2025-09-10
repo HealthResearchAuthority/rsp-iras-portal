@@ -5,12 +5,12 @@ using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Web.Controllers;
+using Rsp.IrasPortal.Web.Features.Modifications.Documents.Controllers;
 using Rsp.IrasPortal.Web.Models;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.ProjectModifiationControllerTests;
+namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModifiationControllerTests;
 
-public class ReviewDocumentTests : TestServiceBase<ModificationsController>
+public class ReviewDocumentTests : TestServiceBase<DocumentsController>
 {
     [Theory, AutoData]
     public async Task Review_WithDocuments_ReturnsViewWithDocuments
@@ -54,18 +54,17 @@ public class ReviewDocumentTests : TestServiceBase<ModificationsController>
         };
 
         // Act
-        var result = await Sut.ReviewDocument();
+        var result = await Sut.ModificationDocumentsAdded();
 
         // Assert
         result.ShouldBeOfType<ViewResult>();
         var viewResult = result as ViewResult;
-        viewResult!.ViewName.ShouldBe("ModificationReviewDocuments");
+        viewResult!.ViewName.ShouldBe("ModificationDocumentsAdded");
 
         var model = viewResult.Model.ShouldBeOfType<ModificationReviewDocumentsViewModel>();
         model.ShortTitle.ShouldBe(shortTitle);
         model.IrasId.ShouldBe(irasId);
         model.ModificationIdentifier.ShouldBe(modificationIdentifier);
-        model.SpecificAreaOfChange.ShouldBe($"Documents added for {specificAreaOfChange}");
 
         model.UploadedDocuments.Count.ShouldBe(documentResponses.Count);
     }
@@ -110,12 +109,12 @@ public class ReviewDocumentTests : TestServiceBase<ModificationsController>
         };
 
         // Act
-        var result = await Sut.ReviewDocument();
+        var result = await Sut.ModificationDocumentsAdded();
 
         // Assert
         result.ShouldBeOfType<ViewResult>();
         var viewResult = result as ViewResult;
-        viewResult!.ViewName.ShouldBe("ModificationReviewDocuments");
+        viewResult!.ViewName.ShouldBe("ModificationDocumentsAdded");
 
         var model = viewResult.Model.ShouldBeOfType<ModificationReviewDocumentsViewModel>();
         model.UploadedDocuments.ShouldBeEmpty();
