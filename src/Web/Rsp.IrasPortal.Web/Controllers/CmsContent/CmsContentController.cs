@@ -9,6 +9,10 @@ public class CmsContentController(ICmsContentService cms) : Controller
 
     public async Task<IActionResult> Index()
     {
+        // check if the current request requires CMS content in preview model
+        var previewQuery = HttpContext?.Request?.Query["preview"];
+        bool previewParsed = bool.TryParse(previewQuery, out var parsed);
+
         var path = HttpContext?.Request?.Path.Value?.Trim('/')?.ToLower();
 
         if (string.IsNullOrEmpty(path) || PathsToIgnore.Contains(path))
@@ -16,7 +20,7 @@ public class CmsContentController(ICmsContentService cms) : Controller
             return NotFound();
         }
 
-        var cmsPage = await cms.GetPageContentByUrl(path);
+        var cmsPage = await cms.GetPageContentByUrl(path, parsed);
 
         if (!cmsPage.IsSuccessStatusCode || cmsPage.Content == null)
         {

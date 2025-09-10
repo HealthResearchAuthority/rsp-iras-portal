@@ -8,6 +8,10 @@ public class SiteContentFilter(ICmsContentService contentService) : IAsyncAction
 {
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
+        // check if the current request requires CMS content in preview model
+        var previewQuery = context.HttpContext.Request.Query["preview"];
+        bool previewParsed = bool.TryParse(previewQuery, out var parsed);
+
         // for every controller request get the page content
         // this includes the page specific content as well as the site footer
         if (context.Controller is Controller controller)
@@ -18,7 +22,7 @@ public class SiteContentFilter(ICmsContentService contentService) : IAsyncAction
             if (!isCmsContentController)
             {
                 // do not try and retrieve mixed content when the page reqested is a generic content page
-                var pageContent = await contentService.GetMixedPageContentByUrl(path);
+                var pageContent = await contentService.GetMixedPageContentByUrl(path, parsed);
 
                 if (pageContent.IsSuccessStatusCode && pageContent.Content != null)
                 {
@@ -26,7 +30,7 @@ public class SiteContentFilter(ICmsContentService contentService) : IAsyncAction
                 }
             }
 
-            var footerData = await contentService.GetSiteSettings();
+            var footerData = await contentService.GetSiteSettings(parsed);
 
             if (footerData.IsSuccessStatusCode)
             {
