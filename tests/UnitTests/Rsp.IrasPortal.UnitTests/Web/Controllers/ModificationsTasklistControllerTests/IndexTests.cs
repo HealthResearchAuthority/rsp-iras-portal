@@ -217,6 +217,161 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
         rbSvc.Verify(s => s.GetReviewBodyById(It.IsAny<Guid>()), Times.Never);
     }
 
+    // NEW: GetUserReviewBodies is NOT successful -> no GetReviewBodyById call, still returns View
+    [Theory, AutoData]
+    public async Task Index_WhenGetUserReviewBodies_NotSuccess_UsesDefault_And_Skips_GetById(
+        GetModificationsResponse modificationResponse)
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        SetUserIdClaim(userId); // assumes helper exists in the test class
+
+        // Allow the action to complete
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, "CreatedAt", "asc"))
+            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = modificationResponse
+            });
+
+        var rbSvc = Mocker.GetMock<IReviewBodyService>();
+
+        rbSvc.Setup(s => s.GetUserReviewBodies(userId))
+            .ReturnsAsync(new ServiceResponse<List<ReviewBodyUserDto>>
+            {
+                StatusCode = HttpStatusCode.BadRequest, // non-success
+                Content = null
+            });
+
+        // Act
+        var result = await Sut.Index(1, 20, null, "CreatedAt", "asc");
+
+        // Assert
+        result.ShouldBeOfType<ViewResult>();
+        rbSvc.Verify(s => s.GetUserReviewBodies(userId), Times.Once);
+        rbSvc.Verify(s => s.GetReviewBodyById(It.IsAny<Guid>()), Times.Never);
+    }
+
+    // NEW: GetUserReviewBodies OK but GetReviewBodyById is NOT successful -> still returns View
+    [Theory, AutoData]
+    public async Task Index_WhenGetReviewBodyById_NotSuccess_ReturnsView_And_NoFurtherCalls(
+        GetModificationsResponse modificationResponse)
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var reviewBodyId = Guid.NewGuid();
+        SetUserIdClaim(userId); // assumes helper exists in the test class
+
+        // Allow the action to complete
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, "CreatedAt", "asc"))
+            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = modificationResponse
+            });
+
+        var rbSvc = Mocker.GetMock<IReviewBodyService>();
+
+        rbSvc.Setup(s => s.GetUserReviewBodies(userId))
+            .ReturnsAsync(new ServiceResponse<List<ReviewBodyUserDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new List<ReviewBodyUserDto>
+                {
+                new ReviewBodyUserDto { Id = reviewBodyId }
+                }
+            });
+
+        rbSvc.Setup(s => s.GetReviewBodyById(reviewBodyId))
+            .ReturnsAsync(new ServiceResponse<ReviewBodyDto>
+            {
+                StatusCode = HttpStatusCode.BadRequest, // non-success
+                Content = null
+            });
+
+        // Act
+        var result = await Sut.Index(1, 20, null, "CreatedAt", "asc");
+
+        // Assert
+        result.ShouldBeOfType<ViewResult>();
+        rbSvc.Verify(s => s.GetUserReviewBodies(userId), Times.Once);
+        rbSvc.Verify(s => s.GetReviewBodyById(reviewBodyId), Times.Once);
+    }
+
+    // NEW: Sorting by DaysSinceSubmission = invert direction and use CreatedAt
+
+    [Theory, AutoData]
+    public async Task Index_SortByDaysSinceSubmission_Asc_InvertsTo_CreatedAt_Desc(GetModificationsResponse modificationResponse)
+    {
+        // Arrange
+        string? capturedField = null;
+        string? capturedDir = null;
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
+            .Callback<ModificationSearchRequest, int, int, string, string>((_, __, ___, field, dir) =>
+            {
+                capturedField = field;
+                capturedDir = dir;
+            })
+            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = modificationResponse
+            });
+
+        // Act
+        var result = await Sut.Index(
+             1,
+             20,
+             null,
+            nameof(ModificationsModel.DaysSinceSubmission),
+             SortDirections.Ascending);
+
+        // Assert
+        result.ShouldBeOfType<ViewResult>();
+        capturedField.ShouldBe(nameof(ModificationsModel.CreatedAt));
+        capturedDir.ShouldBe(SortDirections.Descending);
+    }
+
+    [Theory, AutoData]
+    public async Task Index_SortByDaysSinceSubmission_Desc_InvertsTo_CreatedAt_Asc(GetModificationsResponse modificationResponse)
+    {
+        // Arrange
+        string? capturedField = null;
+        string? capturedDir = null;
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
+            .Callback<ModificationSearchRequest, int, int, string, string>((_, __, ___, field, dir) =>
+            {
+                capturedField = field;
+                capturedDir = dir;
+            })
+            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = modificationResponse
+            });
+
+        // Act
+        var result = await Sut.Index(
+             1,
+             20,
+             null,
+             nameof(ModificationsModel.DaysSinceSubmission),
+             SortDirections.Descending);
+
+        // Assert
+        result.ShouldBeOfType<ViewResult>();
+        capturedField.ShouldBe(nameof(ModificationsModel.CreatedAt));
+        capturedDir.ShouldBe(SortDirections.Ascending);
+    }
+
+
+
     // ---------------
     // helpers
     // ---------------
