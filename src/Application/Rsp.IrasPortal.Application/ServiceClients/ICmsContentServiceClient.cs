@@ -7,14 +7,14 @@ namespace Rsp.IrasPortal.Application.ServiceClients;
 public interface ICmsContentServiceClient
 {
     [Get("/genericContentPage/getByUrl")]
-    public Task<ApiResponse<GenericPageResponse>> GetPageContentByUrl(string url);
+    public Task<ApiResponse<GenericPageResponse>> GetPageContentByUrl(string url, bool preview = false);
 
     [Get("/siteSettings/getSiteSettings")]
-    public Task<ApiResponse<SiteSettingsModel>> GetSiteSettings();
+    public Task<ApiResponse<SiteSettingsModel>> GetSiteSettings(bool preview = false);
 
     [Get("/mixedcontentpage/getByUrl")]
-    public Task<ApiResponse<MixedContentPageResponse>> GetMixedPageContentByUrl(string url);
+    public Task<ApiResponse<MixedContentPageResponse>> GetMixedPageContentByUrl(string url, bool preview = false);
 
     [Get("/genericContentPage/getHomeContent")]
-    public Task<ApiResponse<GenericPageResponse>> GetHomeContent();
+    public Task<ApiResponse<GenericPageResponse>> GetHomeContent(bool preview = false);
 }
