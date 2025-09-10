@@ -1,10 +1,11 @@
 ﻿@model Rsp.IrasPortal.Web.Models.ModificationReviewDocumentsViewModel
 
 @{
-    ViewData["Title"] = "Review uploaded documents";
     (string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
     navModel = ("pmc:projectdocument", "Back", new());
 
+	// If we know the specific area of change, dynamically build the page title to make the UI clearer.
+	// Otherwise, leave the title empty (will fallback to default in the view if needed).
     ViewBag.Title = !string.IsNullOrEmpty(Model.SpecificAreaOfChange) ?
                         $"Documents added for {Model.SpecificAreaOfChange.ToLowerInvariant()}" :
                         string.Empty;
@@ -17,8 +18,10 @@
 
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
-
-            <partial name="_ProjectModificationSummary" model="Model" />
+			<h1 class="govuk-heading-l">
+				@ViewBag.Title
+			</h1>
+            <partial name="_ProjectModificationSummary" />
 
             @if (Model.UploadedDocuments.Any())
             {

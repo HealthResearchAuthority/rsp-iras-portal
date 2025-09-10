@@ -1,17 +1,16 @@
 ﻿@model Rsp.IrasPortal.Web.Models.ModificationUploadDocumentsViewModel
 
 @{
-    ViewData["Title"] = "Add documents";
-    var errorSummaryTitle = "There is a problem";
+	var errorSummaryTitle = "There is a problem";
+
+	// If we know the specific area of change, dynamically build the page title to make the UI clearer.
+	// Otherwise, leave the title empty (will fallback to default in the view if needed).
+	ViewBag.Title = !string.IsNullOrEmpty(Model.SpecificAreaOfChange) ?
+		$"Add documents for {Model.SpecificAreaOfChange.ToLowerInvariant()}" :
+		string.Empty;
 
     (string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
     navModel = ("pmc:areaofchange", "Back", new());
-
-    // If we know the specific area of change, dynamically build the page title to make the UI clearer.
-    // Otherwise, leave the title empty (will fallback to default in the view if needed).
-    ViewBag.Title = !string.IsNullOrEmpty(Model.SpecificAreaOfChange) ?
-        $"Add documents for {Model.SpecificAreaOfChange.ToLowerInvariant()}" :
-        string.Empty;
 }
 
 <govuk-header />
@@ -22,8 +21,11 @@
         }
 
         <form asp-action="UploadDocuments" method="post" enctype="multipart/form-data">
+			<h1 class="govuk-heading-l">
+				@ViewBag.Title
+			</h1>
             <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
-            <partial name="_ProjectModificationSummary" model="Model" />
+            <partial name="_ProjectModificationSummary" />
 
             <p class="govuk-body">
                 Upload your documents here. You’ll add document details in the next step. <br />

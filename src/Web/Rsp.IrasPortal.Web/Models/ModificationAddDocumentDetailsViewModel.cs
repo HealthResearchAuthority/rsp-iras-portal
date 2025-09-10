@@ -48,7 +48,7 @@ public class ModificationAddDocumentDetailsViewModel : QuestionnaireViewModel
     /// <summary>
     /// Size of the uploaded file (formatted as a string, e.g., "1.2 MB").
     /// </summary>
-    public string FileSize { get; set; } = string.Empty;
+    public long FileSize { get; set; }
 
     /// <summary>
     /// Path to where the document is stored (e.g., in blob storage or file system).
@@ -59,4 +59,24 @@ public class ModificationAddDocumentDetailsViewModel : QuestionnaireViewModel
     /// Indicates if the answers are being reviewed.
     /// </summary>
     public bool ReviewAnswers { get; set; }
+
+    /// <summary>
+    /// Gets the display size in KB, MB or GB, rounded to 2 decimal places.
+    /// </summary>
+    public string DisplaySize
+    {
+        get
+        {
+            const double KB = 1024;
+            const double MB = KB * 1024;
+            const double GB = MB * 1024;
+
+            if (FileSize >= GB)
+                return $"{Math.Round(FileSize / GB, 2)} GB";
+            else if (FileSize >= MB)
+                return $"{Math.Round(FileSize / MB, 2)} MB";
+            else
+                return $"{Math.Round(FileSize / KB, 2)} KB";
+        }
+    }
 }

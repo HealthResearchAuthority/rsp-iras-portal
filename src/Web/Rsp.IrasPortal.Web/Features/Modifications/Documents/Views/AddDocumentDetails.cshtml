@@ -68,7 +68,7 @@
 					<dt class="govuk-summary-list__key">
 						<a href="@Model.DocumentStoragePath" target="_blank">@Model.FileName</a>
 					</dt>
-					<dd class="govuk-summary-list__value">@Model.FileSize</dd>
+					<dd class="govuk-summary-list__value">@Model.DisplaySize</dd>
 					<dd class="govuk-summary-list__actions">
 						<a asp-action="DeleteDocument"
 						   asp-route-id="@Model.DocumentId"
@@ -139,7 +139,7 @@
 					if (!string.IsNullOrWhiteSpace(templateName))
 					{
 						// plese note the @ is necessary before Html so that Template is rendered, otherwise it won't render
-						@Html.EditorFor(m => m, $"~/Views/ProjectModification/EditorTemplates/{templateName}.cshtml", ViewData)
+						@Html.EditorFor(m => m, templateName, ViewData)
 					}
 				}
 			</govuk-fieldset>

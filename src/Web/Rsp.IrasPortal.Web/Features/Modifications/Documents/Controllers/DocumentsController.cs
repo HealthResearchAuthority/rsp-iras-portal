@@ -204,7 +204,7 @@ public class DocumentsController
             ModificationIdentifier = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string ?? string.Empty,
             DocumentId = documentDetailsResponse.Content.Id,
             FileName = documentDetailsResponse.Content.FileName,
-            FileSize = documentDetailsResponse.Content.FileSize?.ToString() ?? string.Empty,
+            FileSize = documentDetailsResponse.Content.FileSize ?? 0,
             DocumentStoragePath = documentDetailsResponse.Content.DocumentStoragePath,
             ReviewAnswers = reviewAnswers
         };
@@ -333,14 +333,14 @@ public class DocumentsController
             projectModificationChangeId == null ? Guid.Empty : (Guid)projectModificationChangeId!,
             projectRecordId,
             respondentId);
-
+        var irasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty;
         if (model.Files is { Count: > 0 })
         {
             // Upload files to blob storage and get metadata for each file
             var uploadedBlobs = await blobStorageService.UploadFilesAsync(
                 model.Files,
                 ContainerName,
-                model.IrasId.ToString());
+                irasId);
 
             // Map uploaded blob metadata to DTOs for backend service
             var uploadedDocuments = uploadedBlobs.Select(uploadedBlob => new ProjectModificationDocumentRequest
