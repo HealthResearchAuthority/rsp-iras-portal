@@ -1,11 +1,11 @@
 ﻿@model string?
 @{
     ViewBag.Title = "My account";
-
 }
 
 <authorized auth-params="@new(ShowWhenAuthenticated: false)">
     <div class="govuk-body">
+
 		@await Component.InvokeAsync("LoginLandingPage")        
     </div>
 </authorized>

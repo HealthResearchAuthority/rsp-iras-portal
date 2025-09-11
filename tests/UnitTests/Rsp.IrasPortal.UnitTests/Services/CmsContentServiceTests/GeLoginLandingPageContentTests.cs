@@ -29,7 +29,7 @@ public class GeLoginLandingPageContentTests : TestServiceBase<CmsContentService>
 
         Mocker
             .GetMock<ICmsContentServiceClient>()
-            .Setup(client => client.GetHomeContent())
+            .Setup(client => client.GetHomeContent(false))
             .ReturnsAsync(apiResponse);
 
         object value;
@@ -43,7 +43,7 @@ public class GeLoginLandingPageContentTests : TestServiceBase<CmsContentService>
            .Returns(mockEntry.Object);
 
         // Act
-        var result = await Sut.GetHomeContent();
+        var result = await Sut.GetHomeContent(false);
 
         // Assert
         result.ShouldBeOfType<ServiceResponse<GenericPageResponse>>();
@@ -51,7 +51,7 @@ public class GeLoginLandingPageContentTests : TestServiceBase<CmsContentService>
         result.StatusCode.ShouldBe(HttpStatusCode.OK);
 
         // Verify
-        _cmsClient.Verify(client => client.GetHomeContent(), Times.Once());
+        _cmsClient.Verify(client => client.GetHomeContent(false), Times.Once());
     }
 
     [Fact]
@@ -88,6 +88,6 @@ public class GeLoginLandingPageContentTests : TestServiceBase<CmsContentService>
         result.StatusCode.ShouldBe(HttpStatusCode.OK);
 
         // Verify
-        _cmsClient.Verify(client => client.GetHomeContent(), Times.Never);
+        _cmsClient.Verify(client => client.GetHomeContent(false), Times.Never);
     }
 }

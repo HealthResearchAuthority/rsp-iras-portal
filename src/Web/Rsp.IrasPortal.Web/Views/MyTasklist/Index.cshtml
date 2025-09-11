@@ -6,6 +6,7 @@
 @using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.DTOs.Responses
 @using Rsp.IrasPortal.Web.Extensions
+@using Rsp.IrasPortal.Web.Models.CmsContent
 @using Rsp.IrasPortal.Web.TagHelpers.Models
 @model MyTasklistViewModel
 @inject IFeatureManager featureManager
@@ -14,6 +15,19 @@
 @{
 	ViewData["Title"] = "My changes to review - Modifications - Approvals - System Administration";
 	var errorSummaryTitle = "There is a problem";
+	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData["PageContent"];
+	var pageContent = pageContentData != null
+		? pageContentData
+		: new Dictionary<string, MixedContentPageItem?>();
+
+	var bodyText = pageContent.GetValueOrDefault("Approvals.MyTasklist.BodyText", null);
+	var searchHint = pageContent.GetValueOrDefault("Approvals.MyTasklist.SearchHint", null);
+	var pageTitle = pageContent.GetValueOrDefault("Approvals.MyTasklist.PageTitle", null);
+	var noModsTitle = pageContent.GetValueOrDefault("Approvals.MyTasklist.NoModificationsTitle", null);
+	var noModsBody = pageContent.GetValueOrDefault("Approvals.MyTasklist.NoModificationsBody", null);
+	var noResultsTitle = pageContent.GetValueOrDefault("Approvals.MyTasklist.NoResultsBody", null);
+	var noResultsBody = pageContent.GetValueOrDefault("Approvals.MyTasklist.NoResultsBody", null);
+
 }
 
 @section BackNavigation {
@@ -43,16 +57,12 @@
 <div class="govuk-grid-row">
 	<div class="govuk-grid-column-two-thirds search-filter-bottom-border">
 		<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
-		<h2 class="govuk-heading-xl" id="title">My changes to review</h2>
-		<p class="govuk-body">
-            This page shows all the modifications that are ready for you to review
-		</p>		
+		<h2 class="govuk-heading-xl" id="title">@Html.Raw(pageTitle?.Value)</h2>
+		@Html.Raw(bodyText?.Value)
 
 		@if (!Model.EmptySearchPerformed || (Model.Modifications != null && Model.Modifications.Any()))
 		{
-            <p class="govuk-body">
-                Enter the IRAS ID to search for all modifications received.
-		    </p>
+			@Html.Raw(searchHint)
 			<form asp-route="mytasklist:applyfilters" method="post" class="govuk-form-group govuk-!-margin-bottom-0">
 				<div class="search-flex-container">
 					<span id="iras-id-label" class="govuk-visually-hidden">IRAS ID</span>
@@ -188,15 +198,15 @@
 										<span class="search-filter-summary__remove-filter-text">
 											<span class="govuk-visually-hidden">Remove filter</span>
 											@if (filterKey.Contains("submission", StringComparison.OrdinalIgnoreCase)
-														||  filterKey.Contains("date submitted - from", StringComparison.OrdinalIgnoreCase)
-                                                     || filterKey.Contains("date submitted - to", StringComparison.OrdinalIgnoreCase))
-                                                {
-                                                    @($"{filterKey} {val}")
-                                                }
-                                                else
-                                                {
-                                                    @($"{filterKey} - {val}")
-                                                }
+																|| filterKey.Contains("date submitted - from", StringComparison.OrdinalIgnoreCase)
+																|| filterKey.Contains("date submitted - to", StringComparison.OrdinalIgnoreCase))
+											{
+												@($"{filterKey} {val}")
+											}
+											else
+											{
+												@($"{filterKey} - {val}")
+											}
 										</span>
 									</a>
 								</li>
@@ -221,12 +231,8 @@
 		<hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
 		<div class="govuk-grid-row">
 			<div class="govuk-grid-column-two-thirds">
-				<h2 class="govuk-heading-l">No modifications to assign</h2>
-				<p class="govuk-body mb-0">This may be because:</p>
-				<ul class="govuk-list govuk-list--bullet">
-					<li>you have already assigned all of the modifications</li>
-					<li>there are no new modifications that have been submitted that need to be assigned</li>
-				</ul>
+				<h2 class="govuk-heading-l">@Html.Raw(noModsTitle?.Value)</h2>
+				@Html.Raw(noModsBody?.Value)
 			</div>
 		</div>
 	}
@@ -234,14 +240,8 @@
 	{
 		<div class="govuk-grid-row">
 			<div class="govuk-grid-column-two-thirds search-filter-error-border">
-				<h2 class="govuk-heading-l">There are no matching results</h2>
-				<p class="govuk-body">Improve your search results by:</p>
-				<ul class="govuk-list govuk-list--bullet">
-					<li>removing filters</li>
-					<li>double-checking your spelling</li>
-					<li>using fewer keywords</li>
-					<li>searching for something less specific</li>
-				</ul>
+				<h2 class="govuk-heading-l">@Html.Raw(noResultsTitle?.Value)</h2>
+				@Html.Raw(noResultsBody?.Value)
 			</div>
 		</div>
 	}
@@ -254,28 +254,28 @@ else
 				<table class="govuk-table modifications-tasklist-table" id="myTasklistTable">
 					<thead class="govuk-table__head">
 						<tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
-					
+
 							@{
 								var sortableHeaders = new[]
 								{
-												new { Field = nameof(ModificationsModel.ModificationId), Label = "Modification ID" },
-												new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
-												new { Field = nameof(ModificationsModel.CreatedAt), Label = "Date submitted" },
-												new { Field = nameof(ModificationsModel.DaysSinceSubmission), Label = "Days since submission" },
-												new { Field = nameof(ModificationsModel.Status), Label = "Status" }
-												};
+						new { Field = nameof(ModificationsModel.ModificationId), Label = "Modification ID" },
+						new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
+						new { Field = nameof(ModificationsModel.CreatedAt), Label = "Date submitted" },
+						new { Field = nameof(ModificationsModel.DaysSinceSubmission), Label = "Days since submission" },
+						new { Field = nameof(ModificationsModel.Status), Label = "Status" }
+						};
 								var tableId = "myTasklistTable";
 							}
 							@foreach (var header in sortableHeaders)
 							{
 								var sortableHeaderModel = new SortableHeaderModel
-								{
-									FieldName = header.Field,
-									DisplayText = header.Label,
-									CurrentSortField = Model.Pagination?.SortField,
-									CurrentSortDirection = Model.Pagination?.SortDirection,
-									TableId = tableId,
-								};
+					{
+						FieldName = header.Field,
+						DisplayText = header.Label,
+						CurrentSortField = Model.Pagination?.SortField,
+						CurrentSortDirection = Model.Pagination?.SortDirection,
+						TableId = tableId,
+					};
 
 								<th scope="col" class="govuk-table__header govuk-table__header-sortable">
 									<partial name="_SortableHeaderButton" model="@sortableHeaderModel" />
@@ -287,12 +287,12 @@ else
 						<input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
 						<input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
 
-				
+
 					<tbody class="govuk-table__body govuk-body-s">
-						@{
-							foreach (var modification in Model.Modifications)
-							{
-								var daysText = modification.DaysSinceSubmission == 1 ? "day" : "days";
+							@{
+								foreach (var modification in Model.Modifications)
+								{
+									var daysText = modification.DaysSinceSubmission == 1 ? "day" : "days";
 
 								<tr class="govuk-table__row">
 									<td class="govuk-table__cell">@modification.ModificationId</td>
@@ -301,8 +301,8 @@ else
 									<td class="govuk-table__cell">@modification.DaysSinceSubmission @daysText</td>
 									<td class="govuk-table__cell">@modification.Status</td>
 								</tr>
+								}
 							}
-						}
 					</tbody>
 					</form>
 				</table>
