@@ -92,7 +92,7 @@ public class DocumentsController
             viewModel.UploadedDocuments = [];
             ModelState.AddModelError(
                 string.Empty,
-                "No documents found or an error occurred while retrieving documents."
+                "No documents found or an error occurred while retrieving documents"
             );
         }
 
@@ -191,7 +191,7 @@ public class DocumentsController
         if (documentDetailsResponse?.StatusCode != HttpStatusCode.OK || documentDetailsResponse.Content == null)
         {
             ModelState.AddModelError(string.Empty,
-                "Document details not found or an error occurred while retrieving them.");
+                "Document details not found or an error occurred while retrieving them");
             return RedirectToAction(nameof(AddDocumentDetailsList));
         }
 
@@ -372,7 +372,7 @@ public class DocumentsController
         else
         {
             // No existing docs and no new files uploaded
-            ModelState.AddModelError("Files", "Please upload at least one document.");
+            ModelState.AddModelError("Files", "Please upload at least one document");
             return View(model);
         }
     }
