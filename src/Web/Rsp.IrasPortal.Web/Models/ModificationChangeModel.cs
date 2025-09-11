@@ -10,4 +10,5 @@ public class ModificationChangeModel
     public string SpecificChangeName { get; set; } = null!;
     public string? SpecificChangeAnswer { get; set; }
     public string ChangeStatus { get; set; } = null!;
+    public List<SupportingDocumentModel> SupportingDocuments { get; set; } = new();
 }

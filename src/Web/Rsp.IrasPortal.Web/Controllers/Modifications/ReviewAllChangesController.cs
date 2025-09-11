@@ -27,7 +27,16 @@ public partial class ProjectModificationController
                 AreaOfChangeName = "Planned End Date",
                 SpecificChangeName = "PlannedEndDateChanged",
                 SpecificChangeAnswer = "The planned end date has been moved by 3 months.",
-                ChangeStatus = "Change ready for submission"
+                ChangeStatus = "Change ready for submission",
+                SupportingDocuments = new List<SupportingDocumentModel>
+                {
+                    new SupportingDocumentModel
+                    {
+                        Name = "GP-Patient-participation-1.5.doc",
+                        Link = "https://example.com/docs/GP-Patient-participation-1.5.doc",
+                        Date = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc)
+                    }
+                }
             },
             new ModificationChangeModel
             {
@@ -38,9 +47,25 @@ public partial class ProjectModificationController
                 AreaOfChangeName = "Modification Document",
                 SpecificChangeName = "Other Modification Change",
                 SpecificChangeAnswer = "Additional documentation has been submitted for review.",
-                ChangeStatus = "Change ready for submission"
+                ChangeStatus = "Change ready for submission",
+                SupportingDocuments = new List<SupportingDocumentModel>
+                {
+                    new SupportingDocumentModel
+                    {
+                        Name = "GP-Patient-participation-1.5.doc",
+                        Link = "https://example.com/docs/GP-Patient-participation-1.5.doc",
+                        Date = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc)
+                    },
+                    new SupportingDocumentModel
+                    {
+                        Name = "GP-Patient-participation-1.6.doc",
+                        Link = "https://example.com/docs/GP-Patient-participation-1.6.doc",
+                        Date = new DateTime(2025, 9, 2, 0, 0, 0, DateTimeKind.Utc)
+                    }
+                }
             }
         };
+
         viewModel.SponsorReference = new SponsorReferenceViewModel
         {
             SponsorModificationReference = "MOD-2021-045",
