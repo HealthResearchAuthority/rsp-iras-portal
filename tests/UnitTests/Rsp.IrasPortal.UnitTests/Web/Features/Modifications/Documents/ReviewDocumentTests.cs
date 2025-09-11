@@ -120,6 +120,6 @@ public class ReviewDocumentTests : TestServiceBase<DocumentsController>
         model.UploadedDocuments.ShouldBeEmpty();
         Sut.ModelState.IsValid.ShouldBeFalse();
         Sut.ModelState[string.Empty].Errors.ShouldContain(e =>
-            e.ErrorMessage == "No documents found or an error occurred while retrieving documents.");
+            e.ErrorMessage == "No documents found or an error occurred while retrieving documents");
     }
 }
