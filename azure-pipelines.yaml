@@ -68,6 +68,8 @@ variables:
       value: "ARM Automated Test Connection"  
     ${{ if in(parameters.env, 'systemtest_manual') }}:
       value: "ARM Manual Test Connection"
+    ${{ if in(parameters.env, 'uat') }}:
+        value: "ARM UAT Connection"
 
 resources:
   repositories:
@@ -159,11 +161,15 @@ stages:
           echo 'env: system integration test'
 
   - stage: uat
+    displayName: "UAT"
+    variables:
+    - group: 'UATEnvironment'
+    condition: eq('${{ parameters.env }}', 'uat') 
     jobs:
-    - job:
-      steps:
-      - script: |
-          echo 'env: uat'
+      - template: jobs/deployPortal.yaml@library
+        parameters:
+          install_aspire: true
+          service_defaults_repo: service_defaults
 
   - stage: pre_prod
     jobs:
