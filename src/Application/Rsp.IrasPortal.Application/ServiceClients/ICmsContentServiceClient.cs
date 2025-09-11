@@ -1,6 +1,5 @@
 ﻿using Refit;
 using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
-using Rsp.IrasPortal.Web.Models.CmsContent;
 
 namespace Rsp.IrasPortal.Application.ServiceClients;
 

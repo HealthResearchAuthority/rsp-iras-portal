@@ -9,7 +9,7 @@ using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Features.Modifications.Documents.Controllers;
 using Rsp.IrasPortal.Web.Models;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectModifiationControllerTests;
+namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.Documents;
 
 public class ReviewDocumentDetailsTests : TestServiceBase<DocumentsController>
 {

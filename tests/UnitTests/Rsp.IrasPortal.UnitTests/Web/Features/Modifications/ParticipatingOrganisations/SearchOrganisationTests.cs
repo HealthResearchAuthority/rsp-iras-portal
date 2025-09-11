@@ -4,12 +4,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Web.Controllers;
+using Rsp.IrasPortal.Web.Features.Modifications.ParticipatingOrganisations.Controllers;
 using Rsp.IrasPortal.Web.Models;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.ProjectModifiationControllerTests;
+namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.ParticipatingOrganisations;
 
-public class SearchOrganisationTests : TestServiceBase<ModificationsController>
+public class SearchOrganisationTests : TestServiceBase<ParticipatingOrganisationsController>
 {
     [Fact]
     public async Task SearchOrganisation_Post_ReturnsView_WithValidationErrors()
@@ -26,7 +26,7 @@ public class SearchOrganisationTests : TestServiceBase<ModificationsController>
         Mocker
             .GetMock<IValidator<SearchOrganisationViewModel>>()
             .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<SearchOrganisationViewModel>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ValidationResult(new[] { new ValidationFailure(nameof(model.Search.SearchNameTerm), "Provide 3 or more characters to search") }));
+            .ReturnsAsync(new ValidationResult([new ValidationFailure(nameof(model.Search.SearchNameTerm), "Provide 3 or more characters to search")]));
 
         // Act
         var result = await Sut.SearchOrganisation(model);
@@ -46,9 +46,11 @@ public class SearchOrganisationTests : TestServiceBase<ModificationsController>
     public void SaveSelection_WithSaveForLaterTrue_RedirectsToPostApproval()
     {
         // Arrange
-        var projectRecordId = "PRJ-123";
-        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
-        Sut.TempData[TempDataKeys.ProjectRecordId] = projectRecordId;
+        const string projectRecordId = "PRJ-123";
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectRecordId] = projectRecordId
+        };
 
         // Act
         var result = Sut.SaveSelection(saveForLater: true);
@@ -63,9 +65,11 @@ public class SearchOrganisationTests : TestServiceBase<ModificationsController>
     [Fact]
     public void SaveSelection_WithSaveForLaterFalse_RedirectsToParticipatingOrganisation()
     {
-        var projectRecordId = "PRJ-123";
-        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
-        Sut.TempData[TempDataKeys.ProjectRecordId] = projectRecordId;
+        const string projectRecordId = "PRJ-123";
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectRecordId] = projectRecordId
+        };
 
         // Act
         var result = Sut.SaveSelection(saveForLater: false);
