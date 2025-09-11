@@ -6,8 +6,6 @@
 @model ModificationDetailsPageViewModel
 
 @{
-    // Title used in the validation error summary
-    var errorSummaryTitle = "There is a problem";
     int changeIndex = 1;
 
     ViewData["Title"] = "Review all changes";
@@ -97,6 +95,17 @@
                         </div>
                         <div class="govuk-summary-list__row">
                             <dt class="govuk-summary-list__key">
+                                Support documents
+                            </dt>
+                            <dd class="govuk-summary-list__value">
+                                @foreach (var supportDocument in change.SupportingDocuments)
+                                {
+                                 <p>@supportDocument.Name</p>   
+                                }
+                            </dd>
+                        </div>
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">
                                 Modification type
                             </dt>
                             <dd class="govuk-summary-list__value">
@@ -152,7 +161,7 @@
                             Date (optional)
                         </dt>
                         <dd class="govuk-summary-list__value">
-                            @Model.SponsorReference.SponsorModificationDate
+                            @Model.SponsorReference.SponsorModificationDate.Date.Value.ToString("dd MMM yyyy")
                         </dd>
                     </div>
                     <div class="govuk-summary-list__row">
