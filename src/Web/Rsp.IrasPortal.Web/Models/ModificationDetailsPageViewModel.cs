@@ -10,4 +10,10 @@ public class ModificationDetailsPageViewModel : BaseProjectModificationViewModel
     public IEnumerable<ModificationChangeModel> ModificationChanges { get; set; } = new List<ModificationChangeModel>();
     public bool ChangesReadyForSubmission { get; set; } = false;
     public SponsorReferenceViewModel? SponsorReference { get; set; }
+
+    public IEnumerable<SupportingDocumentModel> SupportingDocuments =>
+            ModificationChanges
+                .SelectMany(mc => mc.SupportingDocuments ?? Enumerable.Empty<SupportingDocumentModel>())
+                .GroupBy(doc => doc.Link)
+                .Select(group => group.First());
 }
