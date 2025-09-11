@@ -1,11 +1,4 @@
 ﻿@using Rsp.IrasPortal.Web.Extensions
-@*@model Rsp.IrasPortal.Web.Models.BaseProjectModificationViewModel
-
-    @Html.HiddenFor(m => m.IrasId)
-    @Html.HiddenFor(m => m.ShortTitle)
-    @Html.HiddenFor(m => m.ModificationIdentifier)
-    @Html.HiddenFor(m => m.PageTitle)*@
-
 @{
     var modificationBaseModel = TempData.PopulateBaseProjectModificationProperties(new BaseProjectModificationViewModel());
 }

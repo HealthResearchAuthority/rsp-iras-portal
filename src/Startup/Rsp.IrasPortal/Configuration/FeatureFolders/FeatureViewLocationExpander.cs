@@ -102,7 +102,7 @@ public class FeatureViewLocationExpander(FeatureFolderOptions options) : IViewLo
 
                 // For non-Default view components, add a direct component view file candidate inside the feature.
                 // Example: /Features/Modifications/Components/BackNavigation.cshtml
-                if (componentName is not "Default")
+                if (!string.IsNullOrWhiteSpace(componentName) && componentName != "Default")
                 {
                     string[] componentViewPaths =
                     [
@@ -115,7 +115,7 @@ public class FeatureViewLocationExpander(FeatureFolderOptions options) : IViewLo
         }
 
         // Global (feature-root) component fallback for non-Default component views.
-        if (componentName is not "Default")
+        if (!string.IsNullOrWhiteSpace(componentName) && componentName != "Default")
         {
             expandedViewLocations.Add(Path.Combine("/", options.FeatureFolderName, "Components", componentName + RazorViewEngine.ViewExtension));
         }
