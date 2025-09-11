@@ -72,7 +72,8 @@ public class ModificationsTasklistController(
             FromDate = model.Search.FromDate,
             ToDate = model.Search.ToDate,
             IrasId = model.Search.IrasId,
-            ReviewerId = null
+            ReviewerId = null,
+            IncludeReviewerId = true,
         };
 
         // Since we are searching backwards from the current date, we need to reverse the logic for the date range.

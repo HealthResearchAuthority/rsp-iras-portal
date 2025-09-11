@@ -5,7 +5,7 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Features.Modifications.Components;
 
-public class BackNavigation(ICmsQuestionsetService cmsQuestionsetService, IRespondentService respondentService) : ViewComponent
+public class BackNavigation(ICmsQuestionsetService cmsQuestionsetService) : ViewComponent
 {
     private NavigationDto _navigationDto = null!;
     private string _specificAreaOfChangeId = null!;

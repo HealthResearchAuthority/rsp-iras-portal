@@ -1,6 +1,5 @@
 ﻿using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
 using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Web.Models.CmsContent;
 
 namespace Rsp.IrasPortal.Application.Services;
 

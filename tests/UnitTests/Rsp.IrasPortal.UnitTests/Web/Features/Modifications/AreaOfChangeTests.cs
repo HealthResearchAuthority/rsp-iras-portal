@@ -8,10 +8,10 @@ using Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Web.Controllers;
+using Rsp.IrasPortal.Web.Features.Modifications;
 using Rsp.IrasPortal.Web.Models;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.ProjectModifiationControllerTests;
+namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications;
 
 public class AreaOfChangeTests : TestServiceBase<ModificationsController>
 {
@@ -39,12 +39,11 @@ public class AreaOfChangeTests : TestServiceBase<ModificationsController>
 
         var modificationResponse = new List<GetAreaOfChangesResponse>
         {
-            new GetAreaOfChangesResponse
-            {
+            new() {
                 Id = "1",
                 Name = "Test Area of Change",
-                ModificationSpecificAreaOfChanges = new List<ModificationSpecificAreaOfChangeDto>
-                {
+                ModificationSpecificAreaOfChanges =
+                [
                     new ModificationSpecificAreaOfChangeDto
                     {
                         Id = "1",
@@ -59,7 +58,7 @@ public class AreaOfChangeTests : TestServiceBase<ModificationsController>
                         JourneyType = "specific area 2",
                         ModificationAreaOfChangeId = 1
                     }
-                }
+                ]
             }
         };
 
@@ -87,10 +86,10 @@ public class AreaOfChangeTests : TestServiceBase<ModificationsController>
             .ReturnsAsync(serviceResponse);
 
         // Mock IQuestionSetService.GetVersions to return a published version
-        var publishedVersionId = "v1.0";
+        const string publishedVersionId = "v1.0";
         var versions = new List<VersionDto>
         {
-            new VersionDto { VersionId = publishedVersionId, IsPublished = true }
+            new() { VersionId = publishedVersionId, IsPublished = true }
         };
         var versionsResponse = new ServiceResponse<IEnumerable<VersionDto>>
         {
@@ -177,7 +176,7 @@ public class AreaOfChangeTests : TestServiceBase<ModificationsController>
             .ReturnsAsync(serviceResponse);
 
         // Mock IQuestionSetService.GetVersions to return a published version
-        var publishedVersionId = "v1.0";
+        const string publishedVersionId = "v1.0";
         var versions = new List<VersionDto>
         {
             new() { VersionId = publishedVersionId, IsPublished = true }

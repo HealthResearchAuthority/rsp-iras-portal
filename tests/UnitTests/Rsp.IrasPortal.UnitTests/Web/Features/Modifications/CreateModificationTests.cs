@@ -6,10 +6,10 @@ using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Web.Controllers;
+using Rsp.IrasPortal.Web.Features.Modifications;
 using ProblemDetails = Microsoft.AspNetCore.Mvc.ProblemDetails;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.ProjectModifiationControllerTests;
+namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications;
 
 public class CreateModification : TestServiceBase<ModificationsController>
 {

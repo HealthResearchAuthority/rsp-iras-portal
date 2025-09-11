@@ -42,7 +42,8 @@ public class MyTasklistController(IProjectModificationsService projectModificati
             FromDate = search.FromDate,
             ToDate = search.ToDate,
             IrasId = search.IrasId,
-            ReviewerId = User?.FindFirst("userId")?.Value
+            ReviewerId = User?.FindFirst("userId")?.Value,
+            IncludeReviewerId = true
         };
 
         // Reverse date logic when searching by "days since submission"

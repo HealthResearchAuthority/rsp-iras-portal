@@ -2,25 +2,24 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Web.Controllers;
+using Rsp.IrasPortal.Web.Features.Modifications.ParticipatingOrganisations.Controllers;
 using Rsp.IrasPortal.Web.Models;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.ProjectModifiationControllerTests;
+namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.ParticipatingOrganisations;
 
-public class ParticipatingOrganisationTests : TestServiceBase<ModificationsController>
+public class ParticipatingOrganisationTests : TestServiceBase<ParticipatingOrganisationsController>
 {
     [Fact]
     public async Task ParticipatingOrganisation_ReturnsCorrectView_WithPopulatedViewModel()
     {
         // Arrange
-        var expectedShortTitle = "ASPIRE";
-        var expectedIrasId = "220360";
-        var expectedModId = "220360/1";
-        var expectedPageTitle = "Addition of new sites";
+        const string expectedShortTitle = "ASPIRE";
+        const string expectedIrasId = "220360";
+        const string expectedModId = "220360/1";
+        const string expectedPageTitle = "Addition of new sites";
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
@@ -86,10 +85,10 @@ public class ParticipatingOrganisationTests : TestServiceBase<ModificationsContr
 
         var searchResponse = new OrganisationSearchResponse
         {
-            Organisations = new List<OrganisationDto>
-            {
+            Organisations =
+            [
                 new() { Id = "1", Name = "Hospital A", Address = "Address A", CountryName = "PL", Type = "Site" }
-            },
+            ],
             TotalCount = 1
         };
 
@@ -138,7 +137,7 @@ public class ParticipatingOrganisationTests : TestServiceBase<ModificationsContr
 
         var response = new OrganisationSearchResponse
         {
-            Organisations = new List<OrganisationDto>(),
+            Organisations = [],
             TotalCount = totalCount
         };
 
