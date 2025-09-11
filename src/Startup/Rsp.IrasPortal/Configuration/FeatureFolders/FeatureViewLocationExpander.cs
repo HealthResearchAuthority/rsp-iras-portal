@@ -67,7 +67,7 @@ public class FeatureViewLocationExpander(FeatureFolderOptions options) : IViewLo
         var featureName = featureProperty as string;
 
         // Split using both escaped and normal backslashes to be resilient to differing construction styles.
-        var pathSegments = featureName!.Split(["\\\\", "\\"], StringSplitOptions.RemoveEmptyEntries);
+        var pathSegments = featureName!.Split(['\\', '/'], StringSplitOptions.RemoveEmptyEntries);
 
         // Start with the existing framework-provided view locations to preserve defaults.
         var expandedViewLocations = new List<string>(viewLocations);
@@ -95,10 +95,13 @@ public class FeatureViewLocationExpander(FeatureFolderOptions options) : IViewLo
             if (!string.IsNullOrEmpty(featureParent))
             {
                 // Feature-scoped Views and Shared locations patterns.
-                var viewsPath = Path.Combine("/", options.FeatureFolderName, featureParent, "Views", viewExtension);
-                var sharedPath = Path.Combine("/", options.FeatureFolderName, featureParent, "Shared", viewExtension);
+                string[] viewPaths =
+                [
+                    $"/{options.FeatureFolderName}/{featureParent}/Views/{viewExtension}",
+                    $"/{options.FeatureFolderName}/{featureParent}/Shared/{viewExtension}"
+                ];
 
-                expandedViewLocations.AddRange(viewsPath, sharedPath);
+                expandedViewLocations.AddRange(viewPaths);
 
                 // For non-Default view components, add a direct component view file candidate inside the feature.
                 // Example: /Features/Modifications/Components/BackNavigation.cshtml
@@ -106,7 +109,7 @@ public class FeatureViewLocationExpander(FeatureFolderOptions options) : IViewLo
                 {
                     string[] componentViewPaths =
                     [
-                        Path.Combine("/",  options.FeatureFolderName, featureParent, "Components", componentName + RazorViewEngine.ViewExtension)
+                        $"/{options.FeatureFolderName}/{featureParent}/Components/{componentName + RazorViewEngine.ViewExtension}"
                     ];
 
                     expandedViewLocations.AddRange(componentViewPaths);
@@ -117,7 +120,7 @@ public class FeatureViewLocationExpander(FeatureFolderOptions options) : IViewLo
         // Global (feature-root) component fallback for non-Default component views.
         if (!string.IsNullOrWhiteSpace(componentName) && componentName != "Default")
         {
-            expandedViewLocations.Add(Path.Combine("/", options.FeatureFolderName, "Components", componentName + RazorViewEngine.ViewExtension));
+            expandedViewLocations.Add($"/{options.FeatureFolderName}/Components/{componentName + RazorViewEngine.ViewExtension}");
         }
 
         foreach (var location in expandedViewLocations)
