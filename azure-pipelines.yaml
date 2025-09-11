@@ -153,13 +153,6 @@ stages:
           install_aspire: true
           service_defaults_repo: service_defaults
 
-  - stage: system_integration_test
-    jobs:
-    - job:
-      steps:
-      - script: |
-          echo 'env: system integration test'
-
   - stage: uat
     displayName: "UAT"
     variables:
