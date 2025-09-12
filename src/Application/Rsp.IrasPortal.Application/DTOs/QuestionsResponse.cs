@@ -33,11 +33,6 @@ public record QuestionsResponse
     public int Sequence { get; set; }
 
     /// <summary>
-    /// Indicates if the question is a modification question
-    /// </summary>
-    public bool IsModificationQuestion { get; set; }
-
-    /// <summary>
     /// Heading of the question e.g. 1, 2, 2a, 2b..
     /// </summary>
     public string Heading { get; set; } = null!;

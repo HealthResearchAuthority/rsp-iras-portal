@@ -23,11 +23,6 @@ public class AppSettings
     public Uri UsersServiceUri { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the URI of the questions set microservice
-    /// </summary>
-    public Uri QuestionSetServiceUri { get; set; } = null!;
-
-    /// <summary>
     /// Gets or sets the URI of the RTS microservice
     /// </summary>
     public Uri RtsServiceUri { get; set; } = null!;

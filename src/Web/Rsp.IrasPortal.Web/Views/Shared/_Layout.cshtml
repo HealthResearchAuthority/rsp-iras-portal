@@ -108,16 +108,6 @@
                                 Home
                             </a>
                         </li>
-                        <feature name="@FeatureFlags.ReviewApplications">
-                            <authorized auth-params="@new(Roles:"reviewer")">
-
-                                <li class="govuk-service-navigation__item">
-                                    <a class="govuk-service-navigation__link" asp-route="arc:pendingapplications">
-                                        Review Applications
-                                    </a>
-                                </li>
-                            </authorized>
-                        </feature>
 
                         <feature name="@FeatureFlags.Admin">
                             <authorized auth-params="@new(Roles:"system_administrator")">
@@ -125,26 +115,6 @@
                                     <a class="govuk-service-navigation__link"
                                        asp-route="admin:home">
                                         Admin
-                                    </a>
-                                </li>
-                            </authorized>
-                        </feature>
-
-                        <authorized auth-params="@new(Roles:"system_administrator")">
-                            <li class="govuk-service-navigation__item">
-                                <a class="govuk-service-navigation__link"
-                                   asp-route="qsc:index">
-                                    Question Set
-                                </a>
-                            </li>
-                        </authorized>
-
-                        <feature name="@FeatureFlags.MyApplications">
-                            <authorized auth-params="@new(Roles:"applicant")">
-                                <li class="govuk-service-navigation__item">
-                                    <a class="govuk-service-navigation__link"
-                                       asp-route="app:myapplications">
-                                        My Applications
                                     </a>
                                 </li>
                             </authorized>
@@ -167,7 +137,7 @@
     </section>
 
     <div class="govuk-width-container">
-		<main class="govuk-main-wrapper govuk-body" id="main-content">
+        <main class="govuk-main-wrapper govuk-body" id="main-content">
 
             @*Render the optional BackNavigation section if it exists*@
             @RenderSection("BackNavigation", required: false)

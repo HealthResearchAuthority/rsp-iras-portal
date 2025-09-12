@@ -3,7 +3,6 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.DTOs.Requests;
@@ -623,52 +622,6 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
     }
 
     [Theory, AutoData]
-    public async Task Resume_Should_Return_ServiceError_When_RespondentService_GetModificationAnswers_Is_Unsuccessful
-    (
-        string applicationId,
-        string categoryId,
-        Guid modificationChangeId
-    )
-    {
-        // Arrange
-        Mocker
-            .GetMock<IApplicationsService>()
-            .Setup(s => s.GetProjectRecord(applicationId))
-            .ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new IrasApplicationResponse()
-            });
-
-        var unsuccessfulResponse = new ServiceResponse<IEnumerable<RespondentAnswerDto>>
-        {
-            StatusCode = HttpStatusCode.InternalServerError
-        };
-
-        Mocker
-            .GetMock<IRespondentService>()
-            .Setup(s => s.GetRespondentAnswers(applicationId, categoryId))
-            .ReturnsAsync(unsuccessfulResponse);
-
-        Mocker
-            .GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationAnswers(modificationChangeId, categoryId))
-            .ReturnsAsync(unsuccessfulResponse);
-
-        var session = new Mock<ISession>();
-        var httpContext = new DefaultHttpContext { Session = session.Object };
-        Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
-        Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
-
-        // Act
-        var result = await Sut.Resume(applicationId, categoryId);
-
-        // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Error");
-    }
-
-    [Theory, AutoData]
     public async Task Resume_Should_Use_FirstSectionId_When_SectionId_Is_Null_And_Sections_Exist
     (
         string applicationId, string categoryId, string firstSectionId
@@ -868,101 +821,6 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
     }
 
     [Theory, AutoData]
-    public async Task Resume_Calls_GetModificationAnswers_When_ModificationChangeId_NotEmpty
-    (
-        string applicationId,
-        string categoryId,
-        Guid modificationChangeId,
-        string sectionId
-    )
-    {
-        // Arrange
-        Mocker
-            .GetMock<IApplicationsService>()
-            .Setup(s => s.GetProjectRecord(applicationId))
-            .ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new IrasApplicationResponse()
-            });
-
-        var respondentAnswers = new List<RespondentAnswerDto>();
-        Mocker
-            .GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationAnswers(modificationChangeId, categoryId))
-            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>>
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = respondentAnswers
-            });
-
-        var questionSetServiceResponse = new ServiceResponse<CmsQuestionSetResponse>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new CmsQuestionSetResponse
-            {
-                Id = "123",
-                Version = "1.0",
-                Sections = new List<SectionModel>
-                    {
-                        new SectionModel
-                        {
-                            SectionId = "section-1",
-                            Questions = new List<QuestionModel>
-                            {
-                                new QuestionModel
-                                {
-                                    QuestionId = "Q1"
-                                }
-                            }
-                        }
-                    }
-            }
-        };
-
-        Mocker
-            .GetMock<ICmsQuestionsetService>()
-            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync(questionSetServiceResponse);
-
-        Mocker
-            .GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>()))
-            .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new QuestionSectionsResponse()
-            });
-
-        Mocker
-            .GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>()))
-            .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new QuestionSectionsResponse()
-            });
-
-        var session = new Mock<ISession>();
-        var httpContext = new DefaultHttpContext { Session = session.Object };
-        Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>())
-        {
-            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.Empty,
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = modificationChangeId,
-        };
-
-        Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
-
-        // Act
-        var result = await Sut.Resume(applicationId, categoryId, "False", sectionId);
-
-        // Assert
-        Mocker
-            .GetMock<IRespondentService>()
-            .Verify(s => s.GetModificationAnswers(modificationChangeId, categoryId), Times.Once);
-    }
-
-    [Theory, AutoData]
     public async Task Resume_Uses_EmptySectionId_When_QuestionSections_NullOrEmpty
     (
         string applicationId,
@@ -1059,103 +917,6 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
     }
 
     [Theory, AutoData]
-    public async Task Resume_Filters_Questions_When_ModificationId_NotEmpty
-    (
-        string applicationId,
-        string categoryId,
-        string sectionId,
-        Guid modificationId
-    )
-    {
-        // Arrange
-        var modificationChangeId = Guid.NewGuid();
-
-        Mocker
-            .GetMock<IApplicationsService>()
-            .Setup(s => s.GetProjectRecord(applicationId))
-            .ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new IrasApplicationResponse()
-            });
-
-        Mocker
-            .GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationAnswers(modificationChangeId, categoryId))
-            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>>
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = []
-            });
-
-        var questionSetServiceResponse = new ServiceResponse<CmsQuestionSetResponse>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new CmsQuestionSetResponse
-            {
-                Id = "123",
-                Version = "1.0",
-                Sections = new List<SectionModel>
-                    {
-                        new SectionModel
-                        {
-                            SectionId = "section-1",
-                            Questions = new List<QuestionModel>
-                            {
-                                new QuestionModel
-                                {
-                                    QuestionId = "Q1"
-                                }
-                            }
-                        }
-                    }
-            }
-        };
-
-        Mocker
-            .GetMock<ICmsQuestionsetService>()
-            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync(questionSetServiceResponse);
-
-        Mocker
-            .GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>()))
-            .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new QuestionSectionsResponse()
-            });
-
-        Mocker
-            .GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>()))
-            .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new QuestionSectionsResponse()
-            });
-
-        var session = new Mock<ISession>();
-        var httpContext = new DefaultHttpContext { Session = session.Object };
-        Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>())
-        {
-            [TempDataKeys.ProjectModification.ProjectModificationId] = modificationId,
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = modificationChangeId,
-        };
-
-        Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
-
-        // Act
-        var result = await Sut.Resume(applicationId, categoryId, "False", sectionId);
-
-        // Assert
-        // Only the modification question should be present in the questionnaire
-        // (We can't directly access the questionnaire, but we can check that the session was set with only one question)
-        session
-            .Verify(s => s.Set(It.Is<string>(k => k.Contains(sectionId)), It.IsAny<byte[]>()), Times.Once);
-    }
-
-    [Theory, AutoData]
     public async Task Resume_Calls_UpdateWithAnswers_When_RespondentAnswers_NotEmpty
     (
         string applicationId,
@@ -1189,7 +950,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         var questions = new List<QuestionsResponse>
         {
-            new() { QuestionId = "1", IsModificationQuestion = false }
+            new() { QuestionId = "1" }
         };
 
         var questionSetServiceResponse = new ServiceResponse<CmsQuestionSetResponse>
