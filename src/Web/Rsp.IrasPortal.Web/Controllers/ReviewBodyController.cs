@@ -114,8 +114,12 @@ public class ReviewBodyController(
         string? sortDirection = SortDirections.Ascending,
         [FromQuery] bool fromPagination = false)
     {
-        // Save applied filters to session
-        HttpContext.Session.SetString(SessionKeys.ReviewBodiesSearch, JsonSerializer.Serialize(model.Search));
+        // Always attempt to restore from session if nothing is currently set
+        var savedSearch = HttpContext.Session.GetString(SessionKeys.ReviewBodiesSearch);
+        if (!string.IsNullOrWhiteSpace(savedSearch))
+        {
+            model.Search = JsonSerializer.Deserialize<ReviewBodySearchModel>(savedSearch);
+        }
 
         // Call Index with matching parameter set
         return await ViewReviewBodies(
