@@ -1,0 +1,177 @@
+﻿@using System.Text.Json
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Microsoft.FeatureManagement
+@using Rsp.IrasPortal.Application.Constants
+@using System.Globalization
+@model AffectingOrganisationsViewModel
+
+@{
+    // Title used in the validation error summary
+    var errorSummaryTitle = "There is a problem";
+
+    // Prepare the navigation model depending on whether we have a lastQuestion
+    var navModel = ("pmc:back", "Back", new Dictionary<string, string>());
+
+    var areaOfChange = TempData.Peek(TempDataKeys.ProjectModification.AreaOfChangeText) as string;
+    var specificAreaOfChange = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeText) as string;
+    var newPlannedDate = TempData.Peek(TempDataKeys.ProjectModificationPlannedEndDate.NewPlannedProjectEndDate) as string;
+    var affectedOrgTypes = TempData.Peek(TempDataKeys.ProjectModificationPlannedEndDate.AffectingOrganisationsType) as string;
+
+    var selectedOrgTypes = new List<string>();
+
+    if (!string.IsNullOrEmpty(affectedOrgTypes))
+    {
+        selectedOrgTypes = JsonSerializer.Deserialize<List<string>>(affectedOrgTypes)!;
+    }
+
+    var selectedLocations = TempData.Peek(TempDataKeys.ProjectModificationPlannedEndDate.AffectedOrganisationsLocations) as string;
+
+    if (!string.IsNullOrEmpty(selectedLocations))
+    {
+        Model.SelectedLocations = JsonSerializer.Deserialize<List<string>>(selectedLocations)!;
+    }
+
+    var affectedOrgs = TempData.Peek(TempDataKeys.ProjectModificationPlannedEndDate.AffectedAllOrSomeOrganisations) as string;
+    var additionalResources = TempData.Peek(TempDataKeys.ProjectModificationPlannedEndDate.AffectedOrganisationsRequireAdditionalResources) as string;
+
+    TempData[TempDataKeys.ProjectModificationPlannedEndDate.ReviewChanges] = true;
+
+    // flag for the project summary to not show heading when reviewing the changes.
+    ViewData.Add("ReviewChanges", true);
+}
+
+@* @section is added for the back button, so that we can render something below the back button
+    and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
+    the named section *@
+@section BackNavigation {
+    <partial name="_BackNavigation" model="navModel" />
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">Review @specificAreaOfChange</h1>
+
+        <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
+
+        <partial name="_ProjectModificationSummary" model="Model" view-data="ViewData" />
+
+        <h2 class="govuk-heading-m govuk-!-margin-top-5">
+            Ranking of change
+        </h2>
+
+        <partial name="RankingOfChange.cshtml" />
+
+        <h2 class="govuk-heading-m govuk-!-margin-top-5">
+            @areaOfChange
+        </h2>
+
+        <dl class="govuk-summary-list govuk-!-margin-bottom-7">
+
+            <div class="govuk-summary-list__row" id="new-planned-end-date">
+                <dt class="govuk-summary-list__key">
+                    New planned project end date
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    @newPlannedDate
+                </dd>
+                <dd class="govuk-summary-list__actions">
+
+                    <a class="govuk-link" asp-route="pmc:plannedenddate">
+                        Change
+                    </a>
+                </dd>
+            </div>
+            <div class="govuk-summary-list__row" id="affected-orgs-type">
+
+                <dt class="govuk-summary-list__key">
+                    Which organisations does this change affect?
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    @string.Join(", ", selectedOrgTypes)
+                </dd>
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" asp-route="pmc:plannedenddateorganisationtype">
+                        Change
+                    </a>
+                </dd>
+            </div>
+            <div class="govuk-summary-list__row" id="affected-orgs-locations">
+                <dt class="govuk-summary-list__key">
+                    Where are the particpating NHS/HSC organisations located that will be affected by this change?
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    @string.Join(", ", Model.SelectedLocations)
+                </dd>
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" asp-route="pmc:affectingorganisations">
+                        Change
+                    </a>
+                </dd>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(selectedOrgTypes.FirstOrDefault(org => org == "NHS/HSC")))
+            {
+                <div class="govuk-summary-list__row" id="all-or-some-orgs">
+                    <dt class="govuk-summary-list__key">
+                        Will all participating NHS/HSC organisations be affected by this change, or only some?
+                    </dt>
+                    <dd class="govuk-summary-list__value">
+                        @Model.AffectedOrganisations[affectedOrgs!]
+                    </dd>
+                    <dd class="govuk-summary-list__actions">
+                        <a class="govuk-link" asp-route="pmc:AffectingOrganisations">
+                            Change
+                        </a>
+                    </dd>
+                </div>
+                <div class="govuk-summary-list__row" id="additional-resources">
+                    <dt class="govuk-summary-list__key">
+                        Does this change have any additional resource implications for participating NHS/HSC organisations?
+                    </dt>
+                    <dd class="govuk-summary-list__value">
+                        @Model.AdditionalResources[additionalResources!]
+                    </dd>
+                    <dd class="govuk-summary-list__actions">
+                        <a class="govuk-link" asp-route="pmc:AffectingOrganisations">
+                            Change
+                        </a>
+                    </dd>
+                </div>
+            }
+        </dl>
+
+        <h2 class="govuk-heading-m govuk-!-margin-top-5">
+            Supporting documents
+        </h2>
+
+        <dl class="govuk-summary-list govuk-!-margin-bottom-7">
+
+            <div class="govuk-summary-list__row" id="supporting-documents">
+                <dt class="govuk-summary-list__key">
+                    Supporting documents
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    GP-Patient-participation-1.5.doc
+                </dd>
+                <dd class="govuk-summary-list__actions">
+
+                    <a class="govuk-link" asp-route="pmc:projectdocument">
+                        Change
+                    </a>
+                </dd>
+            </div>
+        </dl>
+
+        <form method="post">
+            <div class="save-buttons">
+                <partial name="_SubmitButton" model="@("mqc:confirmmodificationchanges", "Save and continue" , new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId })" />
+
+                @{
+                    ViewBag.Style = "govuk-button govuk-button--secondary";
+                }
+
+                <partial name="_SubmitButton" model="@("pov:postapproval", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId })" />
+            </div>
+        </form>
+    </div>
+</div>

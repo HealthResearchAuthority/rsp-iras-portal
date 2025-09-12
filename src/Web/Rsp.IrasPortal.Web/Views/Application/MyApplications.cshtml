@@ -69,7 +69,7 @@
                         <p>
                             @foreach (var category in Model.Categories)
                             {
-                                <a class="govuk-link" asp-route="qnc:resume"
+                                <a class="govuk-link" asp-route="cmsqnc:resume"
                                    asp-all-route-data="@(new Dictionary<string, string> { { "categoryId", category.CategoryId }, { "projectRecordId", app.Id } })">
                                     @category.CategoryName
                                 </a>

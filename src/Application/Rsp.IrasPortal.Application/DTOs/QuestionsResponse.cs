@@ -1,4 +1,6 @@
-﻿namespace Rsp.IrasPortal.Application.DTOs;
+﻿using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
+
+namespace Rsp.IrasPortal.Application.DTOs;
 
 /// <summary>
 /// Represents questions response returned by the QuestionSet API
@@ -88,10 +90,12 @@ public record QuestionsResponse
     /// <summary>
     /// Version of the question
     /// </summary>
-    public string? VersionId { get; set; }
+    public string VersionId { get; set; }
 
     /// <summary>
     /// Short question text to display to the user
     /// </summary>
     public string ShortQuestionText { get; set; } = null!;
+
+    public IList<ContentComponent> GuidanceComponents { get; set; } = [];
 }

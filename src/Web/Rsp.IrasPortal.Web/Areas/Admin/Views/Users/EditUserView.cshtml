@@ -94,7 +94,7 @@
     </div>
 </form>
 <!--Use javascript only when progressive enhancement feature is enabled-->
-@if (await featureManager.IsEnabledAsync(Features.ProgressiveEnhancement))
+@if (await featureManager.IsEnabledAsync(FeatureFlags.ProgressiveEnhancement))
 {
     @section FooterResources {
         <script src="~/lib/jquery/dist/jquery.js"></script>

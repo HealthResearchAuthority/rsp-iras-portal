@@ -1,10 +1,12 @@
 ﻿using System.Globalization;
 using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 
 namespace Rsp.IrasPortal.Web.Models;
 
 public class QuestionViewModel
 {
+    public Guid? Id { get; set; }
     public int Index { get; set; }
     public string QuestionId { get; set; } = null!;
     public string VersionId { get; set; } = null!;
@@ -23,6 +25,8 @@ public class QuestionViewModel
     public List<AnswerViewModel> Answers { get; set; } = [];
     public IList<RuleDto> Rules { get; set; } = [];
     public string ShortQuestionText { get; set; } = null!;
+    public bool IsModificationQuestion { get; set; }
+    public IList<ContentComponent> GuidanceComponents { get; set; } = [];
 
     private string? _day, _month, _year;
 
@@ -48,7 +52,7 @@ public class QuestionViewModel
     {
         "date" or "text" or "email" => $"Questions[{Index}].AnswerText",
         "checkbox" => $"Questions[{Index}].Answers",
-        "radio button" or "boolean" or "look-up list" => $"Questions[{Index}].SelectedOption",
+        "radio button" or "boolean" or "look-up list" or "dropdown" => $"Questions[{Index}].SelectedOption",
         _ => ""
     };
 
@@ -66,7 +70,8 @@ public class QuestionViewModel
         }
 
         if ((DataType.Equals("radio button", StringComparison.OrdinalIgnoreCase) ||
-             DataType.Equals("boolean", StringComparison.OrdinalIgnoreCase)) &&
+             DataType.Equals("boolean", StringComparison.OrdinalIgnoreCase) ||
+             DataType.Equals("dropdown", StringComparison.OrdinalIgnoreCase)) &&
             !string.IsNullOrWhiteSpace(SelectedOption))
         {
             return Answers.FirstOrDefault(a => a.AnswerId == SelectedOption)?.AnswerText

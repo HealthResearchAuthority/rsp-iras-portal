@@ -23,6 +23,8 @@ public class QuestionViewModelValidator : QuestionViewModelValidatorBase
                 .NotEmpty()
                 .When(x => x.DataType is "Date" or "Email" or "Text")
                 .WithMessage(GetValidationMessage)
+                .WithName(x => $"Questions[{x.Index}].AnswerText")
+                .WithState(x => x)
                 .DependentRules(() =>
                 {
                     ConfigureLengthRule();
@@ -33,12 +35,16 @@ public class QuestionViewModelValidator : QuestionViewModelValidatorBase
             RuleFor(x => x.Answers)
                 .Must(ans => ans.Exists(a => a.IsSelected))
                 .When(x => x.DataType == "Checkbox")
-                .WithMessage(GetValidationMessage);
+                .WithMessage(GetValidationMessage)
+                .WithName(x => $"Questions[{x.Index}].Answers")
+                .WithState(x => x);
 
             RuleFor(x => x.SelectedOption)
                 .Must(option => !string.IsNullOrWhiteSpace(option))
                 .When(x => x.DataType is "Boolean" or "Radio button" or "Dropdown")
-                .WithMessage(GetValidationMessage);
+                .WithMessage(GetValidationMessage)
+                .WithName(x => $"Questions[{x.Index}].SelectedOption")
+                .WithState(x => x);
         });
     }
 
@@ -172,7 +178,7 @@ public class QuestionViewModelValidator : QuestionViewModelValidatorBase
 
                 // if question data type is boolean or radio
                 // only one option can be selected
-                if (question.DataType is "Boolean" or "Radio button")
+                if (question.DataType is "Boolean" or "Radio button" or "Dropdown")
                 {
                     // if no selection has been made
                     // condition is not satisfied

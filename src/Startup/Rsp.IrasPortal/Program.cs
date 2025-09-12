@@ -42,6 +42,19 @@ builder.AddServiceDefaults();
 var services = builder.Services;
 var configuration = builder.Configuration;
 
+// Allow uploads up to 100 MB
+services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 100 * 1024 * 1024; // 100 MB
+    options.ValueCountLimit = int.MaxValue;
+});
+
+// Also configure Kestrel (important for large uploads)
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 100 * 1024 * 1024; // 100 MB
+});
+
 // this will use the FeatureManagement section
 services.AddFeatureManagement();
 
@@ -74,7 +87,7 @@ services.AddHttpClients(appSettings!);
 // routing configuration
 services.AddRouting(options => options.LowercaseUrls = true);
 
-if (await featureManager.IsEnabledAsync(Features.OneLogin))
+if (await featureManager.IsEnabledAsync(FeatureFlags.OneLogin))
 {
     services.AddOneLoginAuthentication(appSettings);
 }
@@ -95,7 +108,7 @@ services
     {
         options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
 
-        if (await featureManager.IsEnabledAsync(Features.InterceptedLogging))
+        if (await featureManager.IsEnabledAsync(FeatureFlags.InterceptedLogging))
         {
             options.Filters.Add<LogActionFilter>();
         }
@@ -154,13 +167,13 @@ var config = TypeAdapterConfig.GlobalSettings;
 // register the mapping configuration
 config.Scan(typeof(MappingRegister).Assembly);
 
-if (await featureManager.IsEnabledAsync(Features.InterceptedLogging))
+if (await featureManager.IsEnabledAsync(FeatureFlags.InterceptedLogging))
 {
     services.AddLoggingInterceptor<LoggingInterceptor>();
 }
 
 // If the "UseFrontDoor" feature is enabled, configure forwarded headers options
-if (await featureManager.IsEnabledAsync(Features.UseFrontDoor))
+if (await featureManager.IsEnabledAsync(FeatureFlags.UseFrontDoor))
 {
     // Configure ForwardedHeadersOptions to handle proxy headers
     services.Configure<ForwardedHeadersOptions>(options =>

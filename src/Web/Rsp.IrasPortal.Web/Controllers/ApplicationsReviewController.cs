@@ -9,7 +9,7 @@ namespace Rsp.IrasPortal.Web.Controllers;
 
 [Authorize(Policy = "IsReviewer")]
 [Route("[controller]", Name = "arc:[action]")]
-[FeatureGate(Features.ReviewApplications)]
+[FeatureGate(FeatureFlags.ReviewApplications)]
 public class ApplicationsReviewController(IApplicationsService applicationsService) : Controller
 {
     public async Task<IActionResult> PendingApplications()

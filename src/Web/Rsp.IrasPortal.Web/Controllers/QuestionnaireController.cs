@@ -9,6 +9,7 @@ using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Extensions;
+using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers;
@@ -19,7 +20,7 @@ public class QuestionnaireController
 (
     IApplicationsService applicationsService,
     IRespondentService respondentService,
-    IQuestionSetService questionSetService,
+    ICmsQuestionsetService questionSetService,
     IRtsService rtsService,
     IProjectModificationsService projectModificationsService,
     IValidator<QuestionnaireViewModel> validator
@@ -77,13 +78,12 @@ public class QuestionnaireController
             {
                 // Get the first question section for the given categoryId
                 var firstSection = questionSections.First();
-
                 sectionId = firstSection.SectionId;
             }
         }
 
         var sectionIdOrDefault = sectionId ?? string.Empty;
-        var questionsSetServiceResponse = await questionSetService.GetQuestions(categoryId, sectionIdOrDefault);
+        var questionsSetServiceResponse = await questionSetService.GetQuestionSet(sectionIdOrDefault);
 
         // return error page if unsuccessfull
         if (!questionsSetServiceResponse.IsSuccessStatusCode)
@@ -96,13 +96,13 @@ public class QuestionnaireController
         var respondentAnswers = respondentServiceResponse.Content!;
         var questions = questionsSetServiceResponse.Content!;
 
+        // convert the questions response to QuestionnaireViewModel
+        var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(questions);
+
         if (projectModificationId != Guid.Empty)
         {
-            questions = questions.Where(question => question.IsModificationQuestion);
+            questionnaire.Questions = questionnaire.Questions.Where(question => question.IsModificationQuestion).ToList();
         }
-
-        // convert the questions response to QuestionnaireViewModel
-        var questionnaire = BuildQuestionnaireViewModel(questions);
 
         // if respondent has answerd any questions
         if (respondentAnswers.Any())
@@ -166,7 +166,7 @@ public class QuestionnaireController
             // get questions from the database for the category
             if (questions == null || questions.Count == 0)
             {
-                var response = await questionSetService.GetQuestions(categoryId, sectionId);
+                var response = await questionSetService.GetQuestionSet(sectionId: sectionId);
 
                 // return the view if successfull
                 if (response.IsSuccessStatusCode)
@@ -177,12 +177,13 @@ public class QuestionnaireController
                     // set the active stage for the category
                     await SetStage(sectionId);
 
+                    // convert the questions response to QuestionnaireViewModel
+                    var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(response.Content!);
+
                     if (projectModificationId != Guid.Empty)
                     {
-                        response.Content = response.Content!.Where(question => question.IsModificationQuestion);
+                        questionnaire.Questions = questionnaire.Questions.Where(question => question.IsModificationQuestion).ToList();
                     }
-
-                    var questionnaire = BuildQuestionnaireViewModel(response.Content!);
 
                     // store the questions to load again if there are validation errors on the page
                     HttpContext.Session.SetString($"{SessionKeys.Questionnaire}:{sectionId}", JsonSerializer.Serialize(questionnaire.Questions));
@@ -213,7 +214,7 @@ public class QuestionnaireController
 
     [RequestFormLimits(ValueCountLimit = int.MaxValue)]
     [HttpPost]
-    public async Task<IActionResult> SaveResponses(QuestionnaireViewModel model, string searchedPerformed, bool autoSearchEnabled, bool submit = false, string saveAndContinue = "False", string saveForLater = "False")
+    public async Task<IActionResult> SaveResponses(QuestionnaireViewModel model, string searchedPerformed, bool autoSearchEnabled, string categoryId = "", bool submit = false, string saveAndContinue = "False", string saveForLater = "False")
     {
         var (projectModificationId, projectModificationChangeId) = CheckModification();
 
@@ -474,7 +475,7 @@ public class QuestionnaireController
             await respondentService.GetModificationAnswers(projectModificationChangeId, categoryId);
 
         // get the questions for all categories
-        var questionSetServiceResponse = await questionSetService.GetQuestions(categoryId);
+        var questionSetServiceResponse = await questionSetService.GetQuestionSet();
 
         // return the error view if unsuccessfull
         if (!respondentServiceResponse.IsSuccessStatusCode)
@@ -496,18 +497,12 @@ public class QuestionnaireController
         var respondentAnswers = respondentServiceResponse.Content!;
         var questions = questionSetServiceResponse.Content!;
 
-        var questionnaire = new QuestionnaireViewModel
-        {
-            CurrentStage = string.Empty,
-            Questions = new List<QuestionViewModel>()
-        };
+        // convert the questions response to QuestionnaireViewModel
+        var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(questions);
 
         // validate each category
-        foreach (var questionsResponse in questions.ToLookup(q => q.Category))
+        foreach (var questionsResponse in questionnaire.Questions.GroupBy(x => x.Category))
         {
-            // build the QuestionnaireViewModel for each category
-            questionnaire = BuildQuestionnaireViewModel(questionsResponse);
-
             if (questionnaire.Questions.Count == 0)
             {
                 continue;
@@ -568,7 +563,7 @@ public class QuestionnaireController
         }
 
         // get the questions for all categories
-        var questionSetServiceResponse = await questionSetService.GetQuestions(categoryId);
+        var questionSetServiceResponse = await questionSetService.GetQuestionSet();
 
         // return the error view if unsuccessfull
         if (!questionSetServiceResponse.IsSuccessStatusCode)
@@ -577,18 +572,16 @@ public class QuestionnaireController
             return this.ServiceError(questionSetServiceResponse);
         }
 
+        var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(questionSetServiceResponse.Content);
+
         // define the questionnaire validation state dictionary
         var questionnaireValidationState = new Dictionary<string, string>();
 
         var respondentAnswers = respondentServiceResponse.Content!;
-        var questions = questionSetServiceResponse.Content!;
 
         // validate each category
-        foreach (var questionsResponse in questions.ToLookup(q => q.Category))
+        foreach (var questionsResponse in questionnaire.Questions.GroupBy(x => x.Category))
         {
-            // build the QuestionnaireViewModel for each category
-            var questionnaire = BuildQuestionnaireViewModel(questionsResponse);
-
             if (questionnaire.Questions.Count == 0)
             {
                 continue;

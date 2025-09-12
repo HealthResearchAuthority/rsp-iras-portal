@@ -10,11 +10,32 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Compile Remove="Models\ModificationAddDocumentDetailsViewModel.cs" />
+      <Compile Remove="Controllers\CmsProjectModificationController.cs" />
+      <Compile Remove="Controllers\CmsQuestionSetController.cs" />
+      <Compile Remove="Controllers\ModificationDocumentController.cs" />
+      <Compile Remove="Controllers\Modifications\ModificationQuestionnaireController.cs" />
     </ItemGroup>
 
     <ItemGroup>
+      <Content Remove="Views\CmsProjectModification\AreaOfChange.cshtml" />
+      <Content Remove="Views\CmsProjectModification\PlannedEndDate.cshtml" />
+      <Content Remove="Views\CmsProjectModification\RenderQuestions.cshtml" />
+      <Content Remove="Views\CmsProjectModification\SearchOrganisation.cshtml" />
+      <Content Remove="Views\CmsQuestionSet\EditorTemplates\AutoSuggestTemplate.cshtml" />
+      <Content Remove="Views\CmsQuestionSet\EditorTemplates\CheckboxTemplate.cshtml" />
+      <Content Remove="Views\CmsQuestionSet\EditorTemplates\DateTemplate.cshtml" />
+      <Content Remove="Views\CmsQuestionSet\EditorTemplates\DropdownTemplate.cshtml" />
+      <Content Remove="Views\CmsQuestionSet\EditorTemplates\OrgSearchTemplate.cshtml" />
+      <Content Remove="Views\CmsQuestionSet\EditorTemplates\RadioButtonTemplate.cshtml" />
+      <Content Remove="Views\CmsQuestionSet\EditorTemplates\TextTemplate.cshtml" />
+      <Content Remove="Views\CmsQuestionSet\GuidanceContent.cshtml" />
+      <Content Remove="Views\CmsQuestionSet\Index.cshtml" />
+      <Content Remove="Views\CmsQuestionSet\ReviewAnswers.cshtml" />
       <Content Remove="Views\ProjectModification\AddDocumentDetails.cshtml" />
+      <Content Remove="Views\ProjectModification\AddDocumentDetailsList.cshtml" />
+      <Content Remove="Views\ProjectModification\ModificationDocumentsAdded.cshtml" />
+      <Content Remove="Views\ProjectModification\ReviewDocumentDetails.cshtml" />
+      <Content Remove="Views\ProjectModification\UploadDocuments.cshtml" />
     </ItemGroup>
 
     <ItemGroup>
@@ -22,7 +43,7 @@
       <PackageReference Include="FluentValidation" Version="12.0.0" />
       <PackageReference Include="Mapster" Version="7.4.0" />
       <PackageReference Include="Microsoft.FeatureManagement.AspNetCore" Version="4.0.0" />
-      <PackageReference Include="Rsp.Gds.Component" Version="1.0.19" />
+      <PackageReference Include="Rsp.Gds.Component" Version="1.0.20" />
     </ItemGroup>
 
     <ItemGroup>
@@ -30,7 +51,20 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Views\CmsProjectModification\" />
+      <Folder Include="Views\CmsQuestionSet\EditorTemplates\" />
       <Folder Include="Models\CmsContent\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Update="Views\CmsQuestionSet\EditorTemplates\DropdownTemplate.cshtml">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
+      <Content Update="Views\CmsQuestionSet\EditorTemplates\OrgSearchTemplate.cshtml">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>

@@ -139,7 +139,7 @@ public class CustomClaimsTransformation
             }
 
             // for one login
-            var oneLoginEnabled = await featureManager.IsEnabledAsync(Features.OneLogin);
+            var oneLoginEnabled = await featureManager.IsEnabledAsync(FeatureFlags.OneLogin);
 
             if (oneLoginEnabled && !string.IsNullOrEmpty(user.User?.GivenName))
             {
@@ -187,7 +187,7 @@ public class CustomClaimsTransformation
         // get the original access token
         var jsonToken = handler.ReadJwtToken(bearerToken as string);
 
-        var oneLoginEnabled = await featureManager.IsEnabledAsync(Features.OneLogin);
+        var oneLoginEnabled = await featureManager.IsEnabledAsync(FeatureFlags.OneLogin);
 
         var audience = oneLoginEnabled ?
             appSettings.Value.OneLogin.ClientId :
