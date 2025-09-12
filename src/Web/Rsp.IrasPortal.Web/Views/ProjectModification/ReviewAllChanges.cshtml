@@ -79,7 +79,12 @@
                             <a class="govuk-link" asp-route="pmc:modificationchangesreview" asp-route-modificationChangeId="@change.ModificationChangeId">Change</a>
                         </li>
                         <li class="govuk-summary-card__action">
-                            <a class="govuk-link" asp-route="pmc:confirmremovechange" asp-route-modificationChangeId="@change.ModificationChangeId">Remove</a>
+                            <a class="govuk-link"
+                               asp-route="pmc:confirmremovechangereviewall"
+                               asp-route-modificationChangeId="@change.ModificationChangeId"
+                               asp-route-modificationChangeName="@change.SpecificChangeName">
+                                Remove
+                            </a>
                         </li>
                     </ul>
                 </div>

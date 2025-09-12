@@ -80,4 +80,12 @@ public partial class ProjectModificationController
 
         return View(viewModel);
     }
+
+    [HttpGet]
+    public IActionResult ConfirmRemoveChangeReviewAll(string modificationChangeId, string modificationChangeName)
+    {
+        ViewData["ReviewAllPage"] = true;
+        var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationDetailsPageViewModel());
+        return View("ConfirmRemoveChange", (viewModel, modificationChangeId, modificationChangeName));
+    }
 }

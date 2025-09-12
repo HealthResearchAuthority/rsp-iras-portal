@@ -60,10 +60,11 @@ public partial class ProjectModificationController
     }
 
     [HttpGet]
-    public IActionResult ConfirmRemoveChange(string modificationChangeId)
+    public IActionResult ConfirmRemoveChange(string modificationChangeId, string modificationChangeName)
     {
+        ViewData["ReviewAllPage"] = false;
         var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationDetailsPageViewModel());
-        return View("ConfirmRemoveChange", (viewModel, modificationChangeId));
+        return View("ConfirmRemoveChange", (viewModel, modificationChangeId, modificationChangeName));
     }
 
     [HttpPost]

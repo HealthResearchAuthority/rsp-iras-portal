@@ -7,11 +7,13 @@
 
 @{
     ViewData["ReviewChanges"] = true;
+    bool reviewAllPage = ViewData["ReviewAllPage"] as bool? ?? false;
+    var navModel = (reviewAllPage ? "pmc:reviewallchanges" : "pmc:modificationdetailspage", "Back", new Dictionary<string, string>());
 }
 
-@section BackNavigation {
+@section BackNavigation {    
     <form method="get">
-        <partial name="_BackNavigation" model="@("pmc:modificationdetailspage", "Back", new Dictionary<string, string>())" />
+        <partial name="_BackNavigation" model="navModel" />
     </form>
 }
 
