@@ -199,15 +199,6 @@ public class StartProjectTests : TestServiceBase<ApplicationController>
             });
 
         Mocker
-            .GetMock<IQuestionSetService>()
-            .Setup(s => s.GetQuestionCategories())
-            .ReturnsAsync(new ServiceResponse<IEnumerable<CategoryDto>>
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = [new() { CategoryId = "cat1" }]
-            });
-
-        Mocker
            .GetMock<ICmsQuestionSetServiceClient>()
            .Setup(s => s.GetQuestionCategories())
            .ReturnsAsync(new ApiResponse<IEnumerable<CategoryDto>>(

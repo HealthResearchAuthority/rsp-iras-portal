@@ -2,8 +2,6 @@ using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.FeatureManagement;
-using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.ServiceClients;
@@ -21,8 +19,6 @@ public class ApplicationController
 (
     IApplicationsService applicationsService,
     IValidator<IrasIdViewModel> irasIdValidator,
-    IRespondentService respondentService,
-    IQuestionSetService questionSetService,
     ICmsQuestionSetServiceClient cmsSevice) : Controller
 {
     // ApplicationInfo view name
@@ -190,56 +186,6 @@ public class ApplicationController
         TempData.TryAdd(TempDataKeys.UploadedDocuments, documents, true);
 
         return RedirectToAction(nameof(DocumentUpload), new { projectRecordId });
-    }
-
-    [HttpGet]
-    [FeatureGate(FeatureFlags.MyApplications)]
-    public async Task<IActionResult> MyApplications()
-    {
-        var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
-
-        var avm = new ApplicationsViewModel();
-
-        HttpContext.Session.RemoveAllSessionValues();
-
-        // get the pending applications
-        var applicationServiceResponse = await applicationsService.GetApplicationsByRespondent(respondentId);
-
-        // return the view if successful
-        if (applicationServiceResponse is { IsSuccessStatusCode: true, Content: not null })
-        {
-            avm.Applications = applicationServiceResponse.Content
-            .Select(dto => new ApplicationModel
-            {
-                Id = dto.Id,
-                Title = dto.Title,
-                Status = dto.Status,
-                CreatedDate = dto.CreatedDate,
-                IrasId = dto.IrasId,
-                Description = dto.Description,
-                CreatedBy = dto.CreatedBy
-            })
-            .ToList();
-
-            var questionSetServiceResponse = await questionSetService.GetQuestionCategories();
-
-            if (questionSetServiceResponse is { IsSuccessStatusCode: true, Content: not null })
-            {
-                avm.Categories = questionSetServiceResponse.Content;
-                return View(avm);
-            }
-
-            // return the generic error page
-            return this.ServiceError(questionSetServiceResponse);
-        }
-
-        // return the generic error page
-        return this.ServiceError(applicationServiceResponse);
-    }
-
-    public IActionResult ReviewAnswers()
-    {
-        return View(this.GetApplicationFromSession());
     }
 
     [AllowAnonymous]
