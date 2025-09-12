@@ -693,20 +693,32 @@ public class UsersController(
         string? sortDirection = SortDirections.Ascending,
         [FromQuery] bool fromPagination = false)
     {
-        var validationResult = await searchValidator.ValidateAsync(model.Search);
-
-        if (!validationResult.IsValid)
+        if (HttpContext.Request.Method == HttpMethods.Get)
         {
-            foreach (var error in validationResult.Errors)
+            //Always attempt to restore from session if nothing is currently set
+             var savedSearch = HttpContext.Session.GetString(SessionKeys.UsersSearch);
+            if (!string.IsNullOrWhiteSpace(savedSearch))
             {
-                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                model.Search = JsonSerializer.Deserialize<UserSearchModel>(savedSearch);
+            }
+        }
+        else
+        {
+            var validationResult = await searchValidator.ValidateAsync(model.Search);
+
+            if (!validationResult.IsValid)
+            {
+                foreach (var error in validationResult.Errors)
+                {
+                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                }
+
+                return View(nameof(Index), model); // Return with validation errors
             }
 
-            return View(nameof(Index), model); // Return with validation errors
+            // Save applied filters to session
+            HttpContext.Session.SetString(SessionKeys.UsersSearch, JsonSerializer.Serialize(model.Search));
         }
-
-        // Save applied filters to session
-        HttpContext.Session.SetString(SessionKeys.UsersSearch, JsonSerializer.Serialize(model.Search));
 
         // Call Index with matching parameter set
         return await Index(

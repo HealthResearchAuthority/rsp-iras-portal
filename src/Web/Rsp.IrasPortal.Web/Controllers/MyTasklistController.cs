@@ -78,7 +78,8 @@ public class MyTasklistController(IProjectModificationsService projectModificati
         model.Pagination = new PaginationViewModel(pageNumber, pageSize, result?.Content?.TotalCount ?? 0)
         {
             SortField = sortField!,
-            SortDirection = sortDirection!
+            SortDirection = sortDirection!,
+            FormName = "mytasklist-selection"
         };
 
         return View(model);
