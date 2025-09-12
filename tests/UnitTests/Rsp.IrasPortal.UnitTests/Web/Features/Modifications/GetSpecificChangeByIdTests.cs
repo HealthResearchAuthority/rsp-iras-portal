@@ -121,7 +121,7 @@ public class GetSpecificChangeByIdTests : TestServiceBase<ModificationsControlle
         var selectList = jsonResult.Value.ShouldBeOfType<List<SelectListItem>>();
 
         selectList.Count.ShouldBe(1);
-        selectList[0].Text.ShouldBe("Select Specific change");
+        selectList[0].Text.ShouldBe("Select specific change");
     }
 
     [Fact]
