@@ -1,10 +1,13 @@
 ﻿﻿@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Web.Extensions
 @model Rsp.IrasPortal.Web.Models.SearchOrganisationViewModel
 
 @{
 	ViewData["Title"] = "Search participating organisation";
 	var errorSummaryTitle = "There is a problem";
+	var modification = TempData.PopulateBaseProjectModificationProperties(new BaseProjectModificationViewModel());
 
+	var specificArea = modification.SpecificAreaOfChange;
 	(string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
 	navModel = ("pmc:areaofchange", "Back", new());
 }
@@ -30,6 +33,8 @@
 	<main class="govuk-main-wrapper pt-0">
 		<div class="govuk-grid-row">
 			<div class="govuk-grid-column-two-thirds">
+				<h1 class="govuk-heading-l">@specificArea</h1>
+
 				<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
 				<partial name="_ProjectModificationSummary" model="Model" />
 			</div>

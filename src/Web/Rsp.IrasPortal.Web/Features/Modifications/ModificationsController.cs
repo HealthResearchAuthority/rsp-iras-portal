@@ -30,8 +30,8 @@ public class ModificationsController
 ) : Controller
 
 {
-    private const string SelectAreaOfChange = "Select Area of change";
-    private const string SelectSpecificAreaOfChange = "Select Specific change";
+    private const string SelectAreaOfChange = "Select area of change";
+    private const string SelectSpecificAreaOfChange = "Select specific change";
 
     /// <summary>
     /// Initiates the creation of a new project modification.
