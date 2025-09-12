@@ -2,86 +2,86 @@
 @model PaginationViewModel
 
 @{
-	var currentPage = Model.PageNumber;
-	var nextPage = Model.PageNumber < Model.TotalPages ? Model.PageNumber + 1 : Model.PageNumber;
-	var previousPage = Model.PageNumber > 1 ? Model.PageNumber - 1 : 1;
+    var currentPage = Model.PageNumber;
+    var nextPage = Model.PageNumber < Model.TotalPages ? Model.PageNumber + 1 : Model.PageNumber;
+    var previousPage = Model.PageNumber > 1 ? Model.PageNumber - 1 : 1;
 }
 
 @if (Model.TotalCount <= Model.PageSize)
 {
-	return;
+    return;
 }
 
 <nav class="govuk-pagination" aria-label="Pagination">
 
-	<div class="govuk-pagination__prev" style="@(Model.PageNumber <= 1 ? "display: none" : "")">
-		<button type="submit" class="govuk-link govuk-pagination__link"
-				asp-route="@Model.RouteName"
-				name="pageNumber" value="@previousPage"
-				form="@Model.FormName"
-				rel="prev">
-			<svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg"
-				 height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
-				<path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z">
-				</path>
-			</svg>
-			<span class="govuk-pagination__link-title">
-				Previous<span class="govuk-visually-hidden"> page</span>
-			</span>
-		</button>
-	</div>
+    <div class="govuk-pagination__prev" style="@(Model.PageNumber <= 1 ? "display: none" : "")">
+        <button type="submit" class="govuk-link govuk-pagination__link"
+                asp-route="@Model.RouteName"
+                name="pageNumber" value="@previousPage"
+                form="@Model.FormName"
+                rel="prev">
+            <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg"
+                 height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+                <path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z">
+                </path>
+            </svg>
+            <span class="govuk-pagination__link-title">
+                Previous<span class="govuk-visually-hidden"> page</span>
+            </span>
+        </button>
+    </div>
 
-	<ul class="govuk-pagination__list">
+    <ul class="govuk-pagination__list">
 
-		@foreach (var index in Model.Pages)
-		{
-			if (index == null)
-			{
-				// render elipsis
+        @foreach (var index in Model.Pages)
+        {
+            if (index == null)
+            {
+                // render elipsis
 
-				<li class="govuk-pagination__item govuk-pagination__item--ellipses">
-					&ctdot;
-				</li>
-			}
-			else
-			{
-				var current = "";
-				var ariaCurrent = "";
-				if (index == Model.PageNumber)
-				{
-					current = "govuk-pagination__item--current";
-					ariaCurrent = "page";
-				}
+                <li class="govuk-pagination__item govuk-pagination__item--ellipses">
+                    &ctdot;
+                </li>
+            }
+            else
+            {
+                var current = "";
+                var ariaCurrent = "";
+                if (index == Model.PageNumber)
+                {
+                    current = "govuk-pagination__item--current";
+                    ariaCurrent = "page";
+                }
 
-				<li class="govuk-pagination__item @current">
-					<button class="govuk-link govuk-pagination__link @current" aria-label="Page @index" aria-current=@ariaCurrent
-							asp-route="@Model.RouteName"
-							name="pageNumber" value="@index"
-							form="@Model.FormName">
-						@index
-					</button>
-				</li>
-			}
-		}
-	</ul>
+                <li class="govuk-pagination__item @current">
+                    <button class="govuk-link govuk-pagination__link @current" aria-label="Page @index" aria-current=@ariaCurrent
+                            asp-route="@Model.RouteName"
+                            name="pageNumber" value="@index"
+                            form="@Model.FormName">
+                        @index
+                    </button>
+                </li>
+            }
+        }
+    </ul>
 
-	<div class="govuk-pagination__next" style="@(Model.PageNumber >= Model.TotalPages ? "visibility: hidden" : "")">
+    <div class="govuk-pagination__next" style="@(Model.PageNumber >= Model.TotalPages ? "visibility: hidden" : "")">
 
-		<button class="govuk-link govuk-pagination__link" asp-route="@Model.RouteName"
-				form="@Model.FormName"
-				name="pageNumber" value="@nextPage"
-				rel="next">
-			<span class="govuk-pagination__link-title">
-				Next<span class="govuk-visually-hidden"> page</span>
-			</span>
-			<svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg"
-				 height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
-				<path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z">
-				</path>
-			</svg>
-		</button>
-	</div>
+        <button class="govuk-link govuk-pagination__link" asp-route="@Model.RouteName"
+                form="@Model.FormName"
+                name="pageNumber" value="@nextPage"
+                rel="next">
+            <span class="govuk-pagination__link-title">
+                Next<span class="govuk-visually-hidden"> page</span>
+            </span>
+            <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg"
+                 height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+                <path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z">
+                </path>
+            </svg>
+        </button>
+    </div>
 </nav>
 <div>
-	&nbsp;
+    &nbsp;
 </div>

@@ -14,7 +14,8 @@ namespace Rsp.IrasPortal.Services;
 /// Handles retrieval and creation of project modifications and their changes
 /// by delegating to the IProjectModificationsServiceClient and mapping responses.
 /// </summary>
-public class ProjectModificationsService(IProjectModificationsServiceClient projectModificationsServiceClient) : IProjectModificationsService
+public class ProjectModificationsService(IProjectModificationsServiceClient projectModificationsServiceClient,
+    ICmsQuestionSetServiceClient cmsQuestionsetClient) : IProjectModificationsService
 {
     /// <summary>
     /// Gets the saved application by Id.

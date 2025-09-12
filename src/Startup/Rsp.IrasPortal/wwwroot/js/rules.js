@@ -4,7 +4,7 @@
  * Checks if a rule is applicable or not
  * @param {string} questionId - The ID of the conditional question the rule applies to.
  */
-function isRuleApplicable(questionId) {
+function isRuleApplicable(questionId, evaluateForAnswers = false) {
     // Retrieve and filter rules where ParentQuestionId is not null, then sort by sequence
     const rules = JSON.parse(sessionStorage.getItem(questionId))
         .filter(r => r.ParentQuestionId !== null)
@@ -17,8 +17,8 @@ function isRuleApplicable(questionId) {
     // and build evaluation dictionary
     // store the evaluation result for the rule in the group
     const evaluations = {
-        AND: ruleGroups.AND?.map(evaluateRule) || [],
-        OR: ruleGroups.OR?.map(evaluateRule) || [],
+        AND: ruleGroups.AND?.map(rule => evaluateRule(rule, evaluateForAnswers)) || [],
+        OR: ruleGroups.OR?.map(rule => evaluateRule(rule, evaluateForAnswers)) || [],
     };
 
     // Determine if the rule is applicable based on evaluations
@@ -29,7 +29,7 @@ function isRuleApplicable(questionId) {
  * Evaluates the conditions within the rule
  * @param {ruleObject} rule - rule object.
  */
-function evaluateRule(rule) {
+function evaluateRule(rule, evaluateForAnswers = false) {
     // Filter the conditions for the IN operator, used to check equality or selection of options
     const conditions = rule.Conditions.filter(c => c.Operator === "IN");
 
@@ -39,7 +39,9 @@ function evaluateRule(rule) {
     // Evaluate each group of conditions
     const evaluations = {
         AND: conditionGroups.AND?.map(cond => {
-            const evaluation = evaluateCondition(cond, rule.ParentQuestionId);
+            const evaluation = evaluateForAnswers ?
+                evaluateConditionForAnswers(cond, rule.ParentQuestionId) :
+                evaluateCondition(cond, rule.ParentQuestionId);
 
             // do not negate if the condition is not satisfied
             // because of no selection for the parent question
@@ -52,7 +54,9 @@ function evaluateRule(rule) {
             return !evaluation.EvaluationResult;
         }) || [],
         OR: conditionGroups.OR?.map(cond => {
-            const evaluation = evaluateCondition(cond, rule.ParentQuestionId);
+            const evaluation = evaluateForAnswers ?
+                evaluateConditionForAnswers(cond, rule.ParentQuestionId) :
+                evaluateCondition(cond, rule.ParentQuestionId);
 
             // do not negate if the condition is not satisfied
             // because of no selection for the parent question
@@ -86,7 +90,7 @@ function evaluateCondition(condition, parentQuestionId) {
     const selectedRadioAnswers = radioInputs.filter(":checked");
 
     // Gather drop-down (select) elements whose IDs start with the parentQuestionId
-    const selectInputs = $(`select[id^="${parentQuestionId}"]`);
+    const selectInputs = $(`select[id^="${parentQuestionId}"], div[id^="${parentQuestionId}"] > select`);
 
     let selectedIds = [];
 
@@ -128,6 +132,53 @@ function evaluateCondition(condition, parentQuestionId) {
     }
 }
 
+/**
+ * Evaluates the condition to determine if it applies based on the parent question's answers
+ * @param {conditionObject} condition - condition object.
+ * @param {string} parentQuestionId - parent question Id.
+ */
+function evaluateConditionForAnswers(condition, parentQuestionId) {
+    // Retrieve and filter rules where ParentQuestionId is not null, then sort by sequence
+    const parent = JSON.parse(sessionStorage.getItem('A_' + parentQuestionId));
+
+    if (parent == null) {
+        return { EvaluationResult: false, NoSelection: false };
+    }
+
+    // If the operator is unsupported, the condition is not satisfied
+    if (condition.Operator !== "IN") {
+        return { EvaluationResult: false, NoSelection: false };
+    }
+
+    // Gather radio/checkbox inputs whose IDs start with the parentQuestionId
+    const selectedRadioAnswers = parent.SelectedOption == null ? [] : parent.SelectedOption.split(',');
+
+    // selected checkbox answers
+    const selectedCheckBox = parent.Answers.map(function (answer) { return answer.AnswerId });
+
+    let selectedIds = $.merge(selectedRadioAnswers, selectedCheckBox);
+
+    // If no selection is made across both types, the condition is not satisfied
+    if (selectedIds.length === 0) {
+        return { EvaluationResult: false, NoSelection: true };
+    }
+
+    // Get the matching options by checking if they are included in the parent options specified in the condition
+    const matchingOptions = condition.ParentOptions.filter(option => selectedIds.includes(option));
+
+    // Evaluate based on the option type specified in the condition
+    switch (condition.OptionType) {
+        case "Single":
+            // Only one option must be selected and it must match one of the parent options
+            return { EvaluationResult: selectedIds.length === 1 && matchingOptions.length === 1, NoSelection: false };
+        case "Exact":
+            // The count of selected options must match the count of matching parent options
+            return { EvaluationResult: matchingOptions.length === selectedIds.length, NoSelection: false };
+        default:
+            // At least one selected option must match one of the parent options
+            return { EvaluationResult: matchingOptions.length > 0, NoSelection: false };
+    }
+}
 
 /**
  * Processes evaluation results to determine rule applicability

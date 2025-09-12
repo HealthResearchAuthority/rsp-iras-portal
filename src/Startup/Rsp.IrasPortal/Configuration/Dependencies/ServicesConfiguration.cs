@@ -21,14 +21,13 @@ public static class ServicesConfiguration
         // add application services
         services.AddTransient<IApplicationsService, ApplicationsService>();
         services.AddTransient<IUserManagementService, UserManagementService>();
-        services.AddTransient<IQuestionSetService, QuestionSetService>();
-        services.AddTransient<IQuestionSetBuilder, QuestionSetBuilder>();
         services.AddTransient<IRespondentService, RespondentService>();
         services.AddTransient<IClaimsTransformation, CustomClaimsTransformation>();
         services.AddTransient<IReviewBodyService, ReviewBodyService>();
         services.AddTransient<IRtsService, RtsService>();
         services.AddTransient<IProjectModificationsService, ProjectModificationsService>();
         services.AddScoped<IBlobStorageService, BlobStorageService>();
+        services.AddTransient<ICmsQuestionsetService, CmsQuestionsetService>();
         services.AddScoped<ICmsContentService, CmsContentService>();
 
         // add message handlers

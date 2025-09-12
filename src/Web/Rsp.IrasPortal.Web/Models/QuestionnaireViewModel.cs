@@ -1,5 +1,7 @@
 ﻿using System.Globalization;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
+using Rsp.IrasPortal.Application.DTOs.Requests;
 
 namespace Rsp.IrasPortal.Web.Models;
 
@@ -16,17 +18,21 @@ public class QuestionnaireViewModel
     /// <summary>
     /// The current stage of the questionnaire.
     /// </summary>
-    public string CurrentStage { get; set; } = "";
+    public string? CurrentStage { get; set; } = "";
 
     /// <summary>
     /// List of questions in the questionnaire.
     /// </summary>
     public List<QuestionViewModel> Questions { get; set; } = [];
 
+    public List<ContentComponent> GuidanceContent { get; set; } = [];
+
     /// <summary>
     /// ViewModel for searching and selecting a sponsor organisation.
     /// </summary>
     public OrganisationSearchViewModel SponsorOrgSearch { get; set; } = new();
+
+    public Dictionary<string, RespondentAnswerDto> OriginalAnswers { get; set; } = [];
 
     /// <summary>
     /// Gets a list of conditional rules for non-mandatory questions that have rules.
@@ -41,6 +47,69 @@ public class QuestionnaireViewModel
                 q.QuestionId,
                 q.Rules
             })];
+    }
+
+    /// <summary>
+    /// Gets a list of conditional rules for non-mandatory questions that have rules.
+    /// </summary>
+    /// <returns>List of objects containing QuestionType, DataType, AnswerText, SelectedOption, Answers for each parent question.</returns>
+    public List<object> GetParentQuestionAnswers()
+    {
+        // Pseudocode:
+        // 1. Create a set to hold unique parent question IDs.
+        // 2. Iterate all questions:
+        //    a. If question is non-mandatory and has rules:
+        //       i. Add any non-null ParentQuestionId from its rules to the set.
+        // 3. For each parent question ID:
+        //    a. Find the matching question in Questions by QuestionId.
+        //    b. If found, create an anonymous object with QuestionType, DataType, AnswerText, SelectedOption, Answers.
+        // 4. Return the list of these objects.
+
+        var parentIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var question in Questions)
+        {
+            if (!question.IsMandatory && question.Rules.Any())
+            {
+                foreach (var rule in question.Rules)
+                {
+                    if (!string.IsNullOrWhiteSpace(rule.ParentQuestionId))
+                    {
+                        parentIds.Add(rule.ParentQuestionId!);
+                    }
+                }
+            }
+        }
+
+        var results = new List<object>(parentIds.Count);
+
+        foreach (var parentId in parentIds)
+        {
+            var parentQuestion = Questions
+                .FirstOrDefault(q => q.QuestionId.Equals(parentId, StringComparison.OrdinalIgnoreCase));
+
+            if (parentQuestion is null)
+            {
+                continue;
+            }
+
+            var data = new
+            {
+                parentQuestion.QuestionType,
+                parentQuestion.DataType,
+                parentQuestion.AnswerText,
+                parentQuestion.SelectedOption,
+                Answers = parentQuestion.Answers.Where(a => a.IsSelected)
+            };
+
+            results.Add(new
+            {
+                QuestionId = parentId,
+                Answers = data
+            });
+        }
+
+        return results;
     }
 
     /// <summary>

@@ -11,20 +11,20 @@ public class AreaOfChangeViewModel : BaseProjectModificationViewModel
     /// <summary>
     /// Gets or sets the selected area of change identifier.
     /// </summary>
-    public int? AreaOfChangeId { get; set; }
+    public string? AreaOfChangeId { get; set; }
 
     /// <summary>
     /// Gets or sets the selected specific change identifier associated with the area of change.
     /// </summary>
-    public int? SpecificChangeId { get; set; }
+    public string? SpecificChangeId { get; set; }
 
     /// <summary>
     /// Gets or sets the list of available area of change options for the dropdown.
     /// </summary>
-    public IEnumerable<SelectListItem> AreaOfChangeOptions { get; set; }
+    public IEnumerable<SelectListItem> AreaOfChangeOptions { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the list of available specific change options for the selected area of change.
     /// </summary>
-    public IEnumerable<SelectListItem> SpecificChangeOptions { get; set; }
+    public IEnumerable<SelectListItem> SpecificChangeOptions { get; set; } = [];
 }

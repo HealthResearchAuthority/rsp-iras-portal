@@ -7,9 +7,8 @@
 @{
     Layout = null;
 
-    var serviceName = "Plan and manage healthcare research";
+    var serviceName = "Health research UK";
 
-    var active = ViewBag.Active as string;
     var pageTitle = ViewBag.Title as string;
 
     pageTitle = string.IsNullOrWhiteSpace(pageTitle) ? serviceName : $"{pageTitle} - {serviceName}";
@@ -36,9 +35,6 @@
     <link rel="stylesheet" href="~/css/govuk-frontend.min.css" />
     <link rel="stylesheet" href="~/css/main.css" asp-append-version="true" />
     <script src="~/lib/jquery/dist/jquery.js"></script>
-    <script src="~/js/sessionTimeout.js"></script>
-    <script src="~/js/checkbox-counter.js"></script>
-    <script src="~/js/site.js"></script>
 
     @if (!string.IsNullOrEmpty(clarityProjectId))
     {
@@ -112,43 +108,13 @@
                                 Home
                             </a>
                         </li>
-                        <feature name="@Features.ReviewApplications">
-                            <authorized auth-params="@new(Roles:"reviewer")">
 
-                                <li class="govuk-service-navigation__item">
-                                    <a class="govuk-service-navigation__link" asp-route="arc:pendingapplications">
-                                        Review Applications
-                                    </a>
-                                </li>
-                            </authorized>
-                        </feature>
-
-                        <feature name="@Features.Admin">
+                        <feature name="@FeatureFlags.Admin">
                             <authorized auth-params="@new(Roles:"system_administrator")">
                                 <li class="govuk-service-navigation__item">
                                     <a class="govuk-service-navigation__link"
                                        asp-route="admin:home">
                                         Admin
-                                    </a>
-                                </li>
-                            </authorized>
-                        </feature>
-
-                        <authorized auth-params="@new(Roles:"system_administrator")">
-                            <li class="govuk-service-navigation__item">
-                                <a class="govuk-service-navigation__link"
-                                   asp-route="qsc:index">
-                                    Question Set
-                                </a>
-                            </li>
-                        </authorized>
-
-                        <feature name="@Features.MyApplications">
-                            <authorized auth-params="@new(Roles:"applicant")">
-                                <li class="govuk-service-navigation__item">
-                                    <a class="govuk-service-navigation__link"
-                                       asp-route="app:myapplications">
-                                        My Applications
                                     </a>
                                 </li>
                             </authorized>
@@ -171,7 +137,7 @@
     </section>
 
     <div class="govuk-width-container">
-		<main class="govuk-main-wrapper govuk-body" id="main-content">
+        <main class="govuk-main-wrapper govuk-body" id="main-content">
 
             @*Render the optional BackNavigation section if it exists*@
             @RenderSection("BackNavigation", required: false)
@@ -188,15 +154,17 @@
     <partial name="_Footer" />
 
     <script type="module" src="~/js/govuk-frontend.min.js"></script>
-<script type="module">
+    <script type="module">
         import { initAll } from '/js//govuk-frontend.min.js';
         initAll();
     </script>
-	<!-- Required styles and scripts -->
-	<link rel="stylesheet" href="~/assets/css/accessible-autocomplete.min.css" />
-	<script src="~/lib/jquery/dist/jquery.js"></script>
-	<script src="~/assets/js/accessible-autocomplete.min.js"></script>
-	<script src="~/js/accessible-autocomplete-wrapper.js"></script>
+    <!-- Required styles and scripts -->
+    <link rel="stylesheet" href="~/assets/css/accessible-autocomplete.min.css" />
+    <script src="~/js/sessionTimeout.js"></script>
+    <script src="~/js/checkbox-counter.js"></script>
+    <script src="~/assets/js/accessible-autocomplete.min.js"></script>
+    <script src="~/js/accessible-autocomplete-wrapper.js"></script>
+    <script src="~/js/site.js"></script>
 </body>
 
 @await RenderSectionAsync("FooterResources", false)

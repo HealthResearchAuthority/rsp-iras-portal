@@ -31,11 +31,11 @@
                 {
             { "sectionId", lastQuestion.SectionId },
             { "categoryId", lastQuestion.Category }
-                                                                                                                                                                                                                                                                                                                        })
+                                                                                                                                                                                                                                                                                                                                        })
         : ("app:createapplication", "Back", new Dictionary<string, string>());
 }
 
-@if (await featureManager.IsEnabledAsync(Features.ProgressiveEnhancement))
+@if (await featureManager.IsEnabledAsync(FeatureFlags.ProgressiveEnhancement))
 {
     // If progressive enhancement is enabled, add jQuery and custom JavaScript
     <script src="~/lib/jquery/dist/jquery.js"></script>

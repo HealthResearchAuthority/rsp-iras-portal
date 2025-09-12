@@ -6,7 +6,6 @@ using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Services.Extensions;
-using Rsp.IrasPortal.Web.Models.CmsContent;
 
 namespace Rsp.IrasPortal.Services;
 

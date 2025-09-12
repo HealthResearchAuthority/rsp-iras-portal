@@ -28,7 +28,7 @@ public class PopulateBaseProjectModificationPropertiesTests : TestServiceBase
         model.ShortTitle.ShouldBe("ShortTitleTest");
         model.IrasId.ShouldBe("IRAS123");
         model.ModificationIdentifier.ShouldBe("MOD-456");
-        model.PageTitle.ShouldBe("PageTitleTest");
+        model.SpecificAreaOfChange.ShouldBe("PageTitleTest");
     }
 
     [Fact]
@@ -45,6 +45,6 @@ public class PopulateBaseProjectModificationPropertiesTests : TestServiceBase
         model.ShortTitle.ShouldBe("");
         model.IrasId.ShouldBe("");
         model.ModificationIdentifier.ShouldBe("");
-        model.PageTitle.ShouldBe("");
+        model.SpecificAreaOfChange.ShouldBe("");
     }
 }

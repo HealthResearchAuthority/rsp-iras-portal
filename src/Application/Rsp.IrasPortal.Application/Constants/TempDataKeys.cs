@@ -17,6 +17,7 @@ public struct TempDataKeys
         public const string SpecificAreaOfChangeId = "td:specific_area_of_change_id";
         public const string AreaOfChangeText = "td:area_of_change_text";
         public const string SpecificAreaOfChangeText = "td:specific_area_of_changeText";
+        public const string Questionnaire = "td:modification_questionnaire";
         public const string ProjectModificationChangeMarker = "td:project_modification_change_marker";
     }
 
@@ -28,6 +29,12 @@ public struct TempDataKeys
         public const string AffectedAllOrSomeOrganisations = "td:affected_organisations_all_or_some";
         public const string AffectedOrganisationsRequireAdditionalResources = "td:affected_organisations_require_additional_resources";
         public const string ReviewChanges = "td:planned_enddate_review_changes";
+    }
+
+    public struct ProjectModificationChange
+    {
+        public const string ReviewChanges = "td:modification_review_changes";
+        public const string Navigation = "td:modification_change_navigation";
     }
 
     public const string ProjectRecordId = "td:project_record_id";

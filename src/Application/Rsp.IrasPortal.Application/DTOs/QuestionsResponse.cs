@@ -1,4 +1,6 @@
-﻿namespace Rsp.IrasPortal.Application.DTOs;
+﻿using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
+
+namespace Rsp.IrasPortal.Application.DTOs;
 
 /// <summary>
 /// Represents questions response returned by the QuestionSet API
@@ -31,11 +33,6 @@ public record QuestionsResponse
     public int Sequence { get; set; }
 
     /// <summary>
-    /// Indicates if the question is a modification question
-    /// </summary>
-    public bool IsModificationQuestion { get; set; }
-
-    /// <summary>
     /// Heading of the question e.g. 1, 2, 2a, 2b..
     /// </summary>
     public string Heading { get; set; } = null!;
@@ -66,6 +63,16 @@ public record QuestionsResponse
     public bool IsOptional { get; set; }
 
     /// <summary>
+    /// If true then it indicates to fetch the original answer
+    /// </summary>
+    public bool ShowOriginalAnswer { get; set; }
+
+    /// <summary>
+    /// If true then it indicates to fetch the original answer
+    /// </summary>
+    public int SectionSequence { get; set; }
+
+    /// <summary>
     /// Potential answers of the question for single or multiple choice type question
     /// </summary>
     public IList<AnswerDto> Answers { get; set; } = [];
@@ -88,10 +95,12 @@ public record QuestionsResponse
     /// <summary>
     /// Version of the question
     /// </summary>
-    public string? VersionId { get; set; }
+    public string VersionId { get; set; }
 
     /// <summary>
     /// Short question text to display to the user
     /// </summary>
     public string ShortQuestionText { get; set; } = null!;
+
+    public IList<ContentComponent> GuidanceComponents { get; set; } = [];
 }
