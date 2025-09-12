@@ -2,7 +2,6 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
@@ -22,7 +21,6 @@ public class QuestionnaireController
     IRespondentService respondentService,
     ICmsQuestionsetService questionSetService,
     IRtsService rtsService,
-    IProjectModificationsService projectModificationsService,
     IValidator<QuestionnaireViewModel> validator
 ) : Controller
 {
@@ -43,13 +41,8 @@ public class QuestionnaireController
             return NotFound();
         }
 
-        // check if we are in the modification journey, so only get the modfication questions
-        var (projectModificationId, projectModificationChangeId) = CheckModification();
-
         // get the responent answers for the category
-        var respondentServiceResponse = projectModificationChangeId == Guid.Empty ?
-            await respondentService.GetRespondentAnswers(projectRecordId, categoryId) :
-            await respondentService.GetModificationAnswers(projectModificationChangeId, categoryId);
+        var respondentServiceResponse = await respondentService.GetRespondentAnswers(projectRecordId, categoryId);
 
         if (!respondentServiceResponse.IsSuccessStatusCode)
         {
@@ -98,11 +91,6 @@ public class QuestionnaireController
 
         // convert the questions response to QuestionnaireViewModel
         var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(questions);
-
-        if (projectModificationId != Guid.Empty)
-        {
-            questionnaire.Questions = questionnaire.Questions.Where(question => question.IsModificationQuestion).ToList();
-        }
 
         // if respondent has answerd any questions
         if (respondentAnswers.Any())
@@ -171,19 +159,11 @@ public class QuestionnaireController
                 // return the view if successfull
                 if (response.IsSuccessStatusCode)
                 {
-                    // check if we are in the modification journey, so only get the modfication questions
-                    var (projectModificationId, _) = CheckModification();
-
                     // set the active stage for the category
                     await SetStage(sectionId);
 
                     // convert the questions response to QuestionnaireViewModel
                     var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(response.Content!);
-
-                    if (projectModificationId != Guid.Empty)
-                    {
-                        questionnaire.Questions = questionnaire.Questions.Where(question => question.IsModificationQuestion).ToList();
-                    }
 
                     // store the questions to load again if there are validation errors on the page
                     HttpContext.Session.SetString($"{SessionKeys.Questionnaire}:{sectionId}", JsonSerializer.Serialize(questionnaire.Questions));
@@ -216,8 +196,6 @@ public class QuestionnaireController
     [HttpPost]
     public async Task<IActionResult> SaveResponses(QuestionnaireViewModel model, string searchedPerformed, bool autoSearchEnabled, string categoryId = "", bool submit = false, string saveAndContinue = "False", string saveForLater = "False")
     {
-        var (projectModificationId, projectModificationChangeId) = CheckModification();
-
         // get the questionnaire from the session
         // and deserialize it
         var questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(HttpContext.Session.GetString($"{SessionKeys.Questionnaire}:{model.CurrentStage}")!)!;
@@ -310,42 +288,8 @@ public class QuestionnaireController
             return View(Index, model);
         }
 
-        // ------------------Save Project Record Answers or Modification Answers-------------------------
-        if (projectModificationId == Guid.Empty)
-        {
-            await SaveProjectRecordAnswers(application.Id, questions);
-        }
-        else
-        {
-            var respondent = this.GetRespondentFromContext();
-
-            var name = $"{respondent.GivenName} {respondent.FamilyName}";
-
-            if (projectModificationChangeId == Guid.Empty)
-            {
-                var modificationChangeResponse = await projectModificationsService.CreateModificationChange(new ProjectModificationChangeRequest
-                {
-                    AreaOfChange = questions[0].SelectedOption!,
-                    SpecificAreaOfChange = questions[1].SelectedOption!,
-                    ProjectModificationId = projectModificationId,
-                    Status = "OPEN",
-                    CreatedBy = name,
-                    UpdatedBy = name
-                });
-
-                if (modificationChangeResponse.IsSuccessStatusCode)
-                {
-                    var modificationChange = modificationChangeResponse.Content!;
-
-                    projectModificationChangeId = modificationChange.Id;
-
-                    TempData[TempDataKeys.ProjectModification.ProjectModificationChangeId] = projectModificationChangeId;
-                    TempData[TempDataKeys.ProjectModification.ProjectModificationSpecificArea] = questions[1].Answers.First(a => a.AnswerId == questions[1].SelectedOption).AnswerText;
-                }
-            }
-
-            await SaveModificationAnswers(projectModificationChangeId, application.Id, questions);
-        }
+        // ------------------Save Project Record Answers Answers-------------------------
+        await SaveProjectRecordAnswers(application.Id, questions);
 
         // set the previous, current and next stages
         var navigation = await SetStage(model.CurrentStage);
@@ -379,26 +323,6 @@ public class QuestionnaireController
         // so we need to resume from the next stage
         if (saveAndContinue == bool.TrueString)
         {
-            if (projectModificationId != Guid.Empty)
-            {
-                // validate the questionnaire and save the result in tempdata
-                // this is so we display the validation passed message or not
-                isValid = await ValidateQuestionnaire(model, true);
-                ViewData[ViewDataKeys.IsQuestionnaireValid] = isValid;
-
-                // get the application from the session
-                // to get the projectApplicationId
-                application = this.GetApplicationFromSession();
-
-                if (!isValid)
-                {
-                    // set the previous, current and next stages
-                    await SetStage(model.CurrentStage!);
-                    model.ReviewAnswers = submit;
-                    return View(Index, model);
-                }
-            }
-
             // if the user is at the last stage and clicks on Save and Continue
             if (string.IsNullOrWhiteSpace(navigation.NextStage))
             {
@@ -462,17 +386,12 @@ public class QuestionnaireController
     /// and display the progress of the application
     /// </summary>
     /// <param name="projectRecordId">ApplicationId to submit</param>
-    [FeatureGate("Action.ProceedToSubmit")]
     public async Task<IActionResult> SubmitApplication(string projectRecordId)
     {
-        var (projectModificationId, projectModificationChangeId) = CheckModification();
-
         var categoryId = (TempData.Peek(TempDataKeys.CategoryId) as string)!;
 
         // get the responent answers for the category
-        var respondentServiceResponse = projectModificationChangeId == Guid.Empty ?
-            await respondentService.GetRespondentAnswers(projectRecordId, categoryId) :
-            await respondentService.GetModificationAnswers(projectModificationChangeId, categoryId);
+        var respondentServiceResponse = await respondentService.GetRespondentAnswers(projectRecordId, categoryId);
 
         // get the questions for all categories
         var questionSetServiceResponse = await questionSetService.GetQuestionSet();
@@ -542,8 +461,6 @@ public class QuestionnaireController
     /// </summary>
     public async Task<IActionResult> ConfirmProjectDetails()
     {
-        var (projectModificationId, projectModificationChangeId) = CheckModification();
-
         var categoryId = (TempData.Peek(TempDataKeys.CategoryId) as string)!;
 
         // get the application from the session
@@ -551,9 +468,7 @@ public class QuestionnaireController
         var application = this.GetApplicationFromSession();
 
         // get the respondent answers for the category
-        var respondentServiceResponse = projectModificationChangeId == Guid.Empty ?
-            await respondentService.GetRespondentAnswers(application.Id, categoryId) :
-            await respondentService.GetModificationAnswers(projectModificationChangeId, categoryId);
+        var respondentServiceResponse = await respondentService.GetRespondentAnswers(application.Id, categoryId);
 
         // return the error view if unsuccessfull
         if (!respondentServiceResponse.IsSuccessStatusCode)
@@ -691,27 +606,6 @@ public class QuestionnaireController
         return Redirect(returnUrl);
     }
 
-    private (Guid ModificationId, Guid ModificationChangeId) CheckModification()
-    {
-        // check if we are in the modification journey, so only get the modfication questions
-        var modificationId = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId);
-        var modificationChangeId = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationChangeId);
-
-        var modification = (Guid.Empty, Guid.Empty);
-
-        if (modificationId is not null)
-        {
-            modification.Item1 = (Guid)modificationId;
-        }
-
-        if (modificationChangeId is not null)
-        {
-            modification.Item2 = (Guid)modificationChangeId;
-        }
-
-        return modification;
-    }
-
     private async Task SaveProjectRecordAnswers(string projectRecordId, List<QuestionViewModel> questions)
     {
         // save the responses
@@ -765,60 +659,6 @@ public class QuestionnaireController
         }
     }
 
-    private async Task SaveModificationAnswers(Guid projectModificationChangeId, string projectRecordId, List<QuestionViewModel> questions)
-    {
-        // save the responses
-        var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
-
-        // to save the responses
-        // we need to build the RespondentAnswerRequest
-        // populate the RespondentAnswers
-        var request = new ProjectModificationAnswersRequest
-        {
-            ProjectModificationChangeId = projectModificationChangeId,
-            ProjectRecordId = projectRecordId,
-            ProjectPersonnelId = respondentId
-        };
-
-        foreach (var question in questions)
-        {
-            // we need to identify if it's a
-            // multiple choice or a single choice question
-            // this is to determine if the responses
-            // should be saved as comma seprated values
-            // or a single value
-            var optionType = question.DataType switch
-            {
-                "Boolean" or "Radio button" or "Look-up list" or "Dropdown" => "Single",
-                "Checkbox" => "Multiple",
-                _ => null
-            };
-
-            // build RespondentAnswers model
-            request.ModificationAnswers.Add(new RespondentAnswerDto
-            {
-                QuestionId = question.QuestionId,
-                VersionId = question.VersionId ?? string.Empty,
-                AnswerText = question.AnswerText,
-                CategoryId = question.Category,
-                SectionId = question.SectionId,
-                SelectedOption = question.SelectedOption,
-                OptionType = optionType,
-                Answers = question.Answers
-                                .Where(a => a.IsSelected)
-                                .Select(ans => ans.AnswerId)
-                                .ToList()
-            });
-        }
-
-        // if user has answered some or all of the questions
-        // call the api to save the responses
-        if (request.ModificationAnswers.Count > 0)
-        {
-            await respondentService.SaveModificationAnswers(request);
-        }
-    }
-
     private List<QuestionViewModel> GetQuestionsFromSession(QuestionnaireViewModel model)
     {
         // get the questionnaire from the session
@@ -846,20 +686,10 @@ public class QuestionnaireController
     /// Validates the passed QuestionnaireViewModel and return ture or false
     /// </summary>
     /// <param name="model"><see cref="QuestionnaireViewModel"/> to validate</param>
-    private async Task<bool> ValidateQuestionnaire(QuestionnaireViewModel model, bool validateMandatory = false)
+    private async Task<bool> ValidateQuestionnaire(QuestionnaireViewModel model)
     {
         // using the FluentValidation, create a new context for the model
         var context = new ValidationContext<QuestionnaireViewModel>(model);
-
-        if (validateMandatory)
-        {
-            var (projectModificationId, _) = CheckModification();
-
-            if (projectModificationId != Guid.Empty)
-            {
-                context.RootContextData["ValidateMandatoryOnly"] = true;
-            }
-        }
 
         // this is required to get the questions in the validator
         // before the validation cicks in

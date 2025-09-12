@@ -30,12 +30,6 @@ public static class HttpClientsConfiguration
             .AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
 
         services
-           .AddRestClient<IQuestionSetServiceClient>()
-           .ConfigureHttpClient(client => client.BaseAddress = appSettings.QuestionSetServiceUri)
-           .AddHttpMessageHandler<AuthHeadersHandler>()
-           .AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
-
-        services
            .AddRestClient<IRespondentServiceClient>()
            .ConfigureHttpClient(client => client.BaseAddress = appSettings.ApplicationsServiceUri)
            .AddHttpMessageHandler<AuthHeadersHandler>()

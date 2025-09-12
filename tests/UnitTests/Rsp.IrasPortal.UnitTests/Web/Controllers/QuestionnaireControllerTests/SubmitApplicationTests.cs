@@ -4,9 +4,7 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Moq;
 using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
@@ -32,14 +30,6 @@ public class SubmitApplicationTests : TestServiceBase<QuestionnaireController>
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>>
             {
                 StatusCode = HttpStatusCode.InternalServerError
-            });
-
-        Mocker
-            .GetMock<IQuestionSetService>()
-            .Setup(s => s.GetQuestions(It.IsAny<string>()))
-            .ReturnsAsync(new ServiceResponse<IEnumerable<QuestionsResponse>>
-            {
-                StatusCode = HttpStatusCode.OK
             });
 
         var context = new DefaultHttpContext();

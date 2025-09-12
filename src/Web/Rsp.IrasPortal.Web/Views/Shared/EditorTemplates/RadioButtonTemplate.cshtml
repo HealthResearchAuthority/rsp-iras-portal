@@ -1,5 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Html
 @using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Rsp.IrasPortal.Application.Constants
 @using Rsp.Gds.Component.Models
 @model QuestionnaireViewModel
 
@@ -20,13 +21,15 @@
                          string.Join("", rules.Select(r => $"<p>{r.Description}</p>")) +
                          "</div>")
         : HtmlString.Empty;
+
+    var conditionalClass = ViewData[ViewDataKeys.ConditionalClass] as string ?? string.Empty;
 }
 
 <rsp-gds-radio-group asp-for="Questions[@index].SelectedOption"
                      label-text="@question.QuestionText"
                      options="@(question.Answers.Select(a => new GdsOption { Value = a.AnswerId.ToString(), Label = a.AnswerText }))"
                      conditional-field="conditional"
-                     conditional-class="conditional-field govuk-radios__conditional"
+                     conditional-class="@conditionalClass"
                      dataquestionid-attr="@questionId"
                      dataparents-attr="@parents"
                      div-inline-class="@(conditional ? "govuk-radios" : "govuk-radios govuk-radios--inline")"

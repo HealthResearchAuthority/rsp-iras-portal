@@ -87,19 +87,6 @@ public class AreaOfChangeTests : TestServiceBase<ModificationsController>
 
         // Mock IQuestionSetService.GetVersions to return a published version
         const string publishedVersionId = "v1.0";
-        var versions = new List<VersionDto>
-        {
-            new() { VersionId = publishedVersionId, IsPublished = true }
-        };
-        var versionsResponse = new ServiceResponse<IEnumerable<VersionDto>>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = versions
-        };
-        Mocker
-            .GetMock<IQuestionSetService>()
-            .Setup(s => s.GetVersions())
-            .ReturnsAsync(versionsResponse);
 
         var questionSetResponse = new ServiceResponse<Application.DTOs.CmsQuestionset.CmsQuestionSetResponse>
         {
@@ -177,20 +164,6 @@ public class AreaOfChangeTests : TestServiceBase<ModificationsController>
 
         // Mock IQuestionSetService.GetVersions to return a published version
         const string publishedVersionId = "v1.0";
-        var versions = new List<VersionDto>
-        {
-            new() { VersionId = publishedVersionId, IsPublished = true }
-        };
-        var versionsResponse = new ServiceResponse<IEnumerable<VersionDto>>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = versions
-        };
-
-        Mocker
-            .GetMock<IQuestionSetService>()
-            .Setup(s => s.GetVersions())
-            .ReturnsAsync(versionsResponse);
 
         var questionSetResponse = new ServiceResponse<Application.DTOs.CmsQuestionset.CmsQuestionSetResponse>
         {
