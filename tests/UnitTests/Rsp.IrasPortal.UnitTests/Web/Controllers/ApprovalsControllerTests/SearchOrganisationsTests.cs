@@ -179,6 +179,7 @@ public class SearchOrganisationsTests : TestServiceBase<ApprovalsController>
         var result = await Sut.SearchOrganisations(model, null, pageSize, pageIndex);
 
         // Assert
-        result.ShouldBeOfType<ViewResult>(); // ServiceError(...) returns a View result in your codebase
+        var statusCodeResult = result.ShouldBeOfType<StatusCodeResult>();
+        statusCodeResult.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
     }
 }

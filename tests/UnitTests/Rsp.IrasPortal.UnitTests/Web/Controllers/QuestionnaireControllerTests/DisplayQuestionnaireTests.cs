@@ -182,8 +182,8 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
         var result = await Sut.DisplayQuestionnaire(categoryId, sectionId);
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Error");
+        var statusCodeResult = result.ShouldBeOfType<StatusCodeResult>();
+        statusCodeResult.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
     }
 
     [Theory]

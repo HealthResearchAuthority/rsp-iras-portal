@@ -1,6 +1,8 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
@@ -65,15 +67,29 @@ public class SubmitReviewBodyTests : TestServiceBase<ReviewBodyController>
             .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<AddUpdateReviewBodyModel>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ValidationResult());
 
+        var session = new Mock<ISession>();
+        var httpContext = new DefaultHttpContext
+        {
+            Session = session.Object
+        };
+
+        Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
+
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = httpContext
+        };
+
         // Act
         var result = await Sut.SubmitReviewBody(model);
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Error");
+        var statusCodeResult = result.ShouldBeOfType<StatusCodeResult>();
+        statusCodeResult.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
 
         // Verify the service method was called once
-        Mocker.GetMock<IReviewBodyService>()
+        Mocker
+            .GetMock<IReviewBodyService>()
             .Verify(s => s.CreateReviewBody(It.IsAny<ReviewBodyDto>()), Times.Once);
     }
 

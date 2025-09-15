@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace Rsp.IrasPortal.Application.Responses;
 
@@ -48,6 +49,8 @@ public class ServiceResponse
     public virtual ServiceResponse WithError(string? errorMessage, string? reasonPhrase = null, HttpStatusCode statusCode = HttpStatusCode.InternalServerError)
     {
         Error = errorMessage;
+
+        reasonPhrase ??= ReasonPhrases.GetReasonPhrase((int)statusCode);
 
         return WithStatus(statusCode).WithReason(reasonPhrase);
     }

@@ -101,7 +101,8 @@ public class StartProjectTests : TestServiceBase<ApplicationController>
         var result = await Sut.StartProject(model);
 
         // Assert
-        result.ShouldBeOfType<ViewResult>();
+        var statusCodeResult = result.ShouldBeOfType<StatusCodeResult>();
+        statusCodeResult.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
     }
 
     [Fact]
@@ -165,7 +166,7 @@ public class StartProjectTests : TestServiceBase<ApplicationController>
         var result = await Sut.StartProject(model);
 
         // Assert
-        result.ShouldBeOfType<ViewResult>();
+        result.ShouldBeOfType<StatusCodeResult>();
     }
 
     [Fact]

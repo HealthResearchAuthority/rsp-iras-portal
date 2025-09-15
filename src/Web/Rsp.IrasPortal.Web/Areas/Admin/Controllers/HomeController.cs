@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Web.Extensions;
 
 namespace Rsp.IrasPortal.Web.Areas.Admin.Controllers;
 
@@ -42,12 +44,10 @@ public class HomeController(IUserManagementService userManagementService) : Cont
             return Forbid();
         }
 
-        return View("Error", new ProblemDetails
-        {
-            Title = "An unexpected error has occured, please try again",
-            Detail = "Error getting the count of users and roles",
-            Instance = Request.Path,
-            Status = StatusCodes.Status500InternalServerError
-        });
+        var serviceResponse = new ServiceResponse()
+            .WithError("Error getting the count of users and roles")
+            .WithReason("An unexpected error has occured, please try again");
+
+        return this.ServiceError(serviceResponse);
     }
 }

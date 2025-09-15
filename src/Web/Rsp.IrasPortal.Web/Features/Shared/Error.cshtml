@@ -1,0 +1,27 @@
+﻿@using Microsoft.AspNetCore.Http.Features
+
+@{
+    var correlationId = Context.TraceIdentifier;
+
+    ViewBag.Title = "Sorry, there is a problem with the service";
+}
+
+<div class="govuk-width-container">
+    <main class="govuk-main-wrapper govuk-main-wrapper--l" id="main-content" role="main">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <h1 class="govuk-heading-l">Sorry, there is a problem with the service</h1>
+                <p class="govuk-body">Try again later.</p>
+                <p class="govuk-body">
+                    When the service is available, you will have to start again.
+                </p>
+                <p class="govuk-body">
+                    You can <a class="govuk-link" asp-route="acc:home">go back to home page</a>.
+                </p>
+                <p class="govuk-body">
+                    <strong>Correlation ID:</strong> <code>@correlationId</code>
+                </p>
+            </div>
+        </div>
+    </main>
+</div>

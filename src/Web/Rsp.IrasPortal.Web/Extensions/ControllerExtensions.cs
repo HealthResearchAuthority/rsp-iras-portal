@@ -1,5 +1,4 @@
-﻿using System.Net;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
@@ -18,15 +17,11 @@ public static class ControllerExtensions
     /// </summary>
     public static IActionResult ServiceError<T>(this Controller controller, ServiceResponse<T> response)
     {
-        // return the generic error page
-        // if status is forbidden or not found
-        // return the appropriate response otherwise
-        // return the generic error page
-        return response.StatusCode switch
-        {
-            HttpStatusCode.Forbidden => controller.Forbid(),
-            _ => controller.View("Error", ProblemResult(controller, response))
-        };
+        // Store it in HttpContext so ErrorController can read it later
+        controller.HttpContext.Items[ContextItemKeys.ProblemDetails] = ProblemResult(controller, response);
+
+        // UseStatusCodePagesWithExecute will redirect to /error/statuscode
+        return controller.StatusCode((int)response.StatusCode);
     }
 
     /// <summary>
@@ -36,15 +31,11 @@ public static class ControllerExtensions
     /// </summary>
     public static IActionResult ServiceError(this Controller controller, ServiceResponse response)
     {
-        // return the generic error page
-        // if status is forbidden or not found
-        // return the appropriate response otherwise
-        // return the generic error page
-        return response.StatusCode switch
-        {
-            HttpStatusCode.Forbidden => controller.Forbid(),
-            _ => controller.View("Error", ProblemResult(controller, response))
-        };
+        // Store it in HttpContext so ErrorController can read it later
+        controller.HttpContext.Items[ContextItemKeys.ProblemDetails] = ProblemResult(controller, response);
+
+        // UseStatusCodePagesWithExecute will redirect to /error/handlestatuscode
+        return controller.StatusCode((int)response.StatusCode);
     }
 
     /// <summary>

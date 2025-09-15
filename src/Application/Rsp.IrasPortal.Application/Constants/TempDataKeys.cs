@@ -21,16 +21,6 @@ public struct TempDataKeys
         public const string ProjectModificationChangeMarker = "td:project_modification_change_marker";
     }
 
-    public struct ProjectModificationPlannedEndDate
-    {
-        public const string NewPlannedProjectEndDate = "td:new_planned_project_enddate";
-        public const string AffectingOrganisationsType = "td:affecting_organisations_type";
-        public const string AffectedOrganisationsLocations = "td:affecting_organisations_locations";
-        public const string AffectedAllOrSomeOrganisations = "td:affected_organisations_all_or_some";
-        public const string AffectedOrganisationsRequireAdditionalResources = "td:affected_organisations_require_additional_resources";
-        public const string ReviewChanges = "td:planned_enddate_review_changes";
-    }
-
     public struct ProjectModificationChange
     {
         public const string ReviewChanges = "td:modification_review_changes";
@@ -50,7 +40,6 @@ public struct TempDataKeys
     public const string VersionId = "td:version_id";
     public const string QuestionSetPublishSuccess = "td:qset_publish_success";
     public const string QuestionSetUploadSuccess = "td:qset_upload_success";
-    public const string QuestionSetPublishedVersionId = "td:qset_published_version_id";
     public const string ProjectOverview = "td:project_overview";
     public const string SponsorOrganisations = "td:sponsor_organisations";
     public const string SponsorOrgSearched = "td:sponsor_org_searched";

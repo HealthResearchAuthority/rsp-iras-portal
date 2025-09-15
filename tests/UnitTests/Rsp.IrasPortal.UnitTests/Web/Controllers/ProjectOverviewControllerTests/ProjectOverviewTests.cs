@@ -7,7 +7,6 @@ using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Services;
 using Rsp.IrasPortal.Web.Controllers.ProjectOverview;
 using Rsp.IrasPortal.Web.Models;
 
@@ -106,6 +105,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         tempData[TempDataKeys.ProjectModification.ProjectModificationIdentifier] = "ident-1";
         tempData[TempDataKeys.ProjectModification.ProjectModificationChangeId] = "chg-1";
         tempData[TempDataKeys.ProjectModification.ProjectModificationSpecificArea] = "area-1";
+        tempData[$"{TempDataKeys.ProjectModification.Questionnaire}_abc"] = "questionnaire-data"; // dynamic key to test removal by prefix
 
         var answers = new List<RespondentAnswerDto>
         {
@@ -125,6 +125,35 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         tempData.ContainsKey(TempDataKeys.ProjectModification.ProjectModificationIdentifier).ShouldBeFalse();
         tempData.ContainsKey(TempDataKeys.ProjectModification.ProjectModificationChangeId).ShouldBeFalse();
         tempData.ContainsKey(TempDataKeys.ProjectModification.ProjectModificationSpecificArea).ShouldBeFalse();
+        tempData.Keys.Any(k => k.StartsWith(TempDataKeys.ProjectModification.Questionnaire)).ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task ProjectDetails_SetsNotificationBanner_WhenMarkerPresent()
+    {
+        // Arrange
+        var httpContext = new DefaultHttpContext();
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempData = CreateTempData(tempDataProvider, httpContext);
+
+        tempData[TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid();
+        tempData[TempDataKeys.ProjectModification.ProjectModificationChangeMarker] = Guid.NewGuid();
+
+        var answers = new List<RespondentAnswerDto>
+        {
+            new() { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "Project X" }
+        };
+
+        SetupProjectRecord(DefaultProjectRecordId);
+        SetupRespondentAnswers(DefaultProjectRecordId, answers);
+        SetupControllerContext(httpContext, tempData);
+
+        // Act
+        await Sut.ProjectDetails(DefaultProjectRecordId);
+
+        // Assert
+        tempData[TempDataKeys.ShowNotificationBanner].ShouldBe(true);
+        tempData[TempDataKeys.ProjectOverview].ShouldBe(true);
     }
 
     [Fact]
@@ -184,8 +213,8 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var result = await Sut.ProjectDetails(DefaultProjectRecordId);
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        var model = viewResult.Model.ShouldBeOfType<Microsoft.AspNetCore.Mvc.ProblemDetails>();
+        var statusCodeResult = result.ShouldBeOfType<StatusCodeResult>();
+        statusCodeResult.StatusCode.ShouldBe(StatusCodes.Status404NotFound);
     }
 
     [Fact]
@@ -321,5 +350,123 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         model.Pagination.PageSize.ShouldBe(pageSize);
         model.Pagination.SortField.ShouldBe(sortField);
         model.Pagination.SortDirection.ShouldBe(sortDirection);
+    }
+
+    [Fact]
+    public async Task PostApproval_MapsModifications_WithDraftStatus()
+    {
+        // Arrange
+        var projectRecordId = "456";
+        var httpContext = new DefaultHttpContext();
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempData = CreateTempData(tempDataProvider, httpContext);
+
+        var answers = new List<RespondentAnswerDto>
+        {
+            new() { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "Project Y" }
+        };
+
+        SetupProjectRecord(projectRecordId);
+        SetupRespondentAnswers(projectRecordId, answers);
+        SetupControllerContext(httpContext, tempData);
+
+        var modifications = new List<ModificationsDto>
+        {
+            new() { ModificationId = "m1", ModificationType = "Type1" }
+        };
+
+        var modificationsResponse = new GetModificationsResponse
+        {
+            Modifications = modifications,
+            TotalCount = 1
+        };
+
+        var serviceResponse = new ServiceResponse<GetModificationsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = modificationsResponse
+        };
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(serviceResponse);
+
+        // Act
+        var result = await Sut.PostApproval(projectRecordId);
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var model = viewResult.Model.ShouldBeOfType<PostApprovalViewModel>();
+        var mod = model.Modifications.Single();
+        mod.ModificationId.ShouldBe("m1");
+        mod.ModificationType.ShouldBe("Type1");
+        mod.Status.ShouldBe("Draft");
+        mod.ReviewType.ShouldBeNull();
+        mod.Category.ShouldBeNull();
+        mod.DateSubmitted.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task PostApproval_ReturnsEmptyModifications_WhenServiceReturnsNullContent()
+    {
+        // Arrange
+        var projectRecordId = "789";
+        var httpContext = new DefaultHttpContext();
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempData = CreateTempData(tempDataProvider, httpContext);
+
+        var answers = new List<RespondentAnswerDto>
+        {
+            new() { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "Project Z" }
+        };
+
+        SetupProjectRecord(projectRecordId);
+        SetupRespondentAnswers(projectRecordId, answers);
+        SetupControllerContext(httpContext, tempData);
+
+        var serviceResponse = new ServiceResponse<GetModificationsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = null
+        };
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(serviceResponse);
+
+        // Act
+        var result = await Sut.PostApproval(projectRecordId);
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var model = viewResult.Model.ShouldBeOfType<PostApprovalViewModel>();
+        model.Modifications.ShouldBeEmpty();
+        model.Pagination.TotalCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task PostApproval_PropagatesError_WhenGetProjectOverviewFails()
+    {
+        // Arrange
+        var projectRecordId = "err-1";
+        var httpContext = new DefaultHttpContext();
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempData = CreateTempData(tempDataProvider, httpContext);
+        SetupControllerContext(httpContext, tempData);
+
+        // Cause application service to fail inside GetProjectOverview
+        Mocker.GetMock<IApplicationsService>()
+            .Setup(s => s.GetProjectRecord(projectRecordId))
+            .ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
+            {
+                StatusCode = HttpStatusCode.InternalServerError
+            });
+
+        // Act
+        var result = await Sut.PostApproval(projectRecordId);
+
+        // Assert
+        var status = result.ShouldBeOfType<StatusCodeResult>();
+        status.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
     }
 }
