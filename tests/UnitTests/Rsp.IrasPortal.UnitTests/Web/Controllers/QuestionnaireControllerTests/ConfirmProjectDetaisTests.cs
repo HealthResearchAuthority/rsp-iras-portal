@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
@@ -73,9 +73,9 @@ public class ConfirmProjectDetaisTests : TestServiceBase<QuestionnaireController
             });
 
         Mocker
-            .GetMock<IQuestionSetService>()
-            .Setup(s => s.GetQuestions(It.IsAny<string>()))
-            .ReturnsAsync(new ServiceResponse<IEnumerable<QuestionsResponse>>
+            .GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
             {
                 StatusCode = HttpStatusCode.InternalServerError
             });
@@ -99,14 +99,28 @@ public class ConfirmProjectDetaisTests : TestServiceBase<QuestionnaireController
             Content = []
         };
 
-        var questionSetServiceResponse = new ServiceResponse<IEnumerable<QuestionsResponse>>
+        var questionSetServiceResponse = new ServiceResponse<CmsQuestionSetResponse>
         {
             StatusCode = HttpStatusCode.OK,
-            Content =
-            [
-                new() { Category = "Category1", QuestionId = "Q1" },
-                new() { Category = "Category2", QuestionId = "Q2" }
-            ]
+            Content = new CmsQuestionSetResponse
+            {
+                Id = "123",
+                Version = "1.0",
+                Sections = new List<SectionModel>
+                {
+                    new SectionModel
+                    {
+                        SectionId = "section-1",
+                        Questions = new List<QuestionModel>
+                        {
+                            new QuestionModel
+                            {
+                                QuestionId = "Q1"
+                            }
+                        }
+                    }
+                }
+            }
         };
 
         Mocker
@@ -115,8 +129,8 @@ public class ConfirmProjectDetaisTests : TestServiceBase<QuestionnaireController
             .ReturnsAsync(respondentServiceResponse);
 
         Mocker
-            .GetMock<IQuestionSetService>()
-            .Setup(s => s.GetQuestions(It.IsAny<string>()))
+            .GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(questionSetServiceResponse);
 
         Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
@@ -147,14 +161,28 @@ public class ConfirmProjectDetaisTests : TestServiceBase<QuestionnaireController
             Content = []
         };
 
-        var questionSetServiceResponse = new ServiceResponse<IEnumerable<QuestionsResponse>>
+        var questionSetServiceResponse = new ServiceResponse<CmsQuestionSetResponse>
         {
             StatusCode = HttpStatusCode.OK,
-            Content =
-            [
-                new() { Category = "Category1", QuestionId = "Q1" },
-                new() { Category = "Category2", QuestionId = "Q2" }
-            ]
+            Content = new CmsQuestionSetResponse
+            {
+                Id = "123",
+                Version = "1.0",
+                Sections = new List<SectionModel>
+                {
+                    new SectionModel
+                    {
+                        SectionId = "section-1",
+                        Questions = new List<QuestionModel>
+                        {
+                            new QuestionModel
+                            {
+                                QuestionId = "Q1"
+                            }
+                        }
+                    }
+                }
+            }
         };
 
         Mocker
@@ -163,8 +191,8 @@ public class ConfirmProjectDetaisTests : TestServiceBase<QuestionnaireController
             .ReturnsAsync(respondentServiceResponse);
 
         Mocker
-            .GetMock<IQuestionSetService>()
-            .Setup(s => s.GetQuestions(It.IsAny<string>()))
+            .GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(questionSetServiceResponse);
 
         Mocker.GetMock<IValidator<QuestionnaireViewModel>>()

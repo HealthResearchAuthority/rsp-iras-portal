@@ -76,7 +76,22 @@ public static class TempDataExtensions
         model.IrasId = tempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty;
         model.ProjectRecordId = tempData.Peek(TempDataKeys.ProjectRecordId)?.ToString() ?? string.Empty;
         model.ModificationIdentifier = tempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string ?? string.Empty;
-        model.PageTitle = tempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeText) as string ?? string.Empty;
+        model.SpecificAreaOfChange = tempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeText) as string ?? string.Empty;
+        model.SpecificAreaOfChangeId = tempData.PeekGuid(TempDataKeys.ProjectModification.SpecificAreaOfChangeId);
         return model;
+    }
+
+    public static string? PeekGuid(this ITempDataDictionary tempData, string key)
+    {
+        var element = tempData.Peek(key);
+
+        if (element != null)
+        {
+            var elementAsGuid = (Guid)element;
+
+            return elementAsGuid.ToString();
+        }
+
+        return null;
     }
 }

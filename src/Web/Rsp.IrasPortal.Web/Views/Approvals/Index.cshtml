@@ -1,13 +1,12 @@
-﻿﻿﻿@using System.Text.RegularExpressions
-@using System.Text.RegularExpressions
+﻿﻿@using System.Text.RegularExpressions
 @using Microsoft.AspNetCore.Html
 @using Microsoft.AspNetCore.Http.Extensions
 @using Microsoft.AspNetCore.Mvc.ModelBinding
 @using Rsp.Gds.Component.Models
 @using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.DTOs.Responses
+@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
 @using Rsp.IrasPortal.Web.Extensions
-@using Rsp.IrasPortal.Web.Models.CmsContent
 @using Rsp.IrasPortal.Web.TagHelpers.Models
 @model ApprovalsSearchViewModel
 @inject IHttpContextAccessor httpContextAccessor
@@ -21,25 +20,25 @@
 	private bool CanOpenPanelForField(string fieldName)
 	{
 		return ViewData.ModelState
-			.Where(kvp => kvp.Key.StartsWith(fieldName, StringComparison.OrdinalIgnoreCase))
-			.Any(kvp => kvp.Value != null && kvp.Value.Errors.Any());
+		.Where(kvp => kvp.Key.StartsWith(fieldName, StringComparison.OrdinalIgnoreCase))
+		.Any(kvp => kvp.Value != null && kvp.Value.Errors.Any());
 	}
 
 	private bool CanOpenPanelForAnyField(params string[] fieldNames)
-	{ 
+	{
 		return fieldNames.Any(CanOpenPanelForField);
 	}
 
 	private bool HasFilterErrors()
 	{
 		return ViewData.ModelState.Values.Any(v => v.Errors.Count > 0)
-			   || !string.IsNullOrWhiteSpace(Model.Search.SponsorOrgSearch?.SearchText);
+		|| !string.IsNullOrWhiteSpace(Model.Search.SponsorOrgSearch?.SearchText);
 	}
 
 	private bool CanOpenSponsorOrgSection()
 	{
 		return CanOpenPanelForField("SponsorOrganisation")
-			   || !string.IsNullOrWhiteSpace(Model.Search.SponsorOrgSearch?.SearchText);
+		|| !string.IsNullOrWhiteSpace(Model.Search.SponsorOrgSearch?.SearchText);
 	}
 }
 
@@ -61,8 +60,8 @@
 
 	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData["PageContent"];
 	var pageContent = pageContentData != null
-		? pageContentData
-		: new Dictionary<string, MixedContentPageItem?>();
+	? pageContentData
+	: new Dictionary<string, MixedContentPageItem?>();
 
 	var title = pageContent.GetValueOrDefault("Approvals.Search.Title", null);
 	var searchHint = pageContent.GetValueOrDefault("Approvals.Search.SearchHint", null);
@@ -76,16 +75,15 @@
 		<partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
 
 		<h2 class="govuk-heading-l" id="title">@Html.Raw(title?.Value)</h2>
-		
+
 		@Html.Raw(searchHint?.Value)
 
-		<form asp-route="approvals:applyfilters" method="post" class="govuk-form-group govuk-!-margin-bottom-0" id="applyFiltersForm">
+		<form asp-route="approvals:applyfilters" method="post" class="govuk-form-group govuk-!-margin-bottom-0"
+			id="applyFiltersForm">
 			<div class="search-flex-container">
 				<span id="iras-id-label" class="govuk-visually-hidden">IRAS ID</span>
-				<input class="govuk-input search-flex-input"
-					   asp-for="Search.IrasId"
-					   type="text"
-					   aria-labelledby="iras-id-label" />
+				<input class="govuk-input search-flex-input" asp-for="Search.IrasId" type="text"
+					aria-labelledby="iras-id-label" />
 
 				<div class="search-flex-button">
 					<button type="submit" class="govuk-button">Search</button>
@@ -95,14 +93,10 @@
 			<!-- Filter Panel -->
 			<div class="search-filter-panel">
 				<details class="search-filter-toggle" @(HasFilterErrors() ? "open" : null)>
-					<summary class="search-filter-panel__header"
-							 tabindex="-1"
-							 role="button"
-							 aria-controls="filter-panel"
-							 aria-expanded="@(HasFilterErrors().ToString().ToLower())">
+					<summary class="search-filter-panel__header" tabindex="-1" role="button"
+						aria-controls="filter-panel" aria-expanded="@(HasFilterErrors().ToString().ToLower())">
 
-						<span class="search-filter-panel__button-inner govuk-link"
-							  tabindex="0">
+						<span class="search-filter-panel__button-inner govuk-link" tabindex="0">
 							Advanced filters
 						</span>
 
@@ -111,54 +105,50 @@
 						</span>
 					</summary>
 
-					<div class="search-filter-panel__content" id="filter-panel" role="region" aria-labelledby="toggle-filter">
+					<div class="search-filter-panel__content" id="filter-panel" role="region"
+						aria-labelledby="toggle-filter">
 						<!-- Chief Investigator -->
-						<details class="search-filter-section" @(CanOpenPanelForField("ChiefInvestigatorName") ? "open" : null)>
+						<details class="search-filter-section" @(CanOpenPanelForField("ChiefInvestigatorName") ? "open"
+																		 : null)>
 							<summary class="search-filter-section__summary">
 								<h2 class="search-filter-section__summary-heading">Chief Investigator name</h2>
 							</summary>
 							<div class="search-filter-section__content">
 								<div class="govuk-form-group govuk-!-margin-bottom-2">
 									<fieldset class="govuk-fieldset">
-										<rsp-gds-input asp-for="Search.ChiefInvestigatorName" label-text="Enter the name of the Chief Investigator" width-class="govuk-!-width-three-quarters" label-html-class="font-weight-none" />
+										<rsp-gds-input asp-for="Search.ChiefInvestigatorName"
+											label-text="Enter the name of the Chief Investigator"
+											width-class="govuk-!-width-three-quarters"
+											label-html-class="font-weight-none" />
 									</fieldset>
 								</div>
 							</div>
 						</details>
 
 						<!-- Date submitted -->
-						<details class="search-filter-section" @(CanOpenPanelForAnyField("FromDate", "ToDate") ? "open" : null)>
+						<details class="search-filter-section" @(CanOpenPanelForAnyField("FromDate", "ToDate") ? "open"
+																		 : null)>
 							<summary class="search-filter-section__summary">
 								<h2 class="search-filter-section__summary-heading">Date submitted</h2>
 							</summary>
 							<div class="search-filter-section__content">
 								<div class="govuk-form-group govuk-!-margin-bottom-2">
 									<fieldset class="govuk-fieldset">
-										<rsp-gds-date-input asp-for="Search.FromDate"
-															day-name="Search.FromDay"
-															day-value="@Model.Search.FromDay"
-															month-name="Search.FromMonth"
-															month-value="@Model.Search.FromMonth"
-															year-name="Search.FromYear"
-															year-value="@Model.Search.FromYear"
-															label-text="Enter the date you want to search from"
-															hint-html="For example, 28 February 2023"
-															error-key="FromDate"
-															id="FromDate"
-															label-html-class="font-weight-none" />
+										<rsp-gds-date-input asp-for="Search.FromDate" day-name="Search.FromDay"
+											day-value="@Model.Search.FromDay" month-name="Search.FromMonth"
+											month-value="@Model.Search.FromMonth" year-name="Search.FromYear"
+											year-value="@Model.Search.FromYear"
+											label-text="Enter the date you want to search from"
+											hint-html="For example, 28 February 2023" error-key="FromDate" id="FromDate"
+											label-html-class="font-weight-none" />
 
-										<rsp-gds-date-input asp-for="Search.ToDate"
-															day-name="Search.ToDay"
-															day-value="@Model.Search.ToDay"
-															month-name="Search.ToMonth"
-															month-value="@Model.Search.ToMonth"
-															year-name="Search.ToYear"
-															year-value="@Model.Search.ToYear"
-															label-text="Enter the date you want to search to"
-															hint-html="For example, 12 October 2024"
-															error-key="ToDate"
-															id="ToDate"
-															label-html-class="font-weight-none" />
+										<rsp-gds-date-input asp-for="Search.ToDate" day-name="Search.ToDay"
+											day-value="@Model.Search.ToDay" month-name="Search.ToMonth"
+											month-value="@Model.Search.ToMonth" year-name="Search.ToYear"
+											year-value="@Model.Search.ToYear"
+											label-text="Enter the date you want to search to"
+											hint-html="For example, 12 October 2024" error-key="ToDate" id="ToDate"
+											label-html-class="font-weight-none" />
 									</fieldset>
 								</div>
 							</div>
@@ -173,20 +163,20 @@
 								<div class="govuk-form-group govuk-!-margin-bottom-2">
 									<fieldset class="govuk-fieldset">
 										<rsp-gds-checkbox-group asp-for="Search.LeadNation"
-																options="UkCountryNames.Countries"
-																conditional-field="false"
-																label-text="Select all that apply"
-																legend-class="govuk-label govuk-label--s font-weight-none"
-																hint-id="lead-nation-hint"
-																hint-html="@($"{Model.Search.LeadNation?.Count ?? 0} selected")"
-																label-html-class="font-weight-none" />
+											options="UkCountryNames.Countries" conditional-field="false"
+											label-text="Select all that apply"
+											legend-class="govuk-label govuk-label--s font-weight-none"
+											hint-id="lead-nation-hint"
+											hint-html="@($"{Model.Search.LeadNation?.Count ?? 0} selected")"
+											label-html-class="font-weight-none" />
 									</fieldset>
 								</div>
 							</div>
 						</details>
 
 						<!-- Modification type -->
-						<details class="search-filter-section" @(CanOpenPanelForField("ModificationTypes") ? "open" : null)>
+						<details class="search-filter-section" @(CanOpenPanelForField("ModificationTypes") ? "open" :
+																		 null)>
 							<summary class="search-filter-section__summary">
 								<h2 class="search-filter-section__summary-heading">Modification type</h2>
 							</summary>
@@ -194,19 +184,19 @@
 								<div class="govuk-form-group govuk-!-margin-bottom-2">
 									<fieldset class="govuk-fieldset">
 										<rsp-gds-checkbox-group asp-for="Search.ModificationTypes"
-																options="ModificationOptions.Types"
-																conditional-field="true"
-																label-text="Select all that apply"
-																legend-class="govuk-label govuk-label--s font-weight-none"
-																hint-id="modification-hint"
-																hint-html="@($"{Model.Search.ModificationTypes?.Count ?? 0} selected")" />
+											options="ModificationOptions.Types" conditional-field="true"
+											label-text="Select all that apply"
+											legend-class="govuk-label govuk-label--s font-weight-none"
+											hint-id="modification-hint"
+											hint-html="@($"{Model.Search.ModificationTypes?.Count ?? 0} selected")" />
 									</fieldset>
 								</div>
 							</div>
 						</details>
 
 						<!-- Participating nation -->
-						<details class="search-filter-section" @(CanOpenPanelForField("ParticipatingNation") ? "open" : null)>
+						<details class="search-filter-section" @(CanOpenPanelForField("ParticipatingNation") ? "open" :
+																		 null)>
 							<summary class="search-filter-section__summary">
 								<h2 class="search-filter-section__summary-heading">Participating nation</h2>
 							</summary>
@@ -214,27 +204,30 @@
 								<div class="govuk-form-group govuk-!-margin-bottom-2">
 									<fieldset class="govuk-fieldset">
 										<rsp-gds-checkbox-group asp-for="Search.ParticipatingNation"
-																options="UkCountryNames.Countries"
-																conditional-field="false"
-																label-text="Select all that apply"
-																legend-class="govuk-label govuk-label--s font-weight-none"
-																hint-id="participating-nation-hint"
-																hint-html="@($"{Model.Search.ParticipatingNation?.Count ?? 0} selected")"
-																label-html-class="font-weight-none" />
+											options="UkCountryNames.Countries" conditional-field="false"
+											label-text="Select all that apply"
+											legend-class="govuk-label govuk-label--s font-weight-none"
+											hint-id="participating-nation-hint"
+											hint-html="@($"{Model.Search.ParticipatingNation?.Count ?? 0} selected")"
+											label-html-class="font-weight-none" />
 									</fieldset>
 								</div>
 							</div>
 						</details>
 
 						<!-- Short project title -->
-						<details class="search-filter-section" @(CanOpenPanelForField("ShortProjectTitle") ? "open" : null)>
+						<details class="search-filter-section" @(CanOpenPanelForField("ShortProjectTitle") ? "open" :
+																		 null)>
 							<summary class="search-filter-section__summary">
 								<h2 class="search-filter-section__summary-heading">Short project title</h2>
 							</summary>
 							<div class="search-filter-section__content">
 								<div class="govuk-form-group govuk-!-margin-bottom-2">
 									<fieldset class="govuk-fieldset">
-										<rsp-gds-input asp-for="Search.ShortProjectTitle" label-text="Enter the name of the short project title" width-class="govuk-!-width-three-quarters" label-html-class="font-weight-none" />
+										<rsp-gds-input asp-for="Search.ShortProjectTitle"
+											label-text="Enter the name of the short project title"
+											width-class="govuk-!-width-three-quarters"
+											label-html-class="font-weight-none" />
 									</fieldset>
 								</div>
 							</div>
@@ -249,43 +242,38 @@
 								<div class="govuk-form-group govuk-!-margin-bottom-2">
 									<fieldset class="govuk-fieldset">
 										<rsp-gds-autocomplete asp-for="Search.SponsorOrganisation"
-															  label-html-class="js-hidden font-weight-none"
-															  field-id="SponsorOrganisation_Text"
-															  label-text="Type the name of the organisation or scroll through the list"
-															  api-url="/organisation/getsponsororganisationsnames"
-															  auto-complete-enabled-id="auto_search"
-															  label-html-class="govuk-label govuk-label--s font-weight-none">
+											label-html-class="js-hidden font-weight-none"
+											field-id="SponsorOrganisation_Text"
+											label-text="Type the name of the organisation or scroll through the list"
+											api-url="/organisation/getsponsororganisationsnames"
+											auto-complete-enabled-id="auto_search"
+											label-html-class="govuk-label govuk-label--s font-weight-none">
 										</rsp-gds-autocomplete>
 
-										<input id="SponsorOrganisation_Text"
-											   type="text"
-											   asp-for="Search.SponsorOrganisation"
-											   error-class-for="Search.SponsorOrganisation"
-											   class="govuk-input font-weight-none"
-											   hidden />
+										<input id="SponsorOrganisation_Text" type="text"
+											asp-for="Search.SponsorOrganisation"
+											error-class-for="Search.SponsorOrganisation"
+											class="govuk-input font-weight-none" hidden />
 
-										<input id="auto_search"
-											   name="autoSearchEnabled"
-											   type="text"
-											   value="false"
-											   hidden />
+										<input id="auto_search" name="autoSearchEnabled" type="text" value="false"
+											hidden />
 
 										<noscript>
 											@{
 												string? searchText;
 
-												TempData.TryGetValue(TempDataKeys.SponsorOrgSearched, out var sponsorOrgSearched);
-												TempData.TryGetValue(TempDataKeys.OrgSearch, out OrganisationSearchViewModel? orgSearch, true);
+												TempData.TryGetValue(TempDataKeys.SponsorOrgSearched, out var
+												sponsorOrgSearched);
+												TempData.TryGetValue(TempDataKeys.OrgSearch, out
+												OrganisationSearchViewModel? orgSearch, true);
 
 												if (sponsorOrgSearched is "searched:true")
 												{
-													searchText = string.IsNullOrWhiteSpace(orgSearch?.SearchText) ? string.Empty : orgSearch.SearchText;
+													searchText = string.IsNullOrWhiteSpace(orgSearch?.SearchText) ? string.Empty
+													: orgSearch.SearchText;
 
-													<input id="sponsor_org_search_performed"
-														   type="text"
-														   name="searchedPerformed"
-														   value="@sponsorOrgSearched"
-														   hidden />
+													<input id="sponsor_org_search_performed" type="text"
+														name="searchedPerformed" value="@sponsorOrgSearched" hidden />
 												}
 
 												if (!string.IsNullOrWhiteSpace(orgSearch?.SelectedOrganisation))
@@ -294,40 +282,47 @@
 												}
 												else
 												{
-													var hasError = ViewData.ModelState["sponsor_org_search"]?.ValidationState == ModelValidationState.Invalid;
+													var hasError = ViewData.ModelState["sponsor_org_search"]?.ValidationState ==
+													ModelValidationState.Invalid;
 
 													searchText = hasError ? orgSearch?.SearchText ?? string.Empty :
-													string.IsNullOrWhiteSpace(orgSearch?.SearchText) ? Model.Search.SponsorOrganisation :
+													string.IsNullOrWhiteSpace(orgSearch?.SearchText) ?
+													Model.Search.SponsorOrganisation :
 													orgSearch.SearchText;
 												}
 
-												if (sponsorOrgSearched is not "searched:true" && !string.IsNullOrWhiteSpace(Model.Search.SponsorOrganisation))
+												if (sponsorOrgSearched is not "searched:true" &&
+												!string.IsNullOrWhiteSpace(Model.Search.SponsorOrganisation))
 												{
-													<input type="hidden" name="Search.SponsorOrgSearch.SelectedOrganisation" value="@Model.Search.SponsorOrganisation" />
+													<input type="hidden" name="Search.SponsorOrgSearch.SelectedOrganisation"
+														value="@Model.Search.SponsorOrganisation" />
 												}
 											}
 
 											<div class="govuk-form-group" error-class-property="sponsor_org_search">
-												<label class="govuk-label govuk-label--s font-weight-none" for="sponsor_org_search" aria-describedby="SponsorOrganisation">
+												<label class="govuk-label govuk-label--s font-weight-none"
+													for="sponsor_org_search" aria-describedby="SponsorOrganisation">
 													Type the name of the organisation or scroll through the list
 												</label>
 
-												@Html.ValidationMessage("sponsor_org_search", new { @class = "govuk-error-message" })
+												@Html.ValidationMessage("sponsor_org_search", new { @class =
+												"govuk-error-message" })
 
 												<div class="sponsor-org-search">
-													<input id="sponsor_org_search"
-														   type="text"
-														   name="Search.SponsorOrgSearch.SearchText"
-														   class="govuk-input govuk-!-width-three-quarters"
-														   value="@searchText"
-														   form="applyFiltersForm" />
+													<input id="sponsor_org_search" type="text"
+														name="Search.SponsorOrgSearch.SearchText"
+														class="govuk-input govuk-!-width-three-quarters"
+														value="@searchText" form="applyFiltersForm" />
 
-													<input type="hidden" name="pageSize" value="5" form="applyFiltersForm" />
-													<input type="hidden" name="pageIndex" value="1" form="applyFiltersForm" />
+													<input type="hidden" name="pageSize" value="5"
+														form="applyFiltersForm" />
+													<input type="hidden" name="pageIndex" value="1"
+														form="applyFiltersForm" />
 
-													<button type="submit" class="govuk-button govuk-button--primary" form="applyFiltersForm"
-															formaction='@Url.RouteUrl("approvals:searchorganisations")'
-															formmethod="post">
+													<button type="submit" class="govuk-button govuk-button--primary"
+														form="applyFiltersForm"
+														formaction='@Url.RouteUrl("approvals:searchorganisations")'
+														formmethod="post">
 														Search
 													</button>
 												</div>
@@ -336,7 +331,8 @@
 											<div class="govuk-form-group">
 												@if (!string.IsNullOrWhiteSpace(searchText))
 												{
-													TempData.TryGetValue<OrganisationSearchResponse>(TempDataKeys.SponsorOrganisations, out var response, true);
+													TempData.TryGetValue<OrganisationSearchResponse>(TempDataKeys.SponsorOrganisations,
+													out var response, true);
 
 													if (response?.Organisations is not null)
 													{
@@ -352,22 +348,22 @@
 														{
 															var escapedSearch = Regex.Escape(searchText);
 
-															<rsp-gds-radio-group asp-for="Search.SponsorOrgSearch.SelectedOrganisation"
-																				 label-css-class="govuk-label govuk-label--s font-weight-none"
-																				 label-text=""
-																				 options="@(organisations.Select(org => new GdsOption
-							  {
-								  Value = Html.Encode(org.Name),
-								  Label = Regex.Replace(org.Name, escapedSearch, match => $"<b>{match.Value}</b>", RegexOptions.IgnoreCase)
-							  }))"
-																	 div-inline-class="govuk-radios"
-																	 hint-html="Results for '@searchText'">
+															<rsp-gds-radio-group
+																asp-for="Search.SponsorOrgSearch.SelectedOrganisation"
+																label-css-class="govuk-label govuk-label--s font-weight-none"
+																label-text="" options="@(organisations.Select(org => new GdsOption
+									   {
+										   Value = Html.Encode(org.Name),
+										   Label = Regex.Replace(org.Name, escapedSearch, match => $"<b>{match.Value}</b>", RegexOptions.IgnoreCase)
+									   }))" div-inline-class="govuk-radios" hint-html="Results for '@searchText'">
 												</rsp-gds-radio-group>
 
 																								if (response.TotalCount > 5)
 															{
 																<div class="govuk-inset-text">
-																	@response.TotalCount sponsor organisations match your search for '@searchText'. Try narrowing down your search if the organisation you are looking for is not listed
+																	@response.TotalCount sponsor organisations match your search for
+																	'@searchText'. Try narrowing down your search if the organisation
+																	you are looking for is not listed
 																</div>
 															}
 														}
@@ -382,7 +378,9 @@
 
 						<!-- Apply -->
 						<div class="search-filter-panel__actions">
-							<button class="govuk-button search-filter-panel__action search-filter-panel__action--submit">Apply filters</button>
+							<button
+								class="govuk-button search-filter-panel__action search-filter-panel__action--submit">Apply
+								filters</button>
 						</div>
 					</div>
 				</details>
@@ -391,7 +389,8 @@
 		</form>
 		<noscript>
 			<form id="sponsorOrgSearchForm" method="post" action="@Url.RouteUrl("approvals:searchorganisations")">
-				<input type="hidden" name="Search.SponsorOrgSearch.SearchText" id="noscript_sponsor_org_search_submit" />
+				<input type="hidden" name="Search.SponsorOrgSearch.SearchText"
+					id="noscript_sponsor_org_search_submit" />
 			</form>
 		</noscript>
 
@@ -409,10 +408,8 @@
 						foreach (var val in filterValues)
 						{
 							<li>
-								<a asp-route="approvals:removefilter"
-								   asp-route-key="@filterKey"
-								   asp-route-value="@val"
-								   class="search-filter-summary__remove-filter">
+								<a asp-route="approvals:removefilter" asp-route-key="@filterKey" asp-route-value="@val"
+									class="search-filter-summary__remove-filter">
 									<span class="search-filter-summary__remove-filter-text">
 										<span class="govuk-visually-hidden">Remove filter</span>
 										@if (filterKey.Contains("date submitted - from", StringComparison.OrdinalIgnoreCase)
@@ -431,7 +428,8 @@
 					}
 				</ul>
 				<div>
-					<a asp-route="approvals:clearfilters" class="search-filter-summary__clear-filters govuk-link govuk-link--no-visited-state">
+					<a asp-route="approvals:clearfilters"
+						class="search-filter-summary__clear-filters govuk-link govuk-link--no-visited-state">
 						Clear all filters
 					</a>
 				</div>
@@ -489,7 +487,8 @@
 										<partial name="_SortableHeaderButton" model="@sortableHeaderModel" />
 									</th>
 								}
-								<th scope="col" class="govuk-table__header govuk-table__header-sortable govuk-!-text-align-right">
+								<th scope="col"
+									class="govuk-table__header govuk-table__header-sortable govuk-!-text-align-right">
 									Project link
 								</th>
 							</tr>

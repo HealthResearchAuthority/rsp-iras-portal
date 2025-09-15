@@ -21,7 +21,7 @@ namespace Rsp.IrasPortal.Web.Areas.Admin.Controllers;
 [Area("Admin")]
 [Route("[area]/[controller]/[action]", Name = "admin:[action]")]
 [Authorize(Policy = "IsSystemAdministrator")]
-[FeatureGate(Features.Admin)]
+[FeatureGate(FeatureFlags.Admin)]
 public class UsersController(
     IUserManagementService userManagementService,
     IValidator<UserViewModel> validator,
@@ -813,8 +813,8 @@ public class UsersController(
                         else
                         {
                             foreach (var rb in viewModel.Search.ReviewBodies.Where(x =>
-                                         string.Equals(x.RegulatoryBodyName, token, StringComparison.OrdinalIgnoreCase) ||
-                                         string.Equals(x.DisplayName, token, StringComparison.OrdinalIgnoreCase)))
+                                     string.Equals(x.RegulatoryBodyName, token, StringComparison.OrdinalIgnoreCase) ||
+                                     string.Equals(x.DisplayName, token, StringComparison.OrdinalIgnoreCase)))
                                 rb.IsSelected = false;
                         }
                     }

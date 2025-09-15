@@ -5,20 +5,19 @@
 @using Rsp.Gds.Component.Models
 @using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.DTOs.Responses
+@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
 @using Rsp.IrasPortal.Web.Extensions
-@using Rsp.IrasPortal.Web.Models.CmsContent
 @using Rsp.IrasPortal.Web.TagHelpers.Models
 @model MyTasklistViewModel
 @inject IFeatureManager featureManager
-@using Rsp.IrasPortal.Application.Constants
 
 @{
 	ViewData["Title"] = "My changes to review - Modifications - Approvals - System Administration";
 	var errorSummaryTitle = "There is a problem";
 	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData["PageContent"];
 	var pageContent = pageContentData != null
-		? pageContentData
-		: new Dictionary<string, MixedContentPageItem?>();
+	? pageContentData
+	: new Dictionary<string, MixedContentPageItem?>();
 
 	var bodyText = pageContent.GetValueOrDefault("Approvals.MyTasklist.BodyText", null);
 	var searchHint = pageContent.GetValueOrDefault("Approvals.MyTasklist.SearchHint", null);
@@ -38,9 +37,9 @@
 	private bool HasFilterErrors()
 	{
 		return ViewData.ModelState
-			.Where(kvp => kvp.Key != ModificationsTasklist.ModificationToAssignNotSelected && kvp.Value != null)
-			.SelectMany(kvp => kvp.Value!.Errors)
-			.Any();
+		.Where(kvp => kvp.Key != ModificationsTasklist.ModificationToAssignNotSelected && kvp.Value != null)
+		.SelectMany(kvp => kvp.Value!.Errors)
+		.Any();
 	}
 
 	private bool CanOpenPanelForField(string fieldName)
@@ -66,7 +65,8 @@
 			<form asp-route="mytasklist:applyfilters" method="post" class="govuk-form-group govuk-!-margin-bottom-0">
 				<div class="search-flex-container">
 					<span id="iras-id-label" class="govuk-visually-hidden">IRAS ID</span>
-					<input class="govuk-input search-flex-input" asp-for="Search.IrasId" type="text" aria-labelledby="iras-id-label" />
+					<input class="govuk-input search-flex-input" asp-for="Search.IrasId" type="text"
+						aria-labelledby="iras-id-label" />
 					<div class="search-flex-button">
 						<button type="submit" class="govuk-button">Search</button>
 					</div>
@@ -75,14 +75,10 @@
 				<!-- Filter Panel -->
 				<div class="search-filter-panel">
 					<details class="search-filter-toggle" @(HasFilterErrors() ? "open" : null)>
-						<summary class="search-filter-panel__header"
-								 tabindex="-1"
-								 role="button"
-								 aria-controls="filter-panel"
-								 aria-expanded="@(HasFilterErrors().ToString().ToLower())">
+						<summary class="search-filter-panel__header" tabindex="-1" role="button"
+							aria-controls="filter-panel" aria-expanded="@(HasFilterErrors().ToString().ToLower())">
 
-							<span class="search-filter-panel__button-inner govuk-link"
-								  tabindex="0">
+							<span class="search-filter-panel__button-inner govuk-link" tabindex="0">
 								Advanced filters
 							</span>
 
@@ -91,47 +87,40 @@
 							</span>
 						</summary>
 
-						<div class="search-filter-panel__content" id="filter-panel" role="region" aria-labelledby="toggle-filter">
+						<div class="search-filter-panel__content" id="filter-panel" role="region"
+							aria-labelledby="toggle-filter">
 							<!-- Date submitted -->
-							<details class="search-filter-section" @(CanOpenPanelForAnyField("FromDate", "ToDate") ? "open" : null)>
+							<details class="search-filter-section" @(CanOpenPanelForAnyField("FromDate", "ToDate") ? "open"
+																			 : null)>
 								<summary class="search-filter-section__summary">
 									<h2 class="search-filter-section__summary-heading">Date submitted</h2>
 								</summary>
 								<div class="search-filter-section__content">
 									<div class="govuk-form-group govuk-!-margin-bottom-2">
 										<fieldset class="govuk-fieldset">
-											<rsp-gds-date-input asp-for="Search.FromDate"
-																day-name="Search.FromDay"
-																day-value="@Model.Search.FromDay"
-																month-name="Search.FromMonth"
-																month-value="@Model.Search.FromMonth"
-																year-name="Search.FromYear"
-																year-value="@Model.Search.FromYear"
-																label-text="Enter the date you want to search from"
-																hint-html="For example, 28 February 2023"
-																error-key="FromDate"
-																id="FromDate"
-																label-html-class="font-weight-none" />
+											<rsp-gds-date-input asp-for="Search.FromDate" day-name="Search.FromDay"
+												day-value="@Model.Search.FromDay" month-name="Search.FromMonth"
+												month-value="@Model.Search.FromMonth" year-name="Search.FromYear"
+												year-value="@Model.Search.FromYear"
+												label-text="Enter the date you want to search from"
+												hint-html="For example, 28 February 2023" error-key="FromDate" id="FromDate"
+												label-html-class="font-weight-none" />
 
-											<rsp-gds-date-input asp-for="Search.ToDate"
-																day-name="Search.ToDay"
-																day-value="@Model.Search.ToDay"
-																month-name="Search.ToMonth"
-																month-value="@Model.Search.ToMonth"
-																year-name="Search.ToYear"
-																year-value="@Model.Search.ToYear"
-																label-text="Enter the date you want to search to"
-																hint-html="For example, 12 October 2024"
-																error-key="ToDate"
-																id="ToDate"
-																label-html-class="font-weight-none" />
+											<rsp-gds-date-input asp-for="Search.ToDate" day-name="Search.ToDay"
+												day-value="@Model.Search.ToDay" month-name="Search.ToMonth"
+												month-value="@Model.Search.ToMonth" year-name="Search.ToYear"
+												year-value="@Model.Search.ToYear"
+												label-text="Enter the date you want to search to"
+												hint-html="For example, 12 October 2024" error-key="ToDate" id="ToDate"
+												label-html-class="font-weight-none" />
 										</fieldset>
 									</div>
 								</div>
 							</details>
 
 							<!-- Days since submission -->
-							<details class="search-filter-section" @(CanOpenPanelForAnyField("FromSubmission", "ToSubmission") ? "open" : null)>
+							<details class="search-filter-section" @(CanOpenPanelForAnyField("FromSubmission",
+																			 "ToSubmission") ? "open" : null)>
 								<summary class="search-filter-section__summary">
 									<h2 class="search-filter-section__summary-heading">Days since submission</h2>
 								</summary>
@@ -140,15 +129,21 @@
 									<p class="govuk-hint govuk-!-margin-bottom-0">For example, 23 to 45 days</p>
 									<div class="govuk-form-group govuk-!-margin-bottom-2">
 										<div class="display-inline-block govuk-!-padding-right-4">
-											<rsp-gds-input asp-for="Search.FromDaysSinceSubmission" width-class="govuk-input--width-4" label-text=" " label-html-class="font-weight-none" />
+											<rsp-gds-input asp-for="Search.FromDaysSinceSubmission"
+												width-class="govuk-input--width-4" label-text=" "
+												label-html-class="font-weight-none" />
 										</div>
-										<div class="govuk-body govuk-!-padding-top-7 govuk-!-margin-bottom-0 govuk-!-padding-right-4 display-inline-block">
+										<div
+											class="govuk-body govuk-!-padding-top-7 govuk-!-margin-bottom-0 govuk-!-padding-right-4 display-inline-block">
 											to
 										</div>
 										<div class="display-inline-block govuk-!-padding-right-4">
-											<rsp-gds-input asp-for="Search.ToDaysSinceSubmission" width-class="govuk-input--width-4" label-text=" " label-html-class="font-weight-none" />
+											<rsp-gds-input asp-for="Search.ToDaysSinceSubmission"
+												width-class="govuk-input--width-4" label-text=" "
+												label-html-class="font-weight-none" />
 										</div>
-										<div class="govuk-body govuk-!-padding-top-7 govuk-!-margin-bottom-0 display-inline-block">
+										<div
+											class="govuk-body govuk-!-padding-top-7 govuk-!-margin-bottom-0 display-inline-block">
 											days
 										</div>
 									</div>
@@ -156,14 +151,18 @@
 							</details>
 
 							<!-- Short project title -->
-							<details class="search-filter-section" @(CanOpenPanelForField("ShortProjectTitle") ? "open" : null)>
+							<details class="search-filter-section" @(CanOpenPanelForField("ShortProjectTitle") ? "open" :
+																			 null)>
 								<summary class="search-filter-section__summary">
 									<h2 class="search-filter-section__summary-heading">Short project title</h2>
 								</summary>
 								<div class="search-filter-section__content">
 									<div class="govuk-form-group govuk-!-margin-bottom-2">
 										<fieldset class="govuk-fieldset">
-											<rsp-gds-input asp-for="Search.ShortProjectTitle" label-text="Enter the name of the short project title" width-class="govuk-!-width-three-quarters" label-html-class="font-weight-none" />
+											<rsp-gds-input asp-for="Search.ShortProjectTitle"
+												label-text="Enter the name of the short project title"
+												width-class="govuk-!-width-three-quarters"
+												label-html-class="font-weight-none" />
 										</fieldset>
 									</div>
 								</div>
@@ -171,7 +170,9 @@
 
 							<!-- Apply -->
 							<div class="search-filter-panel__actions">
-								<button class="govuk-button search-filter-panel__action search-filter-panel__action--submit">Apply filters</button>
+								<button
+									class="govuk-button search-filter-panel__action search-filter-panel__action--submit">Apply
+									filters</button>
 							</div>
 						</div>
 					</details>
@@ -192,14 +193,13 @@
 							foreach (var val in filterValues)
 							{
 								<li>
-									<a asp-route="mytasklist:removefilter"
-									   asp-route-key="@filterKey"
-									   class="search-filter-summary__remove-filter">
+									<a asp-route="mytasklist:removefilter" asp-route-key="@filterKey"
+										class="search-filter-summary__remove-filter">
 										<span class="search-filter-summary__remove-filter-text">
 											<span class="govuk-visually-hidden">Remove filter</span>
 											@if (filterKey.Contains("submission", StringComparison.OrdinalIgnoreCase)
-																|| filterKey.Contains("date submitted - from", StringComparison.OrdinalIgnoreCase)
-																|| filterKey.Contains("date submitted - to", StringComparison.OrdinalIgnoreCase))
+																		|| filterKey.Contains("date submitted - from", StringComparison.OrdinalIgnoreCase)
+																		|| filterKey.Contains("date submitted - to", StringComparison.OrdinalIgnoreCase))
 											{
 												@($"{filterKey} {val}")
 											}
@@ -214,7 +214,8 @@
 						}
 					</ul>
 					<div>
-						<a asp-route="mytasklist:clearfilters" class="search-filter-summary__clear-filters govuk-link govuk-link--no-visited-state">
+						<a asp-route="mytasklist:clearfilters"
+							class="search-filter-summary__clear-filters govuk-link govuk-link--no-visited-state">
 							Clear all filters
 						</a>
 					</div>
@@ -258,24 +259,24 @@ else
 							@{
 								var sortableHeaders = new[]
 								{
-						new { Field = nameof(ModificationsModel.ModificationId), Label = "Modification ID" },
-						new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
-						new { Field = nameof(ModificationsModel.CreatedAt), Label = "Date submitted" },
-						new { Field = nameof(ModificationsModel.DaysSinceSubmission), Label = "Days since submission" },
-						new { Field = nameof(ModificationsModel.Status), Label = "Status" }
-						};
+												new { Field = nameof(ModificationsModel.ModificationId), Label = "Modification ID" },
+												new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
+												new { Field = nameof(ModificationsModel.CreatedAt), Label = "Date submitted" },
+												new { Field = nameof(ModificationsModel.DaysSinceSubmission), Label = "Days since submission" },
+												new { Field = nameof(ModificationsModel.Status), Label = "Status" }
+												};
 								var tableId = "myTasklistTable";
 							}
 							@foreach (var header in sortableHeaders)
 							{
 								var sortableHeaderModel = new SortableHeaderModel
-					{
-						FieldName = header.Field,
-						DisplayText = header.Label,
-						CurrentSortField = Model.Pagination?.SortField,
-						CurrentSortDirection = Model.Pagination?.SortDirection,
-						TableId = tableId,
-					};
+								{
+									FieldName = header.Field,
+									DisplayText = header.Label,
+									CurrentSortField = Model.Pagination?.SortField,
+									CurrentSortDirection = Model.Pagination?.SortDirection,
+									TableId = tableId,
+								};
 
 								<th scope="col" class="govuk-table__header govuk-table__header-sortable">
 									<partial name="_SortableHeaderButton" model="@sortableHeaderModel" />
@@ -288,22 +289,23 @@ else
 						<input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
 
 
-					<tbody class="govuk-table__body govuk-body-s">
+						<tbody class="govuk-table__body govuk-body-s">
 							@{
 								foreach (var modification in Model.Modifications)
 								{
 									var daysText = modification.DaysSinceSubmission == 1 ? "day" : "days";
 
-								<tr class="govuk-table__row">
-									<td class="govuk-table__cell">@modification.ModificationId</td>
-									<td class="govuk-table__cell"><a href="?@modification.ModificationId" class="govuk-link"><strong>@modification.ShortProjectTitle</strong></a></td>
-									<td class="govuk-table__cell">@modification.CreatedAt.ToString("dd MMM yyyy")</td>
-									<td class="govuk-table__cell">@modification.DaysSinceSubmission @daysText</td>
-									<td class="govuk-table__cell">@modification.Status</td>
-								</tr>
+									<tr class="govuk-table__row">
+										<td class="govuk-table__cell">@modification.ModificationId</td>
+										<td class="govuk-table__cell"><a href="?@modification.ModificationId"
+												class="govuk-link"><strong>@modification.ShortProjectTitle</strong></a></td>
+										<td class="govuk-table__cell">@modification.CreatedAt.ToString("dd MMM yyyy")</td>
+										<td class="govuk-table__cell">@modification.DaysSinceSubmission @daysText</td>
+										<td class="govuk-table__cell">@modification.Status</td>
+									</tr>
 								}
 							}
-					</tbody>
+						</tbody>
 					</form>
 				</table>
 			</div>

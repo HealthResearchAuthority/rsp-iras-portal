@@ -22,18 +22,17 @@
     var modificationId = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string;
     var specificArea = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationSpecificArea) as string;
 
-    Model.CurrentStage = currentStage!;    
+    Model.CurrentStage = currentStage!;
 }
 
 @{
     var prefix = ViewData.ModelState.IsValid ? "" : "Error - ";
     ViewBag.Title = !string.IsNullOrWhiteSpace(specificArea) ?
             $"{prefix}{specificArea} - Make changes to research" :
-            $"{prefix}{Model.Questions.FirstOrDefault()?.Section} - Make changes to research";    
+            $"{prefix}{Model.Questions.FirstOrDefault()?.Section} - Make changes to research";
 }
 
-
-@if (await featureManager.IsEnabledAsync(Features.ProgressiveEnhancement))
+@if (await featureManager.IsEnabledAsync(FeatureFlags.ProgressiveEnhancement))
 {
     <script src="~/lib/jquery/dist/jquery.js"></script>
 
@@ -76,7 +75,7 @@
     {
         // If the project overview is true, navigate to the project overview page
         navModel = ("pov:projectdetails", "Back", new()
-        {
+{
             { "projectRecordId", projectRecordId }
         });
     }
@@ -177,8 +176,13 @@
 
                         if (!string.IsNullOrWhiteSpace(templateName))
                         {
+                            if (templateName == "RadioButtonTemplate")
+                            {
+                                ViewData[ViewDataKeys.ConditionalClass] = "govuk-radios__conditional";
+                            }
+
                             // plese note the @ is necessary before Html so that Template is rendered, otherwise it won't render
-                            @Html.EditorForModel(templateName, ViewData);
+                            @Html.EditorForModel(templateName, ViewData)
                         }
 
                     }

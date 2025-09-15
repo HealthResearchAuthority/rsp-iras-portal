@@ -4,7 +4,7 @@ using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Services;
 
-namespace Rsp.IrasPortal.UnitTests.Services.RtsServiceTests;
+namespace Rsp.IrasPortal.UnitTests.Services.CmsContentServiceTests;
 
 public class GetSiteSettingsTests : TestServiceBase<CmsContentService>
 {

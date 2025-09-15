@@ -85,7 +85,7 @@ public class AuthController(AppSettings appSettings, IFeatureManager featureMana
         //&post_logout_redirect_uri = http://example-service.com/my-logout-url
         //&state = sadk8d4--lda % d
 
-        var oneLoginEnabled = await featureManager.IsEnabledAsync(Features.OneLogin);
+        var oneLoginEnabled = await featureManager.IsEnabledAsync(FeatureFlags.OneLogin);
 
         var tokenHint = oneLoginEnabled ?
             await HttpContext.GetTokenAsync(ContextItemKeys.IdToken) :

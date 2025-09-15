@@ -7,9 +7,9 @@
 // questionnaire.js
 $(function () {
     // Hide all conditional questions initially
-    $(".conditional").hide();
+    $(".conditional, .conditional-field").hide();
 
-    $(".conditional").each(function (_, conditionalElement) {
+    $(".conditional, .conditional-field").each(function (_, conditionalElement) {
         const $conditionalElement = $(conditionalElement);
         const questionId = $conditionalElement.data("questionid");
         const parentQuestions = $conditionalElement.data("parents");
@@ -17,12 +17,12 @@ $(function () {
         // Skip processing if questionId or parentQuestions is missing
         if (!questionId || !parentQuestions) return;
 
-        const parentQuestionIds = parentQuestions.split(',');
+        const parentQuestionIds = parentQuestions.toString().split(',');
 
         // Set up event listeners for parent questions
         parentQuestionIds.forEach(function (parentQuestionId) {
             // Select both radio button inputs and drop-down lists whose id starts with parentQuestionId
-            const $parentInputs = $(`input[id^="${parentQuestionId}"], select[id^="${parentQuestionId}"]`);
+            const $parentInputs = $(`input[id^="${parentQuestionId}"], select[id^="${parentQuestionId}"], div[id^="${parentQuestionId}"] > select`);
 
             // Evaluate rules initially and set visibility
             updateConditionalVisibility(questionId, $conditionalElement);
@@ -36,14 +36,13 @@ $(function () {
     });
 });
 
-
 /**
  * Updates the visibility of a conditional question based on rule evaluation.
  * @param {string} questionId - The ID of the conditional question.
  * @param {jQuery} $conditionalElement - The jQuery object for the conditional question element.
  */
 function updateConditionalVisibility(questionId, $conditionalElement) {
-    const isApplicable = isRuleApplicable(questionId);
+    const isApplicable = isRuleApplicable(questionId) || isRuleApplicable(questionId, true);
     const scrollPosition = $(window).scrollTop();
 
     if (isApplicable) {

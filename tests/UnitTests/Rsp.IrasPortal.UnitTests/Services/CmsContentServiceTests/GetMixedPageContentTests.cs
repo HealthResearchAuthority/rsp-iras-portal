@@ -1,10 +1,10 @@
 using Microsoft.Extensions.Caching.Memory;
+using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Services;
-using Rsp.IrasPortal.Web.Models.CmsContent;
 
-namespace Rsp.IrasPortal.UnitTests.Services.RtsServiceTests;
+namespace Rsp.IrasPortal.UnitTests.Services.CmsContentServiceTests;
 
 public class GetMixedPageContentTests : TestServiceBase<CmsContentService>
 {
