@@ -4,7 +4,7 @@
 public class CmsContentActionAttribute : Attribute
 {
     /// <summary>
-    /// Specify the methid name that can ge used to retrieve the CMS content (usually the main GET method in this controller)
+    /// Specify the method name that can be used to retrieve the CMS content (usually the main GET method in this controller)
     /// </summary>
     /// <param name="actionName"></param>
     public CmsContentActionAttribute(string actionName)
