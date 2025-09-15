@@ -8,7 +8,6 @@ using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Controllers.ProjectOverview;
 using Rsp.IrasPortal.Web.Models;
-using ProblemDetails = Microsoft.AspNetCore.Mvc.ProblemDetails;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectOverviewControllerTests;
 
@@ -30,8 +29,8 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
         var result = await Sut.GetProjectOverview("rec-1");
 
         // Assert
-        var viewResult = result.Error.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Error");
+        var redirectToRouteResult = result.ShouldBeOfType<StatusCodeResult>();
+        redirectToRouteResult.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
     }
 
     [Fact]
@@ -51,11 +50,8 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
         var result = await Sut.GetProjectOverview("rec-1");
 
         // Assert
-        var viewResult = result.Error.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Error");
-
-        // The model should be of type Microsoft.AspNetCore.Mvc.ProblemDetails
-        viewResult.Model.ShouldBeOfType<ProblemDetails>();
+        var redirectToRouteResult = result.ShouldBeOfType<StatusCodeResult>();
+        redirectToRouteResult.StatusCode.ShouldBe(StatusCodes.Status404NotFound);
     }
 
     [Fact]
@@ -80,8 +76,8 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
         var result = await Sut.GetProjectOverview("rec-1");
 
         // Assert
-        var viewResult = result.Error.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Error");
+        var redirectToRouteResult = result.ShouldBeOfType<StatusCodeResult>();
+        redirectToRouteResult.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
     }
 
     [Fact]
@@ -106,8 +102,8 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
         var result = await Sut.GetProjectOverview("rec-1");
 
         // Assert
-        var viewResult = result.Error.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Error");
+        var redirectToRouteResult = result.ShouldBeOfType<StatusCodeResult>();
+        redirectToRouteResult.StatusCode.ShouldBe(StatusCodes.Status404NotFound);
     }
 
     [Fact]
@@ -141,9 +137,9 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
         var result = await Sut.GetProjectOverview("rec-1");
 
         // Assert
-        result.Error.ShouldBeNull();
+        var okResult = result.ShouldBeOfType<OkObjectResult>();
 
-        var model = result.Model.ShouldBeOfType<ProjectOverviewModel>();
+        var model = okResult.Value.ShouldBeOfType<ProjectOverviewModel>();
         model.ProjectTitle.ShouldBe("Project X");
         model.ProjectRecordId.ShouldBe("rec-1");
         model.CategoryId.ShouldBe(QuestionCategories.ProjectRecrod);
@@ -231,9 +227,10 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
         var result = await Sut.GetProjectOverview("rec-1");
 
         // Assert
-        result.Error.ShouldBeNull();
+        var okResult = result.ShouldBeOfType<OkObjectResult>();
 
-        var model = result.Model.ShouldBeOfType<ProjectOverviewModel>();
+        var model = okResult.Value.ShouldBeOfType<ProjectOverviewModel>();
+
         model.ProjectTitle.ShouldBe("Project X");
         model.ProjectRecordId.ShouldBe("rec-1");
         model.CategoryId.ShouldBe(QuestionCategories.ProjectRecrod);

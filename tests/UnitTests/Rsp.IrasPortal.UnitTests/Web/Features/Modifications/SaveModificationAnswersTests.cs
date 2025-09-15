@@ -39,7 +39,10 @@ public class SaveModificationAnswersTests : TestServiceBase<ModificationsControl
         var result = await Sut.SaveModificationAnswers([], "pmc:any");
 
         // Assert
-        result.ShouldBeOfType<ViewResult>().ViewName.ShouldBe("Error");
+        result
+            .ShouldBeOfType<StatusCodeResult>()
+            .StatusCode
+            .ShouldBe(StatusCodes.Status400BadRequest);
     }
 
     [Fact]

@@ -168,8 +168,8 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
         var result = await Sut.ConfirmModificationJourney(model, action: "proceed");
 
         // Assert
-        var redirectResult = result.ShouldBeOfType<ViewResult>();
-        redirectResult.ViewName.ShouldBe("Error");
+        var statusCodeResult = result.ShouldBeOfType<StatusCodeResult>();
+        statusCodeResult.StatusCode.ShouldBe(StatusCodes.Status400BadRequest);
     }
 
     [Fact]
@@ -283,8 +283,8 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
         var result = await Sut.ConfirmModificationJourney(model, "saveAndContinue");
 
         // Assert
-        var view = result.ShouldBeOfType<ViewResult>();
-        view.ViewName.ShouldBe("Error");
+        var statusCodeResult = result.ShouldBeOfType<StatusCodeResult>();
+        statusCodeResult.StatusCode.ShouldBe(StatusCodes.Status400BadRequest);
     }
 
     [Fact]

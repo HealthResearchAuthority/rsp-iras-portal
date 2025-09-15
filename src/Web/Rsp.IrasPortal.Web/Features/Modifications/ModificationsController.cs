@@ -49,14 +49,13 @@ public class ModificationsController
         if (string.IsNullOrEmpty((string?)projectRecordId) || IrasId == null)
         {
             // Return a problem response if data is missing
-            var problemDetails = this.ProblemResult(new ServiceResponse
+
+            return this.ServiceError(new ServiceResponse
             {
                 Error = "ProjectRecordId and/or IrasId missing",
                 StatusCode = HttpStatusCode.BadRequest,
                 ReasonPhrase = "Bad Request"
             });
-
-            return Problem(problemDetails.Detail, problemDetails.Instance, problemDetails.Status, problemDetails.Title, problemDetails.Type);
         }
 
         // Get respondent information from the current context
@@ -102,26 +101,6 @@ public class ModificationsController
     [HttpGet]
     public async Task<IActionResult> AreaOfChange()
     {
-        var questionSetResponse = await cmsQuestionsetService.GetModificationQuestionSet();
-
-        // a published version of question set must exist
-        // so that it can be used when saving the modification/changes
-        if (!questionSetResponse.IsSuccessStatusCode)
-        {
-            return this.ServiceError(questionSetResponse);
-        }
-
-        var questionSet = questionSetResponse.Content!;
-
-        var publishedVersion = questionSet.Version;
-
-        if (publishedVersion == null)
-        {
-            return this.ServiceError(questionSetResponse);
-        }
-
-        TempData[TempDataKeys.QuestionSetPublishedVersionId] = publishedVersion;
-
         // get the initial modification questions from CMS
         var startingQuestionsResponse = await cmsQuestionsetService.GetInitialModificationQuestions();
 

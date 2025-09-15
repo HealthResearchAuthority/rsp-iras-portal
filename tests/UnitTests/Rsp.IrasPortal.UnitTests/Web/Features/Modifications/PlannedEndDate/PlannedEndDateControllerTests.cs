@@ -39,7 +39,10 @@ public class PlannedEndDateControllerTests : TestServiceBase<PlannedEndDateContr
         var result = await Sut.DisplayQuestionnaire("PR1", "CAT1", "SEC1", false, viewName: nameof(PlannedEndDateController.PlannedEndDate));
 
         // Assert
-        result.ShouldBeOfType<ViewResult>().ViewName.ShouldBe("Error");
+        result
+            .ShouldBeOfType<StatusCodeResult>()
+            .StatusCode
+            .ShouldBe(StatusCodes.Status400BadRequest);
     }
 
     [Fact]
@@ -128,7 +131,11 @@ public class PlannedEndDateControllerTests : TestServiceBase<PlannedEndDateContr
         var result = await Sut.SaveResponses(model);
 
         // Assert
-        result.ShouldBeOfType<ViewResult>().ViewName.ShouldBe("Error");
+        // Assert
+        result
+            .ShouldBeOfType<StatusCodeResult>()
+            .StatusCode
+            .ShouldBe(StatusCodes.Status400BadRequest);
     }
 
     [Fact]

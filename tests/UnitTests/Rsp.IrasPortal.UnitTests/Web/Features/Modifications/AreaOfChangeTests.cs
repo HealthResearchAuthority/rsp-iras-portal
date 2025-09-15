@@ -85,23 +85,6 @@ public class AreaOfChangeTests : TestServiceBase<ModificationsController>
             .Setup(s => s.GetAreaOfChanges())
             .ReturnsAsync(serviceResponse);
 
-        // Mock IQuestionSetService.GetVersions to return a published version
-        const string publishedVersionId = "v1.0";
-
-        var questionSetResponse = new ServiceResponse<Application.DTOs.CmsQuestionset.CmsQuestionSetResponse>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new Application.DTOs.CmsQuestionset.CmsQuestionSetResponse
-            {
-                Version = publishedVersionId,
-            }
-        };
-
-        Mocker
-            .GetMock<ICmsQuestionsetService>()
-            .Setup(s => s.GetModificationQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync(questionSetResponse);
-
         Mocker
             .GetMock<ICmsQuestionsetService>()
             .Setup(c => c.GetInitialModificationQuestions())
@@ -161,23 +144,6 @@ public class AreaOfChangeTests : TestServiceBase<ModificationsController>
             .GetMock<IProjectModificationsService>()
             .Setup(s => s.GetAreaOfChanges())
             .ReturnsAsync(serviceResponse);
-
-        // Mock IQuestionSetService.GetVersions to return a published version
-        const string publishedVersionId = "v1.0";
-
-        var questionSetResponse = new ServiceResponse<Application.DTOs.CmsQuestionset.CmsQuestionSetResponse>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new Application.DTOs.CmsQuestionset.CmsQuestionSetResponse
-            {
-                Version = publishedVersionId,
-            }
-        };
-
-        Mocker
-            .GetMock<ICmsQuestionsetService>()
-            .Setup(s => s.GetModificationQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync(questionSetResponse);
 
         Mocker
             .GetMock<ICmsQuestionsetService>()

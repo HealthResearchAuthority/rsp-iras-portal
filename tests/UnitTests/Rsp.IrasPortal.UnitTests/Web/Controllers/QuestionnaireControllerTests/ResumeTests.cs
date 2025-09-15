@@ -83,9 +83,8 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         var result = await Sut.Resume(applicationId, categoryId);
 
         // Assert
-        result.ShouldBeOfType<ViewResult>();
-        var viewResult = result as ViewResult;
-        viewResult!.ViewName.ShouldBe("Error");
+        var statusCodeResult = result.ShouldBeOfType<StatusCodeResult>();
+        statusCodeResult.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
     }
 
     [Theory]
@@ -199,9 +198,8 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         var result = await Sut.Resume(applicationId, categoryId);
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Error");
-        viewResult.Model.ShouldBeOfType<Microsoft.AspNetCore.Mvc.ProblemDetails>();
+        var statusCodeResult = result.ShouldBeOfType<StatusCodeResult>();
+        statusCodeResult.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
     }
 
     [Theory]
@@ -616,9 +614,8 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         var result = await Sut.Resume(applicationId, categoryId);
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Error");
-        viewResult.Model.ShouldBeOfType<Microsoft.AspNetCore.Mvc.ProblemDetails>();
+        var statusCodeResult = result.ShouldBeOfType<StatusCodeResult>();
+        statusCodeResult.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
     }
 
     [Theory, AutoData]

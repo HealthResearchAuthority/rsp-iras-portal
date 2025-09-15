@@ -1,9 +1,10 @@
 ﻿using System.Globalization;
+using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.WebUtilities;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
@@ -24,11 +25,15 @@ public class ProjectOverviewController
         UpdateModificationRelatedTempData();
 
         var response = await GetProjectOverview(projectRecordId);
-        if (response.Error is not null)
+
+        // if status code is not a successful status code
+        if ((response is StatusCodeResult result && result.StatusCode is < 200 or > 299) ||
+            (response is not OkObjectResult okResult))
         {
-            return response.Error;
+            return response;
         }
-        return View(response.Model);
+
+        return View(okResult.Value);
     }
 
     public async Task<IActionResult> PostApproval
@@ -43,15 +48,20 @@ public class ProjectOverviewController
         UpdateModificationRelatedTempData();
 
         var response = await GetProjectOverview(projectRecordId);
-        if (response.Error is not null)
+
+        // if status code is not a successful status code
+        if ((response is StatusCodeResult result && result.StatusCode is < 200 or > 299) ||
+            (response is not OkObjectResult okResult))
         {
-            return response.Error;
+            return response;
         }
 
-        var model = new PostApprovalViewModel();
-        model.ProjectOverviewModel = response.Model;
+        var model = new PostApprovalViewModel
+        {
+            ProjectOverviewModel = okResult.Value as ProjectOverviewModel
+        };
 
-        ModificationSearchRequest searchQuery = new ModificationSearchRequest();
+        var searchQuery = new ModificationSearchRequest();
 
         var modificationsResponseResult = await projectModificationsService.GetModificationsForProject(projectRecordId, searchQuery, pageNumber, pageSize, sortField, sortDirection);
 
@@ -82,58 +92,29 @@ public class ProjectOverviewController
     public async Task<IActionResult> KeyProjectRoles(string projectRecordId)
     {
         var response = await GetProjectOverview(projectRecordId);
-        if (response.Error is not null)
+
+        // if status code is not a successful status code
+        if ((response is StatusCodeResult result && result.StatusCode is < 200 or > 299) ||
+            (response is not OkObjectResult okResult))
         {
-            return response.Error;
+            return response;
         }
-        return View(response.Model);
+
+        return View(okResult.Value);
     }
 
     public async Task<IActionResult> ResearchLocations(string projectRecordId)
     {
         var response = await GetProjectOverview(projectRecordId);
-        if (response.Error is not null)
-        {
-            return response.Error;
-        }
-        return View(response.Model);
-    }
 
-    private void UpdateModificationRelatedTempData()
-    {
-        // If there is a project modification change, show the notification banner
-        if (TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId) is not null &&
-            TempData[TempDataKeys.ProjectModification.ProjectModificationChangeMarker] is Guid marker &&
-            marker != Guid.Empty)
+        // if status code is not a successful status code
+        if ((response is StatusCodeResult result && result.StatusCode is < 200 or > 299) ||
+            (response is not OkObjectResult okResult))
         {
-            TempData[TempDataKeys.ShowNotificationBanner] = true;
+            return response;
         }
 
-        // Remove modification-related TempData keys to reset state
-        TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationId);
-        TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationIdentifier);
-        TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationChangeId);
-        TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationSpecificArea);
-        TempData.Remove(TempDataKeys.ProjectModification.AreaOfChangeId);
-        TempData.Remove(TempDataKeys.ProjectModification.SpecificAreaOfChangeId);
-        TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationChangeMarker);
-        TempData.Remove(TempDataKeys.ProjectModificationPlannedEndDate.NewPlannedProjectEndDate);
-        TempData.Remove(TempDataKeys.ProjectModificationPlannedEndDate.AffectingOrganisationsType);
-        TempData.Remove(TempDataKeys.ProjectModificationPlannedEndDate.AffectedOrganisationsLocations);
-        TempData.Remove(TempDataKeys.ProjectModificationPlannedEndDate.AffectedAllOrSomeOrganisations);
-        TempData.Remove(TempDataKeys.ProjectModificationPlannedEndDate.AffectedOrganisationsRequireAdditionalResources);
-        TempData.Remove(TempDataKeys.ProjectModificationPlannedEndDate.ReviewChanges);
-        TempData.Remove(TempDataKeys.QuestionSetPublishedVersionId);
-
-        var keys = TempData.Keys.Where(key => key.StartsWith(TempDataKeys.ProjectModification.Questionnaire));
-
-        foreach (var key in keys)
-        {
-            TempData.Remove(key);
-        }
-
-        // Indicate that the project overview is being shown
-        TempData[TempDataKeys.ProjectOverview] = true;
+        return View(okResult.Value);
     }
 
     /// <summary>
@@ -145,7 +126,8 @@ public class ProjectOverviewController
     /// A <see cref="Task<IActionResult?>"/> that has null value for successful run
     /// or an error details if the project record or answers are not found or a service error occurs.
     /// </returns>
-    public async Task<(IActionResult Error, ProjectOverviewModel? Model)> GetProjectOverview(string projectRecordId)
+    [NonAction]
+    public async Task<IActionResult> GetProjectOverview(string projectRecordId)
     {
         // Retrieve the project record by its ID
         var projectRecordResponse = await applicationService.GetProjectRecord(projectRecordId);
@@ -153,7 +135,7 @@ public class ProjectOverviewController
         // If the service call failed, return a generic service error view
         if (!projectRecordResponse.IsSuccessStatusCode)
         {
-            return (this.ServiceError(projectRecordResponse), null);
+            return this.ServiceError(projectRecordResponse);
         }
 
         var projectRecord = projectRecordResponse.Content;
@@ -161,13 +143,11 @@ public class ProjectOverviewController
         if (projectRecord == null)
         {
             // Return a 404 error view if the project record is not found
-            return (View("Error", new ProblemDetails()
-            {
-                Title = ReasonPhrases.GetReasonPhrase(StatusCodes.Status404NotFound),
-                Detail = "Project record not found",
-                Status = StatusCodes.Status404NotFound,
-                Instance = Request.Path
-            }), null);
+            var serviceResponse = new ServiceResponse()
+                .WithError("Project record not found")
+                .WithStatus(HttpStatusCode.NotFound);
+
+            return this.ServiceError(serviceResponse);
         }
 
         // Get all respondent answers for the project and category
@@ -175,7 +155,7 @@ public class ProjectOverviewController
 
         if (!respondentAnswersResponse.IsSuccessStatusCode)
         {
-            return (this.ServiceError(respondentAnswersResponse), null);
+            return this.ServiceError(respondentAnswersResponse);
         }
 
         var answers = respondentAnswersResponse.Content;
@@ -183,13 +163,11 @@ public class ProjectOverviewController
         if (answers == null)
         {
             // Return a 404 error view if no responses are found for the project record
-            return (View("Error", new ProblemDetails()
-            {
-                Title = ReasonPhrases.GetReasonPhrase(StatusCodes.Status404NotFound),
-                Detail = "No responses found for the project record",
-                Status = StatusCodes.Status404NotFound,
-                Instance = Request.Path
-            }), null);
+            var serviceResponse = new ServiceResponse()
+                .WithError("No responses found for the project record")
+                .WithStatus(HttpStatusCode.NotFound);
+
+            return this.ServiceError(serviceResponse);
         }
 
         TempData.TryAdd(TempDataKeys.ProjectRecordResponses, answers, true);
@@ -210,8 +188,8 @@ public class ProjectOverviewController
 
         var participatingNations = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.ParticipatingNations)?
             .Answers
-            .Select(id => answerOptions.TryGetValue(id, out var name) ? name : id)
-            .ToList();
+            .ConvertAll(id => answerOptions.TryGetValue(id, out var name) ? name : id)
+;
 
         var nhsOrHscOrganisations = GetAnswerName(answers.FirstOrDefault(a => a.QuestionId == QuestionIds.NhsOrHscOrganisations)?.SelectedOption, answerOptions);
         var LeadNation = GetAnswerName(answers.FirstOrDefault(a => a.QuestionId == QuestionIds.LeadNation)?.SelectedOption, answerOptions);
@@ -249,11 +227,41 @@ public class ProjectOverviewController
             SponsorContact = sponsorContact
         };
 
-        return (null, model);
+        return Ok(model);
     }
 
-    private string? GetAnswerName(string? answerText, Dictionary<string, string> options)
+    private static string? GetAnswerName(string? answerText, Dictionary<string, string> options)
     {
         return answerText is string id && options.TryGetValue(id, out var name) ? name : null;
+    }
+
+    private void UpdateModificationRelatedTempData()
+    {
+        // If there is a project modification change, show the notification banner
+        if (TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId) is not null &&
+            TempData[TempDataKeys.ProjectModification.ProjectModificationChangeMarker] is Guid marker &&
+            marker != Guid.Empty)
+        {
+            TempData[TempDataKeys.ShowNotificationBanner] = true;
+        }
+
+        // Remove modification-related TempData keys to reset state
+        TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationId);
+        TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationIdentifier);
+        TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationChangeId);
+        TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationSpecificArea);
+        TempData.Remove(TempDataKeys.ProjectModification.AreaOfChangeId);
+        TempData.Remove(TempDataKeys.ProjectModification.SpecificAreaOfChangeId);
+        TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationChangeMarker);
+
+        var keys = TempData.Keys.Where(key => key.StartsWith(TempDataKeys.ProjectModification.Questionnaire));
+
+        foreach (var key in keys)
+        {
+            TempData.Remove(key);
+        }
+
+        // Indicate that the project overview is being shown
+        TempData[TempDataKeys.ProjectOverview] = true;
     }
 }

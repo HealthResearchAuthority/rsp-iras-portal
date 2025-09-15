@@ -14,4 +14,5 @@ public struct ContextItemKeys
     public const string FirstName = "context:firstname";
     public const string LastName = "context:lastname";
     public const string LastLogin = "context:lastlogin";
+    public const string ProblemDetails = "context:problem_details";
 }

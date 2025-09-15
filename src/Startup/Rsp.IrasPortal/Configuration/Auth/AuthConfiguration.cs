@@ -61,12 +61,6 @@ public static class AuthConfiguration
                             context.HttpContext.Items[ContextItemKeys.BearerToken] = context.Properties.GetTokenValue(ContextItemKeys.AcessToken);
 
                             return Task.CompletedTask;
-                        },
-
-                        OnRedirectToLogin = context =>
-                        {
-                            context.Response.Redirect("/auth/timedout");
-                            return Task.CompletedTask;
                         }
                     };
 
@@ -74,7 +68,7 @@ public static class AuthConfiguration
                     options.LogoutPath = "/";
                     options.ExpireTimeSpan = TimeSpan.FromSeconds(appSettings.AuthSettings.AuthCookieTimeout + 60);
                     options.SlidingExpiration = true;
-                    options.AccessDeniedPath = "/Forbidden";
+                    options.AccessDeniedPath = "/error/forbidden";
                 }
             )
             .AddOpenIdConnect
@@ -148,12 +142,6 @@ public static class AuthConfiguration
                         context.HttpContext.Items[ContextItemKeys.BearerToken] = context.Properties.GetTokenValue(ContextItemKeys.IdToken);
 
                         return Task.CompletedTask;
-                    },
-
-                    OnRedirectToLogin = context =>
-                    {
-                        context.Response.Redirect("/auth/timedout");
-                        return Task.CompletedTask;
                     }
                 };
 
@@ -161,7 +149,7 @@ public static class AuthConfiguration
                 options.LogoutPath = "/";
                 options.ExpireTimeSpan = TimeSpan.FromSeconds(appSettings.OneLogin.AuthCookieTimeout + 60);
                 options.SlidingExpiration = true;
-                options.AccessDeniedPath = "/Forbidden";
+                options.AccessDeniedPath = "/error/forbidden";
             })
             .AddOpenIdConnect(options =>
             {

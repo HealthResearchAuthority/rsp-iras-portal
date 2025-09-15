@@ -7,7 +7,6 @@ using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Features.Modifications;
-using ProblemDetails = Microsoft.AspNetCore.Mvc.ProblemDetails;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications;
 
@@ -23,16 +22,17 @@ public class CreateModification : TestServiceBase<ModificationsController>
         // No ProjectRecordId or IrasId in TempData
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
 
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext()
+        };
+
         // Act
         var result = await Sut.CreateModification(separator);
 
         // Assert
-        var objResult = result.ShouldBeOfType<ObjectResult>();
-        var problem = objResult.Value.ShouldBeOfType<ProblemDetails>();
-
-        problem.Detail.ShouldNotBeNull();
-        problem.Status.ShouldBe(StatusCodes.Status400BadRequest);
-        problem.Detail.ShouldContain("ProjectRecordId and/or IrasId missing");
+        var statusCodeResult = result.ShouldBeOfType<StatusCodeResult>();
+        statusCodeResult.StatusCode.ShouldBe(StatusCodes.Status400BadRequest);
     }
 
     [Theory, AutoData]
@@ -78,8 +78,8 @@ public class CreateModification : TestServiceBase<ModificationsController>
         var result = await Sut.CreateModification(separator);
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Error");
+        var statusCodeResult = result.ShouldBeOfType<StatusCodeResult>();
+        statusCodeResult.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
     }
 
     [Theory, AutoData]

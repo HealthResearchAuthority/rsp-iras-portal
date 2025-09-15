@@ -3,7 +3,6 @@ using Mapster;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.FeatureManagement;
@@ -15,6 +14,7 @@ using Rsp.IrasPortal.Configuration.Dependencies;
 using Rsp.IrasPortal.Configuration.FeatureFolders;
 using Rsp.IrasPortal.Configuration.Health;
 using Rsp.IrasPortal.Configuration.HttpClients;
+using Rsp.IrasPortal.Infrastructure.ExceptionHandlers;
 using Rsp.IrasPortal.Web;
 using Rsp.IrasPortal.Web.ActionFilters;
 using Rsp.IrasPortal.Web.Attributes;
@@ -83,7 +83,6 @@ var featureManager = new FeatureManager(new ConfigurationFeatureDefinitionProvid
 services.AddServices();
 
 services.AddHttpContextAccessor();
-services.AddTransient<IActionContextAccessor, ActionContextAccessor>();
 
 services.AddHttpClients(appSettings!);
 
@@ -199,6 +198,11 @@ if (await featureManager.IsEnabledAsync(FeatureFlags.UseFrontDoor))
     });
 }
 
+// Global Exception Handler to log all unhandled requests
+// As we have UseExceptionHandler call with path below
+// It will call the Error action method to display a custom page
+services.AddExceptionHandler<GlobalExceptionHandler>();
+
 var app = builder.Build();
 
 app.UseForwardedHeaders();
@@ -210,7 +214,11 @@ app.UseStaticFiles(); // this will serve the static files from wwwroot folder
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Application/Error");
+    // this will enable the GlobalExceptionHandler to catch unhandled
+    // exceptions and log then, after that it will be redirected to
+    // /error/servererror to display a custom page
+    app.UseExceptionHandler("/error/servererror");
+
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 
@@ -220,6 +228,11 @@ else
 {
     app.UseDeveloperExceptionPage();
 }
+
+// we need custom page for other statuses as well e.g. like 404, 403
+// Re-executes the pipeline for error status codes (e.g. 404/500) so a unified endpoint (/error/statuscode)
+// can render a custom page while preserving the original status code and request context (no external redirect).
+app.UseStatusCodePagesWithReExecute("/error/statuscode", "?statusCode={0}");
 
 app.UseHttpsRedirection();
 

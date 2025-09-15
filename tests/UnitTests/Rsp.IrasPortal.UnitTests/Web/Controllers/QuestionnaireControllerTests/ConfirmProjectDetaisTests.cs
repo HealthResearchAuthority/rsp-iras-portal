@@ -55,7 +55,8 @@ public class ConfirmProjectDetaisTests : TestServiceBase<QuestionnaireController
         var result = await Sut.ConfirmProjectDetails();
 
         // Assert
-        result.ShouldBeOfType<ViewResult>().ViewName.ShouldBe("Error");
+        var statusCodeResult = result.ShouldBeOfType<StatusCodeResult>();
+        statusCodeResult.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
     }
 
     [Fact]
@@ -84,7 +85,8 @@ public class ConfirmProjectDetaisTests : TestServiceBase<QuestionnaireController
         var result = await Sut.ConfirmProjectDetails();
 
         // Assert
-        result.ShouldBeOfType<ViewResult>().ViewName.ShouldBe("Error");
+        var statusCodeResult = result.ShouldBeOfType<StatusCodeResult>();
+        statusCodeResult.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
     }
 
     [Fact]

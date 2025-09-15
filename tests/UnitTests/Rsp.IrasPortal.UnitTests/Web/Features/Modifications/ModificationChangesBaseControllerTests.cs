@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Responses;
@@ -48,7 +47,11 @@ public class ModificationChangesBaseControllerTests : TestServiceBase<Modificati
         var result = await Sut.ReviewChanges("PR1");
 
         // Assert
-        result.ShouldBeOfType<ViewResult>().ViewName.ShouldBe("Error");
+        // Assert
+        result
+            .ShouldBeOfType<StatusCodeResult>()
+            .StatusCode
+            .ShouldBe(StatusCodes.Status400BadRequest);
     }
 
     [Fact]
@@ -67,7 +70,11 @@ public class ModificationChangesBaseControllerTests : TestServiceBase<Modificati
         var result = await Sut.ReviewChanges("PR1");
 
         // Assert
-        result.ShouldBeOfType<ViewResult>().ViewName.ShouldBe("Error");
+        // Assert
+        result
+            .ShouldBeOfType<StatusCodeResult>()
+            .StatusCode
+            .ShouldBe(StatusCodes.Status400BadRequest);
     }
 
     [Fact]
@@ -108,7 +115,10 @@ public class ModificationChangesBaseControllerTests : TestServiceBase<Modificati
         var result = await Sut.ConfirmModificationChanges();
 
         // Assert
-        result.ShouldBeOfType<ViewResult>().ViewName.ShouldBe("Error");
+        result
+            .ShouldBeOfType<StatusCodeResult>()
+            .StatusCode
+            .ShouldBe(StatusCodes.Status400BadRequest);
     }
 
     [Fact]
@@ -127,7 +137,10 @@ public class ModificationChangesBaseControllerTests : TestServiceBase<Modificati
         var result = await Sut.ConfirmModificationChanges();
 
         // Assert
-        result.ShouldBeOfType<ViewResult>().ViewName.ShouldBe("Error");
+        result
+            .ShouldBeOfType<StatusCodeResult>()
+            .StatusCode
+            .ShouldBe(StatusCodes.Status400BadRequest);
     }
 
     [Fact]
@@ -149,7 +162,7 @@ public class ModificationChangesBaseControllerTests : TestServiceBase<Modificati
 
         _validator
             .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ValidationResult([ new ValidationFailure("Q1", "Required") ]));
+            .ReturnsAsync(new ValidationResult([new ValidationFailure("Q1", "Required")]));
 
         // Act
         var result = await Sut.ConfirmModificationChanges();
