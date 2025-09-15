@@ -1,13 +1,12 @@
-﻿using System.Security.Claims;
-using System.Text.Json;
+﻿using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.Filters;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
-using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers;
@@ -86,6 +85,7 @@ public class MyTasklistController(IProjectModificationsService projectModificati
     }
 
     [HttpPost]
+    [CmsContentAction(nameof(Index))]
     public async Task<IActionResult> ApplyFilters(MyTasklistViewModel model)
     {
         var validationResult = await validator.ValidateAsync(model.Search);

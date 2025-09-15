@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
+using Rsp.IrasPortal.Application.Filters;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
@@ -256,6 +257,7 @@ public class ModificationsTasklistController(
     }
 
     [HttpPost]
+    [CmsContentAction(nameof(Index))]
     public async Task<IActionResult> ApplyFilters(ModificationsTasklistViewModel model)
     {
         var validationResult = await validator.ValidateAsync(model.Search);
