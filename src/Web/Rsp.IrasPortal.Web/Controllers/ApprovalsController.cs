@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.Filters;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
@@ -86,6 +87,7 @@ public class ApprovalsController
     }
 
     [HttpPost]
+    [CmsContentAction(nameof(Index))]
     public async Task<IActionResult> ApplyFilters(ApprovalsSearchViewModel model)
     {
         var validationResult = await validator.ValidateAsync(model.Search);
@@ -148,23 +150,29 @@ public class ApprovalsController
             case "chiefinvestigatorname":
                 search.ChiefInvestigatorName = null;
                 break;
+
             case "shortprojecttitle":
                 search.ShortProjectTitle = null;
                 break;
+
             case "sponsororganisation":
                 search.SponsorOrganisation = null;
                 search.SponsorOrgSearch = new OrganisationSearchViewModel();
                 break;
+
             case "datesubmitted":
                 search.FromDay = search.FromMonth = search.FromYear = null;
                 search.ToDay = search.ToMonth = search.ToYear = null;
                 break;
+
             case "datesubmitted-from":
                 search.FromDay = search.FromMonth = search.FromYear = null;
                 break;
+
             case "datesubmitted-to":
                 search.ToDay = search.ToMonth = search.ToYear = null;
                 break;
+
             case "leadnation":
                 if (!string.IsNullOrEmpty(value) && search.LeadNation?.Count > 0)
                 {
@@ -173,6 +181,7 @@ public class ApprovalsController
                         .ToList();
                 }
                 break;
+
             case "participatingnation":
                 if (!string.IsNullOrEmpty(value) && search.ParticipatingNation?.Count > 0)
                 {
@@ -181,6 +190,7 @@ public class ApprovalsController
                         .ToList();
                 }
                 break;
+
             case "modificationtype":
                 if (!string.IsNullOrEmpty(value) && search.ModificationTypes?.Count > 0)
                 {
