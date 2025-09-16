@@ -42,6 +42,7 @@ public class MyTasklistController(IProjectModificationsService projectModificati
             ToDate = search.ToDate,
             IrasId = search.IrasId,
             ReviewerId = User?.FindFirst("userId")?.Value,
+            ShortProjectTitle = search.ShortProjectTitle,
             IncludeReviewerId = true
         };
 
