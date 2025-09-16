@@ -61,7 +61,7 @@
 
 		@if (!Model.EmptySearchPerformed || (Model.Modifications != null && Model.Modifications.Any()))
 		{
-			@Html.Raw(searchHint)
+			@Html.Raw(searchHint?.Value)
 			<form asp-route="mytasklist:applyfilters" method="post" class="govuk-form-group govuk-!-margin-bottom-0">
 				<div class="search-flex-container">
 					<span id="iras-id-label" class="govuk-visually-hidden">IRAS ID</span>
