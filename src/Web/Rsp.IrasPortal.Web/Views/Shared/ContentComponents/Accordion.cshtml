@@ -10,12 +10,12 @@
 				<div class="govuk-accordion__section-header">
 					<h2 class="govuk-accordion__section-heading">
 						<span class="govuk-accordion__section-button" id="accordion-default-heading-1">
-							@accordionItem.Content.Properties.Title
+							@accordionItem?.Content?.Properties?.Title
 						</span>
 					</h2>
 				</div>
 				<div id="accordion-default-content-1" class="govuk-accordion__section-content">
-					<p class="govuk-body">@Html.Raw(accordionItem.Content.Properties.Value)</p>
+					<p class="govuk-body">@Html.Raw(accordionItem?.Content?.Properties?.Value)</p>
 				</div>
 			</div>
 		}
