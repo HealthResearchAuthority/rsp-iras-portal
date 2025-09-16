@@ -63,6 +63,11 @@ public class AppSettings
     public string? ClarityProjectId { get; set; }
 
     /// <summary>
+    /// Google Analytics tag id
+    /// </summary>
+    public string? GoogleTagId { get; set; }
+
+    /// <summary>
     /// Number of seconds the general page CMS content is cached
     /// </summary>
     public int? GeneralContentCacheDurationSeconds { get; set; }
