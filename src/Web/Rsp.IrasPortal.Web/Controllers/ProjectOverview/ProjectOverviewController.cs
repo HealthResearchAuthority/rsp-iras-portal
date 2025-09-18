@@ -72,8 +72,8 @@ public class ProjectOverviewController
                         ModificationType = dto.ModificationType,
                         ReviewType = null,
                         Category = null,
-                        DateSubmitted = null,
-                        Status = "Draft"
+                        DateSubmitted = dto.CreatedAt,
+                        Status = dto.Status
                     })
                     .ToList() ?? [];
 
@@ -89,7 +89,7 @@ public class ProjectOverviewController
         return View(model);
     }
 
-    public async Task<IActionResult> KeyProjectRoles(string projectRecordId)
+    public async Task<IActionResult> ProjectTeam(string projectRecordId)
     {
         var response = await GetProjectOverview(projectRecordId);
 

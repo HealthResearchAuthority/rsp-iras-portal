@@ -12,4 +12,5 @@ public class ModificationsDto
     public string ParticipatingNation { get; set; } = null!;
     public string SponsorOrganisation { get; set; } = null!;
     public DateTime CreatedAt { get; set; }
+    public string Status { get; set; } = null!;
 }

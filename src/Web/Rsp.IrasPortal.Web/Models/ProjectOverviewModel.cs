@@ -11,6 +11,16 @@ public class ProjectOverviewModel
     public string? ProjectTitle { get; set; }
 
     /// <summary>
+    /// Gets or sets the title of the project.
+    /// </summary>
+    public string? FullProjectTitle { get; set; }
+
+    /// <summary>
+    /// Gets or sets the REC name.
+    /// </summary>
+    public string? RecName { get; set; }
+
+    /// <summary>
     /// Gets or sets the category identifier for the project.
     /// </summary>
     public string? CategoryId { get; set; }

@@ -37,9 +37,9 @@
                             @ProjectOverview.ProjectDocuments
                         </a>
                     </li>
-                    <li class="govuk-service-navigation__item small-margin @(active == ProjectOverview.KeyProjectRoles ? "govuk-service-navigation__item--active" : "")">
-                        <a class="govuk-service-navigation__link" asp-route="pov:keyprojectroles" asp-route-projectRecordId="@Model.ProjectRecordId">
-                            @ProjectOverview.KeyProjectRoles
+                    <li class="govuk-service-navigation__item small-margin @(active == ProjectOverview.ProjectTeam ? "govuk-service-navigation__item--active" : "")">
+						<a class="govuk-service-navigation__link" asp-route="pov:projectteam" asp-route-projectRecordId="@Model.ProjectRecordId">
+							@ProjectOverview.ProjectTeam
                         </a>
                     </li>
                     <li class="govuk-service-navigation__item small-margin @(active == ProjectOverview.ResearchLocations ? "govuk-service-navigation__item--active" : "")">

@@ -218,7 +218,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
     }
 
     [Fact]
-    public async Task KeyProjectRoles_ReturnsViewResult_WithKeyProjectRoleData()
+    public async Task ProjectTeam_ReturnsViewResult_WithKeyProjectRoleData()
     {
         // Arrange
         var projectRecordId = "123";
@@ -238,7 +238,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupControllerContext(httpContext, tempData);
 
         // Act
-        var result = await Sut.KeyProjectRoles(projectRecordId);
+        var result = await Sut.ProjectTeam(projectRecordId);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -372,7 +372,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 
         var modifications = new List<ModificationsDto>
         {
-            new() { ModificationId = "m1", ModificationType = "Type1" }
+            new() { ModificationId = "m1", ModificationType = "Type1",Status = "Draft" }
         };
 
         var modificationsResponse = new GetModificationsResponse
@@ -403,7 +403,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         mod.Status.ShouldBe("Draft");
         mod.ReviewType.ShouldBeNull();
         mod.Category.ShouldBeNull();
-        mod.DateSubmitted.ShouldBeNull();
+        mod.DateSubmitted.ShouldNotBeNull();
     }
 
     [Fact]
