@@ -9,18 +9,18 @@
 @inject IFeatureManager featureManager
 
 @{
-    (string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
-    ViewBag.Title = $"Add document details for {Model.FileName}";
-    var errorSummaryTitle = "There is a problem";
+	(string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
+	ViewBag.Title = $"Add document details for {Model.FileName}";
+	var errorSummaryTitle = "There is a problem";
 }
 @if (await featureManager.IsEnabledAsync(FeatureFlags.ProgressiveEnhancement))
 {
-    <script src="~/lib/jquery/dist/jquery.js"></script>
+	<script src="~/lib/jquery/dist/jquery.js"></script>
 
-    // Collect all rules for conditional questions
-    var conditionalRules = Model.GetConditionalRules();
+	// Collect all rules for conditional questions
+	var conditionalRules = Model.GetConditionalRules();
 
-    <script>
+	<script>
 		$(document).ready(function () {
 		const conditionalRules = @Html.Raw(JsonSerializer.Serialize(conditionalRules));
 
@@ -29,131 +29,142 @@
 		sessionStorage.setItem(rule.QuestionId, JSON.stringify(rule.Rules));
 		});
 		});
-    </script>
+	</script>
 
-    <script src="~/js/questionnaire.js"></script>
-    <script src="~/js/rules.js"></script>
+	<script src="~/js/questionnaire.js"></script>
+	<script src="~/js/rules.js"></script>
 }
 
 @{
-    if (Model.ReviewAnswers)
-    {
-        navModel = ("pmc:reviewdocumentdetails", "Back", new());
-    }
-    else
-    {
-        // back to the add document details view as that's where the jouney started from
-        navModel = ("pmc:adddocumentdetailslist", "Back", new());
-    }
+	if (Model.ReviewAnswers)
+	{
+		navModel = ("pmc:reviewdocumentdetails", "Back", new());
+	}
+	else
+	{
+		// back to the add document details view as that's where the jouney started from
+		navModel = ("pmc:adddocumentdetailslist", "Back", new());
+	}
 }
 
 @if (navModel != null)
 {
-    @* @section is added for the back button, so that we can render something below the back button
+	@* @section is added for the back button, so that we can render something below the back button
         and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
         the named section *@
-    @section BackNavigation {
-        <partial name="_BackNavigation" model="navModel.Value" />
-    }
+	@section BackNavigation {
+	<partial name="_BackNavigation" model="navModel.Value" />
+	}
 }
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-        <form method="post">
-            <h1 class="govuk-heading-l">
-                Add document details for @Model.FileName
-            </h1>
+	<div class="govuk-grid-column-two-thirds">
+		<form method="post">
+			<h1 class="govuk-heading-l">
+				Add document details for @Model.FileName
+			</h1>
 
-            <dl class="govuk-summary-list">
-                <div class="govuk-summary-list__row">
-                    <dt class="govuk-summary-list__key govuk-!-width-one-half">
-                        <a href="@Model.DocumentStoragePath" target="_blank">@Model.FileName</a>
-                    </dt>
-                    <dd class="govuk-summary-list__value govuk-!-width-one-quarter">@Model.DisplaySize</dd>
-                    <dd class="govuk-summary-list__actions govuk-!-width-one-quarter">
-                        <a asp-action="DeleteDocument" asp-route-id="@Model.DocumentId" class="govuk-link">Delete</a>
-                    </dd>
-                </div>
-            </dl>
+			<table class="govuk-table">
+				<thead class="govuk-visually-hidden">
+					<tr>
+						<th>Document name</th>
+						<th>Size</th>
+						<th class="govuk-!-text-align-right">Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell" style="width: 60%;">
+							<a href="@Model.DocumentStoragePath" class="govuk-link" target="_blank">@Model.FileName</a>
+						</td>
+						<td class="govuk-table__cell" style="width: 20%;">
+							<span class="govuk-body">@Model.DisplaySize</span>
+						</td>
+						<td class="govuk-table__cell govuk-!-text-align-right" style="width: 20%;">
+							<a asp-action="DeleteDocument" asp-route-id="@Model.FileName" class="govuk-link govuk-link--destructive">Delete</a>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
 
-            <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
+			<govuk-fieldset class="sections">
+				<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
 
-            <govuk-fieldset class="sections">
-                <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
+				<input type="hidden" asp-for="@Model.ShortTitle" />
+				<input type="hidden" asp-for="@Model.IrasId" />
+				<input type="hidden" asp-for="@Model.ModificationIdentifier" />
+				<input type="hidden" asp-for="@Model.DocumentId" />
+				<input type="hidden" asp-for="@Model.FileName" />
+				<input type="hidden" asp-for="@Model.FileSize" />
+				<input type="hidden" asp-for="@Model.DocumentStoragePath" />
+				<input type="hidden" asp-for="@Model.ReviewAnswers" />
+				<input type="hidden" asp-for="@Model.ProjectRecordId" />
 
-                <input type="hidden" asp-for="@Model.ShortTitle" />
-                <input type="hidden" asp-for="@Model.IrasId" />
-                <input type="hidden" asp-for="@Model.ModificationIdentifier" />
-                <input type="hidden" asp-for="@Model.DocumentId" />
-                <input type="hidden" asp-for="@Model.FileName" />
-                <input type="hidden" asp-for="@Model.FileSize" />
-                <input type="hidden" asp-for="@Model.DocumentStoragePath" />
-                <input type="hidden" asp-for="@Model.ReviewAnswers" />
+				@foreach (var question in Model.Questions)
+				{
+					var index = question.Index;
 
-                @foreach (var question in Model.Questions)
-                {
-                    var index = question.Index;
+					<input type="hidden" asp-for="Questions[index].Id" />
+					<input type="hidden" asp-for="Questions[index].Index" />
+					<input type="hidden" asp-for="Questions[index].QuestionId" />
+					<input type="hidden" asp-for="Questions[index].Category" />
+					<input type="hidden" asp-for="Questions[index].SectionId" />
+					<input type="hidden" asp-for="Questions[index].Section" />
+					<input type="hidden" asp-for="Questions[index].Heading" />
+					<input type="hidden" asp-for="Questions[index].QuestionText" />
+					<input type="hidden" asp-for="Questions[index].ShortQuestionText" />
+					<input type="hidden" asp-for="Questions[index].QuestionType" />
+					<input type="hidden" asp-for="Questions[index].DataType" />
+					<input type="hidden" asp-for="Questions[index].IsMandatory" checked="@question.IsMandatory" />
+					<input type="hidden" asp-for="Questions[index].IsOptional" checked="@question.IsOptional" />
 
-                    <input type="hidden" asp-for="Questions[index].Id" />
-                    <input type="hidden" asp-for="Questions[index].Index" />
-                    <input type="hidden" asp-for="Questions[index].QuestionId" />
-                    <input type="hidden" asp-for="Questions[index].Category" />
-                    <input type="hidden" asp-for="Questions[index].SectionId" />
-                    <input type="hidden" asp-for="Questions[index].Section" />
-                    <input type="hidden" asp-for="Questions[index].Heading" />
-                    <input type="hidden" asp-for="Questions[index].QuestionText" />
-                    <input type="hidden" asp-for="Questions[index].ShortQuestionText" />
-                    <input type="hidden" asp-for="Questions[index].QuestionType" />
-                    <input type="hidden" asp-for="Questions[index].DataType" />
-                    <input type="hidden" asp-for="Questions[index].IsMandatory" checked="@question.IsMandatory" />
-                    <input type="hidden" asp-for="Questions[index].IsOptional" checked="@question.IsOptional" />
+					if (!question.IsMandatory)
+					{
+						if (question.Rules.Count == 0)
+						{
+							<div class="govuk-inset-text">
+								This question is conditional:
+							</div>
+						}
+					}
 
-                    if (!question.IsMandatory)
-                    {
-                        if (question.Rules.Count == 0)
-                        {
-                            <div class="govuk-inset-text">
-                                This question is conditional:
-                            </div>
-                        }
-                    }
+					var types = (question.QuestionType.ToLower(), question.DataType.ToLower());
 
-                    var types = (question.QuestionType.ToLower(), question.DataType.ToLower());
+					ViewBag.Index = index;
 
-                    ViewBag.Index = index;
+					// this will be used in the template
+					var templateName = types switch
+					{
+						("date", "date") => "DateTemplate",
+						("text", "text" or "email") => "TextTemplate",
+						("look-up list", "checkbox") => "CheckboxTemplate",
+						("look-up list", "radio button") => "RadioButtonTemplate",
+						("boolean", "boolean") => "RadioButtonTemplate",
+						("boolean", "radio button") => "RadioButtonTemplate",
+						("look-up list", "dropdown") => "DropdownTemplate",
+						_ => string.Empty
+					};
 
-                    // this will be used in the template
-                    var templateName = types switch
-                    {
-                        ("date", "date") => "DateTemplate",
-                        ("text", "text" or "email") => "TextTemplate",
-                        ("look-up list", "checkbox") => "CheckboxTemplate",
-                        ("look-up list", "radio button") => "RadioButtonTemplate",
-                        ("boolean", "boolean") => "RadioButtonTemplate",
-                        ("boolean", "radio button") => "RadioButtonTemplate",
-                        ("look-up list", "dropdown") => "DropdownTemplate",
-                        _ => string.Empty
-                    };
+					if (!string.IsNullOrWhiteSpace(templateName))
+					{
+						// plese note the @ is necessary before Html so that Template is rendered, otherwise it won't render
+						@Html.EditorFor(m => m, templateName, ViewData)
+					}
+				}
+			</govuk-fieldset>
+			<div class="save-buttons">
+				@if (!Model.ReviewAnswers)
+				{
+					<partial name="_SubmitButton" model="@("pmc:savedocumentdetails", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } })" />
 
-                    if (!string.IsNullOrWhiteSpace(templateName))
-                    {
-                        // plese note the @ is necessary before Html so that Template is rendered, otherwise it won't render
-                        @Html.EditorFor(m => m, templateName, ViewData)
-                    }
-                }
-            </govuk-fieldset>
-            <div class="save-buttons">
-                @if (!Model.ReviewAnswers)
-                {
-                    <partial name="_SubmitButton" model="@("pmc:savedocumentdetails", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } })" />
-
-                    ViewBag.Style = "govuk-button govuk-button--secondary";
-                    <partial name="_SubmitButton" model="@("pov:postapproval", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId })" />
-                }
-                else
-                {
-                    <partial name="_SubmitButton" model="@("pmc:savedocumentdetails", "Save changes", new Dictionary<string, string>())" />
-                }
-            </div>
-        </form>
-    </div>
+					ViewBag.Style = "govuk-button govuk-button--secondary";
+					<partial name="_SubmitButton" model="@("pmc:savedocumentdetails", "Save for later", new Dictionary<string, string> {{ "saveForLater", bool.TrueString }})" />
+				}
+				else
+				{
+					<partial name="_SubmitButton" model="@("pmc:savedocumentdetails", "Save changes", new Dictionary<string, string>())" />
+				}
+			</div>
+		</form>
+	</div>
 </div>
