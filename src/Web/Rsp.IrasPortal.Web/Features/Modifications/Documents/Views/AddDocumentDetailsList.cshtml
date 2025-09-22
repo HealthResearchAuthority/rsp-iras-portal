@@ -23,33 +23,34 @@
 			</h1>
             <partial name="_ProjectModificationSummary" />
 
-            @if (Model.UploadedDocuments.Any())
-            {
-                <table class="govuk-table">
-                    <thead class="govuk-visually-hidden">
-                        <tr>
-                            <th>Document name</th>
-                            <th>Size</th>
-                            <th class="govuk-!-text-align-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var doc in Model.UploadedDocuments)
-                        {
-                            <tr class="govuk-table__row">
-                                <td class="govuk-table__cell" style="width: 60%;">
-                                    <a asp-action="ContinueToDetails" asp-controller="Documents" asp-route-documentId="@doc.DocumentId" class="govuk-link">@doc.FileName</a>
-                                </td>
-                                <td class="govuk-table__cell govuk-!-text-align-right" style="width: 20%;">
-                                    <strong class="govuk-tag">
-                                        @doc.Status
-                                    </strong>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            }
+			@if (Model.UploadedDocuments.Any())
+			{
+				<ul class="govuk-task-list">
+					@foreach (var doc in Model.UploadedDocuments)
+					{
+						<li class="govuk-task-list__item">
+							<div class="govuk-task-list__name-and-hint">
+								<a asp-action="ContinueToDetails"
+								   asp-controller="Documents"
+								   asp-route-documentId="@doc.DocumentId"
+								   class="govuk-link govuk-task-list__link">
+									@doc.FileName
+								</a>
+							</div>
+							<div class="govuk-task-list__status">
+								@if (doc.Status == "Completed")
+								{
+									@doc.Status
+								}
+								else
+								{
+									<strong class="govuk-tag">@doc.Status</strong>
+								}
+							</div>
+						</li>
+					}
+				</ul>
+			}
             else
             {
                 <p class="govuk-body">No documents uploaded.</p>

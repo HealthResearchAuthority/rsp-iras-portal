@@ -29,6 +29,7 @@ public class DocumentsController
 {
     private const string ContainerName = "staging";
     private const string DocumentDetailsSection = "pdm-document-metadata";
+    private const string PostApprovalRoute = "pov:postapproval";
 
     /// <summary>
     /// Handles GET requests for the ProjectDocument action.
@@ -387,7 +388,7 @@ public class DocumentsController
     /// - If validation succeeds: saves answers and redirects to review or list page based on ReviewAnswers flag.
     /// </returns>
     [HttpPost]
-    public async Task<IActionResult> SaveDocumentDetails(ModificationAddDocumentDetailsViewModel viewModel)
+    public async Task<IActionResult> SaveDocumentDetails(ModificationAddDocumentDetailsViewModel viewModel, bool saveForLater = false)
     {
         // Retrieve the CMS question set for the document metadata section
         var additionalQuestionsResponse = await cmsQuestionsetService
@@ -431,6 +432,15 @@ public class DocumentsController
 
         // Persist the responses to the backend service
         await SaveModificationDocumentAnswers(viewModel);
+
+        // if save for later
+        if (saveForLater)
+        {
+            // to get the ProjectRecordId
+            var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
+
+            return RedirectToRoute(PostApprovalRoute, new { projectRecordId });
+        }
 
         // Redirect depending on whether the user is reviewing answers or adding more details
         return viewModel.ReviewAnswers
