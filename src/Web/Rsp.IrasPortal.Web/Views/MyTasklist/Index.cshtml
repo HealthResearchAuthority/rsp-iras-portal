@@ -297,8 +297,14 @@ else
 
 									<tr class="govuk-table__row">
 										<td class="govuk-table__cell">@modification.ModificationId</td>
-										<td class="govuk-table__cell"><a href="?@modification.ModificationId"
-												class="govuk-link"><strong>@modification.ShortProjectTitle</strong></a></td>
+                                        <td class="govuk-table__cell">
+                                            <a asp-route="pov:projectdetails"
+                                               asp-route-projectRecordId="@modification.ProjectRecordId"
+                                               asp-route-backRoute="mytasklist:index"
+                                               class="govuk-link">
+											<strong>@modification.ShortProjectTitle</strong>
+                                            </a>
+                                        </td>
 										<td class="govuk-table__cell">@modification.CreatedAt.ToString("dd MMM yyyy")</td>
 										<td class="govuk-table__cell">@modification.DaysSinceSubmission @daysText</td>
 										<td class="govuk-table__cell">@modification.Status</td>

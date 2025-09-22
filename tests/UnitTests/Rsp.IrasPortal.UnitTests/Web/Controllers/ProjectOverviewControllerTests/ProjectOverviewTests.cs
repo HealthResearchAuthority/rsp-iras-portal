@@ -1,6 +1,8 @@
+using System.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Moq;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
@@ -9,6 +11,7 @@ using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Controllers.ProjectOverview;
 using Rsp.IrasPortal.Web.Models;
+using Shouldly;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectOverviewControllerTests;
 
@@ -16,10 +19,35 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 {
     private const string DefaultProjectRecordId = "123";
 
-    private TempDataDictionary CreateTempData(Mock<ITempDataProvider> tempDataProvider, HttpContext httpContext)
+    // --- NEW: simple in-memory session for unit tests
+    private sealed class TestSession : ISession
     {
-        return new TempDataDictionary(httpContext, tempDataProvider.Object);
+        private readonly Dictionary<string, byte[]> _store = new();
+
+        public IEnumerable<string> Keys => _store.Keys;
+        public string Id { get; } = Guid.NewGuid().ToString("N");
+        public bool IsAvailable => true;
+
+        public void Clear() => _store.Clear();
+        public Task CommitAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task LoadAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public void Remove(string key) => _store.Remove(key);
+        public void Set(string key, byte[] value) => _store[key] = value;
+        public bool TryGetValue(string key, out byte[] value) => _store.TryGetValue(key, out value!);
     }
+
+    // --- NEW: helper to create HttpContext with session already wired up
+    private static DefaultHttpContext CreateHttpContextWithSession()
+    {
+        var ctx = new DefaultHttpContext
+        {
+            Session = new TestSession()
+        };
+        return ctx;
+    }
+
+    private TempDataDictionary CreateTempData(Mock<ITempDataProvider> tempDataProvider, HttpContext httpContext)
+        => new(httpContext, tempDataProvider.Object);
 
     private void SetupProjectRecord(string projectRecordId)
     {
@@ -52,10 +80,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 
     private void SetupControllerContext(HttpContext httpContext, ITempDataDictionary tempData)
     {
-        Sut.ControllerContext = new ControllerContext
-        {
-            HttpContext = httpContext
-        };
+        Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
         Sut.TempData = tempData;
     }
 
@@ -63,7 +88,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
     public async Task ProjectDetails_UsesTempData_AndReturnsViewResult()
     {
         // Arrange
-        var httpContext = new DefaultHttpContext();
+        var httpContext = CreateHttpContextWithSession(); // CHANGED
         var tempDataProvider = new Mock<ITempDataProvider>();
         var tempData = CreateTempData(tempDataProvider, httpContext);
 
@@ -82,8 +107,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupControllerContext(httpContext, tempData);
 
         // Act
-        var result = await Sut.ProjectDetails(DefaultProjectRecordId);
-
+        var result = await Sut.ProjectDetails(DefaultProjectRecordId, "");
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
         var model = viewResult.Model.ShouldBeOfType<ProjectOverviewModel>();
@@ -97,7 +121,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
     public async Task ProjectDetails_RemovesModificationRelatedTempDataKeys()
     {
         // Arrange
-        var httpContext = new DefaultHttpContext();
+        var httpContext = CreateHttpContextWithSession(); // CHANGED
         var tempDataProvider = new Mock<ITempDataProvider>();
         var tempData = CreateTempData(tempDataProvider, httpContext);
 
@@ -105,7 +129,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         tempData[TempDataKeys.ProjectModification.ProjectModificationIdentifier] = "ident-1";
         tempData[TempDataKeys.ProjectModification.ProjectModificationChangeId] = "chg-1";
         tempData[TempDataKeys.ProjectModification.ProjectModificationSpecificArea] = "area-1";
-        tempData[$"{TempDataKeys.ProjectModification.Questionnaire}_abc"] = "questionnaire-data"; // dynamic key to test removal by prefix
+        tempData[$"{TempDataKeys.ProjectModification.Questionnaire}_abc"] = "questionnaire-data";
 
         var answers = new List<RespondentAnswerDto>
         {
@@ -118,7 +142,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupControllerContext(httpContext, tempData);
 
         // Act
-        await Sut.ProjectDetails(DefaultProjectRecordId);
+        await Sut.ProjectDetails(DefaultProjectRecordId, "");
 
         // Assert
         tempData.ContainsKey(TempDataKeys.ProjectModification.ProjectModificationId).ShouldBeFalse();
@@ -132,7 +156,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
     public async Task ProjectDetails_SetsNotificationBanner_WhenMarkerPresent()
     {
         // Arrange
-        var httpContext = new DefaultHttpContext();
+        var httpContext = CreateHttpContextWithSession(); // CHANGED
         var tempDataProvider = new Mock<ITempDataProvider>();
         var tempData = CreateTempData(tempDataProvider, httpContext);
 
@@ -149,7 +173,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupControllerContext(httpContext, tempData);
 
         // Act
-        await Sut.ProjectDetails(DefaultProjectRecordId);
+        await Sut.ProjectDetails(DefaultProjectRecordId, "");
 
         // Assert
         tempData[TempDataKeys.ShowNotificationBanner].ShouldBe(true);
@@ -161,7 +185,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
     {
         // Arrange
         var projectRecordId = "rec-1";
-        var httpContext = new DefaultHttpContext();
+        var httpContext = CreateHttpContextWithSession(); // CHANGED
         var tempDataProvider = new Mock<ITempDataProvider>();
         var tempData = CreateTempData(tempDataProvider, httpContext);
 
@@ -182,7 +206,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupControllerContext(httpContext, tempData);
 
         // Act
-        var result = await Sut.ProjectDetails(projectRecordId);
+        var result = await Sut.ProjectDetails(projectRecordId, "");
 
         // Assert
         tempData[TempDataKeys.ProjectOverview].ShouldBe(true);
@@ -192,7 +216,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
     public async Task ProjectDetails_SetsProjectOverviewProblemDetails()
     {
         // Arrange
-        var httpContext = new DefaultHttpContext();
+        var httpContext = CreateHttpContextWithSession(); // CHANGED
         var tempDataProvider = new Mock<ITempDataProvider>();
         var tempData = CreateTempData(tempDataProvider, httpContext);
 
@@ -210,7 +234,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupControllerContext(httpContext, tempData);
 
         // Act
-        var result = await Sut.ProjectDetails(DefaultProjectRecordId);
+        var result = await Sut.ProjectDetails(DefaultProjectRecordId, "");
 
         // Assert
         var statusCodeResult = result.ShouldBeOfType<StatusCodeResult>();
@@ -222,7 +246,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
     {
         // Arrange
         var projectRecordId = "123";
-        var httpContext = new DefaultHttpContext();
+        var httpContext = CreateHttpContextWithSession(); // CHANGED
         var tempDataProvider = new Mock<ITempDataProvider>();
         var tempData = CreateTempData(tempDataProvider, httpContext);
 
@@ -238,7 +262,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupControllerContext(httpContext, tempData);
 
         // Act
-        var result = await Sut.ProjectTeam(projectRecordId);
+        var result = await Sut.ProjectTeam(projectRecordId, "");
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -254,7 +278,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
     {
         // Arrange
         var projectRecordId = "123";
-        var httpContext = new DefaultHttpContext();
+        var httpContext = CreateHttpContextWithSession(); // CHANGED
         var tempDataProvider = new Mock<ITempDataProvider>();
         var tempData = CreateTempData(tempDataProvider, httpContext);
 
@@ -265,20 +289,12 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
             new() { QuestionId = QuestionIds.LeadNation, SelectedOption = QuestionAnswersOptionsIds.Wales }
         };
 
-        var answerOptions = new Dictionary<string, string>
-        {
-            { QuestionAnswersOptionsIds.England, "England" },
-            { QuestionAnswersOptionsIds.Scotland, "Scotland" },
-            { QuestionAnswersOptionsIds.Wales, "Wales" },
-            { QuestionAnswersOptionsIds.Yes, "Yes" }
-        };
-
         SetupProjectRecord(projectRecordId);
         SetupRespondentAnswers(projectRecordId, answers);
         SetupControllerContext(httpContext, tempData);
 
         // Act
-        var result = await Sut.ResearchLocations(projectRecordId);
+        var result = await Sut.ResearchLocations(projectRecordId, "");
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -299,7 +315,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var sortField = nameof(ModificationsModel.CreatedAt);
         var sortDirection = SortDirections.Ascending;
 
-        var httpContext = new DefaultHttpContext();
+        var httpContext = CreateHttpContextWithSession(); // CHANGED
         var tempDataProvider = new Mock<ITempDataProvider>();
         var tempData = CreateTempData(tempDataProvider, httpContext);
 
@@ -333,11 +349,11 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var projectModificationsService = Mocker.GetMock<IProjectModificationsService>();
 
         projectModificationsService
-                .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), pageNumber, pageSize, sortField, sortDirection))
-                .ReturnsAsync(serviceResponse);
+            .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), pageNumber, pageSize, sortField, sortDirection))
+            .ReturnsAsync(serviceResponse);
 
         // Act
-        var result = await Sut.PostApproval(projectRecordId, pageNumber, pageSize, sortField, sortDirection);
+        var result = await Sut.PostApproval(projectRecordId, "", pageNumber, pageSize, sortField, sortDirection);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -357,7 +373,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
     {
         // Arrange
         var projectRecordId = "456";
-        var httpContext = new DefaultHttpContext();
+        var httpContext = CreateHttpContextWithSession(); // CHANGED
         var tempDataProvider = new Mock<ITempDataProvider>();
         var tempData = CreateTempData(tempDataProvider, httpContext);
 
@@ -372,7 +388,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 
         var modifications = new List<ModificationsDto>
         {
-            new() { ModificationId = "m1", ModificationType = "Type1",Status = "Draft" }
+            new() { ModificationId = "m1", ModificationType = "Type1", Status = "Draft" }
         };
 
         var modificationsResponse = new GetModificationsResponse
@@ -392,7 +408,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
             .ReturnsAsync(serviceResponse);
 
         // Act
-        var result = await Sut.PostApproval(projectRecordId);
+        var result = await Sut.PostApproval(projectRecordId, "");
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -411,7 +427,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
     {
         // Arrange
         var projectRecordId = "789";
-        var httpContext = new DefaultHttpContext();
+        var httpContext = CreateHttpContextWithSession(); // CHANGED
         var tempDataProvider = new Mock<ITempDataProvider>();
         var tempData = CreateTempData(tempDataProvider, httpContext);
 
@@ -435,7 +451,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
             .ReturnsAsync(serviceResponse);
 
         // Act
-        var result = await Sut.PostApproval(projectRecordId);
+        var result = await Sut.PostApproval(projectRecordId, "");
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -449,12 +465,11 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
     {
         // Arrange
         var projectRecordId = "err-1";
-        var httpContext = new DefaultHttpContext();
+        var httpContext = CreateHttpContextWithSession(); // CHANGED
         var tempDataProvider = new Mock<ITempDataProvider>();
         var tempData = CreateTempData(tempDataProvider, httpContext);
         SetupControllerContext(httpContext, tempData);
 
-        // Cause application service to fail inside GetProjectOverview
         Mocker.GetMock<IApplicationsService>()
             .Setup(s => s.GetProjectRecord(projectRecordId))
             .ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
@@ -463,7 +478,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
             });
 
         // Act
-        var result = await Sut.PostApproval(projectRecordId);
+        var result = await Sut.PostApproval(projectRecordId, "");
 
         // Assert
         var status = result.ShouldBeOfType<StatusCodeResult>();
