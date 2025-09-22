@@ -484,4 +484,152 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var status = result.ShouldBeOfType<StatusCodeResult>();
         status.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
     }
+
+    [Fact]
+    public async Task ProjectDetails_BackNav_SetsSessionAndViewData_WhenBackRouteProvided()
+    {
+        // Arrange
+        var httpContext = CreateHttpContextWithSession();
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempData = CreateTempData(tempDataProvider, httpContext);
+
+        SetupProjectRecord(DefaultProjectRecordId);
+        SetupRespondentAnswers(DefaultProjectRecordId, new[]
+        {
+        new RespondentAnswerDto { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "X" }
+    });
+        SetupControllerContext(httpContext, tempData);
+
+        // Act (triggers: if (!IsNullOrWhiteSpace(backRouteFromQuery)) {... return;})
+        var result = await Sut.ProjectDetails(DefaultProjectRecordId, "admin:applyfilters");
+
+        // Assert
+        (Sut.ViewData["BackRoute"] as string).ShouldBe("admin:applyfilters");
+        httpContext.Session.GetString(SessionKeys.BackRoute).ShouldBe("admin:applyfilters");
+        httpContext.Session.GetString(SessionKeys.BackRouteSection).ShouldBe("pov");
+        result.ShouldBeOfType<ViewResult>();
+    }
+
+    [Fact]
+    public async Task ProjectDetails_BackNav_UsesStoredRoute_WhenSameSection_AndStoredRouteExists()
+    {
+        // Arrange
+        var httpContext = CreateHttpContextWithSession();
+        httpContext.Session.SetString(SessionKeys.BackRouteSection, "pov");
+        httpContext.Session.SetString(SessionKeys.BackRoute, "admin:results");
+
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempData = CreateTempData(tempDataProvider, httpContext);
+
+        SetupProjectRecord(DefaultProjectRecordId);
+        SetupRespondentAnswers(DefaultProjectRecordId, new[]
+        {
+        new RespondentAnswerDto { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "X" }
+    });
+        SetupControllerContext(httpContext, tempData);
+
+        // Act (triggers: same section -> pull BackRoute from session)
+        var result = await Sut.ProjectDetails(DefaultProjectRecordId, null);
+
+        // Assert
+        (Sut.ViewData["BackRoute"] as string).ShouldBe("admin:results");
+        httpContext.Session.GetString(SessionKeys.BackRouteSection).ShouldBe("pov");
+        httpContext.Session.GetString(SessionKeys.BackRoute).ShouldBe("admin:results");
+        result.ShouldBeOfType<ViewResult>();
+    }
+
+    [Fact]
+    public async Task ProjectDetails_BackNav_FallsBackToDefault_WhenSameSection_ButNoStoredRoute()
+    {
+        // Arrange
+        var httpContext = CreateHttpContextWithSession();
+        httpContext.Session.SetString(SessionKeys.BackRouteSection, "pov");
+        // Intentionally do NOT set BackRoute
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempData = CreateTempData(tempDataProvider, httpContext);
+
+        SetupProjectRecord(DefaultProjectRecordId);
+        SetupRespondentAnswers(DefaultProjectRecordId, new[]
+        {
+        new RespondentAnswerDto { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "X" }
+    });
+        SetupControllerContext(httpContext, tempData);
+
+        // Act (triggers: same section, storedRoute null -> defaultRoute)
+        var result = await Sut.ProjectDetails(DefaultProjectRecordId, null);
+
+        // Assert
+        (Sut.ViewData["BackRoute"] as string).ShouldBe("app:Welcome");
+        httpContext.Session.GetString(SessionKeys.BackRouteSection).ShouldBe("pov");
+        httpContext.Session.GetString(SessionKeys.BackRoute).ShouldBeNull();
+        result.ShouldBeOfType<ViewResult>();
+    }
+
+    [Fact]
+    public async Task ProjectDetails_BackNav_ClearsSession_AndDefaults_WhenDifferentSection()
+    {
+        // Arrange
+        var httpContext = CreateHttpContextWithSession();
+        httpContext.Session.SetString(SessionKeys.BackRouteSection, "other");
+        httpContext.Session.SetString(SessionKeys.BackRoute, "admin:old");
+
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempData = CreateTempData(tempDataProvider, httpContext);
+
+        SetupProjectRecord(DefaultProjectRecordId);
+        SetupRespondentAnswers(DefaultProjectRecordId, new[]
+        {
+        new RespondentAnswerDto { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "X" }
+    });
+        SetupControllerContext(httpContext, tempData);
+
+        // Act (triggers: else branch -> clears + default)
+        var result = await Sut.ProjectDetails(DefaultProjectRecordId, null);
+
+        // Assert
+        httpContext.Session.GetString(SessionKeys.BackRouteSection).ShouldBeNull();
+        httpContext.Session.GetString(SessionKeys.BackRoute).ShouldBeNull();
+        (Sut.ViewData["BackRoute"] as string).ShouldBe("app:Welcome");
+        result.ShouldBeOfType<ViewResult>();
+    }
+
+    [Fact]
+    public async Task BackNav_PersistsAcrossActions_WithinSection()
+    {
+        // Arrange
+        var projectRecordId = "persist-1";
+        var httpContext = CreateHttpContextWithSession();
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempData = CreateTempData(tempDataProvider, httpContext);
+
+        SetupProjectRecord(projectRecordId);
+        SetupRespondentAnswers(projectRecordId, new[]
+        {
+        new RespondentAnswerDto { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "X" }
+    });
+        SetupControllerContext(httpContext, tempData);
+
+        // Seed via ProjectDetails (sets session + ViewData)
+        await Sut.ProjectDetails(projectRecordId, "admin:applyfilters");
+
+        // Now call another action in the *same* section WITHOUT backRoute
+        var modsService = Mocker.GetMock<IProjectModificationsService>();
+        modsService
+            .Setup(s => s.GetModificationsForProject(
+                projectRecordId,
+                It.IsAny<ModificationSearchRequest>(),
+                1, 20, It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new GetModificationsResponse { Modifications = new List<ModificationsDto>(), TotalCount = 0 }
+            });
+
+        var postApprovalResult = await Sut.PostApproval(projectRecordId, null);
+
+        // Assert the helper restored the route from session
+        (Sut.ViewData["BackRoute"] as string).ShouldBe("admin:applyfilters");
+        postApprovalResult.ShouldBeOfType<ViewResult>();
+    }
+
 }
