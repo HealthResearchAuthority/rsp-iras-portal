@@ -35,7 +35,7 @@ public class ApplyFiltersTests : TestServiceBase<ReviewBodyController>
 
         Mocker.GetMock<IReviewBodyService>()
             .Setup(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20,
-                                             nameof(ReviewBodyDto.RegulatoryBodyName), SortDirections.Ascending))
+                    nameof(ReviewBodyDto.RegulatoryBodyName), SortDirections.Ascending))
             .ReturnsAsync(serviceResponse);
 
         var reviewBodySearchModel = new ReviewBodySearchModel
@@ -45,60 +45,67 @@ public class ApplyFiltersTests : TestServiceBase<ReviewBodyController>
             Status = null
         };
 
-        // Persist the search model in Session (controller now reads from session)
-        _http.Session.SetString(SessionKeys.ReviewBodiesSearch, JsonSerializer.Serialize(reviewBodySearchModel));
+        // Persist the search model in Session (GET path reads from session)
+        var persisted = JsonSerializer.Serialize(reviewBodySearchModel);
+        _http.Session.SetString(SessionKeys.ReviewBodiesSearch, persisted);
+
+        // Simulate HTTP GET
+        _http.Request.Method = HttpMethods.Get;
 
         // Act
-        var result = await Sut.ApplyFilters(new ReviewBodySearchViewModel
+        var result = await Sut.ApplyFilters(
+            new ReviewBodySearchViewModel
             {
-                Search = new ReviewBodySearchModel
-                {
-                    SearchQuery = null,
-                    Country = [],
-                    Status = null
-                }
-            }, nameof(ReviewBodyDto.RegulatoryBodyName),
-                                                SortDirections.Ascending, false);
+                // Controller should ignore this on GET and use session
+                Search = new ReviewBodySearchModel { SearchQuery = "ignored", Country = ["England"], Status = false }
+            },
+            nameof(ReviewBodyDto.RegulatoryBodyName),
+            SortDirections.Ascending,
+            fromPagination: false);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
         var model = viewResult.Model.ShouldBeAssignableTo<ReviewBodySearchViewModel>();
         model.ReviewBodies.ShouldBeEquivalentTo(reviewBodies.ReviewBodies);
 
+        // Session should NOT be overwritten on GET
+        _http.Session.GetString(SessionKeys.ReviewBodiesSearch).ShouldBe(persisted);
+
         // Verify
         Mocker.GetMock<IReviewBodyService>()
             .Verify(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20,
-                                              nameof(ReviewBodyDto.RegulatoryBodyName), SortDirections.Ascending),
-                    Times.Once);
+                    nameof(ReviewBodyDto.RegulatoryBodyName), SortDirections.Ascending),
+                Times.Once);
     }
 
     [Fact]
-    public async Task ApplyFilters_ShouldReturnEmptyView_WhenServiceReturnsNullContent()
+    public async Task ApplyFilters_ShouldReturnEmptyView_WhenServiceReturnsNullContent_OnHttpGet()
     {
         // Arrange
         Mocker.GetMock<IReviewBodyService>()
             .Setup(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20,
-                                             nameof(ReviewBodyDto.RegulatoryBodyName), SortDirections.Ascending))
+                    nameof(ReviewBodyDto.RegulatoryBodyName), SortDirections.Ascending))
             .ReturnsAsync(new ServiceResponse<AllReviewBodiesResponse>
             {
                 StatusCode = HttpStatusCode.OK,
                 Content = null
             });
 
-        // Optional: clear any persisted session search
+        // No persisted search — simulate first-load GET
         _http.Session.Remove(SessionKeys.ReviewBodiesSearch);
 
+        // Simulate HTTP GET
+        _http.Request.Method = HttpMethods.Get;
+
         // Act
-        var result = await Sut.ApplyFilters(new ReviewBodySearchViewModel
+        var result = await Sut.ApplyFilters(
+            new ReviewBodySearchViewModel
             {
-                Search = new ReviewBodySearchModel
-                {
-                    SearchQuery = null,
-                    Country = [],
-                    Status = null
-                }
-            }, nameof(ReviewBodyDto.RegulatoryBodyName),
-                                                SortDirections.Ascending);
+                // Controller should ignore payload on GET if it uses session/empty defaults
+                Search = new ReviewBodySearchModel { SearchQuery = null, Country = [], Status = null }
+            },
+            nameof(ReviewBodyDto.RegulatoryBodyName),
+            SortDirections.Ascending);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -108,37 +115,39 @@ public class ApplyFiltersTests : TestServiceBase<ReviewBodyController>
         model.Pagination.ShouldNotBeNull();
         model.Pagination.TotalCount.ShouldBe(0);
 
+        // Session still not set by GET path
+        _http.Session.GetString(SessionKeys.ReviewBodiesSearch).ShouldBeNull();
+
         // Verify
         Mocker.GetMock<IReviewBodyService>()
             .Verify(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20,
-                                              nameof(ReviewBodyDto.RegulatoryBodyName), SortDirections.Ascending),
-                    Times.Once);
+                    nameof(ReviewBodyDto.RegulatoryBodyName), SortDirections.Ascending),
+                Times.Once);
     }
 
     [Fact]
-    public async Task ApplyFilters_ShouldReturnErrorView_WhenServiceFails()
+    public async Task ApplyFilters_ShouldReturnErrorView_WhenServiceFails_OnHttpGet()
     {
         // Arrange
         Mocker.GetMock<IReviewBodyService>()
             .Setup(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20,
-                                             nameof(ReviewBodyDto.RegulatoryBodyName), SortDirections.Ascending))
+                    nameof(ReviewBodyDto.RegulatoryBodyName), SortDirections.Ascending))
             .ReturnsAsync(new ServiceResponse<AllReviewBodiesResponse>
             {
                 StatusCode = HttpStatusCode.InternalServerError
             });
 
+        // Simulate HTTP GET
+        _http.Request.Method = HttpMethods.Get;
+
         // Act
-        var result = await Sut.ApplyFilters(new ReviewBodySearchViewModel
+        var result = await Sut.ApplyFilters(
+            new ReviewBodySearchViewModel
             {
-                Search = new ReviewBodySearchModel
-                {
-                    SearchQuery = null,
-                    Country = [],
-                    Status = null
-                }
-            }, nameof(ReviewBodyDto.RegulatoryBodyName),
-                                                SortDirections.Ascending
-                                                );
+                Search = new ReviewBodySearchModel { SearchQuery = null, Country = [], Status = null }
+            },
+            nameof(ReviewBodyDto.RegulatoryBodyName),
+            SortDirections.Ascending);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -147,8 +156,8 @@ public class ApplyFiltersTests : TestServiceBase<ReviewBodyController>
         // Verify
         Mocker.GetMock<IReviewBodyService>()
             .Verify(s => s.GetAllReviewBodies(It.IsAny<ReviewBodySearchRequest>(), 1, 20,
-                                              nameof(ReviewBodyDto.RegulatoryBodyName), SortDirections.Ascending),
-                    Times.Once);
+                    nameof(ReviewBodyDto.RegulatoryBodyName), SortDirections.Ascending),
+                Times.Once);
     }
 
     [Theory, AutoData]
