@@ -320,11 +320,14 @@ else
 										</div>
 									</td>
 									<td class="govuk-table__cell">@modification.Modification.ModificationId</td>
-									<td class="govuk-table__cell">
-										<a href="?@modification.Modification.ModificationId" class="govuk-link">
-											<strong>@modification.Modification.ShortProjectTitle</strong>
-										</a>
-									</td>
+                                    <td class="govuk-table__cell">
+                                        <a asp-route="pov:projectdetails"
+                                           asp-route-projectRecordId="@modification.Modification.ProjectRecordId"
+                                           asp-route-backRoute="tasklist:index"
+                                           class="govuk-link">
+                                            <strong>@modification.Modification.ShortProjectTitle</strong>
+                                        </a>
+                                    </td>
 									<td class="govuk-table__cell">@modification.Modification.CreatedAt.ToString("dd MMM yyyy")
 									</td>
 									<td class="govuk-table__cell">@modification.Modification.DaysSinceSubmission @daysText</td>

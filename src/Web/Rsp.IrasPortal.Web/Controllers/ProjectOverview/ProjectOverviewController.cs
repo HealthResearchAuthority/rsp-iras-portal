@@ -14,15 +14,15 @@ namespace Rsp.IrasPortal.Web.Controllers.ProjectOverview;
 
 [Route("[controller]/[action]", Name = "pov:[action]")]
 [Authorize(Policy = "IsApplicant")]
-public class ProjectOverviewController
-(
+public class ProjectOverviewController(
     IApplicationsService applicationService,
     IProjectModificationsService projectModificationsService,
     IRespondentService respondentService) : Controller
 {
-    public async Task<IActionResult> ProjectDetails(string projectRecordId)
+    public async Task<IActionResult> ProjectDetails(string projectRecordId, string? backRoute)
     {
         UpdateModificationRelatedTempData();
+        SetupShortProjectTitleBackNav("pov", "app:Welcome", backRoute);
 
         var response = await GetProjectOverview(projectRecordId);
 
@@ -39,6 +39,7 @@ public class ProjectOverviewController
     public async Task<IActionResult> PostApproval
     (
         string projectRecordId,
+        string? backRoute,
         int pageNumber = 1,
         int pageSize = 20,
         string sortField = nameof(ModificationsModel.CreatedAt),
@@ -46,6 +47,7 @@ public class ProjectOverviewController
     )
     {
         UpdateModificationRelatedTempData();
+        SetupShortProjectTitleBackNav("pov", "app:Welcome", backRoute);
 
         var response = await GetProjectOverview(projectRecordId);
 
@@ -63,34 +65,36 @@ public class ProjectOverviewController
 
         var searchQuery = new ModificationSearchRequest();
 
-        var modificationsResponseResult = await projectModificationsService.GetModificationsForProject(projectRecordId, searchQuery, pageNumber, pageSize, sortField, sortDirection);
+        var modificationsResponseResult = await projectModificationsService.GetModificationsForProject(projectRecordId,
+            searchQuery, pageNumber, pageSize, sortField, sortDirection);
 
         model.Modifications = modificationsResponseResult?.Content?.Modifications?
-                    .Select(dto => new PostApprovalModificationsModel
-                    {
-                        ModificationId = dto.ModificationId,
-                        ModificationType = dto.ModificationType,
-                        ReviewType = null,
-                        Category = null,
-                        DateSubmitted = dto.CreatedAt,
-                        Status = dto.Status
-                    })
-                    .ToList() ?? [];
+            .Select(dto => new PostApprovalModificationsModel
+            {
+                ModificationId = dto.ModificationId,
+                ModificationType = dto.ModificationType,
+                ReviewType = null,
+                Category = null,
+                DateSubmitted = dto.CreatedAt,
+                Status = dto.Status
+            })
+            .ToList() ?? [];
 
         model.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationsResponseResult?.Content?.TotalCount ?? 0)
-        {
-            SortDirection = sortDirection,
-            SortField = sortField,
-            FormName = "postapproval-selection",
-            RouteName = "pov:postapproval",
-            AdditionalParameters = new Dictionary<string, string>() { { "projectRecordId", projectRecordId } }
-        };
+            {
+                SortDirection = sortDirection,
+                SortField = sortField,
+                FormName = "postapproval-selection",
+                RouteName = "pov:postapproval",
+                AdditionalParameters = new Dictionary<string, string>() { { "projectRecordId", projectRecordId } }
+            };
 
         return View(model);
     }
 
-    public async Task<IActionResult> ProjectTeam(string projectRecordId)
+    public async Task<IActionResult> ProjectTeam(string projectRecordId,  string? backRoute)
     {
+        SetupShortProjectTitleBackNav("pov", "app:Welcome", backRoute);
         var response = await GetProjectOverview(projectRecordId);
 
         // if status code is not a successful status code
@@ -103,8 +107,9 @@ public class ProjectOverviewController
         return View(okResult.Value);
     }
 
-    public async Task<IActionResult> ResearchLocations(string projectRecordId)
+    public async Task<IActionResult> ResearchLocations(string projectRecordId, string? backRoute)
     {
+        SetupShortProjectTitleBackNav("pov", "app:Welcome", backRoute);
         var response = await GetProjectOverview(projectRecordId);
 
         // if status code is not a successful status code
@@ -151,7 +156,8 @@ public class ProjectOverviewController
         }
 
         // Get all respondent answers for the project and category
-        var respondentAnswersResponse = await respondentService.GetRespondentAnswers(projectRecordId, QuestionCategories.ProjectRecrod);
+        var respondentAnswersResponse =
+            await respondentService.GetRespondentAnswers(projectRecordId, QuestionCategories.ProjectRecrod);
 
         if (!respondentAnswersResponse.IsSuccessStatusCode)
         {
@@ -187,9 +193,9 @@ public class ProjectOverviewController
         var endDateAnswer = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.ProjectPlannedEndDate)?.AnswerText;
 
         var participatingNations = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.ParticipatingNations)?
-            .Answers
-            .ConvertAll(id => answerOptions.TryGetValue(id, out var name) ? name : id)
-;
+                .Answers
+                .ConvertAll(id => answerOptions.TryGetValue(id, out var name) ? name : id)
+            ;
 
         var nhsOrHscOrganisations = GetAnswerName(answers.FirstOrDefault(a => a.QuestionId == QuestionIds.NhsOrHscOrganisations)?.SelectedOption, answerOptions);
         var LeadNation = GetAnswerName(answers.FirstOrDefault(a => a.QuestionId == QuestionIds.LeadNation)?.SelectedOption, answerOptions);
@@ -263,5 +269,35 @@ public class ProjectOverviewController
 
         // Indicate that the project overview is being shown
         TempData[TempDataKeys.ProjectOverview] = true;
+    }
+
+    private void SetupShortProjectTitleBackNav(string sectionId, string defaultRoute = "app:Welcome",
+        string? backRouteFromQuery = null)
+    {
+        // If a backRoute is supplied on the query, store it (and any brv_* values) for this section
+        if (!string.IsNullOrWhiteSpace(backRouteFromQuery))
+        {
+            HttpContext.Session.SetString(SessionKeys.BackRoute, backRouteFromQuery);
+            HttpContext.Session.SetString(SessionKeys.BackRouteSection, sectionId);
+
+            ViewData["BackRoute"] = backRouteFromQuery;
+            return;
+        }
+
+        // No backRoute in the query: try session, but only if we're still in the same section
+        var storedSection = HttpContext.Session.GetString(SessionKeys.BackRouteSection);
+        if (string.Equals(storedSection, sectionId, StringComparison.OrdinalIgnoreCase))
+        {
+            var storedRoute = HttpContext.Session.GetString(SessionKeys.BackRoute);
+            ViewData["BackRoute"] = storedRoute ?? defaultRoute;
+        }
+        else
+        {
+            // Different section: clear old and fall back to default
+            HttpContext.Session.Remove(SessionKeys.BackRoute);
+            HttpContext.Session.Remove(SessionKeys.BackRouteSection);
+
+            ViewData["BackRoute"] = defaultRoute;
+        }
     }
 }

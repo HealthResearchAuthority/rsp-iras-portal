@@ -6,8 +6,14 @@
     ViewBag.Active = ProjectOverview.ProjectTeam;
 }
 
+@{
+    var routeName = (ViewData["BackRoute"] as string) ?? "app:Welcome";
+    var routeValues = ViewData["BackRouteValues"] as Dictionary<string, string>
+                      ?? new Dictionary<string, string>();
+}
+
 @section BackNavigation {
-    <partial name="_BackNavigation" model="@("app:Welcome","Back", new Dictionary<string, string>())" />
+    <partial name="_BackNavigation" model="@((routeName, "Back", routeValues))" />
 }
 
 <partial name="_NavigationHeaderPartial" model="@Model" />
