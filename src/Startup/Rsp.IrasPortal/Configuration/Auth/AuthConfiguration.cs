@@ -243,6 +243,12 @@ public static class AuthConfiguration
             .AddPolicy("IsStudyWideReviewer", policy => policy.RequireRole(Roles.studyWideReviewer))
             .AddPolicy("IsTeamManager", policy => policy.RequireRole(Roles.teamManager))
             .AddPolicy("IsWorkflowCoordinator", policy => policy.RequireRole(Roles.workflowCoordinator))
+            .AddPolicy("IsBackstageUser", p => p.RequireRole(
+                Roles.applicant,
+                Roles.systemAdministrator,
+                Roles.studyWideReviewer,
+                Roles.teamManager,
+                Roles.workflowCoordinator))
             .SetDefaultPolicy(policy);
     }
 }

@@ -13,7 +13,7 @@ using Rsp.IrasPortal.Web.Models;
 namespace Rsp.IrasPortal.Web.Controllers.ProjectOverview;
 
 [Route("[controller]/[action]", Name = "pov:[action]")]
-[Authorize(Policy = "IsApplicant")]
+[Authorize(Policy = "IsBackstageUser")]
 public class ProjectOverviewController(
     IApplicationsService applicationService,
     IProjectModificationsService projectModificationsService,
