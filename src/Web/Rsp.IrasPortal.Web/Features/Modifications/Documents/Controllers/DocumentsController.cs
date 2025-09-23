@@ -567,12 +567,15 @@ public class DocumentsController
                         IsOptional = cmsQ.IsOptional,
                         AnswerText = matchingAnswer?.AnswerText,
                         SelectedOption = matchingAnswer?.SelectedOption,
-                        Answers = cmsQ?.Answers?.Select(ans => new AnswerViewModel
+                        Answers = cmsQ?.Answers?
+                        .Select(ans => new AnswerViewModel
                         {
                             AnswerId = ans.AnswerId,
                             AnswerText = ans.AnswerText,
-                            IsSelected = ans.IsSelected
-                        }).ToList() ?? new List<AnswerViewModel>(),
+                            // Set true if CMS already marked it OR if it exists in answersResponse
+                            IsSelected = ans.IsSelected || answers.Any(a => a.SelectedOption == ans.AnswerId)
+                        })
+                        .ToList() ?? new List<AnswerViewModel>(),
                         Rules = cmsQ?.Rules ?? new List<RuleDto>(),
                         ShortQuestionText = cmsQ?.ShortQuestionText ?? string.Empty,
                         IsModificationQuestion = true,

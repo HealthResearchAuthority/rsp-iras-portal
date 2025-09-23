@@ -14,7 +14,6 @@
 	var irasId = TempData.Peek(TempDataKeys.IrasId) as int? ?? 0;
 	var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty;
 
-
 	// Title used in the validation error summary
 	var errorSummaryTitle = "There is a problem";
 
@@ -36,66 +35,54 @@
 			<h1 class="govuk-heading-l">Review your document information</h1>
 			<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
 
-			@foreach (var docu in Model)
+			@{
+				// Collect everything in one payload
+				var allParentAnswers = Model.SelectMany(doc => doc.GetParentQuestionAnswers()).ToList();
+			}
+
+			<script>
+				$(function () {
+					// Clear existing sessionStorage before loading the page
+					sessionStorage.clear();
+
+					// Store parent answers
+					const parentAnswers = @Html.Raw(JsonSerializer.Serialize(allParentAnswers));
+					parentAnswers.forEach(parent => {
+						let existing = sessionStorage.getItem(parent.QuestionId);
+						let answers = existing ? JSON.parse(existing) : [];
+						answers = answers.concat(parent.Answers);
+						sessionStorage.setItem(parent.QuestionId, JSON.stringify(answers));
+					});
+				});
+			</script>
+
+			@foreach (var (docu, index) in Model.Select((question, index) => (question, index)))
 			{
 				// Group questions by their Section and order them
 				var groupedSections = docu.Questions
-				.GroupBy(q => q.Section)
-				.OrderBy(g => g.First().Sequence)
+				.OrderBy(q => q.SectionSequence)
+				.ThenBy(q => q.Sequence)
+				.GroupBy(q => q.SectionId)
 				.ToList();
 
 				// Get the key of the first section (e.g., for special handling like IRAS ID)
 				var firstSectionKey = groupedSections.FirstOrDefault()?.Key;
 
-				// Get the last question from the last section for back navigation
-				var lastQuestion = groupedSections.LastOrDefault()?.FirstOrDefault();
+				<script>
+					$(document).ready(function () {
+						const conditionalRulesData = @Html.Raw(JsonSerializer.Serialize(
+								docu.Questions
+									.Where(q => !q.IsMandatory && q.Rules.Any())
+									.Select(q => new { q.QuestionId, q.Rules })
+							));
 
-
-				@if (await featureManager.IsEnabledAsync(FeatureFlags.ProgressiveEnhancement))
-				{
-					// If progressive enhancement is enabled, add jQuery and custom JavaScript
-					<script src="~/lib/jquery/dist/jquery.js"></script>
-
-					<script>
-						$(document).ready(function () {
-							// Serialize conditional rules and store them in sessionStorage
-							const conditionalRules = @Html.Raw(JsonSerializer.Serialize(
-											docu.Questions
-											.Where(q => !q.IsMandatory && q.Rules.Any())
-											.Select(q => new { q.QuestionId, q.Rules })
-										));
-
-							// Save each conditional rule by QuestionId
-							conditionalRules.forEach(rule => {
-								sessionStorage.setItem(rule.QuestionId, JSON.stringify(rule.Rules));
-							});
-
-							// Initially hide all elements with 'conditional' class
-							$(".conditional").hide();
-
-							// For each conditional div, check its parent hidden input value
-							document.querySelectorAll('div.conditional').forEach(div => {
-							const parentId = div.getAttribute('data-parents');
-
-							// Find the closest dl ancestor
-							const dl = div.closest('dl');
-
-							// Within that dl, look for the hidden input with the matching id
-							const hiddenInput = dl?.querySelector(`input[type="hidden"]#${parentId}`);
-
-							// If the hidden input has any value, unhide the conditional div
-							if (hiddenInput?.value.trim()) {
-								div.classList.remove('conditional');
-								div.style.display = '';
-							}
-						});
-						});
-					</script>
-				}
-
+						conditionalRulesHandler.init(conditionalRulesData);
+					});
+				</script>
 				@foreach (var sectionGroup in groupedSections)
 				{
 					<dl class="govuk-summary-list govuk-!-margin-bottom-7">
+						<input type="hidden" name="data-docindex" value="@index" />
 
 						@if (sectionGroup.Key == firstSectionKey)
 						{
@@ -124,7 +111,7 @@
 									}
 									else
 									{
-										<input type="hidden" id="@question.QuestionId" name="hiddenResponse" value="@question.GetDisplayText()" />
+										<input type="hidden" id="@question.QuestionId" name="hiddenResponse" value="@question.SelectedOption" />
 										@Html.Raw(question.GetDisplayText())
 									}
 								</dd>
@@ -160,4 +147,9 @@
 		</form>
 	</div>
 </div>
+
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script src="~/js/documentsreview.js"></script>
+
+
 

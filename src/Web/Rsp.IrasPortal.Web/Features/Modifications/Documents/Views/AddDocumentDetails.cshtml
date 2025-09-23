@@ -22,6 +22,8 @@
 
 	<script>
 		$(document).ready(function () {
+		// Clear existing sessionStorage first
+		sessionStorage.clear();
 		const conditionalRules = @Html.Raw(JsonSerializer.Serialize(conditionalRules));
 
 		// Loop through each rule and store it individually by QuestionId
