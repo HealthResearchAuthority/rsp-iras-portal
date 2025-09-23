@@ -22,7 +22,9 @@
 				@ViewBag.Title
 			</h1>
             <partial name="_ProjectModificationSummary" />
-
+			<p class="govuk-body">
+				Some of the documents you've added need additional details.
+			</p>
 			@if (Model.UploadedDocuments.Any())
 			{
 				<ul class="govuk-task-list">
