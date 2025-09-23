@@ -62,10 +62,13 @@ public class ReviewBodyController(
         model ??= new ReviewBodySearchViewModel();
 
         // Always attempt to restore from session if nothing is currently set
-        var savedSearch = HttpContext.Session.GetString(SessionKeys.ReviewBodiesSearch);
-        if (!string.IsNullOrWhiteSpace(savedSearch))
+        if (HttpContext.Request.Method == HttpMethods.Get)
         {
-            model.Search = JsonSerializer.Deserialize<ReviewBodySearchModel>(savedSearch);
+            var savedSearch = HttpContext.Session.GetString(SessionKeys.ReviewBodiesSearch);
+            if (!string.IsNullOrWhiteSpace(savedSearch))
+            {
+                model.Search = JsonSerializer.Deserialize<ReviewBodySearchModel>(savedSearch);
+            }
         }
 
         var request = new ReviewBodySearchRequest
@@ -123,7 +126,7 @@ public class ReviewBodyController(
                 model.Search = JsonSerializer.Deserialize<ReviewBodySearchModel>(savedSearch);
             }
         }
-  
+
         // Call Index with matching parameter set
         return await ViewReviewBodies(
             1, // pageNumber
