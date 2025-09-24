@@ -115,6 +115,128 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
     }
 
     [Fact]
+    public async Task AddDocumentDetailsList_WhenDocumentsExist_ClonesQuestionnaireAndSetsDocumentStatus()
+    {
+        // Arrange
+        var docId = Guid.NewGuid();
+
+        // Make sure GetModificationChangesDocuments returns ONE document
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new List<ProjectModificationDocumentRequest>
+                {
+                new ProjectModificationDocumentRequest
+                {
+                    Id = docId,
+                    FileName = "doc1.pdf",
+                    FileSize = 123,
+                    DocumentStoragePath = "https://storage/doc1.pdf"
+                }
+                }
+            });
+
+        // CMS question set (with one question so clone is exercised)
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet("pdm-document-metadata", It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse
+                {
+                    ActiveFrom = DateTime.UtcNow,
+                    ActiveTo = DateTime.UtcNow.AddYears(1),
+                    Id = "pdm-document-metadata",
+                    Version = "1.0",
+                    Sections = new List<SectionModel>
+                    {
+                    new SectionModel
+                    {
+                        Id = "S1",
+                        Questions = new List<QuestionModel>
+                        {
+                            new QuestionModel
+                            {
+                                Id = "Q1",
+                                QuestionId = "Test",
+                                Name = "Test Question",
+                                Version = "1.0",
+                                CategoryId = "cat",
+                                SectionSequence = 1,
+                                Sequence = 1,
+                                ShortName = "Short Q",
+                                AnswerDataType = "Dropdown",
+                                Conformance = "Mandatory",
+                                QuestionFormat = "dropdown",
+                                Answers =
+                                [
+                                    new() { Id = "opt1", OptionName = "Option 1" }
+                                ]
+                            }
+                        }
+                    }
+                    }
+                }
+            });
+
+        // Document answers: simulate one valid answer
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationDocumentAnswers(docId))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentAnswerDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new List<ProjectModificationDocumentAnswerDto>
+                {
+                new ProjectModificationDocumentAnswerDto
+                {
+                    QuestionId = "Test",
+                    AnswerText = "some text",
+                    OptionType = "dropdown",
+                    SelectedOption = "opt1"
+                }
+                }
+            });
+
+        Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult());
+
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = "Safety",
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectRecordId] = "record-123",
+            [TempDataKeys.ShortProjectTitle] = "Short Title",
+            [TempDataKeys.IrasId] = 999,
+        };
+
+        Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+
+        // Act
+        var result = await Sut.AddDocumentDetailsList();
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<ModificationReviewDocumentsViewModel>(viewResult.Model);
+
+        // Page title part
+        Assert.Equal("Safety", model.SpecificAreaOfChange);
+
+        // UploadedDocuments should now be populated
+        Assert.Single(model.UploadedDocuments);
+        var doc = model.UploadedDocuments.First();
+
+        Assert.Equal("Add details for doc1.pdf", doc.FileName);
+        Assert.Equal("123", doc.FileSize.ToString());
+        Assert.Equal("https://storage/doc1.pdf", doc.BlobUri);
+
+        // Since we provided a valid answer, status should be Completed
+        Assert.Equal(DocumentDetailStatus.Completed.ToString(), doc.Status);
+    }
+
+    [Fact]
     public async Task AddDocumentDetailsList_WhenNoSpecificAreaOfChange_SetsEmptyPageTitle()
     {
         // Arrange
