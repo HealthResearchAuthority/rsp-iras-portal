@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using FluentValidation;
+using FluentValidation.Results;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
@@ -144,6 +146,10 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
                 }
             });
 
+        Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult());
+
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
             [TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = "Safety",
@@ -164,7 +170,7 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
         var viewResult = Assert.IsType<ViewResult>(result);
         var model = Assert.IsType<ModificationReviewDocumentsViewModel>(viewResult.Model);
         Assert.Single(model.UploadedDocuments);
-        Assert.Equal(DocumentDetailStatus.Incomplete.ToString(), model.UploadedDocuments[0].Status);
+        Assert.Equal(DocumentDetailStatus.Completed.ToString(), model.UploadedDocuments[0].Status);
     }
 
     [Fact]
@@ -205,6 +211,15 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
                 {
                     new ProjectModificationDocumentAnswerDto { AnswerText = "", OptionType = "", SelectedOption = "" }
                 }
+            });
+
+        Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult()
+            {
+                Errors = new List<ValidationFailure> {
+                new("IrasId", "Required")
+            }
             });
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
