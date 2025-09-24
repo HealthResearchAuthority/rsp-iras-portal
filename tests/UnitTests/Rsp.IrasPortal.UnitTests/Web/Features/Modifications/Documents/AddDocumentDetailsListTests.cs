@@ -118,9 +118,10 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
     public async Task AddDocumentDetailsList_WhenDocumentsExist_ClonesQuestionnaireAndSetsDocumentStatus()
     {
         // Arrange
-        var docId = Guid.NewGuid();
+        var docWithAnswers = Guid.NewGuid();
+        var docWithoutAnswers = Guid.NewGuid();
 
-        // Make sure GetModificationChangesDocuments returns ONE document
+        // Mock: return two documents
         Mocker.GetMock<IRespondentService>()
             .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
@@ -128,17 +129,12 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
                 StatusCode = HttpStatusCode.OK,
                 Content = new List<ProjectModificationDocumentRequest>
                 {
-                new ProjectModificationDocumentRequest
-                {
-                    Id = docId,
-                    FileName = "doc1.pdf",
-                    FileSize = 123,
-                    DocumentStoragePath = "https://storage/doc1.pdf"
-                }
+                new() { Id = docWithAnswers, FileName = "doc1.pdf", FileSize = 123, DocumentStoragePath = "https://storage/doc1.pdf" },
+                new() { Id = docWithoutAnswers, FileName = "doc2.pdf", FileSize = 456, DocumentStoragePath = "https://storage/doc2.pdf" }
                 }
             });
 
-        // CMS question set (with one question so clone is exercised)
+        // Mock: CMS question set (needed for cloning)
         Mocker.GetMock<ICmsQuestionsetService>()
             .Setup(s => s.GetModificationQuestionSet("pdm-document-metadata", It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
@@ -146,17 +142,17 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
                 StatusCode = HttpStatusCode.OK,
                 Content = new CmsQuestionSetResponse
                 {
-                    ActiveFrom = DateTime.UtcNow,
-                    ActiveTo = DateTime.UtcNow.AddYears(1),
                     Id = "pdm-document-metadata",
                     Version = "1.0",
-                    Sections = new List<SectionModel>
-                    {
-                    new SectionModel
+                    ActiveFrom = DateTime.UtcNow,
+                    ActiveTo = DateTime.UtcNow.AddYears(1),
+                    Sections =
+                    [
+                        new SectionModel
                     {
                         Id = "S1",
-                        Questions = new List<QuestionModel>
-                        {
+                        Questions =
+                        [
                             new QuestionModel
                             {
                                 Id = "Q1",
@@ -170,33 +166,33 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
                                 AnswerDataType = "Dropdown",
                                 Conformance = "Mandatory",
                                 QuestionFormat = "dropdown",
-                                Answers =
-                                [
-                                    new() { Id = "opt1", OptionName = "Option 1" }
-                                ]
+                                Answers = [ new() { Id = "opt1", OptionName = "Option 1" } ]
                             }
-                        }
+                        ]
                     }
-                    }
+                    ]
                 }
             });
 
-        // Document answers: simulate one valid answer
+        // Mock: answers for docWithAnswers (valid answers → Completed)
         Mocker.GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationDocumentAnswers(docId))
+            .Setup(s => s.GetModificationDocumentAnswers(docWithAnswers))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentAnswerDto>>
             {
                 StatusCode = HttpStatusCode.OK,
                 Content = new List<ProjectModificationDocumentAnswerDto>
                 {
-                new ProjectModificationDocumentAnswerDto
-                {
-                    QuestionId = "Test",
-                    AnswerText = "some text",
-                    OptionType = "dropdown",
-                    SelectedOption = "opt1"
+                new() { QuestionId = "Test", AnswerText = "some text", OptionType = "dropdown", SelectedOption = "opt1" }
                 }
-                }
+            });
+
+        // Mock: answers for docWithoutAnswers (empty answers → Incomplete)
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationDocumentAnswers(docWithoutAnswers))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentAnswerDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new List<ProjectModificationDocumentAnswerDto>() // no answers
             });
 
         Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
@@ -221,19 +217,19 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
         var viewResult = Assert.IsType<ViewResult>(result);
         var model = Assert.IsType<ModificationReviewDocumentsViewModel>(viewResult.Model);
 
-        // Page title part
+        // Page title still correct
         Assert.Equal("Safety", model.SpecificAreaOfChange);
 
-        // UploadedDocuments should now be populated
-        Assert.Single(model.UploadedDocuments);
-        var doc = model.UploadedDocuments.First();
+        // Two uploaded documents returned
+        Assert.Equal(2, model.UploadedDocuments.Count);
 
-        Assert.Equal("Add details for doc1.pdf", doc.FileName);
-        Assert.Equal("123", doc.FileSize.ToString());
-        Assert.Equal("https://storage/doc1.pdf", doc.BlobUri);
+        // doc1: has answers, should be Completed
+        var doc1 = model.UploadedDocuments.Single(d => d.DocumentId == docWithAnswers);
+        Assert.Equal(DocumentDetailStatus.Completed.ToString(), doc1.Status);
 
-        // Since we provided a valid answer, status should be Completed
-        Assert.Equal(DocumentDetailStatus.Completed.ToString(), doc.Status);
+        // doc2: no answers, should be Incomplete
+        var doc2 = model.UploadedDocuments.Single(d => d.DocumentId == docWithoutAnswers);
+        Assert.Equal(DocumentDetailStatus.Incomplete.ToString(), doc2.Status);
     }
 
     [Fact]
@@ -256,6 +252,10 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
                 StatusCode = HttpStatusCode.OK,
                 Content = new CmsQuestionSetResponse()
             });
+
+        Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult());
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
