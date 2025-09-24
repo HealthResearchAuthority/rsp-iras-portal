@@ -35,7 +35,34 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
             .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new CmsQuestionSetResponse()
+                Content = new CmsQuestionSetResponse
+                {
+                    ActiveFrom = DateTime.UtcNow,
+                    ActiveTo = DateTime.UtcNow.AddYears(1),
+                    Id = "pdm-document-metadata",
+                    Version = "1.0",
+                    Sections = new List<SectionModel>()
+                    {
+                        new SectionModel
+                        {
+                            Id = "Q1",
+                            Questions = new List<QuestionModel>()
+                            {
+                                new QuestionModel
+                                {
+                                    Id = "1",
+                                    QuestionId = "Test",
+                                    Name = "Test Question",
+                                    Answers =
+                                    [
+                                        new() { Id = "opt1", OptionName = "Option 1" },
+                                        new() { Id = "opt2", OptionName = "Option 2" }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
             });
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())

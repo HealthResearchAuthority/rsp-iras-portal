@@ -25,7 +25,7 @@ public class ProjectOverviewDocumentDto
     /// <summary>
     /// Gets or sets the identifier of the document date, if specified.
     /// </summary>
-    public string DocumentDate { get; set; } = string.Empty;
+    public DateTime? DocumentDate { get; set; }
 
     /// <summary>
     /// Gets or sets the identifier of the status, if specified.

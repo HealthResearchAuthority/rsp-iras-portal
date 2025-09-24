@@ -183,7 +183,6 @@ public class ProjectModificationsService(IProjectModificationsServiceClient proj
     /// <param name="sortField">The field name by which the results should be sorted.</param>
     /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
     /// <returns>Returns a paginated list of modifications related to the specified project record.</returns>
-
     public async Task<ServiceResponse<ProjectOverviewDocumentResponse>> GetDocumentsForProjectOverview(string projectRecordId, ProjectOverviewDocumentSearchRequest searchQuery, int pageNumber = 1, int pageSize = 20, string sortField = "DocumentType", string sortDirection = "desc")
     {
         var apiResponse = await projectModificationsServiceClient.GetDocumentsForProjectOverview(projectRecordId, searchQuery, pageNumber, pageSize, sortField, sortDirection);
