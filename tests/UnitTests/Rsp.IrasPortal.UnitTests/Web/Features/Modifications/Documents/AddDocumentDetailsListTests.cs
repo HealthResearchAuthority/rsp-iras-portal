@@ -233,6 +233,139 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
     }
 
     [Fact]
+    public async Task AddDocumentDetailsList_WhenNoDocuments_ReturnsEmptyList()
+    {
+        // Arrange
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new List<ProjectModificationDocumentRequest>() // empty
+            });
+
+        Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult());
+
+        // Mock: CMS question set (needed for cloning)
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet("pdm-document-metadata", It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse
+                {
+                    Id = "pdm-document-metadata",
+                    Version = "1.0",
+                    ActiveFrom = DateTime.UtcNow,
+                    ActiveTo = DateTime.UtcNow.AddYears(1),
+                    Sections =
+                    [
+                        new SectionModel
+                    {
+                        Id = "S1",
+                        Questions =
+                        [
+                            new QuestionModel
+                            {
+                                Id = "Q1",
+                                QuestionId = "Test",
+                                Name = "Test Question",
+                                Version = "1.0",
+                                CategoryId = "cat",
+                                SectionSequence = 1,
+                                Sequence = 1,
+                                ShortName = "Short Q",
+                                AnswerDataType = "Dropdown",
+                                Conformance = "Mandatory",
+                                QuestionFormat = "dropdown",
+                                Answers = [ new() { Id = "opt1", OptionName = "Option 1" } ]
+                            }
+                        ]
+                    }
+                    ]
+                }
+            });
+
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = "Safety",
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectRecordId] = "record-123",
+        };
+
+        Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+
+        // Act
+        var result = await Sut.AddDocumentDetailsList();
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<ModificationReviewDocumentsViewModel>(viewResult.Model);
+        Assert.Empty(model.UploadedDocuments); // no documents returned
+    }
+
+    [Fact]
+    public async Task AddDocumentDetailsList_WhenAnswersServiceFails_SetsDocumentAsIncomplete()
+    {
+        // Arrange
+        var docId = Guid.NewGuid();
+
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new List<ProjectModificationDocumentRequest>
+                {
+                new() { Id = docId, FileName = "doc.pdf", FileSize = 123, DocumentStoragePath = "https://storage/doc.pdf" }
+                }
+            });
+
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationDocumentAnswers(docId))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentAnswerDto>>
+            {
+                StatusCode = HttpStatusCode.InternalServerError, // simulate failure
+                Content = null
+            });
+
+        // CMS question set required for cloning
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet("pdm-document-metadata", It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse { Sections = new List<SectionModel>() }
+            });
+
+        Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult());
+
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = "Safety",
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectRecordId] = "record-123",
+        };
+
+        Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+
+        // Act
+        var result = await Sut.AddDocumentDetailsList();
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<ModificationReviewDocumentsViewModel>(viewResult.Model);
+
+        // Document marked as incomplete
+        var doc = model.UploadedDocuments.Single();
+        Assert.Equal(DocumentDetailStatus.Incomplete.ToString(), doc.Status);
+    }
+
+    [Fact]
     public async Task AddDocumentDetailsList_WhenNoSpecificAreaOfChange_SetsEmptyPageTitle()
     {
         // Arrange
