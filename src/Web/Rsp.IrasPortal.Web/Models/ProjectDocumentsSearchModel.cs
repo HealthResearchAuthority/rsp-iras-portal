@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Web.Extensions;
 
 namespace Rsp.IrasPortal.Web.Models;
@@ -33,26 +32,6 @@ public class ProjectDocumentsSearchModel
             }
 
             var filters = new Dictionary<string, List<string>>();
-
-            if (FromDate.HasValue && ToDate.HasValue)
-            {
-                // Both dates entered — show combined range only
-                filters.Add(ApprovalsSearch.DateRangeKey,
-                    [$"{FromDate.Value:d MMM yyyy} to {ToDate.Value:d MMM yyyy}"]);
-            }
-            else
-            {
-                // Only one date entered — show individual filter
-                if (FromDate.HasValue)
-                {
-                    filters.Add(ApprovalsSearch.FromDateKey, [FromDate.Value.ToString("d MMM yyyy")]);
-                }
-
-                if (ToDate.HasValue)
-                {
-                    filters.Add(ApprovalsSearch.ToDateKey, [ToDate.Value.ToString("d MMM yyyy")]);
-                }
-            }
 
             if (DocumentTypes.Count != 0)
             {
