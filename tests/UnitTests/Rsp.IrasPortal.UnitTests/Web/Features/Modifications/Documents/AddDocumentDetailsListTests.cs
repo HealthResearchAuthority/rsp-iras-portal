@@ -52,6 +52,14 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
                                 new QuestionModel
                                 {
                                     Id = "1",
+                                    Version = "1.0",
+                                    CategoryId = "cat1",
+                                    SectionSequence = 1,
+                                    Sequence = 1,
+                                    ShortName = "Short Q1",
+                                    AnswerDataType = "Dropdown",
+                                    Conformance = "Mandatory",
+                                    ShowOriginalAnswer = false,
                                     QuestionId = "Test",
                                     Name = "Test Question",
                                     QuestionFormat = "dropdown",
@@ -59,6 +67,10 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
                                     [
                                         new() { Id = "opt1", OptionName = "Option 1" },
                                         new() { Id = "opt2", OptionName = "Option 2" }
+                                    ],
+                                    ValidationRules =
+                                    [
+                                        new RuleModel { Mode = "And", QuestionId = "Q1", Conditions = [new ConditionModel {OptionType= "M" } ]}
                                     ]
                                 }
                             }
