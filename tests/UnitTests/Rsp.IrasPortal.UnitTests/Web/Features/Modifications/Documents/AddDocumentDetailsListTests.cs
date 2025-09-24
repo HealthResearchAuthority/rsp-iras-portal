@@ -20,6 +20,7 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
     public async Task AddDocumentDetailsList_WhenSpecificAreaOfChangeProvided_SetsPageTitle()
     {
         // Arrange
+        var docId = Guid.NewGuid();
 
         Mocker
             .GetMock<IRespondentService>()
@@ -53,6 +54,7 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
                                     Id = "1",
                                     QuestionId = "Test",
                                     Name = "Test Question",
+                                    QuestionFormat = "dropdown",
                                     Answers =
                                     [
                                         new() { Id = "opt1", OptionName = "Option 1" },
@@ -62,6 +64,18 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
                             }
                         }
                     }
+                }
+            });
+
+        Mocker
+            .GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationDocumentAnswers(docId))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentAnswerDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new List<ProjectModificationDocumentAnswerDto>
+                {
+                    new ProjectModificationDocumentAnswerDto { QuestionId = "Test", AnswerText = "some text", OptionType = "dropdown", SelectedOption = "opt1" }
                 }
             });
 
