@@ -597,4 +597,93 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
         var model = Assert.IsType<ModificationReviewDocumentsViewModel>(viewResult.Model);
         Assert.Empty(model.UploadedDocuments);
     }
+
+    [Fact]
+    public async Task PopulateAnswersFromDocuments_MatchingAnswerWithoutAnswers_UpdatesProperties()
+    {
+        var questionnaire = new QuestionnaireViewModel
+        {
+            Questions = new List<QuestionViewModel>
+            {
+                new() { QuestionId = "Q1", QuestionType = "Text" }
+            }
+        };
+
+        var answers = new List<ProjectModificationDocumentAnswerDto>
+        {
+            new() { QuestionId = "Q1", AnswerText = "New", SelectedOption = "B", OptionType = null }
+        };
+
+        var result = await InvokePopulate(questionnaire, answers);
+
+        var q = result.Questions[0];
+        Assert.Equal("New", q.AnswerText);
+        Assert.Equal("B", q.SelectedOption);
+        Assert.Equal("Text", q.QuestionType); // unchanged since OptionType is null
+        Assert.Empty(q.Answers);
+    }
+
+    [Fact]
+    public async Task PopulateAnswersFromDocuments_MatchingAnswerWithOptionType_UpdatesQuestionType()
+    {
+        var questionnaire = new QuestionnaireViewModel
+        {
+            Questions = new List<QuestionViewModel>
+            {
+                new() { QuestionId = "Q1", QuestionType = "OldType" }
+            }
+        };
+
+        var answers = new List<ProjectModificationDocumentAnswerDto>
+        {
+            new() { QuestionId = "Q1", AnswerText = "Ans", SelectedOption = "X", OptionType = "Radio" }
+        };
+
+        var result = await InvokePopulate(questionnaire, answers);
+
+        var q = result.Questions[0];
+        Assert.Equal("Radio", q.QuestionType); // updated from OptionType
+    }
+
+    [Fact]
+    public async Task PopulateAnswersFromDocuments_MatchingAnswerWithAnswersList_MapsAnswerViewModels()
+    {
+        var questionnaire = new QuestionnaireViewModel
+        {
+            Questions = new List<QuestionViewModel>
+            {
+                new() { QuestionId = "Q1", QuestionType = "Multi" }
+            }
+        };
+
+        var answers = new List<ProjectModificationDocumentAnswerDto>
+        {
+            new()
+            {
+                QuestionId = "Q1",
+                AnswerText = "Ans",
+                SelectedOption = "C",
+                OptionType = "Checkbox",
+                Answers = new List<string> { "Opt1", "Opt2" }
+            }
+        };
+
+        var result = await InvokePopulate(questionnaire, answers);
+
+        var q = result.Questions[0];
+        Assert.Equal("Checkbox", q.QuestionType);
+        Assert.Equal(2, q.Answers.Count);
+        Assert.Contains(q.Answers, a => a.AnswerId == "Opt1" && a.IsSelected);
+        Assert.Contains(q.Answers, a => a.AnswerId == "Opt2" && a.IsSelected);
+    }
+
+    private async Task<QuestionnaireViewModel> InvokePopulate(
+        QuestionnaireViewModel questionnaire,
+        IEnumerable<ProjectModificationDocumentAnswerDto> answers)
+    {
+        var method = Sut.GetType()
+            .GetMethod("PopulateAnswersFromDocuments", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+        return await (Task<QuestionnaireViewModel>)method.Invoke(Sut, new object[] { questionnaire, answers });
+    }
 }
