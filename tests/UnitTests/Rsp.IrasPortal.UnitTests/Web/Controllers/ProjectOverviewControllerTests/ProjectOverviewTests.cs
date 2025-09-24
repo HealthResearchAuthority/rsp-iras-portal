@@ -1,17 +1,15 @@
-using System.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Moq;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Controllers.ProjectOverview;
 using Rsp.IrasPortal.Web.Models;
-using Shouldly;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectOverviewControllerTests;
 
@@ -29,10 +27,15 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         public bool IsAvailable => true;
 
         public void Clear() => _store.Clear();
+
         public Task CommitAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+
         public Task LoadAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+
         public void Remove(string key) => _store.Remove(key);
+
         public void Set(string key, byte[] value) => _store[key] = value;
+
         public bool TryGetValue(string key, out byte[] value) => _store.TryGetValue(key, out value!);
     }
 
@@ -632,4 +635,99 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         postApprovalResult.ShouldBeOfType<ViewResult>();
     }
 
+    [Fact]
+    public async Task ProjectDocuments_ReturnsViewResult_WithExpectedModel()
+    {
+        // Arrange
+        var projectRecordId = "123";
+        var pageNumber = 1;
+        var pageSize = 20;
+        var sortField = nameof(ModificationsModel.CreatedAt);
+        var sortDirection = SortDirections.Ascending;
+
+        var httpContext = CreateHttpContextWithSession(); // CHANGED
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempData = CreateTempData(tempDataProvider, httpContext);
+
+        var answers = new List<RespondentAnswerDto>
+        {
+            new() { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "Project X" }
+        };
+
+        SetupProjectRecord(projectRecordId);
+        SetupRespondentAnswers(projectRecordId, answers);
+        SetupControllerContext(httpContext, tempData);
+
+        var documents = new List<ProjectOverviewDocumentDto>
+        {
+            new() { FileName = "mod1", DocumentType = "TypeA" },
+            new() { FileName = "mod2", DocumentType = "TypeB" }
+        };
+
+        var documentsResponse = new ProjectOverviewDocumentResponse
+        {
+            Documents = documents,
+            TotalCount = documents.Count
+        };
+
+        var serviceResponse = new ServiceResponse<ProjectOverviewDocumentResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = documentsResponse
+        };
+
+        var projectModificationsService = Mocker.GetMock<IProjectModificationsService>();
+
+        projectModificationsService
+            .Setup(s => s.GetDocumentsForProjectOverview(projectRecordId, It.IsAny<ProjectOverviewDocumentSearchRequest>(), pageNumber, pageSize, sortField, sortDirection))
+            .ReturnsAsync(serviceResponse);
+
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet("pdm-document-metadata", It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse { }
+            });
+
+        // Act
+        var result = await Sut.ProjectDocuments(projectRecordId, "", pageNumber, pageSize, sortField, sortDirection);
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var model = viewResult.Model.ShouldBeOfType<ProjectOverviewDocumentViewModel>();
+
+        model.ProjectOverviewModel.ShouldNotBeNull();
+        model.Documents.Count().ShouldBe(documents.Count);
+        model.Pagination.ShouldNotBeNull();
+        model.Pagination.PageNumber.ShouldBe(pageNumber);
+        model.Pagination.PageSize.ShouldBe(pageSize);
+        model.Pagination.SortField.ShouldBe(sortField);
+        model.Pagination.SortDirection.ShouldBe(sortDirection);
+    }
+
+    [Fact]
+    public async Task ProjectDocuments_PropagatesError_WhenGetProjectOverviewFails()
+    {
+        // Arrange
+        var projectRecordId = "err-1";
+        var httpContext = CreateHttpContextWithSession(); // CHANGED
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempData = CreateTempData(tempDataProvider, httpContext);
+        SetupControllerContext(httpContext, tempData);
+
+        Mocker.GetMock<IApplicationsService>()
+            .Setup(s => s.GetProjectRecord(projectRecordId))
+            .ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
+            {
+                StatusCode = HttpStatusCode.InternalServerError
+            });
+
+        // Act
+        var result = await Sut.ProjectDocuments(projectRecordId, "");
+
+        // Assert
+        var status = result.ShouldBeOfType<StatusCodeResult>();
+        status.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
+    }
 }

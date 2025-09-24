@@ -1,0 +1,180 @@
+﻿@using Rsp.IrasPortal.Application.Constants;
+@using Rsp.IrasPortal.Application.DTOs
+@model ProjectOverviewDocumentViewModel
+
+@{
+	ViewBag.Title = "Project overview";
+	ViewBag.Active = ProjectOverview.ProjectDocuments;
+}
+
+@{
+	var routeName = (ViewData["BackRoute"] as string) ?? "app:Welcome";
+	var routeValues = ViewData["BackRouteValues"] as Dictionary<string, string>
+							?? new Dictionary<string, string>();
+}
+
+@section BackNavigation {
+	<partial name="_BackNavigation" model="@((routeName, "Back", routeValues))" />
+}
+
+@functions {
+
+	private bool CanOpenPanelForField(string fieldName) =>
+		ViewData.ModelState.TryGetValue(fieldName, out var state) && state.Errors.Any();
+
+	private bool CanOpenPanelForAnyField(params string[] fieldNames) =>
+		fieldNames.Any(CanOpenPanelForField);
+
+	private bool HasFilterErrors() =>
+		ViewData.ModelState.Values.Any(v => v.Errors.Count > 0);
+
+}
+
+@if (TempData[TempDataKeys.ShowNotificationBanner] is not null)
+{
+	<partial name="_NotificationBanner" model="@("Success", "Modification progress successfully saved")" />
+}
+
+<partial name="_NavigationHeaderPartial" model="@Model.ProjectOverviewModel" />
+
+<div class="govuk-grid-row">
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-two-thirds">
+			<partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
+		</div>
+	</div>
+
+	<div class="govuk-grid-column-two-thirds">
+		<br />
+		<label class="govuk-label" for="Search.SearchQuery">
+			<b>Project documents</b>
+		</label>
+		<div class="govuk-hint" id="Search.SearchQuery-hint">
+			
+		</div>
+
+		<div class="review-body-search">
+			<input class="govuk-input" id="Search.SearchQuery" name="Search.SearchQuery" type="text"
+				   value="@(Model.Search?.SearchQuery ?? string.Empty)" />
+
+			<button class="govuk-button mb-0" data-module="govuk-button" type="submit">
+				Search
+			</button>
+		</div>
+
+		<input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize" />
+		<input hidden readonly name="PageNumber" value="@Model.Pagination?.PageNumber" />
+
+		<!-- Filter Panel -->
+		<div class="search-filter-panel">
+			<details class="search-filter-toggle" @(HasFilterErrors() ? "open" : null)>
+				<summary class="search-filter-panel__header"
+						 tabindex="-1"
+						 role="button"
+						 aria-controls="filter-panel"
+						 aria-expanded="@(HasFilterErrors().ToString().ToLower())">
+
+					<span class="search-filter-panel__button-inner govuk-link"
+						  tabindex="0">
+						Advanced filters
+					</span>
+
+					<span class="search-filter-panel__count" aria-hidden="true" tabindex="-1">
+						@(Model.Pagination?.TotalCount ?? 0) results
+					</span>
+				</summary>
+
+				<div class="search-filter-panel__content" id="filter-panel" role="region" aria-labelledby="toggle-filter">
+					<div class="search-filter-panel__actions">
+						<button type="submit" class="govuk-button search-filter-panel__action search-filter-panel__action--submit">Apply filters</button>
+					</div>
+				</div>
+			</details>
+		</div>
+	</div>
+</div>
+
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-full">
+		<authorized auth-params="@new(Roles:"applicant,system_administrator,reviewer")">
+			<div class="govuk-table-wrapper">
+				<table class="govuk-table modifications-tasklist-table" id="projectDocumentsTable">
+					<thead class="govuk-table__head">
+						<tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+							@{
+								var sortableHeaders = new[]
+								{
+							new { Field = nameof(ProjectOverviewDocumentDto.DocumentType), Label = "Document type" },
+							new { Field = nameof(ProjectOverviewDocumentDto.FileName), Label = "Document name" },
+							new { Field = nameof(ProjectOverviewDocumentDto.DocumentVersion), Label = "Version" },
+							new { Field = nameof(ProjectOverviewDocumentDto.DocumentDate), Label = "Document date" },
+							new { Field = nameof(ProjectOverviewDocumentDto.Status), Label = "Status" },
+							new { Field = nameof(ProjectOverviewDocumentDto.ModificationIdentifier), Label = "Modification ID" }
+							};
+								var tableId = "projectDocumentsTable";
+							}
+
+							@foreach (var header in sortableHeaders)
+							{
+								var displayText = header.Label.Contains(" ")
+								? header.Label.Replace(" ", "<br />")
+								: header.Label;
+
+								<th scope="col" class="govuk-table__header govuk-table__header-sortable">
+									@await Html.PartialAsync("_SortableHeaderButton", new SortableHeaderModel
+   {
+	   FieldName = header.Field,
+	   DisplayText = displayText,
+	   CurrentSortField = Model.Pagination?.SortField,
+	   CurrentSortDirection = Model.Pagination?.SortDirection,
+	   TableId = tableId,
+	   AdditionalParameters = new Dictionary<string, string>
+								{
+								{ "projectRecordId", Model.ProjectOverviewModel.ProjectRecordId }
+								}
+   })
+								</th>
+							}
+							<th scope="col" class="govuk-table__header">Action</th>
+						</tr>
+					</thead>
+
+					<form method="get" id="projectdocuments-selection">
+						<input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
+						<input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
+
+					<tbody class="govuk-table__body govuk-body-s">
+							@{
+								foreach (var modification in Model.Documents)
+								{
+								<tr class="govuk-table__row">
+									<td class="govuk-table__cell">@modification.DocumentType</td>
+									<td class="govuk-table__cell">
+										<a class="govuk-link" href="#">
+											<strong>@modification.FileName</strong>
+										</a>
+									</td>
+									<td class="govuk-table__cell">@modification.DocumentVersion</td>
+									<td class="govuk-table__cell">@modification.DocumentDate</td>
+									<td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">@modification.Status</strong></td>
+									<td class="govuk-table__cell">
+										<a class="govuk-link" href="#">
+											<strong>@modification.ModificationIdentifier</strong>
+										</a>
+									</td>
+									<td class="govuk-table__cell">
+										<a class="govuk-link" href="#">
+											View details
+										</a>
+									</td>
+								</tr>
+								}
+							}
+					</tbody>
+					</form>
+				</table>
+			</div>
+			<partial name="_Pagination" model="@Model.Pagination" />
+		</authorized>
+	</div>
+</div>

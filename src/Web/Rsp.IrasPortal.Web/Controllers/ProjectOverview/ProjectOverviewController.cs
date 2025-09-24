@@ -3,11 +3,13 @@ using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
+using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers.ProjectOverview;
@@ -17,8 +19,11 @@ namespace Rsp.IrasPortal.Web.Controllers.ProjectOverview;
 public class ProjectOverviewController(
     IApplicationsService applicationService,
     IProjectModificationsService projectModificationsService,
-    IRespondentService respondentService) : Controller
+    IRespondentService respondentService,
+    ICmsQuestionsetService cmsQuestionsetService) : Controller
 {
+    private const string DocumentDetailsSection = "pdm-document-metadata";
+
     public async Task<IActionResult> ProjectDetails(string projectRecordId, string? backRoute)
     {
         UpdateModificationRelatedTempData();
@@ -81,18 +86,18 @@ public class ProjectOverviewController(
             .ToList() ?? [];
 
         model.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationsResponseResult?.Content?.TotalCount ?? 0)
-            {
-                SortDirection = sortDirection,
-                SortField = sortField,
-                FormName = "postapproval-selection",
-                RouteName = "pov:postapproval",
-                AdditionalParameters = new Dictionary<string, string>() { { "projectRecordId", projectRecordId } }
-            };
+        {
+            SortDirection = sortDirection,
+            SortField = sortField,
+            FormName = "postapproval-selection",
+            RouteName = "pov:postapproval",
+            AdditionalParameters = new Dictionary<string, string>() { { "projectRecordId", projectRecordId } }
+        };
 
         return View(model);
     }
 
-    public async Task<IActionResult> ProjectTeam(string projectRecordId,  string? backRoute)
+    public async Task<IActionResult> ProjectTeam(string projectRecordId, string? backRoute)
     {
         SetupShortProjectTitleBackNav("pov", "app:Welcome", backRoute);
         var response = await GetProjectOverview(projectRecordId);
@@ -234,6 +239,62 @@ public class ProjectOverviewController(
         };
 
         return Ok(model);
+    }
+
+    public async Task<IActionResult> ProjectDocuments
+        (
+        string projectRecordId,
+        string? backRoute,
+        int pageNumber = 1,
+        int pageSize = 20,
+        string sortField = nameof(ProjectOverviewDocumentDto.DocumentType),
+        string sortDirection = SortDirections.Ascending
+        )
+    {
+        UpdateModificationRelatedTempData();
+        SetupShortProjectTitleBackNav("pov", "app:Welcome", backRoute);
+
+        var response = await GetProjectOverview(projectRecordId);
+
+        // if status code is not a successful status code
+        if ((response is StatusCodeResult result && result.StatusCode is < 200 or > 299) ||
+            (response is not OkObjectResult okResult))
+        {
+            return response;
+        }
+
+        var model = new ProjectOverviewDocumentViewModel
+        {
+            ProjectOverviewModel = okResult.Value as ProjectOverviewModel
+        };
+
+        var searchQuery = new ProjectOverviewDocumentSearchRequest();
+        // Fetch the CMS question set that defines what metadata must be collected for this document.
+        var additionalQuestionsResponse = await cmsQuestionsetService
+            .GetModificationQuestionSet(DocumentDetailsSection);
+
+        // Build the questionnaire model containing all questions for the details section.
+        var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(additionalQuestionsResponse.Content!);
+        var matchingQuestion = questionnaire.Questions.FirstOrDefault(q => q.QuestionId == ModificationQuestionIds.DocumentType);
+
+        searchQuery.DocumentTypes = matchingQuestion?.Answers?
+            .ToDictionary(a => a.AnswerId, a => a.AnswerText) ?? [];
+
+        var modificationsResponseResult = await projectModificationsService.GetDocumentsForProjectOverview(projectRecordId,
+            searchQuery, pageNumber, pageSize, sortField, sortDirection);
+
+        model.Documents = modificationsResponseResult?.Content?.Documents ?? [];
+
+        model.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationsResponseResult?.Content?.TotalCount ?? 0)
+        {
+            SortDirection = sortDirection,
+            SortField = sortField,
+            FormName = "projectdocuments-selection",
+            RouteName = "pov:projectdocuments",
+            AdditionalParameters = new Dictionary<string, string>() { { "projectRecordId", projectRecordId } }
+        };
+
+        return View(model);
     }
 
     private static string? GetAnswerName(string? answerText, Dictionary<string, string> options)
