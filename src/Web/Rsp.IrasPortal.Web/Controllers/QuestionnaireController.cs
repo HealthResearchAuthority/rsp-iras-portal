@@ -537,7 +537,42 @@ public class QuestionnaireController
             }
         }
 
-        return RedirectToAction("ProjectDetails", "ProjectOverview", new { projectRecordId = application.Id });
+        return RedirectToAction("ProjectRecordCreated");
+    }
+
+    public async Task<IActionResult> ProjectRecordCreated()
+    {
+        var categoryId = (TempData.Peek(TempDataKeys.CategoryId) as string)!;
+
+        // get the application from the session
+        // to get the projectApplicationId
+        var application = this.GetApplicationFromSession();
+
+        // get the application details from the database
+        var applicationResponse = await applicationsService.GetProjectRecord(application.Id);
+
+        if (!applicationResponse.IsSuccessStatusCode)
+        {
+            // return the generic error page
+            return this.ServiceError(applicationResponse);
+        }
+
+        // get the respondent answers for the category
+        var respondentServiceResponse = await respondentService.GetRespondentAnswers(application.Id, categoryId);
+
+        // return the error view if unsuccessfull
+        if (!respondentServiceResponse.IsSuccessStatusCode)
+        {
+            // return the error page
+            return this.ServiceError(respondentServiceResponse);
+        }
+
+        var projectRecord = applicationResponse.Content!;
+        var answers = respondentServiceResponse.Content!;
+
+        var titleAnswer = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.ShortProjectTitle)?.AnswerText;
+
+        return View((projectRecord.IrasId, titleAnswer, projectRecord.Id));
     }
 
     /// <summary>

@@ -152,7 +152,7 @@ public class ConfirmProjectDetaisTests : TestServiceBase<QuestionnaireController
     }
 
     [Fact]
-    public async Task ConfirmProjectDetails_Should_RedirectToProjectOverview_When_ValidationPasses()
+    public async Task ConfirmProjectDetails_Should_RedirectToProjectRecordCreated_When_ValidationPasses()
     {
         // Arrange
         SetupApplicationInSession();
@@ -206,8 +206,7 @@ public class ConfirmProjectDetaisTests : TestServiceBase<QuestionnaireController
 
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
-        redirectResult.ActionName.ShouldBe("ProjectDetails");
-        redirectResult.ControllerName.ShouldBe("ProjectOverview");
+        redirectResult.ActionName.ShouldBe("ProjectRecordCreated");
     }
 
     [Theory]
