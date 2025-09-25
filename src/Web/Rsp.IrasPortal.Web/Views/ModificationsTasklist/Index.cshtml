@@ -237,8 +237,8 @@
 		<hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
 		<div class="govuk-grid-row">
 			<div class="govuk-grid-column-two-thirds">
-				<h2 class="govuk-heading-l">@Html.Raw(emptySearchTitle?.Value)</h2>
-				@Html.Raw(emptySearchBodyText?.Value)
+				<h2 class="govuk-heading-l">@Html.Raw(noResultsTitle?.Value)</h2>
+				@Html.Raw(noResultsBodyText?.Value)
 			</div>
 		</div>
 	}
@@ -246,8 +246,9 @@
 	{
 		<div class="govuk-grid-row">
 			<div class="govuk-grid-column-two-thirds search-filter-error-border">
-				<h2 class="govuk-heading-l">@Html.Raw(noResultsTitle?.Value)</h2>
-				@Html.Raw(noResultsBodyText?.Value)
+				<h2 class="govuk-heading-l">@Html.Raw(emptySearchTitle?.Value)</h2>
+				
+				@Html.Raw(emptySearchBodyText?.Value)
 			</div>
 		</div>
 	}
