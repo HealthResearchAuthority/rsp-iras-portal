@@ -29,22 +29,37 @@
 
             <p class="govuk-body">
                 Upload your documents here. You’ll add document details in the next step. <br />
-                Documents must be a XXX or XXX and smaller than XXXMB.
+				<br />
+				Documents must be less than 100MB and one of these file types: mp4, mov, avi, mkv, wmv, mpeg, mpg, webm,
+				png, gif, bmp, svg, jpg, jpeg,
+				doc, docx, dot, dotx, pdf, rtf, odt, ofd, xps,
+				xls, xlsx, csv,
+				ppt, pptx,
+				txt, xml, html, htm,
+				vcf, eml, msg
             </p>
+			
+			<div class="govuk-form-group @(Html.ViewData.ModelState.ContainsKey(nameof(Model.Files)) ? "govuk-form-group--error" : "")">
+				<label class="govuk-label" for="Files">Upload documents</label>
+				@if (ViewData.ModelState.TryGetValue(nameof(Model.Files), out var entry) && entry.Errors.Any())
+				{
+					<ul class="govuk-error-list">
+						@foreach (var error in entry.Errors)
+						{
+							<li class="govuk-error-message">@error.ErrorMessage</li>
+						}
+					</ul>
+				}
 
-            <label class="govuk-label" for="Files">Upload documents</label>
-            @Html.ValidationMessageFor(m => m.Files, "", new { @class = "govuk-error-message" })
-
-            <div class="govuk-drop-zone @(Html.ViewData.ModelState.ContainsKey(nameof(Model.Files)) ? "govuk-form-group--error" : "")"
-                 data-module="govuk-file-upload">
-
-                <input asp-for="Files"
-                       class="govuk-file-upload"
-                       id="Files"
-                       name="Files"
-                       type="file"
-                       multiple />
-            </div>
+				<div class="govuk-drop-zone" data-module="govuk-file-upload">
+					<input asp-for="Files"
+						   class="govuk-file-upload"
+						   id="Files"
+						   name="Files"
+						   type="file"
+						   multiple />
+				</div>
+			</div>
 
             <div class="govuk-button-group govuk-!-margin-top-4">
                 <button class="govuk-button" data-module="govuk-button" name="action" value="continue">Save and continue</button>
