@@ -415,7 +415,6 @@ public class DocumentsController
             // 4. Combined file size check
             if (totalFileSize > maxFileSize)
             {
-                atleastOneInvalidFile = true;
                 ModelState.AddModelError("Files", "The combined size of all files must not exceed 100 MB");
                 return View(model);
             }
