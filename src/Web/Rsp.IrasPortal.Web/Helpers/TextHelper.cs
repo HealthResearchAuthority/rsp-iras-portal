@@ -28,7 +28,9 @@ public static class TextHelper
                 lowered,
                 $@"\b{Regex.Escape(acronym.ToLowerInvariant())}\b",
                 acronym,
-                RegexOptions.IgnoreCase);
+                RegexOptions.IgnoreCase,
+                TimeSpan.FromMilliseconds(200) // Prevent runaway regex
+             );
         }
 
         return lowered;
