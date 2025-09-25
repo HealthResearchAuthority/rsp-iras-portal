@@ -247,4 +247,149 @@ public class ContinueToDetailsTests : TestServiceBase<DocumentsController>
         var q = model.Questions;
         Assert.NotNull(q);
     }
+
+    [Fact]
+    public async Task ContinueToDetails_WhenMatchingAnswerExists_PopulatesQuestionProperties()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        var answerId = Guid.NewGuid();
+
+        // Mock document details
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationDocumentDetails(documentId))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationDocumentRequest>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectModificationDocumentRequest
+                {
+                    Id = documentId,
+                    FileName = "doc.pdf",
+                    FileSize = 123,
+                    DocumentStoragePath = "https://storage/doc.pdf"
+                }
+            });
+
+        // Mock CMS question set
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet("pdm-document-metadata", It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse
+                {
+                    Sections = new List<SectionModel>
+                    {
+                    new()
+                    {
+                        Id = "S1",
+                        Questions = new List<QuestionModel>
+                        {
+                            new() { QuestionId = "Q1", Name = "Test Question", Id = "1" }
+                        }
+                    }
+                    }
+                }
+            });
+
+        // Mock answers that match the question
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationDocumentAnswers(documentId))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentAnswerDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new List<ProjectModificationDocumentAnswerDto>
+                {
+                new ProjectModificationDocumentAnswerDto
+                {
+                    Id = answerId,
+                    QuestionId = "Q1",
+                    AnswerText = "Some answer",
+                    SelectedOption = "opt1"
+                }
+                }
+            });
+
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectRecordId] = "record-123",
+            [TempDataKeys.ShortProjectTitle] = "Short Title",
+        };
+
+        Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+
+        // Act
+        var result = await Sut.ContinueToDetails(documentId);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<ModificationAddDocumentDetailsViewModel>(viewResult.Model);
+
+        Assert.Single(model.Questions);
+    }
+
+    [Fact]
+    public async Task ContinueToDetails_WhenAnswerDoesNotMatchQuestion_DoesNotSetQuestionProperties()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationDocumentDetails(documentId))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationDocumentRequest>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectModificationDocumentRequest { Id = documentId, FileName = "doc.pdf" }
+            });
+
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet("pdm-document-metadata", It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse
+                {
+                    Sections = new List<SectionModel>
+                    {
+                    new()
+                    {
+                        Id = "S1",
+                        Questions = new List<QuestionModel>
+                        {
+                            new() { QuestionId = "Q1", Name = "Test Question", Id = "1" }
+                        }
+                    }
+                    }
+                }
+            });
+
+        // Answer has a non-matching QuestionId
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationDocumentAnswers(documentId))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentAnswerDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new List<ProjectModificationDocumentAnswerDto>
+                {
+                new() { Id = Guid.NewGuid(), QuestionId = "NonMatching", AnswerText = "Some answer" }
+                }
+            });
+
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectRecordId] = "record-123"
+        };
+        Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+
+        // Act
+        var result = await Sut.ContinueToDetails(documentId);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<ModificationAddDocumentDetailsViewModel>(viewResult.Model);
+
+        var question = model.Questions.First();
+        Assert.Null(question.AnswerText);
+        Assert.Null(question.SelectedOption);
+    }
 }

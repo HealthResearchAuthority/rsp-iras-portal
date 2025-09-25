@@ -147,10 +147,35 @@ public class DocumentsController
                     var answersResponse = await respondentService.GetModificationDocumentAnswers(a.Id);
                     var answers = answersResponse?.StatusCode == HttpStatusCode.OK
                         ? answersResponse.Content ?? []
-                        : new List<ProjectModificationDocumentAnswerDto>();
+                        : [];
+
+                    // Clone the questionnaire to avoid polluting the shared one
+                    var clonedQuestionnaire = new QuestionnaireViewModel
+                    {
+                        Questions = questionnaire.Questions
+                            .Select(q => new QuestionViewModel
+                            {
+                                Id = q.Id,
+                                Index = q.Index,
+                                QuestionId = q.QuestionId,
+                                SectionSequence = q.SectionSequence,
+                                Sequence = q.Sequence,
+                                QuestionText = q.QuestionText,
+                                QuestionType = q.QuestionType,
+                                DataType = q.DataType,
+                                IsMandatory = q.IsMandatory,
+                                IsOptional = q.IsOptional,
+                                ShowOriginalAnswer = q.ShowOriginalAnswer,
+                                Rules = q.Rules
+                            })
+                            .ToList()
+                    };
+
+                    clonedQuestionnaire = await PopulateAnswersFromDocuments(clonedQuestionnaire, answers);
+                    var isValid = await ValidateQuestionnaire(clonedQuestionnaire, true);
 
                     // Mark as incomplete if no answers exist or if not all questions are answered.
-                    var isIncomplete = !answers.Any() || questionnaire.Questions.Count != answers.Count();
+                    var isIncomplete = !answers.Any() || !isValid;
 
                     return new DocumentSummaryItemDto
                     {
@@ -631,5 +656,40 @@ public class DocumentsController
         }
 
         return true;
+    }
+
+    private async Task<QuestionnaireViewModel> PopulateAnswersFromDocuments(
+    QuestionnaireViewModel questionnaire,
+    IEnumerable<ProjectModificationDocumentAnswerDto> answers)
+    {
+        foreach (var question in questionnaire.Questions)
+        {
+            // Find the matching answer by QuestionId
+            var match = answers.FirstOrDefault(a => a.QuestionId == question.QuestionId);
+
+            if (match != null)
+            {
+                question.AnswerText = match.AnswerText;
+                question.SelectedOption = match.SelectedOption;
+
+                // carry over OptionType (if you want to track Single/Multiple)
+                question.QuestionType = match.OptionType ?? question.QuestionType;
+
+                // map multiple answers into AnswerViewModel list
+                if (match.Answers != null && match.Answers.Any())
+                {
+                    question.Answers = match.Answers
+                        .Select(ans => new AnswerViewModel
+                        {
+                            AnswerId = ans,        // if ans is an ID
+                            AnswerText = ans,      // or fetch the display text elsewhere if IDs map to text
+                            IsSelected = true
+                        })
+                        .ToList();
+                }
+            }
+        }
+
+        return questionnaire;
     }
 }

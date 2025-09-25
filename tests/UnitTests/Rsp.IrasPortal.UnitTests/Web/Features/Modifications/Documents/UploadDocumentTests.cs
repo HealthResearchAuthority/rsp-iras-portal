@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Features.Modifications.Documents.Controllers;
 using Rsp.IrasPortal.Web.Models;
@@ -69,5 +71,96 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
         result.ShouldBeOfType<RedirectToActionResult>();
         var redirect = result as RedirectToActionResult;
         redirect!.ActionName.ShouldBe("ModificationDocumentsAdded");
+    }
+
+    [Fact]
+    public async Task UploadDocuments_WhenBackendFails_ReturnsServiceError()
+    {
+        // Arrange
+        var model = new ModificationUploadDocumentsViewModel { Files = new List<IFormFile>() };
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectRecordId] = "record-123",
+            [TempDataKeys.IrasId] = 999
+        };
+        Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+
+        var response = new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>> { StatusCode = HttpStatusCode.InternalServerError };
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(response);
+
+        // Act
+        var result = await Sut.UploadDocuments(model);
+
+        // Assert
+        var serviceErrorResult = Assert.IsType<StatusCodeResult>(result); // Assuming ServiceError returns ViewResult
+        Assert.Equal(serviceErrorResult.StatusCode, StatusCodes.Status500InternalServerError);
+    }
+
+    [Fact]
+    public async Task UploadDocuments_WhenDocumentsExist_RedirectsToReview()
+    {
+        // Arrange
+        var model = new ModificationUploadDocumentsViewModel { Files = new List<IFormFile>() };
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectRecordId] = "record-123",
+            [TempDataKeys.IrasId] = 999
+        };
+        Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+
+        var response = new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new List<ProjectModificationDocumentRequest> { new() { FileName = "doc1.pdf" } }
+        };
+
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(response);
+
+        // Act
+        var result = await Sut.UploadDocuments(model);
+
+        // Assert
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal(nameof(Sut.ModificationDocumentsAdded), redirect.ActionName);
+    }
+
+    [Fact]
+    public async Task UploadDocuments_WhenNoFilesAndNoExistingDocuments_AddsModelError()
+    {
+        // Arrange
+        var model = new ModificationUploadDocumentsViewModel { Files = new List<IFormFile>() };
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectRecordId] = "record-123",
+            [TempDataKeys.IrasId] = 999
+        };
+        Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+
+        var response = new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new List<ProjectModificationDocumentRequest>() // no documents
+        };
+
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(response);
+
+        // Act
+        var result = await Sut.UploadDocuments(model);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var returnedModel = Assert.IsType<ModificationUploadDocumentsViewModel>(viewResult.Model);
+
+        Assert.True(Sut.ModelState.ContainsKey("Files"));
+        Assert.Equal("Please upload at least one document", Sut.ModelState["Files"].Errors[0].ErrorMessage);
     }
 }
