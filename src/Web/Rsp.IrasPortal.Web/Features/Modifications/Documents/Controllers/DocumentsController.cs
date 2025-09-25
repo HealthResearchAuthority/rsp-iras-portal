@@ -349,6 +349,12 @@ public class DocumentsController
     [HttpPost]
     public async Task<IActionResult> UploadDocuments(ModificationUploadDocumentsViewModel model)
     {
+        // If the posted model is null (due to exceeding max request size)
+        if (model?.Files == null)
+        {
+            return View("FileTooLarge");
+        }
+
         // Retrieve contextual identifiers from TempData and HttpContext
         var projectModificationChangeId = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationChangeId);
         var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
@@ -359,12 +365,59 @@ public class DocumentsController
             projectModificationChangeId == null ? Guid.Empty : (Guid)projectModificationChangeId!,
             projectRecordId,
             respondentId);
+
         var irasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty;
+
         if (model.Files is { Count: > 0 })
         {
-            // Upload files to blob storage and get metadata for each file
+            // Get existing document names for duplicate check
+            var existingDocs = response?.Content?.ToList() ?? [];
+
+            var validFiles = new List<IFormFile>();
+            var atleastOneInvalidFile = false;
+            const long maxFileSize = 100 * 1024 * 1024; // 100 MB in bytes
+
+            foreach (var file in model.Files)
+            {
+                var ext = Path.GetExtension(file.FileName);
+                var fileName = Path.GetFileName(file.FileName);
+
+                // 1. Extension check
+                if (!FileConstants.AllowedExtensions.Contains(ext, StringComparer.OrdinalIgnoreCase))
+                {
+                    atleastOneInvalidFile = true;
+                    ModelState.AddModelError("Files", $"{fileName} must be a permitted file type");
+                    continue;
+                }
+
+                // 2. Duplicate file name check
+                if (existingDocs.Any(d => d.FileName.Equals(fileName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    atleastOneInvalidFile = true;
+                    ModelState.AddModelError("Files", $"{fileName} has already been uploaded");
+                    continue;
+                }
+
+                // 3. File size check
+                if (file.Length > maxFileSize)
+                {
+                    atleastOneInvalidFile = true;
+                    ModelState.AddModelError("Files", $"{fileName} must be smaller than 100 MB");
+                    continue;
+                }
+
+                validFiles.Add(file);
+            }
+
+            // If no valid files remain, re-render view with errors
+            if (!validFiles.Any())
+            {
+                return View(model);
+            }
+
+            // Upload only valid files to blob storage
             var uploadedBlobs = await blobStorageService.UploadFilesAsync(
-                model.Files,
+                validFiles,
                 ContainerName,
                 irasId);
 
@@ -382,7 +435,13 @@ public class DocumentsController
             // Save the uploaded document metadata to the backend
             await projectModificationsService.CreateDocumentModification(uploadedDocuments);
 
-            // Redirect to the review page
+            if (atleastOneInvalidFile)
+            {
+                // Stay on the same view with errors if some invalid files were attempted
+                return View(model);
+            }
+
+            // Redirect to the documents added page if all files were valid
             return RedirectToAction(nameof(ModificationDocumentsAdded));
         }
         else if (response?.StatusCode != HttpStatusCode.OK)
@@ -392,7 +451,7 @@ public class DocumentsController
         }
         else if (response.Content != null && response.Content.Any())
         {
-            // Documents already exist, redirect to review
+            // Documents already exist, redirect to documents added page
             return RedirectToAction(nameof(ModificationDocumentsAdded));
         }
         else
