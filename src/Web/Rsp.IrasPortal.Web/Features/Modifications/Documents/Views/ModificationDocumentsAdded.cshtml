@@ -1,4 +1,5 @@
-﻿@model Rsp.IrasPortal.Web.Models.ModificationReviewDocumentsViewModel
+﻿@using Rsp.IrasPortal.Web.Helpers
+@model Rsp.IrasPortal.Web.Models.ModificationReviewDocumentsViewModel
 
 @{
     (string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
@@ -6,9 +7,9 @@
 
 	// If we know the specific area of change, dynamically build the page title to make the UI clearer.
 	// Otherwise, leave the title empty (will fallback to default in the view if needed).
-    ViewBag.Title = !string.IsNullOrEmpty(Model.SpecificAreaOfChange) ?
-                        $"Documents added for {Model.SpecificAreaOfChange.ToLowerInvariant()}" :
-                        string.Empty;
+	ViewBag.Title = !string.IsNullOrEmpty(Model.SpecificAreaOfChange)
+		? $"Documents added for {TextHelper.ToSentenceCaseWithAcronyms(Model.SpecificAreaOfChange)}"
+		: string.Empty;
 }
 
 <div class="govuk-width-container">
