@@ -164,22 +164,22 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>(), false))
             .ReturnsAsync(questionSetServiceResponse);
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(x => x.GetQuestionSections())
+            .Setup(x => x.GetQuestionSections(false))
             .ReturnsAsync(questionsSetServiceSectionsResponse);
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>()))
+            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>(), false))
             .ReturnsAsync(questionsSetServiceSectionResponse);
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>())).ReturnsAsync(questionsSetServiceSectionResponse);
+            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>(), false)).ReturnsAsync(questionsSetServiceSectionResponse);
 
         var session = new Mock<ISession>();
         var httpContext = new DefaultHttpContext
@@ -252,7 +252,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(x => x.GetQuestionSections())
+            .Setup(x => x.GetQuestionSections(false))
             .ReturnsAsync(questionsSetServiceSectionsResponse);
 
         Mocker
@@ -291,17 +291,17 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>(), false))
             .ReturnsAsync(questionSetServiceResponse);
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>()))
+            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>(), false))
             .ReturnsAsync(questionsSetServiceSectionResponse);
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>())).ReturnsAsync(questionsSetServiceSectionResponse);
+            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>(), false)).ReturnsAsync(questionsSetServiceSectionResponse);
 
         var session = new Mock<ISession>();
         var httpContext = new DefaultHttpContext
@@ -327,7 +327,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Verify(x => x.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            .Verify(x => x.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>(), false), Times.Once);
     }
 
     [Theory]
@@ -401,7 +401,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>(), false))
             .ReturnsAsync(questionSetServiceResponse);
 
         Mocker
@@ -412,12 +412,12 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>()))
+            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>(), false))
             .ReturnsAsync(questionsSetServiceSectionResponse);
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>())).ReturnsAsync(questionsSetServiceSectionResponse);
+            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>(), false)).ReturnsAsync(questionsSetServiceSectionResponse);
 
         var session = new Mock<ISession>();
         var httpContext = new DefaultHttpContext
@@ -532,22 +532,22 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>(), false))
             .ReturnsAsync(questionSetServiceResponse);
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(x => x.GetQuestionSections())
+            .Setup(x => x.GetQuestionSections(false))
             .ReturnsAsync(questionsSetServiceSectionsResponse);
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>()))
+            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>(), false))
             .ReturnsAsync(questionsSetServiceSectionResponse);
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>())).ReturnsAsync(questionsSetServiceSectionResponse);
+            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>(), false)).ReturnsAsync(questionsSetServiceSectionResponse);
 
         var session = new Mock<ISession>();
         var httpContext = new DefaultHttpContext
@@ -599,7 +599,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(s => s.GetQuestionSections())
+            .Setup(s => s.GetQuestionSections(false))
             .ReturnsAsync(new ServiceResponse<IEnumerable<QuestionSectionsResponse>>
             {
                 StatusCode = HttpStatusCode.InternalServerError
@@ -650,7 +650,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(s => s.GetQuestionSections())
+            .Setup(s => s.GetQuestionSections(false))
             .ReturnsAsync(new ServiceResponse<IEnumerable<QuestionSectionsResponse>>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -683,12 +683,12 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>(), false))
             .ReturnsAsync(questionSetServiceResponse);
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>()))
+            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>(), false))
             .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -697,7 +697,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>()))
+            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>(), false))
             .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -748,7 +748,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         // No sections for the category
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(s => s.GetQuestionSections())
+            .Setup(s => s.GetQuestionSections(false))
             .ReturnsAsync(new ServiceResponse<IEnumerable<QuestionSectionsResponse>>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -781,12 +781,12 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>(), false))
             .ReturnsAsync(questionSetServiceResponse);
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>()))
+            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>(), false))
             .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -795,7 +795,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>()))
+            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>(), false))
             .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -846,7 +846,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         // Simulate GetQuestionSections returns null content
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(s => s.GetQuestionSections())
+            .Setup(s => s.GetQuestionSections(false))
             .ReturnsAsync(new ServiceResponse<IEnumerable<QuestionSectionsResponse>>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -879,12 +879,12 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>(), false))
             .ReturnsAsync(questionSetServiceResponse);
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>()))
+            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>(), false))
             .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -893,7 +893,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>()))
+            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>(), false))
             .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -976,12 +976,12 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>(), false))
             .ReturnsAsync(questionSetServiceResponse);
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>()))
+            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>(), false))
             .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -990,7 +990,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>()))
+            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>(), false))
             .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
             {
                 StatusCode = HttpStatusCode.OK,

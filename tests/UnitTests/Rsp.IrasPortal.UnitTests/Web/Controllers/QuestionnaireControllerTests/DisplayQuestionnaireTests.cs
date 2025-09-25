@@ -74,20 +74,20 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>(), false))
             .ReturnsAsync(questionSetServiceResponse);
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetQuestionSections()).ReturnsAsync(responseQuestionSections);
+            .Setup(q => q.GetQuestionSections(false)).ReturnsAsync(responseQuestionSections);
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>())).ReturnsAsync(responseQuestionSection);
+            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>(), false)).ReturnsAsync(responseQuestionSection);
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>())).ReturnsAsync(responseQuestionSection);
+            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>(), false)).ReturnsAsync(responseQuestionSection);
 
         var session = new Mock<ISession>();
         session
@@ -133,7 +133,7 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Verify(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            .Verify(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>(), false), Times.Once);
     }
 
     [Theory]
@@ -153,7 +153,7 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>(), false))
             .ReturnsAsync(response);
 
         var responseQuestionSections = new ServiceResponse<IEnumerable<QuestionSectionsResponse>>
@@ -164,7 +164,7 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetQuestionSections()).ReturnsAsync(responseQuestionSections);
+            .Setup(q => q.GetQuestionSections(false)).ReturnsAsync(responseQuestionSections);
 
         var session = new Mock<ISession>();
 
@@ -223,7 +223,7 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>(), false))
             .ReturnsAsync(questionSetServiceResponse);
 
         var responseQuestionSections = new ServiceResponse<IEnumerable<QuestionSectionsResponse>>
@@ -234,7 +234,7 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetQuestionSections()).ReturnsAsync(responseQuestionSections);
+            .Setup(q => q.GetQuestionSections(false)).ReturnsAsync(responseQuestionSections);
 
         var responseQuestionSection = new ServiceResponse<QuestionSectionsResponse>
         {
@@ -244,11 +244,11 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>())).ReturnsAsync(responseQuestionSection);
+            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>(), false)).ReturnsAsync(responseQuestionSection);
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>())).ReturnsAsync(responseQuestionSection);
+            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>(), false)).ReturnsAsync(responseQuestionSection);
 
         var session = new Mock<ISession>();
         session
@@ -305,6 +305,6 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Verify(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            .Verify(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>(), false), Times.Once);
     }
 }

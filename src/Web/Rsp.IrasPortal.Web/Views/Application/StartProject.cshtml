@@ -16,7 +16,7 @@
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
         <form method="post">
-
+			<input hidden readonly name="QuestionsetPreview" asp-for="QuestionsetPreview" value="@(Model.QuestionsetPreview.ToString() ?? bool.FalseString)" />
             <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
 
             <div class="govuk-form-group" error-class-for="IrasId">

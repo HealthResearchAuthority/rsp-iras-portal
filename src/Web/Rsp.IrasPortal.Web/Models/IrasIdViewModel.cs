@@ -3,4 +3,5 @@
 public class IrasIdViewModel
 {
     public string? IrasId { get; set; }
+    public bool QuestionsetPreview { get; set; } = false;
 }

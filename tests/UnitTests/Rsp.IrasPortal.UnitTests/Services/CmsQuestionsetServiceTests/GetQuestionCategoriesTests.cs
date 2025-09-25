@@ -26,11 +26,11 @@ public class GetQuestionCategoriesTests : TestServiceBase<CmsQuestionsetService>
         );
 
         _questionSetServiceClient
-            .Setup(c => c.GetQuestionCategories())
+            .Setup(c => c.GetQuestionCategories(false))
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.GetQuestionCategories();
+        var result = await Sut.GetQuestionCategories(false);
 
         // Assert
         result.ShouldNotBeNull();
@@ -42,9 +42,9 @@ public class GetQuestionCategoriesTests : TestServiceBase<CmsQuestionsetService>
     public async Task GetQuestionCategories_ShouldThrow_WhenApiFails()
     {
         _questionSetServiceClient
-            .Setup(c => c.GetQuestionCategories())
+            .Setup(c => c.GetQuestionCategories(false))
             .ThrowsAsync(new Exception("Error fetching categories"));
 
-        await Should.ThrowAsync<Exception>(() => Sut.GetQuestionCategories());
+        await Should.ThrowAsync<Exception>(() => Sut.GetQuestionCategories(false));
     }
 }

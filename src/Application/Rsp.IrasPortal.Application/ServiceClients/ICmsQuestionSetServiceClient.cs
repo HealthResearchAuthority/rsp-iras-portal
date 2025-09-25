@@ -8,19 +8,19 @@ namespace Rsp.IrasPortal.Application.ServiceClients;
 public interface ICmsQuestionSetServiceClient
 {
     [Get("/projectRecordQuestionset/getQuestionSet")]
-    public Task<ApiResponse<CmsQuestionSetResponse>> GetQuestionSet(string? sectionId = null, string? questionSetId = null);
+    public Task<ApiResponse<CmsQuestionSetResponse>> GetQuestionSet(string? sectionId = null, string? questionSetId = null, bool preview = false);
 
     [Get("/projectRecordQuestionset/getQuestionCategories")]
-    public Task<ApiResponse<IEnumerable<CategoryDto>>> GetQuestionCategories();
+    public Task<ApiResponse<IEnumerable<CategoryDto>>> GetQuestionCategories(bool preview);
 
     [Get("/projectRecordQuestionset/getQuestionSections")]
-    public Task<ApiResponse<IEnumerable<QuestionSectionsResponse>>> GetQuestionSections();
+    public Task<ApiResponse<IEnumerable<QuestionSectionsResponse>>> GetQuestionSections(bool preview);
 
     [Get("/projectRecordQuestionset/getPreviousQuestionSection")]
-    public Task<ApiResponse<QuestionSectionsResponse>> GetPreviousQuestionSection(string currentSectionId);
+    public Task<ApiResponse<QuestionSectionsResponse>> GetPreviousQuestionSection(string currentSectionId, bool preview);
 
     [Get("/projectRecordQuestionset/getNextQuestionSection")]
-    public Task<ApiResponse<QuestionSectionsResponse>> GetNextQuestionSection(string currentSectionId);
+    public Task<ApiResponse<QuestionSectionsResponse>> GetNextQuestionSection(string currentSectionId, bool preview);
 
     [Get("/modificationsquestionset/getstartingquestions")]
     public Task<ApiResponse<StartingQuestionsDto>> GetInitialModificationQuestions();

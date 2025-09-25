@@ -39,7 +39,7 @@ public class ModificationsController
     /// <param name="separator">Separator to use in the modification identifier. Default is "/".</param>
     /// <returns>Redirects to the resume route if successful, otherwise returns an error page.</returns>
     [HttpGet]
-    public async Task<IActionResult> CreateModification(string separator = "/")
+    public async Task<IActionResult> CreateModification(string separator = "/", bool preview = false)
     {
         // Retrieve IRAS ID from TempData
         var IrasId = TempData.Peek(TempDataKeys.IrasId) as int?;
@@ -91,7 +91,11 @@ public class ModificationsController
         TempData[TempDataKeys.ProjectModification.ProjectModificationIdentifier] = projectModification.ModificationIdentifier;
         TempData[TempDataKeys.CategoryId] = QuestionCategories.ProjectModification;
 
-        return RedirectToAction(nameof(AreaOfChange));
+        return RedirectToAction(nameof(AreaOfChange),
+            new
+            {
+                preview = preview
+            });
     }
 
     /// <summary>
@@ -99,7 +103,7 @@ public class ModificationsController
     /// Retrieves area of change data and stores it in session for later reuse.
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> AreaOfChange()
+    public async Task<IActionResult> AreaOfChange(bool preview = false)
     {
         // get the initial modification questions from CMS
         var startingQuestionsResponse = await cmsQuestionsetService.GetInitialModificationQuestions();

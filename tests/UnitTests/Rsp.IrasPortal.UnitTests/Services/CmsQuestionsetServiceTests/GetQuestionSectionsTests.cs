@@ -26,10 +26,10 @@ public class GetQuestionSectionsTests : TestServiceBase<CmsQuestionsetService>
         );
 
         _questionSetServiceClient
-            .Setup(c => c.GetQuestionSections())
+            .Setup(c => c.GetQuestionSections(false))
             .ReturnsAsync(apiResponse);
 
-        var result = await Sut.GetQuestionSections();
+        var result = await Sut.GetQuestionSections(false);
 
         // Assert
         result.ShouldNotBeNull();
@@ -41,9 +41,9 @@ public class GetQuestionSectionsTests : TestServiceBase<CmsQuestionsetService>
     public async Task GetQuestionSections_ShouldThrow_WhenApiFails()
     {
         _questionSetServiceClient
-            .Setup(c => c.GetQuestionSections())
+            .Setup(c => c.GetQuestionSections(false))
             .ThrowsAsync(new Exception("Timeout"));
 
-        await Should.ThrowAsync<Exception>(() => Sut.GetQuestionSections());
+        await Should.ThrowAsync<Exception>(() => Sut.GetQuestionSections(false));
     }
 }

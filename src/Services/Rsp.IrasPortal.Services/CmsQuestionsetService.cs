@@ -10,41 +10,41 @@ namespace Rsp.IrasPortal.Services;
 
 public class CmsQuestionsetService(ICmsQuestionSetServiceClient client) : ICmsQuestionsetService
 {
-    public async Task<ServiceResponse<QuestionSectionsResponse>> GetNextQuestionSection(string currentSectionId)
+    public async Task<ServiceResponse<QuestionSectionsResponse>> GetNextQuestionSection(string currentSectionId, bool preview)
     {
-        var responce = await client.GetNextQuestionSection(currentSectionId);
+        var responce = await client.GetNextQuestionSection(currentSectionId, preview);
 
         // convert to service response
         return responce.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse<QuestionSectionsResponse>> GetPreviousQuestionSection(string currentSectionId)
+    public async Task<ServiceResponse<QuestionSectionsResponse>> GetPreviousQuestionSection(string currentSectionId, bool preview)
     {
-        var responce = await client.GetPreviousQuestionSection(currentSectionId);
+        var responce = await client.GetPreviousQuestionSection(currentSectionId, preview);
 
         // convert to service response
         return responce.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse<IEnumerable<CategoryDto>>> GetQuestionCategories()
+    public async Task<ServiceResponse<IEnumerable<CategoryDto>>> GetQuestionCategories(bool preview)
     {
-        var responce = await client.GetQuestionCategories();
+        var responce = await client.GetQuestionCategories(preview);
 
         // convert to service response
         return responce.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse<IEnumerable<QuestionSectionsResponse>>> GetQuestionSections()
+    public async Task<ServiceResponse<IEnumerable<QuestionSectionsResponse>>> GetQuestionSections(bool preview)
     {
-        var responce = await client.GetQuestionSections();
+        var responce = await client.GetQuestionSections(preview);
 
         // convert to service response
         return responce.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse<CmsQuestionSetResponse>> GetQuestionSet(string? sectionId = null, string? questionSetId = null)
+    public async Task<ServiceResponse<CmsQuestionSetResponse>> GetQuestionSet(string? sectionId = null, string? questionSetId = null, bool preview = false)
     {
-        var responce = await client.GetQuestionSet(sectionId, questionSetId);
+        var responce = await client.GetQuestionSet(sectionId, questionSetId, preview: preview);
 
         // convert to service response
         return responce.ToServiceResponse();

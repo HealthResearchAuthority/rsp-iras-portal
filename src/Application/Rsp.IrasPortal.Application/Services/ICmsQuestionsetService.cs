@@ -7,15 +7,15 @@ namespace Rsp.IrasPortal.Application.Services;
 
 public interface ICmsQuestionsetService
 {
-    Task<ServiceResponse<CmsQuestionSetResponse>> GetQuestionSet(string? sectionId = null, string? questionSetId = null);
+    Task<ServiceResponse<CmsQuestionSetResponse>> GetQuestionSet(string? sectionId = null, string? questionSetId = null, bool preview = false);
 
-    Task<ServiceResponse<IEnumerable<CategoryDto>>> GetQuestionCategories();
+    Task<ServiceResponse<IEnumerable<CategoryDto>>> GetQuestionCategories(bool preview);
 
-    Task<ServiceResponse<IEnumerable<QuestionSectionsResponse>>> GetQuestionSections();
+    Task<ServiceResponse<IEnumerable<QuestionSectionsResponse>>> GetQuestionSections(bool preview);
 
-    Task<ServiceResponse<QuestionSectionsResponse>> GetPreviousQuestionSection(string currentSectionId);
+    Task<ServiceResponse<QuestionSectionsResponse>> GetPreviousQuestionSection(string currentSectionId, bool preview);
 
-    Task<ServiceResponse<QuestionSectionsResponse>> GetNextQuestionSection(string currentSectionId);
+    Task<ServiceResponse<QuestionSectionsResponse>> GetNextQuestionSection(string currentSectionId, bool preview);
 
     Task<ServiceResponse<StartingQuestionsDto>> GetInitialModificationQuestions();
 

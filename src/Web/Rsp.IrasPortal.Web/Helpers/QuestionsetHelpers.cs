@@ -14,7 +14,7 @@ public static class QuestionsetHelpers
     // - Within each group, use Select with index to create (question, indexPerSection) tuples.
     // - Build QuestionnaireViewModel and add QuestionViewModel items using the per-section index.
 
-    public static QuestionnaireViewModel BuildQuestionnaireViewModel(CmsQuestionSetResponse response, bool resetIndexPerSection = false)
+    public static QuestionnaireViewModel BuildQuestionnaireViewModel(CmsQuestionSetResponse response, bool resetIndexPerSection = false, bool preview = false)
     {
         var model = ConvertToQuestionResponse(response);
 
@@ -39,7 +39,8 @@ public static class QuestionsetHelpers
 
         var questionnaire = new QuestionnaireViewModel
         {
-            GuidanceContent = guidanceContent
+            GuidanceContent = guidanceContent,
+            Preview = preview
         };
 
         // build the questionnaire view model with per-section index

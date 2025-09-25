@@ -77,13 +77,13 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
         };
 
         Mocker.GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetQuestionSections()).ReturnsAsync(responseQuestionSections);
+            .Setup(q => q.GetQuestionSections(false)).ReturnsAsync(responseQuestionSections);
 
         Mocker.GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>())).ReturnsAsync(responseQuestionSection);
+            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>(), false)).ReturnsAsync(responseQuestionSection);
 
         Mocker.GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>())).ReturnsAsync(responseQuestionSectionNull);
+            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>(), false)).ReturnsAsync(responseQuestionSectionNull);
 
         Mocker
             .GetMock<IRtsService>()
@@ -183,13 +183,13 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
         };
 
         Mocker.GetMock<ICmsQuestionsetService>()
-           .Setup(q => q.GetQuestionSections()).ReturnsAsync(responseQuestionSections);
+           .Setup(q => q.GetQuestionSections(false)).ReturnsAsync(responseQuestionSections);
 
         Mocker.GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>())).ReturnsAsync(responseQuestionSection);
+            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>(), false)).ReturnsAsync(responseQuestionSection);
 
         Mocker.GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>())).ReturnsAsync(responseQuestionSectionNull);
+            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>(), false)).ReturnsAsync(responseQuestionSectionNull);
 
         var context = new DefaultHttpContext
         {
@@ -270,13 +270,13 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
         };
 
         Mocker.GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetQuestionSections()).ReturnsAsync(responseQuestionSections);
+            .Setup(q => q.GetQuestionSections(false)).ReturnsAsync(responseQuestionSections);
 
         Mocker.GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>())).ReturnsAsync(responseQuestionSection);
+            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>(), false)).ReturnsAsync(responseQuestionSection);
 
         Mocker.GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>())).ReturnsAsync(responseQuestionSectionNull);
+            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>(), false)).ReturnsAsync(responseQuestionSectionNull);
 
         session
             .Setup(s => s.TryGetValue(It.IsAny<string>(), out It.Ref<byte[]?>.IsAny))

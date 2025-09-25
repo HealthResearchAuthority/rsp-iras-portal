@@ -33,7 +33,7 @@ public class QuestionnaireController
     /// <param name="projectRecordId">Application Id</param>
     /// <param name="categoryId">CategoryId to resume from</param>
     /// <param name="validate">Indicates whether to validate or not</param>
-    public async Task<IActionResult> Resume(string projectRecordId, string categoryId, string validate = "False", string? sectionId = null)
+    public async Task<IActionResult> Resume(string projectRecordId, string categoryId, string validate = "False", string? sectionId = null, bool preview = false)
     {
         // load existing application in session
         if (await LoadApplication(projectRecordId) == null)
@@ -53,7 +53,7 @@ public class QuestionnaireController
         if (sectionId == null)
         {
             // get the questions for the category
-            var questionSectionsResponse = await questionSetService.GetQuestionSections();
+            var questionSectionsResponse = await questionSetService.GetQuestionSections(preview);
 
             if (!questionSectionsResponse.IsSuccessStatusCode)
             {
@@ -76,7 +76,7 @@ public class QuestionnaireController
         }
 
         var sectionIdOrDefault = sectionId ?? string.Empty;
-        var questionsSetServiceResponse = await questionSetService.GetQuestionSet(sectionIdOrDefault);
+        var questionsSetServiceResponse = await questionSetService.GetQuestionSet(sectionIdOrDefault, preview: preview);
 
         // return error page if unsuccessfull
         if (!questionsSetServiceResponse.IsSuccessStatusCode)
@@ -102,7 +102,7 @@ public class QuestionnaireController
         HttpContext.Session.SetString($"{SessionKeys.Questionnaire}:{sectionId}", JsonSerializer.Serialize(questionnaire.Questions));
 
         // this is where the questionnaire will resume
-        var navigationDto = await SetStage(sectionIdOrDefault);
+        var navigationDto = await SetStage(sectionIdOrDefault, preview);
 
         questionnaire.CurrentStage = navigationDto.CurrentStage;
 
@@ -123,7 +123,8 @@ public class QuestionnaireController
         return RedirectToAction(nameof(DisplayQuestionnaire), new
         {
             categoryId,
-            sectionId
+            sectionId,
+            preview = preview
         });
     }
 
@@ -132,10 +133,10 @@ public class QuestionnaireController
     /// </summary>
     /// <param name="categoryId">CategoryId of the questions to be rendered</param>
     ///<param name="sectionId">sectionId of the questions to be rendered</param>
-    public async Task<IActionResult> DisplayQuestionnaire(string categoryId, string sectionId, bool reviewAnswers = false)
+    public async Task<IActionResult> DisplayQuestionnaire(string categoryId, string sectionId, bool reviewAnswers = false, bool preview = false)
     {
         // get the questions for the category
-        var questionSectionsResponse = await questionSetService.GetQuestionSections();
+        var questionSectionsResponse = await questionSetService.GetQuestionSections(preview);
 
         // return the view if successfull
         if (questionSectionsResponse.IsSuccessStatusCode)
@@ -154,13 +155,13 @@ public class QuestionnaireController
             // get questions from the database for the category
             if (questions == null || questions.Count == 0)
             {
-                var response = await questionSetService.GetQuestionSet(sectionId: sectionId);
+                var response = await questionSetService.GetQuestionSet(sectionId: sectionId, preview: preview);
 
                 // return the view if successfull
                 if (response.IsSuccessStatusCode)
                 {
                     // set the active stage for the category
-                    await SetStage(sectionId);
+                    await SetStage(sectionId, preview);
 
                     // convert the questions response to QuestionnaireViewModel
                     var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(response.Content!);
@@ -176,7 +177,7 @@ public class QuestionnaireController
             }
 
             // set the active stage for the category
-            await SetStage(sectionId);
+            await SetStage(sectionId, preview);
 
             // if we have questions in the session
             // then return the view with the model
@@ -184,7 +185,8 @@ public class QuestionnaireController
             {
                 CurrentStage = sectionId,
                 Questions = questions,
-                ReviewAnswers = reviewAnswers
+                ReviewAnswers = reviewAnswers,
+                Preview = preview
             });
         }
 
@@ -283,7 +285,7 @@ public class QuestionnaireController
         if (!isValid)
         {
             // set the previous, current and next stages
-            await SetStage(model.CurrentStage!);
+            await SetStage(model.CurrentStage!, model.Preview);
             model.ReviewAnswers = submit;
             return View(Index, model);
         }
@@ -292,7 +294,7 @@ public class QuestionnaireController
         await SaveProjectRecordAnswers(application.Id, questions);
 
         // set the previous, current and next stages
-        var navigation = await SetStage(model.CurrentStage);
+        var navigation = await SetStage(model.CurrentStage, model.Preview);
 
         // save the questions in the session
         HttpContext.Session.SetString($"{SessionKeys.Questionnaire}:{navigation.CurrentStage}", JsonSerializer.Serialize(questions));
@@ -300,11 +302,11 @@ public class QuestionnaireController
         // user clicks on Proceed to submit button
         if (submit)
         {
-            return RedirectToAction(nameof(SubmitApplication), new { projectRecordId = application.Id });
+            return RedirectToAction(nameof(SubmitApplication), new { projectRecordId = application.Id, preview = model.Preview });
         }
 
         // get the question sections
-        var questionSectionsResponse = await questionSetService.GetQuestionSections();
+        var questionSectionsResponse = await questionSetService.GetQuestionSections(false);
         var questionSections = questionSectionsResponse.Content;
         // Ensure questionSections is not null and has elements
         if (questionSections?.Any() == true)
@@ -326,7 +328,7 @@ public class QuestionnaireController
             // if the user is at the last stage and clicks on Save and Continue
             if (string.IsNullOrWhiteSpace(navigation.NextStage))
             {
-                return RedirectToAction(nameof(SubmitApplication), new { projectRecordId = application.Id });
+                return RedirectToAction(nameof(SubmitApplication), new { projectRecordId = application.Id, preview = model.Preview });
             }
 
             // otherwise resume from the NextStage in sequence
@@ -334,7 +336,8 @@ public class QuestionnaireController
             {
                 projectRecordId = application.Id,
                 categoryId = navigation.NextCategory,
-                sectionId = navigation.NextStage
+                sectionId = navigation.NextStage,
+                preview = model.Preview
             });
         }
 
@@ -347,7 +350,8 @@ public class QuestionnaireController
         return RedirectToAction(nameof(DisplayQuestionnaire), new
         {
             navigation.NextCategory,
-            navigation.NextStage
+            navigation.NextStage,
+            preview = model.Preview
         });
     }
 
@@ -376,7 +380,7 @@ public class QuestionnaireController
         var application = this.GetApplicationFromSession();
 
         // set the previous, current and next stages
-        await SetStage(model.CurrentStage!);
+        await SetStage(model.CurrentStage!, model.Preview);
 
         return View(Index, model);
     }
@@ -386,7 +390,7 @@ public class QuestionnaireController
     /// and display the progress of the application
     /// </summary>
     /// <param name="projectRecordId">ApplicationId to submit</param>
-    public async Task<IActionResult> SubmitApplication(string projectRecordId)
+    public async Task<IActionResult> SubmitApplication(string projectRecordId, bool preview)
     {
         var categoryId = (TempData.Peek(TempDataKeys.CategoryId) as string)!;
 
@@ -394,7 +398,7 @@ public class QuestionnaireController
         var respondentServiceResponse = await respondentService.GetRespondentAnswers(projectRecordId, categoryId);
 
         // get the questions for all categories
-        var questionSetServiceResponse = await questionSetService.GetQuestionSet();
+        var questionSetServiceResponse = await questionSetService.GetQuestionSet(preview: preview);
 
         // return the error view if unsuccessfull
         if (!respondentServiceResponse.IsSuccessStatusCode)
@@ -417,7 +421,7 @@ public class QuestionnaireController
         var questions = questionSetServiceResponse.Content!;
 
         // convert the questions response to QuestionnaireViewModel
-        var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(questions);
+        var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(questions, preview);
 
         // validate each category
         foreach (var questionsResponse in questionnaire.Questions.GroupBy(x => x.Category))
@@ -459,7 +463,7 @@ public class QuestionnaireController
     /// Gets all questions for the application. Validates for each category
     /// and display the progress of the application
     /// </summary>
-    public async Task<IActionResult> ConfirmProjectDetails()
+    public async Task<IActionResult> ConfirmProjectDetails(bool preview = false)
     {
         var categoryId = (TempData.Peek(TempDataKeys.CategoryId) as string)!;
 
@@ -478,7 +482,7 @@ public class QuestionnaireController
         }
 
         // get the questions for all categories
-        var questionSetServiceResponse = await questionSetService.GetQuestionSet();
+        var questionSetServiceResponse = await questionSetService.GetQuestionSet(preview: preview);
 
         // return the error view if unsuccessfull
         if (!questionSetServiceResponse.IsSuccessStatusCode)
@@ -559,7 +563,7 @@ public class QuestionnaireController
         var application = this.GetApplicationFromSession();
 
         // set the previous, current and next stages
-        await SetStage(model.CurrentStage!);
+        await SetStage(model.CurrentStage!, model.Preview);
 
         TempData.TryAdd(TempDataKeys.SponsorOrgSearched, "searched:true");
 
@@ -836,15 +840,15 @@ public class QuestionnaireController
     /// This method retrieves the previous, current, and next question sections for the given section and category.
     /// It uses the QuestionSetService to fetch section details and stores navigation state in TempData for use in the UI.
     /// </remarks>
-    private async Task<NavigationDto> SetStage(string section)
+    private async Task<NavigationDto> SetStage(string section, bool preview)
     {
         // Get the current categoryId from TempData
         var categoryId = (TempData.Peek(TempDataKeys.CategoryId) as string)!;
 
         // Fetch previous, current, and next section responses from the question set service
-        var previousResponse = await questionSetService.GetPreviousQuestionSection(section);
-        var currentResponse = await questionSetService.GetQuestionSections();
-        var nextResponse = await questionSetService.GetNextQuestionSection(section);
+        var previousResponse = await questionSetService.GetPreviousQuestionSection(section, preview);
+        var currentResponse = await questionSetService.GetQuestionSections(preview);
+        var nextResponse = await questionSetService.GetNextQuestionSection(section, preview);
 
         // Extract previous stage and category if available and matches the current category
         string previousStage = (previousResponse.IsSuccessStatusCode, previousResponse.Content?.SectionId) switch

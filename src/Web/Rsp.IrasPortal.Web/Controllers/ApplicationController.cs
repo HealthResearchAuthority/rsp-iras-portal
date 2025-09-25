@@ -62,7 +62,10 @@ public class ApplicationController
         return View(nameof(Index), model);
     }
 
-    public IActionResult StartProject() => View(nameof(StartProject));
+    public IActionResult StartProject(bool questionsetPreview = false) => View(nameof(StartProject), new IrasIdViewModel
+    {
+        QuestionsetPreview = questionsetPreview
+    });
 
     /// <summary>
     /// Handles the POST request to start a new project.
@@ -142,7 +145,7 @@ public class ApplicationController
         HttpContext.Session.SetString(SessionKeys.ProjectRecord, JsonSerializer.Serialize(irasApplication));
 
         // Store relevant information in TempData for use in subsequent requests
-        var questionCategoriesResponse = await cmsSevice.GetQuestionCategories();
+        var questionCategoriesResponse = await cmsSevice.GetQuestionCategories(model.QuestionsetPreview);
         var categoryId = questionCategoriesResponse.IsSuccessStatusCode && questionCategoriesResponse.Content?.FirstOrDefault() != null
             ? questionCategoriesResponse.Content.FirstOrDefault()?.CategoryId : QuestionCategories.A;
 
@@ -154,7 +157,8 @@ public class ApplicationController
         return RedirectToAction(nameof(QuestionnaireController.Resume), "Questionnaire", new
         {
             categoryId = categoryId,
-            projectRecordId = irasApplication.Id
+            projectRecordId = irasApplication.Id,
+            preview = model.QuestionsetPreview
         });
     }
 

@@ -11,6 +11,11 @@ namespace Rsp.IrasPortal.Web.Models;
 public class QuestionnaireViewModel
 {
     /// <summary>
+    /// The explicit version of the questionset.
+    /// </summary>
+    public bool Preview { get; set; }
+
+    /// <summary>
     /// Indicates if the answers are being reviewed.
     /// </summary>
     public bool ReviewAnswers { get; set; }

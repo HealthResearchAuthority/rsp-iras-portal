@@ -75,7 +75,7 @@ public class ConfirmProjectDetaisTests : TestServiceBase<QuestionnaireController
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>(), false))
             .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
             {
                 StatusCode = HttpStatusCode.InternalServerError
@@ -132,7 +132,7 @@ public class ConfirmProjectDetaisTests : TestServiceBase<QuestionnaireController
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>(), false))
             .ReturnsAsync(questionSetServiceResponse);
 
         Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
@@ -194,7 +194,7 @@ public class ConfirmProjectDetaisTests : TestServiceBase<QuestionnaireController
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>(), false))
             .ReturnsAsync(questionSetServiceResponse);
 
         Mocker.GetMock<IValidator<QuestionnaireViewModel>>()

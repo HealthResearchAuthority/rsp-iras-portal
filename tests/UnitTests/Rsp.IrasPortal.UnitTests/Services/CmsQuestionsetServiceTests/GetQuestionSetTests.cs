@@ -27,7 +27,7 @@ public class GetQuestionSetTests : TestServiceBase<CmsQuestionsetService>
         );
 
         _questionSetServiceClient
-            .Setup(c => c.GetQuestionSet(sectionId, questionSetId))
+            .Setup(c => c.GetQuestionSet(sectionId, questionSetId, false))
             .ReturnsAsync(apiResponse);
 
         var result = await Sut.GetQuestionSet(sectionId, questionSetId);
@@ -42,7 +42,7 @@ public class GetQuestionSetTests : TestServiceBase<CmsQuestionsetService>
     public async Task GetQuestionSet_ShouldThrow_WhenApiFails(string sectionId, string questionSetId)
     {
         _questionSetServiceClient
-            .Setup(c => c.GetQuestionSet(sectionId, questionSetId))
+            .Setup(c => c.GetQuestionSet(sectionId, questionSetId, false))
             .ThrowsAsync(new Exception("Internal server error"));
 
         await Should.ThrowAsync<Exception>(() => Sut.GetQuestionSet(sectionId, questionSetId));

@@ -26,11 +26,11 @@ public class GetPreviousQuestionSectionTests : TestServiceBase<CmsQuestionsetSer
         );
 
         _questionSetServiceClient
-            .Setup(c => c.GetPreviousQuestionSection(currentSectionId))
+            .Setup(c => c.GetPreviousQuestionSection(currentSectionId, false))
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.GetPreviousQuestionSection(currentSectionId);
+        var result = await Sut.GetPreviousQuestionSection(currentSectionId, false);
 
         // Assert
         result.ShouldNotBeNull();
@@ -42,9 +42,9 @@ public class GetPreviousQuestionSectionTests : TestServiceBase<CmsQuestionsetSer
     public async Task GetPreviousQuestionSection_ShouldThrow_WhenApiFails(string currentSectionId)
     {
         _questionSetServiceClient
-            .Setup(c => c.GetPreviousQuestionSection(currentSectionId))
+            .Setup(c => c.GetPreviousQuestionSection(currentSectionId, false))
             .ThrowsAsync(new Exception("Service unavailable"));
 
-        await Should.ThrowAsync<Exception>(() => Sut.GetPreviousQuestionSection(currentSectionId));
+        await Should.ThrowAsync<Exception>(() => Sut.GetPreviousQuestionSection(currentSectionId, false));
     }
 }

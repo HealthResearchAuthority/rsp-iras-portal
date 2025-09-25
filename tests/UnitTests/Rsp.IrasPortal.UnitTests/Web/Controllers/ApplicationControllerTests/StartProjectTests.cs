@@ -201,7 +201,7 @@ public class StartProjectTests : TestServiceBase<ApplicationController>
 
         Mocker
            .GetMock<ICmsQuestionSetServiceClient>()
-           .Setup(s => s.GetQuestionCategories())
+           .Setup(s => s.GetQuestionCategories(false))
            .ReturnsAsync(new ApiResponse<IEnumerable<CategoryDto>>(
                new HttpResponseMessage(HttpStatusCode.OK),
                new List<CategoryDto> { new() { CategoryId = "cat1" } },

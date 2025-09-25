@@ -91,7 +91,7 @@ public class SubmitApplicationTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>(), false))
             .ReturnsAsync(questionSetServiceResponse);
 
         var context = new DefaultHttpContext();
@@ -193,7 +193,7 @@ public class SubmitApplicationTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>(), false))
             .ReturnsAsync(questionSetServiceResponse);
 
         // Act
@@ -291,7 +291,7 @@ public class SubmitApplicationTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>(), false))
             .ReturnsAsync(questionSetServiceResponse);
 
         Mocker
@@ -352,7 +352,7 @@ public class SubmitApplicationTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<ICmsQuestionsetService>()
-            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>(), false))
             .ReturnsAsync(questionSetServiceResponse);
 
         var application = new IrasApplicationResponse

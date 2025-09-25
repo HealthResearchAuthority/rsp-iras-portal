@@ -26,11 +26,11 @@ public class GetNextQuestionSectionTests : TestServiceBase<CmsQuestionsetService
         );
 
         _questionSetServiceClient
-            .Setup(c => c.GetNextQuestionSection(currentSectionId))
+            .Setup(c => c.GetNextQuestionSection(currentSectionId, false))
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.GetNextQuestionSection(currentSectionId);
+        var result = await Sut.GetNextQuestionSection(currentSectionId, false);
 
         // Assert
         result.ShouldNotBeNull();
@@ -42,9 +42,9 @@ public class GetNextQuestionSectionTests : TestServiceBase<CmsQuestionsetService
     public async Task GetNextQuestionSection_ShouldThrow_WhenApiFails(string currentSectionId)
     {
         _questionSetServiceClient
-            .Setup(c => c.GetNextQuestionSection(currentSectionId))
+            .Setup(c => c.GetNextQuestionSection(currentSectionId, false))
             .ThrowsAsync(new Exception("API Down"));
 
-        await Should.ThrowAsync<Exception>(() => Sut.GetNextQuestionSection(currentSectionId));
+        await Should.ThrowAsync<Exception>(() => Sut.GetNextQuestionSection(currentSectionId, false));
     }
 }
