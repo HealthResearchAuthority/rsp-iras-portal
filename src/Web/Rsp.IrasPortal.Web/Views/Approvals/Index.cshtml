@@ -498,7 +498,14 @@ else if (showNoResultsMessage)
                             foreach (var modification in Model.Modifications)
                             {
                                 <tr class="govuk-table__row">
-                                    <td class="govuk-table__cell">@modification.ModificationId</td>
+                                    <td class="govuk-table__cell">
+                                        <a asp-route=""
+                                           asp-route-modificationId="@modification.ModificationId"
+											   asp-route-backRoute="approvals:index"
+                                           class="govuk-link">
+                                            @modification.ModificationId
+                                        </a>
+                                    </td>
                                     <td class="govuk-table__cell">
                                         <a asp-route="pov:projectdetails"
                                            asp-route-projectRecordId="@modification.ProjectRecordId"

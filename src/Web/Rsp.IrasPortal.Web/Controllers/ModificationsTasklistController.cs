@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using System.Text.Json;
+using System.Xml;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -117,7 +118,7 @@ public class ModificationsTasklistController(
                     ChiefInvestigator = dto.ChiefInvestigator,
                     LeadNation = dto.LeadNation,
                     SponsorOrganisation = dto.SponsorOrganisation,
-                    CreatedAt = dto.CreatedAt
+                    CreatedAt = dto.CreatedAt,
                 },
                 IsSelected = selectedModificationIds?.Contains(dto.Id) ?? false,
             })
@@ -129,6 +130,7 @@ public class ModificationsTasklistController(
             SortField = sortField,
             FormName = "tasklist-selection"
         };
+
 
         return View(model);
     }
@@ -158,6 +160,7 @@ public class ModificationsTasklistController(
                 Id = dto.Id,
                 ModificationId = dto.ModificationId,
                 ShortProjectTitle = dto.ShortProjectTitle,
+                ProjectRecordId = dto.ProjectRecordId
             })
             .ToList() ?? [];
 

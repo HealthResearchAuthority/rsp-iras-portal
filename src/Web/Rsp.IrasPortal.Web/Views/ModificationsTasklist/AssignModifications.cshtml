@@ -23,8 +23,23 @@
             @foreach (var item in Model.Modifications)
             {
                 <tr class="govuk-table__row">
-                    <td class="govuk-table__cell">@item.ModificationId</td>
-                    <td class="govuk-table__cell"><a class="govuk-link" href="#">@item.ShortProjectTitle</a></td>
+					   
+                    <td class="govuk-table__cell">
+                        <a asp-route=""
+                           asp-route-modificationId="@item.ModificationId"
+                           asp-route-backRoute="tasklist:index"
+                           class="govuk-link">
+                            @item.ModificationId
+                        </a>
+                    </td>
+                    <td class="govuk-table__cell">
+                        <a asp-route="pov:projectdetails"
+                           asp-route-projectRecordId="@item.ProjectRecordId"
+                           asp-route-backRoute="tasklist:index"
+                           class="govuk-link">
+                            <strong>@item.ShortProjectTitle</strong>
+                        </a>
+                    </td>
                 </tr>
                 <input type="hidden" name="ModificationIds" value="@item.Id" />
             }
