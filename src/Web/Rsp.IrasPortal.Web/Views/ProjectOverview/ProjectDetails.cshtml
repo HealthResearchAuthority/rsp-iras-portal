@@ -38,23 +38,29 @@
                 <dd class="govuk-summary-list__value">
                     @Model.ProjectTitle
                 </dd>
-            </div>     
-            <div class="govuk-summary-list__row">
-	            <dt class="govuk-summary-list__key">
-		            Full project title
-	            </dt>
-	            <dd class="govuk-summary-list__value">
-		            @Model.FullProjectTitle
-	            </dd>
-            </div>  
-            <div class="govuk-summary-list__row">
-	            <dt class="govuk-summary-list__key">
-		            REC name
-	            </dt>
-	            <dd class="govuk-summary-list__value">
-		            @Model.RecName
-	            </dd>
-            </div>  
+            </div>
+			@if (@Model.FullProjectTitle != null)
+            {
+                <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">
+                        Full project title
+                    </dt>
+                    <dd class="govuk-summary-list__value">
+                        @Model.FullProjectTitle
+                    </dd>
+                </div>
+            }
+            @if (@Model.RecName != null)
+            {
+                <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">
+                        REC name
+                    </dt>
+                    <dd class="govuk-summary-list__value">
+                        @Model.RecName
+                    </dd>
+                </div>  
+            }
         </dl>
     </div>
 </div>
