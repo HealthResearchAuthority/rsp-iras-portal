@@ -102,11 +102,20 @@ public interface IProjectModificationsServiceClient
     public Task<ApiResponse<ProjectModificationChangeResponse>> CreateModificationChange(ProjectModificationChangeRequest projectModificationChangeRequest);
 
     /// <summary>
-    /// Gets all the area of changes and specific area of changes for the modification.
+    /// Retrieves a project modification change by its unique identifier.
     /// </summary>
-    /// <returns>An asynchronous operation that returns all area of changes and specific area of changes.</returns>
-    [Get("/projectmodifications/areaofchanges")]
-    public Task<ApiResponse<IEnumerable<GetAreaOfChangesResponse>>> GetAreaOfChanges();
+    /// <param name="modificationChangeId">The unique identifier of the project modification change.</param>
+    /// <returns>An asynchronous operation that returns the requested project modification change.</returns>
+    [Get("/projectmodifications/change")]
+    public Task<ApiResponse<ProjectModificationChangeResponse>> GetModificationChange(Guid modificationChangeId);
+
+    /// <summary>
+    /// Retrieves all modification changes for a modification.
+    /// </summary>
+    /// <param name="projectModificationId">The unique identifier of the project modification.</param>
+    /// <returns>An asynchronous operation that returns the requested project modification changes.</returns>
+    [Get("/projectmodifications/changes")]
+    public Task<ApiResponse<IEnumerable<ProjectModificationChangeResponse>>> GetModificationChanges(Guid projectModificationId);
 
     /// <summary>
     /// Creates one or more modification documents associated with a project modification change.
@@ -149,4 +158,20 @@ public interface IProjectModificationsServiceClient
         string sortField = nameof(ProjectOverviewDocumentDto.DocumentType),
         string sortDirection = SortDirections.Descending
     );
+
+    /// <summary>
+    /// Removes a project modification change by its unique identifier.
+    /// </summary>
+    /// <param name="modificationChangeId">The unique identifier of the project modification change.</param>
+    /// <returns>An asynchronous operation that returns the requested project modification change.</returns>
+    [Delete("/projectmodifications/remove")]
+    public Task<IApiResponse> RemoveModificationChange(Guid modificationChangeId);
+
+    /// <summary>
+    /// Updates a project modification status by its unique identifier.
+    /// </summary>
+    /// <param name="modificationId">The unique identifier of the project modification.</param>
+    /// <returns>An asynchronous operation that returns the requested project modification change.</returns>
+    [Post("/projectmodifications/update")]
+    public Task<IApiResponse> UpdateModificationStatus(Guid modificationId, string status);
 }

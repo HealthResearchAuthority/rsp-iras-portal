@@ -35,16 +35,16 @@ public class ModificationChangesBaseControllerTests : TestServiceBase<Modificati
         };
     }
 
-    [Fact]
-    public async Task ReviewChanges_Returns_Error_When_RespondentService_Fails()
+    [Theory, AutoData]
+    public async Task ReviewChanges_Returns_Error_When_RespondentService_Fails(string projectRecordId, Guid specificAreaOfChangeId, Guid modificationChangeId)
     {
         // Arrange
         _respondentService
-            .Setup(s => s.GetModificationAnswers(It.IsAny<Guid>(), "PR1"))
+            .Setup(s => s.GetModificationChangeAnswers(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.BadRequest, Error = "fail" });
 
         // Act
-        var result = await Sut.ReviewChanges("PR1");
+        var result = await Sut.ReviewChanges(projectRecordId, specificAreaOfChangeId, modificationChangeId);
 
         // Assert
         // Assert
@@ -54,12 +54,12 @@ public class ModificationChangesBaseControllerTests : TestServiceBase<Modificati
             .ShouldBe(StatusCodes.Status400BadRequest);
     }
 
-    [Fact]
-    public async Task ReviewChanges_Returns_Error_When_CmsJourney_Fails()
+    [Theory, AutoData]
+    public async Task ReviewChanges_Returns_Error_When_CmsJourney_Fails(string projectRecordId, Guid specificAreaOfChangeId, Guid modificationChangeId)
     {
         // Arrange
         _respondentService
-            .Setup(s => s.GetModificationAnswers(It.IsAny<Guid>(), "PR1"))
+            .Setup(s => s.GetModificationChangeAnswers(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = [] });
 
         _cmsService
@@ -67,7 +67,7 @@ public class ModificationChangesBaseControllerTests : TestServiceBase<Modificati
             .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse> { StatusCode = HttpStatusCode.BadRequest, Error = "fail" });
 
         // Act
-        var result = await Sut.ReviewChanges("PR1");
+        var result = await Sut.ReviewChanges(projectRecordId, specificAreaOfChangeId, modificationChangeId);
 
         // Assert
         // Assert
@@ -77,12 +77,12 @@ public class ModificationChangesBaseControllerTests : TestServiceBase<Modificati
             .ShouldBe(StatusCodes.Status400BadRequest);
     }
 
-    [Fact]
-    public async Task ReviewChanges_Returns_View_With_Model_On_Success()
+    [Theory, AutoData]
+    public async Task ReviewChanges_Returns_View_With_Model_On_Success(string projectRecordId, Guid specificAreaOfChangeId, Guid modificationChangeId)
     {
         // Arrange
         _respondentService
-            .Setup(s => s.GetModificationAnswers(It.IsAny<Guid>(), "PR1"))
+            .Setup(s => s.GetModificationChangeAnswers(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = [] });
 
         _cmsService
@@ -95,7 +95,7 @@ public class ModificationChangesBaseControllerTests : TestServiceBase<Modificati
             });
 
         // Act
-        var result = await Sut.ReviewChanges("PR1");
+        var result = await Sut.ReviewChanges(projectRecordId, specificAreaOfChangeId, modificationChangeId);
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
@@ -108,7 +108,7 @@ public class ModificationChangesBaseControllerTests : TestServiceBase<Modificati
     {
         // Arrange
         _respondentService
-            .Setup(s => s.GetModificationAnswers(It.IsAny<Guid>(), "PR1"))
+            .Setup(s => s.GetModificationChangeAnswers(It.IsAny<Guid>(), "PR1"))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.BadRequest, Error = "fail" });
 
         // Act
@@ -126,7 +126,7 @@ public class ModificationChangesBaseControllerTests : TestServiceBase<Modificati
     {
         // Arrange
         _respondentService
-            .Setup(s => s.GetModificationAnswers(It.IsAny<Guid>(), "PR1"))
+            .Setup(s => s.GetModificationChangeAnswers(It.IsAny<Guid>(), "PR1"))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = [] });
 
         _cmsService
@@ -148,7 +148,7 @@ public class ModificationChangesBaseControllerTests : TestServiceBase<Modificati
     {
         // Arrange
         _respondentService
-            .Setup(s => s.GetModificationAnswers(It.IsAny<Guid>(), "PR1"))
+            .Setup(s => s.GetModificationChangeAnswers(It.IsAny<Guid>(), "PR1"))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = [] });
 
         _cmsService
@@ -168,9 +168,8 @@ public class ModificationChangesBaseControllerTests : TestServiceBase<Modificati
         var result = await Sut.ConfirmModificationChanges();
 
         // Assert
-        var view = result.ShouldBeOfType<ViewResult>();
-        view.ViewName.ShouldBe("ModificationChangesReview");
-        view.Model.ShouldBeOfType<QuestionnaireViewModel>();
+        var view = result.ShouldBeOfType<RedirectToRouteResult>();
+        view.RouteName.ShouldBe("pmc:modificationdetails");
     }
 
     [Fact]
@@ -178,7 +177,7 @@ public class ModificationChangesBaseControllerTests : TestServiceBase<Modificati
     {
         // Arrange
         _respondentService
-            .Setup(s => s.GetModificationAnswers(It.IsAny<Guid>(), "PR1"))
+            .Setup(s => s.GetModificationChangeAnswers(It.IsAny<Guid>(), "PR1"))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = [] });
 
         _cmsService
@@ -199,7 +198,7 @@ public class ModificationChangesBaseControllerTests : TestServiceBase<Modificati
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
-        redirect.RouteName.ShouldBe("pov:postapproval");
+        redirect.RouteName.ShouldBe("pmc:modificationdetails");
         redirect.RouteValues!["projectRecordId"].ShouldBe("PR1");
     }
 

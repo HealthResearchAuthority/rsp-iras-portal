@@ -4,12 +4,12 @@ using Rsp.IrasPortal.Services;
 
 namespace Rsp.IrasPortal.UnitTests.Services.RespondentServiceTests;
 
-public class SaveModificationAnswers : TestServiceBase<RespondentService>
+public class SaveModificationChangeAnswers : TestServiceBase<RespondentService>
 {
     [Theory, AutoData]
-    public async Task SaveModificationAnswers_DelegatesToClient_AndReturnsMappedResult
+    public async Task SaveModificationChangeAnswers_DelegatesToClient_AndReturnsMappedResult
     (
-        ProjectModificationAnswersRequest request
+        ProjectModificationChangeAnswersRequest request
     )
     {
         // Arrange
@@ -18,17 +18,17 @@ public class SaveModificationAnswers : TestServiceBase<RespondentService>
         var respondentServiceClient = Mocker.GetMock<IRespondentServiceClient>();
 
         respondentServiceClient
-            .Setup(c => c.SaveModificationAnswers(request))
+            .Setup(c => c.SaveModificationChangeAnswers(request))
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.SaveModificationAnswers(request);
+        var result = await Sut.SaveModificationChangeAnswers(request);
 
         // Assert
         respondentServiceClient
             .Verify
             (
-                c => c.SaveModificationAnswers(request),
+                c => c.SaveModificationChangeAnswers(request),
                 Times.Once
             );
 

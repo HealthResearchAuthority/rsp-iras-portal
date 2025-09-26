@@ -14,8 +14,10 @@ namespace Rsp.IrasPortal.Services;
 /// Handles retrieval and creation of project modifications and their changes
 /// by delegating to the IProjectModificationsServiceClient and mapping responses.
 /// </summary>
-public class ProjectModificationsService(IProjectModificationsServiceClient projectModificationsServiceClient,
-    ICmsQuestionSetServiceClient cmsQuestionsetClient) : IProjectModificationsService
+public class ProjectModificationsService
+(
+    IProjectModificationsServiceClient projectModificationsServiceClient
+) : IProjectModificationsService
 {
     /// <summary>
     /// Gets the saved application by Id.
@@ -74,20 +76,6 @@ public class ProjectModificationsService(IProjectModificationsServiceClient proj
     public async Task<ServiceResponse<ProjectModificationChangeResponse>> CreateModificationChange(ProjectModificationChangeRequest projectModificationChangeRequest)
     {
         var apiResponse = await projectModificationsServiceClient.CreateModificationChange(projectModificationChangeRequest);
-        return apiResponse.ToServiceResponse();
-    }
-
-    /// <summary>
-    /// Gets all the area of changes and specific area of changes for the modification.
-    /// </summary>
-    /// /// <returns>
-    /// An asynchronous operation that returns a <see cref="ServiceResponse{GetAreaOfChangesResponse}"/>
-    /// containing the result of the area of changes.
-    /// </returns>
-    public async Task<ServiceResponse<IEnumerable<GetAreaOfChangesResponse>>> GetAreaOfChanges()
-    {
-        var apiResponse = await projectModificationsServiceClient.GetAreaOfChanges();
-
         return apiResponse.ToServiceResponse();
     }
 
@@ -186,6 +174,52 @@ public class ProjectModificationsService(IProjectModificationsServiceClient proj
     public async Task<ServiceResponse<ProjectOverviewDocumentResponse>> GetDocumentsForProjectOverview(string projectRecordId, ProjectOverviewDocumentSearchRequest searchQuery, int pageNumber = 1, int pageSize = 20, string sortField = "DocumentType", string sortDirection = "desc")
     {
         var apiResponse = await projectModificationsServiceClient.GetDocumentsForProjectOverview(projectRecordId, searchQuery, pageNumber, pageSize, sortField, sortDirection);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse<ProjectModificationChangeResponse>> GetModificationChange(Guid modificationChangeId)
+    {
+        var apiResponse = await projectModificationsServiceClient.GetModificationChange(modificationChangeId);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>> GetModificationChanges(Guid projectModificationId)
+    {
+        var apiResponse = await projectModificationsServiceClient.GetModificationChanges(projectModificationId);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    /// <summary>
+    /// Removes a change from an existing project modification by its unique identifier.
+    /// </summary>
+    /// <param name="modificationChangeId">The unique identifier of the project modification change to remove.</param>
+    /// <returns>
+    /// A task representing the asynchronous operation, containing a <see cref="ServiceResponse"/>
+    /// that reflects the success or failure of the deletion operation.
+    /// </returns>
+    public async Task<ServiceResponse> RemoveModificationChange(Guid modificationChangeId)
+    {
+        // Invoke microservice client to delete the modification change.
+        var apiResponse = await projectModificationsServiceClient.RemoveModificationChange(modificationChangeId);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    /// <summary>
+    /// Updates sttaus of an existing project modification by its unique identifier.
+    /// </summary>
+    /// <param name="modificationId">The unique identifier of the project modification to update.</param>
+    /// <returns>
+    /// A task representing the asynchronous operation, containing a <see cref="ServiceResponse"/>
+    /// that reflects the success or failure of the update operation.
+    /// </returns>
+    public async Task<ServiceResponse> UpdateModificationStatus(Guid modificationId, string status)
+    {
+        // Invoke microservice client to delete the modification change.
+        var apiResponse = await projectModificationsServiceClient.UpdateModificationStatus(modificationId, status);
 
         return apiResponse.ToServiceResponse();
     }

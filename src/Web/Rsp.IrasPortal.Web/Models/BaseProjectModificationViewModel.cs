@@ -19,7 +19,17 @@ public class BaseProjectModificationViewModel
     /// <summary>
     /// Gets or sets the identifier associated with the current project modification.
     /// </summary>
+    public string? ModificationId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the identifier associated with the current project modification.
+    /// </summary>
     public string ModificationIdentifier { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the unique identifier representing the modification change.
+    /// </summary>
+    public string? ModificationChangeId { get; set; }
 
     /// <summary>
     /// Gets or sets the title displayed on the page for context.
@@ -35,4 +45,9 @@ public class BaseProjectModificationViewModel
     /// Gets or sets the Project Record Id.
     /// </summary>
     public string ProjectRecordId { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the Status of the Modification
+    /// </summary>
+    public string Status { get; set; } = null!;
 }

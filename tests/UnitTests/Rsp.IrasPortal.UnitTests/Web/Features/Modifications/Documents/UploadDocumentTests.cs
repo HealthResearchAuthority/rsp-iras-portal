@@ -95,8 +95,8 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
         var result = await Sut.UploadDocuments(model);
 
         // Assert
-        var serviceErrorResult = Assert.IsType<StatusCodeResult>(result); // Assuming ServiceError returns ViewResult
-        Assert.Equal(serviceErrorResult.StatusCode, StatusCodes.Status500InternalServerError);
+        var serviceErrorResult = result.ShouldBeOfType<StatusCodeResult>(); // Assuming ServiceError returns ViewResult
+        serviceErrorResult.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
     }
 
     [Fact]

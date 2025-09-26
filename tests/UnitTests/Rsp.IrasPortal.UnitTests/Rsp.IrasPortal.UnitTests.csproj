@@ -9,9 +9,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Web\Controllers\Modifications\**" />
     <Compile Remove="Web\Features\Modifications\ProjectModifiationControllerTests\**" />
+    <Compile Remove="Web\Validators\SponsorReferenceViewModelValidatorTests\**" />
+    <EmbeddedResource Remove="Web\Controllers\Modifications\**" />
     <EmbeddedResource Remove="Web\Features\Modifications\ProjectModifiationControllerTests\**" />
+    <EmbeddedResource Remove="Web\Validators\SponsorReferenceViewModelValidatorTests\**" />
+    <None Remove="Web\Controllers\Modifications\**" />
     <None Remove="Web\Features\Modifications\ProjectModifiationControllerTests\**" />
+    <None Remove="Web\Validators\SponsorReferenceViewModelValidatorTests\**" />
   </ItemGroup>
 
   <ItemGroup>

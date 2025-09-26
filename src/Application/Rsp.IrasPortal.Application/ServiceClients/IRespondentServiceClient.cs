@@ -26,6 +26,14 @@ public interface IRespondentServiceClient
     public Task<IApiResponse> SaveModificationAnswers(ProjectModificationAnswersRequest request);
 
     /// <summary>
+    /// Saves the modification answers.
+    /// </summary>
+    /// <param name="request">The project modification answers request.</param>
+    /// <returns>An asynchronous operation that saves modification answers.</returns>
+    [Post("/respondent/modificationchange")]
+    public Task<IApiResponse> SaveModificationChangeAnswers(ProjectModificationChangeAnswersRequest request);
+
+    /// <summary>
     /// Gets the respondent answers by applicationId.
     /// </summary>
     /// <param name="applicationId">The application identifier.</param>
@@ -46,18 +54,35 @@ public interface IRespondentServiceClient
     /// Gets the modification answers by project modification change Id.
     /// </summary>
     /// <param name="modificationChangeId">The project modification change identifier.</param>
-    /// <returns>An asynchronous operation that gets the modification answers.</returns>
-    [Get("/respondent/modification/{modificationChangeId}/{projectRecordId}")]
-    public Task<ApiResponse<IEnumerable<RespondentAnswerDto>>> GetModificationAnswers(Guid modificationChangeId, string projectRecordId);
+    /// <returns>An asynchronous operation that gets the modification change answers.</returns>
+    [Get("/respondent/modificationchange/{modificationChangeId}/{projectRecordId}")]
+    public Task<ApiResponse<IEnumerable<RespondentAnswerDto>>> GetModificationChangeAnswers(Guid modificationChangeId, string projectRecordId);
 
     /// <summary>
     /// Gets the modification answers by project modification change Id and categoryId.
     /// </summary>
     /// <param name="modificationChangeId">The project modification change identifier.</param>
     /// <param name="categoryId">The category identifier.</param>
+    /// <returns>An asynchronous operation that gets the modification change answers.</returns>
+    [Get("/respondent/modificationchange/{modificationChangeId}/{projectRecordId}/{categoryId}")]
+    public Task<ApiResponse<IEnumerable<RespondentAnswerDto>>> GetModificationChangeAnswers(Guid modificationChangeId, string projectRecordId, string categoryId);
+
+    /// <summary>
+    /// Gets the modification answers by project modification Id.
+    /// </summary>
+    /// <param name="modificationId">The project modification identifier.</param>
     /// <returns>An asynchronous operation that gets the modification answers.</returns>
-    [Get("/respondent/modification/{modificationChangeId}/{projectRecordId}/{categoryId}")]
-    public Task<ApiResponse<IEnumerable<RespondentAnswerDto>>> GetModificationAnswers(Guid modificationChangeId, string projectRecordId, string categoryId);
+    [Get("/respondent/modification/{modificationId}/{projectRecordId}")]
+    public Task<ApiResponse<IEnumerable<RespondentAnswerDto>>> GetModificationAnswers(Guid modificationId, string projectRecordId);
+
+    /// <summary>
+    /// Gets the modification answers by project modification Id and categoryId.
+    /// </summary>
+    /// <param name="modificationId">The project modification identifier.</param>
+    /// <param name="categoryId">The category identifier.</param>
+    /// <returns>An asynchronous operation that gets the modification answers.</returns>
+    [Get("/respondent/modification/{modificationId}/{projectRecordId}/{categoryId}")]
+    public Task<ApiResponse<IEnumerable<RespondentAnswerDto>>> GetModificationAnswers(Guid modificationId, string projectRecordId, string categoryId);
 
     /// <summary>
     /// Retrieves all modification documents associated with a specific project modification change and respondent.
@@ -77,9 +102,6 @@ public interface IRespondentServiceClient
     /// <summary>
     /// Retrieves all modification documents associated with a specific project modification change and respondent.
     /// </summary>
-    /// <param name="modificationChangeId">The unique identifier for the project modification change.</param>
-    /// <param name="projectRecordId">The identifier of the associated project record.</param>
-    /// <param name="projectPersonnelId">The identifier of the personnel who uploaded or is associated with the documents.</param>
     /// <returns>
     /// A task representing the asynchronous operation. The task result contains a list of <see cref="ProjectModificationDocumentRequest"/> wrapped in an <see cref="ApiResponse{T}"/>.
     /// </returns>

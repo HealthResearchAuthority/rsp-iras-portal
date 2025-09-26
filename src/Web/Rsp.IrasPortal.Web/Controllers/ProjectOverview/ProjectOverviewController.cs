@@ -70,13 +70,14 @@ public class ProjectOverviewController(
 
         var searchQuery = new ModificationSearchRequest();
 
-        var modificationsResponseResult = await projectModificationsService.GetModificationsForProject(projectRecordId,
-            searchQuery, pageNumber, pageSize, sortField, sortDirection);
+        var modificationsResponseResult =
+            await projectModificationsService.GetModificationsForProject(projectRecordId, searchQuery, pageNumber, pageSize, sortField, sortDirection);
 
         model.Modifications = modificationsResponseResult?.Content?.Modifications?
             .Select(dto => new PostApprovalModificationsModel
             {
-                ModificationId = dto.ModificationId,
+                ModificationId = dto.Id,
+                ModificationIdentifier = dto.ModificationId,
                 ModificationType = dto.ModificationType,
                 ReviewType = null,
                 Category = null,
@@ -316,7 +317,7 @@ public class ProjectOverviewController(
         TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationId);
         TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationIdentifier);
         TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationChangeId);
-        TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationSpecificArea);
+        TempData.Remove(TempDataKeys.ProjectModification.SpecificAreaOfChangeText);
         TempData.Remove(TempDataKeys.ProjectModification.AreaOfChangeId);
         TempData.Remove(TempDataKeys.ProjectModification.SpecificAreaOfChangeId);
         TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationChangeMarker);

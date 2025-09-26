@@ -58,7 +58,7 @@ public class PlannedEndDateControllerTests : TestServiceBase<PlannedEndDateContr
         };
 
         _respondentService
-            .Setup(s => s.GetModificationAnswers(It.IsAny<Guid>(), "PR1", "CAT1"))
+            .Setup(s => s.GetModificationChangeAnswers(It.IsAny<Guid>(), "PR1", "CAT1"))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -196,7 +196,7 @@ public class PlannedEndDateControllerTests : TestServiceBase<PlannedEndDateContr
             .ReturnsAsync(new ValidationResult());
 
         _respondentService
-            .Setup(s => s.SaveModificationAnswers(It.IsAny<ProjectModificationAnswersRequest>()))
+            .Setup(s => s.SaveModificationChangeAnswers(It.IsAny<ProjectModificationChangeAnswersRequest>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         var model = new QuestionnaireViewModel
@@ -235,7 +235,7 @@ public class PlannedEndDateControllerTests : TestServiceBase<PlannedEndDateContr
             .ReturnsAsync(new ValidationResult());
 
         _respondentService
-            .Setup(s => s.SaveModificationAnswers(It.IsAny<ProjectModificationAnswersRequest>()))
+            .Setup(s => s.SaveModificationChangeAnswers(It.IsAny<ProjectModificationChangeAnswersRequest>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         var model = new QuestionnaireViewModel
@@ -274,7 +274,7 @@ public class PlannedEndDateControllerTests : TestServiceBase<PlannedEndDateContr
             .ReturnsAsync(new ValidationResult());
 
         _respondentService
-            .Setup(s => s.SaveModificationAnswers(It.IsAny<ProjectModificationAnswersRequest>()))
+            .Setup(s => s.SaveModificationChangeAnswers(It.IsAny<ProjectModificationChangeAnswersRequest>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         var model = new QuestionnaireViewModel
@@ -317,7 +317,7 @@ public class PlannedEndDateControllerTests : TestServiceBase<PlannedEndDateContr
             .ReturnsAsync(new ValidationResult());
 
         _respondentService
-            .Setup(s => s.SaveModificationAnswers(It.IsAny<ProjectModificationAnswersRequest>()))
+            .Setup(s => s.SaveModificationChangeAnswers(It.IsAny<ProjectModificationChangeAnswersRequest>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         var model = new QuestionnaireViewModel

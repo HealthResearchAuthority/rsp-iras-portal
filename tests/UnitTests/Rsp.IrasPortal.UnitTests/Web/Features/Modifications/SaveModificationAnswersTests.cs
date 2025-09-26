@@ -32,7 +32,7 @@ public class SaveModificationAnswersTests : TestServiceBase<ModificationsControl
     {
         // Arrange
         _respondentService
-            .Setup(s => s.SaveModificationAnswers(It.IsAny<ProjectModificationAnswersRequest>()))
+            .Setup(s => s.SaveModificationChangeAnswers(It.IsAny<ProjectModificationChangeAnswersRequest>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.BadRequest, Error = "fail" });
 
         // Act
@@ -50,7 +50,7 @@ public class SaveModificationAnswersTests : TestServiceBase<ModificationsControl
     {
         // Arrange
         _respondentService
-            .Setup(s => s.SaveModificationAnswers(It.IsAny<ProjectModificationAnswersRequest>()))
+            .Setup(s => s.SaveModificationChangeAnswers(It.IsAny<ProjectModificationChangeAnswersRequest>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         // Act
@@ -67,7 +67,7 @@ public class SaveModificationAnswersTests : TestServiceBase<ModificationsControl
     {
         // Arrange
         _respondentService
-            .Setup(s => s.SaveModificationAnswers(It.IsAny<ProjectModificationAnswersRequest>()))
+            .Setup(s => s.SaveModificationChangeAnswers(It.IsAny<ProjectModificationChangeAnswersRequest>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         // Act

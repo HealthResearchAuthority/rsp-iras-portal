@@ -20,17 +20,17 @@ public class GetModificationAnswers : TestServiceBase<RespondentService>
 
         var respondentServiceClient = Mocker.GetMock<IRespondentServiceClient>();
         respondentServiceClient
-            .Setup(c => c.GetModificationAnswers(It.IsAny<Guid>(), It.IsAny<string>()))
+            .Setup(c => c.GetModificationChangeAnswers(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.GetModificationAnswers(projectModificationChangeId, projectRecordId);
+        var result = await Sut.GetModificationChangeAnswers(projectModificationChangeId, projectRecordId);
 
         // Assert
         respondentServiceClient
             .Verify
             (
-                c => c.GetModificationAnswers(projectModificationChangeId, projectRecordId),
+                c => c.GetModificationChangeAnswers(projectModificationChangeId, projectRecordId),
                 Times.Once
             );
 
@@ -52,17 +52,17 @@ public class GetModificationAnswers : TestServiceBase<RespondentService>
 
         var respondentServiceClient = Mocker.GetMock<IRespondentServiceClient>();
         respondentServiceClient
-            .Setup(c => c.GetModificationAnswers(projectModificationChangeId, categoryId))
+            .Setup(c => c.GetModificationChangeAnswers(projectModificationChangeId, categoryId))
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.GetModificationAnswers(projectModificationChangeId, categoryId);
+        var result = await Sut.GetModificationChangeAnswers(projectModificationChangeId, categoryId);
 
         // Assert
         respondentServiceClient
             .Verify
             (
-                c => c.GetModificationAnswers(projectModificationChangeId, categoryId),
+                c => c.GetModificationChangeAnswers(projectModificationChangeId, categoryId),
                 Times.Once
             );
 

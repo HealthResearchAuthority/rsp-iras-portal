@@ -2,11 +2,13 @@
 @model PostApprovalViewModel
 
 @{
+    // set this to true if you want to navigate back to this
+    // page via the Back button on the ModificationDetails page
+    TempData[TempDataKeys.ProjectModification.LinkBackToReferrer] = true;
+
     ViewBag.Title = "Project overview";
     ViewBag.Active = ProjectOverview.PostApproval;
-}
 
-@{
     var routeName = (ViewData["BackRoute"] as string) ?? "app:Welcome";
     var routeValues = ViewData["BackRouteValues"] as Dictionary<string, string>
                       ?? new Dictionary<string, string>();
@@ -30,13 +32,17 @@
     <div class="govuk-grid-column-full">
         <authorized auth-params="@new(Roles:"applicant,system_administrator,reviewer")">
             <div class="govuk-table-wrapper">
+
+                <input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
+                <input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
+
                 <table class="govuk-table modifications-tasklist-table" id="postApprovalTable">
                     <thead class="govuk-table__head">
                         <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
                             @{
                                 var sortableHeaders = new[]
                                 {
-                                                    new { Field = nameof(PostApprovalModificationsModel.ModificationId), Label = "Modification ID" },
+                                                    new { Field = nameof(PostApprovalModificationsModel.ModificationIdentifier), Label = "Modification ID" },
                                                     new { Field = nameof(PostApprovalModificationsModel.ModificationType), Label = "Modification type" },
                                                     new { Field = nameof(PostApprovalModificationsModel.ReviewType), Label = "Review type" },
                                                     new { Field = nameof(PostApprovalModificationsModel.Category), Label = "Category" },
@@ -60,23 +66,28 @@
                                             { "projectRecordId", Model.ProjectOverviewModel.ProjectRecordId }
                                         }
                                     })
-                            </th>
+                                </th>
                             }
                         </tr>
                     </thead>
-
-                    <form method="get" id="postapproval-selection">
-                        <input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
-                        <input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
 
                     <tbody class="govuk-table__body govuk-body-s">
                         @{
                             foreach (var modification in Model.Modifications)
                             {
+                                //string projectRecordId, string irasId, string shortTitle, Guid projectModificationId
+
+                                var modificationParams = new Dictionary<string, string> {
+                                    { "projectRecordId", Model.ProjectOverviewModel.ProjectRecordId },
+                                    { "irasId", Model.ProjectOverviewModel.IrasId?.ToString()  },
+                                    { "shortTitle", Model.ProjectOverviewModel.ProjectTitle?.ToString() },
+                                    { "projectModificationId", modification.ModificationId  }
+                                };
+
                                 <tr class="govuk-table__row">
                                     <td class="govuk-table__cell">
-                                        <a class="govuk-link" href="#">
-                                            <strong>@modification.ModificationId</strong>
+                                        <a class="govuk-link" asp-route="pmc:modificationdetails" asp-all-route-data="modificationParams">
+                                            <strong>@modification.ModificationIdentifier</strong>
                                         </a>
                                     </td>
                                     <td class="govuk-table__cell">@modification.ModificationType</td>
@@ -90,9 +101,9 @@
                             }
                         }
                     </tbody>
-                    </form>
                 </table>
             </div>
+
             <partial name="_Pagination" model="@Model.Pagination" />
             <a asp-route="pmc:createmodification"
                class="govuk-button govuk-button--secondary">

@@ -147,7 +147,12 @@ public class PlannedEndDateController
 
                 TempData[ProjectModificationChange.Navigation] = JsonSerializer.Serialize(navigation);
 
-                return RedirectToAction(nameof(ReviewChanges), new { projectRecordId });
+                return RedirectToAction(nameof(ReviewChanges), new
+                {
+                    projectRecordId,
+                    specificAreaOfChangeId = GetSpecificAreaOfChangeId(),
+                    modificationChangeId = projectModificationChangeId
+                });
             }
 
             // otherwise resume from the NextStage in sequence
@@ -161,9 +166,16 @@ public class PlannedEndDateController
         }
 
         // if review in progress or the user is at the last stage and clicks on Save and Continue
-        if (isReviewInProgress || string.IsNullOrWhiteSpace(navigation.NextStage))
+        if (isReviewInProgress ||
+            string.IsNullOrWhiteSpace(navigation.NextStage) ||
+            navigation.NextSection.StaticViewName.Equals(nameof(ReviewChanges), StringComparison.OrdinalIgnoreCase))
         {
-            return RedirectToAction(nameof(ReviewChanges), new { projectRecordId });
+            return RedirectToAction(nameof(ReviewChanges), new
+            {
+                projectRecordId,
+                specificAreaOfChangeId = GetSpecificAreaOfChangeId(),
+                modificationChangeId = projectModificationChangeId
+            });
         }
 
         // otherwise resume from the NextStage in sequence
@@ -191,7 +203,7 @@ public class PlannedEndDateController
         }
 
         // get the responent answers for the category
-        var respondentServiceResponse = await _respondentService.GetModificationAnswers(projectModificationChangeId, projectRecordId, categoryId);
+        var respondentServiceResponse = await _respondentService.GetModificationChangeAnswers(projectModificationChangeId, projectRecordId, categoryId);
 
         if (!respondentServiceResponse.IsSuccessStatusCode)
         {

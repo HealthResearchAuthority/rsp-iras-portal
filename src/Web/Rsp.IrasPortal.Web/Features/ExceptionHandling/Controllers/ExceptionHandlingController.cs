@@ -41,7 +41,7 @@ public class ExceptionHandlingController(ILogger<ExceptionHandlingController> lo
             {
                 StatusCodes.Status404NotFound => View("NotFound"),
                 StatusCodes.Status403Forbidden => Forbidden(false),
-                _ => Error()
+                _ => View(nameof(Error))
             };
         }
 
@@ -56,7 +56,7 @@ public class ExceptionHandlingController(ILogger<ExceptionHandlingController> lo
         {
             StatusCodes.Status404NotFound => View("NotFound"),
             StatusCodes.Status403Forbidden => Forbidden(),
-            _ => Error()
+            _ => View(nameof(Error))
         };
     }
 

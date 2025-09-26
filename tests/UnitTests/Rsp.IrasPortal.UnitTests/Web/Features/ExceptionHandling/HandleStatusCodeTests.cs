@@ -37,7 +37,7 @@ public class HandleStatusCodeTests : TestServiceBase<ExceptionHandlingController
 
         // assert
         var view = result.ShouldBeOfType<ViewResult>();
-        view.ViewName.ShouldBeNull();
+        view.ViewName.ShouldBe("Error");
         VerifyAtLeastOneErrorLog(loggerMock);
     }
 
@@ -86,7 +86,7 @@ public class HandleStatusCodeTests : TestServiceBase<ExceptionHandlingController
 
         // assert
         var view = result.ShouldBeOfType<ViewResult>();
-        view.ViewName.ShouldBeNull();
+        view.ViewName.ShouldBe("Error");
         VerifyAtLeastOneErrorLog(loggerMock);
     }
 

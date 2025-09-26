@@ -1,0 +1,111 @@
+﻿@using System.Globalization
+@using System.Text.Json
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Microsoft.FeatureManagement
+@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Web.Features.Modifications.Models
+@using Rsp.IrasPortal.Web.Extensions
+@model QuestionnaireViewModel
+
+@{
+    // Title used in the validation error summary
+    var errorSummaryTitle = "There is a problem";
+
+    ViewBag.Title = "Add sponsor reference, date and brief summary of changes";
+
+    //string projectRecordId, string irasId, string shortTitle, Guid projectModificationId
+
+    var modification = TempData.PopulateBaseProjectModificationProperties(new BaseProjectModificationViewModel());
+
+    var modificationParams = new Dictionary<string, string> {
+            { "projectRecordId", modification.ProjectRecordId },
+            { "irasId", modification.IrasId  },
+            { "shortTitle", modification.ShortTitle ?? string.Empty },
+            { "projectModificationId", modification.ModificationId ?? string.Empty }
+        };
+}
+
+<div class="govuk-width-container">
+    <div class="govuk-width-container">
+        @section BackNavigation {
+            <partial name="_BackNavigation" model="@("pmc:modificationdetails", "Back", modificationParams)" />
+            @*<vc:back-navigation navigation-dto="@navigation"
+                specific-area-of-change-id="@modification.SpecificAreaOfChangeId"
+                project-record-id="@modification.ProjectRecordId"
+                modification-change-id="@modification.ModificationChangeId"
+                review-in-progress="@isReviewInProgress" />*@
+
+        }
+
+        <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
+
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+
+                <h1 class="govuk-heading-l">Add sponsor reference, date and brief summary of changes</h1>
+
+                <form method="post">
+
+                    <partial name="_ProjectModificationSummary" model="modification" />
+
+                    <partial name="_Questionnaire" model="Model" />
+
+                    <div class="save-buttons">
+
+                        <partial name="_SubmitButton" model="@("pmc:saveresponses", "Save and continue to review", new Dictionary<string, string>())" />
+
+                        ViewBag.Style = "govuk-button govuk-button--secondary";
+
+                        <partial name="_SubmitButton" model="@("pmc:saveresponses", "Save for later", new Dictionary<string, string> {{ "saveForLater", bool.TrueString }})" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*<div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
+            <h1 class="govuk-heading-l">Add sponsor reference, date and brief summary of changes</h1>
+            <form method="post">
+
+                <partial name="_ProjectModificationSummary" model="Model" />
+
+                <rsp-gds-input asp-for="SponsorModificationReference"
+                               label-html-class="font-weight-none"
+                               label-text="Sponsor modification reference (optional)" />
+
+                <rsp-gds-date-input id="SponsorModificationDate.Date"
+                                    asp-for="SponsorModificationDate.Date"
+                                    day-name="SponsorModificationDate.Day"
+                                    day-value="@Model.SponsorModificationDate.Day"
+                                    month-name="SponsorModificationDate.Month"
+                                    month-value="@Model.SponsorModificationDate.Month"
+                                    year-name="SponsorModificationDate.Year"
+                                    year-value="@Model.SponsorModificationDate.Year"
+                                    label-text="Sponsor modification date (optional)"
+                                    label-html-class="font-weight-none"
+                                    hint-html="For example, 27 March 2029"
+                                    error-key="SponsorModificationDate" />
+
+                <rsp-gds-character-count-textarea asp-for="MainChangesDescription"
+                                                  label-text="Briefly summarise in lay language the main changes proposed in this modification"
+                                                  label-html-class="font-weight-none"
+                                                  word-count-error-for="_DescriptionExcessCharactersCount"
+                                                  rows="5"
+                                                  width-class="govuk-!-width-full" />
+
+                <div class="save-buttons">
+                    <input type="hidden" name="projectRecordId" value="@Model.ProjectRecordId" />
+                    <partial name="_SubmitButton" model="@("pmc:savesponsorreference", "Save and continue" , new Dictionary<string, string>())" />
+
+                    @{
+                        ViewBag.Style = "govuk-button govuk-button--secondary";
+                    }
+
+                    <partial name="_SubmitButton" model="@("pmc:savesponsorreference", "Save for later", new Dictionary<string, string> { { "saveForLater", bool.TrueString } })" />
+                </div>
+            </form>
+        </div>
+    </div>*@

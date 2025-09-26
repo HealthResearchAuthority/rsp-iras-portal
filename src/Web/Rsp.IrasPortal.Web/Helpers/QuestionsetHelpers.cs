@@ -64,6 +64,7 @@ public static class QuestionsetHelpers
                 IsMandatory = question.IsMandatory,
                 ShowOriginalAnswer = question.ShowOriginalAnswer,
                 SectionSequence = question.SectionSequence,
+                ShowAnswerOn = question.ShowAnswerOn,
                 GuidanceComponents = question.GuidanceComponents,
                 Answers = [.. question.Answers.Select(ans => new AnswerViewModel
                 {
@@ -96,6 +97,7 @@ public static class QuestionsetHelpers
                 Category = question.CategoryId ?? string.Empty,
                 ShowOriginalAnswer = question.ShowOriginalAnswer,
                 SectionSequence = question.SectionSequence,
+                ShowAnswerOn = question.ShowAnswerOn,
                 Answers = [],
                 Rules = [],
                 GuidanceComponents = question.GuidanceComponents,

@@ -69,7 +69,7 @@ public class ModificationsController
         {
             ProjectRecordId = (string)projectRecordId,
             ModificationIdentifier = IrasId + separator,
-            Status = "OPEN",
+            Status = "Draft",
             CreatedBy = name,
             UpdatedBy = name
         };
@@ -99,8 +99,17 @@ public class ModificationsController
     /// Retrieves area of change data and stores it in session for later reuse.
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> AreaOfChange()
+    public async Task<IActionResult> AreaOfChange(Guid? projectModificationId)
     {
+        // if we are adding a new change to the existing modification
+        if (projectModificationId.HasValue && projectModificationId != Guid.Empty)
+        {
+            TempData.Remove(TempDataKeys.ProjectModification.AreaOfChangeId);
+            TempData.Remove(TempDataKeys.ProjectModification.SpecificAreaOfChangeId);
+
+            TempData[TempDataKeys.ProjectModification.ProjectModificationId] = projectModificationId;
+        }
+
         // get the initial modification questions from CMS
         var startingQuestionsResponse = await cmsQuestionsetService.GetInitialModificationQuestions();
 
@@ -149,7 +158,11 @@ public class ModificationsController
 
         if (string.IsNullOrWhiteSpace(tempDataString))
         {
-            return BadRequest("Area of changes not available.");
+            return this.ServiceError(new ServiceResponse
+            {
+                StatusCode = HttpStatusCode.BadRequest,
+                Error = "Area of changes not available."
+            });
         }
 
         // Deserialize the area of changes from TempData
@@ -311,7 +324,7 @@ public class ModificationsController
         var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty;
 
         // Build the request to save modification answers
-        var request = new ProjectModificationAnswersRequest
+        var request = new ProjectModificationChangeAnswersRequest
         {
             ProjectModificationChangeId = projectModificationChangeId == null ? Guid.Empty : (Guid)projectModificationChangeId!,
             ProjectRecordId = projectRecordId,
@@ -319,10 +332,10 @@ public class ModificationsController
         };
 
         // Add the new planned end date answer to the request
-        request.ModificationAnswers.AddRange(respondentAnswers);
+        request.ModificationChangeAnswers.AddRange(respondentAnswers);
 
         // Save the modification answers using the respondent service
-        var saveModificationAnswersResponse = await respondentService.SaveModificationAnswers(request);
+        var saveModificationAnswersResponse = await respondentService.SaveModificationChangeAnswers(request);
 
         if (!saveModificationAnswersResponse.IsSuccessStatusCode)
         {
@@ -353,7 +366,7 @@ public class ModificationsController
             AreaOfChange = model.AreaOfChangeId!,
             SpecificAreaOfChange = model.SpecificChangeId!,
             ProjectModificationId = modificationId,
-            Status = "OPEN",
+            Status = "Draft",
             CreatedBy = name,
             UpdatedBy = name
         });
