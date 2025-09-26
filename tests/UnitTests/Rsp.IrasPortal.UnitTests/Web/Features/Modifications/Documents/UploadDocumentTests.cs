@@ -16,12 +16,10 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
     [Fact]
     public async Task UploadDocuments_NullModel_ReturnsFileTooLargeView()
     {
-        // Act
         var result = await Sut.UploadDocuments(null);
 
-        // Assert
-        var viewResult = Assert.IsType<ViewResult>(result);
-        Assert.Equal("FileTooLarge", viewResult.ViewName);
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.ViewName.ShouldBe("FileTooLarge");
     }
 
     [Fact]
@@ -51,10 +49,9 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
 
         var result = await Sut.UploadDocuments(model);
 
-        Assert.IsType<ViewResult>(result);
-        Assert.True(Sut.ModelState.ContainsKey("Files"));
-        var error = Sut.ModelState["Files"].Errors.First();
-        Assert.Contains("must be a permitted file type", error.ErrorMessage);
+        result.ShouldBeOfType<ViewResult>();
+        Sut.ModelState.ContainsKey("Files").ShouldBeTrue();
+        Sut.ModelState["Files"].Errors.First().ErrorMessage.ShouldContain("must be a permitted file type");
     }
 
     [Fact]
@@ -89,8 +86,8 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
 
         var result = await Sut.UploadDocuments(model);
 
-        Assert.IsType<ViewResult>(result);
-        Assert.True(Sut.ModelState["Files"].Errors.Any(e => e.ErrorMessage.Contains("already been uploaded")));
+        result.ShouldBeOfType<ViewResult>();
+        Sut.ModelState["Files"].Errors.Any(e => e.ErrorMessage.Contains("already been uploaded")).ShouldBeTrue();
     }
 
     [Fact]
@@ -120,8 +117,8 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
 
         var result = await Sut.UploadDocuments(model);
 
-        Assert.IsType<ViewResult>(result);
-        Assert.True(Sut.ModelState["Files"].Errors.Any(e => e.ErrorMessage.Contains("must be smaller than 100 MB")));
+        result.ShouldBeOfType<ViewResult>();
+        Sut.ModelState["Files"].Errors.Any(e => e.ErrorMessage.Contains("must be smaller than 100 MB")).ShouldBeTrue();
     }
 
     [Fact]
@@ -158,8 +155,8 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
 
         var result = await Sut.UploadDocuments(model);
 
-        var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal(nameof(Sut.ModificationDocumentsAdded), redirect.ActionName);
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe(nameof(Sut.ModificationDocumentsAdded));
     }
 
     [Fact]
@@ -196,8 +193,8 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
 
         var result = await Sut.UploadDocuments(model);
 
-        var view = Assert.IsType<ViewResult>(result);
-        Assert.True(Sut.ModelState["Files"].Errors.Any());
+        var view = result.ShouldBeOfType<ViewResult>();
+        Sut.ModelState["Files"].Errors.Any().ShouldBeTrue();
     }
 
     [Fact]
@@ -223,7 +220,7 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
 
         var result = await Sut.UploadDocuments(model);
 
-        var view = Assert.IsType<StatusCodeResult>(result); // or whatever ServiceError returns
+        result.ShouldBeOfType<StatusCodeResult>(); // or whatever ServiceError returns
     }
 
     [Fact]
@@ -247,8 +244,8 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
 
         var result = await Sut.UploadDocuments(model);
 
-        var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal(nameof(Sut.ModificationDocumentsAdded), redirect.ActionName);
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe(nameof(Sut.ModificationDocumentsAdded));
     }
 
     [Fact]
@@ -272,7 +269,7 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
 
         var result = await Sut.UploadDocuments(model);
 
-        var view = Assert.IsType<ViewResult>(result);
-        Assert.True(Sut.ModelState["Files"].Errors.Any(e => e.ErrorMessage.Contains("Please upload at least one document")));
+        var view = result.ShouldBeOfType<ViewResult>();
+        Sut.ModelState["Files"].Errors.Any(e => e.ErrorMessage.Contains("Please upload at least one document")).ShouldBeTrue();
     }
 }
