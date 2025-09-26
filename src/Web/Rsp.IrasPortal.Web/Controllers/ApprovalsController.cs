@@ -81,9 +81,6 @@ public class ApprovalsController
             };
         }
 
-        model.SortField = sortField;
-        model.SortDirection = sortDirection;
-
         return View(model);
     }
 
