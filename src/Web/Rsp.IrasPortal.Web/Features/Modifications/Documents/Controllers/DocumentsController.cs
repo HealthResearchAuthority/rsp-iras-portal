@@ -377,6 +377,8 @@ public class DocumentsController
             var atleastOneInvalidFile = false;
             const long maxFileSize = 100 * 1024 * 1024; // 100 MB in bytes
 
+            long totalFileSize = 0; // Track combined file size
+
             foreach (var file in model.Files)
             {
                 var ext = Path.GetExtension(file.FileName);
@@ -406,7 +408,16 @@ public class DocumentsController
                     continue;
                 }
 
+                totalFileSize += file.Length; // add to combined size
                 validFiles.Add(file);
+            }
+
+            // 4. Combined file size check
+            if (totalFileSize > maxFileSize)
+            {
+                atleastOneInvalidFile = true;
+                ModelState.AddModelError("Files", "The combined size of all files must not exceed 100 MB");
+                return View(model);
             }
 
             // If no valid files remain, re-render view with errors
