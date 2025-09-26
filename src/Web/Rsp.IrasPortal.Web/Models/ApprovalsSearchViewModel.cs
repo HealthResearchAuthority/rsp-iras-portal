@@ -8,6 +8,4 @@ public class ApprovalsSearchViewModel
     public IEnumerable<ModificationsModel> Modifications { get; set; } = [];
     public PaginationViewModel? Pagination { get; set; }
     public bool EmptySearchPerformed { get; set; } = false;
-    public string? SortField { get; set; }
-    public string? SortDirection { get; set; }
 }

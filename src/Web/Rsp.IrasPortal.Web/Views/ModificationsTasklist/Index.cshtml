@@ -296,8 +296,11 @@ else
 						</tr>
 					</thead>
 					<form method="get" id="tasklist-selection">
-						<!--Keep track of selected modifications that are not displayed on this page for continuity-->
-						@foreach (var selectedMod in Model.SelectedModificationIds.Except(Model.Modifications.Select(m =>
+                        <!--Keep track of selected modifications that are not displayed on this page for continuity-->
+                        <input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
+                        <input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
+
+                        @foreach (var selectedMod in Model.SelectedModificationIds.Except(Model.Modifications.Select(m =>
 											m.Modification.ModificationId)))
 						{
 							<input hidden="hidden" type="text" value="@selectedMod" name="selectedModificationIds" />
