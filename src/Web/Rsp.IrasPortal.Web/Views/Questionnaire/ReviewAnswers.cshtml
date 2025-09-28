@@ -26,13 +26,17 @@
     var errorSummaryTitle = "There is a problem";
 
     // Prepare the navigation model depending on whether we have a lastQuestion
+
     var navModel = lastQuestion != null
-        ? ("qnc:displayquestionnaire", "Back", new Dictionary<string, string>
-                {
-            { "sectionId", lastQuestion.SectionId },
-            { "categoryId", lastQuestion.Category }
-                                                                                                                                                                                                                                                                                                                                        })
+        ? ("qnc:displayquestionnaire", "Back", new Dictionary<string, string> {{ "sectionId", lastQuestion.SectionId }, { "categoryId", lastQuestion.Category }})
         : ("app:createapplication", "Back", new Dictionary<string, string>());
+
+    var backRoute = TempData.Peek(TempDataKeys.BackRoute) as string;
+
+    if (!string.IsNullOrEmpty(backRoute))
+    {
+        navModel = (backRoute, "Back", new Dictionary<string, string> { { "projectRecordId", projectRecordId } });
+    }
 }
 
 @if (await featureManager.IsEnabledAsync(FeatureFlags.ProgressiveEnhancement))
@@ -72,9 +76,12 @@
     </script>
 }
 
-@* @section is added for the back button, so that we can render something below the back button
+@*
+    @section is added for the back button, so that we can render something below the back button
     and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
-    the named section *@
+    the named section 
+*@
+
 @section BackNavigation {
     <partial name="_BackNavigation" model="navModel" />
 }
@@ -150,7 +157,7 @@
                 @{
                     ViewBag.Style = "govuk-button govuk-button--secondary";
                 }
-                <partial name="_SubmitButton" model="@("pov:projectdetails", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = projectRecordId })" />
+                <partial name="_SubmitButton" model="@("pov:index", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = projectRecordId })" />
             </div>
         </form>
     </div>

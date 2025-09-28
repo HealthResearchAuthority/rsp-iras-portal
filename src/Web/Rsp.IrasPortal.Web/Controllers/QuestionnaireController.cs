@@ -50,6 +50,8 @@ public class QuestionnaireController
             return this.ServiceError(respondentServiceResponse);
         }
 
+        IOrderedEnumerable<QuestionSectionsResponse>? questionSections = null;
+
         if (sectionId == null)
         {
             // get the questions for the category
@@ -61,13 +63,13 @@ public class QuestionnaireController
                 return this.ServiceError(questionSectionsResponse);
             }
 
-            var questionSections = questionSectionsResponse
+            questionSections = questionSectionsResponse
                 .Content?
                 .Where(section => section.QuestionCategoryId.Equals(categoryId, StringComparison.OrdinalIgnoreCase))
                 .OrderBy(section => section.SectionId);
 
             // Ensure questionSections is not null and has elements
-            if (questionSections?.Any() == true)
+            if (questionSections?.Any() == true && validate == bool.FalseString)
             {
                 // Get the first question section for the given categoryId
                 var firstSection = questionSections.First();
@@ -90,7 +92,7 @@ public class QuestionnaireController
         var questions = questionsSetServiceResponse.Content!;
 
         // convert the questions response to QuestionnaireViewModel
-        var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(questions);
+        var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(questions, true);
 
         // if respondent has answerd any questions
         if (respondentAnswers.Any())
@@ -98,26 +100,33 @@ public class QuestionnaireController
             UpdateWithAnswers(respondentAnswers, questionnaire.Questions);
         }
 
-        // save the list of QuestionViewModel in session to get it later
-        HttpContext.Session.SetString($"{SessionKeys.Questionnaire}:{sectionId}", JsonSerializer.Serialize(questionnaire.Questions));
+        if (validate == bool.FalseString)
+        {
+            // save the list of QuestionViewModel for the section in session to get it later
+            HttpContext.Session.SetString($"{SessionKeys.Questionnaire}:{sectionId}", JsonSerializer.Serialize(questionnaire.Questions));
+        }
+        else
+        {
+            // save the list of QuestionViewModel for all sections in session to get later
+            foreach (var section in questionSections!)
+            {
+                var sectionQuestions = questionnaire.Questions.Where(q => q.SectionId == section.SectionId).ToList();
+                HttpContext.Session.SetString($"{SessionKeys.Questionnaire}:{section.SectionId}", JsonSerializer.Serialize(sectionQuestions));
+            }
+
+            // validate the questionnaire. The application is being resumed from the SubmitApplication page
+            await ValidateQuestionnaire(questionnaire);
+
+            TempData.TryAdd(TempDataKeys.BackRoute, "pov:index");
+
+            // return the review page with errors if they exist
+            return RedirectToAction("SubmitApplication", new { projectRecordId });
+        }
 
         // this is where the questionnaire will resume
         var navigationDto = await SetStage(sectionIdOrDefault);
 
         questionnaire.CurrentStage = navigationDto.CurrentStage;
-
-        // validate the questionnaire. The
-        // application is being resumed from the
-        // SubmitApplication page
-        if (validate == bool.TrueString)
-        {
-            // this validation will addd model errors
-            // to the ModelState dictionary
-            await ValidateQuestionnaire(questionnaire);
-
-            // return the view with errors
-            return View(Index, questionnaire);
-        }
 
         // continue to resume for the category Id &
         return RedirectToAction(nameof(DisplayQuestionnaire), new
@@ -340,7 +349,7 @@ public class QuestionnaireController
 
         if (saveForLater == bool.TrueString)
         {
-            return RedirectToAction("ProjectDetails", "ProjectOverview", new { projectRecordId = application.Id });
+            return RedirectToAction("Index", "ProjectOverview", new { projectRecordId = application.Id });
         }
 
         // continue rendering the questionnaire if the above conditions are not true
@@ -386,7 +395,7 @@ public class QuestionnaireController
     /// and display the progress of the application
     /// </summary>
     /// <param name="projectRecordId">ApplicationId to submit</param>
-    public async Task<IActionResult> SubmitApplication(string projectRecordId)
+    public async Task<IActionResult> SubmitApplication(string projectRecordId, string? backRoute = null)
     {
         var categoryId = (TempData.Peek(TempDataKeys.CategoryId) as string)!;
 
@@ -537,9 +546,29 @@ public class QuestionnaireController
             }
         }
 
+        // update the application status to Submitted
+        var updateApplicationResponse = await applicationsService.UpdateApplication
+        (
+            new IrasApplicationRequest
+            {
+                Id = application.Id,
+                Title = application.Title,
+                Description = application.Description,
+                StartDate = application.CreatedDate,
+                Status = ApplicationStatuses.Submitted,
+                CreatedBy = application.CreatedBy,
+                UpdatedBy = application.UpdatedBy,
+                Respondent = this.GetRespondentFromContext(),
+                IrasId = application.IrasId
+            }
+        );
+
         return RedirectToAction("ProjectRecordCreated");
     }
 
+    /// <summary>
+    /// Displays the 'Project record created' page with IRAS ID and project title
+    /// </summary>
     public async Task<IActionResult> ProjectRecordCreated()
     {
         var categoryId = (TempData.Peek(TempDataKeys.CategoryId) as string)!;
