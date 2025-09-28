@@ -64,7 +64,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
                 {
                     Id = projectRecordId,
                     IrasId = 1,
-                    Status = "Draft"
+                    Status = ApplicationStatuses.Draft
                 }
             });
     }
@@ -85,6 +85,91 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
     {
         Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
         Sut.TempData = tempData;
+    }
+
+    [Fact]
+    public async Task Index_GetsProjectOverview_And_ReturnsViewResult_When_StatusIsDraft()
+    {
+        // Arrange
+        var httpContext = CreateHttpContextWithSession();
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempData = CreateTempData(tempDataProvider, httpContext);
+
+        tempData[TempDataKeys.ShortProjectTitle] = "Test Project";
+        tempData[TempDataKeys.CategoryId] = QuestionCategories.ProjectRecrod;
+        tempData[TempDataKeys.ProjectRecordId] = DefaultProjectRecordId;
+
+        var answers = new List<RespondentAnswerDto>
+        {
+            new() { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "Test Project" },
+            new() { QuestionId = QuestionIds.ProjectPlannedEndDate, AnswerText = "01/01/2025" }
+        };
+
+        var applicationService = Mocker.GetMock<IApplicationsService>();
+        applicationService
+            .Setup(s => s.GetProjectRecord(DefaultProjectRecordId))
+            .ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new IrasApplicationResponse
+                {
+                    Id = DefaultProjectRecordId,
+                    IrasId = 1,
+                    Status = ApplicationStatuses.Draft
+                }
+            });
+
+        SetupRespondentAnswers(DefaultProjectRecordId, answers);
+        SetupControllerContext(httpContext, tempData);
+
+        // Act
+        var result = await Sut.Index(DefaultProjectRecordId, null);
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.Model.ShouldBeOfType<ProjectOverviewModel>();
+    }
+
+    [Fact]
+    public async Task Index_GetsProjectOverview_And_ReturnsRedirectToActionResult_When_StatusIsSubmitted()
+    {
+        // Arrange
+        var httpContext = CreateHttpContextWithSession();
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempData = CreateTempData(tempDataProvider, httpContext);
+
+        tempData[TempDataKeys.ShortProjectTitle] = "Test Project";
+        tempData[TempDataKeys.CategoryId] = QuestionCategories.ProjectRecrod;
+        tempData[TempDataKeys.ProjectRecordId] = DefaultProjectRecordId;
+
+        var answers = new List<RespondentAnswerDto>
+        {
+            new() { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "Test Project" },
+            new() { QuestionId = QuestionIds.ProjectPlannedEndDate, AnswerText = "01/01/2025" }
+        };
+
+        var applicationService = Mocker.GetMock<IApplicationsService>();
+        applicationService
+            .Setup(s => s.GetProjectRecord(DefaultProjectRecordId))
+            .ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new IrasApplicationResponse
+                {
+                    Id = DefaultProjectRecordId,
+                    IrasId = 1,
+                    Status = ApplicationStatuses.Submitted
+                }
+            });
+
+        SetupRespondentAnswers(DefaultProjectRecordId, answers);
+        SetupControllerContext(httpContext, tempData);
+
+        // Act
+        var result = await Sut.Index(DefaultProjectRecordId, null);
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<RedirectToActionResult>();
     }
 
     [Fact]

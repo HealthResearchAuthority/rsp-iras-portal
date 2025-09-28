@@ -314,7 +314,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
 
         // Act
-        var result = await Sut.Resume(applicationId, categoryId, sectionId);
+        var result = await Sut.Resume(applicationId, categoryId, "False", sectionId);
 
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
@@ -332,8 +332,13 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
     [Theory]
     [AutoData]
-    public async Task Resume_Should_Return_View_With_Questionnaire_When_Validate_Is_True(string applicationId,
-        string categoryId, string sectionId)
+    public async Task Resume_Should_Return_View_With_Questionnaire_When_Validate_Is_True
+    (
+        string applicationId,
+        string categoryId,
+        string sectionId,
+        IEnumerable<QuestionSectionsResponse> questionSectionsResponse
+    )
     {
         // Arrange
         var applicationResponse = new ServiceResponse<IrasApplicationResponse>
@@ -405,6 +410,15 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
             .ReturnsAsync(questionSetServiceResponse);
 
         Mocker
+            .GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetQuestionSections())
+            .ReturnsAsync(new ServiceResponse<IEnumerable<QuestionSectionsResponse>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = questionSectionsResponse
+            });
+
+        Mocker
             .GetMock<IValidator<QuestionnaireViewModel>>()
             .Setup(x => x.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(),
                 It.IsAny<CancellationToken>()))
@@ -433,12 +447,11 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         };
 
         // Act
-        var result = await Sut.Resume(applicationId, categoryId, "True", sectionId);
+        var result = await Sut.Resume(applicationId, categoryId, "True");
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Index");
-        viewResult.Model.ShouldBeOfType<QuestionnaireViewModel>();
+        var viewResult = result.ShouldBeOfType<RedirectToActionResult>();
+        viewResult.ActionName.ShouldBe(nameof(QuestionnaireController.SubmitApplication));
 
         Mocker
             .GetMock<IValidator<QuestionnaireViewModel>>()
@@ -449,8 +462,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
     [Theory]
     [AutoData]
-    public async Task Resume_Should_RedirectToDisplayQuestionnaire_When_ValidateIsFalse(string applicationId,
-        string categoryId, string sectionId)
+    public async Task Resume_Should_RedirectToDisplayQuestionnaire_When_ValidateIsFalse(string applicationId, string categoryId, string sectionId)
     {
         // Arrange
         var applicationResponse = new ServiceResponse<IrasApplicationResponse>
@@ -563,7 +575,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         };
 
         // Act
-        var result = await Sut.Resume(applicationId, categoryId, sectionId);
+        var result = await Sut.Resume(applicationId, categoryId, "False", sectionId);
 
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();

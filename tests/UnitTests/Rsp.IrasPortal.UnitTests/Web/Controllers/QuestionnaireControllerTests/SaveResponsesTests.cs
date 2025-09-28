@@ -413,7 +413,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
 
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
-        redirectResult.ActionName.ShouldBe(nameof(ProjectOverviewController.ProjectDetails));
+        redirectResult.ActionName.ShouldBe(nameof(ProjectOverviewController.Index));
 
         Mocker
            .GetMock<IRespondentService>()

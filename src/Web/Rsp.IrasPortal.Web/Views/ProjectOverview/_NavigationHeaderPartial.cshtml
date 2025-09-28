@@ -6,22 +6,7 @@
     var backRoute = ViewData["BackRoute"] as string;
 }
 
-<div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-        <h1 class="govuk-heading-l">Project overview</h1>
-        <div class="govuk-inset-text">
-            <p>
-                <strong>IRAS ID:</strong> @Model.IrasId
-            </p>
-            <p>
-                <strong>Short project title:</strong> @Model.ProjectTitle
-            </p>
-        </div>
-    </div>
-    <div class="govuk-grid-column-one-third govuk-!-text-align-right">
-        <strong class="govuk-tag govuk-tag--blue">@Model.Status</strong>
-    </div>
-</div>
+<partial name="_ProjectOverviewPartial" model="@Model" />
 
 <div class="govuk-service-navigation">
     <div class="govuk-width-container">
@@ -30,49 +15,49 @@
                 <ul class="govuk-service-navigation__list">
                     <li class="govuk-service-navigation__item small-margin @(active == ProjectOverview.ProjectDetails ? "govuk-service-navigation__item--active" : "")">
                         <a class="govuk-service-navigation__link"
-                           asp-route="pov:projectdetails"
-                           asp-route-projectRecordId="@Model.ProjectRecordId"
-                           asp-route-backRoute="@backRoute">
+                            asp-route="pov:projectdetails"
+                            asp-route-projectRecordId="@Model.ProjectRecordId"
+                            asp-route-backRoute="@backRoute">
                             @ProjectOverview.ProjectDetails
                         </a>
                     </li>
                     <li class="govuk-service-navigation__item small-margin @(active == ProjectOverview.ProjectDocuments ? "govuk-service-navigation__item--active" : "")">
                         <a class="govuk-service-navigation__link"
-                           asp-route="pov:projectdocuments"
-                           asp-route-projectRecordId="@Model.ProjectRecordId"
-                           asp-route-backRoute="@backRoute">
+                            asp-route="pov:projectdocuments"
+                            asp-route-projectRecordId="@Model.ProjectRecordId"
+                            asp-route-backRoute="@backRoute">
                             @ProjectOverview.ProjectDocuments
                         </a>
                     </li>
                     <li class="govuk-service-navigation__item small-margin @(active == ProjectOverview.ProjectTeam ? "govuk-service-navigation__item--active" : "")">
                         <a class="govuk-service-navigation__link"
-                           asp-route="pov:projectteam"
-                           asp-route-projectRecordId="@Model.ProjectRecordId"
-                           asp-route-backRoute="@backRoute">
+                            asp-route="pov:projectteam"
+                            asp-route-projectRecordId="@Model.ProjectRecordId"
+                            asp-route-backRoute="@backRoute">
                             @ProjectOverview.ProjectTeam
                         </a>
                     </li>
                     <li class="govuk-service-navigation__item small-margin @(active == ProjectOverview.ResearchLocations ? "govuk-service-navigation__item--active" : "")">
                         <a class="govuk-service-navigation__link"
-                           asp-route="pov:researchlocations"
-                           asp-route-projectRecordId="@Model.ProjectRecordId"
-                           asp-route-backRoute="@backRoute">
+                            asp-route="pov:researchlocations"
+                            asp-route-projectRecordId="@Model.ProjectRecordId"
+                            asp-route-backRoute="@backRoute">
                             @ProjectOverview.ResearchLocations
                         </a>
                     </li>
                     <li class="govuk-service-navigation__item small-margin @(active == ProjectOverview.PostApproval ? "govuk-service-navigation__item--active" : "")">
                         <a class="govuk-service-navigation__link"
-                           asp-route="pov:postapproval"
-                           asp-route-projectRecordId="@Model.ProjectRecordId"
-                           asp-route-backRoute="@backRoute">
+                            asp-route="pov:postapproval"
+                            asp-route-projectRecordId="@Model.ProjectRecordId"
+                            asp-route-backRoute="@backRoute">
                             @ProjectOverview.PostApproval
                         </a>
                     </li>
                     <li class="govuk-service-navigation__item small-margin @(active == ProjectOverview.ProjectHistory ? "govuk-service-navigation__item--active" : "")">
                         <a class="govuk-service-navigation__link"
-                           asp-route="pov:projecthistory"
-                           asp-route-projectRecordId="@Model.ProjectRecordId"
-                           asp-route-backRoute="@backRoute">
+                            asp-route="pov:projecthistory"
+                            asp-route-projectRecordId="@Model.ProjectRecordId"
+                            asp-route-backRoute="@backRoute">
                             @ProjectOverview.ProjectHistory
                         </a>
                     </li>

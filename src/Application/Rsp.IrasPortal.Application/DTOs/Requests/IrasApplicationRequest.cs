@@ -1,4 +1,6 @@
-﻿namespace Rsp.IrasPortal.Application.DTOs.Requests;
+﻿using Rsp.IrasPortal.Application.Constants;
+
+namespace Rsp.IrasPortal.Application.DTOs.Requests;
 
 /// <summary>
 /// Represents an application request to create
@@ -29,7 +31,7 @@ public record IrasApplicationRequest
     /// <summary>
     /// Application Status
     /// </summary>
-    public string? Status { get; set; } = "created";
+    public string? Status { get; set; } = ApplicationStatuses.Draft;
 
     /// <summary>
     /// Applicant's name who initiated the application

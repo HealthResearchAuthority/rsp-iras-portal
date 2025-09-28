@@ -1,0 +1,21 @@
+﻿@model ProjectOverviewModel
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">Project overview</h1>
+        <div class="govuk-inset-text">
+            <p>
+                <strong>IRAS ID:</strong> @Model.IrasId
+            </p>
+            @if (!string.IsNullOrEmpty(Model.ProjectTitle))
+            {
+                <p>
+                    <strong>Short project title:</strong> @Model.ProjectTitle
+                </p>
+            }
+        </div>
+    </div>
+    <div class="govuk-grid-column-one-third govuk-!-text-align-right">
+        <strong class="govuk-tag govuk-tag--blue">@Model.Status</strong>
+    </div>
+</div>
