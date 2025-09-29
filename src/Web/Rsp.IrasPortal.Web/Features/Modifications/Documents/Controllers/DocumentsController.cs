@@ -79,6 +79,7 @@ public class DocumentsController
             viewModel.UploadedDocuments = [.. response.Content
             .Select(a => new DocumentSummaryItemDto
             {
+                DocumentId = a.Id,
                 FileName = a.FileName,
                 FileSize = a.FileSize ?? 0,
                 BlobUri = a.DocumentStoragePath ?? string.Empty,
@@ -541,6 +542,126 @@ public class DocumentsController
         return viewModel.ReviewAnswers
             ? RedirectToAction(nameof(ReviewDocumentDetails))
             : RedirectToAction(nameof(AddDocumentDetailsList));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ConfirmDeleteDocument(Guid id, string backRoute)
+    {
+        // Attempt to fetch the document details from the respondent service.
+        var documentDetailsResponse = await respondentService.GetModificationDocumentDetails(id);
+
+        // Construct the request object containing identifiers needed by the service call
+        var request = BuildDocumentRequest();
+        request.Id = id;
+        request.FileName = documentDetailsResponse?.Content?.FileName;
+        request.FileSize = documentDetailsResponse?.Content?.FileSize ?? 0;
+        request.DocumentStoragePath = documentDetailsResponse?.Content?.DocumentStoragePath;
+
+        var viewModel = new ModificationDeleteDocumentViewModel
+        {
+            Documents = [request]
+        };
+
+        viewModel.BackRoute = backRoute;
+        return View("DeleteDocuments", viewModel);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ConfirmDeleteDocuments()
+    {
+        // Construct the request object containing identifiers needed by the service call
+        var request = BuildDocumentRequest();
+
+        // Call the respondent service to fetch metadata for documents
+        var response = await respondentService.GetModificationChangesDocuments(
+            request.ProjectModificationChangeId, request.ProjectRecordId, request.ProjectPersonnelId);
+
+        if (response?.StatusCode == HttpStatusCode.OK && response.Content != null)
+        {
+            // Map the backend service response into DTOs suitable for the view model
+            var viewModel = new ModificationDeleteDocumentViewModel
+            {
+                Documents = response.Content.Select(doc => new ProjectModificationDocumentRequest
+                {
+                    Id = doc.Id, // assuming backend provides this Guid
+                    ProjectModificationChangeId = request.ProjectModificationChangeId,
+                    ProjectRecordId = request.ProjectRecordId,
+                    ProjectPersonnelId = request.ProjectPersonnelId,
+                    FileName = doc.FileName,
+                    DocumentStoragePath = doc.DocumentStoragePath,
+                    FileSize = doc.FileSize
+                }).ToList()
+            };
+
+            return View("DeleteDocuments", viewModel);
+        }
+
+        return RedirectToAction(nameof(ProjectDocument));
+    }
+
+    [HttpPost("deletedocument")]
+    public async Task<IActionResult> DeleteDocuments(ModificationDeleteDocumentViewModel model)
+    {
+        if (model?.Documents == null || !model.Documents.Any())
+        {
+            // No documents to delete
+            return RedirectToAction(nameof(AddDocumentDetailsList));
+        }
+        var request = BuildDocumentRequest();
+
+        var multipleDelete = model.Documents.Count > 1;
+
+        // Build the request list from the view model
+        var deleteDocumentRequest = model.Documents
+            .Select(d => new ProjectModificationDocumentRequest
+            {
+                Id = d.Id,
+                ProjectModificationChangeId = request.ProjectModificationChangeId,
+                ProjectRecordId = request.ProjectRecordId,
+                ProjectPersonnelId = request.ProjectPersonnelId,
+                FileName = d.FileName,
+                DocumentStoragePath = d.DocumentStoragePath,
+                FileSize = d.FileSize
+            })
+            .ToList();
+
+        // Call the service to delete the documents
+        var deleteResponse = await projectModificationsService.DeleteDocumentModification(deleteDocumentRequest);
+
+        // Delete from blob storage
+        foreach (var doc in deleteDocumentRequest)
+        {
+            if (!string.IsNullOrEmpty(doc.DocumentStoragePath))
+            {
+                await blobStorageService.DeleteFileAsync(
+                    containerName: ContainerName,
+                    blobPath: doc.DocumentStoragePath
+                );
+            }
+        }
+
+        // Handle single vs multiple delete redirection
+        if (!multipleDelete)
+        {
+            // Call the respondent service to fetch metadata for documents
+            var response = await respondentService.GetModificationChangesDocuments(
+                request.ProjectModificationChangeId, request.ProjectRecordId, request.ProjectPersonnelId);
+
+            // Check if there are any remaining documents in the response
+            if (response?.Content == null || !response.Content.Any())
+            {
+                // No more documents → go to ProjectDocument view
+                return RedirectToAction(nameof(ProjectDocument));
+            }
+
+            // Documents still exist → go back to AddDocumentDetailsList
+            return RedirectToAction(nameof(AddDocumentDetailsList));
+        }
+        else
+        {
+            // After multiple deletes go to ProjectDocument view
+            return RedirectToAction(nameof(ProjectDocument));
+        }
     }
 
     /// <summary>

@@ -73,4 +73,26 @@ public class BlobStorageService(BlobServiceClient blobServiceClient) : IBlobStor
 
         return results;
     }
+
+    /// <summary>
+    /// Uploads a collection of files to the specified Azure Blob Storage container and folder path.
+    /// </summary>
+    /// <param name="files">The collection of files to upload.</param>
+    /// <param name="containerName">The name of the blob container.</param>
+    /// <param name="folderPrefix">The prefix to prepend to each blob name (typically the folder path).</param>
+    /// <returns>A list of <see cref="DocumentSummaryItemDto"/> containing metadata about each uploaded file.</returns>
+    /// <exception cref="ArgumentException">Thrown if the file list is null or empty.</exception>
+    public async Task DeleteFileAsync(string containerName, string blobPath)
+    {
+        if (string.IsNullOrWhiteSpace(blobPath))
+            throw new ArgumentException("Blob path cannot be null or empty.", nameof(blobPath));
+
+        var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+        await containerClient.CreateIfNotExistsAsync();
+
+        var blobClient = containerClient.GetBlobClient(blobPath);
+
+        // Delete the blob if it exists
+        await blobClient.DeleteIfExistsAsync();
+    }
 }

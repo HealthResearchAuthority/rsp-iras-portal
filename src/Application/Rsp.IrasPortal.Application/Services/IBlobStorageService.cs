@@ -28,4 +28,6 @@ public interface IBlobStorageService
     /// A list of <see cref="DocumentSummaryItemDto"/> representing the files found in the specified folder.
     /// </returns>
     Task<List<DocumentSummaryItemDto>> ListFilesAsync(string containerName, string folderPrefix);
+
+    Task DeleteFileAsync(string containerName, string blobPath);
 }

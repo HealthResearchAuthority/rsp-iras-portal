@@ -33,7 +33,33 @@ public class ProjectModificationDocumentRequest
     public string? DocumentStoragePath { get; set; }
 
     /// <summary>
-    /// Gets or sets the document file size.
+    /// Gets or sets the document file size in bytes.
     /// </summary>
     public long? FileSize { get; set; }
+
+    /// <summary>
+    /// Gets the display size in KB, MB or GB, rounded to 2 decimal places.
+    /// Returns "-" if size is null or zero.
+    /// </summary>
+    public string DisplaySize
+    {
+        get
+        {
+            if (FileSize == null || FileSize == 0)
+                return "-";
+
+            const double KB = 1024;
+            const double MB = KB * 1024;
+            const double GB = MB * 1024;
+
+            double size = FileSize.Value;
+
+            if (size >= GB)
+                return $"{Math.Round(size / GB, 2)} GB";
+            else if (size >= MB)
+                return $"{Math.Round(size / MB, 2)} MB";
+            else
+                return $"{Math.Round(size / KB, 2)} KB";
+        }
+    }
 }
