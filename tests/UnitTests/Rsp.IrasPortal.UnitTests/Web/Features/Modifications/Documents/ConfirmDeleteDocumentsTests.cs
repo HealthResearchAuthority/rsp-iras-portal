@@ -57,7 +57,7 @@ public class ConfirmDeleteDocumentsTests : TestServiceBase<DocumentsController>
         };
 
         // Act
-        var result = await Sut.ConfirmDeleteDocuments();
+        var result = await Sut.ConfirmDeleteDocuments(It.IsAny<string>());
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -65,7 +65,7 @@ public class ConfirmDeleteDocumentsTests : TestServiceBase<DocumentsController>
 
         var model = viewResult.Model.ShouldBeOfType<ModificationDeleteDocumentViewModel>();
         model.Documents.ShouldNotBeNull();
-        model.Documents.Count.ShouldBe(documents.ToList().Count);
+        model.Documents.Count.ShouldBe(documents.OrderBy(dto => dto.FileName, StringComparer.OrdinalIgnoreCase).ToList().Count);
 
         // Verify first document is mapped correctly
         var expected = documents.First();
@@ -125,7 +125,7 @@ public class ConfirmDeleteDocumentsTests : TestServiceBase<DocumentsController>
         };
 
         // Act
-        var result = await Sut.ConfirmDeleteDocuments();
+        var result = await Sut.ConfirmDeleteDocuments(It.IsAny<string>());
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();

@@ -567,7 +567,7 @@ public class DocumentsController
     }
 
     [HttpGet]
-    public async Task<IActionResult> ConfirmDeleteDocuments()
+    public async Task<IActionResult> ConfirmDeleteDocuments(string? backRoute)
     {
         // Construct the request object containing identifiers needed by the service call
         var request = BuildDocumentRequest();
@@ -581,7 +581,7 @@ public class DocumentsController
             // Map the backend service response into DTOs suitable for the view model
             var viewModel = new ModificationDeleteDocumentViewModel
             {
-                Documents = response.Content.Select(doc => new ProjectModificationDocumentRequest
+                Documents = [.. response.Content.Select(doc => new ProjectModificationDocumentRequest
                 {
                     Id = doc.Id, // assuming backend provides this Guid
                     ProjectModificationChangeId = request.ProjectModificationChangeId,
@@ -590,9 +590,11 @@ public class DocumentsController
                     FileName = doc.FileName,
                     DocumentStoragePath = doc.DocumentStoragePath,
                     FileSize = doc.FileSize
-                }).ToList()
+                })
+                .OrderBy(dto => dto.FileName, StringComparer.OrdinalIgnoreCase)]
             };
 
+            viewModel.BackRoute = backRoute;
             return View("DeleteDocuments", viewModel);
         }
 
