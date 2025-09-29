@@ -99,49 +99,51 @@
 									</tr>
 								</thead>
 
-								<form method="get" id="applications-selection">
-									<input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
-									<input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
-
-								<tbody class="govuk-table__body govuk-body-s">
-										@{
-											foreach (var application in Model.Applications)
-											{
-											<tr class="govuk-table__row">
-												<td class="govuk-table__cell">
-													<a asp-route="pov:index"
-													   asp-route-projectRecordId="@application.Id"
-													   class="govuk-link">
-														<strong>@application.Title</strong>
-													</a>
-												</td>
-												<td class="govuk-table__cell">@application.IrasId</td>
-												<td class="govuk-table__cell">@application.CreatedDate.ToString("dd MMM yyyy")</td>
-												<td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">@application.Status</strong></td>
-											</tr>
-											}
-										}
-								</tbody>
-								</form>
-							</table>
-						</div>
-						<partial name="_PaginationForm" model="@Model.Pagination" />
-					</div>
-				</div>
-				<hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
-				<div class="govuk-grid-row govuk-grid-column-two-thirds">
-					<h2 class="govuk-heading-m">@Html.Raw(addProjectTitle?.Value)</h2>
-
-					@Html.Raw(addProjectDescription?.Value)
-
-					<a class="govuk-button" asp-route="app:createapplication">Add project</a>
-				</div>
-			}
-			else
-			{
-				@Html.Raw(noProjectsDescription?.Value)
-				<a class="govuk-button" asp-route="app:createapplication">Add project</a>
-			}
-		</authorized>
-	</div>
+                                <form method="get" id="applications-selection"> 
+                                    <input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
+                                    <input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
+                                    
+                                    <tbody class="govuk-table__body govuk-body-s">
+                                        @{
+                                        foreach (var application in Model.Applications)
+                                        {
+                                            <tr class="govuk-table__row">
+                                                <td class="govuk-table__cell">
+                                                    <a asp-route="pov:projectdetails"
+                                                       asp-route-projectRecordId="@application.Id"                                                       
+                                                       class="govuk-link">
+                                                        <strong>@application.Title</strong>
+                                                    </a>
+                                                </td>
+                                                <td class="govuk-table__cell">@application.IrasId</td>
+                                                <td class="govuk-table__cell">@application.CreatedDate.ToString("dd MMM yyyy")</td>                                            
+                                                <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">@application.Status</strong></td>
+                                            </tr>
+                                        }
+                                        }
+                                    </tbody>
+                                </form>
+                            </table>
+                        </div>
+                        <partial name="_PaginationForm" model="@Model.Pagination" />
+                    </div>                    
+                </div>
+                <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+                <div class="govuk-grid-row govuk-grid-column-two-thirds">
+                    <h2 class="govuk-heading-m">Add project</h2>
+                    <p class="govuk-body">
+                        If your project has not yet been added to this system, you can create a record to manage your project.
+                    </p>
+                    <a class="govuk-button" asp-route="app:createapplication">Add project</a>
+                </div>
+            }
+            else
+            {                
+                <p class="govuk-body">
+                You don’t have any projects available in the new service
+                </p>
+                <a class="govuk-button" asp-route="app:createapplication">Add project</a>
+            }           
+        </authorized>
+    </div>
 </div>
