@@ -46,6 +46,12 @@ public class ProjectOverviewController(
 
     public async Task<IActionResult> ProjectDetails(string projectRecordId, string? backRoute)
     {
+        // IF NAVIGATED FROM SHORT PROJECT TITLE LINKS
+        if (backRoute != null)
+        {
+            TempData[TempDataKeys.ProjectModification.ProjectModificationId] = projectRecordId;
+        }
+
         UpdateModificationRelatedTempData();
         SetupShortProjectTitleBackNav("pov", "app:Welcome", backRoute);
 
