@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
+using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
+using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 
 namespace Rsp.IrasPortal.Application.Filters;
@@ -48,7 +50,17 @@ public class SiteContentFilter(ICmsContentService contentService,
                     }
                 }
 
-                var pageContent = await contentService.GetMixedPageContentByUrl(path, isPreview);
+                ServiceResponse<MixedContentPageResponse> pageContent = null!;
+
+                if (path == "/")
+                {
+                    // query the homepage to get the dashboard content
+                    pageContent = await contentService.GetDashboardContent(isPreview);
+                }
+                else
+                {
+                    pageContent = await contentService.GetMixedPageContentByUrl(path, isPreview);
+                }
 
                 if (pageContent.IsSuccessStatusCode && pageContent.Content != null)
                 {

@@ -1,28 +1,28 @@
 ﻿@using Rsp.IrasPortal.Application.DTOs.Responses;
+@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
 
 @{
     ViewBag.Title = "Create a project record - Make changes to research";
+
+	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData["PageContent"];
+	var pageContent = pageContentData != null
+		? pageContentData
+		: new Dictionary<string, MixedContentPageItem?>();
+
+	var headline = pageContent.GetValueOrDefault("Application.CreateApplication.Title", null);
+	var body = pageContent.GetValueOrDefault("Application.CreateApplication.Body", null);
 }
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
 		<div class="govuk-grid-row">
 			<div class="govuk-grid-column-two-thirds">
-				<h2 class="govuk-heading-l" id="page-title">Create a project record</h2>
+				<h2 class="govuk-heading-l" id="page-title">@Html.Raw(headline?.Value)</h2>
 			</div>
 		</div>
         <authorized auth-params="@new(Roles:"applicant")">
 
-			<p class="govuk-body">
-				As it's the first time you're using this system to manage your project, we need you to enter a few details to create a project record.
-				You'll only have to do this once.
-			</p>
-			<p class="govuk-body">
-				The information we'll ask for can all be found on your original application, so have this with you before starting.
-			</p>
-			<p class="govuk-body">
-				You'll be able to save your progress and come back to it later if you need to.
-			</p>
+			@Html.Raw(body?.Value)
 
 			<a class="gem-c-button govuk-button govuk-button--start" asp-route="app:startproject" aria-label="Start creating a project record">
 				Start

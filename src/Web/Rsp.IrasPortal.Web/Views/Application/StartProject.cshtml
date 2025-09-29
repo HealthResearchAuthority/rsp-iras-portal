@@ -1,8 +1,18 @@
-﻿@model IrasIdViewModel
+﻿@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
+@model IrasIdViewModel
 
 @{
     ViewData["Title"] = "Project details - Make changes to research";
-    var errorSummaryTitle = "There is a problem";
+
+	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData["PageContent"];
+	var pageContent = pageContentData != null
+		? pageContentData
+		: new Dictionary<string, MixedContentPageItem?>();
+
+	var headline = pageContent.GetValueOrDefault("Application.StartProject.Title", null);
+	var irasIdLabel = pageContent.GetValueOrDefault("Application.StartProject.IrasIdLabel", null);
+	var irasIdHint = pageContent.GetValueOrDefault("Application.StartProject.IrasIdHint", null);
+	var errorSummaryTitle = pageContent.GetValueOrDefault("Application.StartProject.ErrorSummaryTitle", null);
 }
 
 @* @section is added for the back button, so that we can render something below the back button
@@ -12,19 +22,19 @@
     <partial name="_BackNavigation" model="@("app:createapplication", "Back", new Dictionary<string, string>())" />
 }
 
-<h1 class="govuk-heading-l">Project details</h1>
+<h1 class="govuk-heading-l">@Html.Raw(headline?.Value)</h1>
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
         <form method="post">
 
-            <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
+            <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle?.Value)" />
 
             <div class="govuk-form-group" error-class-for="IrasId">
 
-                <label class="govuk-label" asp-for="IrasId">IRAS ID</label>
+				<label class="govuk-label" asp-for="IrasId">@Html.Raw(irasIdLabel?.Value)</label>
 
                 <div class="govuk-hint">
-                    This is the 4 to 7 digit ID generated when you created your initial application
+					@Html.Raw(irasIdHint?.Value)
                 </div>
                 <span class="govuk-error-message" asp-validation-for="IrasId"></span>
 
