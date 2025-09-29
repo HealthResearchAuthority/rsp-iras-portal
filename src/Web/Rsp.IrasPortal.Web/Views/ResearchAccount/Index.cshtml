@@ -1,139 +1,167 @@
-﻿@model string?
+﻿@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
+@model string?
 @{
-    ViewBag.Title = "My account";
+	ViewBag.Title = "My account";
+
+	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData["PageContent"];
+	var pageContent = pageContentData != null
+		? pageContentData
+		: new Dictionary<string, MixedContentPageItem?>();
+
+	var headline = pageContent.GetValueOrDefault("HomeDashboard.Title", null);
+	var description = pageContent.GetValueOrDefault("HomeDashboard.Description", null);
+	var workspaceTitle = pageContent.GetValueOrDefault("HomeDashboard.WorkspaceTitle", null);
+	var approvalsLabel = pageContent.GetValueOrDefault("HomeDashboard.Approvals.Label", null);
+	var approvalsDescription = pageContent.GetValueOrDefault("HomeDashboard.Approvals.Description", null);
+	var cagLabel = pageContent.GetValueOrDefault("HomeDashboard.CAG.Label", null);
+	var cagDescription = pageContent.GetValueOrDefault("HomeDashboard.CAG.Description", null);
+	var catLabel = pageContent.GetValueOrDefault("HomeDashboard.CAT.Label", null);
+	var catDescription = pageContent.GetValueOrDefault("HomeDashboard.CAT.Description", null);
+	var memberManagementLabel = pageContent.GetValueOrDefault("HomeDashboard.MemberManagement.Label", null);
+	var memberManagementDescription = pageContent.GetValueOrDefault("HomeDashboard.MemberManagement.Description", null);
+	var myResearchLabel = pageContent.GetValueOrDefault("HomeDashboard.MyResearch.Label", null);
+	var myResearchDescription = pageContent.GetValueOrDefault("HomeDashboard.MyResearch.Description", null);
+	var recLabel = pageContent.GetValueOrDefault("HomeDashboard.REC.Label", null);
+	var recDescription = pageContent.GetValueOrDefault("HomeDashboard.REC.Description", null);
+	var systemAdministrationLabel = pageContent.GetValueOrDefault("HomeDashboard.SystemAdministration.Label", null);
+	var systemAdministrationDescription = pageContent.GetValueOrDefault("HomeDashboard.SystemAdministration.Description", null);
+	var technicalAssuranceLabel = pageContent.GetValueOrDefault("HomeDashboard.TechnicalAssurance.Label", null);
+	var technicalAssuranceDescription = pageContent.GetValueOrDefault("HomeDashboard.TechnicalAssurance.Description", null);
+	var technicalAssuranceReviewersLabel = pageContent.GetValueOrDefault("HomeDashboard.TechnicalAssuranceReviewers.Label", null);
+	var technicalAssuranceReviewersDescription = pageContent.GetValueOrDefault("HomeDashboard.TechnicalAssuranceReviewers.Description", null);
 }
 
 <authorized auth-params="@new(ShowWhenAuthenticated: false)">
-    <div class="govuk-body">
+	<div class="govuk-body">
 
-		@await Component.InvokeAsync("LoginLandingPage")        
-    </div>
+		@await Component.InvokeAsync("LoginLandingPage")
+	</div>
 </authorized>
 
 <authorized auth-params="@new()">
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-two-thirds">
-            <h1 class="govuk-heading-l">My Account homepage</h1>
-            <p class="govuk-body">This is your account homepage where you can access your workspaces</p>
-            <dl class="govuk-summary-list">
-                <div class="govuk-summary-list__row">
-                    <dt class="govuk-summary-list__key">
-                        Last logged in:
-                    </dt>
-                    <dd class="govuk-summary-list__value">
-                        @Model
-                    </dd>
-                </div>
-            </dl>
-        </div>
-    </div>
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-two-thirds">
+			<h1 class="govuk-heading-l">@Html.Raw(headline?.Value)</h1>
+			<p class="govuk-body">@Html.Raw(description?.Value)</p>
+			<dl class="govuk-summary-list">
+				<div class="govuk-summary-list__row">
+					<dt class="govuk-summary-list__key">
+						Last logged in:
+					</dt>
+					<dd class="govuk-summary-list__value">
+						@Model
+					</dd>
+				</div>
+			</dl>
+		</div>
+	</div>
 
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-two-thirds">
-            <h2 class="govuk-heading-m">
-                My workspaces
-            </h2>
-        </div>
-    </div>
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-two-thirds">
+			<h2 class="govuk-heading-m">
+				@Html.Raw(workspaceTitle?.Value)
+			</h2>
+		</div>
+	</div>
 
-    @{
-        var cards = new[]
-        {
-            new 
-            {
-                Roles = "study-wide_reviewer,team_manager,system_administrator,workflow_co-ordinator",
-                Title = "Approvals",
-                Desc = "Workspace for approvals service staff to receive and process applications and post approval activity for review.",
-                Link = "approvalsmenu:welcome"
-            },
-            new 
-            { 
-                Roles = "system_administrator",
-                Title = "CAG members",
-                Desc = "Workspace for members to review applications and post approval activity.",
-                Link = ""
-            },
-            new 
-            { 
-                Roles = "system_administrator",
-                Title = "CAT",
-                Desc = "Workspace for CAT staff to receive and process applications and post approval activity for review.",
-                Link = ""
-            },
-            new 
-            { 
-                Roles = "study-wide_reviewer,team_manager,system_administrator",
-                Title = "Member management",
-                Desc = "Workspace for staff to view and update committee member records.",
-                Link = ""
-            },
-            new 
-            { 
-                Roles = "applicant",
-                Title = "My research",
-                Desc = "Workspace to view and manage the research I am responsible for.",
-                Link = "app:welcome"
-            },
-            new 
-            { 
-                Roles = "system_administrator",
-                Title = "REC members",
-                Desc = "Workspace for members to review applications and post approval activity.",
-                Link = ""
-            },
-            new 
-            { 
-                Roles = "---ROLE_NOT_IMPLEMENTED---",
-                Title = "Sponsor",
-                Desc = "Workspace to view, manage and authorise the research I am responsible for.",
-                Link = ""
-            },
-            new 
-            { 
-                Roles = "system_administrator",
-                Title = "System administration",
-                Desc = "Workspace for system administrators to view and manage system administration functions.",
-                Link = "systemadmin:view"
-            },
-            new 
-            { 
-                Roles = "system_administrator",
-                Title = "Technical Assurance",
-                Desc = "Workspace for Technical Assurance staff to receive and process applications and post approval activity for review.",
-                Link = ""
-            },
-            new 
-            { 
-                Roles = "system_administrator",
-                Title = "Technical Assurance reviewers",
-                Desc = "Workspace for Technical Assurance reviewers to review applications and post approval activity.",
-                Link = ""
-            }
-        };
+	@{
+		var cards = new[]
+		{
+	new
+	{
+	Roles = "study-wide_reviewer,team_manager,system_administrator,workflow_co-ordinator",
+	Title = approvalsLabel?.Value,
+	Desc = approvalsDescription?.Value,
+	Link = "approvalsmenu:welcome"
+	},
+	new
+	{
+	Roles = "system_administrator",
+	Title = cagLabel?.Value,
+	Desc = cagDescription?.Value,
+	Link = ""
+	},
+	new
+	{
+	Roles = "system_administrator",
+	Title = catLabel?.Value,
+	Desc = catDescription?.Value,
+	Link = ""
+	},
+	new
+	{
+	Roles = "study-wide_reviewer,team_manager,system_administrator",
+	Title = memberManagementLabel?.Value,
+	Desc = memberManagementDescription?.Value,
+	Link = ""
+	},
+	new
+	{
+	Roles = "applicant",
+	Title = myResearchLabel?.Value,
+	Desc = myResearchDescription?.Value,
+	Link = "app:welcome"
+	},
+	new
+	{
+	Roles = "system_administrator",
+	Title = recLabel?.Value,
+	Desc = recDescription?.Value,
+	Link = ""
+	},
+	new
+	{
+	Roles = "---ROLE_NOT_IMPLEMENTED---",
+	Title = "Sponsor",
+	Desc = "Workspace to view, manage and authorise the research I am responsible for.",
+	Link = ""
+	},
+	new
+	{
+	Roles = "system_administrator",
+	Title = systemAdministrationLabel?.Value,
+	Desc = systemAdministrationDescription?.Value,
+	Link = "systemadmin:view"
+	},
+	new
+	{
+	Roles = "system_administrator",
+	Title = technicalAssuranceLabel?.Value,
+	Desc = technicalAssuranceDescription?.Value,
+	Link = ""
+	},
+	new
+	{
+	Roles = "system_administrator",
+	Title = technicalAssuranceReviewersLabel?.Value,
+	Desc = technicalAssuranceReviewersDescription?.Value,
+	Link = ""
+	}
+	};
 
-        var authorizedChunks = cards
-            .Where(item =>
-            {
-                var roles = item.Roles?.Split(',') ?? [];
-                return roles.Any(role => User.IsInRole(role));
-            })
-            .Select((card, index) => new { card, index })
-            .GroupBy(x => x.index / 3)
-            .Select(g => g.Select(x => x.card).ToList())
-            .ToList();
-    }
+		var authorizedChunks = cards
+		.Where(item =>
+		{
+			var roles = item.Roles?.Split(',') ?? [];
+			return roles.Any(role => User.IsInRole(role));
+		})
+		.Select((card, index) => new { card, index })
+		.GroupBy(x => x.index / 3)
+		.Select(g => g.Select(x => x.card).ToList())
+		.ToList();
+	}
 
-    @foreach (var row in authorizedChunks)
-    {
-        <div class="govuk-grid-row">
-            @foreach (var item in row)
-            {
-                <authorized auth-params="@new(Roles: item.Roles)">
-                    <div class="govuk-grid-column-one-third">
-                        <partial name="_ActionItem" model="@((item.Title, item.Desc, item.Link))" />
-                    </div>
-                </authorized>
-            }
-        </div>
-    }
+	@foreach (var row in authorizedChunks)
+	{
+		<div class="govuk-grid-row">
+			@foreach (var item in row)
+			{
+				<authorized auth-params="@new(Roles: item.Roles)">
+					<div class="govuk-grid-column-one-third">
+						<partial name="_ActionItem" model="@((item.Title, item.Desc, item.Link))" />
+					</div>
+				</authorized>
+			}
+		</div>
+	}
 </authorized>

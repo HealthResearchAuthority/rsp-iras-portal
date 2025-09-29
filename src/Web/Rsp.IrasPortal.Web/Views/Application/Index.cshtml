@@ -4,78 +4,89 @@
 @using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.DTOs.Responses;
 @using System.Linq
+@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
 @using Rsp.IrasPortal.Web.Areas.Admin.Models
 
 @* @section is added for the back button, so that we can render something below the back button
     and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
     the named section *@
 @section BackNavigation {
-    <partial name="_BackNavigation" model="@("acc:home", "Back", new Dictionary<string, string>())" />
+	<partial name="_BackNavigation" model="@("acc:home", "Back", new Dictionary<string, string>())" />
 }
 @{
-    ViewBag.Title = "My research";
+	ViewBag.Title = "My research";
+
+	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData["PageContent"];
+	var pageContent = pageContentData != null
+		? pageContentData
+		: new Dictionary<string, MixedContentPageItem?>();
+
+	var headline = pageContent.GetValueOrDefault("Application.Welcome.Title", null);
+	var noProjectsDescription = pageContent.GetValueOrDefault("Application.Welcome.NoProjectsDescription", null);
+	var addProjectTitle = pageContent.GetValueOrDefault("Application.Welcome.AddProjectTitle", null);
+	var addProjectDescription = pageContent.GetValueOrDefault("Application.Welcome.AddProjectDescription", null);
 }
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-full">
-        <authorized auth-params="@new(Roles:"applicant,system_administrator,reviewer")">
+	<div class="govuk-grid-column-full">
+		<authorized auth-params="@new(Roles:"applicant,system_administrator,reviewer")">
 
-            <h2 class="govuk-heading-l" id="title">My research</h2>    
-            
-            @if (Model.Applications != null && Model.Applications.Any())
-            {
-                <div class="govuk-grid-row">
-                    <div class="govuk-grid-column-two-thirds">
+			<h2 class="govuk-heading-l" id="title">@Html.Raw(headline?.Value)</h2>
 
-                        <form asp-action="SearchApplication" method="post" novalidate>
+			@if (Model.Applications != null && Model.Applications.Any())
+			{
+				<div class="govuk-grid-row">
+					<div class="govuk-grid-column-two-thirds">
 
-                            <div class="govuk-form-group govuk-!-margin-bottom-0" error-class-for="Search.SearchTitleTerm">
+						<form asp-action="SearchApplication" method="post" novalidate>
 
-                                @Html.ValidationMessageFor(model => model.Search.SearchTitleTerm, "", new { @class = "govuk-error-message" })
+							<div class="govuk-form-group govuk-!-margin-bottom-0" error-class-for="Search.SearchTitleTerm">
 
-                                <div class="govuk-input__wrapper">
-                                    <span id="find-project-label" class="govuk-visually-hidden">Find a project</span>
-                                    <input asp-for="Search.SearchTitleTerm" class="govuk-input" type="text" id="SearchTerm" aria-labelledby="find-project-label" />
-                                    <button class="govuk-button mb-0" style="margin-left:10px" type="submit" name="action" value="search">
-                                        Search
-                                    </button>
-                                </div>
-                            </div>
+								@Html.ValidationMessageFor(model => model.Search.SearchTitleTerm, "", new { @class = "govuk-error-message" })
 
-                            <input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize" />
-                            <input hidden readonly name="PageNumber" value="@Model.Pagination?.PageNumber" />
+								<div class="govuk-input__wrapper">
+									<span id="find-project-label" class="govuk-visually-hidden">Find a project</span>
+									<input asp-for="Search.SearchTitleTerm" class="govuk-input" type="text" id="SearchTerm" aria-labelledby="find-project-label" />
+									<button class="govuk-button mb-0" style="margin-left:10px" type="submit" name="action" value="search">
+										Search
+									</button>
+								</div>
+							</div>
 
-                            <!-- Filter Panel -->
-                            <div class="search-filter-panel">
-                                <div class="search-filter-panel__header">
-                                    <label for="toggle-filter" class="search-filter-panel__button govuk-link" role="button" aria-controls="filter-panel">
-                                        <span class="search-filter-panel__button-inner">Advanced filter</span>
-                                    </label>                                
-                                </div>                            
-                            </div>
-                        </form>
-                    </div>
-                </div>  
-                <div class="govuk-grid-row">
-                    <div class="govuk-grid-column-full">
-                        <div class="govuk-table-wrapper">
-                            <table class="govuk-table modifications-tasklist-table" id="applicationsTable">
-                                <thead class="govuk-table__head">
-                                    <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">                                        
-                                        @{
-                                            var sortableHeaders = new[]
-                                            {
-                                                                        new { Field = nameof(ApplicationModel.Title), Label = "Short project title" },
-                                                                        new { Field = nameof(ApplicationModel.IrasId), Label = "IRAS ID" },
-                                                                        new { Field = nameof(ApplicationModel.CreatedDate), Label = "Date created" },
-                                                                        new { Field = nameof(ApplicationModel.Status), Label = "Status" }
-                                                                        };
-                                            var tableId = "applicationsTable";
-                                        }
-                                        @foreach (var header in sortableHeaders)
-                                        {
-                                            <th scope="col" class="govuk-table__header govuk-table__header-sortable">
-                                                <partial name="_SortableHeaderButton" model="new SortableHeaderModel
+							<input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize" />
+							<input hidden readonly name="PageNumber" value="@Model.Pagination?.PageNumber" />
+
+							<!-- Filter Panel -->
+							<div class="search-filter-panel">
+								<div class="search-filter-panel__header">
+									<label for="toggle-filter" class="search-filter-panel__button govuk-link" role="button" aria-controls="filter-panel">
+										<span class="search-filter-panel__button-inner">Advanced filter</span>
+									</label>
+								</div>
+							</div>
+						</form>
+					</div>
+				</div>
+				<div class="govuk-grid-row">
+					<div class="govuk-grid-column-full">
+						<div class="govuk-table-wrapper">
+							<table class="govuk-table modifications-tasklist-table" id="applicationsTable">
+								<thead class="govuk-table__head">
+									<tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+										@{
+											var sortableHeaders = new[]
+											{
+									new { Field = nameof(ApplicationModel.Title), Label = "Short project title" },
+									new { Field = nameof(ApplicationModel.IrasId), Label = "IRAS ID" },
+									new { Field = nameof(ApplicationModel.CreatedDate), Label = "Date created" },
+									new { Field = nameof(ApplicationModel.Status), Label = "Status" }
+									};
+											var tableId = "applicationsTable";
+										}
+										@foreach (var header in sortableHeaders)
+										{
+											<th scope="col" class="govuk-table__header govuk-table__header-sortable">
+												<partial name="_SortableHeaderButton" model="new SortableHeaderModel
                                                 {
                                                     FieldName = header.Field,
                                                     DisplayText = header.Label,
@@ -83,56 +94,54 @@
                                                     CurrentSortDirection = Model.Pagination?.SortDirection,
                                                     TableId = tableId,
                                                 }" />
-                                            </th>
-                                        }
-                                    </tr>
-                                </thead>
+											</th>
+										}
+									</tr>
+								</thead>
 
-                                <form method="get" id="applications-selection"> 
-                                    <input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
-                                    <input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
-                                    
-                                    <tbody class="govuk-table__body govuk-body-s">
-                                        @{
-                                        foreach (var application in Model.Applications)
-                                        {
-                                            <tr class="govuk-table__row">
-                                                <td class="govuk-table__cell">
-                                                    <a asp-route="pov:index"
-                                                       asp-route-projectRecordId="@application.Id"                                                       
-                                                       class="govuk-link">
-                                                        <strong>@application.Title</strong>
-                                                    </a>
-                                                </td>
-                                                <td class="govuk-table__cell">@application.IrasId</td>
-                                                <td class="govuk-table__cell">@application.CreatedDate.ToString("dd MMM yyyy")</td>                                            
-                                                <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">@application.Status</strong></td>
-                                            </tr>
-                                        }
-                                        }
-                                    </tbody>
-                                </form>
-                            </table>
-                        </div>
-                        <partial name="_PaginationForm" model="@Model.Pagination" />
-                    </div>                    
-                </div>
-                <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
-                <div class="govuk-grid-row govuk-grid-column-two-thirds">
-                    <h2 class="govuk-heading-m">Add project</h2>
-                    <p class="govuk-body">
-                        If your project has not yet been added to this system, you can create a record to manage your project.
-                    </p>
-                    <a class="govuk-button" asp-route="app:createapplication">Add project</a>
-                </div>
-            }
-            else
-            {                
-                <p class="govuk-body">
-                You don’t have any projects available in the new service
-                </p>
-                <a class="govuk-button" asp-route="app:createapplication">Add project</a>
-            }           
-        </authorized>
-    </div>
+								<form method="get" id="applications-selection">
+									<input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
+									<input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
+
+								<tbody class="govuk-table__body govuk-body-s">
+										@{
+											foreach (var application in Model.Applications)
+											{
+											<tr class="govuk-table__row">
+												<td class="govuk-table__cell">
+													<a asp-route="pov:index"
+													   asp-route-projectRecordId="@application.Id"
+													   class="govuk-link">
+														<strong>@application.Title</strong>
+													</a>
+												</td>
+												<td class="govuk-table__cell">@application.IrasId</td>
+												<td class="govuk-table__cell">@application.CreatedDate.ToString("dd MMM yyyy")</td>
+												<td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">@application.Status</strong></td>
+											</tr>
+											}
+										}
+								</tbody>
+								</form>
+							</table>
+						</div>
+						<partial name="_PaginationForm" model="@Model.Pagination" />
+					</div>
+				</div>
+				<hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+				<div class="govuk-grid-row govuk-grid-column-two-thirds">
+					<h2 class="govuk-heading-m">@Html.Raw(addProjectTitle?.Value)</h2>
+
+					@Html.Raw(addProjectDescription?.Value)
+
+					<a class="govuk-button" asp-route="app:createapplication">Add project</a>
+				</div>
+			}
+			else
+			{
+				@Html.Raw(noProjectsDescription?.Value)
+				<a class="govuk-button" asp-route="app:createapplication">Add project</a>
+			}
+		</authorized>
+	</div>
 </div>

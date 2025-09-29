@@ -12,4 +12,6 @@ public interface ICmsContentService
     public Task<ServiceResponse<MixedContentPageResponse>> GetMixedPageContentByUrl(string url, bool preview = false);
 
     public Task<ServiceResponse<GenericPageResponse>> GetHomeContent(bool preview = false);
+
+    public Task<ServiceResponse<MixedContentPageResponse>> GetDashboardContent(bool preview = false);
 }

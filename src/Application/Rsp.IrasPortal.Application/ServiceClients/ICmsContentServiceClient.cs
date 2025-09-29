@@ -16,4 +16,7 @@ public interface ICmsContentServiceClient
 
     [Get("/genericContentPage/getHomeContent")]
     public Task<ApiResponse<GenericPageResponse>> GetHomeContent(bool preview = false);
+
+    [Get("/mixedcontentpage/getDashboardContent")]
+    public Task<ApiResponse<MixedContentPageResponse>> GetDashboardContent(bool preview = false);
 }

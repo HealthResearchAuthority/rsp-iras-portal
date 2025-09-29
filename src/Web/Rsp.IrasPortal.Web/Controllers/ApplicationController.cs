@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.Filters;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Entities;
@@ -75,6 +76,7 @@ public class ApplicationController
     /// Otherwise, returns a service error view.
     /// </returns>
     [HttpPost]
+    [CmsContentAction(nameof(StartProject))]
     public async Task<IActionResult> StartProject(IrasIdViewModel model)
     {
         // Clear session and TempData to ensure a clean state for the new project

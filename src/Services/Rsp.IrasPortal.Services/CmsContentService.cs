@@ -22,6 +22,7 @@ public class CmsContentService(
 
     private const string FooterCacheKey = "FooterContent";
     private const string LoginLandingCacheKey = "LoginLandingContent";
+    private const string DashboardContentCacheKey = "DashboardContent";
 
     public async Task<ServiceResponse<MixedContentPageResponse>> GetMixedPageContentByUrl(string url, bool preview = false)
     {
@@ -111,5 +112,27 @@ public class CmsContentService(
         }
 
         return loginLandingPage.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse<MixedContentPageResponse>> GetDashboardContent(bool preview = false)
+    {
+        // check if page content is in cache
+        if (cache.TryGetValue(DashboardContentCacheKey, out ApiResponse<MixedContentPageResponse>? cachedPageContent) &&
+            cachedPageContent != null &&
+            !preview)
+        {
+            // return from cache
+            return cachedPageContent.ToServiceResponse();
+        }
+
+        var response = await cmsClient.GetDashboardContent(preview);
+
+        if (response.IsSuccessStatusCode && response.Content != null && !preview)
+        {
+            // Store in cache with an absolute expiration
+            cache.Set(DashboardContentCacheKey, response, TimeSpan.FromSeconds(GeneralContentCacheDuration));
+        }
+
+        return response.ToServiceResponse();
     }
 }
