@@ -5,7 +5,7 @@
     var question = Model.Questions[index];
 
     var rules = question.Rules;
-    var conditional = !question.IsMandatory && rules.Count > 0;
+    var conditional = !(question.IsMandatory || question.IsOptional) && rules.Count > 0;
     var parents = conditional ? string.Join(',', rules.Select(rule => rule.ParentQuestionId)) : "";
     var questionId = conditional ? question.QuestionId : "";
 
@@ -17,7 +17,6 @@
         ? string.Join("", rules.Select(r => $"<p>{r.Description}</p>"))
         : "";
 
-    var validationMessage = "Provide an answer for this question";
     var types = (question.QuestionType.ToLower(), question.DataType.ToLower());
     var inputType = types == ("text", "email") ? "email" : "text";
 }
@@ -33,5 +32,5 @@
                width-class="@conditionValue"
                dataparents-attr="@parents"
                dataquestionid-attr="@questionId"
-			   hint-id="@($"{question.QuestionText.ToLowerInvariant().Replace(" ", "-")}-hint")"
-			   label-aria-describedby="@($"{question.QuestionText.ToLowerInvariant().Replace(" ", "-")}-hint")" />
+               hint-id="@($"{question.QuestionText.ToLowerInvariant().Replace(" ", "-")}-hint")"
+               label-aria-describedby="@($"{question.QuestionText.ToLowerInvariant().Replace(" ", "-")}-hint")" />

@@ -40,7 +40,9 @@
 
             <h1 class="govuk-heading-l">Select area of change</h1>
 
-            <form asp-action="ConfirmModificationJourney" method="post">
+            <form method="post">
+
+                <input type="hidden" asp-for="ProjectRecordId" />
 
                 <partial name="_ProjectModificationSummary" model="Model" />
 
@@ -51,7 +53,13 @@
                     <label for="AreaOfChangeId" class="govuk-label">
                         Area of change
                     </label>
-                    <select asp-for="AreaOfChangeId" asp-items="Model.AreaOfChangeOptions" class="govuk-select govuk-!-width-two-thirds" id="AreaOfChangeId"></select>
+                    <select asp-for="AreaOfChangeId" class="govuk-select govuk-!-width-two-thirds" id="AreaOfChangeId">
+                        <option value="@Guid.Empty">Select area of change</option>
+                        @foreach (var item in Model.AreaOfChangeOptions)
+                        {
+                            <option value="@item.Value" selected="@item.Selected" title="@item.Text">@item.Text</option>
+                        }
+                    </select>
                 </div>
 
                 <div class="govuk-form-group" error-class-for="SpecificChangeId">
@@ -61,15 +69,29 @@
                     <label for="SpecificChangeId" class="govuk-label">
                         Specific change
                     </label>
-                    <select asp-for="SpecificChangeId" asp-items="Model.SpecificChangeOptions" class="govuk-select govuk-!-width-two-thirds" id="SpecificChangeId"></select>
+                    <select asp-for="SpecificChangeId" class="govuk-select govuk-!-width-two-thirds" id="SpecificChangeId">
+                        <option value="@Guid.Empty">Select specific change</option>
+                        @foreach (var item in Model.SpecificChangeOptions)
+                        {
+                            <option value="@item.Value" selected="@item.Selected" title="@item.Text">@item.Text</option>
+                        }
+                    </select>
                 </div>
 
                 <div class="save-buttons">
-                    <button type="submit" class="govuk-button">Save and continue</button>
+
+                    @{
+                        var actionParams = new Dictionary<string, string>();
+                    }
+
+                    <partial name="_SubmitButton" model="@("pmc:confirmmodificationjourney", "Save and continue", actionParams)" />
+
                     @{
                         ViewBag.Style = "govuk-button govuk-button--secondary";
+                        actionParams["saveForLater"] = bool.TrueString;
                     }
-                    <partial name="_SubmitButton" model="@("pov:postapproval", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId })" />
+
+                    <partial name="_SubmitButton" model="@("pmc:confirmmodificationjourney", "Save for later", actionParams)" />
                 </div>
                 <p>
                     <a href="#" class="govuk-link">Remove this change</a>
@@ -90,11 +112,18 @@
             const areaId = $(this).val();
             const $specificChangeDropdown = $('#SpecificChangeId');
 
+            $specificChangeDropdown.attr('title', '');
+
             // if the selection is changed from the previously
             // selected value, reset the hidden value to 0
             if (areaId != $areaOfChangeId.val()) {
-                $areaOfChangeId.val('0');
-                $specificAreaOfChangeId.val('0');
+
+                // set the dropdown title
+                let $selectedOption = $(this).find('option:selected');
+                $(this).attr('title', $selectedOption.text());
+
+                $areaOfChangeId.val('@Guid.Empty');
+                $specificAreaOfChangeId.val('@Guid.Empty');
             }
 
             // Clear existing options
@@ -106,13 +135,18 @@
                     $.each(data, function (index, item) {
                         $specificChangeDropdown.append($('<option>', {
                             value: item.value,
-                            text: item.text
+                            text: item.text,
+                            title: item.text
                         }));
                     });
 
                     // if previously selected specificAreaOfChangeId != 0, then select it
-                    if ($specificAreaOfChangeId.val() != '0') {
+                    if ($specificAreaOfChangeId.val() != '@Guid.Empty') {
                         $specificChangeDropdown.val($specificAreaOfChangeId.val());
+
+                        // set the dropdown title
+                        let $selectedOption = $specificChangeDropdown.find('option:selected');
+                        $specificChangeDropdown.attr('title', $selectedOption.text());
                     }
 
                 })
@@ -124,12 +158,18 @@
                 });
         });
 
+        $('#SpecificChangeId').on('change', function () {
+            // set the dropdown title
+            let $selectedOption = $(this).find('option:selected');
+            $(this).attr('title', $selectedOption.text());
+        });
+
         const $areaOfChangeId = $("#areaOfChangeId");
         const $specificAreaOfChangeId = $("#specificAreaOfChangeId");
 
         // if previously selected areaOfChangeId != 0, then select it
         // and manaually trigger the change event, so specificAreaId can be selected
-        if ($areaOfChangeId.val() != '0') {
+        if ($areaOfChangeId.val() != '@Guid.Empty') {
             $("#AreaOfChangeId").val($areaOfChangeId.val());
             $("#AreaOfChangeId").trigger("change");
         }

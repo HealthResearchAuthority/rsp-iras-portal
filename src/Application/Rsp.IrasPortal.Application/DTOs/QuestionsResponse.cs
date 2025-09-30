@@ -73,6 +73,11 @@ public record QuestionsResponse
     public int SectionSequence { get; set; }
 
     /// <summary>
+    /// Indicates on which pages answer to this question should be shown
+    /// </summary>
+    public string ShowAnswerOn { get; set; } = string.Empty;
+
+    /// <summary>
     /// Potential answers of the question for single or multiple choice type question
     /// </summary>
     public IList<AnswerDto> Answers { get; set; } = [];

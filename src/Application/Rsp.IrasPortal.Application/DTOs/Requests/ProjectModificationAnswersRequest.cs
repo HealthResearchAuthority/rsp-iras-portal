@@ -9,7 +9,7 @@ public record ProjectModificationAnswersRequest
     /// <summary>
     /// Project modification change Id
     /// </summary>
-    public Guid ProjectModificationChangeId { get; set; }
+    public Guid ProjectModificationId { get; set; }
 
     /// <summary>
     /// Project record Id

@@ -27,7 +27,7 @@ public class GetSpecificChangeByIdTests : TestServiceBase<ModificationsControlle
         var result = Sut.GetSpecificChangesByAreaId("A1");
 
         // Assert
-        result.ShouldBeOfType<BadRequestObjectResult>();
+        result.ShouldBeOfType<StatusCodeResult>().StatusCode.ShouldBe(StatusCodes.Status400BadRequest);
     }
 
     [Fact]
@@ -73,7 +73,7 @@ public class GetSpecificChangeByIdTests : TestServiceBase<ModificationsControlle
 
         // Assert
         result.ShouldNotBeNull();
-        var list = result.Value.ShouldBeOfType<List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>>();
+        var list = result.Value.ShouldBeOfType<List<SelectListItem>>();
         list.Count.ShouldBe(3); // default + 2
         list[1].Value.ShouldBe("S1");
         list[2].Value.ShouldBe("S2");
@@ -134,7 +134,7 @@ public class GetSpecificChangeByIdTests : TestServiceBase<ModificationsControlle
         var result = Sut.GetSpecificChangesByAreaId("123");
 
         // Assert
-        var badRequest = result.ShouldBeOfType<BadRequestObjectResult>();
-        badRequest.Value.ShouldBe("Area of changes not available.");
+        var badRequest = result.ShouldBeOfType<StatusCodeResult>();
+        badRequest.StatusCode.ShouldBe(StatusCodes.Status400BadRequest);
     }
 }

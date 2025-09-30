@@ -17,19 +17,10 @@
     var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
     var projectOverview = TempData[TempDataKeys.ProjectOverview] as bool? ?? false;
 
-    var IrasId = TempData.Peek(TempDataKeys.IrasId)?.ToString();
-    var shortProjectTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string;
-    var modificationId = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string;
-    var specificArea = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationSpecificArea) as string;
-
     Model.CurrentStage = currentStage!;
-}
 
-@{
     var prefix = ViewData.ModelState.IsValid ? "" : "Error - ";
-    ViewBag.Title = !string.IsNullOrWhiteSpace(specificArea) ?
-            $"{prefix}{specificArea} - Make changes to research" :
-            $"{prefix}{Model.Questions.FirstOrDefault()?.Section} - Make changes to research";
+    ViewBag.Title = $"{prefix}{Model.Questions.FirstOrDefault()?.Section} - Make changes to research";
 }
 
 @if (await featureManager.IsEnabledAsync(FeatureFlags.ProgressiveEnhancement))
@@ -110,21 +101,9 @@
                 <govuk-fieldset class="sections">
                     <govuk-fieldset-legend class="govuk-fieldset__legend--l">
                         <h2 class="govuk-heading-l" id="title">
-                            @if (specificArea != null)
-                            {
-                                @specificArea;
-                            }
-                            else
-                            {
-                                @(Model.Questions.FirstOrDefault()?.Section)
-                            }
+                            @(Model.Questions.FirstOrDefault()?.Section)
                         </h2>
                     </govuk-fieldset-legend>
-
-                    @if (modificationId is not null)
-                    {
-                        <partial name="_ProjectModificationSummary" model="(IrasId, shortProjectTitle, modificationId)" />
-                    }
 
                     <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
 
@@ -167,9 +146,7 @@
                             ("look-up list", "checkbox") => "CheckboxTemplate",
                             ("look-up list", "radio button") => "RadioButtonTemplate",
                             ("boolean", "boolean") => "RadioButtonTemplate",
-                            ("rts:org_lookup", "text") => modificationId == null ?
-                                "AutoSuggestTemplate" :
-                                "OrgSearchTemplate",
+                            ("rts:org_lookup", "text") => "AutoSuggestTemplate",
                             ("look-up list", "dropdown") => "DropdownTemplate",
                             _ => string.Empty
                         };
@@ -202,13 +179,6 @@
                     <partial name="_SubmitButton" model="@("qnc:saveresponses", "Save changes", new Dictionary<string, string> { { "submit", bool.TrueString } })" />
                 }
             </div>
-
-            @if (modificationId is not null)
-            {
-                <div class="govuk-form-group">
-                    <a href="#" class="govuk-link">Remove this change</a>
-                </div>
-            }
         </form>
     </div>
 </div>

@@ -30,7 +30,7 @@ public interface IRespondentService : IInterceptable
     /// </summary>
     /// <param name="modificationChangeId">The unique identifier for the project modification change.</param>
     /// <returns>A service response containing a collection of respondent answers.</returns>
-    Task<ServiceResponse<IEnumerable<RespondentAnswerDto>>> GetModificationAnswers(Guid modificationChangeId, string projectRecordId);
+    Task<ServiceResponse<IEnumerable<RespondentAnswerDto>>> GetModificationChangeAnswers(Guid modificationChangeId, string projectRecordId);
 
     /// <summary>
     /// Gets all the respondent's answers for a specific project modification change and category.
@@ -38,7 +38,22 @@ public interface IRespondentService : IInterceptable
     /// <param name="modificationChangeId">The unique identifier for the project modification change.</param>
     /// <param name="categoryId">The unique identifier for the question category.</param>
     /// <returns>A service response containing a collection of respondent answers.</returns>
-    Task<ServiceResponse<IEnumerable<RespondentAnswerDto>>> GetModificationAnswers(Guid modificationChangeId, string projectRecordId, string categoryId);
+    Task<ServiceResponse<IEnumerable<RespondentAnswerDto>>> GetModificationChangeAnswers(Guid modificationChangeId, string projectRecordId, string categoryId);
+
+    /// <summary>
+    /// Gets all the respondent's answers for a specific project modification.
+    /// </summary>
+    /// <param name="modificationId">The unique identifier for the project modification.</param>
+    /// <returns>A service response containing a collection of respondent answers.</returns>
+    Task<ServiceResponse<IEnumerable<RespondentAnswerDto>>> GetModificationAnswers(Guid modificationId, string projectRecordId);
+
+    /// <summary>
+    /// Gets all the respondent's answers for a specific project modification and category.
+    /// </summary>
+    /// <param name="modificationId">The unique identifier for the project modification.</param>
+    /// <param name="categoryId">The unique identifier for the question category.</param>
+    /// <returns>A service response containing a collection of respondent answers.</returns>
+    Task<ServiceResponse<IEnumerable<RespondentAnswerDto>>> GetModificationAnswers(Guid modificationId, string projectRecordId, string categoryId);
 
     /// <summary>
     /// Saves all the respondent's answers for a project modification.
@@ -46,6 +61,13 @@ public interface IRespondentService : IInterceptable
     /// <param name="request">The request containing all answers for the project modification.</param>
     /// <returns>A service response indicating the result of the save operation.</returns>
     Task<ServiceResponse> SaveModificationAnswers(ProjectModificationAnswersRequest request);
+
+    /// <summary>
+    /// Saves all the respondent's answers for a project modification change.
+    /// </summary>
+    /// <param name="request">The request containing all answers for the project modification change.</param>
+    /// <returns>A service response indicating the result of the save operation.</returns>
+    Task<ServiceResponse> SaveModificationChangeAnswers(ProjectModificationChangeAnswersRequest request);
 
     /// <summary>
     /// Saves all the respondent's answers for the application and category.

@@ -126,7 +126,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
     )
     {
         // Arrange
-        model.CurrentStage = QuestionCategories.D; // Next stage is empty
+        model.CurrentStage = "last stage"; // Next stage is empty
         var submit = false;
         var saveAndContinue = bool.TrueString;
         var questions = new List<QuestionViewModel>
@@ -222,17 +222,20 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
                r.RespondentAnswers.Count == 2)), Times.Once);
     }
 
-    [Theory(Skip = "Need to fix broken code after refactoring"), AutoData]
+    [Theory, AutoData]
     public async Task Should_RedirectToResume_When_SaveAndContinueIsTrue_And_NextStageIsNotEmpty
     (
+        string categoryId,
         QuestionnaireViewModel model,
         List<QuestionSectionsResponse> questionSectionsResponse
     )
     {
+        questionSectionsResponse.ForEach(question => question.QuestionCategoryId = categoryId);
+
         // Arrange
         var submit = false;
         var saveAndContinue = bool.TrueString;
-        model.CurrentStage = QuestionCategories.A;
+        model.CurrentStage = "second last stage";
         var questions = new List<QuestionViewModel>
     {
         new() { Index = 0, QuestionId = "Q1", SelectedOption = "Option1" },
@@ -295,7 +298,10 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
             Session = session.Object
         };
 
-        Sut.TempData = new TempDataDictionary(context, Mock.Of<ITempDataProvider>());
+        Sut.TempData = new TempDataDictionary(context, Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.CategoryId] = categoryId
+        };
 
         context.Items[ContextItemKeys.RespondentId] = "RespondentId1";
 
@@ -334,7 +340,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
         var saveAndContinue = bool.FalseString;
         var saveForLater = bool.TrueString;
 
-        model.CurrentStage = QuestionCategories.A;
+        model.CurrentStage = "first stage";
 
         var questions = new List<QuestionViewModel>
     {
@@ -414,108 +420,6 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
         redirectResult.ActionName.ShouldBe(nameof(ProjectOverviewController.Index));
-
-        Mocker
-           .GetMock<IRespondentService>()
-           .Verify(s => s.SaveRespondentAnswers(It.Is<RespondentAnswersRequest>(r =>
-               r.ProjectRecordId == "App1" &&
-               r.Id == "RespondentId1" &&
-               r.RespondentAnswers.Count == 2)), Times.Once);
-    }
-
-    [Theory(Skip = "Need to fix broken code after refactoring"), AutoData]
-    public async Task Should_RedirectToResume_When_SaveAndContinueIsTrue
-    (
-        QuestionnaireViewModel model,
-        List<QuestionSectionsResponse> questionSectionsResponse
-    )
-    {
-        // Arrange
-        var questions = new List<QuestionViewModel>
-    {
-        new() { Index = 0, QuestionId = "Q1", SelectedOption = "Option1" },
-        new() { Index = 1, QuestionId = "Q2", AnswerText = "Answer2" }
-    };
-
-        var application = new IrasApplicationResponse
-        {
-            Id = "App1"
-        };
-
-        var session = new Mock<ISession>();
-
-        var sessionData = new Dictionary<string, byte[]?>
-        {
-            { $"{SessionKeys.ProjectRecord}", JsonSerializer.SerializeToUtf8Bytes(application) },
-            { $"{SessionKeys.Questionnaire}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(questions) }
-        };
-
-        session
-            .Setup(s => s.TryGetValue(It.IsAny<string>(), out It.Ref<byte[]?>.IsAny))
-            .Returns((string key, out byte[]? value) =>
-            {
-                if (sessionData.ContainsKey(key))
-                {
-                    value = sessionData[key];
-                    return true;
-                }
-
-                value = null;
-                return false;
-            });
-
-        var responseQuestionSections = new ServiceResponse<IEnumerable<QuestionSectionsResponse>>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = questionSectionsResponse
-        };
-
-        var responseQuestionSection = new ServiceResponse<QuestionSectionsResponse>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = questionSectionsResponse[0]
-        };
-
-        var responseQuestionSectionNull = new ServiceResponse<QuestionSectionsResponse>
-        {
-            StatusCode = HttpStatusCode.OK,
-        };
-
-        Mocker
-            .GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetQuestionSections()).ReturnsAsync(responseQuestionSections);
-
-        Mocker
-            .GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>())).ReturnsAsync(responseQuestionSection);
-
-        Mocker
-            .GetMock<ICmsQuestionsetService>()
-            .Setup(q => q.GetNextQuestionSection(It.IsAny<string>())).ReturnsAsync(responseQuestionSection);
-
-        var context = new DefaultHttpContext
-        {
-            Session = session.Object
-        };
-
-        Sut.TempData = new TempDataDictionary(context, Mock.Of<ITempDataProvider>());
-
-        context.Items[ContextItemKeys.RespondentId] = "RespondentId1";
-
-        Sut.ControllerContext = new ControllerContext { HttpContext = context };
-
-        Mocker
-            .GetMock<IValidator<QuestionnaireViewModel>>()
-            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ValidationResult());
-
-        // Act
-        var result = await Sut.SaveResponses(model, "", true, "", false, bool.TrueString);
-
-        // Assert
-        var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
-        redirectResult.ActionName.ShouldBe(nameof(QuestionnaireController.Resume));
-        redirectResult.RouteValues?["projectRecordId"].ShouldBe(application.Id);
 
         Mocker
            .GetMock<IRespondentService>()

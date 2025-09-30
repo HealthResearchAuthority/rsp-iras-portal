@@ -58,7 +58,7 @@ public class PlannedEndDateControllerTests : TestServiceBase<PlannedEndDateContr
         };
 
         _respondentService
-            .Setup(s => s.GetModificationAnswers(It.IsAny<Guid>(), "PR1", "CAT1"))
+            .Setup(s => s.GetModificationChangeAnswers(It.IsAny<Guid>(), "PR1", "CAT1"))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -196,7 +196,7 @@ public class PlannedEndDateControllerTests : TestServiceBase<PlannedEndDateContr
             .ReturnsAsync(new ValidationResult());
 
         _respondentService
-            .Setup(s => s.SaveModificationAnswers(It.IsAny<ProjectModificationAnswersRequest>()))
+            .Setup(s => s.SaveModificationChangeAnswers(It.IsAny<ProjectModificationChangeAnswersRequest>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         var model = new QuestionnaireViewModel
@@ -235,7 +235,7 @@ public class PlannedEndDateControllerTests : TestServiceBase<PlannedEndDateContr
             .ReturnsAsync(new ValidationResult());
 
         _respondentService
-            .Setup(s => s.SaveModificationAnswers(It.IsAny<ProjectModificationAnswersRequest>()))
+            .Setup(s => s.SaveModificationChangeAnswers(It.IsAny<ProjectModificationChangeAnswersRequest>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         var model = new QuestionnaireViewModel
@@ -274,7 +274,7 @@ public class PlannedEndDateControllerTests : TestServiceBase<PlannedEndDateContr
             .ReturnsAsync(new ValidationResult());
 
         _respondentService
-            .Setup(s => s.SaveModificationAnswers(It.IsAny<ProjectModificationAnswersRequest>()))
+            .Setup(s => s.SaveModificationChangeAnswers(It.IsAny<ProjectModificationChangeAnswersRequest>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         var model = new QuestionnaireViewModel
@@ -317,7 +317,7 @@ public class PlannedEndDateControllerTests : TestServiceBase<PlannedEndDateContr
             .ReturnsAsync(new ValidationResult());
 
         _respondentService
-            .Setup(s => s.SaveModificationAnswers(It.IsAny<ProjectModificationAnswersRequest>()))
+            .Setup(s => s.SaveModificationChangeAnswers(It.IsAny<ProjectModificationChangeAnswersRequest>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         var model = new QuestionnaireViewModel
@@ -333,6 +333,143 @@ public class PlannedEndDateControllerTests : TestServiceBase<PlannedEndDateContr
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
         redirect.ActionName.ShouldBe("ReviewChanges");
         redirect.RouteValues!["projectRecordId"].ShouldBe("PR1");
+    }
+
+    [Fact]
+    public async Task DisplayQuestionnaire_Populates_OriginalAnswers_When_ShowOriginalAnswer_True()
+    {
+        // Arrange
+        var ctx = new DefaultHttpContext();
+        Sut.ControllerContext = new ControllerContext { HttpContext = ctx };
+        Sut.TempData = new TempDataDictionary(ctx, Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectRecordId] = "PR1",
+            [TempDataKeys.ProjectModification.SpecificAreaOfChangeId] = Guid.NewGuid()
+        };
+
+        _cmsService
+            .Setup(s => s.GetModificationsJourney(It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = BuildQuestionSet("SEC1", "CAT1", "PlannedEndDate",
+                    new QuestionModel { Id = "QCMS1", QuestionId = "Q1", ShowOriginalAnswer = true, AnswerDataType = "Text", QuestionFormat = "text", CategoryId = "CAT1", Sequence = 1, SectionSequence = 1 })
+            });
+
+        _respondentService
+            .Setup(s => s.GetModificationChangeAnswers(It.IsAny<Guid>(), "PR1", "CAT1"))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = []
+            });
+
+        _respondentService
+            .Setup(s => s.GetRespondentAnswers("PR1"))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                // The controller's transformation uses the CMS question Id as the QuestionViewModel.QuestionId,
+                // so ensure the mocked original answer uses the CMS Id to match the resulting view model.
+                Content = new[] { new RespondentAnswerDto { QuestionId = "QCMS1", AnswerText = "Original" } }
+            });
+
+        // Ensure SetStage has the required stage responses
+        _cmsService
+            .Setup(s => s.GetModificationQuestionSet("SEC1", null))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = BuildQuestionSet("SEC1", "CAT1", "PlannedEndDate",
+                    new QuestionModel { Id = "QCMS1", QuestionId = "Q1", ShowOriginalAnswer = true, AnswerDataType = "Text", QuestionFormat = "text", CategoryId = "CAT1", Sequence = 1, SectionSequence = 1 })
+            });
+
+        _cmsService
+            .Setup(s => s.GetModificationPreviousQuestionSection("SEC1"))
+            .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new QuestionSectionsResponse { SectionId = "PREV", QuestionCategoryId = "CAT1", StaticViewName = "prev" }
+            });
+
+        _cmsService
+            .Setup(s => s.GetModificationNextQuestionSection("SEC1"))
+            .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new QuestionSectionsResponse { SectionId = "SEC2", QuestionCategoryId = "CAT1", StaticViewName = "AffectingOrganisations" }
+            });
+
+        // Act
+        var result = await Sut.DisplayQuestionnaire("PR1", "CAT1", "SEC1", false, nameof(PlannedEndDateController.PlannedEndDate));
+
+        // Assert
+        var view = result.ShouldBeOfType<ViewResult>();
+        var model = view.Model.ShouldBeOfType<QuestionnaireViewModel>();
+        model.OriginalAnswers.ShouldContainKey("QCMS1");
+        model.OriginalAnswers["QCMS1"].AnswerText.ShouldBe("Original");
+    }
+
+    [Fact]
+    public async Task PlannedEndDate_Action_Returns_View()
+    {
+        // Arrange
+        var ctx = new DefaultHttpContext();
+        Sut.ControllerContext = new ControllerContext { HttpContext = ctx };
+        Sut.TempData = new TempDataDictionary(ctx, Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectModification.SpecificAreaOfChangeId] = Guid.NewGuid()
+        };
+
+        _respondentService
+            .Setup(s => s.GetModificationChangeAnswers(It.IsAny<Guid>(), "PR1", "CAT1"))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = []
+            });
+
+        _cmsService
+            .Setup(s => s.GetModificationsJourney(It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = BuildQuestionSet("SEC1", "CAT1", "PlannedEndDate")
+            });
+
+        _cmsService
+            .Setup(s => s.GetModificationQuestionSet("SEC1", null))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = BuildQuestionSet("SEC1", "CAT1", "PlannedEndDate")
+            });
+
+        _cmsService
+            .Setup(s => s.GetModificationPreviousQuestionSection("SEC1"))
+            .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new QuestionSectionsResponse { SectionId = "PREV", QuestionCategoryId = "CAT1", StaticViewName = "prev" }
+            });
+
+        _cmsService
+            .Setup(s => s.GetModificationNextQuestionSection("SEC1"))
+            .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new QuestionSectionsResponse { SectionId = "SEC2", QuestionCategoryId = "CAT1", StaticViewName = "AffectingOrganisations" }
+            });
+
+        // Act
+        var result = await Sut.PlannedEndDate("PR1", "CAT1", "SEC1", true);
+
+        // Assert
+        var view = result.ShouldBeOfType<ViewResult>();
+        view.ViewName.ShouldBe(nameof(PlannedEndDateController.PlannedEndDate));
+        var model = view.Model.ShouldBeOfType<QuestionnaireViewModel>();
     }
 
     private (DefaultHttpContext Ctx, Guid ModificationChangeId) SetupHttpContext()

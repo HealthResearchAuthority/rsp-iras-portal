@@ -66,11 +66,11 @@
     the named section *@
 @section BackNavigation {
     @*<partial name="_BackNavigation" model="navModel" />*@
-    <vc:back-navigation navigation-dto="@navigation"
-                        specific-area-of-change-id="@modification.SpecificAreaOfChangeId"
-                        project-record-id="@projectRecordId"
-                        questionnaire="Model"
-                        back-from-review="true" />
+    @*<vc:back-navigation navigation-dto="@navigation"
+        specific-area-of-change-id="@modification.SpecificAreaOfChangeId"
+        project-record-id="@projectRecordId"
+        questionnaire="Model"
+        back-from-review="true" />*@
 }
 
 <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />

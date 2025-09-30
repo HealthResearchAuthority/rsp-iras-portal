@@ -1,6 +1,19 @@
-﻿@using Rsp.IrasPortal.Web.Extensions
+﻿@using Mapster;
+@using Rsp.IrasPortal.Web.Extensions
+@using Rsp.IrasPortal.Application.Constants
+@model dynamic
+
 @{
-    var modificationBaseModel = TempData.PopulateBaseProjectModificationProperties(new BaseProjectModificationViewModel());
+    var modificationBaseModel = new BaseProjectModificationViewModel();
+
+    if (Model is BaseProjectModificationViewModel viewModel)
+    {
+        modificationBaseModel = viewModel.Adapt<BaseProjectModificationViewModel>();
+    }
+    else
+    {
+        modificationBaseModel = TempData.PopulateBaseProjectModificationProperties(modificationBaseModel);
+    }
 }
 
 <dl class="govuk-summary-list">
@@ -16,4 +29,12 @@
         <dt class="govuk-summary-list__key">Modification ID</dt>
         <dd class="govuk-summary-list__value">@modificationBaseModel.ModificationIdentifier</dd>
     </div>
+
+    @if (ViewData[ViewDataKeys.ShowModificationStatus] is true)
+    {
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Status</dt>
+            <dd class="govuk-summary-list__value">@modificationBaseModel.Status</dd>
+        </div>
+    }
 </dl>

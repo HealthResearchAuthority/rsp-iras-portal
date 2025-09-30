@@ -95,9 +95,24 @@ public interface IProjectModificationsService : IInterceptable
     Task<ServiceResponse<ProjectModificationChangeResponse>> CreateModificationChange(ProjectModificationChangeRequest projectModificationChangeRequest);
 
     /// <summary>
-    /// Gets all the area of changes and specific area of changes for the modification.
+    /// Gets a change for an existing project modification.
     /// </summary>
-    Task<ServiceResponse<IEnumerable<GetAreaOfChangesResponse>>> GetAreaOfChanges();
+    /// <param name="modificationChangeId">The unique identifier of the project modification change to retrieve.</param>
+    /// <returns>
+    /// A <see cref="Task"/> representing the asynchronous operation, containing a <see cref="ServiceResponse{ProjectModificationChangeResponse}"/>
+    /// with the details of the requested project modification change if found; otherwise, an error response.
+    /// </returns>
+    Task<ServiceResponse<ProjectModificationChangeResponse>> GetModificationChange(Guid modificationChangeId);
+
+    /// <summary>
+    /// Retrieves all changes associated with a specific project modification.
+    /// </summary>
+    /// <param name="projectModificationId">The unique identifier of the project modification for which to retrieve changes.</param>
+    /// <returns>
+    /// An asynchronous operation that returns a service response containing a collection of
+    /// <see cref="ProjectModificationChangeResponse"/> objects representing the changes for the specified project modification.
+    /// </returns>
+    Task<ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>> GetModificationChanges(Guid projectModificationId);
 
     ///<summary>
     /// Creates one or more project modification documents based on the provided request data.
@@ -133,4 +148,24 @@ public interface IProjectModificationsService : IInterceptable
        string sortField = nameof(ProjectOverviewDocumentDto.DocumentType),
        string sortDirection = SortDirections.Descending
    );
+
+    /// <summary>
+    /// Removes a change from an existing project modification.
+    /// </summary>
+    /// <param name="modificationChangeId">The unique identifier of the project modification change to remove.</param>
+    /// <returns>
+    /// A <see cref="Task"/> representing the asynchronous operation, containing a <see cref="ServiceResponse{ProjectModificationChangeResponse}"/>
+    /// with the details of the requested project modification change if found; otherwise, an error response.
+    /// </returns>
+    Task<ServiceResponse> RemoveModificationChange(Guid modificationChangeId);
+
+    /// <summary>
+    /// Updates sttaus of an existing project modification by its unique identifier.
+    /// </summary>
+    /// <param name="modificationId">The unique identifier of the project modification to update.</param>
+    /// <returns>
+    /// A task representing the asynchronous operation, containing a <see cref="ServiceResponse"/>
+    /// that reflects the success or failure of the update operation.
+    /// </returns>
+    Task<ServiceResponse> UpdateModificationStatus(Guid modificationId, string status);
 }

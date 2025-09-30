@@ -1,9 +1,20 @@
-﻿@model (string RouteName, string DisplayText, Dictionary<string, string>? Params)
+﻿@using Rsp.IrasPortal.Application.Constants
+@model (string RouteName, string DisplayText, Dictionary<string, string>? Params)
 
 @{
     var model = Model;
+    var urlReferrer = ViewData[ViewDataKeys.UrlReferrer];
 }
 
-<a class="govuk-back-link" asp-route="@Model.RouteName" asp-all-route-data="@Model.Params">
-    @Model.DisplayText
-</a>
+@if (urlReferrer == null)
+{
+    <a class="govuk-back-link" asp-route="@Model.RouteName" asp-all-route-data="@Model.Params">
+        @Model.DisplayText
+    </a>
+}
+else
+{
+    <a class="govuk-back-link" href="@urlReferrer">
+        @Model.DisplayText
+    </a>
+}

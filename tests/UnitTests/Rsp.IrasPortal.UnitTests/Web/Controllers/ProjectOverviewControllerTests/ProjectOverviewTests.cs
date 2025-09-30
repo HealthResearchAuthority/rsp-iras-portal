@@ -216,7 +216,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         tempData[TempDataKeys.ProjectModification.ProjectModificationId] = "mod-1";
         tempData[TempDataKeys.ProjectModification.ProjectModificationIdentifier] = "ident-1";
         tempData[TempDataKeys.ProjectModification.ProjectModificationChangeId] = "chg-1";
-        tempData[TempDataKeys.ProjectModification.ProjectModificationSpecificArea] = "area-1";
+        tempData[TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = "area-1";
         tempData[$"{TempDataKeys.ProjectModification.Questionnaire}_abc"] = "questionnaire-data";
 
         var answers = new List<RespondentAnswerDto>
@@ -236,7 +236,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         tempData.ContainsKey(TempDataKeys.ProjectModification.ProjectModificationId).ShouldBeFalse();
         tempData.ContainsKey(TempDataKeys.ProjectModification.ProjectModificationIdentifier).ShouldBeFalse();
         tempData.ContainsKey(TempDataKeys.ProjectModification.ProjectModificationChangeId).ShouldBeFalse();
-        tempData.ContainsKey(TempDataKeys.ProjectModification.ProjectModificationSpecificArea).ShouldBeFalse();
+        tempData.ContainsKey(TempDataKeys.ProjectModification.SpecificAreaOfChangeText).ShouldBeFalse();
         tempData.Keys.Any(k => k.StartsWith(TempDataKeys.ProjectModification.Questionnaire)).ShouldBeFalse();
     }
 
@@ -502,7 +502,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var viewResult = result.ShouldBeOfType<ViewResult>();
         var model = viewResult.Model.ShouldBeOfType<PostApprovalViewModel>();
         var mod = model.Modifications.Single();
-        mod.ModificationId.ShouldBe("m1");
+        mod.ModificationIdentifier.ShouldBe("m1");
         mod.ModificationType.ShouldBe("Type1");
         mod.Status.ShouldBe("Draft");
         mod.ReviewType.ShouldBeNull();

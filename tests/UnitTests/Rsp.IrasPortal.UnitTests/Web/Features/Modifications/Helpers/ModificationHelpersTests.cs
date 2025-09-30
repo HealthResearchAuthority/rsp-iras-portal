@@ -165,4 +165,76 @@ public class ModificationHelpersTests
         q5.SelectedOption.ShouldBe("Y");
         q5.AnswerText.ShouldBe("Yes");
     }
+
+    [Fact]
+    public void ApplyRespondentAnswersAndTrim_Removes_SurfacingQuestion_When_ActionMatches_And_Trims_Conditional_Unanswered()
+    {
+        // Arrange
+        var questionnaire = new QuestionnaireViewModel
+        {
+            Questions = new List<QuestionViewModel>
+            {
+                new() { QuestionId = "S1", Category = "C1", ShowAnswerOn = "ReviewAllChanges", IsMandatory = false, IsOptional = false }, // surfacing
+                new() { QuestionId = "Q2", Category = "C1", IsMandatory = false, IsOptional = false, AnswerText = null, Answers = new List<AnswerViewModel>() }, // conditional unanswered
+                new() { QuestionId = "Q3", Category = "C1", IsMandatory = true, IsOptional = false }, // mandatory stays
+                new() { QuestionId = "Q4", Category = "C1", IsMandatory = false, IsOptional = false } // will get answer
+            }
+        };
+
+        var respondentAnswers = new List<RespondentAnswerDto>
+        {
+            new() { QuestionId = "Q4", CategoryId = "C1", AnswerText = "Answered" }
+        };
+
+        // Act
+        var (surfacingQuestion, showSurfacingQuestion) = ModificationHelpers.ApplyRespondentAnswersAndTrim(questionnaire, respondentAnswers, nameof(ModificationHelpersTests.ApplyRespondentAnswersAndTrim_Removes_SurfacingQuestion_When_ActionMatches_And_Trims_Conditional_Unanswered).Replace("ApplyRespondentAnswersAndTrim_Removes_SurfacingQuestion_When_ActionMatches_And_Trims_Conditional_Unanswered", "ReviewAllChanges"));
+
+        // Assert
+        showSurfacingQuestion.ShouldBeTrue();
+        surfacingQuestion.ShouldNotBeNull();
+        surfacingQuestion!.QuestionId.ShouldBe("S1");
+
+        // S1 should have been removed from the questionnaire
+        questionnaire.Questions.Any(q => q.QuestionId == "S1").ShouldBeFalse();
+
+        // Q2 was conditional with no answer and should be removed
+        questionnaire.Questions.Any(q => q.QuestionId == "Q2").ShouldBeFalse();
+
+        // Q3 (mandatory) should remain
+        questionnaire.Questions.Any(q => q.QuestionId == "Q3").ShouldBeTrue();
+
+        // Q4 should remain and have the answer applied
+        var q4 = questionnaire.Questions.Single(q => q.QuestionId == "Q4");
+        q4.AnswerText.ShouldBe("Answered");
+    }
+
+    [Fact]
+    public void ApplyRespondentAnswersAndTrim_Keeps_SurfacingQuestion_When_ActionDoesNotMatch()
+    {
+        // Arrange
+        var questionnaire = new QuestionnaireViewModel
+        {
+            Questions = new List<QuestionViewModel>
+            {
+                new() { QuestionId = "S2", Category = "C1", ShowAnswerOn = "OtherAction", IsMandatory = false, IsOptional = false }, // surfacing but for another action
+                new() { QuestionId = "Q5", Category = "C1", IsMandatory = false, IsOptional = false } // conditional unanswered
+            }
+        };
+
+        var respondentAnswers = new List<RespondentAnswerDto>();
+
+        // Act
+        var (surfacingQuestion, showSurfacingQuestion) = ModificationHelpers.ApplyRespondentAnswersAndTrim(questionnaire, respondentAnswers, "ReviewAllChanges");
+
+        // Assert
+        showSurfacingQuestion.ShouldBeFalse();
+        surfacingQuestion.ShouldNotBeNull();
+        surfacingQuestion!.QuestionId.ShouldBe("S2");
+
+        // S2 should still be present
+        questionnaire.Questions.Any(q => q.QuestionId == "S2").ShouldBeTrue();
+
+        // Q5 was conditional with no answer and should be removed
+        questionnaire.Questions.Any(q => q.QuestionId == "Q5").ShouldBeFalse();
+    }
 }
