@@ -158,6 +158,7 @@ public class ModificationsTasklistController(
                 Id = dto.Id,
                 ModificationId = dto.ModificationId,
                 ShortProjectTitle = dto.ShortProjectTitle,
+                ProjectRecordId = dto.ProjectRecordId
             })
             .ToList() ?? [];
 
