@@ -583,7 +583,7 @@ public class DocumentsController
             {
                 Documents = [.. response.Content.Select(doc => new ProjectModificationDocumentRequest
                 {
-                    Id = doc.Id, // assuming backend provides this Guid
+                    Id = doc.Id,
                     ProjectModificationChangeId = request.ProjectModificationChangeId,
                     ProjectRecordId = request.ProjectRecordId,
                     ProjectPersonnelId = request.ProjectPersonnelId,
@@ -591,10 +591,9 @@ public class DocumentsController
                     DocumentStoragePath = doc.DocumentStoragePath,
                     FileSize = doc.FileSize
                 })
-                .OrderBy(dto => dto.FileName, StringComparer.OrdinalIgnoreCase)]
+                .OrderBy(dto => dto.FileName, StringComparer.OrdinalIgnoreCase)],
+                BackRoute = backRoute
             };
-
-            viewModel.BackRoute = backRoute;
             return View("DeleteDocuments", viewModel);
         }
 

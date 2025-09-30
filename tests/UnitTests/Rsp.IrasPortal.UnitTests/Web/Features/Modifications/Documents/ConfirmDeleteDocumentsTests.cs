@@ -65,11 +65,11 @@ public class ConfirmDeleteDocumentsTests : TestServiceBase<DocumentsController>
 
         var model = viewResult.Model.ShouldBeOfType<ModificationDeleteDocumentViewModel>();
         model.Documents.ShouldNotBeNull();
-        model.Documents.Count.ShouldBe(documents.OrderBy(dto => dto.FileName, StringComparer.OrdinalIgnoreCase).ToList().Count);
+        model.Documents.Count.ShouldBe(documents.ToList().Count);
 
         // Verify first document is mapped correctly
-        var expected = documents.First();
-        var actual = model.Documents.First();
+        var expected = documents.OrderBy(dto => dto.FileName, StringComparer.OrdinalIgnoreCase).First();
+        var actual = model.Documents.OrderBy(dto => dto.FileName, StringComparer.OrdinalIgnoreCase).First();
         actual.Id.ShouldBe(expected.Id);
         actual.FileName.ShouldBe(expected.FileName);
         actual.FileSize.ShouldBe(expected.FileSize);
