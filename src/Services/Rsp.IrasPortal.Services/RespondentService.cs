@@ -58,13 +58,24 @@ public class RespondentService(IRespondentServiceClient respondentServiceClient)
     }
 
     /// <summary>
+    /// Saves all respondent answers for a project modification change.
+    /// </summary>
+    /// <param name="request">The request containing all answers for the project modification change.</param>
+    /// <returns>A service response indicating the result of the save operation.</returns>
+    public async Task<ServiceResponse> SaveModificationChangeAnswers(ProjectModificationChangeAnswersRequest request)
+    {
+        var apiResponse = await respondentServiceClient.SaveModificationChangeAnswers(request);
+        return apiResponse.ToServiceResponse();
+    }
+
+    /// <summary>
     /// Gets all respondent answers for a specific project modification change.
     /// </summary>
     /// <param name="modificationChangeId">The unique identifier for the project modification change.</param>
     /// <returns>A service response containing a collection of respondent answers.</returns>
-    public async Task<ServiceResponse<IEnumerable<RespondentAnswerDto>>> GetModificationAnswers(Guid modificationChangeId, string projectRecordId)
+    public async Task<ServiceResponse<IEnumerable<RespondentAnswerDto>>> GetModificationChangeAnswers(Guid modificationChangeId, string projectRecordId)
     {
-        var apiResponse = await respondentServiceClient.GetModificationAnswers(modificationChangeId, projectRecordId);
+        var apiResponse = await respondentServiceClient.GetModificationChangeAnswers(modificationChangeId, projectRecordId);
         return apiResponse.ToServiceResponse();
     }
 
@@ -74,9 +85,32 @@ public class RespondentService(IRespondentServiceClient respondentServiceClient)
     /// <param name="modificationChangeId">The unique identifier for the project modification change.</param>
     /// <param name="categoryId">The unique identifier for the question category.</param>
     /// <returns>A service response containing a collection of respondent answers.</returns>
-    public async Task<ServiceResponse<IEnumerable<RespondentAnswerDto>>> GetModificationAnswers(Guid modificationChangeId, string projectRecordId, string categoryId)
+    public async Task<ServiceResponse<IEnumerable<RespondentAnswerDto>>> GetModificationChangeAnswers(Guid modificationChangeId, string projectRecordId, string categoryId)
     {
-        var apiResponse = await respondentServiceClient.GetModificationAnswers(modificationChangeId, projectRecordId, categoryId);
+        var apiResponse = await respondentServiceClient.GetModificationChangeAnswers(modificationChangeId, projectRecordId, categoryId);
+        return apiResponse.ToServiceResponse();
+    }
+
+    /// <summary>
+    /// Gets all respondent answers for a specific project modification.
+    /// </summary>
+    /// <param name="modificationId">The unique identifier for the project modification change.</param>
+    /// <returns>A service response containing a collection of respondent answers.</returns>
+    public async Task<ServiceResponse<IEnumerable<RespondentAnswerDto>>> GetModificationAnswers(Guid modificationId, string projectRecordId)
+    {
+        var apiResponse = await respondentServiceClient.GetModificationAnswers(modificationId, projectRecordId);
+        return apiResponse.ToServiceResponse();
+    }
+
+    /// <summary>
+    /// Gets all respondent answers for a specific project modification and category.
+    /// </summary>
+    /// <param name="modificationId">The unique identifier for the project modification.</param>
+    /// <param name="categoryId">The unique identifier for the question category.</param>
+    /// <returns>A service response containing a collection of respondent answers.</returns>
+    public async Task<ServiceResponse<IEnumerable<RespondentAnswerDto>>> GetModificationAnswers(Guid modificationId, string projectRecordId, string categoryId)
+    {
+        var apiResponse = await respondentServiceClient.GetModificationAnswers(modificationId, projectRecordId, categoryId);
         return apiResponse.ToServiceResponse();
     }
 

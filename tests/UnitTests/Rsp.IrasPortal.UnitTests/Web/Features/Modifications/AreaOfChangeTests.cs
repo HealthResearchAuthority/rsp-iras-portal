@@ -19,7 +19,8 @@ public class AreaOfChangeTests : TestServiceBase<ModificationsController>
     public async Task AreaOfChange_RedirectsToAreaOfChange_WhenSuccessful
     (
         string projectRecordId,
-        int irasId
+        int irasId,
+        Guid projectModificationId
     )
     {
         // Arrange
@@ -81,11 +82,6 @@ public class AreaOfChangeTests : TestServiceBase<ModificationsController>
         };
 
         Mocker
-            .GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetAreaOfChanges())
-            .ReturnsAsync(serviceResponse);
-
-        Mocker
             .GetMock<ICmsQuestionsetService>()
             .Setup(c => c.GetInitialModificationQuestions())
             .ReturnsAsync(new ServiceResponse<StartingQuestionsDto>
@@ -95,7 +91,7 @@ public class AreaOfChangeTests : TestServiceBase<ModificationsController>
             });
 
         // Act
-        var result = await Sut.AreaOfChange();
+        var result = await Sut.AreaOfChange(projectModificationId);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -106,7 +102,8 @@ public class AreaOfChangeTests : TestServiceBase<ModificationsController>
     public async Task AreaOfChange_RedirectsToAreaOfChange_WhenContentIsNullOrEmpty
    (
        string projectRecordId,
-       int irasId
+       int irasId,
+       Guid projectModificationId
    )
     {
         // Arrange
@@ -141,11 +138,6 @@ public class AreaOfChangeTests : TestServiceBase<ModificationsController>
         };
 
         Mocker
-            .GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetAreaOfChanges())
-            .ReturnsAsync(serviceResponse);
-
-        Mocker
             .GetMock<ICmsQuestionsetService>()
             .Setup(c => c.GetInitialModificationQuestions())
             .ReturnsAsync(new ServiceResponse<StartingQuestionsDto>
@@ -155,7 +147,7 @@ public class AreaOfChangeTests : TestServiceBase<ModificationsController>
             });
 
         // Act
-        var result = await Sut.AreaOfChange();
+        var result = await Sut.AreaOfChange(projectModificationId);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();

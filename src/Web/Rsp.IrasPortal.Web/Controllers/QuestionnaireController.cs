@@ -822,54 +822,6 @@ public class QuestionnaireController
     }
 
     /// <summary>
-    /// Builds the QuestionnaireViewModel from the QuestionsResponse
-    /// </summary>
-    /// <param name="response">QuestionsResponse model for all the questions or for the category</param>
-    private static QuestionnaireViewModel BuildQuestionnaireViewModel(IEnumerable<QuestionsResponse> response)
-    {
-        // order the questions by SectionId and Sequence
-        var questions = response
-                .OrderBy(q => q.SectionId)
-                .ThenBy(q => q.Sequence)
-                .Select((question, index) => (question, index));
-
-        var questionnaire = new QuestionnaireViewModel();
-
-        // build the questionnaire view model
-        // we need to order the questions by section and sequence
-        // and also need to assign the index to the question so the multiple choice
-        // answsers can be linked back to the question
-        foreach (var (question, index) in questions)
-        {
-            questionnaire.Questions.Add(new QuestionViewModel
-            {
-                Index = index,
-                QuestionId = question.QuestionId,
-                VersionId = question.VersionId ?? string.Empty,
-                Category = question.Category,
-                SectionId = question.SectionId,
-                Section = question.Section,
-                Sequence = question.Sequence,
-                Heading = question.Heading,
-                QuestionText = question.QuestionText,
-                ShortQuestionText = question.ShortQuestionText,
-                QuestionType = question.QuestionType,
-                DataType = question.DataType,
-                IsMandatory = question.IsMandatory,
-                IsOptional = question.IsOptional,
-                Rules = question.Rules,
-                Answers = question.Answers.Select(ans => new AnswerViewModel
-                {
-                    AnswerId = ans.AnswerId,
-                    AnswerText = ans.AnswerText
-                }).ToList()
-            });
-        }
-
-        return questionnaire;
-    }
-
-    /// <summary>
     /// Loads the existing application from the database
     /// </summary>
     /// <param name="projectApplicationId">Application Id</param>

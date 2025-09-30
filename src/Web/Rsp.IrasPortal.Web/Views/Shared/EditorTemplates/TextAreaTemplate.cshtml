@@ -1,0 +1,55 @@
+﻿@model QuestionnaireViewModel
+
+@{
+    var index = (int)ViewBag.Index;
+    var question = Model.Questions[index];
+
+    var rules = question.Rules;
+    var conditional = !(question.IsMandatory || question.IsOptional) && rules.Count > 0;
+    var parents = conditional ? string.Join(',', rules.Select(rule => rule.ParentQuestionId)) : "";
+    var questionId = conditional ? question.QuestionId : "";
+
+    var sizeRule = rules.FirstOrDefault(x => x.Conditions.SingleOrDefault(y => y.Operator == "SIZE") != null);
+    var condition = sizeRule?.Conditions.FirstOrDefault(x => x.Operator == "SIZE");
+    var conditionValue = condition?.Value;
+
+    var hintHtml = rules.Count > 0
+        ? string.Join("", rules.Select(r => $"<p>{r.Description}</p>"))
+        : "";
+
+    var types = (question.QuestionType.ToLower(), question.DataType.ToLower());
+    var inputType = types == ("text", "email") ? "email" : "text";
+}
+
+@*<div class="govuk-form-group" id="Questions[@index].AnswerText">
+        <label class="govuk-label govuk-label--s" for="Questions[@index].AnswerText" aria-describedby="sponsor-modification-reference-hint">
+            @Model.Questions[index].QuestionText
+        </label>
+
+        <div class="govuk-form-group govuk-character-count" data-module="govuk-character-count" data-maxlength="@conditionValue">
+            <textarea class="govuk-textarea govuk-js-character-count"
+                      name="Questions[@index].AnswerText"
+                      id="Questions[@index].AnswerText"
+                      rows="5"
+                      aria-describedby="with-hint-info with-hint-hint">
+                    @Model.Questions[index].AnswerText
+                </textarea>
+            <div id="Questions[@index].AnswerText-info" class="govuk-hint govuk-character-count__message">
+                @hintHtml
+            </div>
+        </div>
+    </div>*@
+
+<rsp-gds-input asp-for="Questions[index].AnswerText"
+               id="Questions[@index].AnswerText"
+               field-id="@(question.QuestionId)_Text"
+               input-type=@inputType
+               label-text="@question.QuestionText"
+               hint-html="@Html.Raw(hintHtml)"
+               error-key="Questions[@index].AnswerText"
+               conditional="@conditional"
+               width-class="@conditionValue"
+               dataparents-attr="@parents"
+               dataquestionid-attr="@questionId"
+               hint-id="@($"{question.QuestionText.ToLowerInvariant().Replace(" ", "-")}-hint")"
+               label-aria-describedby="@($"{question.QuestionText.ToLowerInvariant().Replace(" ", "-")}-hint")" />

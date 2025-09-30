@@ -10,7 +10,7 @@
     var fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
 
     var rules = question.Rules;
-    var conditional = !question.IsMandatory && rules.Count > 0;
+    var conditional = !(question.IsMandatory || question.IsOptional) && rules.Count > 0;
     var parents = conditional ? string.Join(',', rules.Select(rule => rule.ParentQuestionId)) : "";
     var questionId = conditional ? question.QuestionId : "";
     var hintHtml = rules.Count > 0
@@ -32,4 +32,4 @@
                         validation-message="@validationMessage"
                         hint-html="@hintHtml"
                         legend-class="govuk-fieldset__legend--s"
-                        id="Questions[@index]_Answers"/>
+                        id="Questions[@index]_Answers" />

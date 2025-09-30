@@ -10,7 +10,6 @@ public struct TempDataKeys
     {
         public const string ProjectModificationId = "td:project_modification_id";
         public const string ProjectModificationIdentifier = "td:project_modification_identifier";
-        public const string ProjectModificationSpecificArea = "td:project_modification_specific_area";
         public const string ProjectModificationChangeId = "td:project_modification_change_id";
         public const string AreaOfChanges = "td:areaofchanges";
         public const string AreaOfChangeId = "td:area_of_change_id";
@@ -19,12 +18,17 @@ public struct TempDataKeys
         public const string SpecificAreaOfChangeText = "td:specific_area_of_changeText";
         public const string Questionnaire = "td:modification_questionnaire";
         public const string ProjectModificationChangeMarker = "td:project_modification_change_marker";
+        public const string LinkBackToReferrer = "td:link_back_to_referrer";
+        public const string UrlReferrer = "td:url_referrer";
+        public const string ReviewAllChanges = "td:modification_review_all_changes";
     }
 
     public struct ProjectModificationChange
     {
         public const string ReviewChanges = "td:modification_review_changes";
         public const string Navigation = "td:modification_change_navigation";
+        public const string ChangeRemoved = "td:modification_change_removed";
+        public const string ChangeName = "td:modification_change_name";
     }
 
     public const string ProjectRecordId = "td:project_record_id";

@@ -30,18 +30,18 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
     }
 
     [Theory, AutoData]
-    public async Task ConfirmModificationJourney_ReturnsView_WhenValidationFails(
+    public async Task ConfirmModificationJourney_ReturnsView_WhenValidationFails
+    (
         AreaOfChangeViewModel model,
-        List<GetAreaOfChangesResponse> areaChanges)
+        List<GetAreaOfChangesResponse> areaChanges
+    )
     {
         // Arrange
-        const string action = "saveAndContinue";
-        var validator = Mocker.GetMock<IValidator<AreaOfChangeViewModel>>();
-        validator
+        _validator
             .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<AreaOfChangeViewModel>>(), default))
             .ReturnsAsync(new ValidationResult(new List<ValidationFailure>
             {
-            new(nameof(model.AreaOfChangeId), "Area is required")
+                new(nameof(model.AreaOfChangeId), "Area is required")
             }));
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
@@ -50,25 +50,24 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
         };
 
         // Act
-        var result = await Sut.ConfirmModificationJourney(model, action);
+        var result = await Sut.ConfirmModificationJourney(model, false);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
         viewResult.ViewName.ShouldBe("AreaOfChange");
         viewResult.Model.ShouldBeOfType<AreaOfChangeViewModel>();
-        validator.Verify();
+        _validator.Verify();
     }
 
     [Theory, AutoData]
-    public async Task ConfirmModificationJourney_RedirectsToPostApproval_WhenActionIsSaveForLater(
+    public async Task ConfirmModificationJourney_RedirectsToPostApproval_WhenActionIsSaveForLater
+    (
         AreaOfChangeViewModel model,
-        List<GetAreaOfChangesResponse> areaChanges)
+        List<GetAreaOfChangesResponse> areaChanges
+    )
     {
         // Arrange
-        const string action = "saveForLater"; // must match controller logic
-
-        var validator = Mocker.GetMock<IValidator<AreaOfChangeViewModel>>();
-        validator
+        _validator
             .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<AreaOfChangeViewModel>>(), default))
             .ReturnsAsync(new ValidationResult());
 
@@ -83,7 +82,8 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
             [TempDataKeys.ProjectModification.AreaOfChanges] = JsonSerializer.Serialize(areaChanges) // kept for completeness
         };
 
-        Mocker.GetMock<IProjectModificationsService>()
+        Mocker
+            .GetMock<IProjectModificationsService>()
             .Setup(s => s.CreateModificationChange(It.IsAny<ProjectModificationChangeRequest>()))
             .ReturnsAsync(new ServiceResponse<ProjectModificationChangeResponse>
             {
@@ -92,7 +92,7 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
             });
 
         // Act
-        var result = await Sut.ConfirmModificationJourney(model, action);
+        var result = await Sut.ConfirmModificationJourney(model, true);
 
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToRouteResult>();
@@ -100,7 +100,7 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
         redirectResult.RouteValues.ShouldNotBeNull();
         redirectResult.RouteValues["projectRecordId"].ShouldBe(model.ProjectRecordId);
         // Validator should NOT be invoked for saveForLater path
-        validator.Verify(v => v.ValidateAsync(It.IsAny<ValidationContext<AreaOfChangeViewModel>>(), default), Times.Never);
+        _validator.Verify(v => v.ValidateAsync(It.IsAny<ValidationContext<AreaOfChangeViewModel>>(), default), Times.Never);
     }
 
     [Fact]
@@ -136,8 +136,7 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
             [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid()
         };
 
-        var validator = Mocker.GetMock<IValidator<AreaOfChangeViewModel>>();
-        validator
+        _validator
             .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<AreaOfChangeViewModel>>(), default))
             .ReturnsAsync(new ValidationResult());
 
@@ -165,7 +164,7 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
         Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
 
         // Act
-        var result = await Sut.ConfirmModificationJourney(model, action: "proceed");
+        var result = await Sut.ConfirmModificationJourney(model, false);
 
         // Assert
         var statusCodeResult = result.ShouldBeOfType<StatusCodeResult>();
@@ -184,7 +183,7 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
             .ReturnsAsync(new ValidationResult([new ValidationFailure("AreaOfChangeId", "Required")]));
 
         // Act
-        var result = await Sut.ConfirmModificationJourney(model, "saveAndContinue");
+        var result = await Sut.ConfirmModificationJourney(model, false);
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
@@ -210,7 +209,7 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
             });
 
         // Act
-        var result = await Sut.ConfirmModificationJourney(model, "saveForLater");
+        var result = await Sut.ConfirmModificationJourney(model, true);
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
@@ -242,7 +241,7 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
         SetupCmsJourney("section-static");
 
         // Act
-        var result = await Sut.ConfirmModificationJourney(model, "saveAndContinue");
+        var result = await Sut.ConfirmModificationJourney(model, false);
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
@@ -275,12 +274,12 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
             .Setup(s => s.GetModificationsJourney("S1"))
             .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
             {
-                StatusCode = System.Net.HttpStatusCode.OK,
+                StatusCode = HttpStatusCode.OK,
                 Content = new CmsQuestionSetResponse { Sections = [] }
             });
 
         // Act
-        var result = await Sut.ConfirmModificationJourney(model, "saveAndContinue");
+        var result = await Sut.ConfirmModificationJourney(model, false);
 
         // Assert
         var statusCodeResult = result.ShouldBeOfType<StatusCodeResult>();
@@ -293,7 +292,12 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
         // Arrange
         var modificationId = Guid.NewGuid();
         var model = new AreaOfChangeViewModel { ProjectRecordId = "PR1", AreaOfChangeId = "A1", SpecificChangeId = "S1" };
+
         SetupTempData(model, BuildAreas(), modificationId);
+
+        _validator
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<AreaOfChangeViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult());
 
         _modsService
             .Setup(s => s.CreateModificationChange(It.IsAny<ProjectModificationChangeRequest>()))
@@ -306,7 +310,7 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
         SetupCmsJourney("section-static");
 
         // Act (action different from saveAndContinue/saveForLater)
-        var result = await Sut.ConfirmModificationJourney(model, "otherAction");
+        var result = await Sut.ConfirmModificationJourney(model, false);
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
@@ -350,7 +354,7 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
             .Setup(s => s.GetModificationsJourney("S1"))
             .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
             {
-                StatusCode = System.Net.HttpStatusCode.OK,
+                StatusCode = HttpStatusCode.OK,
                 Content = new CmsQuestionSetResponse
                 {
                     Sections =

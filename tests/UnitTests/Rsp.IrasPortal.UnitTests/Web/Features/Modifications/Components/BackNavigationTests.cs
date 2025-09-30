@@ -82,8 +82,8 @@ public class BackNavigationTests : TestServiceBase<BackNavigation>
         model.Item3["projectRecordId"].ShouldBe("proj-1");
     }
 
-    [Fact]
-    public async Task InvokeAsync_Should_Resolve_From_Review_Fallback_To_Last_Mandatory_Section_With_Missing_Answers()
+    [Theory, AutoData]
+    public async Task InvokeAsync_Should_Resolve_From_Review_Fallback_To_Last_Mandatory_Section_With_Missing_Answers(Guid modificationChangeId)
     {
         // Arrange
         var questionnaire = new QuestionnaireViewModel
@@ -98,7 +98,7 @@ public class BackNavigationTests : TestServiceBase<BackNavigation>
 
         var cmsResponse = new ServiceResponse<CmsQuestionSetResponse>
         {
-            StatusCode = System.Net.HttpStatusCode.OK,
+            StatusCode = HttpStatusCode.OK,
             Content = new CmsQuestionSetResponse
             {
                 Sections = new List<SectionModel>
@@ -117,7 +117,7 @@ public class BackNavigationTests : TestServiceBase<BackNavigation>
         var navigation = CreateNavigationDto();
 
         // Act
-        var result = await Sut.InvokeAsync(navigation, "spec-1", "proj-1", questionnaire, backFromReview: true, reviewInProgress: false);
+        var result = await Sut.InvokeAsync(navigation, "spec-1", "proj-1", modificationChangeId.ToString(), questionnaire, backFromReview: true, reviewInProgress: false);
 
         // Assert
         var view = result.ShouldBeOfType<ViewViewComponentResult>();
@@ -126,8 +126,8 @@ public class BackNavigationTests : TestServiceBase<BackNavigation>
         model.Item1.ShouldBe("pmc:s1");
     }
 
-    [Fact]
-    public async Task InvokeAsync_Should_Resolve_From_Review_Last_Section_When_All_Mandatory_Answered()
+    [Theory, AutoData]
+    public async Task InvokeAsync_Should_Resolve_From_Review_Last_Section_When_All_Mandatory_Answered(Guid modificationChangeId)
     {
         // Arrange
         var questionnaire = new QuestionnaireViewModel
@@ -141,7 +141,7 @@ public class BackNavigationTests : TestServiceBase<BackNavigation>
 
         var cmsResponse = new ServiceResponse<CmsQuestionSetResponse>
         {
-            StatusCode = System.Net.HttpStatusCode.OK,
+            StatusCode = HttpStatusCode.OK,
             Content = new CmsQuestionSetResponse
             {
                 Sections = new List<SectionModel>
@@ -159,7 +159,7 @@ public class BackNavigationTests : TestServiceBase<BackNavigation>
         var navigation = CreateNavigationDto();
 
         // Act
-        var result = await Sut.InvokeAsync(navigation, "spec-1", "proj-1", questionnaire, backFromReview: true, reviewInProgress: false);
+        var result = await Sut.InvokeAsync(navigation, "spec-1", "proj-1", modificationChangeId.ToString(), questionnaire, backFromReview: true, reviewInProgress: false);
 
         // Assert
         var view = result.ShouldBeOfType<ViewViewComponentResult>();

@@ -7,9 +7,9 @@ namespace Rsp.IrasPortal.UnitTests.Services.RespondentServiceTests;
 public class GetModificationAnswers : TestServiceBase<RespondentService>
 {
     [Theory, AutoData]
-    public async Task GetModificationAnswers_ByChangeId_DelegatesToClient_AndReturnsMappedResult
+    public async Task GetModificationAnswers_ByModificationId_DelegatesToClient_AndReturnsMappedResult
     (
-        Guid projectModificationChangeId,
+        Guid projectModificationId,
         string projectRecordId,
         List<RespondentAnswerDto> apiResponseContent
     )
@@ -20,17 +20,17 @@ public class GetModificationAnswers : TestServiceBase<RespondentService>
 
         var respondentServiceClient = Mocker.GetMock<IRespondentServiceClient>();
         respondentServiceClient
-            .Setup(c => c.GetModificationAnswers(It.IsAny<Guid>(), It.IsAny<string>()))
+            .Setup(c => c.GetModificationAnswers(projectModificationId, projectRecordId))
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.GetModificationAnswers(projectModificationChangeId, projectRecordId);
+        var result = await Sut.GetModificationAnswers(projectModificationId, projectRecordId);
 
         // Assert
         respondentServiceClient
             .Verify
             (
-                c => c.GetModificationAnswers(projectModificationChangeId, projectRecordId),
+                c => c.GetModificationAnswers(projectModificationId, projectRecordId),
                 Times.Once
             );
 
@@ -38,31 +38,31 @@ public class GetModificationAnswers : TestServiceBase<RespondentService>
     }
 
     [Theory, AutoData]
-    public async Task GetModificationAnswers_ByChangeIdAndCategory_DelegatesToClient_AndReturnsMappedResult
+    public async Task GetModificationAnswers_ByModificationIdAndCategory_DelegatesToClient_AndReturnsMappedResult
     (
-        Guid projectModificationChangeId,
+        Guid projectModificationId,
+        string projectRecordId,
         string categoryId,
         List<RespondentAnswerDto> apiResponseContent
     )
     {
         // Arrange
         var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK);
-
         var apiResponse = new ApiResponse<IEnumerable<RespondentAnswerDto>>(httpResponseMessage, apiResponseContent, new(), null);
 
         var respondentServiceClient = Mocker.GetMock<IRespondentServiceClient>();
         respondentServiceClient
-            .Setup(c => c.GetModificationAnswers(projectModificationChangeId, categoryId))
+            .Setup(c => c.GetModificationAnswers(projectModificationId, projectRecordId, categoryId))
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.GetModificationAnswers(projectModificationChangeId, categoryId);
+        var result = await Sut.GetModificationAnswers(projectModificationId, projectRecordId, categoryId);
 
         // Assert
         respondentServiceClient
             .Verify
             (
-                c => c.GetModificationAnswers(projectModificationChangeId, categoryId),
+                c => c.GetModificationAnswers(projectModificationId, projectRecordId, categoryId),
                 Times.Once
             );
 

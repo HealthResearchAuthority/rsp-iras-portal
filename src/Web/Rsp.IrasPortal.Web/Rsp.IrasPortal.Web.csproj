@@ -10,6 +10,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Compile Remove="Views\ProjectModification\**" />
+      <Content Remove="Views\ProjectModification\**" />
+      <EmbeddedResource Remove="Views\ProjectModification\**" />
+      <None Remove="Views\ProjectModification\**" />
+    </ItemGroup>
+
+    <ItemGroup>
       <PackageReference Include="Azure.Storage.Blobs" Version="12.24.0" />
       <PackageReference Include="FluentValidation" Version="12.0.0" />
       <PackageReference Include="Mapster" Version="7.4.0" />

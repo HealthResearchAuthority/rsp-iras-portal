@@ -64,7 +64,7 @@
             <input type="hidden" asp-for="Questions[index].IsMandatory" checked="@question.IsMandatory" />
             <input type="hidden" asp-for="Questions[index].IsOptional" checked="@question.IsOptional" />
 
-            if (!question.IsMandatory)
+            if (!question.IsMandatory && !question.IsOptional)
             {
                 if (question.Rules.Count == 0)
                 {
@@ -83,6 +83,7 @@
             {
                 ("date", "date") => "DateTemplate",
                 ("text", "text" or "email") => "TextTemplate",
+                ("text", "text area") => "TextAreaTemplate",
                 ("look-up list", "checkbox") => "CheckboxTemplate",
                 ("look-up list", "radio button") => "RadioButtonTemplate",
                 ("boolean", "boolean") => "RadioButtonTemplate",

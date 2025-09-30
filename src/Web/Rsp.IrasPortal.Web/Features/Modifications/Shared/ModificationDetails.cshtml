@@ -1,0 +1,125 @@
+﻿@using System.Globalization
+@using System.Text.Json
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Microsoft.FeatureManagement
+@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Web.Features.Modifications.Models
+@model ModificationDetailsViewModel
+
+@{
+
+    ViewBag.Title = "Modification details";
+}
+
+@section BackNavigation {
+
+    @* if we have a urlReferrer use that for back navigation *@
+    @{
+        // set this TempData key to true on the referrer page like PostApprovals
+        // or any other BackStage or FrontStage page so that we can link back to that page.
+        // If this Key is not set, the Back link won't be displayed
+        var linkBackToReferrer = TempData[TempDataKeys.ProjectModification.LinkBackToReferrer];
+        var urlReferrer = TempData[TempDataKeys.ProjectModification.UrlReferrer];
+
+        if (linkBackToReferrer is true && urlReferrer is not null)
+        {
+            ViewData[ViewDataKeys.UrlReferrer] = urlReferrer;
+
+            // no route for back navigation, as this page will
+            // only show back button when you are navigating from some other url
+            // given the LinkBackToReferrer is set
+            <partial name="_BackNavigation" model="@("", "Back", new Dictionary<string, string>())" />
+        }
+    }
+}
+
+@{
+    // display the notification banner if change is removed
+    var changeRemoved = TempData[TempDataKeys.ProjectModificationChange.ChangeRemoved];
+    var changeName = TempData[TempDataKeys.ProjectModificationChange.ChangeName];
+
+    if (changeRemoved is true)
+    {
+        <partial name="_NotificationBanner" model="@("Success", $"{changeName} has been successfully removed")" />
+    }
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+        <h1 class="govuk-heading-l">Modification details</h1>
+
+        @{
+            ViewData[ViewDataKeys.ShowModificationStatus] = true;
+            <partial name="_ProjectModificationSummary" model="Model" view-data="ViewData" />
+        }
+
+        @* Only show the Overall ranking if we have the changes *@
+        @if (Model.ModificationChanges.Any())
+        {
+            <h2 class="govuk-heading-m">Overall modification ranking</h2>
+            <div class="govuk-summary-card">
+                <div class="govuk-summary-card__title-wrapper">
+                    <h2 class="govuk-summary-card__title">
+                        Ranking
+                    </h2>
+                </div>
+                <div class="govuk-summary-card__content">
+                    <partial name="RankingOfChange" />
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+
+        <h2 class="govuk-heading-m">Changes</h2>
+
+        <partial name="ModificationChanges" model="Model" view-data="ViewData" />
+
+        <div class="save-buttons">
+            @if (Model.Status is "Draft")
+            {
+                <a asp-route="pmc:areaofchange" asp-route-projectModificationId="@Model.ModificationId" class="govuk-button govuk-button--secondary">
+                    Add another change to this modification
+                </a>
+            }
+
+            @if (!Model.ModificationChanges.Any() && Model.Status is "Draft")
+            {
+                <a asp-route="pov:postapproval" asp-route-projectRecordId="@Model.ProjectRecordId" class="govuk-button govuk-button--secondary">
+                    Save for later
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+@* Only show the Overall ranking if we have the changes *@
+@if (Model.ModificationChanges.Any() && Model.Status is "Draft")
+{
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <h2 class="govuk-heading-m">Add summary and review modification before sending to sponsor</h2>
+            <p class="govuk-body">
+                You'll have the option to add a brief summary and edit your modification before sending it to the sponsor on the next page.
+            </p>
+
+            <div class="save-buttons">
+                <input type="hidden" name="projectRecordId" value="@Model.ProjectRecordId" />
+                @{
+                    var routeName = Model.ChangesReadyForSubmission ? "pmc:sponsorreference" : "pmc:unfinishedchanges";
+
+                    <a asp-route="@routeName" asp-route-projectRecordId="@Model.ProjectRecordId" class="govuk-button">
+                        Save and continue to review
+                    </a>
+
+                    <a asp-route="pov:postapproval" asp-route-projectRecordId="@Model.ProjectRecordId" class="govuk-button govuk-button--secondary">
+                        Save for later
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+}

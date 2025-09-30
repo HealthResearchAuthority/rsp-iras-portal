@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
+using Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
@@ -35,16 +37,16 @@ public class ModificationChangesBaseControllerTests : TestServiceBase<Modificati
         };
     }
 
-    [Fact]
-    public async Task ReviewChanges_Returns_Error_When_RespondentService_Fails()
+    [Theory, AutoData]
+    public async Task ReviewChanges_Returns_Error_When_RespondentService_Fails(string projectRecordId, Guid specificAreaOfChangeId, Guid modificationChangeId)
     {
         // Arrange
         _respondentService
-            .Setup(s => s.GetModificationAnswers(It.IsAny<Guid>(), "PR1"))
+            .Setup(s => s.GetModificationChangeAnswers(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.BadRequest, Error = "fail" });
 
         // Act
-        var result = await Sut.ReviewChanges("PR1");
+        var result = await Sut.ReviewChanges(projectRecordId, specificAreaOfChangeId, modificationChangeId);
 
         // Assert
         // Assert
@@ -54,12 +56,12 @@ public class ModificationChangesBaseControllerTests : TestServiceBase<Modificati
             .ShouldBe(StatusCodes.Status400BadRequest);
     }
 
-    [Fact]
-    public async Task ReviewChanges_Returns_Error_When_CmsJourney_Fails()
+    [Theory, AutoData]
+    public async Task ReviewChanges_Returns_Error_When_CmsJourney_Fails(string projectRecordId, Guid specificAreaOfChangeId, Guid modificationChangeId)
     {
         // Arrange
         _respondentService
-            .Setup(s => s.GetModificationAnswers(It.IsAny<Guid>(), "PR1"))
+            .Setup(s => s.GetModificationChangeAnswers(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = [] });
 
         _cmsService
@@ -67,7 +69,7 @@ public class ModificationChangesBaseControllerTests : TestServiceBase<Modificati
             .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse> { StatusCode = HttpStatusCode.BadRequest, Error = "fail" });
 
         // Act
-        var result = await Sut.ReviewChanges("PR1");
+        var result = await Sut.ReviewChanges(projectRecordId, specificAreaOfChangeId, modificationChangeId);
 
         // Assert
         // Assert
@@ -77,12 +79,12 @@ public class ModificationChangesBaseControllerTests : TestServiceBase<Modificati
             .ShouldBe(StatusCodes.Status400BadRequest);
     }
 
-    [Fact]
-    public async Task ReviewChanges_Returns_View_With_Model_On_Success()
+    [Theory, AutoData]
+    public async Task ReviewChanges_Returns_View_With_Model_On_Success(string projectRecordId, Guid specificAreaOfChangeId, Guid modificationChangeId)
     {
         // Arrange
         _respondentService
-            .Setup(s => s.GetModificationAnswers(It.IsAny<Guid>(), "PR1"))
+            .Setup(s => s.GetModificationChangeAnswers(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = [] });
 
         _cmsService
@@ -95,7 +97,7 @@ public class ModificationChangesBaseControllerTests : TestServiceBase<Modificati
             });
 
         // Act
-        var result = await Sut.ReviewChanges("PR1");
+        var result = await Sut.ReviewChanges(projectRecordId, specificAreaOfChangeId, modificationChangeId);
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
@@ -108,7 +110,7 @@ public class ModificationChangesBaseControllerTests : TestServiceBase<Modificati
     {
         // Arrange
         _respondentService
-            .Setup(s => s.GetModificationAnswers(It.IsAny<Guid>(), "PR1"))
+            .Setup(s => s.GetModificationChangeAnswers(It.IsAny<Guid>(), "PR1"))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.BadRequest, Error = "fail" });
 
         // Act
@@ -126,7 +128,7 @@ public class ModificationChangesBaseControllerTests : TestServiceBase<Modificati
     {
         // Arrange
         _respondentService
-            .Setup(s => s.GetModificationAnswers(It.IsAny<Guid>(), "PR1"))
+            .Setup(s => s.GetModificationChangeAnswers(It.IsAny<Guid>(), "PR1"))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = [] });
 
         _cmsService
@@ -148,7 +150,7 @@ public class ModificationChangesBaseControllerTests : TestServiceBase<Modificati
     {
         // Arrange
         _respondentService
-            .Setup(s => s.GetModificationAnswers(It.IsAny<Guid>(), "PR1"))
+            .Setup(s => s.GetModificationChangeAnswers(It.IsAny<Guid>(), "PR1"))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = [] });
 
         _cmsService
@@ -168,9 +170,8 @@ public class ModificationChangesBaseControllerTests : TestServiceBase<Modificati
         var result = await Sut.ConfirmModificationChanges();
 
         // Assert
-        var view = result.ShouldBeOfType<ViewResult>();
-        view.ViewName.ShouldBe("ModificationChangesReview");
-        view.Model.ShouldBeOfType<QuestionnaireViewModel>();
+        var view = result.ShouldBeOfType<RedirectToRouteResult>();
+        view.RouteName.ShouldBe("pmc:modificationdetails");
     }
 
     [Fact]
@@ -178,7 +179,7 @@ public class ModificationChangesBaseControllerTests : TestServiceBase<Modificati
     {
         // Arrange
         _respondentService
-            .Setup(s => s.GetModificationAnswers(It.IsAny<Guid>(), "PR1"))
+            .Setup(s => s.GetModificationChangeAnswers(It.IsAny<Guid>(), "PR1"))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = [] });
 
         _cmsService
@@ -199,8 +200,179 @@ public class ModificationChangesBaseControllerTests : TestServiceBase<Modificati
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
-        redirect.RouteName.ShouldBe("pov:postapproval");
+        redirect.RouteName.ShouldBe("pmc:modificationdetails");
         redirect.RouteValues!["projectRecordId"].ShouldBe("PR1");
+    }
+
+    [Fact]
+    public async Task ReviewChanges_With_ReviseChange_Updates_TempData_And_Returns_View()
+    {
+        // Arrange
+        var projectRecordId = "PR1";
+        var specificAreaOfChangeId = Guid.NewGuid();
+        var modificationChangeId = Guid.NewGuid();
+
+        _respondentService
+            .Setup(s => s.GetModificationChangeAnswers(It.IsAny<Guid>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = [] });
+
+        var sectionId = "SEC1";
+        var questionSetResponse = BuildQuestionSet(sectionId, "CAT1", "ReviewChanges",
+            new QuestionModel { Id = "QCMS1", QuestionId = "Q1", AnswerDataType = "Text", QuestionFormat = "text", CategoryId = "CAT1", Sequence = 1, SectionSequence = 1 });
+
+        _cmsService
+            .Setup(s => s.GetModificationsJourney(It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = questionSetResponse
+            });
+
+        _cmsService
+            .Setup(s => s.GetInitialModificationQuestions())
+            .ReturnsAsync(new ServiceResponse<StartingQuestionsDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StartingQuestionsDto
+                {
+                    AreasOfChange = [
+                        new AreaOfChangeDto
+                        {
+                            SpecificAreasOfChange = [
+                                new AnswerModel
+                                {
+                                    AutoGeneratedId = specificAreaOfChangeId.ToString(),
+                                    OptionName = "Specific Area Name"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            });
+
+        _cmsService
+            .Setup(s => s.GetModificationQuestionSet(sectionId, null))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = questionSetResponse
+            });
+
+        _cmsService
+            .Setup(s => s.GetModificationPreviousQuestionSection(sectionId))
+            .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new QuestionSectionsResponse { SectionId = "PREV", QuestionCategoryId = "CAT1" }
+            });
+
+        _cmsService
+            .Setup(s => s.GetModificationNextQuestionSection(sectionId))
+            .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new QuestionSectionsResponse { SectionId = "NEXT", QuestionCategoryId = "CAT1" }
+            });
+
+        _validator
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
+
+        // Act
+        var result = await Sut.ReviewChanges(projectRecordId, specificAreaOfChangeId, modificationChangeId, true);
+
+        // Assert
+        var view = result.ShouldBeOfType<ViewResult>();
+        view.ViewName.ShouldBe("ModificationChangesReview");
+        view.Model.ShouldBeOfType<QuestionnaireViewModel>();
+        Sut.TempData[TempDataKeys.ProjectModification.SpecificAreaOfChangeText].ShouldBe("Specific Area Name");
+        Sut.TempData[TempDataKeys.ProjectModification.SpecificAreaOfChangeId].ShouldBe(specificAreaOfChangeId);
+        Sut.TempData[TempDataKeys.ProjectModification.ProjectModificationChangeId].ShouldBe(modificationChangeId);
+    }
+
+    [Fact]
+    public async Task ReviewChanges_With_ReviseChange_ValidationError_Returns_View()
+    {
+        // Arrange
+        var projectRecordId = "PR1";
+        var specificAreaOfChangeId = Guid.NewGuid();
+        var modificationChangeId = Guid.NewGuid();
+
+        _respondentService
+            .Setup(s => s.GetModificationChangeAnswers(It.IsAny<Guid>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = [] });
+
+        var sectionId = "SEC1";
+        var questionSetResponse = BuildQuestionSet(sectionId, "CAT1", "ReviewChanges",
+            new QuestionModel { Id = "QCMS1", QuestionId = "Q1", AnswerDataType = "Text", QuestionFormat = "text", CategoryId = "CAT1", Sequence = 1, SectionSequence = 1 });
+
+        _cmsService
+            .Setup(s => s.GetModificationsJourney(It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = questionSetResponse
+            });
+
+        _cmsService
+            .Setup(s => s.GetInitialModificationQuestions())
+            .ReturnsAsync(new ServiceResponse<StartingQuestionsDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StartingQuestionsDto
+                {
+                    AreasOfChange = [
+                        new AreaOfChangeDto
+                        {
+                            SpecificAreasOfChange = [
+                                new AnswerModel
+                                {
+                                    AutoGeneratedId = specificAreaOfChangeId.ToString(),
+                                    OptionName = "Specific Area Name"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            });
+
+        _cmsService
+            .Setup(s => s.GetModificationQuestionSet(sectionId, null))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = questionSetResponse
+            });
+
+        _cmsService
+            .Setup(s => s.GetModificationPreviousQuestionSection(sectionId))
+            .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new QuestionSectionsResponse { SectionId = "PREV", QuestionCategoryId = "CAT1" }
+            });
+
+        _cmsService
+            .Setup(s => s.GetModificationNextQuestionSection(sectionId))
+            .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new QuestionSectionsResponse { SectionId = "NEXT", QuestionCategoryId = "CAT1" }
+            });
+
+        _validator
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult([new ValidationFailure("Q1", "Required")]));
+
+        // Act
+        var result = await Sut.ReviewChanges(projectRecordId, specificAreaOfChangeId, modificationChangeId, true);
+
+        // Assert
+        var view = result.ShouldBeOfType<ViewResult>();
+        view.ViewName.ShouldBe("ModificationChangesReview");
+        view.Model.ShouldBeOfType<QuestionnaireViewModel>();
+        Sut.ModelState.IsValid.ShouldBeFalse();
+        Sut.ModelState.ContainsKey("Q1").ShouldBeTrue();
     }
 
     private static CmsQuestionSetResponse BuildQuestionSet(

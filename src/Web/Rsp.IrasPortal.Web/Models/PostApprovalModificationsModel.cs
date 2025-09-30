@@ -3,6 +3,7 @@
 public class PostApprovalModificationsModel
 {
     public string ModificationId { get; set; } = null!;
+    public string ModificationIdentifier { get; set; } = null!;
     public string? ModificationType { get; set; } = null!;
     public string? ReviewType { get; set; } = null!;
     public string? Category { get; set; } = null!;
