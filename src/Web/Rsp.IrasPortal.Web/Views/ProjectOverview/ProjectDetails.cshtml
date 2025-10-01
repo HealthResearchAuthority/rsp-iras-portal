@@ -11,11 +11,18 @@
 	var routeName = (ViewData["BackRoute"] as string) ?? "app:Welcome";
 	var routeValues = ViewData["BackRouteValues"] as Dictionary<string, string>
 					  ?? new Dictionary<string, string>();
+    var modificationId = Context.Request.Query["modificationId"].ToString();
 }
 
 @section BackNavigation {
 	<partial name="_BackNavigation" model="@((routeName, "Back", routeValues))" />
 }
+
+@if (TempData[TempDataKeys.ShowNotificationBanner] is not null)
+{
+    <partial name="_NotificationBanner" model="@("Success", $"Modification {modificationId} has been successfully deleted")" />
+}
+
 
 <partial name="_NavigationHeaderPartial" model="@Model" />
 

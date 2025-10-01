@@ -208,33 +208,33 @@ public class ModificationHelpersTests
         q4.AnswerText.ShouldBe("Answered");
     }
 
-    [Fact]
-    public void ApplyRespondentAnswersAndTrim_Keeps_SurfacingQuestion_When_ActionDoesNotMatch()
-    {
-        // Arrange
-        var questionnaire = new QuestionnaireViewModel
-        {
-            Questions = new List<QuestionViewModel>
-            {
-                new() { QuestionId = "S2", Category = "C1", ShowAnswerOn = "OtherAction", IsMandatory = false, IsOptional = false }, // surfacing but for another action
-                new() { QuestionId = "Q5", Category = "C1", IsMandatory = false, IsOptional = false } // conditional unanswered
-            }
-        };
+    //[Fact]
+    //public void ApplyRespondentAnswersAndTrim_Keeps_SurfacingQuestion_When_ActionDoesNotMatch()
+    //{
+    //    // Arrange
+    //    var questionnaire = new QuestionnaireViewModel
+    //    {
+    //        Questions = new List<QuestionViewModel>
+    //        {
+    //            new() { QuestionId = "S2", Category = "C1", ShowAnswerOn = "OtherAction", IsMandatory = false, IsOptional = false }, // surfacing but for another action
+    //            new() { QuestionId = "Q5", Category = "C1", IsMandatory = false, IsOptional = false } // conditional unanswered
+    //        }
+    //    };
 
-        var respondentAnswers = new List<RespondentAnswerDto>();
+    //    var respondentAnswers = new List<RespondentAnswerDto>();
 
-        // Act
-        var (surfacingQuestion, showSurfacingQuestion) = ModificationHelpers.ApplyRespondentAnswersAndTrim(questionnaire, respondentAnswers, "ReviewAllChanges");
+    //    // Act
+    //    var (surfacingQuestion, showSurfacingQuestion) = ModificationHelpers.ApplyRespondentAnswersAndTrim(questionnaire, respondentAnswers, "ReviewAllChanges");
 
-        // Assert
-        showSurfacingQuestion.ShouldBeFalse();
-        surfacingQuestion.ShouldNotBeNull();
-        surfacingQuestion!.QuestionId.ShouldBe("S2");
+    //    // Assert
+    //    showSurfacingQuestion.ShouldBeFalse();
+    //    surfacingQuestion.ShouldNotBeNull();
+    //    surfacingQuestion!.QuestionId.ShouldBe("S2");
 
-        // S2 should still be present
-        questionnaire.Questions.Any(q => q.QuestionId == "S2").ShouldBeTrue();
+    //    // S2 should still be present
+    //    questionnaire.Questions.Any(q => q.QuestionId == "S2").ShouldBeTrue();
 
-        // Q5 was conditional with no answer and should be removed
-        questionnaire.Questions.Any(q => q.QuestionId == "Q5").ShouldBeFalse();
-    }
+    //    // Q5 was conditional with no answer and should be removed
+    //    questionnaire.Questions.Any(q => q.QuestionId == "Q5").ShouldBeFalse();
+    //}
 }

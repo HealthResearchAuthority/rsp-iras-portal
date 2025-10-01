@@ -174,4 +174,12 @@ public interface IProjectModificationsServiceClient
     /// <returns>An asynchronous operation that returns the requested project modification change.</returns>
     [Post("/projectmodifications/update")]
     public Task<IApiResponse> UpdateModificationStatus(Guid modificationId, string status);
+
+    /// <summary>
+    /// Deletes a project modification by its unique identifier.
+    /// </summary>
+    /// <param name="modificationId">The unique identifier of the project modification.</param>
+    /// <returns>An asynchronous operation that returns the requested project modification change.</returns>
+    [Post("/projectmodifications/delete")]
+    public Task<IApiResponse> DeleteModification(Guid modificationId);
 }

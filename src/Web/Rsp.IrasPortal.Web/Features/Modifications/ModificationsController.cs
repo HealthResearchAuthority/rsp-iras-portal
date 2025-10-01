@@ -11,6 +11,9 @@ using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Extensions;
+using Rsp.IrasPortal.Web.Features.Modifications.Helpers;
+using Rsp.IrasPortal.Web.Features.Modifications.Models;
+using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
 using ValidationResult = FluentValidation.Results.ValidationResult;
 
@@ -265,6 +268,74 @@ public class ModificationsController
             sectionId = section.Id,
         });
     }
+
+    [HttpGet]
+    public async Task<IActionResult> DeleteModification(string projectRecordId, string irasId, string shortTitle, Guid projectModificationId)
+    {
+        // Fetch the modification by its identifier
+        var modificationResponse = await projectModificationsService.GetModificationsByIds([projectModificationId.ToString()]);
+
+        // Short-circuit with a service error if the call failed
+        if (!modificationResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(modificationResponse);
+        }
+
+        if (modificationResponse.Content?.Modifications.Any() is false)
+        {
+            return this.ServiceError(new ServiceResponse
+            {
+                StatusCode = HttpStatusCode.BadRequest,
+                Error = $"Error retrieving the modification for project record: {projectRecordId} modificationId: {projectModificationId.ToString()}",
+            });
+        }
+
+        // Select the first (and only) modification result
+        var modification = modificationResponse.Content!.Modifications.First();
+
+        // Build the base view model with project metadata
+        var viewModel = new ModificationDetailsViewModel
+        {
+            ModificationId = modification.Id,
+            IrasId = irasId,
+            ShortTitle = shortTitle,
+            ModificationIdentifier = modification.ModificationId,
+            Status = modification.Status,
+            ProjectRecordId = projectRecordId
+        };
+
+        // Persist the modification identifier in TempData for subsequent requests/pages
+        TempData[TempDataKeys.ProjectModification.ProjectModificationIdentifier] = modification.ModificationId;
+        TempData[TempDataKeys.ProjectModification.ProjectModificationId] = modification.Id;
+
+        // Render the details view
+        return View(viewModel);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> DeleteModificationConfirmed(
+        string projectRecordId,
+        Guid projectModificationId, string projectModificationIdentifier)
+    {
+        var deleteResponse = await projectModificationsService.DeleteModification(projectModificationId);
+
+        if (!deleteResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(deleteResponse);
+        }
+
+        // Show banner on the next page
+        TempData[TempDataKeys.ShowNotificationBanner] = true;
+        TempData[TempDataKeys.ProjectModification.ProjectModificationChangeMarker] = projectModificationId;
+
+        // Redirect to named route pov:index with both params
+        return RedirectToRoute("pov:index", new
+        {
+            projectRecordId,
+            modificationId = projectModificationIdentifier
+        });
+    }
+
 
     /// <summary>
     /// Adds validation errors to ModelState and rebuilds dropdowns from session.

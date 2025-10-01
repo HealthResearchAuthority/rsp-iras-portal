@@ -223,4 +223,20 @@ public class ProjectModificationsService
 
         return apiResponse.ToServiceResponse();
     }
+
+    /// <summary>
+    /// Deletes existing project modification by its unique identifier.
+    /// </summary>
+    /// <param name="modificationId">The unique identifier of the project modification to update.</param>
+    /// <returns>
+    /// A task representing the asynchronous operation, containing a <see cref="ServiceResponse"/>
+    /// that reflects the success or failure of the update operation.
+    /// </returns>
+    public async Task<ServiceResponse> DeleteModification(Guid modificationId)
+    {
+        // Invoke microservice client to delete the modification change.
+        var apiResponse = await projectModificationsServiceClient.DeleteModification(modificationId);
+
+        return apiResponse.ToServiceResponse();
+    }
 }
