@@ -45,7 +45,12 @@
                                     <span class="govuk-body">@doc.DisplaySize</span>
                                 </td>
                                 <td class="govuk-table__cell govuk-!-text-align-right" style="width: 20%;">
-									<a asp-controller="Documents" asp-action="ConfirmDeleteDocument" asp-route-id="@doc.DocumentId" asp-route-backroute="toaddpage" class="govuk-link">Delete</a>
+									<a asp-route="pmc:confirmdeletedocument"
+									   asp-route-id="@doc.DocumentId"
+									   asp-route-backRoute="toaddpage"
+									   class="govuk-link">
+										Delete
+									</a>
                                 </td>
                             </tr>
                         }
