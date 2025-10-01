@@ -70,6 +70,11 @@ variables:
       value: "ARM Manual Test Connection"
     ${{ if in(parameters.env, 'uat') }}:
         value: "ARM UAT Connection"
+    ${{ if in(parameters.env, 'pre_prod') }}:
+        value: "ARM PreProd Connection"
+    ${{ if in(parameters.env, 'production') }}:
+        value: "ARM Production Connection"
+  
 
 resources:
   repositories:
@@ -165,15 +170,21 @@ stages:
           service_defaults_repo: service_defaults
 
   - stage: pre_prod
+    variables: 
+    - group: 'PreProdEnvironment'
+    condition: eq('${{ parameters.env }}', 'pre_prod')
     jobs:
-    - job:
-      steps:
-      - script: |
-          echo 'env: pre prod'
+      - template: jobs/deploy.yaml@library
+        parameters:
+          install_aspire: true
+          service_defaults_repo: service_defaults
 
   - stage: production
+    variables: 
+    - group: 'ProductionEnvironment'
+    condition: eq('${{ parameters.env }}', 'production')
     jobs:
-    - job:
-      steps:
-      - script: |
-          echo 'env: production'
+      - template: jobs/deploy.yaml@library
+        parameters:
+          install_aspire: true
+          service_defaults_repo: service_defaults
