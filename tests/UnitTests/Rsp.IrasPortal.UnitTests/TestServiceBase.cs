@@ -12,7 +12,8 @@ public class TestServiceBase
     {
         Mocker = new AutoMocker();
 
-        var config = TypeAdapterConfig.GlobalSettings;
+        var config = new TypeAdapterConfig();
+        config.RuleMap.Clear();
         config.Scan(typeof(MappingRegister).Assembly);
     }
 }

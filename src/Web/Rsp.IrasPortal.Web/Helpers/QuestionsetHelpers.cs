@@ -64,6 +64,7 @@ public static class QuestionsetHelpers
                 IsMandatory = question.IsMandatory,
                 ShowOriginalAnswer = question.ShowOriginalAnswer,
                 SectionSequence = question.SectionSequence,
+                ShowAnswerOn = question.ShowAnswerOn,
                 GuidanceComponents = question.GuidanceComponents,
                 Answers = [.. question.Answers.Select(ans => new AnswerViewModel
                 {
@@ -83,7 +84,8 @@ public static class QuestionsetHelpers
         {
             var questionTransformed = new QuestionsResponse
             {
-                IsMandatory = (question.Conformance == "Mandatory"),
+                IsMandatory = question.Conformance == "Mandatory",
+                IsOptional = question.Conformance is not ("Mandatory" or "Conditional"),
                 Heading = (i + 1).ToString(),
                 Sequence = question.Sequence == 0 ? i + 1 : question.Sequence,
                 Section = section.SectionName ?? string.Empty,
@@ -96,6 +98,7 @@ public static class QuestionsetHelpers
                 Category = question.CategoryId ?? string.Empty,
                 ShowOriginalAnswer = question.ShowOriginalAnswer,
                 SectionSequence = question.SectionSequence,
+                ShowAnswerOn = question.ShowAnswerOn,
                 Answers = [],
                 Rules = [],
                 GuidanceComponents = question.GuidanceComponents,

@@ -10,6 +10,7 @@ public class BackNavigation(ICmsQuestionsetService cmsQuestionsetService) : View
     private NavigationDto _navigationDto = null!;
     private string _specificAreaOfChangeId = null!;
     private string _projectRecordId = null!;
+    private string? _modificationChangeId;
     private QuestionnaireViewModel? _questionnaire;
 
     private const string BackButtonText = "Back";
@@ -21,6 +22,7 @@ public class BackNavigation(ICmsQuestionsetService cmsQuestionsetService) : View
         NavigationDto navigationDto,
         string specificAreaOfChangeId,
         string projectRecordId,
+        string? modificationChangeId = null,
         QuestionnaireViewModel? questionnaire = null,
         bool backFromReview = false,
         bool reviewInProgress = false
@@ -29,11 +31,12 @@ public class BackNavigation(ICmsQuestionsetService cmsQuestionsetService) : View
         _navigationDto = navigationDto;
         _specificAreaOfChangeId = specificAreaOfChangeId;
         _projectRecordId = projectRecordId;
+        _modificationChangeId = modificationChangeId;
         _questionnaire = questionnaire;
 
         var navigationModel = (backFromReview, reviewInProgress) switch
         {
-            (false, true) => ResolveBackNavigationForReview(),
+            (false, true) => ResolveBackNavigationToReview(),
             (true, false) => await ResolveBackNavigationFromReview(cmsQuestionsetService),
             _ => ResolveBackNavigation()
         };
@@ -65,11 +68,13 @@ public class BackNavigation(ICmsQuestionsetService cmsQuestionsetService) : View
     /// Resolves the back navigation when ReviewInProgress is true, e.g. a link is clicked to make a change
     /// In this case clicking on the back button should go back to the review page
     /// </summary>
-    private (string RouteName, string Text, Dictionary<string, string> parameters) ResolveBackNavigationForReview()
+    private (string RouteName, string Text, Dictionary<string, string> parameters) ResolveBackNavigationToReview()
     {
         var parameters = new Dictionary<string, string>
         {
-            { "projectRecordId", _projectRecordId }
+            { "modificationChangeId", _modificationChangeId! },
+            { "projectRecordId", _projectRecordId },
+            { "specificAreaOfChangeId", _specificAreaOfChangeId }
         };
 
         return (ReviewPageRoute, BackButtonText, parameters);

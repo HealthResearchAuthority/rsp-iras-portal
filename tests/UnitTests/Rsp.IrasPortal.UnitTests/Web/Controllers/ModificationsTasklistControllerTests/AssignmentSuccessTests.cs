@@ -24,7 +24,7 @@ public class AssignmentSuccessTests : TestServiceBase<ModificationsTasklistContr
 
         var serviceResposne = new ServiceResponse<UserResponse>
         {
-            StatusCode = System.Net.HttpStatusCode.OK,
+            StatusCode = HttpStatusCode.OK,
             Content = userResponse
         };
 

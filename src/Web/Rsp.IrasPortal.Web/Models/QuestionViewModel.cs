@@ -28,6 +28,7 @@ public class QuestionViewModel
     public string ShortQuestionText { get; set; } = null!;
     public bool IsModificationQuestion { get; set; }
     public bool ShowOriginalAnswer { get; set; }
+    public string ShowAnswerOn { get; set; } = string.Empty;
     public IList<ContentComponent> GuidanceComponents { get; set; } = [];
 
     private string? _day, _month, _year;
@@ -58,7 +59,7 @@ public class QuestionViewModel
         _ => ""
     };
 
-    public string GetDisplayText()
+    public string GetDisplayText(bool includePrompt = true)
     {
         if (!string.IsNullOrWhiteSpace(AnswerText))
         {
@@ -76,8 +77,14 @@ public class QuestionViewModel
              DataType.Equals("dropdown", StringComparison.OrdinalIgnoreCase)) &&
             !string.IsNullOrWhiteSpace(SelectedOption))
         {
-            return Answers.FirstOrDefault(a => a.AnswerId == SelectedOption)?.AnswerText
-                ?? $"Enter {QuestionText.ToLowerInvariant()}";
+            var answerText = Answers.FirstOrDefault(a => a.AnswerId == SelectedOption)?.AnswerText;
+
+            if (!string.IsNullOrWhiteSpace(answerText))
+            {
+                return answerText;
+            }
+
+            return includePrompt ? $"Enter {QuestionText.ToLowerInvariant()}" : string.Empty;
         }
 
         if (Answers?.Any(a => a.IsSelected) == true)
@@ -85,8 +92,13 @@ public class QuestionViewModel
             return string.Join("<br/>", Answers.Where(a => a.IsSelected).Select(a => a.AnswerText));
         }
 
-        var label = string.IsNullOrWhiteSpace(ShortQuestionText) ? QuestionText : ShortQuestionText;
-        return $"Enter {label.ToLowerInvariant()}";
+        if (includePrompt)
+        {
+            var label = string.IsNullOrWhiteSpace(ShortQuestionText) ? QuestionText : ShortQuestionText;
+            return $"Enter {label.ToLowerInvariant()}";
+        }
+
+        return string.Empty;
     }
 
     public string GetActionText()

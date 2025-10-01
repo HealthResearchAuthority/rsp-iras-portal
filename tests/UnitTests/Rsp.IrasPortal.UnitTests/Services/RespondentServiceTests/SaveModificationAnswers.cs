@@ -1,37 +1,29 @@
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Services;
+using Rsp.IrasPortal.UnitTests.TestHelpers;
 
 namespace Rsp.IrasPortal.UnitTests.Services.RespondentServiceTests;
 
 public class SaveModificationAnswers : TestServiceBase<RespondentService>
 {
-    [Theory, AutoData]
-    public async Task SaveModificationAnswers_DelegatesToClient_AndReturnsMappedResult
-    (
-        ProjectModificationAnswersRequest request
-    )
+    [Fact]
+    public async Task Returns_Success_On_200()
     {
         // Arrange
-        var apiResponse = Mock.Of<IApiResponse>(i => i.StatusCode == HttpStatusCode.OK);
+        var req = new ProjectModificationAnswersRequest();
 
-        var respondentServiceClient = Mocker.GetMock<IRespondentServiceClient>();
+        var apiResponse = ApiResponseFactory.Success();
 
-        respondentServiceClient
-            .Setup(c => c.SaveModificationAnswers(request))
+        Mocker
+            .GetMock<IRespondentServiceClient>()
+            .Setup(c => c.SaveModificationAnswers(req))
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.SaveModificationAnswers(request);
+        var result = await Sut.SaveModificationAnswers(req);
 
         // Assert
-        respondentServiceClient
-            .Verify
-            (
-                c => c.SaveModificationAnswers(request),
-                Times.Once
-            );
-
-        result.ShouldNotBeNull();
+        result.IsSuccessStatusCode.ShouldBeTrue();
     }
 }
