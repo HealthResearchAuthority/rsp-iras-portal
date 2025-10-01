@@ -174,7 +174,7 @@ stages:
     - group: 'PreProdEnvironment'
     condition: eq('${{ parameters.env }}', 'pre_prod')
     jobs:
-      - template: jobs/deploy.yaml@library
+      - template: jobs/deployPortal.yaml@library
         parameters:
           install_aspire: true
           service_defaults_repo: service_defaults
@@ -184,7 +184,7 @@ stages:
     - group: 'ProductionEnvironment'
     condition: eq('${{ parameters.env }}', 'production')
     jobs:
-      - template: jobs/deploy.yaml@library
+      - template: jobs/deployPortal.yaml@library
         parameters:
           install_aspire: true
           service_defaults_repo: service_defaults
