@@ -1,4 +1,5 @@
-﻿using Azure.Storage.Blobs;
+﻿using System.Net;
+using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Http;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.Responses;
@@ -87,7 +88,7 @@ public class BlobStorageService(BlobServiceClient blobServiceClient) : IBlobStor
     {
         if (string.IsNullOrWhiteSpace(blobPath))
         {
-            return new ServiceResponse { StatusCode = System.Net.HttpStatusCode.BadRequest, Error = "Blob path cannot be null or empty." };
+            return new ServiceResponse { StatusCode = HttpStatusCode.BadRequest, Error = "Blob path cannot be null or empty." };
         }
 
         var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
@@ -98,6 +99,6 @@ public class BlobStorageService(BlobServiceClient blobServiceClient) : IBlobStor
         // Delete the blob if it exists
         await blobClient.DeleteIfExistsAsync();
 
-        return new ServiceResponse { StatusCode = System.Net.HttpStatusCode.OK };
+        return new ServiceResponse { StatusCode = HttpStatusCode.OK };
     }
 }
