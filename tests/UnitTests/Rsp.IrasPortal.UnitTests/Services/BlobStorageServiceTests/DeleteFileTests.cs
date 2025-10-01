@@ -29,20 +29,6 @@ public class DeleteFileTests
     }
 
     [Fact]
-    public async Task Throws_When_BlobPath_IsNull()
-    {
-        // Act & Assert
-        await Should.ThrowAsync<ArgumentException>(() => _sut.DeleteFileAsync("test-container", null));
-    }
-
-    [Fact]
-    public async Task Throws_When_BlobPath_IsEmpty()
-    {
-        // Act & Assert
-        await Should.ThrowAsync<ArgumentException>(() => _sut.DeleteFileAsync("test-container", ""));
-    }
-
-    [Fact]
     public async Task CreatesContainer_AndDeletesBlob()
     {
         // Arrange

@@ -53,7 +53,11 @@
                 </table>
 
                 <div class="govuk-!-text-align-right govuk-!-margin-top-1">
-					<a asp-controller="Documents" asp-action="ConfirmDeleteDocuments" asp-route-backroute="toaddpage" class="govuk-link">Delete all</a>
+					<a asp-route="pmc:confirmdeletedocuments"
+					   asp-route-backRoute="toaddpage"
+					   class="govuk-link">
+						Delete all
+					</a>
                 </div>
             }
             else

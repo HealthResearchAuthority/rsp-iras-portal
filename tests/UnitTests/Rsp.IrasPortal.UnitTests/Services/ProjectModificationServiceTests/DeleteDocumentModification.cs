@@ -22,7 +22,7 @@ public class DeleteDocumentModification : TestServiceBase<ProjectModificationsSe
         var projectModificationsServiceClient = Mocker.GetMock<IProjectModificationsServiceClient>();
 
         projectModificationsServiceClient
-            .Setup(c => c.DeleteDocument(deleteRequest))
+            .Setup(c => c.DeleteDocuments(deleteRequest))
             .ReturnsAsync(apiResponse);
 
         // Act
@@ -34,7 +34,7 @@ public class DeleteDocumentModification : TestServiceBase<ProjectModificationsSe
         result.StatusCode.ShouldBe(HttpStatusCode.OK);
 
         // Verify
-        projectModificationsServiceClient.Verify(c => c.DeleteDocument(deleteRequest), Times.Once);
+        projectModificationsServiceClient.Verify(c => c.DeleteDocuments(deleteRequest), Times.Once);
     }
 
     [Theory, AutoData]
@@ -51,7 +51,7 @@ public class DeleteDocumentModification : TestServiceBase<ProjectModificationsSe
         var projectModificationsServiceClient = Mocker.GetMock<IProjectModificationsServiceClient>();
 
         projectModificationsServiceClient
-            .Setup(c => c.DeleteDocument(deleteRequest))
+            .Setup(c => c.DeleteDocuments(deleteRequest))
             .ReturnsAsync(apiResponse);
 
         // Act
@@ -63,6 +63,6 @@ public class DeleteDocumentModification : TestServiceBase<ProjectModificationsSe
         result.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
 
         // Verify
-        projectModificationsServiceClient.Verify(c => c.DeleteDocument(deleteRequest), Times.Once);
+        projectModificationsServiceClient.Verify(c => c.DeleteDocuments(deleteRequest), Times.Once);
     }
 }

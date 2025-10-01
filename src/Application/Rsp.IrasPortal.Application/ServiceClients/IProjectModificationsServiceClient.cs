@@ -184,6 +184,6 @@ public interface IProjectModificationsServiceClient
     /// <returns>
     /// A task representing the asynchronous operation. The task result contains the API response indicating success or failure.
     /// </returns>
-    [Post("/projectmodifications/deletedocument")]
-    public Task<IApiResponse> DeleteDocument(List<ProjectModificationDocumentRequest> projectModificationChangeRequest);
+    [Post("/projectmodifications/deletedocuments")]
+    public Task<IApiResponse> DeleteDocuments(List<ProjectModificationDocumentRequest> projectModificationChangeRequest);
 }

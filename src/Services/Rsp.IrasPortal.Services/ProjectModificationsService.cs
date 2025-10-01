@@ -237,7 +237,7 @@ public class ProjectModificationsService
     /// </returns>
     public async Task<ServiceResponse> DeleteDocumentModification(List<ProjectModificationDocumentRequest> projectModificationDocumentRequest)
     {
-        var apiResponse = await projectModificationsServiceClient.DeleteDocument(projectModificationDocumentRequest);
+        var apiResponse = await projectModificationsServiceClient.DeleteDocuments(projectModificationDocumentRequest);
 
         return apiResponse.ToServiceResponse();
     }

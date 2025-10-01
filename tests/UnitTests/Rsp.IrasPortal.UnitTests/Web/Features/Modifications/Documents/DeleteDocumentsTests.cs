@@ -53,7 +53,7 @@ public class DeleteDocumentsTests : TestServiceBase<DocumentsController>
 
         Mocker.GetMock<IBlobStorageService>()
             .Setup(s => s.DeleteFileAsync(It.IsAny<string>(), It.IsAny<string>()))
-            .Returns(Task.CompletedTask);
+            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         Mocker.GetMock<IRespondentService>()
             .Setup(s => s.GetModificationChangesDocuments(changeId, projectRecordId, respondentId))
@@ -106,7 +106,7 @@ public class DeleteDocumentsTests : TestServiceBase<DocumentsController>
 
         Mocker.GetMock<IBlobStorageService>()
             .Setup(s => s.DeleteFileAsync(It.IsAny<string>(), It.IsAny<string>()))
-            .Returns(Task.CompletedTask);
+            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         Mocker.GetMock<IRespondentService>()
             .Setup(s => s.GetModificationChangesDocuments(changeId, projectRecordId, respondentId))
@@ -138,7 +138,7 @@ public class DeleteDocumentsTests : TestServiceBase<DocumentsController>
 
         Mocker.GetMock<IBlobStorageService>()
             .Setup(s => s.DeleteFileAsync(It.IsAny<string>(), It.IsAny<string>()))
-            .Returns(Task.CompletedTask);
+            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         SetupControllerContext(changeId, projectRecordId, respondentId);
 

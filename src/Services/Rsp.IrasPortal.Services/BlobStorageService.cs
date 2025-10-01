@@ -1,6 +1,7 @@
 ﻿using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Http;
 using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 
 namespace Rsp.IrasPortal.Services;
@@ -82,10 +83,12 @@ public class BlobStorageService(BlobServiceClient blobServiceClient) : IBlobStor
     /// <param name="folderPrefix">The prefix to prepend to each blob name (typically the folder path).</param>
     /// <returns>A list of <see cref="DocumentSummaryItemDto"/> containing metadata about each uploaded file.</returns>
     /// <exception cref="ArgumentException">Thrown if the file list is null or empty.</exception>
-    public async Task DeleteFileAsync(string containerName, string blobPath)
+    public async Task<ServiceResponse> DeleteFileAsync(string containerName, string blobPath)
     {
         if (string.IsNullOrWhiteSpace(blobPath))
-            throw new ArgumentException("Blob path cannot be null or empty.", nameof(blobPath));
+        {
+            return new ServiceResponse { StatusCode = System.Net.HttpStatusCode.BadRequest, Error = "Blob path cannot be null or empty." };
+        }
 
         var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
         await containerClient.CreateIfNotExistsAsync();
@@ -94,5 +97,7 @@ public class BlobStorageService(BlobServiceClient blobServiceClient) : IBlobStor
 
         // Delete the blob if it exists
         await blobClient.DeleteIfExistsAsync();
+
+        return new ServiceResponse { StatusCode = System.Net.HttpStatusCode.OK };
     }
 }

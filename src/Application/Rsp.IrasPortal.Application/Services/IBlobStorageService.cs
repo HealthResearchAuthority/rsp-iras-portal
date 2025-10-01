@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.Responses;
 
 namespace Rsp.IrasPortal.Application.Services;
 
@@ -29,5 +30,5 @@ public interface IBlobStorageService
     /// </returns>
     Task<List<DocumentSummaryItemDto>> ListFilesAsync(string containerName, string folderPrefix);
 
-    Task DeleteFileAsync(string containerName, string blobPath);
+    Task<ServiceResponse> DeleteFileAsync(string containerName, string blobPath);
 }
