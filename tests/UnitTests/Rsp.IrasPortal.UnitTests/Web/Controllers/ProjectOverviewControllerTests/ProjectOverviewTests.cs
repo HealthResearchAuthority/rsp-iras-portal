@@ -479,7 +479,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 
         var modifications = new List<ModificationsDto>
         {
-            new() { ModificationId = "m1", ModificationType = "Type1", Status = "Draft" }
+            new() { ModificationId = "m1", ModificationType = "Type1", Status = ModificationStatus.Draft }
         };
 
         var modificationsResponse = new GetModificationsResponse
@@ -507,7 +507,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var mod = model.Modifications.Single();
         mod.ModificationIdentifier.ShouldBe("m1");
         mod.ModificationType.ShouldBe("Type1");
-        mod.Status.ShouldBe("Draft");
+        mod.Status.ShouldBe(ModificationStatus.Draft);
         mod.ReviewType.ShouldBeNull();
         mod.Category.ShouldBeNull();
         mod.DateSubmitted.ShouldNotBeNull();

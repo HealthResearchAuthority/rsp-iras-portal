@@ -206,7 +206,7 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
             .ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new IrasApplicationResponse { Id = "rec-1", IrasId = 1, Status = "Draft" }
+                Content = new IrasApplicationResponse { Id = "rec-1", IrasId = 1, Status = ModificationStatus.Draft }
             });
 
         respondentService
@@ -235,7 +235,7 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
         model.ProjectRecordId.ShouldBe("rec-1");
         model.CategoryId.ShouldBe(QuestionCategories.ProjectRecrod);
         model.ProjectPlannedEndDate.ShouldBe("01 January 2025");
-        model.Status.ShouldBe("Draft");
+        model.Status.ShouldBe(ModificationStatus.Draft);
         model.IrasId.ShouldBe(1);
         model.ParticipatingNations.ShouldBe(new List<string> { "England", "Scotland" });
         model.NhsOrHscOrganisations.ShouldBe("Yes");
