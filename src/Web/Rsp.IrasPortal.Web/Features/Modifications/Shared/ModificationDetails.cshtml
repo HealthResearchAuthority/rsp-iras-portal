@@ -123,3 +123,15 @@
         </div>
     </div>
 }
+
+@if (Model.Status is "Draft")
+{
+    <a asp-route="pmc:deletemodification"
+       asp-route-projectRecordId="@Model.ProjectRecordId"
+       asp-route-irasId="@(Model.ModificationIdentifier?.Split('/')[0])"
+       asp-route-shortTitle="@Model.ShortTitle"
+       asp-route-projectModificationId="@Model.ModificationId"
+       class="govuk-link">
+        Delete modification
+    </a>
+}
