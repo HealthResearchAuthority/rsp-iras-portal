@@ -1,8 +1,12 @@
-﻿@using Rsp.IrasPortal.Domain.Identity
+﻿@using Microsoft.AspNetCore.Http.Extensions
+@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Domain.Identity
 @model (List<ModificationsModel> Modifications, IEnumerable<User> Reviewers)
 
 @{
     ViewData["Title"] = "Select a reviewer - Modifications ready to assign - Modifications - Approvals - System Administration";
+	TempData[TempDataKeys.ProjectModification.LinkBackToReferrer] = true;
+	TempData[TempDataKeys.ProjectModification.UrlReferrer] = Context.Request.GetDisplayUrl();
 }
 
 @section BackNavigation {
@@ -23,7 +27,15 @@
             @foreach (var item in Model.Modifications)
             {
                 <tr class="govuk-table__row">
-                    <td class="govuk-table__cell">@item.ModificationId</td>
+                    <td class="govuk-table__cell"><a asp-route="pmc:reviewallchanges"
+                                                     asp-route-projectRecordId="@item.ProjectRecordId"
+						   asp-route-irasId="@(item.ModificationId?.Split('/')[0])"
+                                                     asp-route-shortTitle="@item.ShortProjectTitle"
+						   asp-route-projectModificationId="@item.Id"
+                                                     class="govuk-link">
+							@item.ModificationId
+                        </a>
+                    </td>
                     <td class="govuk-table__cell">
                         <a asp-route="pov:projectdetails"
                            asp-route-projectRecordId="@item.ProjectRecordId"

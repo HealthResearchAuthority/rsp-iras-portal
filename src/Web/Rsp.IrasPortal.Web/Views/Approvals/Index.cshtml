@@ -67,6 +67,9 @@
     var searchHint = pageContent.GetValueOrDefault("Approvals.Search.SearchHint", null);
     var noResultsTitle = pageContent.GetValueOrDefault("Approvals.Search.NoResultsTitle", null);
     var noResultsBody = pageContent.GetValueOrDefault("Approvals.Search.NoResultsBody", null);
+
+    TempData[TempDataKeys.ProjectModification.LinkBackToReferrer] = true;
+    TempData[TempDataKeys.ProjectModification.UrlReferrer] = Context.Request.GetDisplayUrl();
 }
 
 <div class="govuk-grid-row">
@@ -487,10 +490,6 @@ else if (showNoResultsMessage)
 										<partial name="_SortableHeaderButton" model="@sortableHeaderModel" />
                                 </th>
                             }
-                            <th scope="col"
-                                class="govuk-table__header govuk-table__header-sortable govuk-!-text-align-right">
-                                Project link
-                            </th>
                         </tr>
                         </thead>
                         <tbody class="govuk-table__body govuk-body-s">
@@ -498,7 +497,14 @@ else if (showNoResultsMessage)
                             foreach (var modification in Model.Modifications)
                             {
                                 <tr class="govuk-table__row">
-                                    <td class="govuk-table__cell">@modification.ModificationId</td>
+                                    <td class="govuk-table__cell"><a asp-route="pmc:reviewallchanges"
+											   asp-route-projectRecordId="@modification.ProjectRecordId"
+											   asp-route-irasId="@(modification.ModificationId?.Split('/')[0])"
+											   asp-route-shortTitle="@modification.ShortProjectTitle"
+											   asp-route-projectModificationId="@modification.Id"
+                                                                     class="govuk-link">
+												@modification.ModificationId
+                                    </a></td>
                                     <td class="govuk-table__cell">
                                         <a asp-route="pov:projectdetails"
                                            asp-route-projectRecordId="@modification.ProjectRecordId"
@@ -510,9 +516,6 @@ else if (showNoResultsMessage)
                                     <td class="govuk-table__cell">@modification.ModificationType</td>
                                     <td class="govuk-table__cell">@modification.ChiefInvestigator</td>
                                     <td class="govuk-table__cell">@modification.LeadNation</td>
-                                    <td class="govuk-table__cell govuk-!-text-align-right">
-                                        <a class="govuk-link" asp-route="">View record</a>
-                                    </td>
                                 </tr>
                             }
                         }
