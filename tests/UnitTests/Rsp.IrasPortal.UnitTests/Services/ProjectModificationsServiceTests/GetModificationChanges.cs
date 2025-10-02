@@ -1,3 +1,4 @@
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Services;
@@ -14,7 +15,7 @@ public class GetModificationChanges : TestServiceBase<ProjectModificationsServic
         var id = Guid.NewGuid();
         var list = new List<ProjectModificationChangeResponse>
         {
-            new() { Id = Guid.NewGuid(), Status = "Draft" }
+            new() { Id = Guid.NewGuid(), Status = ModificationStatus.Draft }
         };
 
         Mocker

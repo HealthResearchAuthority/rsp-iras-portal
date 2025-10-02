@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Controllers;
@@ -200,6 +201,11 @@ public class ConfirmProjectDetaisTests : TestServiceBase<QuestionnaireController
         Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
             .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), default))
             .ReturnsAsync(new ValidationResult());
+
+        Mocker
+            .GetMock<IApplicationsService>()
+            .Setup(x => x.UpdateApplication(It.IsAny<IrasApplicationRequest>()))
+            .ReturnsAsync(new ServiceResponse<IrasApplicationResponse>().WithStatus(HttpStatusCode.OK));
 
         // Act
         var result = await Sut.ConfirmProjectDetails();

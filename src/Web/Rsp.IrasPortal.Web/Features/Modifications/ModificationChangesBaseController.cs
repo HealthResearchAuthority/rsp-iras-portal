@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using FluentValidation;
 using Mapster;
@@ -9,7 +10,6 @@ using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Extensions;
-using Rsp.IrasPortal.Web.Features.Modifications.Helpers;
 using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
 using static Rsp.IrasPortal.Application.Constants.TempDataKeys;
@@ -101,44 +101,6 @@ public class ModificationChangesBaseController
         {
             await respondentService.SaveModificationChangeAnswers(request);
         }
-    }
-
-    /// <summary>
-    /// Validates the passed QuestionnaireViewModel and return ture or false
-    /// </summary>
-    /// <param name="model"><see cref="QuestionnaireViewModel"/> to validate</param>
-    protected async Task<bool> ValidateQuestionnaire(QuestionnaireViewModel model, bool validateMandatory = false)
-    {
-        // using the FluentValidation, create a new context for the model
-        var context = new ValidationContext<QuestionnaireViewModel>(model);
-
-        if (validateMandatory)
-        {
-            context.RootContextData["ValidateMandatoryOnly"] = true;
-        }
-
-        // this is required to get the questions in the validator
-        // before the validation cicks in
-        context.RootContextData["questions"] = model.Questions;
-
-        // call the ValidateAsync to execute the validation
-        // this will trigger the fluentvalidation using the injected validator if configured
-        var result = await validator.ValidateAsync(context);
-
-        if (!result.IsValid)
-        {
-            // Copy the validation results into ModelState.
-            // ASP.NET uses the ModelState collection to populate
-            // error messages in the View.
-            foreach (var error in result.Errors)
-            {
-                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
-            }
-
-            return false;
-        }
-
-        return true;
     }
 
     /// <summary>
@@ -306,49 +268,18 @@ public class ModificationChangesBaseController
         // convert the questions response to QuestionnaireViewModel
         var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(questionSetServiceResponse.Content!);
 
-        var questions = questionnaire.Questions;
+        questionnaire.UpdateWithRespondentAnswers(respondentAnswers);
 
-        // validate each category
-        foreach (var questionsGroup in questions.ToLookup(x => x.Category))
+        if (reviseChange)
         {
-            var category = questionsGroup.Key;
+            var isValid = await this.ValidateQuestionnaire(validator, questionnaire, true);
 
-            // get the answers for the category
-            var answers = respondentAnswers.Where(r => r.CategoryId == category).ToList();
-
-            if (answers.Count > 0)
+            if (!isValid)
             {
-                // if we have answers, update the model with the provided answers
-                ModificationHelpers.UpdateWithAnswers(respondentAnswers, [.. questionsGroup.Select(q => q)]);
-            }
-
-            if (reviseChange)
-            {
-                // using the FluentValidation, create a new context for the model
-                var context = new ValidationContext<QuestionnaireViewModel>(questionnaire);
-
-                // this is required to get the questions in the validator
-                // before the validation cicks in
-                context.RootContextData["questions"] = questionnaire.Questions;
-                context.RootContextData["ValidateMandatoryOnly"] = true;
-
-                // call the ValidateAsync to execute the validation
-                // this will trigger the fluentvalidation using the injected validator if configured
-                var result = await validator.ValidateAsync(context);
-                if (!result.IsValid)
-                {
-                    // Copy the validation results into ModelState.
-                    // ASP.NET uses the ModelState collection to populate
-                    // error messages in the View.
-                    foreach (var error in result.Errors)
-                    {
-                        ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
-                    }
-
-                    return View("ModificationChangesReview", questionnaire);
-                }
+                return View("ModificationChangesReview", questionnaire);
             }
         }
+
 
         return View("ModificationChangesReview", questionnaire);
     }
@@ -357,82 +288,15 @@ public class ModificationChangesBaseController
     /// Gets all questions for the application. Validates for each category
     /// and display the progress of the application
     /// </summary>
-    public async Task<IActionResult> ConfirmModificationChanges()
+    [ExcludeFromCodeCoverage]
+    public IActionResult ConfirmModificationChanges()
     {
-        var (projectModificationId, projectModificationChangeId) = CheckModification();
+        var (projectModificationId, _) = CheckModification();
 
         // get the application from the session
         // to get the projectApplicationId
         var projectRecordId = TempData.Peek(ProjectRecordId) as string ?? string.Empty;
 
-        // get the respondent answers for the category
-        var respondentServiceResponse = await respondentService.GetModificationChangeAnswers(projectModificationChangeId, projectRecordId);
-
-        // return the error view if unsuccessfull
-        if (!respondentServiceResponse.IsSuccessStatusCode)
-        {
-            // return the error page
-            return this.ServiceError(respondentServiceResponse);
-        }
-
-        var specificAreaOfChangeId = GetSpecificAreaOfChangeId();
-
-        // get the questions for all categories
-        var questionSetServiceResponse = await cmsQuestionsetService.GetModificationsJourney(specificAreaOfChangeId.ToString());
-
-        // return the error view if unsuccessfull
-        if (!questionSetServiceResponse.IsSuccessStatusCode)
-        {
-            // return the error page
-            return this.ServiceError(questionSetServiceResponse);
-        }
-
-        var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(questionSetServiceResponse.Content!);
-        var questions = questionnaire.Questions;
-
-        var respondentAnswers = respondentServiceResponse.Content!;
-
-        // validate each category
-        foreach (var questionsGroup in questions.ToLookup(q => q.Category))
-        {
-            var category = questionsGroup.Key;
-
-            // get the answers for the category
-            var answers = respondentAnswers.Where(r => r.CategoryId == category).ToList();
-
-            ValidationContext<QuestionnaireViewModel> context;
-
-            // if we have answers, update the model with the provided answers
-            ModificationHelpers.UpdateWithAnswers(answers, [.. questionsGroup.Select(q => q)]);
-
-            #region orginal validation
-
-            //// using the FluentValidation, create a new context for the model
-            //context = new ValidationContext<QuestionnaireViewModel>(questionnaire);
-
-            //// this is required to get the questions in the validator
-            //// before the validation cicks in
-            //context.RootContextData["questions"] = questionnaire.Questions;
-            //context.RootContextData["ValidateMandatoryOnly"] = true;
-
-            //// call the ValidateAsync to execute the validation
-            //// this will trigger the fluentvalidation using the injected validator if configured
-            //var result = await validator.ValidateAsync(context);
-            //if (!result.IsValid)
-            //{
-            //    // Copy the validation results into ModelState.
-            //    // ASP.NET uses the ModelState collection to populate
-            //    // error messages in the View.
-            //    foreach (var error in result.Errors)
-            //    {
-            //        ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
-            //    }
-
-            //    return View("ModificationChangesReview", questionnaire);
-            //}
-
-            #endregion orginal validation
-        }
 
         // change it to go to the confirmation page i.e. submitted to sponsor
         // no next stage so redirect to modification details page

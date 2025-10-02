@@ -176,6 +176,18 @@ public interface IProjectModificationsServiceClient
     public Task<IApiResponse> UpdateModificationStatus(Guid modificationId, string status);
 
     /// <summary>
+    /// Deletes one or more modification documents associated with a project modification change.
+    /// </summary>
+    /// <param name="projectModificationChangeRequest">
+    /// A list of <see cref="ProjectModificationDocumentRequest"/> representing the documents to be created.
+    /// </param>
+    /// <returns>
+    /// A task representing the asynchronous operation. The task result contains the API response indicating success or failure.
+    /// </returns>
+    [Post("/projectmodifications/deletedocuments")]
+    public Task<IApiResponse> DeleteDocuments(List<ProjectModificationDocumentRequest> projectModificationChangeRequest);
+
+    /// <summary>
     /// Deletes a project modification by its unique identifier.
     /// </summary>
     /// <param name="modificationId">The unique identifier of the project modification.</param>

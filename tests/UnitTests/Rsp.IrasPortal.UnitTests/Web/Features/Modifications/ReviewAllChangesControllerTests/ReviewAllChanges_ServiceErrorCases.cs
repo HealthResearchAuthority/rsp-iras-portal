@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Features.Modifications;
@@ -19,7 +22,7 @@ public class ReviewAllChanges_ServiceErrorCases : TestServiceBase<ReviewAllChang
 
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.GetModificationsByIds(It.IsAny<List<string>>()))
-            .ReturnsAsync(new ServiceResponse<Rsp.IrasPortal.Application.DTOs.Responses.GetModificationsResponse>
+            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
             {
                 StatusCode = HttpStatusCode.InternalServerError
             });
@@ -42,7 +45,7 @@ public class ReviewAllChanges_ServiceErrorCases : TestServiceBase<ReviewAllChang
 
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.GetModificationsByIds(It.IsAny<List<string>>()))
-            .ReturnsAsync(new ServiceResponse<Rsp.IrasPortal.Application.DTOs.Responses.GetModificationsResponse>
+            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
             {
                 StatusCode = HttpStatusCode.OK,
                 Content = new() { Modifications = [] }
@@ -68,15 +71,15 @@ public class ReviewAllChanges_ServiceErrorCases : TestServiceBase<ReviewAllChang
 
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.GetModificationsByIds(It.IsAny<List<string>>()))
-            .ReturnsAsync(new ServiceResponse<Rsp.IrasPortal.Application.DTOs.Responses.GetModificationsResponse>
+            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new() { Modifications = [new Rsp.IrasPortal.Application.DTOs.ModificationsDto { Id = modId, ModificationId = modId, Status = "Draft" }] }
+                Content = new() { Modifications = [new ModificationsDto { Id = modId, ModificationId = modId, Status = ModificationStatus.Draft }] }
             });
 
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.GetModificationChanges(Guid.Parse(modId)))
-            .ReturnsAsync(new ServiceResponse<IEnumerable<Rsp.IrasPortal.Application.DTOs.Responses.ProjectModificationChangeResponse>>
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>
             {
                 StatusCode = HttpStatusCode.BadGateway
             });
@@ -101,15 +104,15 @@ public class ReviewAllChanges_ServiceErrorCases : TestServiceBase<ReviewAllChang
 
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.GetModificationsByIds(It.IsAny<List<string>>()))
-            .ReturnsAsync(new ServiceResponse<Rsp.IrasPortal.Application.DTOs.Responses.GetModificationsResponse>
+            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new() { Modifications = [new Rsp.IrasPortal.Application.DTOs.ModificationsDto { Id = modId, ModificationId = modId, Status = "Draft" }] }
+                Content = new() { Modifications = [new ModificationsDto { Id = modId, ModificationId = modId, Status = ModificationStatus.Draft }] }
             });
 
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.GetModificationChanges(Guid.Parse(modId)))
-            .ReturnsAsync(new ServiceResponse<IEnumerable<Rsp.IrasPortal.Application.DTOs.Responses.ProjectModificationChangeResponse>>
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>
             {
                 StatusCode = HttpStatusCode.OK,
                 Content = []
@@ -117,7 +120,7 @@ public class ReviewAllChanges_ServiceErrorCases : TestServiceBase<ReviewAllChang
 
         Mocker.GetMock<ICmsQuestionsetService>()
             .Setup(s => s.GetInitialModificationQuestions())
-            .ReturnsAsync(new ServiceResponse<Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications.StartingQuestionsDto>
+            .ReturnsAsync(new ServiceResponse<Application.DTOs.CmsQuestionset.Modifications.StartingQuestionsDto>
             {
                 StatusCode = HttpStatusCode.BadRequest
             });
