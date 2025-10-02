@@ -6,6 +6,7 @@ using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Web.Features.Modifications;
+using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.SponsorReferenceControllerTests;
 
@@ -97,7 +98,7 @@ public class DisplayQuestionnaire_Tests : TestServiceBase<SponsorReferenceContro
 
         var qset = new CmsQuestionSetResponse
         {
-            Sections = [ new SectionModel { Id = SectionId, CategoryId = CategoryId, Questions = [ new QuestionModel { Id = "Q1", QuestionId = "Q1", Name = "Q1", CategoryId = CategoryId, AnswerDataType = "Text" } ] } ]
+            Sections = [new SectionModel { Id = SectionId, CategoryId = CategoryId, Questions = [new QuestionModel { Id = "Q1", QuestionId = "Q1", Name = "Q1", CategoryId = CategoryId, AnswerDataType = "Text" }] }]
         };
 
         Mocker.GetMock<ICmsQuestionsetService>()
@@ -110,7 +111,7 @@ public class DisplayQuestionnaire_Tests : TestServiceBase<SponsorReferenceContro
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
         view.ViewName.ShouldBe(nameof(SponsorReferenceController.SponsorReference));
-        var model = view.Model.ShouldBeOfType<Rsp.IrasPortal.Web.Models.QuestionnaireViewModel>();
+        var model = view.Model.ShouldBeOfType<QuestionnaireViewModel>();
         model.CurrentStage.ShouldBe(SectionId);
         model.Questions.Count.ShouldBe(1);
     }

@@ -7,7 +7,6 @@ using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Extensions;
-using Rsp.IrasPortal.Web.Features.Modifications.Helpers;
 using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
 using static Rsp.IrasPortal.Application.Constants.TempDataKeys;
@@ -69,39 +68,18 @@ public class PlannedEndDateController
         // and deserialize it
         var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(questionsSetServiceResponse.Content!);
 
-        var questions = questionnaire.Questions;
-
         // update the model with the answeres
         // provided by the applicant
-        foreach (var question in questions)
-        {
-            // find the question in the submitted model
-            // that matches the index
-            var response = model.Questions.Find(q => q.Index == question.Index);
-
-            // update the question with provided answers
-            question.SelectedOption = response?.SelectedOption;
-
-            if (question.DataType != "Dropdown")
-            {
-                question.Answers = response?.Answers ?? [];
-            }
-
-            question.AnswerText = response?.AnswerText;
-            // update the date fields if they are present
-            question.Day = response?.Day;
-            question.Month = response?.Month;
-            question.Year = response?.Year;
-        }
+        questionnaire.UpdateWithAnswers(model.Questions);
 
         // override the submitted model
-        // with the updated model with answers
-        model.Questions = questions;
+        // with the updated model with answers and rules
+        model.Questions = questionnaire.Questions;
 
         // At this point only validating the data format like date, email, length etc if provided
         // so that users can continue without entering the information. From the review screen
         // all mandatory questions will be validated
-        var isValid = await ValidateQuestionnaire(model);
+        var isValid = await this.ValidateQuestionnaire(validator, model);
 
         // set the previous, current and next stages
         var navigation = await SetStage(model.CurrentStage!);
@@ -229,12 +207,12 @@ public class PlannedEndDateController
         // convert the questions response to QuestionnaireViewModel
         var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(questionsSetServiceResponse.Content!, true);
 
-        var questions = questionnaire.Questions;
+        //var questions = questionnaire.Questions;
 
         // if respondent has answerd any questions
         if (respondentAnswers.Any())
         {
-            ModificationHelpers.UpdateWithAnswers(respondentAnswers, questions);
+            questionnaire.UpdateWithRespondentAnswers(respondentAnswers);
         }
 
         TempData[ProjectModificationChange.ReviewChanges] = reviewAnswers;
@@ -249,11 +227,11 @@ public class PlannedEndDateController
         var viewModel = new QuestionnaireViewModel
         {
             CurrentStage = sectionId,
-            Questions = questions
+            Questions = questionnaire.Questions
         };
 
         // see if the orginal answers are required to be shown
-        await PopulateOriginalAnswers(projectRecordId, questions, viewModel);
+        await PopulateOriginalAnswers(projectRecordId, questionnaire.Questions, viewModel);
 
         // if we have questions in the session
         // then return the view with the model

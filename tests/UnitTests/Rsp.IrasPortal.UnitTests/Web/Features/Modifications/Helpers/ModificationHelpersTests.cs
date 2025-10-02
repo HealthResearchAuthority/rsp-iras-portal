@@ -1,5 +1,6 @@
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Web.Features.Modifications.Helpers;
+using Rsp.IrasPortal.Web.Features.Modifications.Models;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.Helpers;
@@ -10,18 +11,21 @@ public class ModificationHelpersTests
     public void UpdateWithAnswers_Should_Set_SelectedOption_And_AnswerText_For_SingleChoice()
     {
         // Arrange
-        var questions = new List<QuestionViewModel>
+        var questionnaire = new QuestionnaireViewModel
         {
-            new()
-            {
-                QuestionId = "Q1",
-                DataType = "Radio button",
-                Answers =
-                [
-                    new() { AnswerId = "A", AnswerText = "Option A" },
-                    new() { AnswerId = "B", AnswerText = "Option B" }
-                ]
-            }
+            Questions =
+            [
+                new()
+                {
+                    QuestionId = "Q1",
+                    DataType = "Radio button",
+                    Answers =
+                    [
+                        new() { AnswerId = "A", AnswerText = "Option A" },
+                        new() { AnswerId = "B", AnswerText = "Option B" }
+                    ]
+                }
+            ]
         };
 
         var respondentAnswers = new List<RespondentAnswerDto>
@@ -36,10 +40,10 @@ public class ModificationHelpersTests
         };
 
         // Act
-        ModificationHelpers.UpdateWithAnswers(respondentAnswers, questions);
+        questionnaire.UpdateWithRespondentAnswers(respondentAnswers);
 
         // Assert
-        var q1 = questions.Single(q => q.QuestionId == "Q1");
+        var q1 = questionnaire.Questions.Single(q => q.QuestionId == "Q1");
         q1.SelectedOption.ShouldBe("A");
         q1.AnswerText.ShouldBe("Free text value");
         // For single choice path IsSelected flags should remain false (helper only toggles for Multiple)
@@ -50,19 +54,22 @@ public class ModificationHelpersTests
     public void UpdateWithAnswers_Should_Set_IsSelected_For_MultipleChoice_Answers()
     {
         // Arrange
-        var questions = new List<QuestionViewModel>
+        var questionnaire = new QuestionnaireViewModel
         {
-            new()
-            {
-                QuestionId = "Q2",
-                DataType = "Checkbox",
-                Answers =
-                [
-                    new() { AnswerId = "A", AnswerText = "Opt A" },
-                    new() { AnswerId = "B", AnswerText = "Opt B" },
-                    new() { AnswerId = "C", AnswerText = "Opt C" }
-                ]
-            }
+            Questions =
+            [
+                new()
+                {
+                    QuestionId = "Q2",
+                    DataType = "Checkbox",
+                    Answers =
+                    [
+                        new() { AnswerId = "A", AnswerText = "Opt A" },
+                        new() { AnswerId = "B", AnswerText = "Opt B" },
+                        new() { AnswerId = "C", AnswerText = "Opt C" }
+                    ]
+                }
+            ]
         };
 
         var respondentAnswers = new List<RespondentAnswerDto>
@@ -76,10 +83,10 @@ public class ModificationHelpersTests
         };
 
         // Act
-        ModificationHelpers.UpdateWithAnswers(respondentAnswers, questions);
+        questionnaire.UpdateWithRespondentAnswers(respondentAnswers);
 
         // Assert
-        var q2 = questions.Single(q => q.QuestionId == "Q2");
+        var q2 = questionnaire.Questions.Single(q => q.QuestionId == "Q2");
         q2.Answers.Single(a => a.AnswerId == "A").IsSelected.ShouldBeTrue();
         q2.Answers.Single(a => a.AnswerId == "C").IsSelected.ShouldBeTrue();
         q2.Answers.Single(a => a.AnswerId == "B").IsSelected.ShouldBeFalse();
@@ -89,9 +96,9 @@ public class ModificationHelpersTests
     public void UpdateWithAnswers_Should_Ignore_RespondentAnswer_When_Question_Not_Found()
     {
         // Arrange
-        var questions = new List<QuestionViewModel>
+        var questionnaire = new QuestionnaireViewModel
         {
-            new() { QuestionId = "Q3", DataType = "Text" }
+            Questions = [new() { QuestionId = "Q3", DataType = "Text" }]
         };
 
         var respondentAnswers = new List<RespondentAnswerDto>
@@ -100,10 +107,10 @@ public class ModificationHelpersTests
         };
 
         // Act (should not throw)
-        ModificationHelpers.UpdateWithAnswers(respondentAnswers, questions);
+        questionnaire.UpdateWithRespondentAnswers(respondentAnswers);
 
         // Assert - existing question untouched
-        var q3 = questions.Single(q => q.QuestionId == "Q3");
+        var q3 = questionnaire.Questions.Single(q => q.QuestionId == "Q3");
         q3.SelectedOption.ShouldBeNull();
         q3.AnswerText.ShouldBeNull();
     }
@@ -112,28 +119,32 @@ public class ModificationHelpersTests
     public void UpdateWithAnswers_Should_Handle_Mixture_Of_Single_And_Multiple()
     {
         // Arrange
-        var questions = new List<QuestionViewModel>
+
+        var questionnaire = new QuestionnaireViewModel
         {
-            new()
-            {
-                QuestionId = "Q4",
-                DataType = "Checkbox",
-                Answers =
-                [
-                    new() { AnswerId = "1", AnswerText = "One" },
-                    new() { AnswerId = "2", AnswerText = "Two" }
-                ]
-            },
-            new()
-            {
-                QuestionId = "Q5",
-                DataType = "Radio button",
-                Answers =
-                [
-                    new() { AnswerId = "Y", AnswerText = "Yes" },
-                    new() { AnswerId = "N", AnswerText = "No" }
-                ]
-            }
+            Questions =
+            [
+                new()
+                {
+                    QuestionId = "Q4",
+                    DataType = "Checkbox",
+                    Answers =
+                    [
+                        new() { AnswerId = "1", AnswerText = "One" },
+                        new() { AnswerId = "2", AnswerText = "Two" }
+                    ]
+                },
+                new()
+                {
+                    QuestionId = "Q5",
+                    DataType = "Radio button",
+                    Answers =
+                    [
+                        new() { AnswerId = "Y", AnswerText = "Yes" },
+                        new() { AnswerId = "N", AnswerText = "No" }
+                    ]
+                }
+            ]
         };
 
         var respondentAnswers = new List<RespondentAnswerDto>
@@ -154,31 +165,31 @@ public class ModificationHelpersTests
         };
 
         // Act
-        ModificationHelpers.UpdateWithAnswers(respondentAnswers, questions);
+        questionnaire.UpdateWithRespondentAnswers(respondentAnswers);
 
         // Assert
-        var q4 = questions.Single(q => q.QuestionId == "Q4");
+        var q4 = questionnaire.Questions.Single(q => q.QuestionId == "Q4");
         q4.Answers.Single(a => a.AnswerId == "2").IsSelected.ShouldBeTrue();
         q4.Answers.Single(a => a.AnswerId == "1").IsSelected.ShouldBeFalse();
 
-        var q5 = questions.Single(q => q.QuestionId == "Q5");
+        var q5 = questionnaire.Questions.Single(q => q.QuestionId == "Q5");
         q5.SelectedOption.ShouldBe("Y");
         q5.AnswerText.ShouldBe("Yes");
     }
 
     [Fact]
-    public void ApplyRespondentAnswersAndTrim_Removes_SurfacingQuestion_When_ActionMatches_And_Trims_Conditional_Unanswered()
+    public void ApplyRespondentAnswers_Updates_Questionnaire_WithAnswers()
     {
         // Arrange
         var questionnaire = new QuestionnaireViewModel
         {
-            Questions = new List<QuestionViewModel>
-            {
+            Questions =
+            [
                 new() { QuestionId = "S1", Category = "C1", ShowAnswerOn = "ReviewAllChanges", IsMandatory = false, IsOptional = false }, // surfacing
-                new() { QuestionId = "Q2", Category = "C1", IsMandatory = false, IsOptional = false, AnswerText = null, Answers = new List<AnswerViewModel>() }, // conditional unanswered
+                new() { QuestionId = "Q2", Category = "C1", IsMandatory = false, IsOptional = false, AnswerText = null, Answers = [] }, // conditional unanswered
                 new() { QuestionId = "Q3", Category = "C1", IsMandatory = true, IsOptional = false }, // mandatory stays
                 new() { QuestionId = "Q4", Category = "C1", IsMandatory = false, IsOptional = false } // will get answer
-            }
+            ]
         };
 
         var respondentAnswers = new List<RespondentAnswerDto>
@@ -187,21 +198,7 @@ public class ModificationHelpersTests
         };
 
         // Act
-        var (surfacingQuestion, showSurfacingQuestion) = ModificationHelpers.ApplyRespondentAnswersAndTrim(questionnaire, respondentAnswers, nameof(ModificationHelpersTests.ApplyRespondentAnswersAndTrim_Removes_SurfacingQuestion_When_ActionMatches_And_Trims_Conditional_Unanswered).Replace("ApplyRespondentAnswersAndTrim_Removes_SurfacingQuestion_When_ActionMatches_And_Trims_Conditional_Unanswered", "ReviewAllChanges"));
-
-        // Assert
-        showSurfacingQuestion.ShouldBeTrue();
-        surfacingQuestion.ShouldNotBeNull();
-        surfacingQuestion!.QuestionId.ShouldBe("S1");
-
-        // S1 should have been removed from the questionnaire
-        questionnaire.Questions.Any(q => q.QuestionId == "S1").ShouldBeFalse();
-
-        // Q2 was conditional with no answer and should be removed
-        questionnaire.Questions.Any(q => q.QuestionId == "Q2").ShouldBeFalse();
-
-        // Q3 (mandatory) should remain
-        questionnaire.Questions.Any(q => q.QuestionId == "Q3").ShouldBeTrue();
+        questionnaire.UpdateWithRespondentAnswers(respondentAnswers);
 
         // Q4 should remain and have the answer applied
         var q4 = questionnaire.Questions.Single(q => q.QuestionId == "Q4");
@@ -209,32 +206,73 @@ public class ModificationHelpersTests
     }
 
     [Fact]
-    public void ApplyRespondentAnswersAndTrim_Keeps_SurfacingQuestion_When_ActionDoesNotMatch()
+    public void ShowSurfacingQuestion_Should_Remove_Surfacing_Question_And_Set_SpecificChangeAnswer_When_ActionName_Matches()
     {
         // Arrange
-        var questionnaire = new QuestionnaireViewModel
+        var surfacingQuestion = new QuestionViewModel
         {
-            Questions = new List<QuestionViewModel>
-            {
-                new() { QuestionId = "S2", Category = "C1", ShowAnswerOn = "OtherAction", IsMandatory = false, IsOptional = false }, // surfacing but for another action
-                new() { QuestionId = "Q5", Category = "C1", IsMandatory = false, IsOptional = false } // conditional unanswered
-            }
+            QuestionId = "S1",
+            ShowAnswerOn = "ReviewAllChanges",
+            AnswerText = "Surfacing answer",
+            DataType = "Text", // Ensure required property is set
+            QuestionText = "Surfacing question?",
+            Answers = []
         };
-
-        var respondentAnswers = new List<RespondentAnswerDto>();
+        var questions = new List<QuestionViewModel>
+        {
+            surfacingQuestion,
+            new() { QuestionId = "Q2", DataType = "Text", QuestionText = "Q2?", Answers = [] }
+        };
+        var modificationChange = new ModificationChangeModel();
 
         // Act
-        var (surfacingQuestion, showSurfacingQuestion) = ModificationHelpers.ApplyRespondentAnswersAndTrim(questionnaire, respondentAnswers, "ReviewAllChanges");
+        ModificationHelpers.ShowSurfacingQuestion(questions, modificationChange, "ReviewAllChanges");
 
         // Assert
-        showSurfacingQuestion.ShouldBeFalse();
-        surfacingQuestion.ShouldNotBeNull();
-        surfacingQuestion!.QuestionId.ShouldBe("S2");
+        questions.Any(q => q.QuestionId == "S1").ShouldBeFalse();
+        modificationChange.SpecificChangeAnswer.ShouldBe("Surfacing answer");
+    }
 
-        // S2 should still be present
-        questionnaire.Questions.Any(q => q.QuestionId == "S2").ShouldBeTrue();
+    [Fact]
+    public void ShowSurfacingQuestion_Should_Not_Remove_Or_Set_When_ActionName_Does_Not_Match()
+    {
+        // Arrange
+        var surfacingQuestion = new QuestionViewModel
+        {
+            QuestionId = "S1",
+            ShowAnswerOn = "ReviewAllChanges",
+            AnswerText = "Surfacing answer"
+        };
+        var questions = new List<QuestionViewModel>
+        {
+            surfacingQuestion,
+            new() { QuestionId = "Q2" }
+        };
+        var modificationChange = new ModificationChangeModel();
 
-        // Q5 was conditional with no answer and should be removed
-        questionnaire.Questions.Any(q => q.QuestionId == "Q5").ShouldBeFalse();
+        // Act
+        ModificationHelpers.ShowSurfacingQuestion(questions, modificationChange, "OtherAction");
+
+        // Assert
+        questions.Any(q => q.QuestionId == "S1").ShouldBeTrue();
+        modificationChange.SpecificChangeAnswer.ShouldBeNull();
+    }
+
+    [Fact]
+    public void ShowSurfacingQuestion_Should_Do_Nothing_When_No_Surfacing_Question()
+    {
+        // Arrange
+        var questions = new List<QuestionViewModel>
+        {
+            new() { QuestionId = "Q1" }
+        };
+        var modificationChange = new ModificationChangeModel();
+
+        // Act
+        ModificationHelpers.ShowSurfacingQuestion(questions, modificationChange, "ReviewAllChanges");
+
+        // Assert
+        questions.Count.ShouldBe(1);
+        modificationChange.SpecificChangeAnswer.ShouldBeNull();
     }
 }

@@ -1,9 +1,13 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Features.Modifications;
@@ -28,22 +32,22 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
         // 1. GetModificationsByIds -> one modification entry
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.GetModificationsByIds(It.IsAny<List<string>>()))
-            .ReturnsAsync(new ServiceResponse<Rsp.IrasPortal.Application.DTOs.Responses.GetModificationsResponse>
+            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
             {
                 StatusCode = HttpStatusCode.OK,
                 Content = new()
                 {
-                    Modifications = [new Rsp.IrasPortal.Application.DTOs.ModificationsDto { Id = modId.ToString(), ModificationId = modId.ToString(), Status = "Draft" }]
+                    Modifications = [new ModificationsDto { Id = modId.ToString(), ModificationId = modId.ToString(), Status = ModificationStatus.Draft }]
                 }
             });
 
         // 2. GetModificationChanges -> one change
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.GetModificationChanges(modId))
-            .ReturnsAsync(new ServiceResponse<IEnumerable<Rsp.IrasPortal.Application.DTOs.Responses.ProjectModificationChangeResponse>>
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = [new() { Id = changeId, SpecificAreaOfChange = "SA1", AreaOfChange = "A1", Status = "Draft" }]
+                Content = [new() { Id = changeId, SpecificAreaOfChange = "SA1", AreaOfChange = "A1", Status = ModificationStatus.Draft }]
             });
 
         // 3. GetInitialModificationQuestions -> resolve names
@@ -78,13 +82,15 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
                 }
             });
 
-        Mocker.GetMock<IRespondentService>()
+        Mocker
+            .GetMock<IRespondentService>()
             .Setup(s => s.GetModificationChangeAnswers(changeId, It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = [] });
 
         // Use a permissive validator that sets IsValid true
-        Mocker.GetMock<FluentValidation.IValidator<QuestionnaireViewModel>>()
-            .Setup(v => v.ValidateAsync(It.IsAny<FluentValidation.ValidationContext<QuestionnaireViewModel>>(), default))
+        Mocker
+            .GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), default))
             .ReturnsAsync(new FluentValidation.Results.ValidationResult());
 
         // Act
