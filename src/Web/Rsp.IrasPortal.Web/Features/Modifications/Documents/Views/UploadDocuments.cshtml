@@ -39,7 +39,11 @@
 				txt, xml, html, htm,
 				vcf, eml, msg
             </p>
-			
+
+			<input type="hidden" asp-for="@Model.ProjectRecordId" />
+			<input type="hidden" asp-for="@Model.ShortTitle" />
+			<input type="hidden" asp-for="@Model.IrasId" />
+			<input type="hidden" asp-for="@Model.ModificationIdentifier" />
 			<div class="govuk-form-group @(Html.ViewData.ModelState.ContainsKey(nameof(Model.Files)) ? "govuk-form-group--error" : "")">
 				<label class="govuk-label" for="Files">Upload documents</label>
 				@if (ViewData.ModelState.TryGetValue(nameof(Model.Files), out var entry) && entry.Errors.Any())
