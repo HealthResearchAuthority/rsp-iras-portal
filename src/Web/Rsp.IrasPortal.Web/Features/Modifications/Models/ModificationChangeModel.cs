@@ -13,6 +13,7 @@ public class ModificationChangeModel
     public string SpecificAreaOfChangeId { get; set; } = null!;
     public string? SpecificChangeAnswer { get; set; }
     public string ChangeStatus { get; set; } = null!;
+    public DateTime CreatedDate { get; set; }
     public List<QuestionViewModel> Questions { get; set; } = [];
     public List<SupportingDocumentModel> SupportingDocuments { get; set; } = [];
 }

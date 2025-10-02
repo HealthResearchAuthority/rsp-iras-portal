@@ -1,10 +1,13 @@
 ﻿using System.Security.Claims;
 using System.Text.Json;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
+using Rsp.IrasPortal.Web.Models;
+using Rsp.IrasPortal.Web.Validators.Helpers;
 
 namespace Rsp.IrasPortal.Web.Extensions;
 
@@ -89,5 +92,61 @@ public static class ControllerExtensions
                        .Where(claim => claim.Type == ClaimTypes.Role)
                        .Select(claim => claim.Value))
         };
+    }
+
+    /// <summary>
+    /// Validates the passed QuestionnaireViewModel and return ture or false
+    /// </summary>
+    /// <param name="model"><see cref="QuestionnaireViewModel"/> to validate</param>
+    public static async Task<bool> ValidateQuestionnaire
+    (
+        this Controller controller,
+        IValidator<QuestionnaireViewModel> validator,
+        QuestionnaireViewModel model,
+        bool validateMandatory = false,
+        bool addModelErrors = true
+    )
+    {
+        // using the FluentValidation, create a new context for the model
+        var context = new ValidationContext<QuestionnaireViewModel>(model);
+
+        if (validateMandatory)
+        {
+            context.RootContextData["ValidateMandatoryOnly"] = true;
+        }
+
+        // this is required to get the questions in the validator
+        // before the validation cicks in
+        context.RootContextData["questions"] = model.Questions;
+
+        // call the ValidateAsync to execute the validation
+        // this will trigger the fluentvalidation using the injected validator if configured
+        var result = await validator.ValidateAsync(context);
+
+        if (!result.IsValid)
+        {
+            if (addModelErrors)
+            {
+                // Copy the validation results into ModelState.
+                // ASP.NET uses the ModelState collection to populate
+                // error messages in the View.
+                foreach (var error in result.Errors)
+                {
+                    if (error.CustomState is QuestionViewModel qvm)
+                    {
+                        var adjustedPropertyName = PropertyNameHelper.AdjustPropertyName(error.PropertyName, qvm.Index);
+                        controller.ModelState.AddModelError(adjustedPropertyName, error.ErrorMessage);
+                    }
+                    else
+                    {
+                        controller.ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        return true;
     }
 }

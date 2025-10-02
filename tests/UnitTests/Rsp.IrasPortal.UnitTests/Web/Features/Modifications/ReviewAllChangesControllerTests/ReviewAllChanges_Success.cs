@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Features.Modifications;
@@ -28,17 +29,17 @@ public class ReviewAllChanges_Success : TestServiceBase<ReviewAllChangesControll
         Mocker
             .GetMock<IProjectModificationsService>()
             .Setup(s => s.GetModificationsByIds(It.IsAny<List<string>>()))
-            .ReturnsAsync(new ServiceResponse<Rsp.IrasPortal.Application.DTOs.Responses.GetModificationsResponse>
+            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new() { Modifications = [new Rsp.IrasPortal.Application.DTOs.ModificationsDto { Id = modId.ToString(), ModificationId = modId.ToString(), Status = "Draft" }] }
+                Content = new() { Modifications = [new Application.DTOs.ModificationsDto { Id = modId.ToString(), ModificationId = modId.ToString(), Status = "Draft" }] }
             });
 
         // changes
         Mocker
             .GetMock<IProjectModificationsService>()
             .Setup(s => s.GetModificationChanges(modId))
-            .ReturnsAsync(new ServiceResponse<IEnumerable<Rsp.IrasPortal.Application.DTOs.Responses.ProjectModificationChangeResponse>>
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>
             {
                 StatusCode = HttpStatusCode.OK,
                 Content = [new() { Id = changeId, AreaOfChange = "A1", SpecificAreaOfChange = "SA1", Status = "Draft" }]

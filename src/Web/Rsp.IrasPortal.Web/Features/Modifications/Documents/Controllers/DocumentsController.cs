@@ -10,7 +10,6 @@ using Rsp.IrasPortal.Domain.Enums;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
-using Rsp.IrasPortal.Web.Validators.Helpers;
 
 namespace Rsp.IrasPortal.Web.Features.Modifications.Documents.Controllers;
 
@@ -172,7 +171,8 @@ public class DocumentsController
                     };
 
                     clonedQuestionnaire = await PopulateAnswersFromDocuments(clonedQuestionnaire, answers);
-                    var isValid = await ValidateQuestionnaire(clonedQuestionnaire, true);
+
+                    var isValid = await this.ValidateQuestionnaire(validator, clonedQuestionnaire, true);
 
                     // Mark as incomplete if no answers exist or if not all questions are answered.
                     var isIncomplete = !answers.Any() || !isValid;
@@ -305,7 +305,7 @@ public class DocumentsController
         bool hasFailures = false;
         foreach (var documentDetail in allDocumentDetails)
         {
-            var isValid = await ValidateQuestionnaire(documentDetail, validateMandatory: true);
+            var isValid = await this.ValidateQuestionnaire(validator, documentDetail, true);
             if (!isValid)
             {
                 hasFailures = true;
@@ -516,7 +516,8 @@ public class DocumentsController
         viewModel.Questions = questionnaire.Questions;
 
         // Validate the questionnaire and store the result in ViewData for UI messages
-        var isValid = await ValidateQuestionnaire(viewModel);
+        var isValid = await this.ValidateQuestionnaire(validator, viewModel);
+
         ViewData[ViewDataKeys.IsQuestionnaireValid] = isValid;
 
         if (!isValid)
@@ -683,49 +684,6 @@ public class DocumentsController
         }
 
         return viewModels;
-    }
-
-    /// <summary>
-    /// Validates a questionnaire using FluentValidation and populates ModelState with any errors.
-    /// </summary>
-    /// <param name="model">The questionnaire to validate.</param>
-    /// <param name="validateMandatory">
-    /// If true, only mandatory questions will be validated; otherwise, all questions are validated.
-    /// </param>
-    /// <returns>True if the questionnaire passes validation; false otherwise.</returns>
-    private async Task<bool> ValidateQuestionnaire(QuestionnaireViewModel model, bool validateMandatory = false)
-    {
-        var context = new ValidationContext<QuestionnaireViewModel>(model);
-
-        if (validateMandatory)
-            context.RootContextData["ValidateMandatoryOnly"] = true;
-
-        // Needed to access the questions within the validator
-        context.RootContextData["questions"] = model.Questions;
-
-        // Execute FluentValidation asynchronously
-        var result = await validator.ValidateAsync(context);
-
-        if (!result.IsValid)
-        {
-            // Populate ModelState with errors for display in the view
-            foreach (var error in result.Errors)
-            {
-                if (error.CustomState is QuestionViewModel qvm)
-                {
-                    var adjustedPropertyName = PropertyNameHelper.AdjustPropertyName(error.PropertyName, qvm.Index);
-                    ModelState.AddModelError(adjustedPropertyName, error.ErrorMessage);
-                }
-                else
-                {
-                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
-                }
-            }
-
-            return false;
-        }
-
-        return true;
     }
 
     private async Task<QuestionnaireViewModel> PopulateAnswersFromDocuments(

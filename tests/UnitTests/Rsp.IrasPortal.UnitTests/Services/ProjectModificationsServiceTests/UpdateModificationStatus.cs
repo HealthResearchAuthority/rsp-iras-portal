@@ -1,3 +1,4 @@
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Services;
 using Rsp.IrasPortal.UnitTests.TestHelpers;
@@ -16,11 +17,11 @@ public class UpdateModificationStatus : TestServiceBase<ProjectModificationsServ
 
         Mocker
             .GetMock<IProjectModificationsServiceClient>()
-            .Setup(c => c.UpdateModificationStatus(id, "Draft"))
+            .Setup(c => c.UpdateModificationStatus(id, ModificationStatus.Draft))
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.UpdateModificationStatus(id, "Draft");
+        var result = await Sut.UpdateModificationStatus(id, ModificationStatus.Draft);
 
         // Assert
         result.IsSuccessStatusCode.ShouldBeTrue();
