@@ -69,7 +69,7 @@ public class ModificationsController
         {
             ProjectRecordId = (string)projectRecordId,
             ModificationIdentifier = IrasId + separator,
-            Status = "Draft",
+            Status = ModificationStatus.Draft,
             CreatedBy = name,
             UpdatedBy = name
         };
@@ -366,7 +366,7 @@ public class ModificationsController
             AreaOfChange = model.AreaOfChangeId!,
             SpecificAreaOfChange = model.SpecificChangeId!,
             ProjectModificationId = modificationId,
-            Status = "Draft",
+            Status = ModificationStatus.Draft,
             CreatedBy = name,
             UpdatedBy = name
         });

@@ -141,4 +141,81 @@ public class QuestionnaireViewModel
 
         return null;
     }
+
+    /// <summary>
+    /// Update Questions with answers provided in the model
+    /// </summary>
+    /// <param name="submittedModel">Model with the submitted answers</param>
+    /// <param name="sourceModel">Model to be updated</param>
+    public void UpdateWithAnswers(List<QuestionViewModel> submittedModel, List<QuestionViewModel>? sourceModel = null)
+    {
+        sourceModel ??= Questions;
+
+        // update the model with the answers
+        // provided by the applicant
+        foreach (var question in sourceModel)
+        {
+            // find the question in the submitted model
+            // that matches the index
+            var response = submittedModel.Find(q => q.Index == question.Index);
+
+            // update the question with provided answers
+            question.SelectedOption = response?.SelectedOption;
+
+            if (question.DataType != "Dropdown")
+            {
+                question.Answers = response?.Answers ?? [];
+            }
+
+            question.AnswerText = response?.AnswerText;
+            // update the date fields if they are present
+            question.Day = response?.Day;
+            question.Month = response?.Month;
+            question.Year = response?.Year;
+        }
+    }
+
+    /// <summary>
+    /// Updates the provided QuestionViewModel with RespondentAnswers
+    /// </summary>
+    /// <param name="respondentAnswers">Respondent Answers</param>
+    public void UpdateWithRespondentAnswers(IEnumerable<RespondentAnswerDto> respondentAnswers, List<QuestionViewModel>? sourceModel = null)
+    {
+        sourceModel ??= Questions;
+
+        foreach (var respondentAnswer in respondentAnswers)
+        {
+            // for each respondentAnswer find the question in the
+            // questionviewmodel
+            var question = sourceModel.Find(q => q.QuestionId == respondentAnswer.QuestionId)!;
+
+            // continue to next question if we
+            // don't have an answer
+            if (question == null)
+            {
+                continue;
+            }
+
+            // set the selected option
+            question.SelectedOption = respondentAnswer.SelectedOption;
+
+            // if the question was multiple choice type i.e. checkboxes
+            if (respondentAnswer.OptionType == "Multiple")
+            {
+                // set the IsSelected property to true
+                // where the answerId matches with the respondent answer
+                question.Answers.ForEach(ans =>
+                {
+                    var answer = respondentAnswer.Answers.Find(ra => ans.AnswerId == ra);
+                    if (answer != null)
+                    {
+                        ans.IsSelected = true;
+                    }
+                });
+            }
+
+            // update the freetext answer
+            question.AnswerText = respondentAnswer.AnswerText;
+        }
+    }
 }

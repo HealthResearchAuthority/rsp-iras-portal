@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Features.Modifications;
@@ -20,7 +21,7 @@ public class ModificationDetails_ServiceErrorCases : TestServiceBase<Modificatio
         var mods = Mocker.GetMock<IProjectModificationsService>();
         mods
             .Setup(s => s.GetModificationsByIds(It.IsAny<List<string>>()))
-            .ReturnsAsync(new ServiceResponse<Rsp.IrasPortal.Application.DTOs.Responses.GetModificationsResponse>
+            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
             {
                 StatusCode = HttpStatusCode.InternalServerError,
                 Error = "fail"
@@ -45,7 +46,7 @@ public class ModificationDetails_ServiceErrorCases : TestServiceBase<Modificatio
         var mods = Mocker.GetMock<IProjectModificationsService>();
         mods
             .Setup(s => s.GetModificationsByIds(It.IsAny<List<string>>()))
-            .ReturnsAsync(new ServiceResponse<Rsp.IrasPortal.Application.DTOs.Responses.GetModificationsResponse>
+            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
             {
                 StatusCode = HttpStatusCode.OK,
                 Content = new() { Modifications = [] }

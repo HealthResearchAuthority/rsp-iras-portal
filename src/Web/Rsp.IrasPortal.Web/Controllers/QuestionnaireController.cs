@@ -97,7 +97,7 @@ public class QuestionnaireController
         // if respondent has answerd any questions
         if (respondentAnswers.Any())
         {
-            UpdateWithAnswers(respondentAnswers, questionnaire.Questions);
+            questionnaire.UpdateWithRespondentAnswers(respondentAnswers);
         }
 
         if (validate == bool.FalseString)
@@ -115,7 +115,7 @@ public class QuestionnaireController
             }
 
             // validate the questionnaire. The application is being resumed from the SubmitApplication page
-            await ValidateQuestionnaire(questionnaire);
+            await this.ValidateQuestionnaire(validator, questionnaire);
 
             TempData.TryAdd(TempDataKeys.BackRoute, "pov:index");
 
@@ -211,25 +211,11 @@ public class QuestionnaireController
 
         // update the model with the answeres
         // provided by the applicant
-        foreach (var question in questions)
-        {
-            // find the question in the submitted model
-            // that matches the index
-            var response = model.Questions.Find(q => q.Index == question.Index);
+        model.UpdateWithAnswers(model.Questions, questions);
 
-            // update the question with provided answers
-            question.SelectedOption = response?.SelectedOption;
-            if (question.DataType != "Dropdown")
-            {
-                question.Answers = response?.Answers ?? [];
-            }
-
-            question.AnswerText = response?.AnswerText;
-            // update the date fields if they are present
-            question.Day = response?.Day;
-            question.Month = response?.Month;
-            question.Year = response?.Year;
-        }
+        // override the submitted model
+        // with the updated model with answers and rules
+        model.Questions = questions;
 
         if (!autoSearchEnabled)
         {
@@ -276,13 +262,10 @@ public class QuestionnaireController
             }
         }
 
-        // override the submitted model
-        // with the updated model with answers
-        model.Questions = questions;
-
         // validate the questionnaire and save the result in tempdata
         // this is so we display the validation passed message or not
-        var isValid = await ValidateQuestionnaire(model);
+        var isValid = await this.ValidateQuestionnaire(validator, model);
+
         ViewData[ViewDataKeys.IsQuestionnaireValid] = isValid;
 
         // get the application from the session
@@ -361,41 +344,11 @@ public class QuestionnaireController
     }
 
     /// <summary>
-    /// Performs the validation when user clicks on validate button
-    /// </summary>
-    /// <param name="model"><see cref="QuestionnaireViewModel"/> to validate</param>
-    /// <remarks>
-    /// Some of categories have large number of questions and it will prvent submission of
-    /// so many form values. Hence, we need to increase the ValueCountLimit
-    /// </remarks>
-    [RequestFormLimits(ValueCountLimit = int.MaxValue)]
-    [HttpPost]
-    public async Task<IActionResult> Validate(QuestionnaireViewModel model)
-    {
-        // override the submitted model
-        // with the updated model with answers
-        model.Questions = GetQuestionsFromSession(model);
-
-        // validate the questionnaire and save the result in tempdata
-        // this is so we display the validation passed message or not
-        ViewData[ViewDataKeys.IsQuestionnaireValid] = await ValidateQuestionnaire(model);
-
-        // get the application from the session
-        // to get the projectApplicationId
-        var application = this.GetApplicationFromSession();
-
-        // set the previous, current and next stages
-        await SetStage(model.CurrentStage!);
-
-        return View(Index, model);
-    }
-
-    /// <summary>
     /// Gets all questions for the application. Validates for each category
     /// and display the progress of the application
     /// </summary>
     /// <param name="projectRecordId">ApplicationId to submit</param>
-    public async Task<IActionResult> SubmitApplication(string projectRecordId, string? backRoute = null)
+    public async Task<IActionResult> SubmitApplication(string projectRecordId)
     {
         var categoryId = (TempData.Peek(TempDataKeys.CategoryId) as string)!;
 
@@ -419,47 +372,14 @@ public class QuestionnaireController
             return this.ServiceError(questionSetServiceResponse);
         }
 
-        // define the questionnaire validation state dictionary
-        var questionnaireValidationState = new Dictionary<string, string>();
-
         var respondentAnswers = respondentServiceResponse.Content!;
         var questions = questionSetServiceResponse.Content!;
 
         // convert the questions response to QuestionnaireViewModel
         var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(questions);
 
-        // validate each category
-        foreach (var questionsResponse in questionnaire.Questions.GroupBy(x => x.Category))
-        {
-            if (questionnaire.Questions.Count == 0)
-            {
-                continue;
-            }
-
-            var category = questionsResponse.Key;
-
-            // get the answers for the category
-            var answers = respondentAnswers.Where(r => r.CategoryId == category).ToList();
-
-            ValidationContext<QuestionnaireViewModel> context;
-
-            if (answers.Count > 0)
-            {
-                // if we have answers, update the model with the provided answers
-                UpdateWithAnswers(respondentAnswers, questionnaire.Questions);
-
-                // using the FluentValidation, create a new context for the model
-                context = new ValidationContext<QuestionnaireViewModel>(questionnaire);
-
-                // this is required to get the questions in the validator
-                // before the validation cicks in
-                context.RootContextData["questions"] = questionnaire.Questions;
-
-                // call the ValidateAsync to execute the validation
-                // this will trigger the fluentvalidation using the injected validator if configured
-                var result = await validator.ValidateAsync(context);
-            }
-        }
+        // if we have answers, update the model with the provided answers
+        questionnaire.UpdateWithRespondentAnswers(respondentAnswers);
 
         return View("ReviewAnswers", questionnaire);
     }
@@ -498,52 +418,16 @@ public class QuestionnaireController
 
         var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(questionSetServiceResponse.Content);
 
-        // define the questionnaire validation state dictionary
-        var questionnaireValidationState = new Dictionary<string, string>();
-
         var respondentAnswers = respondentServiceResponse.Content!;
 
-        // validate each category
-        foreach (var questionsResponse in questionnaire.Questions.GroupBy(x => x.Category))
+        // if we have answers, update the model with the provided answers
+        questionnaire.UpdateWithRespondentAnswers(respondentAnswers);
+
+        var isValid = await this.ValidateQuestionnaire(validator, questionnaire, true);
+
+        if (!isValid)
         {
-            if (questionnaire.Questions.Count == 0)
-            {
-                continue;
-            }
-
-            var category = questionsResponse.Key;
-
-            // get the answers for the category
-            var answers = respondentAnswers.Where(r => r.CategoryId == category).ToList();
-
-            ValidationContext<QuestionnaireViewModel> context;
-
-            // if we have answers, update the model with the provided answers
-            UpdateWithAnswers(respondentAnswers, questionnaire.Questions);
-
-            // using the FluentValidation, create a new context for the model
-            context = new ValidationContext<QuestionnaireViewModel>(questionnaire);
-
-            // this is required to get the questions in the validator
-            // before the validation cicks in
-            context.RootContextData["questions"] = questionnaire.Questions;
-            context.RootContextData["ValidateMandatoryOnly"] = true;
-
-            // call the ValidateAsync to execute the validation
-            // this will trigger the fluentvalidation using the injected validator if configured
-            var result = await validator.ValidateAsync(context);
-            if (!result.IsValid)
-            {
-                // Copy the validation results into ModelState.
-                // ASP.NET uses the ModelState collection to populate
-                // error messages in the View.
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
-                }
-
-                return View("ReviewAnswers", questionnaire);
-            }
+            return View("ReviewAnswers", questionnaire);
         }
 
         // update the application status to Submitted
@@ -562,6 +446,11 @@ public class QuestionnaireController
                 IrasId = application.IrasId
             }
         );
+
+        if (!updateApplicationResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(updateApplicationResponse);
+        }
 
         return RedirectToAction("ProjectRecordCreated");
     }
@@ -744,81 +633,6 @@ public class QuestionnaireController
         }
 
         return questions;
-    }
-
-    /// <summary>
-    /// Validates the passed QuestionnaireViewModel and return ture or false
-    /// </summary>
-    /// <param name="model"><see cref="QuestionnaireViewModel"/> to validate</param>
-    private async Task<bool> ValidateQuestionnaire(QuestionnaireViewModel model)
-    {
-        // using the FluentValidation, create a new context for the model
-        var context = new ValidationContext<QuestionnaireViewModel>(model);
-
-        // this is required to get the questions in the validator
-        // before the validation cicks in
-        context.RootContextData["questions"] = model.Questions;
-
-        // call the ValidateAsync to execute the validation
-        // this will trigger the fluentvalidation using the injected validator if configured
-        var result = await validator.ValidateAsync(context);
-
-        if (!result.IsValid)
-        {
-            // Copy the validation results into ModelState.
-            // ASP.NET uses the ModelState collection to populate
-            // error messages in the View.
-            foreach (var error in result.Errors)
-            {
-                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
-            }
-
-            return false;
-        }
-
-        return true;
-    }
-
-    /// <summary>
-    /// Updates the provided QuestionViewModel with RespondentAnswers
-    /// </summary>
-    /// <param name="respondentAnswers">Respondent Answers</param>
-    /// <param name="questionAnswers">QuestionViewModel with answers</param>
-    private static void UpdateWithAnswers(IEnumerable<RespondentAnswerDto> respondentAnswers, List<QuestionViewModel> questionAnswers)
-    {
-        foreach (var respondentAnswer in respondentAnswers)
-        {
-            // for each respondentAnswer find the question in the
-            // questionviewmodel
-            var question = questionAnswers.Find(q => q.QuestionId == respondentAnswer.QuestionId)!;
-
-            // continue to next question if we
-            // don't have an answer
-            if (question == null)
-            {
-                continue;
-            }
-
-            // set the selected option
-            question.SelectedOption = respondentAnswer.SelectedOption;
-
-            // if the question was multiple choice type i.e. checkboxes
-            if (respondentAnswer.OptionType == "Multiple")
-            {
-                // set the IsSelected property to true
-                // where the answerId matches with the respondent answer
-                question.Answers.ForEach(ans =>
-                {
-                    var answer = respondentAnswer.Answers.Find(ra => ans.AnswerId == ra);
-                    if (answer != null)
-                    {
-                        ans.IsSelected = true;
-                    }
-                });
-            }
-            // update the freetext answer
-            question.AnswerText = respondentAnswer.AnswerText;
-        }
     }
 
     /// <summary>
