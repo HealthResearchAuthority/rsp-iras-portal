@@ -27,6 +27,8 @@
 	var noResultsTitle = pageContent.GetValueOrDefault("Approvals.MyTasklist.NoResultsBody", null);
 	var noResultsBody = pageContent.GetValueOrDefault("Approvals.MyTasklist.NoResultsBody", null);
 
+	TempData[TempDataKeys.ProjectModification.LinkBackToReferrer] = true;
+	TempData[TempDataKeys.ProjectModification.UrlReferrer] = Context.Request.GetDisplayUrl();
 }
 
 @section BackNavigation {
@@ -296,7 +298,14 @@ else
 									var daysText = modification.DaysSinceSubmission == 1 ? "day" : "days";
 
 									<tr class="govuk-table__row">
-										<td class="govuk-table__cell">@modification.ModificationId</td>
+										<td class="govuk-table__cell">       <a asp-route="pmc:reviewallchanges"
+                                                                                asp-route-projectRecordId="@modification.ProjectRecordId"
+                                                                                asp-route-irasId="@(modification.ModificationId?.Split('/')[0])"
+                                                                                asp-route-shortTitle="@modification.ShortProjectTitle"
+                                                                                asp-route-projectModificationId="@modification.Id"
+                                                                                class="govuk-link">
+                                            @modification.ModificationId
+                                        </a></td>
                                         <td class="govuk-table__cell">
 										<a asp-route="pov:projectdetails"
                                                asp-route-projectRecordId="@modification.ProjectRecordId"

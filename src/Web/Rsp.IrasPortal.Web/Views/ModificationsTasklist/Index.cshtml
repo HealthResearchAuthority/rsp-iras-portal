@@ -1,4 +1,5 @@
 ﻿﻿@using System.Text.RegularExpressions
+@using Microsoft.AspNetCore.Http.Extensions
 @using Microsoft.FeatureManagement
 @using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
@@ -29,6 +30,9 @@
 	var noResultsTitle = pageContent.GetValueOrDefault("Approvals.ModificationsTasklist.NoResultsTitle", null);
 	var emptySearchBodyText = pageContent.GetValueOrDefault("Approvals.ModificationsTasklist.EmptySearchBodyText", null);
 	var noResultsBodyText = pageContent.GetValueOrDefault("Approvals.ModificationsTasklist.NoResultsBodyText", null);
+
+    TempData[TempDataKeys.ProjectModification.LinkBackToReferrer] = true;
+    TempData[TempDataKeys.ProjectModification.UrlReferrer] = Context.Request.GetDisplayUrl();
 }
 
 @section BackNavigation {
@@ -322,7 +326,16 @@ else
 												class="govuk-label govuk-checkboxes__label modification-checkbox-label"></label>
 										</div>
 									</td>
-									<td class="govuk-table__cell">@modification.Modification.ModificationId</td>
+                                    <td class="govuk-table__cell">
+                                        <a asp-route="pmc:reviewallchanges"
+                                           asp-route-projectRecordId="@modification.Modification.ProjectRecordId"
+                                           asp-route-irasId="@(modification.Modification.ModificationId?.Split('/')[0])"
+                                           asp-route-shortTitle="@modification.Modification.ShortProjectTitle"
+                                           asp-route-projectModificationId="@modification.Modification.Id"
+                                           class="govuk-link">
+                                            @modification.Modification.ModificationId
+                                        </a>
+                                    </td>
                                     <td class="govuk-table__cell">
 									<a asp-route="pov:projectdetails"
                                            asp-route-projectRecordId="@modification.Modification.ProjectRecordId"

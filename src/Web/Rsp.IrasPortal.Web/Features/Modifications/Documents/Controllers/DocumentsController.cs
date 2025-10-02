@@ -10,7 +10,6 @@ using Rsp.IrasPortal.Domain.Enums;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
-using Rsp.IrasPortal.Web.Validators.Helpers;
 
 namespace Rsp.IrasPortal.Web.Features.Modifications.Documents.Controllers;
 
@@ -80,6 +79,7 @@ public class DocumentsController
             viewModel.UploadedDocuments = [.. response.Content
             .Select(a => new DocumentSummaryItemDto
             {
+                DocumentId = a.Id,
                 FileName = a.FileName,
                 FileSize = a.FileSize ?? 0,
                 BlobUri = a.DocumentStoragePath ?? string.Empty,
@@ -172,7 +172,8 @@ public class DocumentsController
                     };
 
                     clonedQuestionnaire = await PopulateAnswersFromDocuments(clonedQuestionnaire, answers);
-                    var isValid = await ValidateQuestionnaire(clonedQuestionnaire, true);
+
+                    var isValid = await this.ValidateQuestionnaire(validator, clonedQuestionnaire, true);
 
                     // Mark as incomplete if no answers exist or if not all questions are answered.
                     var isIncomplete = !answers.Any() || !isValid;
@@ -305,7 +306,7 @@ public class DocumentsController
         bool hasFailures = false;
         foreach (var documentDetail in allDocumentDetails)
         {
-            var isValid = await ValidateQuestionnaire(documentDetail, validateMandatory: true);
+            var isValid = await this.ValidateQuestionnaire(validator, documentDetail, true);
             if (!isValid)
             {
                 hasFailures = true;
@@ -415,7 +416,6 @@ public class DocumentsController
             // 4. Combined file size check
             if (totalFileSize > maxFileSize)
             {
-                atleastOneInvalidFile = true;
                 ModelState.AddModelError("Files", "The combined size of all files must not exceed 100 MB");
                 return View(model);
             }
@@ -516,7 +516,8 @@ public class DocumentsController
         viewModel.Questions = questionnaire.Questions;
 
         // Validate the questionnaire and store the result in ViewData for UI messages
-        var isValid = await ValidateQuestionnaire(viewModel);
+        var isValid = await this.ValidateQuestionnaire(validator, viewModel);
+
         ViewData[ViewDataKeys.IsQuestionnaireValid] = isValid;
 
         if (!isValid)
@@ -541,6 +542,127 @@ public class DocumentsController
         return viewModel.ReviewAnswers
             ? RedirectToAction(nameof(ReviewDocumentDetails))
             : RedirectToAction(nameof(AddDocumentDetailsList));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ConfirmDeleteDocument(Guid id, string backRoute)
+    {
+        // Attempt to fetch the document details from the respondent service.
+        var documentDetailsResponse = await respondentService.GetModificationDocumentDetails(id);
+
+        // Construct the request object containing identifiers needed by the service call
+        var request = BuildDocumentRequest();
+        request.Id = id;
+        request.FileName = documentDetailsResponse?.Content?.FileName;
+        request.FileSize = documentDetailsResponse?.Content?.FileSize ?? 0;
+        request.DocumentStoragePath = documentDetailsResponse?.Content?.DocumentStoragePath;
+
+        var viewModel = new ModificationDeleteDocumentViewModel
+        {
+            Documents = [request]
+        };
+
+        viewModel.BackRoute = backRoute;
+        return View("DeleteDocuments", viewModel);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ConfirmDeleteDocuments(string? backRoute)
+    {
+        // Construct the request object containing identifiers needed by the service call
+        var request = BuildDocumentRequest();
+
+        // Call the respondent service to fetch metadata for documents
+        var response = await respondentService.GetModificationChangesDocuments(
+            request.ProjectModificationChangeId, request.ProjectRecordId, request.ProjectPersonnelId);
+
+        if (response?.StatusCode == HttpStatusCode.OK && response.Content != null)
+        {
+            // Map the backend service response into DTOs suitable for the view model
+            var viewModel = new ModificationDeleteDocumentViewModel
+            {
+                Documents = [.. response.Content.Select(doc => new ProjectModificationDocumentRequest
+                {
+                    Id = doc.Id,
+                    ProjectModificationChangeId = request.ProjectModificationChangeId,
+                    ProjectRecordId = request.ProjectRecordId,
+                    ProjectPersonnelId = request.ProjectPersonnelId,
+                    FileName = doc.FileName,
+                    DocumentStoragePath = doc.DocumentStoragePath,
+                    FileSize = doc.FileSize
+                })
+                .OrderBy(dto => dto.FileName, StringComparer.OrdinalIgnoreCase)],
+                BackRoute = backRoute
+            };
+            return View("DeleteDocuments", viewModel);
+        }
+
+        return RedirectToAction(nameof(ProjectDocument));
+    }
+
+    [HttpPost("deletedocument")]
+    public async Task<IActionResult> DeleteDocuments(ModificationDeleteDocumentViewModel model)
+    {
+        if (model?.Documents == null || !model.Documents.Any())
+        {
+            // No documents to delete
+            return RedirectToAction(nameof(AddDocumentDetailsList));
+        }
+        var request = BuildDocumentRequest();
+
+        var multipleDelete = model.Documents.Count > 1;
+
+        // Build the request list from the view model
+        var deleteDocumentRequest = model.Documents
+            .Select(d => new ProjectModificationDocumentRequest
+            {
+                Id = d.Id,
+                ProjectModificationChangeId = request.ProjectModificationChangeId,
+                ProjectRecordId = request.ProjectRecordId,
+                ProjectPersonnelId = request.ProjectPersonnelId,
+                FileName = d.FileName,
+                DocumentStoragePath = d.DocumentStoragePath,
+                FileSize = d.FileSize
+            })
+            .ToList();
+
+        // Call the service to delete the documents
+        var deleteResponse = await projectModificationsService.DeleteDocumentModification(deleteDocumentRequest);
+
+        // Delete from blob storage
+        foreach (var doc in deleteDocumentRequest)
+        {
+            if (!string.IsNullOrEmpty(doc.DocumentStoragePath))
+            {
+                await blobStorageService.DeleteFileAsync(
+                    containerName: ContainerName,
+                    blobPath: doc.DocumentStoragePath
+                );
+            }
+        }
+
+        // Handle single vs multiple delete redirection
+        if (!multipleDelete)
+        {
+            // Call the respondent service to fetch metadata for documents
+            var response = await respondentService.GetModificationChangesDocuments(
+                request.ProjectModificationChangeId, request.ProjectRecordId, request.ProjectPersonnelId);
+
+            // Check if there are any remaining documents in the response
+            if (response?.Content == null || !response.Content.Any())
+            {
+                // No more documents → go to ProjectDocument view
+                return RedirectToAction(nameof(ProjectDocument));
+            }
+
+            // Documents still exist → go back to AddDocumentDetailsList
+            return RedirectToAction(nameof(AddDocumentDetailsList));
+        }
+        else
+        {
+            // After multiple deletes go to ProjectDocument view
+            return RedirectToAction(nameof(ProjectDocument));
+        }
     }
 
     /// <summary>
@@ -683,49 +805,6 @@ public class DocumentsController
         }
 
         return viewModels;
-    }
-
-    /// <summary>
-    /// Validates a questionnaire using FluentValidation and populates ModelState with any errors.
-    /// </summary>
-    /// <param name="model">The questionnaire to validate.</param>
-    /// <param name="validateMandatory">
-    /// If true, only mandatory questions will be validated; otherwise, all questions are validated.
-    /// </param>
-    /// <returns>True if the questionnaire passes validation; false otherwise.</returns>
-    private async Task<bool> ValidateQuestionnaire(QuestionnaireViewModel model, bool validateMandatory = false)
-    {
-        var context = new ValidationContext<QuestionnaireViewModel>(model);
-
-        if (validateMandatory)
-            context.RootContextData["ValidateMandatoryOnly"] = true;
-
-        // Needed to access the questions within the validator
-        context.RootContextData["questions"] = model.Questions;
-
-        // Execute FluentValidation asynchronously
-        var result = await validator.ValidateAsync(context);
-
-        if (!result.IsValid)
-        {
-            // Populate ModelState with errors for display in the view
-            foreach (var error in result.Errors)
-            {
-                if (error.CustomState is QuestionViewModel qvm)
-                {
-                    var adjustedPropertyName = PropertyNameHelper.AdjustPropertyName(error.PropertyName, qvm.Index);
-                    ModelState.AddModelError(adjustedPropertyName, error.ErrorMessage);
-                }
-                else
-                {
-                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
-                }
-            }
-
-            return false;
-        }
-
-        return true;
     }
 
     private async Task<QuestionnaireViewModel> PopulateAnswersFromDocuments(

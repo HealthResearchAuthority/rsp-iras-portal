@@ -66,6 +66,7 @@ public class MyTasklistController(IProjectModificationsService projectModificati
         model.Modifications = result?.Content?.Modifications?
             .Select(dto => new ModificationsModel
             {
+                Id = dto.Id,
                 ModificationId = dto.ModificationId,
                 ShortProjectTitle = dto.ShortProjectTitle,
                 ModificationType = dto.ModificationType,
