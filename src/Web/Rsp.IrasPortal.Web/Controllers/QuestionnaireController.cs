@@ -66,7 +66,7 @@ public class QuestionnaireController
             questionSections = questionSectionsResponse
                 .Content?
                 .Where(section => section.QuestionCategoryId.Equals(categoryId, StringComparison.OrdinalIgnoreCase))
-                .OrderBy(section => section.SectionId);
+                .OrderBy(section => section.Sequence);
 
             // Ensure questionSections is not null and has elements
             if (questionSections?.Any() == true && validate == bool.FalseString)
