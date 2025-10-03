@@ -15,7 +15,6 @@
     ViewData[ViewDataKeys.ShowRemoveLink] = false;
     ViewData[ViewDataKeys.ShowModificationChangeStatus] = false;
     ViewData[ViewDataKeys.ShowModificationStatus] = true;
-
 }
 
 @section BackNavigation {
@@ -35,7 +34,7 @@
             // no route for back navigation, as this page will
             // only show back button when you are navigating from some other url
             // given the LinkBackToReferrer is set
-            <partial name="_BackNavigation" model="@("", "Back", new Dictionary<string, string>())" />
+            <partial name="_BackNavigation" model="@("", "Back", new Dictionary<string, string>())"/>
         }
     }
     @*<partial name="_BackNavigation" model="@("pmc:sponsorreference", "Back", new Dictionary<string, string>() { { "projectRecordId", Model.ProjectRecordId } })" />*@
@@ -46,7 +45,7 @@
         <h1 class="govuk-heading-l">Review all changes</h1>
 
         @{
-            <partial name="_ProjectModificationSummary" model="Model" viewData="ViewData" />
+            <partial name="_ProjectModificationSummary" model="Model" viewData="ViewData"/>
         }
         <h2 class="govuk-heading-m">Overall modification ranking</h2>
         <div class="govuk-summary-card">
@@ -57,7 +56,7 @@
             </div>
             <div class="govuk-summary-card__content">
                 <div class="govuk-summary-card__content">
-                    <partial name="RankingOfChange" />
+                    <partial name="RankingOfChange"/>
                 </div>
             </div>
         </div>
@@ -68,7 +67,7 @@
 
         <h2 class="govuk-heading-m">Changes</h2>
 
-        <partial name="ModificationChanges" model="Model" view-data="ViewData" />
+        <partial name="ModificationChanges" model="Model" view-data="ViewData"/>
 
         <h2 class="govuk-heading-m">Sponsor details</h2>
 
@@ -106,38 +105,41 @@
     </div>
 </div>
 
-@if (Model.Status is ModificationStatus.Draft)
-{
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-two-thirds">
-            <h2 class="govuk-heading-m">Now send to sponsor</h2>
-            <p class="govuk-body">
-                By sending this modification you are confirming that, to the best of your knowledge, the details you are providing are correct.
-            </p>
-            <form method="post">
-                <div class="save-buttons">
-                    @{
-                        <input type="hidden" name="projectRecordId" value="@Model.ProjectRecordId" />
-                        <partial name="_SubmitButton" model="@("pmc:sendmodificationtosponsor", "Send modification to sponsor", new Dictionary<string, string>()
-                                                             {
-                                                                 ["projectModificationId"] = Model.ModificationId!,
-                                                                 ["projectRecordId"] = Model.ProjectRecordId
-                                                             })" />
 
-                        ViewBag.Style = "govuk-button govuk-button--secondary";
+<authorized auth-params="@new(Roles: "applicant")">
+    @if (Model.Status is ModificationStatus.Draft)
+    {
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <h2 class="govuk-heading-m">Now send to sponsor</h2>
+                <p class="govuk-body">
+                    By sending this modification you are confirming that, to the best of your knowledge, the details you are providing are correct.
+                </p>
+                <form method="post">
+                    <div class="save-buttons">
+                        @{
+                            <input type="hidden" name="projectRecordId" value="@Model.ProjectRecordId"/>
+                            <partial name="_SubmitButton" model="@("pmc:sendmodificationtosponsor", "Send modification to sponsor", new Dictionary<string, string>()
+                                                                 {
+                                                                     ["projectModificationId"] = Model.ModificationId!,
+                                                                     ["projectRecordId"] = Model.ProjectRecordId
+                                                                 })"/>
 
-                        <partial name="_SubmitButton" model="@("pov:postapproval", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId })" />
-                    }
-                </div>
-            </form>
-			<a asp-route="pmc:deletemodification"
-			   asp-route-projectRecordId="@Model.ProjectRecordId"
-			   asp-route-irasId="@(Model.ModificationIdentifier?.Split('/')[0])"
-			   asp-route-shortTitle="@Model.ShortTitle"
-			   asp-route-projectModificationId="@Model.ModificationId"
-               class="govuk-link">
-                Delete modification
-            </a>
+                            ViewBag.Style = "govuk-button govuk-button--secondary";
+
+                            <partial name="_SubmitButton" model="@("pov:postapproval", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId })"/>
+                        }
+                    </div>
+                </form>
+                <a asp-route="pmc:deletemodification"
+                   asp-route-projectRecordId="@Model.ProjectRecordId"
+                   asp-route-irasId="@(Model.ModificationIdentifier?.Split('/')[0])"
+                   asp-route-shortTitle="@Model.ShortTitle"
+                   asp-route-projectModificationId="@Model.ModificationId"
+                   class="govuk-link">
+                    Delete modification
+                </a>
+            </div>
         </div>
-    </div>
-}
+    }
+</authorized>
