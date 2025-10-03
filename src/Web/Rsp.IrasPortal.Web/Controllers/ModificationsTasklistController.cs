@@ -32,6 +32,37 @@ public class ModificationsTasklistController(
         string sortField = nameof(ModificationsModel.CreatedAt),
         string sortDirection = SortDirections.Ascending)
     {
+        const string SessionSelectedKey = "Tasklist:SelectedModificationIds";
+
+        // 1) If query carries selected IDs (from back link), persist + clean URL
+        if (selectedModificationIds is { Count: > 0 })
+        {
+            // Normalize (also split any accidental CSV values)
+            var normalized = selectedModificationIds
+                .SelectMany(v => (v ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            HttpContext.Session.SetString(SessionSelectedKey, JsonSerializer.Serialize(normalized));
+
+            // Redirect WITHOUT selectedModificationIds, keeping sort/paging (and anything else you want)
+            return RedirectToRoute(
+                routeName: "tasklist:index",
+                routeValues: new
+                {
+                    pageNumber,
+                    pageSize,
+                    sortField,
+                    sortDirection
+                });
+        }
+
+        // 2) Pull persisted selections from Session (if any) for rendering
+        var persistedSelections = HttpContext.Session.GetString(SessionSelectedKey);
+        var selectedFromSession = !string.IsNullOrEmpty(persistedSelections)
+            ? JsonSerializer.Deserialize<List<string>>(persistedSelections) ?? []
+            : [];
+
         var leadNation = "England";
         if (Guid.TryParse(User?.FindFirstValue("userId"), out var userId))
         {
@@ -51,7 +82,7 @@ public class ModificationsTasklistController(
 
         var model = new ModificationsTasklistViewModel
         {
-            SelectedModificationIds = selectedModificationIds ?? [],
+            SelectedModificationIds = selectedFromSession,
             EmptySearchPerformed = true, // Set to true to check if search bar should be hidden on view
             LeadNation = leadNation
         };
@@ -77,7 +108,6 @@ public class ModificationsTasklistController(
             IncludeReviewerId = true,
         };
 
-        // Since we are searching backwards from the current date, we need to reverse the logic for the date range.
         if (model.Search.FromSubmission != null)
         {
             var fromDaysSinceSubmission = DateTime.UtcNow.AddDays(-model.Search.FromSubmission.Value);
@@ -119,7 +149,7 @@ public class ModificationsTasklistController(
                     SponsorOrganisation = dto.SponsorOrganisation,
                     CreatedAt = dto.CreatedAt
                 },
-                IsSelected = selectedModificationIds?.Contains(dto.Id) ?? false,
+                IsSelected = selectedFromSession.Contains(dto.Id, StringComparer.OrdinalIgnoreCase),
             })
             .ToList() ?? [];
 

@@ -3,7 +3,7 @@
 $(function () {
     const KEY_PREFIX = 'selectAllModifications:page=';
     const onTaskListPage = window.location.pathname.toLowerCase().includes('/modificationstasklist');
-    if (!onTaskListPage) return; // cleaner handles non-tasklist pages
+    if (!onTaskListPage) return;
 
     // Derive current page number (?pageNumber= or ?page=), default 1
     const params = new URLSearchParams(window.location.search);
@@ -14,13 +14,27 @@ $(function () {
     const $selectAll = $('#select-all-modifications');
     if (!$selectAll.length) return;
 
+    function clearAllSelectionState() {
+        // Remove all persisted "select all" states across pages
+        for (let i = sessionStorage.length - 1; i >= 0; i--) {
+            const k = sessionStorage.key(i);
+            if (k && k.startsWith(KEY_PREFIX)) {
+                sessionStorage.removeItem(k);
+            }
+        }
+        // Uncheck everything currently on the page
+        $selectAll.prop('checked', false);
+        $('.child-checkbox').prop('checked', false);
+    }
+
     function applyState() {
         const saved = sessionStorage.getItem(STORAGE_KEY);
         const isChecked = saved === 'true';
         if (isChecked) {
-            $selectAll.prop('checked', isChecked);
-            $('.child-checkbox').prop('checked', isChecked);
+            $selectAll.prop('checked', true);
+            $('.child-checkbox').prop('checked', true);
         } else {
+            // clean up stale key if present
             sessionStorage.removeItem(STORAGE_KEY);
         }
     }
@@ -31,6 +45,7 @@ $(function () {
         applyState();
     });
 
+    // Maintain select-all state within a page until explicitly cleared
     $(document).on('change', '#select-all-modifications', function () {
         const isChecked = this.checked;
         sessionStorage.setItem(STORAGE_KEY, String(isChecked));
@@ -45,8 +60,10 @@ $(function () {
     });
 
     $(document).on('click', '.js-clear-select-all', function () {
-        sessionStorage.removeItem(STORAGE_KEY);
-        $selectAll.prop('checked', false);
-        $('.child-checkbox').prop('checked', false);
+        clearAllSelectionState();
+    });
+
+    $(document).on('click', 'a[href*="sort="], a[href*="Sort="], a[href*="order="], .js-sort-link', function () {
+        clearAllSelectionState();
     });
 });
