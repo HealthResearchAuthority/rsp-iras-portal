@@ -29,10 +29,12 @@ public class ModificationsController
     IProjectModificationsService projectModificationsService,
     IRespondentService respondentService,
     ICmsQuestionsetService cmsQuestionsetService,
+    IBlobStorageService blobStorageService,
     IValidator<AreaOfChangeViewModel> areaofChangeValidator
 ) : Controller
 
 {
+    private const string ContainerName = "staging";
     private const string SelectAreaOfChange = "Select area of change";
     private const string SelectSpecificAreaOfChange = "Select specific change";
 
@@ -311,12 +313,49 @@ public class ModificationsController
         // Render the details view
         return View(viewModel);
     }
-
     [HttpPost]
     public async Task<IActionResult> DeleteModificationConfirmed(
         string projectRecordId,
-        Guid projectModificationId, string projectModificationIdentifier)
+        Guid projectModificationId,
+        string projectModificationIdentifier)
     {
+        // Call the respondent service to fetch metadata for documents
+        var response = await projectModificationsService.GetModificationChanges(projectModificationId);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return this.ServiceError(response);
+        }
+
+        // Get all documents in db
+        foreach (var projectModificationChangeResponse in response.Content)
+        {
+            // Call the respondent service to fetch metadata for documents
+            var getModificationChangesDocumentsResponse =
+                await respondentService.GetModificationChangesDocuments(
+                    projectModificationChangeResponse.Id,
+                    projectRecordId
+                );
+
+            if (!getModificationChangesDocumentsResponse.IsSuccessStatusCode)
+            {
+                return this.ServiceError(getModificationChangesDocumentsResponse);
+            }
+
+            // Delete all associated documents from blob storage
+            foreach (var doc in getModificationChangesDocumentsResponse.Content)
+            {
+                if (!string.IsNullOrEmpty(doc.DocumentStoragePath))
+                {
+                    await blobStorageService.DeleteFileAsync(
+                        containerName: ContainerName,
+                        blobPath: doc.DocumentStoragePath
+                    );
+                }
+            }
+        }
+
+        // Delete from the DB
         var deleteResponse = await projectModificationsService.DeleteModification(projectModificationId);
 
         if (!deleteResponse.IsSuccessStatusCode)
@@ -335,7 +374,6 @@ public class ModificationsController
             modificationId = projectModificationIdentifier
         });
     }
-
 
     /// <summary>
     /// Adds validation errors to ModelState and rebuilds dropdowns from session.

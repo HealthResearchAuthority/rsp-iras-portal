@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Features.Modifications;
@@ -11,11 +13,15 @@ namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications;
 
 public class DeleteModificationConfirmedTests : TestServiceBase<ModificationsController>
 {
+    private readonly Mock<IBlobStorageService> _blobService;
     private readonly Mock<IProjectModificationsService> _modsService;
+    private readonly Mock<IRespondentService> _respService;
 
     public DeleteModificationConfirmedTests()
     {
         _modsService = Mocker.GetMock<IProjectModificationsService>();
+        _respService = Mocker.GetMock<IRespondentService>();
+        _blobService = Mocker.GetMock<IBlobStorageService>();
     }
 
     [Theory]
@@ -25,6 +31,7 @@ public class DeleteModificationConfirmedTests : TestServiceBase<ModificationsCon
     {
         // Arrange
         var projectModificationId = Guid.NewGuid();
+        var projectModificationChangeId = Guid.NewGuid();
         var projectModificationIdentifier = "90000/1";
 
         var http = new DefaultHttpContext();
@@ -34,6 +41,44 @@ public class DeleteModificationConfirmedTests : TestServiceBase<ModificationsCon
         _modsService
             .Setup(s => s.DeleteModification(projectModificationId))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+
+        _modsService
+            .Setup(x => x.GetModificationChanges(projectModificationId))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>
+            {
+                Content = new List<ProjectModificationChangeResponse>
+                {
+                    new()
+                    {
+                        Id = projectModificationChangeId
+                    }
+                },
+                StatusCode = HttpStatusCode.OK
+            });
+
+        _respService
+            .Setup(x => x.GetModificationChangesDocuments(projectModificationChangeId, projectRecordId))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
+            {
+                Content = new List<ProjectModificationDocumentRequest>
+                {
+                    new()
+                    {
+                        ProjectRecordId = projectRecordId,
+                        ProjectModificationChangeId = projectModificationChangeId,
+                        DocumentStoragePath = "IRAS/TEST.PDF"
+                    }
+                },
+                StatusCode = HttpStatusCode.OK
+            });
+
+        _blobService
+            .Setup(x => x.DeleteFileAsync("staging", "IRAS/TEST.PDF"))
+            .ReturnsAsync(new ServiceResponse
+            {
+                StatusCode = HttpStatusCode.OK
+            });
+
 
         // Act
         var result =
@@ -60,13 +105,13 @@ public class DeleteModificationConfirmedTests : TestServiceBase<ModificationsCon
 
     [Theory]
     [AutoData]
-    public async Task
-        DeleteModificationConfirmed_Should_Return_ServiceError_And_Populate_ProblemDetails_When_Service_Fails(
-            string projectRecordId)
+    public async Task DeleteModificationConfirmed_Should_Fail_When_NoModification(
+        string projectRecordId)
     {
         // Arrange
         var projectModificationId = Guid.NewGuid();
-        var projectModificationIdentifier = "ANY-ID";
+        var projectModificationChangeId = Guid.NewGuid();
+        var projectModificationIdentifier = "90000/1";
 
         var http = new DefaultHttpContext();
         Sut.ControllerContext = new ControllerContext { HttpContext = http };
@@ -74,10 +119,43 @@ public class DeleteModificationConfirmedTests : TestServiceBase<ModificationsCon
 
         _modsService
             .Setup(s => s.DeleteModification(projectModificationId))
+            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+
+        _modsService
+            .Setup(x => x.GetModificationChanges(projectModificationId))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>
+            {
+                Content = new List<ProjectModificationChangeResponse>
+                {
+                    new()
+                    {
+                        Id = projectModificationChangeId
+                    }
+                },
+                StatusCode = HttpStatusCode.BadGateway
+            });
+
+        _respService
+            .Setup(x => x.GetModificationChangesDocuments(projectModificationChangeId, projectRecordId))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
+            {
+                Content = new List<ProjectModificationDocumentRequest>
+                {
+                    new()
+                    {
+                        ProjectRecordId = projectRecordId,
+                        ProjectModificationChangeId = projectModificationChangeId,
+                        DocumentStoragePath = "IRAS/TEST.PDF"
+                    }
+                },
+                StatusCode = HttpStatusCode.OK
+            });
+
+        _blobService
+            .Setup(x => x.DeleteFileAsync("staging", "IRAS/TEST.PDF"))
             .ReturnsAsync(new ServiceResponse
             {
-                StatusCode = HttpStatusCode.BadGateway,
-                Error = "Upstream failure"
+                StatusCode = HttpStatusCode.OK
             });
 
         // Act
@@ -91,9 +169,142 @@ public class DeleteModificationConfirmedTests : TestServiceBase<ModificationsCon
         // Assert: TempData NOT set on failure
         Sut.TempData.ContainsKey(TempDataKeys.ShowNotificationBanner).ShouldBeFalse();
         Sut.TempData.ContainsKey(TempDataKeys.ProjectModification.ProjectModificationChangeMarker).ShouldBeFalse();
+    }
 
-        // Verify service interaction
-        _modsService.Verify(s => s.DeleteModification(projectModificationId), Times.Once);
+    [Theory]
+    [AutoData]
+    public async Task DeleteModificationConfirmed_Should_Fail_When_NoModificationDocuments(
+        string projectRecordId)
+    {
+        // Arrange
+        var projectModificationId = Guid.NewGuid();
+        var projectModificationChangeId = Guid.NewGuid();
+        var projectModificationIdentifier = "90000/1";
+
+        var http = new DefaultHttpContext();
+        Sut.ControllerContext = new ControllerContext { HttpContext = http };
+        Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>());
+
+        _modsService
+            .Setup(s => s.DeleteModification(projectModificationId))
+            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+
+        _modsService
+            .Setup(x => x.GetModificationChanges(projectModificationId))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>
+            {
+                Content = new List<ProjectModificationChangeResponse>
+                {
+                    new()
+                    {
+                        Id = projectModificationChangeId
+                    }
+                },
+                StatusCode = HttpStatusCode.OK
+            });
+
+        _respService
+            .Setup(x => x.GetModificationChangesDocuments(projectModificationChangeId, projectRecordId))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
+            {
+                Content = new List<ProjectModificationDocumentRequest>
+                {
+                    new()
+                    {
+                        ProjectRecordId = projectRecordId,
+                        ProjectModificationChangeId = projectModificationChangeId,
+                        DocumentStoragePath = "IRAS/TEST.PDF"
+                    }
+                },
+                StatusCode = HttpStatusCode.BadGateway
+            });
+
+        _blobService
+            .Setup(x => x.DeleteFileAsync("staging", "IRAS/TEST.PDF"))
+            .ReturnsAsync(new ServiceResponse
+            {
+                StatusCode = HttpStatusCode.OK
+            });
+
+        // Act
+        var result =
+            await Sut.DeleteModificationConfirmed(projectRecordId, projectModificationId,
+                projectModificationIdentifier);
+
+        // Assert: correct status
+        AssertStatusCode(result, StatusCodes.Status502BadGateway);
+
+        // Assert: TempData NOT set on failure
+        Sut.TempData.ContainsKey(TempDataKeys.ShowNotificationBanner).ShouldBeFalse();
+        Sut.TempData.ContainsKey(TempDataKeys.ProjectModification.ProjectModificationChangeMarker).ShouldBeFalse();
+    }
+
+    [Theory]
+    [AutoData]
+    public async Task DeleteModificationConfirmed_Should_Fail_When_DeleteModification(
+    string projectRecordId)
+    {
+        // Arrange
+        var projectModificationId = Guid.NewGuid();
+        var projectModificationChangeId = Guid.NewGuid();
+        var projectModificationIdentifier = "90000/1";
+
+        var http = new DefaultHttpContext();
+        Sut.ControllerContext = new ControllerContext { HttpContext = http };
+        Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>());
+
+        _modsService
+            .Setup(s => s.DeleteModification(projectModificationId))
+            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.BadGateway });
+
+        _modsService
+            .Setup(x => x.GetModificationChanges(projectModificationId))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>
+            {
+                Content = new List<ProjectModificationChangeResponse>
+                {
+                    new()
+                    {
+                        Id = projectModificationChangeId
+                    }
+                },
+                StatusCode = HttpStatusCode.OK
+            });
+
+        _respService
+            .Setup(x => x.GetModificationChangesDocuments(projectModificationChangeId, projectRecordId))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
+            {
+                Content = new List<ProjectModificationDocumentRequest>
+                {
+                    new()
+                    {
+                        ProjectRecordId = projectRecordId,
+                        ProjectModificationChangeId = projectModificationChangeId,
+                        DocumentStoragePath = "IRAS/TEST.PDF"
+                    }
+                },
+                StatusCode = HttpStatusCode.OK
+            });
+
+        _blobService
+            .Setup(x => x.DeleteFileAsync("staging", "IRAS/TEST.PDF"))
+            .ReturnsAsync(new ServiceResponse
+            {
+                StatusCode = HttpStatusCode.OK
+            });
+
+        // Act
+        var result =
+            await Sut.DeleteModificationConfirmed(projectRecordId, projectModificationId,
+                projectModificationIdentifier);
+
+        // Assert: correct status
+        AssertStatusCode(result, StatusCodes.Status502BadGateway);
+
+        // Assert: TempData NOT set on failure
+        Sut.TempData.ContainsKey(TempDataKeys.ShowNotificationBanner).ShouldBeFalse();
+        Sut.TempData.ContainsKey(TempDataKeys.ProjectModification.ProjectModificationChangeMarker).ShouldBeFalse();
     }
 
     /// <summary>
