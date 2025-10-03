@@ -11,13 +11,13 @@ using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
 using static Rsp.IrasPortal.Application.Constants.TempDataKeys;
 
-namespace Rsp.IrasPortal.Web.Features.Modifications.PlannedEndDate.Controllers;
+namespace Rsp.IrasPortal.Web.Features.Modifications.ModificationChanges.Controllers;
 
 /// <summary>
 /// Controller responsible for handling project modification related actions.
 /// </summary>
-[Route("modifications/plannedenddate/[action]", Name = "pmc:[action]")]
-public class PlannedEndDateController
+[Route("modifications/ModificationChanges/[action]", Name = "pmc:[action]")]
+public class ModificationChangesController
 (
     IRespondentService respondentService,
     ICmsQuestionsetService cmsQuestionsetService,
@@ -33,10 +33,19 @@ public class PlannedEndDateController
     /// </summary>
     /// <param name="projectRecordId">Application Id</param>
     /// <param name="categoryId">CategoryId to resume from</param>
-    [HttpGet("/modifications/plannedenddate", Name = "pmc:[action]")]
     public async Task<IActionResult> PlannedEndDate(string projectRecordId, string categoryId, string sectionId, bool reviewAnswers = false)
     {
         return await DisplayQuestionnaire(projectRecordId, categoryId, sectionId, reviewAnswers, nameof(PlannedEndDate));
+    }
+
+    /// <summary>
+    /// Resumes the application for the categoryId
+    /// </summary>
+    /// <param name="projectRecordId">Application Id</param>
+    /// <param name="categoryId">CategoryId to resume from</param>
+    public async Task<IActionResult> ReviewableFreeText(string projectRecordId, string categoryId, string sectionId, bool reviewAnswers = false)
+    {
+        return await DisplayQuestionnaire(projectRecordId, categoryId, sectionId, reviewAnswers, nameof(ReviewableFreeText));
     }
 
     public async Task<IActionResult> AffectingOrganisations(string projectRecordId, string categoryId, string sectionId, bool reviewAnswers = false)
