@@ -25,7 +25,7 @@ public class ProjectOverviewController(
     private const string DocumentDetailsSection = "pdm-document-metadata";
 
     [Route("/projectoverview", Name = "pov:index")]
-    public async Task<IActionResult> Index(string projectRecordId, string? backRoute)
+    public async Task<IActionResult> Index(string projectRecordId, string? backRoute, string? modificationId)
     {
         var response = await GetProjectOverview(projectRecordId);
         SetupShortProjectTitleBackNav("pov", "app:Welcome", backRoute);
@@ -38,13 +38,13 @@ public class ProjectOverviewController(
 
         if (okResult.Value is ProjectOverviewModel model && model.Status == ApplicationStatuses.Submitted)
         {
-            return RedirectToAction(nameof(ProjectDetails), new { projectRecordId, backRoute });
+            return RedirectToAction(nameof(ProjectDetails), new { projectRecordId, backRoute, modificationId });
         }
 
         return View(okResult.Value);
     }
 
-    public async Task<IActionResult> ProjectDetails(string projectRecordId, string? backRoute)
+    public async Task<IActionResult> ProjectDetails(string projectRecordId, string? backRoute, string? modificationId)
     {
         // IF NAVIGATED FROM SHORT PROJECT TITLE LINKS
         if (backRoute != null)

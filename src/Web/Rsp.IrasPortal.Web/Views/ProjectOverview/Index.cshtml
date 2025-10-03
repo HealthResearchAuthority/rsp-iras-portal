@@ -9,11 +9,13 @@
 
     // get projectRecordId from query string
     var projectRecordId = Context.Request.Query["projectRecordId"].ToString();
+
 }
 
 @section BackNavigation {
     <partial name="_BackNavigation" model="@((routeName, "Back", routeValues))" />
 }
+
 
 <partial name="_ProjectOverviewPartial" model="@Model" />
 

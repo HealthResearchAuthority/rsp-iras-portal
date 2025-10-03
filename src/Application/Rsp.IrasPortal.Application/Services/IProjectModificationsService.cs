@@ -181,4 +181,15 @@ public interface IProjectModificationsService : IInterceptable
     /// containing a <see cref="ServiceResponse"/> indicating success or failure of the creation process.
     /// </returns>
     Task<ServiceResponse> DeleteDocumentModification(List<ProjectModificationDocumentRequest> projectModificationDocumentRequest);
+
+
+    /// <summary>
+    /// Updates sttaus of an existing project modification by its unique identifier.
+    /// </summary>
+    /// <param name="modificationId">The unique identifier of the project modification to update.</param>
+    /// <returns>
+    /// A task representing the asynchronous operation, containing a <see cref="ServiceResponse"/>
+    /// that reflects the success or failure of the update operation.
+    /// </returns>
+    Task<ServiceResponse> DeleteModification(Guid modificationId);
 }

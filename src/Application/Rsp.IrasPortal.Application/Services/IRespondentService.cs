@@ -88,6 +88,20 @@ public interface IRespondentService : IInterceptable
     /// containing a <see cref="ServiceResponse{T}"/> with a collection of <see cref="ProjectModificationDocumentRequest"/>
     /// representing the associated documents.
     /// </returns>
+    Task<ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>> GetModificationChangesDocuments(Guid modificationChangeId, string projectRecordId);
+
+    /// <summary>
+    /// Retrieves all documents associated with a specific project modification change,
+    /// filtered by the project record ID and the project personnel who submitted or are responsible for the documents.
+    /// </summary>
+    /// <param name="modificationChangeId">The unique identifier of the project modification change.</param>
+    /// <param name="projectRecordId">The unique identifier of the associated project record.</param>
+    /// <param name="projectPersonnelId">The unique identifier of the project personnel who uploaded or is linked to the documents.</param>
+    /// <returns>
+    /// A <see cref="Task"/> representing the asynchronous operation,
+    /// containing a <see cref="ServiceResponse{T}"/> with a collection of <see cref="ProjectModificationDocumentRequest"/>
+    /// representing the associated documents.
+    /// </returns>
     Task<ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>> GetModificationChangesDocuments(Guid modificationChangeId, string projectRecordId, string projectPersonnelId);
 
     Task<ServiceResponse<ProjectModificationDocumentRequest>> GetModificationDocumentDetails(Guid documentId);
