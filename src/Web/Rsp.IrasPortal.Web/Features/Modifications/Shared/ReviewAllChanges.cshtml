@@ -106,6 +106,7 @@
     </div>
 </div>
 
+<authorized auth-params="@new(Roles: "applicant")">
 @if (Model.Status is ModificationStatus.Draft)
 {
     <div class="govuk-grid-row">
@@ -141,3 +142,4 @@
         </div>
     </div>
 }
+</authorized>
