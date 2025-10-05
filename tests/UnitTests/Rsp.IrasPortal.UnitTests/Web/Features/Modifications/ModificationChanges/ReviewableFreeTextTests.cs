@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,13 +14,13 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.ModificationChanges;
 
-public class ModificationChangesControllerTests : TestServiceBase<ModificationChangesController>
+public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesController>
 {
     private readonly Mock<IRespondentService> _respondentService;
     private readonly Mock<ICmsQuestionsetService> _cmsService;
     private readonly Mock<IValidator<QuestionnaireViewModel>> _validator;
 
-    public ModificationChangesControllerTests()
+    public ReviewableFreeTextTests()
     {
         _respondentService = Mocker.GetMock<IRespondentService>();
         _cmsService = Mocker.GetMock<ICmsQuestionsetService>();
@@ -36,7 +36,7 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
         Sut.TempData = new TempDataDictionary(ctx, Mock.Of<ITempDataProvider>());
 
         // Act
-        var result = await Sut.DisplayQuestionnaire("PR1", "CAT1", "SEC1", false, viewName: nameof(ModificationChangesController.PlannedEndDate));
+        var result = await Sut.DisplayQuestionnaire("PR1", "CAT1", "SEC1", false, viewName: nameof(ModificationChangesController.ReviewableFreeText));
 
         // Assert
         result
@@ -71,7 +71,7 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
             .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = BuildQuestionSet("SEC1", "CAT1", "PlannedEndDate")
+                Content = BuildQuestionSet("SEC1", "CAT1", "ReviewableFreeText")
             });
 
         // stage resolution
@@ -80,7 +80,7 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
             .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = BuildQuestionSet("SEC1", "CAT1", "PlannedEndDate")
+                Content = BuildQuestionSet("SEC1", "CAT1", "ReviewableFreeText")
             });
 
         _cmsService
@@ -100,11 +100,11 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
             });
 
         // Act
-        var result = await Sut.DisplayQuestionnaire("PR1", "CAT1", "SEC1", true, viewName: nameof(ModificationChangesController.PlannedEndDate));
+        var result = await Sut.DisplayQuestionnaire("PR1", "CAT1", "SEC1", true, viewName: nameof(ModificationChangesController.ReviewableFreeText));
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
-        view.ViewName.ShouldBe(nameof(ModificationChangesController.PlannedEndDate));
+        view.ViewName.ShouldBe(nameof(ModificationChangesController.ReviewableFreeText));
         var model = view.Model.ShouldBeOfType<QuestionnaireViewModel>();
         model.CurrentStage.ShouldBe("SEC1");
     }
@@ -143,14 +143,14 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
     {
         // Arrange
         var (ctx, modChangeId) = SetupHttpContext();
-        SetupStage("SEC1", "CAT1", currentStaticView: "PlannedEndDate", nextSectionId: "SEC2", nextStatic: "AffectingOrganisations");
+        SetupStage("SEC1", "CAT1", currentStaticView: "ReviewableFreeText", nextSectionId: "SEC2", nextStatic: "AffectingOrganisations");
 
         _cmsService
             .Setup(s => s.GetModificationQuestionSet("SEC1", null))
             .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = BuildQuestionSet("SEC1", "CAT1", "PlannedEndDate",
+                Content = BuildQuestionSet("SEC1", "CAT1", "ReviewableFreeText",
                     new QuestionModel { Id = "QCMS1", QuestionId = "Q1", AnswerDataType = "Text", QuestionFormat = "text", CategoryId = "CAT1", Sequence = 1, SectionSequence = 1 })
             });
 
@@ -170,7 +170,7 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
-        view.ViewName.ShouldBe("PlannedEndDate");
+        view.ViewName.ShouldBe("ReviewableFreeText");
         view.Model.ShouldBeOfType<QuestionnaireViewModel>();
         _validator.Verify();
     }
@@ -180,14 +180,14 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
     {
         // Arrange
         var (ctx, modChangeId) = SetupHttpContext();
-        SetupStage("SEC1", "CAT1", currentStaticView: "PlannedEndDate", nextSectionId: "SEC2", nextStatic: "AffectingOrganisations");
+        SetupStage("SEC1", "CAT1", currentStaticView: "ReviewableFreeText", nextSectionId: "SEC2", nextStatic: "AffectingOrganisations");
 
         _cmsService
             .Setup(s => s.GetModificationQuestionSet("SEC1", null))
             .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = BuildQuestionSet("SEC1", "CAT1", "PlannedEndDate",
+                Content = BuildQuestionSet("SEC1", "CAT1", "ReviewableFreeText",
                     new QuestionModel { Id = "QCMS1", QuestionId = "Q1", AnswerDataType = "Text", QuestionFormat = "text", CategoryId = "CAT1", Sequence = 1, SectionSequence = 1 })
             });
 
@@ -219,14 +219,14 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
     {
         // Arrange
         var (ctx, modChangeId) = SetupHttpContext();
-        SetupStage("SEC1", "CAT1", currentStaticView: "PlannedEndDate", nextSectionId: "SEC2", nextStatic: "AffectingOrganisations", currentIsMandatory: true);
+        SetupStage("SEC1", "CAT1", currentStaticView: "ReviewableFreeText", nextSectionId: "SEC2", nextStatic: "AffectingOrganisations", currentIsMandatory: true);
 
         _cmsService
             .Setup(s => s.GetModificationQuestionSet("SEC1", null))
             .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = BuildQuestionSet("SEC1", "CAT1", "PlannedEndDate",
+                Content = BuildQuestionSet("SEC1", "CAT1", "ReviewableFreeText",
                     new QuestionModel { Id = "QCMS1", QuestionId = "Q1", AnswerDataType = "Text", QuestionFormat = "text", CategoryId = "CAT1", Sequence = 1, SectionSequence = 1 })
             });
 
@@ -258,14 +258,14 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
     {
         // Arrange
         var (ctx, modChangeId) = SetupHttpContext();
-        SetupStage("SEC1", "CAT1", currentStaticView: "PlannedEndDate", nextSectionId: "SEC2", nextStatic: "AffectedOrganisationsType", currentIsMandatory: true);
+        SetupStage("SEC1", "CAT1", currentStaticView: "ReviewableFreeText", nextSectionId: "SEC2", nextStatic: "AffectedOrganisationsType", currentIsMandatory: true);
 
         _cmsService
             .Setup(s => s.GetModificationQuestionSet("SEC1", null))
             .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = BuildQuestionSet("SEC1", "CAT1", "PlannedEndDate",
+                Content = BuildQuestionSet("SEC1", "CAT1", "ReviewableFreeText",
                     new QuestionModel { Id = "QCMS1", QuestionId = "Q1", AnswerDataType = "Text", QuestionFormat = "text", CategoryId = "CAT1", Sequence = 1, SectionSequence = 1 })
             });
 
@@ -301,14 +301,14 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
         var (ctx, modChangeId) = SetupHttpContext();
         // Set review mode flag
         Sut.TempData[TempDataKeys.ProjectModificationChange.ReviewChanges] = true;
-        SetupStage("SEC1", "CAT1", currentStaticView: "PlannedEndDate", nextSectionId: "SEC2", nextStatic: "AffectingOrganisations");
+        SetupStage("SEC1", "CAT1", currentStaticView: "ReviewableFreeText", nextSectionId: "SEC2", nextStatic: "AffectingOrganisations");
 
         _cmsService
             .Setup(s => s.GetModificationQuestionSet("SEC1", null))
             .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = BuildQuestionSet("SEC1", "CAT1", "PlannedEndDate",
+                Content = BuildQuestionSet("SEC1", "CAT1", "ReviewableFreeText",
                     new QuestionModel { Id = "QCMS1", QuestionId = "Q1", AnswerDataType = "Text", QuestionFormat = "text", CategoryId = "CAT1", Sequence = 1, SectionSequence = 1 })
             });
 
@@ -353,7 +353,7 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
             .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = BuildQuestionSet("SEC1", "CAT1", "PlannedEndDate",
+                Content = BuildQuestionSet("SEC1", "CAT1", "ReviewableFreeText",
                     new QuestionModel { Id = "QCMS1", QuestionId = "Q1", ShowOriginalAnswer = true, AnswerDataType = "Text", QuestionFormat = "text", CategoryId = "CAT1", Sequence = 1, SectionSequence = 1 })
             });
 
@@ -381,7 +381,7 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
             .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = BuildQuestionSet("SEC1", "CAT1", "PlannedEndDate",
+                Content = BuildQuestionSet("SEC1", "CAT1", "ReviewableFreeText",
                     new QuestionModel { Id = "QCMS1", QuestionId = "Q1", ShowOriginalAnswer = true, AnswerDataType = "Text", QuestionFormat = "text", CategoryId = "CAT1", Sequence = 1, SectionSequence = 1 })
             });
 
@@ -402,7 +402,7 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
             });
 
         // Act
-        var result = await Sut.DisplayQuestionnaire("PR1", "CAT1", "SEC1", false, nameof(ModificationChangesController.PlannedEndDate));
+        var result = await Sut.DisplayQuestionnaire("PR1", "CAT1", "SEC1", false, nameof(ModificationChangesController.ReviewableFreeText));
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
@@ -412,7 +412,7 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
     }
 
     [Fact]
-    public async Task PlannedEndDate_Action_Returns_View()
+    public async Task ReviewableFreeText_Action_Returns_View()
     {
         // Arrange
         var ctx = new DefaultHttpContext();
@@ -436,7 +436,7 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
             .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = BuildQuestionSet("SEC1", "CAT1", "PlannedEndDate")
+                Content = BuildQuestionSet("SEC1", "CAT1", "ReviewableFreeText")
             });
 
         _cmsService
@@ -444,7 +444,7 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
             .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = BuildQuestionSet("SEC1", "CAT1", "PlannedEndDate")
+                Content = BuildQuestionSet("SEC1", "CAT1", "ReviewableFreeText")
             });
 
         _cmsService
@@ -464,11 +464,11 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
             });
 
         // Act
-        var result = await Sut.PlannedEndDate("PR1", "CAT1", "SEC1", true);
+        var result = await Sut.ReviewableFreeText("PR1", "CAT1", "SEC1", true);
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
-        view.ViewName.ShouldBe(nameof(ModificationChangesController.PlannedEndDate));
+        view.ViewName.ShouldBe(nameof(ModificationChangesController.ReviewableFreeText));
         var model = view.Model.ShouldBeOfType<QuestionnaireViewModel>();
     }
 
