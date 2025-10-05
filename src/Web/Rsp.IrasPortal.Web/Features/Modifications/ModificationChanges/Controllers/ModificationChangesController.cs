@@ -16,7 +16,7 @@ namespace Rsp.IrasPortal.Web.Features.Modifications.ModificationChanges.Controll
 /// <summary>
 /// Controller responsible for handling project modification related actions.
 /// </summary>
-[Route("modifications/ModificationChanges/[action]", Name = "pmc:[action]")]
+[Route("modifications/modificationchanges/[action]", Name = "pmc:[action]")]
 public class ModificationChangesController
 (
     IRespondentService respondentService,
