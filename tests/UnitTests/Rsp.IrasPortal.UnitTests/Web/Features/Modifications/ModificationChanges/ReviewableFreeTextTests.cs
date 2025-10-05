@@ -336,6 +336,87 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
     }
 
     [Fact]
+    public async Task SaveResponses_Redirects_To_Review_When_Mandatory_And_No_Answers()
+    {
+        // Arrange
+        var (ctx, modChangeId) = SetupHttpContext();
+        SetupStage("SEC1", "CAT1", currentStaticView: "ReviewableFreeText", nextSectionId: "SEC2", nextStatic: "AffectingOrganisations", currentIsMandatory: true);
+
+        _cmsService
+            .Setup(s => s.GetModificationQuestionSet("SEC1", null))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = BuildQuestionSet("SEC1", "CAT1", "ReviewableFreeText", isMandatory: true,
+                    new QuestionModel { Id = "QCMS1", QuestionId = "Q1", AnswerDataType = "Text", QuestionFormat = "text", CategoryId = "CAT1", Sequence = 1, SectionSequence = 1 })
+            });
+
+        _validator
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
+
+        _respondentService
+            .Setup(s => s.SaveModificationChangeAnswers(It.IsAny<ProjectModificationChangeAnswersRequest>()))
+            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+
+        var model = new QuestionnaireViewModel
+        {
+            CurrentStage = "SEC1",
+            Questions = new() // all missing answers
+        };
+
+        // Act
+        var result = await Sut.SaveResponses(model);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe(nameof(ModificationChangesController.ReviewChanges));
+        redirect.RouteValues!["projectRecordId"].ShouldBe("PR1");
+        redirect.RouteValues!["modificationChangeId"].ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task SaveResponses_Redirects_To_NextSection_Route_When_Mandatory_With_Answers()
+    {
+        // Arrange
+        var (ctx, modChangeId) = SetupHttpContext();
+        SetupStage("SEC1", "CAT1", currentStaticView: "ReviewableFreeText", nextSectionId: "SEC2", nextStatic: "AffectedOrganisationsType", currentIsMandatory: true);
+
+        _cmsService
+            .Setup(s => s.GetModificationQuestionSet("SEC1", null))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = BuildQuestionSet("SEC1", "CAT1", "ReviewableFreeText", isMandatory: true,
+                    new QuestionModel { Id = "QCMS1", Conformance = "Mandatory", QuestionId = "Q1", AnswerDataType = "Text", QuestionFormat = "text", CategoryId = "CAT1", Sequence = 1, SectionSequence = 1 })
+            });
+
+        _validator
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
+
+        _respondentService
+            .Setup(s => s.SaveModificationChangeAnswers(It.IsAny<ProjectModificationChangeAnswersRequest>()))
+            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+
+        var model = new QuestionnaireViewModel
+        {
+            CurrentStage = "SEC1",
+            Questions = [new QuestionViewModel { QuestionId = "Q1", AnswerText = "Some answer" }]
+        };
+
+        // Act
+        var result = await Sut.SaveResponses(model);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirect.RouteName.ShouldBe("pmc:AffectedOrganisationsType");
+        redirect.RouteValues!["projectRecordId"].ShouldBe("PR1");
+        redirect.RouteValues!["categoryId"].ShouldBe("CAT2");
+        redirect.RouteValues!["sectionId"].ShouldBe("SEC2");
+    }
+
+    [Fact]
     public async Task DisplayQuestionnaire_Populates_OriginalAnswers_When_ShowOriginalAnswer_True()
     {
         // Arrange
