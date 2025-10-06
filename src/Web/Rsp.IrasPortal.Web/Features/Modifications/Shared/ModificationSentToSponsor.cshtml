@@ -1,30 +1,44 @@
 ﻿@using Rsp.IrasPortal.Application.Constants
 
 @{
-    ViewBag.Title = $"Modification set to sponsor";
+	ViewBag.Title = $"Modification set to sponsor";
 
-    var projectRecordId = TempData[TempDataKeys.ProjectRecordId];
+	var projectRecordId = TempData[TempDataKeys.ProjectRecordId];
+	var projectModificationId = TempData[TempDataKeys.ProjectModification.ProjectModificationId];
 
-    // this is the last stage of the modification so clear
-    // all TempData values
-    TempData.Clear();
+	// this is the last stage of the modification so clear
+	// all TempData values
+	TempData.Clear();
 }
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-        <div class="govuk-panel govuk-panel--confirmation">
-            <h1 class="govuk-panel__title">
-                Modification sent to sponsor
-            </h1>
-        </div>
+	<div class="govuk-grid-column-two-thirds">
+		<div class="govuk-panel govuk-panel--confirmation">
+			<h1 class="govuk-panel__title">
+				Modification sent to sponsor
+			</h1>
+		</div>
 
-        <h2 class="govuk-heading-m">What happens next</h2>
-        <p class="govuk-body">
-            You've sent your modification to the sponsor. They'll either accept the changes and submit it, or contact you for more information.
-        </p>
+		<h2 class="govuk-heading-m">What happens next</h2>
+		<p class="govuk-body">
+			You've sent your modification to the sponsor. They'll either accept the changes and submit it, or contact you for more information.
+		</p>
+		<div class="save-buttons">
+			<a class="govuk-button" asp-route="pov:projectdetails" asp-route-projectRecordId="@projectRecordId">
+				Return to project overview
+			</a>
 
-        <a class="govuk-button" asp-route="pov:projectdetails" asp-route-projectRecordId="@projectRecordId">
-            Return to project overview
-        </a>
-    </div>
+			<form method="post" class="govuk-!-display-inline">
+				<partial name="_SubmitButton" model="@(
+					"pmc:submittoregulator",
+					"Submit to regulator",
+					new Dictionary<string, string>
+					{
+						["projectModificationId"] = projectModificationId?.ToString(),
+						["projectRecordId"] = projectRecordId?.ToString()
+					})" />
+			</form>
+		</div>
+
+	</div>
 </div>

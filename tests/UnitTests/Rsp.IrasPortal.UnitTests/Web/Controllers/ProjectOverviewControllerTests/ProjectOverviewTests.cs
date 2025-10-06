@@ -123,7 +123,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupControllerContext(httpContext, tempData);
 
         // Act
-        var result = await Sut.Index(DefaultProjectRecordId, null);
+        var result = await Sut.Index(DefaultProjectRecordId, null,null);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -166,7 +166,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupControllerContext(httpContext, tempData);
 
         // Act
-        var result = await Sut.Index(DefaultProjectRecordId, null);
+        var result = await Sut.Index(DefaultProjectRecordId, null,null);
 
         // Assert
         var viewResult = result.ShouldBeOfType<RedirectToActionResult>();
@@ -195,7 +195,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupControllerContext(httpContext, tempData);
 
         // Act
-        var result = await Sut.ProjectDetails(DefaultProjectRecordId, "");
+        var result = await Sut.ProjectDetails(DefaultProjectRecordId, "","");
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
         var model = viewResult.Model.ShouldBeOfType<ProjectOverviewModel>();
@@ -230,7 +230,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupControllerContext(httpContext, tempData);
 
         // Act
-        await Sut.ProjectDetails(DefaultProjectRecordId, "");
+        await Sut.ProjectDetails(DefaultProjectRecordId, "","");
 
         // Assert
         tempData.ContainsKey(TempDataKeys.ProjectModification.ProjectModificationId).ShouldBeFalse();
@@ -261,7 +261,8 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupControllerContext(httpContext, tempData);
 
         // Act
-        await Sut.ProjectDetails(DefaultProjectRecordId, "");
+        await Sut.ProjectDetails(DefaultProjectRecordId, "", "");
+
 
         // Assert
         tempData[TempDataKeys.ShowNotificationBanner].ShouldBe(true);
@@ -294,7 +295,8 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupControllerContext(httpContext, tempData);
 
         // Act
-        var result = await Sut.ProjectDetails(projectRecordId, "");
+        var result = await Sut.ProjectDetails(projectRecordId, "", "");
+
 
         // Assert
         tempData[TempDataKeys.ProjectOverview].ShouldBe(true);
@@ -322,7 +324,8 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupControllerContext(httpContext, tempData);
 
         // Act
-        var result = await Sut.ProjectDetails(DefaultProjectRecordId, "");
+        var result = await Sut.ProjectDetails(DefaultProjectRecordId, "", "");
+
 
         // Assert
         var statusCodeResult = result.ShouldBeOfType<StatusCodeResult>();
@@ -476,7 +479,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 
         var modifications = new List<ModificationsDto>
         {
-            new() { ModificationId = "m1", ModificationType = "Type1", Status = "Draft" }
+            new() { ModificationId = "m1", ModificationType = "Type1", Status = ModificationStatus.Draft }
         };
 
         var modificationsResponse = new GetModificationsResponse
@@ -504,7 +507,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var mod = model.Modifications.Single();
         mod.ModificationIdentifier.ShouldBe("m1");
         mod.ModificationType.ShouldBe("Type1");
-        mod.Status.ShouldBe("Draft");
+        mod.Status.ShouldBe(ModificationStatus.Draft);
         mod.ReviewType.ShouldBeNull();
         mod.Category.ShouldBeNull();
         mod.DateSubmitted.ShouldNotBeNull();
@@ -589,7 +592,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupControllerContext(httpContext, tempData);
 
         // Act (triggers: if (!IsNullOrWhiteSpace(backRouteFromQuery)) {... return;})
-        var result = await Sut.ProjectDetails(DefaultProjectRecordId, "admin:applyfilters");
+        var result = await Sut.ProjectDetails(DefaultProjectRecordId, "admin:applyfilters", "");
 
         // Assert
         (Sut.ViewData["BackRoute"] as string).ShouldBe("admin:applyfilters");
@@ -617,7 +620,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupControllerContext(httpContext, tempData);
 
         // Act (triggers: same section -> pull BackRoute from session)
-        var result = await Sut.ProjectDetails(DefaultProjectRecordId, null);
+        var result = await Sut.ProjectDetails(DefaultProjectRecordId, null, "");
 
         // Assert
         (Sut.ViewData["BackRoute"] as string).ShouldBe("admin:results");
@@ -644,7 +647,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupControllerContext(httpContext, tempData);
 
         // Act (triggers: same section, storedRoute null -> defaultRoute)
-        var result = await Sut.ProjectDetails(DefaultProjectRecordId, null);
+        var result = await Sut.ProjectDetails(DefaultProjectRecordId, null, "");
 
         // Assert
         (Sut.ViewData["BackRoute"] as string).ShouldBe("app:Welcome");
@@ -672,7 +675,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupControllerContext(httpContext, tempData);
 
         // Act (triggers: else branch -> clears + default)
-        var result = await Sut.ProjectDetails(DefaultProjectRecordId, null);
+        var result = await Sut.ProjectDetails(DefaultProjectRecordId, null, "");
 
         // Assert
         httpContext.Session.GetString(SessionKeys.BackRouteSection).ShouldBeNull();
@@ -698,7 +701,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupControllerContext(httpContext, tempData);
 
         // Seed via ProjectDetails (sets session + ViewData)
-        await Sut.ProjectDetails(projectRecordId, "admin:applyfilters");
+        await Sut.ProjectDetails(projectRecordId, "admin:applyfilters", "");
 
         // Now call another action in the *same* section WITHOUT backRoute
         var modsService = Mocker.GetMock<IProjectModificationsService>();

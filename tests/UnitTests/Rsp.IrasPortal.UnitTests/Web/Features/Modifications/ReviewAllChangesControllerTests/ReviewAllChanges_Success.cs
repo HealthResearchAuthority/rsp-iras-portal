@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
 using Rsp.IrasPortal.Application.DTOs.Requests;
@@ -32,7 +33,7 @@ public class ReviewAllChanges_Success : TestServiceBase<ReviewAllChangesControll
             .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new() { Modifications = [new Application.DTOs.ModificationsDto { Id = modId.ToString(), ModificationId = modId.ToString(), Status = "Draft" }] }
+                Content = new() { Modifications = [new Application.DTOs.ModificationsDto { Id = modId.ToString(), ModificationId = modId.ToString(), Status = ModificationStatus.Draft }] }
             });
 
         // changes
@@ -42,7 +43,7 @@ public class ReviewAllChanges_Success : TestServiceBase<ReviewAllChangesControll
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = [new() { Id = changeId, AreaOfChange = "A1", SpecificAreaOfChange = "SA1", Status = "Draft" }]
+                Content = [new() { Id = changeId, AreaOfChange = "A1", SpecificAreaOfChange = "SA1", Status = ModificationStatus.Draft }]
             });
 
         // initial questions

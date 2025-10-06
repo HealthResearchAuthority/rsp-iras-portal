@@ -121,17 +121,43 @@ public class ReviewAllChangesController
     }
 
     [HttpPost]
-    public async Task<IActionResult> SendModificationToSponsor(string projectRecordId, Guid projectModificationId)
+    public Task<IActionResult> SendModificationToSponsor(string projectRecordId, Guid projectModificationId)
+    {
+        return HandleModificationStatusUpdate(
+            projectRecordId,
+            projectModificationId,
+            ModificationStatus.InSponsorReview,
+            onSuccess: () => View("ModificationSentToSponsor")
+        );
+    }
+
+    [HttpPost]
+    public Task<IActionResult> SubmitToRegulator(string projectRecordId, Guid projectModificationId)
+    {
+        return HandleModificationStatusUpdate(
+            projectRecordId,
+            projectModificationId,
+            ModificationStatus.Approved,
+            onSuccess: () => RedirectToRoute("pov:projectdetails", new { projectRecordId })
+        );
+    }
+
+    private async Task<IActionResult> HandleModificationStatusUpdate(
+        string projectRecordId,
+        Guid projectModificationId,
+        string newStatus,
+        Func<IActionResult> onSuccess)
     {
         TempData[TempDataKeys.ProjectRecordId] = projectRecordId;
+        TempData[TempDataKeys.ProjectModification.ProjectModificationId] = projectModificationId;
 
-        var updateResponse = await projectModificationsService.UpdateModificationStatus(projectModificationId, ModificationStatus.InSponsorReview);
+        var updateResponse = await projectModificationsService.UpdateModificationStatus(projectModificationId, newStatus);
 
         if (!updateResponse.IsSuccessStatusCode)
         {
             return this.ServiceError(updateResponse);
         }
 
-        return View("ModificationSentToSponsor");
+        return onSuccess();
     }
 }

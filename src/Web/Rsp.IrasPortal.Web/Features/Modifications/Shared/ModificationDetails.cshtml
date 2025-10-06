@@ -79,14 +79,14 @@
         <partial name="ModificationChanges" model="Model" view-data="ViewData" />
 
         <div class="save-buttons">
-            @if (Model.Status is "Draft")
+			@if (Model.Status is ModificationStatus.Draft)
             {
                 <a asp-route="pmc:areaofchange" asp-route-projectModificationId="@Model.ModificationId" class="govuk-button govuk-button--secondary">
                     Add another change to this modification
                 </a>
             }
 
-            @if (!Model.ModificationChanges.Any() && Model.Status is "Draft")
+			@if (!Model.ModificationChanges.Any() && Model.Status is ModificationStatus.Draft)
             {
                 <a asp-route="pov:postapproval" asp-route-projectRecordId="@Model.ProjectRecordId" class="govuk-button govuk-button--secondary">
                     Save for later
@@ -96,8 +96,9 @@
     </div>
 </div>
 
+<authorized auth-params="@new(Roles: "applicant")">
 @* Only show the Overall ranking if we have the changes *@
-@if (Model.ModificationChanges.Any() && Model.Status is "Draft")
+@if (Model.ModificationChanges.Any() && Model.Status is ModificationStatus.Draft)
 {
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
@@ -123,3 +124,16 @@
         </div>
     </div>
 }
+
+@if (Model.Status is ModificationStatus.Draft)
+{
+    <a asp-route="pmc:deletemodification"
+       asp-route-projectRecordId="@Model.ProjectRecordId"
+       asp-route-irasId="@(Model.ModificationIdentifier?.Split('/')[0])"
+       asp-route-shortTitle="@Model.ShortTitle"
+       asp-route-projectModificationId="@Model.ModificationId"
+       class="govuk-link">
+        Delete modification
+    </a>
+}
+</authorized>
