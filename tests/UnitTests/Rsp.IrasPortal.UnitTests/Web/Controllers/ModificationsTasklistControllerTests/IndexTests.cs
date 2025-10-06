@@ -19,6 +19,7 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ModificationsTasklistControll
 public class IndexTests : TestServiceBase<ModificationsTasklistController>
 {
     private readonly DefaultHttpContext _http;
+    private const string SessionSelectedKey = "Tasklist:SelectedModificationIds";
 
     public IndexTests()
     {
@@ -41,6 +42,15 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
     [Fact]
     public async Task Welcome_ReturnsViewResult_WithIndexViewName()
     {
+        // Arrange
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, "CreatedAt", "asc"))
+            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new GetModificationsResponse { Modifications = new List<ModificationsDto>(), TotalCount = 0 }
+            });
+
         // Act
         var result = await Sut.Index(1, 20, null, "CreatedAt", "asc");
 
@@ -78,6 +88,14 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
         bool expectedEmptySearchPerformed)
     {
         _http.Session.SetString(SessionKeys.ModificationsTasklist, json);
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, "CreatedAt", "asc"))
+            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new GetModificationsResponse { Modifications = new List<ModificationsDto>(), TotalCount = 0 }
+            });
 
         var result = await Sut.Index(1, 20, null, "CreatedAt", "asc");
 
@@ -132,13 +150,11 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
         var userId = Guid.NewGuid();
         SetUserIdClaim(userId);
 
-        // Your DTOs may differ – adjust as needed:
-        // A list with one item that has an Id used to fetch the review body
         var reviewBodyId = Guid.NewGuid();
 
-        var userBodies = new List<ReviewBodyUserDto> // <-- replace with your actual item type if different
+        var userBodies = new List<ReviewBodyUserDto>
         {
-            new ReviewBodyUserDto { Id = reviewBodyId } // must have Id: Guid
+            new ReviewBodyUserDto { Id = reviewBodyId }
         };
 
         var userBodiesResponse = new ServiceResponse<List<ReviewBodyUserDto>>
@@ -147,9 +163,9 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
             Content = userBodies
         };
 
-        var reviewBodyDetail = new ReviewBodyDto // <-- replace with your actual detail type if different
+        var reviewBodyDetail = new ReviewBodyDto
         {
-            Countries = new List<string> { "Wales" } // must have Countries: IEnumerable<string>
+            Countries = new List<string> { "Wales" }
         };
 
         var reviewBodyByIdResponse = new ServiceResponse<ReviewBodyDto>
@@ -158,7 +174,6 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
             Content = reviewBodyDetail
         };
 
-        // Modifications service (existing)
         var modsServiceResponse = new ServiceResponse<GetModificationsResponse>
         {
             StatusCode = HttpStatusCode.OK,
@@ -169,7 +184,6 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
             .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, "CreatedAt", "asc"))
             .ReturnsAsync(modsServiceResponse);
 
-        // Review body service (new path)
         var rbSvc = Mocker.GetMock<IReviewBodyService>();
 
         rbSvc.Setup(s => s.GetUserReviewBodies(userId))
@@ -181,10 +195,8 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
         // Act
         var result = await Sut.Index(1, 20, null, "CreatedAt", "asc");
 
-        // Assert: page still returns a view
+        // Assert
         result.ShouldBeOfType<ViewResult>();
-
-        // And we exercised the new calls with the parsed Guid
         rbSvc.Verify(s => s.GetUserReviewBodies(userId), Times.Once);
         rbSvc.Verify(s => s.GetReviewBodyById(reviewBodyId), Times.Once);
     }
@@ -217,16 +229,14 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
         rbSvc.Verify(s => s.GetReviewBodyById(It.IsAny<Guid>()), Times.Never);
     }
 
-    // NEW: GetUserReviewBodies is NOT successful -> no GetReviewBodyById call, still returns View
     [Theory, AutoData]
     public async Task Index_WhenGetUserReviewBodies_NotSuccess_UsesDefault_And_Skips_GetById(
         GetModificationsResponse modificationResponse)
     {
         // Arrange
         var userId = Guid.NewGuid();
-        SetUserIdClaim(userId); // assumes helper exists in the test class
+        SetUserIdClaim(userId);
 
-        // Allow the action to complete
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, "CreatedAt", "asc"))
             .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
@@ -240,7 +250,7 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
         rbSvc.Setup(s => s.GetUserReviewBodies(userId))
             .ReturnsAsync(new ServiceResponse<List<ReviewBodyUserDto>>
             {
-                StatusCode = HttpStatusCode.BadRequest, // non-success
+                StatusCode = HttpStatusCode.BadRequest,
                 Content = null
             });
 
@@ -253,7 +263,6 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
         rbSvc.Verify(s => s.GetReviewBodyById(It.IsAny<Guid>()), Times.Never);
     }
 
-    // NEW: GetUserReviewBodies OK but GetReviewBodyById is NOT successful -> still returns View
     [Theory, AutoData]
     public async Task Index_WhenGetReviewBodyById_NotSuccess_ReturnsView_And_NoFurtherCalls(
         GetModificationsResponse modificationResponse)
@@ -261,9 +270,8 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
         // Arrange
         var userId = Guid.NewGuid();
         var reviewBodyId = Guid.NewGuid();
-        SetUserIdClaim(userId); // assumes helper exists in the test class
+        SetUserIdClaim(userId);
 
-        // Allow the action to complete
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, "CreatedAt", "asc"))
             .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
@@ -280,14 +288,14 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
                 StatusCode = HttpStatusCode.OK,
                 Content = new List<ReviewBodyUserDto>
                 {
-                new ReviewBodyUserDto { Id = reviewBodyId }
+                    new ReviewBodyUserDto { Id = reviewBodyId }
                 }
             });
 
         rbSvc.Setup(s => s.GetReviewBodyById(reviewBodyId))
             .ReturnsAsync(new ServiceResponse<ReviewBodyDto>
             {
-                StatusCode = HttpStatusCode.BadRequest, // non-success
+                StatusCode = HttpStatusCode.BadRequest,
                 Content = null
             });
 
@@ -300,17 +308,19 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
         rbSvc.Verify(s => s.GetReviewBodyById(reviewBodyId), Times.Once);
     }
 
-    // NEW: Sorting by DaysSinceSubmission = invert direction and use CreatedAt
+    // ----- Sorting by DaysSinceSubmission remains: invert direction and use CreatedAt -----
 
     [Theory, AutoData]
-    public async Task Index_SortByDaysSinceSubmission_Asc_InvertsTo_CreatedAt_Desc(GetModificationsResponse modificationResponse)
+    public async Task Index_SortByDaysSinceSubmission_Asc_InvertsTo_CreatedAt_Desc(
+        GetModificationsResponse modificationResponse)
     {
         // Arrange
         string? capturedField = null;
         string? capturedDir = null;
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(),
+                It.IsAny<string>()))
             .Callback<ModificationSearchRequest, int, int, string, string>((_, __, ___, field, dir) =>
             {
                 capturedField = field;
@@ -324,11 +334,11 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
 
         // Act
         var result = await Sut.Index(
-             1,
-             20,
-             null,
+            1,
+            20,
+            null,
             nameof(ModificationsModel.DaysSinceSubmission),
-             SortDirections.Ascending);
+            SortDirections.Ascending);
 
         // Assert
         result.ShouldBeOfType<ViewResult>();
@@ -337,14 +347,16 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
     }
 
     [Theory, AutoData]
-    public async Task Index_SortByDaysSinceSubmission_Desc_InvertsTo_CreatedAt_Asc(GetModificationsResponse modificationResponse)
+    public async Task Index_SortByDaysSinceSubmission_Desc_InvertsTo_CreatedAt_Asc(
+        GetModificationsResponse modificationResponse)
     {
         // Arrange
         string? capturedField = null;
         string? capturedDir = null;
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(),
+                It.IsAny<string>()))
             .Callback<ModificationSearchRequest, int, int, string, string>((_, __, ___, field, dir) =>
             {
                 capturedField = field;
@@ -358,11 +370,11 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
 
         // Act
         var result = await Sut.Index(
-             1,
-             20,
-             null,
-             nameof(ModificationsModel.DaysSinceSubmission),
-             SortDirections.Descending);
+            1,
+            20,
+            null,
+            nameof(ModificationsModel.DaysSinceSubmission),
+            SortDirections.Descending);
 
         // Assert
         result.ShouldBeOfType<ViewResult>();
@@ -370,7 +382,100 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
         capturedDir.ShouldBe(SortDirections.Ascending);
     }
 
+    // ----- NEW: selectedModificationIds flow -----
 
+    [Fact]
+    public async Task Index_WithSelectedIdsInQuery_PersistsToSession_AndRedirectsWithoutSelectedIds()
+    {
+        // Arrange: duplicates, CSV and casing to test normalization
+        var input = new List<string> { "abc", "ABC", "def,ghi", "  jkl  ", "" };
+
+        // Act
+        var result = await Sut.Index(
+            pageNumber: 2,
+            pageSize: 50,
+            selectedModificationIds: input,
+            sortField: "CreatedAt",
+            sortDirection: "asc");
+
+        // Assert redirect
+        var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirect.RouteName.ShouldBe("tasklist:index");
+        redirect.RouteValues.ShouldNotBeNull();
+        redirect.RouteValues!.Count.ShouldBe(4);
+        redirect.RouteValues!["pageNumber"].ShouldBe(2);
+        redirect.RouteValues!["pageSize"].ShouldBe(50);
+        redirect.RouteValues!["sortField"].ShouldBe("CreatedAt");
+        redirect.RouteValues!["sortDirection"].ShouldBe("asc");
+
+        // Assert session persisted normalized distinct values (case-insensitive)
+        var storedJson = _http.Session.GetString(SessionSelectedKey);
+        storedJson.ShouldNotBeNull();
+
+        var stored = JsonSerializer.Deserialize<List<string>>(storedJson!)!;
+        stored.ShouldNotBeNull();
+
+        // Expected normalized: abc, def, ghi, jkl
+        stored.Count.ShouldBe(4);
+        stored.ShouldContain("abc");
+        stored.ShouldContain("def");
+        stored.ShouldContain("ghi");
+        stored.ShouldContain("jkl");
+    }
+
+    [Fact]
+    public async Task Index_NoSelectedIdsInQuery_LoadsFromSession_And_SetsIsSelected_CaseInsensitive()
+    {
+        // Arrange: pre-populate session selections (lower/upper mix)
+        var preselected = new List<string> { "abc", "DEF" };
+        _http.Session.SetString(SessionSelectedKey, JsonSerializer.Serialize(preselected));
+
+        var returned = new GetModificationsResponse
+        {
+            TotalCount = 3,
+            Modifications = new List<ModificationsDto>
+            {
+                new()
+                {
+                    Id = "ABC", ProjectRecordId = "PR-1", ModificationId = "100/1", ShortProjectTitle = "One",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new()
+                {
+                    Id = "def", ProjectRecordId = "PR-2", ModificationId = "100/2", ShortProjectTitle = "Two",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new()
+                {
+                    Id = "xyz", ProjectRecordId = "PR-3", ModificationId = "100/3", ShortProjectTitle = "Three",
+                    CreatedAt = DateTime.UtcNow
+                },
+            }
+        };
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, "CreatedAt", "asc"))
+            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = returned
+            });
+
+        // Act
+        var result = await Sut.Index(1, 20, null, "CreatedAt", "asc");
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var vm = viewResult.Model.ShouldBeAssignableTo<ModificationsTasklistViewModel>();
+
+        vm.SelectedModificationIds.ShouldBeSubsetOf(preselected);
+        vm.Modifications.Count().ShouldBe(3);
+
+        // IsSelected should be case-insensitive
+        vm.Modifications.ToList()[0].IsSelected.ShouldBeTrue(); // "ABC" matches "abc"
+        vm.Modifications.ToList()[1].IsSelected.ShouldBeTrue(); // "def" matches "DEF"
+        vm.Modifications.ToList()[2].IsSelected.ShouldBeFalse(); // "xyz" not selected
+    }
 
     // ---------------
     // helpers
