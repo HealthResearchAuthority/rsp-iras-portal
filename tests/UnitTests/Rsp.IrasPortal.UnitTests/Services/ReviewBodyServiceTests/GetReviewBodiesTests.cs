@@ -6,7 +6,7 @@ using Rsp.IrasPortal.Services;
 
 namespace Rsp.IrasPortal.UnitTests.Services.ReviewBodyServiceTests;
 
-public class GetReviewBodiesTests : TestServiceBase<ReviewBodyService>
+public class GetSponsorOrganisationTests : TestServiceBase<ReviewBodyService>
 {
     [Theory, AutoData]
     public async Task GetReviewBodies_Should_Return_Failure_Response_When_Client_Returns_Failure()
