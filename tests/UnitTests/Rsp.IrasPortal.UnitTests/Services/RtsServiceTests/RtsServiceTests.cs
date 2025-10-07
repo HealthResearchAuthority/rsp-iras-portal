@@ -68,7 +68,7 @@ public class RtsServiceTests : TestServiceBase<RtsService>
 
         Mocker
             .GetMock<IRtsServiceClient>()
-            .Setup(client => client.GetOrganisationsByName(organisationName, null, pageIndex, pageSize))
+            .Setup(client => client.GetOrganisationsByName(organisationName, null, pageIndex, pageSize, null, "asc", "name"))
             .ReturnsAsync(expectedResponse);
 
         // Act
@@ -104,7 +104,7 @@ public class RtsServiceTests : TestServiceBase<RtsService>
 
         Mocker
             .GetMock<IRtsServiceClient>()
-            .Setup(client => client.GetOrganisationsByName(organisationName, null, pageIndex, pageSize))
+            .Setup(client => client.GetOrganisationsByName(organisationName, null, pageIndex, pageSize, null, "asc", "name"))
             .ReturnsAsync(expectedResponse);
 
         // Act
@@ -139,11 +139,11 @@ public class RtsServiceTests : TestServiceBase<RtsService>
 
         Mocker
             .GetMock<IRtsServiceClient>()
-            .Setup(client => client.GetOrganisations(null, pageIndex, pageSize))
+            .Setup(client => client.GetOrganisations(null, pageIndex, pageSize, null, "asc", "name"))
             .ReturnsAsync(expectedResponse);
 
         // Act
-        var result = await Sut.GetOrganisations(null, pageIndex, pageSize);
+        var result = await Sut.GetOrganisations(null, pageIndex, pageSize, null, "asc", "name");
 
         // Assert
         result.ShouldBeOfType<ServiceResponse<OrganisationSearchResponse>>();
@@ -174,11 +174,11 @@ public class RtsServiceTests : TestServiceBase<RtsService>
 
         Mocker
             .GetMock<IRtsServiceClient>()
-            .Setup(client => client.GetOrganisations(null, pageIndex, pageSize))
+            .Setup(client => client.GetOrganisations(null, pageIndex, pageSize, null, "asc", "name"))
             .ReturnsAsync(expectedResponse);
 
         // Act
-        var result = await Sut.GetOrganisations(null, pageIndex, pageSize);
+        var result = await Sut.GetOrganisations(null, pageIndex, pageSize, null, "asc", "name");
 
         // Assert
         result.ShouldBeOfType<ServiceResponse<OrganisationSearchResponse>>();

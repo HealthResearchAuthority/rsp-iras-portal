@@ -94,7 +94,7 @@ public class ParticipatingOrganisationTests : TestServiceBase<ParticipatingOrgan
 
         Mocker
             .GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisationsByName(expectedSearchTerm, null, 1, 10))
+            .Setup(s => s.GetOrganisationsByName(expectedSearchTerm, null, 1, 10,null,"asc", "name"))
             .ReturnsAsync(
                 new ServiceResponse<OrganisationSearchResponse>()
                     .WithContent(searchResponse, HttpStatusCode.OK)
@@ -143,7 +143,7 @@ public class ParticipatingOrganisationTests : TestServiceBase<ParticipatingOrgan
 
         Mocker
             .GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisationsByName("Hospital", null, pageNumber, pageSize))
+            .Setup(s => s.GetOrganisationsByName("Hospital", null, pageNumber, pageSize, null, "asc", "name"))
             .ReturnsAsync(
                 new ServiceResponse<OrganisationSearchResponse>()
                     .WithContent(response, HttpStatusCode.OK)

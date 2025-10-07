@@ -249,18 +249,20 @@
 		}
 		else if ((Model.Search.Filters.Any() && !Model.SponsorOrganisations.Any()) || !string.IsNullOrEmpty(Model.Search?.SearchQuery))
 		{
-			<div class="govuk-grid-row">
-				<div class="govuk-grid-column-two-thirds search-filter-error-border">
-					<h2 class="govuk-heading-l">There are no matching results</h2>
-					<p class="govuk-body">Improve your search results by:</p>
-					<ul class="govuk-list govuk-list--bullet">
-						<li>removing filters</li>
-						<li>double-checking your spelling</li>
-						<li>using fewer keywords</li>
-						<li>searching for something less specific</li>
-					</ul>
-				</div>
-			</div>
+            <div class="govuk-grid-row">
+                <div class="govuk-grid-column-two-thirds search-filter-error-border">
+                    <h2 class="govuk-heading-l">There are no matching results</h2>
+                    <p class="govuk-body">Improve your search results by:</p>
+                    <ul class="govuk-list govuk-list--bullet">
+                        <li>removing filters</li>
+                        <li>double-checking your spelling</li>
+                        <li>using fewer keywords</li>
+                        <li>searching for something less specific</li>
+                    </ul>
+                </div>
+            </div>
+
+    
 		}
 	</div>
 </div>

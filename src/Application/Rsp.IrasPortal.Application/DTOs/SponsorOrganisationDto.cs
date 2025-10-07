@@ -3,8 +3,8 @@
 public class SponsorOrganisationDto
 {
     public Guid Id { get; set; }
+    public string RtsId { get; set; } = null!;
     public string SponsorOrganisationName { get; set; } = null!;
-    public string EmailAddress { get; set; } = null!;
     public List<string> Countries { get; set; } = [];
     public string? Description { get; set; }
     public bool IsActive { get; set; } = true;
