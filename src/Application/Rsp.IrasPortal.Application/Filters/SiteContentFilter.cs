@@ -68,11 +68,12 @@ public class SiteContentFilter(ICmsContentService contentService,
                 }
             }
 
-            var footerData = await contentService.GetSiteSettings(isPreview);
+            var siteSettings = await contentService.GetSiteSettings(isPreview);
 
-            if (footerData.IsSuccessStatusCode)
+            if (siteSettings.IsSuccessStatusCode)
             {
-                controller.ViewData["SiteFooter"] = footerData?.Content?.FooterLinks;
+                controller.ViewData["SiteFooter"] = siteSettings?.Content?.FooterLinks;
+                controller.ViewData["PhaseBanner"] = siteSettings?.Content?.PhaseBannerContent;
             }
         }
 
