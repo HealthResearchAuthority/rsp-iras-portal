@@ -69,7 +69,11 @@ public static class QuestionsetHelpers
                 {
                     AnswerId = ans.AnswerId,
                     AnswerText = ans.AnswerText
-                })]
+                })],
+                NhsInvolvment = question.NhsInvolvment,
+                NonNhsInvolvment = question.NonNhsInvolvment,
+                AffectedOrganisations = question.AffectedOrganisations,
+                RequireAdditionalResources = question.RequireAdditionalResources
             });
         }
 
@@ -101,7 +105,11 @@ public static class QuestionsetHelpers
                 Answers = [],
                 Rules = [],
                 GuidanceComponents = question.GuidanceComponents,
-                VersionId = question.Version ?? string.Empty
+                VersionId = question.Version ?? string.Empty,
+                NhsInvolvment = question.NhsInvolvment,
+                NonNhsInvolvment = question.NonNhsInvolvment,
+                AffectedOrganisations = question.AffectedOrganisations,
+                RequireAdditionalResources = question.RequireAdditionalResources
             };
 
             if (question.Answers != null && question.Answers.Any())

@@ -89,6 +89,21 @@ public class ReviewAllChanges_Success : TestServiceBase<ReviewAllChangesControll
             .Setup(s => s.GetModificationAnswers(modId, It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = [] });
 
+        // Mock RankingOfChange response to avoid NullReferenceException
+        Mocker
+            .GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationRanking(It.IsAny<RankingOfChangeRequest>()))
+            .ReturnsAsync(new ServiceResponse<RankingOfChangeResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new RankingOfChangeResponse
+                {
+                    ModificationType = new() { Substantiality = "Substantial", Order = 1 },
+                    Categorisation = new() { Category = "Category", Order = 1 },
+                    ReviewType = "ReviewType"
+                }
+            });
+
         // Act
         var result = await Sut.ReviewAllChanges("PR1", "IRAS", "Short", modId);
 

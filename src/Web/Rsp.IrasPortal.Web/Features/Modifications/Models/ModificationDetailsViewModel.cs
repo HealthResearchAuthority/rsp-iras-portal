@@ -17,4 +17,32 @@ public class ModificationDetailsViewModel : BaseProjectModificationViewModel
                 .SelectMany(mc => mc.SupportingDocuments ?? Enumerable.Empty<SupportingDocumentModel>())
                 .GroupBy(doc => doc.Link)
                 .Select(group => group.First());
+
+    public void UpdateOverAllRanking()
+    {
+        var modificationTypes =
+            from change in ModificationChanges
+            select change.ModificationType;
+
+        var categories =
+            from change in ModificationChanges
+            select change.Categorisation;
+
+        var reviewTypes =
+            from change in ModificationChanges
+            select change.ReviewType;
+
+        // overall modification ranking
+        ModificationType = modificationTypes.Any() ?
+            modificationTypes.MinBy(mt => mt.Order).Substantiality :
+            "Not available";
+
+        Category = categories.Any() ?
+            categories.MinBy(mt => mt.Order).Category :
+            "Not available";
+
+        ReviewType = reviewTypes.FirstOrDefault(r => r.Equals("Review required")) ??
+                     reviewTypes.FirstOrDefault(r => r.Equals("No review required")) ??
+                     "Not available";
+    }
 }

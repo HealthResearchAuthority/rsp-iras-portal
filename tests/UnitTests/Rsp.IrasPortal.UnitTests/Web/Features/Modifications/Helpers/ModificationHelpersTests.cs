@@ -275,4 +275,95 @@ public class ModificationHelpersTests
         questions.Count.ShouldBe(1);
         modificationChange.SpecificChangeAnswer.ShouldBeNull();
     }
+
+    [Fact]
+    public void GetRankingOfChangeRequest_Should_Map_All_Fields_Correctly_When_All_Questions_Present_And_Selected()
+    {
+        // Arrange
+        var questions = new List<QuestionViewModel>
+        {
+            new()
+            {
+                QuestionId = "Q1",
+                NhsInvolvment = "NHS",
+                Answers = [ new() { AnswerId = "A", AnswerText = "NHS", IsSelected = true } ]
+            },
+            new()
+            {
+                QuestionId = "Q2",
+                NonNhsInvolvment = "Non-NHS",
+                Answers = [ new() { AnswerId = "B", AnswerText = "Non-NHS", IsSelected = true } ]
+            },
+            new()
+            {
+                QuestionId = "Q3",
+                AffectedOrganisations = true,
+                SelectedOption = "C",
+                Answers = [ new() { AnswerId = "C", AnswerText = "Org1" } ]
+            },
+            new()
+            {
+                QuestionId = "Q4",
+                RequireAdditionalResources = true,
+                SelectedOption = "D",
+                Answers = [ new() { AnswerId = "D", AnswerText = "Yes" } ]
+            }
+        };
+
+        // Act
+        var result = ModificationHelpers.GetRankingOfChangeRequest("areaId", true, questions);
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.SpecificAreaOfChangeId.ShouldBe("areaId");
+        result.Applicability.ShouldBe("Yes");
+        result.IsNHSInvolved.ShouldBeTrue();
+        result.IsNonNHSInvolved.ShouldBeTrue();
+        result.NhsOrganisationsAffected.ShouldBe("Org1");
+        result.NhsResourceImplicaitons.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void GetRankingOfChangeRequest_Should_Handle_Missing_Questions_And_Selections()
+    {
+        // Arrange
+        var questions = new List<QuestionViewModel>
+        {
+            new() { QuestionId = "Q1", NhsInvolvment = "NHS", Answers = [ new() { AnswerId = "A", AnswerText = "NHS", IsSelected = false } ] },
+            new() { QuestionId = "Q2", NonNhsInvolvment = "Non-NHS", Answers = [ new() { AnswerId = "B", AnswerText = "Non-NHS", IsSelected = false } ] },
+            new() { QuestionId = "Q3", AffectedOrganisations = true, SelectedOption = null, Answers = [ new() { AnswerId = "C", AnswerText = "Org1" } ] },
+            new() { QuestionId = "Q4", RequireAdditionalResources = true, SelectedOption = null, Answers = [ new() { AnswerId = "D", AnswerText = "No" } ] }
+        };
+
+        // Act
+        var result = ModificationHelpers.GetRankingOfChangeRequest("areaId", false, questions);
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.SpecificAreaOfChangeId.ShouldBe("areaId");
+        result.Applicability.ShouldBe("No");
+        result.IsNHSInvolved.ShouldBeFalse();
+        result.IsNonNHSInvolved.ShouldBeFalse();
+        result.NhsOrganisationsAffected.ShouldBeNull();
+        result.NhsResourceImplicaitons.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void GetRankingOfChangeRequest_Should_Return_Defaults_When_Questions_List_Empty()
+    {
+        // Arrange
+        var questions = new List<QuestionViewModel>();
+
+        // Act
+        var result = ModificationHelpers.GetRankingOfChangeRequest("areaId", false, questions);
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.SpecificAreaOfChangeId.ShouldBe("areaId");
+        result.Applicability.ShouldBe("No");
+        result.IsNHSInvolved.ShouldBeFalse();
+        result.IsNonNHSInvolved.ShouldBeFalse();
+        result.NhsOrganisationsAffected.ShouldBeNull();
+        result.NhsResourceImplicaitons.ShouldBeFalse();
+    }
 }
