@@ -2,6 +2,7 @@
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 
 namespace Rsp.IrasPortal.Application.ServiceClients;
 
@@ -36,4 +37,7 @@ public interface ICmsQuestionSetServiceClient
 
     [Get("/modificationsquestionset/getNextQuestionSection")]
     public Task<ApiResponse<QuestionSectionsResponse>> GetModificationNextQuestionSection(string currentSectionId);
+
+    [Get("/modificationsranking/getmodificationranking")]
+    public Task<ApiResponse<RankingOfChangeResponse>> GetModificationRanking([Query] RankingOfChangeRequest rankingOfChangeRequest);
 }

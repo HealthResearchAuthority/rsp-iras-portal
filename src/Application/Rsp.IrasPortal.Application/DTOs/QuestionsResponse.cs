@@ -108,4 +108,9 @@ public record QuestionsResponse
     public string ShortQuestionText { get; set; } = null!;
 
     public IList<ContentComponent> GuidanceComponents { get; set; } = [];
+
+    public string? NhsInvolvment { get; set; }
+    public string? NonNhsInvolvment { get; set; }
+    public bool AffectedOrganisations { get; set; }
+    public bool RequireAdditionalResources { get; set; }
 }

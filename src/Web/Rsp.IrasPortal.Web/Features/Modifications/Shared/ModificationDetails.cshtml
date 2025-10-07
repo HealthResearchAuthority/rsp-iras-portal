@@ -65,7 +65,16 @@
                     </h2>
                 </div>
                 <div class="govuk-summary-card__content">
-                    <partial name="RankingOfChange" />
+                    @{
+                        var ranking = new RankingOfChangeViewModel
+                        {
+                            ModificationType = Model.ModificationType,
+                            Category = Model.Category,
+                            ReviewType = Model.ReviewType
+                        };
+
+                        <partial name="RankingOfChange" model="ranking" />
+                    }
                 </div>
             </div>
         }
