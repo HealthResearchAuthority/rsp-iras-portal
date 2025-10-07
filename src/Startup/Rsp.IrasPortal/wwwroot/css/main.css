@@ -284,7 +284,7 @@ button.govuk-link {
 }
 
 .govuk-back-link-button--inverse:active, .govuk-back-link-button--inverse:hover {
-  color: hsla(0, 0%, 100%, 0.99);
+  color: hsla(0deg, 0%, 100%, 0.99);
 }
 
 .govuk-back-link-button--inverse:focus {
@@ -891,4 +891,28 @@ button.govuk-pagination__item--current {
   list-style: none;
   margin: 0;
   padding: 0;
+}
+
+.govuk-phase-banner__text p {
+  margin-bottom: 0;
+}
+.govuk-phase-banner__text a {
+  color: #1d70b8;
+}
+.govuk-phase-banner__text a:hover {
+  color: #003078;
+  text-decoration-thickness: max(3px, 0.1875rem, 0.12em);
+  -webkit-text-decoration-skip-ink: none;
+  text-decoration-skip-ink: none;
+  -webkit-text-decoration-skip: none;
+  text-decoration-skip: none;
+}
+.govuk-phase-banner__text a:focus {
+  color: #0b0c0c;
+  background-color: #fd0;
+  box-shadow: 0 -2px #fd0, 0 4px #0b0c0c;
+  text-decoration: none;
+}
+.govuk-phase-banner__text a:active {
+  color: #0b0c0c;
 }

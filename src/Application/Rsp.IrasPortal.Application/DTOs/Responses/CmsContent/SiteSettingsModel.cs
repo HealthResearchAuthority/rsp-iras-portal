@@ -3,4 +3,5 @@
 public class SiteSettingsModel
 {
     public IList<LinkModel>? FooterLinks { get; set; }
+    public RichTextProperties? PhaseBannerContent { get; set; }
 }
