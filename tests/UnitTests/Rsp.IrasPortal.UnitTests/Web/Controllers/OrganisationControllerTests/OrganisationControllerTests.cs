@@ -29,7 +29,7 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
 
         Mocker
             .GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisationsByName(name, role, pageIndex, pageSize))
+            .Setup(s => s.GetOrganisationsByName(name, role, pageIndex, pageSize,null,"asc", "name"))
             .ReturnsAsync
             (
                 new ServiceResponse<OrganisationSearchResponse>()
@@ -55,7 +55,7 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
 
         Mocker
             .GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisationsByName(name, role, pageIndex, pageSize))
+            .Setup(s => s.GetOrganisationsByName(name, role, pageIndex, pageSize,null, "asc", "name"))
             .ReturnsAsync
             (
                 new ServiceResponse<OrganisationSearchResponse>()
@@ -97,7 +97,7 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
 
         Mocker
             .GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisations(role, pageIndex, pageSize))
+            .Setup(s => s.GetOrganisations(role, pageIndex, pageSize, null, "asc", "name"))
             .ReturnsAsync
             (
                 new ServiceResponse<OrganisationSearchResponse>()
@@ -123,7 +123,7 @@ public class OrganisationControllerTests : TestServiceBase<OrganisationControlle
 
         Mocker
             .GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisations(role, pageIndex, pageSize))
+            .Setup(s => s.GetOrganisations(role, pageIndex, pageSize, null, "asc", "name"))
             .ReturnsAsync
             (
                 new ServiceResponse<OrganisationSearchResponse>()

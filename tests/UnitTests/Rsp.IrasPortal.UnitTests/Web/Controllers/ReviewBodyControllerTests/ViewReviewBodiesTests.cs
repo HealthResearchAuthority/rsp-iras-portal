@@ -13,11 +13,11 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ReviewBodyControllerTests;
 
-public class ViewReviewBodiesTests : TestServiceBase<ReviewBodyController>
+public class IndexTests : TestServiceBase<ReviewBodyController>
 {
     private readonly DefaultHttpContext _http;
 
-    public ViewReviewBodiesTests()
+    public IndexTests()
     {
         _http = new DefaultHttpContext { Session = new InMemorySession() };
         Sut.ControllerContext = new ControllerContext { HttpContext = _http };

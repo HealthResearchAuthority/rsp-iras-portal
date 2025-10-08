@@ -75,6 +75,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Services\NewFolder\" />
     <Folder Include="Web\Features\Modifications\ParticipatingOrganisations\" />
   </ItemGroup>
 

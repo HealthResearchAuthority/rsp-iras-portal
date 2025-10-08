@@ -3,7 +3,6 @@
 namespace Rsp.IrasPortal.Web.Models;
 
 [ExcludeFromCodeCoverage]
-public class ReviewBodySearchModel : SearchModel
+public class SponsorOrganisationSearchModel : SearchModel
 {
- 
 }
