@@ -14,6 +14,7 @@ public struct TempDataKeys
         public const string AreaOfChanges = "td:areaofchanges";
         public const string AreaOfChangeId = "td:area_of_change_id";
         public const string SpecificAreaOfChangeId = "td:specific_area_of_change_id";
+        public const string ShowApplicabilityQuestions = "td:show_applicability_questions";
         public const string AreaOfChangeText = "td:area_of_change_text";
         public const string SpecificAreaOfChangeText = "td:specific_area_of_changeText";
         public const string Questionnaire = "td:modification_questionnaire";

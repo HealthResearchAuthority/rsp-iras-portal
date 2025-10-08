@@ -31,6 +31,11 @@ public class QuestionViewModel
     public string ShowAnswerOn { get; set; } = string.Empty;
     public IList<ContentComponent> GuidanceComponents { get; set; } = [];
 
+    public string? NhsInvolvment { get; set; }
+    public string? NonNhsInvolvment { get; set; }
+    public bool AffectedOrganisations { get; set; }
+    public bool RequireAdditionalResources { get; set; }
+
     private string? _day, _month, _year;
 
     public string? Day

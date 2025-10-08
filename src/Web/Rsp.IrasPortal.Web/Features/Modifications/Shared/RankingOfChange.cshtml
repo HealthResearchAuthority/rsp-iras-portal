@@ -1,23 +1,26 @@
-﻿<dl class="govuk-summary-list govuk-!-margin-bottom-7">
+﻿@using Rsp.IrasPortal.Web.Features.Modifications.Models
+@model RankingOfChangeViewModel
+
+<dl class="govuk-summary-list govuk-!-margin-bottom-7">
 
     <div class="govuk-summary-list__row" id="ranking-modification-type">
         <dt class="govuk-summary-list__key">Modification Type</dt>
         <dd class="govuk-summary-list__value">
-            {Substantial/Modification of an important detail/Minor modification}
+            @Model.ModificationType
         </dd>
     </div>
 
     <div class="govuk-summary-list__row" id="ranking-category">
         <dt class="govuk-summary-list__key">Category</dt>
         <dd class="govuk-summary-list__value">
-            {A > B/C > B > C > New site > N/A}
+            @Model.Category
         </dd>
     </div>
 
     <div class="govuk-summary-list__row" id="ranking-review-type">
         <dt class="govuk-summary-list__key">Review Type</dt>
         <dd class="govuk-summary-list__value">
-            {No review required/review required}
+            @Model.ReviewType
         </dd>
     </div>
 </dl>
