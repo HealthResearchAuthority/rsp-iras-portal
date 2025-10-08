@@ -921,3 +921,24 @@ button.govuk-pagination__item--current {
 .govuk-phase-banner__text a:active {
   color: #0b0c0c;
 }
+
+.govuk-rte a {
+  color: #1d70b8;
+}
+.govuk-rte a:hover {
+  color: #003078;
+  text-decoration-thickness: max(3px, 0.1875rem, 0.12em);
+  -webkit-text-decoration-skip-ink: none;
+  text-decoration-skip-ink: none;
+  -webkit-text-decoration-skip: none;
+  text-decoration-skip: none;
+}
+.govuk-rte a:focus {
+  color: #0b0c0c;
+  background-color: #fd0;
+  box-shadow: 0 -2px #fd0, 0 4px #0b0c0c;
+  text-decoration: none;
+}
+.govuk-rte a:active {
+  color: #0b0c0c;
+}
