@@ -4,5 +4,5 @@ public class DetailsProperties
 {
     public string? Title { get; set; }
 
-    public string? Value { get; set; }
+    public RichTextValue? Value { get; set; }
 }
