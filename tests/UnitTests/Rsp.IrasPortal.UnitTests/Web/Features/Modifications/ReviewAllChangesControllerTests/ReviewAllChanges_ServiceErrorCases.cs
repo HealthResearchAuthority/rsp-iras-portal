@@ -74,7 +74,7 @@ public class ReviewAllChanges_ServiceErrorCases : TestServiceBase<ReviewAllChang
             .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new() { Modifications = [new ModificationsDto { Id = modId, ModificationId = modId, Status = ModificationStatus.Draft }] }
+                Content = new() { Modifications = [new ModificationsDto { Id = modId, ModificationId = modId, Status = ModificationStatus.ModificationRecordStarted }] }
             });
 
         Mocker.GetMock<IProjectModificationsService>()
@@ -107,7 +107,7 @@ public class ReviewAllChanges_ServiceErrorCases : TestServiceBase<ReviewAllChang
             .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new() { Modifications = [new ModificationsDto { Id = modId, ModificationId = modId, Status = ModificationStatus.Draft }] }
+                Content = new() { Modifications = [new ModificationsDto { Id = modId, ModificationId = modId, Status = ModificationStatus.ModificationRecordStarted }] }
             });
 
         Mocker.GetMock<IProjectModificationsService>()

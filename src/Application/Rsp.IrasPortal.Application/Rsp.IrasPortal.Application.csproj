@@ -1,6 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <Compile Remove="Constants\ApplicationStatuses.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\Domain\Rsp.IrasPortal.Domain\Rsp.IrasPortal.Domain.csproj" />
   </ItemGroup>
 

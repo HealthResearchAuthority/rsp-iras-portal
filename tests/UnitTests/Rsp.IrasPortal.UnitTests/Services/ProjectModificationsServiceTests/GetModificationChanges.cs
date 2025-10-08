@@ -15,7 +15,7 @@ public class GetModificationChanges : TestServiceBase<ProjectModificationsServic
         var id = Guid.NewGuid();
         var list = new List<ProjectModificationChangeResponse>
         {
-            new() { Id = Guid.NewGuid(), Status = ModificationStatus.Draft }
+            new() { Id = Guid.NewGuid(), Status = ModificationStatus.ModificationRecordStarted }
         };
 
         Mocker
