@@ -43,8 +43,8 @@
 @functions {
 
 	private bool CanOpenPanelForField(string fieldName)
-	{
-		return ViewData.ModelState.TryGetValue(fieldName, out var state) && state.Errors.Any();
+    {
+        return false;
 	}
 
     private bool HasFilterErrors()
@@ -59,7 +59,7 @@
 		<h1 class="govuk-heading-l gov-heading-nowrap">@Html.Raw(headline?.Value)</h1>
 	</div>
 	<div class="govuk-grid-column-one-half">
-		<a class="govuk-link govuk-body float-right" asp-route="soc:createsponsororganisation">@Html.Raw(addNewLink?.Value)</a>
+		<a class="govuk-link govuk-body float-right" asp-route="#">@Html.Raw(addNewLink?.Value)</a>
 	</div>
 </div>
 
@@ -105,45 +105,7 @@
 
 					<div class="search-filter-panel__content" id="filter-panel" role="region" aria-labelledby="toggle-filter">
 
-						<!-- Country -->
-						<details class="search-filter-section" @(CanOpenPanelForField("Country") ? "open" : null)>
-							<summary class="search-filter-section__summary">
-								<h2 class="search-filter-section__summary-heading">Country</h2>
-							</summary>
-							<div class="search-filter-section__content">
-								<div class="govuk-form-group govuk-!-margin-bottom-2">
-									<fieldset class="govuk-fieldset">
-										<rsp-gds-checkbox-group asp-for="Search.Country"
-																label-text="Select all that apply"
-																options="UkCountryNames.Countries"
-																conditional-field="false"
-																legend-class="govuk-label govuk-label--s font-weight-none"
-																hint-id="country-hint"
-																hint-html="@($"{Model.Search.Country?.Count ?? 0} selected")" />
-
-
-									</fieldset>
-								</div>
-							</div>
-						</details>
-
-						<!-- Status -->
-						<details class="search-filter-section" @(CanOpenPanelForField("Status") ? "open" : null)>
-							<summary class="search-filter-section__summary">
-								<h2 class="search-filter-section__summary-heading">Status</h2>
-							</summary>
-							<div class="search-filter-section__content">
-								<div class="govuk-form-group govuk-!-margin-bottom-2">
-									<fieldset class="govuk-fieldset">
-										<rsp-gds-radio-group asp-for="Search.Status"
-															 label-text="Select one option"
-															 options="statusOptions"
-															 conditional-field="false"
-															 legend-class="govuk-label govuk-label--s font-weight-none" />
-									</fieldset>
-								</div>
-							</div>
-						</details>
+				
 
 
 						<!-- Apply -->
