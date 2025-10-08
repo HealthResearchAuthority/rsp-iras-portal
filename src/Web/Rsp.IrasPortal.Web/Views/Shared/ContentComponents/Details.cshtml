@@ -10,7 +10,7 @@
 			</span>
 		</summary>
 		<div class="govuk-details__text">
-			@Html.Raw(Model.Value)
+			<div class="govuk-body">@Html.Raw(Model.Value?.Markup)</div>
 		</div>
 	</details>
 }
