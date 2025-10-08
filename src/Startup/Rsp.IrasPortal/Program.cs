@@ -126,7 +126,7 @@ services
             {
                 { "Users", [SessionKeys.UsersSearch] },
                 { "ReviewBody", [SessionKeys.ReviewBodiesSearch] },
-                { "SponsorOrganisation", [SessionKeys.SponsorOrganisationsSearch] },
+                { "SponsorOrganisations", [SessionKeys.SponsorOrganisationsSearch] },
                 { "Approvals", [SessionKeys.ApprovalsSearch] },
                 { "ModificationsTasklist", [SessionKeys.ModificationsTasklist] },
                 { "MyTasklist", [SessionKeys.MyTasklist] },

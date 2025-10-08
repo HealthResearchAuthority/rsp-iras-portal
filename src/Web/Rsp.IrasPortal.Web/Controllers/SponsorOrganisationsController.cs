@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Filters;
 using Rsp.IrasPortal.Application.Services;
@@ -15,18 +14,11 @@ namespace Rsp.IrasPortal.Web.Controllers;
 [Authorize(Policy = "IsSystemAdministrator")]
 public class SponsorOrganisationsController(
     ISponsorOrganisationService sponsorOrganisationService
-    //IUserManagementService userService,
-    //IValidator<AddUpdateSponsorOrganisationModel> validator
 )
     : Controller
 {
-    private const string UpdateMode = "update";
-    private const string CreateMode = "create";
-    private const string DisableMode = "disable";
-    private const string EnableMode = "enable";
-
     /// <summary>
-    ///     Displays a list of review bodies
+    ///     Displays a list of sponsor organisations
     /// </summary>
     [HttpGet]
     [HttpPost]
@@ -34,8 +26,8 @@ public class SponsorOrganisationsController(
     public async Task<IActionResult> Index(
         int pageNumber = 1,
         int pageSize = 20,
-        string? sortField = nameof(SponsorOrganisationDto.SponsorOrganisationName),
-        string? sortDirection = SortDirections.Ascending,
+        string? sortField = "name",
+        string? sortDirection = "asc",
         [FromForm] SponsorOrganisationSearchViewModel? model = null,
         [FromQuery] bool fromPagination = false)
     {
@@ -76,7 +68,7 @@ public class SponsorOrganisationsController(
             SortDirection = sortDirection
         };
 
-        var reviewBodySearchViewModel = new SponsorOrganisationSearchViewModel
+        var sponsorOrganisationSearchViewModel = new SponsorOrganisationSearchViewModel
         {
             Pagination = paginationModel,
             SponsorOrganisations = response.Content?.SponsorOrganisations,
@@ -94,17 +86,17 @@ public class SponsorOrganisationsController(
                 JsonSerializer.Serialize(model.Search));
         }
 
-        return View("ViewSponsorOrganisations", reviewBodySearchViewModel);
+        return View("ViewSponsorOrganisations", sponsorOrganisationSearchViewModel);
     }
 
-    [Route("/sponsororganisation/applyfilters", Name = "soc:applyfilters")]
+    [Route("/sponsororganisations/applyfilters", Name = "soc:applyfilters")]
     [HttpPost]
     [HttpGet]
     [CmsContentAction(nameof(Index))]
     public async Task<IActionResult> ApplyFilters(
         SponsorOrganisationSearchViewModel model,
-        string? sortField = nameof(UserViewModel.GivenName),
-        string? sortDirection = SortDirections.Ascending,
+        string? sortField = "name",
+        string? sortDirection = "asc",
         [FromQuery] bool fromPagination = false)
     {
         // Always attempt to restore from session if nothing is currently set

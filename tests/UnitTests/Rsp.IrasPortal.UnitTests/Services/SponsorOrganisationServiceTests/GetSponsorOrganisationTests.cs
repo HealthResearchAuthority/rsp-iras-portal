@@ -111,7 +111,7 @@ public class GetSponsorOrganisationTests : TestServiceBase<SponsorOrganisationSe
         var rtsService = Mocker.GetMock<IRtsService>();
 
         rtsService.Setup(x =>
-            x.GetOrganisationsByName(It.IsAny<string>(), It.IsAny<string>(), 1, 20, null, "asc", "name")).ReturnsAsync(
+            x.GetOrganisationsByName(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<string>>(), It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(
             new ServiceResponse<OrganisationSearchResponse>
             {
                 StatusCode = HttpStatusCode.OK,
