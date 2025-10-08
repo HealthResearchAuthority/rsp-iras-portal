@@ -28,6 +28,7 @@ public class ComponentContentConverter : JsonConverter<ComponentContent>
             "tabItem" => JsonSerializer.Deserialize<TabItemProperties>(propertiesElement.GetRawText(), options),
             "accordionComponent" => JsonSerializer.Deserialize<AccordionProperties>(propertiesElement.GetRawText(), options),
             "accordionItem" => JsonSerializer.Deserialize<AccordionItemProperties>(propertiesElement.GetRawText(), options),
+            "insertTextComponent" => JsonSerializer.Deserialize<InsertTextProperties>(propertiesElement.GetRawText(), options),
             _ => JsonSerializer.Deserialize<Dictionary<string, object>>(propertiesElement.GetRawText(), options)
         };
 

@@ -5,7 +5,7 @@
 {
 	@foreach (var item in Model.Items)
 	{
-		@switch (item.Content.Properties)
+		@switch (item?.Content?.Properties)
 		{
 			case BodyTextProperties body:
 				@await Html.PartialAsync("~/Views/Shared/ContentComponents/BodyText.cshtml", body)
@@ -37,6 +37,10 @@
 
 			case LineSeparatorProperties line:
 				@await Html.PartialAsync("~/Views/Shared/ContentComponents/LineSeparator.cshtml", line)
+				break;
+
+			case InsertTextProperties insertText:
+				@await Html.PartialAsync("~/Views/Shared/ContentComponents/InsertText.cshtml", insertText)
 				break;
 		}
 	}

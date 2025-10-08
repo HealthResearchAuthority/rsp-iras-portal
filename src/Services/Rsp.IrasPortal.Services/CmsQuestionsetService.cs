@@ -1,6 +1,7 @@
 ﻿using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Application.Services;
@@ -85,6 +86,14 @@ public class CmsQuestionsetService(ICmsQuestionSetServiceClient client) : ICmsQu
     public async Task<ServiceResponse<CmsQuestionSetResponse>> GetModificationsJourney(string specificChangeId)
     {
         var responce = await client.GetModificationsJourney(specificChangeId);
+
+        // convert to service response
+        return responce.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse<RankingOfChangeResponse>> GetModificationRanking(RankingOfChangeRequest request)
+    {
+        var responce = await client.GetModificationRanking(request);
 
         // convert to service response
         return responce.ToServiceResponse();

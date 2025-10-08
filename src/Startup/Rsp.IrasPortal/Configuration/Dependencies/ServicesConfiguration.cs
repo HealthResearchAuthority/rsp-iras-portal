@@ -29,6 +29,7 @@ public static class ServicesConfiguration
         services.AddScoped<IBlobStorageService, BlobStorageService>();
         services.AddTransient<ICmsQuestionsetService, CmsQuestionsetService>();
         services.AddScoped<ICmsContentService, CmsContentService>();
+        services.AddTransient<ISponsorOrganisationService, SponsorOrganisationService>();
 
         // add message handlers
         services.AddTransient<AuthHeadersHandler>();

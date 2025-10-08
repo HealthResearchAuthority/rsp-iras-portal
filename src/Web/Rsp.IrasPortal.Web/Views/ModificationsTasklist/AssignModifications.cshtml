@@ -9,8 +9,28 @@
 	TempData[TempDataKeys.ProjectModification.UrlReferrer] = Context.Request.GetDisplayUrl();
 }
 
+@{
+	var backParams = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+	foreach (var kvp in Context.Request.Query)
+	{
+		if (kvp.Value.Count > 1)
+		{
+			// Generate unique keys per value
+			for (var i = 0; i < kvp.Value.Count; i++)
+			{
+				backParams[$"{kvp.Key}[{i}]"] = kvp.Value[i]!;
+			}
+		}
+		else if (kvp.Value.Count == 1)
+		{
+			backParams[kvp.Key] = kvp.Value[0]!;
+		}
+	}
+}
+
 @section BackNavigation {
-    <partial name="_BackNavigation" model="@("tasklist:index", "Back", new Dictionary<string, string>())" />
+	<partial name="_BackNavigation" model="@("tasklist:index", "Back", backParams)" />
 }
 
 <h1 class="govuk-heading-l">Select a reviewer</h1>

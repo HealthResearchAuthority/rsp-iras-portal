@@ -2,6 +2,7 @@ using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
+using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Services;
 
 namespace Rsp.IrasPortal.UnitTests.Services.RtsServiceTests;
@@ -47,12 +48,12 @@ public class RtsServiceTests : TestServiceBase<RtsService>
     }
 
     [Fact]
-    public async Task GetOrganisationsByName_ShouldReturnListOfOrganisations_WhenNameIsValid()
+    public async Task GetOrganisationsByName_ShouldReturnList_WhenNameIsValid()
     {
         // Arrange
-        var organisationName = "Test";
-        int pageIndex = 1;
-        int? pageSize = null;
+        var organisationName = "Org";
+        var pageIndex = 1;
+        var pageSize = 2;
         var expectedResponse = new ApiResponse<OrganisationSearchResponse>
         (
             new HttpResponseMessage(HttpStatusCode.OK),
@@ -68,11 +69,11 @@ public class RtsServiceTests : TestServiceBase<RtsService>
 
         Mocker
             .GetMock<IRtsServiceClient>()
-            .Setup(client => client.GetOrganisationsByName(organisationName, null, pageIndex, pageSize))
+            .Setup(client => client.GetOrganisationsByName(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<string>>(), "asc", "name"))
             .ReturnsAsync(expectedResponse);
 
         // Act
-        var result = await Sut.GetOrganisationsByName(organisationName, null, pageIndex, pageSize);
+        var result = await Sut.GetOrganisationsByName(organisationName, null, pageIndex, pageSize, null, "asc", "name");
 
         // Assert
         result.ShouldBeOfType<ServiceResponse<OrganisationSearchResponse>>();
@@ -104,11 +105,11 @@ public class RtsServiceTests : TestServiceBase<RtsService>
 
         Mocker
             .GetMock<IRtsServiceClient>()
-            .Setup(client => client.GetOrganisationsByName(organisationName, null, pageIndex, pageSize))
+            .Setup(client => client.GetOrganisationsByName(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<string>>(), "asc", "name"))
             .ReturnsAsync(expectedResponse);
 
         // Act
-        var result = await Sut.GetOrganisationsByName(organisationName, null, pageIndex, pageSize);
+        var result = await Sut.GetOrganisationsByName(organisationName, null, pageIndex, pageSize, null,"asc", "name");
 
         // Assert
         result.ShouldBeOfType<ServiceResponse<OrganisationSearchResponse>>();
@@ -139,11 +140,11 @@ public class RtsServiceTests : TestServiceBase<RtsService>
 
         Mocker
             .GetMock<IRtsServiceClient>()
-            .Setup(client => client.GetOrganisations(null, pageIndex, pageSize))
+            .Setup(client => client.GetOrganisations(null, pageIndex, pageSize, null, "asc", "name"))
             .ReturnsAsync(expectedResponse);
 
         // Act
-        var result = await Sut.GetOrganisations(null, pageIndex, pageSize);
+        var result = await Sut.GetOrganisations(null, pageIndex, pageSize, null, "asc", "name");
 
         // Assert
         result.ShouldBeOfType<ServiceResponse<OrganisationSearchResponse>>();
@@ -174,11 +175,11 @@ public class RtsServiceTests : TestServiceBase<RtsService>
 
         Mocker
             .GetMock<IRtsServiceClient>()
-            .Setup(client => client.GetOrganisations(null, pageIndex, pageSize))
+            .Setup(client => client.GetOrganisations(null, pageIndex, pageSize, null, "asc", "name"))
             .ReturnsAsync(expectedResponse);
 
         // Act
-        var result = await Sut.GetOrganisations(null, pageIndex, pageSize);
+        var result = await Sut.GetOrganisations(null, pageIndex, pageSize, null, "asc", "name");
 
         // Assert
         result.ShouldBeOfType<ServiceResponse<OrganisationSearchResponse>>();

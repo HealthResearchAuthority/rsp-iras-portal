@@ -97,7 +97,7 @@ public class SearchOrganisationsTests : TestServiceBase<ApprovalsController>
         };
 
         _mockRtsService
-            .Setup(x => x.GetOrganisationsByName("Health Org", OrganisationRoles.Sponsor, pageIndex, pageSize))
+            .Setup(x => x.GetOrganisationsByName("Health Org", OrganisationRoles.Sponsor, pageIndex, pageSize, null, "asc", "name"))
             .ReturnsAsync(new ServiceResponse<OrganisationSearchResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -157,7 +157,7 @@ public class SearchOrganisationsTests : TestServiceBase<ApprovalsController>
         };
 
         _mockRtsService
-            .Setup(x => x.GetOrganisationsByName("FailOrg", OrganisationRoles.Sponsor, pageIndex, pageSize))
+            .Setup(x => x.GetOrganisationsByName("FailOrg", OrganisationRoles.Sponsor, pageIndex, pageSize, null, "asc", "name"))
             .ReturnsAsync(new ServiceResponse<OrganisationSearchResponse>
             {
                 StatusCode = HttpStatusCode.InternalServerError,

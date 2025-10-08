@@ -1,0 +1,99 @@
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.ViewComponents;
+using Moq;
+using Rsp.IrasPortal.Application.DTOs.Responses;
+using Rsp.IrasPortal.Application.Responses;
+using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Web.Features.Modifications.Components;
+using Rsp.IrasPortal.Web.Features.Modifications.Models;
+using Rsp.IrasPortal.Web.Models;
+using Shouldly;
+using Xunit;
+using System.Collections.Generic;
+
+namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.Components;
+
+public class RankingOfChangeTests
+{
+    private readonly Mock<ICmsQuestionsetService> _cmsQuestionsetService;
+    private readonly RankingOfChange _sut;
+
+    public RankingOfChangeTests()
+    {
+        _cmsQuestionsetService = new Mock<ICmsQuestionsetService>();
+        _sut = new RankingOfChange(_cmsQuestionsetService.Object);
+    }
+
+    [Fact]
+    public async Task InvokeAsync_Should_Return_View_With_RankingOfChangeViewModel_When_Ranking_Response_Present()
+    {
+        // Arrange
+        var questions = new List<QuestionViewModel>();
+        var rankingResponse = new RankingOfChangeResponse
+        {
+            ModificationType = new ModificationRank { Substantiality = "Substantial", Order = 1 },
+            Categorisation = new CategoryRank { Category = "CatA", Order = 2 },
+            ReviewType = "TypeA"
+        };
+        _cmsQuestionsetService
+            .Setup(s => s.GetModificationRanking(It.IsAny<RankingOfChangeRequest>()))
+            .ReturnsAsync(new ServiceResponse<RankingOfChangeResponse> { Content = rankingResponse });
+
+        // Act
+        var result = await _sut.InvokeAsync("areaId", true, questions);
+
+        // Assert
+        var view = result.ShouldBeOfType<ViewViewComponentResult>();
+        view.ViewName.ShouldBe("/Features/Modifications/Shared/RankingOfChange.cshtml");
+        var model = view.ViewData.Model.ShouldBeOfType<RankingOfChangeViewModel>();
+        model.ModificationType.ShouldBe("Substantial");
+        model.Category.ShouldBe("CatA");
+        model.ReviewType.ShouldBe("TypeA");
+    }
+
+    [Fact]
+    public async Task InvokeAsync_Should_Return_View_With_NotAvailable_When_Ranking_Response_Null()
+    {
+        // Arrange
+        var questions = new List<QuestionViewModel>();
+        _cmsQuestionsetService
+            .Setup(s => s.GetModificationRanking(It.IsAny<RankingOfChangeRequest>()))
+            .ReturnsAsync(new ServiceResponse<RankingOfChangeResponse> { Content = null });
+
+        // Act
+        var result = await _sut.InvokeAsync("areaId", false, questions);
+
+        // Assert
+        var view = result.ShouldBeOfType<ViewViewComponentResult>();
+        var model = view.ViewData.Model.ShouldBeOfType<RankingOfChangeViewModel>();
+        model.ModificationType.ShouldBe("Not available");
+        model.Category.ShouldBe("Not available");
+        model.ReviewType.ShouldBe("Not available");
+    }
+
+    [Fact]
+    public async Task InvokeAsync_Should_Pass_Correct_Request_To_Service()
+    {
+        // Arrange
+        var questions = new List<QuestionViewModel>
+        {
+            new() { NhsInvolvment = "NHS", Answers = [ new() { AnswerId = "A", AnswerText = "NHS", IsSelected = true } ] },
+            new() { NonNhsInvolvment = "Non-NHS", Answers = [ new() { AnswerId = "B", AnswerText = "Non-NHS", IsSelected = true } ] }
+        };
+        RankingOfChangeRequest? capturedRequest = null;
+        _cmsQuestionsetService
+            .Setup(s => s.GetModificationRanking(It.IsAny<RankingOfChangeRequest>()))
+            .Callback<RankingOfChangeRequest>(req => capturedRequest = req)
+            .ReturnsAsync(new ServiceResponse<RankingOfChangeResponse> { Content = null });
+
+        // Act
+        await _sut.InvokeAsync("areaId", true, questions);
+
+        // Assert
+        capturedRequest.ShouldNotBeNull();
+        capturedRequest.SpecificAreaOfChangeId.ShouldBe("areaId");
+        capturedRequest.Applicability.ShouldBe("Yes");
+        capturedRequest.IsNHSInvolved.ShouldBeTrue();
+        capturedRequest.IsNonNHSInvolved.ShouldBeTrue();
+    }
+}

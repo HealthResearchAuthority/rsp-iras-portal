@@ -30,4 +30,9 @@ public class QuestionModel
     public IList<AnswerModel> Answers { get; set; } = [];
     public IList<RuleModel> ValidationRules { get; set; } = [];
     public IList<ContentComponent> GuidanceComponents { get; set; } = [];
+
+    public string? NhsInvolvment { get; set; }
+    public string? NonNhsInvolvment { get; set; }
+    public bool AffectedOrganisations { get; set; }
+    public bool RequireAdditionalResources { get; set; }
 }
