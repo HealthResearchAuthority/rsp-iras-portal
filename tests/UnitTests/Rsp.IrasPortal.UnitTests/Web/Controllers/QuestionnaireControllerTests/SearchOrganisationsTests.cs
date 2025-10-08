@@ -87,7 +87,7 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisationsByName(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<int?>()))
+            .Setup(s => s.GetOrganisationsByName(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<int?>(), It.IsAny<List<string>?>(), It.IsAny<string>(),It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<OrganisationSearchResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -200,7 +200,7 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
         Sut.ControllerContext = new ControllerContext { HttpContext = context };
 
         Mocker.GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisationsByName(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<int?>()))
+            .Setup(s => s.GetOrganisationsByName(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<int?>(), It.IsAny<List<string>?>(), It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<OrganisationSearchResponse>
             {
                 StatusCode = HttpStatusCode.InternalServerError
@@ -311,7 +311,7 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
         };
 
         Mocker.GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisationsByName(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<int?>()))
+            .Setup(s => s.GetOrganisationsByName(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<int?>(), It.IsAny<List<string>?>(), It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<OrganisationSearchResponse>
             {
                 StatusCode = HttpStatusCode.OK,
