@@ -22,12 +22,14 @@
 
     var specificArea = modification.SpecificAreaOfChange;
 
+    var showApplicabilityQuestions = TempData[TempDataKeys.ProjectModification.ShowApplicabilityQuestions] is true;
+
     // Group questions by their Section and order them by Sequence
     var groupedSections = Model.Questions
-        .OrderBy(q => q.SectionSequence)
-        .ThenBy(q => q.Sequence)
-        .GroupBy(q => q.SectionId)
-        .ToList();
+.OrderBy(q => q.SectionSequence)
+.ThenBy(q => q.Sequence)
+.GroupBy(q => q.SectionId)
+.ToList();
 
     var navigation = JsonSerializer.Deserialize<NavigationDto>((TempData.Peek(TempDataKeys.ProjectModificationChange.Navigation) as string)!);
 
@@ -85,7 +87,9 @@
             Ranking of change
         </h2>
 
-        <partial name="RankingOfChange.cshtml" />
+        <vc:ranking-of-change specific-area-of-change-id="@modification.SpecificAreaOfChangeId"
+                              applicability="@showApplicabilityQuestions"
+                              questions="@Model.Questions" />
 
         <h2 class="govuk-heading-m govuk-!-margin-top-5">
             @specificArea
