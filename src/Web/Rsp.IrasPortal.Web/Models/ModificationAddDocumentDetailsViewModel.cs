@@ -56,11 +56,6 @@ public class ModificationAddDocumentDetailsViewModel : QuestionnaireViewModel
     public string? DocumentStoragePath { get; set; }
 
     /// <summary>
-    /// Indicates if the answers are being reviewed.
-    /// </summary>
-    public bool ReviewAnswers { get; set; }
-
-    /// <summary>
     /// Gets the display size in KB, MB or GB, rounded to 2 decimal places.
     /// </summary>
     public string DisplaySize
