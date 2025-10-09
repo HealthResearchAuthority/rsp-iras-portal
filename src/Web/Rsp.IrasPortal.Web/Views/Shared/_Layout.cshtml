@@ -71,7 +71,7 @@
         <script>
             // On document ready
             $(function () {
-                // Store the session timeout expiry in localStorage (current time + session timeout in ms)
+                // Store the session timeout expiry in localStorage (current time + session timeout in ms) 
                 // This is used to synchronize session timeout across multiple tabs/windows
                 localStorage.setItem('shared-session-timeout', (Date.now() + @appSettings.SessionTimeout * 1000).toString());
 
