@@ -88,14 +88,14 @@
         <partial name="ModificationChanges" model="Model" view-data="ViewData" />
 
         <div class="save-buttons">
-			@if (Model.Status is ModificationStatus.Draft)
+			@if (Model.Status is ModificationStatus.ModificationRecordStarted)
             {
                 <a asp-route="pmc:areaofchange" asp-route-projectModificationId="@Model.ModificationId" class="govuk-button govuk-button--secondary">
                     Add another change to this modification
                 </a>
             }
 
-			@if (!Model.ModificationChanges.Any() && Model.Status is ModificationStatus.Draft)
+			@if (!Model.ModificationChanges.Any() && Model.Status is ModificationStatus.ModificationRecordStarted)
             {
                 <a asp-route="pov:postapproval" asp-route-projectRecordId="@Model.ProjectRecordId" class="govuk-button govuk-button--secondary">
                     Save for later
@@ -107,7 +107,7 @@
 
 <authorized auth-params="@new(Roles: "applicant")">
 @* Only show the Overall ranking if we have the changes *@
-@if (Model.ModificationChanges.Any() && Model.Status is ModificationStatus.Draft)
+	@if (Model.ModificationChanges.Any() && Model.Status is ModificationStatus.ModificationRecordStarted)
 {
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
@@ -134,7 +134,7 @@
     </div>
 }
 
-@if (Model.Status is ModificationStatus.Draft)
+	@if (Model.Status is ModificationStatus.ModificationRecordStarted)
 {
     <a asp-route="pmc:deletemodification"
        asp-route-projectRecordId="@Model.ProjectRecordId"

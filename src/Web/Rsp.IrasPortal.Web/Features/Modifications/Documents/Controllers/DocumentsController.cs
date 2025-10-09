@@ -440,7 +440,8 @@ public class DocumentsController
                 ProjectPersonnelId = respondentId,
                 FileName = uploadedBlob.FileName,
                 DocumentStoragePath = uploadedBlob.BlobUri,
-                FileSize = uploadedBlob.FileSize
+                FileSize = uploadedBlob.FileSize,
+                Status = DocumentStatus.UploadedPendingMalwareScan
             }).ToList();
 
             // Save the uploaded document metadata to the backend

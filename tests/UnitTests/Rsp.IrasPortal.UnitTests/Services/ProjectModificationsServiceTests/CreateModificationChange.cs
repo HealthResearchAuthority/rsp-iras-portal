@@ -13,7 +13,7 @@ public class CreateModificationChange : TestServiceBase<ProjectModificationsServ
     public async Task Returns_Created_Change(ProjectModificationChangeRequest request, ProjectModificationChangeResponse response)
     {
         // Arrange
-        response.Status = ModificationStatus.Draft;
+        response.Status = ModificationStatus.ModificationRecordStarted;
 
         Mocker
             .GetMock<IProjectModificationsServiceClient>()
@@ -26,6 +26,6 @@ public class CreateModificationChange : TestServiceBase<ProjectModificationsServ
         // Assert
         result.IsSuccessStatusCode.ShouldBeTrue();
         result.Content.ShouldNotBeNull();
-        result.Content!.Status.ShouldBe(ModificationStatus.Draft);
+        result.Content!.Status.ShouldBe(ModificationStatus.ModificationRecordStarted);
     }
 }

@@ -39,7 +39,7 @@ public class DeleteModificationTests : TestServiceBase<ModificationsController>
                 {
                     Id = projectModificationId.ToString(),
                     ModificationId = "90000/1",
-                    Status = ModificationStatus.Draft
+                    Status = ModificationStatus.ModificationRecordStarted
                 }
             ]
         };
@@ -69,7 +69,7 @@ public class DeleteModificationTests : TestServiceBase<ModificationsController>
         model.IrasId.ShouldBe(irasId);
         model.ShortTitle.ShouldBe(shortTitle);
         model.ModificationIdentifier.ShouldBe("90000/1");
-        model.Status.ShouldBe(ModificationStatus.Draft);
+        model.Status.ShouldBe(ModificationStatus.ModificationRecordStarted);
         model.ProjectRecordId.ShouldBe(projectRecordId);
 
         // TempData set for subsequent steps

@@ -439,7 +439,7 @@ public class QuestionnaireController
                 Title = application.Title,
                 Description = application.Description,
                 StartDate = application.CreatedDate,
-                Status = ApplicationStatuses.Submitted,
+                Status = ProjectRecordStatus.ProjectActive,
                 CreatedBy = application.CreatedBy,
                 UpdatedBy = application.UpdatedBy,
                 Respondent = this.GetRespondentFromContext(),

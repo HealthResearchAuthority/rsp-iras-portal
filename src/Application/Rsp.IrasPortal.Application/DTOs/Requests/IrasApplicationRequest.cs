@@ -31,7 +31,7 @@ public record IrasApplicationRequest
     /// <summary>
     /// Application Status
     /// </summary>
-    public string? Status { get; set; } = ApplicationStatuses.Draft;
+    public string? Status { get; set; } = ProjectRecordStatus.ProjectRecordStarted;
 
     /// <summary>
     /// Applicant's name who initiated the application
