@@ -74,6 +74,7 @@ public class SiteContentFilter(ICmsContentService contentService,
             {
                 controller.ViewData["SiteFooter"] = siteSettings?.Content?.FooterLinks;
                 controller.ViewData["PhaseBanner"] = siteSettings?.Content?.PhaseBannerContent;
+                controller.ViewData["ServiceNavigation"] = siteSettings?.Content?.ServiceNavigation;
             }
         }
 
