@@ -1,10 +1,11 @@
-﻿@using Rsp.IrasPortal.Application.DTOs.Responses;
+﻿@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Application.DTOs.Responses;
 @using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
 
 @{
     ViewBag.Title = "Create a project record - Make changes to research";
 
-	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData["PageContent"];
+	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
 	var pageContent = pageContentData != null
 		? pageContentData
 		: new Dictionary<string, MixedContentPageItem?>();
@@ -22,9 +23,13 @@
 		</div>
         <authorized auth-params="@new(Roles:"applicant")">
 
-			@Html.Raw(body?.Value)
+            <div class="govuk-grid-row">
+                <div class="govuk-grid-column-two-thirds">
+                    @Html.Raw(body?.Value)
+                </div>
+            </div>
 
-			<a class="gem-c-button govuk-button govuk-button--start" asp-route="app:startproject" aria-label="Start creating a project record">
+            <a class="gem-c-button govuk-button govuk-button--start govuk-!-margin-top-2" asp-route="app:startproject" aria-label="Start creating a project record">
 				Start
 				<svg class="govuk-button__start-icon govuk-!-display-none-print" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19" viewBox="0 0 33 40" focusable="false" aria-hidden="true">
 					<path fill="currentColor" d="M0 0h13l20 20-20 20H0l20-20z"></path>

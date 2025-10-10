@@ -1,4 +1,5 @@
-﻿@using Rsp.IrasPortal.Application.DTOs.Responses;
+﻿@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Application.DTOs.Responses;
 @using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
 
 @* @section is added for the back button, so that we can render something below the back button
@@ -10,7 +11,7 @@
 @{
     ViewBag.Title = "System Administration";
 
-    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData["PageContent"];
+	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null
         ? pageContentData
         : new Dictionary<string, MixedContentPageItem?>();

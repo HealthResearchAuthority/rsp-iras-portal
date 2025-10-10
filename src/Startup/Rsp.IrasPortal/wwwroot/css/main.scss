@@ -329,10 +329,6 @@ button.govuk-link {
     min-width: 550px;
 }
 
-.govuk-service-navigation {
-    background: #fff !important;
-}
-
 .govuk-service-navigation__item.small-margin {
     margin-right: 20px !important;
 }
@@ -350,7 +346,7 @@ button.govuk-link {
 }
 
 .autocomplete__menu:not([data-before-suggestions=""])::before {
-    content: attr(data-before-suggestions); //"Suggestions";
+    content: attr(data-before-suggestions); //"Suggestions ";
     background-color: #f3f2f1;
     border-bottom: 2px solid black !important;
     border-top: 2px solid black;
