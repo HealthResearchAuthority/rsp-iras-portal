@@ -33,6 +33,11 @@ public class ProjectModificationDocumentRequest
     public string? DocumentStoragePath { get; set; }
 
     /// <summary>
+    /// Gets or sets the status.
+    /// </summary>
+    public string? Status { get; set; }
+
+    /// <summary>
     /// Gets or sets the document file size in bytes.
     /// </summary>
     public long? FileSize { get; set; }

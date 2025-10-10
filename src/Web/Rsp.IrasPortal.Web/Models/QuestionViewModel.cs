@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
+using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
 
 namespace Rsp.IrasPortal.Web.Models;
 
@@ -29,7 +29,7 @@ public class QuestionViewModel
     public bool IsModificationQuestion { get; set; }
     public bool ShowOriginalAnswer { get; set; }
     public string ShowAnswerOn { get; set; } = string.Empty;
-    public IList<ContentComponent> GuidanceComponents { get; set; } = [];
+    public IList<ComponentContent> GuidanceComponents { get; set; } = [];
 
     public string? NhsInvolvment { get; set; }
     public string? NonNhsInvolvment { get; set; }

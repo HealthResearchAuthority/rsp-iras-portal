@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
 
 namespace Rsp.IrasPortal.Web.Models;
 
@@ -25,7 +25,7 @@ public class QuestionnaireViewModel
     /// </summary>
     public List<QuestionViewModel> Questions { get; set; } = [];
 
-    public List<ContentComponent> GuidanceContent { get; set; } = [];
+    public List<ComponentContent> GuidanceContent { get; set; } = [];
 
     /// <summary>
     /// ViewModel for searching and selecting a sponsor organisation.

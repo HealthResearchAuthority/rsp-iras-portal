@@ -13,7 +13,7 @@ public class GetModificationChange : TestServiceBase<ProjectModificationsService
     {
         // Arrange
         var changeId = Guid.NewGuid();
-        response.Status = ModificationStatus.Draft;
+        response.Status = ModificationStatus.ModificationRecordStarted;
         response.Id = changeId;
 
         Mocker

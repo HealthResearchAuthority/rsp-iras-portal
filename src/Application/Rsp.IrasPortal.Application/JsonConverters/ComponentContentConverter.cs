@@ -12,11 +12,10 @@ public class ComponentContentConverter : JsonConverter<ComponentContent>
         var root = jsonDoc.RootElement;
 
         var contentType = root.GetProperty("contentType").GetString();
-        var id = root.GetProperty("id").GetGuid();
 
         var propertiesElement = root.GetProperty("properties");
 
-        object properties = contentType switch
+        object? properties = contentType switch
         {
             "hintTextComponent" => JsonSerializer.Deserialize<HintTextProperties>(propertiesElement.GetRawText(), options),
             "lineSeparatorComponent" => JsonSerializer.Deserialize<LineSeparatorProperties>(propertiesElement.GetRawText(), options),
@@ -28,13 +27,13 @@ public class ComponentContentConverter : JsonConverter<ComponentContent>
             "tabItem" => JsonSerializer.Deserialize<TabItemProperties>(propertiesElement.GetRawText(), options),
             "accordionComponent" => JsonSerializer.Deserialize<AccordionProperties>(propertiesElement.GetRawText(), options),
             "accordionItem" => JsonSerializer.Deserialize<AccordionItemProperties>(propertiesElement.GetRawText(), options),
+            "insertTextComponent" => JsonSerializer.Deserialize<InsertTextProperties>(propertiesElement.GetRawText(), options),
             _ => JsonSerializer.Deserialize<Dictionary<string, object>>(propertiesElement.GetRawText(), options)
         };
 
         return new ComponentContent
         {
             ContentType = contentType,
-            Id = id,
             Properties = properties
         };
     }
@@ -43,7 +42,6 @@ public class ComponentContentConverter : JsonConverter<ComponentContent>
     {
         writer.WriteStartObject();
         writer.WriteString("contentType", value.ContentType);
-        writer.WriteString("id", value.Id);
 
         writer.WritePropertyName("properties");
         JsonSerializer.Serialize(writer, value.Properties, value.Properties.GetType(), options);

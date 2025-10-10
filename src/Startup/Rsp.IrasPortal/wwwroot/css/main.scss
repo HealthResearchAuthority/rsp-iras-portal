@@ -933,8 +933,10 @@ button.govuk-pagination__item--current {
     padding: 0;
 }
 
-.gov-heading-nowrap{
-    white-space:nowrap;
+.gov-heading-nowrap {
+    white-space: nowrap;
+}
+
 .govuk-phase-banner__text {
     p {
         margin-bottom: 0;
@@ -963,4 +965,36 @@ button.govuk-pagination__item--current {
             color: #0b0c0c;
         }
     }
-}}
+}
+
+.govuk-rte {
+    a {
+        color: #1d70b8;
+
+        &:hover {
+            color: #003078;
+            text-decoration-thickness: max(3px, .1875rem, .12em);
+            -webkit-text-decoration-skip-ink: none;
+            text-decoration-skip-ink: none;
+            -webkit-text-decoration-skip: none;
+            text-decoration-skip: none;
+        }
+
+        &:focus {
+            color: #0b0c0c;
+            background-color: #fd0;
+            box-shadow: 0 -2px #fd0, 0 4px #0b0c0c;
+            text-decoration: none;
+        }
+
+        &:active {
+            color: #0b0c0c;
+        }
+    }
+}
+
+.header-service-name {
+    font-size: 32px;
+    font-weight: 300;
+    font-style: normal;
+}

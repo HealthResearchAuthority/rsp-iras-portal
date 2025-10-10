@@ -31,14 +31,14 @@
     var conditionalRules = Model.GetConditionalRules();
 
     <script>
-		$(document).ready(function () {
-		const conditionalRules = @Html.Raw(JsonSerializer.Serialize(conditionalRules));
+        $(document).ready(function () {
+        const conditionalRules = @Html.Raw(JsonSerializer.Serialize(conditionalRules));
 
-		// Loop through each rule and store it individually by QuestionId
-		conditionalRules.forEach(rule => {
-		sessionStorage.setItem(rule.QuestionId, JSON.stringify(rule.Rules));
-		});
-		});
+        // Loop through each rule and store it individually by QuestionId
+        conditionalRules.forEach(rule => {
+        sessionStorage.setItem(rule.QuestionId, JSON.stringify(rule.Rules));
+        });
+        });
     </script>
 
     <script src="~/js/questionnaire.js"></script>
@@ -160,6 +160,18 @@
 
                             // plese note the @ is necessary before Html so that Template is rendered, otherwise it won't render
                             @Html.EditorForModel(templateName, ViewData)
+                        }
+
+                        // Render guidance if it exists
+                        if (question.GuidanceComponents.Count > 0)
+                        {
+                            var conditional = !(question.IsMandatory || question.IsOptional) && question.Rules.Count > 0;
+                            var parents = conditional ? string.Join(',', question.Rules.Select(rule => rule.ParentQuestionId)) : "";
+                            var questionId = conditional ? question.QuestionId : "";
+
+                            <div class="govuk-form-group @(conditional ? "conditional" : "")" data-parents="@parents" data-questionid="@questionId">
+                                <partial name="~/Features/Shared/Guidance.cshtml" model="question.GuidanceComponents" />
+                            </div>
                         }
 
                     }

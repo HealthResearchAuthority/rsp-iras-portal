@@ -17,11 +17,11 @@ public class UpdateModificationStatus : TestServiceBase<ProjectModificationsServ
 
         Mocker
             .GetMock<IProjectModificationsServiceClient>()
-            .Setup(c => c.UpdateModificationStatus(id, ModificationStatus.Draft))
+            .Setup(c => c.UpdateModificationStatus(id, ModificationStatus.ModificationRecordStarted))
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.UpdateModificationStatus(id, ModificationStatus.Draft);
+        var result = await Sut.UpdateModificationStatus(id, ModificationStatus.ModificationRecordStarted);
 
         // Assert
         result.IsSuccessStatusCode.ShouldBeTrue();

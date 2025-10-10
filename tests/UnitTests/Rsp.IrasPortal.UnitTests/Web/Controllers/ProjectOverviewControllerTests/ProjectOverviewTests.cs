@@ -64,7 +64,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
                 {
                     Id = projectRecordId,
                     IrasId = 1,
-                    Status = ApplicationStatuses.Draft
+                    Status = ProjectRecordStatus.ProjectRecordStarted
                 }
             });
     }
@@ -115,7 +115,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
                 {
                     Id = DefaultProjectRecordId,
                     IrasId = 1,
-                    Status = ApplicationStatuses.Draft
+                    Status = ProjectRecordStatus.ProjectRecordStarted
                 }
             });
 
@@ -123,7 +123,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupControllerContext(httpContext, tempData);
 
         // Act
-        var result = await Sut.Index(DefaultProjectRecordId, null,null);
+        var result = await Sut.Index(DefaultProjectRecordId, null, null);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -158,7 +158,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
                 {
                     Id = DefaultProjectRecordId,
                     IrasId = 1,
-                    Status = ApplicationStatuses.Submitted
+                    Status = ProjectRecordStatus.ProjectActive
                 }
             });
 
@@ -166,7 +166,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupControllerContext(httpContext, tempData);
 
         // Act
-        var result = await Sut.Index(DefaultProjectRecordId, null,null);
+        var result = await Sut.Index(DefaultProjectRecordId, null, null);
 
         // Assert
         var viewResult = result.ShouldBeOfType<RedirectToActionResult>();
@@ -195,7 +195,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupControllerContext(httpContext, tempData);
 
         // Act
-        var result = await Sut.ProjectDetails(DefaultProjectRecordId, "","");
+        var result = await Sut.ProjectDetails(DefaultProjectRecordId, "", "");
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
         var model = viewResult.Model.ShouldBeOfType<ProjectOverviewModel>();
@@ -230,7 +230,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupControllerContext(httpContext, tempData);
 
         // Act
-        await Sut.ProjectDetails(DefaultProjectRecordId, "","");
+        await Sut.ProjectDetails(DefaultProjectRecordId, "", "");
 
         // Assert
         tempData.ContainsKey(TempDataKeys.ProjectModification.ProjectModificationId).ShouldBeFalse();
@@ -262,7 +262,6 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 
         // Act
         await Sut.ProjectDetails(DefaultProjectRecordId, "", "");
-
 
         // Assert
         tempData[TempDataKeys.ShowNotificationBanner].ShouldBe(true);
@@ -297,7 +296,6 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         // Act
         var result = await Sut.ProjectDetails(projectRecordId, "", "");
 
-
         // Assert
         tempData[TempDataKeys.ProjectOverview].ShouldBe(true);
     }
@@ -325,7 +323,6 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 
         // Act
         var result = await Sut.ProjectDetails(DefaultProjectRecordId, "", "");
-
 
         // Assert
         var statusCodeResult = result.ShouldBeOfType<StatusCodeResult>();
@@ -479,7 +476,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 
         var modifications = new List<ModificationsDto>
         {
-            new() { ModificationId = "m1", ModificationType = "Type1", Status = ModificationStatus.Draft }
+            new() { ModificationId = "m1", ModificationType = "Type1", Status = ModificationStatus.ModificationRecordStarted }
         };
 
         var modificationsResponse = new GetModificationsResponse
@@ -507,7 +504,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var mod = model.Modifications.Single();
         mod.ModificationIdentifier.ShouldBe("m1");
         mod.ModificationType.ShouldBe("Type1");
-        mod.Status.ShouldBe(ModificationStatus.Draft);
+        mod.Status.ShouldBe(ModificationStatus.ModificationRecordStarted);
         mod.ReviewType.ShouldBeNull();
         mod.Category.ShouldBeNull();
         mod.DateSubmitted.ShouldNotBeNull();
