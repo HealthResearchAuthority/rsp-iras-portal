@@ -58,7 +58,7 @@ public class QuestionViewModel
 
     public string GetModelKey() => DataType.ToLower() switch
     {
-        "date" or "text" or "email" => $"Questions[{Index}].AnswerText",
+        "date" or "text" or "text area" or "email" => $"Questions[{Index}].AnswerText",
         "checkbox" => $"Questions[{Index}].Answers",
         "radio button" or "boolean" or "look-up list" or "dropdown" => $"Questions[{Index}].SelectedOption",
         _ => ""
