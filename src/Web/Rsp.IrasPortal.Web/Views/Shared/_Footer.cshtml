@@ -1,7 +1,8 @@
-﻿@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
+﻿@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
 
 @{
-	var model = (IList<LinkModel>?)ViewData["SiteFooter"];
+	var model = (IList<LinkModel>?)ViewData[PageContentElements.SiteFooter];
 
 }
 
