@@ -1,10 +1,11 @@
-﻿@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
+﻿@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
 @model IrasIdViewModel
 
 @{
     ViewData["Title"] = "Project details - Make changes to research";
 
-	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData["PageContent"];
+	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
 	var pageContent = pageContentData != null
 		? pageContentData
 		: new Dictionary<string, MixedContentPageItem?>();

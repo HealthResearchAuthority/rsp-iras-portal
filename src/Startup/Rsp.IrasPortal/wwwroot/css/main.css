@@ -315,10 +315,6 @@ button.govuk-link {
   min-width: 550px;
 }
 
-.govuk-service-navigation {
-  background: #fff !important;
-}
-
 .govuk-service-navigation__item.small-margin {
   margin-right: 20px !important;
 }

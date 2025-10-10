@@ -14,7 +14,7 @@
 @{
 	ViewData["Title"] = "My changes to review - Modifications - Approvals - System Administration";
 	var errorSummaryTitle = "There is a problem";
-	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData["PageContent"];
+	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
 	var pageContent = pageContentData != null
 	? pageContentData
 	: new Dictionary<string, MixedContentPageItem?>();
