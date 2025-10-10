@@ -1,11 +1,14 @@
 ﻿using System.Text.Json;
+using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Filters;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
+using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers;
@@ -13,7 +16,9 @@ namespace Rsp.IrasPortal.Web.Controllers;
 [Route("[controller]/[action]", Name = "soc:[action]")]
 [Authorize(Policy = "IsSystemAdministrator")]
 public class SponsorOrganisationsController(
-    ISponsorOrganisationService sponsorOrganisationService
+    ISponsorOrganisationService sponsorOrganisationService,
+    IRtsService rtsService
+    //IValidator<SponsorOrganisationSetupViewModel> validator
 )
     : Controller
 {
@@ -117,5 +122,207 @@ public class SponsorOrganisationsController(
             sortDirection,
             model,
             fromPagination);
+    }
+
+    /// <summary>
+    ///     Displays the empty review body to create
+    /// </summary>
+    [HttpGet]
+    [Route("/sponsororganisations/setup", Name = "soc:setupsponsororganisation")]
+    public IActionResult SetupSponsorOrganisation()
+    {
+        var model = new SponsorOrganisationSetupViewModel();
+        return View("SetupSponsorOrganisation", model);
+    }
+
+    /// <summary>
+    ///     Check sponsor organisation details
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Route("/sponsororganisations/check", Name = "soc:checksponsororganisation")]
+    [CmsContentAction(nameof(SetupSponsorOrganisation))]
+    public async Task<IActionResult> CheckSponsorOrganisation(SponsorOrganisationSetupViewModel model)
+    {
+        ModelState.Clear();
+        TempData[TempDataKeys.ShowNoResultsFound] = null;
+
+        if (model.SponsorOrganisation != null || model.SponsorOrgSearch.SelectedOrganisation != null)
+
+        {
+            var organisation = model.SponsorOrganisation ?? model.SponsorOrgSearch.SelectedOrganisation;
+
+            var rtsNameSearch =
+                await rtsService.GetOrganisationsByName(organisation, null, 1, int.MaxValue);
+
+            if (rtsNameSearch.IsSuccessStatusCode)
+            {
+                var rtsOrganisationDto = rtsNameSearch.Content?.Organisations.FirstOrDefault();
+
+                if (rtsOrganisationDto != null)
+                {
+                    var organisationByName =
+                        await sponsorOrganisationService.GetSponsorOrganisationByRtsId(rtsOrganisationDto.Id);
+
+                    if (organisationByName.IsSuccessStatusCode)
+                    {
+                        if (organisationByName.Content.TotalCount > 0)
+                        {
+                            ModelState.AddModelError("SponsorOrganisation",
+                                "A sponsor organisation with this name already exists");
+                        }
+                        else
+                        {
+                            return RedirectToAction("ConfirmSponsorOrganisation", new SponsorOrganisationModel
+                            {
+                                SponsorOrganisationName = rtsOrganisationDto.Name,
+                                Countries = [rtsOrganisationDto.CountryName],
+                                RtsId = rtsOrganisationDto.Id
+                            });
+                        }
+                    }
+                    else
+                    {
+                        return this.ServiceError(organisationByName);
+                    }
+                }
+                else
+                {
+                    TempData[TempDataKeys.ShowNoResultsFound] = true;
+                }
+            }
+        }
+
+        return View("SetupSponsorOrganisation", model);
+    }
+
+    /// <summary>
+    ///     Displays the empty review body to create
+    /// </summary>
+    [HttpGet]
+    [Route("/sponsororganisations/confirm", Name = "soc:sponsororganisation")]
+    public IActionResult ConfirmSponsorOrganisation(SponsorOrganisationModel model)
+    {
+        return View("ConfirmSponsorOrganisation", model);
+    }
+
+    /// <summary>
+    ///     Check sponsor organisation details
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Route("/sponsororganisations/save", Name = "soc:savesponsororganisation")]
+    public async Task<IActionResult> SaveSponsorOrganisation(SponsorOrganisationModel model)
+    {
+        model.CreatedBy = User?.Identity?.Name!;
+        model.CreatedDate = DateTime.UtcNow;
+
+        var sponsorOrganisationDto = model.Adapt<SponsorOrganisationDto>();
+
+        var response =
+            await sponsorOrganisationService.CreateSponsorOrganisation(sponsorOrganisationDto);
+
+        if (response.IsSuccessStatusCode)
+        {
+            TempData[TempDataKeys.ShowNotificationBanner] = true;
+            return RedirectToAction("Index");
+        }
+
+        // return error page as api wasn't successful
+        return this.ServiceError(response);
+    }
+
+    /// <summary>
+    ///     Retrieves a list of organisations based on the provided name, role, and optional page size.
+    /// </summary>
+    /// <param name="role">The role of the organisation. Defaults to SponsorRole if not provided.</param>
+    /// <param name="pageSize">Optional page size for pagination. Defults to 5 if not provided.</param>
+    /// <returns>A list of organisation names or an error response.</returns>
+    public async Task<IActionResult> SearchOrganisations(SponsorOrganisationSetupViewModel model, string? role,
+        int? pageSize = 5, int pageIndex = 1)
+    {
+        var returnUrl = TempData.Peek(TempDataKeys.OrgSearchReturnUrl) as string;
+
+        // set the previous, current and next stages
+        TempData.TryAdd(TempDataKeys.SponsorOrgSearched, "searched:true");
+
+        // when search is performed, empty the currently selected organisation
+        model.SponsorOrgSearch.SelectedOrganisation = string.Empty;
+        TempData.TryAdd(TempDataKeys.OrgSearch, model.SponsorOrgSearch, true);
+
+        if (string.IsNullOrEmpty(model.SponsorOrgSearch.SearchText) || model.SponsorOrgSearch.SearchText.Length < 3)
+        {
+            ModelState.AddModelError("sponsor_org_search",
+                "Please provide 3 or more characters to search sponsor organisation.");
+
+            // save the model state in temp data, to use it on redirects to show validation errors
+            // the modelstate will be merged using the action filter ModelStateMergeAttribute
+            // only if the TempData has ModelState stored
+            TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
+
+            // Return the view with the model state errors.
+            return Redirect(returnUrl!);
+        }
+
+        // Use the default sponsor role if no role is provided.
+        role ??= OrganisationRoles.Sponsor;
+
+        var searchResponse =
+            await rtsService.GetOrganisationsByName(model.SponsorOrgSearch.SearchText, role, pageIndex, pageSize);
+
+        if (!searchResponse.IsSuccessStatusCode || searchResponse.Content == null)
+        {
+            return this.ServiceError(searchResponse);
+        }
+
+        var sponsorOrganisations = searchResponse.Content;
+
+        TempData.TryAdd(TempDataKeys.SponsorOrganisations, sponsorOrganisations, true);
+
+        return Redirect(returnUrl!);
+    }
+
+    /// <summary>
+    ///     Displays a single review body
+    /// </summary>
+    [HttpGet]
+    [Route("/sponsororganisations/view", Name = "soc:viewsponsororganisation")]
+    public async Task<IActionResult> ViewSponsorOrganisation(string rtsId)
+    {
+        var response =
+            await sponsorOrganisationService.GetSponsorOrganisationByRtsId(rtsId);
+        if (response.IsSuccessStatusCode)
+        {
+            if (response.Content.SponsorOrganisations.Any())
+            {
+                var sponsorOrganisationDto = response.Content.SponsorOrganisations.ToList()[0];
+                var organisationDto = await rtsService.GetOrganisation(rtsId);
+
+                if (organisationDto.IsSuccessStatusCode)
+                {
+                    var sponsorOrganisationModel = new SponsorOrganisationModel
+                    {
+                        RtsId = rtsId,
+                        SponsorOrganisationName = organisationDto.Content.Name,
+                        Countries = [organisationDto.Content.CountryName],
+                        IsActive = sponsorOrganisationDto.IsActive,
+                        UpdatedDate = sponsorOrganisationDto.UpdatedDate ?? sponsorOrganisationDto.CreatedDate
+                    };
+
+
+                    return View(sponsorOrganisationModel);
+                }
+            }
+        }
+        else
+        {
+            return this.ServiceError(response);
+        }
+
+        return RedirectToAction("Index");
     }
 }
