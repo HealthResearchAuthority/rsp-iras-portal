@@ -1,7 +1,8 @@
-﻿@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
+﻿@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
 
 @{
-	var bannerContent = (RichTextProperties?)ViewData["PhaseBanner"];
+	var bannerContent = (RichTextProperties?)ViewData[PageContentElements.PhaseBanner];
 }
 
 @if (!string.IsNullOrEmpty(bannerContent?.Value?.Markup))

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
@@ -64,7 +65,7 @@ public class SiteContentFilter(ICmsContentService contentService,
 
                 if (pageContent.IsSuccessStatusCode && pageContent.Content != null)
                 {
-                    controller.ViewData["PageContent"] = pageContent.Content.ContentItems;
+                    controller.ViewData[PageContentElements.PageContent] = pageContent.Content.ContentItems;
                 }
             }
 
@@ -72,9 +73,9 @@ public class SiteContentFilter(ICmsContentService contentService,
 
             if (siteSettings.IsSuccessStatusCode)
             {
-                controller.ViewData["SiteFooter"] = siteSettings?.Content?.FooterLinks;
-                controller.ViewData["PhaseBanner"] = siteSettings?.Content?.PhaseBannerContent;
-                controller.ViewData["ServiceNavigation"] = siteSettings?.Content?.ServiceNavigation;
+                controller.ViewData[PageContentElements.SiteFooter] = siteSettings?.Content?.FooterLinks;
+                controller.ViewData[PageContentElements.PhaseBanner] = siteSettings?.Content?.PhaseBannerContent;
+                controller.ViewData[PageContentElements.ServiceNavigation] = siteSettings?.Content?.ServiceNavigation;
             }
         }
 

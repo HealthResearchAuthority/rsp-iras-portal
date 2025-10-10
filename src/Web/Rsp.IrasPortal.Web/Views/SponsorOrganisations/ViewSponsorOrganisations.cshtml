@@ -21,7 +21,7 @@
 	};
 	var tableId = "sponsorOrganisationTable";
 
-    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData["PageContent"];
+	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null
         ? pageContentData
         : new Dictionary<string, MixedContentPageItem?>();
