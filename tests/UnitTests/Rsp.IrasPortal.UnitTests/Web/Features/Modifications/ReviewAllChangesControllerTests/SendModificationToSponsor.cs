@@ -26,7 +26,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
         };
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.UpdateModificationStatus(projectModificationId, ModificationStatus.ModificationSubmittedBySponsor))
+            .Setup(s => s.UpdateModificationStatus(projectModificationId, ModificationStatus.WithSponsor))
             .ReturnsAsync(response);
 
         // Act
@@ -38,7 +38,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
 
         // Verify
         Mocker.GetMock<IProjectModificationsService>()
-            .Verify(s => s.UpdateModificationStatus(projectModificationId, ModificationStatus.ModificationSubmittedBySponsor), Times.Once);
+            .Verify(s => s.UpdateModificationStatus(projectModificationId, ModificationStatus.WithSponsor), Times.Once);
     }
 
     [Theory, AutoData]
@@ -89,7 +89,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
         };
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.UpdateModificationStatus(projectModificationId, ModificationStatus.ModificationSubmittedBySponsor))
+            .Setup(s => s.UpdateModificationStatus(projectModificationId, ModificationStatus.WithSponsor))
             .ReturnsAsync(response);
 
         // Act

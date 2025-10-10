@@ -2,6 +2,6 @@
 
 public struct ProjectRecordStatus
 {
-    public const string ProjectRecordStarted = "Project record started";
-    public const string ProjectActive = "Project active";
+    public const string InDraft = "In draft";
+    public const string Active = "Active";
 }
