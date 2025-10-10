@@ -1,0 +1,30 @@
+﻿﻿@using System.Text.RegularExpressions
+@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
+@model SponsorOrganisationModel
+
+@{
+	ViewData["Title"] = "Manage sponsor organisations - System Administration";
+
+	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData["PageContent"];
+	var pageContent = pageContentData != null
+		? pageContentData
+		: new Dictionary<string, MixedContentPageItem?>();
+
+    var headline = pageContent.GetValueOrDefault("SponsorOrganisations.View.Headline", null);
+}
+
+@section BackNavigation {
+	<partial name="_BackNavigation" model="@("soc:viewsponsororganisations", "Back", new Dictionary<string, string>())" />
+}
+
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-three-quarters">
+		<h1 class="govuk-heading-l">@Html.Raw(headline?.Value) @Model.SponsorOrganisationName</h1>
+	</div>
+</div>
+
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-full">
+		<partial name="_SponsorOrganisationSummaryTablePartial" model="(@Model, true)" />
+	</div>
+</div>

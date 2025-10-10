@@ -9,6 +9,7 @@ public class SponsorOrganisationDto
     public string? Description { get; set; }
     public bool IsActive { get; set; } = true;
     public string CreatedBy { get; set; } = null!;
+    public DateTime? CreatedDate { get; set; }
     public string? UpdatedBy { get; set; }
     public DateTime? UpdatedDate { get; set; }
     public IEnumerable<SponsorOrganisationUserDto>? Users { get; set; } = [];

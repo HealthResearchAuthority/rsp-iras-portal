@@ -1,4 +1,4 @@
-﻿using Rsp.IrasPortal.Application.Constants;
+﻿using System.Net;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
@@ -28,6 +28,18 @@ public class SponsorOrganisationService(ISponsorOrganisationsServiceClient clien
                     .Select(x => x.Id.ToString())
                     .ToList();
             }
+
+            if (searchQuery?.RtsIds != null || searchQuery?.RtsIds.Count == 0)
+            {
+                return new ServiceResponse<AllSponsorOrganisationsResponse>
+                {
+                    Content = new AllSponsorOrganisationsResponse
+                    {
+                        SponsorOrganisations = new List<SponsorOrganisationDto>()
+                    },
+                    StatusCode = HttpStatusCode.OK
+                };
+            }
         }
 
         var apiResponse =
@@ -47,7 +59,20 @@ public class SponsorOrganisationService(ISponsorOrganisationsServiceClient clien
             }
         }
 
+        return apiResponse.ToServiceResponse();
 
+    }
+
+    public async Task<ServiceResponse<AllSponsorOrganisationsResponse>> GetSponsorOrganisationByRtsId(string rtsId)
+    {
+        var apiResponse = await client.GetSponsorOrganisationByRtsId(rtsId);
+        return apiResponse.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse<SponsorOrganisationDto>> CreateSponsorOrganisation(
+        SponsorOrganisationDto sponsorOrganisationDto)
+    {
+        var apiResponse = await client.CreateSponsorOrganisation(sponsorOrganisationDto);
         return apiResponse.ToServiceResponse();
     }
 }

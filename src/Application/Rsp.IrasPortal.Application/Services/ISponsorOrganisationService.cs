@@ -13,7 +13,13 @@ namespace Rsp.IrasPortal.Application.Services;
 /// </summary>
 public interface ISponsorOrganisationService : IInterceptable
 {
-    Task<ServiceResponse<AllSponsorOrganisationsResponse>> GetAllSponsorOrganisations(SponsorOrganisationSearchRequest? searchQuery = null, int pageNumber = 1, int pageSize = 20, string? sortField = nameof(SponsorOrganisationDto.SponsorOrganisationName), string? sortDirection = SortDirections.Ascending);
+    Task<ServiceResponse<AllSponsorOrganisationsResponse>> GetAllSponsorOrganisations(
+        SponsorOrganisationSearchRequest? searchQuery = null, int pageNumber = 1, int pageSize = 20,
+        string? sortField = nameof(SponsorOrganisationDto.SponsorOrganisationName),
+        string? sortDirection = SortDirections.Ascending);
 
-   
+    Task<ServiceResponse<AllSponsorOrganisationsResponse>> GetSponsorOrganisationByRtsId(string rtsId);
+
+    Task<ServiceResponse<SponsorOrganisationDto>> CreateSponsorOrganisation(
+        SponsorOrganisationDto sponsorOrganisationDto);
 }

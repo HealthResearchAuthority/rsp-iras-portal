@@ -1,0 +1,105 @@
+﻿﻿@using Rsp.IrasPortal.Application.Constants
+@model (SponsorOrganisationModel SponsorOrganisationModel, bool AdditionalInformation)
+
+@{
+	var update = Model.SponsorOrganisationModel.Id != Guid.Empty;
+    var createReviewBody = "/reviewbody/create";
+}
+
+<table class="govuk-table">
+    <thead>
+        <tr>
+            <th></th>
+            <th></th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr class="govuk-table__row">
+            <td class="govuk-table__cell">
+                <b>Organisation name</b>
+            </td>
+            <td class="govuk-table__cell">
+                @Model.SponsorOrganisationModel.SponsorOrganisationName
+                <input type="hidden" asp-for="SponsorOrganisationModel.SponsorOrganisationName" name="SponsorOrganisationName" value="@Model.SponsorOrganisationModel.SponsorOrganisationName"/>
+            </td>
+            <td class="govuk-table__cell govuk-table__cell--numeric">
+                @{
+                    await RenderEditLink();
+                }
+            </td>
+        </tr>
+
+        <tr class="govuk-table__row">
+            <td class="govuk-table__cell">
+                <b>Country</b>
+            </td>
+            <td class="govuk-table__cell">
+                @string.Join(", ", Model.SponsorOrganisationModel.Countries)
+
+                @foreach (var country in Model.SponsorOrganisationModel.Countries)
+                {
+                    <input type="hidden" asp-for="SponsorOrganisationModel.Countries" name="Countries" value="@country" />
+                }
+            </td>
+            <td class="govuk-table__cell govuk-table__cell--numeric">
+                @{
+                    await RenderEditLink();
+                }
+            </td>
+        </tr>
+
+        @if (Model.AdditionalInformation)
+        {
+            <tr class="govuk-table__row">
+                <td class="govuk-table__cell">
+                    <b>Users</b>
+                </td>
+                <td class="govuk-table__cell">
+                    <a class="govuk-link"></a>
+					<a asp-route="soc:viewsponsororganisationusers" asp-all-route-data="@(new Dictionary<string, string> { { "sponsorOrganisationId", Model.SponsorOrganisationModel.Id.ToString() } })" class="govuk-link">View this sponsor organisation's list of users</a>
+
+                </td>
+                <td class="govuk-table__cell govuk-table__cell--numeric">
+                </td>
+            </tr>
+
+            <tr class="govuk-table__row">
+                <td class="govuk-table__cell">
+                    <b>Audit</b>
+                </td>
+                <td class="govuk-table__cell">
+                    <a class="govuk-link"></a>
+					<a asp-route="soc:audittrail" asp-all-route-data="@(new Dictionary<string, string> { { "sponsorOrganisationId", Model.SponsorOrganisationModel.Id.ToString() } })" class="govuk-link">View this sponsor organisation's audit history</a>
+
+                </td>
+                <td class="govuk-table__cell govuk-table__cell--numeric">
+                </td>
+            </tr>
+
+            <tr class="govuk-table__row">
+                <td class="govuk-table__cell">
+                    <b>Last updated</b>
+                </td>
+                <td class="govuk-table__cell">
+					@Model.SponsorOrganisationModel.UpdatedDate?.ToString("dd MMMM yyyy HH:mm")
+					<input type="hidden" asp-for="SponsorOrganisationModel.UpdatedDate" name="UpdatedDate" value="@Model.SponsorOrganisationModel.UpdatedDate" />
+                </td>
+                <td class="govuk-table__cell govuk-table__cell--numeric">
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@{
+    async Task RenderEditLink()
+    {
+        if (update)
+        {
+            <a class="govuk-link" asp-route="rbc:updatereviewbody" asp-route-id="@Model.SponsorOrganisationModel.Id">Change</a>
+        }
+  }
+}
+
+
