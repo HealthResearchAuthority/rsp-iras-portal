@@ -1,4 +1,4 @@
-﻿@charset "UTF-8";
+@charset "UTF-8";
 @import url("govuk-frontend.min.css");
 .govuk-form-group.questions {
   border: solid 1px lightgrey;
@@ -896,13 +896,14 @@ button.govuk-pagination__item--current {
 .gov-heading-nowrap {
   white-space: nowrap;
 }
-.gov-heading-nowrap .govuk-phase-banner__text p {
+
+.govuk-phase-banner__text p {
   margin-bottom: 0;
 }
-.gov-heading-nowrap .govuk-phase-banner__text a {
+.govuk-phase-banner__text a {
   color: #1d70b8;
 }
-.gov-heading-nowrap .govuk-phase-banner__text a:hover {
+.govuk-phase-banner__text a:hover {
   color: #003078;
   text-decoration-thickness: max(3px, 0.1875rem, 0.12em);
   -webkit-text-decoration-skip-ink: none;
@@ -910,13 +911,13 @@ button.govuk-pagination__item--current {
   -webkit-text-decoration-skip: none;
   text-decoration-skip: none;
 }
-.gov-heading-nowrap .govuk-phase-banner__text a:focus {
+.govuk-phase-banner__text a:focus {
   color: #0b0c0c;
   background-color: #fd0;
   box-shadow: 0 -2px #fd0, 0 4px #0b0c0c;
   text-decoration: none;
 }
-.gov-heading-nowrap .govuk-phase-banner__text a:active {
+.govuk-phase-banner__text a:active {
   color: #0b0c0c;
 }
 
@@ -946,3 +947,5 @@ button.govuk-pagination__item--current {
   font-weight: 300;
   font-style: normal;
 }
+
+/*# sourceMappingURL=main.css.map */
