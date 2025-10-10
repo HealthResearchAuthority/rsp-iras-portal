@@ -75,7 +75,7 @@ public class ReviewAllChangesController
         return HandleModificationStatusUpdate(
             projectRecordId,
             projectModificationId,
-            ModificationStatus.ModificationSubmittedBySponsor,
+            ModificationStatus.WithSponsor,
             onSuccess: () => View("ModificationSentToSponsor")
         );
     }

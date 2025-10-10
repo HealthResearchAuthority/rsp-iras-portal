@@ -37,7 +37,7 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
                 StatusCode = HttpStatusCode.OK,
                 Content = new()
                 {
-                    Modifications = [new ModificationsDto { Id = modId.ToString(), ModificationId = modId.ToString(), Status = ModificationStatus.ModificationRecordStarted }]
+                    Modifications = [new ModificationsDto { Id = modId.ToString(), ModificationId = modId.ToString(), Status = ModificationStatus.InDraft }]
                 }
             });
 
@@ -47,7 +47,7 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = [new() { Id = changeId, SpecificAreaOfChange = "SA1", AreaOfChange = "A1", Status = ModificationStatus.ModificationRecordStarted }]
+                Content = [new() { Id = changeId, SpecificAreaOfChange = "SA1", AreaOfChange = "A1", Status = ModificationStatus.InDraft }]
             });
 
         // 3. GetInitialModificationQuestions -> resolve names

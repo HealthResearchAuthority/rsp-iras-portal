@@ -36,7 +36,7 @@ public class ProjectOverviewController(
             return response;
         }
 
-        if (okResult.Value is ProjectOverviewModel model && model.Status == ProjectRecordStatus.ProjectActive)
+        if (okResult.Value is ProjectOverviewModel model && model.Status == ProjectRecordStatus.Active)
         {
             return RedirectToAction(nameof(ProjectDetails), new { projectRecordId, backRoute, modificationId });
         }
