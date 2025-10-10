@@ -67,7 +67,7 @@ public class RankingOfChangeTests
         var view = result.ShouldBeOfType<ViewViewComponentResult>();
         var model = view.ViewData.Model.ShouldBeOfType<RankingOfChangeViewModel>();
         model.ModificationType.ShouldBe("Not available");
-        model.Category.ShouldBe("Not available");
+        model.Category.ShouldBe("N/A");
         model.ReviewType.ShouldBe("Not available");
     }
 
