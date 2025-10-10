@@ -24,7 +24,7 @@ public class QuestionsetHelpersTests : TestServiceBase
                     QuestionFormat = "Text",
                     CategoryId = "Cat1",
                     Version = "v1",
-                    GuidanceComponents = new List<ContentComponent>{ new ContentComponent { ContentType = "ContentType" } },
+                    GuidanceComponents = [new() { ContentType = "ContentType" }],
                     Answers = new List<AnswerModel>
                     {
                         new AnswerModel { Id = "a1", OptionName = "Option 1" }

@@ -1,6 +1,5 @@
 ﻿using System.Text.Json;
 using Refit;
-using Rsp.IrasPortal.Application;
 using Rsp.IrasPortal.Application.Configuration;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.ServiceClients;
@@ -57,7 +56,6 @@ public static class HttpClientsConfiguration
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
-        jsonOptions.Converters.Add(new ContentComponentConverter());
 
         var refitSettings = new RefitSettings
         {

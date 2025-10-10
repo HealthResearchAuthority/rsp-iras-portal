@@ -1,4 +1,4 @@
-﻿using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
+﻿using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
 
 namespace Rsp.IrasPortal.Application.DTOs;
 
@@ -107,7 +107,7 @@ public record QuestionsResponse
     /// </summary>
     public string ShortQuestionText { get; set; } = null!;
 
-    public IList<ContentComponent> GuidanceComponents { get; set; } = [];
+    public IList<ComponentContent> GuidanceComponents { get; set; } = [];
 
     public string? NhsInvolvment { get; set; }
     public string? NonNhsInvolvment { get; set; }

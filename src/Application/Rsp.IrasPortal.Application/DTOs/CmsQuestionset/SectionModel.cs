@@ -1,4 +1,6 @@
-﻿namespace Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
+﻿using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
+
+namespace Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 
 public class SectionModel
 {
@@ -39,5 +41,5 @@ public class SectionModel
     /// <summary>
     /// Contains UI content components in this section
     /// </summary>
-    public IList<ContentComponent> GuidanceComponents { get; set; } = [];
+    public IList<ComponentContent> GuidanceComponents { get; set; } = [];
 }

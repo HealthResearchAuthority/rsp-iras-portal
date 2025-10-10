@@ -933,8 +933,10 @@ button.govuk-pagination__item--current {
     padding: 0;
 }
 
-.gov-heading-nowrap{
-    white-space:nowrap;
+.gov-heading-nowrap {
+    white-space: nowrap;
+}
+
 .govuk-phase-banner__text {
     p {
         margin-bottom: 0;
@@ -989,4 +991,10 @@ button.govuk-pagination__item--current {
             color: #0b0c0c;
         }
     }
+}
+
+.header-service-name {
+    font-size: 32px;
+    font-weight: 300;
+    font-style: normal;
 }
