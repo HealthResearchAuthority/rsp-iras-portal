@@ -33,7 +33,7 @@ public class ReviewAllChanges_Success : TestServiceBase<ReviewAllChangesControll
             .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new() { Modifications = [new Application.DTOs.ModificationsDto { Id = modId.ToString(), ModificationId = modId.ToString(), Status = ModificationStatus.ModificationRecordStarted }] }
+                Content = new() { Modifications = [new Application.DTOs.ModificationsDto { Id = modId.ToString(), ModificationId = modId.ToString(), Status = ModificationStatus.InDraft }] }
             });
 
         // changes
@@ -43,7 +43,7 @@ public class ReviewAllChanges_Success : TestServiceBase<ReviewAllChangesControll
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = [new() { Id = changeId, AreaOfChange = "A1", SpecificAreaOfChange = "SA1", Status = ModificationStatus.ModificationRecordStarted }]
+                Content = [new() { Id = changeId, AreaOfChange = "A1", SpecificAreaOfChange = "SA1", Status = ModificationStatus.InDraft }]
             });
 
         // initial questions

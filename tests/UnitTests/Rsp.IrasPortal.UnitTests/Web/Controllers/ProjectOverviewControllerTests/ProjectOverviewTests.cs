@@ -64,7 +64,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
                 {
                     Id = projectRecordId,
                     IrasId = 1,
-                    Status = ProjectRecordStatus.ProjectRecordStarted
+                    Status = ProjectRecordStatus.InDraft
                 }
             });
     }
@@ -115,7 +115,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
                 {
                     Id = DefaultProjectRecordId,
                     IrasId = 1,
-                    Status = ProjectRecordStatus.ProjectRecordStarted
+                    Status = ProjectRecordStatus.InDraft
                 }
             });
 
@@ -158,7 +158,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
                 {
                     Id = DefaultProjectRecordId,
                     IrasId = 1,
-                    Status = ProjectRecordStatus.ProjectActive
+                    Status = ProjectRecordStatus.Active
                 }
             });
 
@@ -476,7 +476,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 
         var modifications = new List<ModificationsDto>
         {
-            new() { ModificationId = "m1", ModificationType = "Type1", Status = ModificationStatus.ModificationRecordStarted }
+            new() { ModificationId = "m1", ModificationType = "Type1", Status = ModificationStatus.InDraft }
         };
 
         var modificationsResponse = new GetModificationsResponse
@@ -504,7 +504,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var mod = model.Modifications.Single();
         mod.ModificationIdentifier.ShouldBe("m1");
         mod.ModificationType.ShouldBe("Type1");
-        mod.Status.ShouldBe(ModificationStatus.ModificationRecordStarted);
+        mod.Status.ShouldBe(ModificationStatus.InDraft);
         mod.ReviewType.ShouldBeNull();
         mod.Category.ShouldBeNull();
         mod.DateSubmitted.ShouldNotBeNull();
