@@ -3,8 +3,8 @@ using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Enums;
 using Rsp.IrasPortal.Web.Extensions;
@@ -797,7 +797,7 @@ public class DocumentsController
                         Rules = cmsQ?.Rules ?? new List<RuleDto>(),
                         ShortQuestionText = cmsQ?.ShortQuestionText ?? string.Empty,
                         IsModificationQuestion = true,
-                        GuidanceComponents = cmsQ?.GuidanceComponents ?? new List<ContentComponent>()
+                        GuidanceComponents = cmsQ?.GuidanceComponents ?? new List<ComponentContent>()
                     };
                 }).ToList()
             };
