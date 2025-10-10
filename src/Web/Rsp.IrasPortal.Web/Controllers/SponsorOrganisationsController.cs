@@ -193,11 +193,6 @@ public class SponsorOrganisationsController(
                     TempData[TempDataKeys.ShowNoResultsFound] = true;
                 }
             }
-            else
-            {
-                ModelState.AddModelError("SponsorOrganisation",
-                    "Cannot find a sponsor organisation with this name");
-            }
         }
 
         return View("SetupSponsorOrganisation", model);
