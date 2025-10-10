@@ -1,4 +1,6 @@
-﻿namespace Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
+﻿using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
+
+namespace Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 
 public class QuestionModel
 {
@@ -29,7 +31,7 @@ public class QuestionModel
 
     public IList<AnswerModel> Answers { get; set; } = [];
     public IList<RuleModel> ValidationRules { get; set; } = [];
-    public IList<ContentComponent> GuidanceComponents { get; set; } = [];
+    public IList<ComponentContent> GuidanceComponents { get; set; } = [];
 
     public string? NhsInvolvment { get; set; }
     public string? NonNhsInvolvment { get; set; }
