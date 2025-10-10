@@ -4,7 +4,7 @@
 <dl class="govuk-summary-list govuk-!-margin-bottom-7">
 
     <div class="govuk-summary-list__row" id="ranking-modification-type">
-        <dt class="govuk-summary-list__key">Modification Type</dt>
+        <dt class="govuk-summary-list__key">Modification type</dt>
         <dd class="govuk-summary-list__value">
             @Model.ModificationType
         </dd>
@@ -13,12 +13,12 @@
     <div class="govuk-summary-list__row" id="ranking-category">
         <dt class="govuk-summary-list__key">Category</dt>
         <dd class="govuk-summary-list__value">
-            @Model.Category
+			@(string.IsNullOrWhiteSpace(Model.Category) ? "N/A" : Model.Category)
         </dd>
     </div>
 
     <div class="govuk-summary-list__row" id="ranking-review-type">
-        <dt class="govuk-summary-list__key">Review Type</dt>
+        <dt class="govuk-summary-list__key">Review type</dt>
         <dd class="govuk-summary-list__value">
             @Model.ReviewType
         </dd>

@@ -22,7 +22,7 @@ public class RankingOfChange(ICmsQuestionsetService cmsQuestionsetService) : Vie
         var rankingOfChangeViewModel = new RankingOfChangeViewModel
         {
             ModificationType = ranking?.Content?.ModificationType.Substantiality ?? "Not available",
-            Category = ranking?.Content?.Categorisation.Category ?? "Not available",
+            Category = ranking?.Content?.Categorisation.Category ?? "N/A",
             ReviewType = ranking?.Content?.ReviewType ?? "Not available"
         };
 

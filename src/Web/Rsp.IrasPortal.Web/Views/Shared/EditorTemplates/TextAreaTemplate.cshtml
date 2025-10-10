@@ -21,13 +21,17 @@
     var inputType = types == ("text", "email") ? "email" : "text";
 }
 
-<div class="govuk-form-group">
+<div class="govuk-form-group @(ViewData.ModelState[$"Questions[{index}].AnswerText"]?.Errors.Any() == true ? "govuk-form-group--error" : "")">
 	<label class="govuk-label govuk-label--s"
 		   asp-for="Questions[index].AnswerText"
 		   aria-describedby="sponsor-modification-reference-hint">
 		@Model.Questions[index].QuestionText
 	</label>
 
+	<span class="govuk-error-message"
+		  asp-validation-for="Questions[@index].AnswerText">
+	</span>
+	
 	<div class="govuk-form-group govuk-character-count"
 		 data-module="govuk-character-count"
 		 data-maxlength="@conditionValue">
