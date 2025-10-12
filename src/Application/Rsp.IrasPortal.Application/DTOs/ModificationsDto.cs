@@ -1,4 +1,6 @@
-﻿namespace Rsp.IrasPortal.Application.DTOs;
+﻿using Rsp.IrasPortal.Application.Enums;
+
+namespace Rsp.IrasPortal.Application.DTOs;
 
 public class ModificationsDto
 {
@@ -13,4 +15,6 @@ public class ModificationsDto
     public string SponsorOrganisation { get; set; } = null!;
     public DateTime CreatedAt { get; set; }
     public string Status { get; set; } = null!;
+    public ModificationStatusOrder? StatusOrder { get; set; } = null!;
+    public DateTime? SubmittedDate { get; set; }
 }

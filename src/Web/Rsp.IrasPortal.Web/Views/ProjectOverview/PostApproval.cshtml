@@ -32,90 +32,97 @@
         <h2 class="govuk-heading-m">Post approval</h2>
     </div>
     <div class="govuk-grid-column-full">
-            <div class="govuk-table-wrapper">
+        <div class="govuk-table-wrapper">
 
-                <input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
-                <input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
+            <input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
+            <input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
 
-                <table class="govuk-table modifications-tasklist-table" id="postApprovalTable">
-                    <thead class="govuk-table__head">
-                        <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
-                            @{
-                                var sortableHeaders = new[]
-                                {
-                                                    new { Field = nameof(PostApprovalModificationsModel.ModificationIdentifier), Label = "Modification ID" },
-                                                    new { Field = nameof(PostApprovalModificationsModel.ModificationType), Label = "Modification type" },
-                                                    new { Field = nameof(PostApprovalModificationsModel.ReviewType), Label = "Review type" },
-                                                    new { Field = nameof(PostApprovalModificationsModel.Category), Label = "Category" },
-                                                    new { Field = nameof(PostApprovalModificationsModel.DateSubmitted), Label = "Date submitted" },
-                                                    new { Field = nameof(PostApprovalModificationsModel.Status), Label = "Status" }
-                                                    };
-                                var tableId = "postApprovalTable";
-                            }
-                            @foreach (var header in sortableHeaders)
-                            {
-                                <th scope="col" class="govuk-table__header govuk-table__header-sortable">
-                                    @await Html.PartialAsync("_SortableHeaderButton", new SortableHeaderModel
-                                    {
-                                        FieldName = header.Field,
-                                        DisplayText = header.Label,
-                                        CurrentSortField = Model.Pagination?.SortField,
-                                        CurrentSortDirection = Model.Pagination?.SortDirection,
-                                        TableId = tableId,
-                                        AdditionalParameters = new Dictionary<string, string>
-                                        {
-                                            { "projectRecordId", Model.ProjectOverviewModel.ProjectRecordId }
-                                        }
-                                    })
-                                </th>
-                            }
-                        </tr>
-                    </thead>
-
-                    <tbody class="govuk-table__body govuk-body-s">
+            <table class="govuk-table modifications-tasklist-table" id="postApprovalTable">
+                <thead class="govuk-table__head">
+                    <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
                         @{
-                            foreach (var modification in Model.Modifications)
+                            var sortableHeaders = new[]
                             {
-                                //string projectRecordId, string irasId, string shortTitle, Guid projectModificationId
+                                                new { Field = nameof(PostApprovalModificationsModel.ModificationIdentifier), Label = "Modification ID" },
+                                                new { Field = nameof(PostApprovalModificationsModel.ModificationType), Label = "Modification type" },
+                                                new { Field = nameof(PostApprovalModificationsModel.ReviewType), Label = "Review type" },
+                                                new { Field = nameof(PostApprovalModificationsModel.Category), Label = "Category" },
+                                                new { Field = nameof(PostApprovalModificationsModel.DateSubmitted), Label = "Date submitted" },
+                                                new { Field = nameof(PostApprovalModificationsModel.Status), Label = "Status" },
+                                                new { Field = nameof(PostApprovalModificationsModel.SubmittedDate), Label = "Submitted date" }
 
-                                var modificationParams = new Dictionary<string, string> {
-                                    { "projectRecordId", Model.ProjectOverviewModel.ProjectRecordId },
-                                    { "irasId", Model.ProjectOverviewModel.IrasId?.ToString()  },
-                                    { "shortTitle", Model.ProjectOverviewModel.ProjectTitle?.ToString() },
-                                    { "projectModificationId", modification.ModificationId  }
-                                };
-
-                                var modificationReviewRoute = "pmc:modificationdetails";
-
-                                if (modification.Status is "Approved" or "In sponsor review")
-                                {
-                                    modificationReviewRoute = "pmc:reviewallchanges";
-                                }
-
-                                <tr class="govuk-table__row">
-                                    <td class="govuk-table__cell">
-                                        <a class="govuk-link" asp-route="@modificationReviewRoute" asp-all-route-data="modificationParams">
-                                            <strong>@modification.ModificationIdentifier</strong>
-                                        </a>
-                                    </td>
-                                    <td class="govuk-table__cell">@modification.ModificationType</td>
-                                    <td class="govuk-table__cell">@modification.ReviewType</td>
-                                    <td class="govuk-table__cell">@modification.Category</td>
-                                    @{
-                                        <td class="govuk-table__cell">@modification.DateSubmitted?.ToString("dd MMM yyyy")</td>
-                                    }
-                                    <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">@modification.Status</strong></td>
-                                </tr>
-                            }
+                                                };
+                            var tableId = "postApprovalTable";
                         }
-                    </tbody>
-                </table>
-            </div>
+                        @foreach (var header in sortableHeaders)
+                        {
+                            <th scope="col" class="govuk-table__header govuk-table__header-sortable">
+                                @await Html.PartialAsync("_SortableHeaderButton", new SortableHeaderModel
+                                {
+                                    FieldName = header.Field,
+                                                        DisplayText = header.Label,
+                                                        CurrentSortField = Model.Pagination?.SortField,
+                                                        CurrentSortDirection = Model.Pagination?.SortDirection,
+                                                        TableId = tableId,
+                                                        AdditionalParameters = new Dictionary<string, string>
+                                                        {
+                                                        { "projectRecordId", Model.ProjectOverviewModel.ProjectRecordId }
+                                                        }
+                                                        })
+                        </th>
+                                                }
+                    </tr>
+                </thead>
 
-            <partial name="_Pagination" model="@Model.Pagination" />
-            <a asp-route="pmc:createmodification"
-               class="govuk-button govuk-button--secondary">
-                Create new modification
-            </a>
+                <tbody class="govuk-table__body govuk-body-s">
+                    @{
+                        foreach (var modification in Model.Modifications)
+                        {
+                            //string projectRecordId, string irasId, string shortTitle, Guid projectModificationId
+
+                            var modificationParams = new Dictionary<string, string> {
+                                        { "projectRecordId", Model.ProjectOverviewModel.ProjectRecordId },
+                                        { "irasId", Model.ProjectOverviewModel.IrasId?.ToString()  },
+                                        { "shortTitle", Model.ProjectOverviewModel.ProjectTitle?.ToString() },
+                                        { "projectModificationId", modification.ModificationId  }
+                                        };
+
+                            var modificationReviewRoute = "pmc:modificationdetails";
+
+                            if (modification.Status is "Approved" or "In sponsor review")
+                            {
+                                modificationReviewRoute = "pmc:reviewallchanges";
+                            }
+                            if (modification.Status is ModificationStatus.ModificationRecordStarted)
+                            {
+                                modification.SubmittedDate = null;
+                            }
+
+                            <tr class="govuk-table__row">
+                                <td class="govuk-table__cell">
+                                    <a class="govuk-link" asp-route="@modificationReviewRoute" asp-all-route-data="modificationParams">
+                                        <strong>@modification.ModificationIdentifier</strong>
+                                    </a>
+                                </td>
+                                <td class="govuk-table__cell">@modification.ModificationType</td>
+                                <td class="govuk-table__cell">@modification.ReviewType</td>
+                                <td class="govuk-table__cell">@modification.Category</td>
+                                @{
+                                    <td class="govuk-table__cell">@modification.DateSubmitted?.ToString("dd MMM yyyy")</td>
+                                }
+                                <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">@modification.Status</strong></td>
+                                <td class="govuk-table__cell">@modification.SubmittedDate?.ToString("dd MMM yyyy")</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <partial name="_Pagination" model="@Model.Pagination" />
+        <a asp-route="pmc:createmodification"
+           class="govuk-button govuk-button--secondary">
+            Create new modification
+        </a>
     </div>
 </div>
