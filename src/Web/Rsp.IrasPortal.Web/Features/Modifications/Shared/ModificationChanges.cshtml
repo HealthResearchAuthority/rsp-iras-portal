@@ -15,15 +15,15 @@
             <h2 class="govuk-summary-card__title">
                 Change @(changeIndex + 1) - @change.AreaOfChangeName<br />
 
-                @if (showStatus is null or true && Model.Status is "Draft")
+				@if (showStatus is null or true && Model.Status is ModificationStatus.InDraft)
                 {
-                    <strong class="govuk-!-margin-top-2 text-nowrap govuk-tag @(change.ChangeStatus == "Unfinished" ? "govuk-tag--red" : "govuk-tag--green") non-max-width-govuk-tag">
+					<strong class="govuk-!-margin-top-2 text-nowrap govuk-tag @(change.ChangeStatus == ModificationStatus.Unfinished ? "govuk-tag--red" : "govuk-tag--green") non-max-width-govuk-tag">
                         @change.ChangeStatus
                     </strong>
                 }
             </h2>
             <ul class="govuk-summary-card__actions">
-                @if (showChangeLink is null or true && Model.Status is "Draft")
+				@if (showChangeLink is null or true && Model.Status is ModificationStatus.InDraft)
                 {
                     <li class="govuk-summary-card__action">
 
@@ -40,7 +40,7 @@
                     </li>
                 }
 
-                @if (showRemoveLink is null or true && Model.Status is "Draft")
+				@if (showRemoveLink is null or true && Model.Status is ModificationStatus.InDraft)
                 {
                     <li class="govuk-summary-card__action">
                         <a class="govuk-link"
