@@ -1,9 +1,7 @@
-﻿@using Microsoft.FeatureManagement
-@using Rsp.Gds.Component.Models
+﻿@using Rsp.Gds.Component.Models
 @using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
 @model Rsp.IrasPortal.Web.Areas.Admin.Models.UserViewModel
-@inject IFeatureManager featureManager
 
 @{
 	var buttonText = ViewBag.Mode == "edit" ? "Save" : "Save and continue";
@@ -29,7 +27,7 @@
 }
 <form method="post">
 
-	<a asp-route="profilesettings:index" asp-all-route-data="@(new Dictionary<string, string> ())" class="govuk-back-link">Back</a>
+	<a asp-route="profilesettings" asp-all-route-data="@(new Dictionary<string, string> ())" class="govuk-back-link">Back</a>
 
 	<div class="govuk-grid-row">
 		<div class="govuk-grid-column-two-thirds">
@@ -102,11 +100,11 @@
 
 			<rsp-gds-input asp-for="GivenName" label-text="First name" width-class="govuk-!-width-one-half" />
 
-			<rsp-gds-input asp-for="FamilyName" label-text="Last name" width-class="govuk-!-width-one-half" />			
+			<rsp-gds-input asp-for="FamilyName" label-text="Last name" width-class="govuk-!-width-one-half" />
 
 			<rsp-gds-input asp-for="JobTitle" label-text="Job title" width-class="govuk-!-width-full" />
 
-			<rsp-gds-input asp-for="Organisation" label-text="Organisation" width-class="govuk-!-width-full" />			
+			<rsp-gds-input asp-for="Organisation" label-text="Organisation" width-class="govuk-!-width-full" />
 
 			<partial name="_SubmitButton" model="@(submitActionName, buttonText, new Dictionary<string, string>())" />
 			@{
@@ -115,11 +113,8 @@
 		</div>
 	</div>
 </form>
-<!--Use javascript only when progressive enhancement feature is enabled-->
-@if (await featureManager.IsEnabledAsync(FeatureFlags.ProgressiveEnhancement))
-{
-	@section FooterResources {
+
+@section FooterResources {
 	<script src="~/lib/jquery/dist/jquery.js"></script>
 	<script src="~/js/manageUsers.js"></script>
-	}
 }

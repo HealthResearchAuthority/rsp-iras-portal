@@ -199,7 +199,7 @@ public class ProfileAndSettingsControllerTests : TestServiceBase<ProfileAndSetti
         Mocker.GetMock<IUserManagementService>()
            .Verify(s => s.UpdateUser(It.IsAny<UpdateUserRequest>()), Times.Once);
 
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("Error");
+        var viewResult = result.ShouldBeOfType<StatusCodeResult>();
+        viewResult.StatusCode.ShouldBe(400);
     }
 }

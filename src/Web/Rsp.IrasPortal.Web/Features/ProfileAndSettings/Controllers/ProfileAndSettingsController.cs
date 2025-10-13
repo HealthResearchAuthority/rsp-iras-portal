@@ -1,5 +1,4 @@
-﻿using System.Net;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using FluentValidation;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
@@ -22,7 +21,7 @@ public class ProfileAndSettingsController(
     private const string EditProfileView = nameof(EditProfileView);
     private const string Error = nameof(Error);
 
-    [HttpGet]
+    [HttpGet("~/[controller]", Name = "profilesettings")]
     public async Task<IActionResult> Index()
     {
         ViewBag.Mode = "edit";
@@ -89,11 +88,7 @@ public class ProfileAndSettingsController(
         // return the generic error page
         if (!updateUserRequest.IsSuccessStatusCode)
         {
-            return updateUserRequest.StatusCode switch
-            {
-                HttpStatusCode.Forbidden => Forbid(),
-                _ => View(Error, this.ProblemResult(updateUserRequest))
-            };
+            return this.ServiceError(updateUserRequest);
         }
 
         // show notification banner for success message
