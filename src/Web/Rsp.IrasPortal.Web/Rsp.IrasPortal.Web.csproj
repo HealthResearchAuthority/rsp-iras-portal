@@ -30,6 +30,5 @@
 
     <ItemGroup>
       <Folder Include="Features\ExceptionHandling\Views\" />
-      <Folder Include="Features\ProfileAndSettings\Models\" />
     </ItemGroup>
 </Project>
