@@ -174,4 +174,32 @@ public class ProfileAndSettingsControllerTests : TestServiceBase<ProfileAndSetti
         var viewResult = result.ShouldBeOfType<ViewResult>();
         viewResult.ViewName.ShouldBe("EditProfileView");
     }
+
+    [Theory, AutoData]
+    public void SaveProfile_Returns_Error_When_Save_Unsuccessful(UserViewModel viewModel)
+    {
+        // arrange
+        var serviceResponse = new ServiceResponse
+        {
+            StatusCode = HttpStatusCode.BadRequest
+        };
+        Mocker.GetMock<IUserManagementService>()
+           .Setup(s => s.UpdateUser(It.IsAny<UpdateUserRequest>()))
+           .ReturnsAsync(serviceResponse);
+
+        Mocker
+            .GetMock<IValidator<UserViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<UserViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult());
+
+        // Act
+        var result = Sut.SaveProfile(viewModel)?.Result;
+
+        // Assert
+        Mocker.GetMock<IUserManagementService>()
+           .Verify(s => s.UpdateUser(It.IsAny<UpdateUserRequest>()), Times.Once);
+
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.ViewName.ShouldBe("Error");
+    }
 }
