@@ -1,16 +1,17 @@
-﻿using System.Globalization;
-using System.Net;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.Enum;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
+using System.Globalization;
+using System.Net;
 
 namespace Rsp.IrasPortal.Web.Controllers.ProjectOverview;
 
@@ -74,7 +75,7 @@ public class ProjectOverviewController(
         int pageNumber = 1,
         int pageSize = 20,
         string sortField = nameof(ModificationsModel.CreatedAt),
-        string sortDirection = SortDirections.Ascending
+        string sortDirection = SortDirections.Descending
     )
     {
         UpdateModificationRelatedTempData();
@@ -108,8 +109,12 @@ public class ProjectOverviewController(
                 ReviewType = null,
                 Category = null,
                 DateSubmitted = dto.CreatedAt,
-                Status = dto.Status
+                Status = dto.Status,
+                SubmittedDate = dto.SubmittedDate
             })
+            .OrderBy(item => Enum.TryParse<ModificationStatusOrder>(item.Status, true, out var statusEnum)
+            ? (int)statusEnum
+            : int.MinValue)
             .ToList() ?? [];
 
         model.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationsResponseResult?.Content?.TotalCount ?? 0)
