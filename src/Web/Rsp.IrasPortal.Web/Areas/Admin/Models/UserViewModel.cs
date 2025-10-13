@@ -35,6 +35,8 @@ public class UserViewModel
 
     public DateTime? LastUpdated { get; set; } = null;
 
+    public string? IdentityProviderId { get; set; }
+
     private string? _status;
 
     public string Status
@@ -86,6 +88,7 @@ public class UserViewModel
             OriginalEmail = user.Email;
             Status = user.Status;
             CurrentLogin = user.CurrentLogin.HasValue ? TimeZoneInfo.ConvertTimeFromUtc((DateTime)user.CurrentLogin, ukTimeZone) : null;
+            IdentityProviderId = user.IdentityProviderId;
         }
     }
 
@@ -100,6 +103,7 @@ public class UserViewModel
         Status = user.Status;
         LastLogin = user.LastLogin;
         CurrentLogin = user.CurrentLogin.HasValue ? TimeZoneInfo.ConvertTimeFromUtc((DateTime)user.CurrentLogin, ukTimeZone) : null;
+        IdentityProviderId = user.IdentityProviderId;
     }
 
     public void Deconstruct(out string givenName, out string familyName, out string email)

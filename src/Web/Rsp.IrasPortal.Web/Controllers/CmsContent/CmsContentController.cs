@@ -27,6 +27,8 @@ public class CmsContentController(ICmsContentService cms) : Controller
             return NotFound();
         }
 
+        ViewBag.Title = cmsPage.Content?.Name;
+
         return View("Index", cmsPage.Content);
     }
 }
