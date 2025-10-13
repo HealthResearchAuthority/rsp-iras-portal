@@ -7,7 +7,7 @@
 	{
 		<div class="govuk-grid-row">
 			<div class="govuk-grid-column-full">
-				@switch (property.Content.Properties)
+				@switch (property?.Content?.Properties)
 				{
 					case BodyTextProperties body:
 						@await Html.PartialAsync("~/Views/Shared/ContentComponents/BodyText.cshtml", body)
