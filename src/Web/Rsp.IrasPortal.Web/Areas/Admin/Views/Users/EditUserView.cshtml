@@ -34,6 +34,8 @@
             <input name="Id" asp-for="Id" value="@(Model.Id ?? string.Empty)" />
             <input name="OriginalEmail" asp-for="OriginalEmail" value="@(Model.OriginalEmail ?? string.Empty)" />
             <input hidden readonly name="Status" asp-for="Status" value="@(Model.Status ?? string.Empty)" />
+			<input hidden readonly name="IdentityProviderId" asp-for="IdentityProviderId" value="@(Model.IdentityProviderId ?? string.Empty)" />
+
 
             <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
 
