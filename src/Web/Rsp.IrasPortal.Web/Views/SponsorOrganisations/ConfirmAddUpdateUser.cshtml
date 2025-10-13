@@ -1,0 +1,40 @@
+﻿@model ConfirmAddUpdateSponsorOrganisationUserModel
+
+@{
+	ViewData["Title"] = "Check and add user profile - Manage sponsor organisations - System Administration";
+}
+
+@* @section is added for the back button, so that we can render something below the back button
+    and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
+    the named section *@
+
+@section BackNavigation {
+    @{
+        var backRouteValues = new Dictionary<string, string>
+        {
+            { "rtsId", Model.SponsorOrganisation.RtsId }
+        };
+    }
+    
+    <partial name="_BackNavigation" model="@("soc:viewadduser", "Back", backRouteValues)"/>
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">Check and add user profile </h1>
+        <p class="govuk-body">Check the information here is correct before adding the profile to @Model.SponsorOrganisation.SponsorOrganisationName.</p>
+    </div>
+</div>
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+        <form method="post" id="submit-user-form">
+
+			<input type="hidden" name="UserId" value="@Model.User.Id" />
+            <input type="hidden" name="RtsId" value="@Model.SponsorOrganisation.RtsId" />
+			<input type="hidden" name="SponsorOrganisationId" value="@Model.SponsorOrganisation.Id" />
+            <partial name="_UserSummaryTablePartial" model="Model.User"/>
+            <partial name="_SubmitButton" model="@("soc:submitadduser", "Add user profile", new Dictionary<string, string>())"/>
+        </form>
+    </div>
+</div>

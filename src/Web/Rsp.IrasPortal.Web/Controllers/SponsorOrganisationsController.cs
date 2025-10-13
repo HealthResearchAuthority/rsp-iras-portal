@@ -17,8 +17,8 @@ namespace Rsp.IrasPortal.Web.Controllers;
 [Authorize(Policy = "IsSystemAdministrator")]
 public class SponsorOrganisationsController(
     ISponsorOrganisationService sponsorOrganisationService,
-    IRtsService rtsService
-    //IValidator<SponsorOrganisationSetupViewModel> validator
+    IRtsService rtsService,
+    IUserManagementService userService
 )
     : Controller
 {
@@ -324,5 +324,220 @@ public class SponsorOrganisationsController(
         }
 
         return RedirectToAction("Index");
+    }
+
+    /// <summary>
+    ///     Displays users for a review body
+    /// </summary>
+    [HttpGet]
+    [Route("/sponsororganisations/viewusers", Name = "soc:viewsponsororganisationusers")]
+    public async Task<IActionResult> ViewSponsorOrganisationUsers(string rtsId, string? searchQuery = null,
+        int pageNumber = 1, int pageSize = 20)
+    {
+        var response =
+            await sponsorOrganisationService.GetSponsorOrganisationByRtsId(rtsId);
+
+        if (response.IsSuccessStatusCode)
+        {
+            if (response.Content.SponsorOrganisations.Any())
+            {
+                var sponsorOrganisationDto = response.Content.SponsorOrganisations.ToList()[0];
+                var organisationDto = await rtsService.GetOrganisation(rtsId);
+
+                if (organisationDto.IsSuccessStatusCode)
+                {
+                    var sponsorOrganisationModel = new SponsorOrganisationModel
+                    {
+                        RtsId = rtsId,
+                        SponsorOrganisationName = organisationDto.Content.Name,
+                        Countries = [organisationDto.Content.CountryName],
+                        IsActive = sponsorOrganisationDto.IsActive,
+                        UpdatedDate = sponsorOrganisationDto.UpdatedDate ?? sponsorOrganisationDto.CreatedDate
+                    };
+
+                    var totalUserCount = 0;
+                    var model = new SponsorOrganisationListUsersModel
+                    {
+                        SponsorOrganisation = sponsorOrganisationModel!
+                    };
+
+                    if (sponsorOrganisationDto?.Users != null)
+                    {
+                        var userIds = sponsorOrganisationDto?.Users?.Select(x => x.UserId.ToString());
+                        if (userIds != null && userIds.Any())
+                        {
+                            var users = await userService.GetUsersByIds(userIds,
+                                searchQuery,
+                                pageNumber,
+                                pageSize);
+
+                            model.Users = users.Content?.Users.Select(user => new UserViewModel(user)) ?? [];
+
+                            totalUserCount = users.Content?.TotalCount ?? 0;
+                        }
+                    }
+
+                    model.Pagination = new PaginationViewModel(pageNumber, pageSize, totalUserCount)
+                    {
+                        SearchQuery = searchQuery,
+                        RouteName = "soc:viewsponsororganisationusers",
+                        AdditionalParameters =
+                        {
+                            { "rtsId", rtsId }
+                        }
+                    };
+
+                    return View(model);
+                }
+            }
+        }
+
+        return this.ServiceError(response);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ViewAddUser(string rtsId, string? searchQuery = null, int pageNumber = 1,
+        int pageSize = 20)
+    {
+        var response =
+            await sponsorOrganisationService.GetSponsorOrganisationByRtsId(rtsId);
+
+        if (response.IsSuccessStatusCode)
+        {
+            if (response.Content.SponsorOrganisations.Any())
+            {
+                var sponsorOrganisationDto = response.Content.SponsorOrganisations.ToList()[0];
+                var organisationDto = await rtsService.GetOrganisation(rtsId);
+
+                if (organisationDto.IsSuccessStatusCode)
+                {
+                    var sponsorOrganisationModel = new SponsorOrganisationModel
+                    {
+                        RtsId = rtsId,
+                        SponsorOrganisationName = organisationDto.Content.Name,
+                        Countries = [organisationDto.Content.CountryName],
+                        IsActive = sponsorOrganisationDto.IsActive,
+                        UpdatedDate = sponsorOrganisationDto.UpdatedDate ?? sponsorOrganisationDto.CreatedDate
+                    };
+
+                    var totalUserCount = 0;
+                    var model = new SponsorOrganisationListUsersModel
+                    {
+                        SponsorOrganisation = sponsorOrganisationModel!
+                    };
+
+                    if (sponsorOrganisationDto?.Users != null)
+                    {
+                        var existingUserIds = sponsorOrganisationDto?.Users?.Select(x => x.UserId.ToString()) ?? [];
+
+                        if (!string.IsNullOrEmpty(searchQuery))
+                        {
+                            // search all users
+                            var users = await userService.SearchUsers(searchQuery, existingUserIds, pageNumber,
+                                pageSize);
+
+                            model.Users = users.Content?.Users.Select(user => new UserViewModel(user)) ?? [];
+
+                            model.Pagination =
+                                new PaginationViewModel(pageNumber, pageSize, users.Content?.TotalCount ?? 0)
+                                {
+                                    RouteName = "soc:viewadduser",
+                                    SearchQuery = searchQuery,
+                                    AdditionalParameters =
+                                    {
+                                        { "rtsId", rtsId },
+                                    }
+                                };
+                        }
+                    }
+
+                    return View(model);
+                }
+            }
+        }
+
+        return this.ServiceError(response);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ConfirmAddUpdateUser(string rtsId, Guid userId)
+    {
+        var response =
+            await sponsorOrganisationService.GetSponsorOrganisationByRtsId(rtsId);
+
+        if (response.IsSuccessStatusCode)
+        {
+            if (response.Content.SponsorOrganisations.Any())
+            {
+                var sponsorOrganisationDto = response.Content.SponsorOrganisations.ToList()[0];
+                var organisationDto = await rtsService.GetOrganisation(rtsId);
+
+                if (organisationDto.IsSuccessStatusCode)
+                {
+                    var sponsorOrganisationModel = new SponsorOrganisationModel
+                    {
+                        Id = sponsorOrganisationDto.Id,
+                        RtsId = rtsId,
+                        SponsorOrganisationName = organisationDto.Content.Name,
+                        Countries = [organisationDto.Content.CountryName],
+                        IsActive = sponsorOrganisationDto.IsActive,
+                        UpdatedDate = sponsorOrganisationDto.UpdatedDate ?? sponsorOrganisationDto.CreatedDate
+                    };
+
+                    // get selected user
+                    var user = await userService.GetUser(userId.ToString(), null);
+
+                    if (user.IsSuccessStatusCode)
+                    {
+                        var model = new ConfirmAddUpdateSponsorOrganisationUserModel
+                        {
+                            SponsorOrganisation = sponsorOrganisationModel,
+                            User = user.Content != null ? new UserViewModel(user.Content) : new UserViewModel()
+                        };
+
+                        TempData[TempDataKeys.ShowEditLink] = false;
+
+                        return View("ConfirmAddUpdateUser", model);
+                    }
+                }
+            }
+        }
+
+        return this.ServiceError(response);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> SubmitAddUser(string rtsId, Guid userId, Guid sponsorOrganisationId)
+    {
+        // get selected user
+        var user = await userService.GetUser(userId.ToString(), null);
+
+        var sponsorOrganisationUserDto = new SponsorOrganisationUserDto()
+        {
+            Id = sponsorOrganisationId,
+            RtsId = rtsId,
+            UserId = userId,
+            Email = user.Content?.User.Email,
+            DateAdded = DateTime.UtcNow
+        };
+
+        //AddUpdateReviewBodyMode
+       var response = await sponsorOrganisationService.AddUserToSponsorOrganisation(sponsorOrganisationUserDto);
+
+       if (response.IsSuccessStatusCode)
+       {
+           // user was created succesfully so let's assign them the 'sponsor' role
+            await userService.UpdateRoles(user.Content.User.Email, null, "sponsor");
+
+           // SHOW BANNER ON NEXT VIEW
+           TempData[TempDataKeys.ShowNotificationBanner] = true;
+
+           return RedirectToAction("ViewSponsorOrganisationUsers", "SponsorOrganisations", new
+           {
+               rtsId
+           });
+        }
+
+        return this.ServiceError(response);
     }
 }
