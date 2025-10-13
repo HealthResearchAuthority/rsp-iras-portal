@@ -95,4 +95,33 @@ public class RenderCmsContentTests : TestServiceBase<CmsContentController>
         Mocker.GetMock<ICmsContentService>()
             .Verify(s => s.GetPageContentByUrl(It.IsAny<string>(), false), Times.Once);
     }
+
+    [Theory, AutoData]
+    public async Task Return_Preview_Content_When_Flagged(GenericPageResponse pageContent)
+    {
+        // Arrange
+        var serviceResponse = new ServiceResponse<GenericPageResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = pageContent
+        };
+
+        Mocker.GetMock<ICmsContentService>()
+            .Setup(s => s.GetPageContentByUrl(It.IsAny<string>(), true))
+            .ReturnsAsync(serviceResponse);
+
+        var existingUrl = "/page-exists";
+        _http.Request.Path = PathString.FromUriComponent(existingUrl);
+        _http.Request.QueryString = new QueryString("?preview=true");
+
+        // Act
+        var result = await Sut.Index();
+
+        // Assert
+        result.ShouldBeOfType<ViewResult>();
+
+        // Verify
+        Mocker.GetMock<ICmsContentService>()
+            .Verify(s => s.GetPageContentByUrl(It.IsAny<string>(), true), Times.Once);
+    }
 }
