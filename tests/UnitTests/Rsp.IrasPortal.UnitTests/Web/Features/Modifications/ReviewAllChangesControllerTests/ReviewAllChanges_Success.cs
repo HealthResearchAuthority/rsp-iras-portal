@@ -74,6 +74,16 @@ public class ReviewAllChanges_Success : TestServiceBase<ReviewAllChangesControll
             .Setup(s => s.GetModificationChangeAnswers(changeId, It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = [] });
 
+        var answers = new List<RespondentAnswerDto>
+            {
+                new() { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "Project X" },
+                new() { QuestionId = QuestionIds.ProjectPlannedEndDate, AnswerText = "01/01/2025" }
+            };
+        Mocker
+            .GetMock<IRespondentService>()
+            .Setup(s => s.GetRespondentAnswers(It.IsAny<string>(), QuestionCategories.ProjectRecrod))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = answers });
+
         // sponsor details question set and answers
         Mocker
             .GetMock<ICmsQuestionsetService>()

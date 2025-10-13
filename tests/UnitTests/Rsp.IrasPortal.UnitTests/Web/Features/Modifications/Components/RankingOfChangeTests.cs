@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc.ViewComponents;
+using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
@@ -52,10 +54,20 @@ public class RankingOfChangeTests
     public async Task InvokeAsync_Should_Return_View_With_NotAvailable_When_Ranking_Response_Null()
     {
         // Arrange
+        var answers = new List<RespondentAnswerDto>
+            {
+                new() { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "Project X" },
+                new() { QuestionId = QuestionIds.ProjectPlannedEndDate, AnswerText = "01/01/2025" }
+            };
+
         var questions = new List<QuestionViewModel>();
         _cmsQuestionsetService
             .Setup(s => s.GetModificationRanking(It.IsAny<RankingOfChangeRequest>()))
             .ReturnsAsync(new ServiceResponse<RankingOfChangeResponse> { Content = null });
+
+        _respondentService
+            .Setup(s => s.GetRespondentAnswers(It.IsAny<string>(), QuestionCategories.ProjectRecrod))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = answers });
 
         // Act
         var result = await _sut.InvokeAsync(It.IsAny<string>(), "areaId", false, questions);
