@@ -311,7 +311,7 @@ public class ModificationHelpersTests
         };
 
         // Act
-        var result = ModificationHelpers.GetRankingOfChangeRequest("areaId", true, questions);
+        var result = ModificationHelpers.GetRankingOfChangeRequest("areaId", true, questions, string.Empty);
 
         // Assert
         result.ShouldNotBeNull();
@@ -336,7 +336,7 @@ public class ModificationHelpersTests
         };
 
         // Act
-        var result = ModificationHelpers.GetRankingOfChangeRequest("areaId", false, questions);
+        var result = ModificationHelpers.GetRankingOfChangeRequest("areaId", false, questions, string.Empty);
 
         // Assert
         result.ShouldNotBeNull();
@@ -355,7 +355,7 @@ public class ModificationHelpersTests
         var questions = new List<QuestionViewModel>();
 
         // Act
-        var result = ModificationHelpers.GetRankingOfChangeRequest("areaId", false, questions);
+        var result = ModificationHelpers.GetRankingOfChangeRequest("areaId", false, questions, string.Empty);
 
         // Assert
         result.ShouldNotBeNull();

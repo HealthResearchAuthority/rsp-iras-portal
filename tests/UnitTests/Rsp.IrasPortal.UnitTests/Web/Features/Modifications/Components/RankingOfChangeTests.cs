@@ -1,27 +1,24 @@
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
-using Moq;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Features.Modifications.Components;
 using Rsp.IrasPortal.Web.Features.Modifications.Models;
 using Rsp.IrasPortal.Web.Models;
-using Shouldly;
-using Xunit;
-using System.Collections.Generic;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.Components;
 
 public class RankingOfChangeTests
 {
     private readonly Mock<ICmsQuestionsetService> _cmsQuestionsetService;
+    private readonly Mock<IRespondentService> _respondentService;
     private readonly RankingOfChange _sut;
 
     public RankingOfChangeTests()
     {
         _cmsQuestionsetService = new Mock<ICmsQuestionsetService>();
-        _sut = new RankingOfChange(_cmsQuestionsetService.Object);
+        _respondentService = new Mock<IRespondentService>();
+        _sut = new RankingOfChange(_cmsQuestionsetService.Object, _respondentService.Object);
     }
 
     [Fact]
@@ -40,7 +37,7 @@ public class RankingOfChangeTests
             .ReturnsAsync(new ServiceResponse<RankingOfChangeResponse> { Content = rankingResponse });
 
         // Act
-        var result = await _sut.InvokeAsync("areaId", true, questions);
+        var result = await _sut.InvokeAsync(It.IsAny<string>(), "areaId", true, questions);
 
         // Assert
         var view = result.ShouldBeOfType<ViewViewComponentResult>();
@@ -61,7 +58,7 @@ public class RankingOfChangeTests
             .ReturnsAsync(new ServiceResponse<RankingOfChangeResponse> { Content = null });
 
         // Act
-        var result = await _sut.InvokeAsync("areaId", false, questions);
+        var result = await _sut.InvokeAsync(It.IsAny<string>(), "areaId", false, questions);
 
         // Assert
         var view = result.ShouldBeOfType<ViewViewComponentResult>();
@@ -87,7 +84,7 @@ public class RankingOfChangeTests
             .ReturnsAsync(new ServiceResponse<RankingOfChangeResponse> { Content = null });
 
         // Act
-        await _sut.InvokeAsync("areaId", true, questions);
+        await _sut.InvokeAsync(It.IsAny<string>(), "areaId", true, questions);
 
         // Assert
         capturedRequest.ShouldNotBeNull();
