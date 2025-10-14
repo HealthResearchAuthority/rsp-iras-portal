@@ -9,4 +9,5 @@ public class ApplicationsViewModel
     public IEnumerable<CategoryDto> Categories { get; set; } = new List<CategoryDto>();
     public ApplicationSearchModel Search { get; set; } = new();
     public PaginationViewModel? Pagination { get; set; }
+    public bool EmptySearchPerformed { get; set; } = false;
 }

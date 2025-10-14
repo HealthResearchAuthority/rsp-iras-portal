@@ -20,22 +20,44 @@ public class ApplicationController
 (
     IApplicationsService applicationsService,
     IValidator<IrasIdViewModel> irasIdValidator,
-    ICmsQuestionSetServiceClient cmsSevice) : Controller
+    ICmsQuestionSetServiceClient cmsSevice,
+    IValidator<ApplicationSearchModel> searchValidator) : Controller
 {
     // ApplicationInfo view name
     private const string ApplicationInfo = nameof(ApplicationInfo);
 
     public async Task<IActionResult> Welcome(
-        string? searchQuery = null,
         int pageNumber = 1,
         int pageSize = 20,
         string? sortField = nameof(ApplicationModel.CreatedDate),
         string? sortDirection = SortDirections.Descending)
     {
-        var model = new ApplicationsViewModel();
+        var model = new ApplicationsViewModel
+        {
+            EmptySearchPerformed = true, // Set to true to check if search bar should be hidden on view
+        };
 
         // getting respondentID from Http context
         var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
+
+        // getting search query
+        var json = HttpContext.Session.GetString(SessionKeys.ProjectRecordSearch);
+        if (!string.IsNullOrEmpty(json))
+        {
+            model.Search = JsonSerializer.Deserialize<ApplicationSearchModel>(json)!;
+            if (model.Search?.Filters?.Count != 0 || !string.IsNullOrEmpty(model.Search.SearchTitleTerm))
+            {
+                model.EmptySearchPerformed = false;
+            }
+        }
+
+        var searchQuery = new ApplicationSearchRequest()
+        {
+            SearchTitleTerm = model.Search.SearchTitleTerm,
+            Status = model.Search.Status,
+            FromDate = model.Search.FromDate,
+            ToDate = model.Search.ToDate,
+        };
 
         // getting research applications by respondent ID
         var applicationServiceResponse = await applicationsService.GetPaginatedApplicationsByRespondent(respondentId, searchQuery, pageNumber, pageSize, sortField, sortDirection);
@@ -54,7 +76,6 @@ public class ApplicationController
         model.Pagination = new PaginationViewModel(pageNumber, pageSize, applicationServiceResponse.Content?.TotalCount ?? 0)
         {
             RouteName = "app:welcome",
-            SearchQuery = searchQuery,
             SortDirection = sortDirection,
             SortField = sortField,
             FormName = "applications-selection"
@@ -194,5 +215,71 @@ public class ApplicationController
     public IActionResult ViewportTesting()
     {
         return View();
+    }
+
+    [HttpPost]
+    [CmsContentAction(nameof(Welcome))]
+    public async Task<IActionResult> ApplyFilters(ApplicationsViewModel model)
+    {
+        var validationResult = await searchValidator.ValidateAsync(model.Search);
+
+        if (!validationResult.IsValid)
+        {
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
+
+            return View(nameof(Index), model);
+        }
+
+        HttpContext.Session.SetString(SessionKeys.ProjectRecordSearch, JsonSerializer.Serialize(model.Search));
+        return RedirectToAction(nameof(Welcome));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> RemoveFilter(string key)
+    {
+        var json = HttpContext.Session.GetString(SessionKeys.ProjectRecordSearch);
+        if (string.IsNullOrWhiteSpace(json) ||
+            JsonSerializer.Deserialize<ApplicationSearchModel>(json) is not { } search)
+            return RedirectToAction(nameof(Welcome));
+
+        var k = key?.ToLowerInvariant().Replace(" ", "");
+
+        void ClearFromDate() => search.FromDay = search.FromMonth = search.FromYear = null;
+        void ClearToDate() => search.ToDay = search.ToMonth = search.ToYear = null;
+
+        var actions = new Dictionary<string, Action>(StringComparer.Ordinal)
+        {
+            ["datecreated"] = () => { ClearFromDate(); ClearToDate(); },
+            ["datecreated-from"] = ClearFromDate,
+            ["datecreated-to"] = ClearToDate,
+            ["status"] = () => search.Status.Clear()
+        };
+
+        if (k is not null && actions.TryGetValue(k, out var act))
+            act();
+
+        HttpContext.Session.SetString(SessionKeys.ProjectRecordSearch, JsonSerializer.Serialize(search));
+        return await ApplyFilters(new ApplicationsViewModel { Search = search });
+    }
+
+    [HttpGet]
+    public IActionResult ClearFilters()
+    {
+        var json = HttpContext.Session.GetString(SessionKeys.ProjectRecordSearch);
+        if (string.IsNullOrWhiteSpace(json))
+            return RedirectToAction(nameof(Welcome));
+
+        if (JsonSerializer.Deserialize<ApplicationSearchModel>(json) is { } search)
+        {
+            HttpContext.Session.SetString(
+                SessionKeys.ProjectRecordSearch,
+                JsonSerializer.Serialize(new ApplicationSearchModel { SearchTitleTerm = search.SearchTitleTerm })
+            );
+        }
+
+        return RedirectToAction(nameof(Welcome));
     }
 }
