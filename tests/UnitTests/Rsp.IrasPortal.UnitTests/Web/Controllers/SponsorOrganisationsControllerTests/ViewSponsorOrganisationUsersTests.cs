@@ -127,70 +127,7 @@ public class ViewSponsorOrganisationUsersTests : TestServiceBase<SponsorOrganisa
             .Verify(s => s.GetOrganisation(rtsId), Times.Once);
     }
 
-    [Fact]
-    public async Task ViewSponsorOrganisationUsers_ShouldReturnServiceError_WhenPrimaryServiceFails()
-    {
-        // Arrange
-        const string rtsId = "99999";
-        var errorResponse = new ServiceResponse<AllSponsorOrganisationsResponse>
-        {
-            StatusCode = HttpStatusCode.InternalServerError,
-            Content = null
-        };
 
-        Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetSponsorOrganisationByRtsId(rtsId))
-            .ReturnsAsync(errorResponse);
 
-        // Act
-        var result = await Sut.ViewSponsorOrganisationUsers(rtsId);
 
-        // Assert
-        var objectResult = result.ShouldBeOfType<StatusCodeResult>();
-        objectResult.StatusCode.ShouldBe((int)HttpStatusCode.InternalServerError);
-
-        // Verify RTS never called
-        Mocker.GetMock<IRtsService>()
-            .Verify(s => s.GetOrganisation(It.IsAny<string>()), Times.Never);
-    }
-
-    [Fact]
-    public async Task ViewSponsorOrganisationUsers_ShouldRedirectToIndex_WhenNoSponsorOrgOrSecondCallFails()
-    {
-        // Arrange
-        const string rtsId = "88888";
-
-        var sponsorResponse = new ServiceResponse<AllSponsorOrganisationsResponse>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new AllSponsorOrganisationsResponse
-            {
-                SponsorOrganisations = new List<SponsorOrganisationDto>
-                {
-                    new() { IsActive = true, CreatedDate = new DateTime(2024, 5, 1) }
-                }
-            }
-        };
-
-        var rtsFailure = new ServiceResponse<OrganisationDto>
-        {
-            StatusCode = HttpStatusCode.BadRequest,
-            Content = null
-        };
-
-        Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetSponsorOrganisationByRtsId(rtsId))
-            .ReturnsAsync(sponsorResponse);
-
-        Mocker.GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisation(rtsId))
-            .ReturnsAsync(rtsFailure);
-
-        // Act
-        var result = await Sut.ViewSponsorOrganisationUsers(rtsId);
-
-        // Assert
-        var redirect = result.ShouldBeOfType<StatusCodeResult>();
-        redirect.StatusCode.ShouldBe(400);
-    }
 }

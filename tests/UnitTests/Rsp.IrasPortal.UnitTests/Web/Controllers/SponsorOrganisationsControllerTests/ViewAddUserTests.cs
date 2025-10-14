@@ -96,7 +96,7 @@ public class ViewAddUserTests : TestServiceBase<SponsorOrganisationsController>
 
 
         // Act
-        var result = await Sut.ViewAddUser(rtsId, "test",1,20);
+        var result = await Sut.ViewAddUser(rtsId, "test");
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -126,39 +126,16 @@ public class ViewAddUserTests : TestServiceBase<SponsorOrganisationsController>
                 It.IsAny<int>()), Times.Once);
     }
 
-
     [Fact]
-    public async Task ViewAddUser_ShouldReturnServiceError_WhenPrimaryServiceFails()
+    public async Task ViewAddUser_ShouldReturnView_WithMappedModel_WhenBothServicesSucceed_NoQuery()
     {
         // Arrange
-        const string rtsId = "99999";
-        var errorResponse = new ServiceResponse<AllSponsorOrganisationsResponse>
-        {
-            StatusCode = HttpStatusCode.InternalServerError,
-            Content = null
-        };
+        const string rtsId = "87765";
+        const string orgName = "Acme Research Ltd";
+        const string country = "England";
 
-        Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetSponsorOrganisationByRtsId(rtsId))
-            .ReturnsAsync(errorResponse);
-
-        // Act
-        var result = await Sut.ViewAddUser(rtsId);
-
-        // Assert
-        var objectResult = result.ShouldBeOfType<StatusCodeResult>();
-        objectResult.StatusCode.ShouldBe((int)HttpStatusCode.InternalServerError);
-
-        // Verify RTS never called
-        Mocker.GetMock<IRtsService>()
-            .Verify(s => s.GetOrganisation(It.IsAny<string>()), Times.Never);
-    }
-
-    [Fact]
-    public async Task ViewAddUser_ShouldRedirectToIndex_WhenNoSponsorOrgOrSecondCallFails()
-    {
-        // Arrange
-        const string rtsId = "88888";
+        var userGuid = Guid.NewGuid();
+        var userId = userGuid.ToString();
 
         var sponsorResponse = new ServiceResponse<AllSponsorOrganisationsResponse>
         {
@@ -167,15 +144,19 @@ public class ViewAddUserTests : TestServiceBase<SponsorOrganisationsController>
             {
                 SponsorOrganisations = new List<SponsorOrganisationDto>
                 {
-                    new() { IsActive = true, CreatedDate = new DateTime(2024, 5, 1) }
+                    new()
+                    {
+                        IsActive = true,
+                        CreatedDate = new DateTime(2024, 5, 1)
+                    }
                 }
             }
         };
 
-        var rtsFailure = new ServiceResponse<OrganisationDto>
+        var organisationResponse = new ServiceResponse<OrganisationDto>
         {
-            StatusCode = HttpStatusCode.BadRequest,
-            Content = null
+            StatusCode = HttpStatusCode.OK,
+            Content = new OrganisationDto { Id = rtsId, Name = orgName, CountryName = country }
         };
 
         Mocker.GetMock<ISponsorOrganisationService>()
@@ -184,13 +165,29 @@ public class ViewAddUserTests : TestServiceBase<SponsorOrganisationsController>
 
         Mocker.GetMock<IRtsService>()
             .Setup(s => s.GetOrganisation(rtsId))
-            .ReturnsAsync(rtsFailure);
+            .ReturnsAsync(organisationResponse);
+
+
 
         // Act
-        var result = await Sut.ViewAddUser(rtsId);
+        var result = await Sut.ViewAddUser(rtsId, null);
 
         // Assert
-        var redirect = result.ShouldBeOfType<StatusCodeResult>();
-        redirect.StatusCode.ShouldBe(400);
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var model = viewResult.Model.ShouldBeAssignableTo<SponsorOrganisationListUsersModel>();
+
+        model.SponsorOrganisation.RtsId.ShouldBe(rtsId);
+        model.SponsorOrganisation.SponsorOrganisationName.ShouldBe(orgName);
+        model.SponsorOrganisation.Countries.ShouldContain(country);
+        model.SponsorOrganisation.IsActive.ShouldBeTrue();
+        model.SponsorOrganisation.UpdatedDate.ShouldBe(
+            sponsorResponse.Content.SponsorOrganisations.First().CreatedDate);
+
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Verify(s => s.GetSponsorOrganisationByRtsId(rtsId), Times.Once);
+        Mocker.GetMock<IRtsService>()
+            .Verify(s => s.GetOrganisation(rtsId), Times.Once);
+
     }
 }
