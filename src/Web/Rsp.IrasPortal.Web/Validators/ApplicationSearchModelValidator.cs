@@ -10,7 +10,7 @@ public class ApplicationSearchModelValidator : AbstractValidator<ApplicationSear
         // Validate "From" date is valid if any part entered
         When(AnyFromDateFieldEntered, () =>
         {
-            RuleFor(x => x.FromDate)
+            RuleFor(d => d.FromDate)
                 .NotNull()
                 .WithMessage("'Search from' date must be in the correct format")
                 .WithName("FromDate");
@@ -19,29 +19,29 @@ public class ApplicationSearchModelValidator : AbstractValidator<ApplicationSear
         // Validate "To" date is valid if any part entered
         When(AnyToDateFieldEntered, () =>
         {
-            RuleFor(x => x.ToDate)
+            RuleFor(d => d.ToDate)
                 .NotNull()
                 .WithMessage("'Search to' date must be in the correct format")
                 .WithName("ToDate");
         });
 
         // Validate date order only if both valid
-        When(x => x.FromDate.HasValue && x.ToDate.HasValue, () =>
+        When(d => d.FromDate.HasValue && d.ToDate.HasValue, () =>
         {
-            RuleFor(x => x)
-                .Must(x => x.ToDate >= x.FromDate)
+            RuleFor(d => d)
+                .Must(d => d.ToDate >= d.FromDate)
                 .WithMessage("'Search to' date must be after 'Search from' date")
                 .WithName("ToDate");
         });
     }
 
-    private bool AnyFromDateFieldEntered(ApplicationSearchModel model) =>
-        !string.IsNullOrWhiteSpace(model.FromDay) ||
-        !string.IsNullOrWhiteSpace(model.FromMonth) ||
-        !string.IsNullOrWhiteSpace(model.FromYear);
+    private bool AnyFromDateFieldEntered(ApplicationSearchModel searchModel) =>
+        !string.IsNullOrWhiteSpace(searchModel.FromDay) ||
+        !string.IsNullOrWhiteSpace(searchModel.FromMonth) ||
+        !string.IsNullOrWhiteSpace(searchModel.FromYear);
 
-    private bool AnyToDateFieldEntered(ApplicationSearchModel model) =>
-        !string.IsNullOrWhiteSpace(model.ToDay) ||
-        !string.IsNullOrWhiteSpace(model.ToMonth) ||
-        !string.IsNullOrWhiteSpace(model.ToYear);
+    private bool AnyToDateFieldEntered(ApplicationSearchModel searchModel) =>
+        !string.IsNullOrWhiteSpace(searchModel.ToDay) ||
+        !string.IsNullOrWhiteSpace(searchModel.ToMonth) ||
+        !string.IsNullOrWhiteSpace(searchModel.ToYear);
 }
