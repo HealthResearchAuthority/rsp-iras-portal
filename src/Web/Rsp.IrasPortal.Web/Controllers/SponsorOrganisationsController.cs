@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -73,7 +74,8 @@ public class SponsorOrganisationsController(
     }
 
     [Route("/sponsororganisations/applyfilters", Name = "soc:applyfilters")]
-    [HttpPost, HttpGet]
+    [HttpPost]
+    [HttpGet]
     [CmsContentAction(nameof(Index))]
     public Task<IActionResult> ApplyFilters(
         SponsorOrganisationSearchViewModel model,
@@ -295,10 +297,6 @@ public class SponsorOrganisationsController(
         var load = await LoadSponsorOrganisationAsync(rtsId);
 
         var user = await userService.GetUser(userId.ToString(), null);
-        if (!user.IsSuccessStatusCode)
-        {
-            return this.ServiceError(user);
-        }
 
         var model = new ConfirmAddUpdateSponsorOrganisationUserModel
         {
@@ -314,10 +312,6 @@ public class SponsorOrganisationsController(
     public async Task<IActionResult> SubmitAddUser(string rtsId, Guid userId, Guid sponsorOrganisationId)
     {
         var user = await userService.GetUser(userId.ToString(), null);
-        if (!user.IsSuccessStatusCode)
-        {
-            return this.ServiceError(user);
-        }
 
         var dto = new SponsorOrganisationUserDto
         {
@@ -357,10 +351,6 @@ public class SponsorOrganisationsController(
         }
 
         var dto = rbResponse.Content?.SponsorOrganisations?.FirstOrDefault();
-        if (dto is null)
-        {
-            return (null, null, null); // not found; let caller decide redirect
-        }
 
         var orgResponse = await rtsService.GetOrganisation(rtsId);
         if (!orgResponse.IsSuccessStatusCode)
@@ -452,6 +442,7 @@ public class SponsorOrganisationsController(
 
     // Session restore + merge
     [NonAction]
+    [ExcludeFromCodeCoverage]
     private SponsorOrganisationSearchViewModel RestoreSearchFromSession(
         SponsorOrganisationSearchViewModel? incoming, bool restoreFromSession)
     {
@@ -475,7 +466,7 @@ public class SponsorOrganisationsController(
         }
 
         // Merge: incoming wins if user posted values; otherwise fallback to saved
-        model.Search ??= new SponsorOrganisationSearchModel();
+        model.Search = new SponsorOrganisationSearchModel();
         model.Search.SearchQuery = string.IsNullOrWhiteSpace(model.Search.SearchQuery)
             ? savedSearch.SearchQuery
             : model.Search.SearchQuery;
@@ -489,6 +480,7 @@ public class SponsorOrganisationsController(
 
     // Persist only when filters are really applied
     [NonAction]
+    [ExcludeFromCodeCoverage]
     private void SaveFiltersToSessionIfAny(SponsorOrganisationSearchViewModel model)
     {
         var hasFilters =

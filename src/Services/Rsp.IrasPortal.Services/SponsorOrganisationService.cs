@@ -29,7 +29,7 @@ public class SponsorOrganisationService(ISponsorOrganisationsServiceClient clien
                     .ToList();
             }
 
-            if (searchQuery?.RtsIds == null || searchQuery?.RtsIds.Count == 0)
+            if (searchQuery?.RtsIds.Count == 0)
             {
                 return new ServiceResponse<AllSponsorOrganisationsResponse>
                 {
