@@ -441,7 +441,7 @@ public class SponsorOrganisationsController(
                 : items.OrderBy(x => CountriesKey(x), StringComparer.OrdinalIgnoreCase)
                     .ThenBy(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase),
 
-            "status" => desc
+            "isactive" => desc
                 ? items.OrderByDescending(x => x.IsActive)
                     .ThenBy(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase)
                 : items.OrderBy(x => x.IsActive)
