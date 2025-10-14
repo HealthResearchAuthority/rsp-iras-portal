@@ -26,9 +26,8 @@
 	var noProjectsDescription = pageContent.GetValueOrDefault("Application.Welcome.NoProjectsDescription", null);
 	var addProjectTitle = pageContent.GetValueOrDefault("Application.Welcome.AddProjectTitle", null);
 	var addProjectDescription = pageContent.GetValueOrDefault("Application.Welcome.AddProjectDescription", null);
-
-    var emptySearchTitle = pageContent.GetValueOrDefault("Approvals.ModificationsTasklist.EmptySearchTitle", null);
-    var emptySearchBodyText = pageContent.GetValueOrDefault("Approvals.ModificationsTasklist.EmptySearchBodyText", null);
+    var emptySearchTitle = pageContent.GetValueOrDefault("Application.Welcome.EmptySearchTitle", null);
+    var emptySearchBodyText = pageContent.GetValueOrDefault("Application.Welcome.EmptySearchBodyText", null);
 }
 
 @functions {
@@ -134,7 +133,7 @@
                                                 <div class="govuk-form-group govuk-!-margin-bottom-2">
                                                     <fieldset class="govuk-fieldset">
                                                         <rsp-gds-checkbox-group asp-for="Search.Status"
-                                                                                options="ProjectStatusNames.StatusNames" conditional-field="false"
+                                                                                options="ProjectRecordStatus.AllOptions" conditional-field="false"
                                                                                 label-text="Select all that apply"
                                                                                 legend-class="govuk-label govuk-label--s font-weight-none"
                                                                                 hint-id="lead-nation-hint"
