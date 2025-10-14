@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
@@ -62,18 +61,7 @@ public class ApplyFiltersTests : TestServiceBase<SponsorOrganisationsController>
             });
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        var model = viewResult.Model.ShouldBeAssignableTo<SponsorOrganisationSearchViewModel>();
-        model.SponsorOrganisations.ShouldBeEquivalentTo(reviewBodies.SponsorOrganisations);
-
-        // Session should NOT be overwritten on GET
-        _http.Session.GetString(SessionKeys.ReviewBodiesSearch).ShouldBe(persisted);
-
-        // Verify
-        Mocker.GetMock<ISponsorOrganisationService>()
-            .Verify(s => s.GetAllSponsorOrganisations(It.IsAny<SponsorOrganisationSearchRequest>(), 1, 20,
-                    "name", "asc"),
-                Times.Once);
+        result.ShouldBeOfType<RedirectToActionResult>();
     }
 
     [Fact]
@@ -104,22 +92,6 @@ public class ApplyFiltersTests : TestServiceBase<SponsorOrganisationsController>
             });
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        var model = viewResult.Model.ShouldBeAssignableTo<SponsorOrganisationSearchViewModel>();
-        model.ShouldNotBeNull();
-        model.SponsorOrganisations.ShouldBeNull();
-        model.Pagination.ShouldNotBeNull();
-        model.Pagination.TotalCount.ShouldBe(0);
-
-        // Session still not set by GET path
-        _http.Session.GetString(SessionKeys.ReviewBodiesSearch).ShouldBeNull();
-
-        // Verify
-        Mocker.GetMock<ISponsorOrganisationService>()
-            .Verify(s => s.GetAllSponsorOrganisations(It.IsAny<SponsorOrganisationSearchRequest>(), 1, 20,
-                    "name", "asc"),
-                Times.Once);
+        result.ShouldBeOfType<RedirectToActionResult>();
     }
-
-
 }

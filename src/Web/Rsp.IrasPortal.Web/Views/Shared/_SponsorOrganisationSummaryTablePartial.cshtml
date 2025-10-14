@@ -57,7 +57,7 @@
                 </td>
                 <td class="govuk-table__cell">
                     <a class="govuk-link"></a>
-					<a asp-route="soc:viewsponsororganisationusers" asp-all-route-data="@(new Dictionary<string, string> { { "sponsorOrganisationId", Model.SponsorOrganisationModel.Id.ToString() } })" class="govuk-link">View this sponsor organisation's list of users</a>
+					<a asp-route="soc:viewsponsororganisationusers" asp-all-route-data="@(new Dictionary<string, string> { { "rtsId", Model.SponsorOrganisationModel.RtsId } })" class="govuk-link">View this sponsor organisation's list of users</a>
 
                 </td>
                 <td class="govuk-table__cell govuk-table__cell--numeric">
@@ -70,7 +70,7 @@
                 </td>
                 <td class="govuk-table__cell">
                     <a class="govuk-link"></a>
-					<a asp-route="soc:audittrail" asp-all-route-data="@(new Dictionary<string, string> { { "sponsorOrganisationId", Model.SponsorOrganisationModel.Id.ToString() } })" class="govuk-link">View this sponsor organisation's audit history</a>
+					<a asp-route="soc:audittrail" asp-all-route-data="@(new Dictionary<string, string> { { "rtsId", Model.SponsorOrganisationModel.RtsId } })" class="govuk-link">View this sponsor organisation's audit history</a>
 
                 </td>
                 <td class="govuk-table__cell govuk-table__cell--numeric">

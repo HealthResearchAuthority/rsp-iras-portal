@@ -31,4 +31,7 @@ public interface ISponsorOrganisationsServiceClient
     [Post("/sponsororganisations/create")]
     public Task<IApiResponse<SponsorOrganisationDto>> CreateSponsorOrganisation([Body] SponsorOrganisationDto sponsorOrganisationDto);
 
+    [Post("/sponsororganisations/adduser")]
+    public Task<IApiResponse<SponsorOrganisationUserDto>> AddUserToSponsorOrganisation([Body] SponsorOrganisationUserDto sponsorOrganisationUserDto);
+
 }
