@@ -10,6 +10,7 @@ using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Services;
 using Rsp.IrasPortal.Web.Features.Modifications;
 using Rsp.IrasPortal.Web.Features.Modifications.Models;
 using Rsp.IrasPortal.Web.Models;
@@ -86,6 +87,16 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
             .GetMock<IRespondentService>()
             .Setup(s => s.GetModificationChangeAnswers(changeId, It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = [] });
+        
+        var answers = new List<RespondentAnswerDto>
+            {
+                new() { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "Project X" },
+                new() { QuestionId = QuestionIds.ProjectPlannedEndDate, AnswerText = "01/01/2025" }
+            };
+        Mocker
+            .GetMock<IRespondentService>()
+            .Setup(s => s.GetRespondentAnswers(It.IsAny<string>(), QuestionCategories.ProjectRecrod))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = answers });
 
         // Use a permissive validator that sets IsValid true
         Mocker

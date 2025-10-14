@@ -37,7 +37,7 @@ public class QuestionViewModelValidatorBase : AbstractValidator<QuestionViewMode
                         }
 
                         // check if the length is within the bounds
-                        if (!(question.AnswerText?.Length >= min && question.AnswerText?.Length <= max))
+                        if (!(question.AnswerText?.Replace("\r\n", "\n").Length >= min && question.AnswerText?.Replace("\r\n", "\n").Length <= max))
                         {
                             // by setting IsApplicable property
                             // it will display the Description of the condition

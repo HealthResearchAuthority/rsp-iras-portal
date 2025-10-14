@@ -30,34 +30,74 @@ public static class ModificationHelpers
         }
     }
 
-    public static RankingOfChangeRequest GetRankingOfChangeRequest(string specificAreaOfChangeId, bool applicability, IEnumerable<QuestionViewModel> questions)
+    public static RankingOfChangeRequest GetRankingOfChangeRequest(
+    string specificAreaOfChangeId,
+    bool applicability,
+    IEnumerable<QuestionViewModel> questions,
+    string nhsOrHscOrganisations)
     {
-        // get the answers to the ranking questions
-        var nhsInvolvmentQuestion = questions
-            .SingleOrDefault
-            (
-                q => q.NhsInvolvment != null &&
-                q.Answers.Any(a => a.IsSelected && a.AnswerText == q.NhsInvolvment)
-            );
+        QuestionViewModel? nhsInvolvmentQuestion = null;
 
+        if (nhsOrHscOrganisations == "Yes")
+        {
+            // When NHS or HSC organisations are involved, explicitly mark as involved
+            nhsInvolvmentQuestion = new QuestionViewModel();
+        }
+        else
+        {
+            // Otherwise, check if the question indicates NHS involvement
+            nhsInvolvmentQuestion = questions
+                .SingleOrDefault(q =>
+                    q.NhsInvolvment != null &&
+                    q.Answers != null &&
+                    q.Answers.Any(a => a.IsSelected && a.AnswerText == q.NhsInvolvment));
+        }
+
+        // Non-NHS involvement question (safe lookup)
         var nonNhsInvolvmentQuestion = questions
-            .SingleOrDefault
-            (
-                q => q.NonNhsInvolvment != null &&
-                q.Answers.Any(a => a.IsSelected && a.AnswerText == q.NonNhsInvolvment)
-            );
+            .SingleOrDefault(q =>
+                q.NonNhsInvolvment != null &&
+                q.Answers != null &&
+                q.Answers.Any(a => a.IsSelected && a.AnswerText == q.NonNhsInvolvment));
 
+        // Organisation and resource questions
         var orgsAffectedQuestion = questions.SingleOrDefault(q => q.AffectedOrganisations);
         var additionaResourcesQuestion = questions.SingleOrDefault(q => q.RequireAdditionalResources);
+
+        // Default flags
+        bool isNhsInvolved = nhsInvolvmentQuestion is not null;
+        string nhsOrganisationsAffected = string.Empty;
+
+        if (nhsOrHscOrganisations == "Yes")
+        {
+            // Force both flags true if NHS involvement explicitly confirmed
+            isNhsInvolved = true;
+            nhsOrganisationsAffected = "All";
+        }
+        else
+        {
+            // Otherwise, infer from the question if possible
+            nhsOrganisationsAffected = orgsAffectedQuestion?
+                .Answers?
+                .FirstOrDefault(a => a.AnswerId == orgsAffectedQuestion?.SelectedOption)?
+                .AnswerText;
+        }
 
         return new RankingOfChangeRequest
         {
             SpecificAreaOfChangeId = specificAreaOfChangeId,
             Applicability = applicability ? "Yes" : "No",
-            IsNHSInvolved = nhsInvolvmentQuestion is not null,
+            IsNHSInvolved = isNhsInvolved,
             IsNonNHSInvolved = nonNhsInvolvmentQuestion is not null,
-            NhsOrganisationsAffected = orgsAffectedQuestion?.Answers.FirstOrDefault(a => a.AnswerId == orgsAffectedQuestion.SelectedOption)?.AnswerText,
-            NhsResourceImplicaitons = additionaResourcesQuestion?.Answers.FirstOrDefault(a => a.AnswerId == additionaResourcesQuestion.SelectedOption)?.AnswerText is "Yes"
+            NhsOrganisationsAffected = nhsOrganisationsAffected,
+            NhsResourceImplicaitons =
+                string.Equals(
+                    additionaResourcesQuestion?
+                        .Answers?
+                        .FirstOrDefault(a => a.AnswerId == additionaResourcesQuestion?.SelectedOption)?
+                        .AnswerText,
+                    "Yes",
+                    StringComparison.OrdinalIgnoreCase)
         };
     }
 }
