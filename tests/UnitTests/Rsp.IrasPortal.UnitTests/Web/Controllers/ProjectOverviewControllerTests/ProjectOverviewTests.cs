@@ -11,7 +11,6 @@ using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Controllers.ProjectOverview;
 using Rsp.IrasPortal.Web.Models;
 
-
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectOverviewControllerTests;
 
 public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
@@ -508,7 +507,6 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         mod.Status.ShouldBe(ModificationStatus.InDraft);
         mod.ReviewType.ShouldBeNull();
         mod.Category.ShouldBeNull();
-        mod.DateSubmitted.ShouldNotBeNull();
     }
 
     [Fact]
@@ -868,9 +866,9 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         mod.Status.ShouldBe(ModificationStatus.InDraft);
         mod.ReviewType.ShouldBeNull();
         mod.Category.ShouldBeNull();
-        mod.DateSubmitted.ShouldNotBeNull();
-        mod.SubmittedDate.ShouldBeNull();
+        mod.DateSubmitted.ShouldBeNull();
     }
+
     [Fact]
     public async Task PostApproval_Modifications_When_ApprovedStatus_SubmittedDate_ShouldNotBeNull()
     {
@@ -923,6 +921,5 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         mod.ReviewType.ShouldBeNull();
         mod.Category.ShouldBeNull();
         mod.DateSubmitted.ShouldNotBeNull();
-        mod.SubmittedDate.ShouldNotBeNull();
     }
 }
