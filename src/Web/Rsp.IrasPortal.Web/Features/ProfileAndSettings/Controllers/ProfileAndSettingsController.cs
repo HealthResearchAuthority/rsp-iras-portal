@@ -8,6 +8,7 @@ using Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
 using Rsp.IrasPortal.Application.Filters;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
+using Rsp.IrasPortal.Web.Controllers;
 using Rsp.IrasPortal.Web.Extensions;
 
 namespace Rsp.IrasPortal.Web.Features.ProfileAndSettings.Controllers;
@@ -58,7 +59,8 @@ public class ProfileAndSettingsController(
     [CmsContentAction(nameof(EditProfile))]
     public async Task<IActionResult> SaveProfile(UserViewModel userModel)
     {
-        ViewBag.Mode = (userModel.Id == null) ? "create" : "edit";
+        var mode = (userModel.Id == null) ? "complete" : "edit";
+        ViewBag.Mode = mode;
 
         var context = new ValidationContext<UserViewModel>(userModel);
         var validationResult = await validator.ValidateAsync(context);
@@ -76,24 +78,65 @@ public class ProfileAndSettingsController(
             return View(EditProfileView, userModel);
         }
 
-        // save user changes
-
-        var updateRequest = userModel.Adapt<UpdateUserRequest>();
-        updateRequest.LastUpdated = DateTime.UtcNow;
-
-        var updateUserRequest = await userService.UpdateUser(updateRequest);
-
-        // if status is forbidden
-        // return the appropriate response otherwise
-        // return the generic error page
-        if (!updateUserRequest.IsSuccessStatusCode)
+        if (mode == "edit")
         {
-            return this.ServiceError(updateUserRequest);
+            // save user changes
+            var updateRequest = userModel.Adapt<UpdateUserRequest>();
+            updateRequest.LastUpdated = DateTime.UtcNow;
+
+            var updateUserRequest = await userService.UpdateUser(updateRequest);
+
+            // if status is forbidden
+            // return the appropriate response otherwise
+            // return the generic error page
+            if (!updateUserRequest.IsSuccessStatusCode)
+            {
+                return this.ServiceError(updateUserRequest);
+            }
+
+            // show notification banner for success message
+            TempData[TempDataKeys.ShowNotificationBanner] = true;
+
+            return RedirectToAction(nameof(Index));
         }
+        else
+        {
+            // create new user
+            var request = userModel.Adapt<CreateUserRequest>();
+            request.Status = IrasUserStatus.Active;
 
-        // show notification banner for success message
-        TempData[TempDataKeys.ShowNotificationBanner] = true;
+            var createUserStatus = await userService.CreateUser(request);
 
-        return RedirectToAction(nameof(Index));
+            // user was created succesfully so let's assign them the 'applicant' role
+            var assignRolesStatus = await userService.UpdateRoles(userModel.Email, null, "applicant");
+
+            if (!createUserStatus.IsSuccessStatusCode || !assignRolesStatus.IsSuccessStatusCode)
+            {
+                return this.ServiceError(createUserStatus);
+            }
+
+            // show notification banner for success message
+            TempData[TempDataKeys.ShowNotificationBanner] = true;
+
+            // redirect to homepage
+            return RedirectToAction(nameof(ResearchAccountController.Home), "ResearchAccount");
+        }
+    }
+
+    [HttpGet]
+    [CmsContentAction(nameof(EditProfile))]
+    public IActionResult CompleteProfile(string email, string identityProviderId, string? telephone = null)
+    {
+        ViewBag.Mode = "complete";
+
+        var viewModel = new UserViewModel()
+        {
+            Email = email,
+            OriginalEmail = email,
+            Telephone = telephone,
+            IdentityProviderId = identityProviderId,
+        };
+
+        return View(EditProfileView, viewModel);
     }
 }

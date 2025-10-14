@@ -30,7 +30,7 @@ public class SiteContentFilter(ICmsContentService contentService,
             if (!isCmsContentController)
             {
                 var controllerActionDescriptor = context.ActionDescriptor as ControllerActionDescriptor;
-                if (controllerActionDescriptor != null && context.HttpContext.Request.Method.ToLower() != "get")
+                if (controllerActionDescriptor != null)
                 {
                     // Access the method info
                     var methodInfo = controllerActionDescriptor.MethodInfo;

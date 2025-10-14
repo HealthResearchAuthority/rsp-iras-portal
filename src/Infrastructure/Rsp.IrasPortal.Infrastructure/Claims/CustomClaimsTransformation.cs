@@ -8,7 +8,6 @@ using Microsoft.IdentityModel.Tokens;
 using NetDevPack.Security.Jwt.Core.Interfaces;
 using Rsp.IrasPortal.Application.Configuration;
 using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
 using Rsp.IrasPortal.Application.Services;
 
 namespace Rsp.IrasPortal.Infrastructure.Claims;
@@ -83,28 +82,14 @@ public class CustomClaimsTransformation
                 }
                 else
                 {
-                    // user cannot be found by their email or provider ID so let's create a new user entity
-                    // and assign them applicant role
-                    var createUserStatus = await userManagementService.CreateUser(new CreateUserRequest
-                    {
-                        Email = email,
-                        Telephone = mobilePhone,
-                        IdentityProviderId = identityProviderId,
-                        Status = IrasUserStatus.Active
-                    });
+                    context.Items.Add(ContextItemKeys.RequireProfileCompletion, true);
+                    context.Items.Add(ContextItemKeys.Email, email);
+                    context.Items.Add("telephoneNumber", mobilePhone);
+                    context.Items.Add("identityProviderId", identityProviderId);
+                    context.Session.Remove(SessionKeys.FirstLogin);
 
-                    if (createUserStatus != null && createUserStatus.IsSuccessStatusCode)
-                    {
-                        // user was created succesfully so let's assign them the 'applicant' role
-                        await userManagementService.UpdateRoles(email, null, "applicant");
-                    }
-
-                    var newlyCreatedUser = await userManagementService.GetUser(null, null, identityProviderId);
-
-                    if (newlyCreatedUser.IsSuccessStatusCode)
-                    {
-                        userResponse = newlyCreatedUser;
-                    }
+                    await UpdateAccessToken(principal);
+                    return principal;
                 }
             }
 
