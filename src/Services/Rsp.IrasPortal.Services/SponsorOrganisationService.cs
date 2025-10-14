@@ -22,14 +22,14 @@ public class SponsorOrganisationService(ISponsorOrganisationsServiceClient clien
             var rtsNameSearch =
                 await rtsService.GetOrganisationsByName(searchQuery.SearchQuery, null, 1, int.MaxValue);
 
-            if (rtsNameSearch.IsSuccessStatusCode)
+           if (rtsNameSearch.IsSuccessStatusCode)
             {
                 searchQuery.RtsIds = rtsNameSearch.Content.Organisations
                     .Select(x => x.Id.ToString())
                     .ToList();
             }
 
-            if (searchQuery?.RtsIds != null || searchQuery?.RtsIds.Count == 0)
+            if (searchQuery?.RtsIds == null || searchQuery?.RtsIds.Count == 0)
             {
                 return new ServiceResponse<AllSponsorOrganisationsResponse>
                 {

@@ -66,6 +66,43 @@ public class SponsorOrganisationsController(
             await sponsorOrganisationService.GetAllSponsorOrganisations(request, pageNumber, pageSize, sortField,
                 sortDirection);
 
+        string CountriesKey(SponsorOrganisationDto x)
+        {
+            return x.Countries == null || !x.Countries.Any()
+                ? string.Empty
+                : string.Join(", ", x.Countries.OrderBy(c => c, StringComparer.OrdinalIgnoreCase));
+        }
+
+        var items = response.Content?.SponsorOrganisations ?? Enumerable.Empty<SponsorOrganisationDto>();
+        var desc = string.Equals(sortDirection, "desc", StringComparison.OrdinalIgnoreCase);
+
+        var sorted = sortField?.ToLowerInvariant() switch
+        {
+            "sponsororganisationname" => desc
+                ? items.OrderByDescending(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(x => CountriesKey(x), StringComparer.OrdinalIgnoreCase)
+                : items.OrderBy(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(x => CountriesKey(x), StringComparer.OrdinalIgnoreCase),
+
+            "countries" => desc
+                ? items.OrderByDescending(x => CountriesKey(x), StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase)
+                : items.OrderBy(x => CountriesKey(x), StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase),
+
+            "status" => desc
+                ? items.OrderByDescending(x => x.IsActive)
+                    .ThenBy(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase)
+                : items.OrderBy(x => x.IsActive)
+                    .ThenBy(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase),
+
+            _ => desc
+                ? items.OrderByDescending(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase)
+                : items.OrderBy(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase)
+        };
+
+        var sortedPage = sorted.ToList(); // keep current paging
+
         var paginationModel = new PaginationViewModel(pageNumber, pageSize, response.Content?.TotalCount ?? 0)
         {
             RouteName = "soc:viewsponsororganisations",
@@ -76,9 +113,10 @@ public class SponsorOrganisationsController(
         var sponsorOrganisationSearchViewModel = new SponsorOrganisationSearchViewModel
         {
             Pagination = paginationModel,
-            SponsorOrganisations = response.Content?.SponsorOrganisations,
+            SponsorOrganisations = sortedPage,
             Search = model.Search
         };
+
 
         // Save applied filters to session
         // Only persist if search has any real values
@@ -445,7 +483,7 @@ public class SponsorOrganisationsController(
                                     SearchQuery = searchQuery,
                                     AdditionalParameters =
                                     {
-                                        { "rtsId", rtsId },
+                                        { "rtsId", rtsId }
                                     }
                                 };
                         }
@@ -512,7 +550,7 @@ public class SponsorOrganisationsController(
         // get selected user
         var user = await userService.GetUser(userId.ToString(), null);
 
-        var sponsorOrganisationUserDto = new SponsorOrganisationUserDto()
+        var sponsorOrganisationUserDto = new SponsorOrganisationUserDto
         {
             Id = sponsorOrganisationId,
             RtsId = rtsId,
@@ -522,20 +560,20 @@ public class SponsorOrganisationsController(
         };
 
         //AddUpdateReviewBodyMode
-       var response = await sponsorOrganisationService.AddUserToSponsorOrganisation(sponsorOrganisationUserDto);
+        var response = await sponsorOrganisationService.AddUserToSponsorOrganisation(sponsorOrganisationUserDto);
 
-       if (response.IsSuccessStatusCode)
-       {
-           // user was created succesfully so let's assign them the 'sponsor' role
+        if (response.IsSuccessStatusCode)
+        {
+            // user was created succesfully so let's assign them the 'sponsor' role
             await userService.UpdateRoles(user.Content.User.Email, null, "sponsor");
 
-           // SHOW BANNER ON NEXT VIEW
-           TempData[TempDataKeys.ShowNotificationBanner] = true;
+            // SHOW BANNER ON NEXT VIEW
+            TempData[TempDataKeys.ShowNotificationBanner] = true;
 
-           return RedirectToAction("ViewSponsorOrganisationUsers", "SponsorOrganisations", new
-           {
-               rtsId
-           });
+            return RedirectToAction("ViewSponsorOrganisationUsers", "SponsorOrganisations", new
+            {
+                rtsId
+            });
         }
 
         return this.ServiceError(response);
