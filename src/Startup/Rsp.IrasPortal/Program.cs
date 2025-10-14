@@ -15,6 +15,7 @@ using Rsp.IrasPortal.Configuration.FeatureFolders;
 using Rsp.IrasPortal.Configuration.Health;
 using Rsp.IrasPortal.Configuration.HttpClients;
 using Rsp.IrasPortal.Infrastructure.ExceptionHandlers;
+using Rsp.IrasPortal.Middleware;
 using Rsp.IrasPortal.Web;
 using Rsp.IrasPortal.Web.ActionFilters;
 using Rsp.IrasPortal.Web.Attributes;
@@ -253,6 +254,7 @@ app
     .UseSession()
     .UseAuthentication()
     .UseAuthorization()
+    .UseMiddleware<CompleteProfileMiddleware>()
     .UseEndpoints
     (
         endpoints =>

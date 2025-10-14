@@ -11,9 +11,15 @@ public class ResearchAccountController : Controller
     // Home action clears session and temp data, then displays last login info if available
     public IActionResult Home()
     {
+        // check if notification banner needs to be shown before clearing session
+        var notificationBannerTemp = TempData[TempDataKeys.ShowNotificationBanner];
+
         // Clear session and TempData to ensure a fresh state
         HttpContext.Session.Clear();
         TempData.Clear();
+
+        // re-add notification banner temp key so it displays in the view
+        TempData[TempDataKeys.ShowNotificationBanner] = notificationBannerTemp;
 
         // Retrieve the last login time from HttpContext items
         var lastLogin = HttpContext.Items[ContextItemKeys.LastLogin];

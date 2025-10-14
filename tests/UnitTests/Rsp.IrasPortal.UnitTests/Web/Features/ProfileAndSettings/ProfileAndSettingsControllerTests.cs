@@ -148,6 +148,43 @@ public class ProfileAndSettingsControllerTests : TestServiceBase<ProfileAndSetti
     }
 
     [Theory, AutoData]
+    public void SaveProfile_Returns_CreateView_When_Success(UserViewModel viewModel)
+    {
+        viewModel.Id = null;
+
+        // Arrange
+        var serviceResponse = new ServiceResponse
+        {
+            StatusCode = HttpStatusCode.OK
+        };
+        Mocker.GetMock<IUserManagementService>()
+           .Setup(s => s.CreateUser(It.IsAny<CreateUserRequest>()))
+           .ReturnsAsync(serviceResponse);
+
+        Mocker.GetMock<IUserManagementService>()
+           .Setup(s => s.UpdateRoles(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+           .ReturnsAsync(serviceResponse);
+
+        Mocker
+            .GetMock<IValidator<UserViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<UserViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult());
+
+        // Act
+        var result = Sut.SaveProfile(viewModel)?.Result;
+
+        // Assert
+        Mocker.GetMock<IUserManagementService>()
+           .Verify(s => s.CreateUser(It.IsAny<CreateUserRequest>()), Times.Once);
+
+        Mocker.GetMock<IUserManagementService>()
+           .Verify(s => s.UpdateRoles(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+
+        var viewResult = result.ShouldBeOfType<RedirectToActionResult>();
+        viewResult.ActionName.ShouldBe("Home");
+    }
+
+    [Theory, AutoData]
     public void SaveProfile_Returns_Error_When_Model_Invalid(UserViewModel viewModel)
     {
         // arrange
@@ -201,5 +238,20 @@ public class ProfileAndSettingsControllerTests : TestServiceBase<ProfileAndSetti
 
         var viewResult = result.ShouldBeOfType<StatusCodeResult>();
         viewResult.StatusCode.ShouldBe(400);
+    }
+
+    [Fact]
+    public void CompleteProfile_Returns_View()
+    {
+        // Arrange
+
+        // Act
+        var result = Sut.CompleteProfile(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>());
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.Model.ShouldNotBeNull();
+        viewResult.Model.ShouldBeOfType<UserViewModel>();
+        viewResult.ViewName.ShouldBe("EditProfileView");
     }
 }
