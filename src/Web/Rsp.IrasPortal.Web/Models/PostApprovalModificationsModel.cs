@@ -9,4 +9,5 @@ public class PostApprovalModificationsModel
     public string? Category { get; set; } = null!;
     public DateTime? DateSubmitted { get; set; }
     public string? Status { get; set; } = null!;
+    public DateTime? SubmittedDate { get; set; }
 }

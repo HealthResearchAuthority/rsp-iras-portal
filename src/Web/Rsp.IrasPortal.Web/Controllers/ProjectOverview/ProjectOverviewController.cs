@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.Enum;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
@@ -40,7 +41,6 @@ public class ProjectOverviewController(
         {
             return RedirectToAction(nameof(ProjectDetails), new { projectRecordId, backRoute, modificationId });
         }
-
         return View(okResult.Value);
     }
 
@@ -74,7 +74,7 @@ public class ProjectOverviewController(
         int pageNumber = 1,
         int pageSize = 20,
         string sortField = nameof(ModificationsModel.CreatedAt),
-        string sortDirection = SortDirections.Ascending
+        string sortDirection = SortDirections.Descending
     )
     {
         UpdateModificationRelatedTempData();
@@ -107,9 +107,12 @@ public class ProjectOverviewController(
                 ModificationType = dto.ModificationType,
                 ReviewType = null,
                 Category = null,
-                DateSubmitted = dto.CreatedAt,
-                Status = dto.Status
+                DateSubmitted = dto.SubmittedDate,
+                Status = dto.Status,
             })
+            .OrderBy(item => Enum.TryParse<ModificationStatusOrder>(item.Status, true, out var statusEnum)
+            ? (int)statusEnum
+            : (int)ModificationStatusOrder.None)
             .ToList() ?? [];
 
         model.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationsResponseResult?.Content?.TotalCount ?? 0)
