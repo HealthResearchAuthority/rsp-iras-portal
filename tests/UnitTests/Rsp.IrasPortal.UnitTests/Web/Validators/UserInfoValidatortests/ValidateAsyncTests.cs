@@ -46,14 +46,14 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
     }
 
     [Fact]
-    public async Task ShouldHaveValidationErrorForTelephone11DigitOrMore()
+    public async Task ShouldHaveValidationErrorForTelephone13DigitOrMore()
     {
         // Arrange
         var model = new UserViewModel
         {
             GivenName = "Hello",
             FamilyName = "Ham",
-            Telephone = "078987654323"
+            Telephone = "07898765432312"
         };
 
         // Act
@@ -62,7 +62,7 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
         // Assert
         result
             .ShouldHaveValidationErrorFor(x => x.Telephone)
-            .WithErrorMessage("Telephone must be 11 digits or less");
+            .WithErrorMessage("Telephone must be 13 digits or less");
     }
 
     [Fact]
@@ -302,5 +302,4 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
         // Assert
         result.ShouldNotHaveValidationErrorFor(x => x.ReviewBodies);
     }
-
 }
