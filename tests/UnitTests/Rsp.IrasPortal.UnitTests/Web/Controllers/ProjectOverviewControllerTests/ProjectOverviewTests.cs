@@ -6,6 +6,7 @@ using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
+using Rsp.IrasPortal.Application.Enum;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Controllers.ProjectOverview;
@@ -840,7 +841,10 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 
         var modificationsResponse = new GetModificationsResponse
         {
-            Modifications = modifications,
+            Modifications = modifications.OrderBy(item => Enum.TryParse<ModificationStatusOrder>(item.Status, true, out var statusEnum)
+            ? (int)statusEnum
+            : (int)ModificationStatusOrder.None)
+            .ToList() ?? [],
             TotalCount = 1
         };
 
@@ -867,6 +871,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         mod.ReviewType.ShouldBeNull();
         mod.Category.ShouldBeNull();
         mod.DateSubmitted.ShouldBeNull();
+        mod.SubmittedDate.ShouldBeNull();
     }
 
     [Fact]
@@ -889,12 +894,17 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 
         var modifications = new List<ModificationsDto>
         {
-            new() { ModificationId = "m1", ModificationType = "Type1", Status = ModificationStatus.Approved, SubmittedDate= new DateTime(2025,10,02) }
+            new() { ModificationId = "m1", ModificationType = "Type1", Status = ModificationStatus.Approved, CreatedAt=new DateTime(2025,10,02),
+                SubmittedDate= new DateTime(2025,10,02),
+            }
         };
 
         var modificationsResponse = new GetModificationsResponse
         {
-            Modifications = modifications,
+            Modifications = modifications.OrderBy(item => Enum.TryParse<ModificationStatusOrder>(item.Status, true, out var statusEnum)
+            ? (int)statusEnum
+            : (int)ModificationStatusOrder.None)
+            .ToList() ?? [],
             TotalCount = 1
         };
 
