@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
+﻿using System.Text.Json;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -74,8 +73,7 @@ public class SponsorOrganisationsController(
     }
 
     [Route("/sponsororganisations/applyfilters", Name = "soc:applyfilters")]
-    [HttpPost]
-    [HttpGet]
+    [HttpPost, HttpGet]
     [CmsContentAction(nameof(Index))]
     public Task<IActionResult> ApplyFilters(
         SponsorOrganisationSearchViewModel model,
@@ -351,6 +349,10 @@ public class SponsorOrganisationsController(
         }
 
         var dto = rbResponse.Content?.SponsorOrganisations?.FirstOrDefault();
+        if (dto is null)
+        {
+            return (null, null, null); // not found; let caller decide redirect
+        }
 
         var orgResponse = await rtsService.GetOrganisation(rtsId);
         if (!orgResponse.IsSuccessStatusCode)
