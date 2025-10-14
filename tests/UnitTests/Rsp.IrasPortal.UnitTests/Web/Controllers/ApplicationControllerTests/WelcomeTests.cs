@@ -5,7 +5,6 @@ using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Services.Extensions;
 using Rsp.IrasPortal.Web.Controllers;
 using Rsp.IrasPortal.Web.Models;
 
@@ -58,7 +57,7 @@ public class WelcomeTests : TestServiceBase<ApplicationController>
                 s => s.GetPaginatedApplicationsByRespondent
                 (
                     It.IsAny<string>(),
-                    It.IsAny<string>(),
+                    It.IsAny<ApplicationSearchRequest>(),
                     It.IsAny<int>(),
                     It.IsAny<int?>(),
                     It.IsAny<string?>(),

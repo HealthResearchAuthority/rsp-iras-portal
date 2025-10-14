@@ -1,4 +1,5 @@
-﻿using Rsp.IrasPortal.Application.DTOs.Responses;
+﻿using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Services;
@@ -18,7 +19,7 @@ public class GetPaginatedApplicationsByRespondentTests : TestServiceBase<Applica
     public async Task GetPaginatedApplicationsByRespondent_Should_Return_Success_Response_When_Client_Returns_Success
     (
         string respondentId,
-        string? searchQuery,
+        ApplicationSearchRequest searchQuery,
         int pageIndex,
         int? pageSize,
         string? sortField,
@@ -61,7 +62,7 @@ public class GetPaginatedApplicationsByRespondentTests : TestServiceBase<Applica
     public async Task GetPaginatedApplicationsByRespondent_Should_Return_Failure_Response_When_Client_Returns_Failure
     (
         string respondentId,
-        string? searchQuery,
+        ApplicationSearchRequest searchQuery,
         int pageIndex,
         int? pageSize,
         string? sortField,
