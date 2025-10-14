@@ -6,6 +6,7 @@ using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
+using Rsp.IrasPortal.Application.Enum;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Controllers.ProjectOverview;
@@ -507,7 +508,6 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         mod.Status.ShouldBe(ModificationStatus.InDraft);
         mod.ReviewType.ShouldBeNull();
         mod.Category.ShouldBeNull();
-        mod.DateSubmitted.ShouldNotBeNull();
     }
 
     [Fact]
@@ -814,5 +814,122 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         // Assert
         var status = result.ShouldBeOfType<StatusCodeResult>();
         status.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
+    }
+
+    [Fact]
+    public async Task PostApproval_Modifications_When_DraftStatus_SubmittedDate_ShouldBeNull()
+    {
+        // Arrange
+        var projectRecordId = "456";
+        var httpContext = CreateHttpContextWithSession();
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempData = CreateTempData(tempDataProvider, httpContext);
+
+        var answers = new List<RespondentAnswerDto>
+        {
+            new() { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "Project Y" }
+        };
+
+        SetupProjectRecord(projectRecordId);
+        SetupRespondentAnswers(projectRecordId, answers);
+        SetupControllerContext(httpContext, tempData);
+
+        var modifications = new List<ModificationsDto>
+        {
+            new() { ModificationId = "m1", ModificationType = "Type1", Status = ModificationStatus.InDraft }
+        };
+
+        var modificationsResponse = new GetModificationsResponse
+        {
+            Modifications = modifications.OrderBy(item => Enum.TryParse<ModificationStatusOrder>(item.Status, true, out var statusEnum)
+            ? (int)statusEnum
+            : (int)ModificationStatusOrder.None)
+            .ToList() ?? [],
+            TotalCount = 1
+        };
+
+        var serviceResponse = new ServiceResponse<GetModificationsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = modificationsResponse
+        };
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(serviceResponse);
+
+        // Act
+        var result = await Sut.PostApproval(projectRecordId, "");
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var model = viewResult.Model.ShouldBeOfType<PostApprovalViewModel>();
+        var mod = model.Modifications.Single();
+        mod.ModificationIdentifier.ShouldBe("m1");
+        mod.ModificationType.ShouldBe("Type1");
+        mod.Status.ShouldBe(ModificationStatus.InDraft);
+        mod.ReviewType.ShouldBeNull();
+        mod.Category.ShouldBeNull();
+        mod.DateSubmitted.ShouldBeNull();
+        mod.SubmittedDate.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task PostApproval_Modifications_When_ApprovedStatus_SubmittedDate_ShouldNotBeNull()
+    {
+        // Arrange
+        var projectRecordId = "456";
+        var httpContext = CreateHttpContextWithSession();
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempData = CreateTempData(tempDataProvider, httpContext);
+
+        var answers = new List<RespondentAnswerDto>
+        {
+            new() { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "Project Y" }
+        };
+
+        SetupProjectRecord(projectRecordId);
+        SetupRespondentAnswers(projectRecordId, answers);
+        SetupControllerContext(httpContext, tempData);
+
+        var modifications = new List<ModificationsDto>
+        {
+            new() { ModificationId = "m1", ModificationType = "Type1", Status = ModificationStatus.Approved, CreatedAt=new DateTime(2025,10,02),
+                SubmittedDate= new DateTime(2025,10,02),
+            }
+        };
+
+        var modificationsResponse = new GetModificationsResponse
+        {
+            Modifications = modifications.OrderBy(item => Enum.TryParse<ModificationStatusOrder>(item.Status, true, out var statusEnum)
+            ? (int)statusEnum
+            : (int)ModificationStatusOrder.None)
+            .ToList() ?? [],
+            TotalCount = 1
+        };
+
+        var serviceResponse = new ServiceResponse<GetModificationsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = modificationsResponse
+        };
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(serviceResponse);
+
+        // Act
+        var result = await Sut.PostApproval(projectRecordId, "");
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var model = viewResult.Model.ShouldBeOfType<PostApprovalViewModel>();
+        var mod = model.Modifications.Single();
+        mod.ModificationIdentifier.ShouldBe("m1");
+        mod.ModificationType.ShouldBe("Type1");
+        mod.Status.ShouldBe(ModificationStatus.Approved);
+        mod.ReviewType.ShouldBeNull();
+        mod.Category.ShouldBeNull();
+        mod.DateSubmitted.ShouldNotBeNull();
     }
 }
