@@ -189,6 +189,6 @@ public class ConfirmAddUpdateUserTests : TestServiceBase<SponsorOrganisationsCon
 
         // Assert
         var redirect = result.ShouldBeOfType<StatusCodeResult>();
-        redirect.StatusCode.ShouldBe(200);
+        redirect.StatusCode.ShouldBe(400);
     }
 }

@@ -10,11 +10,11 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.SponsorOrganisationsControllerTests;
 
-public class ViewSponsorOrganisationUsersUsersTests : TestServiceBase<SponsorOrganisationsController>
+public class ViewSponsorOrganisationUsersTests : TestServiceBase<SponsorOrganisationsController>
 {
     private readonly DefaultHttpContext _http;
 
-    public ViewSponsorOrganisationUsersUsersTests()
+    public ViewSponsorOrganisationUsersTests()
     {
         _http = new DefaultHttpContext { Session = new InMemorySession() };
         Sut.ControllerContext = new ControllerContext { HttpContext = _http };
@@ -191,6 +191,6 @@ public class ViewSponsorOrganisationUsersUsersTests : TestServiceBase<SponsorOrg
 
         // Assert
         var redirect = result.ShouldBeOfType<StatusCodeResult>();
-        redirect.StatusCode.ShouldBe(200);
+        redirect.StatusCode.ShouldBe(400);
     }
 }

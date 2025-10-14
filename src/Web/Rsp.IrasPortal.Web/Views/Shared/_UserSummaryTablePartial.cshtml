@@ -215,34 +215,36 @@
         </tr>
     }
 
-
-    @if (edit)
+    @if (showChangeLink)
     {
-        <tr class="govuk-table__row">
-            <td class="govuk-table__cell">
-                <b>Audit</b>
-            </td>
-            <td class="govuk-table__cell">
-                <a class="govuk-link"
-                   asp-route="admin:useraudittrail"
-                   asp-route-email="@Model.Email"
-                   asp-route-userId="@Model.Id"
-                   asp-route-name="@Model.GivenName @Model.FamilyName">
-                    View this user's audit history
-                </a>
-            </td>
-            <td class="govuk-table__cell govuk-table__cell--numeric"></td>
-        </tr>
+        @if (edit)
+        {
+            <tr class="govuk-table__row">
+                <td class="govuk-table__cell">
+                    <b>Audit</b>
+                </td>
+                <td class="govuk-table__cell">
+                    <a class="govuk-link"
+                       asp-route="admin:useraudittrail"
+                       asp-route-email="@Model.Email"
+                       asp-route-userId="@Model.Id"
+                       asp-route-name="@Model.GivenName @Model.FamilyName">
+                        View this user's audit history
+                    </a>
+                </td>
+                <td class="govuk-table__cell govuk-table__cell--numeric"></td>
+            </tr>
 
-        <tr class="govuk-table__row">
-            <td class="govuk-table__cell">
-                <b>Last updated</b>
-            </td>
-            <td class="govuk-table__cell">
-                @(Model.LastUpdated.HasValue ? Model.LastUpdated.Value.ToString("dd MMMM yyyy HH:mm") : string.Empty)
-            </td>
-            <td class="govuk-table__cell govuk-table__cell--numeric"></td>
-        </tr>
+            <tr class="govuk-table__row">
+                <td class="govuk-table__cell">
+                    <b>Last updated</b>
+                </td>
+                <td class="govuk-table__cell">
+                    @(Model.LastUpdated.HasValue ? Model.LastUpdated.Value.ToString("dd MMMM yyyy HH:mm") : string.Empty)
+                </td>
+                <td class="govuk-table__cell govuk-table__cell--numeric"></td>
+            </tr>
+        }
     }
 
 

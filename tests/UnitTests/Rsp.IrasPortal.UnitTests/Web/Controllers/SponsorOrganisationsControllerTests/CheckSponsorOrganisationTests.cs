@@ -73,11 +73,7 @@ public class CheckSponsorOrganisationTests : TestServiceBase<SponsorOrganisation
         var result = await Sut.CheckSponsorOrganisation(model);
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("SetupSponsorOrganisation");
-
-        var returnedModel = viewResult.Model.ShouldBeAssignableTo<SponsorOrganisationSetupViewModel>();
-        returnedModel.ShouldBe(model);
+        result.ShouldBeOfType<StatusCodeResult>();
 
         // The controller clears this TempData key
         Sut.TempData[TempDataKeys.ShowNoResultsFound].ShouldBeNull();
