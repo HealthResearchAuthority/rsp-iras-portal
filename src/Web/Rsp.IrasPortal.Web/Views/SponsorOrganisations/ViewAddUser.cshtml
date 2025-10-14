@@ -1,15 +1,19 @@
 ﻿@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
 @model SponsorOrganisationListUsersModel
 
 @{
-    ViewBag.Active = "reviewBodies";
-    var errorPrefix = "";
-    if ((Model.Users is null || !Model.Users.Any()) && !string.IsNullOrEmpty(Model.Pagination?.SearchQuery))
-    {
-        errorPrefix = "Error - ";
-    }
+	ViewBag.Title = "Search for user to add to sponsor organisations - Manage sponsor organisations - System Administration";
 
-    ViewBag.Title = $"{errorPrefix}Search for user to add to review body - Manage review bodies - System Administration";
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData != null
+        ? pageContentData
+        : new Dictionary<string, MixedContentPageItem?>();
+
+	var headline = pageContent.GetValueOrDefault("SponsorOrganisations.ViewAddUser.Title", null);
+	var body = pageContent.GetValueOrDefault("SponsorOrganisations.ViewAddUser.Body", null);
+	var searchTitle = pageContent.GetValueOrDefault("SponsorOrganisations.ViewAddUser.SearchTitle", null);
+	var searchHint = pageContent.GetValueOrDefault("SponsorOrganisations.ViewAddUser.SearchHint", null);
 }
 
 @* @section is added for the back button, so that we can render something below the back button
@@ -22,8 +26,8 @@
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-		<h1 class="govuk-heading-l">Add a new user profile record</h1>
-		<p class="govuk-body">Search for an existing user profile to assign to this sponsor organisation</p>
+        <h1 class="govuk-heading-l">@Html.Raw(headline?.Value)</h1>
+        <p class="govuk-body">@Html.Raw(body?.Value)</p>
     </div>
 </div>
 
@@ -31,10 +35,10 @@
     <div class="govuk-grid-column-full">
         <form method="get">
 			<label class="govuk-label" for="SearchQuery">
-                <b>Find a user</b>
+                <b>@Html.Raw(searchTitle?.Value)</b>
             </label>
             <div class="govuk-hint">
-                You can search by first name, last name or email address
+                @Html.Raw(searchHint?.Value)
             </div>
             <input class="govuk-input govuk-!-width-two-thirds" id="SearchQuery" name="SearchQuery" type="text" value="@(Model.Pagination?.SearchQuery ?? string.Empty)">
             <input hidden readonly name="RtsId" value="@Model.SponsorOrganisation.RtsId"/>
