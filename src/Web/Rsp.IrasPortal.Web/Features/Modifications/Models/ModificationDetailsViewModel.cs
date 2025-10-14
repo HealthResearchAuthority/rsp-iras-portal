@@ -39,7 +39,7 @@ public class ModificationDetailsViewModel : BaseProjectModificationViewModel
 
         Category = categories.Any() ?
             categories.MinBy(mt => mt.Order).Category :
-            "Not available";
+            "N/A";
 
         ReviewType = reviewTypes.FirstOrDefault(r => r.Equals("Review required")) ??
                      reviewTypes.FirstOrDefault(r => r.Equals("No review required")) ??

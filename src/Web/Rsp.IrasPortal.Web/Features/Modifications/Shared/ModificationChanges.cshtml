@@ -87,7 +87,7 @@
                         Category
                     </dt>
                     <dd class="govuk-summary-list__value">
-                        @change.Categorisation.Category
+						@(string.IsNullOrWhiteSpace(change.Categorisation.Category) ? "N/A" : change.Categorisation.Category)
                     </dd>
                 </div>
                 <div class="govuk-summary-list__row">

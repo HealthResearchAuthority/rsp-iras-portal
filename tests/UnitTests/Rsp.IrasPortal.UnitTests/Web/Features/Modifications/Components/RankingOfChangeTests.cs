@@ -1,27 +1,26 @@
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
-using Moq;
+using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Features.Modifications.Components;
 using Rsp.IrasPortal.Web.Features.Modifications.Models;
 using Rsp.IrasPortal.Web.Models;
-using Shouldly;
-using Xunit;
-using System.Collections.Generic;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.Components;
 
 public class RankingOfChangeTests
 {
     private readonly Mock<ICmsQuestionsetService> _cmsQuestionsetService;
+    private readonly Mock<IRespondentService> _respondentService;
     private readonly RankingOfChange _sut;
 
     public RankingOfChangeTests()
     {
         _cmsQuestionsetService = new Mock<ICmsQuestionsetService>();
-        _sut = new RankingOfChange(_cmsQuestionsetService.Object);
+        _respondentService = new Mock<IRespondentService>();
+        _sut = new RankingOfChange(_cmsQuestionsetService.Object, _respondentService.Object);
     }
 
     [Fact]
@@ -40,7 +39,7 @@ public class RankingOfChangeTests
             .ReturnsAsync(new ServiceResponse<RankingOfChangeResponse> { Content = rankingResponse });
 
         // Act
-        var result = await _sut.InvokeAsync("areaId", true, questions);
+        var result = await _sut.InvokeAsync(It.IsAny<string>(), "areaId", true, questions);
 
         // Assert
         var view = result.ShouldBeOfType<ViewViewComponentResult>();
@@ -55,19 +54,29 @@ public class RankingOfChangeTests
     public async Task InvokeAsync_Should_Return_View_With_NotAvailable_When_Ranking_Response_Null()
     {
         // Arrange
+        var answers = new List<RespondentAnswerDto>
+            {
+                new() { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "Project X" },
+                new() { QuestionId = QuestionIds.ProjectPlannedEndDate, AnswerText = "01/01/2025" }
+            };
+
         var questions = new List<QuestionViewModel>();
         _cmsQuestionsetService
             .Setup(s => s.GetModificationRanking(It.IsAny<RankingOfChangeRequest>()))
             .ReturnsAsync(new ServiceResponse<RankingOfChangeResponse> { Content = null });
 
+        _respondentService
+            .Setup(s => s.GetRespondentAnswers(It.IsAny<string>(), QuestionCategories.ProjectRecrod))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = answers });
+
         // Act
-        var result = await _sut.InvokeAsync("areaId", false, questions);
+        var result = await _sut.InvokeAsync(It.IsAny<string>(), "areaId", false, questions);
 
         // Assert
         var view = result.ShouldBeOfType<ViewViewComponentResult>();
         var model = view.ViewData.Model.ShouldBeOfType<RankingOfChangeViewModel>();
         model.ModificationType.ShouldBe("Not available");
-        model.Category.ShouldBe("Not available");
+        model.Category.ShouldBe("N/A");
         model.ReviewType.ShouldBe("Not available");
     }
 
@@ -87,7 +96,7 @@ public class RankingOfChangeTests
             .ReturnsAsync(new ServiceResponse<RankingOfChangeResponse> { Content = null });
 
         // Act
-        await _sut.InvokeAsync("areaId", true, questions);
+        await _sut.InvokeAsync(It.IsAny<string>(), "areaId", true, questions);
 
         // Assert
         capturedRequest.ShouldNotBeNull();
