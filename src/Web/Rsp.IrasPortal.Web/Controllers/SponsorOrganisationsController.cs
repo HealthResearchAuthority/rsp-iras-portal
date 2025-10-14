@@ -228,11 +228,6 @@ public class SponsorOrganisationsController(
             return load.ErrorResult;
         }
 
-        if (load.Model is null)
-        {
-            return RedirectToAction("Index");
-        }
-
         return View(load.Model);
     }
 
@@ -243,15 +238,6 @@ public class SponsorOrganisationsController(
         int pageNumber = 1, int pageSize = 20)
     {
         var load = await LoadSponsorOrganisationAsync(rtsId);
-        if (load.ErrorResult is not null)
-        {
-            return load.ErrorResult;
-        }
-
-        if (load.Model is null || load.Dto is null)
-        {
-            return RedirectToAction("Index");
-        }
 
         var model = new SponsorOrganisationListUsersModel { SponsorOrganisation = load.Model };
         var totalUserCount = 0;
@@ -277,15 +263,6 @@ public class SponsorOrganisationsController(
         int pageSize = 20)
     {
         var load = await LoadSponsorOrganisationAsync(rtsId);
-        if (load.ErrorResult is not null)
-        {
-            return load.ErrorResult;
-        }
-
-        if (load.Model is null || load.Dto is null)
-        {
-            return RedirectToAction("Index");
-        }
 
         var model = new SponsorOrganisationListUsersModel { SponsorOrganisation = load.Model };
 
@@ -316,16 +293,7 @@ public class SponsorOrganisationsController(
     public async Task<IActionResult> ConfirmAddUpdateUser(string rtsId, Guid userId)
     {
         var load = await LoadSponsorOrganisationAsync(rtsId);
-        if (load.ErrorResult is not null)
-        {
-            return load.ErrorResult;
-        }
-
-        if (load.Model is null)
-        {
-            return RedirectToAction("Index");
-        }
-
+Re
         var user = await userService.GetUser(userId.ToString(), null);
         if (!user.IsSuccessStatusCode)
         {
