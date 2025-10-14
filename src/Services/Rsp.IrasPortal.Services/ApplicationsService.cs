@@ -54,7 +54,7 @@ public class ApplicationsService(IApplicationsServiceClient applicationsClient) 
     public async Task<ServiceResponse<PaginatedResponse<IrasApplicationResponse>>> GetPaginatedApplicationsByRespondent
     (
         string respondentId,
-        string? searchQuery,
+        ApplicationSearchRequest searchQuery,
         int pageIndex = 1,
         int? pageSize = 20,
         string? sortField = nameof(IrasApplicationResponse.CreatedDate),
