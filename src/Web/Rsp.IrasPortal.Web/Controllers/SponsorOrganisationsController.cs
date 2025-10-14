@@ -293,7 +293,7 @@ public class SponsorOrganisationsController(
     public async Task<IActionResult> ConfirmAddUpdateUser(string rtsId, Guid userId)
     {
         var load = await LoadSponsorOrganisationAsync(rtsId);
-Re
+
         var user = await userService.GetUser(userId.ToString(), null);
         if (!user.IsSuccessStatusCode)
         {
