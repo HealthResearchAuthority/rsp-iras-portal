@@ -22,14 +22,14 @@ public class SponsorOrganisationService(ISponsorOrganisationsServiceClient clien
             var rtsNameSearch =
                 await rtsService.GetOrganisationsByName(searchQuery.SearchQuery, null, 1, int.MaxValue);
 
-            if (rtsNameSearch.IsSuccessStatusCode)
+           if (rtsNameSearch.IsSuccessStatusCode)
             {
                 searchQuery.RtsIds = rtsNameSearch.Content.Organisations
                     .Select(x => x.Id.ToString())
                     .ToList();
             }
 
-            if (searchQuery?.RtsIds != null || searchQuery?.RtsIds.Count == 0)
+            if (searchQuery?.RtsIds.Count == 0)
             {
                 return new ServiceResponse<AllSponsorOrganisationsResponse>
                 {
@@ -73,6 +73,12 @@ public class SponsorOrganisationService(ISponsorOrganisationsServiceClient clien
         SponsorOrganisationDto sponsorOrganisationDto)
     {
         var apiResponse = await client.CreateSponsorOrganisation(sponsorOrganisationDto);
+        return apiResponse.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse<SponsorOrganisationUserDto>> AddUserToSponsorOrganisation(SponsorOrganisationUserDto sponsorOrganisationUserDto)
+    {
+        var apiResponse = await client.AddUserToSponsorOrganisation(sponsorOrganisationUserDto);
         return apiResponse.ToServiceResponse();
     }
 }

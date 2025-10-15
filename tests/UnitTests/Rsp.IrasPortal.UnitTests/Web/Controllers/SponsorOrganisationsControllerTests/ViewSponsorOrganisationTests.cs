@@ -135,10 +135,9 @@ public class ViewSponsorOrganisationTests : TestServiceBase<SponsorOrganisations
         // Act
         var result = await Sut.ViewSponsorOrganisation(rtsId);
 
-        // Assert
-        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
-        redirect.ActionName.ShouldBe("Index");
-        redirect.ControllerName.ShouldBeNull();
+    // Assert
+    var redirect = result.ShouldBeOfType<StatusCodeResult>();
+    redirect.StatusCode.ShouldBe(400);
 
         // Verify
         Mocker.GetMock<ISponsorOrganisationService>()

@@ -156,4 +156,63 @@ public class GetSponsorOrganisationTests : TestServiceBase<SponsorOrganisationSe
             rs => rs.GetOrganisationsByName(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<int>(),
                 null, "asc", "name"), Times.Once);
     }
+
+    [Fact]
+    public async Task GetSponsorOrganisations_Should_Not_Call_Rts_Name_Search_When_NoResults()
+    {
+        // Arrange
+        var apiResponse = Mock.Of<IApiResponse<AllSponsorOrganisationsResponse>>(r =>
+            r.IsSuccessStatusCode &&
+            r.StatusCode == HttpStatusCode.OK &&
+            r.Content == new AllSponsorOrganisationsResponse
+            {
+            
+            });
+
+        var client = Mocker.GetMock<ISponsorOrganisationsServiceClient>();
+        client.Setup(c => c.GetAllSponsorOrganisations(
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<SponsorOrganisationSearchRequest>()))
+            .ReturnsAsync(apiResponse);
+
+        var rtsService = Mocker.GetMock<IRtsService>();
+
+        rtsService.Setup(x =>
+            x.GetOrganisationsByName(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<string>>(), It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(
+            new ServiceResponse<OrganisationSearchResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new OrganisationSearchResponse
+                {
+              
+                }
+            });
+
+        rtsService.Setup(x =>
+            x.GetOrganisation(It.IsAny<string>())).ReturnsAsync(
+            new ServiceResponse<OrganisationDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new OrganisationDto
+                {
+                    Name = "Org 1",
+                    Id = "1",
+                    CountryName = "England"
+                }
+            });
+
+        var sut = new SponsorOrganisationService(client.Object, rtsService.Object);
+
+        // Act
+        var result = await sut.GetAllSponsorOrganisations(new SponsorOrganisationSearchRequest
+        {
+            SearchQuery = "org"
+        });
+
+        // Assert
+        result.IsSuccessStatusCode.ShouldBeTrue();
+        rtsService.Verify(
+            rs => rs.GetOrganisationsByName(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<int>(),
+                null, "asc", "name"), Times.Once);
+    }
 }
