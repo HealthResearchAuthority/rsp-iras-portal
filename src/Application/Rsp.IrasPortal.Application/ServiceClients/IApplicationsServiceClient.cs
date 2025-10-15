@@ -84,4 +84,12 @@ public interface IApplicationsServiceClient
     /// <returns>An asynchronous operation that updates the existing application.</returns>
     [Put("/applications")]
     public Task<ApiResponse<IrasApplicationResponse>> UpdateApplication(IrasApplicationRequest irasApplication);
+
+    /// <summary>
+    /// Deletes the project record by its Id.
+    /// </summary>
+    /// <param name="projectRecordId">The Id of the project record to delete.</param>
+    /// <returns>An asynchronous operation that deletes the specified project record.</returns>
+    [Delete("/applications")]
+    public Task<IApiResponse> DeleteProject(string projectRecordId);
 }

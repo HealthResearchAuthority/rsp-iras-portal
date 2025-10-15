@@ -78,4 +78,25 @@ public class SearchOrganisationTests : TestServiceBase<ParticipatingOrganisation
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
         redirectResult.ActionName.ShouldBe("ParticipatingOrganisation");
     }
+
+    [Fact]
+    public void SaveSelection_WithSaveForLaterTrue_SetsNotificationBannerAndChangeMarker()
+    {
+        // Arrange
+        const string projectRecordId = "PRJ-123";
+        var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectRecordId] = projectRecordId
+        };
+
+        Sut.TempData = tempData;
+
+        // Act
+        var result = Sut.SaveSelection(saveForLater: true);
+
+        // Assert
+        tempData[TempDataKeys.ShowNotificationBanner].ShouldBe(true);
+        tempData[TempDataKeys.ProjectModification.ProjectModificationChangeMarker].ShouldNotBeNull();
+        tempData[TempDataKeys.ProjectModification.ProjectModificationChangeMarker].ShouldBeOfType<Guid>();
+    }
 }

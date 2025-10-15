@@ -13,15 +13,15 @@ using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Features.Modifications;
 using Rsp.IrasPortal.Web.Models;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications;
+namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.ModificationChangesBaseControllerTests;
 
-public class ModificationChangesBaseControllerTests : TestServiceBase<ModificationChangesBaseController>
+public class ReviewChangesTests : TestServiceBase<ModificationChangesBaseController>
 {
     private readonly Mock<IRespondentService> _respondentService;
     private readonly Mock<ICmsQuestionsetService> _cmsService;
     private readonly Mock<IValidator<QuestionnaireViewModel>> _validator;
 
-    public ModificationChangesBaseControllerTests()
+    public ReviewChangesTests()
     {
         _respondentService = Mocker.GetMock<IRespondentService>();
         _cmsService = Mocker.GetMock<ICmsQuestionsetService>();

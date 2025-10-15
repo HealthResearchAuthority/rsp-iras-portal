@@ -238,14 +238,15 @@ public abstract class ModificationsControllerBase
             var respondentAnswersResponse =
                 await respondentService.GetRespondentAnswers(projectRecordId, QuestionCategories.ProjectRecrod);
 
-            Dictionary<string, string> answerOptions = new()
-            {
-                { QuestionAnswersOptionsIds.Yes, "Yes" },
-                { QuestionAnswersOptionsIds.No, "No" }
-            };
-
             var answers = respondentAnswersResponse.Content;
-            nhsOrHscOrganisations = GetAnswerName(answers.FirstOrDefault(a => a.QuestionId == QuestionIds.NhsOrHscOrganisations)?.SelectedOption, answerOptions);
+
+            var answer = answers?.FirstOrDefault(a => a.QuestionId == QuestionIds.NhsOrHscOrganisations);
+
+            nhsOrHscOrganisations = answer?.SelectedOption switch
+            {
+                var option when option is QuestionAnswersOptionsIds.Yes => "Yes",
+                _ => "No"
+            };
         }
 
         var rankingRequest = ModificationHelpers.GetRankingOfChangeRequest(specificAreaOfChangeId, showApplicabilityQuestions, questions, nhsOrHscOrganisations);
@@ -253,10 +254,5 @@ public abstract class ModificationsControllerBase
         var ranking = await cmsQuestionsetService.GetModificationRanking(rankingRequest);
 
         return ranking.Content!;
-    }
-
-    private static string? GetAnswerName(string? answerText, Dictionary<string, string> options)
-    {
-        return answerText is string id && options.TryGetValue(id, out var name) ? name : null;
     }
 }

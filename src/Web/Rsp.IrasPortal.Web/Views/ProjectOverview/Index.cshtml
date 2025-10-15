@@ -4,7 +4,7 @@
 @{
     ViewBag.Title = "Project overview";
     var routeName = (ViewData["BackRoute"] as string) ?? "app:Welcome";
-    var routeValues = ViewData["BackRouteValues"] as Dictionary<string, string> 
+    var routeValues = ViewData["BackRouteValues"] as Dictionary<string, string>
         ?? new Dictionary<string, string>();
 
     // get projectRecordId from query string
@@ -16,24 +16,21 @@
     <partial name="_BackNavigation" model="@((routeName, "Back", routeValues))" />
 }
 
-
 <partial name="_ProjectOverviewPartial" model="@Model" />
 
 <form method="post">
     <div class="save-buttons">
-        <button 
-            class="govuk-button govuk-button--secondary"
-            asp-route="qnc:resume" 
-            asp-all-route-data="@(new Dictionary<string, string>
+        <button class="govuk-button govuk-button--secondary"
+                asp-route="qnc:resume"
+                asp-all-route-data="@(new Dictionary<string, string>
             {
-                { "projectRecordId", projectRecordId }, 
+                { "projectRecordId", projectRecordId },
                 { "categoryId", QuestionCategories.ProjectRecrod},
                 { "validate", "True" }
             })"
-            type="submit"
-        >
+                type="submit">
             Edit project record
         </button>
-        <button class="govuk-button govuk-button--warning">Delete project</button>
+        <button asp-route="pov:confirmdeleteproject" asp-route-projectRecordId="@projectRecordId" class="govuk-button govuk-button--warning">Delete project</button>
     </div>
 </form>

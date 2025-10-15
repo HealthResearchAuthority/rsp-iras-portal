@@ -30,11 +30,13 @@ public static class ModificationHelpers
         }
     }
 
-    public static RankingOfChangeRequest GetRankingOfChangeRequest(
-    string specificAreaOfChangeId,
-    bool applicability,
-    IEnumerable<QuestionViewModel> questions,
-    string nhsOrHscOrganisations)
+    public static RankingOfChangeRequest GetRankingOfChangeRequest
+    (
+        string specificAreaOfChangeId,
+        bool applicability,
+        IEnumerable<QuestionViewModel> questions,
+        string nhsOrHscOrganisations
+    )
     {
         QuestionViewModel? nhsInvolvmentQuestion = null;
 
@@ -49,24 +51,22 @@ public static class ModificationHelpers
             nhsInvolvmentQuestion = questions
                 .SingleOrDefault(q =>
                     q.NhsInvolvment != null &&
-                    q.Answers != null &&
-                    q.Answers.Any(a => a.IsSelected && a.AnswerText == q.NhsInvolvment));
+                    q.Answers?.Any(a => a.IsSelected && a.AnswerText == q.NhsInvolvment) == true);
         }
 
         // Non-NHS involvement question (safe lookup)
         var nonNhsInvolvmentQuestion = questions
             .SingleOrDefault(q =>
                 q.NonNhsInvolvment != null &&
-                q.Answers != null &&
-                q.Answers.Any(a => a.IsSelected && a.AnswerText == q.NonNhsInvolvment));
+                q.Answers?.Any(a => a.IsSelected && a.AnswerText == q.NonNhsInvolvment) == true);
 
         // Organisation and resource questions
         var orgsAffectedQuestion = questions.SingleOrDefault(q => q.AffectedOrganisations);
         var additionaResourcesQuestion = questions.SingleOrDefault(q => q.RequireAdditionalResources);
 
         // Default flags
-        bool isNhsInvolved = nhsInvolvmentQuestion is not null;
-        string nhsOrganisationsAffected = string.Empty;
+        var isNhsInvolved = nhsInvolvmentQuestion is not null;
+        var nhsOrganisationsAffected = string.Empty;
 
         if (nhsOrHscOrganisations == "Yes")
         {

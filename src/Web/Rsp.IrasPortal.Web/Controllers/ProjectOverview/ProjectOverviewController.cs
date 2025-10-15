@@ -327,6 +327,23 @@ public class ProjectOverviewController(
         return View(model);
     }
 
+    [HttpPost]
+    public async Task<IActionResult> ConfirmDeleteProject(string projectRecordId)
+    {
+        var response = await GetProjectOverview(projectRecordId);
+
+        // if status code is not a successful status code
+        if ((response is StatusCodeResult result && result.StatusCode is < 200 or > 299) ||
+            (response is not OkObjectResult okResult))
+        {
+            return response;
+        }
+
+        var model = okResult.Value as ProjectOverviewModel;
+
+        return View("/Features/ProjectOverview/Views/DeleteProject.cshtml", model);
+    }
+
     private static string? GetAnswerName(string? answerText, Dictionary<string, string> options)
     {
         return answerText is string id && options.TryGetValue(id, out var name) ? name : null;
@@ -335,9 +352,11 @@ public class ProjectOverviewController(
     private void UpdateModificationRelatedTempData()
     {
         // If there is a project modification change, show the notification banner
-        if (TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId) is not null &&
-            TempData[TempDataKeys.ProjectModification.ProjectModificationChangeMarker] is Guid marker &&
-            marker != Guid.Empty)
+        if
+        (
+            TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId) is not null &&
+            TempData[TempDataKeys.ProjectModification.ProjectModificationChangeMarker] is Guid marker && marker != Guid.Empty
+        )
         {
             TempData[TempDataKeys.ShowNotificationBanner] = true;
         }

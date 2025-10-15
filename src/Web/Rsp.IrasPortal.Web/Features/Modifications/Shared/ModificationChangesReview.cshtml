@@ -88,7 +88,7 @@
         </h2>
 
         <vc:ranking-of-change project-record-id="@projectRecordId"
-							  specific-area-of-change-id="@modification.SpecificAreaOfChangeId"
+                              specific-area-of-change-id="@modification.SpecificAreaOfChangeId"
                               applicability="@showApplicabilityQuestions"
                               questions="@Model.Questions" />
 
@@ -175,7 +175,7 @@
                     ViewBag.Style = "govuk-button govuk-button--secondary";
                 }
 
-                <partial name="_SubmitButton" model="@("pov:postapproval", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = projectRecordId })" />
+                <partial name="_SubmitButton" model="@("pmc:saveforlater", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = projectRecordId, ["routeName"] = "pov:postapproval" })" />
             </div>
         </form>
     </div>
