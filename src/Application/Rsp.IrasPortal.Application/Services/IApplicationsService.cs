@@ -51,7 +51,7 @@ public interface IApplicationsService : IInterceptable
     /// Gets all the saved applications for a respondent with pagination
     /// </summary>
     /// <param name="respondentId">Respondent Id associated with the application</param>
-    /// <param name="searchQuery">Optional search query to filter projects by title or description.</param>
+    /// <param name="searchQuery">Object containing filtering criteria for projects.</param>
     /// <param name="pageIndex">Page number (1-based). Must be greater than 0.</param>
     /// <param name="pageSize">Number of records per page. Must be greater than 0.</param>
     /// <param name="sortField">Optional field name to sort the results by. Defaults to CreatedDate.</param>
@@ -60,7 +60,7 @@ public interface IApplicationsService : IInterceptable
     public Task<ServiceResponse<PaginatedResponse<IrasApplicationResponse>>> GetPaginatedApplicationsByRespondent
     (
         string respondentId,
-        string? searchQuery,
+        ApplicationSearchRequest searchQuery,
         int pageIndex = 1,
         int? pageSize = 20,
         string? sortField = nameof(IrasApplicationResponse.CreatedDate),
@@ -80,4 +80,13 @@ public interface IApplicationsService : IInterceptable
     /// <param name="irasApplication">IrasApplication to be updated</param>
     /// <returns>An asynchronous operation that updates the existing application.</returns>
     public Task<ServiceResponse<IrasApplicationResponse>> UpdateApplication(IrasApplicationRequest irasApplication);
+
+    /// <summary>
+    /// Deletes the project/application by its record Id.
+    /// </summary>
+    /// <param name="projectRecordId">The unique identifier of the project/application to delete.</param>
+    /// <returns>
+    /// An asynchronous operation that returns a <see cref="ServiceResponse"/> indicating the result of the delete operation.
+    /// </returns>
+    public Task<ServiceResponse> DeleteProject(string projectRecordId);
 }
