@@ -42,8 +42,8 @@ public class ProfileAndSettingsControllerTests : TestServiceBase<ProfileAndSetti
         var result = Sut.Index()?.Result;
 
         // Assert
-        var viewResult = result.ShouldBeOfType<StatusCodeResult>();
-        viewResult.StatusCode.ShouldBe(404);
+        var viewResult = result.ShouldBeOfType<RedirectToActionResult>();
+        viewResult.ActionName.ShouldBe("EditProfile");
     }
 
     [Theory, AutoData]
@@ -89,8 +89,8 @@ public class ProfileAndSettingsControllerTests : TestServiceBase<ProfileAndSetti
         var result = Sut.EditProfile()?.Result;
 
         // Assert
-        var viewResult = result.ShouldBeOfType<StatusCodeResult>();
-        viewResult.StatusCode.ShouldBe(404);
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.ViewName.ShouldBe("EditProfileView");
     }
 
     [Theory, AutoData]

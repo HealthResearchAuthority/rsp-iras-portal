@@ -25,12 +25,16 @@ public class ProfileAndSettingsController(
     [HttpGet("~/[controller]", Name = "profilesettings")]
     public async Task<IActionResult> Index()
     {
-        ViewBag.Mode = "edit";
         var currentUserEmail = HttpContext?.User.FindFirstValue(ClaimTypes.Email);
         var userEntityResponse = await userService.GetUser(null, currentUserEmail);
 
-        if (!userEntityResponse.IsSuccessStatusCode && userEntityResponse.Content == null)
+        if (!userEntityResponse.IsSuccessStatusCode)
         {
+            if (userEntityResponse.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return RedirectToAction(nameof(EditProfile));
+            }
+
             return this.ServiceError(userEntityResponse);
         }
 
@@ -42,15 +46,34 @@ public class ProfileAndSettingsController(
     [HttpGet]
     public async Task<IActionResult> EditProfile()
     {
-        ViewBag.Mode = "edit";
         var currentUserEmail = HttpContext?.User.FindFirstValue(ClaimTypes.Email);
         var userEntityResponse = await userService.GetUser(null, currentUserEmail);
 
-        if (!userEntityResponse.IsSuccessStatusCode && userEntityResponse.Content == null)
+        if (!userEntityResponse.IsSuccessStatusCode)
         {
+            if (userEntityResponse.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                // user does not exist and they need to complete their profile
+                var phone = HttpContext?.User.FindFirstValue(ClaimTypes.MobilePhone);
+                var id = HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                ViewBag.Mode = "complete";
+
+                var createViewModel = new UserViewModel()
+                {
+                    Email = currentUserEmail!,
+                    OriginalEmail = currentUserEmail,
+                    Telephone = phone,
+                    IdentityProviderId = id,
+                };
+
+                return View(EditProfileView, createViewModel);
+            }
+
             return this.ServiceError(userEntityResponse);
         }
 
+        ViewBag.Mode = "edit";
         var viewModel = new UserViewModel(userEntityResponse.Content!);
         return View(EditProfileView, viewModel);
     }
