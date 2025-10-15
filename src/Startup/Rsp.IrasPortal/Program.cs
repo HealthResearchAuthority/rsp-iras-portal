@@ -254,7 +254,7 @@ app
     .UseSession()
     .UseAuthentication()
     .UseAuthorization()
-    .UseMiddleware<CompleteProfileMiddleware>()
+    .UseMiddleware<CompleteProfileMiddleware>() // middleware to check if new user needs to complete their profile
     .UseEndpoints
     (
         endpoints =>

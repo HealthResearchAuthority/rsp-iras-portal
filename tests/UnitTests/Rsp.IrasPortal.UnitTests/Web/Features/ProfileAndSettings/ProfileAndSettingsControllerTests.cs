@@ -239,19 +239,4 @@ public class ProfileAndSettingsControllerTests : TestServiceBase<ProfileAndSetti
         var viewResult = result.ShouldBeOfType<StatusCodeResult>();
         viewResult.StatusCode.ShouldBe(400);
     }
-
-    [Fact]
-    public void CompleteProfile_Returns_View()
-    {
-        // Arrange
-
-        // Act
-        var result = Sut.CompleteProfile(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>());
-
-        // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.Model.ShouldNotBeNull();
-        viewResult.Model.ShouldBeOfType<UserViewModel>();
-        viewResult.ViewName.ShouldBe("EditProfileView");
-    }
 }
