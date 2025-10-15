@@ -70,7 +70,7 @@
                             @(string.IsNullOrWhiteSpace(question.ShortQuestionText) ? question.ShortQuestionText : question.QuestionText)
                         </dt>
                         <dd class="govuk-summary-list__value">
-                            @question.GetDisplayText(false)
+							@Html.Raw(question.GetDisplayText(false))
                         </dd>
                     </div>
                 }

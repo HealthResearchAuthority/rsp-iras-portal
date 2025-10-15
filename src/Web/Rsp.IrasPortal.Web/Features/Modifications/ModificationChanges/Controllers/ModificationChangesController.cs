@@ -29,33 +29,22 @@ public class ModificationChangesController
     private const string PostApprovalRoute = "pov:postapproval";
 
     /// <summary>
-    /// Resumes the application for the categoryId
+    /// A single, generic endpoint to handle modification display questionnaire actions.
     /// </summary>
-    /// <param name="projectRecordId">Application Id</param>
-    /// <param name="categoryId">CategoryId to resume from</param>
-    public async Task<IActionResult> PlannedEndDate(string projectRecordId, string categoryId, string sectionId, bool reviewAnswers = false)
+    /// <param name="viewName">The view name (e.g., PlannedEndDate, ReviewableFreeText, etc.)</param>
+    /// <param name="projectRecordId">The project record ID.</param>
+    /// <param name="categoryId">The category ID.</param>
+    /// <param name="sectionId">The section ID.</param>
+    /// <param name="reviewAnswers">Whether review mode is enabled.</param>
+    [HttpGet("/modifications/modificationchanges/{viewName}", Name = "pmc:modificationchanges:view")]
+    public async Task<IActionResult> DisplayModificationPage(
+        string viewName,
+        string projectRecordId,
+        string categoryId,
+        string sectionId,
+        bool reviewAnswers = false)
     {
-        return await DisplayQuestionnaire(projectRecordId, categoryId, sectionId, reviewAnswers, nameof(PlannedEndDate));
-    }
-
-    /// <summary>
-    /// Resumes the application for the categoryId
-    /// </summary>
-    /// <param name="projectRecordId">Application Id</param>
-    /// <param name="categoryId">CategoryId to resume from</param>
-    public async Task<IActionResult> ReviewableFreeText(string projectRecordId, string categoryId, string sectionId, bool reviewAnswers = false)
-    {
-        return await DisplayQuestionnaire(projectRecordId, categoryId, sectionId, reviewAnswers, nameof(ReviewableFreeText));
-    }
-
-    public async Task<IActionResult> AffectingOrganisations(string projectRecordId, string categoryId, string sectionId, bool reviewAnswers = false)
-    {
-        return await DisplayQuestionnaire(projectRecordId, categoryId, sectionId, reviewAnswers, nameof(AffectingOrganisations));
-    }
-
-    public async Task<IActionResult> AffectedOrganisationsType(string projectRecordId, string categoryId, string sectionId, bool reviewAnswers = false)
-    {
-        return await DisplayQuestionnaire(projectRecordId, categoryId, sectionId, reviewAnswers, nameof(AffectedOrganisationsType));
+        return await DisplayQuestionnaire(projectRecordId, categoryId, sectionId, reviewAnswers, viewName);
     }
 
     [RequestFormLimits(ValueCountLimit = int.MaxValue)]
@@ -106,9 +95,6 @@ public class ModificationChangesController
 
         await SaveModificationChangeAnswers(projectModificationChangeId, projectRecordId!, model.Questions);
 
-        // save the questions in the session
-        // TempData[$"{TempDataKeys.ProjectModification.Questionnaire}:{navigation.CurrentStage}"] = JsonSerializer.Serialize(questions);
-
         // if save for later
         if (saveForLater)
         {
@@ -146,12 +132,12 @@ public class ModificationChangesController
             }
 
             // otherwise resume from the NextStage in sequence
-            return RedirectToRoute($"pmc:{navigation.NextSection.StaticViewName}", new
+            return RedirectToRoute("pmc:modificationchanges:view", new
             {
+                viewName = navigation.NextSection.StaticViewName,
                 projectRecordId,
                 categoryId = navigation.NextCategory,
-                sectionId = navigation.NextStage,
-                reviewAnswers = isReviewInProgress
+                sectionId = navigation.NextStage
             });
         }
 
@@ -169,8 +155,9 @@ public class ModificationChangesController
         }
 
         // otherwise resume from the NextStage in sequence
-        return RedirectToRoute($"pmc:{navigation.NextSection.StaticViewName}", new
+        return RedirectToRoute("pmc:modificationchanges:view", new
         {
+            viewName = navigation.NextSection.StaticViewName,
             projectRecordId,
             categoryId = navigation.NextCategory,
             sectionId = navigation.NextStage
