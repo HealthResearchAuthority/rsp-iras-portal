@@ -15,27 +15,11 @@ public class CompleteProfileMiddleware(RequestDelegate next)
             // the user to complete profile page
             context.Items.Remove(ContextItemKeys.RequireProfileCompletion);
 
-            var email = context.Items[ContextItemKeys.Email];
-            var phone = context.Items["telephoneNumber"]?.ToString();
-            var identityProviderId = context.Items["identityProviderId"];
-
             // Avoid redirect loops
             var path = context.Request.Path.Value?.ToLower();
-            if (!string.IsNullOrEmpty(path) && !path.Contains("profileandsettings/completeprofile"))
+            if (!string.IsNullOrEmpty(path) && !path.Contains("/profileandsettings/editprofile"))
             {
-                var encodedPhone = string.Empty;
-
-                var urlParameters = string.Join("&", $"email={email}", $"identityProviderId={identityProviderId}");
-
-                // URL encode the telephone in case it has + symbol
-                if (!string.IsNullOrEmpty(phone))
-                {
-                    encodedPhone = Uri.EscapeDataString(phone);
-
-                    urlParameters = string.Join("&", $"telephone={encodedPhone}", urlParameters);
-                }
-
-                context.Response.Redirect($"/profileandsettings/completeprofile?{urlParameters}");
+                context.Response.Redirect($"/profileandsettings/editprofile");
 
                 return;
             }

@@ -31,8 +31,7 @@ public class CompleteProfileMiddlewareTests : TestServiceBase<CompleteProfileMid
 
         await Sut.InvokeAsync(_http);
 
-        var redirectUrlParams = string.Join("&", $"telephone={Uri.EscapeDataString(telephone)}", $"email={email}", $"identityProviderId={identityProviderId}");
-        var expectedRedirectUrl = "/profileandsettings/completeprofile?" + redirectUrlParams;
+        var expectedRedirectUrl = "/profileandsettings/editprofile";
 
         _http.Response.Headers["Location"].ToString().ShouldBe(expectedRedirectUrl);
         _http.Items.ContainsKey(ContextItemKeys.RequireProfileCompletion).ShouldBeFalse();
