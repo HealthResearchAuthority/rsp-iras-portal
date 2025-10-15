@@ -145,21 +145,4 @@ public class ProfileAndSettingsController(
             return RedirectToAction(nameof(ResearchAccountController.Home), "ResearchAccount");
         }
     }
-
-    [HttpGet]
-    [CmsContentAction(nameof(EditProfile))]
-    public IActionResult CompleteProfile(string email, string identityProviderId, string? telephone = null)
-    {
-        ViewBag.Mode = "complete";
-
-        var viewModel = new UserViewModel()
-        {
-            Email = email,
-            OriginalEmail = email,
-            Telephone = telephone,
-            IdentityProviderId = identityProviderId,
-        };
-
-        return View(EditProfileView, viewModel);
-    }
 }

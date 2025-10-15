@@ -53,8 +53,7 @@ public class CompleteProfileMiddlewareTests : TestServiceBase<CompleteProfileMid
 
         await Sut.InvokeAsync(_http);
 
-        var redirectUrlParams = string.Join("&", $"telephone={Uri.EscapeDataString(telephone)}", $"email={email}", $"identityProviderId={identityProviderId}");
-        var expectedRedirectUrl = "/profileandsettings/completeprofile?" + redirectUrlParams;
+        var expectedRedirectUrl = "/profileandsettings/editprofile";
 
         _http.Response.Headers["Location"].ToString().ShouldNotBe(expectedRedirectUrl);
         _http.Items.ContainsKey(ContextItemKeys.RequireProfileCompletion).ShouldBeFalse();
@@ -69,7 +68,7 @@ public class CompleteProfileMiddlewareTests : TestServiceBase<CompleteProfileMid
         _http.Items.Add("identityProviderId", identityProviderId);
         _http.Items.Add("telephoneNumber", telephone);
 
-        _http.Request.Path = "/profileandsettings/completeprofile";
+        _http.Request.Path = "/profileandsettings/editprofile";
         _http.User = new ClaimsPrincipal(new ClaimsIdentity(new[]
         {
             new Claim(ClaimTypes.Email, email)
@@ -77,8 +76,7 @@ public class CompleteProfileMiddlewareTests : TestServiceBase<CompleteProfileMid
 
         await Sut.InvokeAsync(_http);
 
-        var redirectUrlParams = string.Join("&", $"telephone={Uri.EscapeDataString(telephone)}", $"email={email}", $"identityProviderId={identityProviderId}");
-        var expectedRedirectUrl = "/profileandsettings/completeprofile?" + redirectUrlParams;
+        var expectedRedirectUrl = "/profileandsettings/editprofile";
 
         _http.Response.Headers["Location"].ToString().ShouldNotBe(expectedRedirectUrl);
         _http.Items.ContainsKey(ContextItemKeys.RequireProfileCompletion).ShouldBeFalse();
