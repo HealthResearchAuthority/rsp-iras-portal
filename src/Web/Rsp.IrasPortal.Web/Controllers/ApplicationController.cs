@@ -211,6 +211,22 @@ public class ApplicationController
         return RedirectToAction(nameof(DocumentUpload), new { projectRecordId });
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteProject(string projectRecordId)
+    {
+        var deleteProjectResponse = await applicationsService.DeleteProject(projectRecordId);
+
+        if (!deleteProjectResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(deleteProjectResponse);
+        }
+
+        TempData[TempDataKeys.ShowProjectDeletedBanner] = true;
+
+        return RedirectToRoute("app:welcome");
+    }
+
     [AllowAnonymous]
     public IActionResult ViewportTesting()
     {

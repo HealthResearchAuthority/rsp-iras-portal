@@ -81,4 +81,12 @@ public class ApplicationsService(IApplicationsServiceClient applicationsClient) 
 
         return apiResponse.ToServiceResponse();
     }
+
+    /// <inheritdoc/>
+    public async Task<ServiceResponse> DeleteProject(string projectRecordId)
+    {
+        var apiResponse = await applicationsClient.DeleteProject(projectRecordId);
+
+        return apiResponse.ToServiceResponse();
+    }
 }

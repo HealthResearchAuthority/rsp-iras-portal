@@ -80,4 +80,13 @@ public interface IApplicationsService : IInterceptable
     /// <param name="irasApplication">IrasApplication to be updated</param>
     /// <returns>An asynchronous operation that updates the existing application.</returns>
     public Task<ServiceResponse<IrasApplicationResponse>> UpdateApplication(IrasApplicationRequest irasApplication);
+
+    /// <summary>
+    /// Deletes the project/application by its record Id.
+    /// </summary>
+    /// <param name="projectRecordId">The unique identifier of the project/application to delete.</param>
+    /// <returns>
+    /// An asynchronous operation that returns a <see cref="ServiceResponse"/> indicating the result of the delete operation.
+    /// </returns>
+    public Task<ServiceResponse> DeleteProject(string projectRecordId);
 }

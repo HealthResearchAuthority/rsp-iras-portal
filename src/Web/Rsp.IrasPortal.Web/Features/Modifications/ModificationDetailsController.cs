@@ -175,9 +175,9 @@ public class ModificationDetailsController
             // show surfacing questions
             ModificationHelpers.ShowSurfacingQuestion(questions, modificationChange, nameof(ModificationDetails));
 
-            // remove all the conditional questions without answers, these must have been
-            // validated on the previous screen
-            questions.RemoveAll(q => !(q.IsMandatory || q.IsOptional) && q.IsMissingAnswer());
+            // remove all questions as they are not needed in the details view
+            // they are only needed to calculate the ranking
+            modificationChange.Questions.Clear();
         }
 
         return modificationChanges;
