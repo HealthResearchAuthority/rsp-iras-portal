@@ -24,4 +24,6 @@ public interface ISponsorOrganisationService : IInterceptable
         SponsorOrganisationDto sponsorOrganisationDto);
 
     Task<ServiceResponse<SponsorOrganisationUserDto>> AddUserToSponsorOrganisation(SponsorOrganisationUserDto sponsorOrganisationUserDto);
+
+    Task<ServiceResponse<SponsorOrganisationUserDto>> GetUserInSponsorOrganisation(string rtsId, Guid userId);
 }

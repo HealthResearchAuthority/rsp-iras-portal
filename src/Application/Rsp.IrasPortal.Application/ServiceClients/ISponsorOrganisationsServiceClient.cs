@@ -34,4 +34,10 @@ public interface ISponsorOrganisationsServiceClient
     [Post("/sponsororganisations/adduser")]
     public Task<IApiResponse<SponsorOrganisationUserDto>> AddUserToSponsorOrganisation([Body] SponsorOrganisationUserDto sponsorOrganisationUserDto);
 
+    /// <summary>
+    /// Gets a Sponsor Organisation by RTS ID
+    /// </summary>
+    [Get("/sponsororganisations/{rtsId}/{userId}")]
+    Task<IApiResponse<SponsorOrganisationUserDto>> GetUserInSponsorOrganisation(string rtsId, Guid userId);
+
 }

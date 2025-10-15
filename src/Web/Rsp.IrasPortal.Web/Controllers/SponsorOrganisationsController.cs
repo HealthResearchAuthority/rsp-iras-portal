@@ -297,14 +297,16 @@ public class SponsorOrganisationsController(
 
         var user = await userService.GetUser(userId.ToString(), null);
 
-        var model = new ConfirmAddUpdateSponsorOrganisationUserModel
+        var model = new SponsorOrganisationUserModel
         {
             SponsorOrganisation = load.Model,
             User = user.Content is not null ? new UserViewModel(user.Content) : new UserViewModel()
         };
 
         TempData[TempDataKeys.ShowEditLink] = false;
-        return View("ConfirmAddUpdateUser", model);
+
+        ViewBag.Type = "add";
+        return View("ViewSponsorOrganisationUser", model);
     }
 
     [HttpPost]
@@ -332,6 +334,29 @@ public class SponsorOrganisationsController(
 
         TempData[TempDataKeys.ShowNotificationBanner] = true;
         return RedirectToAction("ViewSponsorOrganisationUsers", new { rtsId });
+    }
+
+    [HttpGet]
+    [Route("/sponsororganisations/viewuser", Name = "soc:viewsponsororganisationuser")]
+    public async Task<IActionResult> ViewSponsorOrganisationUser(string rtsId, Guid userId)
+    {
+        var load = await LoadSponsorOrganisationAsync(rtsId);
+
+        var user = await userService.GetUser(userId.ToString(), null);
+
+        var sponsorOrganisationUser = await sponsorOrganisationService.GetUserInSponsorOrganisation(rtsId, userId);
+
+        var model = new SponsorOrganisationUserModel
+        {
+            SponsorOrganisation = load.Model,
+            User = user.Content is not null ? new UserViewModel(user.Content) : new UserViewModel(),
+            SponsorOrganisationUser = sponsorOrganisationUser.Content ?? new SponsorOrganisationUserDto()
+        };
+
+        TempData[TempDataKeys.ShowEditLink] = false;
+
+        ViewBag.Type = "edit";
+        return View("ViewSponsorOrganisationUser", model);
     }
 
     // ---------------------------

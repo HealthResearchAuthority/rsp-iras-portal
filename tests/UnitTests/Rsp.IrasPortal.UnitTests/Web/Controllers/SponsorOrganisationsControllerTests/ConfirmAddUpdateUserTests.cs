@@ -101,7 +101,7 @@ public class ConfirmAddUpdateUserTests : TestServiceBase<SponsorOrganisationsCon
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
-        var model = viewResult.Model.ShouldBeAssignableTo<ConfirmAddUpdateSponsorOrganisationUserModel>();
+        var model = viewResult.Model.ShouldBeAssignableTo<SponsorOrganisationUserModel>();
 
         model.SponsorOrganisation.RtsId.ShouldBe(rtsId);
         model.SponsorOrganisation.SponsorOrganisationName.ShouldBe(orgName);
