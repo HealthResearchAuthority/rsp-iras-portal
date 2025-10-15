@@ -111,7 +111,7 @@ public class ModificationChangesBaseController
     /// This method retrieves the previous, current, and next question sections for the given section and category.
     /// It uses the QuestionSetService to fetch section details and stores navigation state in TempData for use in the UI.
     /// </remarks>
-    protected async Task<NavigationDto> SetStage(string sectionId)
+    protected async Task<NavigationDto> SetStage(string sectionId, string? parentQuestionId = null, string? parentAnswerOption = null)
     {
         var specificAreaOfChangeId = GetSpecificAreaOfChangeId();
 
@@ -122,8 +122,8 @@ public class ModificationChangesBaseController
 
         // Fetch previous, current, and next section responses from the question set service
         var currentResponse = await cmsQuestionsetService.GetModificationQuestionSet(sectionId);
-        var previousResponse = await cmsQuestionsetService.GetModificationPreviousQuestionSection(sectionId);
-        var nextResponse = await cmsQuestionsetService.GetModificationNextQuestionSection(sectionId);
+        var previousResponse = await cmsQuestionsetService.GetModificationPreviousQuestionSection(sectionId, parentQuestionId, parentAnswerOption);
+        var nextResponse = await cmsQuestionsetService.GetModificationNextQuestionSection(sectionId, parentQuestionId, parentAnswerOption);
 
         // Extract previous stage and category if available and matches the current category
         string previousStage = (previousResponse.IsSuccessStatusCode, previousResponse.Content?.SectionId) switch

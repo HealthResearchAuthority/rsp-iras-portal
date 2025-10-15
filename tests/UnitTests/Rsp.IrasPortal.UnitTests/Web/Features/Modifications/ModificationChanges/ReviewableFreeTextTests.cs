@@ -488,8 +488,8 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
         var model = view.Model.ShouldBeOfType<QuestionnaireViewModel>();
-        model.OriginalAnswers.ShouldContainKey("QCMS1");
-        model.OriginalAnswers["QCMS1"].AnswerText.ShouldBe("Original");
+        model.ProjectRecordAnswers.ShouldContainKey("QCMS1");
+        model.ProjectRecordAnswers["QCMS1"].AnswerText.ShouldBe("Original");
     }
 
     [Fact]

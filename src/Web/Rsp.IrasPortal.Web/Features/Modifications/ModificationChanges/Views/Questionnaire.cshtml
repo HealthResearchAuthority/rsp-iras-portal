@@ -27,7 +27,6 @@
 
 <div class="govuk-width-container">
     @section BackNavigation {
-        @*<partial name="_BackNavigation" model="navModel" />*@
         <vc:back-navigation navigation-dto="@navigation"
                             specific-area-of-change-id="@modification.SpecificAreaOfChangeId"
                             project-record-id="@modification.ProjectRecordId"
@@ -46,31 +45,6 @@
 
                 <partial name="_ProjectModificationSummary" />
 
-                @{
-                    // show current project planned end date if exists
-                    var originalQuestionId = Model.Questions.FirstOrDefault(q => q.ShowOriginalAnswer)?.QuestionId;
-
-                    var currentPlannedEndDate = string.Empty;
-
-                    if (originalQuestionId != null && Model.ProjectRecordAnswers.ContainsKey(originalQuestionId))
-                    {
-                        var answer = Model.ProjectRecordAnswers[originalQuestionId];
-
-                        if (!string.IsNullOrEmpty(answer.AnswerText))
-                        {
-                            if (DateTime.TryParseExact(@answer.AnswerText, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
-                            {
-                                currentPlannedEndDate = date.ToString("dd MMMM yyyy");
-                            }
-                        }
-                    }
-
-                    <div class="govuk-!-margin-bottom-3 flex-gap-2">
-                        <span class="govuk-label">Current planned project end date</span>
-                        <span class="govuk-body govuk-!-font-weight-bold">@currentPlannedEndDate</span>
-                    </div>
-                }
-
                 <partial name="_Questionnaire" model="Model" />
 
                 <div class="save-buttons">
@@ -88,10 +62,6 @@
                         <partial name="_SubmitButton" model="@("pmc:saveresponses", "Save for later", new Dictionary<string, string> {{ "saveForLater", bool.TrueString }})" />
                     }
                 </div>
-
-                <p>
-                    <a href="#" class="govuk-link">Remove this change</a>
-                </p>
             </form>
         </div>
     </div>
