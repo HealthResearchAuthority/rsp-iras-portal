@@ -16,5 +16,6 @@ public class ModificationsDto
     public DateTime CreatedAt { get; set; }
     public string Status { get; set; } = null!;
     public ModificationStatusOrder StatusOrder { get; set; }
-    public DateTime? SubmittedDate { get; set; }
+    public DateTime? SentToRegulatorDate { get; set; }
+    public DateTime? SentToSponsorDate { get; set; }
 }

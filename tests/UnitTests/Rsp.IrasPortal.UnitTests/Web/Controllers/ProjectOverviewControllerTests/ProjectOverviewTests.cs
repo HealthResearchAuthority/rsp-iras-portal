@@ -870,8 +870,8 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         mod.Status.ShouldBe(ModificationStatus.InDraft);
         mod.ReviewType.ShouldBeNull();
         mod.Category.ShouldBeNull();
-        mod.DateSubmitted.ShouldBeNull();
-        mod.SubmittedDate.ShouldBeNull();
+        mod.SentToRegulatorDate.ShouldBeNull();
+        mod.SentToSponsorDate.ShouldBeNull();
     }
 
     [Fact]
@@ -895,7 +895,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var modifications = new List<ModificationsDto>
         {
             new() { ModificationId = "m1", ModificationType = "Type1", Status = ModificationStatus.Approved, CreatedAt=new DateTime(2025,10,02),
-                SubmittedDate= new DateTime(2025,10,02),
+                SentToRegulatorDate= new DateTime(2025,10,02),
             }
         };
 
@@ -930,7 +930,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         mod.Status.ShouldBe(ModificationStatus.Approved);
         mod.ReviewType.ShouldBeNull();
         mod.Category.ShouldBeNull();
-        mod.DateSubmitted.ShouldNotBeNull();
+        mod.SentToRegulatorDate.ShouldNotBeNull();
     }
 
     [Fact]
