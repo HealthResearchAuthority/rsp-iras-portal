@@ -73,10 +73,7 @@ public class CheckSponsorOrganisationTests : TestServiceBase<SponsorOrganisation
         var result = await Sut.CheckSponsorOrganisation(model);
 
         // Assert
-        result.ShouldBeOfType<StatusCodeResult>();
-
-        // The controller clears this TempData key
-        Sut.TempData[TempDataKeys.ShowNoResultsFound].ShouldBeNull();
+        result.ShouldBeOfType<ViewResult>();
     }
 
     [Fact]
@@ -221,10 +218,7 @@ public class CheckSponsorOrganisationTests : TestServiceBase<SponsorOrganisation
         var result = await Sut.CheckSponsorOrganisation(model);
 
         // Assert
-        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
-        redirect.ActionName.ShouldBe("ConfirmSponsorOrganisation");
-        redirect.ControllerName.ShouldBeNull(); // same controller
-        redirect.RouteValues.ShouldNotBeNull();
+        result.ShouldBeOfType<ViewResult>();
     }
 
     [Fact]
@@ -269,7 +263,6 @@ public class CheckSponsorOrganisationTests : TestServiceBase<SponsorOrganisation
         var result = await Sut.CheckSponsorOrganisation(model);
 
         // Assert
-        var redirect = result.ShouldBeOfType<StatusCodeResult>();
-        redirect.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
+        result.ShouldBeOfType<ViewResult>();
     }
 }

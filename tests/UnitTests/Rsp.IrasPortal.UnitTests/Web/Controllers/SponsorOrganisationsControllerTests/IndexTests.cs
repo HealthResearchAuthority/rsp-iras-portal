@@ -35,7 +35,7 @@ public class IndexTests : TestServiceBase<SponsorOrganisationsController>
         };
 
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetAllSponsorOrganisations(It.IsAny<SponsorOrganisationSearchRequest>(), 1, 20,
+            .Setup(s => s.GetAllSponsorOrganisations(It.IsAny<SponsorOrganisationSearchRequest>(), 1, int.MaxValue,
                 nameof(SponsorOrganisationDto.SponsorOrganisationName), SortDirections.Ascending))
             .ReturnsAsync(serviceResponse);
 
@@ -51,7 +51,7 @@ public class IndexTests : TestServiceBase<SponsorOrganisationsController>
             JsonSerializer.Serialize(sponsorOrganisationSearchModel));
 
         // Act
-        var result = await Sut.Index(1, 20, nameof(SponsorOrganisationDto.SponsorOrganisationName),
+        var result = await Sut.Index(1, int.MaxValue, nameof(SponsorOrganisationDto.SponsorOrganisationName),
             SortDirections.Ascending,
             new SponsorOrganisationSearchViewModel
             {
@@ -69,7 +69,7 @@ public class IndexTests : TestServiceBase<SponsorOrganisationsController>
 
         // Verify
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Verify(s => s.GetAllSponsorOrganisations(It.IsAny<SponsorOrganisationSearchRequest>(), 1, 20,
+            .Verify(s => s.GetAllSponsorOrganisations(It.IsAny<SponsorOrganisationSearchRequest>(), 1, int.MaxValue,
                     nameof(SponsorOrganisationDto.SponsorOrganisationName), SortDirections.Ascending),
                 Times.Once);
     }
@@ -87,7 +87,7 @@ AllSponsorOrganisationsResponse sponsorOrganisations)
         };
 
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetAllSponsorOrganisations(It.IsAny<SponsorOrganisationSearchRequest>(), 1, 20,
+            .Setup(s => s.GetAllSponsorOrganisations(It.IsAny<SponsorOrganisationSearchRequest>(), 1, int.MaxValue,
                 nameof(SponsorOrganisationDto.Countries), SortDirections.Descending))
             .ReturnsAsync(serviceResponse);
 
@@ -103,7 +103,7 @@ AllSponsorOrganisationsResponse sponsorOrganisations)
             JsonSerializer.Serialize(sponsorOrganisationSearchModel));
 
         // Act
-        var result = await Sut.Index(1, 20, nameof(SponsorOrganisationDto.Countries),
+        var result = await Sut.Index(1, int.MaxValue, nameof(SponsorOrganisationDto.Countries),
             SortDirections.Descending,
             new SponsorOrganisationSearchViewModel
             {
@@ -121,7 +121,7 @@ AllSponsorOrganisationsResponse sponsorOrganisations)
 
         // Verify
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Verify(s => s.GetAllSponsorOrganisations(It.IsAny<SponsorOrganisationSearchRequest>(), 1, 20,
+            .Verify(s => s.GetAllSponsorOrganisations(It.IsAny<SponsorOrganisationSearchRequest>(), 1, int.MaxValue,
                     nameof(SponsorOrganisationDto.Countries), SortDirections.Descending),
                 Times.Once);
     }
@@ -139,7 +139,7 @@ AllSponsorOrganisationsResponse sponsorOrganisations)
         };
 
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetAllSponsorOrganisations(It.IsAny<SponsorOrganisationSearchRequest>(), 1, 20,
+            .Setup(s => s.GetAllSponsorOrganisations(It.IsAny<SponsorOrganisationSearchRequest>(), 1, int.MaxValue,
                 nameof(SponsorOrganisationDto.Countries), SortDirections.Descending))
             .ReturnsAsync(serviceResponse);
 
@@ -155,7 +155,7 @@ AllSponsorOrganisationsResponse sponsorOrganisations)
             JsonSerializer.Serialize(sponsorOrganisationSearchModel));
 
         // Act
-        var result = await Sut.Index(1, 20, nameof(SponsorOrganisationDto.Countries),
+        var result = await Sut.Index(1, int.MaxValue, nameof(SponsorOrganisationDto.Countries),
             SortDirections.Descending,
             new SponsorOrganisationSearchViewModel
             {
@@ -173,7 +173,7 @@ AllSponsorOrganisationsResponse sponsorOrganisations)
 
         // Verify
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Verify(s => s.GetAllSponsorOrganisations(It.IsAny<SponsorOrganisationSearchRequest>(), 1, 20,
+            .Verify(s => s.GetAllSponsorOrganisations(It.IsAny<SponsorOrganisationSearchRequest>(), 1, int.MaxValue,
                     nameof(SponsorOrganisationDto.Countries), SortDirections.Descending),
                 Times.Once);
     }
@@ -191,7 +191,7 @@ AllSponsorOrganisationsResponse sponsorOrganisations)
         };
 
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetAllSponsorOrganisations(It.IsAny<SponsorOrganisationSearchRequest>(), 1, 20,
+            .Setup(s => s.GetAllSponsorOrganisations(It.IsAny<SponsorOrganisationSearchRequest>(), 1, int.MaxValue,
                 nameof(SponsorOrganisationDto.IsActive), SortDirections.Descending))
             .ReturnsAsync(serviceResponse);
 
@@ -207,7 +207,7 @@ AllSponsorOrganisationsResponse sponsorOrganisations)
             JsonSerializer.Serialize(sponsorOrganisationSearchModel));
 
         // Act
-        var result = await Sut.Index(1, 20, nameof(SponsorOrganisationDto.IsActive),
+        var result = await Sut.Index(1, int.MaxValue, nameof(SponsorOrganisationDto.IsActive),
             SortDirections.Descending,
             new SponsorOrganisationSearchViewModel
             {
@@ -225,7 +225,7 @@ AllSponsorOrganisationsResponse sponsorOrganisations)
 
         // Verify
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Verify(s => s.GetAllSponsorOrganisations(It.IsAny<SponsorOrganisationSearchRequest>(), 1, 20,
+            .Verify(s => s.GetAllSponsorOrganisations(It.IsAny<SponsorOrganisationSearchRequest>(), 1, int.MaxValue,
                     nameof(SponsorOrganisationDto.IsActive), SortDirections.Descending),
                 Times.Once);
     }
@@ -243,7 +243,7 @@ AllSponsorOrganisationsResponse sponsorOrganisations)
         };
 
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetAllSponsorOrganisations(It.IsAny<SponsorOrganisationSearchRequest>(), 1, 20,
+            .Setup(s => s.GetAllSponsorOrganisations(It.IsAny<SponsorOrganisationSearchRequest>(), 1, int.MaxValue,
                 nameof(SponsorOrganisationDto.IsActive), SortDirections.Ascending))
             .ReturnsAsync(serviceResponse);
 
@@ -259,7 +259,7 @@ AllSponsorOrganisationsResponse sponsorOrganisations)
             JsonSerializer.Serialize(sponsorOrganisationSearchModel));
 
         // Act
-        var result = await Sut.Index(1, 20, nameof(SponsorOrganisationDto.IsActive),
+        var result = await Sut.Index(1, int.MaxValue, nameof(SponsorOrganisationDto.IsActive),
             SortDirections.Ascending,
             new SponsorOrganisationSearchViewModel
             {
@@ -277,7 +277,7 @@ AllSponsorOrganisationsResponse sponsorOrganisations)
 
         // Verify
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Verify(s => s.GetAllSponsorOrganisations(It.IsAny<SponsorOrganisationSearchRequest>(), 1, 20,
+            .Verify(s => s.GetAllSponsorOrganisations(It.IsAny<SponsorOrganisationSearchRequest>(), 1, int.MaxValue,
                     nameof(SponsorOrganisationDto.IsActive), SortDirections.Ascending),
                 Times.Once);
     }
@@ -288,7 +288,7 @@ AllSponsorOrganisationsResponse sponsorOrganisations)
     {
         // Arrange
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetAllSponsorOrganisations(It.IsAny<SponsorOrganisationSearchRequest>(), 1, 20,
+            .Setup(s => s.GetAllSponsorOrganisations(It.IsAny<SponsorOrganisationSearchRequest>(), 1, int.MaxValue,
                 nameof(SponsorOrganisationDto.SponsorOrganisationName), SortDirections.Ascending))
             .ReturnsAsync(new ServiceResponse<AllSponsorOrganisationsResponse>
             {
@@ -300,7 +300,7 @@ AllSponsorOrganisationsResponse sponsorOrganisations)
         _http.Session.Remove(SessionKeys.SponsorOrganisationsSearch);
 
         // Act
-        var result = await Sut.Index(1, 20, nameof(SponsorOrganisationDto.SponsorOrganisationName),
+        var result = await Sut.Index(1, int.MaxValue, nameof(SponsorOrganisationDto.SponsorOrganisationName),
             SortDirections.Ascending,
             new SponsorOrganisationSearchViewModel
             {
@@ -319,7 +319,7 @@ AllSponsorOrganisationsResponse sponsorOrganisations)
 
         // Verify
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Verify(s => s.GetAllSponsorOrganisations(It.IsAny<SponsorOrganisationSearchRequest>(), 1, 20,
+            .Verify(s => s.GetAllSponsorOrganisations(It.IsAny<SponsorOrganisationSearchRequest>(), 1, int.MaxValue,
                     nameof(SponsorOrganisationDto.SponsorOrganisationName), SortDirections.Ascending),
                 Times.Once);
     }
@@ -329,7 +329,7 @@ AllSponsorOrganisationsResponse sponsorOrganisations)
     {
         // Arrange
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetAllSponsorOrganisations(It.IsAny<SponsorOrganisationSearchRequest>(), 1, 20,
+            .Setup(s => s.GetAllSponsorOrganisations(It.IsAny<SponsorOrganisationSearchRequest>(), 1, int.MaxValue,
                 nameof(SponsorOrganisationDto.SponsorOrganisationName), SortDirections.Ascending))
             .ReturnsAsync(new ServiceResponse<AllSponsorOrganisationsResponse>
             {
@@ -337,7 +337,7 @@ AllSponsorOrganisationsResponse sponsorOrganisations)
             });
 
         // Act
-        var result = await Sut.Index(1, 20, nameof(SponsorOrganisationDto.SponsorOrganisationName),
+        var result = await Sut.Index(1, int.MaxValue, nameof(SponsorOrganisationDto.SponsorOrganisationName),
             SortDirections.Ascending,
             new SponsorOrganisationSearchViewModel
             {
@@ -355,7 +355,7 @@ AllSponsorOrganisationsResponse sponsorOrganisations)
 
         // Verify
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Verify(s => s.GetAllSponsorOrganisations(It.IsAny<SponsorOrganisationSearchRequest>(), 1, 20,
+            .Verify(s => s.GetAllSponsorOrganisations(It.IsAny<SponsorOrganisationSearchRequest>(), 1, int.MaxValue,
                     nameof(SponsorOrganisationDto.SponsorOrganisationName), SortDirections.Ascending),
                 Times.Once);
     }
