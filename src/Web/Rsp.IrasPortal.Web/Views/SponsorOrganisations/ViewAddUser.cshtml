@@ -92,8 +92,9 @@
                                 }
                             </td>
                             <td class="govuk-table__cell">
-									<a class="govuk-link" asp-route="soc:confirmaddupdateuser" asp-route-userId="@user.Id"
-                                   asp-route-rtsId="@Model.SponsorOrganisation.RtsId">
+									<a class="govuk-link" asp-route="soc:viewsponsororganisationuser" asp-route-userId="@user.Id"
+                                       asp-route-rtsId="@Model.SponsorOrganisation.RtsId"
+                                       asp-route-addUser="@true">
                                     Add user
                                 </a>
                             </td>

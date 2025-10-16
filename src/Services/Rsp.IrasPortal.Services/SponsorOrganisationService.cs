@@ -22,7 +22,7 @@ public class SponsorOrganisationService(ISponsorOrganisationsServiceClient clien
             var rtsNameSearch =
                 await rtsService.GetOrganisationsByName(searchQuery.SearchQuery, null, 1, int.MaxValue);
 
-           if (rtsNameSearch.IsSuccessStatusCode)
+            if (rtsNameSearch.IsSuccessStatusCode)
             {
                 searchQuery.RtsIds = rtsNameSearch.Content.Organisations
                     .Select(x => x.Id.ToString())
@@ -60,7 +60,6 @@ public class SponsorOrganisationService(ISponsorOrganisationsServiceClient clien
         }
 
         return apiResponse.ToServiceResponse();
-
     }
 
     public async Task<ServiceResponse<AllSponsorOrganisationsResponse>> GetSponsorOrganisationByRtsId(string rtsId)
@@ -76,15 +75,31 @@ public class SponsorOrganisationService(ISponsorOrganisationsServiceClient clien
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse<SponsorOrganisationUserDto>> AddUserToSponsorOrganisation(SponsorOrganisationUserDto sponsorOrganisationUserDto)
+    public async Task<ServiceResponse<SponsorOrganisationUserDto>> AddUserToSponsorOrganisation(
+        SponsorOrganisationUserDto sponsorOrganisationUserDto)
     {
         var apiResponse = await client.AddUserToSponsorOrganisation(sponsorOrganisationUserDto);
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse<SponsorOrganisationUserDto>> GetUserInSponsorOrganisation(string rtsId, Guid userId)
+    public async Task<ServiceResponse<SponsorOrganisationUserDto>> GetUserInSponsorOrganisation(string rtsId,
+        Guid userId)
     {
         var apiResponse = await client.GetUserInSponsorOrganisation(rtsId, userId);
+        return apiResponse.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse<SponsorOrganisationUserDto>> EnableUserInSponsorOrganisation(string rtsId,
+        Guid userId)
+    {
+        var apiResponse = await client.EnableUserInSponsorOrganisation(rtsId, userId);
+        return apiResponse.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse<SponsorOrganisationUserDto>> DisableUserInSponsorOrganisation(string rtsId,
+        Guid userId)
+    {
+        var apiResponse = await client.DisableUserInSponsorOrganisation(rtsId, userId);
         return apiResponse.ToServiceResponse();
     }
 }
