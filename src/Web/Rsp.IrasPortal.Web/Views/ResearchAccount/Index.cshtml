@@ -3,6 +3,7 @@
 @model string?
 @{
 	ViewBag.Title = "My account";
+	var showSuccessMessage = TempData[TempDataKeys.ShowNotificationBanner];
 
 	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
 	var pageContent = pageContentData != null
@@ -30,6 +31,8 @@
 	var technicalAssuranceDescription = pageContent.GetValueOrDefault("HomeDashboard.TechnicalAssurance.Description", null);
 	var technicalAssuranceReviewersLabel = pageContent.GetValueOrDefault("HomeDashboard.TechnicalAssuranceReviewers.Label", null);
 	var technicalAssuranceReviewersDescription = pageContent.GetValueOrDefault("HomeDashboard.TechnicalAssuranceReviewers.Description", null);
+	var successBannerLabel = pageContent.GetValueOrDefault("HomeDashboard.SuccessProfileCreationBanner.Label", null);
+	var successBannerBody = pageContent.GetValueOrDefault("HomeDashboard.SuccessProfileCreationBanner.Body", null);
 }
 
 <authorized auth-params="@new(ShowWhenAuthenticated: false)">
@@ -42,6 +45,12 @@
 <authorized auth-params="@new()">
 	<div class="govuk-grid-row">
 		<div class="govuk-grid-column-two-thirds">
+
+			@if (showSuccessMessage is true)
+			{
+				<partial name="_NotificationBanner" model="@(successBannerLabel?.Value, successBannerBody?.Value)" />
+			}
+
 			<h1 class="govuk-heading-l">@Html.Raw(headline?.Value)</h1>
 			<p class="govuk-body">@Html.Raw(description?.Value)</p>
 			<dl class="govuk-summary-list">

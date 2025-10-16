@@ -7,7 +7,7 @@
 }
 
 <section aria-label="Service information" class="govuk-service-navigation"
-data-module="govuk-service-navigation">
+		 data-module="govuk-service-navigation">
 	<div class="govuk-width-container">
 		<div class="govuk-service-navigation__container">
 			<nav aria-label="Menu" class="govuk-service-navigation__wrapper">
@@ -17,7 +17,7 @@ data-module="govuk-service-navigation">
 				<ul class="govuk-service-navigation__list" id="navigation">
 					<li class="govuk-service-navigation__item">
 						<a class="govuk-service-navigation__link"
-						asp-route="acc:home">
+						   asp-route="acc:home">
 							Home
 						</a>
 					</li>
@@ -25,7 +25,7 @@ data-module="govuk-service-navigation">
 					@if (model != null && model.Any())
 					{
 						foreach (var link in model)
-						{							
+						{
 							if (link != null)
 							{
 								var isActive = Context?.Request?.Path.Value?.ToLower() == link.Link?.Url?.ToLower();
@@ -64,11 +64,14 @@ data-module="govuk-service-navigation">
 						</li>
 					}
 
-					<authorized auth-params="@new()">
-						<li class="govuk-service-navigation__item">
-							<strong>@userName</strong>
-						</li>
-					</authorized>
+					@if (!string.IsNullOrEmpty(userName))
+					{
+						<authorized auth-params="@new()">
+							<li class="govuk-service-navigation__item">
+								<strong>@userName</strong>
+							</li>
+						</authorized>
+					}
 
 					<authorized auth-params="@new()">
 						<li class="govuk-service-navigation__item">

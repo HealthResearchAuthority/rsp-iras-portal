@@ -8,6 +8,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.FeatureManagement;
 using Rsp.IrasPortal.Application.Configuration;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.Middleware;
 using Rsp.IrasPortal.Configuration.AppConfiguration;
 using Rsp.IrasPortal.Configuration.Auth;
 using Rsp.IrasPortal.Configuration.Dependencies;
@@ -253,6 +254,7 @@ app
     .UseSession()
     .UseAuthentication()
     .UseAuthorization()
+    .UseMiddleware<CompleteProfileMiddleware>() // middleware to check if new user needs to complete their profile
     .UseEndpoints
     (
         endpoints =>

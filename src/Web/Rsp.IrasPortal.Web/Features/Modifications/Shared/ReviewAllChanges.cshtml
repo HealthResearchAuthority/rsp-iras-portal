@@ -86,7 +86,7 @@
                 <h2 class="govuk-summary-card__title">
                     Sponsor details
                 </h2>
-				@if (Model.Status is ModificationStatus.InDraft)
+                @if (Model.Status is ModificationStatus.InDraft)
                 {
                     <ul class="govuk-summary-card__actions">
                         <li class="govuk-summary-card__action">
@@ -116,39 +116,39 @@
 </div>
 
 <authorized auth-params="@new(Roles: "applicant")">
-	@if (Model.Status is ModificationStatus.InDraft)
-{
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-two-thirds">
-            <h2 class="govuk-heading-m">Now send to sponsor</h2>
-            <p class="govuk-body">
-                By sending this modification you are confirming that, to the best of your knowledge, the details you are providing are correct.
-            </p>
-            <form method="post">
-                <div class="save-buttons">
-                    @{
-                        <input type="hidden" name="projectRecordId" value="@Model.ProjectRecordId" />
-                        <partial name="_SubmitButton" model="@("pmc:sendmodificationtosponsor", "Send modification to sponsor", new Dictionary<string, string>()
+    @if (Model.Status is ModificationStatus.InDraft)
+    {
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <h2 class="govuk-heading-m">Now send to sponsor</h2>
+                <p class="govuk-body">
+                    By sending this modification you are confirming that, to the best of your knowledge, the details you are providing are correct.
+                </p>
+                <form method="post">
+                    <div class="save-buttons">
+                        @{
+                            <input type="hidden" name="projectRecordId" value="@Model.ProjectRecordId" />
+                            <partial name="_SubmitButton" model="@("pmc:sendmodificationtosponsor", "Send modification to sponsor", new Dictionary<string, string>()
                                                              {
                                                                  ["projectModificationId"] = Model.ModificationId!,
                                                                  ["projectRecordId"] = Model.ProjectRecordId
                                                              })" />
 
-                        ViewBag.Style = "govuk-button govuk-button--secondary";
+                            ViewBag.Style = "govuk-button govuk-button--secondary";
 
-                        <partial name="_SubmitButton" model="@("pov:postapproval", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId })" />
-                    }
-                </div>
-            </form>
-			<a asp-route="pmc:deletemodification"
-			   asp-route-projectRecordId="@Model.ProjectRecordId"
-			   asp-route-irasId="@(Model.ModificationIdentifier?.Split('/')[0])"
-			   asp-route-shortTitle="@Model.ShortTitle"
-			   asp-route-projectModificationId="@Model.ModificationId"
-               class="govuk-link">
-                Delete modification
-            </a>
+                            <partial name="_SubmitButton" model="@("pmc:saveforlater", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId, ["routeName"] = "pov:postapproval" })" />
+                        }
+                    </div>
+                </form>
+                <a asp-route="pmc:deletemodification"
+                   asp-route-projectRecordId="@Model.ProjectRecordId"
+                   asp-route-irasId="@(Model.ModificationIdentifier?.Split('/')[0])"
+                   asp-route-shortTitle="@Model.ShortTitle"
+                   asp-route-projectModificationId="@Model.ModificationId"
+                   class="govuk-link">
+                    Delete modification
+                </a>
+            </div>
         </div>
-    </div>
-}
+    }
 </authorized>

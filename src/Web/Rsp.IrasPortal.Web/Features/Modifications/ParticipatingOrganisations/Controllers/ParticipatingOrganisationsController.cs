@@ -97,6 +97,9 @@ public class ParticipatingOrganisationsController
         var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty;
         if (saveForLater)
         {
+            TempData[TempDataKeys.ShowNotificationBanner] = true;
+            TempData[TempDataKeys.ProjectModification.ProjectModificationChangeMarker] = Guid.NewGuid();
+
             return RedirectToRoute("pov:postapproval", new { projectRecordId });
         }
         else

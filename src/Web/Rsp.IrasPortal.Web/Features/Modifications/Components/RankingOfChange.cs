@@ -27,14 +27,15 @@ public class RankingOfChange(ICmsQuestionsetService cmsQuestionsetService,
             var respondentAnswersResponse =
                 await respondentService.GetRespondentAnswers(projectRecordId, QuestionCategories.ProjectRecrod);
 
-            Dictionary<string, string> answerOptions = new()
-            {
-                { QuestionAnswersOptionsIds.Yes, "Yes" },
-                { QuestionAnswersOptionsIds.No, "No" }
-            };
-
             var answers = respondentAnswersResponse.Content;
-            nhsOrHscOrganisations = GetAnswerName(answers.FirstOrDefault(a => a.QuestionId == QuestionIds.NhsOrHscOrganisations)?.SelectedOption, answerOptions);
+
+            var answer = answers?.FirstOrDefault(a => a.QuestionId == QuestionIds.NhsOrHscOrganisations);
+
+            nhsOrHscOrganisations = answer?.SelectedOption switch
+            {
+                var option when option is QuestionAnswersOptionsIds.Yes => "Yes",
+                _ => "No"
+            };
         }
 
         var rankingOfChangeRequest = ModificationHelpers.GetRankingOfChangeRequest(specificAreaOfChangeId, applicability, questions, nhsOrHscOrganisations);
@@ -49,10 +50,5 @@ public class RankingOfChange(ICmsQuestionsetService cmsQuestionsetService,
         };
 
         return View("/Features/Modifications/Shared/RankingOfChange.cshtml", rankingOfChangeViewModel);
-    }
-
-    private static string? GetAnswerName(string? answerText, Dictionary<string, string> options)
-    {
-        return answerText is string id && options.TryGetValue(id, out var name) ? name : null;
     }
 }

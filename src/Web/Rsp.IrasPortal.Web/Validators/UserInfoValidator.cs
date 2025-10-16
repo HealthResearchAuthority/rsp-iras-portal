@@ -10,7 +10,7 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
     private const string FamilyNameMaxCharactersErrorMessage = "Last name must be 250 characters or less";
     private const string JobTitleMaxCharactersErrorMessage = "Job title must be 250 characters or less";
     private const string TitleMaxCharactersErrorMessage = "Title must be 250 characters or less";
-    private const string TelephoneMaxCharactersErrorMessage = "Telephone must be 11 digits or less";
+    private const string TelephoneMaxCharactersErrorMessage = "Telephone must be 13 digits or less";
     private const string TelephoneNotDigitMessage = "Telephone must only contain numbers";
     private const string GivenNameMandatoryErrorMessage = "Enter a first name";
     private const string FamilyNameMandatoryErrorMessage = "Enter a last name";
@@ -50,10 +50,9 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
             .WithMessage(EmailFormatErrorMessage);
 
         RuleFor(x => x.Telephone)
-            .MaximumLength(11)
+            .MaximumLength(13)
             .WithMessage(TelephoneMaxCharactersErrorMessage)
-            .Must(x => x.All(char.IsDigit))
-            .When(x => !string.IsNullOrEmpty(x.Telephone))
+            .Matches(@"^\+?\d{1,4}[\s\-()]?\d{3,15}$")
             .WithMessage(TelephoneNotDigitMessage);
 
         RuleFor(x => x.Organisation)

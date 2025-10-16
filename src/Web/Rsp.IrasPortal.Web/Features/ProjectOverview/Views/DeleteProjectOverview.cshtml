@@ -1,0 +1,12 @@
+﻿@model ProjectOverviewModel
+
+<dl class="govuk-summary-list">
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">IRAS ID</dt>
+        <dd class="govuk-summary-list__value">@Model.IrasId</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Short project title</dt>
+        <dd class="govuk-summary-list__value">@(Model.ProjectTitle ?? string.Empty)</dd>
+    </div>
+</dl>

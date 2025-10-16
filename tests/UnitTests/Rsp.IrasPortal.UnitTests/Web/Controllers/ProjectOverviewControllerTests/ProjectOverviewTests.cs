@@ -932,4 +932,70 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         mod.Category.ShouldBeNull();
         mod.DateSubmitted.ShouldNotBeNull();
     }
+
+    [Fact]
+    public async Task ConfirmDeleteProject_ReturnsViewResult_When_ProjectOverviewIsSuccessful()
+    {
+        // Arrange
+        var httpContext = CreateHttpContextWithSession();
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempData = CreateTempData(tempDataProvider, httpContext);
+        var projectRecordId = DefaultProjectRecordId;
+
+        var answers = new List<RespondentAnswerDto>
+        {
+            new() { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "Test Project" },
+            new() { QuestionId = QuestionIds.ProjectPlannedEndDate, AnswerText = "01/01/2025" }
+        };
+
+        var applicationService = Mocker.GetMock<IApplicationsService>();
+        applicationService
+            .Setup(s => s.GetProjectRecord(projectRecordId))
+            .ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new IrasApplicationResponse
+                {
+                    Id = projectRecordId,
+                    IrasId = 1,
+                    Status = ProjectRecordStatus.InDraft
+                }
+            });
+
+        SetupRespondentAnswers(projectRecordId, answers);
+        SetupControllerContext(httpContext, tempData);
+
+        // Act
+        var result = await Sut.ConfirmDeleteProject(projectRecordId);
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.ViewName.ShouldBe("/Features/ProjectOverview/Views/DeleteProject.cshtml");
+        viewResult.Model.ShouldBeOfType<ProjectOverviewModel>();
+    }
+
+    [Fact]
+    public async Task ConfirmDeleteProject_PropagatesError_When_GetProjectOverviewFails()
+    {
+        // Arrange
+        var httpContext = CreateHttpContextWithSession();
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempData = CreateTempData(tempDataProvider, httpContext);
+        var projectRecordId = "err-1";
+        SetupControllerContext(httpContext, tempData);
+
+        Mocker.GetMock<IApplicationsService>()
+            .Setup(s => s.GetProjectRecord(projectRecordId))
+            .ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
+            {
+                StatusCode = HttpStatusCode.InternalServerError
+            });
+
+        // Act
+        var result = await Sut.ConfirmDeleteProject(projectRecordId);
+
+        // Assert
+        var status = result.ShouldBeOfType<StatusCodeResult>();
+        status.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
+    }
 }

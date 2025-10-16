@@ -299,9 +299,18 @@ public class ModificationChangesBaseController
 
         // change it to go to the confirmation page i.e. submitted to sponsor
         // no next stage so redirect to modification details page
-        var irasId = TempData.Peek(IrasId) as int?;
+        var irasId = TempData.Peek(IrasId);
         var shortTitle = TempData.Peek(ShortProjectTitle) as string;
 
         return RedirectToRoute("pmc:modificationdetails", new { projectRecordId, irasId, shortTitle, projectModificationId });
+    }
+
+    [HttpGet, HttpPost]
+    public IActionResult SaveForLater(string projectRecordId, string routeName)
+    {
+        TempData[ShowNotificationBanner] = true;
+        TempData[ProjectModification.ProjectModificationChangeMarker] = Guid.NewGuid();
+
+        return RedirectToRoute(routeName, new { projectRecordId });
     }
 }

@@ -112,6 +112,9 @@ public class ModificationChangesController
         // if save for later
         if (saveForLater)
         {
+            TempData[ShowNotificationBanner] = true;
+            TempData[ProjectModification.ProjectModificationChangeMarker] = Guid.NewGuid();
+
             return RedirectToRoute(PostApprovalRoute, new { projectRecordId });
         }
 

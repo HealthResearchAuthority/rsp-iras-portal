@@ -1,10 +1,19 @@
 ﻿﻿@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
 @using Rsp.IrasPortal.Web.Extensions
 @model Rsp.IrasPortal.Web.Models.SearchOrganisationViewModel
 
 @{
 	ViewData["Title"] = "Search participating organisation";
 	var errorSummaryTitle = "There is a problem";
+
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData != null
+        ? pageContentData
+        : new Dictionary<string, MixedContentPageItem?>();
+
+    var cantFindYourOrganisationBodyText = pageContent.GetValueOrDefault("Modifications.ParticipatingOrganisations.CantFindYourOrganisationBodyText", null);
+
 	var modification = TempData.PopulateBaseProjectModificationProperties(new BaseProjectModificationViewModel());
 
 	var specificArea = modification.SpecificAreaOfChange;
@@ -260,31 +269,7 @@
 						        </span>
 					        </summary>
 					        <div class="govuk-details__text">
-						        <p>
-							        This section is asking for details of the organisation responsible for the research at a certain location. This may be different from the actual location the research is taking place. For example, in the case of an NHS hospital in England you should search for the Trust responsible for that hospital.
-						        </p>
-						        <p>You can improve your search results by:</p>
-						        <ul class="govuk-list govuk-list--bullet">
-							        <li>adding or removing filters</li>
-							        <li>double-checking your spelling</li>
-							        <li>using fewer keywords</li>
-							        <li>searching for something less specific</li>
-						        </ul>
-						        <p>
-							        If you still can't find what you're looking for, contact the Service Desk with your IRAS ID and the name and address of the organisations you want to add. Service Desk will notify you on the outcome. It can take up to 2 weeks for an organisation to be added.
-						        </p>
-						        <p>
-							        You can either save this change and its modification to submit later once the organisation has been added, or submit the modification now without the organisation and create a separate one once the organisation is available.
-						        </p>
-						        <a href="https://www.XYZ.com"
-						           class="govuk-link"
-						           onclick="window.open(this.href, '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,width=600,height=400'); return false;">
-							        Click here for the request page (opens in a new window).
-						        </a>
-						        <p>
-							        If the link is not working you can enter it manually:<br>
-							        www.XYZ.com
-						        </p>
+                                @Html.Raw(cantFindYourOrganisationBodyText?.Value)
 					        </div>
 				        </details>
 			        </div>
