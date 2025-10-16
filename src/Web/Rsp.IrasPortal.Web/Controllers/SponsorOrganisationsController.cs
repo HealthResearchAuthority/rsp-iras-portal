@@ -328,25 +328,7 @@ public class SponsorOrganisationsController(
     [CmsContentAction(nameof(ViewSponsorOrganisationUser))]
     public async Task<IActionResult> ViewSponsorOrganisationUser(string rtsId, Guid userId, bool addUser = false)
     {
-        var load = await LoadSponsorOrganisationAsync(rtsId);
-        var user = await userService.GetUser(userId.ToString(), null);
-
-        SponsorOrganisationUserDto? sponsorOrganisationUser = null;
-
-        if (!addUser)
-        {
-            var response = await sponsorOrganisationService.GetUserInSponsorOrganisation(rtsId, userId);
-            sponsorOrganisationUser = response.Content;
-        }
-
-        var model = new SponsorOrganisationUserModel
-        {
-            SponsorOrganisation = load.Model,
-            User = user.Content is not null
-                ? new UserViewModel(user.Content)
-                : new UserViewModel(),
-            SponsorOrganisationUser = sponsorOrganisationUser ?? new SponsorOrganisationUserDto()
-        };
+        var model = await BuildSponsorOrganisationUserModel(rtsId, userId);
 
         TempData[TempDataKeys.ShowEditLink] = false;
 
@@ -358,45 +340,20 @@ public class SponsorOrganisationsController(
 
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     [Route("/sponsororganisations/enableuser", Name = "soc:enableuser")]
     public async Task<IActionResult> EnableUser(string rtsId, Guid userId)
     {
-        var user = await userService.GetUser(userId.ToString(), null);
-
-        var sponsorOrganisationUser = await sponsorOrganisationService.GetUserInSponsorOrganisation(rtsId, userId);
-
-        var model = new SponsorOrganisationUserModel
-        {
-            SponsorOrganisation = new SponsorOrganisationModel
-            {
-                RtsId = rtsId
-            },
-            User = user.Content is not null ? new UserViewModel(user.Content) : new UserViewModel(),
-            SponsorOrganisationUser = sponsorOrganisationUser.Content ?? new SponsorOrganisationUserDto()
-        };
-
-
+        var model = await BuildSponsorOrganisationUserModel(rtsId, userId);
         return View("ConfirmEnableUser", model);
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     [Route("/sponsororganisations/disableuser", Name = "soc:disableuser")]
     public async Task<IActionResult> DisableUser(string rtsId, Guid userId)
     {
-        var user = await userService.GetUser(userId.ToString(), null);
-
-        var sponsorOrganisationUser = await sponsorOrganisationService.GetUserInSponsorOrganisation(rtsId, userId);
-
-        var model = new SponsorOrganisationUserModel
-        {
-            SponsorOrganisation = new SponsorOrganisationModel
-            {
-                RtsId = rtsId
-            },
-            User = user.Content is not null ? new UserViewModel(user.Content) : new UserViewModel(),
-            SponsorOrganisationUser = sponsorOrganisationUser.Content ?? new SponsorOrganisationUserDto()
-        };
-
+        var model = await BuildSponsorOrganisationUserModel(rtsId, userId);
         return View("ConfirmDisableUser", model);
     }
 
@@ -598,5 +555,26 @@ public class SponsorOrganisationsController(
         HttpContext.Session.SetString(
             SessionKeys.SponsorOrganisationsSearch,
             JsonSerializer.Serialize(model.Search));
+    }
+
+    [NonAction]
+    private async Task<SponsorOrganisationUserModel> BuildSponsorOrganisationUserModel(string rtsId, Guid userId)
+    {
+        var userTask = userService.GetUser(userId.ToString(), null);
+        var soUserTask = sponsorOrganisationService.GetUserInSponsorOrganisation(rtsId, userId);
+
+        await Task.WhenAll(userTask, soUserTask);
+
+        var userResponse = await userTask;
+        var soUserResponse = await soUserTask;
+
+        return new SponsorOrganisationUserModel
+        {
+            SponsorOrganisation = new SponsorOrganisationModel { RtsId = rtsId },
+            User = userResponse.Content is not null
+                ? new UserViewModel(userResponse.Content)
+                : new UserViewModel(),
+            SponsorOrganisationUser = soUserResponse.Content ?? new SponsorOrganisationUserDto()
+        };
     }
 }

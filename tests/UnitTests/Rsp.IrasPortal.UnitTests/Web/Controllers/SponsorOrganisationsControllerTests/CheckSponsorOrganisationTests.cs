@@ -136,7 +136,8 @@ public class CheckSponsorOrganisationTests : TestServiceBase<SponsorOrganisation
                     {
                         new()
                         {
-                            Id = "123"
+                            Id = "123",
+                            Name = "test",
                         }
                     }
                 }
@@ -153,6 +154,7 @@ public class CheckSponsorOrganisationTests : TestServiceBase<SponsorOrganisation
                     {
                         new()
                         {
+                            SponsorOrganisationName = "test",
                             RtsId = "123"
                         }
                     },
@@ -246,7 +248,8 @@ public class CheckSponsorOrganisationTests : TestServiceBase<SponsorOrganisation
                     {
                         new()
                         {
-                            Id = "123"
+                            Id = "123",
+                            Name = "test",
                         }
                     }
                 }
@@ -263,6 +266,6 @@ public class CheckSponsorOrganisationTests : TestServiceBase<SponsorOrganisation
         var result = await Sut.CheckSponsorOrganisation(model);
 
         // Assert
-        result.ShouldBeOfType<ViewResult>();
+        result.ShouldBeOfType<StatusCodeResult>();
     }
 }
