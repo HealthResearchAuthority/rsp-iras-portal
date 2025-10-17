@@ -931,6 +931,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         mod.ReviewType.ShouldBeNull();
         mod.Category.ShouldBeNull();
         mod.SentToRegulatorDate.ShouldNotBeNull();
+        mod.SentToSponsorDate.ShouldBeNull();
     }
 
     [Fact]
