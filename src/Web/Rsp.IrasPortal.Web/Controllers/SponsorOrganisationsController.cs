@@ -32,8 +32,8 @@ public class SponsorOrganisationsController(
     public async Task<IActionResult> Index(
         int pageNumber = 1,
         int pageSize = 20,
-        string? sortField = "name",
-        string? sortDirection = "asc",
+        string? sortField = nameof(SponsorOrganisationDto.SponsorOrganisationName),
+        string? sortDirection = SortDirections.Ascending,
         [FromForm] SponsorOrganisationSearchViewModel? model = null,
         [FromQuery] bool fromPagination = false)
     {

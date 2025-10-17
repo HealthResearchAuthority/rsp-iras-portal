@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
@@ -14,8 +15,8 @@ public class SponsorOrganisationService(ISponsorOrganisationsServiceClient clien
 {
     public async Task<ServiceResponse<AllSponsorOrganisationsResponse>> GetAllSponsorOrganisations(
         SponsorOrganisationSearchRequest? searchQuery = null, int pageNumber = 1,
-        int pageSize = 20, string? sortField = "name",
-        string? sortDirection = "asc")
+        int pageSize = 20, string? sortField = nameof(SponsorOrganisationDto.SponsorOrganisationName),
+        string? sortDirection = SortDirections.Ascending)
     {
         if (searchQuery?.SearchQuery != null)
         {
