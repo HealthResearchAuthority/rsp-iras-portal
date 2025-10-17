@@ -93,6 +93,40 @@ public class QuestionViewModelValidatorBase : AbstractValidator<QuestionViewMode
 
                     foreach (var dateCheck in dateChecks)
                     {
+                        if (dateCheck.Contains("MISSINGDATEPART"))
+                        {
+                            var missingParts = new List<string>();
+
+                            if (string.IsNullOrWhiteSpace(question.Day))
+                                missingParts.Add("day");
+                            if (string.IsNullOrWhiteSpace(question.Month))
+                                missingParts.Add("month");
+                            if (string.IsNullOrWhiteSpace(question.Year))
+                                missingParts.Add("year");
+
+                            if (missingParts.Count > 0)
+                            {
+                                condition.IsApplicable = true;
+
+                                switch (missingParts.Count)
+                                {
+                                    case 3:
+                                        context.AddFailure(nameof(question.AnswerText), "Enter a sponsor document date");
+                                        break;
+
+                                    case 2:
+                                        context.AddFailure(nameof(question.AnswerText), $"Enter the {missingParts[0]} and {missingParts[1]}");
+                                        break;
+
+                                    case 1:
+                                        context.AddFailure(nameof(question.AnswerText), $"Enter the {missingParts[0]}");
+                                        break;
+                                }
+
+                                break;
+                            }
+                        }
+
                         if (dateCheck.Contains("FORMAT"))
                         {
                             var format = dateCheck.Split(':', StringSplitOptions.RemoveEmptyEntries)[1];
@@ -114,6 +148,22 @@ public class QuestionViewModelValidatorBase : AbstractValidator<QuestionViewMode
                                 continue;
                             }
                             if (date.Date <= DateTime.Now.Date)
+                            {
+                                // by setting IsApplicable property
+                                // it will display the Description of the condition
+                                // for the property
+                                condition.IsApplicable = true;
+                                context.AddFailure(nameof(question.AnswerText), $"{condition.Description}");
+                            }
+                        }
+
+                        if (dateCheck.Contains("PASTDATE"))
+                        {
+                            if (!DateTime.TryParse(answer, CultureInfo.InvariantCulture, out var date))
+                            {
+                                continue;
+                            }
+                            if (date.Date >= DateTime.Now.Date)
                             {
                                 // by setting IsApplicable property
                                 // it will display the Description of the condition
