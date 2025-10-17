@@ -170,7 +170,7 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
-        view.ViewName.ShouldBe("ReviewableFreeText");
+        view.ViewName.ShouldBe("Questionnaire");
         view.Model.ShouldBeOfType<QuestionnaireViewModel>();
         _validator.Verify();
     }

@@ -170,7 +170,7 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
-        view.ViewName.ShouldBe("PlannedEndDate");
+        view.ViewName.ShouldBe("Questionnaire");
         view.Model.ShouldBeOfType<QuestionnaireViewModel>();
         _validator.Verify();
     }
