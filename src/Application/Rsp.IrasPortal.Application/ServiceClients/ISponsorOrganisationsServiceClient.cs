@@ -34,4 +34,28 @@ public interface ISponsorOrganisationsServiceClient
     [Post("/sponsororganisations/adduser")]
     public Task<IApiResponse<SponsorOrganisationUserDto>> AddUserToSponsorOrganisation([Body] SponsorOrganisationUserDto sponsorOrganisationUserDto);
 
+    /// <summary>
+    /// Gets a Sponsor Organisation user by RTS ID and User ID
+    /// </summary>
+    [Get("/sponsororganisations/{rtsId}/user/{userId}")]
+    Task<IApiResponse<SponsorOrganisationUserDto>> GetUserInSponsorOrganisation(
+        string rtsId,
+         Guid userId);
+
+    /// <summary>
+    /// Enable a Sponsor Organisation user by RTS ID and User ID
+    /// </summary>
+    [Get("/sponsororganisations/{rtsId}/user/{userId}/enable")]
+    Task<IApiResponse<SponsorOrganisationUserDto>> EnableUserInSponsorOrganisation(
+        string rtsId,
+        Guid userId);
+
+    /// <summary>
+    /// Disable a Sponsor Organisation user by RTS ID and User ID
+    /// </summary>
+    [Get("/sponsororganisations/{rtsId}/user/{userId}/disable")]
+    Task<IApiResponse<SponsorOrganisationUserDto>> DisableUserInSponsorOrganisation(
+        string rtsId,
+        Guid userId);
+
 }

@@ -1,22 +1,21 @@
 ﻿@using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
-@using Rsp.IrasPortal.Web.Areas.Admin.Models
 @model SponsorOrganisationListUsersModel
 
 @{
-    ViewBag.Title = "Users - Manage sponsor organisations - System Administration";
+    ViewBag.Title = "View users - Manage sponsor organisations - System Administration";
 
-	
+
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null
         ? pageContentData
         : new Dictionary<string, MixedContentPageItem?>();
 
-	var headline = pageContent.GetValueOrDefault("SponsorOrganisations.ViewUsers.Title", null);
-	var body = pageContent.GetValueOrDefault("SponsorOrganisations.ViewUsers.Body", null);
-	var addNewLink = pageContent.GetValueOrDefault("SponsorOrganisations.ViewUsers.AddNewLink", null);
-	var searchTitle = pageContent.GetValueOrDefault("SponsorOrganisations.ViewUsers.SearchTitle", null);
-	var searchHint = pageContent.GetValueOrDefault("SponsorOrganisations.ViewUsers.SearchHint", null);
+    var headline = pageContent.GetValueOrDefault("SponsorOrganisations.ViewUsers.Title", null);
+    var body = pageContent.GetValueOrDefault("SponsorOrganisations.ViewUsers.Body", null);
+    var addNewLink = pageContent.GetValueOrDefault("SponsorOrganisations.ViewUsers.AddNewLink", null);
+    var searchTitle = pageContent.GetValueOrDefault("SponsorOrganisations.ViewUsers.SearchTitle", null);
+    var searchHint = pageContent.GetValueOrDefault("SponsorOrganisations.ViewUsers.SearchHint", null);
 }
 
 @* @section is added for the back button, so that we can render something below the back button
@@ -39,11 +38,11 @@
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
         <h1 class="govuk-heading-l">@Html.Raw(headline?.Value) @Model.SponsorOrganisation.SponsorOrganisationName</h1>
-		<p class="govuk-body">@Html.Raw(body?.Value)</p>
+        <p class="govuk-body">@Html.Raw(body?.Value)</p>
     </div>
 
     <div class="govuk-grid-column-one-third">
-		<a class="govuk-link govuk-body float-right" asp-route="soc:viewadduser" asp-all-route-data="@(new Dictionary<string, string> { { "rtsId", Model.SponsorOrganisation.RtsId } })">@Html.Raw(addNewLink?.Value)</a>
+        <a class="govuk-link govuk-body float-right" asp-route="soc:viewadduser" asp-all-route-data="@(new Dictionary<string, string> { { "rtsId", Model.SponsorOrganisation.RtsId } })">@Html.Raw(addNewLink?.Value)</a>
     </div>
 </div>
 
@@ -52,10 +51,10 @@
 
         <form method="get">
             <label class="govuk-label" for="Search.SearchQuery">
-				<b>@Html.Raw(searchTitle?.Value)</b>
+                <b>@Html.Raw(searchTitle?.Value)</b>
             </label>
             <div class="govuk-hint">
-				@Html.Raw(searchHint?.Value)
+                @Html.Raw(searchHint?.Value)
             </div>
             <input class="govuk-input govuk-!-width-two-thirds" id="SearchQuery" name="SearchQuery" type="text" value="@(Model.Pagination?.SearchQuery ?? string.Empty)">
             <input hidden readonly name="RtsId" value="@Model.SponsorOrganisation.RtsId"/>
@@ -87,12 +86,13 @@
                             <td class="govuk-table__cell">@user.FamilyName</td>
                             <td class="govuk-table__cell line-break-anywhere">@user.Email</td>
                             <td class="govuk-table__cell">
-                                @if (!string.IsNullOrEmpty(user.Status))
-                                {
-                                    var statusClass = string.Equals(user.Status, IrasUserStatus.Active, StringComparison.InvariantCultureIgnoreCase) ? "govuk-tag--green" : "govuk-tag--red";
-
-                                    <strong class="govuk-tag @statusClass">@user.Status</strong>
+                                @{
+                                    var sponsorOrganisationUserDto = Model.SponsorOrganisation.Users.FirstOrDefault(x => x.UserId == Guid.Parse(user.Id));
+                                    var statusClass = sponsorOrganisationUserDto.IsActive ? "govuk-tag--green" : "govuk-tag--red";
+                                    var statusText = sponsorOrganisationUserDto.IsActive ? "Active" : "Disabled";
                                 }
+
+                                <strong class="govuk-tag @statusClass">@statusText</strong>
                             </td>
                             <td class="govuk-table__cell">
                                 @if (user.CurrentLogin.HasValue)
@@ -110,8 +110,8 @@
                             </td>
                             <td class="govuk-table__cell">
                                 <a class="govuk-link"
-                                   asp-route="soc:confirmremoveuser"
-                                   asp-route-reviewBodyId="@Model.SponsorOrganisation.RtsId"
+                                   asp-route="soc:viewsponsororganisationuser"
+                                   asp-route-rtsId="@Model.SponsorOrganisation.RtsId"
                                    asp-route-userId="@user.Id">
                                     View/edit
                                 </a>

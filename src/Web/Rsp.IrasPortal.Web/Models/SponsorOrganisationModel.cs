@@ -1,4 +1,6 @@
-﻿namespace Rsp.IrasPortal.Web.Models;
+﻿using Rsp.IrasPortal.Application.DTOs;
+
+namespace Rsp.IrasPortal.Web.Models;
 
 public class SponsorOrganisationModel
 {
@@ -11,4 +13,5 @@ public class SponsorOrganisationModel
     public string? UpdatedBy { get; set; }
     public DateTime CreatedDate { get; set; }
     public DateTime? UpdatedDate { get; set; }
+    public IEnumerable<SponsorOrganisationUserDto> Users { get; set; }
 }

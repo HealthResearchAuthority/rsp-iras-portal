@@ -24,9 +24,7 @@
                 <input type="hidden" asp-for="SponsorOrganisationModel.SponsorOrganisationName" name="SponsorOrganisationName" value="@Model.SponsorOrganisationModel.SponsorOrganisationName"/>
             </td>
             <td class="govuk-table__cell govuk-table__cell--numeric">
-                @{
-                    await RenderEditLink();
-                }
+      
             </td>
         </tr>
 
@@ -43,9 +41,8 @@
                 }
             </td>
             <td class="govuk-table__cell govuk-table__cell--numeric">
-                @{
-                    await RenderEditLink();
-                }
+                
+             
             </td>
         </tr>
 
@@ -92,14 +89,5 @@
     </tbody>
 </table>
 
-@{
-    async Task RenderEditLink()
-    {
-        if (update)
-        {
-            <a class="govuk-link" asp-route="rbc:updatereviewbody" asp-route-id="@Model.SponsorOrganisationModel.Id">Change</a>
-        }
-  }
-}
 
 
