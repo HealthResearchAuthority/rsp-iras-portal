@@ -36,7 +36,7 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
         Sut.TempData = new TempDataDictionary(ctx, Mock.Of<ITempDataProvider>());
 
         // Act
-        var result = await Sut.DisplayQuestionnaire("PR1", "CAT1", "SEC1", false, viewName: nameof(ModificationChangesController.ReviewableFreeText));
+        var result = await Sut.DisplayQuestionnaire("PR1", "CAT1", "SEC1", false, viewName: "ReviewableFreeText");
 
         // Assert
         result
@@ -84,7 +84,7 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
             });
 
         _cmsService
-            .Setup(s => s.GetModificationPreviousQuestionSection("SEC1"))
+            .Setup(s => s.GetModificationPreviousQuestionSection("SEC1", It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -92,7 +92,7 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
             });
 
         _cmsService
-            .Setup(s => s.GetModificationNextQuestionSection("SEC1"))
+            .Setup(s => s.GetModificationNextQuestionSection("SEC1", It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -100,11 +100,11 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
             });
 
         // Act
-        var result = await Sut.DisplayQuestionnaire("PR1", "CAT1", "SEC1", true, viewName: nameof(ModificationChangesController.ReviewableFreeText));
+        var result = await Sut.DisplayQuestionnaire("PR1", "CAT1", "SEC1", true, viewName: "ReviewableFreeText");
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
-        view.ViewName.ShouldBe(nameof(ModificationChangesController.ReviewableFreeText));
+        view.ViewName.ShouldBe("Questionnaire");
         var model = view.Model.ShouldBeOfType<QuestionnaireViewModel>();
         model.CurrentStage.ShouldBe("SEC1");
     }
@@ -467,7 +467,7 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
             });
 
         _cmsService
-            .Setup(s => s.GetModificationPreviousQuestionSection("SEC1"))
+            .Setup(s => s.GetModificationPreviousQuestionSection("SEC1", It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -475,82 +475,50 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
             });
 
         _cmsService
-            .Setup(s => s.GetModificationNextQuestionSection("SEC1"))
+            .Setup(s => s.GetModificationNextQuestionSection("SEC1", It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
             {
                 StatusCode = HttpStatusCode.OK,
                 Content = new QuestionSectionsResponse { SectionId = "SEC2", QuestionCategoryId = "CAT1", StaticViewName = "AffectingOrganisations" }
             });
 
+        var questionSetServiceResponse = new ServiceResponse<CmsQuestionSetResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new CmsQuestionSetResponse
+            {
+                Id = "123",
+                Version = "1.0",
+                Sections = new List<SectionModel>
+                {
+                    new SectionModel
+                    {
+                        SectionId = "section-1",
+                        Questions = new List<QuestionModel>
+                        {
+                            new QuestionModel
+                            {
+                                QuestionId = "Q1"
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        Mocker
+            .GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(questionSetServiceResponse);
+
         // Act
-        var result = await Sut.DisplayQuestionnaire("PR1", "CAT1", "SEC1", false, nameof(ModificationChangesController.ReviewableFreeText));
+        var result = await Sut.DisplayQuestionnaire("PR1", "CAT1", "SEC1", false, "ReviewableFreeText");
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
         var model = view.Model.ShouldBeOfType<QuestionnaireViewModel>();
         model.ProjectRecordAnswers.ShouldContainKey("QCMS1");
         model.ProjectRecordAnswers["QCMS1"].AnswerText.ShouldBe("Original");
-    }
-
-    [Fact]
-    public async Task ReviewableFreeText_Action_Returns_View()
-    {
-        // Arrange
-        var ctx = new DefaultHttpContext();
-        Sut.ControllerContext = new ControllerContext { HttpContext = ctx };
-        Sut.TempData = new TempDataDictionary(ctx, Mock.Of<ITempDataProvider>())
-        {
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
-            [TempDataKeys.ProjectModification.SpecificAreaOfChangeId] = Guid.NewGuid()
-        };
-
-        _respondentService
-            .Setup(s => s.GetModificationChangeAnswers(It.IsAny<Guid>(), "PR1", "CAT1"))
-            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>>
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = []
-            });
-
-        _cmsService
-            .Setup(s => s.GetModificationsJourney(It.IsAny<string>()))
-            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = BuildQuestionSet("SEC1", "CAT1", "ReviewableFreeText")
-            });
-
-        _cmsService
-            .Setup(s => s.GetModificationQuestionSet("SEC1", null))
-            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = BuildQuestionSet("SEC1", "CAT1", "ReviewableFreeText")
-            });
-
-        _cmsService
-            .Setup(s => s.GetModificationPreviousQuestionSection("SEC1"))
-            .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new QuestionSectionsResponse { SectionId = "PREV", QuestionCategoryId = "CAT1", StaticViewName = "prev" }
-            });
-
-        _cmsService
-            .Setup(s => s.GetModificationNextQuestionSection("SEC1"))
-            .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new QuestionSectionsResponse { SectionId = "SEC2", QuestionCategoryId = "CAT1", StaticViewName = "AffectingOrganisations" }
-            });
-
-        // Act
-        var result = await Sut.ReviewableFreeText("PR1", "CAT1", "SEC1", true);
-
-        // Assert
-        var view = result.ShouldBeOfType<ViewResult>();
-        view.ViewName.ShouldBe(nameof(ModificationChangesController.ReviewableFreeText));
-        var model = view.Model.ShouldBeOfType<QuestionnaireViewModel>();
     }
 
     private (DefaultHttpContext Ctx, Guid ModificationChangeId) SetupHttpContext()
@@ -586,7 +554,7 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
             });
 
         _cmsService
-            .Setup(s => s.GetModificationPreviousQuestionSection(currentSectionId))
+            .Setup(s => s.GetModificationPreviousQuestionSection(currentSectionId, It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -594,7 +562,7 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
             });
 
         _cmsService
-            .Setup(s => s.GetModificationNextQuestionSection(currentSectionId))
+            .Setup(s => s.GetModificationNextQuestionSection(currentSectionId, It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
             {
                 StatusCode = HttpStatusCode.OK,

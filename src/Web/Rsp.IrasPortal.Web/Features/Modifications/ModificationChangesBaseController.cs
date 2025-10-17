@@ -208,15 +208,15 @@ public class ModificationChangesBaseController
         // get the responent answers for the category
         var respondentServiceResponse = await respondentService.GetModificationChangeAnswers(modificationChangeId, projectRecordId);
 
-        // get the questions for all categories
-        var questionSetServiceResponse = await cmsQuestionsetService.GetModificationsJourney(specificAreaOfChangeId.ToString());
-
         // return the error view if unsuccessfull
         if (!respondentServiceResponse.IsSuccessStatusCode)
         {
             // return the error page
             return this.ServiceError(respondentServiceResponse);
         }
+
+        // get the questions for all categories
+        var questionSetServiceResponse = await cmsQuestionsetService.GetModificationsJourney(specificAreaOfChangeId.ToString());
 
         // return the error view if unsuccessfull
         if (!questionSetServiceResponse.IsSuccessStatusCode)
