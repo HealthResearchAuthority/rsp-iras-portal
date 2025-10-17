@@ -32,7 +32,7 @@ public class QuestionnaireViewModel
     /// </summary>
     public OrganisationSearchViewModel SponsorOrgSearch { get; set; } = new();
 
-    public Dictionary<string, RespondentAnswerDto> OriginalAnswers { get; set; } = [];
+    public Dictionary<string, RespondentAnswerDto> ProjectRecordAnswers { get; set; } = [];
 
     /// <summary>
     /// Gets a list of conditional rules for non-mandatory questions that have rules.

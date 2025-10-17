@@ -59,17 +59,17 @@ public class CmsQuestionsetService(ICmsQuestionSetServiceClient client) : ICmsQu
         return responce.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse<QuestionSectionsResponse>> GetModificationNextQuestionSection(string currentSectionId)
+    public async Task<ServiceResponse<QuestionSectionsResponse>> GetModificationNextQuestionSection(string currentSectionId, string? parentQuestionId = null, string? parentAnswerOption = null)
     {
-        var responce = await client.GetModificationNextQuestionSection(currentSectionId);
+        var responce = await client.GetModificationNextQuestionSection(currentSectionId, parentQuestionId, parentAnswerOption);
 
         // convert to service response
         return responce.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse<QuestionSectionsResponse>> GetModificationPreviousQuestionSection(string currentSectionId)
+    public async Task<ServiceResponse<QuestionSectionsResponse>> GetModificationPreviousQuestionSection(string currentSectionId, string? parentQuestionId = null, string? parentAnswerOption = null)
     {
-        var responce = await client.GetModificationPreviousQuestionSection(currentSectionId);
+        var responce = await client.GetModificationPreviousQuestionSection(currentSectionId, parentQuestionId, parentAnswerOption);
 
         // convert to service response
         return responce.ToServiceResponse();

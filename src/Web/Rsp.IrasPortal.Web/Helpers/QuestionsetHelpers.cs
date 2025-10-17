@@ -73,7 +73,8 @@ public static class QuestionsetHelpers
                 NhsInvolvment = question.NhsInvolvment,
                 NonNhsInvolvment = question.NonNhsInvolvment,
                 AffectedOrganisations = question.AffectedOrganisations,
-                RequireAdditionalResources = question.RequireAdditionalResources
+                RequireAdditionalResources = question.RequireAdditionalResources,
+                UseAnswerForNextSection = question.UseAnswerForNextSection
             });
         }
 
@@ -109,7 +110,8 @@ public static class QuestionsetHelpers
                 NhsInvolvment = question.NhsInvolvment,
                 NonNhsInvolvment = question.NonNhsInvolvment,
                 AffectedOrganisations = question.AffectedOrganisations,
-                RequireAdditionalResources = question.RequireAdditionalResources
+                RequireAdditionalResources = question.RequireAdditionalResources,
+                UseAnswerForNextSection = question.UseAnswerForNextSection
             };
 
             if (question.Answers != null && question.Answers.Any())

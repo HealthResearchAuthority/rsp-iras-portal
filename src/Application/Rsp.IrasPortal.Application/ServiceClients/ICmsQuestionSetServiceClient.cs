@@ -33,10 +33,10 @@ public interface ICmsQuestionSetServiceClient
     public Task<ApiResponse<CmsQuestionSetResponse>> GetModificationQuestionSet(string? sectionId = null, string? questionSetId = null);
 
     [Get("/modificationsquestionset/getPreviousQuestionSection")]
-    public Task<ApiResponse<QuestionSectionsResponse>> GetModificationPreviousQuestionSection(string currentSectionId);
+    public Task<ApiResponse<QuestionSectionsResponse>> GetModificationPreviousQuestionSection(string currentSectionId, string? parentQuestionId = null, string? parentAnswerOption = null);
 
     [Get("/modificationsquestionset/getNextQuestionSection")]
-    public Task<ApiResponse<QuestionSectionsResponse>> GetModificationNextQuestionSection(string currentSectionId);
+    public Task<ApiResponse<QuestionSectionsResponse>> GetModificationNextQuestionSection(string currentSectionId, string? parentQuestionId = null, string? parentAnswerOption = null);
 
     [Get("/modificationsranking/getmodificationranking")]
     public Task<ApiResponse<RankingOfChangeResponse>> GetModificationRanking([Query] RankingOfChangeRequest rankingOfChangeRequest);

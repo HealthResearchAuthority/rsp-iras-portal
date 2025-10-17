@@ -182,7 +182,7 @@ public class ReviewChangesTests : TestServiceBase<ModificationChangesBaseControl
             });
 
         _cmsService
-            .Setup(s => s.GetModificationPreviousQuestionSection(sectionId))
+            .Setup(s => s.GetModificationPreviousQuestionSection(sectionId, It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -190,7 +190,7 @@ public class ReviewChangesTests : TestServiceBase<ModificationChangesBaseControl
             });
 
         _cmsService
-            .Setup(s => s.GetModificationNextQuestionSection(sectionId))
+            .Setup(s => s.GetModificationNextQuestionSection(sectionId, It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -268,7 +268,7 @@ public class ReviewChangesTests : TestServiceBase<ModificationChangesBaseControl
             });
 
         _cmsService
-            .Setup(s => s.GetModificationPreviousQuestionSection(sectionId))
+            .Setup(s => s.GetModificationPreviousQuestionSection(sectionId, It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -276,7 +276,7 @@ public class ReviewChangesTests : TestServiceBase<ModificationChangesBaseControl
             });
 
         _cmsService
-            .Setup(s => s.GetModificationNextQuestionSection(sectionId))
+            .Setup(s => s.GetModificationNextQuestionSection(sectionId, It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
             {
                 StatusCode = HttpStatusCode.OK,
