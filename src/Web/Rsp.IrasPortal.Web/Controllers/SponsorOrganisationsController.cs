@@ -3,6 +3,7 @@ using System.Text.Json;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
@@ -31,8 +32,8 @@ public class SponsorOrganisationsController(
     public async Task<IActionResult> Index(
         int pageNumber = 1,
         int pageSize = 20,
-        string? sortField = "name",
-        string? sortDirection = "asc",
+        string? sortField = nameof(SponsorOrganisationDto.SponsorOrganisationName),
+        string? sortDirection = SortDirections.Ascending,
         [FromForm] SponsorOrganisationSearchViewModel? model = null,
         [FromQuery] bool fromPagination = false)
     {
@@ -53,10 +54,10 @@ public class SponsorOrganisationsController(
         };
 
         var response = await sponsorOrganisationService.GetAllSponsorOrganisations(
-            request, pageNumber, pageSize, sortField, sortDirection);
+            request, 1, int.MaxValue, sortField, sortDirection);
 
         var items = response.Content?.SponsorOrganisations ?? Enumerable.Empty<SponsorOrganisationDto>();
-        var sorted = SortSponsorOrganisations(items, sortField, sortDirection).ToList();
+        var sorted = SortSponsorOrganisations(items, sortField, sortDirection, pageNumber, pageSize).ToList();
         var total = response.Content?.TotalCount ?? 0;
 
         var viewModel = new SponsorOrganisationSearchViewModel
@@ -74,7 +75,8 @@ public class SponsorOrganisationsController(
     }
 
     [Route("/sponsororganisations/applyfilters", Name = "soc:applyfilters")]
-    [HttpPost, HttpGet]
+    [HttpPost]
+    [HttpGet]
     [CmsContentAction(nameof(Index))]
     public Task<IActionResult> ApplyFilters(
         SponsorOrganisationSearchViewModel model,
@@ -124,11 +126,13 @@ public class SponsorOrganisationsController(
             var nameSearch = await rtsService.GetOrganisationsByName(organisationName, null, 1, int.MaxValue);
             if (!nameSearch.IsSuccessStatusCode)
             {
-                return this.ServiceError(nameSearch);
+                TempData[TempDataKeys.ShowNoResultsFound] = true;
+                return View("SetupSponsorOrganisation", model);
             }
 
             var rtsOrg = nameSearch.Content?.Organisations.FirstOrDefault();
-            if (rtsOrg == null)
+            if (rtsOrg == null ||
+                !string.Equals(rtsOrg.Name?.Trim(), organisationName?.Trim(), StringComparison.Ordinal))
             {
                 TempData[TempDataKeys.ShowNoResultsFound] = true;
                 return View("SetupSponsorOrganisation", model);
@@ -260,6 +264,7 @@ public class SponsorOrganisationsController(
     }
 
     [HttpGet]
+    [Route("/sponsororganisations/viewadduser", Name = "soc:viewadduser")]
     public async Task<IActionResult> ViewAddUser(string rtsId, string? searchQuery = null, int pageNumber = 1,
         int pageSize = 20)
     {
@@ -290,24 +295,8 @@ public class SponsorOrganisationsController(
         return View(model);
     }
 
-    [HttpGet]
-    public async Task<IActionResult> ConfirmAddUpdateUser(string rtsId, Guid userId)
-    {
-        var load = await LoadSponsorOrganisationAsync(rtsId);
-
-        var user = await userService.GetUser(userId.ToString(), null);
-
-        var model = new ConfirmAddUpdateSponsorOrganisationUserModel
-        {
-            SponsorOrganisation = load.Model,
-            User = user.Content is not null ? new UserViewModel(user.Content) : new UserViewModel()
-        };
-
-        TempData[TempDataKeys.ShowEditLink] = false;
-        return View("ConfirmAddUpdateUser", model);
-    }
-
     [HttpPost]
+    [Route("/sponsororganisations/submitadduser", Name = "soc:submitadduser")]
     public async Task<IActionResult> SubmitAddUser(string rtsId, Guid userId, Guid sponsorOrganisationId)
     {
         var user = await userService.GetUser(userId.ToString(), null);
@@ -331,6 +320,56 @@ public class SponsorOrganisationsController(
         await userService.UpdateRoles(user.Content!.User.Email, null, "sponsor");
 
         TempData[TempDataKeys.ShowNotificationBanner] = true;
+        return RedirectToAction("ViewSponsorOrganisationUsers", new { rtsId });
+    }
+
+    [HttpGet]
+    [Route("/sponsororganisations/viewuser", Name = "soc:viewsponsororganisationuser")]
+    [CmsContentAction(nameof(ViewSponsorOrganisationUser))]
+    public async Task<IActionResult> ViewSponsorOrganisationUser(string rtsId, Guid userId, bool addUser = false)
+    {
+        var model = await BuildSponsorOrganisationUserModel(rtsId, userId);
+
+        TempData[TempDataKeys.ShowEditLink] = false;
+
+        // Auto-set type based on whether the user is being added or edited
+        ViewBag.Type = addUser ? "add" : "edit";
+
+        return View("ViewSponsorOrganisationUser", model);
+    }
+
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Route("/sponsororganisations/enableuser", Name = "soc:enableuser")]
+    public async Task<IActionResult> EnableUser(string rtsId, Guid userId)
+    {
+        var model = await BuildSponsorOrganisationUserModel(rtsId, userId);
+        return View("ConfirmEnableUser", model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Route("/sponsororganisations/disableuser", Name = "soc:disableuser")]
+    public async Task<IActionResult> DisableUser(string rtsId, Guid userId)
+    {
+        var model = await BuildSponsorOrganisationUserModel(rtsId, userId);
+        return View("ConfirmDisableUser", model);
+    }
+
+    [HttpPost]
+    [Route("/sponsororganisations/confirmenableuser", Name = "soc:confirmenableuser")]
+    public async Task<IActionResult> ConfirmEnableUser(string rtsId, Guid userId)
+    {
+         await sponsorOrganisationService.EnableUserInSponsorOrganisation(rtsId, userId);
+        return RedirectToAction("ViewSponsorOrganisationUsers", new { rtsId });
+    }
+
+    [HttpPost]
+    [Route("/sponsororganisations/confirmdisableuser", Name = "soc:confirmdisableuser")]
+    public async Task<IActionResult> ConfirmDisableUser(string rtsId, Guid userId)
+    {
+        await sponsorOrganisationService.DisableUserInSponsorOrganisation(rtsId, userId);
         return RedirectToAction("ViewSponsorOrganisationUsers", new { rtsId });
     }
 
@@ -368,16 +407,21 @@ public class SponsorOrganisationsController(
             SponsorOrganisationName = orgResponse.Content!.Name,
             Countries = [orgResponse.Content!.CountryName],
             IsActive = dto.IsActive,
-            UpdatedDate = dto.UpdatedDate ?? dto.CreatedDate
+            UpdatedDate = dto.UpdatedDate ?? dto.CreatedDate,
+            Users = dto.Users
         };
 
         return (model, dto, null);
     }
 
-    // Sorting extracted and made stable/consistent
+    // Sorting extracted and made stable/consistent4
     [NonAction]
     private static IEnumerable<SponsorOrganisationDto> SortSponsorOrganisations(
-        IEnumerable<SponsorOrganisationDto> items, string? sortField, string? sortDirection)
+    IEnumerable<SponsorOrganisationDto> items,
+    string? sortField,
+    string? sortDirection,
+    int pageNumber = 1,
+    int pageSize = 20)
     {
         static string CountriesKey(SponsorOrganisationDto x)
         {
@@ -388,7 +432,7 @@ public class SponsorOrganisationsController(
 
         var desc = string.Equals(sortDirection, "desc", StringComparison.OrdinalIgnoreCase);
 
-        return sortField?.ToLowerInvariant() switch
+        var sorted = sortField?.ToLowerInvariant() switch
         {
             "sponsororganisationname" => desc
                 ? items.OrderByDescending(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase)
@@ -412,7 +456,19 @@ public class SponsorOrganisationsController(
                 ? items.OrderByDescending(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase)
                 : items.OrderBy(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase)
         };
+
+        // Apply pagination
+        if (pageNumber < 1)
+            pageNumber = 1;
+
+        if (pageSize < 1)
+            pageSize = 20;
+
+        var skip = (pageNumber - 1) * pageSize;
+
+        return sorted.Skip(skip).Take(pageSize);
     }
+
 
     // Pagination builder with optional extras
     [NonAction]
@@ -499,5 +555,26 @@ public class SponsorOrganisationsController(
         HttpContext.Session.SetString(
             SessionKeys.SponsorOrganisationsSearch,
             JsonSerializer.Serialize(model.Search));
+    }
+
+    [NonAction]
+    private async Task<SponsorOrganisationUserModel> BuildSponsorOrganisationUserModel(string rtsId, Guid userId)
+    {
+        var userTask = userService.GetUser(userId.ToString(), null);
+        var soUserTask = sponsorOrganisationService.GetUserInSponsorOrganisation(rtsId, userId);
+
+        await Task.WhenAll(userTask, soUserTask);
+
+        var userResponse = await userTask;
+        var soUserResponse = await soUserTask;
+
+        return new SponsorOrganisationUserModel
+        {
+            SponsorOrganisation = new SponsorOrganisationModel { RtsId = rtsId },
+            User = userResponse.Content is not null
+                ? new UserViewModel(userResponse.Content)
+                : new UserViewModel(),
+            SponsorOrganisationUser = soUserResponse.Content ?? new SponsorOrganisationUserDto()
+        };
     }
 }

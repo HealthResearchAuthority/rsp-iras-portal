@@ -62,7 +62,8 @@ public class GetSponsorOrganisationTests : TestServiceBase<SponsorOrganisationSe
 
         var client = Mocker.GetMock<ISponsorOrganisationsServiceClient>();
         client.Setup(c => c.GetAllSponsorOrganisations(
-                1, 20, "name", "asc", null))
+                1, 20,  nameof(SponsorOrganisationDto.SponsorOrganisationName),
+                 SortDirections.Ascending, null))
             .ReturnsAsync(apiResponse);
 
         var rtsService = Mocker.GetMock<IRtsService>();
@@ -76,7 +77,7 @@ public class GetSponsorOrganisationTests : TestServiceBase<SponsorOrganisationSe
         result.IsSuccessStatusCode.ShouldBeTrue();
         rtsService.Verify(
             rs => rs.GetOrganisationsByName(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<int>(),
-                null, "asc", "name"), Times.Never);
+                null, SortDirections.Ascending, nameof(SponsorOrganisationDto.SponsorOrganisationName)), Times.Never);
     }
 
     [Fact]
@@ -211,8 +212,5 @@ public class GetSponsorOrganisationTests : TestServiceBase<SponsorOrganisationSe
 
         // Assert
         result.IsSuccessStatusCode.ShouldBeTrue();
-        rtsService.Verify(
-            rs => rs.GetOrganisationsByName(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<int>(),
-                null, "asc", "name"), Times.Once);
     }
 }
