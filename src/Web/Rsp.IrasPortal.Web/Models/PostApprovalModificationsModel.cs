@@ -7,7 +7,7 @@ public class PostApprovalModificationsModel
     public string? ModificationType { get; set; } = null!;
     public string? ReviewType { get; set; } = null!;
     public string? Category { get; set; } = null!;
-    public DateTime? DateSubmitted { get; set; }
+    public DateTime? SentToRegulatorDate { get; set; }
     public string? Status { get; set; } = null!;
-    public DateTime? SubmittedDate { get; set; }
+    public DateTime? SentToSponsorDate { get; set; }
 }

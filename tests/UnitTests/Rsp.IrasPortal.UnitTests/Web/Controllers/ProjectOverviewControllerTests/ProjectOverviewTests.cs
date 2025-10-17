@@ -1,3 +1,4 @@
+using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -824,6 +825,10 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var httpContext = CreateHttpContextWithSession();
         var tempDataProvider = new Mock<ITempDataProvider>();
         var tempData = CreateTempData(tempDataProvider, httpContext);
+        var pageNumber = 1;
+        var pageSize = 20;
+        var sortField = nameof(ModificationsModel.CreatedAt);
+        var sortDirection = SortDirections.Descending;
 
         var answers = new List<RespondentAnswerDto>
         {
@@ -855,7 +860,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         };
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), 1, 20, sortField, sortDirection))
             .ReturnsAsync(serviceResponse);
 
         // Act
@@ -864,14 +869,19 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
         var model = viewResult.Model.ShouldBeOfType<PostApprovalViewModel>();
+        model.Pagination.ShouldNotBeNull();
+        model.Pagination.PageNumber.ShouldBe(pageNumber);
+        model.Pagination.PageSize.ShouldBe(pageSize);
+        model.Pagination.SortField.ShouldBe(sortField);
+        model.Pagination.SortDirection.ShouldBe(sortDirection);
         var mod = model.Modifications.Single();
         mod.ModificationIdentifier.ShouldBe("m1");
         mod.ModificationType.ShouldBe("Type1");
         mod.Status.ShouldBe(ModificationStatus.InDraft);
         mod.ReviewType.ShouldBeNull();
         mod.Category.ShouldBeNull();
-        mod.DateSubmitted.ShouldBeNull();
-        mod.SubmittedDate.ShouldBeNull();
+        mod.SentToRegulatorDate.ShouldBeNull();
+        mod.SentToSponsorDate.ShouldBeNull();
     }
 
     [Fact]
@@ -882,6 +892,10 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var httpContext = CreateHttpContextWithSession();
         var tempDataProvider = new Mock<ITempDataProvider>();
         var tempData = CreateTempData(tempDataProvider, httpContext);
+        var pageNumber = 1;
+        var pageSize = 20;
+        var sortField = nameof(ModificationsModel.CreatedAt);
+        var sortDirection = SortDirections.Descending;
 
         var answers = new List<RespondentAnswerDto>
         {
@@ -895,7 +909,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var modifications = new List<ModificationsDto>
         {
             new() { ModificationId = "m1", ModificationType = "Type1", Status = ModificationStatus.Approved, CreatedAt=new DateTime(2025,10,02),
-                SubmittedDate= new DateTime(2025,10,02),
+                SentToRegulatorDate= new DateTime(2025,10,02),
             }
         };
 
@@ -930,7 +944,13 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         mod.Status.ShouldBe(ModificationStatus.Approved);
         mod.ReviewType.ShouldBeNull();
         mod.Category.ShouldBeNull();
-        mod.DateSubmitted.ShouldNotBeNull();
+        mod.SentToRegulatorDate.ShouldNotBeNull();
+        mod.SentToSponsorDate.ShouldBeNull();
+        model.Pagination.ShouldNotBeNull();
+        model.Pagination.PageNumber.ShouldBe(pageNumber);
+        model.Pagination.PageSize.ShouldBe(pageSize);
+        model.Pagination.SortField.ShouldBe(sortField);
+        model.Pagination.SortDirection.ShouldBe(sortDirection);
     }
 
     [Fact]
@@ -997,5 +1017,46 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         // Assert
         var status = result.ShouldBeOfType<StatusCodeResult>();
         status.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
+    }
+
+    public static IEnumerable<object?[]> MapCases()
+    {
+        // These assume you have these public types/constants available in the test assembly:
+        // - ModificationStatus (string constants)
+        // - ModificationStatusOrder (enum)
+        yield return new object?[] { ModificationStatus.InDraft, nameof(ModificationStatusOrder.InDraft) };
+        yield return new object?[] { ModificationStatus.WithSponsor, nameof(ModificationStatusOrder.WithSponsor) };
+        yield return new object?[] { ModificationStatus.WithRegulator, nameof(ModificationStatusOrder.WithRegulator) };
+        yield return new object?[] { ModificationStatus.Approved, nameof(ModificationStatusOrder.Approved) };
+        yield return new object?[] { ModificationStatus.NotApproved, nameof(ModificationStatusOrder.NotApproved) };
+        yield return new object?[] { ModificationStatus.Authorised, nameof(ModificationStatusOrder.Authorised) };
+        yield return new object?[] { ModificationStatus.NotAuthorised, nameof(ModificationStatusOrder.NotAuthorised) };
+    }
+
+    [Theory]
+    [MemberData(nameof(MapCases))]
+    public void GetEnumStatus_Maps_Status_To_Expected_Order_Name(string? inputStatus, string expectedOrderName)
+    {
+        // Arrange
+        var method = GetGetEnumStatusMethod();
+
+        // Act
+        var result = method.Invoke(null, new object?[] { inputStatus });
+
+        // Assert
+        Assert.IsType<string>(result);
+        Assert.Equal(expectedOrderName, (string)result!);
+    }
+
+    private static MethodInfo GetGetEnumStatusMethod()
+    {
+        var controllerType = typeof(ProjectOverviewController);
+
+        var mi = controllerType.GetMethod(
+            "GetEnumStatus",
+            BindingFlags.NonPublic | BindingFlags.Static);
+
+        Assert.NotNull(mi); // Fails fast if the method name/signature changes
+        return mi!;
     }
 }

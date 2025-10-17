@@ -107,10 +107,10 @@ public class ProjectOverviewController(
                 ModificationType = dto.ModificationType,
                 ReviewType = null,
                 Category = null,
-                DateSubmitted = dto.SubmittedDate,
+                SentToRegulatorDate = dto.SentToRegulatorDate,
                 Status = dto.Status,
             })
-            .OrderBy(item => Enum.TryParse<ModificationStatusOrder>(item.Status, true, out var statusEnum)
+            .OrderBy(item => Enum.TryParse<ModificationStatusOrder>(GetEnumStatus(item.Status!), true, out var statusEnum)
             ? (int)statusEnum
             : (int)ModificationStatusOrder.None)
             .ToList() ?? [];
@@ -412,4 +412,16 @@ public class ProjectOverviewController(
             ViewData["BackRoute"] = defaultRoute;
         }
     }
+
+    private static string? GetEnumStatus(string status) => status switch
+    {
+        ModificationStatus.InDraft => nameof(ModificationStatusOrder.InDraft),
+        ModificationStatus.WithSponsor => nameof(ModificationStatusOrder.WithSponsor),
+        ModificationStatus.WithRegulator => nameof(ModificationStatusOrder.WithRegulator),
+        ModificationStatus.Approved => nameof(ModificationStatusOrder.Approved),
+        ModificationStatus.NotApproved => nameof(ModificationStatusOrder.NotApproved),
+        ModificationStatus.Authorised => nameof(ModificationStatusOrder.Authorised),
+        ModificationStatus.NotAuthorised => nameof(ModificationStatusOrder.NotAuthorised),
+        _ => ModificationStatusOrder.None.ToString()
+    };
 }
