@@ -1,3 +1,4 @@
+using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -845,7 +846,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 
         var modificationsResponse = new GetModificationsResponse
         {
-            Modifications = modifications.OrderBy(item => Enum.TryParse<ModificationStatusOrder>(GetEnumStatus(item.Status), true, out var statusEnum)
+            Modifications = modifications.OrderBy(item => Enum.TryParse<ModificationStatusOrder>(item.Status, true, out var statusEnum)
             ? (int)statusEnum
             : (int)ModificationStatusOrder.None)
             .ToList() ?? [],
@@ -859,7 +860,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         };
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), 1, 20, sortField, sortDirection))
             .ReturnsAsync(serviceResponse);
 
         // Act
@@ -868,6 +869,11 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
         var model = viewResult.Model.ShouldBeOfType<PostApprovalViewModel>();
+        model.Pagination.ShouldNotBeNull();
+        model.Pagination.PageNumber.ShouldBe(pageNumber);
+        model.Pagination.PageSize.ShouldBe(pageSize);
+        model.Pagination.SortField.ShouldBe(sortField);
+        model.Pagination.SortDirection.ShouldBe(sortDirection);
         var mod = model.Modifications.Single();
         mod.ModificationIdentifier.ShouldBe("m1");
         mod.ModificationType.ShouldBe("Type1");
@@ -876,12 +882,6 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         mod.Category.ShouldBeNull();
         mod.SentToRegulatorDate.ShouldBeNull();
         mod.SentToSponsorDate.ShouldBeNull();
-
-        model.Pagination.ShouldNotBeNull();
-        model.Pagination.PageNumber.ShouldBe(pageNumber);
-        model.Pagination.PageSize.ShouldBe(pageSize);
-        model.Pagination.SortField.ShouldBe(sortField);
-        model.Pagination.SortDirection.ShouldBe(sortDirection);
     }
 
     [Fact]
@@ -915,7 +915,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 
         var modificationsResponse = new GetModificationsResponse
         {
-            Modifications = modifications.OrderBy(item => Enum.TryParse<ModificationStatusOrder>(GetEnumStatus(item.Status), true, out var statusEnum)
+            Modifications = modifications.OrderBy(item => Enum.TryParse<ModificationStatusOrder>(item.Status, true, out var statusEnum)
             ? (int)statusEnum
             : (int)ModificationStatusOrder.None)
             .ToList() ?? [],
@@ -1019,15 +1019,44 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         status.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
     }
 
-    private static string? GetEnumStatus(string status) => status switch
+    public static IEnumerable<object?[]> MapCases()
     {
-        ModificationStatus.InDraft => nameof(ModificationStatusOrder.InDraft),
-        ModificationStatus.WithSponsor => nameof(ModificationStatusOrder.WithSponsor),
-        ModificationStatus.WithRegulator => nameof(ModificationStatusOrder.WithRegulator),
-        ModificationStatus.Approved => nameof(ModificationStatusOrder.Approved),
-        ModificationStatus.NotApproved => nameof(ModificationStatusOrder.NotApproved),
-        ModificationStatus.Authorised => nameof(ModificationStatusOrder.Authorised),
-        ModificationStatus.NotAuthorised => nameof(ModificationStatusOrder.NotAuthorised),
-        _ => ModificationStatusOrder.None.ToString()
-    };
+        // These assume you have these public types/constants available in the test assembly:
+        // - ModificationStatus (string constants)
+        // - ModificationStatusOrder (enum)
+        yield return new object?[] { ModificationStatus.InDraft, nameof(ModificationStatusOrder.InDraft) };
+        yield return new object?[] { ModificationStatus.WithSponsor, nameof(ModificationStatusOrder.WithSponsor) };
+        yield return new object?[] { ModificationStatus.WithRegulator, nameof(ModificationStatusOrder.WithRegulator) };
+        yield return new object?[] { ModificationStatus.Approved, nameof(ModificationStatusOrder.Approved) };
+        yield return new object?[] { ModificationStatus.NotApproved, nameof(ModificationStatusOrder.NotApproved) };
+        yield return new object?[] { ModificationStatus.Authorised, nameof(ModificationStatusOrder.Authorised) };
+        yield return new object?[] { ModificationStatus.NotAuthorised, nameof(ModificationStatusOrder.NotAuthorised) };
+    }
+
+    [Theory]
+    [MemberData(nameof(MapCases))]
+    public void GetEnumStatus_Maps_Status_To_Expected_Order_Name(string? inputStatus, string expectedOrderName)
+    {
+        // Arrange
+        var method = GetGetEnumStatusMethod();
+
+        // Act
+        var result = method.Invoke(null, new object?[] { inputStatus });
+
+        // Assert
+        Assert.IsType<string>(result);
+        Assert.Equal(expectedOrderName, (string)result!);
+    }
+
+    private static MethodInfo GetGetEnumStatusMethod()
+    {
+        var controllerType = typeof(ProjectOverviewController);
+
+        var mi = controllerType.GetMethod(
+            "GetEnumStatus",
+            BindingFlags.NonPublic | BindingFlags.Static);
+
+        Assert.NotNull(mi); // Fails fast if the method name/signature changes
+        return mi!;
+    }
 }
