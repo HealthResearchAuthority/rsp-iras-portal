@@ -36,7 +36,7 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
         Sut.TempData = new TempDataDictionary(ctx, Mock.Of<ITempDataProvider>());
 
         // Act
-        var result = await Sut.DisplayQuestionnaire("PR1", "CAT1", "SEC1", false, viewName: nameof(ModificationChangesController.PlannedEndDate));
+        var result = await Sut.DisplayQuestionnaire("PR1", "CAT1", "SEC1", false, viewName: "PlannedEndDate");
 
         // Assert
         result
@@ -100,11 +100,11 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
             });
 
         // Act
-        var result = await Sut.DisplayQuestionnaire("PR1", "CAT1", "SEC1", true, viewName: nameof(ModificationChangesController.PlannedEndDate));
+        var result = await Sut.DisplayQuestionnaire("PR1", "CAT1", "SEC1", true, viewName: "PlannedEndDate");
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
-        view.ViewName.ShouldBe(nameof(ModificationChangesController.PlannedEndDate));
+        view.ViewName.ShouldBe("PlannedEndDate");
         var model = view.Model.ShouldBeOfType<QuestionnaireViewModel>();
         model.CurrentStage.ShouldBe("SEC1");
     }
@@ -249,7 +249,7 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
-        redirect.RouteName.ShouldBe("pmc:AffectingOrganisations");
+        redirect.RouteName.ShouldBe("pmc:modificationchanges:view");
         redirect.RouteValues!["projectRecordId"].ShouldBe("PR1");
     }
 
@@ -288,7 +288,7 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
-        redirect.RouteName.ShouldBe("pmc:AffectedOrganisationsType");
+        redirect.RouteName.ShouldBe("pmc:modificationchanges:view");
         redirect.RouteValues!["projectRecordId"].ShouldBe("PR1");
         redirect.RouteValues!["categoryId"].ShouldBe("CAT2");
         redirect.RouteValues!["sectionId"].ShouldBe("SEC2");
@@ -402,7 +402,7 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
             });
 
         // Act
-        var result = await Sut.DisplayQuestionnaire("PR1", "CAT1", "SEC1", false, nameof(ModificationChangesController.PlannedEndDate));
+        var result = await Sut.DisplayQuestionnaire("PR1", "CAT1", "SEC1", false, "PlannedEndDate");
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
@@ -464,11 +464,11 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
             });
 
         // Act
-        var result = await Sut.PlannedEndDate("PR1", "CAT1", "SEC1", true);
+        var result = await Sut.DisplayModificationPage("PlannedEndDate", "PR1", "CAT1", "SEC1", true);
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
-        view.ViewName.ShouldBe(nameof(ModificationChangesController.PlannedEndDate));
+        view.ViewName.ShouldBe("PlannedEndDate");
         var model = view.Model.ShouldBeOfType<QuestionnaireViewModel>();
     }
 

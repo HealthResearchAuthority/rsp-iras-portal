@@ -261,11 +261,12 @@ public class ModificationsController
 
         TempData[TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = selectedChange.OptionName;
 
-        return RedirectToRoute($"pmc:{section.StaticViewName}", new
+        return RedirectToRoute("pmc:modificationchanges:view", new
         {
+            viewName = section.StaticViewName,
             projectRecordId = model.ProjectRecordId,
             categoryId = section.CategoryId,
-            sectionId = section.Id,
+            sectionId = section.Id
         });
     }
 

@@ -121,7 +121,7 @@
                         <dd class="govuk-summary-list__value @(fieldHasErrors ? "govuk-error-summary__list" : "")">
                             @if (question.IsMissingAnswer())
                             {
-                                <a class="govuk-link" href="@Url.RouteUrl($"pmc:{section.StaticViewName}", new { projectRecordId, categoryId = section.CategoryId, sectionId = question.SectionId, reviewAnswers = true })">
+								<a class="govuk-link" href="@Url.RouteUrl($"pmc:modificationchanges:view", new {viewName = section.StaticViewName, projectRecordId, categoryId = section.CategoryId, sectionId = question.SectionId, reviewAnswers = true })">
                                     @question.GetActionText()<span class="govuk-visually-hidden"> @questionText</span>
                                 </a>
                             }
@@ -135,7 +135,14 @@
                         <dd class="govuk-summary-list__actions">
                             @if (!question.IsMissingAnswer())
                             {
-                                <a class="govuk-link" href="@Url.RouteUrl($"pmc:{section.StaticViewName}", new { projectRecordId, categoryId = section.CategoryId, sectionId = question.SectionId, reviewAnswers = true })">
+								<a class="govuk-link"
+								   href="@Url.RouteUrl("pmc:modificationchanges:view", new {
+								   viewName = section.StaticViewName,
+								   projectRecordId,
+								   categoryId = section.CategoryId,
+								   sectionId = question.SectionId,
+								   reviewAnswers = true
+							   })">
                                     @question.GetActionText()<span class="govuk-visually-hidden"> @questionText</span>
                                 </a>
                             }

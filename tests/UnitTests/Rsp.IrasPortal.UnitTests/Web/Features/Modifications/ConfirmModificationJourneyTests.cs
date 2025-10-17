@@ -245,7 +245,7 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
-        redirect.RouteName.ShouldBe("pmc:section-static");
+        redirect.RouteName.ShouldBe("pmc:modificationchanges:view");
         redirect.RouteValues!["categoryId"].ShouldBe("CAT1");
         redirect.RouteValues!["sectionId"].ShouldBe("SEC1");
     }
@@ -314,7 +314,7 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
-        redirect.RouteName.ShouldBe("pmc:section-static");
+        redirect.RouteName.ShouldBe("pmc:modificationchanges:view");
     }
 
     private void SetupTempData(AreaOfChangeViewModel model, List<AreaOfChangeDto> areas, Guid modificationId, Guid? modificationChangeId = null)

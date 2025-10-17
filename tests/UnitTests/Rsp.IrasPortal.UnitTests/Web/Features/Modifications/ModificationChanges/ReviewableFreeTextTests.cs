@@ -36,7 +36,7 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
         Sut.TempData = new TempDataDictionary(ctx, Mock.Of<ITempDataProvider>());
 
         // Act
-        var result = await Sut.DisplayQuestionnaire("PR1", "CAT1", "SEC1", false, viewName: nameof(ModificationChangesController.ReviewableFreeText));
+        var result = await Sut.DisplayQuestionnaire("PR1", "CAT1", "SEC1", false, viewName: "ReviewableFreeText");
 
         // Assert
         result
@@ -100,11 +100,11 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
             });
 
         // Act
-        var result = await Sut.DisplayQuestionnaire("PR1", "CAT1", "SEC1", true, viewName: nameof(ModificationChangesController.ReviewableFreeText));
+        var result = await Sut.DisplayQuestionnaire("PR1", "CAT1", "SEC1", true, viewName: "ReviewableFreeText");
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
-        view.ViewName.ShouldBe(nameof(ModificationChangesController.ReviewableFreeText));
+        view.ViewName.ShouldBe("ReviewableFreeText");
         var model = view.Model.ShouldBeOfType<QuestionnaireViewModel>();
         model.CurrentStage.ShouldBe("SEC1");
     }
@@ -249,7 +249,7 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
-        redirect.RouteName.ShouldBe("pmc:AffectingOrganisations");
+        redirect.RouteName.ShouldBe("pmc:modificationchanges:view");
         redirect.RouteValues!["projectRecordId"].ShouldBe("PR1");
     }
 
@@ -288,7 +288,7 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
-        redirect.RouteName.ShouldBe("pmc:AffectedOrganisationsType");
+        redirect.RouteName.ShouldBe("pmc:modificationchanges:view");
         redirect.RouteValues!["projectRecordId"].ShouldBe("PR1");
         redirect.RouteValues!["categoryId"].ShouldBe("CAT2");
         redirect.RouteValues!["sectionId"].ShouldBe("SEC2");
@@ -410,7 +410,7 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
-        redirect.RouteName.ShouldBe("pmc:AffectedOrganisationsType");
+        redirect.RouteName.ShouldBe("pmc:modificationchanges:view");
         redirect.RouteValues!["projectRecordId"].ShouldBe("PR1");
         redirect.RouteValues!["categoryId"].ShouldBe("CAT2");
         redirect.RouteValues!["sectionId"].ShouldBe("SEC2");
@@ -483,7 +483,7 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
             });
 
         // Act
-        var result = await Sut.DisplayQuestionnaire("PR1", "CAT1", "SEC1", false, nameof(ModificationChangesController.ReviewableFreeText));
+        var result = await Sut.DisplayQuestionnaire("PR1", "CAT1", "SEC1", false, "ReviewableFreeText");
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
@@ -545,11 +545,11 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
             });
 
         // Act
-        var result = await Sut.ReviewableFreeText("PR1", "CAT1", "SEC1", true);
+        var result = await Sut.DisplayModificationPage("ReviewableFreeText", "PR1", "CAT1", "SEC1", true);
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
-        view.ViewName.ShouldBe(nameof(ModificationChangesController.ReviewableFreeText));
+        view.ViewName.ShouldBe("ReviewableFreeText");
         var model = view.Model.ShouldBeOfType<QuestionnaireViewModel>();
     }
 
