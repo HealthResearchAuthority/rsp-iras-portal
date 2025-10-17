@@ -10,6 +10,7 @@ using Rsp.IrasPortal.Domain.Enums;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
+using Rsp.IrasPortal.Web.Validators.Helpers;
 
 namespace Rsp.IrasPortal.Web.Features.Modifications.Documents.Controllers;
 
@@ -29,6 +30,8 @@ public class DocumentsController
     private const string ContainerName = "staging";
     private const string DocumentDetailsSection = "pdm-document-metadata";
     private const string PostApprovalRoute = "pov:postapproval";
+
+    private const string MissingDateErrorMessage = "Enter a sponsor document date";
 
     /// <summary>
     /// Handles GET requests for the ProjectDocument action.
@@ -518,6 +521,38 @@ public class DocumentsController
 
         // Validate the questionnaire and store the result in ViewData for UI messages
         var isValid = await this.ValidateQuestionnaire(validator, viewModel);
+
+        // Validate if date is missing if not save for later
+        if (!saveForLater)
+        {
+            var selectedDocumentTypeOption = viewModel.Questions
+                .FirstOrDefault(q => q.QuestionId == QuestionIds.SelectedDocumentType)?.SelectedOption;
+
+            var dateQuestions = viewModel.Questions
+                .Where(q => q.DataType?.ToLower() == "date");
+
+            foreach (var question in dateQuestions)
+            {
+                // Validate if date should be entered for selected document type
+                var optionsWithDate = question.Rules?
+                    .FirstOrDefault()?
+                    .Conditions?
+                    .FirstOrDefault(c => c.Operator == "IN")?
+                    .ParentOptions;
+
+                if (selectedDocumentTypeOption is not null &&
+                    optionsWithDate is not null &&
+                    optionsWithDate.Contains(selectedDocumentTypeOption) &&
+                    string.IsNullOrWhiteSpace(question.Day) &&
+                    string.IsNullOrWhiteSpace(question.Month) &&
+                    string.IsNullOrWhiteSpace(question.Year))
+                {
+                    var adjustedPropertyName = PropertyNameHelper.AdjustPropertyName("Date", question.Index);
+                    ModelState.AddModelError(adjustedPropertyName, MissingDateErrorMessage);
+                    isValid = false;
+                }
+            }
+        }
 
         ViewData[ViewDataKeys.IsQuestionnaireValid] = isValid;
 
