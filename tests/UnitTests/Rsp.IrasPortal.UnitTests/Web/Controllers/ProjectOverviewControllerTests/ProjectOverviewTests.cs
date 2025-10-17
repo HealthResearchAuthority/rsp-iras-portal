@@ -824,6 +824,10 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var httpContext = CreateHttpContextWithSession();
         var tempDataProvider = new Mock<ITempDataProvider>();
         var tempData = CreateTempData(tempDataProvider, httpContext);
+        var pageNumber = 1;
+        var pageSize = 20;
+        var sortField = nameof(ModificationsModel.CreatedAt);
+        var sortDirection = SortDirections.Descending;
 
         var answers = new List<RespondentAnswerDto>
         {
@@ -841,7 +845,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 
         var modificationsResponse = new GetModificationsResponse
         {
-            Modifications = modifications.OrderBy(item => Enum.TryParse<ModificationStatusOrder>(item.Status, true, out var statusEnum)
+            Modifications = modifications.OrderBy(item => Enum.TryParse<ModificationStatusOrder>(GetEnumStatus(item.Status), true, out var statusEnum)
             ? (int)statusEnum
             : (int)ModificationStatusOrder.None)
             .ToList() ?? [],
@@ -872,6 +876,12 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         mod.Category.ShouldBeNull();
         mod.SentToRegulatorDate.ShouldBeNull();
         mod.SentToSponsorDate.ShouldBeNull();
+
+        model.Pagination.ShouldNotBeNull();
+        model.Pagination.PageNumber.ShouldBe(pageNumber);
+        model.Pagination.PageSize.ShouldBe(pageSize);
+        model.Pagination.SortField.ShouldBe(sortField);
+        model.Pagination.SortDirection.ShouldBe(sortDirection);
     }
 
     [Fact]
@@ -882,6 +892,10 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var httpContext = CreateHttpContextWithSession();
         var tempDataProvider = new Mock<ITempDataProvider>();
         var tempData = CreateTempData(tempDataProvider, httpContext);
+        var pageNumber = 1;
+        var pageSize = 20;
+        var sortField = nameof(ModificationsModel.CreatedAt);
+        var sortDirection = SortDirections.Descending;
 
         var answers = new List<RespondentAnswerDto>
         {
@@ -901,7 +915,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 
         var modificationsResponse = new GetModificationsResponse
         {
-            Modifications = modifications.OrderBy(item => Enum.TryParse<ModificationStatusOrder>(item.Status, true, out var statusEnum)
+            Modifications = modifications.OrderBy(item => Enum.TryParse<ModificationStatusOrder>(GetEnumStatus(item.Status), true, out var statusEnum)
             ? (int)statusEnum
             : (int)ModificationStatusOrder.None)
             .ToList() ?? [],
@@ -932,6 +946,11 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         mod.Category.ShouldBeNull();
         mod.SentToRegulatorDate.ShouldNotBeNull();
         mod.SentToSponsorDate.ShouldBeNull();
+        model.Pagination.ShouldNotBeNull();
+        model.Pagination.PageNumber.ShouldBe(pageNumber);
+        model.Pagination.PageSize.ShouldBe(pageSize);
+        model.Pagination.SortField.ShouldBe(sortField);
+        model.Pagination.SortDirection.ShouldBe(sortDirection);
     }
 
     [Fact]
@@ -999,4 +1018,16 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var status = result.ShouldBeOfType<StatusCodeResult>();
         status.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
     }
+
+    private static string? GetEnumStatus(string status) => status switch
+    {
+        ModificationStatus.InDraft => nameof(ModificationStatusOrder.InDraft),
+        ModificationStatus.WithSponsor => nameof(ModificationStatusOrder.WithSponsor),
+        ModificationStatus.WithRegulator => nameof(ModificationStatusOrder.WithRegulator),
+        ModificationStatus.Approved => nameof(ModificationStatusOrder.Approved),
+        ModificationStatus.NotApproved => nameof(ModificationStatusOrder.NotApproved),
+        ModificationStatus.Authorised => nameof(ModificationStatusOrder.Authorised),
+        ModificationStatus.NotAuthorised => nameof(ModificationStatusOrder.NotAuthorised),
+        _ => ModificationStatusOrder.None.ToString()
+    };
 }
