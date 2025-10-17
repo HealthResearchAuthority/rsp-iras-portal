@@ -201,10 +201,6 @@ public class ModificationChangesController
 
         var sectionIdOrDefault = sectionId ?? string.Empty;
 
-        //var sectionQuestions = questionnaire.Questions.FindAll(q => q.SectionId.Equals(questionnaire.CurrentStage, StringComparison.OrdinalIgnoreCase));
-
-        //var question = sectionQuestions.FirstOrDefault(sq => sq.UseAnswerForNextSection);
-
         // this is where the questionnaire will resume
         var navigationDto = await SetStage(sectionIdOrDefault);
 
