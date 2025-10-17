@@ -71,7 +71,7 @@ public class ModificationChangesController
         if (!isValid)
         {
             model.ReviewAnswers = false;
-            return View(navigation.CurrentSection.StaticViewName, model);
+            return View("Questionnaire", model);
         }
 
         // ------------------Save Modification Answers-------------------------
