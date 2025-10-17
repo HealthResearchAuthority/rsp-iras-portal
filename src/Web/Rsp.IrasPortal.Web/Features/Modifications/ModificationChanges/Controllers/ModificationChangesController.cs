@@ -28,36 +28,6 @@ public class ModificationChangesController
     private readonly ICmsQuestionsetService _cmsQuestionsetService = cmsQuestionsetService;
     private const string PostApprovalRoute = "pov:postapproval";
 
-    /// <summary>
-    /// Resumes the application for the categoryId
-    /// </summary>
-    /// <param name="projectRecordId">Application Id</param>
-    /// <param name="categoryId">CategoryId to resume from</param>
-    //public async Task<IActionResult> PlannedEndDate(string projectRecordId, string categoryId, string sectionId, bool reviewAnswers = false)
-    //{
-    //    return await DisplayQuestionnaire(projectRecordId, categoryId, sectionId, reviewAnswers, nameof(PlannedEndDate));
-    //}
-
-    ///// <summary>
-    ///// Resumes the application for the categoryId
-    ///// </summary>
-    ///// <param name="projectRecordId">Application Id</param>
-    ///// <param name="categoryId">CategoryId to resume from</param>
-    //public async Task<IActionResult> ReviewableFreeText(string projectRecordId, string categoryId, string sectionId, bool reviewAnswers = false)
-    //{
-    //    return await DisplayQuestionnaire(projectRecordId, categoryId, sectionId, reviewAnswers, nameof(ReviewableFreeText));
-    //}
-
-    //public async Task<IActionResult> AffectingOrganisations(string projectRecordId, string categoryId, string sectionId, bool reviewAnswers = false)
-    //{
-    //    return await DisplayQuestionnaire(projectRecordId, categoryId, sectionId, reviewAnswers, nameof(AffectingOrganisations));
-    //}
-
-    //public async Task<IActionResult> AffectedOrganisationsType(string projectRecordId, string categoryId, string sectionId, bool reviewAnswers = false)
-    //{
-    //    return await DisplayQuestionnaire(projectRecordId, categoryId, sectionId, reviewAnswers, nameof(AffectedOrganisationsType));
-    //}
-
     [RequestFormLimits(ValueCountLimit = int.MaxValue)]
     [HttpPost]
     public async Task<IActionResult> SaveResponses(QuestionnaireViewModel model, bool saveForLater = false)
@@ -98,8 +68,6 @@ public class ModificationChangesController
         // this is where the questionnaire will resume
         var navigation = await SetStage(model.CurrentStage!, question?.QuestionId, question?.GetDisplayText());
 
-        //var navigation = await SetStage(model.CurrentStage!);
-
         if (!isValid)
         {
             model.ReviewAnswers = false;
@@ -112,9 +80,6 @@ public class ModificationChangesController
         var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
 
         await SaveModificationChangeAnswers(projectModificationChangeId, projectRecordId!, model.Questions);
-
-        // save the questions in the session
-        // TempData[$"{TempDataKeys.ProjectModification.Questionnaire}:{navigation.CurrentStage}"] = JsonSerializer.Serialize(questions);
 
         // if save for later
         if (saveForLater)
@@ -165,6 +130,7 @@ public class ModificationChangesController
         // if review in progress or the user is at the last stage and clicks on Save and Continue
         if (isReviewInProgress ||
             string.IsNullOrWhiteSpace(navigation.NextStage) ||
+            navigation.NextSection.IsLastSectionBeforeReview ||
             navigation.NextSection.StaticViewName.Equals(nameof(ReviewChanges), StringComparison.OrdinalIgnoreCase))
         {
             return RedirectToAction(nameof(ReviewChanges), new
@@ -224,8 +190,6 @@ public class ModificationChangesController
 
         // convert the questions response to QuestionnaireViewModel
         var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(questionsSetServiceResponse.Content!, true);
-
-        //var questions = questionnaire.Questions;
 
         // if respondent has answerd any questions
         if (respondentAnswers.Any())
