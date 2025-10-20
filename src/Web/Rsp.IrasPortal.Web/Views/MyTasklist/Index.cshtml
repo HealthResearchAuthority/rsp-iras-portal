@@ -34,7 +34,6 @@
 @section Breadcrumb {
 	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
 	{
-		("My account", "/"),
 		("Approvals", Url.Action("Welcome", "ApprovalsMenu"))
 	})
 }

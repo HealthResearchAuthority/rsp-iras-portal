@@ -8,10 +8,7 @@
 @using Rsp.IrasPortal.Web.Areas.Admin.Models
 
 @section Breadcrumb {
-	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
-	{
-		("My account", "/")
-	})
+	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>())
 }
 
 @if (TempData[TempDataKeys.ShowProjectDeletedBanner] is true)

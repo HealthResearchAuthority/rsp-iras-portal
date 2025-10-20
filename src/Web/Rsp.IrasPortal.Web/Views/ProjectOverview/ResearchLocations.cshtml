@@ -16,9 +16,8 @@
 @section Breadcrumb {
 	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
 	{
-		("My account", "/"),
 		("My research", Url.Action("Welcome", "Application")),
-		(projectTitle, Url.Action("Index", "ProjectOverview", new Dictionary<string, string>{{"projectRecordId", Model.ProjectRecordId!}}))
+		(projectTitle, Url.Action("ProjectDetails", "ProjectOverview", new Dictionary<string, string>{{"projectRecordId", Model.ProjectRecordId!}}))
 	})
 }
 

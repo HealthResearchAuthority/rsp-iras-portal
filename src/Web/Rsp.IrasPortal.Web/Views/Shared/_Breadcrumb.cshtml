@@ -1,17 +1,18 @@
-﻿@using Rsp.IrasPortal.Web.Features.Breadcrumbs.Models
-@* @model IList<BreadcrumbItem> *@
-@model List<(string Title, string? Url)>
+﻿@model List<(string Title, string? Url)>
 
-@if (Model != null && Model.Any())
-{
-	<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
-		<ol class="govuk-breadcrumbs__list">
-			@foreach (var item in Model)
+<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+	<ol class="govuk-breadcrumbs__list">
+		<li class="govuk-breadcrumbs__list-item">
+			<a class="govuk-breadcrumbs__link" href="/">My account</a>
+		</li>
+		@if (Model != null && Model.Any())
+		{
+			foreach (var item in Model)
 			{
 				<li class="govuk-breadcrumbs__list-item">
 					<a class="govuk-breadcrumbs__link" href="@item.Url">@item.Title</a>
 				</li>
 			}
-		</ol>
-	</nav>
-}
+		}
+	</ol>
+</nav>

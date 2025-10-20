@@ -3,10 +3,7 @@
 @using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
 
 @section Breadcrumb {
-	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
-	{
-		("My account", "/")		
-    })
+	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>())
 }
 
 @{
