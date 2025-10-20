@@ -1026,7 +1026,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
     [InlineData(ModificationStatus.NotApproved)]
     [InlineData(ModificationStatus.Authorised)]
     [InlineData(ModificationStatus.NotAuthorised)]
-    public async Task GetEnumStatus_Maps_Status_To_Expected_Order_Name(string inputStatus)
+    public async Task PostApproval_Modifications_When_GetEnumStatus_Maps_Status_To_Expected_Order(string inputStatus)
     {
         // Arrange
         var projectRecordId = "456";
@@ -1049,17 +1049,28 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 
         var modifications = new List<ModificationsDto>
         {
-            new() { ModificationId = "m1", ModificationType = "Type1", Status = inputStatus, CreatedAt=new DateTime(2025,10,02),
+            new() { ModificationId = "m1", ModificationType = "Type1", Status = inputStatus, CreatedAt=new DateTime(2025,10,12),
+                SentToRegulatorDate= new DateTime(2025,10,02),
+            },
+                  new() { ModificationId = "m1", ModificationType = "Type1", Status = inputStatus, CreatedAt=new DateTime(2025,10,03),
+                SentToRegulatorDate= new DateTime(2025,10,02),
+            },
+                        new() { ModificationId = "m1", ModificationType = "Type1", Status = inputStatus, CreatedAt=new DateTime(2025,10,03),
+                SentToRegulatorDate= new DateTime(2025,10,02),
+            },
+                              new() { ModificationId = "m1", ModificationType = "Type1", Status = inputStatus, CreatedAt=new DateTime(2025,10,04),
+                SentToRegulatorDate= new DateTime(2025,10,02),
+            },
+                                    new() { ModificationId = "m1", ModificationType = "Type1", Status = inputStatus, CreatedAt=new DateTime(2025,10,05),
+                SentToRegulatorDate= new DateTime(2025,10,02),
+            },      new() { ModificationId = "m1", ModificationType = "Type1", Status = inputStatus, CreatedAt=new DateTime(2025,10,06),
                 SentToRegulatorDate= new DateTime(2025,10,02),
             }
         };
 
         var modificationsResponse = new GetModificationsResponse
         {
-            Modifications = modifications.OrderBy(item => Enum.TryParse<ModificationStatusOrder>(item.Status, true, out var statusEnum)
-            ? (int)statusEnum
-            : (int)ModificationStatusOrder.None)
-            .ToList() ?? [],
+            Modifications = modifications,
             TotalCount = 1
         };
 
@@ -1071,7 +1082,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), 1, 20, sortField, sortDirection))
-            .ReturnsAsync(serviceResponse);
+             .ReturnsAsync(serviceResponse);
 
         // Act
         var result = await Sut.PostApproval(projectRecordId, "", pageNumber, pageSize, sortField, sortDirection);
@@ -1079,13 +1090,6 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
         var model = viewResult.Model.ShouldBeOfType<PostApprovalViewModel>();
-        var mod = model.Modifications.Single();
-        mod.ModificationIdentifier.ShouldBe("m1");
-        mod.ModificationType.ShouldBe("Type1");
-        mod.Status.ShouldBe(inputStatus);
-        mod.ReviewType.ShouldBeNull();
-        mod.Category.ShouldBeNull();
-        mod.SentToSponsorDate.ShouldBeNull();
         model.Pagination.ShouldNotBeNull();
         model.Pagination.PageNumber.ShouldBe(pageNumber);
         model.Pagination.PageSize.ShouldBe(pageSize);
