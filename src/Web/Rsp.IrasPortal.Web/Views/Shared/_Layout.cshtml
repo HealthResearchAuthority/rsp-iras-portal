@@ -1,6 +1,7 @@
 ﻿@using System.Security.Claims
 @using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.Configuration
+@using Rsp.IrasPortal.Web.Features.Breadcrumbs
 @inject AppSettings appSettings
 @inject IHttpContextAccessor httpContextAccessor
 
@@ -14,7 +15,7 @@
 	pageTitle = string.IsNullOrWhiteSpace(pageTitle) ? serviceName : $"{pageTitle} - {serviceName}";
 
 	var clarityProjectId = appSettings.ClarityProjectId;
-	var googleTagId = appSettings.GoogleTagId;	
+	var googleTagId = appSettings.GoogleTagId;
 }
 
 <!DOCTYPE html>
@@ -112,10 +113,13 @@
 
 	<div class="govuk-width-container">
 		<partial name="_PhaseBanner" />
+
+		@await RenderSectionAsync("Breadcrumb", required: false)
+
 		<main class="govuk-main-wrapper govuk-body" id="main-content">
 
 			@*Render the optional BackNavigation section if it exists*@
-			@RenderSection("BackNavigation", required: false)
+			@await RenderSectionAsync("BackNavigation", required: false)
 
 			@*Render the session timeout warning partial view, this will work with both javaScript enbaled and disabled*@
 			<partial name="_SessionTimeoutWarning" />

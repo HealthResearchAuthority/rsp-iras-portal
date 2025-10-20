@@ -3,47 +3,55 @@
 @model UserAuditTrailViewModel
 
 @{
-    ViewBag.Active = "manageUsers";
-    ViewBag.Title = "Audit history - Manage Users - System Administration";
+	ViewBag.Active = "manageUsers";
+	ViewBag.Title = "Audit history - Manage Users - System Administration";
 
-    var id = Context.Request.Query["userId"].ToString();
-    var email = Context.Request.Query["email"].ToString();
+	var id = Context.Request.Query["userId"].ToString();
+	var email = Context.Request.Query["email"].ToString();
 }
 
-<a asp-route="admin:viewuser" asp-all-route-data="@(new Dictionary<string, string>{{"userId", id}, {"email", email}})" class="govuk-back-link">Back</a>
+@section Breadcrumb {
+	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+	{
+		("My account", "/"),
+		("System administration", Url.Action("Index", "SystemAdmin")),
+		("Manage users", Url.Action("Index", "Users")),
+		("User profile", Url.Action("ViewUser", "Users", new Dictionary<string, string>{{"userId", id}, {"email", email}}))
+	})
+}
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-three-quarters">
-        <h1 class="govuk-heading-l">Audit history: @Model.Name</h1>
-    </div>
+	<div class="govuk-grid-column-three-quarters">
+		<h1 class="govuk-heading-l">Audit history: @Model.Name</h1>
+	</div>
 </div>
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-full">
+	<div class="govuk-grid-column-full">
 
-        <div class="govuk-table-wrapper">
-            <table class="govuk-table">
-                <thead class="govuk-table__head">
-                    <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
-                        <th class="govuk-table__header govuk-!-width-one-third">Date</th>
-                        <th class="govuk-table__header govuk-!-width-one-third">Event description</th>
-                        <th class="govuk-table__header govuk-!-width-one-third line-break-anywhere">System administrator</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model.Items != null)
-                    {
-                        foreach (var record in Model.Items)
-                        {
-                            <tr class="govuk-table__row">
-                                <td class="govuk-table__cell">@record.DateTimeStamp.ToString("dd MMM yyyy HH:mm")</td>
+		<div class="govuk-table-wrapper">
+			<table class="govuk-table">
+				<thead class="govuk-table__head">
+					<tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+						<th class="govuk-table__header govuk-!-width-one-third">Date</th>
+						<th class="govuk-table__header govuk-!-width-one-third">Event description</th>
+						<th class="govuk-table__header govuk-!-width-one-third line-break-anywhere">System administrator</th>
+					</tr>
+				</thead>
+				<tbody>
+					@if (Model.Items != null)
+					{
+						foreach (var record in Model.Items)
+						{
+							<tr class="govuk-table__row">
+								<td class="govuk-table__cell">@record.DateTimeStamp.ToString("dd MMM yyyy HH:mm")</td>
 								<td class="govuk-table__cell line-break-anywhere">@record.Description</td>
-                                <td class="govuk-table__cell line-break-anywhere">@record.SystemAdmin</td>
-                            </tr>
-                        }
-                    }
-                </tbody>
-            </table>
-        </div>
-    </div>
+								<td class="govuk-table__cell line-break-anywhere">@record.SystemAdmin</td>
+							</tr>
+						}
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
 </div>
