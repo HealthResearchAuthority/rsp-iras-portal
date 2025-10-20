@@ -1,4 +1,5 @@
-﻿@using System.Text.Json
+﻿@using System.Globalization;
+@using System.Text.Json
 @using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.DTOs
 @using Rsp.IrasPortal.Web.Models
@@ -18,14 +19,14 @@
             $"{prefix}{specificArea}" :
             $"{prefix}{Model.Questions.FirstOrDefault()?.Section}";
 
+    var navigation = JsonSerializer.Deserialize<NavigationDto>((TempData.Peek(TempDataKeys.ProjectModificationChange.Navigation) as string)!);
+
     var isReviewInProgress = TempData.Peek(TempDataKeys.ProjectModificationChange.ReviewChanges) is true;
 
-    var navigation = JsonSerializer.Deserialize<NavigationDto>((TempData.Peek(TempDataKeys.ProjectModificationChange.Navigation) as string)!);
 }
 
 <div class="govuk-width-container">
     @section BackNavigation {
-        @*<partial name="_BackNavigation" model="navModel" />*@
         <vc:back-navigation navigation-dto="@navigation"
                             specific-area-of-change-id="@modification.SpecificAreaOfChangeId"
                             project-record-id="@modification.ProjectRecordId"
@@ -61,10 +62,6 @@
                         <partial name="_SubmitButton" model="@("pmc:saveresponses", "Save for later", new Dictionary<string, string> {{ "saveForLater", bool.TrueString }})" />
                     }
                 </div>
-
-                <p>
-                    <a href="#" class="govuk-link">Remove this change</a>
-                </p>
             </form>
         </div>
     </div>
