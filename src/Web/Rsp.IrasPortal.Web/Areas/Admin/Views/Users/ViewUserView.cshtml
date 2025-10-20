@@ -9,8 +9,8 @@
 @section Breadcrumb {
 	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
 	{
-		("System administration", Url.Action("Index", "SystemAdmin")),
-		("Manage users", Url.Action("Index", "Users"))
+		("System administration", Url.RouteUrl("systemadmin:view")),
+		("Manage users", Url.RouteUrl("admin:users"))
 	})
 }
 
