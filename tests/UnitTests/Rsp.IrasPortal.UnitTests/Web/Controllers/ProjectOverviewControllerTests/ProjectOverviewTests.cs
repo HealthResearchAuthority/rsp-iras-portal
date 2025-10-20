@@ -1,4 +1,3 @@
-using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -1019,44 +1018,78 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         status.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
     }
 
-    public static IEnumerable<object?[]> MapCases()
-    {
-        // These assume you have these public types/constants available in the test assembly:
-        // - ModificationStatus (string constants)
-        // - ModificationStatusOrder (enum)
-        yield return new object?[] { ModificationStatus.InDraft, nameof(ModificationStatusOrder.InDraft) };
-        yield return new object?[] { ModificationStatus.WithSponsor, nameof(ModificationStatusOrder.WithSponsor) };
-        yield return new object?[] { ModificationStatus.WithRegulator, nameof(ModificationStatusOrder.WithRegulator) };
-        yield return new object?[] { ModificationStatus.Approved, nameof(ModificationStatusOrder.Approved) };
-        yield return new object?[] { ModificationStatus.NotApproved, nameof(ModificationStatusOrder.NotApproved) };
-        yield return new object?[] { ModificationStatus.Authorised, nameof(ModificationStatusOrder.Authorised) };
-        yield return new object?[] { ModificationStatus.NotAuthorised, nameof(ModificationStatusOrder.NotAuthorised) };
-    }
-
     [Theory]
-    [MemberData(nameof(MapCases))]
-    public void GetEnumStatus_Maps_Status_To_Expected_Order_Name(string? inputStatus, string expectedOrderName)
+    [InlineData(ModificationStatus.InDraft)]
+    [InlineData(ModificationStatus.WithSponsor)]
+    [InlineData(ModificationStatus.WithRegulator)]
+    [InlineData(ModificationStatus.Approved)]
+    [InlineData(ModificationStatus.NotApproved)]
+    [InlineData(ModificationStatus.Authorised)]
+    [InlineData(ModificationStatus.NotAuthorised)]
+    public async Task GetEnumStatus_Maps_Status_To_Expected_Order_Name(string inputStatus)
     {
         // Arrange
-        var method = GetGetEnumStatusMethod();
+        var projectRecordId = "456";
+        var httpContext = CreateHttpContextWithSession();
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempData = CreateTempData(tempDataProvider, httpContext);
+        var pageNumber = 1;
+        var pageSize = 20;
+        var sortField = nameof(ModificationsModel.CreatedAt);
+        var sortDirection = SortDirections.Descending;
+
+        var answers = new List<RespondentAnswerDto>
+        {
+            new() { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "Project Y" }
+        };
+
+        SetupProjectRecord(projectRecordId);
+        SetupRespondentAnswers(projectRecordId, answers);
+        SetupControllerContext(httpContext, tempData);
+
+        var modifications = new List<ModificationsDto>
+        {
+            new() { ModificationId = "m1", ModificationType = "Type1", Status = inputStatus, CreatedAt=new DateTime(2025,10,02),
+                SentToRegulatorDate= new DateTime(2025,10,02),
+            }
+        };
+
+        var modificationsResponse = new GetModificationsResponse
+        {
+            Modifications = modifications.OrderBy(item => Enum.TryParse<ModificationStatusOrder>(item.Status, true, out var statusEnum)
+            ? (int)statusEnum
+            : (int)ModificationStatusOrder.None)
+            .ToList() ?? [],
+            TotalCount = 1
+        };
+
+        var serviceResponse = new ServiceResponse<GetModificationsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = modificationsResponse
+        };
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(serviceResponse);
 
         // Act
-        var result = method.Invoke(null, new object?[] { inputStatus });
+        var result = await Sut.PostApproval(projectRecordId, "", pageNumber, pageSize, sortField, sortDirection);
 
         // Assert
-        Assert.IsType<string>(result);
-        Assert.Equal(expectedOrderName, (string)result!);
-    }
-
-    private static MethodInfo GetGetEnumStatusMethod()
-    {
-        var controllerType = typeof(ProjectOverviewController);
-
-        var mi = controllerType.GetMethod(
-            "GetEnumStatus",
-            BindingFlags.NonPublic | BindingFlags.Static);
-
-        Assert.NotNull(mi); // Fails fast if the method name/signature changes
-        return mi!;
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var model = viewResult.Model.ShouldBeOfType<PostApprovalViewModel>();
+        var mod = model.Modifications.Single();
+        mod.ModificationIdentifier.ShouldBe("m1");
+        mod.ModificationType.ShouldBe("Type1");
+        mod.Status.ShouldBe(inputStatus);
+        mod.ReviewType.ShouldBeNull();
+        mod.Category.ShouldBeNull();
+        mod.SentToSponsorDate.ShouldBeNull();
+        model.Pagination.ShouldNotBeNull();
+        model.Pagination.PageNumber.ShouldBe(pageNumber);
+        model.Pagination.PageSize.ShouldBe(pageSize);
+        model.Pagination.SortField.ShouldBe(sortField);
+        model.Pagination.SortDirection.ShouldBe(sortDirection);
     }
 }
