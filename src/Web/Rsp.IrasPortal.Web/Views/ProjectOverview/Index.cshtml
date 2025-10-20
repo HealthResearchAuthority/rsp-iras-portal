@@ -15,14 +15,9 @@
 @section Breadcrumb {
 	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
 	{
-		("My account", "/"),
 		("My research", Url.Action("Welcome", "Application"))
 	})
 }
-
-@* @section BackNavigation {
-    <partial name="_BackNavigation" model="@((routeName, "Back", routeValues))" />
-} *@
 
 <partial name="_ProjectOverviewPartial" model="@Model" />
 

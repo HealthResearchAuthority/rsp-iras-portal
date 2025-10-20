@@ -12,7 +12,6 @@
 @section Breadcrumb {
 	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
 	{
-		("My account", "/"),
 		("System administration", Url.Action("Index", "SystemAdmin")),
 		("Manage review bodies", Url.Action("ViewReviewBodies", "ReviewBody"))
 	})

@@ -18,15 +18,9 @@
 @section Breadcrumb {
 	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
 	{
-		("My account", "/"),
-		("My research", Url.Action("Welcome", "Application")),
-		(projectTitle, Url.Action("Index", "ProjectOverview", new Dictionary<string, string>{{"projectRecordId", Model.ProjectRecordId!}}))
+		("My research", Url.Action("Welcome", "Application"))
 	})
 }
-
-@* @section BackNavigation {
-	<partial name="_BackNavigation" model="@((routeName, "Back", routeValues))" />
-} *@
 
 @if (TempData[TempDataKeys.ShowNotificationBanner] is not null)
 {
