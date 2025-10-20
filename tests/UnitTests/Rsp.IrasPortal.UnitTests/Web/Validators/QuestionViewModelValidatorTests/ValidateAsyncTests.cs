@@ -488,4 +488,83 @@ public class ValidateAsyncTests : TestServiceBase<QuestionViewModelValidator>
         result
             .ShouldHaveValidationErrorFor(q => q.AnswerText);
     }
+
+    [Fact]
+    public async Task ValidateAsync_WithPastDateRule_ShouldAddFailureForNonPastDate()
+    {
+        // Arrange
+        var question = new QuestionViewModel
+        {
+            QuestionId = "Q2",
+            Heading = "Start date",
+            Section = "Project Details",
+            DataType = "Date",
+            AnswerText = DateTime.Now.AddDays(1).ToString("yyyy-MM-dd"),
+            IsMandatory = true,
+            Rules =
+            [
+                new RuleDto
+            {
+                Conditions =
+                [
+                    new ConditionDto
+                    {
+                        Operator = "DATE",
+                        Value = @"FORMAT:yyyy-MM-dd,PASTDATE",
+                        Description = "Date must be in the past"
+                    }
+                ]
+            }
+            ]
+        };
+
+        // Act
+        var result = await Sut.TestValidateAsync(CreateValidationContext(question));
+
+        // Assert
+        result
+            .ShouldHaveValidationErrorFor(q => q.AnswerText)
+            .WithErrorMessage("Date must be in the past");
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WithMissingDatePartRule_ShouldAddFailureForIncompleteDateParts()
+    {
+        // Arrange
+        var question = new QuestionViewModel
+        {
+            QuestionId = "Q3",
+            Heading = "Sponsor document date",
+            Section = "Documents",
+            DataType = "Date",
+            AnswerText = "",
+            Day = "03",
+            Month = "",
+            Year = "",
+            IsMandatory = true,
+            Rules =
+            [
+                new RuleDto
+            {
+                Conditions =
+                [
+                    new ConditionDto
+                    {
+                        Operator = "DATE",
+                        Value = @"MISSINGDATEPART",
+                        Description = ""
+                    }
+                ]
+            }
+            ]
+        };
+
+        // Act
+        var result = await Sut.TestValidateAsync(CreateValidationContext(question));
+
+        // Assert
+        result
+            .ShouldHaveValidationErrorFor(q => q.AnswerText)
+            .WithErrorMessage("Enter the month and year");
+    }
 }

@@ -44,4 +44,9 @@ public struct QuestionIds
     /// The question ID for the sponsor contact.
     /// </summary>
     public const string SponsorContact = "IQA0313";
+
+    /// <summary>
+    /// The question ID for the selected document type.
+    /// </summary>
+    public const string SelectedDocumentType = "IQA0600";
 }
