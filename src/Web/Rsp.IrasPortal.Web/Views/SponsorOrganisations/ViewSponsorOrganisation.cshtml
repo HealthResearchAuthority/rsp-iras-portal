@@ -13,8 +13,13 @@
     var headline = pageContent.GetValueOrDefault("SponsorOrganisations.View.Headline", null);
 }
 
-@section BackNavigation {
-	<partial name="_BackNavigation" model="@("soc:viewsponsororganisations", "Back", new Dictionary<string, string>())" />
+@section Breadcrumb {
+	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+	{
+		("My account", "/"),
+		("System administration", Url.Action("Index", "SystemAdmin")),
+		("Manage sponsor organisations", Url.Action("Index", "SponsorOrganisations"))
+	})
 }
 
 <div class="govuk-grid-row">

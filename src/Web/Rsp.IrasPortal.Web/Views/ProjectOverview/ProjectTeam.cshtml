@@ -10,10 +10,16 @@
     var routeName = (ViewData["BackRoute"] as string) ?? "app:Welcome";
     var routeValues = ViewData["BackRouteValues"] as Dictionary<string, string>
                       ?? new Dictionary<string, string>();
+	var projectTitle = !string.IsNullOrEmpty(Model.ProjectTitle) ? Model.ProjectTitle : "Project overview";
 }
 
-@section BackNavigation {
-    <partial name="_BackNavigation" model="@((routeName, "Back", routeValues))" />
+@section Breadcrumb {
+	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+	{
+		("My account", "/"),
+		("My research", Url.Action("Welcome", "Application")),
+		(projectTitle, Url.Action("Index", "ProjectOverview", new Dictionary<string, string>{{"projectRecordId", Model.ProjectRecordId!}}))
+	})
 }
 
 <partial name="_NavigationHeaderPartial" model="@Model" />
