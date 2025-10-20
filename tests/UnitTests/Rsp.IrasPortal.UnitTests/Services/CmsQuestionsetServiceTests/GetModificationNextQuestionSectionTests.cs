@@ -20,7 +20,7 @@ public class GetModificationNextQuestionSectionTests : TestServiceBase<CmsQuesti
 
         Mocker
             .GetMock<ICmsQuestionSetServiceClient>()
-            .Setup(c => c.GetModificationNextQuestionSection(It.IsAny<string>()))
+            .Setup(c => c.GetModificationNextQuestionSection(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(apiResponse);
 
         // Act
@@ -37,7 +37,7 @@ public class GetModificationNextQuestionSectionTests : TestServiceBase<CmsQuesti
         // Arrange
         Mocker
             .GetMock<ICmsQuestionSetServiceClient>()
-            .Setup(c => c.GetModificationNextQuestionSection(It.IsAny<string>()))
+            .Setup(c => c.GetModificationNextQuestionSection(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
             .ThrowsAsync(new Exception("API failure"));
 
         // Act & Assert
@@ -57,7 +57,7 @@ public class GetModificationNextQuestionSectionTests : TestServiceBase<CmsQuesti
 
         Mocker
             .GetMock<ICmsQuestionSetServiceClient>()
-            .Setup(c => c.GetModificationPreviousQuestionSection(It.IsAny<string>()))
+            .Setup(c => c.GetModificationPreviousQuestionSection(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(apiResponse);
 
         // Act
@@ -74,7 +74,7 @@ public class GetModificationNextQuestionSectionTests : TestServiceBase<CmsQuesti
         // Arrange
         Mocker
             .GetMock<ICmsQuestionSetServiceClient>()
-            .Setup(c => c.GetModificationPreviousQuestionSection(It.IsAny<string>()))
+            .Setup(c => c.GetModificationPreviousQuestionSection(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
             .ThrowsAsync(new Exception("API failure"));
 
         // Act & Assert
