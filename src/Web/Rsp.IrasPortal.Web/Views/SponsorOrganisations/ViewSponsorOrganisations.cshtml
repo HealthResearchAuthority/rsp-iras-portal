@@ -6,13 +6,7 @@
 @model SponsorOrganisationSearchViewModel
 
 @{
-    ViewData["Title"] = "Manage sponsor organisations - System Administration";
-
-    var statusOptions = new List<GdsOption>
-    {
-        new() { Value = "true", Label = "Active" },
-        new() { Value = "false", Label = "Disabled" }
-    };
+    ViewData["Title"] = "View sponsor organisations - Manage sponsor organisations - System Administration";
 
     var sortableHeaders = new[]
     {
@@ -22,7 +16,7 @@
     };
     var tableId = "sponsorOrganisationTable";
 
-	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null
         ? pageContentData
         : new Dictionary<string, MixedContentPageItem?>();
@@ -175,48 +169,48 @@
     <div class="govuk-grid-column-full">
         @if (Model.SponsorOrganisations != null && Model.SponsorOrganisations.Any())
         {
-                <div class="govuk-table-wrapper">
-                    <table class="govuk-table govuk-table-users" id="@tableId">
-                        <thead>
-                        <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
-                            @foreach (var header in sortableHeaders)
-                            {
-                                var sortableHeaderModel = new SortableHeaderModel
-                                {
-                                    FieldName = header.Field,
-                                    DisplayText = header.Label,
-                                    CurrentSortField = Model.Pagination?.SortField,
-                                    CurrentSortDirection = Model.Pagination?.SortDirection,
-                                    TableId = tableId
-                                };
-
-                                <th scope="col" class="govuk-table__header govuk-table__header-sortable">
-                                    <partial name="_SortableHeaderButton" model="@sortableHeaderModel"/>
-                                </th>
-                            }
-                            <th scope="col" class="govuk-table__header">Actions</th>
-                        </tr>
-                        </thead>
-                        <tbody class="govuk-table__body">
-                        @foreach (var sponsorOrganisation in Model.SponsorOrganisations)
+            <div class="govuk-table-wrapper">
+                <table class="govuk-table govuk-table-users" id="@tableId">
+                    <thead>
+                    <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+                        @foreach (var header in sortableHeaders)
                         {
-                            <tr class="govuk-table__row">
-                                <td class="govuk-table__cell">@sponsorOrganisation.SponsorOrganisationName</td>
-                                <td class="govuk-table__cell">@string.Join(", ", sponsorOrganisation.Countries)</td>
-                                <td class="govuk-table__cell">
-                                    <span class="govuk-tag @(sponsorOrganisation.IsActive ? "govuk-tag--green" : "govuk-tag--red")">
-                                        @(sponsorOrganisation.IsActive ? "Active" : "Disabled")
-                                    </span>
-                                </td>
-                                <td class="govuk-table__cell">
-									<a class="govuk-link" asp-route="soc:viewsponsororganisation" asp-route-rtsId="@sponsorOrganisation.RtsId">View/Edit</a>
-                                </td>
-                            </tr>
+                            var sortableHeaderModel = new SortableHeaderModel
+                            {
+                                FieldName = header.Field,
+                                DisplayText = header.Label,
+                                CurrentSortField = Model.Pagination?.SortField,
+                                CurrentSortDirection = Model.Pagination?.SortDirection,
+                                TableId = tableId
+                            };
+
+                            <th scope="col" class="govuk-table__header govuk-table__header-sortable">
+                                <partial name="_SortableHeaderButton" model="@sortableHeaderModel"/>
+                            </th>
                         }
-                        </tbody>
-                    </table>
-                    <partial name="_Pagination" model="@Model.Pagination"/>
-                </div>
+                        <th scope="col" class="govuk-table__header">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody class="govuk-table__body">
+                    @foreach (var sponsorOrganisation in Model.SponsorOrganisations)
+                    {
+                        <tr class="govuk-table__row">
+                            <td class="govuk-table__cell">@sponsorOrganisation.SponsorOrganisationName</td>
+                            <td class="govuk-table__cell">@string.Join(", ", sponsorOrganisation.Countries)</td>
+                            <td class="govuk-table__cell">
+                                <span class="govuk-tag @(sponsorOrganisation.IsActive ? "govuk-tag--green" : "govuk-tag--red")">
+                                    @(sponsorOrganisation.IsActive ? "Active" : "Disabled")
+                                </span>
+                            </td>
+                            <td class="govuk-table__cell">
+                                <a class="govuk-link" asp-route="soc:viewsponsororganisation" asp-route-rtsId="@sponsorOrganisation.RtsId">View/Edit</a>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+                <partial name="_Pagination" model="@Model.Pagination"/>
+            </div>
         }
         else if ((Model.Search.Filters.Any() && !Model.SponsorOrganisations.Any()) || !string.IsNullOrEmpty(Model.Search?.SearchQuery))
         {

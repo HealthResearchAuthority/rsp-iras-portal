@@ -11,7 +11,6 @@ namespace Rsp.IrasPortal.Web.Controllers;
 /// Controller for managing organisation-related operations.
 /// </summary>
 [Route("[controller]/[action]", Name = "org:[action]")]
-[Authorize(Policy = "IsApplicant")]
 public class OrganisationController
 (
     IRtsService rtsService

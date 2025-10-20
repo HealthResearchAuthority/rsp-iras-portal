@@ -49,6 +49,8 @@
 
         @foreach (var question in questions)
         {
+            <partial name="ProjectRecordAnswer" model="(Model, question)" />
+
             var index = question.Index;
 
             <input type="hidden" asp-for="Questions[index].Index" />
