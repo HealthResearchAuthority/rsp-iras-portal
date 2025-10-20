@@ -10,14 +10,7 @@
 	var email = Context.Request.Query["email"].ToString();
 }
 
-@section Breadcrumb {
-	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
-	{
-		("System administration", Url.Action("Index", "SystemAdmin")),
-		("Manage users", Url.Action("Index", "Users")),
-		("User profile", Url.Action("ViewUser", "Users", new Dictionary<string, string>{{"userId", id}, {"email", email}}))
-	})
-}
+<a asp-route="admin:viewuser" asp-all-route-data="@(new Dictionary<string, string>{{"userId", id}, {"email", email}})" class="govuk-back-link">Back</a>
 
 <div class="govuk-grid-row">
 	<div class="govuk-grid-column-three-quarters">

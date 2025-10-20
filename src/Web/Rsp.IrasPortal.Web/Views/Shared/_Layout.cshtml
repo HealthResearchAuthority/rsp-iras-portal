@@ -107,12 +107,13 @@
 			</div>
 		</div>
 	</header>
-
+	
 	<partial name="_ServiceNavigation" />
 
 	<div class="govuk-width-container">
 		<partial name="_PhaseBanner" />
 
+		@*Render optional breadcrumb partial if it exists*@
 		@await RenderSectionAsync("Breadcrumb", required: false)
 
 		<main class="govuk-main-wrapper govuk-body" id="main-content">
