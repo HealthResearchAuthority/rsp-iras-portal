@@ -23,12 +23,12 @@ public class RemoveFiltersTests : TestServiceBase<ApplicationController>
     }
 
     [Fact]
-    public async Task RemoveFilter_Status_ShouldBeCleared_AndRedirect()
+    public async Task RemoveFilter_StatusWithoutValue_ShouldClearAll_AndRedirect()
     {
-        var model = new ApplicationSearchModel { Status = ["In draft"] };
+        var model = new ApplicationSearchModel { Status = ["In draft", "Submitted"] };
         SetSessionModel(model);
 
-        var result = await Sut.RemoveFilter("status");
+        var result = await Sut.RemoveFilter("status", null);
 
         result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe(nameof(Sut.Welcome));
 
@@ -42,7 +42,7 @@ public class RemoveFiltersTests : TestServiceBase<ApplicationController>
         var model = new ApplicationSearchModel { FromDay = "01", FromMonth = "01", FromYear = "2023" };
         SetSessionModel(model);
 
-        var result = await Sut.RemoveFilter("datecreated-from");
+        var result = await Sut.RemoveFilter("datecreated-from", null);
 
         result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe(nameof(Sut.Welcome));
 
@@ -58,7 +58,7 @@ public class RemoveFiltersTests : TestServiceBase<ApplicationController>
         var model = new ApplicationSearchModel { ToDay = "31", ToMonth = "12", ToYear = "2023" };
         SetSessionModel(model);
 
-        var result = await Sut.RemoveFilter("datecreated-to");
+        var result = await Sut.RemoveFilter("datecreated-to", null);
 
         result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe(nameof(Sut.Welcome));
 
@@ -82,7 +82,7 @@ public class RemoveFiltersTests : TestServiceBase<ApplicationController>
         };
         SetSessionModel(model);
 
-        var result = await Sut.RemoveFilter("datecreated");
+        var result = await Sut.RemoveFilter("datecreated", null);
 
         result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe(nameof(Sut.Welcome));
 
@@ -93,6 +93,25 @@ public class RemoveFiltersTests : TestServiceBase<ApplicationController>
         updated.ToDay.ShouldBeNull();
         updated.ToMonth.ShouldBeNull();
         updated.ToYear.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task RemoveFilter_SpecificStatus_ShouldBeRemoved_AndRedirect()
+    {
+        var model = new ApplicationSearchModel
+        {
+            Status = ["In draft", "Submitted", "Approved"]
+        };
+        SetSessionModel(model);
+
+        var result = await Sut.RemoveFilter("status", "Submitted");
+
+        result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe(nameof(Sut.Welcome));
+
+        var updated = GetSessionModel();
+        updated.Status.ShouldContain("In draft");
+        updated.Status.ShouldContain("Approved");
+        updated.Status.ShouldNotContain("Submitted");
     }
 
     // ----------------------

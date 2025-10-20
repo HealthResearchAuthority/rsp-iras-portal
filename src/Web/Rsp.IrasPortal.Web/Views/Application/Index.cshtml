@@ -139,15 +139,16 @@
                                                 <div class="govuk-form-group govuk-!-margin-bottom-2">
                                                     <fieldset class="govuk-fieldset">
                                                         <rsp-gds-checkbox-group asp-for="Search.Status"
-                                                                                options="ProjectRecordStatus.AllOptions" conditional-field="false"
+                                                                                options="ProjectRecordStatus.AllOptions" 
+                                                                                conditional-field="false"
                                                                                 label-text="Select all that apply"
                                                                                 legend-class="govuk-label govuk-label--s font-weight-none"
-                                                                                hint-id="lead-nation-hint"
+                                                                                hint-id="status-hint"
                                                                                 hint-html="@($"{Model.Search.Status?.Count ?? 0} selected")"
                                                                                 label-html-class="font-weight-none" />
                                                     </fieldset>
-								</div>
-							</div>
+								                </div>
+							                </div>
                                         </details>
 
                                         <!-- Apply -->
@@ -176,7 +177,7 @@
                                         foreach (var val in filterValues)
                                         {
                                             <li>
-                                                <a asp-route="app:removefilter" asp-route-key="@filterKey"
+                                                <a asp-route="app:removefilter" asp-route-key="@filterKey" asp-route-value="@val"
                                                    class="search-filter-summary__remove-filter">
                                                     <span class="search-filter-summary__remove-filter-text">
                                                         <span class="govuk-visually-hidden">Remove filter</span>
@@ -295,3 +296,5 @@
         </authorized>
     </div>
 </div>
+
+<script src="~/js/searchApplications.js"></script>

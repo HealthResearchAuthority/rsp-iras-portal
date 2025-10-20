@@ -254,12 +254,14 @@ public class ApplicationController
     }
 
     [HttpGet]
-    public async Task<IActionResult> RemoveFilter(string key)
+    public async Task<IActionResult> RemoveFilter(string key, string? value)
     {
         var json = HttpContext.Session.GetString(SessionKeys.ProjectRecordSearch);
         if (string.IsNullOrWhiteSpace(json) ||
             JsonSerializer.Deserialize<ApplicationSearchModel>(json) is not { } search)
+        {
             return RedirectToAction(nameof(Welcome));
+        }
 
         var k = key?.ToLowerInvariant().Replace(" ", "");
 
@@ -271,7 +273,19 @@ public class ApplicationController
             ["datecreated"] = () => { ClearFromDate(); ClearToDate(); },
             ["datecreated-from"] = ClearFromDate,
             ["datecreated-to"] = ClearToDate,
-            ["status"] = () => search.Status.Clear()
+            ["status"] = () =>
+            {
+                if (!string.IsNullOrEmpty(value) && search.Status?.Count > 0)
+                {
+                    search.Status = search.Status
+                        .Where(s => !string.Equals(s, value, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
+                else
+                {
+                    search.Status.Clear();
+                }
+            }
         };
 
         if (k is not null && actions.TryGetValue(k, out var act))
