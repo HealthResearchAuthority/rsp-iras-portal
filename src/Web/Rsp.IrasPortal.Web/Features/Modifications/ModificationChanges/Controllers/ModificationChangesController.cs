@@ -28,36 +28,6 @@ public class ModificationChangesController
     private readonly ICmsQuestionsetService _cmsQuestionsetService = cmsQuestionsetService;
     private const string PostApprovalRoute = "pov:postapproval";
 
-    /// <summary>
-    /// Resumes the application for the categoryId
-    /// </summary>
-    /// <param name="projectRecordId">Application Id</param>
-    /// <param name="categoryId">CategoryId to resume from</param>
-    public async Task<IActionResult> PlannedEndDate(string projectRecordId, string categoryId, string sectionId, bool reviewAnswers = false)
-    {
-        return await DisplayQuestionnaire(projectRecordId, categoryId, sectionId, reviewAnswers, nameof(PlannedEndDate));
-    }
-
-    /// <summary>
-    /// Resumes the application for the categoryId
-    /// </summary>
-    /// <param name="projectRecordId">Application Id</param>
-    /// <param name="categoryId">CategoryId to resume from</param>
-    public async Task<IActionResult> ReviewableFreeText(string projectRecordId, string categoryId, string sectionId, bool reviewAnswers = false)
-    {
-        return await DisplayQuestionnaire(projectRecordId, categoryId, sectionId, reviewAnswers, nameof(ReviewableFreeText));
-    }
-
-    public async Task<IActionResult> AffectingOrganisations(string projectRecordId, string categoryId, string sectionId, bool reviewAnswers = false)
-    {
-        return await DisplayQuestionnaire(projectRecordId, categoryId, sectionId, reviewAnswers, nameof(AffectingOrganisations));
-    }
-
-    public async Task<IActionResult> AffectedOrganisationsType(string projectRecordId, string categoryId, string sectionId, bool reviewAnswers = false)
-    {
-        return await DisplayQuestionnaire(projectRecordId, categoryId, sectionId, reviewAnswers, nameof(AffectedOrganisationsType));
-    }
-
     [RequestFormLimits(ValueCountLimit = int.MaxValue)]
     [HttpPost]
     public async Task<IActionResult> SaveResponses(QuestionnaireViewModel model, bool saveForLater = false)
@@ -91,12 +61,17 @@ public class ModificationChangesController
         var isValid = await this.ValidateQuestionnaire(validator, model);
 
         // set the previous, current and next stages
-        var navigation = await SetStage(model.CurrentStage!);
+        var sectionQuestions = questionnaire.Questions.FindAll(q => q.SectionId.Equals(model.CurrentStage!, StringComparison.OrdinalIgnoreCase));
+
+        var question = sectionQuestions.FirstOrDefault(sq => sq.UseAnswerForNextSection);
+
+        // this is where the questionnaire will resume
+        var navigation = await SetStage(model.CurrentStage!, question?.QuestionId, question?.GetDisplayText());
 
         if (!isValid)
         {
             model.ReviewAnswers = false;
-            return View(navigation.CurrentSection.StaticViewName, model);
+            return View("Questionnaire", model);
         }
 
         // ------------------Save Modification Answers-------------------------
@@ -105,9 +80,6 @@ public class ModificationChangesController
         var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
 
         await SaveModificationChangeAnswers(projectModificationChangeId, projectRecordId!, model.Questions);
-
-        // save the questions in the session
-        // TempData[$"{TempDataKeys.ProjectModification.Questionnaire}:{navigation.CurrentStage}"] = JsonSerializer.Serialize(questions);
 
         // if save for later
         if (saveForLater)
@@ -158,6 +130,7 @@ public class ModificationChangesController
         // if review in progress or the user is at the last stage and clicks on Save and Continue
         if (isReviewInProgress ||
             string.IsNullOrWhiteSpace(navigation.NextStage) ||
+            navigation.NextSection.IsLastSectionBeforeReview ||
             navigation.NextSection.StaticViewName.Equals(nameof(ReviewChanges), StringComparison.OrdinalIgnoreCase))
         {
             return RedirectToAction(nameof(ReviewChanges), new
@@ -177,7 +150,6 @@ public class ModificationChangesController
         });
     }
 
-    [NonAction]
     public async Task<IActionResult> DisplayQuestionnaire(string projectRecordId, string categoryId, string sectionId, bool reviewAnswers, string viewName)
     {
         // check if we are in the modification journey, so only get the modfication questions
@@ -219,8 +191,6 @@ public class ModificationChangesController
         // convert the questions response to QuestionnaireViewModel
         var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(questionsSetServiceResponse.Content!, true);
 
-        //var questions = questionnaire.Questions;
-
         // if respondent has answerd any questions
         if (respondentAnswers.Any())
         {
@@ -247,7 +217,7 @@ public class ModificationChangesController
 
         // if we have questions in the session
         // then return the view with the model
-        return View(viewName, viewModel);
+        return View("Questionnaire", viewModel);
     }
 
     private async Task PopulateOriginalAnswers(string projectRecordId, List<QuestionViewModel> questions, QuestionnaireViewModel viewModel)
@@ -257,6 +227,12 @@ public class ModificationChangesController
 
         if (originalQuestions.Count != 0)
         {
+            // get the question set for the project record so that we can get the
+            // original question text
+            var questionSetResponse = await _cmsQuestionsetService.GetQuestionSet();
+
+            var projectRecordQuestions = questionSetResponse.Content?.Sections.SelectMany(s => s.Questions) ?? [];
+
             // get the original respondent answers
             var projectAnswersResponse = await _respondentService.GetRespondentAnswers(projectRecordId);
 
@@ -268,12 +244,17 @@ public class ModificationChangesController
                 {
                     foreach (var originalQuestionId in originalQuestions.Select(originalQuestion => originalQuestion.QuestionId))
                     {
+                        var projectRecordQuestion = projectRecordQuestions.SingleOrDefault(q => q.Id == originalQuestionId);
+
                         // get the answer for the question id
                         var originalAnswer = answers.FirstOrDefault(a => a.QuestionId == originalQuestionId);
 
                         if (originalAnswer != null)
                         {
-                            viewModel.OriginalAnswers.Add(originalQuestionId, originalAnswer);
+                            // update the question text from the original question set
+                            originalAnswer.QuestionText = projectRecordQuestion?.Name;
+
+                            viewModel.ProjectRecordAnswers.Add(originalQuestionId, originalAnswer);
                         }
                     }
                 }
