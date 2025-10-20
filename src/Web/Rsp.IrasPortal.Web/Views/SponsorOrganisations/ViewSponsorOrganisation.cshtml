@@ -16,8 +16,8 @@
 @section Breadcrumb {
 	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
 	{
-		("System administration", Url.Action("Index", "SystemAdmin")),
-		("Manage sponsor organisations", Url.Action("Index", "SponsorOrganisations"))
+		("System administration", Url.RouteUrl("systemadmin:view")),
+		("Manage sponsor organisations", Url.RouteUrl("soc:viewsponsororganisations"))
 	})
 }
 

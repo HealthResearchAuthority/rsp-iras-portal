@@ -34,7 +34,7 @@
 @section Breadcrumb {
 	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
 	{
-		("Approvals", Url.Action("Welcome", "ApprovalsMenu"))
+		("Approvals", Url.RouteUrl("approvalsmenu:welcome"))
 	})
 }
 
