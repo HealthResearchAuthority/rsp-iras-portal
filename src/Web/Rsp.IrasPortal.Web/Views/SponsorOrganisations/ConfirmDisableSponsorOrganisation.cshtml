@@ -21,7 +21,7 @@
         <p class="govuk-body">@Html.Raw(body?.Value)</p>
         <form method="post">
             <input hidden name="RtsId" asp-for="RtsId" value="@Model.RtsId" />
-            <button asp-route="soc:confirmdisablesponsororganisation" type="submit" class="govuk-button" data-module="govuk-button">
+			<button asp-route="soc:confirmdisablesponsororganisation" type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button">
                 Confirm
             </button>
         </form>

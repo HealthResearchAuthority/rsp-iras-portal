@@ -113,7 +113,7 @@ public class SponsorOrganisationService(ISponsorOrganisationsServiceClient clien
 
     public async Task<ServiceResponse<SponsorOrganisationDto>> EnableSponsorOrganisation(string rtsId)
     {
-        var apiResponse = await client.DisableSponsorOrganisation(rtsId);
+        var apiResponse = await client.EnableSponsorOrganisation(rtsId);
         return apiResponse.ToServiceResponse();
     }
 }

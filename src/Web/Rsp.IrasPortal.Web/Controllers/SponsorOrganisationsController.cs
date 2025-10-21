@@ -186,7 +186,7 @@ public class SponsorOrganisationsController(
             return this.ServiceError(response);
         }
 
-        ViewBag.Type = "add";
+        TempData[TempDataKeys.SponsorOrganisationType] = "add";
         TempData[TempDataKeys.ShowNotificationBanner] = true;
         return RedirectToAction("Index");
     }
@@ -397,7 +397,7 @@ public class SponsorOrganisationsController(
     public async Task<IActionResult> ConfirmEnableSponsorOrganisation(string rtsId)
     {
         await sponsorOrganisationService.EnableSponsorOrganisation(rtsId);
-        ViewBag.Type = "enable";
+        TempData[TempDataKeys.SponsorOrganisationType] = "enable";
         TempData[TempDataKeys.ShowNotificationBanner] = true;
         return RedirectToAction("Index");
     }
@@ -407,7 +407,7 @@ public class SponsorOrganisationsController(
     public async Task<IActionResult> ConfirmDisableSponsorOrganisation(string rtsId)
     {
         await sponsorOrganisationService.DisableSponsorOrganisation(rtsId);
-        ViewBag.Type = "disable";
+        TempData[TempDataKeys.SponsorOrganisationType] = "disable";
         TempData[TempDataKeys.ShowNotificationBanner] = true;
         return RedirectToAction("Index");
     }
