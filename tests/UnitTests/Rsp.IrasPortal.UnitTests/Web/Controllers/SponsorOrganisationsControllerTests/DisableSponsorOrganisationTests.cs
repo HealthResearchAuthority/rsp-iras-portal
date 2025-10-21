@@ -13,11 +13,11 @@ using Rsp.IrasPortal.Web.Controllers;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.SponsorOrganisationsControllerTests;
 
-public class DisableUserTests : TestServiceBase<SponsorOrganisationsController>
+public class DisableSponsorOrganisationTests : TestServiceBase<SponsorOrganisationsController>
 {
     private readonly DefaultHttpContext _http;
 
-    public DisableUserTests()
+    public DisableSponsorOrganisationTests()
     {
         _http = new DefaultHttpContext { Session = new InMemorySession() };
         Sut.ControllerContext = new ControllerContext { HttpContext = _http };
@@ -25,54 +25,11 @@ public class DisableUserTests : TestServiceBase<SponsorOrganisationsController>
 
     [Theory]
     [AutoData]
-    public async Task DisableUser_ReturnsToView(
-        SponsorOrganisationUserDto sponsorOrganisationUserDto)
+    public async Task DisableSponsorOrganisation_ReturnsToView()
     {
         // Arrange
         const string rtsId = "87765";
         const string orgName = "Acme Research Ltd";
-
-        var userGuid = Guid.NewGuid();
-        var userId = userGuid.ToString();
-
-        var serviceResponseGetUserInSponsorOrganisation = new ServiceResponse<SponsorOrganisationUserDto>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = sponsorOrganisationUserDto
-        };
-
-        Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetUserInSponsorOrganisation(It.IsAny<string>(), It.IsAny<Guid>()))
-            .ReturnsAsync(serviceResponseGetUserInSponsorOrganisation);
-
-        Mocker.GetMock<IUserManagementService>()
-            .Setup(x => x.GetUser(
-                It.IsAny<string?>(),
-                It.IsAny<string?>(),
-                It.IsAny<string?>()))
-            .ReturnsAsync(new ServiceResponse<UserResponse>
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new UserResponse
-                {
-                    User = new User(
-                        userId,
-                        "azure-ad-12345",
-                        "Mr",
-                        "Test",
-                        "Test",
-                        "test.test@example.com",
-                        "Software Developer",
-                        orgName,
-                        "+44 7700 900123",
-                        "United Kingdom",
-                        "Active",
-                        DateTime.UtcNow,
-                        DateTime.UtcNow.AddDays(-2),
-                        DateTime.UtcNow)
-                }
-            });
-
 
         var sponsorResponse = new ServiceResponse<AllSponsorOrganisationsResponse>
         {
@@ -101,7 +58,7 @@ public class DisableUserTests : TestServiceBase<SponsorOrganisationsController>
             .ReturnsAsync(organisationResponse);
 
         // Act
-        var result = await Sut.DisableUser(rtsId, userGuid);
+        var result = await Sut.DisableSponsorOrganisation(rtsId);
 
         // Assert
         result.ShouldBeOfType<ViewResult>();

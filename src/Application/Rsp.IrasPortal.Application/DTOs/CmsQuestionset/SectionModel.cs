@@ -33,6 +33,8 @@ public class SectionModel
 
     public int Sequence { get; set; }
 
+    public bool IsLastSectionBeforeReview { get; set; }
+
     /// <summary>
     /// Contains the questions in this section
     /// </summary>

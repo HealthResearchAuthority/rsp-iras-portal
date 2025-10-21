@@ -11,4 +11,5 @@ public record QuestionSectionsResponse
     public string StaticViewName { get; set; } = null!;
     public bool IsMandatory { get; set; }
     public int Sequence { get; set; }
+    public bool IsLastSectionBeforeReview { get; set; }
 }

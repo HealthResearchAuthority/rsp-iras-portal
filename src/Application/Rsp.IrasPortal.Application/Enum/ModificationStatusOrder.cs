@@ -9,5 +9,5 @@ public enum ModificationStatusOrder
     WithRegulator = 4,
     Approved = 5,
     NotApproved = 6,
-    None = -1000
+    None = 1000
 }
