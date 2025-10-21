@@ -11,6 +11,11 @@
 		: new Dictionary<string, MixedContentPageItem?>();
 
     var headline = pageContent.GetValueOrDefault("SponsorOrganisations.View.Headline", null);
+
+	var disableSponsorOrganisationFlowHeadline = pageContent.GetValueOrDefault("SponsorOrganisations.View.DisableSponsorOrganisationTitle", null);
+	var disableSponsorOrganisationFlowBody = pageContent.GetValueOrDefault("SponsorOrganisations.View.DisableSponsorOrganisationBody", null);
+	var enableSponsorOrganisationFlowHeadline = pageContent.GetValueOrDefault("SponsorOrganisations.View.EnableSponsorOrganisationTitle", null);
+	var enableSponsorOrganisationFlowBody = pageContent.GetValueOrDefault("SponsorOrganisations.View.EnableSponsorOrganisationBody", null);
 }
 
 @section Breadcrumb {
@@ -28,7 +33,42 @@
 </div>
 
 <div class="govuk-grid-row">
-	<div class="govuk-grid-column-full">
-		<partial name="_SponsorOrganisationSummaryTablePartial" model="(@Model, true)" />
-	</div>
+    <div class="govuk-grid-column-full">
+        <partial name="_SponsorOrganisationSummaryTablePartial" model="(@Model, true)" />
+    </div>
 </div>
+
+@if (Model.IsActive)
+{
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-two-thirds">
+			<h2 class="govuk-heading-m">@Html.Raw(disableSponsorOrganisationFlowHeadline?.Value)</h2>
+			<div class="govuk-hint">
+				@Html.Raw(disableSponsorOrganisationFlowBody?.Value)
+			</div>
+			<form method="post">
+				<input name="rtsId" value="@Model.RtsId" hidden />
+				<button asp-route="soc:disablesponsororganisation" type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+					Disable sponsor organisation
+				</button>
+			</form>
+		</div>
+	</div>
+}
+else if (!Model.IsActive)
+{
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-two-thirds">
+			<h2 class="govuk-heading-m">@Html.Raw(enableSponsorOrganisationFlowHeadline?.Value)</h2>
+			<div class="govuk-hint">
+				@Html.Raw(enableSponsorOrganisationFlowBody?.Value)
+			</div>
+			<form method="post">
+				<input name="rtsId" value="@Model.RtsId" hidden />
+				<button asp-route="soc:enablesponsororganisation" type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+					Enable sponsor organisation
+				</button>
+			</form>
+		</div>
+	</div>
+}

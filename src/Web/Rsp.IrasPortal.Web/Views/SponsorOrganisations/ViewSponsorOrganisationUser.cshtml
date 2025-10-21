@@ -70,7 +70,7 @@
 
             @if (ViewBag.Type == "add")
             {
-                <partial name="_SubmitButton" model="@("soc:submitadduser", "Add user profile", new Dictionary<string, string>())"/>
+                <partial name="_SubmitButton" model="@("soc:submitadduser", "Add user", new Dictionary<string, string>())"/>
             }
             else if (ViewBag.Type == "edit")
             {

@@ -58,4 +58,15 @@ public interface ISponsorOrganisationsServiceClient
         string rtsId,
         Guid userId);
 
+    /// <summary>
+    /// Disable a Sponsor Organisation by RTS ID
+    /// </summary>
+    [Get("/sponsororganisations/{rtsId}/enable")]
+    Task<IApiResponse<SponsorOrganisationDto>> EnableSponsorOrganisation(string rtsId);
+
+    /// <summary>
+    /// Disable a Sponsor Organisation by RTS ID
+    /// </summary>
+    [Get("/sponsororganisations/{rtsId}/disable")]
+    Task<IApiResponse<SponsorOrganisationDto>> DisableSponsorOrganisation(string rtsId);
 }

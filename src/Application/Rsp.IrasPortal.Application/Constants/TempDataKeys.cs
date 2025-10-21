@@ -60,4 +60,5 @@ public struct TempDataKeys
     public const string BackRoute = "td:back_route";
     public const string ShowNoResultsFound = "td:show_no_results_found";
     public const string ShowEditLink = "td:show_edit_link";
+    public const string SponsorOrganisationType = "td:sponsor_org_type";
 }
