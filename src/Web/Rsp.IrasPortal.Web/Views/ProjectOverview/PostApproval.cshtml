@@ -14,10 +14,15 @@
     var routeName = (ViewData["BackRoute"] as string) ?? "app:Welcome";
     var routeValues = ViewData["BackRouteValues"] as Dictionary<string, string>
                       ?? new Dictionary<string, string>();
+	var projectTitle = !string.IsNullOrEmpty(Model.ProjectOverviewModel?.ProjectTitle) ? Model.ProjectOverviewModel.ProjectTitle : "Project overview";
 }
 
-@section BackNavigation {
-    <partial name="_BackNavigation" model="@((routeName, "Back", routeValues))" />
+@section Breadcrumb {
+	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+	{
+		("My research",Url.RouteUrl("app:welcome")),
+		(projectTitle, Url.RouteUrl("pov:projectdetails", new Dictionary<string, string>{{"projectRecordId", Model.ProjectOverviewModel?.ProjectRecordId!}}))
+	})
 }
 
 @if (TempData[TempDataKeys.ShowNotificationBanner] is not null)
@@ -47,7 +52,7 @@
                                                 new { Field = nameof(PostApprovalModificationsModel.ModificationType), Label = "Modification type" },
                                                 new { Field = nameof(PostApprovalModificationsModel.ReviewType), Label = "Review type" },
                                                 new { Field = nameof(PostApprovalModificationsModel.Category), Label = "Category" },
-                                                new { Field = nameof(PostApprovalModificationsModel.DateSubmitted), Label = "Date submitted" },
+                                                new { Field = nameof(PostApprovalModificationsModel.SentToRegulatorDate), Label = "Date submitted" },
                                                 new { Field = nameof(PostApprovalModificationsModel.Status), Label = "Status" }
                                                 };
                             var tableId = "postApprovalTable";
@@ -93,7 +98,7 @@
                             }
                             if (modification.Status is ModificationStatus.InDraft)
                             {
-                                modification.DateSubmitted = null;
+                                modification.SentToRegulatorDate = null;
                             }
                             <tr class="govuk-table__row">
                                 <td class="govuk-table__cell">
@@ -105,7 +110,7 @@
                                 <td class="govuk-table__cell">@modification.ReviewType</td>
                                 <td class="govuk-table__cell">@modification.Category</td>
                                 @{
-                                    <td class="govuk-table__cell">@modification.DateSubmitted?.ToString("dd MMM yyyy")</td>
+                                    <td class="govuk-table__cell">@modification.SentToRegulatorDate?.ToString("dd MMM yyyy")</td>
                                 }
                                 <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">@modification.Status</strong></td>
                             </tr>

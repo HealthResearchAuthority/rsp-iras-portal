@@ -12,8 +12,11 @@
 
 }
 
-@section BackNavigation {
-    <partial name="_BackNavigation" model="@((routeName, "Back", routeValues))" />
+@section Breadcrumb {
+	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+	{
+		("My research", Url.RouteUrl("app:welcome"))
+	})
 }
 
 <partial name="_ProjectOverviewPartial" model="@Model" />

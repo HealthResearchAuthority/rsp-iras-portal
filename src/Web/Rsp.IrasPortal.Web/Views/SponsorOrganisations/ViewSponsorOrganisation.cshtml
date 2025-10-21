@@ -18,8 +18,12 @@
 	var enableSponsorOrganisationFlowBody = pageContent.GetValueOrDefault("SponsorOrganisations.View.EnableSponsorOrganisationBody", null);
 }
 
-@section BackNavigation {
-	<partial name="_BackNavigation" model="@("soc:viewsponsororganisations", "Back", new Dictionary<string, string>())" />
+@section Breadcrumb {
+	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+	{
+		("System administration", Url.RouteUrl("systemadmin:view")),
+		("Manage sponsor organisations", Url.RouteUrl("soc:viewsponsororganisations"))
+	})
 }
 
 <div class="govuk-grid-row">

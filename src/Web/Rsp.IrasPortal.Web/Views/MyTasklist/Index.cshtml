@@ -31,8 +31,11 @@
 	TempData[TempDataKeys.ProjectModification.UrlReferrer] = Context.Request.GetDisplayUrl();
 }
 
-@section BackNavigation {
-	<partial name="_BackNavigation" model="@("approvalsmenu:welcome", "Back", new Dictionary<string, string>())" />
+@section Breadcrumb {
+	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+	{
+		("Approvals", Url.RouteUrl("approvalsmenu:welcome"))
+	})
 }
 
 @functions {

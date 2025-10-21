@@ -1,11 +1,14 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
+using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Features.Modifications.Documents.Controllers;
 using Rsp.IrasPortal.Web.Models;
+using ValidationFailure = FluentValidation.Results.ValidationFailure;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.Documents;
 
@@ -169,5 +172,145 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
         // Assert
         var redirect = Assert.IsType<RedirectToActionResult>(result);
         Assert.Equal(nameof(DocumentsController.AddDocumentDetailsList), redirect.ActionName);
+    }
+
+    [Fact]
+    public async Task SaveDocumentDetails_WhenDateIsRequiredForDocumentTypeAndMissing_AddsModelError()
+    {
+        // Arrange
+        var validationFailure = new ValidationFailure("AnswerText", "Date is required");
+
+        var viewModel = new ModificationAddDocumentDetailsViewModel
+        {
+            DocumentId = Guid.NewGuid(),
+            Questions = [
+                new QuestionViewModel
+                {
+                    Index = 0,
+                    QuestionId = QuestionIds.SelectedDocumentType,
+                    SelectedOption = "1"
+                }
+            ]
+        };
+
+        // Mock CMS question set response
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet("pdm-document-metadata", It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse
+                {
+                    Sections =
+                    [
+                        new SectionModel
+                    {
+                        SectionId = "DocumentDetails",
+                        Questions =
+                        [
+                            new QuestionModel
+                            {
+                                QuestionId = QuestionIds.SelectedDocumentType,
+                                Id = QuestionIds.SelectedDocumentType,
+                                AnswerDataType = "Dropdown",
+                                Answers = [ new AnswerModel { Id = "1", OptionName = "TypeA" } ]
+                            },
+                            new QuestionModel
+                            {
+                                QuestionId = "QDate",
+                                Id = "QDate",
+                                AnswerDataType = "date",
+                                ValidationRules =
+                                [
+                                    new RuleModel
+                                    {
+                                        Conditions =
+                                        [
+                                            new ConditionModel
+                                            {
+                                                Operator = "IN",
+                                                ParentOptions = [ new AnswerModel { Id = "1", OptionName = "TypeA" } ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                    ]
+                }
+            });
+
+        Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult());
+
+        // Act
+        var result = await Sut.SaveDocumentDetails(viewModel);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.Equal("AddDocumentDetails", viewResult.ViewName);
+        Assert.False(Sut.ModelState.IsValid);
+    }
+
+    [Fact]
+    public async Task SaveDocumentDetails_WhenDateNotRequiredForDocumentType_DoesNotAddModelError()
+    {
+        // Arrange
+        var viewModel = new ModificationAddDocumentDetailsViewModel
+        {
+            DocumentId = Guid.NewGuid(),
+            Questions =
+            [
+                new QuestionViewModel
+            {
+                Index = 0,
+                QuestionId = QuestionIds.SelectedDocumentType,
+                SelectedOption = "TypeB"
+            },
+            new QuestionViewModel
+            {
+                Index = 1,
+                QuestionId = "QDate",
+                DataType = "date",
+                AnswerText = "", // no date
+                Rules =
+                [
+                    new RuleDto
+                    {
+                        Conditions =
+                        [
+                            new ConditionDto
+                            {
+                                Operator = "IN",
+                                ParentOptions = ["TypeA"] // TypeB not requires date
+                            }
+                        ]
+                    }
+                ]
+            }
+            ]
+        };
+
+        Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult());
+
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet("pdm-document-metadata", It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse { }
+            });
+
+        // Act
+        var result = await Sut.SaveDocumentDetails(viewModel);
+
+        // Assert
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal(nameof(DocumentsController.AddDocumentDetailsList), redirect.ActionName);
+        Assert.True(Sut.ModelState.IsValid);
     }
 }

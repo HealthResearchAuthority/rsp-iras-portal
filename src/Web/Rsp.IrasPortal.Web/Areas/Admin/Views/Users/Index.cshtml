@@ -23,8 +23,11 @@
 	var tableId = "usersTable";
 }
 
-@section BackNavigation {
-	<partial name="_BackNavigation" model="@("systemadmin:view", "Back", new Dictionary<string, string>())" />
+@section Breadcrumb {
+	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+	{
+		("System administration", Url.RouteUrl("systemadmin:view"))
+	})
 }
 
 @functions {
