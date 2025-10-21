@@ -6,6 +6,7 @@ using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Domain.Identity;
 using Rsp.IrasPortal.Services.Extensions;
 
 namespace Rsp.IrasPortal.Services;
@@ -101,6 +102,18 @@ public class SponsorOrganisationService(ISponsorOrganisationsServiceClient clien
         Guid userId)
     {
         var apiResponse = await client.DisableUserInSponsorOrganisation(rtsId, userId);
+        return apiResponse.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse<SponsorOrganisationDto>> DisableSponsorOrganisation(string rtsId)
+    {
+        var apiResponse = await client.DisableSponsorOrganisation(rtsId);
+        return apiResponse.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse<SponsorOrganisationDto>> EnableSponsorOrganisation(string rtsId)
+    {
+        var apiResponse = await client.DisableSponsorOrganisation(rtsId);
         return apiResponse.ToServiceResponse();
     }
 }

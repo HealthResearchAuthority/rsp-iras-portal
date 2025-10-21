@@ -186,6 +186,7 @@ public class SponsorOrganisationsController(
             return this.ServiceError(response);
         }
 
+        ViewBag.Type = "add";
         TempData[TempDataKeys.ShowNotificationBanner] = true;
         return RedirectToAction("Index");
     }
@@ -371,6 +372,44 @@ public class SponsorOrganisationsController(
     {
         await sponsorOrganisationService.DisableUserInSponsorOrganisation(rtsId, userId);
         return RedirectToAction("ViewSponsorOrganisationUsers", new { rtsId });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Route("/sponsororganisations/enablesponsororganisation", Name = "soc:enablesponsororganisation")]
+    public async Task<IActionResult> EnableSponsorOrganisation(string rtsId)
+    {
+        var model = await LoadSponsorOrganisationAsync(rtsId);
+        return View("ConfirmEnableSponsorOrganisation", model.Model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Route("/sponsororganisations/disablesponsororganisation", Name = "soc:disablesponsororganisation")]
+    public async Task<IActionResult> DisableSponsorOrganisation(string rtsId)
+    {
+        var model = await LoadSponsorOrganisationAsync(rtsId);
+        return View("ConfirmDisableSponsorOrganisation", model.Model);
+    }
+
+    [HttpPost]
+    [Route("/sponsororganisations/confirmenablesponsororganisation", Name = "soc:confirmenablesponsororganisation")]
+    public async Task<IActionResult> ConfirmEnableSponsorOrganisation(string rtsId)
+    {
+        await sponsorOrganisationService.EnableSponsorOrganisation(rtsId);
+        ViewBag.Type = "enable";
+        TempData[TempDataKeys.ShowNotificationBanner] = true;
+        return RedirectToAction("Index");
+    }
+
+    [HttpPost]
+    [Route("/sponsororganisations/confirmdisablesponsororganisation", Name = "soc:confirmdisablesponsororganisation")]
+    public async Task<IActionResult> ConfirmDisableSponsorOrganisation(string rtsId)
+    {
+        await sponsorOrganisationService.DisableSponsorOrganisation(rtsId);
+        ViewBag.Type = "disable";
+        TempData[TempDataKeys.ShowNotificationBanner] = true;
+        return RedirectToAction("Index");
     }
 
     // ---------------------------
@@ -560,21 +599,18 @@ public class SponsorOrganisationsController(
     [NonAction]
     private async Task<SponsorOrganisationUserModel> BuildSponsorOrganisationUserModel(string rtsId, Guid userId)
     {
-        var userTask = userService.GetUser(userId.ToString(), null);
-        var soUserTask = sponsorOrganisationService.GetUserInSponsorOrganisation(rtsId, userId);
 
-        await Task.WhenAll(userTask, soUserTask);
-
-        var userResponse = await userTask;
-        var soUserResponse = await soUserTask;
+        var sponsorOrganisation = await LoadSponsorOrganisationAsync(rtsId);
+        var userResponse = await userService.GetUser(userId.ToString(), null);
+        var sponsorOrganisationUser = await sponsorOrganisationService.GetUserInSponsorOrganisation(rtsId, userId);
 
         return new SponsorOrganisationUserModel
         {
-            SponsorOrganisation = new SponsorOrganisationModel { RtsId = rtsId },
+            SponsorOrganisation = sponsorOrganisation.Model,
             User = userResponse.Content is not null
                 ? new UserViewModel(userResponse.Content)
                 : new UserViewModel(),
-            SponsorOrganisationUser = soUserResponse.Content ?? new SponsorOrganisationUserDto()
+            SponsorOrganisationUser = sponsorOrganisationUser.Content ?? new SponsorOrganisationUserDto()
         };
     }
 }

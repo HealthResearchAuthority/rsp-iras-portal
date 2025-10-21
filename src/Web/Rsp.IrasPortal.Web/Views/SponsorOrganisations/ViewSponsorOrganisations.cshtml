@@ -51,11 +51,18 @@
 
 @if (TempData[TempDataKeys.ShowNotificationBanner] is not null)
 {
+    var notificationBanner = ViewBag.Type switch
+    {
+        "add" => "You have successfully added a new sponsor organisation",
+        "enable" => "Sponsor organisation enabled",
+        "disable" => "Sponsor organisation disabled",
+        _ => null
+    };
+
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
-            <partial name="_NotificationBanner" model="@("Success", "You have successfully added a new sponsor organisation")"/>
+			<partial name="_NotificationBanner" model="@("Success", notificationBanner)" />
         </div>
-
     </div>
 }
 
