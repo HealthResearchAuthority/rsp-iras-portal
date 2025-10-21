@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
@@ -100,5 +101,47 @@ public class BlobStorageService(BlobServiceClient blobServiceClient) : IBlobStor
         await blobClient.DeleteIfExistsAsync();
 
         return new ServiceResponse { StatusCode = HttpStatusCode.OK };
+    }
+
+    public async Task<IActionResult> DownloadFileToHttpResponseAsync(string containerName, string blobPath, string fileName)
+    {
+        if (string.IsNullOrWhiteSpace(blobPath))
+        {
+            return new BadRequestObjectResult("Blob path cannot be null or empty.");
+        }
+
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            return new BadRequestObjectResult("File name cannot be null or empty.");
+        }
+
+        var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+        var blobClient = containerClient.GetBlobClient(blobPath);
+
+        if (!await blobClient.ExistsAsync())
+        {
+            return new NotFoundObjectResult($"File not found at path '{blobPath}'.");
+        }
+
+        try
+        {
+            var properties = await blobClient.GetPropertiesAsync();
+
+            // Download as a stream directly from blob storage
+            var downloadResponse = await blobClient.DownloadStreamingAsync();
+
+            // Return as a FileStreamResult to stream directly to HTTP response
+            return new FileStreamResult(downloadResponse.Value.Content, properties.Value.ContentType ?? "application/octet-stream")
+            {
+                FileDownloadName = fileName
+            };
+        }
+        catch (Exception ex)
+        {
+            return new ObjectResult($"Error downloading blob: {ex.Message}")
+            {
+                StatusCode = StatusCodes.Status500InternalServerError
+            };
+        }
     }
 }
