@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using System.Text.Json;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
@@ -66,6 +67,24 @@ public class ProfileAndSettingsControllerTests : TestServiceBase<ProfileAndSetti
         // Assert
         Mocker.GetMock<IUserManagementService>()
            .Verify(s => s.GetUser(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.Model.ShouldNotBeNull();
+        viewResult.Model.ShouldBeOfType<UserViewModel>();
+    }
+
+    [Theory, AutoData]
+    public void Index_Returns_View_When_User_In_TempData(UserViewModel userViewModel)
+    {
+        // Arrange
+        Sut.TempData["newUserProfile"] = JsonSerializer.Serialize(userViewModel);
+
+        // Act
+        var result = Sut.Index()?.Result;
+
+        // Assert
+        Mocker.GetMock<IUserManagementService>()
+           .Verify(s => s.GetUser(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
 
         var viewResult = result.ShouldBeOfType<ViewResult>();
         viewResult.Model.ShouldNotBeNull();
@@ -238,5 +257,56 @@ public class ProfileAndSettingsControllerTests : TestServiceBase<ProfileAndSetti
 
         var viewResult = result.ShouldBeOfType<StatusCodeResult>();
         viewResult.StatusCode.ShouldBe(400);
+    }
+
+    [Theory, AutoData]
+    public void ConfirmProfileDetails_Returns_View(UserViewModel viewModel)
+    {
+        // Arrange
+        Mocker
+            .GetMock<IValidator<UserViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<UserViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult());
+
+        // Act
+        var result = Sut.ConfirmProfileDetails(viewModel)?.Result;
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<RedirectToActionResult>();
+        viewResult.ActionName.ShouldBe("Index");
+    }
+
+    [Theory, AutoData]
+    public void ConfirmProfileDetails_Returns_Error_When_Model_Invalid(UserViewModel viewModel)
+    {
+        // Arrange
+        Mocker
+            .GetMock<IValidator<UserViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<UserViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult(new List<ValidationFailure>
+            {
+                new("GivenName", "Required"),
+                new("FamilyName", "Required")
+            }));
+
+        // Act
+        var result = Sut.ConfirmProfileDetails(viewModel)?.Result;
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.ViewName.ShouldBe("EditProfileView");
+    }
+
+    [Theory, AutoData]
+    public void EditNewUserProfile_Returns_View(UserViewModel viewModel)
+    {
+        // Arrange
+
+        // Act
+        var result = Sut.EditNewUserProfile(viewModel);
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.ViewName.ShouldBe("EditProfileView");
     }
 }
