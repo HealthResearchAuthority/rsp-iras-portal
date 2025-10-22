@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
@@ -36,6 +38,11 @@ public class ConfirmEnableUserTests : TestServiceBase<SponsorOrganisationsContro
         Mocker.GetMock<ISponsorOrganisationService>()
             .Setup(s => s.EnableUserInSponsorOrganisation(It.IsAny<string>(), It.IsAny<Guid>()))
             .ReturnsAsync(serviceResponseGetUserInSponsorOrganisation);
+
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ShowNotificationBanner] = true
+        };
 
         // Act
         var result = await Sut.ConfirmEnableUser(rtsId, userGuid);

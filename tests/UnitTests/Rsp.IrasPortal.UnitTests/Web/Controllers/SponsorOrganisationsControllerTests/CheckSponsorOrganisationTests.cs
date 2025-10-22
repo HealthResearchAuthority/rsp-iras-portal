@@ -77,6 +77,34 @@ public class CheckSponsorOrganisationTests : TestServiceBase<SponsorOrganisation
     }
 
     [Fact]
+    public async Task CheckSponsorOrganisation_ShouldReturnSetupView_WithModalState()
+    {
+        // Arrange
+        var model = new SponsorOrganisationSetupViewModel
+        {
+            SponsorOrganisation = "te"
+        };
+
+        // Set an initial TempData value (simulates what controller clears)
+        Sut.TempData[TempDataKeys.ShowNoResultsFound] = null;
+
+
+        Mocker.GetMock<IRtsService>()
+            .Setup(s => s.GetOrganisationsByName(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(),
+                It.IsAny<int>(), It.IsAny<List<string>>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<OrganisationSearchResponse>
+            {
+                StatusCode = HttpStatusCode.BadRequest
+            });
+
+        // Act
+        var result = await Sut.CheckSponsorOrganisation(model);
+
+        // Assert
+        result.ShouldBeOfType<ViewResult>();
+    }
+
+    [Fact]
     public async Task CheckSponsorOrganisation_ShouldReturnSetupView_WithEmptyModel_RtsSuccessNoResults()
     {
         // Arrange
