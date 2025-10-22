@@ -28,6 +28,8 @@ public class QuestionModel
     public int Sequence { get; set; }
     public int SectionSequence { get; set; }
     public string ShowAnswerOn { get; set; } = string.Empty;
+    public string SectionGroup { get; internal set; } = string.Empty;
+    public int SequenceInSectionGroup { get; set; }
 
     public IList<AnswerModel> Answers { get; set; } = [];
     public IList<RuleModel> ValidationRules { get; set; } = [];

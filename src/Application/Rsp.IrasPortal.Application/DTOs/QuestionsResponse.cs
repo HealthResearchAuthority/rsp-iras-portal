@@ -77,6 +77,10 @@ public record QuestionsResponse
     /// </summary>
     public string ShowAnswerOn { get; set; } = string.Empty;
 
+    public string? SectionGroup { get; set; }
+
+    public int SequenceInSectionGroup { get; set; }
+
     /// <summary>
     /// Potential answers of the question for single or multiple choice type question
     /// </summary>
