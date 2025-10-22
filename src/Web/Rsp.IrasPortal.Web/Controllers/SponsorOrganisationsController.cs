@@ -123,6 +123,12 @@ public class SponsorOrganisationsController(
         {
             var organisationName = model.SponsorOrganisation ?? model.SponsorOrgSearch.SelectedOrganisation;
 
+            if (organisationName.Length < 3)
+            {
+                ModelState.AddModelError("SponsorOrganisation", "Please provide 3 or more characters to search sponsor organisation.");
+                return View("SetupSponsorOrganisation", model);
+            }
+
             var nameSearch = await rtsService.GetOrganisationsByName(organisationName, null, 1, int.MaxValue);
             if (!nameSearch.IsSuccessStatusCode)
             {
@@ -321,6 +327,7 @@ public class SponsorOrganisationsController(
         await userService.UpdateRoles(user.Content!.User.Email, null, "sponsor");
 
         TempData[TempDataKeys.ShowNotificationBanner] = true;
+        TempData[TempDataKeys.SponsorOrganisationUserType] = "add";
         return RedirectToAction("ViewSponsorOrganisationUsers", new { rtsId });
     }
 
@@ -363,6 +370,8 @@ public class SponsorOrganisationsController(
     public async Task<IActionResult> ConfirmEnableUser(string rtsId, Guid userId)
     {
          await sponsorOrganisationService.EnableUserInSponsorOrganisation(rtsId, userId);
+        TempData[TempDataKeys.ShowNotificationBanner] = true;
+        TempData[TempDataKeys.SponsorOrganisationUserType] = "enable";
         return RedirectToAction("ViewSponsorOrganisationUsers", new { rtsId });
     }
 
@@ -371,6 +380,8 @@ public class SponsorOrganisationsController(
     public async Task<IActionResult> ConfirmDisableUser(string rtsId, Guid userId)
     {
         await sponsorOrganisationService.DisableUserInSponsorOrganisation(rtsId, userId);
+        TempData[TempDataKeys.ShowNotificationBanner] = true;
+        TempData[TempDataKeys.SponsorOrganisationUserType] = "disable";
         return RedirectToAction("ViewSponsorOrganisationUsers", new { rtsId });
     }
 

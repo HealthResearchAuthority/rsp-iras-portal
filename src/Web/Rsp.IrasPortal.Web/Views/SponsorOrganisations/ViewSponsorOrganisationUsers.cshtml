@@ -26,11 +26,19 @@
     <partial name="_BackNavigation" model="@("soc:viewsponsororganisation", "Back to sponsor organisation profile", new Dictionary<string, string> { { "RtsId", Model.SponsorOrganisation.RtsId } })"/>
 }
 
-@if (TempData[TempDataKeys.ShowNotificationBanner] is true)
+@if (TempData[TempDataKeys.ShowNotificationBanner] is not null)
 {
+    var notificationBanner = TempData[TempDataKeys.SponsorOrganisationUserType] switch
+    {
+		"add" => "User added to this organisation",
+        "enable" => "User enabled",
+        "disable" => "User disabled",
+        _ => null
+    };
+
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
-            <partial name="_NotificationBanner" model="@("Success", "User added to this organisation")"/>
+            <partial name="_NotificationBanner" model="@("Success", notificationBanner)" />
         </div>
     </div>
 }
@@ -59,6 +67,9 @@
             <input class="govuk-input govuk-!-width-two-thirds" id="SearchQuery" name="SearchQuery" type="text" value="@(Model.Pagination?.SearchQuery ?? string.Empty)">
             <input hidden readonly name="RtsId" value="@Model.SponsorOrganisation.RtsId"/>
             <input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize"/>
+            @{
+                ViewBag.Style = "govuk-button govuk-button--secondary";
+            }
             <partial name="_SubmitButton" model="@("soc:viewsponsororganisationusers", "Search", new Dictionary<string, string>())"/>
         </form>
     </div>
