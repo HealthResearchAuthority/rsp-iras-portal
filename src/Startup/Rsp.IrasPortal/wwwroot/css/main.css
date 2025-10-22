@@ -1,4 +1,4 @@
-@charset "UTF-8";
+﻿@charset "UTF-8";
 @import url("govuk-frontend.min.css");
 .govuk-form-group.questions {
   border: solid 1px lightgrey;
@@ -284,7 +284,7 @@ button.govuk-link {
 }
 
 .govuk-back-link-button--inverse:active, .govuk-back-link-button--inverse:hover {
-  color: hsla(0, 0%, 100%, 0.99);
+  color: hsla(0deg, 0%, 100%, 0.99);
 }
 
 .govuk-back-link-button--inverse:focus {
@@ -937,6 +937,28 @@ button.govuk-pagination__item--current {
 .govuk-rte a:active {
   color: #0b0c0c;
 }
+.govuk-rte h2 {
+  font-size: 1.5rem;
+  line-height: 1.25;
+  color: #0b0c0c;
+  font-family: "GDS Transport", arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-weight: 700;
+  display: block;
+  margin-top: 0;
+}
+.govuk-rte h3 {
+  font-size: 1.1875rem;
+  line-height: 1.3157894737;
+  color: #0b0c0c;
+  font-family: GDS Transport, arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-weight: 700;
+  display: block;
+  margin-top: 0;
+}
 
 .header-service-name {
   font-size: 32px;
@@ -944,4 +966,11 @@ button.govuk-pagination__item--current {
   font-style: normal;
 }
 
-/*# sourceMappingURL=main.css.map */
+.cookie-banner-form {
+  width: 100%;
+}
+@media (min-width: 40.0625em) {
+  .cookie-banner-form {
+    width: auto;
+  }
+}
