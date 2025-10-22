@@ -755,25 +755,21 @@ public class UsersController(
 
     [HttpGet]
     [Route("/admin/users/removefilter", Name = "admin:removefilter")]
-    public IActionResult RemoveFilter(string key, string? value, [FromQuery] string? model = null)
+    public IActionResult RemoveFilter(string key, string? value)
     {
-        var viewModel = new UserSearchViewModel();
-
-        if (!string.IsNullOrWhiteSpace(model))
+        var json = HttpContext.Session.GetString(SessionKeys.UsersSearch);
+        if (string.IsNullOrWhiteSpace(json))
         {
-            viewModel.Search = JsonSerializer.Deserialize<UserSearchModel>(model);
+            return RedirectToAction(nameof(Index));
         }
-        else
-        {
-            viewModel.Search = new UserSearchModel();
-        }
+        var viewModel = JsonSerializer.Deserialize<UserSearchModel>(json)!;
 
         switch (key)
         {
             case UsersSearch.CountryKey:
-                if (!string.IsNullOrEmpty(value) && viewModel.Search.Country != null)
+                if (!string.IsNullOrEmpty(value) && viewModel.Country != null)
                 {
-                    viewModel.Search.Country = viewModel.Search.Country
+                    viewModel.Country = viewModel.Country
                         .Where(c => !string.Equals(c, value, StringComparison.OrdinalIgnoreCase))
                         .ToList();
                 }
@@ -781,15 +777,15 @@ public class UsersController(
                 break;
 
             case UsersSearch.FromDateKey:
-                viewModel.Search.FromDay = viewModel.Search.FromMonth = viewModel.Search.FromYear = null;
+                viewModel.FromDay = viewModel.FromMonth = viewModel.FromYear = null;
                 break;
 
             case UsersSearch.ToDateKey:
-                viewModel.Search.ToDay = viewModel.Search.ToMonth = viewModel.Search.ToYear = null;
+                viewModel.ToDay = viewModel.ToMonth = viewModel.ToYear = null;
                 break;
 
             case UsersSearch.StatusKey:
-                viewModel.Search.Status = null;
+                viewModel.Status = null;
                 break;
             // NEW: turn off selected Review Bodies
             case UsersSearch.ReviewBodyKey:
@@ -797,7 +793,7 @@ public class UsersController(
                     // if value is empty -> clear all selections
                     if (string.IsNullOrWhiteSpace(value))
                     {
-                        foreach (var rb in viewModel.Search.ReviewBodies) rb.IsSelected = false;
+                        foreach (var rb in viewModel.ReviewBodies) rb.IsSelected = false;
                         break;
                     }
 
@@ -807,12 +803,12 @@ public class UsersController(
                     {
                         if (Guid.TryParse(token, out var id))
                         {
-                            foreach (var rb in viewModel.Search.ReviewBodies.Where(x => x.Id == id))
+                            foreach (var rb in viewModel.ReviewBodies.Where(x => x.Id == id))
                                 rb.IsSelected = false;
                         }
                         else
                         {
-                            foreach (var rb in viewModel.Search.ReviewBodies.Where(x =>
+                            foreach (var rb in viewModel.ReviewBodies.Where(x =>
                                      string.Equals(x.RegulatoryBodyName, token, StringComparison.OrdinalIgnoreCase) ||
                                      string.Equals(x.DisplayName, token, StringComparison.OrdinalIgnoreCase)))
                                 rb.IsSelected = false;
@@ -825,7 +821,7 @@ public class UsersController(
             // NEW: turn off selected Roles
             case UsersSearch.RoleKey:
                 {
-                    foreach (var r in viewModel.Search.UserRoles.Where(x => x.DisplayName == value))
+                    foreach (var r in viewModel.UserRoles.Where(x => x.DisplayName == value))
                     {
                         r.IsSelected = false;
                     }
@@ -834,7 +830,7 @@ public class UsersController(
         }
 
         // Save applied filters to session
-        HttpContext.Session.SetString(SessionKeys.UsersSearch, JsonSerializer.Serialize(viewModel.Search));
+        HttpContext.Session.SetString(SessionKeys.UsersSearch, JsonSerializer.Serialize(viewModel));
 
         // Redirect to ViewReviewBodies with query parameters
         return RedirectToRoute("admin:users", new
