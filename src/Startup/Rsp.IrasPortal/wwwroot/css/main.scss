@@ -987,10 +987,42 @@ button.govuk-pagination__item--current {
             color: #0b0c0c;
         }
     }
+
+    h2 {
+        font-size: 1.5rem;
+        line-height: 1.25;
+        color: #0b0c0c;
+        font-family: "GDS Transport", arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        font-weight: 700;
+        display: block;
+        margin-top: 0;
+    }
+
+    h3 {
+        font-size: 1.1875rem;
+        line-height: 1.3157894737;
+        color: #0b0c0c;
+        font-family: GDS Transport, arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        font-weight: 700;
+        display: block;
+        margin-top: 0;
+    }
 }
 
 .header-service-name {
     font-size: 32px;
     font-weight: 300;
     font-style: normal;
+}
+
+.cookie-banner-form {
+    width: 100%;
+
+    @media (min-width: 40.0625em) {
+        width: auto;
+    }
 }

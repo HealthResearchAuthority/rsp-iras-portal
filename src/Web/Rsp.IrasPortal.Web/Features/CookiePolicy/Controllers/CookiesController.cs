@@ -30,6 +30,9 @@ public class CookiesController : Controller
             SameSite = SameSiteMode.Lax
         });
 
+        // set notification banner so it shows on the page
+        TempData[TempDataKeys.ShowNotificationBanner] = true;
+
         // Redirect back to referring page
         var referer = Request.Headers["Referer"].ToString();
         return !string.IsNullOrEmpty(referer)
@@ -37,7 +40,7 @@ public class CookiesController : Controller
             : RedirectToAction("Index", "Home");
     }
 
-    [HttpGet("pages/cookies/")]
+    [HttpGet("/pages/cookies")]
     public IActionResult CookieSettings()
     {
         return View("~/Features/CookiePolicy/Views/CookiesSettingsPage.cshtml");
