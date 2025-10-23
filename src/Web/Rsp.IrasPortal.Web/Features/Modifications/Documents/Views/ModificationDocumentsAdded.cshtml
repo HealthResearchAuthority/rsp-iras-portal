@@ -39,7 +39,11 @@
                         {
                             <tr class="govuk-table__row">
                                 <td class="govuk-table__cell" style="width: 60%;">
-                                    <a href="@doc.BlobUri" class="govuk-link" target="_blank">@doc.FileName</a>
+									<a asp-route="pmc:downloaddocument"
+									   asp-route-fileName="@doc.FileName"
+									   asp-route-path="@doc.BlobUri" class="govuk-link">
+										@doc.FileName
+									</a>
                                 </td>
                                 <td class="govuk-table__cell" style="width: 20%;">
                                     <span class="govuk-body">@doc.DisplaySize</span>

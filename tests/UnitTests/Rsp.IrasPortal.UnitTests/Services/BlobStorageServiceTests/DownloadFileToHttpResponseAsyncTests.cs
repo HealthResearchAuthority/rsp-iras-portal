@@ -3,6 +3,7 @@ using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Mvc;
+using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Services;
 
 namespace Rsp.IrasPortal.UnitTests.Services.BlobStorageServiceTests;
@@ -61,17 +62,20 @@ public class DownloadFileToHttpResponseAsyncTests
         var sut = new BlobStorageService(blobServiceClientMock.Object);
 
         // Act
-        var result = await sut.DownloadFileToHttpResponseAsync(containerName, blobPath, fileName);
+        var serviceResponse = await sut.DownloadFileToHttpResponseAsync(containerName, blobPath, fileName);
 
         // Assert
+        serviceResponse.ShouldNotBeNull();
+        serviceResponse.ShouldBeOfType<ServiceResponse<IActionResult>>();
+
+        var result = serviceResponse.Content as FileStreamResult;
         result.ShouldNotBeNull();
         result.ShouldBeOfType<FileStreamResult>();
 
-        var fileResult = result as FileStreamResult;
-        fileResult!.FileDownloadName.ShouldBe(fileName);
-        fileResult.ContentType.ShouldBe("text/plain");
+        result!.FileDownloadName.ShouldBe(fileName);
+        result.ContentType.ShouldBe("text/plain");
 
-        using var reader = new StreamReader(fileResult.FileStream);
+        using var reader = new StreamReader(result.FileStream);
         var downloadedContent = await reader.ReadToEndAsync();
         downloadedContent.ShouldBe("test file content");
     }

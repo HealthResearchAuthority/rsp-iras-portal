@@ -103,45 +103,64 @@ public class BlobStorageService(BlobServiceClient blobServiceClient) : IBlobStor
         return new ServiceResponse { StatusCode = HttpStatusCode.OK };
     }
 
-    public async Task<IActionResult> DownloadFileToHttpResponseAsync(string containerName, string blobPath, string fileName)
+    public async Task<ServiceResponse<IActionResult>> DownloadFileToHttpResponseAsync
+    (
+        string containerName,
+        string blobPath,
+        string fileName
+    )
     {
+        var response = new ServiceResponse<IActionResult>();
+
         if (string.IsNullOrWhiteSpace(blobPath))
         {
-            return new BadRequestObjectResult("Blob path cannot be null or empty.");
+            return response.WithContent(
+                new BadRequestObjectResult("Blob path cannot be null or empty."),
+                HttpStatusCode.BadRequest
+            );
         }
 
         if (string.IsNullOrWhiteSpace(fileName))
         {
-            return new BadRequestObjectResult("File name cannot be null or empty.");
-        }
-
-        var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
-        var blobClient = containerClient.GetBlobClient(blobPath);
-
-        if (!await blobClient.ExistsAsync())
-        {
-            return new NotFoundObjectResult($"File not found at path '{blobPath}'.");
+            return response.WithContent(
+                new BadRequestObjectResult("File name cannot be null or empty."),
+                HttpStatusCode.BadRequest
+            );
         }
 
         try
         {
-            var properties = await blobClient.GetPropertiesAsync();
+            var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+            var blobClient = containerClient.GetBlobClient(blobPath);
 
-            // Download as a stream directly from blob storage
+            if (!await blobClient.ExistsAsync())
+            {
+                return response.WithContent(
+                    new NotFoundObjectResult($"File not found at path '{blobPath}'."),
+                    HttpStatusCode.NotFound
+                );
+            }
+
+            var properties = await blobClient.GetPropertiesAsync();
             var downloadResponse = await blobClient.DownloadStreamingAsync();
 
-            // Return as a FileStreamResult to stream directly to HTTP response
-            return new FileStreamResult(downloadResponse.Value.Content, properties.Value.ContentType ?? "application/octet-stream")
+            var fileResult = new FileStreamResult(
+                downloadResponse.Value.Content,
+                properties.Value.ContentType ?? "application/octet-stream")
             {
                 FileDownloadName = fileName
             };
+
+            return response.WithContent(fileResult, HttpStatusCode.OK);
         }
         catch (Exception ex)
         {
-            return new ObjectResult($"Error downloading blob: {ex.Message}")
+            var errorResult = new ObjectResult($"Error downloading blob: {ex.Message}")
             {
                 StatusCode = StatusCodes.Status500InternalServerError
             };
+
+            return response.WithContent(errorResult, HttpStatusCode.InternalServerError);
         }
     }
 }

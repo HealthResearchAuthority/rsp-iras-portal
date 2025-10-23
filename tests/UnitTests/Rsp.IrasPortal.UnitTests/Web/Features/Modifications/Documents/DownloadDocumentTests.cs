@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Features.Modifications.Documents.Controllers;
 
@@ -18,17 +19,32 @@ public class DownloadDocumentTests : TestServiceBase<DocumentsController>
             FileDownloadName = fileName
         };
 
+        var serviceResponse = new ServiceResponse<IActionResult>()
+            .WithContent(fileResult, HttpStatusCode.OK);
+
         Mocker.GetMock<IBlobStorageService>()
-            .Setup(s => s.DownloadFileToHttpResponseAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync(fileResult);
+            .Setup(s => s.DownloadFileToHttpResponseAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<string>()))
+            .ReturnsAsync(serviceResponse);
 
         // Act
-        var result = await Sut.DownloadDocument(It.IsAny<string>(), fileName);
+        var result = await Sut.DownloadDocument(path, fileName);
 
         // Assert
         result.ShouldBeOfType<FileContentResult>();
         var fileContentResult = result as FileContentResult;
-        fileContentResult!.FileDownloadName.ShouldBe(fileName);
+        fileContentResult.ShouldNotBeNull();
+        fileContentResult.FileDownloadName.ShouldBe(fileName);
         fileContentResult.ContentType.ShouldBe("application/octet-stream");
+
+        // Verify the blob service was called once
+        Mocker.GetMock<IBlobStorageService>().Verify(s =>
+            s.DownloadFileToHttpResponseAsync(
+                It.IsAny<string>(),
+                path,
+                fileName),
+            Times.Once);
     }
 }
