@@ -103,7 +103,8 @@
                                 TableId = tableId,
                                 AdditionalParameters = new Dictionary<string, string>
                                 {
-                                    { "rtsId", Model.SponsorOrganisation.RtsId }
+                                    { "rtsId", Model.SponsorOrganisation.RtsId },
+												{ "searchQuery", Model.Pagination.SearchQuery }
                                 }
                             };
 
