@@ -15,11 +15,9 @@
     var routeName = (ViewData["BackRoute"] as string) ?? "app:Welcome";
     var routeValues = ViewData["BackRouteValues"] as Dictionary<string, string>
                       ?? new Dictionary<string, string>();
-    ViewData["BackRoute"] = routeName;
-
 
     var modificationTypeOptions = new List<GdsOption>
-    {
+{
         new() { Value = "Minor modification", Label = "Minor modification" },
         new() { Value = "Modification of an important details", Label = "Modification of an important details" },
         new() { Value = "Non-Notifiable", Label = "Non-Notifiable" },
@@ -28,12 +26,12 @@
 
     };
     var reviewTypeOptions = new List<GdsOption>
-    {
+{
         new() { Value = "No review required", Label = "No review required" },
         new() { Value = "Review required", Label = "Review required" }
     };
     var categoryOptions = new List<GdsOption>
-    {
+{
         new() { Value = "A", Label = "A" },
         new() { Value = "B", Label = "B" },
         new() { Value = "B/C", Label = "B/C" },
@@ -42,7 +40,7 @@
         new() { Value = "N/A", Label = "N/A" }
     };
     var statusOptions = new List<GdsOption>
-    {
+{
         new() { Value = "In draft", Label = "In draft" },
         new() { Value = "With sponsor", Label = "With sponsor" },
         new() { Value = "With regulator", Label = "With regulator" },
@@ -79,6 +77,7 @@
 }
 <partial name="_NavigationHeaderPartial" model="@Model.ProjectOverviewModel" view-data="@ViewData" />
 
+<partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
 
 <div class="govuk-grid-row">
     <br>
@@ -157,7 +156,6 @@
                         </div>
                     </details>
 
-
                     <!-- Category  -->
                     <details class="search-filter-section" @(CanOpenPanelForField("Status") ? "open" : null)>
                         <summary class="search-filter-section__summary">
@@ -177,8 +175,7 @@
                     </details>
 
                     <!-- Date submitted -->
-                    <details class="search-filter-section" @(CanOpenPanelForAnyField("FromDate", "ToDate") ? "open"
-                                                                                        : null)>
+                    <details class="search-filter-section" @(CanOpenPanelForAnyField("FromDate", "ToDate") ? "open" : null)>
                         <summary class="search-filter-section__summary">
                             <h2 class="search-filter-section__summary-heading">Date submitted</h2>
                         </summary>
@@ -251,7 +248,7 @@
                                     <span class="search-filter-summary__remove-filter-text">
                                         <span class="govuk-visually-hidden">Remove filter</span>
                                         @if (filterKey.Contains("date submitted - from", StringComparison.OrdinalIgnoreCase)
-                                                                    || filterKey.Contains("date submitted - to", StringComparison.OrdinalIgnoreCase))
+                                                     || filterKey.Contains("date submitted - to", StringComparison.OrdinalIgnoreCase))
                                         {
                                             @($"{filterKey} {val}")
                                         }
@@ -271,7 +268,6 @@
                        class="search-filter-summary__clear-filters govuk-link govuk-link--no-visited-state">
                         Clear all filters
                     </a>
-
                 </div>
             </div>
         }
@@ -282,8 +278,8 @@
     <div class="govuk-grid-column-full">
         <div class="govuk-table-wrapper">
 
-            <input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
-            <input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
+            <input hidden="hidden" type="text" value="@Model.Pagination?.SortField" name="sortField" />
+            <input hidden="hidden" type="text" value="@Model.Pagination?.SortDirection" name="sortDirection" />
 
             <table class="govuk-table modifications-tasklist-table" id="postApprovalTable">
                 <thead class="govuk-table__head">
@@ -315,8 +311,8 @@
                                                         { "projectRecordId", Model.ProjectOverviewModel.ProjectRecordId }
                                                         }
                                                         })
-                        </th>
-                                                }
+                            </th>
+                        }
                     </tr>
                 </thead>
 
@@ -363,7 +359,11 @@
             </table>
         </div>
 
-        <partial name="_Pagination" model="@Model.Pagination" />
+        @if (Model.Pagination is not null)
+        {
+            <partial name="_Pagination" model="@Model.Pagination" />
+        }
+
         <a asp-route="pmc:createmodification"
            class="govuk-button govuk-button--secondary">
             Create new modification
@@ -373,7 +373,7 @@
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-        @if ((Model.Search.Filters.Any() && !Model.Modifications.Any()) || !string.IsNullOrEmpty(Model.Search?.SearchQuery))
+        @if ((Model.Search.Filters?.Count > 0 && !Model.Modifications.Any()) || !string.IsNullOrEmpty(Model.Search?.SearchQuery))
         {
             <div class="govuk-grid-row">
                 <div class="govuk-grid-column-two-thirds search-filter-error-border">

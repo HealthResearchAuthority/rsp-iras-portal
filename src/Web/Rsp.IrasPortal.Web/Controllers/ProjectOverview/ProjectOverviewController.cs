@@ -372,8 +372,20 @@ public class ProjectOverviewController(
     public async Task<IActionResult> ApplyFilters(PostApprovalViewModel model, string backRoute)
     {
         SetupShortProjectTitleBackNav("pov", "app:Welcome", backRoute);
+
+        var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
+
+        var result = await GetProjectOverviewResult(projectRecordId!);
+
+        if (result is not OkObjectResult projectOverview)
+        {
+            return result;
+        }
+
+        model.ProjectOverviewModel = projectOverview.Value as ProjectOverviewModel;
+
         var validationResult = await validator.ValidateAsync(model.Search);
-        var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId);
+
         if (!validationResult.IsValid)
         {
             foreach (var error in validationResult.Errors)
@@ -519,5 +531,19 @@ public class ProjectOverviewController(
 
             ViewData["BackRoute"] = defaultRoute;
         }
+    }
+
+    private async Task<IActionResult> GetProjectOverviewResult(string projectRecordId)
+    {
+        var response = await GetProjectOverview(projectRecordId);
+
+        // if status code is not a successful status code
+        if ((response is StatusCodeResult result && result.StatusCode is < 200 or > 299) ||
+            response is not OkObjectResult)
+        {
+            return response;
+        }
+
+        return response;
     }
 }
