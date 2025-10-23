@@ -31,6 +31,8 @@
 	var technicalAssuranceDescription = pageContent.GetValueOrDefault("HomeDashboard.TechnicalAssurance.Description", null);
 	var technicalAssuranceReviewersLabel = pageContent.GetValueOrDefault("HomeDashboard.TechnicalAssuranceReviewers.Label", null);
 	var technicalAssuranceReviewersDescription = pageContent.GetValueOrDefault("HomeDashboard.TechnicalAssuranceReviewers.Description", null);
+    var sponsorsLabel = pageContent.GetValueOrDefault("HomeDashboard.Sponsors.Label", null);
+	var sponsorsDescription = pageContent.GetValueOrDefault("HomeDashboard.Sponsors.Description", null);
 	var successBannerLabel = pageContent.GetValueOrDefault("HomeDashboard.SuccessProfileCreationBanner.Label", null);
 	var successBannerBody = pageContent.GetValueOrDefault("HomeDashboard.SuccessProfileCreationBanner.Body", null);
 }
@@ -121,9 +123,9 @@
 	},
 	new
 	{
-	Roles = "---ROLE_NOT_IMPLEMENTED---",
-	Title = "Sponsor",
-	Desc = "Workspace to view, manage and authorise the research I am responsible for.",
+	Roles = "sponsor",
+    Title = sponsorsLabel?.Value,
+    Desc = sponsorsDescription?.Value,
 	Link = ""
 	},
 	new

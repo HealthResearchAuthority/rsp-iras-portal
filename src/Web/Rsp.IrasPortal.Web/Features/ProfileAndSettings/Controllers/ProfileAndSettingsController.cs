@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using System.Text.Json;
 using FluentValidation;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
@@ -25,27 +26,41 @@ public class ProfileAndSettingsController(
     [HttpGet("~/[controller]", Name = "profilesettings")]
     public async Task<IActionResult> Index()
     {
-        var currentUserEmail = HttpContext?.User.FindFirstValue(ClaimTypes.Email);
-        var userEntityResponse = await userService.GetUser(null, currentUserEmail);
-
-        if (!userEntityResponse.IsSuccessStatusCode)
+        // cehck if user model is in tempData
+        var userModel = TempData["newUserProfile"];
+        if (userModel is string json)
         {
-            if (userEntityResponse.StatusCode == System.Net.HttpStatusCode.NotFound)
+            ViewBag.Mode = "complete";
+            var viewModel = JsonSerializer.Deserialize<UserViewModel>(json);
+
+            return View(viewModel);
+        }
+        else
+        {
+            ViewBag.Mode = "edit";
+            var currentUserEmail = HttpContext?.User.FindFirstValue(ClaimTypes.Email);
+            var userEntityResponse = await userService.GetUser(null, currentUserEmail);
+
+            if (!userEntityResponse.IsSuccessStatusCode)
             {
-                return RedirectToAction(nameof(EditProfile));
+                if (userEntityResponse.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    return RedirectToAction(nameof(EditProfile));
+                }
+
+                return this.ServiceError(userEntityResponse);
             }
 
-            return this.ServiceError(userEntityResponse);
+            var viewModel = new UserViewModel(userEntityResponse.Content!);
+
+            return View(viewModel);
         }
-
-        var viewModel = new UserViewModel(userEntityResponse.Content!);
-
-        return View(viewModel);
     }
 
     [HttpGet]
-    public async Task<IActionResult> EditProfile()
+    public async Task<IActionResult> EditProfile(UserViewModel? userModel = null)
     {
+        // case for existing user editing their information
         var currentUserEmail = HttpContext?.User.FindFirstValue(ClaimTypes.Email);
         var userEntityResponse = await userService.GetUser(null, currentUserEmail);
 
@@ -76,6 +91,13 @@ public class ProfileAndSettingsController(
         ViewBag.Mode = "edit";
         var viewModel = new UserViewModel(userEntityResponse.Content!);
         return View(EditProfileView, viewModel);
+    }
+
+    [HttpPost]
+    [CmsContentAction(nameof(EditProfile))]
+    public IActionResult EditNewUserProfile(UserViewModel userModel)
+    {
+        return View(EditProfileView, userModel);
     }
 
     [HttpPost]
@@ -141,8 +163,35 @@ public class ProfileAndSettingsController(
             // show notification banner for success message
             TempData[TempDataKeys.ShowNotificationBanner] = true;
 
-            // redirect to homepage
+            //// redirect to homepage
             return RedirectToAction(nameof(ResearchAccountController.Home), "ResearchAccount");
         }
+    }
+
+    [HttpPost]
+    [CmsContentAction(nameof(EditProfile))]
+    public async Task<IActionResult> ConfirmProfileDetails(UserViewModel userModel)
+    {
+        ViewBag.Mode = "complete";
+        var context = new ValidationContext<UserViewModel>(userModel);
+        var validationResult = await validator.ValidateAsync(context);
+
+        if (!validationResult.IsValid)
+        {
+            // Copy the validation results into ModelState.
+            // ASP.NET uses the ModelState collection to populate
+            // error messages in the View.
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
+
+            return View(EditProfileView, userModel);
+        }
+
+        // serialise userModel and store as tempData
+        TempData["newUserProfile"] = JsonSerializer.Serialize(userModel);
+
+        return RedirectToAction(nameof(Index));
     }
 }
