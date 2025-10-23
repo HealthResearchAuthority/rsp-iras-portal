@@ -124,7 +124,8 @@ public class SponsorOrganisationsController(
 
             if (organisationName.Length < 3)
             {
-                ModelState.AddModelError("SponsorOrganisation", "Please provide 3 or more characters to search sponsor organisation.");
+                ModelState.AddModelError("SponsorOrganisation",
+                    "Please provide 3 or more characters to search sponsor organisation.");
                 return View("SetupSponsorOrganisation", model);
             }
 
@@ -371,7 +372,7 @@ public class SponsorOrganisationsController(
     [Route("/sponsororganisations/confirmenableuser", Name = "soc:confirmenableuser")]
     public async Task<IActionResult> ConfirmEnableUser(string rtsId, Guid userId)
     {
-         await sponsorOrganisationService.EnableUserInSponsorOrganisation(rtsId, userId);
+        await sponsorOrganisationService.EnableUserInSponsorOrganisation(rtsId, userId);
         TempData[TempDataKeys.ShowNotificationBanner] = true;
         TempData[TempDataKeys.SponsorOrganisationUserType] = "enable";
         return RedirectToAction("ViewSponsorOrganisationUsers", new { rtsId });
@@ -537,104 +538,76 @@ public class SponsorOrganisationsController(
     {
         var list = users as IList<UserViewModel> ?? users.ToList();
 
-        // Build fast lookup: UserId -> IsActive
+        // Lookup: UserId -> IsActive (safe if null)
         var statusByUserId = sponsorOrganisationUserDtos?
-            .GroupBy(x => x.UserId)
-            .ToDictionary(g => g.Key, g => g.Last().IsActive);
+                                 .GroupBy(x => x.UserId)
+                                 .ToDictionary(g => g.Key, g => g.Last().IsActive)
+                             ?? new Dictionary<Guid, bool>();
 
-        // Update Status on the models when we have a match
+        // Update Status on the models (optional but requested)
         foreach (var u in list)
         {
-            if (Guid.TryParse(u.Id?.Trim(), out var guid) && statusByUserId.TryGetValue(guid, out var isActive))
+            if (Guid.TryParse(u.Id?.Trim(), out var gid) && statusByUserId.TryGetValue(gid, out var active))
             {
-                u.Status = isActive ? "Active" : "Disabled";
+                u.Status = active ? "Active" : "Disabled";
             }
         }
 
+        // Helpers
         var desc = string.Equals(sortDirection, "desc", StringComparison.OrdinalIgnoreCase);
-        var field = sortField?.ToLowerInvariant();
+        var field = sortField?.ToLowerInvariant() ?? string.Empty;
 
-        IOrderedEnumerable<UserViewModel> ordered;
+        // Primary: status ordering
+        var ordered =
+            field == "status"
+                ? desc ? list.OrderByDescending(IsActive) : list.OrderBy(IsActive)
+                : list.OrderByDescending(IsActive); // default bubble Active first
 
-        // Primary: if sorting by status, honor the requested direction.
-        // Asc => Disabled first, Desc => Active first.
-        if (field == "status")
+        // Secondary: selected field (text fields share the same path)
+        if (field == "currentlogin")
         {
+            ordered = desc ? ordered.ThenByDescending(LatestLogin) : ordered.ThenBy(LatestLogin);
+        }
+        else if (field != "status")
+        {
+            Func<UserViewModel, string> key = field switch
+            {
+                "familyname" => x => x.FamilyName ?? string.Empty,
+                "email" => x => x.Email ?? string.Empty,
+                _ => x => x.GivenName ?? string.Empty // default
+            };
+
             ordered = desc
-                ? list.OrderByDescending(IsActive) // Active first
-                : list.OrderBy(IsActive); // Disabled first
-        }
-        else
-        {
-            // Default: bubble Active users first
-            ordered = list.OrderByDescending(IsActive);
+                ? ordered.ThenByDescending(key, StringComparer.OrdinalIgnoreCase)
+                : ordered.ThenBy(key, StringComparer.OrdinalIgnoreCase);
         }
 
-        // Secondary: requested field
-        switch (field)
-        {
-            default: // use given name
-                ordered = desc
-                    ? ordered.ThenByDescending(x => x.GivenName, StringComparer.OrdinalIgnoreCase)
-                    : ordered.ThenBy(x => x.GivenName, StringComparer.OrdinalIgnoreCase);
-                break;
-
-            case "familyname":
-                ordered = desc
-                    ? ordered.ThenByDescending(x => x.FamilyName, StringComparer.OrdinalIgnoreCase)
-                    : ordered.ThenBy(x => x.FamilyName, StringComparer.OrdinalIgnoreCase);
-                break;
-
-            case "email":
-                ordered = desc
-                    ? ordered.ThenByDescending(x => x.Email, StringComparer.OrdinalIgnoreCase)
-                    : ordered.ThenBy(x => x.Email, StringComparer.OrdinalIgnoreCase);
-                break;
-
-            case "currentlogin":
-                ordered = desc
-                    ? ordered.ThenByDescending(LatestLogin)
-                    : ordered.ThenBy(LatestLogin);
-                break;
-
-            case "status":
-                // already handled as primary key above; no extra tie-break needed here
-                break;
-        }
-
-        // Tertiary tie-breaker: most recent login (unless the user explicitly sorted by currentlogin)
-        if (!string.Equals(field, "currentlogin", StringComparison.OrdinalIgnoreCase))
+        // Tertiary tie-break (unless already sorting by currentlogin)
+        if (field != "currentlogin")
         {
             ordered = ordered.ThenByDescending(LatestLogin);
         }
 
         // Pagination
-        if (pageNumber < 1)
-        {
-            pageNumber = 1;
-        }
-
-        if (pageSize < 1)
-        {
-            pageSize = 20;
-        }
+        pageNumber = Math.Max(1, pageNumber);
+        pageSize = Math.Max(1, pageSize);
 
         var skip = (pageNumber - 1) * pageSize;
         return ordered.Skip(skip).Take(pageSize);
 
-        bool IsActive(UserViewModel u)
-        {
-            return Guid.TryParse(u.Id?.Trim(), out var g) && statusByUserId.TryGetValue(g, out var active) && active;
-        }
-
-        // Helpers
         static DateTime LatestLogin(UserViewModel x)
         {
             return ((x.CurrentLogin ?? DateTime.MinValue) > (x.LastLogin ?? DateTime.MinValue)
                 ? x.CurrentLogin
                 : x.LastLogin) ?? DateTime.MinValue;
         }
+
+        bool IsActive(UserViewModel u)
+        {
+            return Guid.TryParse(u.Id?.Trim(), out var g) && statusByUserId.TryGetValue(g, out var a) && a;
+        }
     }
+
 
     // Pagination builder with optional extras
     [NonAction]
