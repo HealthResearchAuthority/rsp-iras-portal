@@ -31,7 +31,7 @@ public class CookiesController : Controller
         });
 
         // set notification banner so it shows on the page
-        TempData[TempDataKeys.ShowNotificationBanner] = true;
+        TempData[TempDataKeys.ShowCookiesSavedNotificationBanner] = true;
 
         // Redirect back to referring page
         var referer = Request.Headers["Referer"].ToString();

@@ -2,7 +2,7 @@
 @using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
 @{
 	bool allowAdditionalCookies = Context.Request.Cookies[CookieConsentNames.AdditionalCookies] == "true";
-	var showSuccessMessage = TempData[TempDataKeys.ShowNotificationBanner];
+	var showSuccessMessage = TempData[TempDataKeys.ShowCookiesSavedNotificationBanner];
 
 	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
 	var pageContent = pageContentData != null
