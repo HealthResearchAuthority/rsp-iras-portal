@@ -1,3 +1,4 @@
+using AutoFixture;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -107,12 +108,13 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
         redirectToRouteResult.StatusCode.ShouldBe(StatusCodes.Status404NotFound);
     }
 
-    [Fact]
-    public async Task GetProjectOverview_PopulatesTempDataAndReturnsView_WhenDataIsPresent()
+    [Theory, RecursionSafeAutoData]
+    public async Task GetProjectOverview_PopulatesTempDataAndReturnsView_WhenDataIsPresent(CmsQuestionSetResponse cmsResponse)
     {
         // Arrange
         var applicationService = Mocker.GetMock<IApplicationsService>();
         var respondentService = Mocker.GetMock<IRespondentService>();
+        var cmsService = Mocker.GetMock<ICmsQuestionsetService>();
 
         var answers = new List<RespondentAnswerDto>
             {
@@ -128,7 +130,13 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
             .Setup(s => s.GetRespondentAnswers("rec-1", QuestionCategories.ProjectRecrod))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = answers });
 
-        SetupCMSService();
+        cmsService
+            .Setup(s => s.GetQuestionSet(null, null))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = cmsResponse
+            });
 
         // Initialize TempData for the controller
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
@@ -153,12 +161,14 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
         Sut.TempData[TempDataKeys.ShortProjectTitle].ShouldBe("Project X");
     }
 
-    [Fact]
-    public async Task GetProjectOverview_SetsProjectPlannedEndDateTempData_WhenEndDateIsValid()
+    [Theory, RecursionSafeAutoData]
+    public async Task GetProjectOverview_SetsProjectPlannedEndDateTempData_WhenEndDateIsValid(CmsQuestionSetResponse cmsResponse)
     {
         // Arrange
         var applicationService = Mocker.GetMock<IApplicationsService>();
         var respondentService = Mocker.GetMock<IRespondentService>();
+        var cmsService = Mocker.GetMock<ICmsQuestionsetService>();
+
         var answers = new List<RespondentAnswerDto>
             {
                 new() { QuestionId = QuestionIds.ProjectPlannedEndDate, AnswerText = "01/01/2025" }
@@ -172,7 +182,13 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
             .Setup(s => s.GetRespondentAnswers("rec-1", QuestionCategories.ProjectRecrod))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = answers });
 
-        SetupCMSService();
+        cmsService
+            .Setup(s => s.GetQuestionSet(null, null))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = cmsResponse
+            });
 
         // Initialize TempData for the controller
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
@@ -187,12 +203,13 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
         Sut.TempData[TempDataKeys.PlannedProjectEndDate].ShouldBe("01 January 2025");
     }
 
-    [Fact]
-    public async Task GetProjectOverview_ReturnsFullyPopulatedModel_WhenDataIsPresent()
+    [Theory, RecursionSafeAutoData]
+    public async Task GetProjectOverview_ReturnsFullyPopulatedModel_WhenDataIsPresent(CmsQuestionSetResponse cmsResponse)
     {
         // Arrange
         var applicationService = Mocker.GetMock<IApplicationsService>();
         var respondentService = Mocker.GetMock<IRespondentService>();
+        var cmsService = Mocker.GetMock<ICmsQuestionsetService>();
 
         var answers = new List<RespondentAnswerDto>
         {
@@ -222,7 +239,13 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
                 Content = answers
             });
 
-        SetupCMSService();
+        cmsService
+            .Setup(s => s.GetQuestionSet(null, null))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = cmsResponse
+            });
 
         // Initialize TempData for the controller
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
@@ -235,7 +258,6 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
 
         // Assert
         var okResult = result.ShouldBeOfType<OkObjectResult>();
-
         var model = okResult.Value.ShouldBeOfType<ProjectOverviewModel>();
 
         model.ProjectTitle.ShouldBe("Project X");
@@ -249,65 +271,23 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
         model.SectionGroupQuestions.ShouldBeEmpty();
     }
 
-    private void SetupCMSService()
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+    public class RecursionSafeAutoDataAttribute : AutoDataAttribute
     {
-        Mocker.GetMock<ICmsQuestionsetService>()
-            .Setup(s => s.GetQuestionSet(null, null))
-            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+        public RecursionSafeAutoDataAttribute()
+            : base(() =>
             {
-                StatusCode = HttpStatusCode.OK,
-                Content = new CmsQuestionSetResponse
-                {
-                    ActiveFrom = DateTime.UtcNow,
-                    ActiveTo = DateTime.UtcNow.AddYears(1),
-                    Id = "project-overview",
-                    Version = "1.0",
-                    Sections = new List<SectionModel>
-                    {
-                        new SectionModel
-                        {
-                            Id = "S1",
-                            Questions = new List<QuestionModel>
-                            {
-                                new QuestionModel
-                                {
-                                    Id = "1",
-                                    QuestionId = QuestionIds.ShortProjectTitle,
-                                    Name = "Short Project Title",
-                                    ShortName = "Short Q1",
-                                    ShowAnswerOn = "ProjectOverview",
-                                    SectionGroup = "Basic Info",
-                                    SectionSequence = 1,
-                                    SequenceInSectionGroup = 1,
-                                    Sequence = 1,
-                                    Version = "1.0",
-                                    AnswerDataType = "Text",
-                                    Conformance = "Mandatory",
-                                    ShowOriginalAnswer = false,
-                                    Answers = new List<AnswerModel>(),
-                                    ValidationRules = new List<RuleModel>()
-                                },
-                                new QuestionModel
-                                {
-                                    Id = "2",
-                                    QuestionId = QuestionIds.ProjectPlannedEndDate,
-                                    Name = "Planned End Date",
-                                    ShowAnswerOn = "ProjectOverview",
-                                    SectionGroup = "Basic Info",
-                                    SectionSequence = 1,
-                                    SequenceInSectionGroup = 2,
-                                    Sequence = 2,
-                                    Version = "1.0",
-                                    AnswerDataType = "Date",
-                                    Conformance = "Optional",
-                                    ShowOriginalAnswer = false,
-                                    Answers = new List<AnswerModel>(),
-                                    ValidationRules = new List<RuleModel>()
-                                }
-                            }
-                        }
-                    }
-                }
-            });
+                var fixture = new Fixture();
+                fixture.Behaviors
+                    .OfType<ThrowingRecursionBehavior>()
+                    .ToList()
+                    .ForEach(b => fixture.Behaviors.Remove(b));
+
+                fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+
+                return fixture;
+            })
+        {
+        }
     }
 }
