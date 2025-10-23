@@ -77,10 +77,6 @@ public record QuestionsResponse
     /// </summary>
     public string ShowAnswerOn { get; set; } = string.Empty;
 
-    public string? SectionGroup { get; set; }
-
-    public int SequenceInSectionGroup { get; set; }
-
     /// <summary>
     /// Allows grouping of questions from diffrent sections to show their answer on single page
     /// </summary>

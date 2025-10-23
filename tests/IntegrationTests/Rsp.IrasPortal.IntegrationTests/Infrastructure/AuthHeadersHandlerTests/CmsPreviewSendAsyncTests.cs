@@ -7,7 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Rsp.IrasPortal.Infrastructure.HttpMessageHandlers;
 using Shouldly;
 
-namespace Rsp.IrasPortal.IntegrationTests._5.Infrastructure.AuthHeadersHandlerTests;
+namespace Rsp.IrasPortal.IntegrationTests.Infrastructure.AuthHeadersHandlerTests;
 
 public class CmsPreviewSendAsyncTests
 {
