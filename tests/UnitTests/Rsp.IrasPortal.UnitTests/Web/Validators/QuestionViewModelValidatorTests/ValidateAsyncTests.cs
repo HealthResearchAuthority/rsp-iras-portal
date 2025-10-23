@@ -565,6 +565,6 @@ public class ValidateAsyncTests : TestServiceBase<QuestionViewModelValidator>
         // Assert
         result
             .ShouldHaveValidationErrorFor(q => q.AnswerText)
-            .WithErrorMessage("Date must include a month and year");
+            .WithErrorMessage("Date must include a year");
     }
 }
