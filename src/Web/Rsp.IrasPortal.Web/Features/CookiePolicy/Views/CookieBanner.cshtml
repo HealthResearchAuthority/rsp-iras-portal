@@ -1,17 +1,14 @@
 ﻿@using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
-@{
-	var bannerContent = (RichTextProperties?)ViewData[PageContentElements.CookieBannerContent];
-}
+@model string
 
 <div class="govuk-cookie-banner" data-nosnippet role="region" aria-label="Cookies on Plan and Manage Health and Care Research">
 	<div class="govuk-cookie-banner__message govuk-width-container">
 		<div class="govuk-grid-row">
 			<div class="govuk-grid-column-two-thirds govuk-body govuk-rte">
-				@if (!string.IsNullOrEmpty(bannerContent?.Value?.Markup))
+				@if (!string.IsNullOrEmpty(Model))
 				{
-					// NOSONAR
-					@Html.Raw(bannerContent.Value.Markup)
+					@Html.Raw(Model)
 				}
 			</div>
 		</div>
