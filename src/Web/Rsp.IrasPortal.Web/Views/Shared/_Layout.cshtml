@@ -1,6 +1,7 @@
 ﻿@using System.Security.Claims
 @using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.Configuration
+@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
 @inject AppSettings appSettings
 @inject IHttpContextAccessor httpContextAccessor
 
@@ -69,7 +70,7 @@
 
 <body class="govuk-template__body govuk-template--rebranded">
 	@*Render cookie banner*@
-	@await Component.InvokeAsync("CookieBanner")
+	<partial name="~/Features/CookiePolicy/Views/CookieBanner.cshtml" />
 
 	<script>
 		document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');
