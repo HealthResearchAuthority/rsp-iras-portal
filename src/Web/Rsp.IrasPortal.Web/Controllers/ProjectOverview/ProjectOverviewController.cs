@@ -55,7 +55,7 @@ public class ProjectOverviewController(
         UpdateModificationRelatedTempData();
         SetupShortProjectTitleBackNav("pov", "app:Welcome", backRoute);
 
-        var response = await GetProjectOverview(projectRecordId);
+        var response = await GetProjectOverview(projectRecordId, nameof(ProjectDetails));
 
         // if status code is not a successful status code
         if ((response is StatusCodeResult result && result.StatusCode is < 200 or > 299) ||
@@ -130,7 +130,7 @@ public class ProjectOverviewController(
     public async Task<IActionResult> ProjectTeam(string projectRecordId, string? backRoute)
     {
         SetupShortProjectTitleBackNav("pov", "app:Welcome", backRoute);
-        var response = await GetProjectOverview(projectRecordId);
+        var response = await GetProjectOverview(projectRecordId, nameof(ProjectTeam));
 
         // if status code is not a successful status code
         if ((response is StatusCodeResult result && result.StatusCode is < 200 or > 299) ||
@@ -145,7 +145,7 @@ public class ProjectOverviewController(
     public async Task<IActionResult> ResearchLocations(string projectRecordId, string? backRoute)
     {
         SetupShortProjectTitleBackNav("pov", "app:Welcome", backRoute);
-        var response = await GetProjectOverview(projectRecordId);
+        var response = await GetProjectOverview(projectRecordId, nameof(ResearchLocations));
 
         // if status code is not a successful status code
         if ((response is StatusCodeResult result && result.StatusCode is < 200 or > 299) ||
@@ -167,7 +167,7 @@ public class ProjectOverviewController(
     /// or an error details if the project record or answers are not found or a service error occurs.
     /// </returns>
     [NonAction]
-    public async Task<IActionResult> GetProjectOverview(string projectRecordId)
+    public async Task<IActionResult> GetProjectOverview(string projectRecordId, string? specificViewName = null)
     {
         // Retrieve the project record by its ID
         var projectRecordResponse = await applicationService.GetProjectRecord(projectRecordId);
@@ -223,21 +223,34 @@ public class ProjectOverviewController(
             { QuestionAnswersOptionsIds.Wales, "Wales" }
         };
 
+        // Get questions from CMS service
+        var additionalQuestionsResponse = await cmsQuestionsetService.GetQuestionSet();
+
+        // Build the questionnaire model containing all questions for the project ovewrview.
+        var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(additionalQuestionsResponse.Content!);
+        questionnaire.UpdateWithRespondentAnswers(answers);
+
         // Extract key answers from the respondent answers
         var titleAnswer = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.ShortProjectTitle)?.AnswerText;
         var endDateAnswer = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.ProjectPlannedEndDate)?.AnswerText;
 
-        var participatingNations = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.ParticipatingNations)?
-                .Answers
-                .ConvertAll(id => answerOptions.TryGetValue(id, out var name) ? name : id)
-            ;
+        // Get list of questions for specific project overview tab.
+        var sectionGroupQuestions = new List<SectionGroupWithQuestionsViewModel>();
 
-        var nhsOrHscOrganisations = GetAnswerName(answers.FirstOrDefault(a => a.QuestionId == QuestionIds.NhsOrHscOrganisations)?.SelectedOption, answerOptions);
-        var LeadNation = GetAnswerName(answers.FirstOrDefault(a => a.QuestionId == QuestionIds.LeadNation)?.SelectedOption, answerOptions);
-
-        var chiefInvestigator = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.ChiefInvestigator)?.AnswerText;
-        var primarySponsorOrganisation = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.PrimarySponsorOrganisation)?.AnswerText;
-        var sponsorContact = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.SponsorContact)?.AnswerText;
+        if (specificViewName is not null)
+        {
+            sectionGroupQuestions = questionnaire.Questions
+                .Where(q => q.ShowAnswerOn.Contains(specificViewName, StringComparison.OrdinalIgnoreCase))
+                .GroupBy(q => q.SectionGroup)
+                .Select(g => new SectionGroupWithQuestionsViewModel
+                {
+                    SectionGroup = g.Key!,
+                    SectionSequence = g.First().SectionSequence,
+                    Questions = g.OrderBy(q => q.SequenceInSectionGroup).ToList()
+                })
+                .OrderBy(g => g.SectionSequence) // Using SectionSequence as there is no separate parameter for group order
+                .ToList();
+        }
 
         // Populate TempData with project details for actual modification journey
         TempData[TempDataKeys.IrasId] = projectRecord.IrasId;
@@ -260,12 +273,7 @@ public class ProjectOverviewController(
             ProjectPlannedEndDate = projectPlannedEndDate,
             Status = projectRecord.Status,
             IrasId = projectRecord.IrasId,
-            ParticipatingNations = participatingNations,
-            NhsOrHscOrganisations = nhsOrHscOrganisations,
-            LeadNation = LeadNation,
-            ChiefInvestigator = chiefInvestigator,
-            PrimarySponsorOrganisation = primarySponsorOrganisation,
-            SponsorContact = sponsorContact
+            SectionGroupQuestions = sectionGroupQuestions,
         };
 
         return Ok(model);

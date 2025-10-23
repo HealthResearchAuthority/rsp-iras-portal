@@ -25,32 +25,22 @@
 
 <div class="govuk-grid-row">
     <div class="govuk-width-container govuk-!-margin-top-4">
-		<h2 class="govuk-heading-m">Project team</h2>
-        <dl class="govuk-summary-list">
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key">
-                    Chief Investigator
-                </dt>
-                <dd class="govuk-summary-list__value">
-                    @Model.ChiefInvestigator
-                </dd>
-            </div>
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key">
-                    Primary sponsor organisation
-                </dt>
-                <dd class="govuk-summary-list__value">
-                    @Model.PrimarySponsorOrganisation
-                </dd>
-            </div>
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key">
-                    Sponsor contact
-                </dt>
-                <dd class="govuk-summary-list__value">
-                    @Model.SponsorContact
-                </dd>
-            </div>        
-        </dl>
+        @foreach (var group in Model.SectionGroupQuestions)
+        {
+            <h2 class="govuk-heading-m">@group.SectionGroup</h2>
+            <dl class="govuk-summary-list">
+                @foreach (var question in group.Questions)
+                {
+                    string questionText = string.IsNullOrWhiteSpace(question.ShortQuestionText) ? question.QuestionText : question.ShortQuestionText;
+
+                    <div class="govuk-summary-list__row">
+                        <dt class="govuk-summary-list__key">@questionText</dt>
+                        <dd class="govuk-summary-list__value">
+                            @Html.Raw(question.GetDisplayText(includePrompt: false))
+                        </dd>
+                    </div>
+                }
+            </dl>
+        }
     </div>
 </div>

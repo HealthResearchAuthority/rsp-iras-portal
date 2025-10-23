@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
@@ -127,6 +128,8 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
             .Setup(s => s.GetRespondentAnswers("rec-1", QuestionCategories.ProjectRecrod))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = answers });
 
+        SetupCMSService();
+
         // Initialize TempData for the controller
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
 
@@ -169,6 +172,8 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
             .Setup(s => s.GetRespondentAnswers("rec-1", QuestionCategories.ProjectRecrod))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = answers });
 
+        SetupCMSService();
+
         // Initialize TempData for the controller
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
 
@@ -196,9 +201,9 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
             new() { QuestionId = QuestionIds.ParticipatingNations, Answers = new List<string> { QuestionAnswersOptionsIds.England, QuestionAnswersOptionsIds.Scotland } },
             new() { QuestionId = QuestionIds.NhsOrHscOrganisations, SelectedOption = QuestionAnswersOptionsIds.Yes },
             new() { QuestionId = QuestionIds.LeadNation, SelectedOption = QuestionAnswersOptionsIds.Wales },
-            new() { QuestionId = QuestionIds.ChiefInvestigator, AnswerText = "Dr. Jane Doe" },
+            new() { QuestionId = QuestionIds.FirstName, AnswerText = "Dr. Jane Doe" },
             new() { QuestionId = QuestionIds.PrimarySponsorOrganisation, AnswerText = "University of Example" },
-            new() { QuestionId = QuestionIds.SponsorContact, AnswerText = "jane.doe@example.com" }
+            new() { QuestionId = QuestionIds.Email, AnswerText = "jane.doe@example.com" }
         };
 
         applicationService
@@ -216,6 +221,8 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
                 StatusCode = HttpStatusCode.OK,
                 Content = answers
             });
+
+        SetupCMSService();
 
         // Initialize TempData for the controller
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
@@ -237,11 +244,70 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
         model.ProjectPlannedEndDate.ShouldBe("01 January 2025");
         model.Status.ShouldBe(ModificationStatus.InDraft);
         model.IrasId.ShouldBe(1);
-        model.ParticipatingNations.ShouldBe(new List<string> { "England", "Scotland" });
-        model.NhsOrHscOrganisations.ShouldBe("Yes");
-        model.LeadNation.ShouldBe("Wales");
-        model.ChiefInvestigator.ShouldBe("Dr. Jane Doe");
-        model.PrimarySponsorOrganisation.ShouldBe("University of Example");
-        model.SponsorContact.ShouldBe("jane.doe@example.com");
+        model.SectionGroupQuestions.ShouldNotBeNull();
+        model.SectionGroupQuestions.ShouldBeOfType<List<SectionGroupWithQuestionsViewModel>>();
+        model.SectionGroupQuestions.ShouldBeEmpty();
+    }
+
+    private void SetupCMSService()
+    {
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetQuestionSet(null, null))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse
+                {
+                    ActiveFrom = DateTime.UtcNow,
+                    ActiveTo = DateTime.UtcNow.AddYears(1),
+                    Id = "project-overview",
+                    Version = "1.0",
+                    Sections = new List<SectionModel>
+                    {
+                        new SectionModel
+                        {
+                            Id = "S1",
+                            Questions = new List<QuestionModel>
+                            {
+                                new QuestionModel
+                                {
+                                    Id = "1",
+                                    QuestionId = QuestionIds.ShortProjectTitle,
+                                    Name = "Short Project Title",
+                                    ShortName = "Short Q1",
+                                    ShowAnswerOn = "ProjectOverview",
+                                    SectionGroup = "Basic Info",
+                                    SectionSequence = 1,
+                                    SequenceInSectionGroup = 1,
+                                    Sequence = 1,
+                                    Version = "1.0",
+                                    AnswerDataType = "Text",
+                                    Conformance = "Mandatory",
+                                    ShowOriginalAnswer = false,
+                                    Answers = new List<AnswerModel>(),
+                                    ValidationRules = new List<RuleModel>()
+                                },
+                                new QuestionModel
+                                {
+                                    Id = "2",
+                                    QuestionId = QuestionIds.ProjectPlannedEndDate,
+                                    Name = "Planned End Date",
+                                    ShowAnswerOn = "ProjectOverview",
+                                    SectionGroup = "Basic Info",
+                                    SectionSequence = 1,
+                                    SequenceInSectionGroup = 2,
+                                    Sequence = 2,
+                                    Version = "1.0",
+                                    AnswerDataType = "Date",
+                                    Conformance = "Optional",
+                                    ShowOriginalAnswer = false,
+                                    Answers = new List<AnswerModel>(),
+                                    ValidationRules = new List<RuleModel>()
+                                }
+                            }
+                        }
+                    }
+                }
+            });
     }
 }

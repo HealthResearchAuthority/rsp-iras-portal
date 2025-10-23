@@ -11,16 +11,6 @@ public class ProjectOverviewModel
     public string? ProjectTitle { get; set; }
 
     /// <summary>
-    /// Gets or sets the title of the project.
-    /// </summary>
-    public string? FullProjectTitle { get; set; }
-
-    /// <summary>
-    /// Gets or sets the REC name.
-    /// </summary>
-    public string? RecName { get; set; }
-
-    /// <summary>
     /// Gets or sets the category identifier for the project.
     /// </summary>
     public string? CategoryId { get; set; }
@@ -45,33 +35,8 @@ public class ProjectOverviewModel
     /// </summary>
     public string Status { get; set; } = null!;
 
-    /// <summary>
-    /// Gets or sets the list of participating nations in the project.
+    // <summary>
+    /// Gets or sets sections with questions for specific view
     /// </summary>
-    public List<string>? ParticipatingNations { get; set; }
-
-    /// <summary>
-    /// Gets or sets the name of the NHS or HSC organisation associated with the project.
-    /// </summary>
-    public string? NhsOrHscOrganisations { get; set; }
-
-    /// <summary>
-    /// Gets or sets the lead nation for the project.
-    /// </summary>
-    public string? LeadNation { get; set; }
-
-    /// <summary>
-    /// Gets or sets the name of the chief investigator for the project.
-    /// </summary>
-    public string? ChiefInvestigator { get; set; }
-
-    /// <summary>
-    /// Gets or sets the name of the primary sponsor organisation.
-    /// </summary>
-    public string? PrimarySponsorOrganisation { get; set; }
-
-    /// <summary>
-    /// Gets or sets the contact person for the sponsor organisation.
-    /// </summary>
-    public string? SponsorContact { get; set; }
+    public List<SectionGroupWithQuestionsViewModel> SectionGroupQuestions { get; set; } = [];
 }

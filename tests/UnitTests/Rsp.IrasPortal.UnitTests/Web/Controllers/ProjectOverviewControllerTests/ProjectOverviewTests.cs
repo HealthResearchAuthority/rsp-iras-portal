@@ -88,6 +88,85 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         Sut.TempData = tempData;
     }
 
+    private void SetupCMSService(string showAnswerOn = "", string sectionGroup = "")
+    {
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetQuestionSet(null, null))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse
+                {
+                    ActiveFrom = DateTime.UtcNow,
+                    ActiveTo = DateTime.UtcNow.AddYears(1),
+                    Id = "project-overview",
+                    Version = "1.0",
+                    Sections = new List<SectionModel>
+                    {
+                        new SectionModel
+                        {
+                            Id = "S1",
+                            Questions = new List<QuestionModel>
+                            {
+                                new QuestionModel
+                                {
+                                    Id = "1",
+                                    QuestionId = QuestionIds.ShortProjectTitle,
+                                    Name = "Short Project Title",
+                                    ShortName = "Short Q1",
+                                    ShowAnswerOn = "ProjectOverview",
+                                    SectionGroup = "Basic Info",
+                                    SectionSequence = 1,
+                                    SequenceInSectionGroup = 1,
+                                    Sequence = 1,
+                                    Version = "1.0",
+                                    AnswerDataType = "Text",
+                                    Conformance = "Mandatory",
+                                    ShowOriginalAnswer = false,
+                                    Answers = new List<AnswerModel>(),
+                                    ValidationRules = new List<RuleModel>()
+                                },
+                                new QuestionModel
+                                {
+                                    Id = "2",
+                                    QuestionId = QuestionIds.ProjectPlannedEndDate,
+                                    Name = "Planned End Date",
+                                    ShowAnswerOn = "ProjectOverview",
+                                    SectionGroup = "Basic Info",
+                                    SectionSequence = 1,
+                                    SequenceInSectionGroup = 2,
+                                    Sequence = 2,
+                                    Version = "1.0",
+                                    AnswerDataType = "Date",
+                                    Conformance = "Optional",
+                                    ShowOriginalAnswer = false,
+                                    Answers = new List<AnswerModel>(),
+                                    ValidationRules = new List<RuleModel>()
+                                },
+                                new QuestionModel
+                                {
+                                    Id = "3",
+                                    QuestionId = "Test",
+                                    Name = "Test Question",
+                                    ShowAnswerOn = showAnswerOn,
+                                    SectionGroup = sectionGroup,
+                                    SectionSequence = 1,
+                                    SequenceInSectionGroup = 1,
+                                    Sequence = 1,
+                                    Version = "1.0",
+                                    AnswerDataType = "Text",
+                                    Conformance = "Optional",
+                                    ShowOriginalAnswer = false,
+                                    Answers = [],
+                                    ValidationRules = new List<RuleModel>()
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+    }
+
     [Fact]
     public async Task Index_GetsProjectOverview_And_ReturnsViewResult_When_StatusIsDraft()
     {
@@ -122,6 +201,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 
         SetupRespondentAnswers(DefaultProjectRecordId, answers);
         SetupControllerContext(httpContext, tempData);
+        SetupCMSService();
 
         // Act
         var result = await Sut.Index(DefaultProjectRecordId, null, null);
@@ -165,6 +245,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 
         SetupRespondentAnswers(DefaultProjectRecordId, answers);
         SetupControllerContext(httpContext, tempData);
+        SetupCMSService();
 
         // Act
         var result = await Sut.Index(DefaultProjectRecordId, null, null);
@@ -194,6 +275,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupProjectRecord(DefaultProjectRecordId);
         SetupRespondentAnswers(DefaultProjectRecordId, answers);
         SetupControllerContext(httpContext, tempData);
+        SetupCMSService("ProjectDetails", "Project details");
 
         // Act
         var result = await Sut.ProjectDetails(DefaultProjectRecordId, "", "");
@@ -229,6 +311,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupProjectRecord(DefaultProjectRecordId);
         SetupRespondentAnswers(DefaultProjectRecordId, answers);
         SetupControllerContext(httpContext, tempData);
+        SetupCMSService("ProjectDetails", "Project details");
 
         // Act
         await Sut.ProjectDetails(DefaultProjectRecordId, "", "");
@@ -260,6 +343,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupProjectRecord(DefaultProjectRecordId);
         SetupRespondentAnswers(DefaultProjectRecordId, answers);
         SetupControllerContext(httpContext, tempData);
+        SetupCMSService("ProjectDetails", "Project details");
 
         // Act
         await Sut.ProjectDetails(DefaultProjectRecordId, "", "");
@@ -285,14 +369,15 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
             new() { QuestionId = QuestionIds.ParticipatingNations, Answers = new List<string> { QuestionAnswersOptionsIds.England, QuestionAnswersOptionsIds.Scotland } },
             new() { QuestionId = QuestionIds.NhsOrHscOrganisations, SelectedOption = QuestionAnswersOptionsIds.Yes },
             new() { QuestionId = QuestionIds.LeadNation, SelectedOption = QuestionAnswersOptionsIds.Wales },
-            new() { QuestionId = QuestionIds.ChiefInvestigator, AnswerText = "Dr. Jane Doe" },
+            new() { QuestionId = QuestionIds.FirstName, AnswerText = "Dr. Jane" },
             new() { QuestionId = QuestionIds.PrimarySponsorOrganisation, AnswerText = "University of Example" },
-            new() { QuestionId = QuestionIds.SponsorContact, AnswerText = "jane.doe@example.com" }
+            new() { QuestionId = QuestionIds.Email, AnswerText = "jane.doe@example.com" }
         };
 
         SetupProjectRecord(projectRecordId);
         SetupRespondentAnswers(projectRecordId, answers);
         SetupControllerContext(httpContext, tempData);
+        SetupCMSService("ProjectDetails", "Project details");
 
         // Act
         var result = await Sut.ProjectDetails(projectRecordId, "", "");
@@ -321,6 +406,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
             });
 
         SetupControllerContext(httpContext, tempData);
+        SetupCMSService("ProjectDetails", "Project details");
 
         // Act
         var result = await Sut.ProjectDetails(DefaultProjectRecordId, "", "");
@@ -341,14 +427,15 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 
         var answers = new List<RespondentAnswerDto>
         {
-            new() { QuestionId = QuestionIds.ChiefInvestigator, AnswerText = "Dr. Jane Doe" },
+            new() { QuestionId = QuestionIds.FirstName, AnswerText = "Dr. Jane Doe" },
             new() { QuestionId = QuestionIds.PrimarySponsorOrganisation, AnswerText = "University of Example" },
-            new() { QuestionId = QuestionIds.SponsorContact, AnswerText = "jane.doe@example.com" }
+            new() { QuestionId = QuestionIds.Email, AnswerText = "jane.doe@example.com" }
         };
 
         SetupProjectRecord(projectRecordId);
         SetupRespondentAnswers(projectRecordId, answers);
         SetupControllerContext(httpContext, tempData);
+        SetupCMSService("ProjectTeam", "Project team");
 
         // Act
         var result = await Sut.ProjectTeam(projectRecordId, "");
@@ -357,9 +444,9 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var viewResult = result.ShouldBeOfType<ViewResult>();
         var model = viewResult.Model.ShouldBeOfType<ProjectOverviewModel>();
 
-        model.ChiefInvestigator.ShouldBe("Dr. Jane Doe");
-        model.PrimarySponsorOrganisation.ShouldBe("University of Example");
-        model.SponsorContact.ShouldBe("jane.doe@example.com");
+        model.SectionGroupQuestions.ShouldNotBeNull();
+        model.SectionGroupQuestions.ShouldBeOfType<List<SectionGroupWithQuestionsViewModel>>();
+        model.SectionGroupQuestions.ShouldNotBeEmpty();
     }
 
     [Fact]
@@ -381,6 +468,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupProjectRecord(projectRecordId);
         SetupRespondentAnswers(projectRecordId, answers);
         SetupControllerContext(httpContext, tempData);
+        SetupCMSService("ResearchLocations", "Research locations");
 
         // Act
         var result = await Sut.ResearchLocations(projectRecordId, "");
@@ -389,9 +477,9 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var viewResult = result.ShouldBeOfType<ViewResult>();
         var model = viewResult.Model.ShouldBeOfType<ProjectOverviewModel>();
 
-        model.ParticipatingNations.ShouldBe(new List<string> { "England", "Scotland" });
-        model.NhsOrHscOrganisations.ShouldBe("Yes");
-        model.LeadNation.ShouldBe("Wales");
+        model.SectionGroupQuestions.ShouldNotBeNull();
+        model.SectionGroupQuestions.ShouldBeOfType<List<SectionGroupWithQuestionsViewModel>>();
+        model.SectionGroupQuestions.ShouldNotBeEmpty();
     }
 
     [Fact]
@@ -416,6 +504,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupProjectRecord(projectRecordId);
         SetupRespondentAnswers(projectRecordId, answers);
         SetupControllerContext(httpContext, tempData);
+        SetupCMSService();
 
         var modifications = new List<ModificationsDto>
         {
@@ -474,6 +563,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupProjectRecord(projectRecordId);
         SetupRespondentAnswers(projectRecordId, answers);
         SetupControllerContext(httpContext, tempData);
+        SetupCMSService();
 
         var modifications = new List<ModificationsDto>
         {
@@ -527,6 +617,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupProjectRecord(projectRecordId);
         SetupRespondentAnswers(projectRecordId, answers);
         SetupControllerContext(httpContext, tempData);
+        SetupCMSService();
 
         var serviceResponse = new ServiceResponse<GetModificationsResponse>
         {
@@ -557,6 +648,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var tempDataProvider = new Mock<ITempDataProvider>();
         var tempData = CreateTempData(tempDataProvider, httpContext);
         SetupControllerContext(httpContext, tempData);
+        SetupCMSService();
 
         Mocker.GetMock<IApplicationsService>()
             .Setup(s => s.GetProjectRecord(projectRecordId))
@@ -587,6 +679,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         new RespondentAnswerDto { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "X" }
     });
         SetupControllerContext(httpContext, tempData);
+        SetupCMSService("ProjectDetails", "Project details");
 
         // Act (triggers: if (!IsNullOrWhiteSpace(backRouteFromQuery)) {... return;})
         var result = await Sut.ProjectDetails(DefaultProjectRecordId, "admin:applyfilters", "");
@@ -615,6 +708,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         new RespondentAnswerDto { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "X" }
     });
         SetupControllerContext(httpContext, tempData);
+        SetupCMSService("ProjectDetails", "Project details");
 
         // Act (triggers: same section -> pull BackRoute from session)
         var result = await Sut.ProjectDetails(DefaultProjectRecordId, null, "");
@@ -642,6 +736,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         new RespondentAnswerDto { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "X" }
     });
         SetupControllerContext(httpContext, tempData);
+        SetupCMSService("ProjectDetails", "Project details");
 
         // Act (triggers: same section, storedRoute null -> defaultRoute)
         var result = await Sut.ProjectDetails(DefaultProjectRecordId, null, "");
@@ -670,6 +765,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         new RespondentAnswerDto { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "X" }
     });
         SetupControllerContext(httpContext, tempData);
+        SetupCMSService("ProjectDetails", "Project details");
 
         // Act (triggers: else branch -> clears + default)
         var result = await Sut.ProjectDetails(DefaultProjectRecordId, null, "");
@@ -696,6 +792,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         new RespondentAnswerDto { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "X" }
     });
         SetupControllerContext(httpContext, tempData);
+        SetupCMSService("ProjectDetails", "Project details");
 
         // Seed via ProjectDetails (sets session + ViewData)
         await Sut.ProjectDetails(projectRecordId, "admin:applyfilters", "");
@@ -742,6 +839,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupProjectRecord(projectRecordId);
         SetupRespondentAnswers(projectRecordId, answers);
         SetupControllerContext(httpContext, tempData);
+        SetupCMSService();
 
         var documents = new List<ProjectOverviewDocumentDto>
         {
@@ -800,6 +898,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var tempDataProvider = new Mock<ITempDataProvider>();
         var tempData = CreateTempData(tempDataProvider, httpContext);
         SetupControllerContext(httpContext, tempData);
+        SetupCMSService();
 
         Mocker.GetMock<IApplicationsService>()
             .Setup(s => s.GetProjectRecord(projectRecordId))
@@ -837,6 +936,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupProjectRecord(projectRecordId);
         SetupRespondentAnswers(projectRecordId, answers);
         SetupControllerContext(httpContext, tempData);
+        SetupCMSService();
 
         var modifications = new List<ModificationsDto>
         {
@@ -904,6 +1004,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupProjectRecord(projectRecordId);
         SetupRespondentAnswers(projectRecordId, answers);
         SetupControllerContext(httpContext, tempData);
+        SetupCMSService();
 
         var modifications = new List<ModificationsDto>
         {
@@ -983,6 +1084,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 
         SetupRespondentAnswers(projectRecordId, answers);
         SetupControllerContext(httpContext, tempData);
+        SetupCMSService();
 
         // Act
         var result = await Sut.ConfirmDeleteProject(projectRecordId);
@@ -1002,6 +1104,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var tempData = CreateTempData(tempDataProvider, httpContext);
         var projectRecordId = "err-1";
         SetupControllerContext(httpContext, tempData);
+        SetupCMSService();
 
         Mocker.GetMock<IApplicationsService>()
             .Setup(s => s.GetProjectRecord(projectRecordId))
@@ -1046,6 +1149,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupProjectRecord(projectRecordId);
         SetupRespondentAnswers(projectRecordId, answers);
         SetupControllerContext(httpContext, tempData);
+        SetupCMSService();
 
         var modifications = new List<ModificationsDto>
         {
