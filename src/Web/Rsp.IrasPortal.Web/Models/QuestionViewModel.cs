@@ -29,6 +29,8 @@ public class QuestionViewModel
     public bool IsModificationQuestion { get; set; }
     public bool ShowOriginalAnswer { get; set; }
     public string ShowAnswerOn { get; set; } = string.Empty;
+    public string? SectionGroup { get; set; }
+    public int SequenceInSectionGroup { get; set; }
     public IList<ComponentContent> GuidanceComponents { get; set; } = [];
 
     public string? NhsInvolvment { get; set; }

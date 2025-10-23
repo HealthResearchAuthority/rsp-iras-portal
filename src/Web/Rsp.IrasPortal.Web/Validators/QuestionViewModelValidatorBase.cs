@@ -115,11 +115,11 @@ public class QuestionViewModelValidatorBase : AbstractValidator<QuestionViewMode
                                         break;
 
                                     case 2:
-                                        context.AddFailure(nameof(question.AnswerText), $"Enter the {missingParts[0]} and {missingParts[1]}");
+                                        context.AddFailure(nameof(question.AnswerText), $"Date must include a {missingParts[0]} and {missingParts[1]}");
                                         break;
 
                                     case 1:
-                                        context.AddFailure(nameof(question.AnswerText), $"Enter the {missingParts[0]}");
+                                        context.AddFailure(nameof(question.AnswerText), $"Date must include a {missingParts[0]}");
                                         break;
                                 }
 
