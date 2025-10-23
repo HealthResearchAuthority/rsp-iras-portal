@@ -13,4 +13,10 @@ public class ModificationSearchRequest
     public List<string> ModificationTypes { get; set; } = [];
     public string? ReviewerId { get; set; } = null;
     public bool IncludeReviewerId { get; set; }
+    public string? ModificationType { get; set; }
+    public string? ReviewType { get; set; }
+    public string? Category { get; set; }
+    public string? Status { get; set; }
+    public string? SearchQuery { get; set; }
+    //public string? ModificationId { get; set; }
 }

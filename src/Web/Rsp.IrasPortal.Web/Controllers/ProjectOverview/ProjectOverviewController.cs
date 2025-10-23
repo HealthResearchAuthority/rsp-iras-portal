@@ -1,5 +1,7 @@
 ﻿using System.Globalization;
 using System.Net;
+using System.Text.Json;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
@@ -21,7 +23,9 @@ public class ProjectOverviewController(
     IApplicationsService applicationService,
     IProjectModificationsService projectModificationsService,
     IRespondentService respondentService,
-    ICmsQuestionsetService cmsQuestionsetService) : Controller
+    ICmsQuestionsetService cmsQuestionsetService,
+    IValidator<ApprovalsSearchModel> validator
+    ) : Controller
 {
     private const string DocumentDetailsSection = "pdm-document-metadata";
 
@@ -93,8 +97,26 @@ public class ProjectOverviewController(
         {
             ProjectOverviewModel = okResult.Value as ProjectOverviewModel
         };
+        if (HttpContext.Request.Method == HttpMethods.Get)
+        {
+            var savedSearch = HttpContext.Session.GetString(SessionKeys.PostApprovalsSearch);
+            if (!string.IsNullOrWhiteSpace(savedSearch))
+            {
+                model.Search = JsonSerializer.Deserialize<ApprovalsSearchModel>(savedSearch);
+            }
+        }
 
-        var searchQuery = new ModificationSearchRequest();
+        var searchQuery = new ModificationSearchRequest()
+        {
+            FromDate = model.Search?.FromDate,
+            ToDate = model.Search?.ToDate,
+            ModificationType = model.Search?.ModificationType!,
+            Category = model.Search?.Category,
+            ReviewType = model.Search?.ReviewType,
+            Status = model.Search?.Status,
+            SearchQuery = model.Search?.SearchQuery,
+            //ModificationId = model.Search?.ModificationId,
+        };
 
         var modificationsResponseResult =
             await projectModificationsService.GetModificationsForProject(projectRecordId, searchQuery, pageNumber, pageSize, sortField, sortDirection);
@@ -342,6 +364,92 @@ public class ProjectOverviewController(
         var model = okResult.Value as ProjectOverviewModel;
 
         return View("/Features/ProjectOverview/Views/DeleteProject.cshtml", model);
+    }
+
+    [Route("/projectoverview/applyfilters", Name = "pov:applyfilters")]
+    [HttpPost]
+    [HttpGet]
+    public async Task<IActionResult> ApplyFilters(PostApprovalViewModel model, string backRoute)
+    {
+        SetupShortProjectTitleBackNav("pov", "app:Welcome", backRoute);
+        var validationResult = await validator.ValidateAsync(model.Search);
+        var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId);
+        if (!validationResult.IsValid)
+        {
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
+
+            return View(nameof(PostApproval), model);
+        }
+
+        HttpContext.Session.SetString(SessionKeys.PostApprovalsSearch, JsonSerializer.Serialize(model.Search));
+
+        // Call PostApproval with matching parameter set
+        return RedirectToRoute("pov:postapproval", new { projectRecordId });
+    }
+
+    [Route("/projectoverview/clearfilters", Name = "pov:clearfilters")]
+    [HttpGet]
+    public IActionResult ClearFilters([FromQuery] string? searchQuery = null)
+    {
+        var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId);
+        HttpContext.Session.Remove(SessionKeys.PostApprovalsSearch);
+        return RedirectToRoute("pov:postapproval", new { projectRecordId });
+    }
+
+    [Route("/projectoverview/removefilter", Name = "pov:removefilter")]
+    [HttpGet]
+    public async Task<IActionResult> RemoveFilter(string key)
+    {
+        var json = HttpContext.Session.GetString(SessionKeys.PostApprovalsSearch);
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        var viewModel = JsonSerializer.Deserialize<PostApprovalViewModel>(json)!;
+
+        var keyNormalized = key?.ToLowerInvariant().Replace(" ", "");
+
+        switch (keyNormalized)
+        {
+            case "modificationtypes":
+                viewModel.Search.ModificationTypes = [];
+                break;
+
+            case "reviewtype":
+                viewModel.Search.ReviewType = null;
+                break;
+
+            case "category":
+                viewModel.Search.Category = null;
+                break;
+
+            case "datesubmitted":
+                viewModel.Search.FromDay = viewModel.Search.FromMonth = viewModel.Search.FromYear = null;
+                viewModel.Search.ToDay = viewModel.Search.ToMonth = viewModel.Search.ToYear = null;
+                break;
+
+            case "datesubmitted-from":
+                viewModel.Search.FromDay = viewModel.Search.FromMonth = viewModel.Search.FromYear = null;
+                break;
+
+            case "datesubmitted-to":
+                viewModel.Search.ToDay = viewModel.Search.ToMonth = viewModel.Search.ToYear = null;
+                break;
+
+            case "status":
+                viewModel.Search.Status = null;
+                break;
+        }
+
+        HttpContext.Session.SetString(SessionKeys.PostApprovalsSearch, JsonSerializer.Serialize(viewModel));
+
+        var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId);
+
+        return RedirectToRoute("pov:postapproval", new { projectRecordId });
     }
 
     private static string? GetAnswerName(string? answerText, Dictionary<string, string> options)
