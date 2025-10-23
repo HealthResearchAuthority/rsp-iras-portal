@@ -3,6 +3,8 @@ using Rsp.IrasPortal.Application.Constants;
 
 namespace Rsp.IrasPortal.Web.Features.CookiePolicy.Components;
 
+// The cookie value is not used — only checked for existence
+// Safe: no user data is rendered or returned
 public class CookieBannerViewComponent : ViewComponent
 {
     public IViewComponentResult Invoke()
