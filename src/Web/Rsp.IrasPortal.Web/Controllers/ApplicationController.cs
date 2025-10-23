@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
@@ -21,6 +22,7 @@ public class ApplicationController
     IApplicationsService applicationsService,
     IValidator<IrasIdViewModel> irasIdValidator,
     ICmsQuestionSetServiceClient cmsSevice,
+    IProjectRecordValidationService projectRecordValidationService,
     IValidator<ApplicationSearchModel> searchValidator) : Controller
 {
     // ApplicationInfo view name
@@ -131,9 +133,21 @@ public class ApplicationController
         bool irasIdExists = applicationsResponse.Content.Any(app => app.IrasId?.ToString() == model.IrasId);
         if (irasIdExists)
         {
-            // Add a model error for duplicate IRAS ID
-            ModelState.AddModelError(nameof(model.IrasId), "A record for the project with this IRAS ID already exists");
-            return View(nameof(StartProject), model);
+            // Redirect to project already exists page
+            return RedirectToRoute("prc:projectrecordexists");
+        }
+
+        // validate against the harp database
+        var validationServiceResponse = await projectRecordValidationService.ValidateProjectRecord(int.Parse(model.IrasId!));
+
+        if (!validationServiceResponse.IsSuccessStatusCode)
+        {
+            return validationServiceResponse.StatusCode switch
+            {
+                // if we don't have a record for the iras id, redirect to not eligible page
+                HttpStatusCode.NotFound => RedirectToRoute("prc:projectnoteligible"),
+                _ => this.ServiceError(validationServiceResponse),
+            };
         }
 
         // Get the respondent information from the current context
