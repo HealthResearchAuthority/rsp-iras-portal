@@ -28,6 +28,7 @@ public class DocumentsController
     ) : Controller
 {
     private const string ContainerName = "staging";
+    private const string DownloadContainerName = "staging";
     private const string DocumentDetailsSection = "pdm-document-metadata";
     private const string PostApprovalRoute = "pov:postapproval";
 
@@ -700,6 +701,15 @@ public class DocumentsController
             // After multiple deletes go to ProjectDocument view
             return RedirectToAction(nameof(ProjectDocument));
         }
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> DownloadDocument(string path, string fileName)
+    {
+        var serviceResponse = await blobStorageService
+            .DownloadFileToHttpResponseAsync(DownloadContainerName, path, fileName);
+
+        return serviceResponse?.Content!;
     }
 
     /// <summary>

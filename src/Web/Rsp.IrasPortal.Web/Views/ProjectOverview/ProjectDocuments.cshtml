@@ -155,7 +155,9 @@
 								<tr class="govuk-table__row">
 									<td class="govuk-table__cell">@modification.DocumentType</td>
 									<td class="govuk-table__cell">
-										<a class="govuk-link" href="#">
+										<a asp-route="pmc:downloaddocument"
+										   asp-route-fileName="@modification.FileName"
+										   asp-route-path="@modification.DocumentStoragePath" class="govuk-link">
 											<strong>@modification.FileName</strong>
 										</a>
 									</td>
