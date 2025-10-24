@@ -3,7 +3,6 @@ using System.Text.Json;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
@@ -125,7 +124,8 @@ public class SponsorOrganisationsController(
 
             if (organisationName.Length < 3)
             {
-                ModelState.AddModelError("SponsorOrganisation", "Please provide 3 or more characters to search sponsor organisation.");
+                ModelState.AddModelError("SponsorOrganisation",
+                    "Please provide 3 or more characters to search sponsor organisation.");
                 return View("SetupSponsorOrganisation", model);
             }
 
@@ -247,7 +247,7 @@ public class SponsorOrganisationsController(
     [HttpGet]
     [Route("/sponsororganisations/viewusers", Name = "soc:viewsponsororganisationusers")]
     public async Task<IActionResult> ViewSponsorOrganisationUsers(string rtsId, string? searchQuery = null,
-        int pageNumber = 1, int pageSize = 20)
+        int pageNumber = 1, int pageSize = 20, string? sortField = "GivenName", string? sortDirection = "asc")
     {
         var load = await LoadSponsorOrganisationAsync(rtsId);
 
@@ -257,13 +257,16 @@ public class SponsorOrganisationsController(
         if (load.Dto.Users?.Any() == true)
         {
             var userIds = load.Dto.Users.Select(x => x.UserId.ToString());
-            var users = await userService.GetUsersByIds(userIds, searchQuery, pageNumber, pageSize);
+            var users = await userService.GetUsersByIds(userIds, searchQuery, 1, int.MaxValue);
             model.Users = users.Content?.Users.Select(u => new UserViewModel(u)) ?? [];
             totalUserCount = users.Content?.TotalCount ?? 0;
         }
 
+        model.Users = SortSponsorOrganisationUsers(model.Users, model.SponsorOrganisation.Users, sortField,
+            sortDirection, pageNumber, pageSize);
+
         model.Pagination = BuildPagination(pageNumber, pageSize, totalUserCount, "soc:viewsponsororganisationusers",
-            null, null,
+            sortField, sortDirection,
             new Dictionary<string, string> { { "rtsId", rtsId }, { "searchQuery", searchQuery ?? string.Empty } });
         model.Pagination.SearchQuery = searchQuery;
 
@@ -369,7 +372,7 @@ public class SponsorOrganisationsController(
     [Route("/sponsororganisations/confirmenableuser", Name = "soc:confirmenableuser")]
     public async Task<IActionResult> ConfirmEnableUser(string rtsId, Guid userId)
     {
-         await sponsorOrganisationService.EnableUserInSponsorOrganisation(rtsId, userId);
+        await sponsorOrganisationService.EnableUserInSponsorOrganisation(rtsId, userId);
         TempData[TempDataKeys.ShowNotificationBanner] = true;
         TempData[TempDataKeys.SponsorOrganisationUserType] = "enable";
         return RedirectToAction("ViewSponsorOrganisationUsers", new { rtsId });
@@ -467,11 +470,11 @@ public class SponsorOrganisationsController(
     // Sorting extracted and made stable/consistent4
     [NonAction]
     private static IEnumerable<SponsorOrganisationDto> SortSponsorOrganisations(
-    IEnumerable<SponsorOrganisationDto> items,
-    string? sortField,
-    string? sortDirection,
-    int pageNumber = 1,
-    int pageSize = 20)
+        IEnumerable<SponsorOrganisationDto> items,
+        string? sortField,
+        string? sortDirection,
+        int pageNumber = 1,
+        int pageSize = 20)
     {
         static string CountriesKey(SponsorOrganisationDto x)
         {
@@ -509,14 +512,100 @@ public class SponsorOrganisationsController(
 
         // Apply pagination
         if (pageNumber < 1)
+        {
             pageNumber = 1;
+        }
 
         if (pageSize < 1)
+        {
             pageSize = 20;
+        }
 
         var skip = (pageNumber - 1) * pageSize;
 
         return sorted.Skip(skip).Take(pageSize);
+    }
+
+
+    [NonAction]
+    private static IEnumerable<UserViewModel> SortSponsorOrganisationUsers(
+        IEnumerable<UserViewModel> users,
+        IEnumerable<SponsorOrganisationUserDto>? sponsorOrganisationUserDtos,
+        string? sortField,
+        string? sortDirection,
+        int pageNumber = 1,
+        int pageSize = 20)
+    {
+        var list = users as IList<UserViewModel> ?? users.ToList();
+
+        // Lookup: UserId -> IsActive (safe if null)
+        var statusByUserId = sponsorOrganisationUserDtos?
+                                 .GroupBy(x => x.UserId)
+                                 .ToDictionary(g => g.Key, g => g.Last().IsActive)
+                             ?? new Dictionary<Guid, bool>();
+
+        // Update Status on the models (optional but requested)
+        foreach (var u in list)
+        {
+            if (Guid.TryParse(u.Id?.Trim(), out var gid) && statusByUserId.TryGetValue(gid, out var active))
+            {
+                u.Status = active ? "Active" : "Disabled";
+            }
+        }
+
+        // Helpers
+        var desc = string.Equals(sortDirection, "desc", StringComparison.OrdinalIgnoreCase);
+        var field = sortField?.ToLowerInvariant() ?? string.Empty;
+
+        // Primary: status ordering
+        var ordered =
+            field == "status"
+                ? desc ? list.OrderByDescending(IsActive) : list.OrderBy(IsActive)
+                : list.OrderByDescending(IsActive); // default bubble Active first
+
+        // Secondary: selected field (text fields share the same path)
+        if (field == "currentlogin")
+        {
+            ordered = desc ? ordered.ThenByDescending(LatestLogin) : ordered.ThenBy(LatestLogin);
+        }
+        else if (field != "status")
+        {
+            Func<UserViewModel, string> key = field switch
+            {
+                "familyname" => x => x.FamilyName ?? string.Empty,
+                "email" => x => x.Email ?? string.Empty,
+                _ => x => x.GivenName ?? string.Empty // default
+            };
+
+            ordered = desc
+                ? ordered.ThenByDescending(key, StringComparer.OrdinalIgnoreCase)
+                : ordered.ThenBy(key, StringComparer.OrdinalIgnoreCase);
+        }
+
+        // Tertiary tie-break (unless already sorting by currentlogin)
+        if (field != "currentlogin")
+        {
+            ordered = ordered.ThenByDescending(LatestLogin);
+        }
+
+        // Pagination
+        pageNumber = Math.Max(1, pageNumber);
+        pageSize = Math.Max(1, pageSize);
+
+        var skip = (pageNumber - 1) * pageSize;
+        return ordered.Skip(skip).Take(pageSize);
+
+        static DateTime LatestLogin(UserViewModel x)
+        {
+            return ((x.CurrentLogin ?? DateTime.MinValue) > (x.LastLogin ?? DateTime.MinValue)
+                ? x.CurrentLogin
+                : x.LastLogin) ?? DateTime.MinValue;
+        }
+
+        bool IsActive(UserViewModel u)
+        {
+            return Guid.TryParse(u.Id?.Trim(), out var g) && statusByUserId.TryGetValue(g, out var a) && a;
+        }
     }
 
 
@@ -610,7 +699,6 @@ public class SponsorOrganisationsController(
     [NonAction]
     private async Task<SponsorOrganisationUserModel> BuildSponsorOrganisationUserModel(string rtsId, Guid userId)
     {
-
         var sponsorOrganisation = await LoadSponsorOrganisationAsync(rtsId);
         var userResponse = await userService.GetUser(userId.ToString(), null);
         var sponsorOrganisationUser = await sponsorOrganisationService.GetUserInSponsorOrganisation(rtsId, userId);

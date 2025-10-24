@@ -1,10 +1,21 @@
 ﻿@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Application.DTOs
 @using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
+@using Rsp.IrasPortal.Web.Areas.Admin.Models
 @model SponsorOrganisationListUsersModel
 
 @{
     ViewBag.Title = "View users - Manage sponsor organisations - System Administration";
 
+    var sortableHeaders = new[]
+    {
+        new { Field = nameof(UserViewModel.GivenName), Label = "Given name" },
+        new { Field = nameof(UserViewModel.FamilyName), Label = "Family name" },
+        new { Field = nameof(UserViewModel.Email), Label = "Email address" },
+        new { Field = nameof(UserViewModel.Status), Label = "Status" },
+        new { Field = nameof(UserViewModel.CurrentLogin), Label = "Last logged in" }
+    };
+    var tableId = "sponsorOrganisationTable";
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null
@@ -81,11 +92,26 @@
                 <table class="govuk-table govuk-table-users">
                     <thead>
                     <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
-                        <th class="govuk-table__header govuk-table--name">First name</th>
-                        <th class="govuk-table__header govuk-table--name">Last name</th>
-                        <th class="govuk-table__header govuk-table--email line-break-anywhere">Email address</th>
-                        <th class="govuk-table__header">Status</th>
-                        <th class="govuk-table__header">Last logged in</th>
+                        @foreach (var header in sortableHeaders)
+                        {
+                            var sortableHeaderModel = new SortableHeaderModel
+                            {
+                                FieldName = header.Field,
+                                DisplayText = header.Label,
+                                CurrentSortField = Model.Pagination?.SortField,
+                                CurrentSortDirection = Model.Pagination?.SortDirection,
+                                TableId = tableId,
+                                AdditionalParameters = new Dictionary<string, string>
+                                {
+                                    { "rtsId", Model.SponsorOrganisation.RtsId },
+												{ "searchQuery", Model.Pagination.SearchQuery }
+                                }
+                            };
+
+                            <th scope="col" class="govuk-table__header govuk-table__header-sortable">
+                                <partial name="_SortableHeaderButton" model="@sortableHeaderModel"/>
+                            </th>
+                        }
                         <th class="govuk-table__header">Action</th>
                     </tr>
                     </thead>
