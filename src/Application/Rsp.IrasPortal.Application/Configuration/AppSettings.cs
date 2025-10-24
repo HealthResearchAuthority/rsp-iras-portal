@@ -33,6 +33,16 @@ public class AppSettings
     public Uri CmsUri { get; set; } = null!;
 
     /// <summary>
+    /// Gets or sets the URI of the Project Record Validation Function Http endpoint.
+    /// </summary>
+    public Uri ProjectRecordValidationUri { get; set; } = null!;
+
+    /// <summary>
+    /// Function key to access the Project Record Validation Function
+    /// </summary>
+    public string ProjectRecordValidationFunctionKey { get; set; } = null!;
+
+    /// <summary>
     /// Authentication settings for the application
     /// </summary>
     public AuthSettings AuthSettings { get; set; } = null!;
