@@ -32,6 +32,7 @@ public class DocumentsController
     private const string PostApprovalRoute = "pov:postapproval";
 
     private const string MissingDateErrorMessage = "Enter a sponsor document date";
+    private const string QuestionsFieldName = "Questions[0].AnswerText";
 
     /// <summary>
     /// Handles GET requests for the ProjectDocument action.
@@ -547,7 +548,7 @@ public class DocumentsController
                     string.IsNullOrWhiteSpace(question.Month) &&
                     string.IsNullOrWhiteSpace(question.Year))
                 {
-                    var adjustedPropertyName = PropertyNameHelper.AdjustPropertyName("Date", question.Index);
+                    var adjustedPropertyName = PropertyNameHelper.AdjustPropertyName(QuestionsFieldName, question.Index);
                     ModelState.AddModelError(adjustedPropertyName, MissingDateErrorMessage);
                     isValid = false;
                 }

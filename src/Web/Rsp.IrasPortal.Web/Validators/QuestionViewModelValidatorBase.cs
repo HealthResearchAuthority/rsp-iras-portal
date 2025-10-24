@@ -104,16 +104,16 @@ public class QuestionViewModelValidatorBase : AbstractValidator<QuestionViewMode
                             if (string.IsNullOrWhiteSpace(question.Year))
                                 missingParts.Add("year");
 
-                            if (missingParts.Count > 0)
+                            if (missingParts.Count == 3)
+                            {
+                                continue;
+                            }
+                            else if (missingParts.Count > 0)
                             {
                                 condition.IsApplicable = true;
 
                                 switch (missingParts.Count)
                                 {
-                                    case 3:
-                                        context.AddFailure(nameof(question.AnswerText), "Enter a sponsor document date");
-                                        break;
-
                                     case 2:
                                         context.AddFailure(nameof(question.AnswerText), $"Date must include a {missingParts[0]} and {missingParts[1]}");
                                         break;
@@ -163,7 +163,7 @@ public class QuestionViewModelValidatorBase : AbstractValidator<QuestionViewMode
                             {
                                 continue;
                             }
-                            if (date.Date >= DateTime.Now.Date)
+                            if (date.Date > DateTime.Now.Date)
                             {
                                 // by setting IsApplicable property
                                 // it will display the Description of the condition
