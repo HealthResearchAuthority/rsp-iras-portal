@@ -21,7 +21,18 @@ public class QuestionViewModel
     public string DataType { get; set; } = null!;
     public bool IsMandatory { get; set; }
     public bool IsOptional { get; set; }
-    public string? AnswerText { get; set; }
+    private string? _answerText;
+
+    public string? AnswerText
+    {
+        get => _answerText;
+        set
+        {
+            _answerText = value;
+            TryPopulateDateFields();
+        }
+    }
+
     public string? SelectedOption { get; set; }
     public List<AnswerViewModel> Answers { get; set; } = [];
     public IList<RuleDto> Rules { get; set; } = [];
@@ -147,6 +158,34 @@ public class QuestionViewModel
             var month = (Month ?? "00").PadLeft(2, '0');
             var day = (Day ?? "00").PadLeft(2, '0');
             AnswerText = $"{year}-{month}-{day}";
+        }
+    }
+
+    private void TryPopulateDateFields()
+    {
+        if (DataType?.Equals("Date", StringComparison.OrdinalIgnoreCase) != true)
+            return;
+
+        if (string.IsNullOrWhiteSpace(_answerText))
+            return;
+
+        // Attempt to parse date in YYYY-MM-DD format
+        if (DateTime.TryParse(_answerText, out var parsedDate))
+        {
+            _year = parsedDate.Year.ToString();
+            _month = parsedDate.Month.ToString("00");
+            _day = parsedDate.Day.ToString("00");
+        }
+        else
+        {
+            // Fallback: simple string split
+            var parts = _answerText.Split('-', StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 3)
+            {
+                _year = parts[0];
+                _month = parts[1];
+                _day = parts[2];
+            }
         }
     }
 }
