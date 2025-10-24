@@ -18,7 +18,7 @@ public static class SessionKeys
     public const string SponsorOrganisationsSearch = "session:sponsororganisationssearch";
     public const string ModificationsTasklist = "session:modificationstasklist";
     public const string MyTasklist = "session:mytasklist";
-
     public const string BackRoute = "BackRoute";
     public const string BackRouteSection = "BackRouteSection";
+    public const string PostApprovalsSearch = "session:postapprovalssearch";
 }
