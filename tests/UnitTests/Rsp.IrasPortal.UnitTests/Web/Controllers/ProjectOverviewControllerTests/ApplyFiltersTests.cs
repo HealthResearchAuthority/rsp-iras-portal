@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
@@ -54,13 +55,12 @@ public class ApplyFiltersTests : TestServiceBase<ProjectOverviewController>
     {
         // Arrange
         SetupValidatorResult(new ValidationResult());
-
         _ = MockTempData.Setup(a => a.Peek(It.IsAny<string>())).Returns("rec-1");
         Sut.TempData = MockTempData.Object;
 
-        // Arrange
         var applicationService = Mocker.GetMock<IApplicationsService>();
         var respondentService = Mocker.GetMock<IRespondentService>();
+        var cmsQuestionsetService = Mocker.GetMock<ICmsQuestionsetService>();
         var answers = new List<RespondentAnswerDto>
             {
                 new() { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "Project X" },
@@ -74,6 +74,14 @@ public class ApplyFiltersTests : TestServiceBase<ProjectOverviewController>
         respondentService
             .Setup(s => s.GetRespondentAnswers("rec-1", It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = answers });
+
+        cmsQuestionsetService
+            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), null))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse { Id = "123", Status = "Active", }
+            });
 
         var httpContext = new DefaultHttpContext
         {

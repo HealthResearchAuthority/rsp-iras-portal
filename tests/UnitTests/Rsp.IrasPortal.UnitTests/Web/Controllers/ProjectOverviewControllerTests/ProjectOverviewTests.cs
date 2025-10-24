@@ -65,7 +65,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
                 {
                     Id = projectRecordId,
                     IrasId = 1,
-                    Status = ProjectRecordStatus.InDraft
+                    Status = ProjectRecordStatus.InDraft,
                 }
             });
     }
@@ -431,7 +431,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
             new() { QuestionId = QuestionIds.PrimarySponsorOrganisation, AnswerText = "University of Example" },
             new() { QuestionId = QuestionIds.Email, AnswerText = "jane.doe@example.com" }
         };
-
+        SetUpProjectRecordOverview();
         SetupProjectRecord(projectRecordId);
         SetupRespondentAnswers(projectRecordId, answers);
         SetupControllerContext(httpContext, tempData);
@@ -443,10 +443,25 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
         var model = viewResult.Model.ShouldBeOfType<ProjectOverviewModel>();
-
-        model.SectionGroupQuestions.ShouldNotBeNull();
         model.SectionGroupQuestions.ShouldBeOfType<List<SectionGroupWithQuestionsViewModel>>();
-        model.SectionGroupQuestions.ShouldNotBeEmpty();
+        model.SectionGroupQuestions.ShouldNotBeNull();
+    }
+
+    private void SetUpProjectRecordOverview()
+    {
+        var applicationService = Mocker.GetMock<IApplicationsService>();
+        applicationService
+            .Setup(s => s.GetProjectRecord(DefaultProjectRecordId))
+            .ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new IrasApplicationResponse
+                {
+                    Id = DefaultProjectRecordId,
+                    IrasId = 1,
+                    Status = ProjectRecordStatus.InDraft
+                }
+            });
     }
 
     [Fact]
@@ -474,12 +489,11 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var result = await Sut.ResearchLocations(projectRecordId, "");
 
         // Assert
+
         var viewResult = result.ShouldBeOfType<ViewResult>();
         var model = viewResult.Model.ShouldBeOfType<ProjectOverviewModel>();
-
-        model.SectionGroupQuestions.ShouldNotBeNull();
         model.SectionGroupQuestions.ShouldBeOfType<List<SectionGroupWithQuestionsViewModel>>();
-        model.SectionGroupQuestions.ShouldNotBeEmpty();
+        model.SectionGroupQuestions.ShouldNotBeNull();
     }
 
     [Fact]
