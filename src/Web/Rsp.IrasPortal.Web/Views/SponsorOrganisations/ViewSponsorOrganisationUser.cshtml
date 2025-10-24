@@ -5,11 +5,11 @@
 @{
     @if (ViewBag.Type == "add")
     {
-        ViewData["Title"] = "Check and add user profile - Manage sponsor organisations - System Administration";
+		ViewData["Title"] = "Search for user to add to sponsor organisations - Manage sponsor organisations - System Administration";
     }
     else if (ViewBag.Type == "edit")
     {
-        ViewData["Title"] = "View user profile - Manage sponsor organisations - System Administration";
+		ViewData["Title"] = "View and edit user profile - Manage sponsor organisations - System Administration";
     }
 
 
@@ -70,7 +70,7 @@
 
             @if (ViewBag.Type == "add")
             {
-                <partial name="_SubmitButton" model="@("soc:submitadduser", "Add user profile", new Dictionary<string, string>())"/>
+                <partial name="_SubmitButton" model="@("soc:submitadduser", "Add user", new Dictionary<string, string>())"/>
             }
             else if (ViewBag.Type == "edit")
             {

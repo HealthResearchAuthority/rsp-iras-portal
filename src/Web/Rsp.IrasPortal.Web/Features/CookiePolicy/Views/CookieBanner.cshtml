@@ -1,0 +1,38 @@
+﻿@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
+@{
+	var userHasConsent = Context.Request.Cookies.ContainsKey(CookieConsentNames.EssentialCookies);
+	var bannerContent = (RichTextProperties?)ViewData[PageContentElements.CookieBannerContent];
+}
+
+@if (!userHasConsent)
+{
+	<div class="govuk-cookie-banner" data-nosnippet role="region" aria-label="Cookies on Plan and Manage Health and Care Research">
+		<div class="govuk-cookie-banner__message govuk-width-container">
+			<div class="govuk-grid-row">
+				<div class="govuk-grid-column-two-thirds govuk-body govuk-rte">
+					@if (!string.IsNullOrEmpty(bannerContent?.Value?.Markup))
+					{
+						@Html.Raw(bannerContent.Value.Markup)
+					}
+				</div>
+			</div>
+			<div class="govuk-button-group">
+				<form class="cookie-banner-form" asp-controller="Cookies" asp-action="AcceptConsent" method="post">
+					<input hidden readonly name="additionalConsent" value="yes" />
+					<button type="submit" class="govuk-button" data-module="govuk-button">
+						Accept additional cookies
+					</button>
+				</form>
+				<form class="cookie-banner-form" asp-controller="Cookies" asp-action="AcceptConsent" method="post">
+					<input hidden readonly name="additionalConsent" value="no" />
+					<button type="submit" class="govuk-button" data-module="govuk-button">
+						Reject additional cookies
+					</button>
+				</form>
+
+				<a class="govuk-link" href="/pages/cookies">View cookies</a>
+			</div>
+		</div>
+	</div>
+}

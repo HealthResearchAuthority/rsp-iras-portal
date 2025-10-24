@@ -11,7 +11,7 @@
 @model SponsorOrganisationSetupViewModel
 
 @{
-	ViewData["Title"] = "Setup sponsor organisation - Manage sponsor organisations - System Administration";
+	ViewData["Title"] = "Set up a new sponsor organisation - Manage sponsor organisations - System Administration";
 
     // this url will be used to redirect, when search button is clicked
     var requestUrl = httpContextAccessor.HttpContext?.Request.GetEncodedUrl();
@@ -38,8 +38,8 @@
         ? pageContentData
         : new Dictionary<string, MixedContentPageItem?>();
 
-	var headline = pageContent.GetValueOrDefault("SponsorOrganisations.Setup.Headline", null);
-	var searchTitle = pageContent.GetValueOrDefault("SponsorOrganisations.Setup.SearchTitle", null);
+    var headline = pageContent.GetValueOrDefault("SponsorOrganisations.Setup.Headline", null);
+    var searchTitle = pageContent.GetValueOrDefault("SponsorOrganisations.Setup.SearchTitle", null);
     var searchHint = pageContent.GetValueOrDefault("SponsorOrganisations.Setup.SearchHint", null);
 }
 
@@ -52,146 +52,172 @@
     <div class="govuk-grid-column-three-quarters">
         <h1 class="govuk-heading-l gov-heading-nowrap">@Html.Raw(headline?.Value)</h1>
         @{
-            var errorKey = "SponsorOrganisation";
-            var hasError = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
+            var hasError = ViewData.ModelState.ValidationState == ModelValidationState.Invalid;
         }
 
         <label class="govuk-label" for="SponsorOrganisation">
-			<b>@Html.Raw(searchTitle?.Value)</b>
+            <b>@Html.Raw(searchTitle?.Value)</b>
         </label>
-		<form method="post" class="govuk-!-margin-bottom-0" id="sponsorOrganisationSearchForm">
-			<div class="govuk-form-group@(hasError ? " govuk-form-group--error" : "")">
+        <form method="post" class="govuk-!-margin-bottom-0" id="sponsorOrganisationSearchForm">
+            <div class="govuk-form-group@(hasError ? " govuk-form-group--error" : "")">
 
-            <rsp-gds-autocomplete asp-for="SponsorOrganisation"
-                                  label-html-class="govuk-hint js-hidden font-weight-none"
-                                  field-id="SponsorOrganisation_Text"
-                                  api-url="/organisation/getsponsororganisationsnames"
-                                  auto-complete-enabled-id="auto_search"
-								  label-text="@Html.Raw(searchHint?.Value)">
-            </rsp-gds-autocomplete>
+                <noscript>
+                    <style>
+        .js-enabled { display: none !important; }
+    </style>
+                </noscript>
 
-            @if (TempData[TempDataKeys.ShowNoResultsFound] is not null)
-            {
-                <div class="govuk-inset-text">
-                    No suggestions found for <strong>@Model.SponsorOrganisation</strong>
+                <div class="js-enabled">
+                    <rsp-gds-autocomplete asp-for="SponsorOrganisation"
+                                          label-html-class="govuk-hint js-hidden font-weight-none"
+                                          field-id="SponsorOrganisation_Text"
+                                          api-url="/organisation/getsponsororganisationsnames"
+                                          auto-complete-enabled-id="auto_search"
+                                          label-text="@Html.Raw(searchHint?.Value)">
+                    </rsp-gds-autocomplete>
                 </div>
-            }
-
-            <input id="SponsorOrganisation_Text" type="text"
-                   asp-for="SponsorOrganisation"
-                   error-class-for="SponsorOrganisation"
-                   class="govuk-input font-weight-none" hidden/>
 
 
-            <input id="auto_search" name="autoSearchEnabled" type="text" value="false"
-                   hidden/>
+                @if (TempData[TempDataKeys.ShowNoResultsFound] is not null)
+                {
+                    <div class="govuk-inset-text">
+                        No suggestions found for <strong>@Model.SponsorOrganisation</strong>
+                    </div>
+                }
 
-			<noscript>
-				@{
-					string? searchText;
+                <input id="auto_search" name="autoSearchEnabled" type="text" value="false"
+                       hidden/>
 
-					TempData.TryGetValue(TempDataKeys.SponsorOrgSearched, out var sponsorOrgSearched);
-					TempData.TryGetValue(TempDataKeys.OrgSearch, out OrganisationSearchViewModel? orgSearch, true);
+                <noscript>
+                    @{
+                        string? searchText;
 
-					if (sponsorOrgSearched is "searched:true")
-					{
-						searchText = string.IsNullOrWhiteSpace(orgSearch?.SearchText)
-						? string.Empty
-						: orgSearch!.SearchText;
+                        TempData.TryGetValue(TempDataKeys.SponsorOrgSearched, out var sponsorOrgSearched);
+                        TempData.TryGetValue(TempDataKeys.OrgSearch, out OrganisationSearchViewModel? orgSearch, true);
 
-						<input id="sponsor_org_search_performed" type="text" name="searchedPerformed" value="@sponsorOrgSearched" hidden />
-					}
+                        if (sponsorOrgSearched is "searched:true")
+                        {
+                            searchText = string.IsNullOrWhiteSpace(orgSearch?.SearchText)
+                                ? string.Empty
+                                : orgSearch!.SearchText;
 
-					if (!string.IsNullOrWhiteSpace(orgSearch?.SelectedOrganisation))
-					{
-						searchText = orgSearch!.SelectedOrganisation;
-					}
-					else
-					{
-                        searchText = !string.IsNullOrWhiteSpace(orgSearch?.SearchText)
-                            ? orgSearch!.SearchText
-                            : Model.SponsorOrgSearch.SearchText;
-					}
+                            <input id="sponsor_org_search_performed"
+                                   type="text"
+                                   name="searchedPerformed"
+                                   value="@sponsorOrgSearched"
+                                   hidden/>
+                        }
+                        else if (!string.IsNullOrWhiteSpace(orgSearch?.SelectedOrganisation))
+                        {
+                            searchText = orgSearch!.SelectedOrganisation;
+                        }
+                        else
+                        {
+                            searchText = !string.IsNullOrWhiteSpace(orgSearch?.SearchText)
+                                ? orgSearch!.SearchText
+                                : Model.SponsorOrgSearch.SearchText;
+                        }
 
-					if (sponsorOrgSearched is not "searched:true" && !string.IsNullOrWhiteSpace(Model.SponsorOrganisation))
-					{
-						<input type="hidden" name="SponsorOrgSearch.SelectedOrganisation" value="@Model.SponsorOrganisation" />
-					}
+                        if (sponsorOrgSearched is not "searched:true" && !string.IsNullOrWhiteSpace(Model.SponsorOrganisation))
+                        {
+                            <input type="hidden"
+                                   name="SponsorOrgSearch.SelectedOrganisation"
+                                   value="@Model.SponsorOrganisation"/>
+                        }
 
-					var errorId = "sponsor_org_search-error";
-				}
-                <div>
-					<label class="govuk-label govuk-label--s font-weight-none" for="sponsor_org_search">
-						@Html.Raw(searchHint?.Value)
-					</label>
+                        var errorId = "sponsor_org_search-error";
+                        var stateEntry = ViewData.ModelState.FirstOrDefault(s => !s.Key.StartsWith('_')).Value;
+                        var errorText = hasError ? stateEntry.Errors.FirstOrDefault()?.ErrorMessage : null;
 
-					<div class="govuk-!-display-flex govuk-!-align-items-start govuk-!-margin-top-2 govuk-!-flex-wrap">
-						<div class="govuk-!-display-flex govuk-!-align-items-start govuk-!-flex-wrap">
-							<input id="sponsor_org_search"
-								   type="text"
-								   name="SponsorOrgSearch.SearchText"
-								   class="govuk-input govuk-!-width-three-quarters"
-								   value="@searchText"
-								   form="sponsorOrganisationSearchForm"
-								   aria-describedby="@(hasError? errorId : null)" />
+                        if (hasError)
+                        {
+                            searchText = Model.SponsorOrgSearch.SelectedOrganisation;
+                        }
+                    }
+                    <div class="govuk-form-group@(hasError ? " govuk-form-group--error" : "")">
 
-							<button type="submit"
-									class="govuk-button govuk-button--secondary govuk-!-margin-left-2"
-									form="sponsorOrganisationSearchForm"
-									formaction='@Url.RouteUrl("soc:searchorganisations")'
-									formmethod="post">
-								Search
-							</button>
+                        <input id="SponsorOrganisation_Text" type="text"
+                               asp-for="SponsorOrganisation"
+                               error-class-for="SponsorOrganisation"
+                               class="govuk-input font-weight-none" hidden/>
 
-							<input type="hidden" name="pageSize" value="5" form="sponsorOrganisationSearchForm" />
-							<input type="hidden" name="pageIndex" value="1" form="sponsorOrganisationSearchForm" />
-						</div>
+                        <label class="govuk-label govuk-label--s font-weight-none" for="sponsor_org_search">
+                            @Html.Raw(searchHint?.Value)
+                        </label>
 
-				
-					</div>
+                        @if (hasError && !string.IsNullOrWhiteSpace(errorText))
+                        {
+                            <p id="@errorId" class="govuk-error-message govuk-!-margin-bottom-2">
+                                <span class="govuk-visually-hidden">Error:</span> @errorText
+                            </p>
+                        }
 
-					@if (!string.IsNullOrWhiteSpace(searchText))
-					{
-						TempData.TryGetValue<OrganisationSearchResponse>(TempDataKeys.SponsorOrganisations, out var response, true);
+                        <div class="govuk-!-display-flex govuk-!-align-items-start govuk-!-margin-top-2 govuk-!-flex-wrap">
+                            <div class="govuk-!-display-flex govuk-!-align-items-start govuk-!-flex-wrap">
+                                <input id="sponsor_org_search"
+                                       type="text"
+                                       name="SponsorOrgSearch.SearchText"
+                                       class="govuk-input govuk-!-width-three-quarters"
+                                       value="@searchText"
+                                       form="sponsorOrganisationSearchForm"
+                                       aria-describedby="@(hasError ? errorId : null)"/>
 
-						if (response?.Organisations is not null)
-						{
-							var organisations = response.Organisations;
+                                <button type="submit"
+                                        class="govuk-button govuk-button--secondary govuk-!-margin-left-2"
+                                        form="sponsorOrganisationSearchForm"
+                                        formaction='@Url.RouteUrl("soc:searchorganisations")'
+                                        formmethod="post">
+                                    Search
+                                </button>
 
-							if (!organisations.Any())
-							{
-								<div class="govuk-inset-text govuk-!-margin-top-3">
-									No suggestions found for <strong>@searchText</strong>
-								</div>
-							}
-							else
-							{
-								var escapedSearch = Regex.Escape(searchText);
+                                <input type="hidden" name="pageSize" value="5" form="sponsorOrganisationSearchForm"/>
+                                <input type="hidden" name="pageIndex" value="1" form="sponsorOrganisationSearchForm"/>
+                            </div>
+                        </div>
 
-								<rsp-gds-radio-group asp-for="SponsorOrgSearch.SelectedOrganisation"
-													 label-css-class="govuk-label govuk-label--s font-weight-none"
-													 label-text=""
-													 options="@(organisations.Select(org => new GdsOption
-					   {
-						   Value = Html.Encode(org.Name),
-						   Label = Regex.Replace(org.Name, escapedSearch, m => $"<b>{m.Value}</b>", RegexOptions.IgnoreCase)
-					   }))"
-										 div-inline-class="govuk-radios"
-										 hint-html="Results for '@searchText'">
-					</rsp-gds-radio-group>
+                        @if (!string.IsNullOrWhiteSpace(searchText))
+                        {
+                            TempData.TryGetValue<OrganisationSearchResponse>(TempDataKeys.SponsorOrganisations, out var response, true);
 
-					@if (response.TotalCount > 5)
-								{
-									<div class="govuk-inset-text govuk-!-margin-top-2">
-										@response.TotalCount sponsor organisations match your search for '@searchText'.
-										Try narrowing down your search if the organisation you are looking for is not listed.
-									</div>
-								}
-							}
-						}
-					}
-				</div>
-			</noscript>
+                            if (response?.Organisations is not null)
+                            {
+                                var organisations = response.Organisations;
+
+                                if (!organisations.Any())
+                                {
+                                    <div class="govuk-inset-text govuk-!-margin-top-3">
+                                        No suggestions found for <strong>@searchText</strong>
+                                    </div>
+                                }
+                                else
+                                {
+                                    var escapedSearch = Regex.Escape(searchText);
+
+                                    <rsp-gds-radio-group asp-for="SponsorOrgSearch.SelectedOrganisation"
+                                                         label-css-class="govuk-label govuk-label--s font-weight-none"
+                                                         label-text=""
+                                                         options="@(organisations.Select(org => new GdsOption
+                                                                  {
+                                                                      Value = Html.Encode(org.Name),
+                                                                      Label = Regex.Replace(org.Name, escapedSearch, m => $"<b>{m.Value}</b>", RegexOptions.IgnoreCase)
+                                                                  }))"
+                                                         div-inline-class="govuk-radios"
+                                                         hint-html="Results for '@searchText'">
+                                    </rsp-gds-radio-group>
+
+                                    @if (response.TotalCount > 5)
+                                    {
+                                        <div class="govuk-inset-text govuk-!-margin-top-2">
+                                            @response.TotalCount sponsor organisations match your search for '@searchText'.
+                                            Try narrowing down your search if the organisation you are looking for is not listed.
+                                        </div>
+                                    }
+                                }
+                            }
+                        }
+                    </div>
+                </noscript>
+
             </div>
 
             <partial name="_SubmitButton" model="@("soc:checksponsororganisation", "Save and continue", new Dictionary<string, string>())"/>

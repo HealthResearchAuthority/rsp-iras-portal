@@ -6,7 +6,13 @@
     ViewBag.Title = "User profile - Manage Users - System Administration";
 }
 
-<a asp-route="admin:users" class="govuk-back-link">Back</a>
+@section Breadcrumb {
+	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+	{
+		("System administration", Url.RouteUrl("systemadmin:view")),
+		("Manage users", Url.RouteUrl("admin:users"))
+	})
+}
 
 <div class="govuk-grid-row">
 	<div class="govuk-grid-column-full">

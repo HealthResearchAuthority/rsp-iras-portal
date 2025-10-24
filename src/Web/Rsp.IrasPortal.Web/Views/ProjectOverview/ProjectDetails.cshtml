@@ -3,8 +3,8 @@
 @model ProjectOverviewModel
 
 @{
-    ViewBag.Title = "Project overview";
-    ViewBag.Active = ProjectOverview.ProjectDetails;
+	ViewBag.Title = "Project overview";
+	ViewBag.Active = ProjectOverview.ProjectDetails;
 }
 
 @{
@@ -12,15 +12,19 @@
 	var routeValues = ViewData["BackRouteValues"] as Dictionary<string, string>
 					  ?? new Dictionary<string, string>();
     var modificationId = Context.Request.Query["modificationId"].ToString();
+    bool addIrasIdInFirstGroup = true;
 }
 
-@section BackNavigation {
-	<partial name="_BackNavigation" model="@((routeName, "Back", routeValues))" />
+@section Breadcrumb {
+	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+	{
+		("My research", Url.RouteUrl("app:welcome"))
+	})
 }
 
 @if (TempData[TempDataKeys.ShowNotificationBanner] is not null)
 {
-    <partial name="_NotificationBanner" model="@("Success", $"Modification {modificationId} has been successfully deleted")" />
+	<partial name="_NotificationBanner" model="@("Success", $"Modification {modificationId} has been successfully deleted")" />
 }
 
 
@@ -28,46 +32,37 @@
 
 <div class="govuk-grid-row">
     <div class="govuk-width-container govuk-!-margin-top-4">
-        <h2 class="govuk-heading-m">Project details</h2>
+        @foreach (var group in Model.SectionGroupQuestions)
+        {
+        <h2 class="govuk-heading-m">@group.SectionGroup</h2>
         <dl class="govuk-summary-list">
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key">
-                    IRAS ID
-                </dt>
-                <dd class="govuk-summary-list__value">
-                    @Model.IrasId
-                </dd>
-            </div>
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key">
-                    Short project title
-                </dt>
-                <dd class="govuk-summary-list__value">
-                    @Model.ProjectTitle
-                </dd>
-            </div>
-			@if (@Model.FullProjectTitle != null)
+
+            @if (addIrasIdInFirstGroup)
             {
                 <div class="govuk-summary-list__row">
                     <dt class="govuk-summary-list__key">
-                        Full project title
+                        IRAS ID
                     </dt>
                     <dd class="govuk-summary-list__value">
-                        @Model.FullProjectTitle
+                        @Model.IrasId
                     </dd>
                 </div>
+
+                addIrasIdInFirstGroup = false;
             }
-            @if (@Model.RecName != null)
+
+            @foreach (var question in group.Questions)
             {
+                string questionText = string.IsNullOrWhiteSpace(question.ShortQuestionText) ? question.QuestionText : question.ShortQuestionText;
+
                 <div class="govuk-summary-list__row">
-                    <dt class="govuk-summary-list__key">
-                        REC name
-                    </dt>
+                    <dt class="govuk-summary-list__key">@questionText</dt>
                     <dd class="govuk-summary-list__value">
-                        @Model.RecName
+                        @Html.Raw(question.GetDisplayText(includePrompt: false))
                     </dd>
-                </div>  
-            }
-        </dl>
+                </div>
+            }           
+        </dl>            
+        }
     </div>
 </div>

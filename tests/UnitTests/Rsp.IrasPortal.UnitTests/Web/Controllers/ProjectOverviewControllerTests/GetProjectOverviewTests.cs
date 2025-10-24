@@ -1,7 +1,9 @@
+using AutoFixture;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
@@ -106,12 +108,13 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
         redirectToRouteResult.StatusCode.ShouldBe(StatusCodes.Status404NotFound);
     }
 
-    [Fact]
-    public async Task GetProjectOverview_PopulatesTempDataAndReturnsView_WhenDataIsPresent()
+    [Theory, RecursionSafeAutoData]
+    public async Task GetProjectOverview_PopulatesTempDataAndReturnsView_WhenDataIsPresent(CmsQuestionSetResponse cmsResponse)
     {
         // Arrange
         var applicationService = Mocker.GetMock<IApplicationsService>();
         var respondentService = Mocker.GetMock<IRespondentService>();
+        var cmsService = Mocker.GetMock<ICmsQuestionsetService>();
 
         var answers = new List<RespondentAnswerDto>
             {
@@ -126,6 +129,14 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
         respondentService
             .Setup(s => s.GetRespondentAnswers("rec-1", QuestionCategories.ProjectRecrod))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = answers });
+
+        cmsService
+            .Setup(s => s.GetQuestionSet(null, null))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = cmsResponse
+            });
 
         // Initialize TempData for the controller
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
@@ -150,12 +161,14 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
         Sut.TempData[TempDataKeys.ShortProjectTitle].ShouldBe("Project X");
     }
 
-    [Fact]
-    public async Task GetProjectOverview_SetsProjectPlannedEndDateTempData_WhenEndDateIsValid()
+    [Theory, RecursionSafeAutoData]
+    public async Task GetProjectOverview_SetsProjectPlannedEndDateTempData_WhenEndDateIsValid(CmsQuestionSetResponse cmsResponse)
     {
         // Arrange
         var applicationService = Mocker.GetMock<IApplicationsService>();
         var respondentService = Mocker.GetMock<IRespondentService>();
+        var cmsService = Mocker.GetMock<ICmsQuestionsetService>();
+
         var answers = new List<RespondentAnswerDto>
             {
                 new() { QuestionId = QuestionIds.ProjectPlannedEndDate, AnswerText = "01/01/2025" }
@@ -168,6 +181,14 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
         respondentService
             .Setup(s => s.GetRespondentAnswers("rec-1", QuestionCategories.ProjectRecrod))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = answers });
+
+        cmsService
+            .Setup(s => s.GetQuestionSet(null, null))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = cmsResponse
+            });
 
         // Initialize TempData for the controller
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
@@ -182,12 +203,13 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
         Sut.TempData[TempDataKeys.PlannedProjectEndDate].ShouldBe("01 January 2025");
     }
 
-    [Fact]
-    public async Task GetProjectOverview_ReturnsFullyPopulatedModel_WhenDataIsPresent()
+    [Theory, RecursionSafeAutoData]
+    public async Task GetProjectOverview_ReturnsFullyPopulatedModel_WhenDataIsPresent(CmsQuestionSetResponse cmsResponse)
     {
         // Arrange
         var applicationService = Mocker.GetMock<IApplicationsService>();
         var respondentService = Mocker.GetMock<IRespondentService>();
+        var cmsService = Mocker.GetMock<ICmsQuestionsetService>();
 
         var answers = new List<RespondentAnswerDto>
         {
@@ -196,9 +218,9 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
             new() { QuestionId = QuestionIds.ParticipatingNations, Answers = new List<string> { QuestionAnswersOptionsIds.England, QuestionAnswersOptionsIds.Scotland } },
             new() { QuestionId = QuestionIds.NhsOrHscOrganisations, SelectedOption = QuestionAnswersOptionsIds.Yes },
             new() { QuestionId = QuestionIds.LeadNation, SelectedOption = QuestionAnswersOptionsIds.Wales },
-            new() { QuestionId = QuestionIds.ChiefInvestigator, AnswerText = "Dr. Jane Doe" },
+            new() { QuestionId = QuestionIds.FirstName, AnswerText = "Dr. Jane Doe" },
             new() { QuestionId = QuestionIds.PrimarySponsorOrganisation, AnswerText = "University of Example" },
-            new() { QuestionId = QuestionIds.SponsorContact, AnswerText = "jane.doe@example.com" }
+            new() { QuestionId = QuestionIds.Email, AnswerText = "jane.doe@example.com" }
         };
 
         applicationService
@@ -217,6 +239,14 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
                 Content = answers
             });
 
+        cmsService
+            .Setup(s => s.GetQuestionSet(null, null))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = cmsResponse
+            });
+
         // Initialize TempData for the controller
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
 
@@ -228,7 +258,6 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
 
         // Assert
         var okResult = result.ShouldBeOfType<OkObjectResult>();
-
         var model = okResult.Value.ShouldBeOfType<ProjectOverviewModel>();
 
         model.ProjectTitle.ShouldBe("Project X");
@@ -237,11 +266,28 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
         model.ProjectPlannedEndDate.ShouldBe("01 January 2025");
         model.Status.ShouldBe(ModificationStatus.InDraft);
         model.IrasId.ShouldBe(1);
-        model.ParticipatingNations.ShouldBe(new List<string> { "England", "Scotland" });
-        model.NhsOrHscOrganisations.ShouldBe("Yes");
-        model.LeadNation.ShouldBe("Wales");
-        model.ChiefInvestigator.ShouldBe("Dr. Jane Doe");
-        model.PrimarySponsorOrganisation.ShouldBe("University of Example");
-        model.SponsorContact.ShouldBe("jane.doe@example.com");
+        model.SectionGroupQuestions.ShouldNotBeNull();
+        model.SectionGroupQuestions.ShouldBeOfType<List<SectionGroupWithQuestionsViewModel>>();
+        model.SectionGroupQuestions.ShouldBeEmpty();
+    }
+
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+    public class RecursionSafeAutoDataAttribute : AutoDataAttribute
+    {
+        public RecursionSafeAutoDataAttribute()
+            : base(() =>
+            {
+                var fixture = new Fixture();
+                fixture.Behaviors
+                    .OfType<ThrowingRecursionBehavior>()
+                    .ToList()
+                    .ForEach(b => fixture.Behaviors.Remove(b));
+
+                fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+
+                return fixture;
+            })
+        {
+        }
     }
 }

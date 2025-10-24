@@ -10,6 +10,7 @@
     ViewBag.Title = $"Delete {Model.ProjectTitle}";
 
     var navModel = ("pov:index", "Back", new Dictionary<string, string> { { "projectRecordId", Model.ProjectRecordId } });
+    var projectTitleText = !string.IsNullOrWhiteSpace(Model.ProjectTitle) ? " " + Model.ProjectTitle : "";
 }
 
 <div class="govuk-width-container">
@@ -21,7 +22,7 @@
 
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
-            <h1 class="govuk-heading-l">Are you sure you want to delete project @Model.ProjectTitle?</h1>
+            <h1 class="govuk-heading-l">@($"Are you sure you want to delete project{projectTitleText}?")</h1>
 
             @* Need to use the full path here for the partial view as, ProjectOverview is not fully in Features folder yet *@
             <partial name="/Features/ProjectOverview/Views/DeleteProjectOverview.cshtml" model="@Model" />

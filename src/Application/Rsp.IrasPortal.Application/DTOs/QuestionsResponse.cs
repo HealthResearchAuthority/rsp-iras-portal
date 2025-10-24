@@ -78,6 +78,16 @@ public record QuestionsResponse
     public string ShowAnswerOn { get; set; } = string.Empty;
 
     /// <summary>
+    /// Allows grouping of questions from diffrent sections to show their answer on single page
+    /// </summary>
+    public string? SectionGroup { get; set; }
+
+    /// <summary>
+    /// The sequence number for the question in group
+    /// </summary>
+    public int SequenceInSectionGroup { get; set; }
+
+    /// <summary>
     /// Potential answers of the question for single or multiple choice type question
     /// </summary>
     public IList<AnswerDto> Answers { get; set; } = [];

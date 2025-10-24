@@ -10,48 +10,37 @@
     var routeName = (ViewData["BackRoute"] as string) ?? "app:Welcome";
     var routeValues = ViewData["BackRouteValues"] as Dictionary<string, string>
                       ?? new Dictionary<string, string>();
+	var projectTitle = !string.IsNullOrEmpty(Model.ProjectTitle) ? Model.ProjectTitle : "Project overview";
 }
 
-@section BackNavigation {
-    <partial name="_BackNavigation" model="@((routeName, "Back", routeValues))" />
+@section Breadcrumb {
+	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+	{
+		("My research",Url.RouteUrl("app:welcome")),
+		(projectTitle, Url.RouteUrl("pov:projectdetails", new Dictionary<string, string>{{"projectRecordId", Model?.ProjectRecordId!}}))
+	})
 }
 
 <partial name="_NavigationHeaderPartial" model="@Model" />
 
 <div class="govuk-grid-row">
     <div class="govuk-width-container govuk-!-margin-top-4">
-        <h2 class="govuk-heading-m">Research locations</h2>
-        <dl class="govuk-summary-list">
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key">
-                    Participating nations
-                </dt>
-                @if (Model.ParticipatingNations is { Count: > 0 })
+        @foreach (var group in Model.SectionGroupQuestions)
+        {
+            <h2 class="govuk-heading-m">@group.SectionGroup</h2>
+            <dl class="govuk-summary-list">
+                @foreach (var question in group.Questions)
                 {
-                    <dd class="govuk-summary-list__value">
-                        @foreach (var nation in Model.ParticipatingNations)
-                        {
-                            @nation<br/>
-                        }
-                    </dd>
+                    string questionText = string.IsNullOrWhiteSpace(question.ShortQuestionText) ? question.QuestionText : question.ShortQuestionText;
+
+                    <div class="govuk-summary-list__row">
+                        <dt class="govuk-summary-list__key">@questionText</dt>
+                        <dd class="govuk-summary-list__value">
+                            @Html.Raw(question.GetDisplayText(includePrompt: false))
+                        </dd>
+                    </div>
                 }
-            </div>
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key">
-                    NHS / HSC organisations
-                </dt>
-                <dd class="govuk-summary-list__value">
-                    @Model.NhsOrHscOrganisations
-                </dd>
-            </div>
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key">
-                    Lead nation
-                </dt>
-                <dd class="govuk-summary-list__value">
-                    @Model.LeadNation
-                </dd>
-            </div>
-        </dl>
+            </dl>
+        }
     </div>
 </div>

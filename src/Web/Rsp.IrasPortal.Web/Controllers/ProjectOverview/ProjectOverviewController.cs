@@ -124,10 +124,10 @@ public class ProjectOverviewController(
                 ModificationType = dto.ModificationType,
                 ReviewType = null,
                 Category = null,
-                DateSubmitted = dto.SubmittedDate,
+                SentToRegulatorDate = dto.SentToRegulatorDate,
                 Status = dto.Status,
             })
-            .OrderBy(item => Enum.TryParse<ModificationStatusOrder>(item.Status, true, out var statusEnum)
+            .OrderBy(item => Enum.TryParse<ModificationStatusOrder>(GetEnumStatus(item.Status!), true, out var statusEnum)
             ? (int)statusEnum
             : (int)ModificationStatusOrder.None)
             .ToList() ?? [];
@@ -179,7 +179,7 @@ public class ProjectOverviewController(
     /// or an error details if the project record or answers are not found or a service error occurs.
     /// </returns>
     [NonAction]
-    public async Task<IActionResult> GetProjectOverview(string projectRecordId)
+    public async Task<IActionResult> GetProjectOverview(string projectRecordId, string? specificViewName = null)
     {
         // Retrieve the project record by its ID
         var projectRecordResponse = await applicationService.GetProjectRecord(projectRecordId);
@@ -235,21 +235,34 @@ public class ProjectOverviewController(
             { QuestionAnswersOptionsIds.Wales, "Wales" }
         };
 
+        // Get questions from CMS service
+        var additionalQuestionsResponse = await cmsQuestionsetService.GetQuestionSet();
+
+        // Build the questionnaire model containing all questions for the project ovewrview.
+        var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(additionalQuestionsResponse.Content!);
+        questionnaire.UpdateWithRespondentAnswers(answers);
+
         // Extract key answers from the respondent answers
         var titleAnswer = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.ShortProjectTitle)?.AnswerText;
         var endDateAnswer = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.ProjectPlannedEndDate)?.AnswerText;
 
-        var participatingNations = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.ParticipatingNations)?
-                .Answers
-                .ConvertAll(id => answerOptions.TryGetValue(id, out var name) ? name : id)
-            ;
+        // Get list of questions for specific project overview tab.
+        var sectionGroupQuestions = new List<SectionGroupWithQuestionsViewModel>();
 
-        var nhsOrHscOrganisations = GetAnswerName(answers.FirstOrDefault(a => a.QuestionId == QuestionIds.NhsOrHscOrganisations)?.SelectedOption, answerOptions);
-        var LeadNation = GetAnswerName(answers.FirstOrDefault(a => a.QuestionId == QuestionIds.LeadNation)?.SelectedOption, answerOptions);
-
-        var chiefInvestigator = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.ChiefInvestigator)?.AnswerText;
-        var primarySponsorOrganisation = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.PrimarySponsorOrganisation)?.AnswerText;
-        var sponsorContact = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.SponsorContact)?.AnswerText;
+        if (specificViewName is not null)
+        {
+            sectionGroupQuestions = questionnaire.Questions
+                .Where(q => q.ShowAnswerOn.Contains(specificViewName, StringComparison.OrdinalIgnoreCase))
+                .GroupBy(q => q.SectionGroup)
+                .Select(g => new SectionGroupWithQuestionsViewModel
+                {
+                    SectionGroup = g.Key!,
+                    SectionSequence = g.First().SectionSequence,
+                    Questions = g.OrderBy(q => q.SequenceInSectionGroup).ToList()
+                })
+                .OrderBy(g => g.SectionSequence) // Using SectionSequence as there is no separate parameter for group order
+                .ToList();
+        }
 
         // Populate TempData with project details for actual modification journey
         TempData[TempDataKeys.IrasId] = projectRecord.IrasId;
@@ -272,12 +285,7 @@ public class ProjectOverviewController(
             ProjectPlannedEndDate = projectPlannedEndDate,
             Status = projectRecord.Status,
             IrasId = projectRecord.IrasId,
-            ParticipatingNations = participatingNations,
-            NhsOrHscOrganisations = nhsOrHscOrganisations,
-            LeadNation = LeadNation,
-            ChiefInvestigator = chiefInvestigator,
-            PrimarySponsorOrganisation = primarySponsorOrganisation,
-            SponsorContact = sponsorContact
+            SectionGroupQuestions = sectionGroupQuestions,
         };
 
         return Ok(model);
@@ -529,4 +537,16 @@ public class ProjectOverviewController(
 
         return response;
     }
+
+    private static string? GetEnumStatus(string status) => status switch
+    {
+        ModificationStatus.InDraft => nameof(ModificationStatusOrder.InDraft),
+        ModificationStatus.WithSponsor => nameof(ModificationStatusOrder.WithSponsor),
+        ModificationStatus.WithRegulator => nameof(ModificationStatusOrder.WithRegulator),
+        ModificationStatus.Approved => nameof(ModificationStatusOrder.Approved),
+        ModificationStatus.NotApproved => nameof(ModificationStatusOrder.NotApproved),
+        ModificationStatus.Authorised => nameof(ModificationStatusOrder.Authorised),
+        ModificationStatus.NotAuthorised => nameof(ModificationStatusOrder.NotAuthorised),
+        _ => ModificationStatusOrder.None.ToString()
+    };
 }

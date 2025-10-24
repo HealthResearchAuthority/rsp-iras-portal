@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
@@ -100,5 +101,54 @@ public class BlobStorageService(BlobServiceClient blobServiceClient) : IBlobStor
         await blobClient.DeleteIfExistsAsync();
 
         return new ServiceResponse { StatusCode = HttpStatusCode.OK };
+    }
+
+    public async Task<ServiceResponse<IActionResult>> DownloadFileToHttpResponseAsync
+    (
+        string containerName,
+        string blobPath,
+        string fileName
+    )
+    {
+        var response = new ServiceResponse<IActionResult>();
+
+        if (string.IsNullOrWhiteSpace(blobPath))
+        {
+            return response.WithContent(
+                new BadRequestObjectResult("Blob path cannot be null or empty."),
+                HttpStatusCode.BadRequest
+            );
+        }
+
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            return response.WithContent(
+                new BadRequestObjectResult("File name cannot be null or empty."),
+                HttpStatusCode.BadRequest
+            );
+        }
+
+        var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+        var blobClient = containerClient.GetBlobClient(blobPath);
+
+        if (!await blobClient.ExistsAsync())
+        {
+            return response.WithContent(
+                new NotFoundObjectResult($"File not found at path '{blobPath}'."),
+                HttpStatusCode.NotFound
+            );
+        }
+
+        var properties = await blobClient.GetPropertiesAsync();
+        var downloadResponse = await blobClient.DownloadStreamingAsync();
+
+        var fileResult = new FileStreamResult(
+            downloadResponse.Value.Content,
+            properties.Value.ContentType ?? "application/octet-stream")
+        {
+            FileDownloadName = fileName
+        };
+
+        return response.WithContent(fileResult, HttpStatusCode.OK);
     }
 }

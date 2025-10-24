@@ -4,13 +4,11 @@
 @model Rsp.IrasPortal.Web.Areas.Admin.Models.UserViewModel
 
 @{
-	var buttonText = ViewBag.Mode == "edit" ? "Save" : "Save and continue";	
-	var submitActionName = "profilesettings:saveprofile";
-	var backButtonRoute = ViewBag.Mode == "edit" ? "profilesettings" : "auth:signout";
+	var buttonText = ViewBag.Mode == "edit" ? "Save" : "Save and continue";
+	var submitActionName = ViewBag.Mode == "edit" ? "profilesettings:saveprofile" : "profilesettings:confirmprofiledetails";
+	var backButtonRoute = "profilesettings";
 
-	ViewBag.Active = "manageUsers";
-
-	string errorPrefix = ViewData.ModelState.IsValid ? "" : "Error - ";	
+	string errorPrefix = ViewData.ModelState.IsValid ? "" : "Error - ";
 
 	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
 	var pageContent = pageContentData != null
@@ -29,8 +27,10 @@
 	ViewBag.Title = heading;
 }
 <form method="post">
-
-	<a asp-route="@backButtonRoute" asp-all-route-data="@(new Dictionary<string, string> ())" class="govuk-back-link">Back</a>
+	@if (ViewBag.Mode == "edit")
+	{
+		<a asp-route="@backButtonRoute" asp-all-route-data="@(new Dictionary<string, string> ())" class="govuk-back-link">Back</a>
+	}
 
 	<div class="govuk-grid-row">
 		<div class="govuk-grid-column-two-thirds">

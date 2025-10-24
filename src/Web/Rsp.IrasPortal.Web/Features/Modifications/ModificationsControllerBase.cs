@@ -150,7 +150,7 @@ public abstract class ModificationsControllerBase
                     ranking?.ModificationType?.Order ?? 0
                 ),
                 Categorisation = (
-                    ranking?.Categorisation?.Category ?? "Not available",
+                    ranking?.Categorisation?.Category ?? "N/A",
                     ranking?.Categorisation?.Order ?? 0
                 ),
                 ReviewType = ranking?.ReviewType ?? "Not available",

@@ -1,20 +1,23 @@
 ﻿@using System.Security.Claims
 @using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.Configuration
+@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
 @inject AppSettings appSettings
 @inject IHttpContextAccessor httpContextAccessor
 
 @{
 	Layout = null;
 
-	var serviceName = "Health research UK";
+	var serviceName = "Plan and manage health and care research";
 
 	var pageTitle = ViewBag.Title as string;
 
 	pageTitle = string.IsNullOrWhiteSpace(pageTitle) ? serviceName : $"{pageTitle} - {serviceName}";
 
 	var clarityProjectId = appSettings.ClarityProjectId;
-	var googleTagId = appSettings.GoogleTagId;	
+	var googleTagId = appSettings.GoogleTagId;
+
+	bool allowAdditionalCookies = Context.Request.Cookies[CookieConsentNames.AdditionalCookies] == "true";	
 }
 
 <!DOCTYPE html>
@@ -37,31 +40,38 @@
 	<link rel="stylesheet" href="~/css/main.css" asp-append-version="true" />
 	<script src="~/lib/jquery/dist/jquery.js"></script>
 
-	@if (!string.IsNullOrEmpty(clarityProjectId))
+	@*Only render analytics scripts if user has cookie consent*@
+	@if (allowAdditionalCookies)
 	{
-		<script type="text/javascript">
-			(function(c,l,a,r,i,t,y){
-			c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-			t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-			y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-			})(window, document, "clarity", "script", "@clarityProjectId");
-		</script>
-	}
+		@if (!string.IsNullOrEmpty(clarityProjectId))
+		{
+			<script type="text/javascript">
+				(function(c,l,a,r,i,t,y){
+				c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+				t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+				y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+				})(window, document, "clarity", "script", "@clarityProjectId");
+			</script>
+		}
 
-	@if (!string.IsNullOrEmpty(googleTagId))
-	{
-		<script async src="https://www.googletagmanager.com/gtag/js?id=@googleTagId"></script>
-		<script>
-			window.dataLayer = window.dataLayer || [];
-			function gtag(){dataLayer.push(arguments);}
-			gtag('js', new Date());
+		@if (!string.IsNullOrEmpty(googleTagId))
+		{
+			<script async src="https://www.googletagmanager.com/gtag/js?id=@googleTagId"></script>
+			<script>
+				window.dataLayer = window.dataLayer || [];
+				function gtag(){dataLayer.push(arguments);}
+				gtag('js', new Date());
 
-			gtag('config', '@googleTagId');
-		</script>
+				gtag('config', '@googleTagId');
+			</script>
+		}
 	}
 </head>
 
 <body class="govuk-template__body govuk-template--rebranded">
+	@*Render cookie banner*@
+	<partial name="~/Features/CookiePolicy/Views/CookieBanner.cshtml" />
+
 	<script>
 		document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');
 	</script>
@@ -92,7 +102,7 @@
 	<header class="govuk-header govuk-header--full-width-border" data-module="govuk-header">
 		<div class="govuk-header__container govuk-width-container">
 			<div class="govuk-header__logo">
-				<a asp-route="app:welcome" class="govuk-header__link govuk-header__link--homepage">
+				<a href="/" class="govuk-header__link govuk-header__link--homepage">
 					<svg class="govuk-header__logotype"
 						 xmlns="http://www.w3.org/2000/svg"
 						 viewBox="0 0 148 30"
@@ -112,10 +122,14 @@
 
 	<div class="govuk-width-container">
 		<partial name="_PhaseBanner" />
+
+		@*Render optional breadcrumb partial if it exists*@
+		@await RenderSectionAsync("Breadcrumb", required: false)
+
 		<main class="govuk-main-wrapper govuk-body" id="main-content">
 
 			@*Render the optional BackNavigation section if it exists*@
-			@RenderSection("BackNavigation", required: false)
+			@await RenderSectionAsync("BackNavigation", required: false)
 
 			@*Render the session timeout warning partial view, this will work with both javaScript enbaled and disabled*@
 			<partial name="_SessionTimeoutWarning" />
