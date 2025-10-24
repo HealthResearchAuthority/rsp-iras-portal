@@ -128,6 +128,11 @@
                         var errorId = "sponsor_org_search-error";
                         var stateEntry = ViewData.ModelState.FirstOrDefault(s => !s.Key.StartsWith('_')).Value;
                         var errorText = hasError ? stateEntry.Errors.FirstOrDefault()?.ErrorMessage : null;
+
+                        if (hasError)
+                        {
+                            searchText = Model.SponsorOrgSearch.SelectedOrganisation;
+                        }
                     }
                     <div class="govuk-form-group@(hasError ? " govuk-form-group--error" : "")">
 
