@@ -17,6 +17,5 @@ public class ModificationSearchRequest
     public string? ReviewType { get; set; }
     public string? Category { get; set; }
     public string? Status { get; set; }
-    public string? SearchQuery { get; set; }
-    //public string? ModificationId { get; set; }
+    public string? ModificationId { get; set; }
 }

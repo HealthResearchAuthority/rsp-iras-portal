@@ -1,6 +1,6 @@
 ﻿namespace Rsp.IrasPortal.Application.Constants;
 
-public static class ModificationOptions
+public static class ModificationTypes
 {
     public static readonly List<string> Types = [
         "Minor modification",

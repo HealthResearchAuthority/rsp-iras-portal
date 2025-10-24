@@ -39,8 +39,7 @@ public class ApprovalsSearchModel
     public string? ReviewType { get; set; }
     public string? Category { get; set; }
     public string? Status { get; set; }
-    public string? SearchQuery { get; set; }
-    //public string? ModificationId { get; set; }
+    public string? ModificationId { get; set; }
 
     public Dictionary<string, List<string>>? Filters
     {
@@ -134,10 +133,10 @@ public class ApprovalsSearchModel
             {
                 filters.Add(ApprovalsSearch.StatusKey, [Status]);
             }
-            //if (!string.IsNullOrWhiteSpace(ModificationId))
-            //{
-            //    filters.Add(ApprovalsSearch.ModificationId, [ModificationId]);
-            //}
+            if (!string.IsNullOrWhiteSpace(ModificationId))
+            {
+                filters.Add(ApprovalsSearch.ModificationId, [ModificationId]);
+            }
             return filters;
         }
     }
