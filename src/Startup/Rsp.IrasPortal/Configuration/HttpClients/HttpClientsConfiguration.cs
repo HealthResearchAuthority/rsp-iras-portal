@@ -52,6 +52,12 @@ public static class HttpClientsConfiguration
             .AddHttpMessageHandler<AuthHeadersHandler>()
             .AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
 
+        services
+            .AddRestClient<IProjectRecordValidationClient>()
+            .ConfigureHttpClient(client => client.BaseAddress = appSettings.ProjectRecordValidationUri)
+            .AddHttpMessageHandler<FunctionKeyHeadersHandler>()
+            .AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
+
         var jsonOptions = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
