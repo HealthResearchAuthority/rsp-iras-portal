@@ -3,7 +3,7 @@
 @model SponsorOrganisationListUsersModel
 
 @{
-	ViewBag.Title = "Search for user to add to sponsor organisations - Manage sponsor organisations - System Administration";
+	ViewBag.Title = "Add a new user profile to sponsor organisation - Manage sponsor organisations - System Administration";
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null
@@ -37,7 +37,7 @@
 			<label class="govuk-label" for="SearchQuery">
                 <b>@Html.Raw(searchTitle?.Value)</b>
             </label>
-            <div class="govuk-hint">
+            <div class="govuk-label">
                 @Html.Raw(searchHint?.Value)
             </div>
             <input class="govuk-input govuk-!-width-two-thirds" id="SearchQuery" name="SearchQuery" type="text" value="@(Model.Pagination?.SearchQuery ?? string.Empty)">

@@ -3,7 +3,7 @@
 @model SponsorOrganisationModel
 
 @{
-	ViewData["Title"] = "View sponsor organisation - Manage sponsor organisations - System Administration";
+	ViewData["Title"] = "Sponsor organisation profile - Manage sponsor organisations - System Administration";
 
 	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData["PageContent"];
 	var pageContent = pageContentData != null
@@ -49,7 +49,7 @@
 			<form method="post">
 				<input name="rtsId" value="@Model.RtsId" hidden />
 				<button asp-route="soc:disablesponsororganisation" type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
-					Disable sponsor organisation
+					Disable
 				</button>
 			</form>
 		</div>
@@ -66,7 +66,7 @@ else if (!Model.IsActive)
 			<form method="post">
 				<input name="rtsId" value="@Model.RtsId" hidden />
 				<button asp-route="soc:enablesponsororganisation" type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
-					Enable sponsor organisation
+					Enable
 				</button>
 			</form>
 		</div>
