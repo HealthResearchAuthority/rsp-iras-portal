@@ -31,9 +31,14 @@ public struct QuestionIds
     public const string ParticipatingNations = "IQA0032";
 
     /// <summary>
-    /// The question ID for the chief investigator.
+    /// The question ID for the Chief Investigator First Name.
     /// </summary>
-    public const string ChiefInvestigator = "IQA0311";
+    public const string FirstName = "IQA0309";
+
+    /// <summary>
+    /// The question ID for the Chief Investigator Last Name.
+    /// </summary>
+    public const string LastName = "IQA0310";
 
     /// <summary>
     /// The question ID for the primary sponsor organisation.
@@ -41,9 +46,9 @@ public struct QuestionIds
     public const string PrimarySponsorOrganisation = "IQA0312";
 
     /// <summary>
-    /// The question ID for the sponsor contact.
+    /// The question ID for the Chief Investigator Email.
     /// </summary>
-    public const string SponsorContact = "IQA0313";
+    public const string Email = "IQA0311";
 
     /// <summary>
     /// The question ID for the selected document type.
