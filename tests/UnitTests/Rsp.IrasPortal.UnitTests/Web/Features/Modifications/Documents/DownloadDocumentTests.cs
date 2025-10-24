@@ -82,7 +82,7 @@ public class DownloadDocumentTests : TestServiceBase<DocumentsController>
         var result = await Sut.DownloadDocument("invalid/path", "missing.txt");
 
         // Assert
-        result.ShouldBeOfType<ObjectResult>();
+        result.ShouldBeNull();
     }
 
     [Fact]
@@ -100,7 +100,7 @@ public class DownloadDocumentTests : TestServiceBase<DocumentsController>
         var result = await Sut.DownloadDocument("invalid/path", "missing.txt");
 
         // Assert
-        result.ShouldBeOfType<ObjectResult>();
+        result.ShouldBeNull();
     }
 
     [Fact]
@@ -121,6 +121,6 @@ public class DownloadDocumentTests : TestServiceBase<DocumentsController>
         var result = await Sut.DownloadDocument("invalid/path", "missing.txt");
 
         // Assert
-        result.ShouldBeOfType<ObjectResult>();
+        result.ShouldBeNull();
     }
 }

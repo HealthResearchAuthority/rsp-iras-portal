@@ -128,39 +128,27 @@ public class BlobStorageService(BlobServiceClient blobServiceClient) : IBlobStor
             );
         }
 
-        try
+        var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+        var blobClient = containerClient.GetBlobClient(blobPath);
+
+        if (!await blobClient.ExistsAsync())
         {
-            var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
-            var blobClient = containerClient.GetBlobClient(blobPath);
-
-            if (!await blobClient.ExistsAsync())
-            {
-                return response.WithContent(
-                    new NotFoundObjectResult($"File not found at path '{blobPath}'."),
-                    HttpStatusCode.NotFound
-                );
-            }
-
-            var properties = await blobClient.GetPropertiesAsync();
-            var downloadResponse = await blobClient.DownloadStreamingAsync();
-
-            var fileResult = new FileStreamResult(
-                downloadResponse.Value.Content,
-                properties.Value.ContentType ?? "application/octet-stream")
-            {
-                FileDownloadName = fileName
-            };
-
-            return response.WithContent(fileResult, HttpStatusCode.OK);
+            return response.WithContent(
+                new NotFoundObjectResult($"File not found at path '{blobPath}'."),
+                HttpStatusCode.NotFound
+            );
         }
-        catch (Exception ex)
+
+        var properties = await blobClient.GetPropertiesAsync();
+        var downloadResponse = await blobClient.DownloadStreamingAsync();
+
+        var fileResult = new FileStreamResult(
+            downloadResponse.Value.Content,
+            properties.Value.ContentType ?? "application/octet-stream")
         {
-            var errorResult = new ObjectResult($"Error downloading blob: {ex.Message}")
-            {
-                StatusCode = StatusCodes.Status500InternalServerError
-            };
+            FileDownloadName = fileName
+        };
 
-            return response.WithContent(errorResult, HttpStatusCode.InternalServerError);
-        }
+        return response.WithContent(fileResult, HttpStatusCode.OK);
     }
 }

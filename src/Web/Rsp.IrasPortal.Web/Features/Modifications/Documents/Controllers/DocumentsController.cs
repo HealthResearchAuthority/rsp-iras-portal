@@ -708,17 +708,7 @@ public class DocumentsController
         var serviceResponse = await blobStorageService
             .DownloadFileToHttpResponseAsync(DownloadContainerName, path, fileName);
 
-        // If the service response has a valid content, return it directly.
-        if (serviceResponse?.Content is IActionResult actionResult)
-        {
-            return actionResult;
-        }
-
-        // Fallback: if Content is null, return a generic error response
-        return new ObjectResult("An unexpected error occurred while processing your request.")
-        {
-            StatusCode = (int)(serviceResponse?.StatusCode ?? HttpStatusCode.InternalServerError)
-        };
+        return serviceResponse?.Content!;
     }
 
     /// <summary>
