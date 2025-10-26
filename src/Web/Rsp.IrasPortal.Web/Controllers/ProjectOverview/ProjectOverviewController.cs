@@ -32,9 +32,7 @@ public class ProjectOverviewController(
     [Route("/projectoverview", Name = "pov:index")]
     public async Task<IActionResult> Index(string projectRecordId, string? backRoute, string? modificationId)
     {
-        SetupShortProjectTitleBackNav("pov", "app:Welcome", backRoute);
-
-        var result = await GetProjectOverviewResult(projectRecordId!);
+        var result = await GetProjectOverviewResult(projectRecordId!, backRoute);
 
         if (result is not OkObjectResult projectOverview)
         {
@@ -57,9 +55,8 @@ public class ProjectOverviewController(
         }
 
         UpdateModificationRelatedTempData();
-        SetupShortProjectTitleBackNav("pov", "app:Welcome", backRoute);
 
-        var result = await GetProjectOverviewResult(projectRecordId!);
+        var result = await GetProjectOverviewResult(projectRecordId!, backRoute, nameof(ProjectDetails));
 
         if (result is not OkObjectResult projectOverview)
         {
@@ -80,9 +77,8 @@ public class ProjectOverviewController(
     )
     {
         UpdateModificationRelatedTempData();
-        SetupShortProjectTitleBackNav("pov", "app:Welcome", backRoute);
 
-        var result = await GetProjectOverviewResult(projectRecordId!);
+        var result = await GetProjectOverviewResult(projectRecordId!, backRoute);
 
         if (result is not OkObjectResult projectOverview)
         {
@@ -146,8 +142,7 @@ public class ProjectOverviewController(
 
     public async Task<IActionResult> ProjectTeam(string projectRecordId, string? backRoute)
     {
-        SetupShortProjectTitleBackNav("pov", "app:Welcome", backRoute);
-        var result = await GetProjectOverviewResult(projectRecordId!);
+        var result = await GetProjectOverviewResult(projectRecordId!, backRoute, nameof(ProjectTeam));
         if (result is not OkObjectResult okResult)
         {
             return result;
@@ -158,9 +153,7 @@ public class ProjectOverviewController(
 
     public async Task<IActionResult> ResearchLocations(string projectRecordId, string? backRoute)
     {
-        SetupShortProjectTitleBackNav("pov", "app:Welcome", backRoute);
-
-        var result = await GetProjectOverviewResult(projectRecordId!);
+        var result = await GetProjectOverviewResult(projectRecordId!, backRoute, nameof(ResearchLocations));
         if (result is not OkObjectResult okResult)
         {
             return result;
@@ -302,9 +295,8 @@ public class ProjectOverviewController(
         )
     {
         UpdateModificationRelatedTempData();
-        SetupShortProjectTitleBackNav("pov", "app:Welcome", backRoute);
 
-        var result = await GetProjectOverviewResult(projectRecordId!);
+        var result = await GetProjectOverviewResult(projectRecordId!, backRoute);
 
         if (result is not OkObjectResult okResult)
         {
@@ -348,7 +340,7 @@ public class ProjectOverviewController(
     [HttpPost]
     public async Task<IActionResult> ConfirmDeleteProject(string projectRecordId)
     {
-        var result = await GetProjectOverviewResult(projectRecordId!);
+        var result = await GetProjectOverviewResult(projectRecordId!, "");
 
         if (result is not OkObjectResult okResult)
         {
@@ -366,7 +358,7 @@ public class ProjectOverviewController(
     {
         var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
 
-        var result = await GetProjectOverviewResult(projectRecordId!);
+        var result = await GetProjectOverviewResult(projectRecordId!, "");
 
         if (result is not OkObjectResult projectOverview)
         {
@@ -455,11 +447,6 @@ public class ProjectOverviewController(
         return RedirectToRoute("pov:postapproval", new { projectRecordId });
     }
 
-    private static string? GetAnswerName(string? answerText, Dictionary<string, string> options)
-    {
-        return answerText is string id && options.TryGetValue(id, out var name) ? name : null;
-    }
-
     private void UpdateModificationRelatedTempData()
     {
         // If there is a project modification change, show the notification banner
@@ -524,20 +511,6 @@ public class ProjectOverviewController(
         }
     }
 
-    private async Task<IActionResult> GetProjectOverviewResult(string projectRecordId)
-    {
-        var response = await GetProjectOverview(projectRecordId);
-
-        // if status code is not a successful status code
-        if ((response is StatusCodeResult result && result.StatusCode is < 200 or > 299) ||
-            response is not OkObjectResult)
-        {
-            return response;
-        }
-
-        return response;
-    }
-
     private static string? GetEnumStatus(string status) => status switch
     {
         ModificationStatus.InDraft => nameof(ModificationStatusOrder.InDraft),
@@ -549,4 +522,20 @@ public class ProjectOverviewController(
         ModificationStatus.NotAuthorised => nameof(ModificationStatusOrder.NotAuthorised),
         _ => ModificationStatusOrder.None.ToString()
     };
+
+    private async Task<IActionResult> GetProjectOverviewResult(string projectRecordId, string? backRoute, string? specificViewName = null)
+    {
+        SetupShortProjectTitleBackNav("pov", "app:Welcome", backRoute);
+
+        var response = await GetProjectOverview(projectRecordId, specificViewName);
+
+        // if status code is not a successful status code
+        if ((response is StatusCodeResult result && result.StatusCode is < 200 or > 299) ||
+            response is not OkObjectResult)
+        {
+            return response;
+        }
+
+        return response;
+    }
 }
