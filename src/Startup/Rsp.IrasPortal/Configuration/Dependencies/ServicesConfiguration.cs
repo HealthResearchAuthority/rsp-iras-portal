@@ -19,28 +19,27 @@ public static class ServicesConfiguration
     public static IServiceCollection AddServices(this IServiceCollection services)
     {
         // add application services
-        services.AddTransient<IApplicationsService, ApplicationsService>();
-        services.AddTransient<IUserManagementService, UserManagementService>();
-        services.AddTransient<IRespondentService, RespondentService>();
-        services.AddTransient<IClaimsTransformation, CustomClaimsTransformation>();
-        services.AddTransient<IReviewBodyService, ReviewBodyService>();
-        services.AddTransient<IRtsService, RtsService>();
-        services.AddTransient<IProjectModificationsService, ProjectModificationsService>();
+        services.AddScoped<IApplicationsService, ApplicationsService>();
+        services.AddScoped<IUserManagementService, UserManagementService>();
+        services.AddScoped<IRespondentService, RespondentService>();
+        services.AddScoped<IClaimsTransformation, CustomClaimsTransformation>();
+        services.AddScoped<IReviewBodyService, ReviewBodyService>();
+        services.AddScoped<IRtsService, RtsService>();
+        services.AddScoped<IProjectModificationsService, ProjectModificationsService>();
         services.AddScoped<IBlobStorageService, BlobStorageService>();
-        services.AddTransient<ICmsQuestionsetService, CmsQuestionsetService>();
+        services.AddScoped<ICmsQuestionsetService, CmsQuestionsetService>();
         services.AddScoped<ICmsContentService, CmsContentService>();
-        services.AddTransient<ISponsorOrganisationService, SponsorOrganisationService>();
+        services.AddScoped<ISponsorOrganisationService, SponsorOrganisationService>();
+        services.AddScoped<IProjectRecordValidationService, ProjectRecordValidationService>();
 
         // add message handlers
         services.AddTransient<AuthHeadersHandler>();
         services.AddTransient<CmsPreviewHeadersHandler>();
+        services.AddTransient<FunctionKeyHeadersHandler>();
 
         services.AddMemoryCache();
 
-        services.AddControllersWithViews(options =>
-        {
-            options.Filters.Add<SiteContentFilter>();
-        });
+        services.AddControllersWithViews(options => options.Filters.Add<SiteContentFilter>());
 
         return services;
     }

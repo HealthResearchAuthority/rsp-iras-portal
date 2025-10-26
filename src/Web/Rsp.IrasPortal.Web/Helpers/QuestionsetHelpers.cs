@@ -66,6 +66,7 @@ public static class QuestionsetHelpers
                 ShowAnswerOn = question.ShowAnswerOn,
                 SectionGroup = question.SectionGroup,
                 SequenceInSectionGroup = question.SequenceInSectionGroup,
+
                 GuidanceComponents = question.GuidanceComponents,
                 Answers = [.. question.Answers.Select(ans => new AnswerViewModel
                 {
