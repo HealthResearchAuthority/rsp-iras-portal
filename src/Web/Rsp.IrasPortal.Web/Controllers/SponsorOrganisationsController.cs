@@ -426,6 +426,37 @@ public class SponsorOrganisationsController(
         return RedirectToAction("Index");
     }
 
+    [HttpGet]
+    [Route("/sponsororganisations/audittrail", Name = "soc:audittrail")]
+    public async Task<IActionResult> AuditTrail(string rtsId, string sortField, string sortDirection, int pageNumber = 1, int pageSize = 20 )
+    {
+        var load = await LoadSponsorOrganisationAsync(rtsId);
+
+        var response = await sponsorOrganisationService.SponsorOrganisationAuditTrail(rtsId, pageNumber, pageSize, sortField, sortDirection);
+
+        var auditTrailResponse = response?.Content;
+        var items = auditTrailResponse?.Items;
+
+        var paginationModel = new PaginationViewModel(pageNumber, pageSize,
+            auditTrailResponse != null ? auditTrailResponse.TotalCount : -1)
+        {
+            RouteName = "soc:audittrail",
+            AdditionalParameters =
+            {
+                { "rtsId", rtsId }
+            }
+        };
+
+        var resultModel = new SponsorOrganisationAuditTrailViewModel()
+        {
+            SponsorOrganisation = load.Model.SponsorOrganisationName,
+            Pagination = paginationModel,
+            Items = items!
+        };
+
+        return View("AuditTrail", resultModel);
+    }
+
     // ---------------------------
     // Private helpers (de-duplication)
     // ---------------------------

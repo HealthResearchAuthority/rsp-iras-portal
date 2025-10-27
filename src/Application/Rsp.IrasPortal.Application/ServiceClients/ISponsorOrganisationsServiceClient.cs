@@ -69,4 +69,10 @@ public interface ISponsorOrganisationsServiceClient
     /// </summary>
     [Get("/sponsororganisations/{rtsId}/disable")]
     Task<IApiResponse<SponsorOrganisationDto>> DisableSponsorOrganisation(string rtsId);
+
+    /// <summary>
+    /// Gets review bodies by Id
+    /// </summary>
+    [Get("/sponsororganisations/{rtsId}/audittrail")]
+    public Task<IApiResponse<SponsorOrganisationAuditTrailResponse>> GetSponsorOrganisationAuditTrail(string rtsId, int pageNumber, int pageSize, string sortField, string sortDirection);
 }
