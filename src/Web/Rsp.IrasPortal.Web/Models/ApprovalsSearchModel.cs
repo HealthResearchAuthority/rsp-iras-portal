@@ -1,7 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Extensions;
 
 namespace Rsp.IrasPortal.Web.Models;
@@ -36,6 +34,12 @@ public class ApprovalsSearchModel
     public List<string> ParticipatingNation { get; set; } = [];
     public List<string> ModificationTypes { get; set; } = [];
     public OrganisationSearchViewModel SponsorOrgSearch { get; set; } = new();
+
+    public string? ModificationType { get; set; }
+    public string? ReviewType { get; set; }
+    public string? Category { get; set; }
+    public string? Status { get; set; }
+    public string? ModificationId { get; set; }
 
     public Dictionary<string, List<string>>? Filters
     {
@@ -113,13 +117,29 @@ public class ApprovalsSearchModel
             {
                 filters.Add(ApprovalsSearch.ModificationTypeKey, ModificationTypes);
             }
-
+            if (!string.IsNullOrWhiteSpace(ModificationType))
+            {
+                filters.Add(ApprovalsSearch.ModificationTypeKey, [ModificationType]);
+            }
+            if (!string.IsNullOrWhiteSpace(ReviewType))
+            {
+                filters.Add(ApprovalsSearch.ReviewTypeKey, [ReviewType]);
+            }
+            if (!string.IsNullOrWhiteSpace(Category))
+            {
+                filters.Add(ApprovalsSearch.CategoryKey, [Category]);
+            }
+            if (!string.IsNullOrWhiteSpace(Status))
+            {
+                filters.Add(ApprovalsSearch.StatusKey, [Status]);
+            }
+            if (!string.IsNullOrWhiteSpace(ModificationId))
+            {
+                filters.Add(ApprovalsSearch.ModificationId, [ModificationId]);
+            }
             return filters;
         }
-      
     }
 
     public bool IgnoreFilters { get; set; }
-
-
 }
