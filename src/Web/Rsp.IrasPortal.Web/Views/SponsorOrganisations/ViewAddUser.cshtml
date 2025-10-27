@@ -41,8 +41,8 @@
                 @Html.Raw(searchHint?.Value)
             </div>
             <input class="govuk-input govuk-!-width-two-thirds" id="SearchQuery" name="SearchQuery" type="text" value="@(Model.Pagination?.SearchQuery ?? string.Empty)">
-            <input hidden readonly name="RtsId" value="@Model.SponsorOrganisation.RtsId"/>
-            <input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize"/>
+			<input type="hidden" readonly name="RtsId" value="@Model.SponsorOrganisation.RtsId" />
+			<input type="hidden" readonly name="PageSize" value="@Model.Pagination?.PageSize" />
             @{
                 ViewBag.Style = "govuk-button govuk-button--secondary";
             }
