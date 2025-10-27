@@ -90,8 +90,7 @@
                 <partial name="_SubmitButton"
                          model="@("soc:applyfilters", "Search", new Dictionary<string, string>())"/>
             </div>
-            <input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize"/>
-
+            <input type="hidden" name="PageSize" value="@Model.Pagination?.PageSize" />
 
             <!-- Filter Panel -->
             <div class="search-filter-panel">
