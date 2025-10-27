@@ -47,7 +47,7 @@
 				@Html.Raw(disableSponsorOrganisationFlowBody?.Value)
 			</div>
 			<form method="post">
-				<input name="rtsId" value="@Model.RtsId" hidden />
+				<input name="rtsId" value="@Model.RtsId" type="hidden" />
 				<button asp-route="soc:disablesponsororganisation" type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
 					Disable
 				</button>
@@ -64,7 +64,7 @@ else if (!Model.IsActive)
 				@Html.Raw(enableSponsorOrganisationFlowBody?.Value)
 			</div>
 			<form method="post">
-				<input name="rtsId" value="@Model.RtsId" hidden />
+				<input name="rtsId" value="@Model.RtsId" type="hidden" />
 				<button asp-route="soc:enablesponsororganisation" type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
 					Enable
 				</button>
