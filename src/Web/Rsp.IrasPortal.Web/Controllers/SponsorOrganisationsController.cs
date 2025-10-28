@@ -664,8 +664,8 @@ public class SponsorOrganisationsController(
 
                 if (!string.IsNullOrWhiteSpace(sponsorOrganisationName) && !string.IsNullOrWhiteSpace(x.RtsId))
                 {
-                    // Replace all occurrences of RtsId in the description with the org name (ignore case)
-                    desc = Regex.Replace(desc, Regex.Escape(x.RtsId), sponsorOrganisationName!, RegexOptions.IgnoreCase);
+                    // Replace all occurrences of RtsId with sponsorOrganisationName (case-insensitive, no regex)
+                    desc = desc.Replace(x.RtsId, sponsorOrganisationName!, StringComparison.OrdinalIgnoreCase);
                 }
 
                 return new SponsorOrganisationAuditTrailDto
