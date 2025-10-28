@@ -10,7 +10,6 @@ using Rsp.IrasPortal.Domain.Enums;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
-using Rsp.IrasPortal.Web.Validators.Helpers;
 
 namespace Rsp.IrasPortal.Web.Features.Modifications.Documents.Controllers;
 
@@ -548,8 +547,7 @@ public class DocumentsController
                     string.IsNullOrWhiteSpace(question.Month) &&
                     string.IsNullOrWhiteSpace(question.Year))
                 {
-                    var adjustedPropertyName = PropertyNameHelper.AdjustPropertyName("Date", question.Index);
-                    ModelState.AddModelError(adjustedPropertyName, MissingDateErrorMessage);
+                    ModelState.AddModelError($"Questions[{question.Index}].AnswerText", MissingDateErrorMessage);
                     isValid = false;
                 }
             }
