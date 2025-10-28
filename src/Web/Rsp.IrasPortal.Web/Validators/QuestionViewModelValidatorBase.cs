@@ -93,16 +93,23 @@ public class QuestionViewModelValidatorBase : AbstractValidator<QuestionViewMode
 
                     foreach (var dateCheck in dateChecks)
                     {
+                        // TODO - Refactor conditions
                         if (dateCheck.Contains("MISSINGDATEPART"))
                         {
                             var missingParts = new List<string>();
 
                             if (string.IsNullOrWhiteSpace(question.Day))
+                            {
                                 missingParts.Add("day");
+                            }
                             if (string.IsNullOrWhiteSpace(question.Month))
+                            {
                                 missingParts.Add("month");
+                            }
                             if (string.IsNullOrWhiteSpace(question.Year))
+                            {
                                 missingParts.Add("year");
+                            }
 
                             if (missingParts.Count == 3)
                             {
