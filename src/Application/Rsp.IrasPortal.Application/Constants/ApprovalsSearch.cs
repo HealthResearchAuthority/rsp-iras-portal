@@ -13,4 +13,8 @@ public class ApprovalsSearch
     public const string ModificationTypeKey = "Modification type";
     public const string FromSubmissionKey = "Days since submission - from";
     public const string ToSubmissionKey = "Days since submission - to";
+    public const string ReviewTypeKey = "Review Type";
+    public const string CategoryKey = "Category";
+    public const string StatusKey = "Status";
+    public const string ModificationId = "ModificationId";
 }
