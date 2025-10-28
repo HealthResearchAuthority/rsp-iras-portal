@@ -154,6 +154,123 @@ public class SponsorOrganisationAuditTrailTests : TestServiceBase<SponsorOrganis
     }
 
     [Fact]
+    public void SortSponsorOrganisationAuditTrails_ShouldSort_ByUser_Asc_CaseInsensitive_WithDateTieBreaker()
+    {
+        // Arrange
+        const string rtsId = "R1";
+        const string orgName = "Org";
+        var items = new List<SponsorOrganisationAuditTrailDto>
+        {
+            // alice vs Alice should be considered equal for primary ordering; tie-breaker by DateTimeStamp desc
+            new() { Id = "1", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 1, 10, 9, 0, 0),  Description = "d1", User = "alice" },
+            new() { Id = "2", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 1, 11, 9, 0, 0), Description = "d2", User = "Alice" },
+            new() { Id = "3", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 1,  9, 9, 0, 0), Description = "d3", User = "Bob"   },
+            new() { Id = "4", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 1, 12, 9, 0, 0), Description = "d4", User = "charlie" }
+        };
+
+        // Act
+        var sorted = InvokeSorter(items, "User", "asc", orgName, 1, 50).ToList();
+
+        // Assert
+        // Expected User order asc (case-insensitive): Alice/alice (tie => Date desc => "2" then "1"), Bob, charlie
+        sorted.Select(x => x.Id).ShouldBe(new[] { "2", "1", "3", "4" });
+    }
+
+    [Fact]
+    public void SortSponsorOrganisationAuditTrails_ShouldSort_ByUser_Desc_CaseInsensitive_WithDateTieBreaker()
+    {
+        // Arrange
+        const string rtsId = "R1";
+        const string orgName = "Org";
+        var items = new List<SponsorOrganisationAuditTrailDto>
+        {
+            new() { Id = "1", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 1, 10, 9, 0, 0), Description = "d1", User = "alice" },
+            new() { Id = "2", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 1, 11, 9, 0, 0), Description = "d2", User = "Alice" },
+            new() { Id = "3", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 1,  9, 9, 0, 0), Description = "d3", User = "Bob"   },
+            new() { Id = "4", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 1, 12, 9, 0, 0), Description = "d4", User = "charlie" }
+        };
+
+        // Act
+        var sorted = InvokeSorter(items, "User", "desc", orgName, 1, 50).ToList();
+
+        // Assert
+        // Expected User order desc (case-insensitive): charlie, Bob, Alice/alice (tie => Date desc => "2" then "1")
+        sorted.Select(x => x.Id).ShouldBe(new[] { "4", "3", "2", "1" });
+    }
+
+    [Fact]
+    public void SortSponsorOrganisationAuditTrails_ShouldSort_ByDescription_Asc_CaseInsensitive_WithDateTieBreaker()
+    {
+        // Arrange
+        const string rtsId = "R2";
+        const string orgName = "OrgZ";
+        var items = new List<SponsorOrganisationAuditTrailDto>
+        {
+            // Two equal descriptions (case-insensitive) => tie broken by DateTimeStamp desc
+            new() { Id = "a1", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 2, 10), Description = "alpha change", User = "u1" },
+            new() { Id = "a2", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 2, 12), Description = "Alpha Change", User = "u2" },
+            new() { Id = "b1", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 2, 11), Description = "beta patch",   User = "u3" },
+            new() { Id = "c1", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 2,  9), Description = "charlie fix",  User = "u4" }
+        };
+
+        // Act
+        var sorted = InvokeSorter(items, "Description", "asc", orgName, 1, 50).ToList();
+
+        // Assert
+        // Alphabetical asc by description (case-insensitive): alpha..., beta..., charlie...
+        // For "alpha..." tie => Date desc => a2 (2024-02-12) before a1 (2024-02-10)
+        sorted.Select(x => x.Id).ShouldBe(new[] { "a2", "a1", "b1", "c1" });
+    }
+
+    [Fact]
+    public void SortSponsorOrganisationAuditTrails_ShouldSort_ByDescription_Desc_CaseInsensitive_WithDateTieBreaker()
+    {
+        // Arrange
+        const string rtsId = "R2";
+        const string orgName = "OrgZ";
+        var items = new List<SponsorOrganisationAuditTrailDto>
+        {
+            new() { Id = "a1", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 2, 10), Description = "alpha change", User = "u1" },
+            new() { Id = "a2", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 2, 12), Description = "Alpha Change", User = "u2" },
+            new() { Id = "b1", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 2, 11), Description = "beta patch",   User = "u3" },
+            new() { Id = "c1", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 2,  9), Description = "charlie fix",  User = "u4" }
+        };
+
+        // Act
+        var sorted = InvokeSorter(items, "Description", "desc", orgName, 1, 50).ToList();
+
+        // Assert
+        // Desc by description: charlie..., beta..., alpha...
+        // For "alpha..." tie => Date desc => a2 then a1
+        sorted.Select(x => x.Id).ShouldBe(new[] { "c1", "b1", "a2", "a1" });
+    }
+
+    [Fact]
+    public void SortSponsorOrganisationAuditTrails_ByUser_Asc_ShouldRespectPagination()
+    {
+        // Arrange
+        const string rtsId = "R3";
+        const string orgName = "OrgP";
+        var items = new List<SponsorOrganisationAuditTrailDto>
+        {
+            new() { Id = "1", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 3, 10), Description = "x", User = "adam"   },
+            new() { Id = "2", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 3, 11), Description = "x", User = "Barry"  },
+            new() { Id = "3", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 3, 12), Description = "x", User = "barry"  }, // tie with Barry -> Date desc wins
+            new() { Id = "4", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 3, 13), Description = "x", User = "charles"},
+            new() { Id = "5", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 3, 14), Description = "x", User = "dave"   }
+        };
+
+        // Asc by user => adam, Barry/barry (tie => "3" then "2"), charles, dave
+        // With pageNumber=2, pageSize=2 => expect ids ["3","2"] on first page, ["4","5"] on second
+        var page1 = InvokeSorter(items, "User", "asc", orgName, 1, 2).Select(x => x.Id).ToList();
+        var page2 = InvokeSorter(items, "User", "asc", orgName, 2, 2).Select(x => x.Id).ToList();
+
+        page1.ShouldBe(new[] { "1", "3" });          // adam, then barry(2024-03-12)
+        page2.ShouldBe(new[] { "2", "4" });          // Barry(2024-03-11), then charles
+    }
+
+
+    [Fact]
     public void SortSponsorOrganisationAuditTrails_ShouldSort_ByDescription_ThenByDate_WhenRequested()
     {
         // Arrange
