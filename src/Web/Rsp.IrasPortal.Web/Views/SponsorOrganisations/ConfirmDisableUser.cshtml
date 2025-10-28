@@ -20,8 +20,8 @@
         <h2 class="govuk-heading-l">@Html.Raw(headline?.Value) @Model.User.GivenName @Model.User.FamilyName</h2>
         <p class="govuk-body">@Html.Raw(body?.Value)</p>
         <form method="post">
-            <input hidden name="UserId" asp-for="User.Id" value="@Model.User.Id"/>
-            <input hidden name="RtsId" asp-for="SponsorOrganisationUser.RtsId" value="@Model.SponsorOrganisationUser.RtsId"/>
+			<input type="hidden" name="UserId" asp-for="User.Id" value="@Model.User.Id" />
+			<input type="hidden" name="RtsId" asp-for="SponsorOrganisationUser.RtsId" value="@Model.SponsorOrganisationUser.RtsId" />
             <button asp-route="soc:confirmdisableuser" type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button">
                 Confirm
             </button>

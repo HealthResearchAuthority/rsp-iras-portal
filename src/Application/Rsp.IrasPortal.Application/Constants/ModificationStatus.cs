@@ -11,4 +11,14 @@ public struct ModificationStatus
     public const string NotApproved = "Not approved";
     public const string Authorised = "Authorised";
     public const string NotAuthorised = "Not authorised";
+
+    public static readonly List<string> Types = [
+        InDraft,
+        WithSponsor,
+        WithRegulator,
+        Approved,
+        NotApproved,
+        Authorised,
+        NotAuthorised
+    ];
 }

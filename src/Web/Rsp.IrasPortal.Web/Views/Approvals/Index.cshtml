@@ -190,7 +190,7 @@
         <div class="govuk-form-group govuk-!-margin-bottom-2">
             <fieldset class="govuk-fieldset">
                 <rsp-gds-checkbox-group asp-for="Search.ModificationTypes"
-                                        options="ModificationOptions.Types" conditional-field="true"
+                                        options="ModificationTypes.Types" conditional-field="true"
                                         label-text="Select all that apply"
                                         legend-class="govuk-label govuk-label--s font-weight-none"
                                         hint-id="modification-hint"
@@ -447,7 +447,6 @@ else if (showNoResultsMessage)
 }
 </div>
 </div>
-</authorized>
 
 @{
     @if (showNoResultsMessage)
