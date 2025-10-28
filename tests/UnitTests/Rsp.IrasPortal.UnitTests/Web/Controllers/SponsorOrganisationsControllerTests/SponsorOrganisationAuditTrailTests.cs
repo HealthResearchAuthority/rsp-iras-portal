@@ -154,6 +154,338 @@ public class SponsorOrganisationAuditTrailTests : TestServiceBase<SponsorOrganis
     }
 
     [Fact]
+    public async Task AuditTrail_ShouldSort_ByUser_Asc_CaseInsensitive_WithDateTieBreaker()
+    {
+        // Arrange
+        const string rtsId = "R1";
+        const string orgName = "Acme Research Ltd";
+        const string country = "England";
+        const int pageNumber = 1;
+        const int pageSize = 10;
+        const string sortField = "User";
+        const string sortDirection = "asc";
+
+        var sponsorResponse = new ServiceResponse<AllSponsorOrganisationsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new AllSponsorOrganisationsResponse
+            {
+                SponsorOrganisations = new List<SponsorOrganisationDto>
+            {
+                new() { IsActive = true, CreatedDate = new DateTime(2024, 5, 1) }
+            }
+            }
+        };
+        var organisationResponse = new ServiceResponse<OrganisationDto>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new OrganisationDto { Id = rtsId, Name = orgName, CountryName = country }
+        };
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.GetSponsorOrganisationByRtsId(rtsId))
+            .ReturnsAsync(sponsorResponse);
+
+        Mocker.GetMock<IRtsService>()
+            .Setup(s => s.GetOrganisation(rtsId))
+            .ReturnsAsync(organisationResponse);
+
+        var rawItems = new List<SponsorOrganisationAuditTrailDto>
+    {
+        // alice vs Alice => case-insensitive equal; tie broken by DateTimeStamp DESC => "A2" before "A1"
+        new() { Id = "A1", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 6, 10,  9, 0, 0), Description = "d1", User = "alice" },
+        new() { Id = "A2", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 6, 11,  9, 0, 0), Description = "d2", User = "Alice" },
+        new() { Id = "B1", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 6,  9,  9, 0, 0), Description = "d3", User = "Bob"   },
+        new() { Id = "C1", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 6, 12,  9, 0, 0), Description = "d4", User = "charlie" }
+    };
+
+        var pagedResponse = new SponsorOrganisationAuditTrailResponse
+        {
+            Items = rawItems,
+            TotalCount = rawItems.Count
+        };
+
+        var serviceResponse = new ServiceResponse<SponsorOrganisationAuditTrailResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = pagedResponse
+        };
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.SponsorOrganisationAuditTrail(rtsId, pageNumber, pageSize, sortField, sortDirection))
+            .ReturnsAsync(serviceResponse);
+
+        // Act
+        var result = await Sut.AuditTrail(rtsId, pageNumber, pageSize, sortField, sortDirection);
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.ViewName.ShouldBe("AuditTrail");
+
+        var model = viewResult.Model.ShouldBeAssignableTo<SponsorOrganisationAuditTrailViewModel>();
+        model.SponsorOrganisation.ShouldBe(orgName);
+
+        // Expected order: Alice (A2), alice (A1), Bob (B1), charlie (C1)
+        model.Items.Select(i => i.Id).ShouldBe(new[] { "A2", "A1", "B1", "C1" });
+
+        model.Pagination.SortField.ShouldBe(sortField);
+        model.Pagination.SortDirection.ShouldBe(sortDirection);
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Verify(s => s.SponsorOrganisationAuditTrail(rtsId, pageNumber, pageSize, sortField, sortDirection), Times.Once);
+    }
+
+    [Fact]
+    public async Task AuditTrail_ShouldSort_ByUser_Desc_CaseInsensitive_WithDateTieBreaker()
+    {
+        // Arrange
+        const string rtsId = "R1";
+        const string orgName = "Acme Research Ltd";
+        const string country = "England";
+        const int pageNumber = 1;
+        const int pageSize = 10;
+        const string sortField = "User";
+        const string sortDirection = "desc";
+
+        var sponsorResponse = new ServiceResponse<AllSponsorOrganisationsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new AllSponsorOrganisationsResponse
+            {
+                SponsorOrganisations = new List<SponsorOrganisationDto>
+            {
+                new() { IsActive = true, CreatedDate = new DateTime(2024, 5, 1) }
+            }
+            }
+        };
+        var organisationResponse = new ServiceResponse<OrganisationDto>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new OrganisationDto { Id = rtsId, Name = orgName, CountryName = country }
+        };
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.GetSponsorOrganisationByRtsId(rtsId))
+            .ReturnsAsync(sponsorResponse);
+
+        Mocker.GetMock<IRtsService>()
+            .Setup(s => s.GetOrganisation(rtsId))
+            .ReturnsAsync(organisationResponse);
+
+        var rawItems = new List<SponsorOrganisationAuditTrailDto>
+    {
+        new() { Id = "A1", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 6, 10,  9, 0, 0), Description = "d1", User = "alice" },
+        new() { Id = "A2", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 6, 11,  9, 0, 0), Description = "d2", User = "Alice" },
+        new() { Id = "B1", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 6,  9,  9, 0, 0), Description = "d3", User = "Bob"   },
+        new() { Id = "C1", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 6, 12,  9, 0, 0), Description = "d4", User = "charlie" }
+    };
+
+        var pagedResponse = new SponsorOrganisationAuditTrailResponse
+        {
+            Items = rawItems,
+            TotalCount = rawItems.Count
+        };
+
+        var serviceResponse = new ServiceResponse<SponsorOrganisationAuditTrailResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = pagedResponse
+        };
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.SponsorOrganisationAuditTrail(rtsId, pageNumber, pageSize, sortField, sortDirection))
+            .ReturnsAsync(serviceResponse);
+
+        // Act
+        var result = await Sut.AuditTrail(rtsId, pageNumber, pageSize, sortField, sortDirection);
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.ViewName.ShouldBe("AuditTrail");
+
+        var model = viewResult.Model.ShouldBeAssignableTo<SponsorOrganisationAuditTrailViewModel>();
+        model.SponsorOrganisation.ShouldBe(orgName);
+
+        // Expected desc: charlie (C1), Bob (B1), Alice/alice => A2 then A1 by DateTimeStamp desc
+        model.Items.Select(i => i.Id).ShouldBe(new[] { "C1", "B1", "A2", "A1" });
+
+        model.Pagination.SortField.ShouldBe(sortField);
+        model.Pagination.SortDirection.ShouldBe(sortDirection);
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Verify(s => s.SponsorOrganisationAuditTrail(rtsId, pageNumber, pageSize, sortField, sortDirection), Times.Once);
+    }
+
+    [Fact]
+    public async Task AuditTrail_ShouldSort_ByDescription_Asc_CaseInsensitive_WithDateTieBreaker_AndReplaceRtsId()
+    {
+        // Arrange
+        const string rtsId = "R2";
+        const string orgName = "Zeta Org";
+        const string country = "England";
+        const int pageNumber = 1;
+        const int pageSize = 10;
+        const string sortField = "Description";
+        const string sortDirection = "asc";
+
+        var sponsorResponse = new ServiceResponse<AllSponsorOrganisationsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new AllSponsorOrganisationsResponse
+            {
+                SponsorOrganisations = new List<SponsorOrganisationDto>
+            {
+                new() { IsActive = true, CreatedDate = new DateTime(2024, 5, 1) }
+            }
+            }
+        };
+        var organisationResponse = new ServiceResponse<OrganisationDto>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new OrganisationDto { Id = rtsId, Name = orgName, CountryName = country }
+        };
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.GetSponsorOrganisationByRtsId(rtsId))
+            .ReturnsAsync(sponsorResponse);
+
+        Mocker.GetMock<IRtsService>()
+            .Setup(s => s.GetOrganisation(rtsId))
+            .ReturnsAsync(organisationResponse);
+
+        var rawItems = new List<SponsorOrganisationAuditTrailDto>
+    {
+        // Two equal descriptions ignoring case => tie broken by DateTimeStamp DESC => D2 before D1
+        new() { Id = "D1", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 2, 10), Description = "alpha change",               User = "u1" },
+        new() { Id = "D2", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 2, 12), Description = "Alpha Change",               User = "u2" },
+        new() { Id = "E1", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 2, 11), Description = $"beta patch for {rtsId}",    User = "u3" },
+        new() { Id = "F1", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 2,  9), Description = "charlie fix",                User = "u4" }
+    };
+
+        var pagedResponse = new SponsorOrganisationAuditTrailResponse
+        {
+            Items = rawItems,
+            TotalCount = rawItems.Count
+        };
+
+        var serviceResponse = new ServiceResponse<SponsorOrganisationAuditTrailResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = pagedResponse
+        };
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.SponsorOrganisationAuditTrail(rtsId, pageNumber, pageSize, sortField, sortDirection))
+            .ReturnsAsync(serviceResponse);
+
+        // Act
+        var result = await Sut.AuditTrail(rtsId, pageNumber, pageSize, sortField, sortDirection);
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.ViewName.ShouldBe("AuditTrail");
+
+        var model = viewResult.Model.ShouldBeAssignableTo<SponsorOrganisationAuditTrailViewModel>();
+        model.SponsorOrganisation.ShouldBe(orgName);
+
+        // Expected asc by description: alpha..., beta..., charlie...
+        model.Items.Select(i => i.Id).ShouldBe(new[] { "D2", "D1", "E1", "F1" });
+
+        // Replacement check on the "beta..." item
+        var replaced = model.Items.Single(i => i.Id == "E1").Description;
+        replaced.ShouldContain(orgName);
+        replaced.ShouldNotContain(rtsId);
+
+        model.Pagination.SortField.ShouldBe(sortField);
+        model.Pagination.SortDirection.ShouldBe(sortDirection);
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Verify(s => s.SponsorOrganisationAuditTrail(rtsId, pageNumber, pageSize, sortField, sortDirection), Times.Once);
+    }
+
+    [Fact]
+    public async Task AuditTrail_ShouldSort_ByDescription_Desc_CaseInsensitive_WithDateTieBreaker()
+    {
+        // Arrange
+        const string rtsId = "R2";
+        const string orgName = "Zeta Org";
+        const string country = "England";
+        const int pageNumber = 1;
+        const int pageSize = 10;
+        const string sortField = "Description";
+        const string sortDirection = "desc";
+
+        var sponsorResponse = new ServiceResponse<AllSponsorOrganisationsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new AllSponsorOrganisationsResponse
+            {
+                SponsorOrganisations = new List<SponsorOrganisationDto>
+            {
+                new() { IsActive = true, CreatedDate = new DateTime(2024, 5, 1) }
+            }
+            }
+        };
+        var organisationResponse = new ServiceResponse<OrganisationDto>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new OrganisationDto { Id = rtsId, Name = orgName, CountryName = country }
+        };
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.GetSponsorOrganisationByRtsId(rtsId))
+            .ReturnsAsync(sponsorResponse);
+
+        Mocker.GetMock<IRtsService>()
+            .Setup(s => s.GetOrganisation(rtsId))
+            .ReturnsAsync(organisationResponse);
+
+        var rawItems = new List<SponsorOrganisationAuditTrailDto>
+    {
+        new() { Id = "D1", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 2, 10), Description = "alpha change", User = "u1" },
+        new() { Id = "D2", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 2, 12), Description = "Alpha Change", User = "u2" },
+        new() { Id = "E1", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 2, 11), Description = "beta patch",   User = "u3" },
+        new() { Id = "F1", RtsId = rtsId, DateTimeStamp = new DateTime(2024, 2,  9), Description = "charlie fix",  User = "u4" }
+    };
+
+        var pagedResponse = new SponsorOrganisationAuditTrailResponse
+        {
+            Items = rawItems,
+            TotalCount = rawItems.Count
+        };
+
+        var serviceResponse = new ServiceResponse<SponsorOrganisationAuditTrailResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = pagedResponse
+        };
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.SponsorOrganisationAuditTrail(rtsId, pageNumber, pageSize, sortField, sortDirection))
+            .ReturnsAsync(serviceResponse);
+
+        // Act
+        var result = await Sut.AuditTrail(rtsId, pageNumber, pageSize, sortField, sortDirection);
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.ViewName.ShouldBe("AuditTrail");
+
+        var model = viewResult.Model.ShouldBeAssignableTo<SponsorOrganisationAuditTrailViewModel>();
+        model.SponsorOrganisation.ShouldBe(orgName);
+
+        // Expected desc by description: charlie..., beta..., alpha... (alpha tie => D2 then D1 by Date desc)
+        model.Items.Select(i => i.Id).ShouldBe(new[] { "F1", "E1", "D2", "D1" });
+
+        model.Pagination.SortField.ShouldBe(sortField);
+        model.Pagination.SortDirection.ShouldBe(sortDirection);
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Verify(s => s.SponsorOrganisationAuditTrail(rtsId, pageNumber, pageSize, sortField, sortDirection), Times.Once);
+    }
+
+
+    [Fact]
     public void SortSponsorOrganisationAuditTrails_ShouldSort_ByUser_Asc_CaseInsensitive_WithDateTieBreaker()
     {
         // Arrange
