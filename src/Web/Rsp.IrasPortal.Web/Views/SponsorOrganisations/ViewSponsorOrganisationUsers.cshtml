@@ -32,8 +32,13 @@
     and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
     the named section *@
 
-@section BackNavigation {
-    <partial name="_BackNavigation" model="@("soc:viewsponsororganisation", "Back to sponsor organisation profile", new Dictionary<string, string> { { "RtsId", Model.SponsorOrganisation.RtsId } })"/>
+@section Breadcrumb {
+@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+{
+    ("System administration", Url.RouteUrl("systemadmin:view")),
+    ("Manage sponsor organisations", Url.RouteUrl("soc:viewsponsororganisations")),
+    ("Sponsor organisation profile", Url.RouteUrl("soc:viewsponsororganisation", new { rtsId = Model.SponsorOrganisation.RtsId }))
+})
 }
 
 @if (TempData[TempDataKeys.ShowNotificationBanner] is not null)

@@ -1,12 +1,27 @@
-﻿@model SponsorOrganisationAuditTrailViewModel
+﻿@using Rsp.IrasPortal.Application.DTOs.Responses
+@using Rsp.IrasPortal.Web.Areas.Admin.Models
+@model SponsorOrganisationAuditTrailViewModel
 
 @{
     ViewBag.Active = "rbc";
 	ViewBag.Title = "Audit history - Manage sponsor organisations - System Administration";
-}
 
-@section BackNavigation {
-	<partial name="_BackNavigation" model="@("soc:viewsponsororganisation", "Back to sponsor organisation profile", new Dictionary<string, string> { { "RtsId", Model.RtsId } })" />
+
+var sortableHeaders = new[]
+{
+new { Field = nameof(SponsorOrganisationAuditTrailDto.DateTimeStamp), Label = "Date" },
+new { Field = nameof(SponsorOrganisationAuditTrailDto.Description), Label = "Event description" },
+new { Field = nameof(SponsorOrganisationAuditTrailDto.User), Label = "System administrator" }
+};
+var tableId = "sponsorOrganisationAuditTable";}
+
+@section Breadcrumb {
+    @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+    {
+        ("System administration", Url.RouteUrl("systemadmin:view")),
+        ("Manage sponsor organisations", Url.RouteUrl("soc:viewsponsororganisations")),
+        ("Sponsor organisation profile", Url.RouteUrl("soc:viewsponsororganisation", new { rtsId = Model.RtsId }))
+    })
 }
 
 <div class="govuk-grid-row">
@@ -21,10 +36,26 @@
         <div class="govuk-table-wrapper">
             <table class="govuk-table govuk-table-users">
                 <thead>
-                <tr>
-                    <th class="govuk-table__header govuk-table__header-sortable govuk-table--name">Date</th>
-                    <th class="govuk-table__header govuk-table__header-sortable govuk-table--name">Event description</th>
-                    <th class="govuk-table__header govuk-table__header-sortable govuk-table--email line-break-anywhere">System administrator</th>
+                <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+                    @foreach (var header in sortableHeaders)
+                    {
+                        var sortableHeaderModel = new SortableHeaderModel
+                        {
+                            FieldName = header.Field,
+                            DisplayText = header.Label,
+                            CurrentSortField = Model.Pagination?.SortField,
+                            CurrentSortDirection = Model.Pagination?.SortDirection,
+                            TableId = tableId,
+                            AdditionalParameters = new Dictionary<string, string>
+                            {
+                                { "rtsId", Model.RtsId },
+                            }
+                        };
+
+                        <th scope="col" class="govuk-table__header govuk-table__header-sortable">
+                            <partial name="_SortableHeaderButton" model="@sortableHeaderModel"/>
+                        </th>
+                    }
                 </tr>
                 </thead>
                 <tbody>
