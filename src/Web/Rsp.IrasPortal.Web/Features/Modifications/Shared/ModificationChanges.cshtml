@@ -67,7 +67,7 @@
                 {
                     <div class="govuk-summary-list__row">
                         <dt class="govuk-summary-list__key">
-                            @(string.IsNullOrWhiteSpace(question.ShortQuestionText) ? question.ShortQuestionText : question.QuestionText)
+                            @(string.IsNullOrWhiteSpace(question.ShortQuestionText) ? question.QuestionText : question.ShortQuestionText)
                         </dt>
                         <dd class="govuk-summary-list__value">
 							@Html.Raw(question.GetDisplayText(false))

@@ -75,9 +75,9 @@ public class RankingOfChangeTests
         // Assert
         var view = result.ShouldBeOfType<ViewViewComponentResult>();
         var model = view.ViewData.Model.ShouldBeOfType<RankingOfChangeViewModel>();
-        model.ModificationType.ShouldBe("Not available");
-        model.Category.ShouldBe("N/A");
-        model.ReviewType.ShouldBe("Not available");
+        model.ModificationType.ShouldBe(Ranking.NotAvailable);
+        model.Category.ShouldBe(Ranking.NotAvailable);
+        model.ReviewType.ShouldBe(Ranking.NotAvailable);
     }
 
     [Fact]
