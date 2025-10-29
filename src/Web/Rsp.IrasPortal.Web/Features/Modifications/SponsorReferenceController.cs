@@ -142,6 +142,9 @@ public class SponsorReferenceController
         // if save for later, redirect to postapprovals
         if (saveForLater)
         {
+            TempData[ShowNotificationBanner] = true;
+            TempData[ProjectModification.ProjectModificationChangeMarker] = Guid.NewGuid();
+
             return RedirectToRoute(PostApprovalRoute, new { projectRecordId });
         }
 

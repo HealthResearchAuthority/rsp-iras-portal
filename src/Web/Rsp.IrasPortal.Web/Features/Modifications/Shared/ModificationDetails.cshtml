@@ -3,6 +3,7 @@
 @using Microsoft.AspNetCore.Mvc.ModelBinding
 @using Microsoft.FeatureManagement
 @using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
 @using Rsp.IrasPortal.Web.Features.Modifications.Models
 @model ModificationDetailsViewModel
 
@@ -42,6 +43,13 @@
     {
         <partial name="_NotificationBanner" model="@("Success", $"{changeName} has been successfully removed")" />
     }
+
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData != null ?
+        pageContentData :
+        new Dictionary<string, MixedContentPageItem?>();
+
+    var maxChangesWarning = pageContent.GetValueOrDefault("ModificationDetails.MaxChangesWarning", null);
 }
 
 <div class="govuk-grid-row">
@@ -93,7 +101,7 @@
                 <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                 <strong class="govuk-warning-text__text">
                     <span class="govuk-visually-hidden">Warning</span>
-                    You have reached the maximum number of changes allowed in a single modification. To make further changes, either remove a change or create a new modification.
+                    @Html.Raw(maxChangesWarning?.Value)
                 </strong>
             </div>
         }
