@@ -396,51 +396,57 @@ public class ProjectOverviewController(
 
     [Route("/projectoverview/removefilter", Name = "pov:removefilter")]
     [HttpGet]
-    public IActionResult RemoveFilter(string key)
+    public IActionResult RemoveFilter(string key, [FromQuery] string? model = null)
     {
-        var json = HttpContext.Session.GetString(SessionKeys.PostApprovalsSearch);
-        if (string.IsNullOrWhiteSpace(json))
+        var viewModel = new PostApprovalViewModel();
+
+        if (!string.IsNullOrWhiteSpace(model))
         {
-            return RedirectToAction(nameof(Index));
+            viewModel.Search = JsonSerializer.Deserialize<ApprovalsSearchModel>(model);
         }
-
-        var viewModel = JsonSerializer.Deserialize<PostApprovalViewModel>(json)!;
-
+        else
+        {
+            viewModel.Search = new ApprovalsSearchModel();
+        }
         var keyNormalized = key?.ToLowerInvariant().Replace(" ", "");
 
         switch (keyNormalized)
         {
             case "modificationtype":
-                viewModel.Search.ModificationType = null;
+                viewModel.Search!.ModificationType = null;
                 break;
 
             case "reviewtype":
-                viewModel.Search.ReviewType = null;
+                viewModel.Search!.ReviewType = null;
                 break;
 
             case "category":
-                viewModel.Search.Category = null;
+                viewModel.Search!.Category = null;
                 break;
 
             case "datesubmitted":
-                viewModel.Search.FromDay = viewModel.Search.FromMonth = viewModel.Search.FromYear = null;
+                viewModel.Search!.FromDay = viewModel.Search.FromMonth = viewModel.Search.FromYear = null;
                 viewModel.Search.ToDay = viewModel.Search.ToMonth = viewModel.Search.ToYear = null;
                 break;
 
             case "datesubmitted-from":
-                viewModel.Search.FromDay = viewModel.Search.FromMonth = viewModel.Search.FromYear = null;
+                viewModel.Search!.FromDay = viewModel.Search.FromMonth = viewModel.Search.FromYear = null;
                 break;
 
             case "datesubmitted-to":
-                viewModel.Search.ToDay = viewModel.Search.ToMonth = viewModel.Search.ToYear = null;
+                viewModel.Search!.ToDay = viewModel.Search.ToMonth = viewModel.Search.ToYear = null;
                 break;
 
             case "status":
-                viewModel.Search.Status = null;
+                viewModel.Search!.Status = null;
+                break;
+
+            case "modificationid":
+                viewModel.Search!.ModificationId = null;
                 break;
         }
 
-        HttpContext.Session.SetString(SessionKeys.PostApprovalsSearch, JsonSerializer.Serialize(viewModel));
+        HttpContext.Session.SetString(SessionKeys.PostApprovalsSearch, JsonSerializer.Serialize(viewModel.Search));
 
         var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId);
 
