@@ -44,7 +44,8 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
     [Theory, AutoData]
     public async Task SubmitToRegulator_Should_Redirect_When_Success(
         string projectRecordId,
-        Guid projectModificationId)
+        Guid projectModificationId,
+        string overallReviewType)
     {
         // Arrange
         var http = new DefaultHttpContext();
@@ -61,7 +62,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
             .ReturnsAsync(response);
 
         // Act
-        var result = await Sut.SubmitToRegulator(projectRecordId, projectModificationId);
+        var result = await Sut.SubmitToRegulator(projectRecordId, projectModificationId, "no review required");
 
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToRouteResult>();
@@ -103,7 +104,8 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
     [Theory, AutoData]
     public async Task SubmitToRegulator_Should_Return_StatusCode_When_Failure(
         string projectRecordId,
-        Guid projectModificationId)
+        Guid projectModificationId,
+        string overallReviewType)
     {
         // Arrange
         var http = new DefaultHttpContext();
@@ -120,7 +122,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
             .ReturnsAsync(response);
 
         // Act
-        var result = await Sut.SubmitToRegulator(projectRecordId, projectModificationId);
+        var result = await Sut.SubmitToRegulator(projectRecordId, projectModificationId, "no review required");
 
         // Assert
         var status = result.ShouldBeOfType<StatusCodeResult>();

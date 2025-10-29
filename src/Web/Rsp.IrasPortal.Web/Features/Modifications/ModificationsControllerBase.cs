@@ -255,4 +255,29 @@ public abstract class ModificationsControllerBase
 
         return ranking.Content!;
     }
+
+    protected async Task<(IActionResult? Result, ModificationDetailsViewModel? Model)> PrepareModificationAsync(
+    Guid projectModificationId,
+    string irasId,
+    string shortTitle,
+    string projectRecordId)
+    {
+        var (modificationResult, model) = await GetModificationDetails(projectModificationId, irasId, shortTitle, projectRecordId);
+        if (modificationResult is not null)
+            return (modificationResult, null);
+
+        var modification = model!;
+        TempData[TempDataKeys.ProjectModification.ProjectModificationIdentifier] = modification.ModificationIdentifier;
+        TempData[TempDataKeys.ProjectModification.ProjectModificationId] = modification.ModificationId;
+
+        var (changesResult, initialQuestions, modificationChanges) = await GetModificationChanges(modification);
+        if (changesResult is not null)
+            return (changesResult, null);
+
+        await UpdateModificationWithChanges(initialQuestions!, modification, modificationChanges!);
+        modification.UpdateOverAllRanking();
+        TempData[TempDataKeys.ProjectModification.OverallReviewType] = modification.ReviewType;
+
+        return (null, modification);
+    }
 }

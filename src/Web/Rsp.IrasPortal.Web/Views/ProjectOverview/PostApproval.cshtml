@@ -308,7 +308,7 @@
 
                                 var modificationReviewRoute = "pmc:modificationdetails";
 
-                                if (modification.Status is ModificationStatus.Approved or ModificationStatus.WithSponsor)
+                                if (modification.Status is ModificationStatus.Approved or ModificationStatus.WithSponsor or ModificationStatus.WithRegulator)
                                 {
                                     modificationReviewRoute = "pmc:reviewallchanges";
                                 }
