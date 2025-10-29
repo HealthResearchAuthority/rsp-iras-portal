@@ -21,35 +21,11 @@ public class ReviewAllChangesController
     public async Task<IActionResult> ReviewAllChanges(string projectRecordId, string irasId, string shortTitle, Guid projectModificationId)
     {
         // Fetch the modification by its identifier
-        var (modificationResult, model) = await GetModificationDetails(projectModificationId, irasId, shortTitle, projectRecordId);
-
-        // Short-circuit with a service error if the call failed
-        if (modificationResult is not null)
+        var (result, modification) = await PrepareModificationAsync(projectModificationId, irasId, shortTitle, projectRecordId);
+        if (result is not null)
         {
-            return modificationResult;
+            return result;
         }
-
-        var modification = model!;
-
-        // Persist the modification identifier in TempData for subsequent requests/pages
-        TempData[TempDataKeys.ProjectModification.ProjectModificationIdentifier] = modification.ModificationIdentifier;
-        TempData[TempDataKeys.ProjectModification.ProjectModificationId] = modification.ModificationId;
-
-        var (changesResult, initialQuestions, modificationChanges) = await GetModificationChanges(modification);
-
-        if (changesResult is not null)
-        {
-            return changesResult;
-        }
-
-        // populate all the answers for the changes questions,
-        // calculates the ranking for each change and adds the change
-        // to the modification model.
-        await UpdateModificationWithChanges(initialQuestions!, modification, modificationChanges!);
-
-        // overall modification ranking
-        modification.UpdateOverAllRanking();
-        TempData[TempDataKeys.ProjectModification.OverallReviewType] = modification.ReviewType;
 
         var sponsorDetailsQuestionsResponse = await cmsQuestionsetService.GetModificationQuestionSet(SponsorDetailsSectionId);
 
