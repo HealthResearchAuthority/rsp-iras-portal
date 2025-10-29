@@ -49,6 +49,7 @@ public class ReviewAllChangesController
 
         // overall modification ranking
         modification.UpdateOverAllRanking();
+        TempData[TempDataKeys.ProjectModification.OverallReviewType] = modification.ReviewType;
 
         var sponsorDetailsQuestionsResponse = await cmsQuestionsetService.GetModificationQuestionSet(SponsorDetailsSectionId);
 
@@ -81,12 +82,31 @@ public class ReviewAllChangesController
     }
 
     [HttpPost]
-    public Task<IActionResult> SubmitToRegulator(string projectRecordId, Guid projectModificationId)
+    public Task<IActionResult> SubmitToRegulator(string projectRecordId, Guid projectModificationId, string overallReviewType)
     {
+        // Default to WithRegulator if not set or review required
+        var statusToSet = ModificationStatus.WithRegulator;
+
+        // Evaluate the review type (case-insensitive, null-safe)
+        if (!string.IsNullOrWhiteSpace(overallReviewType))
+        {
+            switch (overallReviewType.Trim().ToLowerInvariant())
+            {
+                case "no review required":
+                    statusToSet = ModificationStatus.Approved;
+                    break;
+
+                default:
+                    statusToSet = ModificationStatus.WithRegulator;
+                    break;
+            }
+        }
+
+        // Call your existing handler with the determined status
         return HandleModificationStatusUpdate(
             projectRecordId,
             projectModificationId,
-            ModificationStatus.Approved,
+            statusToSet,
             onSuccess: () => RedirectToRoute("pov:projectdetails", new { projectRecordId })
         );
     }

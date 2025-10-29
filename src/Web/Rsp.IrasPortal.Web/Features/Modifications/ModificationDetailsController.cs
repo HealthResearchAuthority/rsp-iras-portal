@@ -75,6 +75,7 @@ public class ModificationDetailsController
 
         // overall modification ranking
         modification.UpdateOverAllRanking();
+        TempData[TempDataKeys.ProjectModification.OverallReviewType] = modification.ReviewType;
 
         // validate and update the status and answers for the change
         modification.ModificationChanges = await UpdateModificationChanges(projectRecordId, modification.ModificationChanges);
