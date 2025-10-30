@@ -64,15 +64,6 @@
 						</li>
 					}
 
-					@if (!string.IsNullOrEmpty(userName))
-					{
-						<authorized auth-params="@new()">
-							<li class="govuk-service-navigation__item">
-								<strong>@userName</strong>
-							</li>
-						</authorized>
-					}
-
 					<authorized auth-params="@new()">
 						<li class="govuk-service-navigation__item">
 							<a class="govuk-service-navigation__link" asp-route="auth:signout">Logout</a>
