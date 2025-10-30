@@ -495,9 +495,11 @@ public class DocumentsController
 
         // Replace the original question list with updated answers from the user
         viewModel.Questions = questionnaire.Questions;
+
+        // Find the "Document Name" question for later duplicate name validation
         var documentNameQuestion = questionnaire.Questions
-        .Select((q, index) => new { Question = q, Index = index })
-        .FirstOrDefault(x => x.Question.QuestionId.Equals(QuestionIds.DocumentName, StringComparison.OrdinalIgnoreCase));
+            .Select((q, index) => new { Question = q, Index = index })
+            .FirstOrDefault(x => x.Question.QuestionId.Equals(QuestionIds.DocumentName, StringComparison.OrdinalIgnoreCase));
 
         // Find the "Document Name" question for later duplicate name validation
         var documentNameQuestion = questionnaire.Questions
@@ -540,42 +542,11 @@ public class DocumentsController
             }
         }
 
-        // Construct the request object containing identifiers needed by the service call.
-        var documentChangeRequest = BuildDocumentRequest();
+        // 📄 Step 4: Validate that document name doesn’t already exist
+        var duplicateValidationPassed = await ValidateDuplicateDocumentNames(viewModel, documentNameQuestion);
+        isValid = isValid && duplicateValidationPassed;
 
-        // Call the respondent service to retrieve the list of uploaded documents.
-        var documentsResponse = await respondentService.GetModificationChangesDocuments(
-            documentChangeRequest.ProjectModificationChangeId,
-            documentChangeRequest.ProjectRecordId,
-            documentChangeRequest.ProjectPersonnelId);
-
-        if (documentsResponse?.StatusCode == HttpStatusCode.OK && documentsResponse.Content != null)
-        {
-            // For each uploaded document, fetch its associated answers and determine
-            // whether document name has already been entered.
-            foreach (var doc in documentsResponse!.Content.OrderBy(d => d.FileName, StringComparer.OrdinalIgnoreCase))
-            {
-                // Fetch existing answers for this document
-                if (doc.Id == viewModel.DocumentId)
-                {
-                    // Skip the current document being edited
-                    continue;
-                }
-
-                var answersResponse = await respondentService.GetModificationDocumentAnswers(doc.Id);
-                var answers = answersResponse?.StatusCode == HttpStatusCode.OK
-                    ? answersResponse.Content ?? []
-                    : [];
-
-                var documentName = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.DocumentName)?.AnswerText?.Trim();
-                if (!string.IsNullOrWhiteSpace(documentName) && string.Equals(documentNameQuestion?.Question?.AnswerText?.Trim(), documentName, StringComparison.OrdinalIgnoreCase))
-                {
-                    ModelState.AddModelError($"Questions[{documentNameQuestion?.Index}].AnswerText", DuplicateDocumentNameErrorMessage);
-                    isValid = false;
-                }
-            }
-        }
-
+        // Pass validation result to the view so that GOV.UK error summaries can display correctly
         ViewData[ViewDataKeys.IsQuestionnaireValid] = isValid;
 
         // Step 5: If validation fails, redisplay form with errors
