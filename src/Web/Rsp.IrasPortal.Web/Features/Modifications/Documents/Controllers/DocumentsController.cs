@@ -32,6 +32,7 @@ public class DocumentsController
     private const string PostApprovalRoute = "pov:postapproval";
 
     private const string MissingDateErrorMessage = "Enter a sponsor document date";
+    private const string DuplicateDocumentNameErrorMessage = "Document name already exists. Enter a unique document name";
 
     /// <summary>
     /// Handles GET requests for the ProjectDocument action.
@@ -444,7 +445,7 @@ public class DocumentsController
                 FileName = uploadedBlob.FileName,
                 DocumentStoragePath = uploadedBlob.BlobUri,
                 FileSize = uploadedBlob.FileSize,
-                Status = DocumentStatus.UploadedPendingMalwareScan
+                Status = DocumentStatus.Uploaded
             }).ToList();
 
             // Save the uploaded document metadata to the backend
@@ -518,6 +519,9 @@ public class DocumentsController
 
         // Replace the original questions with the updated ones
         viewModel.Questions = questionnaire.Questions;
+        var documentNameQuestion = questionnaire.Questions
+        .Select((q, index) => new { Question = q, Index = index })
+        .FirstOrDefault(x => x.Question.QuestionId.Equals(QuestionIds.DocumentName, StringComparison.OrdinalIgnoreCase));
 
         // Validate the questionnaire and store the result in ViewData for UI messages
         var isValid = await this.ValidateQuestionnaire(validator, viewModel);
@@ -548,6 +552,47 @@ public class DocumentsController
                     string.IsNullOrWhiteSpace(question.Year))
                 {
                     ModelState.AddModelError($"Questions[{question.Index}].AnswerText", MissingDateErrorMessage);
+                    isValid = false;
+                }
+            }
+        }
+
+        // Construct the request object containing identifiers required for fetching documents.
+        var documentChangeRequest = new ProjectModificationDocumentRequest
+        {
+            ProjectModificationChangeId = (Guid)TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationChangeId)!,
+            ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty,
+            ProjectPersonnelId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!,
+        };
+
+        // Call the respondent service to retrieve the list of uploaded documents.
+        var documentsResponse = await respondentService.GetModificationChangesDocuments(
+            documentChangeRequest.ProjectModificationChangeId,
+            documentChangeRequest.ProjectRecordId,
+            documentChangeRequest.ProjectPersonnelId);
+
+        if (documentsResponse?.StatusCode == HttpStatusCode.OK && documentsResponse.Content != null)
+        {
+            // For each uploaded document, fetch its associated answers and determine
+            // whether document name has already been entered.
+            foreach (var doc in documentsResponse!.Content.OrderBy(d => d.FileName, StringComparer.OrdinalIgnoreCase))
+            {
+                // Fetch existing answers for this document
+                if (doc.Id == viewModel.DocumentId)
+                {
+                    // Skip the current document being edited
+                    continue;
+                }
+
+                var answersResponse = await respondentService.GetModificationDocumentAnswers(doc.Id);
+                var answers = answersResponse?.StatusCode == HttpStatusCode.OK
+                    ? answersResponse.Content ?? []
+                    : [];
+
+                var documentName = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.DocumentName)?.AnswerText?.Trim();
+                if (!string.IsNullOrWhiteSpace(documentName) && string.Equals(documentNameQuestion?.Question?.AnswerText?.Trim(), documentName, StringComparison.OrdinalIgnoreCase))
+                {
+                    ModelState.AddModelError($"Questions[{documentNameQuestion?.Index}].AnswerText", DuplicateDocumentNameErrorMessage);
                     isValid = false;
                 }
             }
