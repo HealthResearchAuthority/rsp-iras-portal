@@ -557,13 +557,8 @@ public class DocumentsController
             }
         }
 
-        // Construct the request object containing identifiers required for fetching documents.
-        var documentChangeRequest = new ProjectModificationDocumentRequest
-        {
-            ProjectModificationChangeId = (Guid)TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationChangeId)!,
-            ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty,
-            ProjectPersonnelId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!,
-        };
+        // Construct the request object containing identifiers needed by the service call.
+        var documentChangeRequest = BuildDocumentRequest();
 
         // Call the respondent service to retrieve the list of uploaded documents.
         var documentsResponse = await respondentService.GetModificationChangesDocuments(

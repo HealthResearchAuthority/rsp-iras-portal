@@ -1,6 +1,8 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
@@ -43,6 +45,15 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
                 new ValidationFailure("Questions[0].AnswerText", "Answer is required")
             }));
 
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectRecordId] = "record-123",
+            [TempDataKeys.IrasId] = 999
+        };
+        Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
+
         // Act
         var result = await Sut.SaveDocumentDetails(viewModel);
 
@@ -61,44 +72,31 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
         var viewModel = new ModificationAddDocumentDetailsViewModel
         {
             DocumentId = Guid.NewGuid(),
-            Questions =
-        [
-            new QuestionViewModel
-            {
-                Index = 0,
-                QuestionId = "Q1",
-                AnswerText = "Applicant Answer",
-                SelectedOption = "OptionA",
-                Answers = new List<AnswerViewModel> { new AnswerViewModel { IsSelected = true } },
-                Day = "01",
-                Month = "09",
-                Year = "2025"
-            }
-        ]
+
+            Questions = new List<QuestionViewModel>
+                {
+                    new QuestionViewModel { Index = 0, QuestionId = "Q1" }
+                }
         };
 
         // CMS question set will return a "blank" questionnaire question with the same Index
+
         Mocker.GetMock<ICmsQuestionsetService>()
             .Setup(s => s.GetModificationQuestionSet("pdm-document-metadata", It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new CmsQuestionSetResponse
-                {
-                    Sections =
-                    [
-                        new SectionModel { Id = "Q1", SectionId = "Text",
-                        Questions =
-                        [
-                            new QuestionModel
-                            {
-                                QuestionId = "Q1",
-                                Answers = new List<AnswerModel> { new AnswerModel { Id = "1", OptionName = "OptionName" } },
-                            }
-                        ]}
-                    ]
-                }
+                Content = new CmsQuestionSetResponse { }
             });
+
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectRecordId] = "record-123",
+            [TempDataKeys.IrasId] = 999
+        };
+        Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
 
         // Validator fails so we stay on the same view
         Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
@@ -136,6 +134,15 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
                 Content = new CmsQuestionSetResponse { }
             });
 
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectRecordId] = "record-123",
+            [TempDataKeys.IrasId] = 999
+        };
+        Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
+
         // Act
         var result = await Sut.SaveDocumentDetails(viewModel);
 
@@ -166,6 +173,15 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
                 Content = new CmsQuestionSetResponse { }
             });
 
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectRecordId] = "record-123",
+            [TempDataKeys.IrasId] = 999
+        };
+        Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
+
         // Act
         var result = await Sut.SaveDocumentDetails(viewModel);
 
@@ -192,6 +208,15 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
                 }
             ]
         };
+
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectRecordId] = "record-123",
+            [TempDataKeys.IrasId] = 999
+        };
+        Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
 
         // Mock CMS question set response
         Mocker.GetMock<ICmsQuestionsetService>()
@@ -304,6 +329,15 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
                 StatusCode = HttpStatusCode.OK,
                 Content = new CmsQuestionSetResponse { }
             });
+
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectRecordId] = "record-123",
+            [TempDataKeys.IrasId] = 999
+        };
+        Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
 
         // Act
         var result = await Sut.SaveDocumentDetails(viewModel);
