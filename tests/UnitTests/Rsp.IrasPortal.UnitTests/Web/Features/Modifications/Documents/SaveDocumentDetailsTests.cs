@@ -188,6 +188,11 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
                 Content = new CmsQuestionSetResponse { }
             });
 
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
+            { StatusCode = HttpStatusCode.OK, Content = existingDocs });
+
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
             [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
