@@ -140,7 +140,7 @@ public class CheckSponsorOrganisationTests : TestServiceBase<SponsorOrganisation
     }
 
     [Fact]
-    public async Task CheckSponsorOrganisation_ShouldReturnSetupView_WithEmptyModel_RtsSuccessResults()
+    public async Task CheckSponsorOrganisation_ShouldReturnSetupView_WithModel_RtsSuccessResults()
     {
         // Arrange
         var model = new SponsorOrganisationSetupViewModel
@@ -199,6 +199,63 @@ public class CheckSponsorOrganisationTests : TestServiceBase<SponsorOrganisation
 
         var returnedModel = viewResult.Model.ShouldBeAssignableTo<SponsorOrganisationSetupViewModel>();
         returnedModel.ShouldBe(model);
+    }
+
+    [Fact]
+    public async Task CheckSponsorOrganisation_ShouldReturnConfirmView_WithEmptyModel_RtsSuccessResults()
+    {
+        // Arrange
+        var model = new SponsorOrganisationSetupViewModel
+        {
+            SponsorOrganisation = "test"
+        };
+
+        // Set an initial TempData value (simulates what controller clears)
+        Sut.TempData[TempDataKeys.ShowNoResultsFound] = true;
+
+
+        Mocker.GetMock<IRtsService>()
+            .Setup(s => s.GetOrganisationsByName(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(),
+                It.IsAny<int>(), It.IsAny<List<string>>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<OrganisationSearchResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new OrganisationSearchResponse
+                {
+                    Organisations = new List<OrganisationDto>
+                    {
+                        new()
+                        {
+                            Id = "123",
+                            Name = "test",
+                        }
+                    }
+                }
+            });
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.GetSponsorOrganisationByRtsId(It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<AllSponsorOrganisationsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new AllSponsorOrganisationsResponse
+                {
+                    SponsorOrganisations = new List<SponsorOrganisationDto>
+                    {
+                        new()
+                  
+                    },
+                    TotalCount = 0
+                }
+            });
+
+        // Act
+        var result = await Sut.CheckSponsorOrganisation(model);
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<RedirectToActionResult>();
+
+ 
     }
 
     [Fact]
