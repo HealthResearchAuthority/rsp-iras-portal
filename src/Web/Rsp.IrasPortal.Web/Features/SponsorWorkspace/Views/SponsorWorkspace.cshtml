@@ -11,9 +11,9 @@
         ? pageContentData
         : new Dictionary<string, MixedContentPageItem?>();
 
-    var headline = pageContent.GetValueOrDefault("SponsorWorkspace.SponsorWorkspaceMenu.Headline", null);
-    var authorisationsTitle = pageContent.GetValueOrDefault("SponsorWorkspace.SponsorWorkspaceMenu.AuthorisationsTitle", null);
-    var authorisationsDescription = pageContent.GetValueOrDefault("SponsorWorkspace.SponsorWorkspaceMenu.AuthorisationsDescription", null);
+    var headline = pageContent.GetValueOrDefault("SponsorWorkspace.Headline", null);
+    var authorisationsTitle = pageContent.GetValueOrDefault("SponsorWorkspace.AuthorisationsTitle", null);
+    var authorisationsDescription = pageContent.GetValueOrDefault("SponsorWorkspace.AuthorisationsDescription", null);
 
     var sponsorOrganisationName = ViewBag.SponsorOrganisationName as string;
     var filledAuthorisationsDescription = authorisationsDescription?.Value?.Replace("{sponsor organisation name}", sponsorOrganisationName);
