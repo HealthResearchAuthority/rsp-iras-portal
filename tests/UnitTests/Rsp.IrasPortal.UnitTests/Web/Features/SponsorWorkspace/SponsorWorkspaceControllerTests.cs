@@ -9,11 +9,11 @@ using Rsp.IrasPortal.Web.Features.SponsorWorkspace;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Features.SponsorWorkspace;
 
-public class SponsorWorkspaceMenuControllerTests : TestServiceBase<SponsorWorkspaceMenuController>
+public class SponsorWorkspaceControllerTests : TestServiceBase<SponsorWorkspaceController>
 {
     private readonly DefaultHttpContext _http;
 
-    public SponsorWorkspaceMenuControllerTests()
+    public SponsorWorkspaceControllerTests()
     {
         _http = new DefaultHttpContext { Session = new InMemorySession() };
         Sut.ControllerContext = new ControllerContext { HttpContext = _http };
@@ -34,7 +34,7 @@ public class SponsorWorkspaceMenuControllerTests : TestServiceBase<SponsorWorksp
         _http.User = user;
 
         // Act
-        var result = await Sut.SponsorWorkspaceMenu();
+        var result = await Sut.SponsorWorkspace();
 
         // Assert
         var viewResult = result.ShouldBeOfType<StatusCodeResult>();
@@ -68,7 +68,7 @@ public class SponsorWorkspaceMenuControllerTests : TestServiceBase<SponsorWorksp
         _http.User = userClaims;
 
         // Act
-        var result = await Sut.SponsorWorkspaceMenu();
+        var result = await Sut.SponsorWorkspace();
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -100,7 +100,11 @@ public class SponsorWorkspaceMenuControllerTests : TestServiceBase<SponsorWorksp
 
         _http.User = userClaims;
 
-        // Act & Assert
-        await Should.ThrowAsync<InvalidOperationException>(() => Sut.SponsorWorkspaceMenu());
+        // Act
+        var result = await Sut.SponsorWorkspace();
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<StatusCodeResult>();
+        viewResult.StatusCode.ShouldBe(400);
     }
 }
