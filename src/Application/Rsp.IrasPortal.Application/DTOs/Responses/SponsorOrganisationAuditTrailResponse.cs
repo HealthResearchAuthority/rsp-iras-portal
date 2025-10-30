@@ -2,6 +2,6 @@
 
 public class SponsorOrganisationAuditTrailResponse
 {
-    public IEnumerable<ReviewBodyAuditTrailDto> Items { get; set; } = Enumerable.Empty<ReviewBodyAuditTrailDto>();
+    public IEnumerable<SponsorOrganisationAuditTrailDto> Items { get; set; } = Enumerable.Empty<SponsorOrganisationAuditTrailDto>();
     public int TotalCount { get; set; }
 }
