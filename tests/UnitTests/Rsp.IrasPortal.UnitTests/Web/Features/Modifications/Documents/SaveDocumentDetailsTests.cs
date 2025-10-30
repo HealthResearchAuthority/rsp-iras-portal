@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
+using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Features.Modifications.Documents.Controllers;
@@ -161,6 +162,11 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
             Questions = []
         };
 
+        var existingDocs = new List<ProjectModificationDocumentRequest>
+        {
+            new() { FileName = "duplicate.pdf" }
+        };
+
         Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
             .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), default))
             .ReturnsAsync(new ValidationResult());
@@ -172,6 +178,11 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
                 StatusCode = HttpStatusCode.OK,
                 Content = new CmsQuestionSetResponse { }
             });
+
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
+            { StatusCode = HttpStatusCode.OK, Content = existingDocs });
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
