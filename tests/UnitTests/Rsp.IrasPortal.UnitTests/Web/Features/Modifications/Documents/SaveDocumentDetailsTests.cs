@@ -99,6 +99,15 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
         Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
 
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectRecordId] = "record-123",
+            [TempDataKeys.IrasId] = 999
+        };
+        Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
+
         // Validator fails so we stay on the same view
         Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
             .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), default))
@@ -179,11 +188,6 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
                 Content = new CmsQuestionSetResponse { }
             });
 
-        Mocker.GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
-            { StatusCode = HttpStatusCode.OK, Content = existingDocs });
-
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
             [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
@@ -219,6 +223,15 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
                 }
             ]
         };
+
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectRecordId] = "record-123",
+            [TempDataKeys.IrasId] = 999
+        };
+        Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
