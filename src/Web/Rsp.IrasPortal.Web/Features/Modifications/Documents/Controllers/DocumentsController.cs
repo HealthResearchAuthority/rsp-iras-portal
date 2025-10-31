@@ -501,11 +501,6 @@ public class DocumentsController
             .Select((q, index) => new { Question = q, Index = index })
             .FirstOrDefault(x => x.Question.QuestionId.Equals(QuestionIds.DocumentName, StringComparison.OrdinalIgnoreCase));
 
-        // Find the "Document Name" question for later duplicate name validation
-        var documentNameQuestion = questionnaire.Questions
-            .Select((q, index) => new { Question = q, Index = index })
-            .FirstOrDefault(x => x.Question.QuestionId.Equals(QuestionIds.DocumentName, StringComparison.OrdinalIgnoreCase));
-
         // Step 2: Validate all basic questionnaire rules (e.g., required fields)
         var isValid = await this.ValidateQuestionnaire(validator, viewModel);
 
@@ -517,32 +512,6 @@ public class DocumentsController
         }
 
         // Step 4: Validate that document name doesn’t already exist
-        var duplicateValidationPassed = await ValidateDuplicateDocumentNames(viewModel, documentNameQuestion);
-        isValid = isValid && duplicateValidationPassed;
-
-            foreach (var question in dateQuestions)
-            {
-                // Validate if date should be entered for selected document type
-                var optionsWithDate = question.Rules?
-                    .FirstOrDefault()?
-                    .Conditions?
-                    .FirstOrDefault(c => c.Operator == "IN")?
-                    .ParentOptions;
-
-                if (selectedDocumentTypeOption is not null &&
-                    optionsWithDate is not null &&
-                    optionsWithDate.Contains(selectedDocumentTypeOption) &&
-                    string.IsNullOrWhiteSpace(question.Day) &&
-                    string.IsNullOrWhiteSpace(question.Month) &&
-                    string.IsNullOrWhiteSpace(question.Year))
-                {
-                    ModelState.AddModelError($"Questions[{question.Index}].AnswerText", MissingDateErrorMessage);
-                    isValid = false;
-                }
-            }
-        }
-
-        // 📄 Step 4: Validate that document name doesn’t already exist
         var duplicateValidationPassed = await ValidateDuplicateDocumentNames(viewModel, documentNameQuestion);
         isValid = isValid && duplicateValidationPassed;
 
@@ -951,8 +920,8 @@ public class DocumentsController
     /// Adds ModelState error if a duplicate is found.
     /// </summary>
     private async Task<bool> ValidateDuplicateDocumentNames(
-        ModificationAddDocumentDetailsViewModel viewModel,
-        dynamic? documentNameQuestion)
+            ModificationAddDocumentDetailsViewModel viewModel,
+            dynamic? documentNameQuestion)
     {
         var request = BuildDocumentRequest();
 
