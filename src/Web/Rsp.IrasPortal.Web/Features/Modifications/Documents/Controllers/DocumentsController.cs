@@ -937,24 +937,37 @@ public class DocumentsController
 
         var isValid = true;
 
-        // Iterate through all uploaded documents, ordered alphabetically
-        foreach (var doc in documentsResponse.Content.OrderBy(d => d.FileName, StringComparer.OrdinalIgnoreCase))
+        // Extract all document IDs except the current one, ordered alphabetically by FileName
+        var documentIds = documentsResponse.Content
+            .Where(d => d.Id != viewModel.DocumentId)
+            .OrderBy(d => d.FileName, StringComparer.OrdinalIgnoreCase)
+            .Select(d => d.Id);
+
+        foreach (var documentId in documentIds)
         {
-            // Skip validation for the current document being edited
-            if (doc.Id == viewModel.DocumentId)
-                continue;
+            // Fetch answers for each document
+            var answersResponse = await respondentService.GetModificationDocumentAnswers(documentId);
+            var answers = answersResponse?.StatusCode == HttpStatusCode.OK
+                ? answersResponse.Content ?? []
+                : [];
 
-            // Fetch answers for each document to compare names
-            var answersResponse = await respondentService.GetModificationDocumentAnswers(doc.Id);
-            var answers = answersResponse?.StatusCode == HttpStatusCode.OK ? answersResponse.Content ?? [] : [];
+            // Get the existing document name (if any)
+            var existingDocName = answers
+                .FirstOrDefault(a => a.QuestionId == QuestionIds.DocumentName)?
+                .AnswerText?
+                .Trim();
 
-            var existingDocName = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.DocumentName)?.AnswerText?.Trim();
-
-            // If a duplicate document name is found, mark invalid
+            // Compare document names to detect duplicates
             if (!string.IsNullOrWhiteSpace(existingDocName) &&
-                string.Equals(existingDocName, documentNameQuestion?.Question?.AnswerText?.Trim(), StringComparison.OrdinalIgnoreCase))
+                string.Equals(
+                    existingDocName,
+                    documentNameQuestion?.Question?.AnswerText?.Trim(),
+                    StringComparison.OrdinalIgnoreCase))
             {
-                ModelState.AddModelError($"Questions[{documentNameQuestion?.Index}].AnswerText", DuplicateDocumentNameErrorMessage);
+                ModelState.AddModelError(
+                    $"Questions[{documentNameQuestion?.Index}].AnswerText",
+                    DuplicateDocumentNameErrorMessage);
+
                 isValid = false;
             }
         }
@@ -965,7 +978,7 @@ public class DocumentsController
     /// <summary>
     /// Redirects to the “save for later” route.
     /// </summary>
-    private IActionResult RedirectToSaveForLater()
+    private RedirectToRouteResult RedirectToSaveForLater()
     {
         var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
         return RedirectToRoute(PostApprovalRoute, new { projectRecordId });
@@ -974,7 +987,7 @@ public class DocumentsController
     /// <summary>
     /// Redirects user to appropriate next page based on review mode.
     /// </summary>
-    private IActionResult RedirectAfterSubmit(ModificationAddDocumentDetailsViewModel viewModel)
+    private RedirectToActionResult RedirectAfterSubmit(ModificationAddDocumentDetailsViewModel viewModel)
     {
         return viewModel.ReviewAnswers
             ? RedirectToAction(nameof(ReviewDocumentDetails))

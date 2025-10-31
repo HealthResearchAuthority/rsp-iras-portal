@@ -67,6 +67,52 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
     }
 
     [Fact]
+    public async Task SaveDocumentDetails_WhenValidationFails_MapsApplicantAnswersIntoQuestionnaire_AndReturnsRedirectToRouteResult()
+    {
+        // Arrange
+        var viewModel = new ModificationAddDocumentDetailsViewModel
+        {
+            DocumentId = Guid.NewGuid(),
+
+            Questions = new List<QuestionViewModel>
+                {
+                    new QuestionViewModel { Index = 0, QuestionId = "Q1" }
+                }
+        };
+
+        // CMS question set will return a "blank" questionnaire question with the same Index
+
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet("pdm-document-metadata", It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse { }
+            });
+
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectRecordId] = "record-123",
+            [TempDataKeys.IrasId] = 999
+        };
+        Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
+
+        // Validator fails so we stay on the same view
+        Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult());
+
+        // Act
+        var result = await Sut.SaveDocumentDetails(viewModel, true);
+
+        // Assert
+        var viewResult = Assert.IsType<RedirectToRouteResult>(result);
+        Assert.True(Sut.ModelState.IsValid);
+    }
+
+    [Fact]
     public async Task SaveDocumentDetails_WhenValidationFails_MapsApplicantAnswersIntoQuestionnaire_AndReturnsAddDocumentDetailsView()
     {
         // Arrange
@@ -105,11 +151,10 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
             .ReturnsAsync(new ValidationResult());
 
         // Act
-        var result = await Sut.SaveDocumentDetails(viewModel);
+        var result = await Sut.SaveDocumentDetails(viewModel, true);
 
         // Assert
-        var viewResult = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal(nameof(DocumentsController.AddDocumentDetailsList), viewResult.ActionName);
+        var viewResult = Assert.IsType<RedirectToRouteResult>(result);
         Assert.True(Sut.ModelState.IsValid);
     }
 
