@@ -66,7 +66,8 @@ public class ReviewAllChangesController
         // Evaluate the review type (case-insensitive, null-safe)
         if (!string.IsNullOrWhiteSpace(overallReviewType))
         {
-            statusToSet = overallReviewType switch
+            var reviewTypeNormalized = overallReviewType.Trim().ToLowerInvariant();
+            statusToSet = reviewTypeNormalized switch
             {
                 "no review required" => ModificationStatus.Approved,
                 _ => ModificationStatus.WithRegulator
