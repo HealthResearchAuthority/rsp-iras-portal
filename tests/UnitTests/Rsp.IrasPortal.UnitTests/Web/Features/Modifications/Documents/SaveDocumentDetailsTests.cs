@@ -358,4 +358,108 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
         Assert.Equal(nameof(DocumentsController.AddDocumentDetailsList), redirect.ActionName);
         Assert.True(Sut.ModelState.IsValid);
     }
+
+    [Fact]
+    public async Task SaveDocumentDetails_CallsSaveModificationDocumentAnswers_WhenValid()
+    {
+        // Arrange
+        var respondentServiceMock = new Mock<IRespondentService>();
+        var cmsQuestionsetServiceMock = new Mock<ICmsQuestionsetService>();
+        var validatorMock = new Mock<IValidator<ModificationAddDocumentDetailsViewModel>>();
+
+        // Setup CMS questionset mock
+        var question = new QuestionViewModel { QuestionId = "Q1", Index = 0, AnswerText = "Sample answer" };
+        var questionnaire = new QuestionnaireViewModel { Questions = new List<QuestionViewModel> { question } };
+        var cmsResponse = new ServiceResponse<CmsQuestionSetResponse> { Content = new CmsQuestionSetResponse() };
+
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectRecordId] = "record-123",
+            [TempDataKeys.IrasId] = 999
+        };
+        Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
+
+        // Mock CMS question set response
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet("pdm-document-metadata", It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse
+                {
+                    Sections =
+                    [
+                        new SectionModel
+                    {
+                        SectionId = "DocumentDetails",
+                        Questions =
+                        [
+                            new QuestionModel
+                            {
+                                QuestionId = QuestionIds.SelectedDocumentType,
+                                Id = QuestionIds.SelectedDocumentType,
+                                AnswerDataType = "Dropdown",
+                                Answers = [ new AnswerModel { Id = "1", OptionName = "TypeA" } ]
+                            },
+                            new QuestionModel
+                            {
+                                QuestionId = "QDate",
+                                Id = "QDate",
+                                AnswerDataType = "date",
+                                ValidationRules =
+                                [
+                                    new RuleModel
+                                    {
+                                        Conditions =
+                                        [
+                                            new ConditionModel
+                                            {
+                                                Operator = "IN",
+                                                ParentOptions = [ new AnswerModel { Id = "1", OptionName = "TypeA" } ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                    ]
+                }
+            });
+
+        // Setup questionnaire builder
+        Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult());
+
+        //QuestionsetHelpers.BuildQuestionnaireViewModel = _ => questionnaire;
+
+        // Setup validation to pass
+        validatorMock
+            .Setup(v => v.ValidateAsync(It.IsAny<ModificationAddDocumentDetailsViewModel>(), default))
+            .ReturnsAsync(new ValidationResult());
+
+        // Mock respondent service (the dependency SaveModificationDocumentAnswers uses)
+        respondentServiceMock
+            .Setup(s => s.SaveModificationDocumentAnswers(It.IsAny<List<ProjectModificationDocumentAnswerDto>>()))
+            .ReturnsAsync(new ServiceResponse())
+            .Verifiable();
+
+        var viewModel = new ModificationAddDocumentDetailsViewModel
+        {
+            DocumentId = Guid.NewGuid(),
+            Questions = new List<QuestionViewModel> { question }
+        };
+
+        // Act
+        var result = await Sut.SaveDocumentDetails(viewModel);
+
+        // Assert
+        respondentServiceMock.Verify(
+            s => s.SaveModificationDocumentAnswers(
+                It.Is<List<ProjectModificationDocumentAnswerDto>>(a => a.Count == 1 && a.First().QuestionId == "Q1")),
+            Times.Never);
+    }
 }
