@@ -490,7 +490,7 @@ public class DocumentsController
     [HttpPost]
     public async Task<IActionResult> SaveDocumentDetails(ModificationAddDocumentDetailsViewModel viewModel, bool saveForLater = false)
     {
-        // 🧩 Step 1: Retrieve and rebuild the questionnaire structure from CMS
+        // Step 1: Retrieve and rebuild the questionnaire structure from CMS
         var questionnaire = await BuildUpdatedQuestionnaire(viewModel);
 
         // Replace the original question list with updated answers from the user
@@ -501,31 +501,31 @@ public class DocumentsController
             .Select((q, index) => new { Question = q, Index = index })
             .FirstOrDefault(x => x.Question.QuestionId.Equals(QuestionIds.DocumentName, StringComparison.OrdinalIgnoreCase));
 
-        // ✅ Step 2: Validate all basic questionnaire rules (e.g., required fields)
+        // Step 2: Validate all basic questionnaire rules (e.g., required fields)
         var isValid = await this.ValidateQuestionnaire(validator, viewModel);
 
-        // 🗓️ Step 3: Validate missing date fields — only if user is not saving for later
+        // Step 3: Validate missing date fields — only if user is not saving for later
         if (!saveForLater)
         {
             var dateValidationPassed = ValidateRequiredDates(viewModel);
             isValid = isValid && dateValidationPassed;
         }
 
-        // 📄 Step 4: Validate that document name doesn’t already exist
+        // Step 4: Validate that document name doesn’t already exist
         var duplicateValidationPassed = await ValidateDuplicateDocumentNames(viewModel, documentNameQuestion);
         isValid = isValid && duplicateValidationPassed;
 
         // Pass validation result to the view so that GOV.UK error summaries can display correctly
         ViewData[ViewDataKeys.IsQuestionnaireValid] = isValid;
 
-        // 🚫 Step 5: If validation fails, redisplay form with errors
+        // Step 5: If validation fails, redisplay form with errors
         if (!isValid)
             return View("AddDocumentDetails", viewModel);
 
-        // 💾 Step 6: Save all valid answers to backend
+        // Step 6: Save all valid answers to backend
         await SaveModificationDocumentAnswers(viewModel);
 
-        // 🔄 Step 7: Redirect user depending on their action
+        // Step 7: Redirect user depending on their action
         return saveForLater
             ? RedirectToSaveForLater()    // “Save and come back later”
             : RedirectAfterSubmit(viewModel); // Continue flow or review answers
