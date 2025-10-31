@@ -27,7 +27,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
 
             Questions = new List<QuestionViewModel>
                 {
-                    new QuestionViewModel { Index = 0, QuestionId = "Q1" }
+                    new QuestionViewModel { Index = 0, QuestionId = QuestionIds.DocumentName }
                 }
         };
 
@@ -70,13 +70,30 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
     public async Task SaveDocumentDetails_WhenValidationFails_MapsApplicantAnswersIntoQuestionnaire_AndReturnsRedirectToRouteResult()
     {
         // Arrange
+        var docId = Guid.NewGuid();
+
+        Mocker
+            .GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new List<ProjectModificationDocumentRequest>()
+                {
+                    new ProjectModificationDocumentRequest
+                    {
+                        Id = docId, FileName = "doc1.pdf", FileSize = 123, DocumentStoragePath = "path"
+                    }
+                }
+            });
+
         var viewModel = new ModificationAddDocumentDetailsViewModel
         {
             DocumentId = Guid.NewGuid(),
 
             Questions = new List<QuestionViewModel>
                 {
-                    new QuestionViewModel { Index = 0, QuestionId = "Q1" }
+                    new QuestionViewModel { Index = 0, QuestionId = QuestionIds.DocumentName, AnswerText = "some text" }
                 }
         };
 
@@ -88,6 +105,51 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
             {
                 StatusCode = HttpStatusCode.OK,
                 Content = new CmsQuestionSetResponse { }
+            });
+
+        Mocker
+            .GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationDocumentAnswers(docId))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentAnswerDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new List<ProjectModificationDocumentAnswerDto>
+                {
+                    new ProjectModificationDocumentAnswerDto { QuestionId = QuestionIds.DocumentName, AnswerText = "some text", OptionType = "dropdown", SelectedOption = "opt1" }
+                }
+            });
+
+        // Mock CMS question set response
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet("pdm-document-metadata", It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse
+                {
+                    Sections =
+                    [
+                        new SectionModel
+                    {
+                        SectionId = "DocumentDetails",
+                        Questions =
+                        [
+                            new QuestionModel
+                            {
+                                QuestionId = QuestionIds.DocumentName,
+                                Id = QuestionIds.DocumentName,
+                                AnswerDataType = "text",
+                            },
+                            new QuestionModel
+                            {
+                                QuestionId =  QuestionIds.DocumentName,
+                                Id =  QuestionIds.DocumentName,
+                                AnswerDataType = "text",
+                            }
+                        ]
+                    }
+                    ]
+                }
             });
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
@@ -108,8 +170,8 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
         var result = await Sut.SaveDocumentDetails(viewModel, true);
 
         // Assert
-        var viewResult = Assert.IsType<RedirectToRouteResult>(result);
-        Assert.True(Sut.ModelState.IsValid);
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.False(Sut.ModelState.IsValid);
     }
 
     [Fact]
