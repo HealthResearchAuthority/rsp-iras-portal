@@ -3,6 +3,12 @@
 @model (QuestionnaireViewModel Questionnaire, QuestionViewModel CurrentQuestion)
 
 @{
+    var question = Model.CurrentQuestion;
+
+    var conditional = !(question.IsMandatory || question.IsOptional) && question.Rules.Count > 0;
+    var parents = conditional ? string.Join(',', question.Rules.Select(rule => rule.ParentQuestionId)) : "";
+    var questionId = conditional ? question.QuestionId : "";
+
     var questionnaire = Model.Questionnaire;
     var currentQuestion = Model.CurrentQuestion;
 
@@ -28,7 +34,7 @@
         // format the answer based on the question data type
         projectRecordAnswer = answer.GetDisplayText(projectRecordQuestion.DataType);
 
-        <div class="govuk-!-margin-bottom-3 flex-gap-2">
+        <div class="govuk-!-margin-bottom-3 flex-gap-2 @(conditional ? "conditional" : "")" data-parents="@parents" data-questionid="@questionId">
             <span class="govuk-label">Current @(answer!.QuestionText?.ToLower() ?? "value")</span>
             <span class="govuk-body govuk-!-font-weight-bold">@Html.Raw(projectRecordAnswer)</span>
         </div>

@@ -107,7 +107,7 @@
                             <fieldset class="govuk-fieldset">
                                 <rsp-gds-radio-group asp-for="Search.ModificationType"
                                                      label-text="Select one option"
-                                                     options="ModificationTypes.Types.Select(type => new GdsOption { Value = type, Label = type })"
+                                                 options="Ranking.ModificationTypes.AllOptions.Select(type => new GdsOption { Value = type, Label = type })"
                                                      conditional-field="false"
                                                      legend-class="govuk-label govuk-label--s font-weight-none" />
                             </fieldset>
@@ -125,7 +125,7 @@
                             <fieldset class="govuk-fieldset">
                                 <rsp-gds-radio-group asp-for="Search.ReviewType"
                                                      label-text="Select one option"
-                                                     options="ReviewTypes.Types.Select(type => new GdsOption { Value = type, Label = type })"
+                                                 options="Ranking.ReviewTypes.AllOptions.Select(type => new GdsOption { Value = type, Label = type })"
                                                      conditional-field="false"
                                                      legend-class="govuk-label govuk-label--s font-weight-none" />
                             </fieldset>
@@ -143,7 +143,7 @@
                             <fieldset class="govuk-fieldset">
                                 <rsp-gds-radio-group asp-for="Search.Category"
                                                      label-text="Select one option"
-                                                     options="Category.Types.Select(type => new GdsOption { Value = type, Label = type })"
+                                                 options="Ranking.CategoryTypes.AllOptions.Select(type => new GdsOption { Value = type, Label = type })"
                                                      conditional-field="false"
                                                      legend-class="govuk-label govuk-label--s font-weight-none" />
                             </fieldset>
@@ -227,7 +227,7 @@
                             <span class="search-filter-summary__remove-filter-text">
                                 <span class="govuk-visually-hidden">Remove filter</span>
                                 @if (filterKey.Contains("date submitted - from", StringComparison.OrdinalIgnoreCase)
-                || filterKey.Contains("date submitted - to", StringComparison.OrdinalIgnoreCase))
+                                                    || filterKey.Contains("date submitted - to", StringComparison.OrdinalIgnoreCase))
                                 {
                                     @($"{filterKey} {val}")
                                 }

@@ -44,9 +44,9 @@ public class RankingOfChange(ICmsQuestionsetService cmsQuestionsetService,
 
         var rankingOfChangeViewModel = new RankingOfChangeViewModel
         {
-            ModificationType = ranking?.Content?.ModificationType.Substantiality ?? "Not available",
-            Category = ranking?.Content?.Categorisation.Category ?? "N/A",
-            ReviewType = ranking?.Content?.ReviewType ?? "Not available"
+            ModificationType = ranking?.Content?.ModificationType.Substantiality ?? Ranking.NotAvailable,
+            Category = ranking?.Content?.Categorisation.Category ?? Ranking.NotAvailable,
+            ReviewType = ranking?.Content?.ReviewType ?? Ranking.NotAvailable
         };
 
         return View("/Features/Modifications/Shared/RankingOfChange.cshtml", rankingOfChangeViewModel);
