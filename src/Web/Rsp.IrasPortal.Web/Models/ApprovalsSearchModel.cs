@@ -133,10 +133,6 @@ public class ApprovalsSearchModel
             {
                 filters.Add(ApprovalsSearch.StatusKey, [Status]);
             }
-            if (!string.IsNullOrWhiteSpace(ModificationId))
-            {
-                filters.Add(ApprovalsSearch.ModificationId, [ModificationId]);
-            }
             return filters;
         }
     }
