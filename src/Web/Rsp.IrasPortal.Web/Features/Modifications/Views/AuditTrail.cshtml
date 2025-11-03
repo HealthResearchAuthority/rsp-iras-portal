@@ -1,0 +1,32 @@
+﻿@using Rsp.IrasPortal.Web.Features.Modifications.Models
+@model AuditTrailModel
+@{
+    ViewBag.Title = "Modification audit history";
+}
+
+<h1 class="govuk-heading-l">Audit history</h1>
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <dl class="govuk-summary-list">
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    Short project title
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    @Model.ShortTitle
+                </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    Modification ID
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    @Model.ModificationIdentifier
+                </dd>
+            </div>
+        </dl>
+    </div>
+</div>
+
+<partial name="../Shared/_ProjectModificationAuditTrail" model="Model" />

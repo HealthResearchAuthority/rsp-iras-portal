@@ -29,6 +29,20 @@
         <dt class="govuk-summary-list__key">Modification ID</dt>
         <dd class="govuk-summary-list__value">@modificationBaseModel.ModificationIdentifier</dd>
     </div>
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Audit</dt>
+        <dd class="govuk-summary-list__value">
+            <a 
+                asp-route="pmc:audittrail"
+                asp-route-modificationId="@modificationBaseModel.ModificationId"
+                asp-route-shortTitle="@modificationBaseModel.ShortTitle"
+                asp-route-modificationIdentifier="@modificationBaseModel.ModificationIdentifier"
+                class="govuk-link"
+            >
+                View modification audit history
+            </a>
+        </dd>
+    </div>
 
     @if (ViewData[ViewDataKeys.ShowModificationStatus] is true)
     {
