@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Text.Json;
 using FluentValidation;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Rsp.IrasPortal.Application.Constants;
@@ -203,6 +204,12 @@ public class ModificationChangesController
 
         // this is where the questionnaire will resume
         var navigationDto = await SetStage(sectionIdOrDefault);
+
+        if (navigationDto.CurrentSection.StoreUrlReferrer)
+        {
+            TempData[ProjectModification.UrlReferrer] = HttpContext.Request.GetDisplayUrl();
+            TempData[ProjectModification.LinkBackToReferrer] = true;
+        }
 
         questionnaire.CurrentStage = navigationDto.CurrentStage;
 
