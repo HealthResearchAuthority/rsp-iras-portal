@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Web.Features.CookiePolicy.Controllers;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Features.CookiePolicy;
@@ -21,11 +22,12 @@ public class CookiePolicyControllerTests : TestServiceBase<CookiesController>
     public void CookieSet_When_Cookies_Accepted_Returns_View()
     {
         // arrange
+        var settingsSource = CookieConfirmationSource.CookieBanner;
         var userConsent = "yes";
         _http.Request.Headers["Referer"] = "some-url";
 
         // act
-        var result = Sut.AcceptConsent(userConsent);
+        var result = Sut.AcceptConsent(userConsent, settingsSource);
 
         // assert
         result.ShouldBeOfType<RedirectResult>();
