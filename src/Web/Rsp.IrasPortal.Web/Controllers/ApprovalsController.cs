@@ -71,7 +71,8 @@ public class ApprovalsController
                     LeadNation = dto.LeadNation,
                     SponsorOrganisation = dto.SponsorOrganisation,
                     CreatedAt = dto.CreatedAt,
-                    ProjectRecordId = dto.ProjectRecordId
+                    ProjectRecordId = dto.ProjectRecordId,
+                    Status = dto.Status
                 })
                 .ToList() ?? [];
 
