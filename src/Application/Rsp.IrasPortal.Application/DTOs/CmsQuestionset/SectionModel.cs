@@ -35,6 +35,10 @@ public class SectionModel
 
     public bool IsLastSectionBeforeReview { get; set; }
 
+    public bool StoreUrlReferrer { get; set; }
+
+    public bool EvaluateBackRoute { get; set; }
+
     /// <summary>
     /// Contains the questions in this section
     /// </summary>

@@ -513,7 +513,8 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
                     CategoryId = categoryId,
                     StaticViewName = staticView,
                     IsMandatory = isMandatory,
-                    Questions = questions?.ToList() ?? []
+                    Questions = questions?.ToList() ?? [],
+                    StoreUrlReferrer = true,
                 }
             ]
         };

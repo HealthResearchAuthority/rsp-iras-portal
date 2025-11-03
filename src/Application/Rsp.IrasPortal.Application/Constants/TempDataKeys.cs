@@ -64,4 +64,5 @@ public struct TempDataKeys
     public const string SponsorOrganisationType = "td:sponsor_org_type";
     public const string SponsorOrganisationUserType = "td:sponsor_org_user_type";
     public const string ShowCookiesSavedNotificationBanner = "td:show_cookies_notification_banner";
+    public const string ShowCookiesSavedHeaderBanner = "td:show_cookies_header_banner";
 }
