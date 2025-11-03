@@ -12,4 +12,6 @@ public record QuestionSectionsResponse
     public bool IsMandatory { get; set; }
     public int Sequence { get; set; }
     public bool IsLastSectionBeforeReview { get; set; }
+    public bool StoreUrlReferrer { get; set; }
+    public bool EvaluateBackRoute { get; set; }
 }
