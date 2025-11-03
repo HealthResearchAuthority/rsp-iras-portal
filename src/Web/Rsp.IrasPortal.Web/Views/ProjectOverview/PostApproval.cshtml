@@ -227,7 +227,7 @@
                             <span class="search-filter-summary__remove-filter-text">
                                 <span class="govuk-visually-hidden">Remove filter</span>
                                 @if (filterKey.Contains("date submitted - from", StringComparison.OrdinalIgnoreCase)
-                                        || filterKey.Contains("date submitted - to", StringComparison.OrdinalIgnoreCase))
+                                      || filterKey.Contains("date submitted - to", StringComparison.OrdinalIgnoreCase))
                                 {
                                     @($"{filterKey} {val}")
                                 }
@@ -341,9 +341,7 @@
 }
 
 @if ((!Model.Modifications.Any()) &&
-((Model.Search.Filters?.Count >= 0 && !string.IsNullOrEmpty(Model.Search?.ModificationId)) ||
-(Model.Search.Filters?.Count == 0 && !string.IsNullOrEmpty(Model.Search?.ModificationId)) ||
-(Model.Search.Filters?.Count == 0 && string.IsNullOrEmpty(Model.Search?.ModificationId))))
+((Model.Search.Filters?.Count >= 0 && !string.IsNullOrEmpty(Model.Search?.ModificationId)) || string.IsNullOrEmpty(Model.Search?.ModificationId)))
 {
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
