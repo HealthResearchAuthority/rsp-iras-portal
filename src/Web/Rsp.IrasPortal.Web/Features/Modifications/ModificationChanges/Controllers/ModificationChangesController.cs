@@ -205,7 +205,7 @@ public class ModificationChangesController
         // this is where the questionnaire will resume
         var navigationDto = await SetStage(sectionIdOrDefault);
 
-        if (navigationDto.CurrentSection.StoreUrlReferrer)
+        if (navigationDto.CurrentSection?.StoreUrlReferrer == true)
         {
             TempData[ProjectModification.UrlReferrer] = HttpContext.Request.GetDisplayUrl();
             TempData[ProjectModification.LinkBackToReferrer] = true;
