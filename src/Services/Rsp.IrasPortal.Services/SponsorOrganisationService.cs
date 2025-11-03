@@ -116,4 +116,13 @@ public class SponsorOrganisationService(ISponsorOrganisationsServiceClient clien
         var apiResponse = await client.EnableSponsorOrganisation(rtsId);
         return apiResponse.ToServiceResponse();
     }
+
+    public async Task<ServiceResponse<SponsorOrganisationAuditTrailResponse>> SponsorOrganisationAuditTrail(
+        string rtsId, int pageNumber, int pageSize, string sortField, string sortDirection)
+    {
+        var apiResponse =
+            await client.GetSponsorOrganisationAuditTrail(rtsId, pageNumber, pageSize, sortField, sortDirection);
+
+        return apiResponse.ToServiceResponse();
+    }
 }

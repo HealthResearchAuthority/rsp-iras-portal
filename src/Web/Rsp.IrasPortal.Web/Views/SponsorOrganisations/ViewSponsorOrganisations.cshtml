@@ -6,7 +6,7 @@
 @model SponsorOrganisationSearchViewModel
 
 @{
-    ViewData["Title"] = "View sponsor organisations - Manage sponsor organisations - System Administration";
+    ViewData["Title"] = "Manage sponsor organisations - System Administration";
 
     var sortableHeaders = new[]
     {
@@ -76,7 +76,7 @@
             <label class="govuk-label" for="Search.SearchQuery">
                 <b>@Html.Raw(searchTitle?.Value)</b>
             </label>
-            <div class="govuk-hint">
+			<div class="govuk-label">
                 @Html.Raw(searchHint?.Value)
             </div>
 
@@ -90,8 +90,7 @@
                 <partial name="_SubmitButton"
                          model="@("soc:applyfilters", "Search", new Dictionary<string, string>())"/>
             </div>
-            <input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize"/>
-
+            <input type="hidden" name="PageSize" value="@Model.Pagination?.PageSize" />
 
             <!-- Filter Panel -->
             <div class="search-filter-panel">

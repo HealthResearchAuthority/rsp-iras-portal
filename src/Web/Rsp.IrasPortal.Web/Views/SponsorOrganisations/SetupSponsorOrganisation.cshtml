@@ -1,6 +1,5 @@
 ﻿﻿@using System.Text.RegularExpressions
 @inject IHttpContextAccessor httpContextAccessor
-@using System.Text.RegularExpressions
 @using Microsoft.AspNetCore.Http.Extensions
 @using Microsoft.AspNetCore.Mvc.ModelBinding
 @using Rsp.Gds.Component.Models
@@ -11,7 +10,7 @@
 @model SponsorOrganisationSetupViewModel
 
 @{
-    ViewData["Title"] = "Setup sponsor organisation - Manage sponsor organisations - System Administration";
+	ViewData["Title"] = "Set up a new sponsor organisation - Manage sponsor organisations - System Administration";
 
     // this url will be used to redirect, when search button is clicked
     var requestUrl = httpContextAccessor.HttpContext?.Request.GetEncodedUrl();
@@ -85,8 +84,7 @@
                     </div>
                 }
 
-                <input id="auto_search" name="autoSearchEnabled" type="text" value="false"
-                       hidden/>
+				<input id="auto_search" name="autoSearchEnabled" type="hidden" value="false"/>
 
                 <noscript>
                     @{
@@ -102,10 +100,9 @@
                                 : orgSearch!.SearchText;
 
                             <input id="sponsor_org_search_performed"
-                                   type="text"
+								   type="hidden"
                                    name="searchedPerformed"
-                                   value="@sponsorOrgSearched"
-                                   hidden/>
+                                   value="@sponsorOrgSearched"/>
                         }
                         else if (!string.IsNullOrWhiteSpace(orgSearch?.SelectedOrganisation))
                         {
@@ -128,6 +125,11 @@
                         var errorId = "sponsor_org_search-error";
                         var stateEntry = ViewData.ModelState.FirstOrDefault(s => !s.Key.StartsWith('_')).Value;
                         var errorText = hasError ? stateEntry.Errors.FirstOrDefault()?.ErrorMessage : null;
+
+                        if (hasError)
+                        {
+                            searchText = Model.SponsorOrgSearch.SelectedOrganisation;
+                        }
                     }
                     <div class="govuk-form-group@(hasError ? " govuk-form-group--error" : "")">
 

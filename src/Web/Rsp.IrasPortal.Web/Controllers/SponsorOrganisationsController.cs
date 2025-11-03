@@ -1,11 +1,13 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Filters;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
@@ -426,6 +428,43 @@ public class SponsorOrganisationsController(
         return RedirectToAction("Index");
     }
 
+    [HttpGet]
+    [Route("/sponsororganisations/audittrail", Name = "soc:audittrail")]
+    public async Task<IActionResult> AuditTrail(string rtsId, int pageNumber = 1, int pageSize = 20, string? sortField = "DateTimeStamp", string? sortDirection = "desc")
+    {
+        var load = await LoadSponsorOrganisationAsync(rtsId);
+
+        var response = await sponsorOrganisationService.SponsorOrganisationAuditTrail(rtsId, pageNumber, pageSize, sortField, sortDirection);
+
+        var auditTrailResponse = response?.Content;
+        var items = auditTrailResponse?.Items;
+
+        var sorted = SortSponsorOrganisationAuditTrails(items, sortField, sortDirection,
+            load.Model.SponsorOrganisationName, pageNumber, pageSize);
+
+        var paginationModel = new PaginationViewModel(pageNumber, pageSize,
+            auditTrailResponse != null ? auditTrailResponse.TotalCount : -1)
+        {
+            RouteName = "soc:audittrail",
+            AdditionalParameters =
+            {
+                { "rtsId", rtsId }
+            },
+            SortField = sortField,
+            SortDirection = sortDirection
+        };
+
+        var resultModel = new SponsorOrganisationAuditTrailViewModel()
+        {
+            RtsId = rtsId,
+            SponsorOrganisation = load.Model.SponsorOrganisationName,
+            Pagination = paginationModel,
+            Items = sorted!
+        };
+
+        return View("AuditTrail", resultModel);
+    }
+
     // ---------------------------
     // Private helpers (de-duplication)
     // ---------------------------
@@ -608,6 +647,72 @@ public class SponsorOrganisationsController(
         }
     }
 
+    [NonAction]
+    private static IEnumerable<SponsorOrganisationAuditTrailDto> SortSponsorOrganisationAuditTrails(
+    IEnumerable<SponsorOrganisationAuditTrailDto> items,
+    string? sortField,
+    string? sortDirection,
+    string? sponsorOrganisationName,
+    int pageNumber = 1,
+    int pageSize = 20)
+    {
+        // 1) Transform descriptions: replace RtsId with sponsorOrganisationName (case-insensitive)
+        var list = items
+            .Select(x =>
+            {
+                var desc = x.Description ?? string.Empty;
+
+                if (!string.IsNullOrWhiteSpace(sponsorOrganisationName) && !string.IsNullOrWhiteSpace(x.RtsId))
+                {
+                    // Replace all occurrences of RtsId with sponsorOrganisationName (case-insensitive, no regex)
+                    desc = desc.Replace(x.RtsId, sponsorOrganisationName!, StringComparison.OrdinalIgnoreCase);
+                }
+
+                return new SponsorOrganisationAuditTrailDto
+                {
+                    Id = x.Id,
+                    RtsId = x.RtsId,
+                    DateTimeStamp = x.DateTimeStamp,
+                    Description = desc,
+                    User = x.User
+                };
+            })
+            .ToList();
+
+        // 2) Sorting
+        var descSort = string.Equals(sortDirection, "desc", StringComparison.OrdinalIgnoreCase);
+        var field = sortField?.ToLowerInvariant();
+
+        var sorted = field switch
+        {
+            "description" => descSort
+                ? list.OrderByDescending(x => x.Description, StringComparer.OrdinalIgnoreCase)
+                      .ThenByDescending(x => x.DateTimeStamp)
+                : list.OrderBy(x => x.Description, StringComparer.OrdinalIgnoreCase)
+                      .ThenByDescending(x => x.DateTimeStamp),
+
+            "user" => descSort
+                ? list.OrderByDescending(x => x.User, StringComparer.OrdinalIgnoreCase)
+                      .ThenByDescending(x => x.DateTimeStamp)
+                : list.OrderBy(x => x.User, StringComparer.OrdinalIgnoreCase)
+                      .ThenByDescending(x => x.DateTimeStamp),
+
+            // Allow common aliases for the timestamp
+            "datetimestamp" => descSort
+                ? list.OrderByDescending(x => x.DateTimeStamp)
+                : list.OrderBy(x => x.DateTimeStamp),
+
+            // Default = most recent first (typical for audit trails)
+            _ => list.OrderByDescending(x => x.DateTimeStamp)
+        };
+
+        // 3) Pagination safety + apply
+        if (pageNumber < 1) pageNumber = 1;
+        if (pageSize < 1) pageSize = 20;
+
+        var skip = (pageNumber - 1) * pageSize;
+        return sorted.Skip(skip).Take(pageSize);
+    }
 
     // Pagination builder with optional extras
     [NonAction]

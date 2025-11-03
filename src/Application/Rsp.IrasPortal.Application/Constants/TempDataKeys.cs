@@ -22,6 +22,7 @@ public struct TempDataKeys
         public const string LinkBackToReferrer = "td:link_back_to_referrer";
         public const string UrlReferrer = "td:url_referrer";
         public const string ReviewAllChanges = "td:modification_review_all_changes";
+        public const string OverallReviewType = "td:modification_overall_review_type";
     }
 
     public struct ProjectModificationChange

@@ -130,7 +130,11 @@
         <td class="govuk-table__cell">
             @{
                 var selectedRoles = Model.UserRoles != null
-                    ? string.Join(", ", Model.UserRoles.Where(r => r.IsSelected).Select(r => r?.DisplayName))
+                    ? string.Join(", ",
+                        Model.UserRoles
+                            .Where(r => r.IsSelected)
+                            .OrderBy(r => r.DisplayName, StringComparer.OrdinalIgnoreCase)
+                            .Select(r => r?.DisplayName))
                     : string.Empty;
             }
 

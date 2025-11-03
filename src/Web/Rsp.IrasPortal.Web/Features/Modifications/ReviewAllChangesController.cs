@@ -21,34 +21,11 @@ public class ReviewAllChangesController
     public async Task<IActionResult> ReviewAllChanges(string projectRecordId, string irasId, string shortTitle, Guid projectModificationId)
     {
         // Fetch the modification by its identifier
-        var (modificationResult, model) = await GetModificationDetails(projectModificationId, irasId, shortTitle, projectRecordId);
-
-        // Short-circuit with a service error if the call failed
-        if (modificationResult is not null)
+        var (result, modification) = await PrepareModificationAsync(projectModificationId, irasId, shortTitle, projectRecordId);
+        if (result is not null)
         {
-            return modificationResult;
+            return result;
         }
-
-        var modification = model!;
-
-        // Persist the modification identifier in TempData for subsequent requests/pages
-        TempData[TempDataKeys.ProjectModification.ProjectModificationIdentifier] = modification.ModificationIdentifier;
-        TempData[TempDataKeys.ProjectModification.ProjectModificationId] = modification.ModificationId;
-
-        var (changesResult, initialQuestions, modificationChanges) = await GetModificationChanges(modification);
-
-        if (changesResult is not null)
-        {
-            return changesResult;
-        }
-
-        // populate all the answers for the changes questions,
-        // calculates the ranking for each change and adds the change
-        // to the modification model.
-        await UpdateModificationWithChanges(initialQuestions!, modification, modificationChanges!);
-
-        // overall modification ranking
-        modification.UpdateOverAllRanking();
 
         var sponsorDetailsQuestionsResponse = await cmsQuestionsetService.GetModificationQuestionSet(SponsorDetailsSectionId);
 
@@ -81,12 +58,27 @@ public class ReviewAllChangesController
     }
 
     [HttpPost]
-    public Task<IActionResult> SubmitToRegulator(string projectRecordId, Guid projectModificationId)
+    public Task<IActionResult> SubmitToRegulator(string projectRecordId, Guid projectModificationId, string overallReviewType)
     {
+        // Default to WithRegulator if not set or review required
+        var statusToSet = ModificationStatus.WithRegulator;
+
+        // Evaluate the review type (case-insensitive, null-safe)
+        if (!string.IsNullOrWhiteSpace(overallReviewType))
+        {
+            var reviewTypeNormalized = overallReviewType.Trim().ToLowerInvariant();
+            statusToSet = reviewTypeNormalized switch
+            {
+                "no review required" => ModificationStatus.Approved,
+                _ => ModificationStatus.WithRegulator
+            };
+        }
+
+        // Call your existing handler with the determined status
         return HandleModificationStatusUpdate(
             projectRecordId,
             projectModificationId,
-            ModificationStatus.Approved,
+            statusToSet,
             onSuccess: () => RedirectToRoute("pov:projectdetails", new { projectRecordId })
         );
     }

@@ -8,6 +8,11 @@ public class ProjectOverviewDocumentDto
     public string FileName { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets the name of the document, if specified.
+    /// </summary>
+    public string DocumentName { get; set; } = string.Empty;
+
+    /// <summary>
     /// Gets or sets the path where the document is stored in blob storage.
     /// </summary>
     public string? DocumentStoragePath { get; set; }

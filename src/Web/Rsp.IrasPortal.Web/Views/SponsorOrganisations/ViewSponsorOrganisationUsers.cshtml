@@ -1,16 +1,15 @@
 ﻿@using Rsp.IrasPortal.Application.Constants
-@using Rsp.IrasPortal.Application.DTOs
 @using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
 @using Rsp.IrasPortal.Web.Areas.Admin.Models
 @model SponsorOrganisationListUsersModel
 
 @{
-    ViewBag.Title = "View users - Manage sponsor organisations - System Administration";
+	ViewBag.Title = "Users for sponsor organisation - Manage sponsor organisations - System Administration";
 
     var sortableHeaders = new[]
     {
-        new { Field = nameof(UserViewModel.GivenName), Label = "Given name" },
-        new { Field = nameof(UserViewModel.FamilyName), Label = "Family name" },
+        new { Field = nameof(UserViewModel.GivenName), Label = "First name" },
+        new { Field = nameof(UserViewModel.FamilyName), Label = "Last name" },
         new { Field = nameof(UserViewModel.Email), Label = "Email address" },
         new { Field = nameof(UserViewModel.Status), Label = "Status" },
         new { Field = nameof(UserViewModel.CurrentLogin), Label = "Last logged in" }
@@ -33,8 +32,22 @@
     and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
     the named section *@
 
-@section BackNavigation {
-    <partial name="_BackNavigation" model="@("soc:viewsponsororganisation", "Back to sponsor organisation profile", new Dictionary<string, string> { { "RtsId", Model.SponsorOrganisation.RtsId } })"/>
+@section Breadcrumb {
+@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+{
+    ("System administration", Url.RouteUrl("systemadmin:view")),
+    ("Manage sponsor organisations", Url.RouteUrl("soc:viewsponsororganisations")),
+    ("Sponsor organisation profile", Url.RouteUrl("soc:viewsponsororganisation", new { rtsId = Model.SponsorOrganisation.RtsId }))
+})
+}
+
+@functions {
+
+	private bool HasFilterErrors()
+	{
+		return ViewData.ModelState.Values.Any(v => v.Errors.Count > 0);
+	}
+
 }
 
 @if (TempData[TempDataKeys.ShowNotificationBanner] is not null)
@@ -66,24 +79,64 @@
 </div>
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-full">
 
-        <form method="get">
-            <label class="govuk-label" for="Search.SearchQuery">
+	<div class="govuk-grid-column-two-thirds">
+
+		<form method="get" class="govuk-form-group" >
+            <label class="govuk-label" for="SearchQuery">
                 <b>@Html.Raw(searchTitle?.Value)</b>
             </label>
-            <div class="govuk-hint">
+            <div class="govuk-label">
                 @Html.Raw(searchHint?.Value)
             </div>
-            <input class="govuk-input govuk-!-width-two-thirds" id="SearchQuery" name="SearchQuery" type="text" value="@(Model.Pagination?.SearchQuery ?? string.Empty)">
-            <input hidden readonly name="RtsId" value="@Model.SponsorOrganisation.RtsId"/>
-            <input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize"/>
-            @{
-                ViewBag.Style = "govuk-button govuk-button--secondary";
-            }
-            <partial name="_SubmitButton" model="@("soc:viewsponsororganisationusers", "Search", new Dictionary<string, string>())"/>
+       
+			<div class="review-body-search">
+                <input class="govuk-input" id="SearchQuery" name="SearchQuery" type="text" value="@(Model.Pagination?.SearchQuery ?? string.Empty)">
+				<input type="hidden" readonly name="RtsId" value="@Model.SponsorOrganisation.RtsId" />
+				<input type="hidden" readonly name="PageSize" value="@Model.Pagination?.PageSize" />
+                @{
+                    ViewBag.Style = "govuk-button govuk-button--secondary";
+                }
+                <partial name="_SubmitButton" model="@("soc:viewsponsororganisationusers", "Search", new Dictionary<string, string>())"/>
+			</div>
+
+            <!-- Filter Panel -->
+            <div class="search-filter-panel">
+                <details class="search-filter-toggle" @(HasFilterErrors() ? "open" : null)>
+                    <summary class="search-filter-panel__header"
+                             tabindex="-1"
+                             role="button"
+                             aria-controls="filter-panel"
+                             aria-expanded="@(HasFilterErrors().ToString().ToLower())">
+
+                        <span class="search-filter-panel__button-inner govuk-link"
+                              tabindex="0">
+                            Advanced filters
+                        </span>
+
+                        <span class="search-filter-panel__count" aria-hidden="true" tabindex="-1">
+                            @(Model.Pagination?.TotalCount ?? 0) results
+                        </span>
+                    </summary>
+
+                    <div class="search-filter-panel__content" id="filter-panel" role="region" aria-labelledby="toggle-filter">
+
+
+                        <!-- Apply -->
+                        <div class="search-filter-panel__actions">
+                            <button class="govuk-button search-filter-panel__action search-filter-panel__action--submit">Apply filters</button>
+                        </div>
+                    </div>
+                </details>
+            </div>
+            
+
         </form>
     </div>
+    </div>
+<div class="govuk-grid-row">
+
+<div class="govuk-grid-column-full">
     @if (Model.Users != null && Model.Users.Any())
     {
         <div class="govuk-grid-column-full">
@@ -163,17 +216,18 @@
     }
     else if (!string.IsNullOrEmpty(Model.Pagination?.SearchQuery))
     {
-        <div class="govuk-grid-column-two-thirds">
-            <h1 class="govuk-heading-l">No results found</h1>
-            <p class="govuk-body">
-                Check your spelling or enter another search term and try again. If no results are found, go to Manage users where you can check if a user profile exists and create one if needed.
-            </p>
-            <p class="govuk-body">
-                <a class="govuk-link" asp-route="soc:viewsponsororganisationusers" asp-all-route-data="@(new Dictionary<string, string> { { "RtsId", Model.SponsorOrganisation.RtsId } })">Back to Users for @Model.SponsorOrganisation.SponsorOrganisationName</a>
-            </p>
-            <p class="govuk-body">
-                <a class="govuk-link" asp-route="admin:users">Manage users</a>
-            </p>
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds search-filter-error-border">
+                <h2 class="govuk-heading-l">There are no matching results</h2>
+                <p class="govuk-body">Improve your search results by:</p>
+                <ul class="govuk-list govuk-list--bullet">
+                    <li>removing filters</li>
+                    <li>double-checking your spelling</li>
+                    <li>using fewer keywords</li>
+                    <li>searching for something less specific</li>
+                </ul>
+            </div>
         </div>
     }
-</div>
+		</div>
+	</div>

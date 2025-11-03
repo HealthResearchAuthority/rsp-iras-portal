@@ -1,5 +1,7 @@
 ﻿using System.Globalization;
 using System.Net;
+using System.Text.Json;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
@@ -21,27 +23,27 @@ public class ProjectOverviewController(
     IApplicationsService applicationService,
     IProjectModificationsService projectModificationsService,
     IRespondentService respondentService,
-    ICmsQuestionsetService cmsQuestionsetService) : Controller
+    ICmsQuestionsetService cmsQuestionsetService,
+    IValidator<ApprovalsSearchModel> validator
+    ) : Controller
 {
     private const string DocumentDetailsSection = "pdm-document-metadata";
 
     [Route("/projectoverview", Name = "pov:index")]
     public async Task<IActionResult> Index(string projectRecordId, string? backRoute, string? modificationId)
     {
-        var response = await GetProjectOverview(projectRecordId);
-        SetupShortProjectTitleBackNav("pov", "app:Welcome", backRoute);
+        var result = await GetProjectOverviewResult(projectRecordId!, backRoute);
 
-        if ((response is StatusCodeResult result && result.StatusCode is < 200 or > 299) ||
-            (response is not OkObjectResult okResult))
+        if (result is not OkObjectResult projectOverview)
         {
-            return response;
+            return result;
         }
 
-        if (okResult.Value is ProjectOverviewModel model && model.Status == ProjectRecordStatus.Active)
+        if (projectOverview.Value is ProjectOverviewModel model && model.Status == ProjectRecordStatus.Active)
         {
             return RedirectToAction(nameof(ProjectDetails), new { projectRecordId, backRoute, modificationId });
         }
-        return View(okResult.Value);
+        return View(projectOverview.Value);
     }
 
     public async Task<IActionResult> ProjectDetails(string projectRecordId, string? backRoute, string? modificationId)
@@ -53,18 +55,15 @@ public class ProjectOverviewController(
         }
 
         UpdateModificationRelatedTempData();
-        SetupShortProjectTitleBackNav("pov", "app:Welcome", backRoute);
 
-        var response = await GetProjectOverview(projectRecordId, nameof(ProjectDetails));
+        var result = await GetProjectOverviewResult(projectRecordId!, backRoute, nameof(ProjectDetails));
 
-        // if status code is not a successful status code
-        if ((response is StatusCodeResult result && result.StatusCode is < 200 or > 299) ||
-            (response is not OkObjectResult okResult))
+        if (result is not OkObjectResult projectOverview)
         {
-            return response;
+            return result;
         }
 
-        return View(okResult.Value);
+        return View(projectOverview.Value);
     }
 
     public async Task<IActionResult> PostApproval
@@ -78,23 +77,37 @@ public class ProjectOverviewController(
     )
     {
         UpdateModificationRelatedTempData();
-        SetupShortProjectTitleBackNav("pov", "app:Welcome", backRoute);
 
-        var response = await GetProjectOverview(projectRecordId);
+        var result = await GetProjectOverviewResult(projectRecordId!, backRoute);
 
-        // if status code is not a successful status code
-        if ((response is StatusCodeResult result && result.StatusCode is < 200 or > 299) ||
-            (response is not OkObjectResult okResult))
+        if (result is not OkObjectResult projectOverview)
         {
-            return response;
+            return result;
         }
 
         var model = new PostApprovalViewModel
         {
-            ProjectOverviewModel = okResult.Value as ProjectOverviewModel
+            ProjectOverviewModel = projectOverview.Value as ProjectOverviewModel
         };
+        if (HttpContext.Request.Method == HttpMethods.Get)
+        {
+            var savedSearch = HttpContext.Session.GetString(SessionKeys.PostApprovalsSearch);
+            if (!string.IsNullOrWhiteSpace(savedSearch))
+            {
+                model.Search = JsonSerializer.Deserialize<ApprovalsSearchModel>(savedSearch)!;
+            }
+        }
 
-        var searchQuery = new ModificationSearchRequest();
+        var searchQuery = new ModificationSearchRequest()
+        {
+            FromDate = model.Search?.FromDate,
+            ToDate = model.Search?.ToDate,
+            ModificationType = model.Search?.ModificationType!,
+            Category = model.Search?.Category,
+            ReviewType = model.Search?.ReviewType,
+            Status = model.Search?.Status,
+            ModificationId = model.Search?.ModificationId,
+        };
 
         var modificationsResponseResult =
             await projectModificationsService.GetModificationsForProject(projectRecordId, searchQuery, pageNumber, pageSize, sortField, sortDirection);
@@ -129,14 +142,10 @@ public class ProjectOverviewController(
 
     public async Task<IActionResult> ProjectTeam(string projectRecordId, string? backRoute)
     {
-        SetupShortProjectTitleBackNav("pov", "app:Welcome", backRoute);
-        var response = await GetProjectOverview(projectRecordId, nameof(ProjectTeam));
-
-        // if status code is not a successful status code
-        if ((response is StatusCodeResult result && result.StatusCode is < 200 or > 299) ||
-            (response is not OkObjectResult okResult))
+        var result = await GetProjectOverviewResult(projectRecordId!, backRoute, nameof(ProjectTeam));
+        if (result is not OkObjectResult okResult)
         {
-            return response;
+            return result;
         }
 
         return View(okResult.Value);
@@ -144,14 +153,10 @@ public class ProjectOverviewController(
 
     public async Task<IActionResult> ResearchLocations(string projectRecordId, string? backRoute)
     {
-        SetupShortProjectTitleBackNav("pov", "app:Welcome", backRoute);
-        var response = await GetProjectOverview(projectRecordId, nameof(ResearchLocations));
-
-        // if status code is not a successful status code
-        if ((response is StatusCodeResult result && result.StatusCode is < 200 or > 299) ||
-            (response is not OkObjectResult okResult))
+        var result = await GetProjectOverviewResult(projectRecordId!, backRoute, nameof(ResearchLocations));
+        if (result is not OkObjectResult okResult)
         {
-            return response;
+            return result;
         }
 
         return View(okResult.Value);
@@ -290,15 +295,12 @@ public class ProjectOverviewController(
         )
     {
         UpdateModificationRelatedTempData();
-        SetupShortProjectTitleBackNav("pov", "app:Welcome", backRoute);
 
-        var response = await GetProjectOverview(projectRecordId);
+        var result = await GetProjectOverviewResult(projectRecordId!, backRoute);
 
-        // if status code is not a successful status code
-        if ((response is StatusCodeResult result && result.StatusCode is < 200 or > 299) ||
-            (response is not OkObjectResult okResult))
+        if (result is not OkObjectResult okResult)
         {
-            return response;
+            return result;
         }
 
         var model = new ProjectOverviewDocumentViewModel
@@ -338,13 +340,11 @@ public class ProjectOverviewController(
     [HttpPost]
     public async Task<IActionResult> ConfirmDeleteProject(string projectRecordId)
     {
-        var response = await GetProjectOverview(projectRecordId);
+        var result = await GetProjectOverviewResult(projectRecordId!, "");
 
-        // if status code is not a successful status code
-        if ((response is StatusCodeResult result && result.StatusCode is < 200 or > 299) ||
-            (response is not OkObjectResult okResult))
+        if (result is not OkObjectResult okResult)
         {
-            return response;
+            return result;
         }
 
         var model = okResult.Value as ProjectOverviewModel;
@@ -352,9 +352,105 @@ public class ProjectOverviewController(
         return View("/Features/ProjectOverview/Views/DeleteProject.cshtml", model);
     }
 
-    private static string? GetAnswerName(string? answerText, Dictionary<string, string> options)
+    [Route("/projectoverview/applyfilters", Name = "pov:applyfilters")]
+    [HttpPost]
+    public async Task<IActionResult> ApplyFilters(PostApprovalViewModel model)
     {
-        return answerText is string id && options.TryGetValue(id, out var name) ? name : null;
+        var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
+
+        var result = await GetProjectOverviewResult(projectRecordId!, "");
+
+        if (result is not OkObjectResult projectOverview)
+        {
+            return result;
+        }
+
+        model.ProjectOverviewModel = projectOverview.Value as ProjectOverviewModel;
+
+        var validationResult = await validator.ValidateAsync(model.Search);
+
+        if (!validationResult.IsValid)
+        {
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
+
+            return View(nameof(PostApproval), model);
+        }
+
+        HttpContext.Session.SetString(SessionKeys.PostApprovalsSearch, JsonSerializer.Serialize(model.Search));
+
+        // Call PostApproval with matching parameter set
+        return RedirectToRoute("pov:postapproval", new { projectRecordId });
+    }
+
+    [Route("/projectoverview/clearfilters", Name = "pov:clearfilters")]
+    [HttpGet]
+    public IActionResult ClearFilters()
+    {
+        var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId);
+        HttpContext.Session.Remove(SessionKeys.PostApprovalsSearch);
+        return RedirectToRoute("pov:postapproval", new { projectRecordId });
+    }
+
+    [Route("/projectoverview/removefilter", Name = "pov:removefilter")]
+    [HttpGet]
+    public IActionResult RemoveFilter(string key, [FromQuery] string? model = null)
+    {
+        var viewModel = new PostApprovalViewModel();
+
+        if (!string.IsNullOrWhiteSpace(model))
+        {
+            viewModel.Search = JsonSerializer.Deserialize<ApprovalsSearchModel>(model);
+        }
+        else
+        {
+            viewModel.Search = new ApprovalsSearchModel();
+        }
+        var keyNormalized = key?.ToLowerInvariant().Replace(" ", "");
+
+        switch (keyNormalized)
+        {
+            case "modificationtype":
+                viewModel.Search!.ModificationType = null;
+                break;
+
+            case "reviewtype":
+                viewModel.Search!.ReviewType = null;
+                break;
+
+            case "category":
+                viewModel.Search!.Category = null;
+                break;
+
+            case "datesubmitted":
+                viewModel.Search!.FromDay = viewModel.Search.FromMonth = viewModel.Search.FromYear = null;
+                viewModel.Search.ToDay = viewModel.Search.ToMonth = viewModel.Search.ToYear = null;
+                break;
+
+            case "datesubmitted-from":
+                viewModel.Search!.FromDay = viewModel.Search.FromMonth = viewModel.Search.FromYear = null;
+                break;
+
+            case "datesubmitted-to":
+                viewModel.Search!.ToDay = viewModel.Search.ToMonth = viewModel.Search.ToYear = null;
+                break;
+
+            case "status":
+                viewModel.Search!.Status = null;
+                break;
+
+            case "modificationid":
+                viewModel.Search!.ModificationId = null;
+                break;
+        }
+
+        HttpContext.Session.SetString(SessionKeys.PostApprovalsSearch, JsonSerializer.Serialize(viewModel.Search));
+
+        var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId);
+
+        return RedirectToRoute("pov:postapproval", new { projectRecordId });
     }
 
     private void UpdateModificationRelatedTempData()
@@ -432,4 +528,20 @@ public class ProjectOverviewController(
         ModificationStatus.NotAuthorised => nameof(ModificationStatusOrder.NotAuthorised),
         _ => ModificationStatusOrder.None.ToString()
     };
+
+    private async Task<IActionResult> GetProjectOverviewResult(string projectRecordId, string? backRoute, string? specificViewName = null)
+    {
+        SetupShortProjectTitleBackNav("pov", "app:Welcome", backRoute);
+
+        var response = await GetProjectOverview(projectRecordId, specificViewName);
+
+        // if status code is not a successful status code
+        if ((response is StatusCodeResult result && result.StatusCode is < 200 or > 299) ||
+            response is not OkObjectResult)
+        {
+            return response;
+        }
+
+        return response;
+    }
 }
