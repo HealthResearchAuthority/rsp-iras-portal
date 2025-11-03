@@ -74,7 +74,8 @@ public class MyTasklistController(IProjectModificationsService projectModificati
                 LeadNation = dto.LeadNation,
                 SponsorOrganisation = dto.SponsorOrganisation,
                 CreatedAt = dto.CreatedAt,
-                ProjectRecordId = dto.ProjectRecordId
+                ProjectRecordId = dto.ProjectRecordId,
+                Status = dto.Status
             }).ToList() ?? new();
 
         model.Pagination = new PaginationViewModel(pageNumber, pageSize, result?.Content?.TotalCount ?? 0)
