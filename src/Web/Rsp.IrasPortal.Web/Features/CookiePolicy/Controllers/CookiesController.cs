@@ -7,7 +7,7 @@ namespace Rsp.IrasPortal.Web.Features.CookiePolicy.Controllers;
 public class CookiesController : Controller
 {
     [HttpPost]
-    public IActionResult AcceptConsent(string? additionalConsent)
+    public IActionResult AcceptConsent(string? additionalConsent, string settingsSource)
     {
         // Always set the main consent cookie
         Response.Cookies.Append(CookieConsentNames.EssentialCookies, "true", new CookieOptions
@@ -31,7 +31,15 @@ public class CookiesController : Controller
         });
 
         // set notification banner so it shows on the page
-        TempData[TempDataKeys.ShowCookiesSavedNotificationBanner] = true;
+        if (settingsSource == CookieConfirmationSource.CookieSettingsPage)
+        {
+            TempData[TempDataKeys.ShowCookiesSavedNotificationBanner] = true;
+        }
+
+        if (settingsSource == CookieConfirmationSource.CookieBanner)
+        {
+            TempData[TempDataKeys.ShowCookiesSavedHeaderBanner] = true;
+        }
 
         // Redirect back to referring page
         var referer = Request.Headers["Referer"].ToString();
@@ -44,5 +52,14 @@ public class CookiesController : Controller
     public IActionResult CookieSettings()
     {
         return View("~/Features/CookiePolicy/Views/CookiesSettingsPage.cshtml");
+    }
+
+    [HttpPost]
+    public IActionResult HideCookieSuccessBanner()
+    {
+        var referer = Request.Headers.Referer.ToString();
+        return !string.IsNullOrEmpty(referer)
+            ? Redirect(referer)
+            : RedirectToAction("Index", "Home");
     }
 }

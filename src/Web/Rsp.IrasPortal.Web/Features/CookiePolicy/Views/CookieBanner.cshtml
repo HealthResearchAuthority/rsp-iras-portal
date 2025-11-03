@@ -3,6 +3,8 @@
 @{
 	var userHasConsent = Context.Request.Cookies.ContainsKey(CookieConsentNames.EssentialCookies);
 	var bannerContent = (RichTextProperties?)ViewData[PageContentElements.CookieBannerContent];
+	var cookieSettingsSavedContent = (RichTextProperties?)ViewData[PageContentElements.CookieBannerContent];
+	var showCookiesSavedConfirmation = TempData[TempDataKeys.ShowCookiesSavedHeaderBanner];
 }
 
 @if (!userHasConsent)
@@ -20,12 +22,14 @@
 			<div class="govuk-button-group">
 				<form class="cookie-banner-form" asp-controller="Cookies" asp-action="AcceptConsent" method="post">
 					<input hidden readonly name="additionalConsent" value="yes" />
+					<input hidden readonly name="settingsSource" value="@CookieConfirmationSource.CookieBanner" />
 					<button type="submit" class="govuk-button" data-module="govuk-button">
 						Accept additional cookies
 					</button>
 				</form>
 				<form class="cookie-banner-form" asp-controller="Cookies" asp-action="AcceptConsent" method="post">
 					<input hidden readonly name="additionalConsent" value="no" />
+					<input hidden readonly name="settingsSource" value="@CookieConfirmationSource.CookieBanner" />
 					<button type="submit" class="govuk-button" data-module="govuk-button">
 						Reject additional cookies
 					</button>
@@ -33,6 +37,31 @@
 
 				<a class="govuk-link" href="/pages/cookies">View cookies</a>
 			</div>
+		</div>
+	</div>
+}
+
+@if (showCookiesSavedConfirmation is true)
+{
+	var userAcceptedAnalyticsCookies = Context.Request.Cookies[CookieConsentNames.AdditionalCookies] == "true";
+	var userConsent = userAcceptedAnalyticsCookies ? "accepted" : "rejected";
+
+	<div class="govuk-cookie-banner" data-nosnippet role="region" aria-label="Cookies on [name of service]">
+		<div class="govuk-cookie-banner__message govuk-width-container">
+			<div class="govuk-grid-row">
+				<div class="govuk-grid-column-two-thirds">
+					<div class="govuk-cookie-banner__content">
+						<p class="govuk-body">You’ve @userConsent additional cookies. You can <a class="govuk-link" href="/pages/cookies">change your cookie settings</a> at any time.</p>
+					</div>
+				</div>
+			</div>
+			<form asp-controller="Cookies" asp-action="HideCookieSuccessBanner" method="post">
+				<div class="govuk-button-group">
+					<button value="yes" type="submit" name="cookies[hide]" class="govuk-button" data-module="govuk-button">
+						Hide cookie message
+					</button>
+				</div>
+			</form>			
 		</div>
 	</div>
 }
