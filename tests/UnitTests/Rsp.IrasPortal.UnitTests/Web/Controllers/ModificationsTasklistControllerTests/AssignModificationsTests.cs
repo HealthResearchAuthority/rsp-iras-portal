@@ -270,7 +270,37 @@ public class AssignModificationsTests : TestServiceBase<ModificationsTasklistCon
     }
 
     [Theory, AutoData]
-    public async Task AssignModifications_POST_ServiceFails_AddsModelErrorAndRedirects
+    public async Task AssignModifications_POST_ModificationsServiceFails_AddsModelErrorAndRedirects
+    (
+        List<string> modificationIds,
+        UserResponse userResponse,
+        string reviewerId
+    )
+    {
+        // Arrange
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<UserResponse> { StatusCode = HttpStatusCode.OK, Content = userResponse });
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.AssignModificationsToReviewer(modificationIds, reviewerId, userResponse.User.Email))
+            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.BadRequest });
+
+        // Act
+        var result = await Sut.AssignModifications(modificationIds, reviewerId);
+
+        // Assert
+        Sut.ModelState.ContainsKey(string.Empty).ShouldBeTrue();
+        Sut.TempData.ContainsKey(TempDataKeys.ModelState).ShouldBeTrue();
+
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe(nameof(Sut.Index));
+    }
+
+    [Theory, AutoData]
+    public async Task AssignModifications_POST_UserServiceFails_AddsModelErrorAndRedirects
     (
         List<string> modificationIds,
         string reviewerId
@@ -279,9 +309,9 @@ public class AssignModificationsTests : TestServiceBase<ModificationsTasklistCon
         // Arrange
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
 
-        Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.AssignModificationsToReviewer(modificationIds, reviewerId))
-            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.BadRequest });
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<UserResponse> { StatusCode = HttpStatusCode.BadRequest });
 
         // Act
         var result = await Sut.AssignModifications(modificationIds, reviewerId);
@@ -298,14 +328,19 @@ public class AssignModificationsTests : TestServiceBase<ModificationsTasklistCon
     public async Task AssignModifications_SuccessfulAssignment_StoresReviewerIdAndRedirects
     (
         List<string> modificationIds,
+        UserResponse userResponse,
         string reviewerId
     )
     {
         // Arrange
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
 
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<UserResponse> { StatusCode = HttpStatusCode.OK, Content = userResponse });
+
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.AssignModificationsToReviewer(modificationIds, reviewerId))
+            .Setup(s => s.AssignModificationsToReviewer(modificationIds, reviewerId, userResponse.User.Email))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         // Act

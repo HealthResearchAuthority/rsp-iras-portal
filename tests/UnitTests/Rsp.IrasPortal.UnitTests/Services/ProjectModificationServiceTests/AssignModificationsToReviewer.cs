@@ -9,7 +9,8 @@ public class AssignModificationsToReviewer : TestServiceBase<ProjectModification
     public async Task AssignModificationsToReviewer_DelegatesToClient_AndReturnsMappedResult
     (
         List<string> modificationIds,
-        string reviewerId
+        string reviewerId,
+        string reviewerEmail
     )
     {
         // Arrange
@@ -23,17 +24,17 @@ public class AssignModificationsToReviewer : TestServiceBase<ProjectModification
         var projectModificationsServiceClient = Mocker.GetMock<IProjectModificationsServiceClient>();
 
         projectModificationsServiceClient
-            .Setup(c => c.AssignModificationsToReviewer(modificationIds, reviewerId))
+            .Setup(c => c.AssignModificationsToReviewer(modificationIds, reviewerId, reviewerEmail))
             .ReturnsAsync(mockApiResponse.Object);
 
         // Act
-        var result = await Sut.AssignModificationsToReviewer(modificationIds, reviewerId);
+        var result = await Sut.AssignModificationsToReviewer(modificationIds, reviewerId, reviewerEmail);
 
         // Assert
         projectModificationsServiceClient
             .Verify
             (
-                c => c.AssignModificationsToReviewer(modificationIds, reviewerId),
+                c => c.AssignModificationsToReviewer(modificationIds, reviewerId, reviewerEmail),
                 Times.Once
             );
 
