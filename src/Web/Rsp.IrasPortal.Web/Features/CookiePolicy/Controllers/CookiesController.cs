@@ -57,7 +57,7 @@ public class CookiesController : Controller
     [HttpPost]
     public IActionResult HideCookieSuccessBanner()
     {
-        var referer = Request.Headers["Referer"].ToString();
+        var referer = Request.Headers.Referer.ToString();
         return !string.IsNullOrEmpty(referer)
             ? Redirect(referer)
             : RedirectToAction("Index", "Home");
