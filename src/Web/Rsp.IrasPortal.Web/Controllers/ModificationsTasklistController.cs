@@ -147,7 +147,8 @@ public class ModificationsTasklistController(
                     ChiefInvestigator = dto.ChiefInvestigator,
                     LeadNation = dto.LeadNation,
                     SponsorOrganisation = dto.SponsorOrganisation,
-                    CreatedAt = dto.CreatedAt
+                    CreatedAt = dto.CreatedAt,
+                    Status = dto.Status
                 },
                 IsSelected = selectedFromSession.Contains(dto.Id, StringComparer.OrdinalIgnoreCase),
             })

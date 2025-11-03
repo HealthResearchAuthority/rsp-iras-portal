@@ -472,7 +472,8 @@ else if (showNoResultsMessage)
                                 new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
                                 new { Field = nameof(ModificationsModel.ModificationType), Label = "Modification type" },
                                 new { Field = nameof(ModificationsModel.ChiefInvestigator), Label = "Chief Investigator" },
-                                new { Field = nameof(ModificationsModel.LeadNation), Label = "Lead Nation" }
+                                new { Field = nameof(ModificationsModel.LeadNation), Label = "Lead Nation" },
+                                new { Field = nameof(ModificationsModel.Status), Label = "Status" }
                             };
                             var tableId = "modificationsTable";
                         }
@@ -518,6 +519,7 @@ else if (showNoResultsMessage)
                                     <td class="govuk-table__cell">@modification.ModificationType</td>
                                     <td class="govuk-table__cell">@modification.ChiefInvestigator</td>
                                     <td class="govuk-table__cell">@modification.LeadNation</td>
+										<td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">@modification.Status</strong></td>
                                 </tr>
                             }
                         }
