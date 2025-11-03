@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.Filters;
 using Rsp.IrasPortal.Web.Controllers;
 using Rsp.IrasPortal.Web.Features.Approvals.RecordSearch.Models;
 
@@ -18,6 +19,7 @@ public class RecordSearchController(IValidator<RecordSearchNavigationModel> vali
     }
 
     [HttpPost]
+    [CmsContentAction(nameof(Index))]
     public async Task<IActionResult> Navigate(RecordSearchNavigationModel model)
     {
         var context = new ValidationContext<RecordSearchNavigationModel>(model);
