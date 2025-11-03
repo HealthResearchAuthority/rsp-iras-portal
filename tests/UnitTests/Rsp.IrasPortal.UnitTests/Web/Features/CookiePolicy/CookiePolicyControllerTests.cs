@@ -45,4 +45,33 @@ public class CookiePolicyControllerTests : TestServiceBase<CookiesController>
         var viewResult = result.ShouldBeOfType<ViewResult>();
         viewResult.ViewName.ShouldBe("~/Features/CookiePolicy/Views/CookiesSettingsPage.cshtml");
     }
+
+    [Fact]
+    public void HideCookie_Triggers_Redirect()
+    {
+        // Arrange
+        var pageUrl = "some-url";
+        _http.Request.Headers["Referer"] = pageUrl;
+
+        // Act
+        var result = Sut.HideCookieSuccessBanner();
+
+        // Assert
+        var redirectResult = result.ShouldBeOfType<RedirectResult>();
+        redirectResult.Url.ShouldBe(pageUrl);
+    }
+
+    [Fact]
+    public void HideCookie_Triggers_RedirectAction()
+    {
+        // Arrange
+
+        // Act
+        var result = Sut.HideCookieSuccessBanner();
+
+        // Assert
+        var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
+        redirectResult.ActionName.ShouldBe("Index");
+        redirectResult.ControllerName.ShouldBe("Home");
+    }
 }
