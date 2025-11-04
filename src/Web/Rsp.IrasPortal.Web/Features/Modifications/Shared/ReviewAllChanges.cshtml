@@ -74,44 +74,15 @@
 </div>
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-
         <h2 class="govuk-heading-m">Changes</h2>
+        <authorized auth-params="@new(Roles: "sponsor")">
+            <partial name="_NavigationTabPartial" model="Model" view-data="ViewData" />
+        </authorized>
 
-        <partial name="ModificationChanges" model="Model" view-data="ViewData" />
-
-        <h2 class="govuk-heading-m">Sponsor details</h2>
-
-        <div class="govuk-summary-card">
-            <div class="govuk-summary-card__title-wrapper">
-                <h2 class="govuk-summary-card__title">
-                    Sponsor details
-                </h2>
-                @if (Model.Status is ModificationStatus.InDraft)
-                {
-                    <ul class="govuk-summary-card__actions">
-                        <li class="govuk-summary-card__action">
-                            <a class="govuk-link" asp-route="pmc:sponsorreference" asp-route-projectRecordId="@Model.ProjectRecordId">Change</a>
-                        </li>
-                    </ul>
-                }
-            </div>
-            <div class="govuk-summary-card__content">
-                <dl class="govuk-summary-list">
-
-                    @foreach (var question in Model.SponsorDetails)
-                    {
-                        <div class="govuk-summary-list__row">
-                            <dt class="govuk-summary-list__key">
-                                @question.ShortQuestionText
-                            </dt>
-                            <dd class="govuk-summary-list__value">
-                                @question.GetDisplayText(false)
-                            </dd>
-                        </div>
-                    }
-                </dl>
-            </div>
-        </div>
+        <authorized auth-params="@new(Roles: "applicant")">
+            <partial name="ModificationChanges" model="Model" view-data="ViewData" />
+            <partial name="SponsorDetailsView" model="Model" view-data="ViewData" />
+        </authorized>
     </div>
 </div>
 
