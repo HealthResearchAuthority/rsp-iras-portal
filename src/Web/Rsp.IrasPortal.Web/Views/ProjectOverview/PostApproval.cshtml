@@ -107,7 +107,7 @@
                             <fieldset class="govuk-fieldset">
                                 <rsp-gds-radio-group asp-for="Search.ModificationType"
                                                      label-text="Select one option"
-                                                 options="Ranking.ModificationTypes.AllOptions.Select(type => new GdsOption { Value = type, Label = type })"
+                                                     options="Ranking.ModificationTypes.AllOptions.Select(type => new GdsOption { Value = type, Label = type })"
                                                      conditional-field="false"
                                                      legend-class="govuk-label govuk-label--s font-weight-none" />
                             </fieldset>
@@ -125,7 +125,7 @@
                             <fieldset class="govuk-fieldset">
                                 <rsp-gds-radio-group asp-for="Search.ReviewType"
                                                      label-text="Select one option"
-                                                 options="Ranking.ReviewTypes.AllOptions.Select(type => new GdsOption { Value = type, Label = type })"
+                                                     options="Ranking.ReviewTypes.AllOptions.Select(type => new GdsOption { Value = type, Label = type })"
                                                      conditional-field="false"
                                                      legend-class="govuk-label govuk-label--s font-weight-none" />
                             </fieldset>
@@ -143,7 +143,7 @@
                             <fieldset class="govuk-fieldset">
                                 <rsp-gds-radio-group asp-for="Search.Category"
                                                      label-text="Select one option"
-                                                 options="Ranking.CategoryTypes.AllOptions.Select(type => new GdsOption { Value = type, Label = type })"
+                                                     options="Ranking.CategoryTypes.AllOptions.Select(type => new GdsOption { Value = type, Label = type })"
                                                      conditional-field="false"
                                                      legend-class="govuk-label govuk-label--s font-weight-none" />
                             </fieldset>
@@ -227,7 +227,7 @@
                             <span class="search-filter-summary__remove-filter-text">
                                 <span class="govuk-visually-hidden">Remove filter</span>
                                 @if (filterKey.Contains("date submitted - from", StringComparison.OrdinalIgnoreCase)
-                                                    || filterKey.Contains("date submitted - to", StringComparison.OrdinalIgnoreCase))
+                                      || filterKey.Contains("date submitted - to", StringComparison.OrdinalIgnoreCase))
                                 {
                                     @($"{filterKey} {val}")
                                 }
@@ -255,18 +255,16 @@
 {
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
+            <input hidden="hidden" type="text" value="@Model.Pagination?.SortField" name="sortField" />
+            <input hidden="hidden" type="text" value="@Model.Pagination?.SortDirection" name="sortDirection" />
             <div class="govuk-table-wrapper">
-
-                <input hidden="hidden" type="text" value="@Model.Pagination?.SortField" name="sortField" />
-                <input hidden="hidden" type="text" value="@Model.Pagination?.SortDirection" name="sortDirection" />
-
                 <table class="govuk-table modifications-tasklist-table" id="postApprovalTable">
                     <thead class="govuk-table__head">
                         <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
                             @{
                                 var sortableHeaders = new[]
                                 {
-                                                new { Field = nameof(PostApprovalModificationsModel.ModificationId), Label = "Modification ID" },
+                                                new { Field = nameof(PostApprovalModificationsModel.ModificationNumber), Label = "Modification ID" },
                                                 new { Field = nameof(PostApprovalModificationsModel.ModificationType), Label = "Modification type" },
                                                 new { Field = nameof(PostApprovalModificationsModel.ReviewType), Label = "Review type" },
                                                 new { Field = nameof(PostApprovalModificationsModel.Category), Label = "Category" },
@@ -337,11 +335,13 @@
                     </tbody>
                 </table>
             </div>
+            <partial name="_Pagination" model="@Model.Pagination" />
         </div>
     </div>
 }
 
-@if ((Model.Search.Filters?.Count > 0 && !Model.Modifications.Any()) || !string.IsNullOrEmpty(Model.Search?.ModificationId))
+@if ((!Model.Modifications.Any()) &&
+((Model.Search.Filters?.Count >= 0 && !string.IsNullOrEmpty(Model.Search?.ModificationId)) || string.IsNullOrEmpty(Model.Search?.ModificationId)))
 {
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">

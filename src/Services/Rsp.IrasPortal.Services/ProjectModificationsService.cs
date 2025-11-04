@@ -155,9 +155,9 @@ public class ProjectModificationsService
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse> AssignModificationsToReviewer(List<string> modificationIds, string reviewerId)
+    public async Task<ServiceResponse> AssignModificationsToReviewer(List<string> modificationIds, string reviewerId, string reviewerEmail)
     {
-        var apiResponse = await projectModificationsServiceClient.AssignModificationsToReviewer(modificationIds, reviewerId);
+        var apiResponse = await projectModificationsServiceClient.AssignModificationsToReviewer(modificationIds, reviewerId, reviewerEmail);
         return apiResponse.ToServiceResponse();
     }
 
@@ -255,6 +255,12 @@ public class ProjectModificationsService
         // Invoke microservice client to delete the modification change.
         var apiResponse = await projectModificationsServiceClient.DeleteModification(modificationId);
 
+        return apiResponse.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse<ProjectModificationAuditTrailResponse>> GetModificationAuditTrail(Guid modificationId)
+    {
+        var apiResponse = await projectModificationsServiceClient.GetModificationAuditTrail(modificationId);
         return apiResponse.ToServiceResponse();
     }
 }
