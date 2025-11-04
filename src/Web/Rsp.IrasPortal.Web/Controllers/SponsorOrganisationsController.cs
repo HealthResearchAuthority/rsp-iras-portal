@@ -131,7 +131,7 @@ public class SponsorOrganisationsController(
                 return View("SetupSponsorOrganisation", model);
             }
 
-            var nameSearch = await rtsService.GetOrganisationsByName(organisationName, null, 1, int.MaxValue);
+            var nameSearch = await rtsService.GetOrganisationsByName(organisationName, OrganisationRoles.Sponsor, 1, int.MaxValue);
             if (!nameSearch.IsSuccessStatusCode)
             {
                 TempData[TempDataKeys.ShowNoResultsFound] = true;
