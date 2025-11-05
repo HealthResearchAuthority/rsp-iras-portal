@@ -73,7 +73,7 @@ public class ProjectOverviewController(
         string? backRoute,
         int pageNumber = 1,
         int pageSize = 20,
-        string sortField = nameof(ModificationsModel.CreatedAt),
+        string sortField = nameof(ModificationsModel.ModificationNumber),
         string sortDirection = SortDirections.Descending
     )
     {
@@ -453,10 +453,6 @@ public class ProjectOverviewController(
 
             case "status":
                 viewModel.Search!.Status = null;
-                break;
-
-            case "modificationid":
-                viewModel.Search!.ModificationId = null;
                 break;
         }
 

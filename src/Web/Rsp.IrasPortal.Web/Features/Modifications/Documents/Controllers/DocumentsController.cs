@@ -32,6 +32,7 @@ public class DocumentsController
     private const string PostApprovalRoute = "pov:postapproval";
 
     private const string MissingDateErrorMessage = "Enter a sponsor document date";
+    private const string DuplicateDocumentNameErrorMessage = "Document name already exists. Enter a unique document name";
 
     /// <summary>
     /// Handles GET requests for the ProjectDocument action.
@@ -444,7 +445,7 @@ public class DocumentsController
                 FileName = uploadedBlob.FileName,
                 DocumentStoragePath = uploadedBlob.BlobUri,
                 FileSize = uploadedBlob.FileSize,
-                Status = DocumentStatus.UploadedPendingMalwareScan
+                Status = DocumentStatus.Uploaded
             }).ToList();
 
             // Save the uploaded document metadata to the backend
@@ -489,94 +490,45 @@ public class DocumentsController
     [HttpPost]
     public async Task<IActionResult> SaveDocumentDetails(ModificationAddDocumentDetailsViewModel viewModel, bool saveForLater = false)
     {
-        // Retrieve the CMS question set for the document metadata section
-        var additionalQuestionsResponse = await cmsQuestionsetService
-            .GetModificationQuestionSet(DocumentDetailsSection);
+        // Step 1: Retrieve and rebuild the questionnaire structure from CMS
+        var questionnaire = await BuildUpdatedQuestionnaire(viewModel);
 
-        // Build the full questionnaire from the CMS content
-        var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(additionalQuestionsResponse.Content!);
-
-        // Map user responses from the submitted view model to the questionnaire
-        foreach (var question in questionnaire.Questions)
-        {
-            var response = viewModel.Questions.Find(q => q.Index == question.Index);
-
-            question.SelectedOption = response?.SelectedOption;
-            if (question.DataType != "Dropdown")
-            {
-                question.Answers = response?.Answers ?? [];
-            }
-
-            question.Id = response?.Id;
-            question.AnswerText = response?.AnswerText;
-
-            // Update date fields if present
-            question.Day = response?.Day;
-            question.Month = response?.Month;
-            question.Year = response?.Year;
-        }
-
-        // Replace the original questions with the updated ones
+        // Replace the original question list with updated answers from the user
         viewModel.Questions = questionnaire.Questions;
 
-        // Validate the questionnaire and store the result in ViewData for UI messages
+        // Find the "Document Name" question for later duplicate name validation
+        var documentNameQuestion = questionnaire.Questions
+            .Select((q, index) => new { Question = q, Index = index })
+            .FirstOrDefault(x => x.Question.QuestionId.Equals(QuestionIds.DocumentName, StringComparison.OrdinalIgnoreCase));
+
+        // Step 2: Validate all basic questionnaire rules (e.g., required fields)
         var isValid = await this.ValidateQuestionnaire(validator, viewModel);
 
-        // Validate if date is missing if not save for later
+        // Step 3: Validate missing date fields — only if user is not saving for later
         if (!saveForLater)
         {
-            var selectedDocumentTypeOption = viewModel.Questions
-                .FirstOrDefault(q => q.QuestionId == QuestionIds.SelectedDocumentType)?.SelectedOption;
-
-            var dateQuestions = viewModel.Questions
-                .Where(q => q.DataType?.ToLower() == "date");
-
-            foreach (var question in dateQuestions)
-            {
-                // Validate if date should be entered for selected document type
-                var optionsWithDate = question.Rules?
-                    .FirstOrDefault()?
-                    .Conditions?
-                    .FirstOrDefault(c => c.Operator == "IN")?
-                    .ParentOptions;
-
-                if (selectedDocumentTypeOption is not null &&
-                    optionsWithDate is not null &&
-                    optionsWithDate.Contains(selectedDocumentTypeOption) &&
-                    string.IsNullOrWhiteSpace(question.Day) &&
-                    string.IsNullOrWhiteSpace(question.Month) &&
-                    string.IsNullOrWhiteSpace(question.Year))
-                {
-                    ModelState.AddModelError($"Questions[{question.Index}].AnswerText", MissingDateErrorMessage);
-                    isValid = false;
-                }
-            }
+            var dateValidationPassed = ValidateRequiredDates(viewModel);
+            isValid = isValid && dateValidationPassed;
         }
 
+        // Step 4: Validate that document name doesn’t already exist
+        var duplicateValidationPassed = await ValidateDuplicateDocumentNames(viewModel, documentNameQuestion);
+        isValid = isValid && duplicateValidationPassed;
+
+        // Pass validation result to the view so that GOV.UK error summaries can display correctly
         ViewData[ViewDataKeys.IsQuestionnaireValid] = isValid;
 
+        // Step 5: If validation fails, redisplay form with errors
         if (!isValid)
-        {
-            // Redisplay the view with validation errors
             return View("AddDocumentDetails", viewModel);
-        }
 
-        // Persist the responses to the backend service
+        // Step 6: Save all valid answers to backend
         await SaveModificationDocumentAnswers(viewModel);
 
-        // if save for later
-        if (saveForLater)
-        {
-            // to get the ProjectRecordId
-            var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
-
-            return RedirectToRoute(PostApprovalRoute, new { projectRecordId });
-        }
-
-        // Redirect depending on whether the user is reviewing answers or adding more details
-        return viewModel.ReviewAnswers
-            ? RedirectToAction(nameof(ReviewDocumentDetails))
-            : RedirectToAction(nameof(AddDocumentDetailsList));
+        // Step 7: Redirect user depending on their action
+        return saveForLater
+            ? RedirectToSaveForLater()    // “Save and come back later”
+            : RedirectAfterSubmit(viewModel); // Continue flow or review answers
     }
 
     [HttpGet]
@@ -884,5 +836,161 @@ public class DocumentsController
         }
 
         return questionnaire;
+    }
+
+    /// <summary>
+    /// Builds the questionnaire structure from CMS and maps user responses onto it.
+    /// Ensures that form inputs (AnswerText, Dates, etc.) are bound to correct questions.
+    /// </summary>
+    private async Task<QuestionnaireViewModel> BuildUpdatedQuestionnaire(ModificationAddDocumentDetailsViewModel viewModel)
+    {
+        // Get the CMS-driven question set for "Document Details"
+        var additionalQuestionsResponse = await cmsQuestionsetService.GetModificationQuestionSet(DocumentDetailsSection);
+
+        // Build questionnaire view model from CMS content
+        var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(additionalQuestionsResponse.Content!);
+
+        // Map submitted answers to each question
+        foreach (var question in questionnaire.Questions)
+        {
+            var response = viewModel.Questions.Find(q => q.Index == question.Index);
+
+            // Copy selected answer values from the user submission
+            question.SelectedOption = response?.SelectedOption;
+
+            // For non-dropdowns, assign user’s text or checkbox answers
+            if (question.DataType != "Dropdown")
+                question.Answers = response?.Answers ?? [];
+
+            // Carry over IDs and free-text responses
+            question.Id = response?.Id;
+            question.AnswerText = response?.AnswerText;
+
+            // Handle date fields (day, month, year)
+            question.Day = response?.Day;
+            question.Month = response?.Month;
+            question.Year = response?.Year;
+        }
+
+        return questionnaire;
+    }
+
+    /// <summary>
+    /// Validates that date fields are entered for questions requiring dates,
+    /// based on selected document type.
+    /// </summary>
+    private bool ValidateRequiredDates(ModificationAddDocumentDetailsViewModel viewModel)
+    {
+        // Identify which document type the user selected
+        var selectedDocumentTypeOption = viewModel.Questions
+            .FirstOrDefault(q => q.QuestionId == QuestionIds.SelectedDocumentType)?.SelectedOption;
+
+        // Filter all questions that use a date input type
+        var dateQuestions = viewModel.Questions.Where(q => q.DataType?.ToLower() == "date");
+        var isValid = true;
+
+        foreach (var question in dateQuestions)
+        {
+            // Find rules that define when this date question should be required
+            var optionsWithDate = question.Rules?
+                .FirstOrDefault()?.Conditions?
+                .FirstOrDefault(c => c.Operator == "IN")?.ParentOptions;
+
+            // If the document type requires a date, and it's missing, mark invalid
+            if (ShouldRequireDate(selectedDocumentTypeOption, optionsWithDate) && IsDateMissing(question))
+            {
+                ModelState.AddModelError($"Questions[{question.Index}].AnswerText", MissingDateErrorMessage);
+                isValid = false;
+            }
+        }
+
+        return isValid;
+    }
+
+    /// <summary>Checks if the selected document type requires a date.</summary>
+    private static bool ShouldRequireDate(string? selectedOption, IEnumerable<string>? optionsWithDate) =>
+        selectedOption is not null && optionsWithDate?.Contains(selectedOption) == true;
+
+    /// <summary>Checks if all parts of a date (day/month/year) are missing.</summary>
+    private static bool IsDateMissing(QuestionViewModel q) =>
+        string.IsNullOrWhiteSpace(q.Day) && string.IsNullOrWhiteSpace(q.Month) && string.IsNullOrWhiteSpace(q.Year);
+
+    /// <summary>
+    /// Checks whether the document name entered already exists among uploaded documents.
+    /// Adds ModelState error if a duplicate is found.
+    /// </summary>
+    private async Task<bool> ValidateDuplicateDocumentNames(
+            ModificationAddDocumentDetailsViewModel viewModel,
+            dynamic? documentNameQuestion)
+    {
+        var request = BuildDocumentRequest();
+
+        // Fetch all existing uploaded documents for this modification
+        var documentsResponse = await respondentService.GetModificationChangesDocuments(
+            request.ProjectModificationChangeId,
+            request.ProjectRecordId,
+            request.ProjectPersonnelId);
+
+        // Skip validation if service call fails or no documents exist
+        if (documentsResponse?.StatusCode != HttpStatusCode.OK || documentsResponse.Content == null)
+            return true;
+
+        var isValid = true;
+
+        // Extract all document IDs except the current one, ordered alphabetically by FileName
+        var documentIds = documentsResponse.Content
+            .Where(d => d.Id != viewModel.DocumentId)
+            .OrderBy(d => d.FileName, StringComparer.OrdinalIgnoreCase)
+            .Select(d => d.Id);
+
+        foreach (var documentId in documentIds)
+        {
+            // Fetch answers for each document
+            var answersResponse = await respondentService.GetModificationDocumentAnswers(documentId);
+            var answers = answersResponse?.StatusCode == HttpStatusCode.OK
+                ? answersResponse.Content ?? []
+                : [];
+
+            // Get the existing document name (if any)
+            var existingDocName = answers
+                .FirstOrDefault(a => a.QuestionId == QuestionIds.DocumentName)?
+                .AnswerText?
+                .Trim();
+
+            // Compare document names to detect duplicates
+            if (!string.IsNullOrWhiteSpace(existingDocName) &&
+                string.Equals(
+                    existingDocName,
+                    documentNameQuestion?.Question?.AnswerText?.Trim(),
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                ModelState.AddModelError(
+                    $"Questions[{documentNameQuestion?.Index}].AnswerText",
+                    DuplicateDocumentNameErrorMessage);
+
+                isValid = false;
+            }
+        }
+
+        return isValid;
+    }
+
+    /// <summary>
+    /// Redirects to the “save for later” route.
+    /// </summary>
+    private RedirectToRouteResult RedirectToSaveForLater()
+    {
+        var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
+        return RedirectToRoute(PostApprovalRoute, new { projectRecordId });
+    }
+
+    /// <summary>
+    /// Redirects user to appropriate next page based on review mode.
+    /// </summary>
+    private RedirectToActionResult RedirectAfterSubmit(ModificationAddDocumentDetailsViewModel viewModel)
+    {
+        return viewModel.ReviewAnswers
+            ? RedirectToAction(nameof(ReviewDocumentDetails))
+            : RedirectToAction(nameof(AddDocumentDetailsList));
     }
 }

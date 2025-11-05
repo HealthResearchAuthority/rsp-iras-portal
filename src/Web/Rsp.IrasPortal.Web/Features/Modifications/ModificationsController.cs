@@ -489,4 +489,24 @@ public class ModificationsController
             TempData[TempDataKeys.ProjectModification.ProjectModificationChangeMarker] = Guid.NewGuid();
         }
     }
+
+    [HttpGet]
+    public async Task<IActionResult> AuditTrail(Guid modificationId, string shortTitle, string modificationIdentifier)
+    {
+        var auditResponse = await projectModificationsService.GetModificationAuditTrail(modificationId);
+
+        if (!auditResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(auditResponse);
+        }
+
+        var viewModel = new AuditTrailModel
+        {
+            AuditTrail = auditResponse.Content!,
+            ModificationIdentifier = modificationIdentifier,
+            ShortTitle = shortTitle,
+        };
+
+        return View(viewModel);
+    }
 }

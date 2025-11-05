@@ -13,6 +13,7 @@ public class ResearchAccountController : Controller
     {
         // check if notification banner needs to be shown before clearing session
         var notificationBannerTemp = TempData[TempDataKeys.ShowNotificationBanner];
+        var cookiesSavedBannerTemp = TempData[TempDataKeys.ShowCookiesSavedHeaderBanner];
 
         // Clear session and TempData to ensure a fresh state
         HttpContext.Session.Clear();
@@ -20,6 +21,7 @@ public class ResearchAccountController : Controller
 
         // re-add notification banner temp key so it displays in the view
         TempData[TempDataKeys.ShowNotificationBanner] = notificationBannerTemp;
+        TempData[TempDataKeys.ShowCookiesSavedHeaderBanner] = cookiesSavedBannerTemp;
 
         // Retrieve the last login time from HttpContext items
         var lastLogin = HttpContext.Items[ContextItemKeys.LastLogin];

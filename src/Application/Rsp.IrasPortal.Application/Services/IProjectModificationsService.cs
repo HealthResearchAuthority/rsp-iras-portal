@@ -127,7 +127,7 @@ public interface IProjectModificationsService : IInterceptable
     /// </returns>
     Task<ServiceResponse> CreateDocumentModification(List<ProjectModificationDocumentRequest> projectModificationDocumentRequest);
 
-    Task<ServiceResponse> AssignModificationsToReviewer(List<string> modificationIds, string reviewerId);
+    Task<ServiceResponse> AssignModificationsToReviewer(List<string> modificationIds, string reviewerId, string reviewerEmail);
 
     /// <summary>
     /// Gets modifications for specific ProjectRecordId with filtering, sorting and pagination
@@ -182,7 +182,6 @@ public interface IProjectModificationsService : IInterceptable
     /// </returns>
     Task<ServiceResponse> DeleteDocumentModification(List<ProjectModificationDocumentRequest> projectModificationDocumentRequest);
 
-
     /// <summary>
     /// Updates sttaus of an existing project modification by its unique identifier.
     /// </summary>
@@ -192,4 +191,6 @@ public interface IProjectModificationsService : IInterceptable
     /// that reflects the success or failure of the update operation.
     /// </returns>
     Task<ServiceResponse> DeleteModification(Guid modificationId);
+
+    Task<ServiceResponse<ProjectModificationAuditTrailResponse>> GetModificationAuditTrail(Guid modificationId);
 }

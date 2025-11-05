@@ -54,4 +54,9 @@ public struct QuestionIds
     /// The question ID for the selected document type.
     /// </summary>
     public const string SelectedDocumentType = "IQA0600";
+
+    /// <summary>
+    /// The question ID for the selected document type.
+    /// </summary>
+    public const string DocumentName = "IQA0623";
 }
