@@ -307,4 +307,109 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
             .GetMock<ICmsQuestionsetService>()
             .Verify(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
     }
+
+    [Theory, AutoData]
+    public async Task DisplayQuestionnaire_ShouldSetViewBagDisplayName_WhenOrgLookupAnswerExists
+    (
+    List<QuestionSectionsResponse> questionSectionsResponse,
+    OrganisationDto organisationDto,
+    string organisationId,
+    string sectionId,
+    string categoryId)
+    {
+        // Arrange
+        var cmsResponse = new CmsQuestionSetResponse();
+        cmsResponse.Sections = new List<SectionModel>
+        {
+            new SectionModel
+            {
+                Id = sectionId,
+                Questions = new List<QuestionModel>
+                {
+                    new QuestionModel
+                    {
+                        Id = "Q1",
+                        QuestionFormat = "rts:org_lookup",
+                        AnswerDataType = "rts:org_lookup",
+                        Answers = new List<AnswerModel>
+                        {
+                            new AnswerModel { Id = "ORG123", OptionName = organisationId }
+                        }
+                    }
+                }
+            }
+        };
+
+        // Mock CMS service
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetQuestionSections())
+            .ReturnsAsync(new ServiceResponse<IEnumerable<QuestionSectionsResponse>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = questionSectionsResponse
+            });
+
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetQuestionSet(sectionId, null))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = cmsResponse
+            });
+
+        // Mock RTS service
+        Mocker.GetMock<IRtsService>()
+            .Setup(s => s.GetOrganisation(organisationId))
+            .ReturnsAsync(new ServiceResponse<OrganisationDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = organisationDto
+            });
+
+        // Mock SetStage dependencies
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetPreviousQuestionSection(It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = questionSectionsResponse.First()
+            });
+
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetNextQuestionSection(It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = questionSectionsResponse.First()
+            });
+
+        var session = new Mock<ISession>();
+        session
+            .Setup(s => s.Keys)
+            .Returns([]);
+
+        var httpContext = new DefaultHttpContext
+        {
+            Session = session.Object
+        };
+
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = httpContext
+        };
+
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.CurrentStage] = categoryId
+        };
+
+        // Act
+        var result = await Sut.DisplayQuestionnaire(categoryId, sectionId);
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.ViewName.ShouldBe("Index");
+
+        ((string)Sut.ViewBag.DisplayName).ShouldBe(organisationDto.Name);
+    }
 }
