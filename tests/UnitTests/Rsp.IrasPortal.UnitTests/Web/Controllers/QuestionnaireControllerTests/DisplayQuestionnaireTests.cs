@@ -412,4 +412,93 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
 
         ((string)Sut.ViewBag.DisplayName).ShouldBe(organisationDto.Name);
     }
+
+    [Theory, AutoData]
+    public async Task DisplayQuestionnaire_ShouldSetViewBagDisplayName_WhenQuestionsExistInSession(
+     List<QuestionSectionsResponse> questionSectionsResponse,
+     OrganisationDto organisationDto,
+     string organisationId,
+     string sectionId,
+     string categoryId)
+    {
+        // Arrange
+        var questions = new List<QuestionViewModel>
+    {
+        new QuestionViewModel
+        {
+            QuestionType = "rts:org_lookup",
+            AnswerText = organisationId
+        }
+    };
+
+        var sessionKey = $"{SessionKeys.Questionnaire}:{sectionId}";
+        var sessionData = JsonSerializer.SerializeToUtf8Bytes(questions);
+
+        // Mock CMS service
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetQuestionSections())
+            .ReturnsAsync(new ServiceResponse<IEnumerable<QuestionSectionsResponse>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = questionSectionsResponse
+            });
+
+        // RTS service mock
+        Mocker.GetMock<IRtsService>()
+            .Setup(s => s.GetOrganisation(organisationId))
+            .ReturnsAsync(new ServiceResponse<OrganisationDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = organisationDto
+            });
+
+        // Mock SetStage dependencies
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetPreviousQuestionSection(It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = questionSectionsResponse.First()
+            });
+
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetNextQuestionSection(It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<QuestionSectionsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = questionSectionsResponse.First()
+            });
+
+        var session = new Mock<ISession>();
+        session.Setup(s => s.Keys).Returns(new[] { sessionKey });
+        session.Setup(s => s.TryGetValue(sessionKey, out It.Ref<byte[]?>.IsAny))
+            .Returns((string key, out byte[]? value) =>
+            {
+                value = sessionData;
+                return true;
+            });
+
+        var httpContext = new DefaultHttpContext
+        {
+            Session = session.Object
+        };
+
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = httpContext
+        };
+
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.CurrentStage] = categoryId
+        };
+
+        // Act
+        var result = await Sut.DisplayQuestionnaire(categoryId, sectionId);
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.ViewName.ShouldBe("Index");
+        ((string)Sut.ViewBag.DisplayName).ShouldBe(organisationDto.Name);
+    }
 }
