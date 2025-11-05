@@ -44,6 +44,15 @@ public class ApprovalsController
                 return View(model);
             }
 
+            if (search.SponsorOrganisation is not null)
+            {
+                var orgResponse = await rtsService.GetOrganisation(search.SponsorOrganisation);
+                if (orgResponse is not null && orgResponse.IsSuccessStatusCode)
+                {
+                    ViewBag.DisplayName = orgResponse.Content?.Name;
+                }
+            }
+
             var searchQuery = new ModificationSearchRequest
             {
                 IrasId = search.IrasId,

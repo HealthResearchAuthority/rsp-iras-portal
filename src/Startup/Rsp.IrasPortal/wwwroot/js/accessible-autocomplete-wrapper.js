@@ -6,13 +6,25 @@
  * @param {string} defaultValue - The default value to prefill in the autocomplete input.
  * @param {string} apiUrl - The API endpoint to fetch autocomplete suggestions.
  * @param {string} containerId - The ID of the container to render the autocomplete component into.
+ * @param {boolean} useOrganisationId - Indicate if organisation Id should be used instead of name.
  */
-function initAutocomplete(autoCompleteInputId, inputIdForSubmission, defaultValue, apiUrl, containerId, autoCompleteEnabledId) {
+function initAutocomplete
+    (
+        autoCompleteInputId,
+        inputIdForSubmission,
+        defaultValue,
+        apiUrl,
+        containerId,
+        autoCompleteEnabledId,
+        useOrganisationId
+    ) {
     const beforeSuggestionsText = 'Suggestions'; // Message displayed before the suggestions.
     const afterSuggestionsText = 'Continue entering to improve suggestions'; // Message displayed after the suggestions.
     const noResultsText = 'No suggestions found.'; // Message displayed when no suggestions are found.
+    const useOrganisationIdBool = useOrganisationId == 'true'; // Map value to a boolean
     let resultsFound = false; // Flag to indicate if results were found.
     let requestToken = 0; // A counter to identify the most recent AJAX request
+    let nameToIdMap = {}; // Map ids of results to displayed names
 
     accessibleAutocomplete({
         element: document.getElementById(containerId), // The container element for the autocomplete.
@@ -60,9 +72,17 @@ function initAutocomplete(autoCompleteInputId, inputIdForSubmission, defaultValu
                         return;
                     }
 
+                    // Map ids of results to displayed names
+                    if (useOrganisationIdBool) {
+                        nameToIdMap = {};
+                        for (const item of data) {
+                            nameToIdMap[item.name] = item.id;
+                        }
+                    }
+
                     resultsFound = true; // Set flag to indicate that results were found.
                     $(".autocomplete__menu").attr('data-before-suggestions', beforeSuggestionsText); // Show message before suggestions.
-                    populateResults(data); // Populate the suggestion list with the API response.
+                    populateResults(data.map(item => item.name)); // Populate the names from suggestion list with the API response.
                     $(".autocomplete__menu").attr('data-after-suggestions', afterSuggestionsText); // Show message after suggestions.
                     $(`#${inputIdForSubmission}`).attr('value', ''); // Clear the hidden input; only populated when a suggestion is selected.
                 },
@@ -99,7 +119,12 @@ function initAutocomplete(autoCompleteInputId, inputIdForSubmission, defaultValu
                 return;
             }
 
-            $(`#${inputIdForSubmission}`).attr('value', suggestion); // Set the hidden input value to the selected suggestion.
+            if (useOrganisationIdBool) {
+                $(`#${inputIdForSubmission}`).attr('value', nameToIdMap[suggestion]); // Set the hidden input value to the selected suggestion.
+            }
+            else {
+                $(`#${inputIdForSubmission}`).attr('value', suggestion); // Set the hidden input value to the selected suggestion.
+            }
         },
         tNoResults: function () {
             // Message displayed when no suggestions are found.

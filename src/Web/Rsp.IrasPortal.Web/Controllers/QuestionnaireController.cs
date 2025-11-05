@@ -159,6 +159,9 @@ public class QuestionnaireController
                 questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(questionsJson)!;
             }
 
+            // store organisation name to display in org autocomplete field
+            QuestionViewModel? sponsorOrgInput;
+
             // questionnaire doesn't exist in session so
             // get questions from the database for the category
             if (questions == null || questions.Count == 0)
@@ -177,6 +180,18 @@ public class QuestionnaireController
                     // store the questions to load again if there are validation errors on the page
                     HttpContext.Session.SetString($"{SessionKeys.Questionnaire}:{sectionId}", JsonSerializer.Serialize(questionnaire.Questions));
 
+                    // store organisation name to display in org autocomplete field
+                    sponsorOrgInput = questionnaire.Questions.FirstOrDefault(q => string.Equals(q.QuestionType, "rts:org_lookup", StringComparison.OrdinalIgnoreCase));
+                    var organisationId = sponsorOrgInput?.Answers?.FirstOrDefault()?.AnswerText;
+                    if (organisationId is not null)
+                    {
+                        var orgResponse = await rtsService.GetOrganisation(organisationId);
+                        if (orgResponse is not null && orgResponse.IsSuccessStatusCode)
+                        {
+                            ViewBag.DisplayName = orgResponse.Content?.Name;
+                        }
+                    }
+
                     return View(Index, questionnaire);
                 }
 
@@ -186,6 +201,17 @@ public class QuestionnaireController
 
             // set the active stage for the category
             await SetStage(sectionId);
+
+            // store organisation name to display in org autocomplete field
+            sponsorOrgInput = questions.FirstOrDefault(q => string.Equals(q.QuestionType, "rts:org_lookup", StringComparison.OrdinalIgnoreCase));
+            if (sponsorOrgInput is not null && sponsorOrgInput.AnswerText is not null)
+            {
+                var orgResponse = await rtsService.GetOrganisation(sponsorOrgInput.AnswerText);
+                if (orgResponse is not null && orgResponse.IsSuccessStatusCode)
+                {
+                    ViewBag.DisplayName = orgResponse.Content?.Name;
+                }
+            }
 
             // if we have questions in the session
             // then return the view with the model
@@ -232,6 +258,21 @@ public class QuestionnaireController
                 {
                     // If a search was performed, only assign if a selection was made
                     sponsorOrgInput.AnswerText = string.IsNullOrWhiteSpace(selectedOrg) ? string.Empty : selectedOrg;
+
+                    if (!string.IsNullOrWhiteSpace(selectedOrg))
+                    {
+                        // pass name of organisation, to be displayed when there are validation errors on page
+                        TempData.TryGetValue<OrganisationSearchResponse>(TempDataKeys.SponsorOrganisations, out var response, true);
+
+                        if (response?.Organisations != null)
+                        {
+                            var selectedOrganisationObj = response.Organisations.FirstOrDefault(o => o.Id.ToString() == selectedOrg);
+                            if (selectedOrganisationObj != null)
+                            {
+                                model.SponsorOrgSearch.DisplayName = selectedOrganisationObj.Name;
+                            }
+                        }
+                    }
                 }
                 else
                 {
@@ -380,6 +421,17 @@ public class QuestionnaireController
 
         // if we have answers, update the model with the provided answers
         questionnaire.UpdateWithRespondentAnswers(respondentAnswers);
+
+        // use name for organisation from RTS
+        var sponsorOrgInput = questionnaire.Questions.FirstOrDefault(q => string.Equals(q.QuestionType, "rts:org_lookup", StringComparison.OrdinalIgnoreCase));
+        if (sponsorOrgInput is not null && sponsorOrgInput.AnswerText is not null)
+        {
+            var orgResponse = await rtsService.GetOrganisation(sponsorOrgInput.AnswerText);
+            if (orgResponse is not null && orgResponse.IsSuccessStatusCode)
+            {
+                ViewBag.DisplayName = orgResponse.Content?.Name;
+            }
+        }
 
         return View("ReviewAnswers", questionnaire);
     }
