@@ -14,7 +14,12 @@ namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace;
 /// </summary>
 [Route("[action]", Name = "sws:[action]")]
 [Authorize(Policy = "IsSponsor")]
-public class SponsorWorkspaceController(IUserManagementService userService) : Controller
+public class SponsorWorkspaceController
+(
+    IUserManagementService userService,
+    ISponsorOrganisationService sponsorOrganisationService,
+    IRtsService rtsService
+) : Controller
 {
     [HttpGet]
     public async Task<IActionResult> SponsorWorkspace()
@@ -26,20 +31,39 @@ public class SponsorWorkspaceController(IUserManagementService userService) : Co
         {
             return this.ServiceError(userEntityResponse);
         }
-
-        if (string.IsNullOrEmpty(userEntityResponse.Content?.User.Organisation))
+        if (!Guid.TryParse(userEntityResponse.Content!.User.Id?.Trim(), out var gid))
         {
             var errorResponse = new ServiceResponse<UserResponse>()
-                        .WithError(
-                            errorMessage: "Sponsor organisation name is missing for the current user.",
-                            reasonPhrase: "InvalidOperation",
-                            statusCode: HttpStatusCode.BadRequest
-                        );
-
+                    .WithError(
+                        errorMessage: "Invalid or missing user identifier for the current user.",
+                        reasonPhrase: "InvalidUserId",
+                        statusCode: HttpStatusCode.BadRequest
+                    );
             return this.ServiceError(errorResponse);
         }
 
-        ViewBag.SponsorOrganisationName = userEntityResponse.Content?.User.Organisation;
+        var sponsorOrganisationsResponse = await sponsorOrganisationService.GetAllActiveSponsorOrganisationsForEnabledUser(gid);
+
+        if (!sponsorOrganisationsResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(sponsorOrganisationsResponse);
+        }
+        // Handling multiple active sponsor organisations assigned to a single user is currently out of scope.
+        else if (sponsorOrganisationsResponse.Content?.Count() != 1)
+        {
+            return Forbid();
+        }
+
+        var organisationId = sponsorOrganisationsResponse.Content.Single().RtsId;
+        var rtsResponse = await rtsService.GetOrganisation(organisationId);
+
+        if (!rtsResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(rtsResponse);
+        }
+
+        ViewBag.SponsorOrganisationName = rtsResponse.Content?.Name;
+        ViewBag.OrganisationId = organisationId;
 
         return View();
     }
