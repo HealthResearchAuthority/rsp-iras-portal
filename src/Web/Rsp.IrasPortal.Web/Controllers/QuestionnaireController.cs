@@ -159,9 +159,6 @@ public class QuestionnaireController
                 questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(questionsJson)!;
             }
 
-            // store organisation name to display in org autocomplete field
-            QuestionViewModel? sponsorOrgInput;
-
             // questionnaire doesn't exist in session so
             // get questions from the database for the category
             if (questions == null || questions.Count == 0)
@@ -181,16 +178,7 @@ public class QuestionnaireController
                     HttpContext.Session.SetString($"{SessionKeys.Questionnaire}:{sectionId}", JsonSerializer.Serialize(questionnaire.Questions));
 
                     // store organisation name to display in org autocomplete field
-                    sponsorOrgInput = questionnaire.Questions.FirstOrDefault(q => string.Equals(q.QuestionType, "rts:org_lookup", StringComparison.OrdinalIgnoreCase));
-                    var organisationId = sponsorOrgInput?.Answers?.FirstOrDefault()?.AnswerText;
-                    if (organisationId is not null)
-                    {
-                        var orgResponse = await rtsService.GetOrganisation(organisationId);
-                        if (orgResponse is not null && orgResponse.IsSuccessStatusCode)
-                        {
-                            ViewBag.DisplayName = orgResponse.Content?.Name;
-                        }
-                    }
+                    ViewBag.DisplayName = await SponsorOrganisationNameHelper.GetSponsorOrganisationNameFromQuestions(rtsService, questionnaire.Questions, getIdFromQuestionsFirstAnswer: true);
 
                     return View(Index, questionnaire);
                 }
@@ -203,15 +191,7 @@ public class QuestionnaireController
             await SetStage(sectionId);
 
             // store organisation name to display in org autocomplete field
-            sponsorOrgInput = questions.FirstOrDefault(q => string.Equals(q.QuestionType, "rts:org_lookup", StringComparison.OrdinalIgnoreCase));
-            if (sponsorOrgInput is not null && sponsorOrgInput.AnswerText is not null)
-            {
-                var orgResponse = await rtsService.GetOrganisation(sponsorOrgInput.AnswerText);
-                if (orgResponse is not null && orgResponse.IsSuccessStatusCode)
-                {
-                    ViewBag.DisplayName = orgResponse.Content?.Name;
-                }
-            }
+            ViewBag.DisplayName = await SponsorOrganisationNameHelper.GetSponsorOrganisationNameFromQuestions(rtsService, questions);
 
             // if we have questions in the session
             // then return the view with the model
@@ -423,15 +403,7 @@ public class QuestionnaireController
         questionnaire.UpdateWithRespondentAnswers(respondentAnswers);
 
         // use name for organisation from RTS
-        var sponsorOrgInput = questionnaire.Questions.FirstOrDefault(q => string.Equals(q.QuestionType, "rts:org_lookup", StringComparison.OrdinalIgnoreCase));
-        if (sponsorOrgInput is not null && sponsorOrgInput.AnswerText is not null)
-        {
-            var orgResponse = await rtsService.GetOrganisation(sponsorOrgInput.AnswerText);
-            if (orgResponse is not null && orgResponse.IsSuccessStatusCode)
-            {
-                ViewBag.DisplayName = orgResponse.Content?.Name;
-            }
-        }
+        ViewBag.DisplayName = await SponsorOrganisationNameHelper.GetSponsorOrganisationNameFromQuestions(rtsService, questionnaire.Questions);
 
         return View("ReviewAnswers", questionnaire);
     }

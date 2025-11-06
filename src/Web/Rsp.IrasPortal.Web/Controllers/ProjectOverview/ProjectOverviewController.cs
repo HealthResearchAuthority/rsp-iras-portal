@@ -259,16 +259,7 @@ public class ProjectOverviewController(
         }
 
         // Get organisation name from RTS service
-        string? organisationName = null;
-        var sponsorOrgInput = questionnaire.Questions.FirstOrDefault(q => string.Equals(q.QuestionType, "rts:org_lookup", StringComparison.OrdinalIgnoreCase));
-        if (sponsorOrgInput is not null && sponsorOrgInput.AnswerText is not null)
-        {
-            var orgResponse = await rtsService.GetOrganisation(sponsorOrgInput.AnswerText);
-            if (orgResponse is not null && orgResponse.IsSuccessStatusCode)
-            {
-                organisationName = orgResponse.Content?.Name;
-            }
-        }
+        var organisationName = await SponsorOrganisationNameHelper.GetSponsorOrganisationNameFromQuestions(rtsService, questionnaire.Questions);
 
         // Populate TempData with project details for actual modification journey
         TempData[TempDataKeys.IrasId] = projectRecord.IrasId;
