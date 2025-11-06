@@ -301,7 +301,6 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
         viewResult.ViewName.ShouldBe("Index");
 
         var model = viewResult.Model.ShouldBeOfType<QuestionnaireViewModel>();
-        //model.Questions.ShouldBeEquivalentTo(expectedQuestionnaire.Questions);
 
         Mocker
             .GetMock<ICmsQuestionsetService>()

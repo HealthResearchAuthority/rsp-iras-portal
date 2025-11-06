@@ -8,6 +8,7 @@ using Rsp.IrasPortal.Application.Filters;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
+using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers;
@@ -44,14 +45,7 @@ public class ApprovalsController
                 return View(model);
             }
 
-            if (search.SponsorOrganisation is not null)
-            {
-                var orgResponse = await rtsService.GetOrganisation(search.SponsorOrganisation);
-                if (orgResponse is not null && orgResponse.IsSuccessStatusCode)
-                {
-                    ViewBag.DisplayName = orgResponse.Content?.Name;
-                }
-            }
+            ViewBag.DisplayName = await SponsorOrganisationNameHelper.GetSponsorOrganisationNameFromOrganisationId(rtsService, search.SponsorOrganisation);
 
             var searchQuery = new ModificationSearchRequest
             {
