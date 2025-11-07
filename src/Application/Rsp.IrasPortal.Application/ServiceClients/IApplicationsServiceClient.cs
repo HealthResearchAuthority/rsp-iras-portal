@@ -92,4 +92,13 @@ public interface IApplicationsServiceClient
     /// <returns>An asynchronous operation that deletes the specified project record.</returns>
     [Delete("/applications")]
     public Task<IApiResponse> DeleteProject(string projectRecordId);
+
+    [Post("/applications/paginated")]
+    public Task<ApiResponse<PaginatedResponse<CompleteProjectRecordResponse>>> GetPaginatedApplications(
+        [Body] ProjectRecordSearchRequest searchQuery,
+        int pageIndex = 1,
+        int? pageSize = null,
+        string? sortField = null,
+        string? sortDirection = null
+        );
 }

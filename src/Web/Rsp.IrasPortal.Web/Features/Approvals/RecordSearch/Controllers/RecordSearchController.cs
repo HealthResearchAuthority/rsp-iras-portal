@@ -42,7 +42,7 @@ public class RecordSearchController(IValidator<RecordSearchNavigationModel> vali
         switch (model.RecordType)
         {
             case SearchRecordTypes.ProjectRecord:
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Index), "ProjectRecordSearch");
 
             case SearchRecordTypes.ModificationRecord:
                 return RedirectToAction(nameof(ApprovalsController.Index), "Approvals");

@@ -22,4 +22,5 @@ public static class SessionKeys
     public const string BackRouteSection = "BackRouteSection";
     public const string PostApprovalsSearch = "session:postapprovalssearch";
     public const string SponsorAuthorisationsSearch = "session:sponsor_authorisations_search";
+    public const string ApplicationsSearch = "session:applicationsearch";
 }

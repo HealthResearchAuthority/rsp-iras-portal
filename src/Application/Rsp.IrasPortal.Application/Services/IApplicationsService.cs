@@ -89,4 +89,13 @@ public interface IApplicationsService : IInterceptable
     /// An asynchronous operation that returns a <see cref="ServiceResponse"/> indicating the result of the delete operation.
     /// </returns>
     public Task<ServiceResponse> DeleteProject(string projectRecordId);
+
+    public Task<ServiceResponse<PaginatedResponse<CompleteProjectRecordResponse>>> GetPaginatedApplications
+    (
+        ProjectRecordSearchRequest searchQuery,
+        int pageIndex = 1,
+        int? pageSize = 20,
+        string? sortField = nameof(IrasApplicationResponse.CreatedDate),
+        string? sortDirection = SortDirections.Descending
+    );
 }
