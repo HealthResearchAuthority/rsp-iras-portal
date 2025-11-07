@@ -74,15 +74,16 @@
 </div>
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-        <h2 class="govuk-heading-m">Changes</h2>
-        <authorized auth-params="@new(Roles: "sponsor")">
+        @if (Model.Status != ModificationStatus.InDraft)
+        {
             <partial name="_NavigationTabPartial" model="Model" view-data="ViewData" />
-        </authorized>
-
-        <authorized auth-params="@new(Roles: "applicant")">
+        }
+        else
+        {
+            <h2 class="govuk-heading-m">Changes</h2>
             <partial name="ModificationChanges" model="Model" view-data="ViewData" />
-            <partial name="SponsorDetailsView" model="Model" view-data="ViewData" />
-        </authorized>
+            <partial name="SponsorDetails" model="Model" view-data="ViewData" />
+        }
     </div>
 </div>
 
