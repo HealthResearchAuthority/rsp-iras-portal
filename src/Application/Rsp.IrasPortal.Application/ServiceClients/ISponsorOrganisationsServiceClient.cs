@@ -75,4 +75,10 @@ public interface ISponsorOrganisationsServiceClient
     /// </summary>
     [Get("/sponsororganisations/{rtsId}/audittrail")]
     public Task<IApiResponse<SponsorOrganisationAuditTrailResponse>> GetSponsorOrganisationAuditTrail(string rtsId, int pageNumber, int pageSize, string sortField, string sortDirection);
+
+    /// <summary>
+    /// Gets all active sponsor organisations assigned to an active user
+    /// </summary>
+    [Get("/sponsororganisations/getallactiveforenableduser/{userId}")]
+    public Task<IApiResponse<IEnumerable<SponsorOrganisationDto>>> GetAllActiveSponsorOrganisationsForEnabledUser(Guid userId);
 }

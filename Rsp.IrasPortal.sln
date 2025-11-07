@@ -10,6 +10,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsp.IrasPortal.Web", "src\Web\Rsp.IrasPortal.Web\Rsp.IrasPortal.Web.csproj", "{16232F65-3D77-4FFD-BC51-4AC0FFD9DAEE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2.Domain", "2.Domain", "{9361B42C-F733-4032-9E77-BD8453CCB750}"
+	ProjectSection(SolutionItems) = preProject
+		src\Startup\Rsp.IrasPortal\wwwroot\favicon.ico = src\Startup\Rsp.IrasPortal\wwwroot\favicon.ico
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsp.IrasPortal.Domain", "src\Domain\Rsp.IrasPortal.Domain\Rsp.IrasPortal.Domain.csproj", "{34A64270-AC4E-429A-A4D2-8395018BA1FC}"
 EndProject

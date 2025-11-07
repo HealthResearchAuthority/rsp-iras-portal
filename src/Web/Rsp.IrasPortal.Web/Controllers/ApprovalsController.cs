@@ -8,6 +8,7 @@ using Rsp.IrasPortal.Application.Filters;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
+using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers;
@@ -43,6 +44,8 @@ public class ApprovalsController
                 model.EmptySearchPerformed = true;
                 return View(model);
             }
+
+            ViewBag.DisplayName = await SponsorOrganisationNameHelper.GetSponsorOrganisationNameFromOrganisationId(rtsService, search.SponsorOrganisation);
 
             var searchQuery = new ModificationSearchRequest
             {

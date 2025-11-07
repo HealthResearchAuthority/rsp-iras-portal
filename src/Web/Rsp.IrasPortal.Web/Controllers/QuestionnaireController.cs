@@ -177,6 +177,9 @@ public class QuestionnaireController
                     // store the questions to load again if there are validation errors on the page
                     HttpContext.Session.SetString($"{SessionKeys.Questionnaire}:{sectionId}", JsonSerializer.Serialize(questionnaire.Questions));
 
+                    // store organisation name to display in org autocomplete field
+                    ViewBag.DisplayName = await SponsorOrganisationNameHelper.GetSponsorOrganisationNameFromQuestions(rtsService, questionnaire.Questions, getIdFromQuestionsFirstAnswer: true);
+
                     return View(Index, questionnaire);
                 }
 
@@ -186,6 +189,9 @@ public class QuestionnaireController
 
             // set the active stage for the category
             await SetStage(sectionId);
+
+            // store organisation name to display in org autocomplete field
+            ViewBag.DisplayName = await SponsorOrganisationNameHelper.GetSponsorOrganisationNameFromQuestions(rtsService, questions);
 
             // if we have questions in the session
             // then return the view with the model
@@ -232,6 +238,21 @@ public class QuestionnaireController
                 {
                     // If a search was performed, only assign if a selection was made
                     sponsorOrgInput.AnswerText = string.IsNullOrWhiteSpace(selectedOrg) ? string.Empty : selectedOrg;
+
+                    if (!string.IsNullOrWhiteSpace(selectedOrg))
+                    {
+                        // pass name of organisation, to be displayed when there are validation errors on page
+                        TempData.TryGetValue<OrganisationSearchResponse>(TempDataKeys.SponsorOrganisations, out var response, true);
+
+                        if (response?.Organisations != null)
+                        {
+                            var selectedOrganisation = response.Organisations.FirstOrDefault(o => o.Id.ToString() == selectedOrg);
+                            if (selectedOrganisation != null)
+                            {
+                                model.SponsorOrgSearch.DisplayName = selectedOrganisation.Name;
+                            }
+                        }
+                    }
                 }
                 else
                 {
@@ -380,6 +401,9 @@ public class QuestionnaireController
 
         // if we have answers, update the model with the provided answers
         questionnaire.UpdateWithRespondentAnswers(respondentAnswers);
+
+        // use name for organisation from RTS
+        ViewBag.DisplayName = await SponsorOrganisationNameHelper.GetSponsorOrganisationNameFromQuestions(rtsService, questionnaire.Questions);
 
         return View("ReviewAnswers", questionnaire);
     }
