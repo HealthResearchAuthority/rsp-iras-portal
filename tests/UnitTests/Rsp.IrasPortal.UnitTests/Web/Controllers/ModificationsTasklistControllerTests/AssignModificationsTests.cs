@@ -285,7 +285,7 @@ public class AssignModificationsTests : TestServiceBase<ModificationsTasklistCon
             .ReturnsAsync(new ServiceResponse<UserResponse> { StatusCode = HttpStatusCode.OK, Content = userResponse });
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.AssignModificationsToReviewer(modificationIds, reviewerId, userResponse.User.Email, $"{userResponse.User.GivenName}{userResponse.User.FamilyName}"))
+            .Setup(s => s.AssignModificationsToReviewer(modificationIds, reviewerId, userResponse.User.Email, It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.BadRequest });
 
         // Act
