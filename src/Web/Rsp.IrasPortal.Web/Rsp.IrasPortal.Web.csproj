@@ -10,9 +10,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Compile Remove="Features\SponsorWorkspace\Models\**" />
       <Compile Remove="Views\ProjectModification\**" />
+      <Content Remove="Features\SponsorWorkspace\Models\**" />
       <Content Remove="Views\ProjectModification\**" />
+      <EmbeddedResource Remove="Features\SponsorWorkspace\Models\**" />
       <EmbeddedResource Remove="Views\ProjectModification\**" />
+      <None Remove="Features\SponsorWorkspace\Models\**" />
       <None Remove="Views\ProjectModification\**" />
     </ItemGroup>
 
@@ -30,6 +34,5 @@
 
     <ItemGroup>
       <Folder Include="Features\ExceptionHandling\Views\" />
-      <Folder Include="Features\SponsorWorkspace\Models\" />
     </ItemGroup>
 </Project>
