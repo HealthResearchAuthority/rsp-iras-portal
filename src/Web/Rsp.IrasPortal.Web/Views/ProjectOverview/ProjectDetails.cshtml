@@ -8,11 +8,11 @@
 }
 
 @{
-	var routeName = (ViewData["BackRoute"] as string) ?? "app:Welcome";
-	var routeValues = ViewData["BackRouteValues"] as Dictionary<string, string>
-					  ?? new Dictionary<string, string>();
+    var routeName = (ViewData["BackRoute"] as string) ?? "app:Welcome";
+    var routeValues = ViewData["BackRouteValues"] as Dictionary<string, string>
+                      ?? new Dictionary<string, string>();
     var modificationId = Context.Request.Query["modificationId"].ToString();
-    bool addIrasIdInFirstGroup = true;
+    bool addIrasIdInFirstGroup = true;    
 }
 
 @section Breadcrumb {
@@ -55,12 +55,24 @@
             {
                 string questionText = string.IsNullOrWhiteSpace(question.ShortQuestionText) ? question.QuestionText : question.ShortQuestionText;
 
-                <div class="govuk-summary-list__row">
-                    <dt class="govuk-summary-list__key">@questionText</dt>
-                    <dd class="govuk-summary-list__value">
-                        @Html.Raw(question.GetDisplayText(includePrompt: false))
-                    </dd>
-                </div>
+                if (string.Equals(question.QuestionId, QuestionIds.PrimarySponsorOrganisation, StringComparison.Ordinal))
+                {
+                    <div class="govuk-summary-list__row">
+                        <dt class="govuk-summary-list__key">@questionText</dt>
+                        <dd class="govuk-summary-list__value">
+                            @Model.OrganisationName
+                        </dd>
+                    </div>
+                }
+                else
+                {
+                    <div class="govuk-summary-list__row">
+                        <dt class="govuk-summary-list__key">@questionText</dt>
+                        <dd class="govuk-summary-list__value">
+                            @Html.Raw(question.GetDisplayText(includePrompt: false))
+                        </dd>
+                    </div>
+                }
             }           
         </dl>            
         }

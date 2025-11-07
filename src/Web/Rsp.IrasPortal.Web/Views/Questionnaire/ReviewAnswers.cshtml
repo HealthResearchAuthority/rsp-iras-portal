@@ -89,6 +89,7 @@
 @{
     var prefix = ViewData.ModelState.IsValid ? "" : "Error - ";
     ViewBag.Title = $"{prefix}Review your answers - Make changes to research";
+    var organisationDisplayName = ViewBag.DisplayName as string ?? string.Empty;
 }
 
 <div class="govuk-grid-row">
@@ -130,7 +131,14 @@
                             else
                             {
                                 <input type="hidden" id="@question.QuestionId" name="hiddenResponse" value="@question.GetDisplayText()" />
-                                @Html.Raw(question.GetDisplayText())
+                                @if (string.Equals(question.QuestionId, QuestionIds.PrimarySponsorOrganisation, StringComparison.Ordinal))
+                                {
+                                    @organisationDisplayName                                    
+                                }
+                                else
+                                {
+                                    @Html.Raw(question.GetDisplayText())
+                                }                                
                             }
                         </dd>
 

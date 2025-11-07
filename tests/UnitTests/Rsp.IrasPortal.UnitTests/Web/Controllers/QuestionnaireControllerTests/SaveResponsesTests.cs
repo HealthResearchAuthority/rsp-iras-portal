@@ -651,4 +651,93 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
                r.Id == "RespondentId1" &&
                r.RespondentAnswers[0].AnswerText == expectedAnswerText)), Times.Once);
     }
+
+    [Theory, AutoData]
+    public async Task SaveResponses_ShouldSetSponsorOrgDisplayName_WhenOrganisationFoundInTempData(
+    QuestionnaireViewModel model,
+    OrganisationSearchResponse orgResponse,
+    IrasApplicationResponse application,
+    List<QuestionSectionsResponse> questionSectionsResponse)
+    {
+        // Arrange
+        var selectedOrgId = orgResponse.Organisations.First().Id.ToString();
+        var organisationName = orgResponse.Organisations.First().Name;
+
+        model.CurrentStage = "last stage";
+        model.SponsorOrgSearch.SelectedOrganisation = selectedOrgId;
+        model.SponsorOrgSearch.SearchText = "SomeText";
+        model.Questions = new List<QuestionViewModel>
+    {
+        new QuestionViewModel
+        {
+            QuestionId = "Q1",
+            QuestionType = "rts:org_lookup",
+            AnswerText = string.Empty
+        }
+    };
+
+        // Mock session
+        var session = new Mock<ISession>();
+        var sessionData = new Dictionary<string, byte[]?>
+    {
+        { SessionKeys.ProjectRecord, JsonSerializer.SerializeToUtf8Bytes(application) },
+        { $"{SessionKeys.Questionnaire}:{model.CurrentStage}", JsonSerializer.SerializeToUtf8Bytes(model.Questions) }
+    };
+
+        session.Setup(s => s.TryGetValue(It.IsAny<string>(), out It.Ref<byte[]?>.IsAny))
+               .Returns((string key, out byte[]? value) =>
+               {
+                   if (sessionData.ContainsKey(key))
+                   {
+                       value = sessionData[key];
+                       return true;
+                   }
+                   value = null;
+                   return false;
+               });
+
+        var context = new DefaultHttpContext { Session = session.Object };
+
+        // TempData
+        Sut.TempData = new TempDataDictionary(context, Mock.Of<ITempDataProvider>());
+        Sut.TempData[TempDataKeys.SponsorOrganisations] = JsonSerializer.Serialize(orgResponse);
+
+        Sut.ControllerContext = new ControllerContext { HttpContext = context };
+
+        // Mock validator
+        Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
+              .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), It.IsAny<CancellationToken>()))
+              .ReturnsAsync(new ValidationResult());
+
+        // Mock CMS service for SetStage
+        var responseQuestionSections = new ServiceResponse<IEnumerable<QuestionSectionsResponse>>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = questionSectionsResponse
+        };
+
+        var responseQuestionSection = new ServiceResponse<QuestionSectionsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = questionSectionsResponse.First()
+        };
+
+        Mocker.GetMock<ICmsQuestionsetService>()
+              .Setup(q => q.GetQuestionSections()).ReturnsAsync(responseQuestionSections);
+
+        Mocker.GetMock<ICmsQuestionsetService>()
+              .Setup(q => q.GetPreviousQuestionSection(It.IsAny<string>())).ReturnsAsync(responseQuestionSection);
+
+        Mocker.GetMock<ICmsQuestionsetService>()
+              .Setup(q => q.GetNextQuestionSection(It.IsAny<string>())).ReturnsAsync(responseQuestionSection);
+
+        // Act
+        var result = await Sut.SaveResponses(model, "searched:true", false);
+
+        // Assert
+        var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
+        redirectResult.ActionName.ShouldBe(nameof(QuestionnaireController.DisplayQuestionnaire));
+
+        model.SponsorOrgSearch.DisplayName.ShouldBe(organisationName);
+    }
 }

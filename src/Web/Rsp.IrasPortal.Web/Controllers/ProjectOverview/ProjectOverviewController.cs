@@ -24,6 +24,7 @@ public class ProjectOverviewController(
     IProjectModificationsService projectModificationsService,
     IRespondentService respondentService,
     ICmsQuestionsetService cmsQuestionsetService,
+    IRtsService rtsService,
     IValidator<ApprovalsSearchModel> validator
     ) : Controller
 {
@@ -257,6 +258,9 @@ public class ProjectOverviewController(
                 .ToList();
         }
 
+        // Get organisation name from RTS service
+        var organisationName = await SponsorOrganisationNameHelper.GetSponsorOrganisationNameFromQuestions(rtsService, questionnaire.Questions);
+
         // Populate TempData with project details for actual modification journey
         TempData[TempDataKeys.IrasId] = projectRecord.IrasId;
         TempData[TempDataKeys.ProjectRecordId] = projectRecord.Id;
@@ -278,6 +282,7 @@ public class ProjectOverviewController(
             ProjectPlannedEndDate = projectPlannedEndDate,
             Status = projectRecord.Status,
             IrasId = projectRecord.IrasId,
+            OrganisationName = organisationName,
             SectionGroupQuestions = sectionGroupQuestions,
         };
 
