@@ -50,4 +50,9 @@ public class BaseProjectModificationViewModel
     /// Gets or sets the Status of the Modification
     /// </summary>
     public string Status { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the created date of the Modification
+    /// </summary>
+    public string DateCreated { get; set; } = null!;
 }
