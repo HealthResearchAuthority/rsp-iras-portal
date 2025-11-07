@@ -246,10 +246,10 @@ public class QuestionnaireController
 
                         if (response?.Organisations != null)
                         {
-                            var selectedOrganisationObj = response.Organisations.FirstOrDefault(o => o.Id.ToString() == selectedOrg);
-                            if (selectedOrganisationObj != null)
+                            var selectedOrganisation = response.Organisations.FirstOrDefault(o => o.Id.ToString() == selectedOrg);
+                            if (selectedOrganisation != null)
                             {
-                                model.SponsorOrgSearch.DisplayName = selectedOrganisationObj.Name;
+                                model.SponsorOrgSearch.DisplayName = selectedOrganisation.Name;
                             }
                         }
                     }
