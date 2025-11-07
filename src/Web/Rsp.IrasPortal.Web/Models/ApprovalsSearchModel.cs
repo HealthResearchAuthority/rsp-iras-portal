@@ -64,7 +64,7 @@ public class ApprovalsSearchModel
             }
 
             if (!string.IsNullOrWhiteSpace(SponsorOrgSearch.SelectedOrganisation))
-            {
+            {                
                 SponsorOrganisation = SponsorOrgSearch.SelectedOrganisation;
             }
 
@@ -132,10 +132,6 @@ public class ApprovalsSearchModel
             if (!string.IsNullOrWhiteSpace(Status))
             {
                 filters.Add(ApprovalsSearch.StatusKey, [Status]);
-            }
-            if (!string.IsNullOrWhiteSpace(ModificationId))
-            {
-                filters.Add(ApprovalsSearch.ModificationId, [ModificationId]);
             }
             return filters;
         }

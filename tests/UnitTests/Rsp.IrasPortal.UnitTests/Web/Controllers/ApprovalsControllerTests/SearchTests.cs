@@ -2,8 +2,8 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
@@ -98,6 +98,34 @@ public class SearchTests : TestServiceBase<ApprovalsController>
     }
 
     [Theory, AutoData]
+    public async Task Search_ShouldSetViewBagDisplayName_WhenSponsorOrganisationExists(OrganisationDto responseContent)
+    {
+        // Arrange
+        var searchModel = new ApprovalsSearchModel
+        {
+            SponsorOrganisation = "1"
+        };
+        _http.Session.SetString(SessionKeys.ApprovalsSearch, JsonSerializer.Serialize(searchModel));
+
+        var orgServiceResponse = new ServiceResponse<OrganisationDto>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = responseContent
+        };
+
+        _rtsService
+            .Setup(s => s.GetOrganisation(searchModel.SponsorOrganisation))
+            .ReturnsAsync(orgServiceResponse);
+
+        // Act
+        var result = await Sut.Index();
+
+        // Assert
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.Equal(responseContent.Name, Sut.ViewBag.DisplayName);
+    }
+
+    [Theory, AutoData]
     public async Task Search_ShouldReturnModifications_WhenShortProjectTitleIsSet(GetModificationsResponse mockResponse)
     {
         // Arrange
@@ -127,7 +155,7 @@ public class SearchTests : TestServiceBase<ApprovalsController>
     public async Task Search_ShouldReturnModifications_WhenSponsorOrganisationIsSet(GetModificationsResponse mockResponse)
     {
         // Arrange
-        var searchModel = new ApprovalsSearchModel { SponsorOrganisation = "University College London" };
+        var searchModel = new ApprovalsSearchModel { SponsorOrganisation = "71" };
         _http.Session.SetString(SessionKeys.ApprovalsSearch, JsonSerializer.Serialize(searchModel));
 
         var serviceResponse = new ServiceResponse<GetModificationsResponse>

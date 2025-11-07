@@ -10,4 +10,5 @@ public class PostApprovalModificationsModel
     public DateTime? SentToRegulatorDate { get; set; }
     public string? Status { get; set; } = null!;
     public DateTime? SentToSponsorDate { get; set; }
+    public int ModificationNumber { get; set; }
 }

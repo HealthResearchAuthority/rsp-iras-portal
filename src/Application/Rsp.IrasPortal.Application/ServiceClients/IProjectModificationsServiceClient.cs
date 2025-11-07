@@ -136,7 +136,7 @@ public interface IProjectModificationsServiceClient
     /// <param name="reviewerId">The user ID of the study-wide reviewer</param>
     /// <returns></returns>
     [Post("/projectmodifications/assignmodificationstoreviewer")]
-    public Task<IApiResponse> AssignModificationsToReviewer(List<string> modificationIds, string reviewerId);
+    public Task<IApiResponse> AssignModificationsToReviewer(List<string> modificationIds, string reviewerId, string reviewerEmail);
 
     /// <summary>
     /// Gets modifications for specific ProjectRecordId with filtering, sorting and pagination
@@ -194,4 +194,12 @@ public interface IProjectModificationsServiceClient
     /// <returns>An asynchronous operation that returns the requested project modification change.</returns>
     [Post("/projectmodifications/delete")]
     public Task<IApiResponse> DeleteModification(Guid modificationId);
+
+    /// <summary>
+    /// Gets the audit trail for a specific project modification.
+    /// </summary>
+    /// <param name="modificationId">The unique identifier of the project modification</param>
+    /// <returns>A list of modification audit trail records and total record count</returns>
+    [Get("/projectmodifications/audittrail")]
+    public Task<ApiResponse<ProjectModificationAuditTrailResponse>> GetModificationAuditTrail(Guid modificationId);
 }

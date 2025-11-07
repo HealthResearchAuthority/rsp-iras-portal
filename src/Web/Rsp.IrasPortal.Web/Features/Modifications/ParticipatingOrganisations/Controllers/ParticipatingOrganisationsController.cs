@@ -38,7 +38,7 @@ public class ParticipatingOrganisationsController
 
         var response = string.IsNullOrEmpty(viewModel.Search.SearchNameTerm) ?
             await rtsService.GetOrganisations(null, pageNumber, pageSize) :
-            await rtsService.GetOrganisationsByName(viewModel.Search.SearchNameTerm, null, pageNumber, pageSize);
+            await rtsService.GetOrganisationsByName(viewModel.Search.SearchNameTerm, OrganisationRoles.Sponsor, pageNumber, pageSize);
 
         viewModel.Organisations = response?.Content?.Organisations?.Select(dto => new SelectableOrganisationViewModel
         {

@@ -147,7 +147,8 @@ public class ModificationsTasklistController(
                     ChiefInvestigator = dto.ChiefInvestigator,
                     LeadNation = dto.LeadNation,
                     SponsorOrganisation = dto.SponsorOrganisation,
-                    CreatedAt = dto.CreatedAt
+                    CreatedAt = dto.CreatedAt,
+                    Status = dto.Status
                 },
                 IsSelected = selectedFromSession.Contains(dto.Id, StringComparer.OrdinalIgnoreCase),
             })
@@ -261,7 +262,17 @@ public class ModificationsTasklistController(
             return RedirectToAction(nameof(Index));
         }
 
-        var serviceResponse = await projectModificationsService.AssignModificationsToReviewer(modificationIds, reviewerId);
+        var reviewer = await userManagementService.GetUser(reviewerId, null);
+
+        if (!reviewer.IsSuccessStatusCode || reviewer.Content?.User == null)
+        {
+            ModelState.AddModelError(string.Empty, "There was a problem assigning the modifications");
+            TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
+            return RedirectToAction(nameof(Index));
+        }
+
+        var serviceResponse = await projectModificationsService
+            .AssignModificationsToReviewer(modificationIds, reviewerId, reviewer.Content.User.Email);
 
         if (!serviceResponse.IsSuccessStatusCode)
         {

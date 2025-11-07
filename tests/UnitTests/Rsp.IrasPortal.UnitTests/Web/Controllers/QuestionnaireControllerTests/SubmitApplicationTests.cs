@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
@@ -204,6 +205,86 @@ public class SubmitApplicationTests : TestServiceBase<QuestionnaireController>
         viewResult.Model.ShouldBeOfType<QuestionnaireViewModel>();
         var model = viewResult.Model as QuestionnaireViewModel;
         model.ShouldNotBeNull();
+    }
+
+    [Theory, AutoData]
+    public async Task Should_SetViewBagDisplayName_WhenSponsorOrganisationAnswerExists(
+    string projectRecordId,
+    OrganisationDto organisationDto)
+    {
+        // Arrange
+        var categoryId = "Category1";
+        var orgId = "1";
+
+        // TempData
+        var context = new DefaultHttpContext();
+        Sut.TempData = new TempDataDictionary(context, Mock.Of<ITempDataProvider>());
+        Sut.TempData[TempDataKeys.CategoryId] = categoryId;
+
+        // Respondent answers
+        var respondentServiceResponse = new ServiceResponse<IEnumerable<RespondentAnswerDto>>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new List<RespondentAnswerDto>
+            {
+                new() { CategoryId = categoryId, QuestionId = "Q1", AnswerText = orgId }
+            }
+        };
+
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetRespondentAnswers(projectRecordId, categoryId))
+            .ReturnsAsync(respondentServiceResponse);
+
+        var questionSetServiceResponse = new ServiceResponse<CmsQuestionSetResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new CmsQuestionSetResponse
+            {
+                Sections = new List<SectionModel>
+            {
+                new SectionModel
+                {
+                    Id = "Section1",
+                    Questions = new List<QuestionModel>
+                    {
+                        new QuestionModel
+                        {
+                            Id = "Q1",
+                            QuestionFormat = "rts:org_lookup",
+                            AnswerDataType = "rts:org_lookup"
+                        }
+                    }
+                }
+            }
+            }
+        };
+
+        Mocker
+            .GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(questionSetServiceResponse);
+
+        var orgServiceResponse = new ServiceResponse<OrganisationDto>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = organisationDto
+        };
+
+        Mocker.GetMock<IRtsService>()
+            .Setup(s => s.GetOrganisation(orgId))
+            .ReturnsAsync(orgServiceResponse);
+
+        // Act
+        var result = await Sut.SubmitApplication(projectRecordId);
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.ViewName.ShouldBe("ReviewAnswers");
+
+        var model = viewResult.Model.ShouldBeOfType<QuestionnaireViewModel>();
+        model.ShouldNotBeNull();
+
+        ((string)Sut.ViewBag.DisplayName).ShouldBe(organisationDto.Name);
     }
 
     [Theory, AutoData]

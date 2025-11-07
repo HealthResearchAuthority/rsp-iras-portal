@@ -8,6 +8,7 @@ using Rsp.IrasPortal.Application.Filters;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
+using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers;
@@ -44,6 +45,8 @@ public class ApprovalsController
                 return View(model);
             }
 
+            ViewBag.DisplayName = await SponsorOrganisationNameHelper.GetSponsorOrganisationNameFromOrganisationId(rtsService, search.SponsorOrganisation);
+
             var searchQuery = new ModificationSearchRequest
             {
                 IrasId = search.IrasId,
@@ -71,7 +74,8 @@ public class ApprovalsController
                     LeadNation = dto.LeadNation,
                     SponsorOrganisation = dto.SponsorOrganisation,
                     CreatedAt = dto.CreatedAt,
-                    ProjectRecordId = dto.ProjectRecordId
+                    ProjectRecordId = dto.ProjectRecordId,
+                    Status = dto.Status
                 })
                 .ToList() ?? [];
 

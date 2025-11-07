@@ -24,6 +24,7 @@ public class ProjectOverviewController(
     IProjectModificationsService projectModificationsService,
     IRespondentService respondentService,
     ICmsQuestionsetService cmsQuestionsetService,
+    IRtsService rtsService,
     IValidator<ApprovalsSearchModel> validator
     ) : Controller
 {
@@ -72,7 +73,7 @@ public class ProjectOverviewController(
         string? backRoute,
         int pageNumber = 1,
         int pageSize = 20,
-        string sortField = nameof(ModificationsModel.CreatedAt),
+        string sortField = nameof(ModificationsModel.ModificationNumber),
         string sortDirection = SortDirections.Descending
     )
     {
@@ -257,6 +258,9 @@ public class ProjectOverviewController(
                 .ToList();
         }
 
+        // Get organisation name from RTS service
+        var organisationName = await SponsorOrganisationNameHelper.GetSponsorOrganisationNameFromQuestions(rtsService, questionnaire.Questions);
+
         // Populate TempData with project details for actual modification journey
         TempData[TempDataKeys.IrasId] = projectRecord.IrasId;
         TempData[TempDataKeys.ProjectRecordId] = projectRecord.Id;
@@ -278,6 +282,7 @@ public class ProjectOverviewController(
             ProjectPlannedEndDate = projectPlannedEndDate,
             Status = projectRecord.Status,
             IrasId = projectRecord.IrasId,
+            OrganisationName = organisationName,
             SectionGroupQuestions = sectionGroupQuestions,
         };
 
@@ -439,10 +444,6 @@ public class ProjectOverviewController(
 
             case "status":
                 viewModel.Search!.Status = null;
-                break;
-
-            case "modificationid":
-                viewModel.Search!.ModificationId = null;
                 break;
         }
 
