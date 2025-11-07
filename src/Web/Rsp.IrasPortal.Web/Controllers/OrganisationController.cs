@@ -1,5 +1,3 @@
-using System.Data;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.Services;
@@ -40,7 +38,7 @@ public class OrganisationController
         // Convert the response content to a list of organisation names.
         var organisations = response.Content.Organisations.ToList();
 
-        return Ok(organisations.Select(org => org.Name));
+        return Ok(organisations);
     }
 
     /// <summary>

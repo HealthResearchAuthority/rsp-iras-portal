@@ -26,9 +26,16 @@ public interface ISponsorOrganisationService : IInterceptable
     Task<ServiceResponse<SponsorOrganisationUserDto>> AddUserToSponsorOrganisation(SponsorOrganisationUserDto sponsorOrganisationUserDto);
 
     Task<ServiceResponse<SponsorOrganisationUserDto>> GetUserInSponsorOrganisation(string rtsId, Guid userId);
+
     Task<ServiceResponse<SponsorOrganisationUserDto>> EnableUserInSponsorOrganisation(string rtsId, Guid userId);
+
     Task<ServiceResponse<SponsorOrganisationUserDto>> DisableUserInSponsorOrganisation(string rtsId, Guid userId);
+
     Task<ServiceResponse<SponsorOrganisationDto>> DisableSponsorOrganisation(string rtsId);
+
     Task<ServiceResponse<SponsorOrganisationDto>> EnableSponsorOrganisation(string rtsId);
+
     Task<ServiceResponse<SponsorOrganisationAuditTrailResponse>> SponsorOrganisationAuditTrail(string rtsId, int pageNumber, int pageSize, string sortField, string sortDirection);
+
+    Task<ServiceResponse<IEnumerable<SponsorOrganisationDto>>> GetAllActiveSponsorOrganisationsForEnabledUser(Guid userId);
 }

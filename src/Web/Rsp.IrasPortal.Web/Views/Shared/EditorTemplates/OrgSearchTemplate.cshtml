@@ -13,6 +13,7 @@
     var question = Model.Questions[index];
     var errorKey = $"Questions[{index}].AnswerText";
     var fieldHasErrors = ViewData.ModelState[errorKey]?.ValidationState == ModelValidationState.Invalid;
+    var displayName = ViewBag.DisplayName as string ?? string.Empty;
 
     var rules = question.Rules;
     var conditional = !(question.IsMandatory || question.IsOptional) && rules.Count > 0;
@@ -75,7 +76,9 @@
     // work if there are validation errors on the page
     if (!string.IsNullOrWhiteSpace(orgSearch?.SelectedOrganisation))
     {
-        searchText = orgSearch.SelectedOrganisation;
+        searchText = !string.IsNullOrWhiteSpace(orgSearch?.DisplayName)
+                    ? orgSearch.DisplayName
+                    : orgSearch.SelectedOrganisation;
     }
     else
     {
@@ -93,7 +96,7 @@
             // if no errors, retain the search text if provided, otherwise
             // use the value from the previously selected answer
             searchText = string.IsNullOrWhiteSpace(orgSearch?.SearchText) ?
-                Model.Questions[index].AnswerText :
+                displayName :
                 orgSearch.SearchText;
         }
     }
@@ -158,7 +161,7 @@
                     <rsp-gds-radio-group asp-for="SponsorOrgSearch.SelectedOrganisation"
                                          label-css-class="govuk-hint"
                                          label-text=""
-                                         options="@(organisations.Select(org => new GdsOption { Value = Html.Encode(org.Name), Label = Regex.Replace(org.Name, escapedSearch, match => $"<b>{match.Value}</b>", RegexOptions.IgnoreCase) }))"
+                                         options="@(organisations.Select(org => new GdsOption { Value = Html.Encode(org.Id), Label = Regex.Replace(org.Name, escapedSearch, match => $"<b>{match.Value}</b>", RegexOptions.IgnoreCase) }))"
                                          div-inline-class="govuk-radios"
                                          hint-html="Results for '@searchText'">
                     </rsp-gds-radio-group>
