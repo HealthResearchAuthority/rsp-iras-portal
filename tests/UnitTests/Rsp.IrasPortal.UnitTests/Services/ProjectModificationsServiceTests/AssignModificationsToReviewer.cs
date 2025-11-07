@@ -13,15 +13,16 @@ public class AssignModificationsToReviewer : TestServiceBase<ProjectModification
         var ids = new List<string> { Guid.NewGuid().ToString() };
         var reviewer = Guid.NewGuid().ToString();
         var reviewerEmail = Guid.NewGuid().ToString();
+        var reviewerName = "Test Test";
         var apiResponse = ApiResponseFactory.Success();
 
         Mocker
             .GetMock<IProjectModificationsServiceClient>()
-            .Setup(c => c.AssignModificationsToReviewer(ids, reviewer, reviewerEmail))
+            .Setup(c => c.AssignModificationsToReviewer(ids, reviewer, reviewerEmail, reviewerName))
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.AssignModificationsToReviewer(ids, reviewer, reviewerEmail);
+        var result = await Sut.AssignModificationsToReviewer(ids, reviewer, reviewerEmail, reviewerName);
 
         // Assert
         result.IsSuccessStatusCode.ShouldBeTrue();

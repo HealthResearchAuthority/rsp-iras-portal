@@ -15,6 +15,8 @@
 
         <h2 class="govuk-heading-m">What happens next</h2>
         <p class="govuk-body">@Model.GivenName @Model.FamilyName will be notified that they have been assigned modifications</p>
-        <a asp-route="tasklist:index" class="govuk-link">Back to Tasklist</a>
+        <a asp-route="tasklist:index" class="govuk-link">
+            @(User.IsInRole("team_manager") ? "Back to Dashboard" : "Back to Tasklist")
+        </a>
     </div>
 </div>
