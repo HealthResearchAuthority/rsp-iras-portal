@@ -13,6 +13,7 @@ public class ModificationsDto
     public string LeadNation { get; set; } = null!;
     public string ParticipatingNation { get; set; } = null!;
     public string SponsorOrganisation { get; set; } = null!;
+    public string ReviewerName { get; set; }
     public DateTime CreatedAt { get; set; }
     public string Status { get; set; } = null!;
     public ModificationStatusOrder StatusOrder { get; set; }

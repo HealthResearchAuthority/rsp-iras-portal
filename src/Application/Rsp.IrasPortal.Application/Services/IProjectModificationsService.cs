@@ -127,7 +127,7 @@ public interface IProjectModificationsService : IInterceptable
     /// </returns>
     Task<ServiceResponse> CreateDocumentModification(List<ProjectModificationDocumentRequest> projectModificationDocumentRequest);
 
-    Task<ServiceResponse> AssignModificationsToReviewer(List<string> modificationIds, string reviewerId, string reviewerEmail);
+    Task<ServiceResponse> AssignModificationsToReviewer(List<string> modificationIds, string reviewerId, string reviewerEmail, string reviewerName);
 
     /// <summary>
     /// Gets modifications for specific ProjectRecordId with filtering, sorting and pagination

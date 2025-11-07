@@ -155,9 +155,9 @@ public class ProjectModificationsService
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse> AssignModificationsToReviewer(List<string> modificationIds, string reviewerId, string reviewerEmail)
+    public async Task<ServiceResponse> AssignModificationsToReviewer(List<string> modificationIds, string reviewerId, string reviewerEmail, string reviewerName)
     {
-        var apiResponse = await projectModificationsServiceClient.AssignModificationsToReviewer(modificationIds, reviewerId, reviewerEmail);
+        var apiResponse = await projectModificationsServiceClient.AssignModificationsToReviewer(modificationIds, reviewerId, reviewerEmail, reviewerName);
         return apiResponse.ToServiceResponse();
     }
 

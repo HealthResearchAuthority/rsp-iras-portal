@@ -105,7 +105,7 @@ public class ModificationsTasklistController(
             ToDate = model.Search.ToDate,
             IrasId = model.Search.IrasId,
             ReviewerId = null,
-            IncludeReviewerId = true,
+            IncludeReviewerId = !User.IsInRole("team_manager"),
         };
 
         if (model.Search.FromSubmission != null)
@@ -146,8 +146,10 @@ public class ModificationsTasklistController(
                     SponsorOrganisation = dto.SponsorOrganisation,
                     SentToSponsorDate = dto.SentToSponsorDate,
                     SentToRegulatorDate = dto.SentToRegulatorDate,
-                    ChiefInvestigator = dto.ChiefInvestigator,
-                    Status = dto.Status
+                    ChiefInvestigator = dto.ChiefInvestigator,                    
+                    CreatedAt = dto.CreatedAt,
+                    Status = dto.Status,
+                    ReviewerName = dto.ReviewerName
                 },
                 IsSelected = selectedFromSession.Contains(dto.Id, StringComparer.OrdinalIgnoreCase),
             })
@@ -271,7 +273,7 @@ public class ModificationsTasklistController(
         }
 
         var serviceResponse = await projectModificationsService
-            .AssignModificationsToReviewer(modificationIds, reviewerId, reviewer.Content.User.Email);
+            .AssignModificationsToReviewer(modificationIds, reviewerId, reviewer.Content.User.Email, $"{reviewer.Content.User.GivenName} {reviewer.Content.User.FamilyName}");
 
         if (!serviceResponse.IsSuccessStatusCode)
         {
