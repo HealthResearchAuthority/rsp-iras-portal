@@ -136,7 +136,7 @@ public interface IProjectModificationsServiceClient
     /// <param name="reviewerId">The user ID of the study-wide reviewer</param>
     /// <returns></returns>
     [Post("/projectmodifications/assignmodificationstoreviewer")]
-    public Task<IApiResponse> AssignModificationsToReviewer(List<string> modificationIds, string reviewerId, string reviewerEmail);
+    public Task<IApiResponse> AssignModificationsToReviewer(List<string> modificationIds, string reviewerId, string reviewerEmail, string reviewerName);
 
     /// <summary>
     /// Gets modifications for specific ProjectRecordId with filtering, sorting and pagination

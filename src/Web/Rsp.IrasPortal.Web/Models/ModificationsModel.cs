@@ -14,4 +14,5 @@ public class ModificationsModel
     public int DaysSinceSubmission => (DateTime.UtcNow - CreatedAt).Days;
     public string Status { get; set; } = null!;
     public int ModificationNumber { get; set; }
+    public string ReviewerName { get; set; }
 }

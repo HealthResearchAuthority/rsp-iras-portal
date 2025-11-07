@@ -10,7 +10,8 @@ public class AssignModificationsToReviewer : TestServiceBase<ProjectModification
     (
         List<string> modificationIds,
         string reviewerId,
-        string reviewerEmail
+        string reviewerEmail,
+        string reviewerName
     )
     {
         // Arrange
@@ -24,17 +25,17 @@ public class AssignModificationsToReviewer : TestServiceBase<ProjectModification
         var projectModificationsServiceClient = Mocker.GetMock<IProjectModificationsServiceClient>();
 
         projectModificationsServiceClient
-            .Setup(c => c.AssignModificationsToReviewer(modificationIds, reviewerId, reviewerEmail))
+            .Setup(c => c.AssignModificationsToReviewer(modificationIds, reviewerId, reviewerEmail, reviewerName))
             .ReturnsAsync(mockApiResponse.Object);
 
         // Act
-        var result = await Sut.AssignModificationsToReviewer(modificationIds, reviewerId, reviewerEmail);
+        var result = await Sut.AssignModificationsToReviewer(modificationIds, reviewerId, reviewerEmail, reviewerName);
 
         // Assert
         projectModificationsServiceClient
             .Verify
             (
-                c => c.AssignModificationsToReviewer(modificationIds, reviewerId, reviewerEmail),
+                c => c.AssignModificationsToReviewer(modificationIds, reviewerId, reviewerEmail, reviewerName),
                 Times.Once
             );
 
