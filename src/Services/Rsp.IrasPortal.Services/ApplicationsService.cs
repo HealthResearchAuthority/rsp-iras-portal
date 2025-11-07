@@ -89,4 +89,21 @@ public class ApplicationsService(IApplicationsServiceClient applicationsClient) 
 
         return apiResponse.ToServiceResponse();
     }
+
+    public async Task<ServiceResponse<PaginatedResponse<CompleteProjectRecordResponse>>> GetPaginatedApplications(
+        ProjectRecordSearchRequest searchQuery,
+        int pageIndex = 1,
+        int? pageSize = 20,
+        string? sortField = "CreatedDate",
+        string? sortDirection = "desc")
+    {
+        var apiResponse = await applicationsClient.GetPaginatedApplications(
+            searchQuery,
+            pageIndex,
+            pageSize,
+            sortField,
+            sortDirection);
+
+        return apiResponse.ToServiceResponse();
+    }
 }
