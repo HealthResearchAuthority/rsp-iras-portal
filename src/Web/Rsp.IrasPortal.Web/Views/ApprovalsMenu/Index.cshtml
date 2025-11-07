@@ -23,12 +23,12 @@
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
         <h1 class="govuk-heading-xl">@Html.Raw(headline?.Value)</h1>
-        <partial name="_ActionItem" model="@(searchTitle?.Value, searchDescription?.Value, "recordsearch")" />
+        <partial name="_ActionItem" model="@((searchTitle?.Value, searchDescription?.Value, "recordsearch", new Dictionary<string, string>()))" />
         <authorized auth-params="@new(Roles:"system_administrator,workflow_co-ordinator")">
-            <partial name="_ActionItem" model="@(tasklistTitle?.Value, tasklistDescription?.Value, "tasklist:index")" />
+            <partial name="_ActionItem" model="@((tasklistTitle?.Value, tasklistDescription?.Value, "tasklist:index", new Dictionary<string, string>()))" />
         </authorized>
         <authorized auth-params="@new(Roles:"study-wide_reviewer")">
-            <partial name="_ActionItem" model="@(myTasklistTitle?.Value, myTasklistDescription?.Value, "mytasklist:index")" />
+            <partial name="_ActionItem" model="@((myTasklistTitle?.Value, myTasklistDescription?.Value, "mytasklist:index", new Dictionary<string, string>()))" />
         </authorized>
     </div>
 </div>

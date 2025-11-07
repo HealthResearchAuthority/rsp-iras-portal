@@ -27,6 +27,6 @@
             model="@(authorisationsTitle?.Value,
                      filledAuthorisationsDescription,
                      "sws:authorisations",
-                     new Dictionary<string, Guid> { { "sponsorOrganisationUserId", sponsorOrganisationUserId } })" />
+                     new Dictionary<string, string> { { "sponsorOrganisationUserId", sponsorOrganisationUserId.ToString() } })" />
     </div>
 </div>

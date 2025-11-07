@@ -9,7 +9,10 @@
 @model SponsorAuthorisationsViewModel
 
 @section Breadcrumb {
-	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>())
+    @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+    {
+        ("Sponsor workspace", Url.RouteUrl("sws:sponsorworkspace"))
+    })
 }
 
 @{
@@ -24,265 +27,114 @@
     var headline = pageContent.GetValueOrDefault("SponsorWorkspace.Authorisations.Title", null);
 }
 
-@functions {
-    private bool HasFilterErrors()
-    {
-        return ViewData.ModelState
-        .Where(kvp => kvp.Value != null)
-        .SelectMany(kvp => kvp.Value!.Errors)
-        .Any();
-    }
-
-    private bool CanOpenPanelForField(string fieldName)
-    {
-        return ViewData.ModelState.TryGetValue(fieldName, out var state) && HasFilterErrors();
-    }
-
-    private bool CanOpenPanelForAnyField(params string[] fieldNames)
-    {
-        return fieldNames.Any(CanOpenPanelForField);
-    }
-}
-
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
         <authorized auth-params="@new(Roles:"sponsor")">
 
             <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
             <h2 class="govuk-heading-l" id="title">@Html.Raw(headline?.Value)</h2>
+            
+            <div class="govuk-grid-row">
+                <div class="govuk-grid-column-two-thirds">
 
-            @if ((Model.Applications != null && Model.Applications.Any()) || !Model.EmptySearchPerformed)
-            {
-                <div class="govuk-grid-row">
-                    <div class="govuk-grid-column-two-thirds">
+                    <form asp-route="sws:applyfilters" method="post" class="govuk-form-group govuk-!-margin-bottom-0">
 
-                        <form asp-route="app:applyfilters" method="post" class="govuk-form-group govuk-!-margin-bottom-0">
+                        <div class="govuk-form-group govuk-!-margin-bottom-2" error-class-for="Search.SearchTerm">
 
-                            <div class="govuk-form-group govuk-!-margin-bottom-0" error-class-for="Search.SearchTitleTerm">
+                            @Html.ValidationMessageFor(model => model.Search.SearchTerm, "", new { @class = "govuk-error-message" })
 
-                                @Html.ValidationMessageFor(model => model.Search.SearchTitleTerm, "", new { @class = "govuk-error-message" })
-
-                                <div class="govuk-input__wrapper">
-                                    <span id="find-project-label" class="govuk-visually-hidden">Find a project</span>
-                                    <input asp-for="Search.SearchTitleTerm" class="govuk-input" type="text" id="SearchTerm" aria-labelledby="find-project-label" />
-                                    <button class="govuk-button govuk-button--secondary mb-0" style="margin-left:10px" type="submit">
-                                        Search
-                                    </button>
-                                </div>
+                            <div class="govuk-input__wrapper">
+                                <span id="find-project-label" class="govuk-visually-hidden">Find a project</span>
+                                <input asp-for="Search.SearchTerm" class="govuk-input" type="text" id="SearchTerm" aria-labelledby="find-project-label" />
+                                <button class="govuk-button mb-0" style="margin-left:10px" type="submit">
+                                    Search
+                                </button>
                             </div>
+                        </div>
 
-                            <input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize" />
-                            <input hidden readonly name="PageNumber" value="@Model.Pagination?.PageNumber" />
-
-                            <!-- Filter Panel -->
-                            <div class="search-filter-panel">
-                                <details class="search-filter-toggle" @(HasFilterErrors() ? "open" : null)>
-                                    <summary class="search-filter-panel__header" tabindex="-1" role="button"
-                                             aria-controls="filter-panel" aria-expanded="@(HasFilterErrors().ToString().ToLower())">
-
-                                        <span class="search-filter-panel__button-inner govuk-link" tabindex="0">
-                                            Advanced filters
-                                        </span>
-
-                                        <span class="search-filter-panel__count" aria-hidden="true" tabindex="-1">
-                                            @(Model.Pagination?.TotalCount ?? 0) results
-                                        </span>
-                                    </summary>
-
-                                    <div class="search-filter-panel__content" id="filter-panel" role="region" aria-labelledby="toggle-filter">
-                                        <!-- Date created -->
-                                        <details class="search-filter-section" @(CanOpenPanelForAnyField("FromDate", "ToDate") ? "open" : null)>
-                                            <summary class="search-filter-section__summary">
-                                                <h2 class="search-filter-section__summary-heading">Date created</h2>
-                                            </summary>
-                                            <div class="search-filter-section__content">
-                                                <div class="govuk-form-group govuk-!-margin-bottom-2">
-                                                    <fieldset class="govuk-fieldset">
-                                                        <rsp-gds-date-input asp-for="Search.FromDate" day-name="Search.FromDay"
-                                                                            day-value="@Model.Search.FromDay" month-name="Search.FromMonth"
-                                                                            month-value="@Model.Search.FromMonth" year-name="Search.FromYear"
-                                                                            year-value="@Model.Search.FromYear"
-                                                                            label-text="Enter the date you want to search from"
-                                                                            hint-html="For example, 28 February 2023" error-key="FromDate" id="FromDate"
-                                                                            label-html-class="font-weight-none" />
-
-                                                            <rsp-gds-date-input asp-for="Search.ToDate" day-name="Search.ToDay"
-                                                                                day-value="@Model.Search.ToDay" month-name="Search.ToMonth"
-                                                                                month-value="@Model.Search.ToMonth" year-name="Search.ToYear"
-                                                                                year-value="@Model.Search.ToYear"
-                                                                                label-text="Enter the date you want to search to"
-                                                                                hint-html="For example, 12 October 2024" error-key="ToDate" id="ToDate"
-                                                                                label-html-class="font-weight-none" />
-                                                    </fieldset>
-                                                </div>
-                                            </div>
-                                        </details>
-
-                                        <!-- Status -->
-                                        <details class="search-filter-section" @(CanOpenPanelForField("Status") ? "open" : null)>
-                                            <summary class="search-filter-section__summary">
-                                                <h2 class="search-filter-section__summary-heading">Status</h2>
-                                            </summary>
-                                            <div class="search-filter-section__content">
-                                                <div class="govuk-form-group govuk-!-margin-bottom-2">
-                                                    <fieldset class="govuk-fieldset">
-                                                        <rsp-gds-checkbox-group asp-for="Search.Status"
-                                                                                options="ProjectRecordStatus.AllOptions" 
-                                                                                conditional-field="false"
-                                                                                label-text="Select all that apply"
-                                                                                legend-class="govuk-label govuk-label--s font-weight-none"
-                                                                                hint-id="status-hint"
-                                                                                hint-html="@($"{Model.Search.Status?.Count ?? 0} selected")"
-                                                                                label-html-class="font-weight-none" />
-                                                    </fieldset>
-								                </div>
-							                </div>
-                                        </details>
-
-                                        <!-- Apply -->
-                                        <div class="search-filter-panel__actions">
-                                            <button class="govuk-button search-filter-panel__action search-filter-panel__action--submit">
-                                                Apply
-                                                filters
-                                            </button>
-                                        </div>
-                                    </div>
-                                </details>
-                            </div>
-                        </form>
-
-                        <!-- Active Filters Panel -->
-                        @if (Model.Search.Filters.Any())
-                        {
-                            <div class="search-filter-summary">
-                                <h3 class="search-filter-summary__heading">Active filters</h3>
-                                <ul class="search-filter-summary__remove-filters">
-                                    @foreach (var filter in Model.Search.Filters)
-                                    {
-                                        var filterKey = filter.Key;
-                                        var filterValues = filter.Value ?? [];
-
-                                        foreach (var val in filterValues)
-                                        {
-                                            <li>
-                                                <a asp-route="app:removefilter" asp-route-key="@filterKey" asp-route-value="@val"
-                                                   class="search-filter-summary__remove-filter">
-                                                    <span class="search-filter-summary__remove-filter-text">
-                                                        <span class="govuk-visually-hidden">Remove filter</span>
-                                                        @if (filterKey.Contains("Date created - from", StringComparison.OrdinalIgnoreCase)
-                                                             || filterKey.Contains("Date created - to", StringComparison.OrdinalIgnoreCase))
-                                                        {
-                                                            @($"{filterKey} {val}")
-                                                        }
-                                                        else
-                                                        {
-                                                            @($"{filterKey} - {val}")
-                                                        }
-                                                    </span>
-                                                </a>
-                                            </li>
-                                        }
-                                    }
-                                </ul>
-                                <div>
-                                    <a asp-route="app:clearfilters"
-                                       class="search-filter-summary__clear-filters govuk-link govuk-link--no-visited-state">
-                                        Clear all filters
-                                    </a>
-                                </div>
-                            </div>
-                        }
-                    </div>
+                        <input hidden asp-for="SponsorOrganisationUserId" />
+                        <input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize" />
+                        <input hidden readonly name="PageNumber" value="@Model.Pagination?.PageNumber" />
+                    </form>
                 </div>
-                <div class="govuk-grid-row">
-                    @if (Model.Applications == null || !Model.Applications.Any())
-                    {
-                        @if (!Model.Search.Filters.Any())
-                        {
-                            <div class="govuk-!-margin-top-4"></div>
-                        }
-                        <div class="govuk-grid-column-two-thirds search-filter-error-border">
-                        <h2 class="govuk-heading-l">@Html.Raw(emptySearchTitle?.Value)</h2>
-                        @Html.Raw(emptySearchBodyText?.Value)
-                    </div>
-                    }
-                    else
-                    {
-                    <div class="govuk-grid-column-full">
-                        <div class="govuk-table-wrapper">
-                            <table class="govuk-table modifications-tasklist-table" id="applicationsTable">
-                                <thead class="govuk-table__head">
-                                    <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
-                                        @{
-                                            var sortableHeaders = new[]
-                                            {
-									new { Field = nameof(ApplicationModel.Title), Label = "Short project title" },
-									new { Field = nameof(ApplicationModel.IrasId), Label = "IRAS ID" },
-									new { Field = nameof(ApplicationModel.CreatedDate), Label = "Date created" },
-									new { Field = nameof(ApplicationModel.Status), Label = "Status" }
-									};
-                                            var tableId = "applicationsTable";
-                                        }
-                                        @foreach (var header in sortableHeaders)
+            </div>
+            <div class="govuk-grid-row">
+                <div class="govuk-grid-column-full">
+                    <div class="govuk-table-wrapper">
+                        <table class="govuk-table modifications-tasklist-table" id="authorisationsTable">
+                            <thead class="govuk-table__head">
+                                <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+                                    @{
+                                        var sortableHeaders = new[]
                                         {
-                                            <th scope="col" class="govuk-table__header govuk-table__header-sortable">
-                                                <partial name="_SortableHeaderButton" model="new SortableHeaderModel
+                                            new { Field = nameof(ModificationsModel.ModificationNumber), Label = "Modification ID" },
+                                            new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
+                                            new { Field = nameof(ModificationsModel.SentToSponsorDate), Label = "Date received" },
+                                            new { Field = nameof(ModificationsModel.SentToRegulatorDate), Label = "Date authorised" },
+                                            new { Field = nameof(ModificationsModel.ChiefInvestigator), Label = "Chief investigator" },
+                                            new { Field = nameof(ModificationsModel.Status), Label = "Status" }
+								        };
+                                        var tableId = "authorisationsTable";
+                                    }
+                                    @foreach (var header in sortableHeaders)
+                                    {
+                                        <th scope="col" class="govuk-table__header govuk-table__header-sortable">
+                                            <partial name="_SortableHeaderButton" model="@(new SortableHeaderModel
+                                            {
+                                                FieldName = header.Field,
+                                                DisplayText = header.Label,
+                                                CurrentSortField = Model.Pagination?.SortField,
+                                                CurrentSortDirection = Model.Pagination?.SortDirection,
+                                                TableId = tableId,                                                
+                                                AdditionalParameters = new Dictionary<string, string>
                                                 {
-                                                    FieldName = header.Field,
-                                                    DisplayText = header.Label,
-                                                    CurrentSortField = Model.Pagination?.SortField,
-                                                    CurrentSortDirection = Model.Pagination?.SortDirection,
-                                                    TableId = tableId,
-                                                }" />
-                                            </th>
-                                        }
-                                    </tr>
-                                </thead>
+                                                    { "SponsorOrganisationUserId", Model.SponsorOrganisationUserId.ToString() }
+                                                }
+                                            })" />
+                                        </th>
+                                    }
+                                </tr>
+                            </thead>
 
-                                <form method="get" id="applications-selection">
-                                    <input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
-                                    <input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
+                            <form method="get" id="authorisations-selection">
+                                <input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
+                                <input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
 
                                 <tbody class="govuk-table__body govuk-body-s">
                                     @{
-                                        foreach (var application in Model.Applications)
+                                        foreach (var modification in Model.Modifications)
                                         {
                                             <tr class="govuk-table__row">
                                                 <td class="govuk-table__cell">
-                                                    <a asp-route="pov:index"
-                                                       asp-route-projectRecordId="@application.Id"
-                                                       class="govuk-link">
-                                                        <strong>@application.Title</strong>
+                                                    <a  class="govuk-link">
+                                                        <strong>@modification.ModificationId</strong>
                                                     </a>
                                                 </td>
-                                                <td class="govuk-table__cell">@application.IrasId</td>
-                                                <td class="govuk-table__cell">@application.CreatedDate.ToString("dd MMM yyyy")</td>
-                                                <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">@application.Status</strong></td>
+                                                <td class="govuk-table__cell">@modification.ShortProjectTitle</td>
+                                                <td class="govuk-table__cell">@(modification.SentToSponsorDate?.ToString("dd MMM yyyy") ?? string.Empty)</td>
+                                                <td class="govuk-table__cell">@(modification.SentToRegulatorDate?.ToString("dd MMM yyyy") ?? string.Empty)</td>
+                                                <td class="govuk-table__cell">@modification.ChiefInvestigator</td>
+                                                <td class="govuk-table__cell">
+                                                    @{
+                                                        var tagClass = modification.Status switch
+                                                        {
+                                                            ModificationStatus.WithSponsor => "govuk-tag--yellow",
+                                                            ModificationStatus.Authorised => "govuk-tag--green",
+                                                            ModificationStatus.NotAuthorised => "govuk-tag--red"                                                        
+                                                        };
+                                                    }
+                                                    <strong class="govuk-tag @tagClass">@modification.Status</strong>
+                                                </td>
                                             </tr>
                                         }
                                     }
                                 </tbody>
-                                </form>
-                            </table>
-                        </div>
-						<partial name="_PaginationForm" model="@Model.Pagination" />
+                            </form>
+                        </table>
                     </div>
-                    }
-                </div>
-                <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
-                <div class="govuk-grid-row govuk-grid-column-two-thirds">
-                    <h2 class="govuk-heading-m">@Html.Raw(addProjectTitle?.Value)</h2>
-                    @Html.Raw(addProjectDescription?.Value)
-                    <a class="govuk-button" asp-route="app:createapplication">Add project</a>
-                </div>
-            }
-            else
-            {
-                @Html.Raw(noProjectsDescription?.Value)
-                <a class="govuk-button" asp-route="app:createapplication">Add project</a>
-            }
+                    <partial name="_Pagination" model="@Model.Pagination" />
+                </div>                
+            </div>                    
         </authorized>
     </div>
 </div>
-
-<script src="~/js/searchApplications.js"></script>

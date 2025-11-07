@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
@@ -6,6 +7,7 @@ using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Filters;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
+using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Models;
 using Rsp.IrasPortal.Web.Models;
 
@@ -18,7 +20,8 @@ namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation;
 [Authorize(Policy = "IsSponsor")]
 public class AuthorisationsController
 (
-    IProjectModificationsService projectModificationsService
+    IProjectModificationsService projectModificationsService,
+    IValidator<SponsorAuthorisationsSearchModel> searchValidator
 ) : Controller
 {
     [HttpGet]
@@ -54,12 +57,11 @@ public class AuthorisationsController
                     Id = dto.Id,
                     ModificationId = dto.ModificationId,
                     ShortProjectTitle = dto.ShortProjectTitle,
-                    ModificationType = dto.ModificationType,
                     ChiefInvestigator = dto.ChiefInvestigator,
-                    LeadNation = dto.LeadNation,
                     SponsorOrganisation = dto.SponsorOrganisation,
-                    CreatedAt = dto.CreatedAt,
                     ProjectRecordId = dto.ProjectRecordId,
+                    SentToRegulatorDate = dto.SentToRegulatorDate,
+                    SentToSponsorDate = dto.SentToSponsorDate,
                     Status = dto.Status
                 })
                 .ToList() ?? [];
@@ -69,8 +71,14 @@ public class AuthorisationsController
             RouteName = "sws:authorisations",
             SortDirection = sortDirection,
             SortField = sortField,
-            FormName = "authorisations-selection"
+            FormName = "authorisations-selection",
+            AdditionalParameters = new Dictionary<string, string>
+            {
+                { "SponsorOrganisationUserId", sponsorOrganisationUserId.ToString() }
+            }
         };
+
+        model.SponsorOrganisationUserId = sponsorOrganisationUserId;
 
         return View(model);
     }
@@ -79,19 +87,20 @@ public class AuthorisationsController
     [CmsContentAction(nameof(Authorisations))]
     public async Task<IActionResult> ApplyFilters(SponsorAuthorisationsViewModel model)
     {
-        //var validationResult = await searchValidator.ValidateAsync(model.Search);
+        var validationResult = await searchValidator.ValidateAsync(model.Search);
 
-        //if (!validationResult.IsValid)
-        //{
-        //    foreach (var error in validationResult.Errors)
-        //    {
-        //        ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
-        //    }
+        if (!validationResult.IsValid)
+        {
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
 
-        //    return View(nameof(Authorisations), model);
-        //}
+            TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
+            return RedirectToAction(nameof(Authorisations), new { sponsorOrganisationUserId = model.SponsorOrganisationUserId });
+        }
 
         HttpContext.Session.SetString(SessionKeys.SponsorAuthorisationsSearch, JsonSerializer.Serialize(model.Search));
-        return RedirectToAction(nameof(Authorisations));
+        return RedirectToAction(nameof(Authorisations), new { sponsorOrganisationUserId = model.SponsorOrganisationUserId });
     }
 }

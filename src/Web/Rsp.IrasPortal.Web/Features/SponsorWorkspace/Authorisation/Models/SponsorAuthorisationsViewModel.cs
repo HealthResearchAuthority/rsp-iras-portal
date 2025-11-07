@@ -8,4 +8,5 @@ public class SponsorAuthorisationsViewModel
     public SponsorAuthorisationsSearchModel Search { get; set; } = new();
     public IEnumerable<ModificationsModel> Modifications { get; set; } = [];
     public PaginationViewModel? Pagination { get; set; }
+    public Guid SponsorOrganisationUserId { get; set; }
 }
