@@ -21,7 +21,6 @@ function initAutocomplete
     const beforeSuggestionsText = 'Suggestions'; // Message displayed before the suggestions.
     const afterSuggestionsText = 'Continue entering to improve suggestions'; // Message displayed after the suggestions.
     const noResultsText = 'No suggestions found.'; // Message displayed when no suggestions are found.
-    const useOrganisationIdBool = useOrganisationId == 'true'; // Map value to a boolean
     let resultsFound = false; // Flag to indicate if results were found.
     let requestToken = 0; // A counter to identify the most recent AJAX request
     let nameToIdMap = {}; // Map ids of results to displayed names
@@ -73,7 +72,7 @@ function initAutocomplete
                     }
 
                     // Map ids of results to displayed names
-                    if (useOrganisationIdBool) {
+                    if (useOrganisationId) {
                         nameToIdMap = {};
                         for (const item of data) {
                             nameToIdMap[item.name] = item.id;
@@ -119,7 +118,7 @@ function initAutocomplete
                 return;
             }
 
-            if (useOrganisationIdBool) {
+            if (useOrganisationId) {
                 $(`#${inputIdForSubmission}`).attr('value', nameToIdMap[suggestion]); // Set the hidden input value to the selected suggestion.
             }
             else {
