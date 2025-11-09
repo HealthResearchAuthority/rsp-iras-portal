@@ -160,12 +160,12 @@ public class ProjectRecordSearchControllerTests : TestServiceBase<ProjectRecordS
     }
 
     [Fact]
-    public async Task RemoveFilter_ProjectTitle_ShouldBeCleared_AndRedirect()
+    public void RemoveFilter_ProjectTitle_ShouldBeCleared_AndRedirect()
     {
         var model = new ApprovalsSearchModel { ShortProjectTitle = "Cancer Study" };
         SetSessionModel(model);
 
-        var result = await Sut.RemoveFilter("shortprojecttitle", null);
+        var result = Sut.RemoveFilter("shortprojecttitle", null);
 
         result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Index");
 
