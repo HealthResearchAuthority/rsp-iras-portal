@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
@@ -111,7 +110,7 @@ public class ProjectRecordSearchController(
 
     [HttpGet]
     [CmsContentAction(nameof(Index))]
-    public async Task<IActionResult> RemoveFilter(string key, string? value)
+    public IActionResult RemoveFilter(string key, string? value)
     {
         var json = HttpContext.Session.GetString(SessionKeys.ProjectRecordSearch);
         if (string.IsNullOrWhiteSpace(json))
@@ -121,43 +120,7 @@ public class ProjectRecordSearchController(
 
         var search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json)!;
 
-        var keyNormalized = key?.ToLowerInvariant().Replace(" ", "");
-
-        switch (keyNormalized)
-        {
-            case "chiefinvestigatorname":
-                search.ChiefInvestigatorName = null;
-                break;
-
-            case "shortprojecttitle":
-                search.ShortProjectTitle = null;
-                break;
-
-            case "sponsororganisation":
-                search.SponsorOrganisation = null;
-                search.SponsorOrgSearch = new OrganisationSearchViewModel();
-                break;
-
-            case "leadnation":
-                if (!string.IsNullOrEmpty(value) && search.LeadNation?.Count > 0)
-                {
-                    search.LeadNation = search.LeadNation
-                        .Where(c => !string.Equals(c, value, StringComparison.OrdinalIgnoreCase))
-                        .ToList();
-                }
-                break;
-
-            case "participatingnation":
-                if (!string.IsNullOrEmpty(value) && search.ParticipatingNation?.Count > 0)
-                {
-                    search.ParticipatingNation = search.ParticipatingNation
-                        .Where(c => !string.Equals(c, value, StringComparison.OrdinalIgnoreCase))
-                        .ToList();
-                }
-                break;
-        }
-
-        HttpContext.Session.SetString(SessionKeys.ProjectRecordSearch, JsonSerializer.Serialize(search));
+        this.RemoveFilters(SessionKeys.ProjectRecordSearch, search, key, value);
 
         return ApplyFilters(new ProjectRecordSearchViewModel { Search = search });
     }
@@ -171,51 +134,12 @@ public class ProjectRecordSearchController(
     [CmsContentAction(nameof(Index))]
     public async Task<IActionResult> SearchOrganisations(ApprovalsSearchViewModel model, string? role, int? pageSize = 5, int pageIndex = 1)
     {
-        var returnUrl = TempData.Peek(TempDataKeys.OrgSearchReturnUrl) as string;
-
-        // store the irasId in the TempData to get in the view
-        TempData.TryAdd(TempDataKeys.IrasId, model.Search.IrasId);
-
-        // set the previous, current and next stages
-        TempData.TryAdd(TempDataKeys.SponsorOrgSearched, "searched:true");
-
-        // when search is performed, empty the currently selected organisation
-        model.Search.SponsorOrgSearch.SelectedOrganisation = string.Empty;
-        TempData.TryAdd(TempDataKeys.OrgSearch, model.Search.SponsorOrgSearch, true);
-
-        if (string.IsNullOrEmpty(model.Search.SponsorOrgSearch.SearchText) || model.Search.SponsorOrgSearch.SearchText.Length < 3)
-        {
-            ModelState.AddModelError("sponsor_org_search",
-                "Please provide 3 or more characters to search sponsor organisation.");
-
-            // save the model state in temp data, to use it on redirects to show validation errors
-            // the modelstate will be merged using the action filter ModelStateMergeAttribute
-            // only if the TempData has ModelState stored
-            TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
-
-            // Return the view with the model state errors.
-            return Redirect(returnUrl!);
-        }
-
-        // Use the default sponsor role if no role is provided.
-        role ??= OrganisationRoles.Sponsor;
-
-        var searchResponse = await rtsService.GetOrganisationsByName(model.Search.SponsorOrgSearch.SearchText, role, pageIndex, pageSize);
-
-        if (!searchResponse.IsSuccessStatusCode || searchResponse.Content == null)
-        {
-            return this.ServiceError(searchResponse);
-        }
-
-        var sponsorOrganisations = searchResponse.Content;
-
-        TempData.TryAdd(TempDataKeys.SponsorOrganisations, sponsorOrganisations, true);
-
-        //THIS IS ONLY USED HERE TO NOT SHOW THE FILTERS IF WE RUN A NON JAVASCRIPT ORG SEARCH
-        model.Search.IgnoreFilters = true;
-
-        HttpContext.Session.SetString(SessionKeys.ProjectRecordSearch, JsonSerializer.Serialize(model.Search));
-
-        return Redirect(returnUrl!);
+        return await this.HandleOrganisationSearchAsync(
+            rtsService,
+            model,
+            SessionKeys.ProjectRecordSearch,
+            role,
+            pageSize,
+            pageIndex);
     }
 }
