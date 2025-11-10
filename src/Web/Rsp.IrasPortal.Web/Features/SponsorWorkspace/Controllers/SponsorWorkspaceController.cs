@@ -62,8 +62,11 @@ public class SponsorWorkspaceController
             return this.ServiceError(rtsResponse);
         }
 
+        // TODO refactor to getting OrganisationUserDto from Iras instead of organisationDto
+        var sponsorOrganisationUserId = sponsorOrganisationsResponse.Content?.Single().Users?.Single(u => u.UserId.Equals(gid)).Id;
+
         ViewBag.SponsorOrganisationName = rtsResponse.Content?.Name;
-        ViewBag.OrganisationId = organisationId;
+        ViewBag.SponsorOrganisationUserId = sponsorOrganisationUserId;
 
         return View();
     }

@@ -16,12 +16,17 @@
     var authorisationsDescription = pageContent.GetValueOrDefault("SponsorWorkspace.AuthorisationsDescription", null);
 
     var sponsorOrganisationName = ViewBag.SponsorOrganisationName as string;
+    var sponsorOrganisationUserId = ViewBag.SponsorOrganisationUserId ?? Guid.Empty;
     var filledAuthorisationsDescription = authorisationsDescription?.Value?.Replace("{sponsor organisation name}", sponsorOrganisationName);
 }
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
         <h1 class="govuk-heading-xl">@Html.Raw(headline?.Value)</h1>
-        <partial name="_ActionItem" model="@(authorisationsTitle?.Value, filledAuthorisationsDescription, "sws:authorisations")" />
+        <partial name="_ActionItem"
+            model="@(authorisationsTitle?.Value,
+                     filledAuthorisationsDescription,
+                     "sws:authorisations",
+                     new Dictionary<string, string> { { "sponsorOrganisationUserId", sponsorOrganisationUserId.ToString() } })" />
     </div>
 </div>

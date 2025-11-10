@@ -1,10 +1,11 @@
-﻿@model (string Heading, string Description, string RouteName)
+﻿@model (string Heading, string Description, string RouteName, Dictionary<string, string>? Params)
 
 
 <div class="hra-card">
     <a 
         class="govuk-heading-s govuk-link hra-card-heading__link" 
-        asp-route="@Model.RouteName">
+        asp-route="@Model.RouteName"
+        asp-all-route-data="@Model.Params">
         @Model.Heading
     </a>
     <p class="govuk-body">@Model.Description</p>

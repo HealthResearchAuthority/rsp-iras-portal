@@ -46,14 +46,24 @@ public class SponsorWorkspaceControllerTests : TestServiceBase<SponsorWorkspaceC
     ClaimsPrincipal userClaims,
     User mockUser,
     SponsorOrganisationDto sponsorOrganisation,
-    OrganisationDto rtsOrganisation
-    )
+    OrganisationDto rtsOrganisation)
     {
         // Arrange
+        var gid = Guid.NewGuid();
+
+        // Dodaj użytkownika do sponsorOrganisation.Users
+        sponsorOrganisation.Users = new List<SponsorOrganisationUserDto>
+        {
+            new SponsorOrganisationUserDto
+            {
+                Id = Guid.NewGuid(),
+                UserId = gid
+            }
+        };
 
         var mockUserResponse = new UserResponse
         {
-            User = mockUser with { Id = Guid.NewGuid().ToString() }
+            User = mockUser with { Id = gid.ToString() }
         };
 
         var userResponse = new ServiceResponse<UserResponse>
@@ -79,7 +89,7 @@ public class SponsorWorkspaceControllerTests : TestServiceBase<SponsorWorkspaceC
             .ReturnsAsync(userResponse);
 
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetAllActiveSponsorOrganisationsForEnabledUser(It.IsAny<Guid>()))
+            .Setup(s => s.GetAllActiveSponsorOrganisationsForEnabledUser(gid))
             .ReturnsAsync(sponsorResponse);
 
         Mocker.GetMock<IRtsService>()
@@ -94,6 +104,7 @@ public class SponsorWorkspaceControllerTests : TestServiceBase<SponsorWorkspaceC
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
         (Sut.ViewBag.SponsorOrganisationName as string).ShouldBe(rtsOrganisation.Name);
+        (Sut.ViewBag.SponsorOrganisationUserId as Guid?).ShouldBe(sponsorOrganisation.Users.Single().Id);
     }
 
     [Theory]

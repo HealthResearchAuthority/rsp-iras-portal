@@ -28,8 +28,8 @@
 
         <h1 class="govuk-heading-l">@Html.Raw(headline?.Value)</h1>
 
-        <partial name="_ActionItem" model="@(reviewBodyTitle?.Value, reviewBodyDescription?.Value, "rbc:viewreviewbodies")" />
-		<partial name="_ActionItem" model="@(sponsorOrgTitle?.Value, sponsorOrgDescription?.Value, "soc:viewsponsororganisations")" />
-		<partial name="_ActionItem" model="@(usersTitle?.Value, usersDescription?.Value, "admin:users")" />
+        <partial name="_ActionItem" model="@(reviewBodyTitle?.Value, reviewBodyDescription?.Value, "rbc:viewreviewbodies", new Dictionary<string, string>())" />
+        <partial name="_ActionItem" model="@(sponsorOrgTitle?.Value, sponsorOrgDescription?.Value, "soc:viewsponsororganisations", new Dictionary<string, string>())" />
+        <partial name="_ActionItem" model="@(usersTitle?.Value, usersDescription?.Value, "admin:users", new Dictionary<string, string>())" />
     </div>
 </div>
