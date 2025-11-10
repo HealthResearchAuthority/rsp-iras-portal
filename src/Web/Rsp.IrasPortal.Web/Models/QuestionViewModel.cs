@@ -1,6 +1,6 @@
-﻿using System.Globalization;
-using Rsp.IrasPortal.Application.DTOs;
+﻿using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
+using Rsp.IrasPortal.Web.Helpers;
 
 namespace Rsp.IrasPortal.Web.Models;
 
@@ -82,12 +82,10 @@ public class QuestionViewModel
     {
         if (!string.IsNullOrWhiteSpace(AnswerText))
         {
-            if (DataType.Equals("Date", StringComparison.OrdinalIgnoreCase) &&
-                DateTime.TryParse(AnswerText, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedDate))
+            if (DataType.Equals("Date", StringComparison.OrdinalIgnoreCase))
             {
-                return parsedDate.ToString("dd MMMM yyyy", CultureInfo.InvariantCulture);
+                return DateHelper.ConvertDateToString(AnswerText);
             }
-
             return AnswerText!;
         }
 

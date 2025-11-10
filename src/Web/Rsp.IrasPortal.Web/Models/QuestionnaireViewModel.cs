@@ -1,7 +1,7 @@
-﻿using System.Globalization;
-using Rsp.IrasPortal.Application.Constants;
+﻿using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
+using Rsp.IrasPortal.Web.Helpers;
 
 namespace Rsp.IrasPortal.Web.Models;
 
@@ -130,16 +130,8 @@ public class QuestionnaireViewModel
     /// </returns>
     public string? GetProjectPlannedEndDate()
     {
-        var ukCulture = new CultureInfo("en-GB");
-
         var plannedEndDate = Questions.FirstOrDefault(q => q.QuestionId.Equals(QuestionIds.ProjectPlannedEndDate, StringComparison.OrdinalIgnoreCase))?.AnswerText;
-
-        if (DateTime.TryParse(plannedEndDate, ukCulture, DateTimeStyles.None, out var parsedDate))
-        {
-            return parsedDate.ToString("dd MMMM yyyy");
-        }
-
-        return null;
+        return DateHelper.ConvertDateToString(plannedEndDate!);
     }
 
     /// <summary>

@@ -62,7 +62,8 @@ public abstract class ModificationsControllerBase
             ShortTitle = shortTitle,
             ModificationIdentifier = modification.ModificationId,
             Status = modification.Status,
-            ProjectRecordId = projectRecordId
+            ProjectRecordId = projectRecordId,
+            DateCreated = DateHelper.ConvertDateToString(modification.CreatedAt.ToString())
         });
     }
 

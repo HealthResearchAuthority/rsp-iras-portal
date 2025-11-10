@@ -1124,7 +1124,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
     [Theory]
     [InlineData(ModificationStatus.InDraft)]
     [InlineData(ModificationStatus.WithSponsor)]
-    [InlineData(ModificationStatus.WithRegulator)]
+    [InlineData(ModificationStatus.WithReviewBody)]
     [InlineData(ModificationStatus.Approved)]
     [InlineData(ModificationStatus.NotApproved)]
     [InlineData(ModificationStatus.Authorised)]

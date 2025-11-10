@@ -1,0 +1,41 @@
+﻿@using Rsp.IrasPortal.Web.Features.Modifications.Models;
+@using Rsp.IrasPortal.Application.Constants
+@model ModificationDetailsViewModel
+@{
+    var active = ViewBag.Active as string;
+}
+
+<div class="govuk-service-navigation">
+    <div class="govuk-width-container">
+        <div class="govuk-service-navigation__container">
+            <nav class="govuk-service-navigation__wrapper">
+                <ul class="govuk-service-navigation__list">
+                    <li class="govuk-service-navigation__item small-margin @(active == ModificationOverview.SponsorDetails ? "govuk-service-navigation__item--active" : "")">
+                        <a class="govuk-service-navigation__link" href="#sponser-details">
+                            @ModificationOverview.SponsorDetails
+                        </a>
+                    </li>
+                    <li class="govuk-service-navigation__item small-margin @(active == ModificationOverview.ModificationDetails ? "govuk-service-navigation__item--active" : "")">
+                        <a class="govuk-service-navigation__link">
+                            @ModificationOverview.ModificationDetails
+                        </a>
+                    </li>
+                    <li class="govuk-service-navigation__item small-margin @(active == ModificationOverview.Documents ? "govuk-service-navigation__item--active" : "")">
+                        <a class="govuk-service-navigation__link">
+                            @ModificationOverview.Documents
+                        </a>
+                    </li>
+                    <li class="govuk-service-navigation__item small-margin @(active == ModificationOverview.History ? " govuk-service-navigation__item--active" : "" )">
+                        <a class="govuk-service-navigation__link">
+                            @ModificationOverview.History
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+<br />
+<div id="sponser-details">
+    <partial name="SponsorDetails" model="Model" viewData="ViewData" />
+</div>

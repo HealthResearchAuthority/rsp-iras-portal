@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using System.Net;
+﻿using System.Net;
 using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
@@ -265,21 +264,14 @@ public class ProjectOverviewController(
         TempData[TempDataKeys.IrasId] = projectRecord.IrasId;
         TempData[TempDataKeys.ProjectRecordId] = projectRecord.Id;
         TempData[TempDataKeys.ShortProjectTitle] = titleAnswer as string ?? string.Empty;
-
-        var ukCulture = new CultureInfo("en-GB");
-        string? projectPlannedEndDate = null;
-        if (DateTime.TryParse(endDateAnswer, ukCulture, DateTimeStyles.None, out var parsedDate))
-        {
-            projectPlannedEndDate = parsedDate.ToString("dd MMMM yyyy");
-            TempData[TempDataKeys.PlannedProjectEndDate] = projectPlannedEndDate;
-        }
+        TempData[TempDataKeys.PlannedProjectEndDate] = DateHelper.ConvertDateToString(endDateAnswer);
 
         var model = new ProjectOverviewModel
         {
             ProjectTitle = titleAnswer as string ?? string.Empty,
             CategoryId = QuestionCategories.ProjectRecrod,
             ProjectRecordId = projectRecord.Id,
-            ProjectPlannedEndDate = projectPlannedEndDate,
+            ProjectPlannedEndDate = DateHelper.ConvertDateToString(endDateAnswer),
             Status = projectRecord.Status,
             IrasId = projectRecord.IrasId,
             OrganisationName = organisationName,
@@ -522,7 +514,7 @@ public class ProjectOverviewController(
     {
         ModificationStatus.InDraft => nameof(ModificationStatusOrder.InDraft),
         ModificationStatus.WithSponsor => nameof(ModificationStatusOrder.WithSponsor),
-        ModificationStatus.WithRegulator => nameof(ModificationStatusOrder.WithRegulator),
+        ModificationStatus.WithReviewBody => nameof(ModificationStatusOrder.WithRegulator),
         ModificationStatus.Approved => nameof(ModificationStatusOrder.Approved),
         ModificationStatus.NotApproved => nameof(ModificationStatusOrder.NotApproved),
         ModificationStatus.Authorised => nameof(ModificationStatusOrder.Authorised),

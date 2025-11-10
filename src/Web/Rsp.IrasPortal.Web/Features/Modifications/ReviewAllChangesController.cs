@@ -61,7 +61,7 @@ public class ReviewAllChangesController
     public Task<IActionResult> SubmitToRegulator(string projectRecordId, Guid projectModificationId, string overallReviewType)
     {
         // Default to WithRegulator if not set or review required
-        var statusToSet = ModificationStatus.WithRegulator;
+        var statusToSet = ModificationStatus.WithReviewBody;
 
         // Evaluate the review type (case-insensitive, null-safe)
         if (!string.IsNullOrWhiteSpace(overallReviewType))
@@ -70,7 +70,7 @@ public class ReviewAllChangesController
             statusToSet = reviewTypeNormalized switch
             {
                 "no review required" => ModificationStatus.Approved,
-                _ => ModificationStatus.WithRegulator
+                _ => ModificationStatus.WithReviewBody
             };
         }
 

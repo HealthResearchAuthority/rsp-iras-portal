@@ -80,6 +80,7 @@ public static class TempDataExtensions
         model.ModificationChangeId = tempData.PeekGuid(TempDataKeys.ProjectModification.ProjectModificationChangeId);
         model.SpecificAreaOfChange = tempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeText) as string ?? string.Empty;
         model.SpecificAreaOfChangeId = tempData.PeekGuid(TempDataKeys.ProjectModification.SpecificAreaOfChangeId);
+        model.DateCreated = tempData.PeekGuid(TempDataKeys.ProjectModification.DateCreated);
         return model;
     }
 
