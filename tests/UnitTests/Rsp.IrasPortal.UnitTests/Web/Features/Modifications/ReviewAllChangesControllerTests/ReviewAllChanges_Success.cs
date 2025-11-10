@@ -108,7 +108,7 @@ public class ReviewAllChanges_Success : TestServiceBase<ReviewAllChangesControll
                 StatusCode = HttpStatusCode.OK,
                 Content = new RankingOfChangeResponse
                 {
-                    ModificationType = new() { Substantiality = "Substantial", Order = 1 },
+                    ModificationType = new() { Substantiality = "Non-Notifiable", Order = 1 },
                     Categorisation = new() { Category = "Category", Order = 1 },
                     ReviewType = "ReviewType"
                 }

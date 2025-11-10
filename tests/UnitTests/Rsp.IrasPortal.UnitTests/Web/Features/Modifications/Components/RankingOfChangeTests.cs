@@ -30,7 +30,7 @@ public class RankingOfChangeTests
         var questions = new List<QuestionViewModel>();
         var rankingResponse = new RankingOfChangeResponse
         {
-            ModificationType = new ModificationRank { Substantiality = "Substantial", Order = 1 },
+            ModificationType = new ModificationRank { Substantiality = "Non-Notifiable", Order = 1 },
             Categorisation = new CategoryRank { Category = "CatA", Order = 2 },
             ReviewType = "TypeA"
         };
@@ -45,8 +45,8 @@ public class RankingOfChangeTests
         var view = result.ShouldBeOfType<ViewViewComponentResult>();
         view.ViewName.ShouldBe("/Features/Modifications/Shared/RankingOfChange.cshtml");
         var model = view.ViewData.Model.ShouldBeOfType<RankingOfChangeViewModel>();
-        model.ModificationType.ShouldBe("Substantial");
-        model.Category.ShouldBe("CatA");
+        model.ModificationType.ShouldBe("Non-Notifiable");
+        model.Category.ShouldBe("N/A");
         model.ReviewType.ShouldBe("TypeA");
     }
 
