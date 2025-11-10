@@ -10,15 +10,21 @@
 	? $"Add documents for {TextHelper.ToSentenceCaseWithAcronyms(Model.SpecificAreaOfChange)}"
 	: string.Empty;
 
-    (string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
-    navModel = ("pmc:areaofchange", "Back", new());
+	var modificationParams = new Dictionary<string, string>
+	{
+		{ "projectRecordId", Model.ProjectRecordId },
+		{ "irasId", Model.IrasId },
+		{ "shortTitle", Model.ShortTitle ?? string.Empty },
+		{ "projectModificationId", Model.ModificationId ?? string.Empty },
+		{ "projectModificationIdentifier", Model.ModificationIdentifier ?? string.Empty }
+	};
 }
 
 <govuk-header />
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-        @section BackNavigation {
-            <partial name="_BackNavigation" model="navModel.Value" />
+		@section BackNavigation {
+			<partial name="_BackNavigation" model="@("pmc:reviewallchanges", "Back", modificationParams)" />
         }
 
         <form asp-action="UploadDocuments" method="post" enctype="multipart/form-data">

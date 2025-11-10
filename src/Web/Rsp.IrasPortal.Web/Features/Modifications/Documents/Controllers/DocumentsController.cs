@@ -73,7 +73,7 @@ public class DocumentsController
         // Call the respondent service to fetch metadata for documents
         // that have already been uploaded for this project modification.
         var response = await respondentService.GetModificationChangesDocuments(
-            request.ProjectModificationChangeId, request.ProjectRecordId, request.ProjectPersonnelId);
+            request.ProjectModificationId, request.ProjectRecordId, request.ProjectPersonnelId);
 
         if (response?.StatusCode == HttpStatusCode.OK && response.Content != null)
         {
@@ -121,7 +121,7 @@ public class DocumentsController
         // Construct the request object containing identifiers required for fetching documents.
         var documentChangeRequest = new ProjectModificationDocumentRequest
         {
-            ProjectModificationChangeId = (Guid)TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationChangeId)!,
+            ProjectModificationId = (Guid)TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId)!,
             ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty,
             ProjectPersonnelId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!,
         };
@@ -135,7 +135,7 @@ public class DocumentsController
 
         // Call the respondent service to retrieve the list of uploaded documents.
         var response = await respondentService.GetModificationChangesDocuments(
-            documentChangeRequest.ProjectModificationChangeId,
+            documentChangeRequest.ProjectModificationId,
             documentChangeRequest.ProjectRecordId,
             documentChangeRequest.ProjectPersonnelId);
 
@@ -361,13 +361,13 @@ public class DocumentsController
         }
 
         // Retrieve contextual identifiers from TempData and HttpContext
-        var projectModificationChangeId = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationChangeId);
+        var projectModificationId = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId);
         var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
         var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty;
 
         // Fetch existing documents for this modification
         var response = await respondentService.GetModificationChangesDocuments(
-            projectModificationChangeId == null ? Guid.Empty : (Guid)projectModificationChangeId!,
+            projectModificationId == null ? Guid.Empty : (Guid)projectModificationId!,
             projectRecordId,
             respondentId);
 
@@ -439,7 +439,7 @@ public class DocumentsController
             // Map uploaded blob metadata to DTOs for backend service
             var uploadedDocuments = uploadedBlobs.Select(uploadedBlob => new ProjectModificationDocumentRequest
             {
-                ProjectModificationChangeId = projectModificationChangeId == null ? Guid.Empty : (Guid)projectModificationChangeId!,
+                ProjectModificationId = projectModificationId == null ? Guid.Empty : (Guid)projectModificationId!,
                 ProjectRecordId = projectRecordId,
                 ProjectPersonnelId = respondentId,
                 FileName = uploadedBlob.FileName,
@@ -561,7 +561,7 @@ public class DocumentsController
 
         // Call the respondent service to fetch metadata for documents
         var response = await respondentService.GetModificationChangesDocuments(
-            request.ProjectModificationChangeId, request.ProjectRecordId, request.ProjectPersonnelId);
+            request.ProjectModificationId, request.ProjectRecordId, request.ProjectPersonnelId);
 
         if (response?.StatusCode == HttpStatusCode.OK && response.Content != null)
         {
@@ -571,7 +571,7 @@ public class DocumentsController
                 Documents = [.. response.Content.Select(doc => new ProjectModificationDocumentRequest
                 {
                     Id = doc.Id,
-                    ProjectModificationChangeId = request.ProjectModificationChangeId,
+                    ProjectModificationId = request.ProjectModificationId,
                     ProjectRecordId = request.ProjectRecordId,
                     ProjectPersonnelId = request.ProjectPersonnelId,
                     FileName = doc.FileName,
@@ -604,7 +604,7 @@ public class DocumentsController
             .Select(d => new ProjectModificationDocumentRequest
             {
                 Id = d.Id,
-                ProjectModificationChangeId = request.ProjectModificationChangeId,
+                ProjectModificationId = request.ProjectModificationId,
                 ProjectRecordId = request.ProjectRecordId,
                 ProjectPersonnelId = request.ProjectPersonnelId,
                 FileName = d.FileName,
@@ -633,7 +633,7 @@ public class DocumentsController
         {
             // Call the respondent service to fetch metadata for documents
             var response = await respondentService.GetModificationChangesDocuments(
-                request.ProjectModificationChangeId, request.ProjectRecordId, request.ProjectPersonnelId);
+                request.ProjectModificationId, request.ProjectRecordId, request.ProjectPersonnelId);
 
             // Check if there are any remaining documents in the response
             if (response?.Content == null || !response.Content.Any())
@@ -669,7 +669,7 @@ public class DocumentsController
     {
         return new ProjectModificationDocumentRequest
         {
-            ProjectModificationChangeId = (Guid)TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationChangeId)!,
+            ProjectModificationId = (Guid)TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId)!,
             ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty,
             ProjectPersonnelId = HttpContext.Items[ContextItemKeys.RespondentId] as string ?? string.Empty
         };
@@ -731,7 +731,7 @@ public class DocumentsController
 
         // Fetch uploaded documents for the modification
         var response = await respondentService.GetModificationChangesDocuments(
-            documentChangeRequest.ProjectModificationChangeId,
+            documentChangeRequest.ProjectModificationId,
             documentChangeRequest.ProjectRecordId,
             documentChangeRequest.ProjectPersonnelId);
 
@@ -927,7 +927,7 @@ public class DocumentsController
 
         // Fetch all existing uploaded documents for this modification
         var documentsResponse = await respondentService.GetModificationChangesDocuments(
-            request.ProjectModificationChangeId,
+            request.ProjectModificationId,
             request.ProjectRecordId,
             request.ProjectPersonnelId);
 
