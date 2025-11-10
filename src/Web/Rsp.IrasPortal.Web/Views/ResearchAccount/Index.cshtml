@@ -170,7 +170,7 @@
 			{
 				<authorized auth-params="@new(Roles: item.Roles)">
 					<div class="govuk-grid-column-one-third">
-						<partial name="_ActionItem" model="@((item.Title, item.Desc, item.Link))" />
+                        <partial name="_ActionItem" model="@(item.Title, item.Desc, item.Link, new Dictionary<string, string>())" />
 					</div>
 				</authorized>
 			}
