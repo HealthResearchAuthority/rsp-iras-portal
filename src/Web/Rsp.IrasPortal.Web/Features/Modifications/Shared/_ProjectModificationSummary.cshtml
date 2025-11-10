@@ -30,7 +30,7 @@
         <dd class="govuk-summary-list__value">@modificationBaseModel.ModificationIdentifier</dd>
     </div>
     <authorized auth-params="@new(Roles: "sponsor,applicant")">
-        @if (Model.Status is ModificationStatus.Approved || Model.Status is ModificationStatus.NotAuthorised || Model.Status is ModificationStatus.WithReviewBody)
+        @if (modificationBaseModel.Status is ModificationStatus.Approved or ModificationStatus.NotAuthorised or ModificationStatus.WithReviewBody)
         {
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key">Date created</dt>
