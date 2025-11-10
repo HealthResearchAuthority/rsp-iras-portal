@@ -95,7 +95,7 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
             };
         Mocker
             .GetMock<IRespondentService>()
-            .Setup(s => s.GetRespondentAnswers(It.IsAny<string>(), QuestionCategories.ProjectRecrod))
+            .Setup(s => s.GetRespondentAnswers(It.IsAny<string>(), QuestionCategories.ProjectRecord))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = answers });
 
         // Use a permissive validator that sets IsValid true

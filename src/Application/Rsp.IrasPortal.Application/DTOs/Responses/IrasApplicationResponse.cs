@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace Rsp.IrasPortal.Application.DTOs.Responses;
+﻿namespace Rsp.IrasPortal.Application.DTOs.Responses;
 
 public class IrasApplicationResponse
 {
@@ -12,12 +10,12 @@ public class IrasApplicationResponse
     /// <summary>
     /// The title of the project
     /// </summary>
-    public string Title { get; set; } = null!;
+    public string ShortProjectTitle { get; set; } = null!;
 
     /// <summary>
     /// Description of the application
     /// </summary>
-    public string Description { get; set; } = null!;
+    public string FullProjectTitle { get; set; } = null!;
 
     /// <summary>
     /// Application Status

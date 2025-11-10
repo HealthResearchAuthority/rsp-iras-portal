@@ -1,4 +1,4 @@
-﻿using Rsp.IrasPortal.Application.DTOs.Responses;
+﻿using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Web.Features.Modifications.Models;
 using Rsp.IrasPortal.Web.Models;
 

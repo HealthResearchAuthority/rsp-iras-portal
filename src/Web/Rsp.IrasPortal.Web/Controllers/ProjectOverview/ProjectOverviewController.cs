@@ -197,7 +197,7 @@ public class ProjectOverviewController(
 
         // Get all respondent answers for the project and category
         var respondentAnswersResponse =
-            await respondentService.GetRespondentAnswers(projectRecordId, QuestionCategories.ProjectRecrod);
+            await respondentService.GetRespondentAnswers(projectRecordId, QuestionCategories.ProjectRecord);
 
         if (!respondentAnswersResponse.IsSuccessStatusCode)
         {
@@ -269,7 +269,7 @@ public class ProjectOverviewController(
         var model = new ProjectOverviewModel
         {
             ProjectTitle = titleAnswer as string ?? string.Empty,
-            CategoryId = QuestionCategories.ProjectRecrod,
+            CategoryId = QuestionCategories.ProjectRecord,
             ProjectRecordId = projectRecord.Id,
             ProjectPlannedEndDate = DateHelper.ConvertDateToString(endDateAnswer),
             Status = projectRecord.Status,

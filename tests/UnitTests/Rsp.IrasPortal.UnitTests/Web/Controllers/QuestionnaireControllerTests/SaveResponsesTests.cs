@@ -208,7 +208,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
             .ReturnsAsync(new ValidationResult());
 
         // Act
-        var result = await Sut.SaveResponses(model, "", true, "", submit, saveAndContinue);
+        var result = await Sut.SaveResponses(model, "", true, submit, saveAndContinue);
 
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
@@ -313,7 +313,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
             .ReturnsAsync(new ValidationResult());
 
         // Act
-        var result = await Sut.SaveResponses(model, "", true, "", submit, saveAndContinue);
+        var result = await Sut.SaveResponses(model, "", true, submit, saveAndContinue);
 
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
@@ -415,7 +415,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
             .ReturnsAsync(new ValidationResult());
 
         // Act
-        var result = await Sut.SaveResponses(model, "", true, "", submit, saveAndContinue, saveForLater);
+        var result = await Sut.SaveResponses(model, "", true, submit, saveAndContinue, saveForLater);
 
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
@@ -519,7 +519,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
             .ReturnsAsync(new ValidationResult());
 
         // Act
-        var result = await Sut.SaveResponses(model, "", true, "", submit, saveAndContinue);
+        var result = await Sut.SaveResponses(model, "", true, submit, saveAndContinue);
 
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();

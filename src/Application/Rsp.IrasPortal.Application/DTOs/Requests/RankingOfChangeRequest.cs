@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Application.DTOs.Responses;
+﻿namespace Rsp.IrasPortal.Application.DTOs.Requests;
 
 public class RankingOfChangeRequest
 {
