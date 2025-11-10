@@ -71,6 +71,8 @@
 	var searchHint = pageContent.GetValueOrDefault("ProjectRecordSearch.SearchHint", null);
 	var noResultsTitle = pageContent.GetValueOrDefault("ProjectRecordSearch.NoResultsTitle", null);
 	var noResultsBody = pageContent.GetValueOrDefault("ProjectRecordSearch.NoResultsBody", null);
+
+	var activeSponsorOrgFilter = TempData[TempDataKeys.ActiveSponsoOrganisationFilterName] as string;
 }
 
 @* Filters START*@
@@ -203,6 +205,8 @@
 															  label-text="Type the name of the organisation or scroll through the list"
 															  api-url="/organisation/getsponsororganisationsnames"
 															  auto-complete-enabled-id="auto_search"
+															  use-organisation-id=@true
+															  display-name=@activeSponsorOrgFilter
 															  label-html-class="govuk-label govuk-label--s font-weight-none">
 										</rsp-gds-autocomplete>
 
@@ -375,6 +379,10 @@
 															|| filterKey.Contains("date submitted - to", StringComparison.OrdinalIgnoreCase))
 										{
 											@($"{filterKey} {val}")
+										}
+										else if (filterKey == ApprovalsSearch.SponsorOrganisationKey)
+										{
+											@($"{filterKey} - {activeSponsorOrgFilter}")
 										}
 										else
 										{

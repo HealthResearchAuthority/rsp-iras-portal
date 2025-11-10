@@ -8,6 +8,7 @@ using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Features.Approvals.ProjectRecord.Models;
+using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Features.Approvals.ProjectRecord.Controllers;
@@ -71,6 +72,15 @@ public class ProjectRecordSearchController(
                 SortField = sortField,
                 FormName = "applications-selection"
             };
+
+            if (model.Search?.SponsorOrganisation != null)
+            {
+                // sponsor org filter is active
+                // lookup the org name
+                var activeOrg = await SponsorOrganisationNameHelper.GetSponsorOrganisationNameFromOrganisationId(rtsService, model.Search.SponsorOrganisation);
+                
+                TempData[TempDataKeys.ActiveSponsoOrganisationFilterName] = activeOrg;   
+            }
         }
 
         return View("~/Features/Approvals/ProjectRecordSearch/Views/Index.cshtml", model);
