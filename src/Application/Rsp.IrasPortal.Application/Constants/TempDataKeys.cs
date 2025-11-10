@@ -35,6 +35,7 @@ public struct TempDataKeys
     }
 
     public const string ProjectRecordId = "td:project_record_id";
+    public const string ProjectRecord = "td:project_record";
     public const string ProjectRecordResponses = "td:project_record_responses";
     public const string ShortProjectTitle = "td:short_project_title";
     public const string PlannedProjectEndDate = "td:planned_project_enddate";

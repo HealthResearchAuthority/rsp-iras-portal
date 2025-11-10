@@ -74,7 +74,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
     {
         var respondentService = Mocker.GetMock<IRespondentService>();
         respondentService
-            .Setup(s => s.GetRespondentAnswers(projectRecordId, QuestionCategories.ProjectRecrod))
+            .Setup(s => s.GetRespondentAnswers(projectRecordId, QuestionCategories.ProjectRecord))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -176,7 +176,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var tempData = CreateTempData(tempDataProvider, httpContext);
 
         tempData[TempDataKeys.ShortProjectTitle] = "Test Project";
-        tempData[TempDataKeys.CategoryId] = QuestionCategories.ProjectRecrod;
+        tempData[TempDataKeys.CategoryId] = QuestionCategories.ProjectRecord;
         tempData[TempDataKeys.ProjectRecordId] = DefaultProjectRecordId;
 
         var answers = new List<RespondentAnswerDto>
@@ -220,7 +220,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var tempData = CreateTempData(tempDataProvider, httpContext);
 
         tempData[TempDataKeys.ShortProjectTitle] = "Test Project";
-        tempData[TempDataKeys.CategoryId] = QuestionCategories.ProjectRecrod;
+        tempData[TempDataKeys.CategoryId] = QuestionCategories.ProjectRecord;
         tempData[TempDataKeys.ProjectRecordId] = DefaultProjectRecordId;
 
         var answers = new List<RespondentAnswerDto>
@@ -263,7 +263,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var tempData = CreateTempData(tempDataProvider, httpContext);
 
         tempData[TempDataKeys.ShortProjectTitle] = "Test Project";
-        tempData[TempDataKeys.CategoryId] = QuestionCategories.ProjectRecrod;
+        tempData[TempDataKeys.CategoryId] = QuestionCategories.ProjectRecord;
         tempData[TempDataKeys.ProjectRecordId] = DefaultProjectRecordId;
 
         var answers = new List<RespondentAnswerDto>
@@ -284,7 +284,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var model = viewResult.Model.ShouldBeOfType<ProjectOverviewModel>();
 
         model.ProjectTitle.ShouldBe("Test Project");
-        model.CategoryId.ShouldBe(QuestionCategories.ProjectRecrod);
+        model.CategoryId.ShouldBe(QuestionCategories.ProjectRecord);
         model.ProjectRecordId.ShouldBe(DefaultProjectRecordId);
     }
 
@@ -398,7 +398,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 
         var respondentService = Mocker.GetMock<IRespondentService>();
         respondentService
-            .Setup(s => s.GetRespondentAnswers(DefaultProjectRecordId, QuestionCategories.ProjectRecrod))
+            .Setup(s => s.GetRespondentAnswers(DefaultProjectRecordId, QuestionCategories.ProjectRecord))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>>
             {
                 StatusCode = HttpStatusCode.OK,

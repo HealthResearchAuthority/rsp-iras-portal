@@ -43,7 +43,7 @@ public class WelcomeTests : TestServiceBase<ApplicationController>
                 Id = "App1",
                 CreatedDate = mockDate,
                 Status = "Created",
-                Title = "My Title"
+                ShortProjectTitle = "My Title"
             }
         };
 

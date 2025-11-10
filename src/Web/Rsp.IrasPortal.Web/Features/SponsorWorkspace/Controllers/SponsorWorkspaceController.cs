@@ -7,7 +7,7 @@ using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Extensions;
 
-namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace;
+namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace.Controllers;
 
 /// <summary>
 /// Controller responsible for handling sponsor workspace related actions.
