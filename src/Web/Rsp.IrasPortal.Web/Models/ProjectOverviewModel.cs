@@ -39,4 +39,9 @@ public class ProjectOverviewModel
     /// Gets or sets sections with questions for specific view
     /// </summary>
     public List<SectionGroupWithQuestionsViewModel> SectionGroupQuestions { get; set; } = [];
+
+    /// <summary>
+    /// Get or sets organisation name for Project Details
+    /// </summary>
+    public string? OrganisationName { get; set; }
 }

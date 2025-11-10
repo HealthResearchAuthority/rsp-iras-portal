@@ -3,9 +3,6 @@
 @using Microsoft.FeatureManagement
 @using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
-@using Rsp.IrasPortal.Application.DTOs.Responses
-@using Rsp.IrasPortal.Web.Extensions
-@using Rsp.IrasPortal.Web.TagHelpers.Models
 @model ModificationsTasklistViewModel
 @inject IFeatureManager featureManager
 
@@ -17,6 +14,10 @@
 	{
 		pageTitle = "Assign modifications task list";
 	}
+    if (User.IsInRole("team_manager"))
+    {
+        pageTitle = "Team manager dashboard";
+    }
 
 	ViewData["Title"] = pageTitle + " - Modifications - Approvals - System Administration";
 
@@ -30,6 +31,12 @@
 	var noResultsTitle = pageContent.GetValueOrDefault("Approvals.ModificationsTasklist.NoResultsTitle", null);
 	var emptySearchBodyText = pageContent.GetValueOrDefault("Approvals.ModificationsTasklist.EmptySearchBodyText", null);
 	var noResultsBodyText = pageContent.GetValueOrDefault("Approvals.ModificationsTasklist.NoResultsBodyText", null);
+	var pageSummary = pageContent.GetValueOrDefault("Approvals.ModificationsTasklist.PageSummarySWR", null);
+
+    if (User.IsInRole("team_manager"))
+    {
+		pageSummary = pageContent.GetValueOrDefault("Approvals.ModificationsTasklist.PageSummaryTeamManager", null);
+    }
 
     TempData[TempDataKeys.ProjectModification.LinkBackToReferrer] = true;
     TempData[TempDataKeys.ProjectModification.UrlReferrer] = Context.Request.GetDisplayUrl();
@@ -66,10 +73,9 @@
 	<div class="govuk-grid-column-two-thirds search-filter-bottom-border">
 		<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
 		<h2 class="govuk-heading-xl" id="title">@pageTitle</h2>
-		<p class="govuk-body">
-			This page shows all the modifications that are ready for you to assign, where the lead nation is
-			@Model.LeadNation.
-		</p>
+        <p class="govuk-body">
+			@pageSummary?.Value @Model.LeadNation.
+        </p>
 
 		@if (!Model.EmptySearchPerformed || (Model.Modifications != null && Model.Modifications.Any()))
 		{
@@ -276,15 +282,26 @@ else
 								</div>
 							</th>
 							@{
-								var sortableHeaders = new[]
-								{
-												new { Field = nameof(ModificationsModel.ModificationId), Label = "Modification ID" },
-												new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
-												new { Field = nameof(ModificationsModel.CreatedAt), Label = "Date submitted" },
-												new { Field = nameof(ModificationsModel.DaysSinceSubmission), Label = "Days since submission" },
-												new { Field = nameof(ModificationsModel.Status), Label = "Status" }
-												};
-								var tableId = "modificationsTasklistTable";
+                                var sortableHeaders = new[]
+                                {
+                                    new { Field = nameof(ModificationsModel.ModificationId),   Label = "Modification ID" },
+                                    new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
+                                    new { Field = nameof(ModificationsModel.CreatedAt),         Label = "Date submitted" },
+                                    new { Field = nameof(ModificationsModel.DaysSinceSubmission), Label = "Days since submission" },
+                                    new { Field = nameof(ModificationsModel.Status),            Label = "Status" }
+                                }.ToList();
+
+                                if (User.IsInRole("team_manager"))
+                                {
+                                    // Insert at index 4 (0-based): after DaysSinceSubmission, before Status
+                                    sortableHeaders.Insert(4, new
+                                    {
+                                        Field = nameof(ModificationsModel.ReviewerName),
+                                        Label = "Study-wide reviewer"
+                                    });
+                                }
+
+                                var tableId = "modificationsTasklistTable";
 							}
 							@foreach (var header in sortableHeaders)
 							{
@@ -351,6 +368,14 @@ else
 									<td class="govuk-table__cell">@modification.Modification.CreatedAt.ToString("dd MMM yyyy")
 									</td>
                                     <td class="govuk-table__cell">@modification.Modification.DaysSinceSubmission @daysText</td>
+                                    @if (User.IsInRole("team_manager"))
+                                    {
+                                        <td class="govuk-table__cell">
+                                            @(string.IsNullOrWhiteSpace(modification.Modification.ReviewerName)
+                                                ? "Unassigned"
+                                                : modification.Modification.ReviewerName)
+                                        </td>
+                                    }
                                     <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">@modification.Modification.Status</strong></td>
 								</tr>
 							}

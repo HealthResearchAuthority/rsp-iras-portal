@@ -64,7 +64,7 @@ public class ApprovalsSearchModel
             }
 
             if (!string.IsNullOrWhiteSpace(SponsorOrgSearch.SelectedOrganisation))
-            {
+            {                
                 SponsorOrganisation = SponsorOrgSearch.SelectedOrganisation;
             }
 
