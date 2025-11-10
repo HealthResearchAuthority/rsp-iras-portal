@@ -10,7 +10,7 @@ public class ProjectModificationDocumentRequest
     /// <summary>
     /// Gets or sets the identifier of the related project modification change.
     /// </summary>
-    public Guid ProjectModificationChangeId { get; set; }
+    public Guid ProjectModificationId { get; set; }
 
     /// <summary>
     /// Gets or sets the project record identifier.

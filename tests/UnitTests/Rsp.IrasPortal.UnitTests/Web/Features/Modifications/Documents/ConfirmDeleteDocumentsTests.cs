@@ -74,7 +74,7 @@ public class ConfirmDeleteDocumentsTests : TestServiceBase<DocumentsController>
         actual.FileName.ShouldBe(expected.FileName);
         actual.FileSize.ShouldBe(expected.FileSize);
         actual.DocumentStoragePath.ShouldBe(expected.DocumentStoragePath);
-        actual.ProjectModificationChangeId.ShouldBe(changeId);
+        actual.ProjectModificationId.ShouldBe(changeId);
         actual.ProjectRecordId.ShouldBe(projectRecordId);
         actual.ProjectPersonnelId.ShouldBe(respondentId);
 

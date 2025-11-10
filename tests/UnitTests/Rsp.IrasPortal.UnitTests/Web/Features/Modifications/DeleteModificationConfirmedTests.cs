@@ -65,7 +65,7 @@ public class DeleteModificationConfirmedTests : TestServiceBase<ModificationsCon
                     new()
                     {
                         ProjectRecordId = projectRecordId,
-                        ProjectModificationChangeId = projectModificationChangeId,
+                        ProjectModificationId = projectModificationChangeId,
                         DocumentStoragePath = "IRAS/TEST.PDF"
                     }
                 },
@@ -144,7 +144,7 @@ public class DeleteModificationConfirmedTests : TestServiceBase<ModificationsCon
                     new()
                     {
                         ProjectRecordId = projectRecordId,
-                        ProjectModificationChangeId = projectModificationChangeId,
+                        ProjectModificationId = projectModificationChangeId,
                         DocumentStoragePath = "IRAS/TEST.PDF"
                     }
                 },
@@ -212,7 +212,7 @@ public class DeleteModificationConfirmedTests : TestServiceBase<ModificationsCon
                     new()
                     {
                         ProjectRecordId = projectRecordId,
-                        ProjectModificationChangeId = projectModificationChangeId,
+                        ProjectModificationId = projectModificationChangeId,
                         DocumentStoragePath = "IRAS/TEST.PDF"
                     }
                 },
@@ -280,7 +280,7 @@ public class DeleteModificationConfirmedTests : TestServiceBase<ModificationsCon
                     new()
                     {
                         ProjectRecordId = projectRecordId,
-                        ProjectModificationChangeId = projectModificationChangeId,
+                        ProjectModificationId = projectModificationChangeId,
                         DocumentStoragePath = "IRAS/TEST.PDF"
                     }
                 },
