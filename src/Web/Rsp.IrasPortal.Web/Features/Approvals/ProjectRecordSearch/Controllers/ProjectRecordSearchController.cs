@@ -26,6 +26,8 @@ public class ProjectRecordSearchController(
         string? sortField = nameof(ApplicationModel.CreatedDate),
         string? sortDirection = SortDirections.Descending)
     {
+        var userIsSystemAdmin = User.IsInRole("system_administrator");
+
         var model = new ProjectRecordSearchViewModel();
 
         // getting search query
@@ -48,7 +50,8 @@ public class ProjectRecordSearchController(
                 ChiefInvestigatorName = model.Search?.ChiefInvestigatorName,
                 LeadNation = model.Search?.LeadNation,
                 ParticipatingNation = model.Search?.ParticipatingNation,
-                SponsorOrganisation = model.Search?.SponsorOrganisation
+                SponsorOrganisation = model.Search?.SponsorOrganisation,
+                ActiveProjectsOnly = !userIsSystemAdmin
             };
 
             var applicationServiceResponse = await applicationService.GetPaginatedApplications(

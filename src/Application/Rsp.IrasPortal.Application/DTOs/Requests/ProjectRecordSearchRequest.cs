@@ -11,4 +11,5 @@ public class ProjectRecordSearchRequest
     public List<string>? ParticipatingNation { get; set; } = [];
     public string? ShortProjectTitle { get; set; }
     public string? SponsorOrganisation { get; set; }
+    public bool ActiveProjectsOnly { get; set; }
 }
