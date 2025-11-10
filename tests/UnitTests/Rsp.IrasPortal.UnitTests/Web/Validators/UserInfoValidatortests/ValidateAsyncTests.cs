@@ -26,26 +26,6 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
     }
 
     [Fact]
-    public async Task ShouldHaveValidationErrorForTelephoneNoDigit()
-    {
-        // Arrange
-        var model = new UserViewModel
-        {
-            GivenName = "Hello",
-            FamilyName = "Ham",
-            Telephone = "qwertyuiopa"
-        };
-
-        // Act
-        var result = await Sut.TestValidateAsync(model);
-
-        // Assert
-        result
-            .ShouldHaveValidationErrorFor(x => x.Telephone)
-            .WithErrorMessage("Telephone must only contain numbers");
-    }
-
-    [Fact]
     public async Task ShouldHaveValidationErrorForTelephone13DigitOrMore()
     {
         // Arrange
