@@ -1,0 +1,66 @@
+﻿@model Rsp.IrasPortal.Web.Features.Modifications.Models.ModificationDetailsViewModel
+
+@{
+    var heading = string.Empty;
+    var messageText = string.Empty;
+
+
+        
+
+    switch (Model.Outcome)
+    {
+        case "Authorised":
+        {
+            // Default to "No review required" if ReviewType is null/empty
+            var reviewType = string.IsNullOrWhiteSpace(Model.ReviewType)
+                ? "No review required"
+                : Model.ReviewType;
+
+            switch (reviewType)
+            {
+                case "Review required":
+					heading = "The modification has been authorised and submitted for review";
+                    messageText = "The modification has been authorised, submitted and is awaiting approval.";
+                    ViewData["Title"] = "Modification authorised (Review required) - System Administration";
+                    break;
+
+                case "No review required":
+                default:
+						heading = "Modification authorised and approved";
+						messageText = "The modification has been authorised, submitted and approved. No further review or approval is needed.";
+                    ViewData["Title"] = "Modification authorised (No review required) - System Administration";
+                    break;
+            }
+
+            break;
+        }
+
+        case "NotAuthorised":
+        default:
+        {
+            heading = "Modification not authorised";
+            messageText = "The modification was not authorised.";
+            ViewData["Title"] = "Modification not authorised - System Administration";
+            break;
+        }
+    }
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <div class="govuk-panel govuk-panel--confirmation">
+            <h1 class="govuk-panel__title">
+                @heading
+            </h1>
+        </div>
+
+        <p class="govuk-body">
+            @messageText
+        </p>
+
+        <form method="get">
+            <partial name="_SubmitButton"
+                     model="@("sws:authorisations", "Return to authorisations", new Dictionary<string, string>())"/>
+        </form>
+    </div>
+</div>

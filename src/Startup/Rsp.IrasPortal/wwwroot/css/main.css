@@ -1,4 +1,4 @@
-﻿@charset "UTF-8";
+@charset "UTF-8";
 @import url("govuk-frontend.min.css");
 .govuk-form-group.questions {
   border: solid 1px lightgrey;
@@ -284,7 +284,7 @@ button.govuk-link {
 }
 
 .govuk-back-link-button--inverse:active, .govuk-back-link-button--inverse:hover {
-  color: hsla(0deg, 0%, 100%, 0.99);
+  color: hsla(0, 0%, 100%, 0.99);
 }
 
 .govuk-back-link-button--inverse:focus {
@@ -974,3 +974,51 @@ button.govuk-pagination__item--current {
     width: auto;
   }
 }
+
+.govuk-tab-toggle {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Remove background colour from list and items */
+.govuk-service-navigation__container,
+.govuk-service-navigation__wrapper,
+.govuk-service-navigation__list,
+.govuk-service-navigation__item {
+  background: var(--background-govuk-body-background-colour, #FFF);
+}
+
+/* Hide all panels by default */
+.tab-content {
+  display: none;
+  margin-top: 1.5rem;
+}
+
+/* Show the panel corresponding to the checked input */
+#tab-sponsor-details:checked ~ #sponsor-details,
+#tab-modifications-changes:checked ~ #modifications-changes,
+#tab-documents:checked ~ #documents,
+#tab-history:checked ~ #history {
+  display: block;
+}
+
+/* Highlight the active tab (underline and text colour) */
+#tab-sponsor-details:checked ~ .govuk-service-navigation .govuk-service-navigation__item--sponsor-details > label,
+#tab-modifications-changes:checked ~ .govuk-service-navigation .govuk-service-navigation__item--modifications-changes > label,
+#tab-documents:checked ~ .govuk-service-navigation .govuk-service-navigation__item--documents > label,
+#tab-history:checked ~ .govuk-service-navigation .govuk-service-navigation__item--history > label {
+  border-bottom: 4px solid #1d70b8;
+  color: #0b0c0c;
+}
+
+/* Label behaves like a link */
+.govuk-service-navigation__link-label {
+  cursor: pointer;
+  display: inline-block;
+  padding-bottom: 4px;
+  text-decoration: none;
+  color: #1d70b8;
+}
+
+/*# sourceMappingURL=main.css.map */

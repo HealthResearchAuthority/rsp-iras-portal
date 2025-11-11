@@ -17,4 +17,5 @@ public class ModificationsModel
     public DateTime? SentToSponsorDate { get; set; } = null;
     public DateTime? SentToRegulatorDate { get; set; } = null;
     public string ReviewerName { get; set; }
+    public DateTime? AuthorisedDate { get; set; }
 }
