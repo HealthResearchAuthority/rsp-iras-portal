@@ -69,7 +69,7 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
             .ReturnsAsync(new ServiceResponse<IrasApplicationResponse> { StatusCode = HttpStatusCode.OK, Content = new IrasApplicationResponse { Id = "rec-1", IrasId = 1 } });
 
         respondentService
-            .Setup(s => s.GetRespondentAnswers("rec-1", QuestionCategories.ProjectRecrod))
+            .Setup(s => s.GetRespondentAnswers("rec-1", QuestionCategories.ProjectRecord))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.InternalServerError });
 
         // Ensure HttpContext/Request is set up
@@ -95,7 +95,7 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
             .ReturnsAsync(new ServiceResponse<IrasApplicationResponse> { StatusCode = HttpStatusCode.OK, Content = new IrasApplicationResponse { Id = "rec-1", IrasId = 1 } });
 
         respondentService
-            .Setup(s => s.GetRespondentAnswers("rec-1", QuestionCategories.ProjectRecrod))
+            .Setup(s => s.GetRespondentAnswers("rec-1", QuestionCategories.ProjectRecord))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = null });
 
         // Ensure HttpContext/Request is set up
@@ -128,7 +128,7 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
             .ReturnsAsync(new ServiceResponse<IrasApplicationResponse> { StatusCode = HttpStatusCode.OK, Content = new IrasApplicationResponse { Id = "rec-1", IrasId = 1 } });
 
         respondentService
-            .Setup(s => s.GetRespondentAnswers("rec-1", QuestionCategories.ProjectRecrod))
+            .Setup(s => s.GetRespondentAnswers("rec-1", QuestionCategories.ProjectRecord))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = answers });
 
         cmsService
@@ -154,7 +154,7 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
         var model = okResult.Value.ShouldBeOfType<ProjectOverviewModel>();
         model.ProjectTitle.ShouldBe("Project X");
         model.ProjectRecordId.ShouldBe("rec-1");
-        model.CategoryId.ShouldBe(QuestionCategories.ProjectRecrod);
+        model.CategoryId.ShouldBe(QuestionCategories.ProjectRecord);
         model.ProjectPlannedEndDate.ShouldNotBeNullOrEmpty();
 
         Sut.TempData[TempDataKeys.IrasId].ShouldBe(1);
@@ -180,7 +180,7 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
             .ReturnsAsync(new ServiceResponse<IrasApplicationResponse> { StatusCode = HttpStatusCode.OK, Content = new IrasApplicationResponse { Id = "rec-1", IrasId = 1 } });
 
         respondentService
-            .Setup(s => s.GetRespondentAnswers("rec-1", QuestionCategories.ProjectRecrod))
+            .Setup(s => s.GetRespondentAnswers("rec-1", QuestionCategories.ProjectRecord))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = answers });
 
         cmsService
@@ -234,7 +234,7 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
             });
 
         respondentService
-            .Setup(s => s.GetRespondentAnswers("rec-1", QuestionCategories.ProjectRecrod))
+            .Setup(s => s.GetRespondentAnswers("rec-1", QuestionCategories.ProjectRecord))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -299,7 +299,7 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
 
         model.ProjectTitle.ShouldBe("Project X");
         model.ProjectRecordId.ShouldBe("rec-1");
-        model.CategoryId.ShouldBe(QuestionCategories.ProjectRecrod);
+        model.CategoryId.ShouldBe(QuestionCategories.ProjectRecord);
         model.ProjectPlannedEndDate.ShouldBe("01 January 2025");
         model.Status.ShouldBe(ModificationStatus.InDraft);
         model.IrasId.ShouldBe(1);

@@ -69,17 +69,20 @@ public class ModificationChangesController
         // this is where the questionnaire will resume
         var navigation = await SetStage(model.CurrentStage!, question?.QuestionId, question?.GetDisplayText());
 
+        // get the application from the session
+        // to get the projectApplicationId
+        var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
+
         if (!isValid)
         {
+            // see if the orginal answers are required to be shown
+            await PopulateOriginalAnswers(projectRecordId, questionnaire.Questions, model);
+
             model.ReviewAnswers = false;
             return View("Questionnaire", model);
         }
 
         // ------------------Save Modification Answers-------------------------
-        // get the application from the session
-        // to get the projectApplicationId
-        var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
-
         await SaveModificationChangeAnswers(projectModificationChangeId, projectRecordId!, model.Questions);
 
         // if save for later

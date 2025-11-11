@@ -4,6 +4,7 @@ using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Features.Modifications.Helpers;
 using Rsp.IrasPortal.Web.Features.Modifications.Models;
 using Rsp.IrasPortal.Web.Models;
+using static Rsp.IrasPortal.Application.Constants.Ranking;
 
 namespace Rsp.IrasPortal.Web.Features.Modifications.Components;
 
@@ -25,7 +26,7 @@ public class RankingOfChange(ICmsQuestionsetService cmsQuestionsetService,
         {
             // Get all respondent answers for the project and category
             var respondentAnswersResponse =
-                await respondentService.GetRespondentAnswers(projectRecordId, QuestionCategories.ProjectRecrod);
+                await respondentService.GetRespondentAnswers(projectRecordId, QuestionCategories.ProjectRecord);
 
             var answers = respondentAnswersResponse.Content;
 
@@ -42,10 +43,17 @@ public class RankingOfChange(ICmsQuestionsetService cmsQuestionsetService,
 
         var ranking = await cmsQuestionsetService.GetModificationRanking(rankingOfChangeRequest);
 
+        var modificationType = ranking?.Content?.ModificationType?.Substantiality ?? Ranking.NotAvailable;
+
+        // If modification type is Non-Notifiable, force category to N/A
+        var category = string.Equals(modificationType, ModificationTypes.NonNotifiable, StringComparison.OrdinalIgnoreCase)
+            ? CategoryTypes.NA
+            : ranking?.Content?.Categorisation?.Category ?? Ranking.NotAvailable;
+
         var rankingOfChangeViewModel = new RankingOfChangeViewModel
         {
-            ModificationType = ranking?.Content?.ModificationType.Substantiality ?? Ranking.NotAvailable,
-            Category = ranking?.Content?.Categorisation.Category ?? Ranking.NotAvailable,
+            ModificationType = modificationType,
+            Category = category,
             ReviewType = ranking?.Content?.ReviewType ?? Ranking.NotAvailable
         };
 

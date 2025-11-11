@@ -35,6 +35,7 @@ public struct TempDataKeys
     }
 
     public const string ProjectRecordId = "td:project_record_id";
+    public const string ProjectRecord = "td:project_record";
     public const string ProjectRecordResponses = "td:project_record_responses";
     public const string ShortProjectTitle = "td:short_project_title";
     public const string PlannedProjectEndDate = "td:planned_project_enddate";
@@ -66,4 +67,5 @@ public struct TempDataKeys
     public const string SponsorOrganisationUserType = "td:sponsor_org_user_type";
     public const string ShowCookiesSavedNotificationBanner = "td:show_cookies_notification_banner";
     public const string ShowCookiesSavedHeaderBanner = "td:show_cookies_header_banner";
+    public const string ActiveSponsoOrganisationFilterName = "td:active_sponsor_org_filter";
 }

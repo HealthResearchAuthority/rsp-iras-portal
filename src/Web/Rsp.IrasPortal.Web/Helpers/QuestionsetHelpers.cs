@@ -66,7 +66,7 @@ public static class QuestionsetHelpers
                 ShowAnswerOn = question.ShowAnswerOn,
                 SectionGroup = question.SectionGroup,
                 SequenceInSectionGroup = question.SequenceInSectionGroup,
-
+                IsEditable = question.IsEditable,
                 GuidanceComponents = question.GuidanceComponents,
                 Answers = [.. question.Answers.Select(ans => new AnswerViewModel
                 {
@@ -108,6 +108,7 @@ public static class QuestionsetHelpers
                 ShowAnswerOn = question.ShowAnswerOn,
                 SectionGroup = question.SectionGroup,
                 SequenceInSectionGroup = question.SequenceInSectionGroup,
+                IsEditable = question.IsEditable,
                 Answers = [],
                 Rules = [],
                 GuidanceComponents = question.GuidanceComponents,

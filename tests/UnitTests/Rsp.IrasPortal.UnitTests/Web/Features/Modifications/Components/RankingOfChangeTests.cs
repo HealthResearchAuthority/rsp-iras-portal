@@ -24,7 +24,7 @@ public class RankingOfChangeTests
     }
 
     [Fact]
-    public async Task InvokeAsync_Should_Return_View_With_RankingOfChangeViewModel_When_Ranking_Response_Present()
+    public async Task InvokeAsync_Should_Return_View_With_RankingOfChangeViewModel_When_Substantial_Ranking_Response_Present()
     {
         // Arrange
         var questions = new List<QuestionViewModel>();
@@ -51,6 +51,33 @@ public class RankingOfChangeTests
     }
 
     [Fact]
+    public async Task InvokeAsync_Should_Return_View_With_RankingOfChangeViewModel_When_Ranking_Response_Present()
+    {
+        // Arrange
+        var questions = new List<QuestionViewModel>();
+        var rankingResponse = new RankingOfChangeResponse
+        {
+            ModificationType = new ModificationRank { Substantiality = "Non-Notifiable", Order = 1 },
+            Categorisation = new CategoryRank { Category = "CatA", Order = 2 },
+            ReviewType = "TypeA"
+        };
+        _cmsQuestionsetService
+            .Setup(s => s.GetModificationRanking(It.IsAny<RankingOfChangeRequest>()))
+            .ReturnsAsync(new ServiceResponse<RankingOfChangeResponse> { Content = rankingResponse });
+
+        // Act
+        var result = await _sut.InvokeAsync(It.IsAny<string>(), "areaId", true, questions);
+
+        // Assert
+        var view = result.ShouldBeOfType<ViewViewComponentResult>();
+        view.ViewName.ShouldBe("/Features/Modifications/Shared/RankingOfChange.cshtml");
+        var model = view.ViewData.Model.ShouldBeOfType<RankingOfChangeViewModel>();
+        model.ModificationType.ShouldBe("Non-Notifiable");
+        model.Category.ShouldBe("N/A");
+        model.ReviewType.ShouldBe("TypeA");
+    }
+
+    [Fact]
     public async Task InvokeAsync_Should_Return_View_With_NotAvailable_When_Ranking_Response_Null()
     {
         // Arrange
@@ -66,7 +93,7 @@ public class RankingOfChangeTests
             .ReturnsAsync(new ServiceResponse<RankingOfChangeResponse> { Content = null });
 
         _respondentService
-            .Setup(s => s.GetRespondentAnswers(It.IsAny<string>(), QuestionCategories.ProjectRecrod))
+            .Setup(s => s.GetRespondentAnswers(It.IsAny<string>(), QuestionCategories.ProjectRecord))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = answers });
 
         // Act

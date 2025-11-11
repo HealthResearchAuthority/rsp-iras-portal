@@ -51,7 +51,9 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
 
         RuleFor(x => x.Telephone)
             .MaximumLength(13)
-            .WithMessage(TelephoneMaxCharactersErrorMessage);
+            .WithMessage(TelephoneMaxCharactersErrorMessage)
+            .Matches(@"^\+?\d+$")
+            .WithMessage(TelephoneNotDigitMessage);
 
         RuleFor(x => x.Organisation)
             .MaximumLength(250)

@@ -25,17 +25,17 @@ public class ProjectOverviewModel
     /// </summary>
     public string? ProjectPlannedEndDate { get; set; }
 
-    // <summary>
+    /// <summary>
     /// Gets or sets current project IrasId
     /// </summary>
     public int? IrasId { get; set; }
 
-    // <summary>
+    /// <summary>
     /// Gets or sets current project status
     /// </summary>
     public string Status { get; set; } = null!;
 
-    // <summary>
+    /// <summary>
     /// Gets or sets sections with questions for specific view
     /// </summary>
     public List<SectionGroupWithQuestionsViewModel> SectionGroupQuestions { get; set; } = [];

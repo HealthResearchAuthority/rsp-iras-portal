@@ -11,6 +11,11 @@ public struct QuestionIds
     public const string ShortProjectTitle = "IQA0002";
 
     /// <summary>
+    /// The question ID for the short project title.
+    /// </summary>
+    public const string FullProjectTitle = "IQA0789";
+
+    /// <summary>
     /// The question ID for the project's planned end date..
     /// </summary>
     public const string ProjectPlannedEndDate = "IQA0003";
