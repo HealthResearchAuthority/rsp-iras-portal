@@ -88,6 +88,11 @@ public record QuestionsResponse
     public int SequenceInSectionGroup { get; set; }
 
     /// <summary>
+    /// Indicates if the question is editable or not
+    /// </summary>
+    public bool IsEditable { get; set; }
+
+    /// <summary>
     /// Potential answers of the question for single or multiple choice type question
     /// </summary>
     public IList<AnswerDto> Answers { get; set; } = [];

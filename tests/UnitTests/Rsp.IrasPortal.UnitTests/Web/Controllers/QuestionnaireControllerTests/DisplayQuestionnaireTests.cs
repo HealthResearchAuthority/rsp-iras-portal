@@ -124,7 +124,7 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
         };
 
         // Act
-        var result = await Sut.DisplayQuestionnaire(categoryId, sectionId);
+        var result = await Sut.DisplayQuestionnaire(sectionId);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -179,7 +179,7 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
         };
 
         // Act
-        var result = await Sut.DisplayQuestionnaire(categoryId, sectionId);
+        var result = await Sut.DisplayQuestionnaire(sectionId);
 
         // Assert
         var statusCodeResult = result.ShouldBeOfType<StatusCodeResult>();
@@ -294,7 +294,7 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
         };
 
         // Act
-        var result = await Sut.DisplayQuestionnaire(categoryId, sectionId);
+        var result = await Sut.DisplayQuestionnaire(sectionId);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -403,7 +403,7 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
         };
 
         // Act
-        var result = await Sut.DisplayQuestionnaire(categoryId, sectionId);
+        var result = await Sut.DisplayQuestionnaire(sectionId);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -493,7 +493,7 @@ public class DisplayQuestionnaireTests : TestServiceBase<QuestionnaireController
         };
 
         // Act
-        var result = await Sut.DisplayQuestionnaire(categoryId, sectionId);
+        var result = await Sut.DisplayQuestionnaire(sectionId);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();

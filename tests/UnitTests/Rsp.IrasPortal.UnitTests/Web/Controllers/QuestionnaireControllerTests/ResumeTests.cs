@@ -3,6 +3,7 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.DTOs.Requests;
@@ -72,7 +73,10 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
             Session = session.Object
         };
 
-        Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
+        Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.CategoryId] = categoryId
+        };
 
         Sut.ControllerContext = new ControllerContext
         {
@@ -135,20 +139,20 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
             {
                 Id = "123",
                 Version = "1.0",
-                Sections = new List<SectionModel>
-                    {
+                Sections =
+                    [
                         new SectionModel
                         {
                             SectionId = "section-1",
-                            Questions = new List<QuestionModel>
-                            {
+                            Questions =
+                            [
                                 new QuestionModel
                                 {
                                     QuestionId = "Q1"
                                 }
-                            }
+                            ]
                         }
-                    }
+                    ]
             }
         };
 
@@ -187,7 +191,10 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
             Session = session.Object
         };
 
-        Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
+        Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.CategoryId] = categoryId
+        };
 
         Sut.ControllerContext = new ControllerContext
         {
@@ -272,20 +279,20 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
             {
                 Id = "123",
                 Version = "1.0",
-                Sections = new List<SectionModel>
-                    {
+                Sections =
+                    [
                         new SectionModel
                         {
                             SectionId = "section-1",
-                            Questions = new List<QuestionModel>
-                            {
+                            Questions =
+                            [
                                 new QuestionModel
                                 {
                                     QuestionId = "Q1"
                                 }
-                            }
+                            ]
                         }
-                    }
+                    ]
             }
         };
 
@@ -309,7 +316,10 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
             Session = session.Object
         };
 
-        Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
+        Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.CategoryId] = categoryId
+        };
 
         Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
 
@@ -319,7 +329,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
         redirectResult.ActionName.ShouldBe(nameof(QuestionnaireController.DisplayQuestionnaire));
-        redirectResult.RouteValues!["categoryId"].ShouldBe(categoryId);
+        redirectResult.RouteValues!["sectionId"].ShouldBe(sectionId);
 
         Mocker
             .GetMock<IRespondentService>()
@@ -387,20 +397,20 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
             {
                 Id = "123",
                 Version = "1.0",
-                Sections = new List<SectionModel>
+                Sections =
+                [
+                    new SectionModel
                     {
-                        new SectionModel
-                        {
-                            SectionId = "section-1",
-                            Questions = new List<QuestionModel>
+                        SectionId = "section-1",
+                        Questions =
+                        [
+                            new QuestionModel
                             {
-                                new QuestionModel
-                                {
-                                    QuestionId = "Q1"
-                                }
+                                QuestionId = "Q1"
                             }
-                        }
+                        ]
                     }
+                ]
             }
         };
 
@@ -420,8 +430,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         Mocker
             .GetMock<IValidator<QuestionnaireViewModel>>()
-            .Setup(x => x.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(),
-                It.IsAny<CancellationToken>()))
+            .Setup(x => x.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ValidationResult());
 
         Mocker
@@ -456,8 +465,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         Mocker
             .GetMock<IValidator<QuestionnaireViewModel>>()
             .Verify(
-                x => x.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(),
-                    It.IsAny<CancellationToken>()), Times.Once);
+                x => x.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Theory]
@@ -525,20 +533,20 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
             {
                 Id = "123",
                 Version = "1.0",
-                Sections = new List<SectionModel>
+                Sections =
+                [
+                    new SectionModel
                     {
-                        new SectionModel
-                        {
-                            SectionId = "section-1",
-                            Questions = new List<QuestionModel>
+                        SectionId = "section-1",
+                        Questions =
+                        [
+                            new QuestionModel
                             {
-                                new QuestionModel
-                                {
-                                    QuestionId = "Q1"
-                                }
+                                QuestionId = "Q1"
                             }
-                        }
+                        ]
                     }
+                ]
             }
         };
 
@@ -567,7 +575,10 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
             Session = session.Object
         };
 
-        Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
+        Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.CategoryId] = categoryId
+        };
 
         Sut.ControllerContext = new ControllerContext
         {
@@ -580,7 +591,7 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
         redirectResult.ActionName.ShouldBe(nameof(QuestionnaireController.DisplayQuestionnaire));
-        redirectResult.RouteValues!["categoryId"].ShouldBe(categoryId);
+        redirectResult.RouteValues!["sectionId"].ShouldBe(sectionId);
     }
 
     [Theory, AutoData]
@@ -676,20 +687,20 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
             {
                 Id = "123",
                 Version = "1.0",
-                Sections = new List<SectionModel>
+                Sections =
+                [
+                    new SectionModel
                     {
-                        new SectionModel
-                        {
-                            SectionId = "section-1",
-                            Questions = new List<QuestionModel>
+                        SectionId = "section-1",
+                        Questions =
+                        [
+                            new QuestionModel
                             {
-                                new QuestionModel
-                                {
-                                    QuestionId = "Q1"
-                                }
+                                QuestionId = "Q1"
                             }
-                        }
+                        ]
                     }
+                ]
             }
         };
 
@@ -718,7 +729,10 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         var session = new Mock<ISession>();
         var httpContext = new DefaultHttpContext { Session = session.Object };
-        Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
+        Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.CategoryId] = categoryId
+        };
         Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
 
         // Act
@@ -727,7 +741,6 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
         redirectResult.ActionName.ShouldBe(nameof(QuestionnaireController.DisplayQuestionnaire));
-        redirectResult.RouteValues!["categoryId"].ShouldBe(categoryId);
         redirectResult.RouteValues!["sectionId"].ShouldBe(firstSectionId);
     }
 
@@ -774,20 +787,20 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
             {
                 Id = "123",
                 Version = "1.0",
-                Sections = new List<SectionModel>
+                Sections =
+                [
+                    new SectionModel
                     {
-                        new SectionModel
-                        {
-                            SectionId = "section-1",
-                            Questions = new List<QuestionModel>
+                        SectionId = "section-1",
+                        Questions =
+                        [
+                            new QuestionModel
                             {
-                                new QuestionModel
-                                {
-                                    QuestionId = "Q1"
-                                }
+                                QuestionId = "Q1"
                             }
-                        }
+                        ]
                     }
+                ]
             }
         };
 
@@ -816,7 +829,10 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         var session = new Mock<ISession>();
         var httpContext = new DefaultHttpContext { Session = session.Object };
-        Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
+        Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.CategoryId] = categoryId
+        };
         Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
 
         // Act
@@ -825,7 +841,6 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
         redirectResult.ActionName.ShouldBe(nameof(QuestionnaireController.DisplayQuestionnaire));
-        redirectResult.RouteValues!["categoryId"].ShouldBe(categoryId);
         redirectResult.RouteValues!["sectionId"].ShouldBe(null);
     }
 
@@ -872,20 +887,20 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
             {
                 Id = "123",
                 Version = "1.0",
-                Sections = new List<SectionModel>
+                Sections =
+                [
+                    new SectionModel
                     {
-                        new SectionModel
-                        {
-                            SectionId = "section-1",
-                            Questions = new List<QuestionModel>
+                        SectionId = "section-1",
+                        Questions =
+                        [
+                            new QuestionModel
                             {
-                                new QuestionModel
-                                {
-                                    QuestionId = "Q1"
-                                }
+                                QuestionId = "Q1"
                             }
-                        }
+                        ]
                     }
+                ]
             }
         };
 
@@ -914,7 +929,10 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         var session = new Mock<ISession>();
         var httpContext = new DefaultHttpContext { Session = session.Object };
-        Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
+        Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.CategoryId] = categoryId
+        };
         Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
 
         // Act
@@ -969,20 +987,20 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
             {
                 Id = "123",
                 Version = "1.0",
-                Sections = new List<SectionModel>
+                Sections =
+                [
+                    new SectionModel
                     {
-                        new SectionModel
-                        {
-                            SectionId = "section-1",
-                            Questions = new List<QuestionModel>
+                        SectionId = "section-1",
+                        Questions =
+                        [
+                            new QuestionModel
                             {
-                                new QuestionModel
-                                {
-                                    QuestionId = "Q1"
-                                }
+                                QuestionId = "Q1"
                             }
-                        }
+                        ]
                     }
+                ]
             }
         };
 
@@ -1011,7 +1029,10 @@ public class ResumeTests : TestServiceBase<QuestionnaireController>
 
         var session = new Mock<ISession>();
         var httpContext = new DefaultHttpContext { Session = session.Object };
-        Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
+        Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.CategoryId] = categoryId
+        };
         Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
 
         // Act

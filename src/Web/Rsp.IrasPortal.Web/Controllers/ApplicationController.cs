@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Filters;
-using Rsp.IrasPortal.Application.ServiceClients;
+using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Entities;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
@@ -21,18 +21,18 @@ public class ApplicationController
 (
     IApplicationsService applicationsService,
     IValidator<IrasIdViewModel> irasIdValidator,
-    ICmsQuestionSetServiceClient cmsSevice,
     IProjectRecordValidationService projectRecordValidationService,
-    IValidator<ApplicationSearchModel> searchValidator) : Controller
+    ICmsQuestionsetService cmsQuestionsetService,
+    IValidator<ApplicationSearchModel> searchValidator
+) : Controller
 {
-    // ApplicationInfo view name
-    private const string ApplicationInfo = nameof(ApplicationInfo);
-
-    public async Task<IActionResult> Welcome(
+    public async Task<IActionResult> Welcome
+    (
         int pageNumber = 1,
         int pageSize = 20,
         string? sortField = nameof(ApplicationModel.CreatedDate),
-        string? sortDirection = SortDirections.Descending)
+        string? sortDirection = SortDirections.Descending
+    )
     {
         var model = new ApplicationsViewModel
         {
@@ -68,7 +68,7 @@ public class ApplicationController
             .Select(dto => new ApplicationModel
             {
                 Id = dto.Id,
-                Title = string.IsNullOrWhiteSpace(dto.Title) ? "Project title" : dto.Title,
+                Title = string.IsNullOrWhiteSpace(dto.ShortProjectTitle) ? "Project title" : dto.ShortProjectTitle,
                 Status = dto.Status,
                 CreatedDate = dto.CreatedDate,
                 IrasId = dto.IrasId
@@ -150,48 +150,35 @@ public class ApplicationController
             };
         }
 
-        // Get the respondent information from the current context
-        var respondent = this.GetRespondentFromContext();
-        var name = $"{respondent.GivenName} {respondent.FamilyName}";
+        // Load the question set for project details
+        var questionSetResponse = await cmsQuestionsetService.GetQuestionSet();
 
-        // Create a new application request object
-        var irasApplicationRequest = new IrasApplicationRequest
-        {
-            Title = string.Empty,
-            Description = string.Empty,
-            CreatedBy = name,
-            UpdatedBy = name,
-            StartDate = DateTime.Now,
-            Respondent = respondent,
-            IrasId = model.IrasId != null ? int.Parse(model.IrasId) : null,
-        };
+        // if we have sections then grab the first section
+        var sections = questionSetResponse.Content?.Sections ?? [];
 
-        // Call the service to create the new application
-        var createResponse = await applicationsService.CreateApplication(irasApplicationRequest);
-        if (!createResponse.IsSuccessStatusCode || createResponse.Content == null)
+        // section shouldn't be null here, this is a defensive
+        // check
+        if (sections is { Count: 0 })
         {
-            // Return a generic service error view if creation fails
-            return this.ServiceError(createResponse);
+            return this.ServiceError(new ServiceResponse
+            {
+                StatusCode = HttpStatusCode.BadRequest,
+                Error = "Unable to load questionnaire for project details",
+            });
         }
 
-        var irasApplication = createResponse.Content;
-        // Save the newly created application to the session
-        HttpContext.Session.SetString(SessionKeys.ProjectRecord, JsonSerializer.Serialize(irasApplication));
+        // get the first section for the project record questionnaire
+        var section = sections[0];
 
-        // Store relevant information in TempData for use in subsequent requests
-        var questionCategoriesResponse = await cmsSevice.GetQuestionCategories();
-        var categoryId = questionCategoriesResponse.IsSuccessStatusCode && questionCategoriesResponse.Content?.FirstOrDefault() != null
-            ? questionCategoriesResponse.Content.FirstOrDefault()?.CategoryId : QuestionCategories.ProjectRecrod;
+        // confirm project details by playing back short and full project titles
+        var projectRecord = validationServiceResponse.Content!;
 
-        TempData[TempDataKeys.CategoryId] = categoryId;
-        TempData[TempDataKeys.ProjectRecordId] = irasApplication.Id;
-        TempData[TempDataKeys.IrasId] = irasApplication.IrasId;
+        TempData[TempDataKeys.ProjectRecord] = JsonSerializer.Serialize(projectRecord.Data);
 
-        // Redirect to the Questionnaire Resume action to continue the application process
-        return RedirectToAction(nameof(QuestionnaireController.Resume), "Questionnaire", new
+        // play back project details for confirmation using the ProjectRecord in TempData
+        return RedirectToRoute($"prc:{section.StaticViewName}", new
         {
-            categoryId = categoryId,
-            projectRecordId = irasApplication.Id
+            sectionId = section.Id
         });
     }
 

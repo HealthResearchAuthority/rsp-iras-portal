@@ -238,7 +238,7 @@ public abstract class ModificationsControllerBase
         {
             // Get all respondent answers for the project and category
             var respondentAnswersResponse =
-                await respondentService.GetRespondentAnswers(projectRecordId, QuestionCategories.ProjectRecrod);
+                await respondentService.GetRespondentAnswers(projectRecordId, QuestionCategories.ProjectRecord);
 
             var answers = respondentAnswersResponse.Content;
 

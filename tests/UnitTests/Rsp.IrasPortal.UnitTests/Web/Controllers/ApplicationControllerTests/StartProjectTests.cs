@@ -4,12 +4,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.CmsQuestionset; // added for SectionModel
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.ServiceClients;
-using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Application.Services; // removed ServiceClients usage
 using Rsp.IrasPortal.Web.Controllers;
+using Rsp.IrasPortal.Web.Features.ProjectRecord.Controllers;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApplicationControllerTests;
@@ -112,7 +113,7 @@ public class StartProjectTests : TestServiceBase<ApplicationController>
         var model = new IrasIdViewModel { IrasId = "1234" };
         var existingApps = new List<IrasApplicationResponse>
         {
-            new() { IrasId =1234, Id = "a1", Title = "Test" }
+            new() { IrasId =1234, Id = "a1", ShortProjectTitle = "Test" }
         };
 
         Mocker
@@ -138,7 +139,7 @@ public class StartProjectTests : TestServiceBase<ApplicationController>
     }
 
     [Fact]
-    public async Task StartProject_ReturnsServiceError_IfCreateApplicationFails()
+    public async Task StartProject_ReturnsServiceError_IfQuestionSetHasNoSections()
     {
         // Arrange
         var model = new IrasIdViewModel { IrasId = "9999" };
@@ -157,7 +158,7 @@ public class StartProjectTests : TestServiceBase<ApplicationController>
                 Content = []
             });
 
-        // HARP validation must succeed to reach creation branch
+        // HARP validation must succeed to reach question set branch
         Mocker
             .GetMock<IProjectRecordValidationService>()
             .Setup(s => s.ValidateProjectRecord(It.IsAny<int>()))
@@ -167,24 +168,29 @@ public class StartProjectTests : TestServiceBase<ApplicationController>
                 Content = new ProjectRecordValidationResponse()
             });
 
+        // Question set service returns empty sections provoking service error (400)
         Mocker
-            .GetMock<IApplicationsService>()
-            .Setup(s => s.CreateApplication(It.IsAny<IrasApplicationRequest>()))
-            .ReturnsAsync(new ServiceResponse<IrasApplicationResponse> { StatusCode = HttpStatusCode.OK });
+            .GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse { Sections = [] }
+            });
 
         // Act
         var result = await Sut.StartProject(model);
 
         // Assert
-        result.ShouldBeOfType<StatusCodeResult>();
+        var statusCodeResult = result.ShouldBeOfType<StatusCodeResult>();
+        statusCodeResult.StatusCode.ShouldBe(StatusCodes.Status400BadRequest);
     }
 
     [Fact]
-    public async Task StartProject_RedirectsToResume_IfEverythingSucceeds()
+    public async Task StartProject_RedirectsToFirstSectionRoute_IfEverythingSucceeds()
     {
         // Arrange
         var model = new IrasIdViewModel { IrasId = "5678" };
-        var createdApp = new IrasApplicationResponse { Id = "abc", IrasId = 5678, Title = "Test" };
 
         Mocker
             .GetMock<IValidator<IrasIdViewModel>>()
@@ -207,34 +213,35 @@ public class StartProjectTests : TestServiceBase<ApplicationController>
             .ReturnsAsync(new ServiceResponse<ProjectRecordValidationResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new ProjectRecordValidationResponse()
+                Content = new ProjectRecordValidationResponse() // Data can be null, serialization handles it
             });
 
+        // Question set with one section to redirect to
+        var section = new SectionModel
+        {
+            Id = "section-1",
+            StaticViewName = "confirmprojectdetails"
+        };
+
         Mocker
-            .GetMock<IApplicationsService>()
-            .Setup(s => s.CreateApplication(It.IsAny<IrasApplicationRequest>()))
-            .ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
+            .GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = createdApp
+                Content = new CmsQuestionSetResponse
+                {
+                    Sections = new List<SectionModel> { section }
+                }
             });
-
-        Mocker
-            .GetMock<ICmsQuestionSetServiceClient>()
-            .Setup(s => s.GetQuestionCategories())
-            .ReturnsAsync(new ApiResponse<IEnumerable<CategoryDto>>(
-                new HttpResponseMessage(HttpStatusCode.OK),
-                new List<CategoryDto> { new() { CategoryId = "cat1" } },
-                null));
 
         // Act
         var result = await Sut.StartProject(model);
 
         // Assert
-        result.ShouldBeOfType<RedirectToActionResult>();
-        var redirect = result as RedirectToActionResult;
-        redirect!.ActionName.ShouldBe(nameof(QuestionnaireController.Resume));
-        redirect.RouteValues!["projectRecordId"].ShouldBe("abc");
+        var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirect.RouteName.ShouldBe($"prc:{section.StaticViewName}");
+        redirect.RouteValues!["sectionId"].ShouldBe(section.Id);
     }
 
     [Fact]

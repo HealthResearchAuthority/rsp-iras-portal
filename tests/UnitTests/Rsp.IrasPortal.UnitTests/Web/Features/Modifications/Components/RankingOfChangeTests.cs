@@ -93,7 +93,7 @@ public class RankingOfChangeTests
             .ReturnsAsync(new ServiceResponse<RankingOfChangeResponse> { Content = null });
 
         _respondentService
-            .Setup(s => s.GetRespondentAnswers(It.IsAny<string>(), QuestionCategories.ProjectRecrod))
+            .Setup(s => s.GetRespondentAnswers(It.IsAny<string>(), QuestionCategories.ProjectRecord))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = answers });
 
         // Act

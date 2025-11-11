@@ -81,7 +81,7 @@ public class ReviewAllChanges_Success : TestServiceBase<ReviewAllChangesControll
             };
         Mocker
             .GetMock<IRespondentService>()
-            .Setup(s => s.GetRespondentAnswers(It.IsAny<string>(), QuestionCategories.ProjectRecrod))
+            .Setup(s => s.GetRespondentAnswers(It.IsAny<string>(), QuestionCategories.ProjectRecord))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = answers });
 
         // sponsor details question set and answers
@@ -192,7 +192,7 @@ public class ReviewAllChanges_Success : TestServiceBase<ReviewAllChangesControll
             };
         Mocker
             .GetMock<IRespondentService>()
-            .Setup(s => s.GetRespondentAnswers(It.IsAny<string>(), QuestionCategories.ProjectRecrod))
+            .Setup(s => s.GetRespondentAnswers(It.IsAny<string>(), QuestionCategories.ProjectRecord))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = answers });
 
         // sponsor details question set and answers

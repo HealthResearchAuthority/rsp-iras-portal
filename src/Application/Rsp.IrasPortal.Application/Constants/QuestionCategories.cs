@@ -5,6 +5,6 @@
 /// </summary>
 public struct QuestionCategories
 {
-    public const string ProjectRecrod = "project record";
+    public const string ProjectRecord = "project record";
     public const string ProjectModification = "project modification";
 }

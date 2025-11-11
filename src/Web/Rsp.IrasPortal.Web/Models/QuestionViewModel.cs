@@ -42,6 +42,7 @@ public class QuestionViewModel
     public string ShowAnswerOn { get; set; } = string.Empty;
     public string? SectionGroup { get; set; }
     public int SequenceInSectionGroup { get; set; }
+    public bool IsEditable { get; set; }
     public IList<ComponentContent> GuidanceComponents { get; set; } = [];
 
     public string? NhsInvolvment { get; set; }
