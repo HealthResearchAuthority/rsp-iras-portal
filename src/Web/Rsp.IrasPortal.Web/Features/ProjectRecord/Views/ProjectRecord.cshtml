@@ -1,0 +1,96 @@
+﻿@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
+@model ProjectRecordViewModel
+
+@{
+    ViewBag.Title = "Confirm Project details - Make changes to research";
+}
+
+@* @section is added for the back button, so that we can render something below the back button
+    and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
+    the named section *@
+@section BackNavigation {
+    <partial name="_BackNavigation" model="@("app:welcome", "Back", new Dictionary<string, string>())" />
+}
+
+
+
+<h1 class="govuk-heading-l">
+    Confirm project details
+</h1>
+
+<p class="govuk-body">
+    Check and confirm that the details below are correct before adding the project.
+</p>
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+        <form method="post">
+            <dl class="govuk-summary-list">
+                <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">IRAS ID</dt>
+                    <dd class="govuk-summary-list__value">@Model.IrasId</dd>
+                </div>
+                
+                <input type="hidden" asp-for="IrasId" />
+                <input type="hidden" asp-for="ShortProjectTitle" />
+                <input type="hidden" asp-for="FullProjectTitle" />
+                <input type="hidden" asp-for="SectionId" />
+
+                @foreach(var question in Model.Questions)
+                {
+                    var index = question.Index;
+
+                    <input type="hidden" asp-for="Questions[index].Index" />
+                    <input type="hidden" asp-for="Questions[index].QuestionId" />
+                    <input type="hidden" asp-for="Questions[index].Category" />
+                    <input type="hidden" asp-for="Questions[index].SectionId" />
+                    <input type="hidden" asp-for="Questions[index].Section" />
+                    <input type="hidden" asp-for="Questions[index].Heading" />
+                    <input type="hidden" asp-for="Questions[index].QuestionText" />
+                    <input type="hidden" asp-for="Questions[index].ShortQuestionText" />
+                    <input type="hidden" asp-for="Questions[index].QuestionType" />
+                    <input type="hidden" asp-for="Questions[index].DataType" />
+                    <input type="hidden" asp-for="Questions[index].IsMandatory" checked="@question.IsMandatory" />
+                    <input type="hidden" asp-for="Questions[index].IsOptional" checked="@question.IsOptional" />
+
+                    <div class="govuk-summary-list__row">
+                        <dt class="govuk-summary-list__key">@question.QuestionText</dt>
+                        <dd class="govuk-summary-list__value">
+                            @{
+                                var value = question.QuestionId switch
+                                {
+                                    QuestionIds.ShortProjectTitle => Model.ShortProjectTitle,
+                                    QuestionIds.FullProjectTitle => Model.FullProjectTitle,
+                                    _ => string.Empty
+                                };
+                            }
+
+                            @value
+
+                            <input type="hidden" asp-for="Questions[index].AnswerText" value="@value" />
+                        </dd>
+                    </div>
+                }
+            </dl>
+
+            <h2 class="govuk-heading-m">
+                Add Project
+            </h2>
+            <p class="govuk-body">
+                Selecting 'Add project' will create a record for your project. Any future modifications will then be made using this service.
+            </p>
+
+        
+            <div class="save-buttons">
+                <button class="govuk-button" data-module="govuk-button" type="submit" asp-route="prc:confirmprojectrecord">Add project</button>
+
+                <a class="govuk-button govuk-button--secondary" asp-route="app:startproject" aria-label="Back to start creating a project record">
+                    Return to IRAS ID
+                </a>
+            </div>
+
+        </form>
+    </div>
+</div>
