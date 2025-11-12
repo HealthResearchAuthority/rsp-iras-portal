@@ -1,10 +1,10 @@
-﻿using System.Net;
-using FluentValidation;
+﻿using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Domain.Enums;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
@@ -18,11 +18,10 @@ public class ReviewAllChangesController
     ICmsQuestionsetService cmsQuestionsetService,
     IRespondentService respondentService,
     IValidator<QuestionnaireViewModel> validator
-) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService)
+) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator)
 {
     private const string SponsorDetailsSectionId = "pm-sponsor-reference";
     private readonly IRespondentService _respondentService = respondentService;
-    private const string DocumentDetailsSection = "pdm-document-metadata";
 
     [HttpGet]
     public async Task<IActionResult> ReviewAllChanges(string projectRecordId, string irasId, string shortTitle, Guid projectModificationId)
@@ -62,102 +61,36 @@ public class ReviewAllChangesController
     [HttpPost]
     public async Task<IActionResult> SendModificationToSponsor(string projectRecordId, Guid projectModificationId)
     {
+        // Verify upload success
         var searchQuery = new ProjectOverviewDocumentSearchRequest();
-        var modificationDocumentsResponseResult = await projectModificationsService.GetDocumentsForModification(projectModificationId,
-            searchQuery, 1, 200, nameof(ProjectOverviewDocumentDto.DocumentType), SortDirections.Ascending);
-        var documents = modificationDocumentsResponseResult?.Content?.Documents ?? [];
+        var modificationDocumentsResponseResult = await projectModificationsService.GetDocumentsForModification(
+            projectModificationId,
+            searchQuery, 1, 200,
+            nameof(ProjectOverviewDocumentDto.DocumentType),
+            SortDirections.Ascending);
 
-        // Check if any document is not successfully uploaded
+        var documents = modificationDocumentsResponseResult?.Content?.Documents ?? [];
         var hasUnfinishedDocuments = documents.Any(d =>
             !string.Equals(d.Status, DocumentStatus.Success, StringComparison.OrdinalIgnoreCase));
 
-        // If uploads are fine, verify each document’s questionnaire answers
+        // Verify each document’s detail completeness
         if (!hasUnfinishedDocuments && documents.Any())
         {
-            // Construct the request object containing identifiers required for fetching documents.
-            var documentChangeRequest = new ProjectModificationDocumentRequest
-            {
-                ProjectModificationId = (Guid)TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId)!,
-                ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty,
-                ProjectPersonnelId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!,
-            };
-
-            // Fetch the CMS question set that defines the metadata/details required for each document.
-            var additionalQuestionsResponse = await cmsQuestionsetService
-                .GetModificationQuestionSet(DocumentDetailsSection);
-
-            // Build the questionnaire model from the CMS questions.
-            var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(additionalQuestionsResponse.Content!);
-
-            // Call the respondent service to retrieve the list of uploaded documents.
-            var response = await respondentService.GetModificationChangesDocuments(
-                documentChangeRequest.ProjectModificationId,
-                documentChangeRequest.ProjectRecordId,
-                documentChangeRequest.ProjectPersonnelId);
-
-            if (response?.StatusCode == HttpStatusCode.OK && response.Content != null)
-            {
-                // For each uploaded document, fetch its associated answers and determine
-                // whether details are complete or incomplete.
-                var tasks = response.Content
-                    .OrderBy(a => a.FileName, StringComparer.OrdinalIgnoreCase)
-                    .Select(async a =>
-                    {
-                        // Fetch answers already provided for this document.
-                        var answersResponse = await respondentService.GetModificationDocumentAnswers(a.Id);
-                        var answers = answersResponse?.StatusCode == HttpStatusCode.OK
-                            ? answersResponse.Content ?? []
-                            : [];
-
-                        // Clone the questionnaire to avoid polluting the shared one
-                        var clonedQuestionnaire = new QuestionnaireViewModel
-                        {
-                            Questions = questionnaire.Questions
-                                .Select(q => new QuestionViewModel
-                                {
-                                    Id = q.Id,
-                                    Index = q.Index,
-                                    QuestionId = q.QuestionId,
-                                    SectionSequence = q.SectionSequence,
-                                    Sequence = q.Sequence,
-                                    QuestionText = q.QuestionText,
-                                    QuestionType = q.QuestionType,
-                                    DataType = q.DataType,
-                                    IsMandatory = q.IsMandatory,
-                                    IsOptional = q.IsOptional,
-                                    ShowOriginalAnswer = q.ShowOriginalAnswer,
-                                    Rules = q.Rules
-                                })
-                                .ToList()
-                        };
-
-                        clonedQuestionnaire = await PopulateAnswersFromDocuments(clonedQuestionnaire, answers);
-
-                        var isValid = await this.ValidateQuestionnaire(validator, clonedQuestionnaire, true);
-
-                        // Return true if the document is incomplete
-                        return !answers.Any() || !isValid;
-                    });
-
-                // Wait for all validation tasks and check if any are incomplete
-                var results = await Task.WhenAll(tasks);
-                hasUnfinishedDocuments = results.Any(r => r);
-            }
+            var documentChangeRequest = BuildDocumentRequest();
+            var documentStatuses = await GetDocumentCompletionStatuses(documentChangeRequest);
+            hasUnfinishedDocuments = documentStatuses.Any(d => d.Status.Equals(DocumentDetailStatus.Incomplete.ToString(), StringComparison.OrdinalIgnoreCase));
         }
 
         // If any document is unfinished, redirect directly to the UnfinishedChanges view
         if (hasUnfinishedDocuments)
-        {
             return RedirectToRoute("pmc:unfinishedchanges");
-        }
 
         // Otherwise, proceed with updating the modification status
         return await HandleModificationStatusUpdate(
             projectRecordId,
             projectModificationId,
             ModificationStatus.WithSponsor,
-            onSuccess: () => View("ModificationSentToSponsor")
-        );
+            onSuccess: () => View("ModificationSentToSponsor"));
     }
 
     [HttpPost]
@@ -203,40 +136,5 @@ public class ReviewAllChangesController
         }
 
         return onSuccess();
-    }
-
-    private async Task<QuestionnaireViewModel> PopulateAnswersFromDocuments(
-    QuestionnaireViewModel questionnaire,
-    IEnumerable<ProjectModificationDocumentAnswerDto> answers)
-    {
-        foreach (var question in questionnaire.Questions)
-        {
-            // Find the matching answer by QuestionId
-            var match = answers.FirstOrDefault(a => a.QuestionId == question.QuestionId);
-
-            if (match != null)
-            {
-                question.AnswerText = match.AnswerText;
-                question.SelectedOption = match.SelectedOption;
-
-                // carry over OptionType (if you want to track Single/Multiple)
-                question.QuestionType = match.OptionType ?? question.QuestionType;
-
-                // map multiple answers into AnswerViewModel list
-                if (match.Answers != null && match.Answers.Any())
-                {
-                    question.Answers = match.Answers
-                        .Select(ans => new AnswerViewModel
-                        {
-                            AnswerId = ans,        // if ans is an ID
-                            AnswerText = ans,      // or fetch the display text elsewhere if IDs map to text
-                            IsSelected = true
-                        })
-                        .ToList();
-                }
-            }
-        }
-
-        return questionnaire;
     }
 }
