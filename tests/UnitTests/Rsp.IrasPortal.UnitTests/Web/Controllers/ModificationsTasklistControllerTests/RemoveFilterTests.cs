@@ -123,6 +123,20 @@ public class RemoveFiltersTests : TestServiceBase<ModificationsTasklistControlle
         updated.ToDaysSinceSubmission.ShouldBeNull();
     }
 
+    [Fact]
+    public async Task RemoveFilter_ReviewerName_ShouldBeCleared_AndRedirect()
+    {
+        var model = new ApprovalsSearchModel { ReviewerName = "Dan" };
+        SetSessionModel(model);
+
+        var result = await Sut.RemoveFilter("study-widereviewer");
+
+        result.ShouldBeOfType<RedirectToActionResult>().ActionName.ShouldBe("Index");
+
+        var updated = GetSessionModel();
+        updated.ReviewerName.ShouldBeNull();
+    }
+
     // ----------------------
     // Helpers
     // ----------------------
