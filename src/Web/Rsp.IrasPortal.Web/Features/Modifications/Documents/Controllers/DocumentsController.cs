@@ -7,7 +7,6 @@ using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Domain.Enums;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
@@ -25,7 +24,7 @@ public class DocumentsController
         ICmsQuestionsetService cmsQuestionsetService,
         IValidator<QuestionnaireViewModel> validator,
         IBlobStorageService blobStorageService
-    ) : Controller
+    ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator)
 {
     private const string StagingContainerName = "staging";
     private const string CleanContainerName = "clean";
@@ -131,87 +130,15 @@ public class DocumentsController
     [HttpGet]
     public async Task<IActionResult> AddDocumentDetailsList()
     {
-        // populate base model properties
+        // Populate base model properties
         var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationReviewDocumentsViewModel());
 
-        // Construct the request object containing identifiers required for fetching documents.
-        var documentChangeRequest = new ProjectModificationDocumentRequest
-        {
-            ProjectModificationId = (Guid)TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId)!,
-            ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty,
-            ProjectPersonnelId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!,
-        };
+        // Construct request identifiers
+        var documentChangeRequest = BuildDocumentRequest();
 
-        // Fetch the CMS question set that defines the metadata/details required for each document.
-        var additionalQuestionsResponse = await cmsQuestionsetService
-            .GetModificationQuestionSet(DocumentDetailsSection);
+        // Retrieve document detail completion statuses
+        viewModel.UploadedDocuments = await GetDocumentCompletionStatuses(documentChangeRequest);
 
-        // Build the questionnaire model from the CMS questions.
-        var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(additionalQuestionsResponse.Content!);
-
-        // Call the respondent service to retrieve the list of uploaded documents.
-        var response = await respondentService.GetModificationChangesDocuments(
-            documentChangeRequest.ProjectModificationId,
-            documentChangeRequest.ProjectRecordId,
-            documentChangeRequest.ProjectPersonnelId);
-
-        if (response?.StatusCode == HttpStatusCode.OK && response.Content != null)
-        {
-            // For each uploaded document, fetch its associated answers and determine
-            // whether details are complete or incomplete.
-            var tasks = response.Content
-                .OrderBy(a => a.FileName, StringComparer.OrdinalIgnoreCase)
-                .Select(async a =>
-                {
-                    // Fetch answers already provided for this document.
-                    var answersResponse = await respondentService.GetModificationDocumentAnswers(a.Id);
-                    var answers = answersResponse?.StatusCode == HttpStatusCode.OK
-                        ? answersResponse.Content ?? []
-                        : [];
-
-                    // Clone the questionnaire to avoid polluting the shared one
-                    var clonedQuestionnaire = new QuestionnaireViewModel
-                    {
-                        Questions = questionnaire.Questions
-                            .ConvertAll(q => new QuestionViewModel
-                            {
-                                Id = q.Id,
-                                Index = q.Index,
-                                QuestionId = q.QuestionId,
-                                SectionSequence = q.SectionSequence,
-                                Sequence = q.Sequence,
-                                QuestionText = q.QuestionText,
-                                QuestionType = q.QuestionType,
-                                DataType = q.DataType,
-                                IsMandatory = q.IsMandatory,
-                                IsOptional = q.IsOptional,
-                                ShowOriginalAnswer = q.ShowOriginalAnswer,
-                                Rules = q.Rules
-                            })
-                    };
-
-                    clonedQuestionnaire = await PopulateAnswersFromDocuments(clonedQuestionnaire, answers);
-
-                    var isValid = await this.ValidateQuestionnaire(validator, clonedQuestionnaire, true);
-
-                    // Mark as incomplete if no answers exist or if not all questions are answered.
-                    var isIncomplete = !answers.Any() || !isValid;
-
-                    return new DocumentSummaryItemDto
-                    {
-                        DocumentId = a.Id,
-                        FileName = $"Add details for {a.FileName}",
-                        FileSize = a.FileSize ?? 0,
-                        BlobUri = a.DocumentStoragePath ?? string.Empty,
-                        Status = (isIncomplete ? DocumentDetailStatus.Incomplete : DocumentDetailStatus.Completed).ToString(),
-                    };
-                });
-
-            // Resolve all tasks and assign the resulting list of documents to the view model.
-            viewModel.UploadedDocuments = [.. (await Task.WhenAll(tasks))];
-        }
-
-        // Render the view with the populated list of documents and their detail status.
         return View(nameof(AddDocumentDetailsList), viewModel);
     }
 
@@ -744,20 +671,6 @@ public class DocumentsController
     }
 
     /// <summary>
-    /// Builds a <see cref="ProjectModificationDocumentRequest"/> using identifiers stored in TempData and HttpContext.
-    /// </summary>
-    /// <returns>The request object populated with modification change ID, project record ID, and respondent ID.</returns>
-    private ProjectModificationDocumentRequest BuildDocumentRequest()
-    {
-        return new ProjectModificationDocumentRequest
-        {
-            ProjectModificationId = (Guid)TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId)!,
-            ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty,
-            ProjectPersonnelId = HttpContext.Items[ContextItemKeys.RespondentId] as string ?? string.Empty
-        };
-    }
-
-    /// <summary>
     /// Saves answers submitted for a document’s questions to the backend service.
     /// Handles mapping between view model, CMS questions, and API DTOs.
     /// </summary>
@@ -884,41 +797,6 @@ public class DocumentsController
         }
 
         return viewModels;
-    }
-
-    private async Task<QuestionnaireViewModel> PopulateAnswersFromDocuments(
-    QuestionnaireViewModel questionnaire,
-    IEnumerable<ProjectModificationDocumentAnswerDto> answers)
-    {
-        foreach (var question in questionnaire.Questions)
-        {
-            // Find the matching answer by QuestionId
-            var match = answers.FirstOrDefault(a => a.QuestionId == question.QuestionId);
-
-            if (match != null)
-            {
-                question.AnswerText = match.AnswerText;
-                question.SelectedOption = match.SelectedOption;
-
-                // carry over OptionType (if you want to track Single/Multiple)
-                question.QuestionType = match.OptionType ?? question.QuestionType;
-
-                // map multiple answers into AnswerViewModel list
-                if (match.Answers?.Any() == true)
-                {
-                    question.Answers = match.Answers
-                        .ConvertAll(ans => new AnswerViewModel
-                        {
-                            AnswerId = ans,        // if ans is an ID
-                            AnswerText = ans,      // or fetch the display text elsewhere if IDs map to text
-                            IsSelected = true
-                        })
-;
-                }
-            }
-        }
-
-        return questionnaire;
     }
 
     /// <summary>
