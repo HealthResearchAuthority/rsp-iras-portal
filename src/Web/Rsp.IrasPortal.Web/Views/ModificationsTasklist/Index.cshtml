@@ -167,26 +167,48 @@
 									</div>
 								</div>
 							</details>
+                            
+                            @if (!User.IsInRole("team_manager"))
+                            {
+                                <!-- Short project title -->
+                                <details class="search-filter-section" @(CanOpenPanelForField("ShortProjectTitle") ? "open" :
+                                    null)>
+                                    <summary class="search-filter-section__summary">
+                                        <h2 class="search-filter-section__summary-heading">Short project title</h2>
+                                    </summary>
+                                    <div class="search-filter-section__content">
+                                        <div class="govuk-form-group govuk-!-margin-bottom-2">
+                                            <fieldset class="govuk-fieldset">
+                                                <rsp-gds-input asp-for="Search.ShortProjectTitle"
+                                                               label-text="Enter the name of the short project title"
+                                                               width-class="govuk-!-width-three-quarters"
+                                                               label-html-class="font-weight-none"/>
+                                            </fieldset>
+                                        </div>
+                                    </div>
+                                </details>
+                            }
+                            @if (User.IsInRole("team_manager"))
+							{
+								<!-- Study-wide reviewer -->
+                                <details class="search-filter-section" @(CanOpenPanelForField("ReviewerName") ? "open" : null)>
+                                    <summary class="search-filter-section__summary">
+                                        <h2 class="search-filter-section__summary-heading">Study-wide reviewer</h2>
+                                    </summary>
+                                    <div class="search-filter-section__content">
+                                        <div class="govuk-form-group govuk-!-margin-bottom-2">
+                                            <fieldset class="govuk-fieldset">
+										<rsp-gds-input asp-for="Search.ReviewerName"
+													   label-text="Enter the name of the study wide reviewer"
+                                                               width-class="govuk-!-width-three-quarters"
+                                                               label-html-class="font-weight-none" />
+                                            </fieldset>
+                                        </div>
+                                    </div>
+                                </details>
+							}
 
-							<!-- Short project title -->
-							<details class="search-filter-section" @(CanOpenPanelForField("ShortProjectTitle") ? "open" :
-																			 null)>
-								<summary class="search-filter-section__summary">
-									<h2 class="search-filter-section__summary-heading">Short project title</h2>
-								</summary>
-								<div class="search-filter-section__content">
-									<div class="govuk-form-group govuk-!-margin-bottom-2">
-										<fieldset class="govuk-fieldset">
-											<rsp-gds-input asp-for="Search.ShortProjectTitle"
-												label-text="Enter the name of the short project title"
-												width-class="govuk-!-width-three-quarters"
-												label-html-class="font-weight-none" />
-										</fieldset>
-									</div>
-								</div>
-							</details>
-
-							<!-- Apply -->
+                            <!-- Apply -->
 							<div class="search-filter-panel__actions">
 								<button
 									class="govuk-button search-filter-panel__action search-filter-panel__action--submit">Apply

@@ -106,6 +106,8 @@ public class ModificationsTasklistController(
             IrasId = model.Search.IrasId,
             ReviewerId = null,
             IncludeReviewerId = !User.IsInRole("team_manager"),
+            ReviewerName = model.Search.ReviewerName,
+            IncludeReviewerName = !string.IsNullOrWhiteSpace(model.Search.ReviewerName),
         };
 
         if (model.Search.FromSubmission != null)
@@ -355,6 +357,10 @@ public class ModificationsTasklistController(
 
             case "dayssincesubmission-to":
                 search.ToDaysSinceSubmission = null;
+                break;
+
+            case "study-widereviewer":
+                search.ReviewerName = null;
                 break;
         }
 

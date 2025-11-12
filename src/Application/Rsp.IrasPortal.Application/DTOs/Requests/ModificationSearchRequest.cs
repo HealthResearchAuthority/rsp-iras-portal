@@ -18,4 +18,6 @@ public class ModificationSearchRequest
     public string? Category { get; set; }
     public string? Status { get; set; }
     public string? ModificationId { get; set; }
+    public string? ReviewerName { get; set; } = null;
+    public bool IncludeReviewerName { get; set; }
 }

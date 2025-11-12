@@ -40,6 +40,7 @@ public class ApprovalsSearchModel
     public string? Category { get; set; }
     public string? Status { get; set; }
     public string? ModificationId { get; set; }
+    public string? ReviewerName { get; set; }
 
     public Dictionary<string, List<string>>? Filters
     {
@@ -132,6 +133,10 @@ public class ApprovalsSearchModel
             if (!string.IsNullOrWhiteSpace(Status))
             {
                 filters.Add(ApprovalsSearch.StatusKey, [Status]);
+            }
+            if (!string.IsNullOrWhiteSpace(ReviewerName))
+            {
+                filters.Add(ApprovalsSearch.ReviewerNameKey, [ReviewerName]);
             }
             return filters;
         }
