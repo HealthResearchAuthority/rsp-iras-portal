@@ -21,6 +21,4 @@ public class ModificationsDto
     public ModificationStatusOrder StatusOrder { get; set; }
     public DateTime? SentToRegulatorDate { get; set; }
     public DateTime? SentToSponsorDate { get; set; }
-    public DateTime? AuthorisedDate { get; set; }
-
 }

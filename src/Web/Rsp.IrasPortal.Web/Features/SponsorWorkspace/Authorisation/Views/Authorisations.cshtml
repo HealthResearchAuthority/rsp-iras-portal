@@ -70,7 +70,7 @@
                                             new { Field = nameof(ModificationsModel.ModificationNumber), Label = "Modification ID" },
                                             new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
                                             new { Field = nameof(ModificationsModel.SentToSponsorDate), Label = "Date received" },
-                                            new { Field = nameof(ModificationsModel.AuthorisedDate), Label = "Date authorised" },
+                                            new { Field = nameof(ModificationsModel.SentToRegulatorDate), Label = "Date actioned" },
                                             new { Field = nameof(ModificationsModel.ChiefInvestigator), Label = "Chief investigator" },
                                             new { Field = nameof(ModificationsModel.Status), Label = "Status" }
 								        };
@@ -120,7 +120,7 @@
                                                 </td>
                                                 <td class="govuk-table__cell">@modification.ShortProjectTitle</td>
                                                 <td class="govuk-table__cell">@(modification.SentToSponsorDate?.ToString("dd MMM yyyy") ?? string.Empty)</td>
-                                                <td class="govuk-table__cell">@(modification.AuthorisedDate?.ToString("dd MMM yyyy") ?? string.Empty)</td>
+                                                <td class="govuk-table__cell">@(modification.SentToRegulatorDate?.ToString("dd MMM yyyy") ?? string.Empty)</td>
                                                 <td class="govuk-table__cell">@modification.ChiefInvestigator</td>
                                                 <td class="govuk-table__cell">
                                                     @{

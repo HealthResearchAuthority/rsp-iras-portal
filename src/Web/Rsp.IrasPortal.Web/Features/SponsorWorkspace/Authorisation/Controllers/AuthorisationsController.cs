@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using FluentValidation;
+using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
@@ -72,7 +73,6 @@ public class AuthorisationsController(
                 SentToRegulatorDate = dto.SentToRegulatorDate,
                 SentToSponsorDate = dto.SentToSponsorDate,
                 Status = dto.Status,
-                AuthorisedDate = dto.AuthorisedDate
             })
             .ToList() ?? [];
 
@@ -144,15 +144,10 @@ public class AuthorisationsController(
 
         modification.SponsorDetails = sponsorDetailsQuestionnaire.Questions;
 
-        return new AuthoriseOutcomeViewModel
-        {
-            Outcome = modification.Outcome,
-            ProjectRecordId = modification.ProjectRecordId,
-            IrasId = modification.IrasId,
-            ShortTitle = modification.ShortTitle,
-            ModificationId = modification.ModificationId, // make sure these types align
-            ReviewType = modification.ReviewType
-        };
+        var authoriseOutcomeViewModel = modification.Adapt<AuthoriseOutcomeViewModel>();
+        authoriseOutcomeViewModel.SponsorOrganisationUserId =sponsorOrganisationUserId;
+
+        return authoriseOutcomeViewModel;
     }
 
     // 2) GET stays tiny and calls the builder
@@ -180,11 +175,6 @@ public class AuthorisationsController(
             model.SponsorOrganisationUserId
         );
 
-        if (string.IsNullOrWhiteSpace(model.Outcome))
-        {
-            ModelState.AddModelError(nameof(model.Outcome), "Select an outcome");
-        }
-
         if (!ModelState.IsValid)
         {
             // Preserve the posted Outcome so the radios keep the selection
@@ -210,7 +200,7 @@ public class AuthorisationsController(
                 {
                     case "Review required":
                         await projectModificationsService.UpdateModificationStatus(
-                            model.ProjectModificationId,
+                            Guid.Parse(model.ModificationId),
                             ModificationStatus.WithReviewBody
                         );
                         break;
@@ -218,8 +208,8 @@ public class AuthorisationsController(
                     case "No review required":
                     default:
                         await projectModificationsService.UpdateModificationStatus(
-                            model.ProjectModificationId,
-                            ModificationStatus.Authorised
+                            Guid.Parse(model.ModificationId),
+                            ModificationStatus.WithReviewBody
                         );
                         break;
                 }
@@ -231,7 +221,7 @@ public class AuthorisationsController(
             default:
             {
                 await projectModificationsService.UpdateModificationStatus(
-                    model.ProjectModificationId,
+                    Guid.Parse(model.ModificationId),
                     ModificationStatus.NotAuthorised
                 );
                 break;
