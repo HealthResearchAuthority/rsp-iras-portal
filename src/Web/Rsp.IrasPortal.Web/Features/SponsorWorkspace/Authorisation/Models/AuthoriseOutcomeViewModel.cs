@@ -1,6 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Rsp.IrasPortal.Web.Features.Modifications.Models;
 
+namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Models;
+
 public class AuthoriseOutcomeViewModel : ModificationDetailsViewModel
 {
     [Required(ErrorMessage = "Select an outcome")]

@@ -209,7 +209,7 @@ public class AuthorisationsController(
                     default:
                         await projectModificationsService.UpdateModificationStatus(
                             Guid.Parse(model.ModificationId),
-                            ModificationStatus.WithReviewBody
+                            ModificationStatus.Approved
                         );
                         break;
                 }
@@ -222,7 +222,7 @@ public class AuthorisationsController(
             {
                 await projectModificationsService.UpdateModificationStatus(
                     Guid.Parse(model.ModificationId),
-                    ModificationStatus.NotAuthorised
+                    ModificationStatus.NotApproved
                 );
                 break;
             }
