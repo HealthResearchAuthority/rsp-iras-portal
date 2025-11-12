@@ -10,7 +10,7 @@ namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.Documents;
 public class ProjectDocumentTests : TestServiceBase<DocumentsController>
 {
     [Theory, AutoData]
-    public void ProjectDocument_ReturnsView_WithCorrectViewModel(
+    public async Task ProjectDocument_ReturnsView_WithCorrectViewModel(
         string shortTitle,
         string irasId,
         string modificationId,
@@ -20,6 +20,7 @@ public class ProjectDocumentTests : TestServiceBase<DocumentsController>
         // Arrange
         var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ShortProjectTitle] = shortTitle,
             [TempDataKeys.IrasId] = irasId,
             [TempDataKeys.ProjectModification.ProjectModificationIdentifier] = modificationId,
@@ -28,8 +29,12 @@ public class ProjectDocumentTests : TestServiceBase<DocumentsController>
 
         Sut.TempData = tempData;
 
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext()
+        };
         // Act
-        var result = Sut.ProjectDocument();
+        var result = await Sut.ProjectDocument();
 
         // Assert
         result.ShouldBeOfType<ViewResult>();
@@ -45,11 +50,12 @@ public class ProjectDocumentTests : TestServiceBase<DocumentsController>
     }
 
     [Fact]
-    public void ProjectDocument_ReturnsView_WithEmptyFallbackValues()
+    public async Task ProjectDocument_ReturnsView_WithEmptyFallbackValues()
     {
         // Arrange
         var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.IrasId] = null,
             [TempDataKeys.ShortProjectTitle] = null,
             [TempDataKeys.ProjectModification.ProjectModificationIdentifier] = null
@@ -57,8 +63,12 @@ public class ProjectDocumentTests : TestServiceBase<DocumentsController>
 
         Sut.TempData = tempData;
 
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext()
+        };
         // Act
-        var result = Sut.ProjectDocument();
+        var result = await Sut.ProjectDocument();
 
         // Assert
         result.ShouldBeOfType<ViewResult>();

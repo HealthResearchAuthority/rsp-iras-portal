@@ -89,11 +89,18 @@
 							<div class="govuk-summary-list__row">
 								<dt class="govuk-summary-list__key">File name</dt>
 								<dd class="govuk-summary-list__value">
-									<a asp-route="pmc:downloaddocument"
-									   asp-route-fileName="@docu.FileName"
-									   asp-route-path="@docu.DocumentStoragePath" class="govuk-link">
+									@if (docu.Status == DocumentStatus.Success)
+									{
+										<a asp-route="pmc:downloaddocument"
+										   asp-route-fileName="@docu.FileName"
+										   asp-route-path="@docu.DocumentStoragePath" class="govuk-link">
+											@docu.FileName
+										</a>
+									}
+									else
+									{
 										@docu.FileName
-									</a>
+									}
 								</dd>
 							</div>
 						}

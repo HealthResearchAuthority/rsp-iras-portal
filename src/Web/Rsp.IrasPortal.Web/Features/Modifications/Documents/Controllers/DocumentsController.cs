@@ -5,6 +5,7 @@ using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
+using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Enums;
 using Rsp.IrasPortal.Web.Extensions;
@@ -26,8 +27,8 @@ public class DocumentsController
         IBlobStorageService blobStorageService
     ) : Controller
 {
-    private const string ContainerName = "staging";
-    private const string DownloadContainerName = "staging";
+    private const string StagingContainerName = "staging";
+    private const string CleanContainerName = "clean";
     private const string DocumentDetailsSection = "pdm-document-metadata";
     private const string PostApprovalRoute = "pov:postapproval";
 
@@ -40,11 +41,26 @@ public class DocumentsController
     /// by reading relevant metadata from TempData (such as the project modification context).
     /// </summary>
     [HttpGet]
-    public IActionResult ProjectDocument()
+    public async Task<IActionResult> ProjectDocument()
     {
         // Populate a new upload documents view model with common project modification properties
         // (e.g., project record ID, modification ID) pulled from TempData.
         var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationUploadDocumentsViewModel());
+
+        // Retrieve contextual identifiers from TempData and HttpContext
+        var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
+
+        // Fetch existing documents for this modification
+        var response = await respondentService.GetModificationChangesDocuments(
+            viewModel.ModificationId == null ? Guid.Empty : Guid.Parse(viewModel.ModificationId),
+            viewModel.ProjectRecordId,
+            respondentId);
+
+        // Map and validate existing documents
+        if (response?.StatusCode == HttpStatusCode.OK && response.Content != null)
+        {
+            viewModel.UploadedDocuments = MapDocuments(response.Content);
+        }
 
         // Render the UploadDocuments view, passing in the populated view model.
         return View(nameof(UploadDocuments), viewModel);
@@ -323,10 +339,10 @@ public class DocumentsController
             return View("ReviewDocumentDetails", allDocumentDetails);
         }
 
-        // If validation passes, proceed to the post-approval step.
+        // If validation passes, proceed to the sponsor-reference step.
         return RedirectToAction(
-            "PostApproval",
-            "ProjectOverview",
+            nameof(SponsorReferenceController.SponsorReference),
+            "SponsorReference",
             new { projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty });
     }
 
@@ -339,143 +355,6 @@ public class DocumentsController
     public IActionResult AddAnotherDocument()
     {
         return RedirectToAction(nameof(UploadDocuments));
-    }
-
-    /// <summary>
-    /// Handles the upload of project modification documents to blob storage.
-    /// Persists metadata to the backend service and redirects to the review page.
-    /// </summary>
-    /// <param name="model">Contains files to upload and related project identifiers.</param>
-    /// <returns>
-    /// - If files are successfully uploaded: redirects to the review page.
-    /// - If documents already exist: redirects to the review page.
-    /// - If no files uploaded or service errors occur: returns the current view with validation errors.
-    /// </returns>
-    [HttpPost]
-    public async Task<IActionResult> UploadDocuments(ModificationUploadDocumentsViewModel model)
-    {
-        // If the posted model is null (due to exceeding max request size)
-        if (model?.Files == null)
-        {
-            return View("FileTooLarge");
-        }
-
-        // Retrieve contextual identifiers from TempData and HttpContext
-        var projectModificationId = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId);
-        var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
-        var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty;
-
-        // Fetch existing documents for this modification
-        var response = await respondentService.GetModificationChangesDocuments(
-            projectModificationId == null ? Guid.Empty : (Guid)projectModificationId!,
-            projectRecordId,
-            respondentId);
-
-        var irasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty;
-
-        if (model.Files is { Count: > 0 })
-        {
-            // Get existing document names for duplicate check
-            var existingDocs = response?.Content?.ToList() ?? [];
-
-            var validFiles = new List<IFormFile>();
-            var atleastOneInvalidFile = false;
-            const long maxFileSize = 100 * 1024 * 1024; // 100 MB in bytes
-
-            long totalFileSize = 0; // Track combined file size
-
-            foreach (var file in model.Files)
-            {
-                var ext = Path.GetExtension(file.FileName);
-                var fileName = Path.GetFileName(file.FileName);
-
-                // 1. Extension check
-                if (!FileConstants.AllowedExtensions.Contains(ext, StringComparer.OrdinalIgnoreCase))
-                {
-                    atleastOneInvalidFile = true;
-                    ModelState.AddModelError("Files", $"{fileName} must be a permitted file type");
-                    continue;
-                }
-
-                // 2. Duplicate file name check
-                if (existingDocs.Any(d => d.FileName.Equals(fileName, StringComparison.OrdinalIgnoreCase)))
-                {
-                    atleastOneInvalidFile = true;
-                    ModelState.AddModelError("Files", $"{fileName} has already been uploaded");
-                    continue;
-                }
-
-                // 3. File size check
-                if (file.Length > maxFileSize)
-                {
-                    atleastOneInvalidFile = true;
-                    ModelState.AddModelError("Files", $"{fileName} must be smaller than 100 MB");
-                    continue;
-                }
-
-                totalFileSize += file.Length; // add to combined size
-                validFiles.Add(file);
-            }
-
-            // 4. Combined file size check
-            if (totalFileSize > maxFileSize)
-            {
-                ModelState.AddModelError("Files", "The combined size of all files must not exceed 100 MB");
-                return View(model);
-            }
-
-            // If no valid files remain, re-render view with errors
-            if (!validFiles.Any())
-            {
-                return View(model);
-            }
-
-            // Upload only valid files to blob storage
-            var uploadedBlobs = await blobStorageService.UploadFilesAsync(
-                validFiles,
-                ContainerName,
-                irasId);
-
-            // Map uploaded blob metadata to DTOs for backend service
-            var uploadedDocuments = uploadedBlobs.Select(uploadedBlob => new ProjectModificationDocumentRequest
-            {
-                ProjectModificationId = projectModificationId == null ? Guid.Empty : (Guid)projectModificationId!,
-                ProjectRecordId = projectRecordId,
-                ProjectPersonnelId = respondentId,
-                FileName = uploadedBlob.FileName,
-                DocumentStoragePath = uploadedBlob.BlobUri,
-                FileSize = uploadedBlob.FileSize,
-                Status = DocumentStatus.Uploaded
-            }).ToList();
-
-            // Save the uploaded document metadata to the backend
-            await projectModificationsService.CreateDocumentModification(uploadedDocuments);
-
-            if (atleastOneInvalidFile)
-            {
-                // Stay on the same view with errors if some invalid files were attempted
-                return View(model);
-            }
-
-            // Redirect to the documents added page if all files were valid
-            return RedirectToAction(nameof(ModificationDocumentsAdded));
-        }
-        else if (response?.StatusCode != HttpStatusCode.OK)
-        {
-            // Show a service error page if backend fails
-            return this.ServiceError(response!);
-        }
-        else if (response.Content != null && response.Content.Any())
-        {
-            // Documents already exist, redirect to documents added page
-            return RedirectToAction(nameof(ModificationDocumentsAdded));
-        }
-        else
-        {
-            // No existing docs and no new files uploaded
-            ModelState.AddModelError("Files", "Please upload at least one document");
-            return View(model);
-        }
     }
 
     /// <summary>
@@ -609,23 +488,29 @@ public class DocumentsController
                 ProjectPersonnelId = request.ProjectPersonnelId,
                 FileName = d.FileName,
                 DocumentStoragePath = d.DocumentStoragePath,
-                FileSize = d.FileSize
+                FileSize = d.FileSize,
+                Status = d.Status
             })
             .ToList();
 
         // Call the service to delete the documents
         var deleteResponse = await projectModificationsService.DeleteDocumentModification(deleteDocumentRequest);
 
-        // Delete from blob storage
+        // Delete from the appropriate blob container based on document status
         foreach (var doc in deleteDocumentRequest)
         {
-            if (!string.IsNullOrEmpty(doc.DocumentStoragePath))
-            {
-                await blobStorageService.DeleteFileAsync(
-                    containerName: ContainerName,
-                    blobPath: doc.DocumentStoragePath
-                );
-            }
+            if (string.IsNullOrEmpty(doc.DocumentStoragePath))
+                continue;
+
+            // Choose container depending on whether the document upload succeeded
+            var targetContainer = doc.Status.Equals(DocumentStatus.Success, StringComparison.OrdinalIgnoreCase)
+                ? CleanContainerName
+                : StagingContainerName;
+
+            await blobStorageService.DeleteFileAsync(
+                containerName: targetContainer,
+                blobPath: doc.DocumentStoragePath
+            );
         }
 
         // Handle single vs multiple delete redirection
@@ -656,9 +541,207 @@ public class DocumentsController
     public async Task<IActionResult> DownloadDocument(string path, string fileName)
     {
         var serviceResponse = await blobStorageService
-            .DownloadFileToHttpResponseAsync(DownloadContainerName, path, fileName);
+            .DownloadFileToHttpResponseAsync(StagingContainerName, path, fileName);
 
         return serviceResponse?.Content!;
+    }
+
+    /// <summary>
+    /// Handles the upload of project modification documents to blob storage.
+    /// Persists metadata to the backend service and redirects to the review page.
+    /// </summary>
+    /// <param name="model">Contains files to upload and related project identifiers.</param>
+    /// <returns>
+    /// - If files are successfully uploaded: redirects to the review page.
+    /// - If documents already exist: redirects to the review page.
+    /// - If no files uploaded or service errors occur: returns the current view with validation errors.
+    /// </returns>
+    [HttpPost]
+    public async Task<IActionResult> UploadDocuments(ModificationUploadDocumentsViewModel model)
+    {
+        // If the posted model is null (due to exceeding max request size)
+        if (model?.Files == null)
+            return View("FileTooLarge");
+
+        // Retrieve contextual identifiers from TempData and HttpContext
+        var projectModificationId = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId);
+        var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
+        var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty;
+        var irasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty;
+
+        // Fetch existing documents for this modification
+        var response = await respondentService.GetModificationChangesDocuments(
+            projectModificationId == null ? Guid.Empty : (Guid)projectModificationId!,
+            projectRecordId,
+            respondentId);
+
+        // Map and validate existing documents
+        var atleastOneInvalidFile = false;
+        if (response?.StatusCode == HttpStatusCode.OK && response.Content != null)
+        {
+            model.UploadedDocuments = MapDocuments(response.Content);
+            atleastOneInvalidFile = ValidateExistingDocuments(model);
+        }
+
+        // If no files were selected but some invalid exist
+        if (model.Files == null || model.Files.Count == 0)
+            return HandleNoNewFiles(response, atleastOneInvalidFile, model);
+
+        // Validate new uploaded files
+        var validationResult = ValidateUploadedFiles(model.Files, response?.Content?.ToList() ?? []);
+        atleastOneInvalidFile = validationResult.HasErrors;
+        if (atleastOneInvalidFile)
+            return View(model);
+
+        // Upload valid files to blob storage
+        var uploadedDocuments = await UploadValidFilesAsync(validationResult.ValidFiles, irasId, projectModificationId, projectRecordId, respondentId);
+
+        // Append and sort the newly uploaded documents
+        model.UploadedDocuments = AppendAndSortDocuments(model.UploadedDocuments, uploadedDocuments);
+
+        // Stay on the same view to show all documents
+        return View(model);
+    }
+
+    private static List<DocumentSummaryItemDto> MapDocuments(IEnumerable<ProjectModificationDocumentRequest> content)
+    {
+        // Map the backend service response into DTOs suitable for the view model.
+        // Each document entry includes filename, size, and blob URI for download.
+        return [.. content
+            .Select(a => new DocumentSummaryItemDto
+            {
+                DocumentId = a.Id,
+                FileName = a.FileName,
+                FileSize = a.FileSize ?? 0,
+                BlobUri = a.DocumentStoragePath ?? string.Empty,
+                Status = a.Status ?? string.Empty
+            })
+            .OrderBy(dto => dto.FileName, StringComparer.OrdinalIgnoreCase)];
+    }
+
+    private bool ValidateExistingDocuments(ModificationUploadDocumentsViewModel model)
+    {
+        // Check if any uploaded document has a failure status (case-insensitive)
+        var invalid = model.UploadedDocuments
+            .Any(d => d.Status.Equals(DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase));
+
+        if (invalid)
+            ModelState.AddModelError("Files", "Failed documents should be deleted before continuing");
+
+        return invalid;
+    }
+
+    private (List<IFormFile> ValidFiles, bool HasErrors) ValidateUploadedFiles(
+        IEnumerable<IFormFile> files,
+        List<ProjectModificationDocumentRequest> existingDocs)
+    {
+        var validFiles = new List<IFormFile>();
+        const long maxFileSize = 100 * 1024 * 1024; // 100 MB in bytes
+        long totalFileSize = 0;
+        bool hasErrors = false;
+
+        foreach (var file in files)
+        {
+            var fileName = Path.GetFileName(file.FileName);
+            var ext = Path.GetExtension(file.FileName);
+
+            // 1. Extension check
+            if (!FileConstants.AllowedExtensions.Contains(ext, StringComparer.OrdinalIgnoreCase))
+            {
+                hasErrors = true;
+                ModelState.AddModelError("Files", $"{fileName} must be a permitted file type");
+                continue;
+            }
+
+            // 2. Duplicate file name check
+            if (existingDocs.Any(d => d.FileName.Equals(fileName, StringComparison.OrdinalIgnoreCase)))
+            {
+                hasErrors = true;
+                ModelState.AddModelError("Files", $"{fileName} has already been uploaded");
+                continue;
+            }
+
+            // 3. File size check
+            if (file.Length > maxFileSize)
+            {
+                hasErrors = true;
+                ModelState.AddModelError("Files", $"{fileName} must be smaller than 100 MB");
+                continue;
+            }
+
+            totalFileSize += file.Length;
+            validFiles.Add(file);
+        }
+
+        // 4. Combined file size check
+        if (totalFileSize > maxFileSize)
+        {
+            hasErrors = true;
+            ModelState.AddModelError("Files", "The combined size of all files must not exceed 100 MB");
+        }
+
+        return (validFiles, hasErrors);
+    }
+
+    private async Task<List<ProjectModificationDocumentRequest>> UploadValidFilesAsync(
+        List<IFormFile> validFiles,
+        string irasId,
+        object? projectModificationId,
+        string projectRecordId,
+        string respondentId)
+    {
+        // Upload only valid files to blob storage
+        var uploadedBlobs = await blobStorageService.UploadFilesAsync(validFiles, StagingContainerName, irasId);
+
+        // Map uploaded blob metadata to DTOs for backend service
+        var uploadedDocuments = uploadedBlobs.ConvertAll(blob => new ProjectModificationDocumentRequest
+        {
+            ProjectModificationId = projectModificationId == null ? Guid.Empty : (Guid)projectModificationId!,
+            ProjectRecordId = projectRecordId,
+            ProjectPersonnelId = respondentId,
+            FileName = blob.FileName,
+            DocumentStoragePath = blob.BlobUri,
+            FileSize = blob.FileSize,
+            Status = DocumentStatus.Uploaded
+        });
+
+        await projectModificationsService.CreateDocumentModification(uploadedDocuments);
+        return uploadedDocuments;
+    }
+
+    private static List<DocumentSummaryItemDto> AppendAndSortDocuments(
+        List<DocumentSummaryItemDto>? existing,
+        List<ProjectModificationDocumentRequest> uploaded)
+    {
+        // Append newly uploaded documents to existing ones, ensuring consistent alphabetical order
+        return [.. (existing ?? [])
+            .Concat(uploaded.Select(a => new DocumentSummaryItemDto
+            {
+                DocumentId = a.Id,
+                FileName = a.FileName,
+                FileSize = a.FileSize ?? 0,
+                BlobUri = a.DocumentStoragePath,
+                Status = a.Status ?? string.Empty
+            }))
+            .OrderBy(dto => dto.FileName, StringComparer.OrdinalIgnoreCase)];
+    }
+
+    private IActionResult HandleNoNewFiles(
+        ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>? response,
+        bool atleastOneInvalidFile,
+        ModificationUploadDocumentsViewModel model)
+    {
+        if (atleastOneInvalidFile)
+            return View(model);
+
+        if (response?.StatusCode != HttpStatusCode.OK)
+            return this.ServiceError(response!);
+
+        if (response.Content?.Any() == true)
+            return RedirectToAction(nameof(ModificationDocumentsAdded));
+
+        ModelState.AddModelError("Files", "Please upload at least one document");
+        return View(model);
     }
 
     /// <summary>
@@ -757,6 +840,7 @@ public class DocumentsController
                 DocumentId = doc.Id,
                 FileName = doc.FileName,
                 DocumentStoragePath = doc.DocumentStoragePath,
+                Status = doc.Status,
                 ReviewAnswers = true,
                 Questions = cmsQuestions.Questions.Select(cmsQ =>
                 {
