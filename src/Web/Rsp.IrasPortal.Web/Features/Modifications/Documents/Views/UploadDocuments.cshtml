@@ -1,4 +1,5 @@
-﻿@using Rsp.IrasPortal.Web.Helpers
+﻿@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Web.Helpers
 @model Rsp.IrasPortal.Web.Models.ModificationUploadDocumentsViewModel
 
 @{
@@ -6,9 +7,7 @@
 
 	// If we know the specific area of change, dynamically build the page title to make the UI clearer.
 	// Otherwise, leave the title empty (will fallback to default in the view if needed).
-	ViewBag.Title = !string.IsNullOrEmpty(Model.SpecificAreaOfChange)
-	? $"Add documents for {TextHelper.ToSentenceCaseWithAcronyms(Model.SpecificAreaOfChange)}"
-	: string.Empty;
+	ViewBag.Title = "Add supporting documents";
 
 	var modificationParams = new Dictionary<string, string>
 	{
@@ -24,7 +23,7 @@
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
 		@section BackNavigation {
-			<partial name="_BackNavigation" model="@("pmc:reviewallchanges", "Back", modificationParams)" />
+			<partial name="_BackNavigation" model="@("pmc:modificationdetails", "Back", modificationParams)" />
         }
 
         <form asp-action="UploadDocuments" method="post" enctype="multipart/form-data">
@@ -49,13 +48,20 @@
 			<input type="hidden" asp-for="@Model.ProjectRecordId" />
 			<input type="hidden" asp-for="@Model.ShortTitle" />
 			<input type="hidden" asp-for="@Model.IrasId" />
+			<input type="hidden" asp-for="@Model.ModificationId" />
 			<input type="hidden" asp-for="@Model.ModificationIdentifier" />
-			<div class="govuk-form-group @(Html.ViewData.ModelState.ContainsKey(nameof(Model.Files)) ? "govuk-form-group--error" : "")">
+			@{
+				var hasFileErrors = ViewData.ModelState.TryGetValue(nameof(Model.Files), out var entry)
+				&& entry.Errors.Any();
+			}
+
+			<div class="govuk-form-group @(hasFileErrors ? "govuk-form-group--error" : "")">
 				<label class="govuk-label" for="Files">Upload documents</label>
-				@if (ViewData.ModelState.TryGetValue(nameof(Model.Files), out var entry) && entry.Errors.Any())
+
+				@if (hasFileErrors)
 				{
 					<ul class="govuk-error-list">
-						@foreach (var error in entry.Errors)
+						@foreach (var error in entry!.Errors)
 						{
 							<li class="govuk-error-message">@error.ErrorMessage</li>
 						}
@@ -71,6 +77,57 @@
 						   multiple />
 				</div>
 			</div>
+
+			@if (Model.UploadedDocuments.Any())
+			{
+				<table class="govuk-table">
+					<thead class="govuk-visually-hidden">
+						<tr>
+							<th>Document name</th>
+							<th>Size</th>
+							<th>Status</th>
+							<th class="govuk-!-text-align-right">Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var doc in Model.UploadedDocuments)
+						{
+							<tr class="govuk-table__row">
+								<td class="govuk-table__cell" style="width: 60%;">
+									@if (doc.Status == DocumentStatus.Success)
+									{
+										<a asp-route="pmc:downloaddocument"
+										   asp-route-fileName="@doc.FileName"
+										   asp-route-path="@doc.BlobUri" class="govuk-link">
+											@doc.FileName
+										</a>
+									}
+									else
+									{
+										@doc.FileName
+									}
+								</td>
+								<td class="govuk-table__cell" style="width: 20%;">
+									<span class="govuk-body">@doc.DisplaySize</span>
+								</td>
+								<td class="govuk-table__cell" style="width: 20%;">
+									<strong class="govuk-tag @(doc.Status?.Equals(DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase) == true ? "govuk-tag--red" : "govuk-tag--green")">
+										@doc.Status
+									</strong>
+								</td>
+								<td class="govuk-table__cell govuk-!-text-align-right" style="width: 20%;">
+									<a asp-route="pmc:confirmdeletedocument"
+									   asp-route-id="@doc.DocumentId"
+									   asp-route-backRoute="toaddpage"
+									   class="govuk-link">
+										Delete
+									</a>
+								</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			}
 
             <div class="govuk-button-group govuk-!-margin-top-4">
                 <button class="govuk-button" data-module="govuk-button" name="action" value="continue">Save and continue</button>
