@@ -28,6 +28,7 @@ public class ReviewAllChangesController
     private const string DocumentDetailsSection = "pdm-document-metadata";
     private const string SponsorDetailsSectionId = "pm-sponsor-reference";
     private readonly IRespondentService _respondentService = respondentService;
+    private const string DocumentDetailsSection = "pdm-document-metadata";
 
     private readonly ServiceResponse _reviewOutcomeNotFoundError = new()
     {
