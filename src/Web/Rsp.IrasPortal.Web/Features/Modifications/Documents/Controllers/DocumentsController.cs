@@ -173,7 +173,7 @@ public class DocumentsController
                     var clonedQuestionnaire = new QuestionnaireViewModel
                     {
                         Questions = questionnaire.Questions
-                            .Select(q => new QuestionViewModel
+                            .ConvertAll(q => new QuestionViewModel
                             {
                                 Id = q.Id,
                                 Index = q.Index,
@@ -188,7 +188,6 @@ public class DocumentsController
                                 ShowOriginalAnswer = q.ShowOriginalAnswer,
                                 Rules = q.Rules
                             })
-                            .ToList()
                     };
 
                     clonedQuestionnaire = await PopulateAnswersFromDocuments(clonedQuestionnaire, answers);
@@ -905,16 +904,16 @@ public class DocumentsController
                 question.QuestionType = match.OptionType ?? question.QuestionType;
 
                 // map multiple answers into AnswerViewModel list
-                if (match.Answers != null && match.Answers.Any())
+                if (match.Answers?.Any() == true)
                 {
                     question.Answers = match.Answers
-                        .Select(ans => new AnswerViewModel
+                        .ConvertAll(ans => new AnswerViewModel
                         {
                             AnswerId = ans,        // if ans is an ID
                             AnswerText = ans,      // or fetch the display text elsewhere if IDs map to text
                             IsSelected = true
                         })
-                        .ToList();
+;
                 }
             }
         }
