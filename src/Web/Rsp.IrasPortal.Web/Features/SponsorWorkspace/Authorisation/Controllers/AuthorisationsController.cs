@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using FluentValidation;
+using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
@@ -8,22 +9,29 @@ using Rsp.IrasPortal.Application.Filters;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
+using Rsp.IrasPortal.Web.Features.Modifications;
+using Rsp.IrasPortal.Web.Features.Modifications.Models;
 using Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Models;
+using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation;
 
 /// <summary>
-/// Controller responsible for handling sponsor workspace related actions.
+///     Controller responsible for handling sponsor workspace related actions.
 /// </summary>
 [Route("sponsorworkspace/[action]", Name = "sws:[action]")]
 [Authorize(Policy = "IsSponsor")]
-public class AuthorisationsController
-(
+public class AuthorisationsController(
     IProjectModificationsService projectModificationsService,
+    IRespondentService respondentService,
+    ICmsQuestionsetService cmsQuestionsetService,
     IValidator<SponsorAuthorisationsSearchModel> searchValidator
-) : Controller
+) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService)
 {
+    private const string SponsorDetailsSectionId = "pm-sponsor-reference";
+    private readonly IRespondentService _respondentService = respondentService;
+
     [HttpGet]
     public async Task<IActionResult> Authorisations
     (
@@ -43,30 +51,33 @@ public class AuthorisationsController
             model.Search = JsonSerializer.Deserialize<SponsorAuthorisationsSearchModel>(json)!;
         }
 
-        var searchQuery = new SponsorAuthorisationsSearchRequest()
+        var searchQuery = new SponsorAuthorisationsSearchRequest
         {
-            SearchTerm = model.Search.SearchTerm,
+            SearchTerm = model.Search.SearchTerm
         };
 
         // getting modifications by sponsor organisation name
-        var projectModificationsServiceResponse = await projectModificationsService.GetModificationsBySponsorOrganisationUserId(sponsorOrganisationUserId, searchQuery, pageNumber, pageSize, sortField, sortDirection);
+        var projectModificationsServiceResponse =
+            await projectModificationsService.GetModificationsBySponsorOrganisationUserId(sponsorOrganisationUserId,
+                searchQuery, pageNumber, pageSize, sortField, sortDirection);
 
         model.Modifications = projectModificationsServiceResponse?.Content?.Modifications?
-                .Select(dto => new ModificationsModel
-                {
-                    Id = dto.Id,
-                    ModificationId = dto.ModificationId,
-                    ShortProjectTitle = dto.ShortProjectTitle,
-                    ChiefInvestigator = dto.ChiefInvestigator,
-                    SponsorOrganisation = dto.SponsorOrganisation,
-                    ProjectRecordId = dto.ProjectRecordId,
-                    SentToRegulatorDate = dto.SentToRegulatorDate,
-                    SentToSponsorDate = dto.SentToSponsorDate,
-                    Status = dto.Status
-                })
-                .ToList() ?? [];
+            .Select(dto => new ModificationsModel
+            {
+                Id = dto.Id,
+                ModificationId = dto.ModificationId,
+                ShortProjectTitle = dto.ShortProjectTitle,
+                ChiefInvestigator = dto.ChiefInvestigator,
+                SponsorOrganisation = dto.SponsorOrganisation,
+                ProjectRecordId = dto.ProjectRecordId,
+                SentToRegulatorDate = dto.SentToRegulatorDate,
+                SentToSponsorDate = dto.SentToSponsorDate,
+                Status = dto.Status,
+            })
+            .ToList() ?? [];
 
-        model.Pagination = new PaginationViewModel(pageNumber, pageSize, projectModificationsServiceResponse?.Content?.TotalCount ?? 0)
+        model.Pagination = new PaginationViewModel(pageNumber, pageSize,
+            projectModificationsServiceResponse?.Content?.TotalCount ?? 0)
         {
             RouteName = "sws:authorisations",
             SortDirection = sortDirection,
@@ -97,10 +108,132 @@ public class AuthorisationsController
             }
 
             TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
-            return RedirectToAction(nameof(Authorisations), new { sponsorOrganisationUserId = model.SponsorOrganisationUserId });
+            return RedirectToAction(nameof(Authorisations),
+                new { sponsorOrganisationUserId = model.SponsorOrganisationUserId });
         }
 
         HttpContext.Session.SetString(SessionKeys.SponsorAuthorisationsSearch, JsonSerializer.Serialize(model.Search));
-        return RedirectToAction(nameof(Authorisations), new { sponsorOrganisationUserId = model.SponsorOrganisationUserId });
+        return RedirectToAction(nameof(Authorisations),
+            new { sponsorOrganisationUserId = model.SponsorOrganisationUserId });
+    }
+
+    // 1) Shared builder used by both GET and POST
+    private async Task<AuthoriseOutcomeViewModel?> BuildCheckAndAuthorisePageAsync(Guid projectModificationId,
+        string irasId, string shortTitle,
+        string projectRecordId, Guid sponsorOrganisationUserId)
+    {
+        // Fetch the modification by its identifier
+        var (result, modification) =
+            await PrepareModificationAsync(projectModificationId, irasId, shortTitle, projectRecordId);
+        if (result is not null)
+        {
+            return null;
+        }
+
+        // Load sponsor details Q&A
+        var sponsorDetailsQuestionsResponse =
+            await cmsQuestionsetService.GetModificationQuestionSet(SponsorDetailsSectionId);
+
+        var sponsorDetailsResponse =
+            await _respondentService.GetModificationAnswers(projectModificationId, projectRecordId);
+        var sponsorDetailsAnswers = sponsorDetailsResponse.Content!;
+
+        var sponsorDetailsQuestionnaire =
+            QuestionsetHelpers.BuildQuestionnaireViewModel(sponsorDetailsQuestionsResponse.Content!);
+        sponsorDetailsQuestionnaire.UpdateWithRespondentAnswers(sponsorDetailsAnswers);
+
+        modification.SponsorDetails = sponsorDetailsQuestionnaire.Questions;
+
+        var authoriseOutcomeViewModel = modification.Adapt<AuthoriseOutcomeViewModel>();
+        authoriseOutcomeViewModel.SponsorOrganisationUserId =sponsorOrganisationUserId;
+
+        return authoriseOutcomeViewModel;
+    }
+
+    // 2) GET stays tiny and calls the builder
+    [HttpGet]
+    public async Task<IActionResult> CheckAndAuthorise(string projectRecordId, string irasId, string shortTitle,
+        Guid projectModificationId, Guid sponsorOrganisationUserId)
+    {
+        var response =
+            await BuildCheckAndAuthorisePageAsync(projectModificationId, irasId, shortTitle, projectRecordId,
+                sponsorOrganisationUserId);
+
+        return View(response);
+    }
+
+    // 3) POST: on invalid, rebuild the page VM and return the same view with ModelState errors
+    [HttpPost]
+    public async Task<IActionResult> CheckAndAuthorise(AuthoriseOutcomeViewModel model)
+    {
+        // 🟢 Always build the page first, so it's hydrated for both success and error paths
+        var hydrated = await BuildCheckAndAuthorisePageAsync(
+            Guid.Parse(model.ModificationId),
+            model.IrasId,
+            model.ShortTitle,
+            model.ProjectRecordId,
+            model.SponsorOrganisationUserId
+        );
+
+        if (!ModelState.IsValid)
+        {
+            // Preserve the posted Outcome so the radios keep the selection
+            if (hydrated is not null)
+            {
+                hydrated.Outcome = model.Outcome;
+                // copy any other posted fields you want to preserve on re-render
+            }
+
+            return View(hydrated);
+        }
+
+        switch (model.Outcome)
+        {
+            case "Authorised":
+            {
+                // Default to "No review required" if ReviewType is null/empty
+                var reviewType = string.IsNullOrWhiteSpace(model.ReviewType)
+                    ? "No review required"
+                    : model.ReviewType;
+
+                switch (reviewType)
+                {
+                    case "Review required":
+                        await projectModificationsService.UpdateModificationStatus(
+                            Guid.Parse(model.ModificationId),
+                            ModificationStatus.WithReviewBody
+                        );
+                        break;
+
+                    case "No review required":
+                    default:
+                        await projectModificationsService.UpdateModificationStatus(
+                            Guid.Parse(model.ModificationId),
+                            ModificationStatus.Approved
+                        );
+                        break;
+                }
+
+                break;
+            }
+
+            case "NotAuthorised":
+            default:
+            {
+                await projectModificationsService.UpdateModificationStatus(
+                    Guid.Parse(model.ModificationId),
+                    ModificationStatus.NotApproved
+                );
+                break;
+            }
+        }
+
+        return RedirectToAction(nameof(Confirmation), model);
+    }
+
+    [HttpGet]
+    public IActionResult Confirmation(ModificationDetailsViewModel model)
+    {
+        return View(model);
     }
 }

@@ -30,7 +30,7 @@
         <dd class="govuk-summary-list__value">@modificationBaseModel.ModificationIdentifier</dd>
     </div>
     <authorized auth-params="@new(Roles: "sponsor,applicant")">
-        @if (modificationBaseModel.Status is ModificationStatus.Approved or ModificationStatus.NotAuthorised or ModificationStatus.WithReviewBody)
+        @if (modificationBaseModel.Status is ModificationStatus.Approved or ModificationStatus.NotAuthorised or ModificationStatus.WithReviewBody or ModificationStatus.WithSponsor)
         {
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key">Date created</dt>
@@ -59,7 +59,19 @@
     {
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key">Status</dt>
-            <dd class="govuk-summary-list__value">@modificationBaseModel.Status</dd>
+            <dd class="govuk-summary-list__value">
+                @{
+                    var tagClass = modificationBaseModel.Status switch
+                    {
+                        ModificationStatus.WithSponsor => "govuk-tag--yellow",
+                        ModificationStatus.Authorised => "govuk-tag--green",
+                        ModificationStatus.NotAuthorised => "govuk-tag--red",
+                        _ => "govuk-tag--blue" // default fallback if needed
+                    };
+                }
+                <strong class="govuk-tag @tagClass">@modificationBaseModel.Status</strong>
+            </dd>
         </div>
+
     }
 </dl>

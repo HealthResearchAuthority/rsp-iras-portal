@@ -70,7 +70,7 @@
                                             new { Field = nameof(ModificationsModel.ModificationNumber), Label = "Modification ID" },
                                             new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
                                             new { Field = nameof(ModificationsModel.SentToSponsorDate), Label = "Date received" },
-                                            new { Field = nameof(ModificationsModel.SentToRegulatorDate), Label = "Date authorised" },
+                                            new { Field = nameof(ModificationsModel.SentToRegulatorDate), Label = "Date actioned" },
                                             new { Field = nameof(ModificationsModel.ChiefInvestigator), Label = "Chief investigator" },
                                             new { Field = nameof(ModificationsModel.Status), Label = "Status" }
 								        };
@@ -106,7 +106,15 @@
                                         {
                                             <tr class="govuk-table__row">
                                                 <td class="govuk-table__cell">
-                                                    <a  class="govuk-link">
+                                                    <a class="govuk-link"
+                                                       asp-route="sws:checkandauthorise"
+                                                       asp-route-projectRecordId="@modification.ProjectRecordId"
+                                                       asp-route-irasId="@(modification.ModificationId?.Split('/')[0])"
+                                                       asp-route-shortTitle="@modification.ShortProjectTitle"
+                                                       asp-route-projectModificationId="@modification.Id"
+                                                       asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId"
+                                                    
+                                                       >
                                                         <strong>@modification.ModificationId</strong>
                                                     </a>
                                                 </td>

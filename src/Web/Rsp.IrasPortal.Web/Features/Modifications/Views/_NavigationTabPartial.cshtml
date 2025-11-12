@@ -1,41 +1,68 @@
-﻿@using Rsp.IrasPortal.Web.Features.Modifications.Models;
-@using Rsp.IrasPortal.Application.Constants
-@model ModificationDetailsViewModel
+﻿@using Rsp.IrasPortal.Application.Constants
+@model Rsp.IrasPortal.Web.Features.Modifications.Models.ModificationDetailsViewModel
 @{
     var active = ViewBag.Active as string;
 }
 
+
+<!-- Hidden controls -->
+<input type="radio" id="tab-sponsor-details" name="tab-toggle" class="govuk-tab-toggle" checked>
+<input type="radio" id="tab-modifications-changes" name="tab-toggle" class="govuk-tab-toggle">
+<input type="radio" id="tab-documents" name="tab-toggle" class="govuk-tab-toggle">
+<input type="radio" id="tab-history" name="tab-toggle" class="govuk-tab-toggle">
+
+<!-- Keep the same GOV.UK Service Navigation look -->
 <div class="govuk-service-navigation">
     <div class="govuk-width-container">
         <div class="govuk-service-navigation__container">
             <nav class="govuk-service-navigation__wrapper">
                 <ul class="govuk-service-navigation__list">
-                    <li class="govuk-service-navigation__item small-margin @(active == ModificationOverview.SponsorDetails ? "govuk-service-navigation__item--active" : "")">
-                        <a class="govuk-service-navigation__link" href="#sponser-details">
+
+                    <li class="govuk-service-navigation__item small-margin govuk-service-navigation__item--sponsor-details">
+                        <label for="tab-sponsor-details" class="govuk-service-navigation__link govuk-service-navigation__link-label">
                             @ModificationOverview.SponsorDetails
-                        </a>
+                        </label>
                     </li>
-                    <li class="govuk-service-navigation__item small-margin @(active == ModificationOverview.ModificationDetails ? "govuk-service-navigation__item--active" : "")">
-                        <a class="govuk-service-navigation__link">
+
+                    <li class="govuk-service-navigation__item small-margin govuk-service-navigation__item--modifications-changes">
+                        <label for="tab-modifications-changes" class="govuk-service-navigation__link govuk-service-navigation__link-label">
                             @ModificationOverview.ModificationDetails
-                        </a>
+                        </label>
                     </li>
-                    <li class="govuk-service-navigation__item small-margin @(active == ModificationOverview.Documents ? "govuk-service-navigation__item--active" : "")">
-                        <a class="govuk-service-navigation__link">
+
+                    <li class="govuk-service-navigation__item small-margin govuk-service-navigation__item--documents">
+                        <label for="tab-documents" class="govuk-service-navigation__link govuk-service-navigation__link-label">
                             @ModificationOverview.Documents
-                        </a>
+                        </label>
                     </li>
-                    <li class="govuk-service-navigation__item small-margin @(active == ModificationOverview.History ? " govuk-service-navigation__item--active" : "" )">
-                        <a class="govuk-service-navigation__link">
+
+                    <li class="govuk-service-navigation__item small-margin govuk-service-navigation__item--history">
+                        <label for="tab-history" class="govuk-service-navigation__link govuk-service-navigation__link-label">
                             @ModificationOverview.History
-                        </a>
+                        </label>
                     </li>
+
                 </ul>
             </nav>
         </div>
     </div>
 </div>
-<br />
-<div id="sponser-details">
-    <partial name="SponsorDetails" model="Model" viewData="ViewData" />
+
+<br/>
+
+<!-- Panels (toggle visibility via CSS) -->
+<div id="sponsor-details" class="tab-content">
+    <partial name="SponsorDetails" model="Model" viewData="ViewData"/>
+</div>
+
+<div id="modifications-changes" class="tab-content">
+    <partial name="ModificationChanges" model="Model" viewData="ViewData"/>
+</div>
+
+<div id="documents" class="tab-content">
+    <p class="govuk-body">Documents content here...</p>
+</div>
+
+<div id="history" class="tab-content">
+    <p class="govuk-body">History content here...</p>
 </div>
