@@ -15,15 +15,15 @@
             <h2 class="govuk-summary-card__title">
                 Change @(changeIndex + 1) - @change.AreaOfChangeName<br />
 
-				@if (showStatus is null or true && Model.Status is ModificationStatus.InDraft)
+                @if (showStatus is null or true && Model.Status is ModificationStatus.InDraft)
                 {
-					<strong class="govuk-!-margin-top-2 text-nowrap govuk-tag @(change.ChangeStatus == ModificationStatus.Unfinished ? "govuk-tag--red" : "govuk-tag--green") non-max-width-govuk-tag">
+                    <strong class="govuk-!-margin-top-2 text-nowrap govuk-tag @(change.ChangeStatus == ModificationStatus.Unfinished ? "govuk-tag--red" : "govuk-tag--green") non-max-width-govuk-tag">
                         @change.ChangeStatus
                     </strong>
                 }
             </h2>
             <ul class="govuk-summary-card__actions">
-				@if (showChangeLink is null or true && Model.Status is ModificationStatus.InDraft)
+                @if (showChangeLink is null or true && Model.Status is ModificationStatus.InDraft)
                 {
                     <li class="govuk-summary-card__action">
 
@@ -40,7 +40,7 @@
                     </li>
                 }
 
-				@if (showRemoveLink is null or true && Model.Status is ModificationStatus.InDraft)
+                @if (showRemoveLink is null or true && Model.Status is ModificationStatus.InDraft)
                 {
                     <li class="govuk-summary-card__action">
                         <a class="govuk-link"
@@ -70,8 +70,8 @@
                             @(string.IsNullOrWhiteSpace(question.ShortQuestionText) ? question.QuestionText : question.ShortQuestionText)
                         </dt>
                         <dd class="govuk-summary-list__value">
-							@Html.Raw(question.GetDisplayText(false))
-						</dd>
+                            @Html.Raw(question.GetDisplayText(false))
+                        </dd>
                     </div>
                 }
                 <div class="govuk-summary-list__row">
@@ -79,7 +79,7 @@
                         Modification type
                     </dt>
                     <dd class="govuk-summary-list__value">
-                        @change.ModificationType.Substantiality
+                        @change.ModificationType
                     </dd>
                 </div>
                 <div class="govuk-summary-list__row">
@@ -87,7 +87,7 @@
                         Category
                     </dt>
                     <dd class="govuk-summary-list__value">
-						@(string.IsNullOrWhiteSpace(change.Categorisation.Category) ? "N/A" : change.Categorisation.Category)
+                        @change.Category
                     </dd>
                 </div>
                 <div class="govuk-summary-list__row">

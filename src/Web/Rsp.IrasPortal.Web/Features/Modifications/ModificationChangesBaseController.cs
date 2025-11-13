@@ -7,9 +7,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Extensions;
+using Rsp.IrasPortal.Web.Features.Modifications.Helpers;
+using Rsp.IrasPortal.Web.Features.Modifications.Models;
 using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
 using static Rsp.IrasPortal.Application.Constants.TempDataKeys;
@@ -24,6 +28,8 @@ public class ModificationChangesBaseController
 (
     IRespondentService respondentService,
     ICmsQuestionsetService cmsQuestionsetService,
+    IProjectModificationsService projectModificationsService,
+    IModificationRankingService modificationRankingService,
     IValidator<QuestionnaireViewModel> validator
 ) : Controller
 {
@@ -289,16 +295,14 @@ public class ModificationChangesBaseController
     /// and display the progress of the application
     /// </summary>
     [ExcludeFromCodeCoverage]
-    public IActionResult ConfirmModificationChanges()
+    public async Task<IActionResult> ConfirmModificationChanges()
     {
-        var (projectModificationId, _) = CheckModification();
-
-        // get the application from the session
-        // to get the projectApplicationId
+        var (projectModificationId, projectModificationChangeId) = CheckModification();
         var projectRecordId = TempData.Peek(ProjectRecordId) as string ?? string.Empty;
 
-        // change it to go to the confirmation page i.e. submitted to sponsor
-        // no next stage so redirect to modification details page
+        await modificationRankingService.UpdateChangeRanking(projectModificationChangeId, projectRecordId);
+        await modificationRankingService.UpdateOverallRanking(projectModificationId, projectRecordId);
+
         var irasId = TempData.Peek(IrasId);
         var shortTitle = TempData.Peek(ShortProjectTitle) as string;
 
@@ -306,11 +310,182 @@ public class ModificationChangesBaseController
     }
 
     [HttpGet, HttpPost]
-    public IActionResult SaveForLater(string projectRecordId, string routeName)
+    public async Task<IActionResult> SaveForLater(string projectRecordId, string routeName)
     {
+        var (projectModificationId, projectModificationChangeId) = CheckModification();
+
+        await modificationRankingService.UpdateChangeRanking(projectModificationChangeId, projectRecordId);
+        await modificationRankingService.UpdateOverallRanking(projectModificationId, projectRecordId);
+
         TempData[ShowNotificationBanner] = true;
         TempData[ProjectModification.ProjectModificationChangeMarker] = Guid.NewGuid();
 
         return RedirectToRoute(routeName, new { projectRecordId });
+    }
+
+    /// <summary>
+    /// Calculates and update the modification change ranking in the database
+    /// </summary>
+    protected internal async Task SaveModificationChangeRanking()
+    {
+        // Get the ranking of change. The change is already calculated in the Ranking of Change component
+        // and saved in TempData.
+        var rankingOfChange = TempData[ProjectModificationChange.RankingOfChange] as string;
+
+        if (!string.IsNullOrWhiteSpace(rankingOfChange))
+        {
+            var (_, projectModificationChangeId) = CheckModification();
+
+            // get the current modification change in progress
+            var modificationChange = await projectModificationsService.GetModificationChange(projectModificationChangeId);
+
+            var rankingOfChangeModel = JsonSerializer.Deserialize<RankingOfChangeViewModel>(rankingOfChange);
+
+            // adapt the modification change to request model
+            var modificationChangeRequest = modificationChange.Content!.Adapt<ProjectModificationChangeRequest>();
+
+            modificationChangeRequest.ModificationType = rankingOfChangeModel!.ModificationType;
+            modificationChangeRequest.Category = rankingOfChangeModel.Category;
+            modificationChangeRequest.ReviewType = rankingOfChangeModel.ReviewType;
+
+            await projectModificationsService.UpdateModificationChange(modificationChangeRequest);
+        }
+    }
+
+    protected internal async Task SaveOverallModificationRanking()
+    {
+        var (projectModificationId, _) = CheckModification();
+
+        if (projectModificationId == Guid.Empty)
+        {
+            return;
+        }
+
+        // get the modification details to update
+        var modificationResponse = await projectModificationsService.GetModification(projectModificationId);
+
+        // Retrieve all changes related to this modification
+        var modificationChangesResponse = await projectModificationsService.GetModificationChanges(projectModificationId);
+
+        // Load initial questions
+        var initialQuestionsResponse = await cmsQuestionsetService.GetInitialModificationQuestions();
+
+        var modification = modificationResponse.Content!;
+
+        // initial questions including area and specific areas of change
+        var initialQuestions = initialQuestionsResponse.Content!;
+
+        // modification changes returned from the service
+        var modificationChanges = modificationChangesResponse.Content!;
+
+        var projectModificationRequest = modification.Adapt<ProjectModificationRequest>();
+
+        await UpdateModificationWithChanges(initialQuestions, projectModificationRequest, modificationChanges);
+
+        projectModificationRequest.UpdateOverAllRanking();
+
+        await projectModificationsService.UpdateModification(projectModificationRequest);
+    }
+
+    protected internal async Task UpdateModificationWithChanges
+    (
+        StartingQuestionsDto initialQuestions,
+        ProjectModificationRequest modification,
+        IEnumerable<ProjectModificationChangeResponse> modificationChanges
+    )
+    {
+        foreach (var change in modificationChanges.OrderByDescending(c => c.CreatedDate))
+        {
+            if (change.AreaOfChange == Guid.Empty.ToString() || change.SpecificAreaOfChange == Guid.Empty.ToString())
+            {
+                continue;
+            }
+
+            var areaOfChange = initialQuestions!.AreasOfChange.Find(area => area.AutoGeneratedId == change.AreaOfChange);
+
+            var specificAreaOfChange = areaOfChange?.SpecificAreasOfChange.Find(area => area.AutoGeneratedId == change.SpecificAreaOfChange);
+
+            // get the questions for the change
+            var questionSetServiceResponse = await cmsQuestionsetService.GetModificationsJourney(change.SpecificAreaOfChange);
+
+            // get the responent answers for the change
+            var respondentServiceResponse = await respondentService.GetModificationChangeAnswers(change.Id, modification.ProjectRecordId);
+
+            var respondentAnswers = respondentServiceResponse.Content!;
+
+            // convert the questions response to QuestionnaireViewModel
+            var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(questionSetServiceResponse.Content!);
+
+            // Apply answers and trim questions using shared helper
+            questionnaire.UpdateWithRespondentAnswers(respondentAnswers);
+
+            var questions = questionnaire.Questions;
+
+            // calculate the change ranking
+            var ranking = await GetRankingOfChange(modification.ProjectRecordId, specificAreaOfChange!.AutoGeneratedId!, specificAreaOfChange.ShowApplicabilityQuestions, questions)!;
+
+            if (ranking is null)
+            {
+                return;
+            }
+
+            var modificationType = ranking.ModificationType?.Substantiality ?? Ranking.NotAvailable;
+
+            // If modification type is Non-Notifiable, force category to N/A
+            var category = string.Equals(modificationType, Ranking.ModificationTypes.NonNotifiable, StringComparison.OrdinalIgnoreCase)
+                ? Ranking.CategoryTypes.NA
+                : ranking.Categorisation?.Category ?? Ranking.NotAvailable;
+
+            var changeModel = change.Adapt<ProjectModificationChangeRequest>();
+
+            changeModel.ModificationType = modificationType;
+            changeModel.ModificationSubstantiality =
+            (
+                modificationType,
+                ranking.ModificationType?.Order ?? 0
+            );
+
+            changeModel.Category = category;
+            changeModel.Categorisation =
+            (
+                category,
+                // as we are setting category to N/A when modification type is non-notifiable
+                // we need to set the order manaully, N/A is last in category and order is set to 6 in cms
+                category is Ranking.CategoryTypes.NA ? 6 : ranking.Categorisation?.Order ?? 0
+            );
+
+            changeModel.ReviewType = ranking.ReviewType ?? Ranking.NotAvailable;
+
+            modification.ProjectModificationChanges.Add(changeModel);
+        }
+    }
+
+    protected internal async Task<RankingOfChangeResponse> GetRankingOfChange(string projectRecordId, string specificAreaOfChangeId, bool showApplicabilityQuestions, IEnumerable<QuestionViewModel> questions)
+    {
+        // if applicability is false, call project record look up for IQA0004,
+        string nhsOrHscOrganisations = string.Empty;
+
+        if (!showApplicabilityQuestions)
+        {
+            // Get all respondent answers for the project and category
+            var respondentAnswersResponse =
+                await respondentService.GetRespondentAnswers(projectRecordId, QuestionCategories.ProjectRecord);
+
+            var answers = respondentAnswersResponse.Content;
+
+            var answer = answers?.FirstOrDefault(a => a.QuestionId == QuestionIds.NhsOrHscOrganisations);
+
+            nhsOrHscOrganisations = answer?.SelectedOption switch
+            {
+                var option when option is QuestionAnswersOptionsIds.Yes => "Yes",
+                _ => "No"
+            };
+        }
+
+        var rankingRequest = ModificationHelpers.GetRankingOfChangeRequest(specificAreaOfChangeId, showApplicabilityQuestions, questions, nhsOrHscOrganisations);
+
+        var ranking = await cmsQuestionsetService.GetModificationRanking(rankingRequest);
+
+        return ranking.Content!;
     }
 }

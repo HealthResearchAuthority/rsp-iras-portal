@@ -1,15 +1,18 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Features.Modifications.Helpers;
 using Rsp.IrasPortal.Web.Features.Modifications.Models;
 using Rsp.IrasPortal.Web.Models;
-using static Rsp.IrasPortal.Application.Constants.Ranking;
 
 namespace Rsp.IrasPortal.Web.Features.Modifications.Components;
 
-public class RankingOfChange(ICmsQuestionsetService cmsQuestionsetService,
-    IRespondentService respondentService) : ViewComponent
+public class RankingOfChange
+(
+    ICmsQuestionsetService cmsQuestionsetService,
+    IRespondentService respondentService
+) : ViewComponent
 {
     public async Task<IViewComponentResult> InvokeAsync
     (
@@ -46,8 +49,8 @@ public class RankingOfChange(ICmsQuestionsetService cmsQuestionsetService,
         var modificationType = ranking?.Content?.ModificationType?.Substantiality ?? Ranking.NotAvailable;
 
         // If modification type is Non-Notifiable, force category to N/A
-        var category = string.Equals(modificationType, ModificationTypes.NonNotifiable, StringComparison.OrdinalIgnoreCase)
-            ? CategoryTypes.NA
+        var category = string.Equals(modificationType, Ranking.ModificationTypes.NonNotifiable, StringComparison.OrdinalIgnoreCase)
+            ? Ranking.CategoryTypes.NA
             : ranking?.Content?.Categorisation?.Category ?? Ranking.NotAvailable;
 
         var rankingOfChangeViewModel = new RankingOfChangeViewModel
@@ -56,6 +59,10 @@ public class RankingOfChange(ICmsQuestionsetService cmsQuestionsetService,
             Category = category,
             ReviewType = ranking?.Content?.ReviewType ?? Ranking.NotAvailable
         };
+
+        // store the ranking in TempData to be saved in database on confirmation of change
+        // in review changes page
+        TempData[TempDataKeys.ProjectModificationChange.RankingOfChange] = JsonSerializer.Serialize(rankingOfChangeViewModel);
 
         return View("/Features/Modifications/Shared/RankingOfChange.cshtml", rankingOfChangeViewModel);
     }

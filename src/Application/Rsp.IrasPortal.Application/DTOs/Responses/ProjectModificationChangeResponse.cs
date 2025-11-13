@@ -31,6 +31,21 @@ public record ProjectModificationChangeResponse
     public string Status { get; set; } = null!;
 
     /// <summary>
+    /// Ranking type of the change
+    /// </summary>
+    public string? ModificationType { get; set; }
+
+    /// <summary>
+    /// Ranking category of the change
+    /// </summary>
+    public string? Category { get; set; }
+
+    /// <summary>
+    /// Ranking review type of the change
+    /// </summary>
+    public string? ReviewType { get; set; }
+
+    /// <summary>
     /// The user identifier of the person who created the modification change.
     /// </summary>
     public string CreatedBy { get; set; } = null!;

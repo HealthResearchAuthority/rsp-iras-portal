@@ -9,7 +9,6 @@ public class GetModification : TestServiceBase<ProjectModificationsService>
     [Theory, AutoData]
     public async Task GetModification_DelegatesToClient_AndReturnsMappedResult
     (
-        string projectRecordId,
         Guid projectModificationId,
         ProjectModificationResponse apiResponseContent
     )
@@ -22,17 +21,17 @@ public class GetModification : TestServiceBase<ProjectModificationsService>
         var projectModificationsServiceClient = Mocker.GetMock<IProjectModificationsServiceClient>();
 
         projectModificationsServiceClient
-            .Setup(c => c.GetModification(projectRecordId, projectModificationId))
+            .Setup(c => c.GetModification(It.IsAny<Guid>()))
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.GetModification(projectRecordId, projectModificationId);
+        var result = await Sut.GetModification(projectModificationId);
 
         // Assert
         projectModificationsServiceClient
             .Verify
             (
-                c => c.GetModification(projectRecordId, projectModificationId),
+                c => c.GetModification(projectModificationId),
                 Times.Once
             );
 
