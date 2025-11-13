@@ -1,11 +1,9 @@
-﻿using System.Text;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Features.Modifications.Documents.Controllers;
@@ -34,6 +32,13 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
                 new FormFile(new MemoryStream(), 0, 100, "file", "test.xyz")
             }
         };
+
+        Mocker.GetMock<IBlobStorageService>()
+            .Setup(b => b.UploadFilesAsync(It.IsAny<IEnumerable<IFormFile>>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new List<DocumentSummaryItemDto>
+            {
+                new() { FileName = "good.pdf", BlobUri = "uri", FileSize = 1024 }
+            });
 
         Mocker.GetMock<IRespondentService>()
             .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
@@ -71,6 +76,13 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
                 new FormFile(new MemoryStream(), 0, 100, "file", "duplicate.pdf")
             }
         };
+
+        Mocker.GetMock<IBlobStorageService>()
+            .Setup(b => b.UploadFilesAsync(It.IsAny<IEnumerable<IFormFile>>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new List<DocumentSummaryItemDto>
+            {
+                new() { FileName = "good.pdf", BlobUri = "uri", FileSize = 1024 }
+            });
 
         Mocker.GetMock<IRespondentService>()
             .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))

@@ -314,7 +314,7 @@ public class ProjectModificationsService
     /// <summary>
     /// Gets modifications for specific ProjectRecordId with filtering, sorting and pagination
     /// </summary>
-    /// <param name="projectRecordId">The unique identifier of the project record for which modifications are requested.</param>
+    /// <param name="modificationId">The unique identifier of the project record for which modifications are requested.</param>
     /// <param name="searchQuery">Object containing filtering criteria for modifications.</param>
     /// <param name="pageNumber">The number of the page to retrieve (used for pagination - 1-based).</param>
     /// <param name="pageSize">The number of items per page (used for pagination).</param>
