@@ -516,8 +516,17 @@ public class DocumentsController
         // Validate new uploaded files
         var validationResult = ValidateUploadedFiles(model.Files, response?.Content?.ToList() ?? []);
         atleastOneInvalidFile = validationResult.HasErrors;
-        if (atleastOneInvalidFile)
+
+        // Check if any ModelState errors mention "100 MB"
+        var hasFileSizeError = ModelState.Values
+            .SelectMany(v => v.Errors)
+            .Any(e => e.ErrorMessage.Contains("100 MB", StringComparison.OrdinalIgnoreCase));
+
+        // Only return the view if at least one validation error is related to "100 MB"
+        if (atleastOneInvalidFile && hasFileSizeError)
+        {
             return View(model);
+        }
 
         // Upload valid files to blob storage
         var uploadedDocuments = await UploadValidFilesAsync(validationResult.ValidFiles, irasId, projectModificationId, projectRecordId, respondentId);

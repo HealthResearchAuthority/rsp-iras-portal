@@ -3,6 +3,11 @@
 public class ProjectOverviewDocumentDto
 {
     /// <summary>
+    /// Unique identifier for the uploaded document.
+    /// </summary>
+    public Guid Id { get; set; }
+
+    /// <summary>
     /// Gets or sets the name of the uploaded file.
     /// </summary>
     public string FileName { get; set; } = string.Empty;
