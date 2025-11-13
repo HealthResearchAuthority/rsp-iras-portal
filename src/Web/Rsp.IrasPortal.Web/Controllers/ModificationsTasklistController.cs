@@ -64,19 +64,34 @@ public class ModificationsTasklistController(
             : [];
 
         var leadNation = "England";
+
         if (Guid.TryParse(User?.FindFirstValue("userId"), out var userId))
         {
-            var bodiesResp = await reviewBodyService.GetUserReviewBodies(userId);
-            var reviewBodyId = bodiesResp.IsSuccessStatusCode
-                ? bodiesResp.Content?.FirstOrDefault()?.Id
-                : null;
-
-            if (reviewBodyId is { } rbId)
+            if (User.IsInRole("team_manager"))
             {
-                var rbResp = await reviewBodyService.GetReviewBodyById(rbId);
-                leadNation = rbResp.IsSuccessStatusCode
-                    ? rbResp.Content?.Countries?.FirstOrDefault() ?? leadNation
-                    : leadNation;
+                var user = await userManagementService.GetUser(userId.ToString(), null, null);
+
+                if (user.IsSuccessStatusCode)
+                {
+                    leadNation = user.Content?.User.Country;
+                }
+            }
+            else
+            {
+                // STUDY WIDE REVIEWER
+                //TODO CHANGE 1
+                var bodiesResp = await reviewBodyService.GetUserReviewBodies(userId);
+                var reviewBodyId = bodiesResp.IsSuccessStatusCode
+                    ? bodiesResp.Content?.FirstOrDefault()?.Id
+                    : null;
+
+                if (reviewBodyId is { } rbId)
+                {
+                    var rbResp = await reviewBodyService.GetReviewBodyById(rbId);
+                    leadNation = rbResp.IsSuccessStatusCode
+                        ? rbResp.Content?.Countries?.FirstOrDefault() ?? leadNation
+                        : leadNation;
+                }
             }
         }
 
