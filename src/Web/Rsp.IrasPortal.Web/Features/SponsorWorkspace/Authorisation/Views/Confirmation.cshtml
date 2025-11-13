@@ -71,13 +71,14 @@
             @messageText
         </p>
 
-        <form method="get">
+        <form asp-route="sws:authorisations" method="get">
+            <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
+
             <partial name="_SubmitButton"
                      model="@("sws:authorisations", "Return to authorisations", new Dictionary<string, string>
-                            {
-                                ["SponsorOrganisationUserId"] = Model.SponsorOrganisationUserId.ToString()
-                            })"/>
-
+                     {
+                         ["SponsorOrganisationUserId"] = Model.SponsorOrganisationUserId.ToString()
+                     })" />
         </form>
     </div>
 </div>

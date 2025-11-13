@@ -9,16 +9,12 @@ public struct ModificationStatus
     public const string WithReviewBody = "With review body";
     public const string Approved = "Approved";
     public const string NotApproved = "Not approved";
-    public const string Authorised = "Authorised";
-    public const string NotAuthorised = "Not authorised";
 
     public static readonly List<string> Types = [
         InDraft,
         WithSponsor,
         WithReviewBody,
         Approved,
-        NotApproved,
-        Authorised,
-        NotAuthorised
+        NotApproved
     ];
 }
