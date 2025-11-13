@@ -10,7 +10,6 @@ using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Features.Modifications;
-using Rsp.IrasPortal.Web.Features.Modifications.Models;
 using Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Models;
 using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
@@ -145,7 +144,8 @@ public class AuthorisationsController(
         modification.SponsorDetails = sponsorDetailsQuestionnaire.Questions;
 
         var authoriseOutcomeViewModel = modification.Adapt<AuthoriseOutcomeViewModel>();
-        authoriseOutcomeViewModel.SponsorOrganisationUserId =sponsorOrganisationUserId;
+        authoriseOutcomeViewModel.SponsorOrganisationUserId = sponsorOrganisationUserId;
+        authoriseOutcomeViewModel.ProjectModificationId = projectModificationId;
 
         return authoriseOutcomeViewModel;
     }
@@ -190,49 +190,49 @@ public class AuthorisationsController(
         switch (model.Outcome)
         {
             case "Authorised":
-            {
-                // Default to "No review required" if ReviewType is null/empty
-                var reviewType = string.IsNullOrWhiteSpace(model.ReviewType)
-                    ? "No review required"
-                    : model.ReviewType;
-
-                switch (reviewType)
                 {
-                    case "Review required":
-                        await projectModificationsService.UpdateModificationStatus(
-                            Guid.Parse(model.ModificationId),
-                            ModificationStatus.WithReviewBody
-                        );
-                        break;
+                    // Default to "No review required" if ReviewType is null/empty
+                    var reviewType = string.IsNullOrWhiteSpace(model.ReviewType)
+                        ? "No review required"
+                        : model.ReviewType;
 
-                    case "No review required":
-                    default:
-                        await projectModificationsService.UpdateModificationStatus(
-                            Guid.Parse(model.ModificationId),
-                            ModificationStatus.Approved
-                        );
-                        break;
+                    switch (reviewType)
+                    {
+                        case "Review required":
+                            await projectModificationsService.UpdateModificationStatus(
+                                Guid.Parse(model.ModificationId),
+                                ModificationStatus.WithReviewBody
+                            );
+                            break;
+
+                        case "No review required":
+                        default:
+                            await projectModificationsService.UpdateModificationStatus(
+                                Guid.Parse(model.ModificationId),
+                                ModificationStatus.Approved
+                            );
+                            break;
+                    }
+
+                    break;
                 }
-
-                break;
-            }
 
             case "NotAuthorised":
             default:
-            {
-                await projectModificationsService.UpdateModificationStatus(
-                    Guid.Parse(model.ModificationId),
-                    ModificationStatus.NotApproved
-                );
-                break;
-            }
+                {
+                    await projectModificationsService.UpdateModificationStatus(
+                        Guid.Parse(model.ModificationId),
+                        ModificationStatus.NotApproved
+                    );
+                    break;
+                }
         }
 
         return RedirectToAction(nameof(Confirmation), model);
     }
 
     [HttpGet]
-    public IActionResult Confirmation(ModificationDetailsViewModel model)
+    public IActionResult Confirmation(AuthoriseOutcomeViewModel model)
     {
         return View(model);
     }

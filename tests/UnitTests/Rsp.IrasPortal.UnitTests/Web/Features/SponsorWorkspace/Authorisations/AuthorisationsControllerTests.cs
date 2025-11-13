@@ -100,7 +100,6 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
     {
         SetupAuthoriseOutcomeViewModel();
 
-
         // Act
         var result = await Sut.CheckAndAuthorise("PR1", "IRAS", "Short", _sponsorOrganisationUserId,
             _sponsorOrganisationUserId);
@@ -186,7 +185,7 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
     public void Confirmation_Returns_View_With_Model()
     {
         // Arrange
-        var model = new ModificationDetailsViewModel
+        var model = new AuthoriseOutcomeViewModel
         {
             ModificationId = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
             ProjectRecordId = "PR-001"
@@ -300,7 +299,7 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
             .GetMock<IRespondentService>()
             .Setup(s => s.GetModificationChangeAnswers(changeId, It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>>
-                { StatusCode = HttpStatusCode.OK, Content = [] });
+            { StatusCode = HttpStatusCode.OK, Content = [] });
 
         var answers = new List<RespondentAnswerDto>
         {
@@ -311,7 +310,7 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
             .GetMock<IRespondentService>()
             .Setup(s => s.GetRespondentAnswers(It.IsAny<string>(), QuestionCategories.ProjectRecord))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>>
-                { StatusCode = HttpStatusCode.OK, Content = answers });
+            { StatusCode = HttpStatusCode.OK, Content = answers });
 
         // Use a permissive validator that sets IsValid true
         Mocker
@@ -332,7 +331,6 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
                     ReviewType = "ReviewType"
                 }
             });
-
 
         // Build a fake CMS question set response that your helper accepts
         var cmsResponse = new CmsQuestionSetResponse
