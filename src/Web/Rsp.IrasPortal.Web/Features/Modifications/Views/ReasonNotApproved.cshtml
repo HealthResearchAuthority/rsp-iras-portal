@@ -1,0 +1,47 @@
+﻿@using Rsp.IrasPortal.Web.Features.Modifications.Models
+@model ReviewOutcomeViewModel
+@{
+    ViewBag.Title = "Reason modification not approved";
+}
+
+<partial name="_BackNavigation"
+         model="@(
+        "pmc:reviewoutcome",
+        "Back",
+        new Dictionary<string, string>())" />
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">  
+        <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
+    </div>
+</div>
+
+<partial name="_ReviewModification" model="@Model.ModificationDetails" />
+
+<form method="post" asp-action="ReasonNotApproved">
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <h2 class="govuk-heading-m">Reason modification not approved</h2>
+            <p class="govuk-hint">Enter the reason this modification was not approved</p>
+            <div class="govuk-form-group govuk-character-count"
+                 data-module="govuk-character-count"
+                 data-maxlength="500">
+                <textarea 
+                    asp-for="ReasonNotApproved"
+                    class="govuk-textarea govuk-js-character-count"
+                    rows="5"
+                    aria-describedby="with-hint-info with-hint-hint">
+                </textarea>
+                <div id="ReasonNotApproved-info" class="govuk-hint govuk-character-count__message"></div>
+            </div>
+            <div class="save-buttons">
+                <button type="submit" class="govuk-button" data-module="govuk-button">
+                    Save and continue
+                </button>
+                <button asp-route-saveForLater="true" type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+                    Save for later
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
