@@ -324,8 +324,7 @@ public class ReviewAllChangesController
             SortDirections.Ascending);
 
         var documents = modificationDocumentsResponseResult?.Content?.Documents ?? [];
-        var hasUnfinishedDocuments = documents.Any(d =>
-            !string.Equals(d.Status, DocumentStatus.Success, StringComparison.OrdinalIgnoreCase));
+        var hasUnfinishedDocuments = documents.Any(d => d.IsMalwareScanSuccessful != true);
 
         // Verify each document’s detail completeness
         if (!hasUnfinishedDocuments && documents.Any())
