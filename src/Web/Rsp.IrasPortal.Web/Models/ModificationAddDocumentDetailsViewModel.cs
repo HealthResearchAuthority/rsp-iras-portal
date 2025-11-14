@@ -16,6 +16,11 @@ public class ModificationAddDocumentDetailsViewModel : QuestionnaireViewModel
     public string? ShortTitle { get; set; }
 
     /// <summary>
+    /// Gets or sets the identifier associated with the current modification.
+    /// </summary>
+    public Guid ModificationId { get; set; }
+
+    /// <summary>
     /// Gets or sets the identifier associated with the current project modification.
     /// </summary>
     public string ModificationIdentifier { get; set; } = null!;
