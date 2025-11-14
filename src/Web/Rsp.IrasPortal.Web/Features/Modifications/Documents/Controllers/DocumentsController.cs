@@ -426,7 +426,8 @@ public class DocumentsController
                 FileName = d.FileName,
                 DocumentStoragePath = d.DocumentStoragePath,
                 FileSize = d.FileSize,
-                Status = d.Status
+                Status = d.Status,
+                IsMalwareScanSuccessful = d.IsMalwareScanSuccessful
             })
             .ToList();
 
@@ -440,7 +441,7 @@ public class DocumentsController
                 continue;
 
             // Choose container depending on whether the document upload succeeded
-            var targetContainer = doc.Status.Equals(DocumentStatus.Success, StringComparison.OrdinalIgnoreCase)
+            var targetContainer = doc.IsMalwareScanSuccessful == true
                 ? CleanContainerName
                 : StagingContainerName;
 
@@ -560,7 +561,8 @@ public class DocumentsController
                 FileName = a.FileName,
                 FileSize = a.FileSize ?? 0,
                 BlobUri = a.DocumentStoragePath ?? string.Empty,
-                Status = a.Status ?? string.Empty
+                Status = a.Status ?? string.Empty,
+                IsMalwareScanSuccessful = a.IsMalwareScanSuccessful
             })
             .OrderBy(dto => dto.FileName, StringComparer.OrdinalIgnoreCase)];
     }
@@ -667,7 +669,8 @@ public class DocumentsController
                 FileName = a.FileName,
                 FileSize = a.FileSize ?? 0,
                 BlobUri = a.DocumentStoragePath,
-                Status = a.Status ?? string.Empty
+                Status = a.Status ?? string.Empty,
+                IsMalwareScanSuccessful = a.IsMalwareScanSuccessful
             }))
             .OrderBy(dto => dto.FileName, StringComparer.OrdinalIgnoreCase)];
     }
@@ -773,6 +776,7 @@ public class DocumentsController
                 FileName = doc.FileName,
                 DocumentStoragePath = doc.DocumentStoragePath,
                 Status = doc.Status,
+                IsMalwareScanSuccessful = doc.IsMalwareScanSuccessful,
                 ReviewAnswers = true,
                 Questions = cmsQuestions.Questions.Select(cmsQ =>
                 {

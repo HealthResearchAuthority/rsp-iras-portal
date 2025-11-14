@@ -43,6 +43,11 @@ public class ProjectOverviewDocumentDto
     public string Status { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets if the scan is successful or not.
+    /// </summary>
+    public bool? IsMalwareScanSuccessful { get; set; }
+
+    /// <summary>
     /// Gets or sets the identifier of the modification, if specified.
     /// </summary>
     public string ModificationIdentifier { get; set; } = string.Empty;

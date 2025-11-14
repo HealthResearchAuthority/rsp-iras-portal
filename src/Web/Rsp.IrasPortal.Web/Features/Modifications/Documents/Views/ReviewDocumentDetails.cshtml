@@ -89,7 +89,7 @@
 							<div class="govuk-summary-list__row">
 								<dt class="govuk-summary-list__key">File name</dt>
 								<dd class="govuk-summary-list__value">
-									@if (docu.Status == DocumentStatus.Success)
+									@if (docu.IsMalwareScanSuccessful == true)
 									{
 										<a asp-route="pmc:downloaddocument"
 										   asp-route-fileName="@docu.FileName"

@@ -174,7 +174,7 @@
 															</td>
 															<td class="govuk-table__cell">@modification.DocumentName</td>
 															<td class="govuk-table__cell">
-																@if (modification.Status == DocumentStatus.Success)
+																@if (modification.IsMalwareScanSuccessful == true)
 																{
 																	<a asp-route="pmc:downloaddocument"
 																	   asp-route-fileName="@modification.FileName"

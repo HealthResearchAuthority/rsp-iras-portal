@@ -38,6 +38,11 @@ public class ProjectModificationDocumentRequest
     public string? Status { get; set; }
 
     /// <summary>
+    /// Gets or sets if the scan is successful or not.
+    /// </summary>
+    public bool? IsMalwareScanSuccessful { get; set; }
+
+    /// <summary>
     /// Gets or sets the document file size in bytes.
     /// </summary>
     public long? FileSize { get; set; }
