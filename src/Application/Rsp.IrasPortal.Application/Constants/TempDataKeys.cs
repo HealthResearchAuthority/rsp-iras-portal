@@ -24,6 +24,7 @@ public struct TempDataKeys
         public const string ReviewAllChanges = "td:modification_review_all_changes";
         public const string OverallReviewType = "td:modification_overall_review_type";
         public const string DateCreated = "td:created_date";
+        public const string ProjectModificationsDetails = "td:project_modifications_details";
     }
 
     public struct ProjectModificationChange

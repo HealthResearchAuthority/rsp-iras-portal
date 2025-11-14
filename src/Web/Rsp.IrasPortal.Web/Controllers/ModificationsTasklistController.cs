@@ -148,9 +148,9 @@ public class ModificationsTasklistController(
                     SponsorOrganisation = dto.SponsorOrganisation,
                     SentToSponsorDate = dto.SentToSponsorDate,
                     SentToRegulatorDate = dto.SentToRegulatorDate,
-                    ChiefInvestigator = dto.ChiefInvestigator,                    
+                    ChiefInvestigator = dto.ChiefInvestigator,
                     CreatedAt = dto.CreatedAt,
-                    Status = dto.Status,
+                    Status = dto.Status is ModificationStatus.WithReviewBody ? "Received" : dto.Status,
                     ReviewerName = dto.ReviewerName
                 },
                 IsSelected = selectedFromSession.Contains(dto.Id, StringComparer.OrdinalIgnoreCase),

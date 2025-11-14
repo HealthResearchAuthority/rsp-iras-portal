@@ -223,4 +223,19 @@ public interface IProjectModificationsServiceClient
         string sortField = nameof(ModificationsDto.SentToSponsorDate),
         string sortDirection = SortDirections.Descending
     );
+
+    /// <summary>
+    /// Saves review responses for a project modification.
+    /// </summary>
+    /// <param name="modificationReviewRequest">The request object containing the review values</param>
+    [Post("/projectmodifications/savereviewresponses")]
+    public Task<IApiResponse> SaveModificationReviewResponses(ProjectModificationReviewRequest modificationReviewRequest);
+
+    /// <summary>
+    /// Gets review responses for a project modification.
+    /// </summary>
+    /// <param name="modificationId">The ID of the modification</param>
+    /// <returns>Returns the modification review properties</returns>
+    [Get("/projectmodifications/getreviewresponses")]
+    public Task<ApiResponse<ProjectModificationReviewResponse>> GetModificationReviewResponses(Guid modificationId);
 }
