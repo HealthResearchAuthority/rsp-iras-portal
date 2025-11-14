@@ -170,7 +170,7 @@ stages:
           service_defaults_repo: service_defaults
 
   - stage: pre_prod
-    variables: 
+    variables:
     - group: 'PreProdEnvironment'
     condition: eq('${{ parameters.env }}', 'pre_prod')
     jobs:
@@ -178,9 +178,11 @@ stages:
         parameters:
           install_aspire: true
           service_defaults_repo: service_defaults
+          deployToSlot: true
+          slotName: 'staging'
 
   - stage: production
-    variables: 
+    variables:
     - group: 'ProductionEnvironment'
     condition: eq('${{ parameters.env }}', 'production')
     jobs:
@@ -188,3 +190,5 @@ stages:
         parameters:
           install_aspire: true
           service_defaults_repo: service_defaults
+          deployToSlot: true
+          slotName: 'staging'
