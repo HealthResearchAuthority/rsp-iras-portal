@@ -139,10 +139,13 @@
                                                             ModificationStatus.WithSponsor => "govuk-tag--yellow",
                                                             ModificationStatus.Approved => "govuk-tag--green",
                                                             ModificationStatus.WithReviewBody => "govuk-tag--green",
-                                                            ModificationStatus.NotApproved => "govuk-tag--red"                                                        
+                                                            ModificationStatus.NotApproved => "govuk-tag--red",
+                                                            _ => ""
                                                         };
                                                     }
-                                                    <strong class="govuk-tag @tagClass">@statusDisplayMap[modification.Status]</strong>
+                                                    <strong class="govuk-tag @tagClass">
+                                                        @statusDisplayMap.GetValueOrDefault(modification.Status, modification.Status)
+                                                    </strong>
                                                 </td>
                                             </tr>
                                         }
