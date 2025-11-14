@@ -30,6 +30,7 @@ public class DocumentsController
     private const string CleanContainerName = "clean";
     private const string DocumentDetailsSection = "pdm-document-metadata";
     private const string PostApprovalRoute = "pov:postapproval";
+    private const string ReviewAllChangesRoute = "pmc:reviewallchanges";
 
     private const string MissingDateErrorMessage = "Enter a sponsor document date";
     private const string DuplicateDocumentNameErrorMessage = "Document name already exists. Enter a unique document name";
@@ -155,7 +156,7 @@ public class DocumentsController
     /// Redirects back to <see cref="AddDocumentDetailsList"/> if document details cannot be retrieved.
     /// </returns>
     [HttpGet]
-    public async Task<IActionResult> ContinueToDetails(Guid documentId, bool reviewAnswers = false)
+    public async Task<IActionResult> ContinueToDetails(Guid documentId, bool reviewAnswers = false, bool reviewAllChanges = false)
     {
         // Attempt to fetch the document details from the respondent service.
         var documentDetailsResponse = await respondentService.GetModificationDocumentDetails(documentId);
@@ -176,10 +177,14 @@ public class DocumentsController
             IrasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty,
             ModificationIdentifier = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string ?? string.Empty,
             DocumentId = documentDetailsResponse.Content.Id,
+            ModificationId = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId) is Guid modificationId
+               ? modificationId
+               : Guid.NewGuid(),
             FileName = documentDetailsResponse.Content.FileName,
             FileSize = documentDetailsResponse.Content.FileSize ?? 0,
             DocumentStoragePath = documentDetailsResponse.Content.DocumentStoragePath,
-            ReviewAnswers = reviewAnswers
+            ReviewAnswers = reviewAnswers,
+            ReviewAllChanges = reviewAllChanges
         };
 
         // Fetch the CMS question set that defines what metadata must be collected for this document.
@@ -293,7 +298,7 @@ public class DocumentsController
     /// - If validation succeeds: saves answers and redirects to review or list page based on ReviewAnswers flag.
     /// </returns>
     [HttpPost]
-    public async Task<IActionResult> SaveDocumentDetails(ModificationAddDocumentDetailsViewModel viewModel, bool saveForLater = false)
+    public async Task<IActionResult> SaveDocumentDetails(ModificationAddDocumentDetailsViewModel viewModel, bool saveForLater = false, bool reviewAllChanges = false)
     {
         // Step 1: Retrieve and rebuild the questionnaire structure from CMS
         var questionnaire = await BuildUpdatedQuestionnaire(viewModel);
@@ -329,6 +334,12 @@ public class DocumentsController
 
         // Step 6: Save all valid answers to backend
         await SaveModificationDocumentAnswers(viewModel);
+
+        // Redirect to the review-all-changes route if explicitly requested
+        if (reviewAllChanges)
+        {
+            return RedirectToReviewAllChanges();
+        }
 
         // Step 7: Redirect user depending on their action
         return saveForLater
@@ -952,6 +963,18 @@ public class DocumentsController
     {
         var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
         return RedirectToRoute(PostApprovalRoute, new { projectRecordId });
+    }
+
+    private RedirectToRouteResult RedirectToReviewAllChanges()
+    {
+        var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
+        var shortTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty;
+        var irasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty;
+        var modificationIdentifier = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string ?? string.Empty;
+        var projectModificationId = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId) is Guid modId
+               ? modId
+               : Guid.NewGuid();
+        return RedirectToRoute(ReviewAllChangesRoute, new { projectRecordId, irasId, shortTitle, projectModificationId });
     }
 
     /// <summary>
