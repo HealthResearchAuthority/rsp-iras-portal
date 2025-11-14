@@ -376,6 +376,10 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
             ProjectRecordId = projectRecordId
         };
 
+        TypeAdapterConfig<ModificationDetailsViewModel, AuthoriseOutcomeViewModel>
+        .NewConfig()
+        .Ignore(dest => dest.ProjectOverviewDocumentViewModel);
+
         var authoriseOutcomeViewModel = modification.Adapt<AuthoriseOutcomeViewModel>();
         authoriseOutcomeViewModel.SponsorOrganisationUserId = sponsorOrganisationUserId;
         return authoriseOutcomeViewModel;

@@ -20,7 +20,7 @@ public class SponsorReferenceController
     IRespondentService respondentService,
     ICmsQuestionsetService cmsQuestionsetService,
     IValidator<QuestionnaireViewModel> validator
-) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService)
+) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator)
 {
     private readonly IRespondentService _respondentService = respondentService;
     private const string PostApprovalRoute = "pov:postapproval";

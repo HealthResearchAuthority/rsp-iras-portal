@@ -94,7 +94,7 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
             [TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = "Safety",
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
             [TempDataKeys.ShortProjectTitle] = "Short Title",
             [TempDataKeys.IrasId] = 999,
@@ -202,7 +202,7 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
             [TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = "Safety",
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
             [TempDataKeys.ShortProjectTitle] = "Short Title",
             [TempDataKeys.IrasId] = 999,
@@ -291,7 +291,7 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
             [TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = "Safety",
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
         };
 
@@ -347,7 +347,7 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
             [TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = "Safety",
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
         };
 
@@ -393,7 +393,7 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
             [TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = null,
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
             [TempDataKeys.ShortProjectTitle] = "Short Title",
             [TempDataKeys.IrasId] = 999,
@@ -461,7 +461,7 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
             [TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = "Safety",
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
             [TempDataKeys.ShortProjectTitle] = "Short Title",
             [TempDataKeys.IrasId] = 999,
@@ -533,7 +533,7 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
             [TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = "Safety",
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
             [TempDataKeys.ShortProjectTitle] = "Short Title",
             [TempDataKeys.IrasId] = 999,
@@ -578,7 +578,7 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
             [TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = "Safety",
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
             [TempDataKeys.ShortProjectTitle] = "Short Title",
             [TempDataKeys.IrasId] = 999,

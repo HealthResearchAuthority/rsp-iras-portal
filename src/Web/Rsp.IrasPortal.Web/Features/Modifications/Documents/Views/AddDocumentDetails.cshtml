@@ -42,6 +42,19 @@
 	{
 		navModel = ("pmc:reviewdocumentdetails", "Back", new());
 	}
+	else if (Model.ReviewAllChanges)
+	{
+
+		var modificationParams = new Dictionary<string, string>
+		{
+			{ "projectRecordId", Model.ProjectRecordId },
+			{ "irasId", Model.IrasId },
+			{ "shortTitle", Model.ShortTitle ?? string.Empty },
+			{ "projectModificationId", Model.ModificationId.ToString() },
+			{ "projectModificationIdentifier", Model.ModificationIdentifier ?? string.Empty }
+		};
+		navModel = ("pmc:reviewallchanges", "Back", modificationParams);
+	}
 	else
 	{
 		// back to the add document details view as that's where the jouney started from
@@ -76,11 +89,19 @@
 				<tbody>
 					<tr class="govuk-table__row">
 						<td class="govuk-table__cell" style="width: 60%;">
-							<a asp-route="pmc:downloaddocument"
-							   asp-route-fileName="@Model.FileName"
-							   asp-route-path="@Model.DocumentStoragePath" class="govuk-link">
-								<strong>@Model.FileName</strong>
-							</a>
+							@if (Model.IsMalwareScanSuccessful == true)
+							{
+								<a asp-route="pmc:downloaddocument"
+								   asp-route-fileName="@Model.FileName"
+								   asp-route-path="@Model.DocumentStoragePath"
+								   class="govuk-link">
+									<strong>@Model.FileName</strong>
+								</a>
+							}
+							else
+							{
+								@Model.FileName
+							}
 						</td>
 						<td class="govuk-table__cell" style="width: 20%;">
 							<span class="govuk-body">@Model.DisplaySize</span>
@@ -102,6 +123,7 @@
 
 				<input type="hidden" asp-for="@Model.ShortTitle" />
 				<input type="hidden" asp-for="@Model.IrasId" />
+				<input type="hidden" asp-for="@Model.ModificationId" />
 				<input type="hidden" asp-for="@Model.ModificationIdentifier" />
 				<input type="hidden" asp-for="@Model.DocumentId" />
 				<input type="hidden" asp-for="@Model.FileName" />
@@ -163,7 +185,11 @@
 				}
 			</govuk-fieldset>
 			<div class="save-buttons">
-				@if (!Model.ReviewAnswers)
+				@if (Model.ReviewAllChanges)
+				{
+					<partial name="_SubmitButton" model="@("pmc:savedocumentdetails", "Save changes", new Dictionary<string, string>{{ "reviewAllChanges", bool.TrueString }})" />
+				}
+				else if (!Model.ReviewAnswers)
 				{
 					<partial name="_SubmitButton" model="@("pmc:savedocumentdetails", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString } })" />
 

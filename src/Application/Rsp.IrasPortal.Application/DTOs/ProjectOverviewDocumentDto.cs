@@ -3,6 +3,11 @@
 public class ProjectOverviewDocumentDto
 {
     /// <summary>
+    /// Unique identifier for the uploaded document.
+    /// </summary>
+    public Guid Id { get; set; }
+
+    /// <summary>
     /// Gets or sets the name of the uploaded file.
     /// </summary>
     public string FileName { get; set; } = string.Empty;
@@ -36,6 +41,11 @@ public class ProjectOverviewDocumentDto
     /// Gets or sets the identifier of the status, if specified.
     /// </summary>
     public string Status { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets if the scan is successful or not.
+    /// </summary>
+    public bool? IsMalwareScanSuccessful { get; set; }
 
     /// <summary>
     /// Gets or sets the identifier of the modification, if specified.

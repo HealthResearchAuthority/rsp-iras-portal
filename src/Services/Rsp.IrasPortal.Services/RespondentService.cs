@@ -118,7 +118,7 @@ public class RespondentService(IRespondentServiceClient respondentServiceClient)
     /// Retrieves all documents associated with a specific project modification change,
     /// filtered by the project record ID and the project personnel who submitted or are responsible for the documents.
     /// </summary>
-    /// <param name="modificationChangeId">The unique identifier of the project modification change.</param>
+    /// <param name="modificationId">The unique identifier of the project modification change.</param>
     /// <param name="projectRecordId">The unique identifier of the associated project record.</param>
     /// <param name="projectPersonnelId">The unique identifier of the project personnel who uploaded or is linked to the documents.</param>
     /// <returns>
@@ -126,9 +126,9 @@ public class RespondentService(IRespondentServiceClient respondentServiceClient)
     /// containing a <see cref="ServiceResponse{T}"/> with a collection of <see cref="ProjectModificationDocumentRequest"/>
     /// representing the associated documents.
     /// </returns>
-    public async Task<ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>> GetModificationChangesDocuments(Guid modificationChangeId, string projectRecordId)
+    public async Task<ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>> GetModificationChangesDocuments(Guid modificationId, string projectRecordId)
     {
-        var apiResponse = await respondentServiceClient.GetModificationChangesDocuments(modificationChangeId, projectRecordId);
+        var apiResponse = await respondentServiceClient.GetModificationChangesDocuments(modificationId, projectRecordId);
 
         return apiResponse.ToServiceResponse();
     }
@@ -137,7 +137,7 @@ public class RespondentService(IRespondentServiceClient respondentServiceClient)
     /// Retrieves all documents associated with a specific project modification change,
     /// filtered by the project record ID and the project personnel who submitted or are responsible for the documents.
     /// </summary>
-    /// <param name="modificationChangeId">The unique identifier of the project modification change.</param>
+    /// <param name="modificationId">The unique identifier of the project modification change.</param>
     /// <param name="projectRecordId">The unique identifier of the associated project record.</param>
     /// <param name="projectPersonnelId">The unique identifier of the project personnel who uploaded or is linked to the documents.</param>
     /// <returns>
@@ -145,9 +145,9 @@ public class RespondentService(IRespondentServiceClient respondentServiceClient)
     /// containing a <see cref="ServiceResponse{T}"/> with a collection of <see cref="ProjectModificationDocumentRequest"/>
     /// representing the associated documents.
     /// </returns>
-    public async Task<ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>> GetModificationChangesDocuments(Guid modificationChangeId, string projectRecordId, string projectPersonnelId)
+    public async Task<ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>> GetModificationChangesDocuments(Guid modificationId, string projectRecordId, string projectPersonnelId)
     {
-        var apiResponse = await respondentServiceClient.GetModificationChangesDocuments(modificationChangeId, projectRecordId, projectPersonnelId);
+        var apiResponse = await respondentServiceClient.GetModificationChangesDocuments(modificationId, projectRecordId, projectPersonnelId);
 
         return apiResponse.ToServiceResponse();
     }

@@ -125,7 +125,23 @@
 <authorized auth-params="@new(Roles: "applicant")">
     @* Only show the Overall ranking if we have the changes *@
     @if (Model.ModificationChanges.Any() && Model.Status is ModificationStatus.InDraft)
-    {
+	{
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h2 class="govuk-heading-m">Supporting documents</h2>
+				<p class="govuk-body">
+					If any of the changes you're making involve an update to any project documents, make sure you add a copy of the original and updated documents.
+				</p>
+			</div>
+		</div>
+		<div class="govuk-button-group">
+			<form method="get">
+				@{
+					ViewBag.Style = "govuk-button govuk-button--secondary";
+				}
+				<partial name="_SubmitButton" model="@("pmc:projectdocument", "Add documents", new Dictionary<string, string> { })" />
+			</form>
+		</div>
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
                 <h2 class="govuk-heading-m">Add summary and review modification before sending to sponsor</h2>

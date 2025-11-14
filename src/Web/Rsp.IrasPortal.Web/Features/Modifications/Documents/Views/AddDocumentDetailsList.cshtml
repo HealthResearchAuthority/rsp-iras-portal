@@ -7,9 +7,7 @@
 
 	// If we know the specific area of change, dynamically build the page title to make the UI clearer.
 	// Otherwise, leave the title empty (will fallback to default in the view if needed).
-	ViewBag.Title = !string.IsNullOrEmpty(Model.SpecificAreaOfChange)
-		? $"Add document details for {TextHelper.ToSentenceCaseWithAcronyms(Model.SpecificAreaOfChange)}"
-		: string.Empty;
+	ViewBag.Title = "Add document details";
 }
 
 <div class="govuk-width-container">

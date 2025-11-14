@@ -1,102 +1,108 @@
-﻿@using Rsp.IrasPortal.Web.Helpers
+﻿@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Web.Helpers
 @model Rsp.IrasPortal.Web.Models.ModificationReviewDocumentsViewModel
 
 @{
-    (string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
-    navModel = ("pmc:projectdocument", "Back", new());
+	(string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
+	navModel = ("pmc:projectdocument", "Back", new());
 
 	// If we know the specific area of change, dynamically build the page title to make the UI clearer.
 	// Otherwise, leave the title empty (will fallback to default in the view if needed).
-	ViewBag.Title = !string.IsNullOrEmpty(Model.SpecificAreaOfChange)
-		? $"Documents added for {TextHelper.ToSentenceCaseWithAcronyms(Model.SpecificAreaOfChange)}"
-		: string.Empty;
+	ViewBag.Title = "Documents added";
 }
 
 <div class="govuk-width-container">
-    @section BackNavigation {
-        <partial name="_BackNavigation" model="navModel.Value" />
-    }
+	@section BackNavigation {
+		<partial name="_BackNavigation" model="navModel.Value" />
+	}
 
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-two-thirds">
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-two-thirds">
 			<h1 class="govuk-heading-l">
 				@ViewBag.Title
 			</h1>
-            <partial name="_ProjectModificationSummary" />
+			<partial name="_ProjectModificationSummary" />
 
-            @if (Model.UploadedDocuments.Any())
-            {
-                <table class="govuk-table">
-                    <thead class="govuk-visually-hidden">
-                        <tr>
-                            <th>Document name</th>
-                            <th>Size</th>
-                            <th class="govuk-!-text-align-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var doc in Model.UploadedDocuments)
-                        {
-                            <tr class="govuk-table__row">
-                                <td class="govuk-table__cell" style="width: 60%;">
-									<a asp-route="pmc:downloaddocument"
-									   asp-route-fileName="@doc.FileName"
-									   asp-route-path="@doc.BlobUri" class="govuk-link">
+			@if (Model.UploadedDocuments.Any())
+			{
+				<table class="govuk-table">
+					<thead class="govuk-visually-hidden">
+						<tr>
+							<th>Document name</th>
+							<th>Size</th>
+							<th class="govuk-!-text-align-right">Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var doc in Model.UploadedDocuments)
+						{
+							<tr class="govuk-table__row">
+								<td class="govuk-table__cell" style="width: 60%;">
+									@if (doc.IsMalwareScanSuccessful == true)
+									{
+										<a asp-route="pmc:downloaddocument"
+										   asp-route-fileName="@doc.FileName"
+										   asp-route-path="@doc.BlobUri" class="govuk-link">
+											@doc.FileName
+										</a>
+									}
+									else
+									{
 										@doc.FileName
-									</a>
-                                </td>
-                                <td class="govuk-table__cell" style="width: 20%;">
-                                    <span class="govuk-body">@doc.DisplaySize</span>
-                                </td>
-                                <td class="govuk-table__cell govuk-!-text-align-right" style="width: 20%;">
+									}
+								</td>
+								<td class="govuk-table__cell" style="width: 20%;">
+									<span class="govuk-body">@doc.DisplaySize</span>
+								</td>
+								<td class="govuk-table__cell govuk-!-text-align-right" style="width: 20%;">
 									<a asp-route="pmc:confirmdeletedocument"
 									   asp-route-id="@doc.DocumentId"
 									   asp-route-backRoute="toaddpage"
 									   class="govuk-link">
 										Delete
 									</a>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+								</td>
+							</tr>
+						}
+					</tbody>
+				</table>
 
-                <div class="govuk-!-text-align-right govuk-!-margin-top-1">
+				<div class="govuk-!-text-align-right govuk-!-margin-top-1">
 					<a asp-route="pmc:confirmdeletedocuments"
 					   asp-route-backRoute="toaddpage"
 					   class="govuk-link">
 						Delete all
 					</a>
-                </div>
-            }
-            else
-            {
-                <p class="govuk-body">No documents uploaded.</p>
-            }
+				</div>
+			}
+			else
+			{
+				<p class="govuk-body">No documents uploaded.</p>
+			}
 
-            <form asp-action="ProjectDocument" method="get">
-                <button class="govuk-button govuk-button--secondary" type="submit">Add another document</button>
-            </form>
+			<form asp-action="ProjectDocument" method="get">
+				<button class="govuk-button govuk-button--secondary" type="submit">Add another document</button>
+			</form>
 
-            <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible" />
+			<hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible" />
 
-            <h2 class="govuk-heading-m">Now add your document details</h2>
-            <p class="govuk-body">
-                Some of the documents you've added need additional details which you'll add in the next step.
-            </p>
+			<h2 class="govuk-heading-m">Now add your document details</h2>
+			<p class="govuk-body">
+				Some of the documents you've added need additional details which you'll add in the next step.
+			</p>
 
-            <div class="govuk-button-group">
-                <form asp-action="AddDocumentDetailsList" method="get">
-                    <partial name="_SubmitButton" model="@("pmc:AddDocumentDetailsList", "Save and continue", new Dictionary<string, string>{})" />
-                </form>
-                <form asp-action="PostApproval" method="get">
-                    <input type="hidden" name="projectRecordId" value="@Model.ProjectRecordId" />
-                    @{
-                        ViewBag.Style = "govuk-button govuk-button--secondary";
-                    }
-                    <partial name="_SubmitButton" model="@("pov:postapproval", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId })" />
-                </form>
-            </div>
-        </div>
-    </div>
+			<div class="govuk-button-group">
+				<form asp-action="AddDocumentDetailsList" method="get">
+					<partial name="_SubmitButton" model="@("pmc:AddDocumentDetailsList", "Save and continue", new Dictionary<string, string>{})" />
+				</form>
+				<form asp-action="PostApproval" method="get">
+					<input type="hidden" name="projectRecordId" value="@Model.ProjectRecordId" />
+					@{
+						ViewBag.Style = "govuk-button govuk-button--secondary";
+					}
+					<partial name="_SubmitButton" model="@("pov:postapproval", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId })" />
+				</form>
+			</div>
+		</div>
+	</div>
 </div>

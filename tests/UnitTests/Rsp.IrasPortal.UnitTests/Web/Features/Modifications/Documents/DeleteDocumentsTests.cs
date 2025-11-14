@@ -160,7 +160,7 @@ public class DeleteDocumentsTests : TestServiceBase<DocumentsController>
     {
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = changeId,
+            [TempDataKeys.ProjectModification.ProjectModificationId] = changeId,
             [TempDataKeys.ProjectRecordId] = projectRecordId
         };
 

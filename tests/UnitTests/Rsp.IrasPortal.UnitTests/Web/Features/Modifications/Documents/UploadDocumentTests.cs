@@ -33,6 +33,13 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
             }
         };
 
+        Mocker.GetMock<IBlobStorageService>()
+            .Setup(b => b.UploadFilesAsync(It.IsAny<IEnumerable<IFormFile>>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new List<DocumentSummaryItemDto>
+            {
+                new() { FileName = "good.pdf", BlobUri = "uri", FileSize = 1024 }
+            });
+
         Mocker.GetMock<IRespondentService>()
             .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
@@ -40,7 +47,7 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
             [TempDataKeys.IrasId] = 999
         };
@@ -70,6 +77,13 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
             }
         };
 
+        Mocker.GetMock<IBlobStorageService>()
+            .Setup(b => b.UploadFilesAsync(It.IsAny<IEnumerable<IFormFile>>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new List<DocumentSummaryItemDto>
+            {
+                new() { FileName = "good.pdf", BlobUri = "uri", FileSize = 1024 }
+            });
+
         Mocker.GetMock<IRespondentService>()
             .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
@@ -77,7 +91,7 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
             [TempDataKeys.IrasId] = 999
         };
@@ -108,7 +122,7 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
             [TempDataKeys.IrasId] = 999
         };
@@ -146,7 +160,7 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
             [TempDataKeys.IrasId] = 999
         };
@@ -155,8 +169,7 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
 
         var result = await Sut.UploadDocuments(model);
 
-        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
-        redirect.ActionName.ShouldBe(nameof(Sut.ModificationDocumentsAdded));
+        var redirect = result.ShouldBeOfType<ViewResult>();
     }
 
     [Fact]
@@ -184,7 +197,7 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
             [TempDataKeys.IrasId] = 999
         };
@@ -211,7 +224,7 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
             [TempDataKeys.IrasId] = 999
         };
@@ -235,7 +248,7 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
             [TempDataKeys.IrasId] = 999
         };
@@ -260,7 +273,7 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
             [TempDataKeys.IrasId] = 999
         };

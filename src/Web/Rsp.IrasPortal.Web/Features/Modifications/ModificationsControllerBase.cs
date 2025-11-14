@@ -2,11 +2,13 @@ using System.Net;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Domain.Enums;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Features.Modifications.Helpers;
 using Rsp.IrasPortal.Web.Features.Modifications.Models;
@@ -25,10 +27,11 @@ public abstract class ModificationsControllerBase
 (
     IRespondentService respondentService,
     IProjectModificationsService projectModificationsService,
-    ICmsQuestionsetService cmsQuestionsetService
-
+    ICmsQuestionsetService cmsQuestionsetService,
+    IValidator<QuestionnaireViewModel> validator
 ) : Controller
 {
+    private const string DocumentDetailsSection = "pdm-document-metadata";
     protected readonly IProjectModificationsService projectModificationsService = projectModificationsService;
     protected readonly ICmsQuestionsetService cmsQuestionsetService = cmsQuestionsetService;
 
@@ -288,4 +291,130 @@ public abstract class ModificationsControllerBase
 
         return (null, modification);
     }
+
+    /// <summary>
+    /// Builds a standard ProjectModificationDocumentRequest using TempData and HttpContext.
+    /// </summary>
+    protected ProjectModificationDocumentRequest BuildDocumentRequest() => new()
+    {
+        ProjectModificationId = (Guid)TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId)!,
+        ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty,
+        ProjectPersonnelId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!,
+    };
+
+    /// <summary>
+    /// Fetches all uploaded modification documents and determines their detail completion status.
+    /// </summary>
+    protected async Task<List<DocumentSummaryItemDto>> GetDocumentCompletionStatuses(ProjectModificationDocumentRequest documentChangeRequest)
+    {
+        // Fetch CMS question set (document metadata requirements)
+        var additionalQuestionsResponse = await cmsQuestionsetService.GetModificationQuestionSet(DocumentDetailsSection);
+        var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(additionalQuestionsResponse.Content!);
+
+        // Get uploaded documents
+        var response = await respondentService.GetModificationChangesDocuments(
+            documentChangeRequest.ProjectModificationId,
+            documentChangeRequest.ProjectRecordId,
+            documentChangeRequest.ProjectPersonnelId);
+
+        if (response?.StatusCode != HttpStatusCode.OK || response.Content == null)
+            return [];
+
+        // Evaluate each document’s completeness
+        var tasks = response.Content
+            .OrderBy(a => a.FileName, StringComparer.OrdinalIgnoreCase)
+            .Select(a => EvaluateDocumentCompletion(a, questionnaire));
+
+        return [.. await Task.WhenAll(tasks)];
+    }
+
+    protected async Task<QuestionnaireViewModel> PopulateAnswersFromDocuments(
+    QuestionnaireViewModel questionnaire,
+    IEnumerable<ProjectModificationDocumentAnswerDto> answers)
+    {
+        foreach (var question in questionnaire.Questions)
+        {
+            // Find the matching answer by QuestionId
+            var match = answers.FirstOrDefault(a => a.QuestionId == question.QuestionId);
+
+            if (match != null)
+            {
+                question.AnswerText = match.AnswerText;
+                question.SelectedOption = match.SelectedOption;
+
+                // carry over OptionType (if you want to track Single/Multiple)
+                question.QuestionType = match.OptionType ?? question.QuestionType;
+
+                // map multiple answers into AnswerViewModel list
+                if (match.Answers != null && match.Answers.Any())
+                {
+                    question.Answers = match.Answers
+                        .ConvertAll(ans => new AnswerViewModel
+                        {
+                            AnswerId = ans,        // if ans is an ID
+                            AnswerText = ans,      // or fetch the display text elsewhere if IDs map to text
+                            IsSelected = true
+                        })
+;
+                }
+            }
+        }
+
+        return questionnaire;
+    }
+
+    /// <summary>
+    /// Evaluates whether a single document’s answers are complete.
+    /// </summary>
+    private async Task<DocumentSummaryItemDto> EvaluateDocumentCompletion(ProjectModificationDocumentRequest a, QuestionnaireViewModel questionnaire)
+    {
+        // Fetch document answers
+        var answersResponse = await respondentService.GetModificationDocumentAnswers(a.Id);
+        var answers = answersResponse?.StatusCode == HttpStatusCode.OK
+            ? answersResponse.Content ?? []
+            : [];
+
+        // Clone questionnaire to prevent shared mutation
+        var clonedQuestionnaire = CloneQuestionnaire(questionnaire);
+
+        // Populate with answers
+        clonedQuestionnaire = await PopulateAnswersFromDocuments(clonedQuestionnaire, answers);
+
+        // Validate questionnaire
+        var isValid = await this.ValidateQuestionnaire(validator, clonedQuestionnaire, true);
+        var isIncomplete = !answers.Any() || !isValid;
+
+        return new DocumentSummaryItemDto
+        {
+            DocumentId = a.Id,
+            FileName = $"Add details for {a.FileName}",
+            FileSize = a.FileSize ?? 0,
+            BlobUri = a.DocumentStoragePath ?? string.Empty,
+            Status = (isIncomplete ? DocumentDetailStatus.Incomplete : DocumentDetailStatus.Completed).ToString(),
+        };
+    }
+
+    /// <summary>
+    /// Clones a questionnaire deeply to avoid shared references.
+    /// </summary>
+    private static QuestionnaireViewModel CloneQuestionnaire(QuestionnaireViewModel source) =>
+        new()
+        {
+            Questions = source.Questions
+                .ConvertAll(q => new QuestionViewModel
+                {
+                    Id = q.Id,
+                    Index = q.Index,
+                    QuestionId = q.QuestionId,
+                    SectionSequence = q.SectionSequence,
+                    Sequence = q.Sequence,
+                    QuestionText = q.QuestionText,
+                    QuestionType = q.QuestionType,
+                    DataType = q.DataType,
+                    IsMandatory = q.IsMandatory,
+                    IsOptional = q.IsOptional,
+                    ShowOriginalAnswer = q.ShowOriginalAnswer,
+                    Rules = q.Rules
+                })
+        };
 }

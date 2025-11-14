@@ -26,7 +26,7 @@ public class AuthorisationsController(
     IRespondentService respondentService,
     ICmsQuestionsetService cmsQuestionsetService,
     IValidator<SponsorAuthorisationsSearchModel> searchValidator
-) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService)
+) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, null!)
 {
     private const string SponsorDetailsSectionId = "pm-sponsor-reference";
     private readonly IRespondentService _respondentService = respondentService;

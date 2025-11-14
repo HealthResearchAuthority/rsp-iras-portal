@@ -45,7 +45,7 @@ public class ConfirmDeleteDocumentTests : TestServiceBase<DocumentsController>
             [TempDataKeys.IrasId] = irasId,
             [TempDataKeys.ProjectModification.ProjectModificationIdentifier] = modificationIdentifier,
             [TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = specificAreaOfChange,
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = changeId,
+            [TempDataKeys.ProjectModification.ProjectModificationId] = changeId,
             [TempDataKeys.ProjectRecordId] = projectRecordId
         };
 
@@ -106,7 +106,7 @@ public class ConfirmDeleteDocumentTests : TestServiceBase<DocumentsController>
             [TempDataKeys.IrasId] = irasId,
             [TempDataKeys.ProjectModification.ProjectModificationIdentifier] = modificationIdentifier,
             [TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = specificAreaOfChange,
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = changeId,
+            [TempDataKeys.ProjectModification.ProjectModificationId] = changeId,
             [TempDataKeys.ProjectRecordId] = projectRecordId
         };
 

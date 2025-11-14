@@ -1,4 +1,5 @@
-﻿@model ModificationDeleteDocumentViewModel
+﻿@using Rsp.IrasPortal.Application.Constants
+@model ModificationDeleteDocumentViewModel
 
 @{
 	var isSingle = Model?.Documents != null && Model.Documents.Count == 1;
@@ -28,49 +29,56 @@
 		navModel = ("pmc:modificationdocumentsadded", "Back", new());
 	}
 
-		@* @section is added for the back button, so that we can render something below the back button
+	@* @section is added for the back button, so that we can render something below the back button
         and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
         the named section *@
-		@section BackNavigation {
+	@section BackNavigation {
 		<partial name="_BackNavigation" model="navModel.Value" />
-		}
 	}
-	<div class="govuk-form-group @(ViewData.ModelState.IsValid ? "" : "govuk-form-group--error")">
-		<h1 class="govuk-heading-l">@title</h1>
+}
+<div class="govuk-form-group @(ViewData.ModelState.IsValid ? "" : "govuk-form-group--error")">
+	<h1 class="govuk-heading-l">@title</h1>
 
-		@if (Model?.Documents != null)
-		{
-			<table class="govuk-table">
-				<thead class="govuk-visually-hidden">
-					<tr>
-						<th>Document name</th>
-						<th>Size</th>
-					</tr>
-				</thead>
-				<tbody>
-					@foreach (var doc in Model.Documents)
-					{
-						<tr class="govuk-table__row">
-							<td class="govuk-table__cell" style="width: 60%;">
+	@if (Model?.Documents != null)
+	{
+		<table class="govuk-table">
+			<thead class="govuk-visually-hidden">
+				<tr>
+					<th>Document name</th>
+					<th>Size</th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var doc in Model.Documents)
+				{
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell" style="width: 60%;">
+							@if (doc.IsMalwareScanSuccessful == true)
+							{
 								<a href="@doc.DocumentStoragePath" class="govuk-link" target="_blank">@doc.FileName</a>
-							</td>
-							<td class="govuk-table__cell" style="width: 20%;">
-								<span class="govuk-body">@doc.DisplaySize</span>
-							</td>
-						</tr>
-					}
-				</tbody>
-			</table>
-		}
+							}
+							else
+							{
+								@doc.FileName
+							}
+						</td>
+						<td class="govuk-table__cell" style="width: 20%;">
+							<span class="govuk-body">@doc.DisplaySize</span>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	}
 
-		<form asp-action="DeleteDocuments" method="post">
-			@for (int i = 0; i < Model.Documents.Count; i++)
-			{
-				<input type="hidden" name="Documents[@i].Id" value="@Model.Documents[i].Id" />
-				<input type="hidden" name="Documents[@i].FileName" value="@Model.Documents[i].FileName" />
-				<input type="hidden" name="Documents[@i].FileSize" value="@Model.Documents[i].FileSize" />
-				<input type="hidden" name="Documents[@i].FileSize" value="@Model.Documents[i].DocumentStoragePath" />
-			}
+	<form asp-action="DeleteDocuments" method="post">
+		@for (int i = 0; i < Model.Documents.Count; i++)
+		{
+			<input type="hidden" name="Documents[@i].Id" value="@Model.Documents[i].Id" />
+			<input type="hidden" name="Documents[@i].FileName" value="@Model.Documents[i].FileName" />
+			<input type="hidden" name="Documents[@i].FileSize" value="@Model.Documents[i].FileSize" />
+			<input type="hidden" name="Documents[@i].FileSize" value="@Model.Documents[i].DocumentStoragePath" />
+		}
 
 		<button type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button">
 			@(isSingle ? "Delete document" : "Delete documents")
@@ -80,5 +88,5 @@
 			<a href="@cancelUrl" class="govuk-link">Cancel</a>
 		</p>
 
-		</form>
-	</div>
+	</form>
+</div>

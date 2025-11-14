@@ -48,7 +48,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
             [TempDataKeys.IrasId] = 999
         };
@@ -154,7 +154,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
             [TempDataKeys.IrasId] = 999
         };
@@ -200,7 +200,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
             [TempDataKeys.IrasId] = 999
         };
@@ -209,7 +209,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
             [TempDataKeys.IrasId] = 999
         };
@@ -253,7 +253,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
             [TempDataKeys.IrasId] = 999
         };
@@ -302,7 +302,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
             [TempDataKeys.IrasId] = 999
         };
@@ -338,7 +338,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
             [TempDataKeys.IrasId] = 999
         };
@@ -347,7 +347,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
             [TempDataKeys.IrasId] = 999
         };
@@ -468,7 +468,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
             [TempDataKeys.IrasId] = 999
         };
@@ -499,7 +499,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
             [TempDataKeys.IrasId] = 999
         };

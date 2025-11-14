@@ -2,7 +2,6 @@
 
 public struct DocumentStatus
 {
-    public const string Uploading = "Uploading";
     public const string Uploaded = "Uploaded";
     public const string Failed = "Failed";
     public const string Incomplete = "Incomplete";
