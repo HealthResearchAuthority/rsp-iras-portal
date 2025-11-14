@@ -31,6 +31,11 @@ public class DocumentSummaryItemDto
     public string Status { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets if the scan is successful or not.
+    /// </summary>
+    public bool? IsMalwareScanSuccessful { get; set; }
+
+    /// <summary>
     /// Gets the display size in KB, MB or GB, rounded to 2 decimal places.
     /// </summary>
     public string DisplaySize

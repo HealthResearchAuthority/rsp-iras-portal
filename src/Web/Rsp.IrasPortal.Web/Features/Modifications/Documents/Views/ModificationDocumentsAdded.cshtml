@@ -38,7 +38,7 @@
 						{
 							<tr class="govuk-table__row">
 								<td class="govuk-table__cell" style="width: 60%;">
-									@if (doc.Status == DocumentStatus.Success)
+									@if (doc.IsMalwareScanSuccessful == true)
 									{
 										<a asp-route="pmc:downloaddocument"
 										   asp-route-fileName="@doc.FileName"

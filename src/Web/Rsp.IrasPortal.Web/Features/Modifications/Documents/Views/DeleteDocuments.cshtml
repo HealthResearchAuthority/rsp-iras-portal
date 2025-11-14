@@ -53,7 +53,7 @@
 				{
 					<tr class="govuk-table__row">
 						<td class="govuk-table__cell" style="width: 60%;">
-							@if (doc.Status == DocumentStatus.Success)
+							@if (doc.IsMalwareScanSuccessful == true)
 							{
 								<a href="@doc.DocumentStoragePath" class="govuk-link" target="_blank">@doc.FileName</a>
 							}
