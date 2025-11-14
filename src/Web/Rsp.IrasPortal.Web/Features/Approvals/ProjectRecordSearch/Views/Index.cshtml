@@ -247,7 +247,7 @@
 
 													searchText = hasError ? orgSearch?.SearchText ?? string.Empty :
 													string.IsNullOrWhiteSpace(orgSearch?.SearchText) ?
-													Model.Search.SponsorOrganisation :
+													activeSponsorOrgFilter :
 													orgSearch.SearchText;
 												}
 
@@ -315,7 +315,7 @@
 																				 label-css-class="govuk-label govuk-label--s font-weight-none"
 																				 label-text="" options="@(organisations.Select(org => new GdsOption
                                                                {
-                                                                   Value = Html.Encode(org.Name),
+                                                                   Value = Html.Encode(org.Id),
                                                                    Label = Regex.Replace(org.Name, escapedSearch, match => $"<b>{match.Value}</b>", RegexOptions.IgnoreCase)
 									   }))" div-inline-class="govuk-radios" hint-html="Results for '@searchText'">
 															</rsp-gds-radio-group>
