@@ -223,4 +223,11 @@ public interface IProjectModificationsServiceClient
         string sortField = nameof(ModificationsDto.SentToSponsorDate),
         string sortDirection = SortDirections.Descending
     );
+
+    /// <summary>
+    /// Saves review responses for a project modification.
+    /// </summary>
+    /// <param name="modificationReviewRequest">The request object containing the review values</param>
+    [Post("/projectmodifications/savereviewresponses")]
+    public Task<IApiResponse> SaveModificationReviewResponses(ProjectModificationReviewRequest modificationReviewRequest);
 }
