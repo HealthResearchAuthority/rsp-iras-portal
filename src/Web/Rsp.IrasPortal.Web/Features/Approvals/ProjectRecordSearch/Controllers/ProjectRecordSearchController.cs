@@ -24,8 +24,8 @@ public class ProjectRecordSearchController(
     public async Task<IActionResult> Index(
         int pageNumber = 1,
         int pageSize = 20,
-        string? sortField = nameof(ApplicationModel.CreatedDate),
-        string? sortDirection = SortDirections.Descending)
+        string? sortField = "irasid",
+        string? sortDirection = SortDirections.Ascending)
     {
         var userIsSystemAdmin = User.IsInRole("system_administrator");
 
@@ -78,8 +78,8 @@ public class ProjectRecordSearchController(
                 // sponsor org filter is active
                 // lookup the org name
                 var activeOrg = await SponsorOrganisationNameHelper.GetSponsorOrganisationNameFromOrganisationId(rtsService, model.Search.SponsorOrganisation);
-                
-                TempData[TempDataKeys.ActiveSponsoOrganisationFilterName] = activeOrg;   
+
+                TempData[TempDataKeys.ActiveSponsoOrganisationFilterName] = activeOrg;
             }
         }
 
