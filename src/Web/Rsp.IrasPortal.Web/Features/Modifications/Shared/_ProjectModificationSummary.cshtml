@@ -4,24 +4,25 @@
 @model dynamic
 
 @{
-    var modificationBaseModel = new BaseProjectModificationViewModel();
+	var modificationBaseModel = new BaseProjectModificationViewModel();
 
-    if (Model is BaseProjectModificationViewModel viewModel)
-    {
-        modificationBaseModel = viewModel.Adapt<BaseProjectModificationViewModel>();
-    }
-    else
-    {
-        modificationBaseModel = TempData.PopulateBaseProjectModificationProperties(modificationBaseModel);
-    }
+	if (Model is BaseProjectModificationViewModel viewModel)
+	{
+		modificationBaseModel = viewModel.Adapt<BaseProjectModificationViewModel>();
+	}
+	else
+	{
+		modificationBaseModel = TempData.PopulateBaseProjectModificationProperties(modificationBaseModel);
+	}
 
-    var statusDisplayMap = new Dictionary<string, string>
-    {
-        { ModificationStatus.Approved, "Authorised" },
-        { ModificationStatus.WithReviewBody, "Authorised" },
-        { ModificationStatus.NotApproved, "Not authorised" },
-        { ModificationStatus.WithSponsor, "With sponsor" }
-    };
+	var statusDisplayMap = new Dictionary<string, string>
+	{
+		{ ModificationStatus.InDraft, "In draft" },
+		{ ModificationStatus.Approved, "Authorised" },
+		{ ModificationStatus.WithReviewBody, "Authorised" },
+		{ ModificationStatus.NotApproved, "Not authorised" },
+		{ ModificationStatus.WithSponsor, "With sponsor" }
+	};
 }
 
 <dl class="govuk-summary-list">
@@ -84,5 +85,5 @@
             </dd>
         </div>
 
-    }
+	}
 </dl>

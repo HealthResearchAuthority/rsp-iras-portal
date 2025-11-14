@@ -148,46 +148,68 @@
 													</tr>
 												</thead>
 												<tbody class="govuk-table__body govuk-body-s">
-													@{
-														foreach (var modification in @Model.ProjectOverviewDocumentViewModel?.Documents)
-														{
-															<tr class="govuk-table__row">
-																<td class="govuk-table__cell">@modification.DocumentType</td>
-																<td class="govuk-table__cell">@modification.DocumentName</td>
-																<td class="govuk-table__cell">
-																	@if (modification.Status == DocumentStatus.Success)
-																	{
-																		<a asp-route="pmc:downloaddocument"
-																		   asp-route-fileName="@modification.FileName"
-																		   asp-route-path="@modification.DocumentStoragePath" class="govuk-link">
-																			@modification.FileName
-																		</a>
-																	}
-																	else
-																	{
-																		@modification.FileName
-																	}
-																</td>
-																<td class="govuk-table__cell">@modification.DocumentVersion</td>
-																@{
-																	<td class="govuk-table__cell">@modification.DocumentDate?.ToString("dd MMM yyyy")</td>
+													@foreach (var modification in Model.ProjectOverviewDocumentViewModel?.Documents ?? Enumerable.Empty<ProjectOverviewDocumentDto>())
+													{
+														var isFailed = string.Equals(modification.Status, DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase);
+
+														<tr class="govuk-table__row">
+															<td class="govuk-table__cell">
+																<span class="govuk-!-font-weight-bold">@modification.DocumentType</span>
+																@if (isFailed)
+																{
+																	<div class="govuk-error-message govuk-!-margin-top-1 govuk-!-margin-bottom-1">
+																		The selected file contains a virus
+																	</div>
+																	<form asp-route="pmc:confirmdeletedocument"
+																		  asp-route-id="@modification.Id"
+																		  asp-route-backRoute="toaddpage"
+																		  method="get"
+																		  class="govuk-!-margin-bottom-0">
+																		<input type="hidden" name="id" value="@modification.Id" />
+																		<button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0">
+																			Delete
+																		</button>
+																	</form>
 																}
-																<td class="govuk-table__cell">
-																	<strong class="govuk-tag @(modification.Status?.Equals(DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase) == true ? "govuk-tag--red" : "govuk-tag--green")">
-																		@modification.Status
-																	</strong>
-																</td>
-																<td class="govuk-table__cell">
+															</td>
+															<td class="govuk-table__cell">@modification.DocumentName</td>
+															<td class="govuk-table__cell">
+																@if (modification.Status == DocumentStatus.Success)
+																{
+																	<a asp-route="pmc:downloaddocument"
+																	   asp-route-fileName="@modification.FileName"
+																	   asp-route-path="@modification.DocumentStoragePath"
+																	   class="govuk-link">
+																		@modification.FileName
+																	</a>
+																}
+																else
+																{
+																	@modification.FileName
+																}
+															</td>
+															<td class="govuk-table__cell">@modification.DocumentVersion</td>
+															<td class="govuk-table__cell">@modification.DocumentDate?.ToString("d MMM yyyy")</td>
+															<td class="govuk-table__cell">
+																<strong class="govuk-tag @(isFailed ? "govuk-tag--red" : "govuk-tag--green")">
+																	@modification.Status
+																</strong>
+															</td>
+															<td class="govuk-table__cell">
+																@if (!isFailed)
+																{
 																	<a asp-route="pmc:continuetodetails"
 																	   asp-route-documentId="@modification.Id"
+																	   asp-route-reviewAllChanges="true"
 																	   class="govuk-link">
 																		Change details
 																	</a>
-																</td>
-															</tr>
-														}
+																}
+															</td>
+														</tr>
 													}
 												</tbody>
+
 											</table>
 										</form>
 									</div>
