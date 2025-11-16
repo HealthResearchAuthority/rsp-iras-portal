@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Azure.Storage.Blobs;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.Responses;
@@ -19,7 +20,7 @@ public interface IBlobStorageService
     /// <returns>
     /// A list of <see cref="DocumentSummaryItemDto"/> containing metadata for each uploaded file, such as file name, URI, and size.
     /// </returns>
-    Task<List<DocumentSummaryItemDto>> UploadFilesAsync(IEnumerable<IFormFile> files, string containerName, string folderPrefix);
+    Task<List<DocumentSummaryItemDto>> UploadFilesAsync(BlobServiceClient blobServiceClient, IEnumerable<IFormFile> files, string containerName, string folderPrefix);
 
     /// <summary>
     /// Lists all files within a specific folder (prefix) inside the given blob container.
@@ -29,9 +30,9 @@ public interface IBlobStorageService
     /// <returns>
     /// A list of <see cref="DocumentSummaryItemDto"/> representing the files found in the specified folder.
     /// </returns>
-    Task<List<DocumentSummaryItemDto>> ListFilesAsync(string containerName, string folderPrefix);
+    Task<List<DocumentSummaryItemDto>> ListFilesAsync(BlobServiceClient blobServiceClient, string containerName, string folderPrefix);
 
-    Task<ServiceResponse> DeleteFileAsync(string containerName, string blobPath);
+    Task<ServiceResponse> DeleteFileAsync(BlobServiceClient blobServiceClient, string containerName, string blobPath);
 
-    Task<ServiceResponse<IActionResult>> DownloadFileToHttpResponseAsync(string containerName, string blobPath, string fileName);
+    Task<ServiceResponse<IActionResult>> DownloadFileToHttpResponseAsync(BlobServiceClient blobServiceClient, string containerName, string blobPath, string fileName);
 }

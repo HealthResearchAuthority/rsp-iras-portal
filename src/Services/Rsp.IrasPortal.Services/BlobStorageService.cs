@@ -11,8 +11,7 @@ namespace Rsp.IrasPortal.Services;
 /// <summary>
 /// Service responsible for managing file uploads and retrievals from Azure Blob Storage.
 /// </summary>
-/// <param name="blobServiceClient">Injected Azure BlobServiceClient for interacting with the Blob service.</param>
-public class BlobStorageService(BlobServiceClient blobServiceClient) : IBlobStorageService
+public class BlobStorageService : IBlobStorageService
 {
     /// <summary>
     /// Uploads a collection of files to the specified Azure Blob Storage container and folder path.
@@ -22,7 +21,7 @@ public class BlobStorageService(BlobServiceClient blobServiceClient) : IBlobStor
     /// <param name="folderPrefix">The prefix to prepend to each blob name (typically the folder path).</param>
     /// <returns>A list of <see cref="DocumentSummaryItemDto"/> containing metadata about each uploaded file.</returns>
     /// <exception cref="ArgumentException">Thrown if the file list is null or empty.</exception>
-    public async Task<List<DocumentSummaryItemDto>> UploadFilesAsync(IEnumerable<IFormFile> files, string containerName, string folderPrefix)
+    public async Task<List<DocumentSummaryItemDto>> UploadFilesAsync(BlobServiceClient blobServiceClient, IEnumerable<IFormFile> files, string containerName, string folderPrefix)
     {
         if (files == null || !files.Any())
             throw new ArgumentException("No files to upload.", nameof(files));
@@ -58,7 +57,7 @@ public class BlobStorageService(BlobServiceClient blobServiceClient) : IBlobStor
     /// <param name="containerName">The name of the blob container to search within.</param>
     /// <param name="folderPrefix">The folder prefix used to filter blobs.</param>
     /// <returns>A list of <see cref="DocumentSummaryItemDto"/> representing the files found.</returns>
-    public async Task<List<DocumentSummaryItemDto>> ListFilesAsync(string containerName, string folderPrefix)
+    public async Task<List<DocumentSummaryItemDto>> ListFilesAsync(BlobServiceClient blobServiceClient, string containerName, string folderPrefix)
     {
         var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
         var results = new List<DocumentSummaryItemDto>();
@@ -85,7 +84,7 @@ public class BlobStorageService(BlobServiceClient blobServiceClient) : IBlobStor
     /// <param name="folderPrefix">The prefix to prepend to each blob name (typically the folder path).</param>
     /// <returns>A list of <see cref="DocumentSummaryItemDto"/> containing metadata about each uploaded file.</returns>
     /// <exception cref="ArgumentException">Thrown if the file list is null or empty.</exception>
-    public async Task<ServiceResponse> DeleteFileAsync(string containerName, string blobPath)
+    public async Task<ServiceResponse> DeleteFileAsync(BlobServiceClient blobServiceClient, string containerName, string blobPath)
     {
         if (string.IsNullOrWhiteSpace(blobPath))
         {
@@ -105,6 +104,7 @@ public class BlobStorageService(BlobServiceClient blobServiceClient) : IBlobStor
 
     public async Task<ServiceResponse<IActionResult>> DownloadFileToHttpResponseAsync
     (
+        BlobServiceClient blobServiceClient,
         string containerName,
         string blobPath,
         string fileName

@@ -2,7 +2,6 @@
 using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Services;
@@ -60,10 +59,10 @@ public class DownloadFileToHttpResponseAsyncTests
             .Setup(b => b.GetBlobContainerClient(containerName))
             .Returns(containerClientMock.Object);
 
-        var sut = new BlobStorageService(blobServiceClientMock.Object);
+        var sut = new BlobStorageService();
 
         // Act
-        var serviceResponse = await sut.DownloadFileToHttpResponseAsync(containerName, blobPath, fileName);
+        var serviceResponse = await sut.DownloadFileToHttpResponseAsync(blobServiceClientMock.Object, containerName, blobPath, fileName);
 
         // Assert
         serviceResponse.ShouldNotBeNull();
@@ -101,10 +100,10 @@ public class DownloadFileToHttpResponseAsyncTests
             .Setup(b => b.GetBlobContainerClient(It.IsAny<string>()))
             .Returns(containerClientMock.Object);
 
-        var sut = new BlobStorageService(blobServiceClientMock.Object);
+        var sut = new BlobStorageService();
 
         // Act
-        var result = await sut.DownloadFileToHttpResponseAsync(It.IsAny<string>(), string.Empty, It.IsAny<string>());
+        var result = await sut.DownloadFileToHttpResponseAsync(blobServiceClientMock.Object, It.IsAny<string>(), string.Empty, It.IsAny<string>());
 
         // Assert
         result.ShouldBeOfType<ServiceResponse<IActionResult>>();
@@ -130,10 +129,10 @@ public class DownloadFileToHttpResponseAsyncTests
             .Setup(b => b.GetBlobContainerClient(It.IsAny<string>()))
             .Returns(containerClientMock.Object);
 
-        var sut = new BlobStorageService(blobServiceClientMock.Object);
+        var sut = new BlobStorageService();
 
         // Act
-        var result = await sut.DownloadFileToHttpResponseAsync(It.IsAny<string>(), It.IsAny<string>(), string.Empty);
+        var result = await sut.DownloadFileToHttpResponseAsync(blobServiceClientMock.Object, It.IsAny<string>(), It.IsAny<string>(), string.Empty);
 
         // Assert
         result.ShouldBeOfType<ServiceResponse<IActionResult>>();

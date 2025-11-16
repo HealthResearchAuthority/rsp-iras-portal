@@ -295,12 +295,24 @@ public abstract class ModificationsControllerBase
     /// <summary>
     /// Builds a standard ProjectModificationDocumentRequest using TempData and HttpContext.
     /// </summary>
-    protected ProjectModificationDocumentRequest BuildDocumentRequest() => new()
+    protected ProjectModificationDocumentRequest BuildDocumentRequest()
     {
-        ProjectModificationId = (Guid)TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId)!,
-        ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty,
-        ProjectPersonnelId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!,
-    };
+        var rawValue = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId);
+
+        Guid projectModificationId = rawValue switch
+        {
+            Guid g => g,                                                           // already a Guid
+            string s when Guid.TryParse(s, out var parsed) => parsed,              // string Guid
+            _ => throw new InvalidOperationException("ProjectModificationId not found or invalid")
+        };
+
+        return new ProjectModificationDocumentRequest
+        {
+            ProjectModificationId = projectModificationId,
+            ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty,
+            ProjectPersonnelId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!,
+        };
+    }
 
     /// <summary>
     /// Fetches all uploaded modification documents and determines their detail completion status.
@@ -323,7 +335,7 @@ public abstract class ModificationsControllerBase
         // Evaluate each document’s completeness
         var tasks = response.Content
             .OrderBy(a => a.FileName, StringComparer.OrdinalIgnoreCase)
-            .Select(a => EvaluateDocumentCompletion(a, questionnaire));
+            .Select(a => GetDocumentSummary(a, questionnaire));
 
         return [.. await Task.WhenAll(tasks)];
     }
@@ -366,7 +378,22 @@ public abstract class ModificationsControllerBase
     /// <summary>
     /// Evaluates whether a single document’s answers are complete.
     /// </summary>
-    private async Task<DocumentSummaryItemDto> EvaluateDocumentCompletion(ProjectModificationDocumentRequest a, QuestionnaireViewModel questionnaire)
+    private async Task<DocumentSummaryItemDto> GetDocumentSummary(ProjectModificationDocumentRequest a, QuestionnaireViewModel questionnaire)
+    {
+        return new DocumentSummaryItemDto
+        {
+            DocumentId = a.Id,
+            FileName = $"Add details for {a.FileName}",
+            FileSize = a.FileSize ?? 0,
+            BlobUri = a.DocumentStoragePath ?? string.Empty,
+            Status = (await EvaluateDocumentCompletion(a, questionnaire) ? DocumentDetailStatus.Incomplete : DocumentDetailStatus.Completed).ToString(),
+        };
+    }
+
+    /// <summary>
+    /// Evaluates whether a single document’s answers are complete.
+    /// </summary>
+    protected async Task<bool> EvaluateDocumentCompletion(ProjectModificationDocumentRequest a, QuestionnaireViewModel questionnaire)
     {
         // Fetch document answers
         var answersResponse = await respondentService.GetModificationDocumentAnswers(a.Id);
@@ -382,16 +409,7 @@ public abstract class ModificationsControllerBase
 
         // Validate questionnaire
         var isValid = await this.ValidateQuestionnaire(validator, clonedQuestionnaire, true);
-        var isIncomplete = !answers.Any() || !isValid;
-
-        return new DocumentSummaryItemDto
-        {
-            DocumentId = a.Id,
-            FileName = $"Add details for {a.FileName}",
-            FileSize = a.FileSize ?? 0,
-            BlobUri = a.DocumentStoragePath ?? string.Empty,
-            Status = (isIncomplete ? DocumentDetailStatus.Incomplete : DocumentDetailStatus.Completed).ToString(),
-        };
+        return !answers.Any() || !isValid;
     }
 
     /// <summary>

@@ -1,6 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Azure;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.Extensions.Azure;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
@@ -33,8 +37,32 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
             }
         };
 
+        var blobClientMock = new Mock<BlobClient>();
+        blobClientMock
+            .Setup(b => b.UploadAsync(It.IsAny<Stream>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Mock.Of<Response<BlobContentInfo>>());
+
+        var containerClientMock = new Mock<BlobContainerClient>();
+        containerClientMock
+            .Setup(c => c.CreateIfNotExistsAsync(It.IsAny<PublicAccessType>(), null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Response.FromValue(Mock.Of<BlobContainerInfo>(), null!));
+        containerClientMock
+            .Setup(c => c.GetBlobClient(It.IsAny<string>()))
+            .Returns(blobClientMock.Object);
+
+        var blobServiceClientMock = new Mock<BlobServiceClient>();
+        blobServiceClientMock
+            .Setup(b => b.GetBlobContainerClient("containerName"))
+            .Returns(containerClientMock.Object);
+
+        // MOCK FACTORY so GetBlobClient(true) returns our blobServiceClientMock
+        var factoryMock = Mocker.GetMock<IAzureClientFactory<BlobServiceClient>>();
+        factoryMock
+            .Setup(f => f.CreateClient(It.IsAny<string>()))
+            .Returns(blobServiceClientMock.Object);
+
         Mocker.GetMock<IBlobStorageService>()
-            .Setup(b => b.UploadFilesAsync(It.IsAny<IEnumerable<IFormFile>>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(b => b.UploadFilesAsync(blobServiceClientMock.Object, It.IsAny<IEnumerable<IFormFile>>(), It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new List<DocumentSummaryItemDto>
             {
                 new() { FileName = "good.pdf", BlobUri = "uri", FileSize = 1024 }
@@ -76,12 +104,32 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
                 new FormFile(new MemoryStream(), 0, 100, "file", "duplicate.pdf")
             }
         };
+        // MOCK BlobClient
+        var blobClientMock = new Mock<BlobClient>();
+
+        // MOCK BlobContainerClient
+        var containerClientMock = new Mock<BlobContainerClient>();
+        containerClientMock
+            .Setup(c => c.GetBlobClient(It.IsAny<string>()))
+            .Returns(blobClientMock.Object);
+
+        // MOCK BlobServiceClient
+        var blobServiceClientMock = new Mock<BlobServiceClient>();
+        blobServiceClientMock
+            .Setup(s => s.GetBlobContainerClient(It.IsAny<string>()))
+            .Returns(containerClientMock.Object);
+
+        // MOCK FACTORY so GetBlobClient(true) returns our blobServiceClientMock
+        var factoryMock = Mocker.GetMock<IAzureClientFactory<BlobServiceClient>>();
+        factoryMock
+            .Setup(f => f.CreateClient(It.IsAny<string>()))
+            .Returns(blobServiceClientMock.Object);
 
         Mocker.GetMock<IBlobStorageService>()
-            .Setup(b => b.UploadFilesAsync(It.IsAny<IEnumerable<IFormFile>>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(b => b.UploadFilesAsync(blobServiceClientMock.Object, It.IsAny<IEnumerable<IFormFile>>(), It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new List<DocumentSummaryItemDto>
             {
-                new() { FileName = "good.pdf", BlobUri = "uri", FileSize = 1024 }
+                new() { FileName = It.IsAny<string>(), BlobUri = It.IsAny<string>(), FileSize = It.IsAny<long>() }
             });
 
         Mocker.GetMock<IRespondentService>()
@@ -151,8 +199,32 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
             { StatusCode = HttpStatusCode.OK, Content = new List<ProjectModificationDocumentRequest>() });
 
+        var blobClientMock = new Mock<BlobClient>();
+        blobClientMock
+            .Setup(b => b.UploadAsync(It.IsAny<Stream>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Mock.Of<Response<BlobContentInfo>>());
+
+        var containerClientMock = new Mock<BlobContainerClient>();
+        containerClientMock
+            .Setup(c => c.CreateIfNotExistsAsync(It.IsAny<PublicAccessType>(), null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Response.FromValue(Mock.Of<BlobContainerInfo>(), null!));
+        containerClientMock
+            .Setup(c => c.GetBlobClient(It.IsAny<string>()))
+            .Returns(blobClientMock.Object);
+
+        var blobServiceClientMock = new Mock<BlobServiceClient>();
+        blobServiceClientMock
+            .Setup(b => b.GetBlobContainerClient("containerName"))
+            .Returns(containerClientMock.Object);
+
+        // MOCK FACTORY so GetBlobClient(true) returns our blobServiceClientMock
+        var factoryMock = Mocker.GetMock<IAzureClientFactory<BlobServiceClient>>();
+        factoryMock
+            .Setup(f => f.CreateClient(It.IsAny<string>()))
+            .Returns(blobServiceClientMock.Object);
+
         Mocker.GetMock<IBlobStorageService>()
-            .Setup(b => b.UploadFilesAsync(It.IsAny<IEnumerable<IFormFile>>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(b => b.UploadFilesAsync(blobServiceClientMock.Object, It.IsAny<IEnumerable<IFormFile>>(), It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new List<DocumentSummaryItemDto>
             {
                 new() { FileName = "good.pdf", BlobUri = "uri", FileSize = 1024 }
@@ -188,8 +260,32 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
             { StatusCode = HttpStatusCode.OK, Content = new List<ProjectModificationDocumentRequest>() });
 
+        var blobClientMock = new Mock<BlobClient>();
+        blobClientMock
+            .Setup(b => b.UploadAsync(It.IsAny<Stream>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Mock.Of<Response<BlobContentInfo>>());
+
+        var containerClientMock = new Mock<BlobContainerClient>();
+        containerClientMock
+            .Setup(c => c.CreateIfNotExistsAsync(It.IsAny<PublicAccessType>(), null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Response.FromValue(Mock.Of<BlobContainerInfo>(), null!));
+        containerClientMock
+            .Setup(c => c.GetBlobClient(It.IsAny<string>()))
+            .Returns(blobClientMock.Object);
+
+        var blobServiceClientMock = new Mock<BlobServiceClient>();
+        blobServiceClientMock
+            .Setup(b => b.GetBlobContainerClient("containerName"))
+            .Returns(containerClientMock.Object);
+
+        // MOCK FACTORY so GetBlobClient(true) returns our blobServiceClientMock
+        var factoryMock = Mocker.GetMock<IAzureClientFactory<BlobServiceClient>>();
+        factoryMock
+            .Setup(f => f.CreateClient(It.IsAny<string>()))
+            .Returns(blobServiceClientMock.Object);
+
         Mocker.GetMock<IBlobStorageService>()
-            .Setup(b => b.UploadFilesAsync(It.IsAny<IEnumerable<IFormFile>>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(b => b.UploadFilesAsync(blobServiceClientMock.Object, It.IsAny<IEnumerable<IFormFile>>(), It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new List<DocumentSummaryItemDto>
             {
                 new() { FileName = "good.pdf", BlobUri = "uri", FileSize = 1024 }
