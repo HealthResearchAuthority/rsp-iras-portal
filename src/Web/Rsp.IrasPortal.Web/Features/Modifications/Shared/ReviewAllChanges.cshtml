@@ -194,7 +194,16 @@
 															<td class="govuk-table__cell">@modification.DocumentVersion</td>
 															<td class="govuk-table__cell">@modification.DocumentDate?.ToString("d MMM yyyy")</td>
 															<td class="govuk-table__cell">
-																<strong class="govuk-tag @(isFailed ? "govuk-tag--red" : "govuk-tag--green")">
+																@{
+																	var tagClass = modification.Status switch
+																	{
+																		DocumentStatus.Failed => "govuk-tag--red",
+																		DocumentStatus.Incomplete => "govuk-tag--blue",
+																		DocumentStatus.Completed => "govuk-tag--green",   // no background
+																		_ => ""          // fallback
+																	};
+																}
+																<strong class="govuk-tag @(tagClass)">
 																	@modification.Status
 																</strong>
 															</td>

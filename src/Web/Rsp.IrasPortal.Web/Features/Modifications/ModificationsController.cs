@@ -1,10 +1,12 @@
 ﻿using System.Data;
 using System.Net;
 using System.Text.Json;
+using Azure.Storage.Blobs;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Azure;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
 using Rsp.IrasPortal.Application.DTOs.Requests;
@@ -28,13 +30,16 @@ public class ModificationsController
     IRespondentService respondentService,
     ICmsQuestionsetService cmsQuestionsetService,
     IBlobStorageService blobStorageService,
-    IValidator<AreaOfChangeViewModel> areaofChangeValidator
+    IValidator<AreaOfChangeViewModel> areaofChangeValidator,
+    IAzureClientFactory<BlobServiceClient> blobClientFactory
 ) : Controller
 
 {
-    private const string ContainerName = "staging";
+    private const string StagingContainerName = "staging";
+    private const string CleanContainerName = "clean";
     private const string SelectAreaOfChange = "Select area of change";
     private const string SelectSpecificAreaOfChange = "Select specific change";
+    private readonly IAzureClientFactory<BlobServiceClient> _blobClientFactory = blobClientFactory;
 
     /// <summary>
     /// Initiates the creation of a new project modification.
@@ -344,10 +349,18 @@ public class ModificationsController
             // Delete all associated documents from blob storage
             foreach (var doc in getModificationChangesDocumentsResponse.Content)
             {
+                // Determine whether this document should use the clean container
+                bool useClean = doc.IsMalwareScanSuccessful == true;
+
+                // Choose blob client and container based on malware scan result
+                var targetBlobClient = GetBlobClient(useClean);
+                var targetContainer = useClean ? CleanContainerName : StagingContainerName;
+
                 if (!string.IsNullOrEmpty(doc.DocumentStoragePath))
                 {
                     await blobStorageService.DeleteFileAsync(
-                        containerName: ContainerName,
+                        targetBlobClient,
+                        containerName: targetContainer,
                         blobPath: doc.DocumentStoragePath
                     );
                 }
@@ -508,5 +521,12 @@ public class ModificationsController
         };
 
         return View(viewModel);
+    }
+
+    // Example helper method to get correct blob client
+    private BlobServiceClient GetBlobClient(bool useCleanContainer)
+    {
+        var name = useCleanContainer ? "Clean" : "Staging";
+        return _blobClientFactory.CreateClient(name);
     }
 }

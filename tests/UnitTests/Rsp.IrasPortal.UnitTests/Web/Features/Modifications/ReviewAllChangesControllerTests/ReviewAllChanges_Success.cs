@@ -1,3 +1,5 @@
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -11,6 +13,7 @@ using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Features.Modifications;
 using Rsp.IrasPortal.Web.Features.Modifications.Models;
+using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.ReviewAllChangesControllerTests;
 
@@ -154,6 +157,11 @@ public class ReviewAllChanges_Success : TestServiceBase<ReviewAllChangesControll
                     ReviewType = "ReviewType"
                 }
             });
+
+        Mocker
+            .GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
 
         // Act
         var result = await Sut.ReviewAllChanges("PR1", "IRAS", "Short", modId);
@@ -305,6 +313,11 @@ public class ReviewAllChanges_Success : TestServiceBase<ReviewAllChangesControll
                     ReviewType = "ReviewType"
                 }
             });
+
+        Mocker
+            .GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
 
         // Act
         var result = await Sut.ReviewAllChanges("PR1", "IRAS", "Short", modId);

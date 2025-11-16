@@ -1,5 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Azure;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Azure;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Features.Modifications.Documents.Controllers;
@@ -23,11 +27,34 @@ public class DownloadDocumentTests : TestServiceBase<DocumentsController>
         var serviceResponse = new ServiceResponse<IActionResult>()
             .WithContent(fileResult, HttpStatusCode.OK);
 
+        // MOCK BlobClient
+        var blobClientMock = new Mock<BlobClient>();
+
+        // MOCK BlobContainerClient
+        var containerClientMock = new Mock<BlobContainerClient>();
+        containerClientMock
+            .Setup(c => c.GetBlobClient(It.IsAny<string>()))
+            .Returns(blobClientMock.Object);
+
+        // MOCK BlobServiceClient
+        var blobServiceClientMock = new Mock<BlobServiceClient>();
+        blobServiceClientMock
+            .Setup(s => s.GetBlobContainerClient(It.IsAny<string>()))
+            .Returns(containerClientMock.Object);
+
+        // MOCK FACTORY so GetBlobClient(true) returns our blobServiceClientMock
+        var factoryMock = Mocker.GetMock<IAzureClientFactory<BlobServiceClient>>();
+        factoryMock
+            .Setup(f => f.CreateClient("Clean"))
+            .Returns(blobServiceClientMock.Object);
+
+        // Mock blob storage service returning a file response
         Mocker.GetMock<IBlobStorageService>()
             .Setup(s => s.DownloadFileToHttpResponseAsync(
+                blobServiceClientMock.Object,
                 It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<string>()))
+                path,
+                fileName))
             .ReturnsAsync(serviceResponse);
 
         // Act
@@ -40,13 +67,17 @@ public class DownloadDocumentTests : TestServiceBase<DocumentsController>
         fileContentResult.FileDownloadName.ShouldBe(fileName);
         fileContentResult.ContentType.ShouldBe("application/octet-stream");
 
-        // Verify the blob service was called once
+        // Verify that the service was called
         Mocker.GetMock<IBlobStorageService>().Verify(s =>
             s.DownloadFileToHttpResponseAsync(
+                blobServiceClientMock.Object,
                 It.IsAny<string>(),
                 path,
                 fileName),
             Times.Once);
+
+        // Verify the factory was used
+        factoryMock.Verify(f => f.CreateClient("Clean"), Times.Once);
     }
 
     [Fact]
@@ -56,8 +87,32 @@ public class DownloadDocumentTests : TestServiceBase<DocumentsController>
         var serviceResponse = new ServiceResponse<IActionResult>()
             .WithContent(new NotFoundObjectResult("File not found"), HttpStatusCode.NotFound);
 
+        var blobClientMock = new Mock<BlobClient>();
+        blobClientMock
+            .Setup(b => b.UploadAsync(It.IsAny<Stream>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Mock.Of<Response<BlobContentInfo>>());
+
+        var containerClientMock = new Mock<BlobContainerClient>();
+        containerClientMock
+            .Setup(c => c.CreateIfNotExistsAsync(It.IsAny<PublicAccessType>(), null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Response.FromValue(Mock.Of<BlobContainerInfo>(), null!));
+        containerClientMock
+            .Setup(c => c.GetBlobClient(It.IsAny<string>()))
+            .Returns(blobClientMock.Object);
+
+        var blobServiceClientMock = new Mock<BlobServiceClient>();
+        blobServiceClientMock
+            .Setup(b => b.GetBlobContainerClient("containerName"))
+            .Returns(containerClientMock.Object);
+
+        // MOCK FACTORY so GetBlobClient(true) returns our blobServiceClientMock
+        var factoryMock = Mocker.GetMock<IAzureClientFactory<BlobServiceClient>>();
+        factoryMock
+            .Setup(f => f.CreateClient("Clean"))
+            .Returns(blobServiceClientMock.Object);
+
         Mocker.GetMock<IBlobStorageService>()
-            .Setup(s => s.DownloadFileToHttpResponseAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.DownloadFileToHttpResponseAsync(blobServiceClientMock.Object, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(serviceResponse);
 
         // Act
@@ -74,8 +129,26 @@ public class DownloadDocumentTests : TestServiceBase<DocumentsController>
         var serviceResponse = new ServiceResponse<IActionResult>()
             .WithContent(new NotFoundObjectResult("File not found"), HttpStatusCode.NotFound);
 
+        var blobClientMock = new Mock<BlobClient>();
+        blobClientMock
+            .Setup(b => b.UploadAsync(It.IsAny<Stream>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Mock.Of<Response<BlobContentInfo>>());
+
+        var containerClientMock = new Mock<BlobContainerClient>();
+        containerClientMock
+            .Setup(c => c.CreateIfNotExistsAsync(It.IsAny<PublicAccessType>(), null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Response.FromValue(Mock.Of<BlobContainerInfo>(), null!));
+        containerClientMock
+            .Setup(c => c.GetBlobClient(It.IsAny<string>()))
+            .Returns(blobClientMock.Object);
+
+        var blobServiceClientMock = new Mock<BlobServiceClient>();
+        blobServiceClientMock
+            .Setup(b => b.GetBlobContainerClient("containerName"))
+            .Returns(containerClientMock.Object);
+
         Mocker.GetMock<IBlobStorageService>()
-            .Setup(s => s.DownloadFileToHttpResponseAsync(It.IsAny<string>(), string.Empty, It.IsAny<string>()))
+            .Setup(s => s.DownloadFileToHttpResponseAsync(blobServiceClientMock.Object, It.IsAny<string>(), string.Empty, It.IsAny<string>()))
             .ReturnsAsync(serviceResponse);
 
         // Act
@@ -92,8 +165,26 @@ public class DownloadDocumentTests : TestServiceBase<DocumentsController>
         var serviceResponse = new ServiceResponse<IActionResult>()
             .WithContent(new NotFoundObjectResult("File not found"), HttpStatusCode.NotFound);
 
+        var blobClientMock = new Mock<BlobClient>();
+        blobClientMock
+            .Setup(b => b.UploadAsync(It.IsAny<Stream>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Mock.Of<Response<BlobContentInfo>>());
+
+        var containerClientMock = new Mock<BlobContainerClient>();
+        containerClientMock
+            .Setup(c => c.CreateIfNotExistsAsync(It.IsAny<PublicAccessType>(), null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Response.FromValue(Mock.Of<BlobContainerInfo>(), null!));
+        containerClientMock
+            .Setup(c => c.GetBlobClient(It.IsAny<string>()))
+            .Returns(blobClientMock.Object);
+
+        var blobServiceClientMock = new Mock<BlobServiceClient>();
+        blobServiceClientMock
+            .Setup(b => b.GetBlobContainerClient("containerName"))
+            .Returns(containerClientMock.Object);
+
         Mocker.GetMock<IBlobStorageService>()
-            .Setup(s => s.DownloadFileToHttpResponseAsync(It.IsAny<string>(), It.IsAny<string>(), string.Empty))
+            .Setup(s => s.DownloadFileToHttpResponseAsync(blobServiceClientMock.Object, It.IsAny<string>(), It.IsAny<string>(), string.Empty))
             .ReturnsAsync(serviceResponse);
 
         // Act
@@ -113,8 +204,26 @@ public class DownloadDocumentTests : TestServiceBase<DocumentsController>
                 StatusCode = StatusCodes.Status500InternalServerError
             });
 
+        var blobClientMock = new Mock<BlobClient>();
+        blobClientMock
+            .Setup(b => b.UploadAsync(It.IsAny<Stream>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Mock.Of<Response<BlobContentInfo>>());
+
+        var containerClientMock = new Mock<BlobContainerClient>();
+        containerClientMock
+            .Setup(c => c.CreateIfNotExistsAsync(It.IsAny<PublicAccessType>(), null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Response.FromValue(Mock.Of<BlobContainerInfo>(), null!));
+        containerClientMock
+            .Setup(c => c.GetBlobClient(It.IsAny<string>()))
+            .Returns(blobClientMock.Object);
+
+        var blobServiceClientMock = new Mock<BlobServiceClient>();
+        blobServiceClientMock
+            .Setup(b => b.GetBlobContainerClient("containerName"))
+            .Returns(containerClientMock.Object);
+
         Mocker.GetMock<IBlobStorageService>()
-            .Setup(s => s.DownloadFileToHttpResponseAsync(It.IsAny<string>(), It.IsAny<string>(), string.Empty))
+            .Setup(s => s.DownloadFileToHttpResponseAsync(blobServiceClientMock.Object, It.IsAny<string>(), It.IsAny<string>(), string.Empty))
             .ReturnsAsync(serviceResponse);
 
         // Act

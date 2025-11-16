@@ -84,6 +84,7 @@ public class ReviewAllChangesController
 
         if (documentTypeQuestion?.Answers?.Any() == true)
         {
+            var documentChangeRequest = BuildDocumentRequest();
             // For each document, replace the dropdown value (AnswerId) with the corresponding AnswerText
             foreach (var doc in modification.ProjectOverviewDocumentViewModel.Documents)
             {
@@ -98,6 +99,12 @@ public class ReviewAllChangesController
                         // Replace the stored AnswerId with the friendly AnswerText
                         doc.DocumentType = matchingAnswer.AnswerText;
                     }
+                }
+
+                documentChangeRequest.Id = doc.Id;
+                if (!doc.Status.Equals(DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase))
+                {
+                    doc.Status = (await EvaluateDocumentCompletion(documentChangeRequest, questionnaire) ? DocumentDetailStatus.Incomplete : DocumentDetailStatus.Completed).ToString();
                 }
             }
         }
