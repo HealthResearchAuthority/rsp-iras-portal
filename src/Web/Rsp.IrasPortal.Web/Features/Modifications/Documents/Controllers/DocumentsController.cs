@@ -1,6 +1,8 @@
 ﻿using System.Net;
+using Azure.Storage.Blobs;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Azure;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
@@ -23,7 +25,8 @@ public class DocumentsController
         IRespondentService respondentService,
         ICmsQuestionsetService cmsQuestionsetService,
         IValidator<QuestionnaireViewModel> validator,
-        IBlobStorageService blobStorageService
+        IBlobStorageService blobStorageService,
+        IAzureClientFactory<BlobServiceClient> blobClientFactory
     ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator)
 {
     private const string StagingContainerName = "staging";
@@ -34,6 +37,8 @@ public class DocumentsController
 
     private const string MissingDateErrorMessage = "Enter a sponsor document date";
     private const string DuplicateDocumentNameErrorMessage = "Document name already exists. Enter a unique document name";
+
+    private readonly IAzureClientFactory<BlobServiceClient> _blobClientFactory = blobClientFactory;
 
     /// <summary>
     /// Handles GET requests for the ProjectDocument action.
@@ -103,6 +108,7 @@ public class DocumentsController
                 FileName = a.FileName,
                 FileSize = a.FileSize ?? 0,
                 BlobUri = a.DocumentStoragePath ?? string.Empty,
+                IsMalwareScanSuccessful = a.IsMalwareScanSuccessful
             })
             .OrderBy(dto => dto.FileName, StringComparer.OrdinalIgnoreCase)];
         }
@@ -184,7 +190,8 @@ public class DocumentsController
             FileSize = documentDetailsResponse.Content.FileSize ?? 0,
             DocumentStoragePath = documentDetailsResponse.Content.DocumentStoragePath,
             ReviewAnswers = reviewAnswers,
-            ReviewAllChanges = reviewAllChanges
+            ReviewAllChanges = reviewAllChanges,
+            IsMalwareScanSuccessful = documentDetailsResponse.Content.IsMalwareScanSuccessful
         };
 
         // Fetch the CMS question set that defines what metadata must be collected for this document.
@@ -440,12 +447,15 @@ public class DocumentsController
             if (string.IsNullOrEmpty(doc.DocumentStoragePath))
                 continue;
 
-            // Choose container depending on whether the document upload succeeded
-            var targetContainer = doc.IsMalwareScanSuccessful == true
-                ? CleanContainerName
-                : StagingContainerName;
+            // Determine whether this document should use the clean container
+            bool useClean = doc.IsMalwareScanSuccessful == true;
+
+            // Choose blob client and container based on malware scan result
+            var targetBlobClient = GetBlobClient(useClean);
+            var targetContainer = useClean ? CleanContainerName : StagingContainerName;
 
             await blobStorageService.DeleteFileAsync(
+                targetBlobClient,
                 containerName: targetContainer,
                 blobPath: doc.DocumentStoragePath
             );
@@ -478,8 +488,9 @@ public class DocumentsController
     [HttpGet]
     public async Task<IActionResult> DownloadDocument(string path, string fileName)
     {
+        var blobClient = GetBlobClient(true);
         var serviceResponse = await blobStorageService
-            .DownloadFileToHttpResponseAsync(StagingContainerName, path, fileName);
+            .DownloadFileToHttpResponseAsync(blobClient, CleanContainerName, path, fileName);
 
         return serviceResponse?.Content!;
     }
@@ -638,8 +649,10 @@ public class DocumentsController
         string projectRecordId,
         string respondentId)
     {
+        var blobClient = GetBlobClient(false);
+
         // Upload only valid files to blob storage
-        var uploadedBlobs = await blobStorageService.UploadFilesAsync(validFiles, StagingContainerName, irasId);
+        var uploadedBlobs = await blobStorageService.UploadFilesAsync(blobClient, validFiles, StagingContainerName, irasId);
 
         // Map uploaded blob metadata to DTOs for backend service
         var uploadedDocuments = uploadedBlobs.ConvertAll(blob => new ProjectModificationDocumentRequest
@@ -989,5 +1002,12 @@ public class DocumentsController
         return viewModel.ReviewAnswers
             ? RedirectToAction(nameof(ReviewDocumentDetails))
             : RedirectToAction(nameof(AddDocumentDetailsList));
+    }
+
+    // Example helper method to get correct blob client
+    private BlobServiceClient GetBlobClient(bool useCleanContainer)
+    {
+        var name = useCleanContainer ? "Clean" : "Staging";
+        return _blobClientFactory.CreateClient(name);
     }
 }

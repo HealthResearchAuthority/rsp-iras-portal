@@ -44,10 +44,10 @@ public class UploadFilesTests
             .Setup(b => b.GetBlobContainerClient(containerName))
             .Returns(containerClientMock.Object);
 
-        var sut = new BlobStorageService(blobServiceClientMock.Object);
+        var sut = new BlobStorageService();
 
         // Act
-        var result = await sut.UploadFilesAsync(files, containerName, folderPrefix);
+        var result = await sut.UploadFilesAsync(blobServiceClientMock.Object, files, containerName, folderPrefix);
 
         // Assert
         result.Count.ShouldBe(1);
