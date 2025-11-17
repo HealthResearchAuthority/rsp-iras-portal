@@ -1,4 +1,5 @@
 ﻿@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Application.DTOs
 @using Rsp.IrasPortal.Web.Features.Modifications.Models
 @model ModificationDetailsViewModel
 
@@ -54,6 +55,157 @@
             {
                 <h2 class="govuk-heading-m">Changes</h2>
                 <partial name="ModificationChanges" model="Model" view-data="ViewData" />
+
+				<div class="govuk-grid-row">
+					<div class="govuk-grid-column-full">
+						<h2 class="govuk-heading-m">Supporting documents</h2>
+						<div class="govuk-grid-row">
+							<div class="govuk-grid-column-full">
+								<authorized auth-params="@new(Roles:"applicant,system_administrator,reviewer")">
+									<div class="govuk-table-wrapper">
+										<form method="get" id="projectdocuments-selection">
+											<table class="govuk-table modifications-tasklist-table" id="projectDocumentsTable">
+												<thead class="govuk-table__head">
+													<tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+														@{
+															var sortableHeaders = new[]
+															{
+													new { Field = nameof(ProjectOverviewDocumentDto.DocumentType), Label = "Document type" },
+													new { Field = nameof(ProjectOverviewDocumentDto.DocumentName), Label = "Document name" },
+													new { Field = nameof(ProjectOverviewDocumentDto.FileName), Label = "File name" },
+													new { Field = nameof(ProjectOverviewDocumentDto.DocumentVersion), Label = "Version" },
+													new { Field = nameof(ProjectOverviewDocumentDto.DocumentDate), Label = "Document date" },
+													new { Field = nameof(ProjectOverviewDocumentDto.Status), Label = "Status" }
+													};
+															var tableId = "projectDocumentsTable";
+														}
+
+														@foreach (var header in sortableHeaders)
+														{
+															var displayText = header.Label.Contains(" ")
+															? header.Label.Replace(" ", "<br />")
+															: header.Label;
+
+															<th scope="col" class="govuk-table__header govuk-table__header-sortable">
+																@await Html.PartialAsync("_SortableHeaderButton", new SortableHeaderModel
+																 {
+																	 FieldName = header.Field,
+																	 DisplayText = displayText,
+																	 CurrentSortField = Model.ProjectOverviewDocumentViewModel.Pagination?.SortField,
+																	 CurrentSortDirection = Model.ProjectOverviewDocumentViewModel.Pagination?.SortDirection,
+																	 TableId = tableId,
+																	 AdditionalParameters = new Dictionary<string, string>
+																		{
+																		{ "projectRecordId", Model.ProjectRecordId },
+																		{ "irasId", Model.IrasId },
+																		{ "shortTitle", Model.ShortTitle! },
+																		{ "projectModificationId", Model.ModificationId }
+																		}
+																 })
+															</th>
+														}
+														@if (Model.Status is ModificationStatus.InDraft)
+														{
+															<th scope="col" class="govuk-table__header">Action</th>
+														}
+													</tr>
+												</thead>
+												<tbody class="govuk-table__body govuk-body-s">
+													@foreach (var modification in Model.ProjectOverviewDocumentViewModel?.Documents ?? Enumerable.Empty<ProjectOverviewDocumentDto>())
+													{
+														var isFailed = string.Equals(modification.Status, DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase);
+
+														<tr class="govuk-table__row">
+															<td class="govuk-table__cell">
+																<span class="govuk-!-font-weight-bold">@modification.DocumentType</span>
+																@if (isFailed)
+																{
+																	<div class="govuk-error-message govuk-!-margin-top-1 govuk-!-margin-bottom-1">
+																		The selected file contains a virus
+																	</div>
+																	<form asp-route="pmc:confirmdeletedocument"
+																		  asp-route-id="@modification.Id"
+																		  asp-route-backRoute="toaddpage"
+																		  method="get"
+																		  class="govuk-!-margin-bottom-0">
+																		<input type="hidden" name="id" value="@modification.Id" />
+																		<button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0">
+																			Delete
+																		</button>
+																	</form>
+																}
+															</td>
+															<td class="govuk-table__cell">@modification.DocumentName</td>
+															<td class="govuk-table__cell">
+																@if (modification.IsMalwareScanSuccessful == true)
+																{
+																	<a asp-route="pmc:downloaddocument"
+																	   asp-route-fileName="@modification.FileName"
+																	   asp-route-path="@modification.DocumentStoragePath"
+																	   class="govuk-link">
+																		@modification.FileName
+																	</a>
+																}
+																else
+																{
+																	@modification.FileName
+																}
+															</td>
+															<td class="govuk-table__cell">@modification.DocumentVersion</td>
+															<td class="govuk-table__cell">@modification.DocumentDate?.ToString("d MMM yyyy")</td>
+															<td class="govuk-table__cell">
+																@{
+																	var tagClass = modification.Status switch
+																	{
+																		DocumentStatus.Failed => "govuk-tag--red",
+																		DocumentStatus.Incomplete => "govuk-tag--blue",
+																		DocumentStatus.Completed => "govuk-tag--green",   // no background
+																		_ => ""          // fallback
+																	};
+																}
+																<strong class="govuk-tag @(tagClass)">
+																	@modification.Status
+																</strong>
+															</td>
+															@if (Model.Status is ModificationStatus.InDraft)
+															{
+																<td class="govuk-table__cell">
+																	@if (!isFailed)
+																	{
+																		<a asp-route="pmc:continuetodetails"
+																		   asp-route-documentId="@modification.Id"
+																		   asp-route-reviewAllChanges="true"
+																		   class="govuk-link">
+																			Change details
+																		</a>
+																	}
+																</td>
+															}
+														</tr>
+													}
+												</tbody>
+
+											</table>
+										</form>
+									</div>
+									<partial name="_Pagination" model="@Model.ProjectOverviewDocumentViewModel?.Pagination" />
+								</authorized>
+							</div>
+						</div>
+					</div>
+				</div>
+				@if (Model.Status is ModificationStatus.InDraft)
+				{
+					<div class="govuk-button-group">
+						<form method="get">
+							@{
+								ViewBag.Style = "govuk-button govuk-button--secondary";
+							}
+							<partial name="_SubmitButton" model="@("pmc:projectdocument", "Add documents", new Dictionary<string, string> { })" />
+						</form>
+					</div>
+				}
+
                 <partial name="SponsorDetails" model="Model" view-data="ViewData" />
             }
         </authorized>
