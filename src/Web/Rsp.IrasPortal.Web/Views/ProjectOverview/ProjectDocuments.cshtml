@@ -157,11 +157,18 @@
 									<td class="govuk-table__cell">@modification.DocumentType</td>
 									<td class="govuk-table__cell">@modification.DocumentName</td>
 									<td class="govuk-table__cell">
-										<a asp-route="pmc:downloaddocument"
-										   asp-route-fileName="@modification.FileName"
-										   asp-route-path="@modification.DocumentStoragePath" class="govuk-link">
-											<strong>@modification.FileName</strong>
-										</a>
+											@if (modification.IsMalwareScanSuccessful == true)
+											{
+											<a asp-route="pmc:downloaddocument"
+											   asp-route-fileName="@modification.FileName"
+											   asp-route-path="@modification.DocumentStoragePath" class="govuk-link">
+													@modification.FileName
+											</a>
+											}
+											else
+											{
+												@modification.FileName
+											}
 									</td>
 									<td class="govuk-table__cell">@modification.DocumentVersion</td>
 										@{

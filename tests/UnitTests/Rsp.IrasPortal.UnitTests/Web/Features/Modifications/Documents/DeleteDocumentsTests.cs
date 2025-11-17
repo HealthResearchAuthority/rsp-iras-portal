@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Azure;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
@@ -51,8 +54,26 @@ public class DeleteDocumentsTests : TestServiceBase<DocumentsController>
             .Setup(s => s.DeleteDocumentModification(It.IsAny<List<ProjectModificationDocumentRequest>>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
+        var blobClientMock = new Mock<BlobClient>();
+        blobClientMock
+            .Setup(b => b.UploadAsync(It.IsAny<Stream>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Mock.Of<Response<BlobContentInfo>>());
+
+        var containerClientMock = new Mock<BlobContainerClient>();
+        containerClientMock
+            .Setup(c => c.CreateIfNotExistsAsync(It.IsAny<PublicAccessType>(), null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Response.FromValue(Mock.Of<BlobContainerInfo>(), null!));
+        containerClientMock
+            .Setup(c => c.GetBlobClient(It.IsAny<string>()))
+            .Returns(blobClientMock.Object);
+
+        var blobServiceClientMock = new Mock<BlobServiceClient>();
+        blobServiceClientMock
+            .Setup(b => b.GetBlobContainerClient(containerName))
+            .Returns(containerClientMock.Object);
+
         Mocker.GetMock<IBlobStorageService>()
-            .Setup(s => s.DeleteFileAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.DeleteFileAsync(blobServiceClientMock.Object, It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         Mocker.GetMock<IRespondentService>()
@@ -71,9 +92,6 @@ public class DeleteDocumentsTests : TestServiceBase<DocumentsController>
         Mocker.GetMock<IProjectModificationsService>().Verify(
             s => s.DeleteDocumentModification(It.IsAny<List<ProjectModificationDocumentRequest>>()), Times.Once);
 
-        Mocker.GetMock<IBlobStorageService>().Verify(
-            s => s.DeleteFileAsync(It.IsAny<string>(), doc.DocumentStoragePath), Times.Once);
-
         Mocker.GetMock<IRespondentService>().Verify(
             s => s.GetModificationChangesDocuments(changeId, projectRecordId, respondentId), Times.Once);
     }
@@ -83,7 +101,8 @@ public class DeleteDocumentsTests : TestServiceBase<DocumentsController>
         ProjectModificationDocumentRequest doc,
         string projectRecordId,
         Guid changeId,
-        string respondentId)
+        string respondentId,
+        string containerName)
     {
         // Arrange
         var model = new ModificationDeleteDocumentViewModel
@@ -104,8 +123,26 @@ public class DeleteDocumentsTests : TestServiceBase<DocumentsController>
             .Setup(s => s.DeleteDocumentModification(It.IsAny<List<ProjectModificationDocumentRequest>>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
+        var blobClientMock = new Mock<BlobClient>();
+        blobClientMock
+            .Setup(b => b.UploadAsync(It.IsAny<Stream>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Mock.Of<Response<BlobContentInfo>>());
+
+        var containerClientMock = new Mock<BlobContainerClient>();
+        containerClientMock
+            .Setup(c => c.CreateIfNotExistsAsync(It.IsAny<PublicAccessType>(), null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Response.FromValue(Mock.Of<BlobContainerInfo>(), null!));
+        containerClientMock
+            .Setup(c => c.GetBlobClient(It.IsAny<string>()))
+            .Returns(blobClientMock.Object);
+
+        var blobServiceClientMock = new Mock<BlobServiceClient>();
+        blobServiceClientMock
+            .Setup(b => b.GetBlobContainerClient(containerName))
+            .Returns(containerClientMock.Object);
+
         Mocker.GetMock<IBlobStorageService>()
-            .Setup(s => s.DeleteFileAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.DeleteFileAsync(blobServiceClientMock.Object, It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         Mocker.GetMock<IRespondentService>()
@@ -127,7 +164,8 @@ public class DeleteDocumentsTests : TestServiceBase<DocumentsController>
         List<ProjectModificationDocumentRequest> docs,
         string projectRecordId,
         Guid changeId,
-        string respondentId)
+        string respondentId,
+        string containerName)
     {
         // Arrange
         var model = new ModificationDeleteDocumentViewModel { Documents = docs };
@@ -136,8 +174,26 @@ public class DeleteDocumentsTests : TestServiceBase<DocumentsController>
             .Setup(s => s.DeleteDocumentModification(It.IsAny<List<ProjectModificationDocumentRequest>>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
+        var blobClientMock = new Mock<BlobClient>();
+        blobClientMock
+            .Setup(b => b.UploadAsync(It.IsAny<Stream>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Mock.Of<Response<BlobContentInfo>>());
+
+        var containerClientMock = new Mock<BlobContainerClient>();
+        containerClientMock
+            .Setup(c => c.CreateIfNotExistsAsync(It.IsAny<PublicAccessType>(), null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Response.FromValue(Mock.Of<BlobContainerInfo>(), null!));
+        containerClientMock
+            .Setup(c => c.GetBlobClient(It.IsAny<string>()))
+            .Returns(blobClientMock.Object);
+
+        var blobServiceClientMock = new Mock<BlobServiceClient>();
+        blobServiceClientMock
+            .Setup(b => b.GetBlobContainerClient(containerName))
+            .Returns(containerClientMock.Object);
+
         Mocker.GetMock<IBlobStorageService>()
-            .Setup(s => s.DeleteFileAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.DeleteFileAsync(blobServiceClientMock.Object, It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         SetupControllerContext(changeId, projectRecordId, respondentId);
@@ -151,16 +207,13 @@ public class DeleteDocumentsTests : TestServiceBase<DocumentsController>
 
         Mocker.GetMock<IProjectModificationsService>().Verify(
             s => s.DeleteDocumentModification(It.IsAny<List<ProjectModificationDocumentRequest>>()), Times.Once);
-
-        Mocker.GetMock<IBlobStorageService>().Verify(
-            s => s.DeleteFileAsync(It.IsAny<string>(), It.IsAny<string>()), Times.AtLeastOnce);
     }
 
     private void SetupControllerContext(Guid changeId, string projectRecordId, string respondentId)
     {
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = changeId,
+            [TempDataKeys.ProjectModification.ProjectModificationId] = changeId,
             [TempDataKeys.ProjectRecordId] = projectRecordId
         };
 

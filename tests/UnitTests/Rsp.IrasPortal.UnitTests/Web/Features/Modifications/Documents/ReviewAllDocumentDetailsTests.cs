@@ -80,7 +80,7 @@ public class ReviewAllDocumentDetailsTests : TestServiceBase<DocumentsController
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123"
         };
 
@@ -95,7 +95,7 @@ public class ReviewAllDocumentDetailsTests : TestServiceBase<DocumentsController
 
         // Assert
         var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal("PostApproval", redirect.ActionName);
-        Assert.Equal("ProjectOverview", redirect.ControllerName);
+        Assert.Equal("SponsorReference", redirect.ActionName);
+        Assert.Equal("SponsorReference", redirect.ControllerName);
     }
 }

@@ -16,6 +16,11 @@ public class QuestionnaireViewModel
     public bool ReviewAnswers { get; set; }
 
     /// <summary>
+    /// Indicates if the answers are being reviewed.
+    /// </summary>
+    public bool ReviewAllChanges { get; set; }
+
+    /// <summary>
     /// The current stage of the questionnaire.
     /// </summary>
     public string? CurrentStage { get; set; } = "";
