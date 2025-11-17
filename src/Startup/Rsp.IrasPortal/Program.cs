@@ -66,6 +66,14 @@ if (!builder.Environment.IsDevelopment())
     services.AddAzureAppConfiguration(configuration);
 }
 
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "X-CSRF-TOKEN";
+    options.Cookie.SameSite = SameSiteMode.Strict;
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+});
+
 builder.Services.Configure<AppSettings>(builder.Configuration.GetSection(nameof(AppSettings)));
 
 var appSettingsSection = configuration.GetSection(nameof(AppSettings));
