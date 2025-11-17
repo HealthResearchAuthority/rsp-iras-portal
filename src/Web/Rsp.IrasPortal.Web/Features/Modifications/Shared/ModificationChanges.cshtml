@@ -7,9 +7,9 @@
     var showChangeLink = ViewData[ViewDataKeys.ShowChangeLink];
     var showRemoveLink = ViewData[ViewDataKeys.ShowRemoveLink];
 
-    var isSponsorWorkspace = ViewData[ViewDataKeys.IsSponsorCheckAndAuthorise] as bool?;
+    var isSponsorCheckAndAuthorise = ViewData[ViewDataKeys.IsSponsorCheckAndAuthorise] as bool?;
 
-    bool showDetailedVersion = isSponsorWorkspace == true
+    bool showDetailedVersion = isSponsorCheckAndAuthorise == true
     ? Model.Status != ModificationStatus.WithSponsor
     : Model.Status != ModificationStatus.InDraft;
 
