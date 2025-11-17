@@ -8,7 +8,7 @@ public static class Ranking
     {
         public const string MinorModification = "Minor modification";
         public const string ModificationOfAnImportantDetail = "Modification of an important detail";
-        public const string NonNotifiable = "Non-Notifiable";
+        public const string NonNotifiable = "Non-notifiable";
         public const string Substantial = "Substantial";
 
         public static List<string> AllOptions => [
