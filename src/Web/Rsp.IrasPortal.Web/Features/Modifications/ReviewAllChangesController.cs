@@ -316,10 +316,6 @@ public class ReviewAllChangesController
         return View();
     }
 
-    [HttpPost]
-    public Task<IActionResult> SendModificationToSponsor(string projectRecordId, Guid projectModificationId)
-    {
-        return HandleModificationStatusUpdate(
     public async Task<IActionResult> SendModificationToSponsor(string projectRecordId, Guid projectModificationId)
     {
         // Verify upload success
