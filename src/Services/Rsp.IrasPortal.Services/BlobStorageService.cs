@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.IO.Compression;
+using System.Net;
 using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -151,4 +152,47 @@ public class BlobStorageService : IBlobStorageService
 
         return response.WithContent(fileResult, HttpStatusCode.OK);
     }
+
+    public async Task<(byte[] FileBytes, string FileName)> DownloadFolderAsZipAsync(
+    BlobServiceClient blobServiceClient,
+    string containerName,
+    string folderName,
+    string saveAsFileName)
+    {
+        var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+
+        // Ensure folderName ends with slash
+        if (!folderName.EndsWith("/"))
+            folderName += "/";
+
+        // List all blobs under folder prefix
+        var blobs = containerClient.GetBlobsAsync(prefix: folderName.ToLower());
+
+        using var zipStream = new MemoryStream();
+        using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, true))
+        {
+            await foreach (var blobItem in blobs)
+            {
+                var blobClient = containerClient.GetBlobClient(blobItem.Name);
+
+                using var blobContent = new MemoryStream();
+                await blobClient.DownloadToAsync(blobContent);
+                blobContent.Position = 0;
+
+                // Remove the folderName prefix to get just the filename (or subpath)
+                string entryName = blobItem.Name.Substring(folderName.Length);
+
+                var zipEntry = archive.CreateEntry(entryName, CompressionLevel.Fastest);
+
+                using var entryStream = zipEntry.Open();
+                blobContent.CopyTo(entryStream);
+            }
+        }
+
+        var finalBytes = zipStream.ToArray();
+        var zipName = $"{saveAsFileName}.zip";
+
+        return (finalBytes, zipName);
+    }
+
 }

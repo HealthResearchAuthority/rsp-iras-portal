@@ -561,6 +561,38 @@ public class DocumentsController
         return View(model);
     }
 
+    public async Task<IActionResult> DownloadDocumentsAsZip(string folderName)
+    {
+        var blobClient = GetBlobClient(true);
+
+        var irasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty;
+        var modificationIdentifier =
+            TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string;
+
+        // Build the file name
+        var saveAsFileName = BuildZipFileName(modificationIdentifier);
+
+        var response = await blobStorageService.DownloadFolderAsZipAsync(
+            blobClient,
+            CleanContainerName,
+            $"{irasId}/{folderName}",
+            saveAsFileName);
+
+        return File(response.FileBytes, "application/zip", response.FileName);
+    }
+
+    private static string BuildZipFileName(string? modificationIdentifier)
+    {
+        if (string.IsNullOrWhiteSpace(modificationIdentifier))
+            return $"Documents-{DateTime.UtcNow:ddMMMyy}";
+
+        // Replace the slash with a dash
+        var cleanIdentifier = modificationIdentifier.Replace("/", "-");
+
+        // Append today's date
+        return $"{cleanIdentifier}-{DateTime.UtcNow:ddMMMyy}";
+    }
+
     private static List<DocumentSummaryItemDto> MapDocuments(IEnumerable<ProjectModificationDocumentRequest> content)
     {
         // Map the backend service response into DTOs suitable for the view model.
@@ -652,7 +684,7 @@ public class DocumentsController
         var blobClient = GetBlobClient(false);
 
         // Upload only valid files to blob storage
-        var uploadedBlobs = await blobStorageService.UploadFilesAsync(blobClient, validFiles, StagingContainerName, irasId);
+        var uploadedBlobs = await blobStorageService.UploadFilesAsync(blobClient, validFiles, StagingContainerName, $"{irasId}/{projectModificationId.ToString()}");
 
         // Map uploaded blob metadata to DTOs for backend service
         var uploadedDocuments = uploadedBlobs.ConvertAll(blob => new ProjectModificationDocumentRequest
