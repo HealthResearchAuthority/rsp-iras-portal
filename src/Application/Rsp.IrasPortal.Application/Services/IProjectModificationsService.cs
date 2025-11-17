@@ -213,4 +213,17 @@ public interface IProjectModificationsService : IInterceptable
        string sortField = nameof(ModificationsDto.SentToSponsorDate),
        string sortDirection = SortDirections.Descending
    );
+
+    /// <summary>
+    /// Saves review responses for a project modification.
+    /// </summary>
+    /// <param name="modificationReviewRequest">The request object containing the review values</param>
+    public Task<ServiceResponse> SaveModificationReviewResponses(ProjectModificationReviewRequest modificationReviewRequest);
+
+    /// <summary>
+    /// Gets review responses for a project modification.
+    /// </summary>
+    /// <param name="modificationId">The ID of the modification</param>
+    /// <returns>Returns the modification review properties</returns>
+    public Task<ServiceResponse<ProjectModificationReviewResponse>> GetModificationReviewResponses(Guid modificationId);
 }

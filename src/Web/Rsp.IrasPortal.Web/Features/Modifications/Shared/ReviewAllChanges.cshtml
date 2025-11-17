@@ -42,63 +42,7 @@
     @*<partial name="_BackNavigation" model="@("pmc:sponsorreference", "Back", new Dictionary<string, string>() { { "projectRecordId", Model.ProjectRecordId } })" />*@
 }
 
-<div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-
-        <authorized auth-params="@new(Roles: "applicant,sponsor")">
-            @if (Model.Status is ModificationStatus.Approved || Model.Status is ModificationStatus.NotApproved || Model.Status is ModificationStatus.WithReviewBody)
-            {
-                <h1 class="govuk-heading-l">Modification</h1>
-            }
-            else
-            {
-                <h1 class="govuk-heading-l">Review all changes</h1>
-            }
-        </authorized>
-
-        @{
-            <partial name="_ProjectModificationSummary" model="Model" viewData="ViewData" />
-        }
-        <h2 class="govuk-heading-m">Overall modification ranking</h2>
-        <div class="govuk-summary-card">
-            <div class="govuk-summary-card__title-wrapper">
-                <h2 class="govuk-summary-card__title">
-                    Ranking
-                </h2>
-            </div>
-            <div class="govuk-summary-card__content">
-                <div class="govuk-summary-card__content">
-                    @{
-                        var ranking = new RankingOfChangeViewModel
-                        {
-                            ModificationType = Model.ModificationType,
-                            Category = Model.Category,
-                            ReviewType = Model.ReviewType
-                        };
-
-                        <partial name="RankingOfChange" model="ranking" />
-                    }
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<div class="govuk-grid-row">
-    <div class="govuk-grid-column-full">
-        <authorized auth-params="@new(Roles: "applicant,sponsor")">
-            @if (Model.Status is ModificationStatus.Approved || Model.Status is ModificationStatus.NotApproved || Model.Status is ModificationStatus.WithReviewBody)
-            {
-                <partial name="_NavigationTabPartial" model="Model" view-data="ViewData" />
-            }
-            else
-            {
-                <h2 class="govuk-heading-m">Changes</h2>
-                <partial name="ModificationChanges" model="Model" view-data="ViewData" />
-                <partial name="SponsorDetails" model="Model" view-data="ViewData" />
-            }
-        </authorized>
-    </div>
-</div>
+<partial name="_ReviewModification" model="Model" />
 
 <authorized auth-params="@new(Roles: "applicant")">
     @if (Model.Status is ModificationStatus.InDraft)
@@ -114,10 +58,10 @@
                         @{
                             <input type="hidden" name="projectRecordId" value="@Model.ProjectRecordId" />
                             <partial name="_SubmitButton" model="@("pmc:sendmodificationtosponsor", "Send modification to sponsor", new Dictionary<string, string>()
-                                                             {
-                                                                 ["projectModificationId"] = Model.ModificationId!,
-                                                                 ["projectRecordId"] = Model.ProjectRecordId
-                                                             })" />
+                                    {
+                                        ["projectModificationId"] = Model.ModificationId!,
+                                        ["projectRecordId"] = Model.ProjectRecordId
+                                    })" />
 
                             ViewBag.Style = "govuk-button govuk-button--secondary";
 
@@ -126,12 +70,35 @@
                     </div>
                 </form>
                 <a asp-route="pmc:deletemodification"
-                   asp-route-projectRecordId="@Model.ProjectRecordId"
-                   asp-route-irasId="@(Model.ModificationIdentifier?.Split('/')[0])"
-                   asp-route-shortTitle="@Model.ShortTitle"
-                   asp-route-projectModificationId="@Model.ModificationId"
-                   class="govuk-link">
+                asp-route-projectRecordId="@Model.ProjectRecordId"
+                asp-route-irasId="@(Model.ModificationIdentifier?.Split('/')[0])"
+                asp-route-shortTitle="@Model.ShortTitle"
+                asp-route-projectModificationId="@Model.ModificationId"
+                class="govuk-link">
                     Delete modification
+                </a>
+            </div>
+        </div>
+    }
+</authorized>
+
+<authorized auth-params="@new(Roles: "study-wide_reviewer")">
+    @if (Model.Status is ModificationStatus.WithReviewBody)
+    {
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <div class="govuk-heading-m">
+                    Next steps
+                </div>
+                <div class="govuk-body">
+                    When you've completed your review of all the information on this page,
+                    continue to the next step where you'll enter the review outcome
+                </div>
+                <a
+                    asp-route="pmc:reviewoutcome"
+                    class="govuk-button"
+                >
+                    Continue
                 </a>
             </div>
         </div>

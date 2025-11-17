@@ -1,0 +1,71 @@
+﻿@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Web.Features.Modifications.Models
+@model ReviewOutcomeViewModel
+@{
+    ViewBag.Title = "Confirm review outcome";
+
+    var backRoute = Model.ReviewOutcome == ModificationStatus.Approved
+        ? "pmc:reviewoutcome"
+        : "pmc:reasonnotapproved";
+}
+
+<partial 
+    name="_BackNavigation"
+    model="@(
+        backRoute,
+        "Back",
+        new Dictionary<string, string>())" />
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">Check and send review outcome to applicant</h1>
+        <p class="govuk-body">Check the information here is correct before sending the review outcome</p>
+    </div>
+</div>
+
+<form method="post" asp-action="SubmitReviewOutcome">
+    <h2 class="govuk-heading-m">Modification decision</h2>
+    <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Short project title</dt>
+            <dd class="govuk-summary-list__value">@Model.ModificationDetails.ShortTitle</dd>
+        </div>
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Modification ID</dt>
+            <dd class="govuk-summary-list__value">@Model.ModificationDetails.ModificationIdentifier</dd>
+        </div>
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Decision</dt>
+            <dd class="govuk-summary-list__value">@Model.ReviewOutcome</dd>
+            <dd class="govuk-summary-list__actions">
+                <a 
+                    class="govuk-link" 
+                    asp-route="pmc:reviewoutcome"
+                >
+                    Change
+                    <span class="govuk-visually-hidden"> decision</span>
+                </a>
+            </dd>
+        </div>
+        @if (Model.ReviewOutcome == ModificationStatus.NotApproved)
+        {
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Reason</dt>
+                <dd class="govuk-summary-list__value">@Model.ReasonNotApproved</dd>
+                <dd class="govuk-summary-list__actions">
+                    <a
+                        class="govuk-link"
+                        asp-route="pmc:reasonnotapproved"
+                    >
+                        Change
+                        <span class="govuk-visually-hidden"> reason modification not approved</span>
+                    </a>
+                </dd>
+            </div>
+        }
+    </dl>
+
+    <button class="govuk-button" data-module="govuk-button" type="submit">
+        Send review outcome to applicant
+    </button>
+</form>

@@ -287,4 +287,27 @@ public class ProjectModificationsService
 
         return apiResponse.ToServiceResponse();
     }
+
+    /// <summary>
+    /// Saves review responses for a project modification.
+    /// </summary>
+    /// <param name="modificationReviewRequest">The request object containing the review values</param>
+    public async Task<ServiceResponse> SaveModificationReviewResponses(ProjectModificationReviewRequest modificationReviewRequest)
+    {
+        var apiResponse = await projectModificationsServiceClient.SaveModificationReviewResponses(modificationReviewRequest);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    /// <summary>
+    /// Gets review responses for a project modification.
+    /// </summary>
+    /// <param name="modificationId">The ID of the modification</param>
+    /// <returns>Returns the modification review properties</returns>
+    public async Task<ServiceResponse<ProjectModificationReviewResponse>> GetModificationReviewResponses(Guid modificationId)
+    {
+        var apiResponse = await projectModificationsServiceClient.GetModificationReviewResponses(modificationId);
+
+        return apiResponse.ToServiceResponse();
+    }
 }
