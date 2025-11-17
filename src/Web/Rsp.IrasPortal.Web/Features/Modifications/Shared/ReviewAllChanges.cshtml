@@ -16,6 +16,7 @@
     ViewData[ViewDataKeys.ShowRemoveLink] = false;
     ViewData[ViewDataKeys.ShowModificationChangeStatus] = false;
     ViewData[ViewDataKeys.ShowModificationStatus] = true;
+    var isSponsorCheckAndAuthorise = ViewData[ViewDataKeys.IsSponsorCheckAndAuthorise] as bool?;
 
 }
 
@@ -70,11 +71,11 @@
                     </div>
                 </form>
                 <a asp-route="pmc:deletemodification"
-                asp-route-projectRecordId="@Model.ProjectRecordId"
-                asp-route-irasId="@(Model.ModificationIdentifier?.Split('/')[0])"
-                asp-route-shortTitle="@Model.ShortTitle"
-                asp-route-projectModificationId="@Model.ModificationId"
-                class="govuk-link">
+                   asp-route-projectRecordId="@Model.ProjectRecordId"
+                   asp-route-irasId="@(Model.ModificationIdentifier?.Split('/')[0])"
+                   asp-route-shortTitle="@Model.ShortTitle"
+                   asp-route-projectModificationId="@Model.ModificationId"
+                   class="govuk-link">
                     Delete modification
                 </a>
             </div>
@@ -83,7 +84,7 @@
 </authorized>
 
 <authorized auth-params="@new(Roles: "study-wide_reviewer")">
-    @if (Model.Status is ModificationStatus.WithReviewBody)
+    @if (Model.Status is ModificationStatus.WithReviewBody && isSponsorCheckAndAuthorise is true)
     {
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
@@ -94,10 +95,8 @@
                     When you've completed your review of all the information on this page,
                     continue to the next step where you'll enter the review outcome
                 </div>
-                <a
-                    asp-route="pmc:reviewoutcome"
-                    class="govuk-button"
-                >
+                <a asp-route="pmc:reviewoutcome"
+                   class="govuk-button">
                     Continue
                 </a>
             </div>
