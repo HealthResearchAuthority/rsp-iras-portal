@@ -1,7 +1,10 @@
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
 using Rsp.IrasPortal.Application.DTOs.Requests;
@@ -10,6 +13,7 @@ using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Features.Modifications;
 using Rsp.IrasPortal.Web.Features.Modifications.Models;
+using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.ReviewAllChangesControllerTests;
 
@@ -94,6 +98,46 @@ public class ReviewAllChanges_Success : TestServiceBase<ReviewAllChangesControll
                 Content = new CmsQuestionSetResponse { Sections = [new() { Id = "S2", CategoryId = "SCAT", Questions = [new QuestionModel { Id = "SQ1", QuestionId = "SQ1", Name = "SQ1", CategoryId = "SCAT", AnswerDataType = "Text" }] }] }
             });
 
+        var documents = new List<ProjectOverviewDocumentDto>
+        {
+            new() { FileName = "mod1", DocumentType = "TypeA" },
+            new() { FileName = "mod2", DocumentType = "TypeB" }
+        };
+
+        var documentsResponse = new ProjectOverviewDocumentResponse
+        {
+            Documents = documents,
+            TotalCount = documents.Count
+        };
+
+        var serviceResponse = new ServiceResponse<ProjectOverviewDocumentResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = documentsResponse
+        };
+
+        var projectModificationsService = Mocker.GetMock<IProjectModificationsService>();
+        projectModificationsService
+            .Setup(s => s.GetDocumentsForModification(It.IsAny<Guid>(), It.IsAny<ProjectOverviewDocumentSearchRequest>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(serviceResponse);
+
+        // sponsor details question set and answers
+        Mocker
+            .GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet("pdm-document-metadata", null))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse
+                {
+                    Sections = [new() { Id = "IQA0600", CategoryId = "SCAT", Questions = [new QuestionModel { Id = "IQA0600", QuestionId = "IQA0600", Name = "IQA0600", CategoryId = "SCAT", AnswerDataType = "Text",
+                    Answers = new List<AnswerModel>
+                        {
+                            new AnswerModel { Id = "TypeB", OptionName = "actual text" }
+                        } }] }]
+                }
+            });
+
         Mocker
             .GetMock<IRespondentService>()
             .Setup(s => s.GetModificationAnswers(modId, It.IsAny<string>()))
@@ -113,6 +157,11 @@ public class ReviewAllChanges_Success : TestServiceBase<ReviewAllChangesControll
                     ReviewType = "ReviewType"
                 }
             });
+
+        Mocker
+            .GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
 
         // Act
         var result = await Sut.ReviewAllChanges("PR1", "IRAS", "Short", modId);
@@ -205,6 +254,46 @@ public class ReviewAllChanges_Success : TestServiceBase<ReviewAllChangesControll
                 Content = new CmsQuestionSetResponse { Sections = [new() { Id = "S2", CategoryId = "SCAT", Questions = [new QuestionModel { Id = "SQ1", QuestionId = "SQ1", Name = "SQ1", CategoryId = "SCAT", AnswerDataType = "Text" }] }] }
             });
 
+        var documents = new List<ProjectOverviewDocumentDto>
+        {
+            new() { FileName = "mod1", DocumentType = "TypeA" },
+            new() { FileName = "mod2", DocumentType = "TypeB" }
+        };
+
+        var documentsResponse = new ProjectOverviewDocumentResponse
+        {
+            Documents = documents,
+            TotalCount = documents.Count
+        };
+
+        var serviceResponse = new ServiceResponse<ProjectOverviewDocumentResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = documentsResponse
+        };
+
+        var projectModificationsService = Mocker.GetMock<IProjectModificationsService>();
+        projectModificationsService
+            .Setup(s => s.GetDocumentsForModification(It.IsAny<Guid>(), It.IsAny<ProjectOverviewDocumentSearchRequest>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(serviceResponse);
+
+        // sponsor details question set and answers
+        Mocker
+            .GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet("pdm-document-metadata", null))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse
+                {
+                    Sections = [new() { Id = "IQA0600", CategoryId = "SCAT", Questions = [new QuestionModel { Id = "IQA0600", QuestionId = "IQA0600", Name = "IQA0600", CategoryId = "SCAT", AnswerDataType = "Text",
+                    Answers = new List<AnswerModel>
+                        {
+                            new AnswerModel { Id = "TypeB", OptionName = "actual text" }
+                        } }] }]
+                }
+            });
+
         Mocker
             .GetMock<IRespondentService>()
             .Setup(s => s.GetModificationAnswers(modId, It.IsAny<string>()))
@@ -224,6 +313,11 @@ public class ReviewAllChanges_Success : TestServiceBase<ReviewAllChangesControll
                     ReviewType = "ReviewType"
                 }
             });
+
+        Mocker
+            .GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
 
         // Act
         var result = await Sut.ReviewAllChanges("PR1", "IRAS", "Short", modId);

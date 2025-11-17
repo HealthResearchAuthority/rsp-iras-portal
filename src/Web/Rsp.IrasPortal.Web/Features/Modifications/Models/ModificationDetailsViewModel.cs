@@ -12,6 +12,8 @@ public class ModificationDetailsViewModel : BaseProjectModificationViewModel
     public List<ModificationChangeModel> ModificationChanges { get; set; } = [];
     public bool ChangesReadyForSubmission { get; set; }
     public List<QuestionViewModel> SponsorDetails { get; set; } = [];
+    public ProjectOverviewDocumentViewModel ProjectOverviewDocumentViewModel { get; set; } = new();
+
     public string? Outcome { get; set; }
     public IEnumerable<SupportingDocumentModel> SupportingDocuments =>
             ModificationChanges
