@@ -16,7 +16,6 @@
     ViewData[ViewDataKeys.ShowRemoveLink] = false;
     ViewData[ViewDataKeys.ShowModificationChangeStatus] = false;
     ViewData[ViewDataKeys.ShowModificationStatus] = true;
-    var isSponsorCheckAndAuthorise = ViewData[ViewDataKeys.IsSponsorCheckAndAuthorise] as bool?;
 
 }
 
@@ -84,7 +83,7 @@
 </authorized>
 
 <authorized auth-params="@new(Roles: "study-wide_reviewer")">
-    @if (Model.Status is ModificationStatus.WithReviewBody && isSponsorCheckAndAuthorise is true)
+    @if (Model.Status == ModificationStatus.WithReviewBody)
     {
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">

@@ -22,7 +22,7 @@
             <h2 class="govuk-summary-card__title">
                 Change @(changeIndex + 1) - @change.AreaOfChangeName<br />
 
-                @if (showStatus is null or true && Model.Status is ModificationStatus.InDraft)
+                @if ((showStatus == null || showStatus.Equals(true)) && Model.Status is ModificationStatus.InDraft)
                 {
                     <strong class="govuk-!-margin-top-2 text-nowrap govuk-tag @(change.ChangeStatus == ModificationStatus.Unfinished ? "govuk-tag--red" : "govuk-tag--green") non-max-width-govuk-tag">
                         @change.ChangeStatus
