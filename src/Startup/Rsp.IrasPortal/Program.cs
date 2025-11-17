@@ -160,11 +160,11 @@ services.AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.
 services.AddAzureClients(azure =>
 {
     azure.AddBlobServiceClient(
-        builder.Configuration["AppSettings:Azure:DocumentStorage:Blob:CleanConnectionString"]
+        builder.Configuration["AppSettings:DocumentStorage:CleanBlobConnectionString"]
     ).WithName("Clean");
 
     azure.AddBlobServiceClient(
-        builder.Configuration["AppSettings:Azure:DocumentStorage:Blob:StagingConnectionString"]
+        builder.Configuration["AppSettings:DocumentStorage:StagingBlobConnectionString"]
     ).WithName("Staging");
 });
 
