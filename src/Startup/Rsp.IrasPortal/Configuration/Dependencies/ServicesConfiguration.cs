@@ -31,6 +31,7 @@ public static class ServicesConfiguration
         services.AddScoped<ICmsContentService, CmsContentService>();
         services.AddScoped<ISponsorOrganisationService, SponsorOrganisationService>();
         services.AddScoped<IProjectRecordValidationService, ProjectRecordValidationService>();
+        services.AddScoped<IModificationRankingService, ModificationRankingService>();
 
         // add message handlers
         services.AddTransient<AuthHeadersHandler>();

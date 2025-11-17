@@ -24,6 +24,7 @@ public class ModificationChangesBaseController
 (
     IRespondentService respondentService,
     ICmsQuestionsetService cmsQuestionsetService,
+    IModificationRankingService modificationRankingService,
     IValidator<QuestionnaireViewModel> validator
 ) : Controller
 {
@@ -289,16 +290,14 @@ public class ModificationChangesBaseController
     /// and display the progress of the application
     /// </summary>
     [ExcludeFromCodeCoverage]
-    public IActionResult ConfirmModificationChanges()
+    public async Task<IActionResult> ConfirmModificationChanges()
     {
-        var (projectModificationId, _) = CheckModification();
-
-        // get the application from the session
-        // to get the projectApplicationId
+        var (projectModificationId, projectModificationChangeId) = CheckModification();
         var projectRecordId = TempData.Peek(ProjectRecordId) as string ?? string.Empty;
 
-        // change it to go to the confirmation page i.e. submitted to sponsor
-        // no next stage so redirect to modification details page
+        await modificationRankingService.UpdateChangeRanking(projectModificationChangeId, projectRecordId);
+        await modificationRankingService.UpdateOverallRanking(projectModificationId, projectRecordId);
+
         var irasId = TempData.Peek(IrasId);
         var shortTitle = TempData.Peek(ShortProjectTitle) as string;
 
@@ -306,8 +305,13 @@ public class ModificationChangesBaseController
     }
 
     [HttpGet, HttpPost]
-    public IActionResult SaveForLater(string projectRecordId, string routeName)
+    public async Task<IActionResult> SaveForLater(string projectRecordId, string routeName)
     {
+        var (projectModificationId, projectModificationChangeId) = CheckModification();
+
+        await modificationRankingService.UpdateChangeRanking(projectModificationChangeId, projectRecordId);
+        await modificationRankingService.UpdateOverallRanking(projectModificationId, projectRecordId);
+
         TempData[ShowNotificationBanner] = true;
         TempData[ProjectModification.ProjectModificationChangeMarker] = Guid.NewGuid();
 

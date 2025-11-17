@@ -8,18 +8,18 @@ namespace Rsp.IrasPortal.UnitTests.Services.ProjectModificationsServiceTests;
 public class GetModification : TestServiceBase<ProjectModificationsService>
 {
     [Theory, AutoData]
-    public async Task Returns_ServiceResponse_From_Client(string projectRecordId, Guid modificationId, ProjectModificationResponse response)
+    public async Task Returns_ServiceResponse_From_Client(Guid modificationId, ProjectModificationResponse response)
     {
         // Arrange
         response.Id = modificationId;
 
         Mocker
             .GetMock<IProjectModificationsServiceClient>()
-            .Setup(c => c.GetModification(projectRecordId, modificationId))
+            .Setup(c => c.GetModification(It.IsAny<Guid>()))
             .ReturnsAsync(ApiResponseFactory.Success(response));
 
         // Act
-        var result = await Sut.GetModification(projectRecordId, modificationId);
+        var result = await Sut.GetModification(modificationId);
 
         // Assert
         result.IsSuccessStatusCode.ShouldBeTrue();

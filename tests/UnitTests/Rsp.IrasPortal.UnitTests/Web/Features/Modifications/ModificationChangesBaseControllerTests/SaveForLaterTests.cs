@@ -7,16 +7,18 @@ using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Features.Modifications;
 using Rsp.IrasPortal.Web.Models;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.ModificationChangesBaseControllerTests.ModificationChangesBaseControllerTests;
+namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.ModificationChangesBaseControllerTests;
 
 public class SaveForLaterTests
 {
-    private ModificationChangesBaseController CreateControllerWithTempData(out TempDataDictionary tempData)
+    private static ModificationChangesBaseController CreateControllerWithTempData(out TempDataDictionary tempData)
     {
         tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
-        var controller = new ModificationChangesBaseController(
+        var controller = new ModificationChangesBaseController
+        (
             Mock.Of<IRespondentService>(),
             Mock.Of<ICmsQuestionsetService>(),
+            Mock.Of<IModificationRankingService>(),
             Mock.Of<IValidator<QuestionnaireViewModel>>()
         )
         {
@@ -27,15 +29,14 @@ public class SaveForLaterTests
     }
 
     [Fact]
-    public void SaveForLater_SetsTempDataAndRedirectsToRoute()
+    public async Task SaveForLater_SetsTempDataAndRedirectsToRoute()
     {
         // Arrange
         var projectRecordId = "PRJ-999";
         var routeName = "pmc:modificationdetails";
         var controller = CreateControllerWithTempData(out var tempData);
-
         // Act
-        var result = controller.SaveForLater(projectRecordId, routeName);
+        var result = await controller.SaveForLater(projectRecordId, routeName);
 
         // Assert
         tempData[TempDataKeys.ShowNotificationBanner].ShouldBe(true);
