@@ -18,17 +18,19 @@ public class ModificationDetails_ServiceErrorCases : TestServiceBase<Modificatio
         Sut.ControllerContext = new() { HttpContext = http };
         Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>());
 
+        var projectModificationId = Guid.NewGuid();
+        
         var mods = Mocker.GetMock<IProjectModificationsService>();
         mods
-            .Setup(s => s.GetModificationsByIds(It.IsAny<List<string>>()))
-            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+            .Setup(s => s.GetModification(projectModificationId))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationResponse>
             {
                 StatusCode = HttpStatusCode.InternalServerError,
                 Error = "fail"
             });
 
         // Act
-        var result = await Sut.ModificationDetails("PR1", "12345", "short", Guid.NewGuid());
+        var result = await Sut.ModificationDetails("PR1", "12345", "short", projectModificationId);
 
         // Assert
         var status = result.ShouldBeOfType<StatusCodeResult>();
@@ -43,17 +45,19 @@ public class ModificationDetails_ServiceErrorCases : TestServiceBase<Modificatio
         Sut.ControllerContext = new() { HttpContext = http };
         Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>());
 
+        var projectModificationId = Guid.NewGuid();
+        
         var mods = Mocker.GetMock<IProjectModificationsService>();
         mods
-            .Setup(s => s.GetModificationsByIds(It.IsAny<List<string>>()))
-            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+            .Setup(s => s.GetModification(projectModificationId))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new() { Modifications = [] }
+                Content = null
             });
 
         // Act
-        var result = await Sut.ModificationDetails("PR1", "12345", "short", Guid.NewGuid());
+        var result = await Sut.ModificationDetails("PR1", "12345", "short", projectModificationId);
 
         // Assert
         var status = result.ShouldBeOfType<StatusCodeResult>();

@@ -36,10 +36,10 @@
 
                         @{
                             var reviewChangesParams = new Dictionary<string, string> {
-                                    { "projectRecordId", Model.ProjectRecordId },
-                                    { "specificAreaOfChangeId", change.SpecificAreaOfChangeId },
-                                    { "modificationChangeId", change.ModificationChangeId.ToString() },
-                                    { "reviseChange", bool.TrueString },
+                                { "projectRecordId", Model.ProjectRecordId },
+                                { "specificAreaOfChangeId", change.SpecificAreaOfChangeId },
+                                { "modificationChangeId", change.ModificationChangeId.ToString() },
+                                { "reviseChange", bool.TrueString },
                                 };
 
                             <a class="govuk-link" asp-route="pmc:reviewchanges" asp-all-route-data="reviewChangesParams">Change</a>
@@ -89,7 +89,7 @@
                         Modification type
                     </dt>
                     <dd class="govuk-summary-list__value">
-                        @change.ModificationType.Substantiality
+                        @change.ModificationType
                     </dd>
                 </div>
                 <div class="govuk-summary-list__row">
@@ -97,7 +97,7 @@
                         Category
                     </dt>
                     <dd class="govuk-summary-list__value">
-                        @(string.IsNullOrWhiteSpace(change.Categorisation.Category) ? "N/A" : change.Categorisation.Category)
+                        @change.Category
                     </dd>
                 </div>
                 <div class="govuk-summary-list__row">

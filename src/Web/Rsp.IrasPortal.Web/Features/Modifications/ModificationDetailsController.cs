@@ -18,6 +18,7 @@ public class ModificationDetailsController
     IProjectModificationsService projectModificationsService,
     IRespondentService respondentService,
     ICmsQuestionsetService cmsQuestionsetService,
+    IModificationRankingService modificationRankingService,
     IValidator<QuestionnaireViewModel> validator
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator)
 {
@@ -98,6 +99,9 @@ public class ModificationDetailsController
         {
             return this.ServiceError(removeChangeResponse);
         }
+
+        // update the overall ranking after removing the change
+        await modificationRankingService.UpdateOverallRanking(Guid.Parse(viewModel.ModificationId!), viewModel.ProjectRecordId);
 
         TempData[TempDataKeys.ProjectModificationChange.ChangeRemoved] = true;
         TempData[TempDataKeys.ProjectModificationChange.ChangeName] = modificationChangeName;

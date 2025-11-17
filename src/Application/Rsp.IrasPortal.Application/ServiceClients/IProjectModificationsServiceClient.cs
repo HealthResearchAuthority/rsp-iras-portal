@@ -15,11 +15,10 @@ public interface IProjectModificationsServiceClient
     /// <summary>
     /// Gets the saved project modification by project record Id and modification Id.
     /// </summary>
-    /// <param name="projectRecordId">The unique identifier of the project record.</param>
     /// <param name="projectModificationId">The unique identifier of the project modification.</param>
     /// <returns>An asynchronous operation that returns the saved project modification.</returns>
-    [Get("/projectmodifications/{projectRecordId}")]
-    public Task<ApiResponse<ProjectModificationResponse>> GetModification(string projectRecordId, Guid projectModificationId);
+    [Get("/projectmodifications/{projectModificationId}")]
+    public Task<ApiResponse<ProjectModificationResponse>> GetModification(Guid projectModificationId);
 
     /// <summary>
     /// Gets all saved project modifications for a given project record Id.
@@ -172,7 +171,7 @@ public interface IProjectModificationsServiceClient
     /// </summary>
     /// <param name="modificationId">The unique identifier of the project modification.</param>
     /// <returns>An asynchronous operation that returns the requested project modification change.</returns>
-    [Post("/projectmodifications/update")]
+    [Patch("/projectmodifications/status")]
     public Task<IApiResponse> UpdateModificationStatus(Guid modificationId, string status);
 
     /// <summary>
@@ -259,4 +258,18 @@ public interface IProjectModificationsServiceClient
         string sortField = nameof(ProjectOverviewDocumentDto.DocumentType),
         string sortDirection = SortDirections.Descending
     );
+
+    /// <summary>
+    /// Updates an existing project modification.
+    /// </summary>
+    /// <param name="projectModificationRequest">The request object containing the updated details for the project modification.</param>
+    [Patch("/projectmodifications")]
+    Task<IApiResponse> UpdateModification(ProjectModificationRequest projectModificationRequest);
+
+    /// <summary>
+    /// Updates an existing project modification change.
+    /// </summary>
+    /// <param name="projectModificationChangeRequest">The request object containing the updated details for the modification change.</param>
+    [Patch("/projectmodifications/change")]
+    Task<IApiResponse> UpdateModificationChange(ProjectModificationChangeRequest projectModificationChangeRequest);
 }

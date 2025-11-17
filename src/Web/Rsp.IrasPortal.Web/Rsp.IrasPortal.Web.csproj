@@ -40,4 +40,8 @@
     <ItemGroup>
       <Folder Include="Features\ExceptionHandling\Views\" />
     </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Rsp.IrasPortal.UnitTests" />
+    </ItemGroup>
 </Project>

@@ -16,10 +16,9 @@ public interface IProjectModificationsService : IInterceptable
     /// <summary>
     /// Retrieves a specific project modification by project record ID and modification ID.
     /// </summary>
-    /// <param name="projectRecordId">The unique identifier of the project record.</param>
     /// <param name="projectModificationId">The unique identifier of the project modification.</param>
     /// <returns>A service response containing the project modification details.</returns>
-    Task<ServiceResponse<ProjectModificationResponse>> GetModification(string projectRecordId, Guid projectModificationId);
+    Task<ServiceResponse<ProjectModificationResponse>> GetModification(Guid projectModificationId);
 
     /// <summary>
     /// Retrieves all modifications for a given project record.
@@ -105,6 +104,16 @@ public interface IProjectModificationsService : IInterceptable
     Task<ServiceResponse<ProjectModificationChangeResponse>> GetModificationChange(Guid modificationChangeId);
 
     /// <summary>
+    /// Gets a change for an existing project modification.
+    /// </summary>
+    /// <param name="projectModificationChangeRequest">The request object containing details for the modification change.</param>
+    /// <returns>
+    /// A <see cref="Task"/> representing the asynchronous operation, containing a <see cref="ServiceResponse{ProjectModificationChangeResponse}"/>
+    /// with the details of the requested project modification change if found; otherwise, an error response.
+    /// </returns>
+    Task<ServiceResponse> UpdateModificationChange(ProjectModificationChangeRequest projectModificationChangeRequest);
+
+    /// <summary>
     /// Retrieves all changes associated with a specific project modification.
     /// </summary>
     /// <param name="projectModificationId">The unique identifier of the project modification for which to retrieve changes.</param>
@@ -168,6 +177,16 @@ public interface IProjectModificationsService : IInterceptable
     /// that reflects the success or failure of the update operation.
     /// </returns>
     Task<ServiceResponse> UpdateModificationStatus(Guid modificationId, string status);
+
+    /// <summary>
+    /// Updates an existing project modification.
+    /// </summary>
+    /// <param name="projectModificationRequest">The request containing the details of the project modification to update.</param>
+    /// <returns>
+    /// A task representing the asynchronous operation, containing a <see cref="ServiceResponse"/>
+    /// that reflects the success or failure of the update operation.
+    /// </returns>
+    Task<ServiceResponse> UpdateModification(ProjectModificationRequest projectModificationRequest);
 
     ///<summary>
     /// Creates one or more project modification documents based on the provided request data.
