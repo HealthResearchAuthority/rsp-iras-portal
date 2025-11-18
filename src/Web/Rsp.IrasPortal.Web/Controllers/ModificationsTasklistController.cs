@@ -384,7 +384,7 @@ public class ModificationsTasklistController(
 
     private async Task<List<string>?> GetRelevantCountriesForUser()
     {
-        var leadNation = new List<string> { "England" };
+        var leadNation = new List<string> { UkCountryNames.England };
 
         if (!Guid.TryParse(User?.FindFirstValue("userId"), out var userId))
         {
