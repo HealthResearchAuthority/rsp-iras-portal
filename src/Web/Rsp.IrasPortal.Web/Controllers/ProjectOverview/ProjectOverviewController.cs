@@ -9,6 +9,7 @@ using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Enum;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Domain.Enums;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Helpers;
@@ -24,7 +25,8 @@ public class ProjectOverviewController(
     IRespondentService respondentService,
     ICmsQuestionsetService cmsQuestionsetService,
     IRtsService rtsService,
-    IValidator<ApprovalsSearchModel> validator
+    IValidator<ApprovalsSearchModel> validator,
+    IValidator<QuestionnaireViewModel> docValidator
     ) : Controller
 {
     private const string DocumentDetailsSection = "pdm-document-metadata";
@@ -323,6 +325,42 @@ public class ProjectOverviewController(
 
         model.Documents = modificationsResponseResult?.Content?.Documents ?? [];
 
+        // Locate the question defining "Document Type"
+        var documentTypeQuestion = questionnaire.Questions
+            .FirstOrDefault(q =>
+                string.Equals(q.QuestionId?.ToString(),
+                QuestionIds.SelectedDocumentType,
+                StringComparison.OrdinalIgnoreCase));
+
+        if (documentTypeQuestion?.Answers?.Any() == true)
+        {
+            // For each document, replace the dropdown value (AnswerId) with the corresponding AnswerText
+            foreach (var doc in model.Documents)
+            {
+                if (!string.IsNullOrWhiteSpace(doc.DocumentType))
+                {
+                    var matchingAnswer = documentTypeQuestion.Answers
+                        .FirstOrDefault(a =>
+                            string.Equals(a.AnswerId, doc.DocumentType, StringComparison.OrdinalIgnoreCase));
+
+                    if (matchingAnswer != null)
+                    {
+                        // Replace the stored AnswerId with the friendly AnswerText
+                        doc.DocumentType = matchingAnswer.AnswerText;
+                    }
+                }
+
+                // Evaluate and update document completion status
+                if (!doc.Status.Equals(DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase) &&
+                    doc.Status.Equals(DocumentStatus.Uploaded, StringComparison.OrdinalIgnoreCase))
+                {
+                    doc.Status = (await EvaluateDocumentCompletion(doc.Id, questionnaire)
+                        ? DocumentDetailStatus.Incomplete
+                        : DocumentDetailStatus.Complete).ToString();
+                }
+            }
+        }
+
         model.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationsResponseResult?.Content?.TotalCount ?? 0)
         {
             SortDirection = sortDirection,
@@ -446,6 +484,87 @@ public class ProjectOverviewController(
 
         return RedirectToRoute("pov:postapproval", new { projectRecordId });
     }
+
+    /// <summary>
+    /// Evaluates whether a single document’s answers are complete.
+    /// </summary>
+    private async Task<bool> EvaluateDocumentCompletion(Guid documentId, QuestionnaireViewModel questionnaire)
+    {
+        // Fetch document answers
+        var answersResponse = await respondentService.GetModificationDocumentAnswers(documentId);
+        var answers = answersResponse?.StatusCode == HttpStatusCode.OK
+            ? answersResponse.Content ?? []
+            : [];
+
+        // Clone questionnaire to prevent shared mutation
+        var clonedQuestionnaire = CloneQuestionnaire(questionnaire);
+
+        // Populate with answers
+        clonedQuestionnaire = await PopulateAnswersFromDocuments(clonedQuestionnaire, answers);
+
+        // Validate questionnaire
+        var isValid = await this.ValidateQuestionnaire(docValidator, clonedQuestionnaire, true);
+        return !answers.Any() || !isValid;
+    }
+
+    private async Task<QuestionnaireViewModel> PopulateAnswersFromDocuments(
+    QuestionnaireViewModel questionnaire,
+    IEnumerable<ProjectModificationDocumentAnswerDto> answers)
+    {
+        foreach (var question in questionnaire.Questions)
+        {
+            // Find the matching answer by QuestionId
+            var match = answers.FirstOrDefault(a => a.QuestionId == question.QuestionId);
+
+            if (match != null)
+            {
+                question.AnswerText = match.AnswerText;
+                question.SelectedOption = match.SelectedOption;
+
+                // carry over OptionType (if you want to track Single/Multiple)
+                question.QuestionType = match.OptionType ?? question.QuestionType;
+
+                // map multiple answers into AnswerViewModel list
+                if (match.Answers != null && match.Answers.Any())
+                {
+                    question.Answers = match.Answers
+                        .ConvertAll(ans => new AnswerViewModel
+                        {
+                            AnswerId = ans,        // if ans is an ID
+                            AnswerText = ans,      // or fetch the display text elsewhere if IDs map to text
+                            IsSelected = true
+                        })
+;
+                }
+            }
+        }
+
+        return questionnaire;
+    }
+
+    /// <summary>
+    /// Clones a questionnaire deeply to avoid shared references.
+    /// </summary>
+    private static QuestionnaireViewModel CloneQuestionnaire(QuestionnaireViewModel source) =>
+        new()
+        {
+            Questions = source.Questions
+                .ConvertAll(q => new QuestionViewModel
+                {
+                    Id = q.Id,
+                    Index = q.Index,
+                    QuestionId = q.QuestionId,
+                    SectionSequence = q.SectionSequence,
+                    Sequence = q.Sequence,
+                    QuestionText = q.QuestionText,
+                    QuestionType = q.QuestionType,
+                    DataType = q.DataType,
+                    IsMandatory = q.IsMandatory,
+                    IsOptional = q.IsOptional,
+                    ShowOriginalAnswer = q.ShowOriginalAnswer,
+                    Rules = q.Rules
+                })
+        };
 
     private void UpdateModificationRelatedTempData()
     {

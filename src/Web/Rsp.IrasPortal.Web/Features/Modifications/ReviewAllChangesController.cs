@@ -132,9 +132,13 @@ public class ReviewAllChangesController
                 }
 
                 documentChangeRequest.Id = doc.Id;
-                if (!doc.Status.Equals(DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase))
+                // Evaluate and update document completion status
+                if (!doc.Status.Equals(DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase) &&
+                    doc.Status.Equals(DocumentStatus.Uploaded, StringComparison.OrdinalIgnoreCase))
                 {
-                    doc.Status = (await EvaluateDocumentCompletion(documentChangeRequest, questionnaire) ? DocumentDetailStatus.Incomplete : DocumentDetailStatus.Completed).ToString();
+                    doc.Status = (await EvaluateDocumentCompletion(documentChangeRequest, questionnaire)
+                        ? DocumentDetailStatus.Incomplete
+                        : DocumentDetailStatus.Complete).ToString();
                 }
             }
         }
@@ -328,30 +332,40 @@ public class ReviewAllChangesController
 
     public async Task<IActionResult> SendModificationToSponsor(string projectRecordId, Guid projectModificationId)
     {
-        // Verify upload success
+        // Fetch all modification documents (up to 200)
         var searchQuery = new ProjectOverviewDocumentSearchRequest();
         var modificationDocumentsResponseResult = await projectModificationsService.GetDocumentsForModification(
             projectModificationId,
-            searchQuery, 1, 200,
+            searchQuery, 1, 300,
             nameof(ProjectOverviewDocumentDto.DocumentType),
             SortDirections.Ascending);
 
         var documents = modificationDocumentsResponseResult?.Content?.Documents ?? [];
-        var hasUnfinishedDocuments = documents.Any(d => d.IsMalwareScanSuccessful != true);
 
-        // Verify each document’s detail completeness
-        if (!hasUnfinishedDocuments && documents.Any())
+        // CHECK FOR INCOMPLETE DOCUMENT DETAILS
+        if (documents.Any())
         {
             var documentChangeRequest = BuildDocumentRequest();
             var documentStatuses = await GetDocumentCompletionStatuses(documentChangeRequest);
-            hasUnfinishedDocuments = documentStatuses.Any(d => d.Status.Equals(DocumentDetailStatus.Incomplete.ToString(), StringComparison.OrdinalIgnoreCase));
+
+            bool hasIncompleteDocuments = documentStatuses
+                .Any(d => d.Status.Equals(DocumentDetailStatus.Incomplete.ToString(), StringComparison.OrdinalIgnoreCase));
+
+            if (hasIncompleteDocuments)
+            {
+                return RedirectToRoute("pmc:DocumentDetailsIncomplete");
+            }
         }
 
-        // If any document is unfinished, redirect directly to the UnfinishedChanges view
-        if (hasUnfinishedDocuments)
-            return RedirectToRoute("pmc:unfinishedchanges");
+        // CHECK MALWARE SCAN STATUS
+        bool allMalwareScansCompleted = documents.All(d => d.IsMalwareScanSuccessful == true);
 
-        // Otherwise, proceed with updating the modification status
+        if (!allMalwareScansCompleted)
+        {
+            return RedirectToRoute("pmc:DocumentsScanInProgress");
+        }
+
+        // PASS ALL CHECKS → CONTINUE WORKFLOW
         return await HandleModificationStatusUpdate(
             projectRecordId,
             projectModificationId,

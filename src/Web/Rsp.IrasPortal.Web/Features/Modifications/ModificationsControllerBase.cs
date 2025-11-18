@@ -335,13 +335,23 @@ public abstract class ModificationsControllerBase
     /// </summary>
     private async Task<DocumentSummaryItemDto> GetDocumentSummary(ProjectModificationDocumentRequest a, QuestionnaireViewModel questionnaire)
     {
+        var status = a.Status;
+
+        if (!a.Status.Equals(DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase) &&
+            a.Status.Equals(DocumentStatus.Uploaded, StringComparison.OrdinalIgnoreCase))
+        {
+            status = (await EvaluateDocumentCompletion(a, questionnaire)
+                ? DocumentDetailStatus.Incomplete
+                : DocumentDetailStatus.Complete).ToString();
+        }
+
         return new DocumentSummaryItemDto
         {
             DocumentId = a.Id,
             FileName = $"Add details for {a.FileName}",
             FileSize = a.FileSize ?? 0,
             BlobUri = a.DocumentStoragePath ?? string.Empty,
-            Status = (await EvaluateDocumentCompletion(a, questionnaire) ? DocumentDetailStatus.Incomplete : DocumentDetailStatus.Completed).ToString(),
+            Status = status
         };
     }
 

@@ -225,7 +225,7 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
 
         // doc1: has answers, should be Completed
         var doc1 = model.UploadedDocuments.Single(d => d.DocumentId == docWithAnswers);
-        Assert.Equal(DocumentDetailStatus.Completed.ToString(), doc1.Status);
+        Assert.Equal(DocumentDetailStatus.Complete.ToString(), doc1.Status);
 
         // doc2: no answers, should be Incomplete
         var doc2 = model.UploadedDocuments.Single(d => d.DocumentId == docWithoutAnswers);
@@ -478,7 +478,7 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
         var viewResult = Assert.IsType<ViewResult>(result);
         var model = Assert.IsType<ModificationReviewDocumentsViewModel>(viewResult.Model);
         Assert.Single(model.UploadedDocuments);
-        Assert.Equal(DocumentDetailStatus.Completed.ToString(), model.UploadedDocuments[0].Status);
+        Assert.Equal(DocumentDetailStatus.Complete.ToString(), model.UploadedDocuments[0].Status);
     }
 
     [Fact]

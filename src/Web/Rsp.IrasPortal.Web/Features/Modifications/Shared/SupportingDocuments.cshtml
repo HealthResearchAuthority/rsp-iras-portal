@@ -21,8 +21,7 @@
 										new { Field = nameof(ProjectOverviewDocumentDto.DocumentName), Label = "Document name" },
 										new { Field = nameof(ProjectOverviewDocumentDto.FileName), Label = "File name" },
 										new { Field = nameof(ProjectOverviewDocumentDto.DocumentVersion), Label = "Version" },
-										new { Field = nameof(ProjectOverviewDocumentDto.DocumentDate), Label = "Document date" },
-										new { Field = nameof(ProjectOverviewDocumentDto.Status), Label = "Status" }
+										new { Field = nameof(ProjectOverviewDocumentDto.DocumentDate), Label = "Document date" }
 										};
 											var tableId = "projectDocumentsTable";
 										}
@@ -42,15 +41,16 @@
 													  CurrentSortDirection = Model.ProjectOverviewDocumentViewModel.Pagination?.SortDirection,
 													  TableId = tableId,
 													  AdditionalParameters = new Dictionary<string, string>
-																						{
-																						{ "projectRecordId", Model.ProjectRecordId },
-																						{ "irasId", Model.IrasId },
-																						{ "shortTitle", Model.ShortTitle! },
-																						{ "projectModificationId", Model.ModificationId }
-																						}
+														{
+														{ "projectRecordId", Model.ProjectRecordId },
+														{ "irasId", Model.IrasId },
+														{ "shortTitle", Model.ShortTitle! },
+														{ "projectModificationId", Model.ModificationId }
+														}
 												  })
 											</th>
 										}
+										<th scope="col" class="govuk-table__header">Status</th>
 										@if (Model.Status is ModificationStatus.InDraft)
 										{
 											<th scope="col" class="govuk-table__header">Action</th>
@@ -106,8 +106,13 @@
 													{
 														DocumentStatus.Failed => "govuk-tag--red",
 														DocumentStatus.Incomplete => "govuk-tag--blue",
-														DocumentStatus.Completed => "govuk-tag--green",   // no background
-														_ => ""          // fallback
+														DocumentStatus.Complete => "govuk-tag--blue",
+														ModificationStatus.WithSponsor => "govuk-tag--yellow",
+														ModificationStatus.Approved => "govuk-tag--green",
+														ModificationStatus.WithReviewBody => "govuk-tag--green",
+														ModificationStatus.NotApproved => "govuk-tag--red",
+														// ModificationStatus.NotAuthorised => "govuk-tag--red",
+														_ => "govuk-tag--blue"
 													};
 												}
 												<strong class="govuk-tag @(tagClass)">
