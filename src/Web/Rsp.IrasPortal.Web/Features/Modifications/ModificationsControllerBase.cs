@@ -377,6 +377,50 @@ public abstract class ModificationsControllerBase
         return !answers.Any() || !isValid;
     }
 
+    protected async Task MapDocumentTypesAndStatusesAsync(
+      QuestionnaireViewModel questionnaire,
+      IEnumerable<ProjectOverviewDocumentDto> documents)
+    {
+        if (questionnaire?.Questions == null || documents == null)
+            return;
+
+        // 1. Locate the "Document Type" question
+        var documentTypeQuestion = questionnaire.Questions
+            .FirstOrDefault(q =>
+                string.Equals(q.QuestionId?.ToString(),
+                QuestionIds.SelectedDocumentType,
+                StringComparison.OrdinalIgnoreCase));
+
+        if (documentTypeQuestion?.Answers?.Any() != true)
+            return;
+
+        // **Answer dictionary for fast lookup**
+        var answerLookup = documentTypeQuestion.Answers
+            .ToDictionary(a => a.AnswerId, a => a.AnswerText, StringComparer.OrdinalIgnoreCase);
+
+        // 2. Loop through documents
+        foreach (var doc in documents)
+        {
+            // ---- A. Map DocumentType AnswerId → AnswerText ----
+            if (!string.IsNullOrWhiteSpace(doc.DocumentType) &&
+                answerLookup.TryGetValue(doc.DocumentType, out var friendlyName))
+            {
+                doc.DocumentType = friendlyName;
+            }
+
+            // ---- B. Update completion status ----
+            if (!doc.Status.Equals(DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase) &&
+                doc.Status.Equals(DocumentStatus.Uploaded, StringComparison.OrdinalIgnoreCase))
+            {
+                bool isIncomplete = await EvaluateDocumentCompletion(doc.Id, questionnaire);
+
+                doc.Status = isIncomplete
+                    ? DocumentDetailStatus.Incomplete.ToString()
+                    : DocumentDetailStatus.Complete.ToString();
+            }
+        }
+    }
+
     /// <summary>
     /// Clones a questionnaire deeply to avoid shared references.
     /// </summary>

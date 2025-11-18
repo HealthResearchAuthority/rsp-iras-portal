@@ -9,7 +9,6 @@ using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Enum;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Domain.Enums;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Features.Modifications;
@@ -326,41 +325,7 @@ public class ProjectOverviewController(
 
         model.Documents = modificationsResponseResult?.Content?.Documents ?? [];
 
-        // Locate the question defining "Document Type"
-        var documentTypeQuestion = questionnaire.Questions
-            .FirstOrDefault(q =>
-                string.Equals(q.QuestionId?.ToString(),
-                QuestionIds.SelectedDocumentType,
-                StringComparison.OrdinalIgnoreCase));
-
-        if (documentTypeQuestion?.Answers?.Any() == true)
-        {
-            // For each document, replace the dropdown value (AnswerId) with the corresponding AnswerText
-            foreach (var doc in model.Documents)
-            {
-                if (!string.IsNullOrWhiteSpace(doc.DocumentType))
-                {
-                    var matchingAnswer = documentTypeQuestion.Answers
-                        .FirstOrDefault(a =>
-                            string.Equals(a.AnswerId, doc.DocumentType, StringComparison.OrdinalIgnoreCase));
-
-                    if (matchingAnswer != null)
-                    {
-                        // Replace the stored AnswerId with the friendly AnswerText
-                        doc.DocumentType = matchingAnswer.AnswerText;
-                    }
-                }
-
-                // Evaluate and update document completion status
-                if (!doc.Status.Equals(DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase) &&
-                    doc.Status.Equals(DocumentStatus.Uploaded, StringComparison.OrdinalIgnoreCase))
-                {
-                    doc.Status = (await EvaluateDocumentCompletion(doc.Id, questionnaire)
-                        ? DocumentDetailStatus.Incomplete
-                        : DocumentDetailStatus.Complete).ToString();
-                }
-            }
-        }
+        await MapDocumentTypesAndStatusesAsync(questionnaire, model.Documents);
 
         model.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationsResponseResult?.Content?.TotalCount ?? 0)
         {

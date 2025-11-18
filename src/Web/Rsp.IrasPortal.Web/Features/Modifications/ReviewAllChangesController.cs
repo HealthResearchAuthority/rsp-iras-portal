@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Reflection;
+using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
@@ -105,41 +106,7 @@ public class ReviewAllChangesController
         // Build the questionnaire model containing all questions for the details section.
         var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(additionalQuestionsResponse.Content!);
 
-        // Locate the question defining "Document Type"
-        var documentTypeQuestion = questionnaire.Questions
-            .FirstOrDefault(q =>
-                string.Equals(q.QuestionId?.ToString(),
-                QuestionIds.SelectedDocumentType,
-                StringComparison.OrdinalIgnoreCase));
-
-        if (documentTypeQuestion?.Answers?.Any() == true)
-        {
-            // For each document, replace the dropdown value (AnswerId) with the corresponding AnswerText
-            foreach (var doc in modification.ProjectOverviewDocumentViewModel.Documents)
-            {
-                if (!string.IsNullOrWhiteSpace(doc.DocumentType))
-                {
-                    var matchingAnswer = documentTypeQuestion.Answers
-                        .FirstOrDefault(a =>
-                            string.Equals(a.AnswerId, doc.DocumentType, StringComparison.OrdinalIgnoreCase));
-
-                    if (matchingAnswer != null)
-                    {
-                        // Replace the stored AnswerId with the friendly AnswerText
-                        doc.DocumentType = matchingAnswer.AnswerText;
-                    }
-                }
-
-                // Evaluate and update document completion status
-                if (!doc.Status.Equals(DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase) &&
-                    doc.Status.Equals(DocumentStatus.Uploaded, StringComparison.OrdinalIgnoreCase))
-                {
-                    doc.Status = (await EvaluateDocumentCompletion(doc.Id, questionnaire)
-                        ? DocumentDetailStatus.Incomplete
-                        : DocumentDetailStatus.Complete).ToString();
-                }
-            }
-        }
+        await MapDocumentTypesAndStatusesAsync(questionnaire, modification.ProjectOverviewDocumentViewModel.Documents);
 
         modification.ProjectOverviewDocumentViewModel.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationDocumentsResponseResult?.Content?.TotalCount ?? 0)
         {
