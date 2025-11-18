@@ -46,6 +46,11 @@ public class MyTasklistController(IProjectModificationsService projectModificati
             IncludeReviewerId = true
         };
 
+        if (User.IsInRole("team_manager") || User.IsInRole("study-wide_reviewer"))
+        {
+            searchQuery.AllowedStatuses.Add(ModificationStatus.WithReviewBody);
+        }
+
         // Reverse date logic when searching by "days since submission"
         if (search.FromSubmission is int fromSub)
             searchQuery.ToDate = DateTime.UtcNow.AddDays(-fromSub);

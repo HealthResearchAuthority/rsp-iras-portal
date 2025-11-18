@@ -110,6 +110,11 @@ public class ModificationsTasklistController(
             IncludeReviewerName = !string.IsNullOrWhiteSpace(model.Search.ReviewerName),
         };
 
+        if (User.IsInRole("team_manager") || User.IsInRole("workflow_co-ordinator"))
+        {
+            searchQuery.AllowedStatuses.Add(ModificationStatus.WithReviewBody);
+        }
+
         if (model.Search.FromSubmission != null)
         {
             var fromDaysSinceSubmission = DateTime.UtcNow.AddDays(-model.Search.FromSubmission.Value);
