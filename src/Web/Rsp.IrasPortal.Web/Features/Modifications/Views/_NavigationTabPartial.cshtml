@@ -5,7 +5,7 @@
 }
 
 <!-- Hidden controls -->
-<input type="radio" id="tab-sponsor-details" name="tab-toggle" class="govuk-tab-toggle" >
+<input type="radio" id="tab-sponsor-details" name="tab-toggle" class="govuk-tab-toggle">
 <input type="radio" id="tab-modifications-changes" name="tab-toggle" class="govuk-tab-toggle" checked>
 <input type="radio" id="tab-documents" name="tab-toggle" class="govuk-tab-toggle">
 <input type="radio" id="tab-history" name="tab-toggle" class="govuk-tab-toggle">
@@ -40,20 +40,21 @@
                             @ModificationOverview.History
                         </label>
                     </li>
-
                 </ul>
             </nav>
         </div>
     </div>
 </div>
 
+<br />
+
 <!-- Panels (toggle visibility via CSS) -->
 <div id="sponsor-details" class="tab-content">
-    <partial name="SponsorDetails" model="Model" viewData="ViewData"/>
+    <partial name="SponsorDetails" model="Model" viewData="ViewData" />
 </div>
 
 <div id="modifications-changes" class="tab-content">
-    <partial name="ModificationChanges" model="Model" viewData="ViewData"/>
+    <partial name="ModificationChanges" model="Model" viewData="ViewData" />
 </div>
 
 <div id="documents" class="tab-content">
