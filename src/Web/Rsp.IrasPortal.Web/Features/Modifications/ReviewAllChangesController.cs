@@ -1,11 +1,10 @@
 ﻿using System.Text.Json;
-using System.Net;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Enums;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
@@ -347,32 +346,6 @@ public class ReviewAllChangesController
             projectModificationId,
             ModificationStatus.WithSponsor,
             onSuccess: () => View("ModificationSentToSponsor"));
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> SubmitToRegulator(string projectRecordId, Guid projectModificationId, string overallReviewType)
-    {
-        // Default to WithReviewBody if not set or review required
-        var statusToSet = ModificationStatus.WithReviewBody;
-
-        // Evaluate the review type (case-insensitive, null-safe)
-        if (!string.IsNullOrWhiteSpace(overallReviewType))
-        {
-            var reviewTypeNormalized = overallReviewType.Trim().ToLowerInvariant();
-            statusToSet = reviewTypeNormalized switch
-            {
-                "no review required" => ModificationStatus.Approved,
-                _ => ModificationStatus.WithReviewBody
-            };
-        }
-
-        // Call your existing handler with the determined status
-        return await HandleModificationStatusUpdate(
-            projectRecordId,
-            projectModificationId,
-            statusToSet,
-            onSuccess: () => RedirectToRoute("pov:projectdetails", new { projectRecordId })
-        );
     }
 
     private async Task<IActionResult> HandleModificationStatusUpdate(
