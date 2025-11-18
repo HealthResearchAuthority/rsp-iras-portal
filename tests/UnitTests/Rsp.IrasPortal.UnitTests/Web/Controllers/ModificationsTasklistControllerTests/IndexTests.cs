@@ -475,6 +475,13 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
         vm.Modifications.ToList()[0].IsSelected.ShouldBeTrue(); // "ABC" matches "abc"
         vm.Modifications.ToList()[1].IsSelected.ShouldBeTrue(); // "def" matches "DEF"
         vm.Modifications.ToList()[2].IsSelected.ShouldBeFalse(); // "xyz" not selected
+        vm.Modifications.ToList()[0].Modification.DateSubmitted.ShouldBeNull();
+        vm.Modifications.ToList()[1].Modification.DateSubmitted.ShouldBeNull();
+        vm.Modifications.ToList()[2].Modification.DateSubmitted.ShouldBeNull();
+
+        vm.Modifications.ToList()[0].Modification.DaysSinceSubmission.ShouldBe(0);
+        vm.Modifications.ToList()[1].Modification.DaysSinceSubmission.ShouldBe(0);
+        vm.Modifications.ToList()[2].Modification.DaysSinceSubmission.ShouldBe(0);
     }
 
     // ---------------

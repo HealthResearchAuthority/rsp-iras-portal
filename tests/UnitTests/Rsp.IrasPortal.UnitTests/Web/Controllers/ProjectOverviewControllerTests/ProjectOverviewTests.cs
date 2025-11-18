@@ -598,6 +598,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         mod.Status.ShouldBe(ModificationStatus.InDraft);
         mod.ReviewType.ShouldBeNull();
         mod.Category.ShouldBeNull();
+        mod.DateSubmitted.ShouldBeNull();
     }
 
     [Fact]
