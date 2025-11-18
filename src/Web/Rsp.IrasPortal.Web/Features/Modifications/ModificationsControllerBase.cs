@@ -340,7 +340,7 @@ public abstract class ModificationsControllerBase
         if (!a.Status.Equals(DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase) &&
             a.Status.Equals(DocumentStatus.Uploaded, StringComparison.OrdinalIgnoreCase))
         {
-            status = (await EvaluateDocumentCompletion(a, questionnaire)
+            status = (await EvaluateDocumentCompletion(a.Id, questionnaire)
                 ? DocumentDetailStatus.Incomplete
                 : DocumentDetailStatus.Complete).ToString();
         }
@@ -358,10 +358,10 @@ public abstract class ModificationsControllerBase
     /// <summary>
     /// Evaluates whether a single document�s answers are complete.
     /// </summary>
-    protected async Task<bool> EvaluateDocumentCompletion(ProjectModificationDocumentRequest a, QuestionnaireViewModel questionnaire)
+    protected async Task<bool> EvaluateDocumentCompletion(Guid documentId, QuestionnaireViewModel questionnaire)
     {
         // Fetch document answers
-        var answersResponse = await respondentService.GetModificationDocumentAnswers(a.Id);
+        var answersResponse = await respondentService.GetModificationDocumentAnswers(documentId);
         var answers = answersResponse?.StatusCode == HttpStatusCode.OK
             ? answersResponse.Content ?? []
             : [];

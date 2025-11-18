@@ -114,7 +114,6 @@ public class ReviewAllChangesController
 
         if (documentTypeQuestion?.Answers?.Any() == true)
         {
-            var documentChangeRequest = BuildDocumentRequest();
             // For each document, replace the dropdown value (AnswerId) with the corresponding AnswerText
             foreach (var doc in modification.ProjectOverviewDocumentViewModel.Documents)
             {
@@ -131,12 +130,11 @@ public class ReviewAllChangesController
                     }
                 }
 
-                documentChangeRequest.Id = doc.Id;
                 // Evaluate and update document completion status
                 if (!doc.Status.Equals(DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase) &&
                     doc.Status.Equals(DocumentStatus.Uploaded, StringComparison.OrdinalIgnoreCase))
                 {
-                    doc.Status = (await EvaluateDocumentCompletion(documentChangeRequest, questionnaire)
+                    doc.Status = (await EvaluateDocumentCompletion(doc.Id, questionnaire)
                         ? DocumentDetailStatus.Incomplete
                         : DocumentDetailStatus.Complete).ToString();
                 }
