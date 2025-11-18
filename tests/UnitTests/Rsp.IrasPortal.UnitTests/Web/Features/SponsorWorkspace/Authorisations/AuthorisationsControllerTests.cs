@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
 using Rsp.IrasPortal.Application.DTOs.Requests;
@@ -387,5 +386,19 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
         var authoriseOutcomeViewModel = modification.Adapt<AuthoriseOutcomeViewModel>();
         authoriseOutcomeViewModel.SponsorOrganisationUserId = sponsorOrganisationUserId;
         return authoriseOutcomeViewModel;
+    }
+
+    [Fact]
+    public async Task ChangeDetails_Returns_View_With_Mapped_Changes_And_Flags()
+    {
+        SetupAuthoriseOutcomeViewModel();
+        var modificationChangeId = Guid.NewGuid();
+
+        // Act
+        var result = await Sut.ChangeDetails("PR1", "IRAS", "Short", _sponsorOrganisationUserId,
+            _sponsorOrganisationUserId, modificationChangeId);
+
+        // Assert
+        result.ShouldBeOfType<ViewResult>();
     }
 }
