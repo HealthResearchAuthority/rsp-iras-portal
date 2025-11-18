@@ -10,6 +10,7 @@ using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Features.Modifications;
+using Rsp.IrasPortal.Web.Features.Modifications.Models;
 using Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Models;
 using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
@@ -71,6 +72,7 @@ public class AuthorisationsController(
                 ProjectRecordId = dto.ProjectRecordId,
                 SentToRegulatorDate = dto.SentToRegulatorDate,
                 SentToSponsorDate = dto.SentToSponsorDate,
+                CreatedAt = dto.CreatedAt,
                 Status = dto.Status,
             })
             .ToList() ?? [];
@@ -83,9 +85,9 @@ public class AuthorisationsController(
             SortField = sortField,
             FormName = "authorisations-selection",
             AdditionalParameters = new Dictionary<string, string>
-            {
-                { "SponsorOrganisationUserId", sponsorOrganisationUserId.ToString() }
-            }
+                {
+                    { "SponsorOrganisationUserId", sponsorOrganisationUserId.ToString() }
+                }
         };
 
         model.SponsorOrganisationUserId = sponsorOrganisationUserId;
@@ -117,9 +119,15 @@ public class AuthorisationsController(
     }
 
     // 1) Shared builder used by both GET and POST
-    private async Task<AuthoriseOutcomeViewModel?> BuildCheckAndAuthorisePageAsync(Guid projectModificationId,
-        string irasId, string shortTitle,
-        string projectRecordId, Guid sponsorOrganisationUserId)
+    private async Task<AuthoriseOutcomeViewModel?> BuildCheckAndAuthorisePageAsync
+    (
+        Guid projectModificationId,
+        string irasId,
+        string shortTitle,
+        string projectRecordId,
+        Guid sponsorOrganisationUserId,
+        Guid? modificationChangeId = null
+    )
     {
         // Fetch the modification by its identifier
         var (result, modification) =
@@ -143,9 +151,15 @@ public class AuthorisationsController(
 
         modification.SponsorDetails = sponsorDetailsQuestionnaire.Questions;
 
-        var authoriseOutcomeViewModel = modification.Adapt<AuthoriseOutcomeViewModel>();
+        var config = new TypeAdapterConfig();
+        config.ForType<ModificationDetailsViewModel, AuthoriseOutcomeViewModel>()
+              .Ignore(dest => dest.ProjectOverviewDocumentViewModel);
+
+        var authoriseOutcomeViewModel = modification.Adapt<AuthoriseOutcomeViewModel>(config);
+
         authoriseOutcomeViewModel.SponsorOrganisationUserId = sponsorOrganisationUserId;
         authoriseOutcomeViewModel.ProjectModificationId = projectModificationId;
+        authoriseOutcomeViewModel.ModificationChangeId = modificationChangeId is null ? null : modificationChangeId.ToString();
 
         return authoriseOutcomeViewModel;
     }
@@ -222,7 +236,7 @@ public class AuthorisationsController(
                 {
                     await projectModificationsService.UpdateModificationStatus(
                         Guid.Parse(model.ModificationId),
-                        ModificationStatus.NotApproved
+                        ModificationStatus.NotAuthorised
                     );
                     break;
                 }
@@ -235,5 +249,23 @@ public class AuthorisationsController(
     public IActionResult Confirmation(AuthoriseOutcomeViewModel model)
     {
         return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ChangeDetails
+    (
+        string projectRecordId,
+        string irasId,
+        string shortTitle,
+        Guid projectModificationId,
+        Guid sponsorOrganisationUserId,
+        Guid modificationChangeId
+    )
+    {
+        var response =
+            await BuildCheckAndAuthorisePageAsync(projectModificationId, irasId, shortTitle, projectRecordId,
+                sponsorOrganisationUserId, modificationChangeId);
+
+        return View(response);
     }
 }

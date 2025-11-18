@@ -1128,6 +1128,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
     [InlineData(ModificationStatus.WithReviewBody)]
     [InlineData(ModificationStatus.Approved)]
     [InlineData(ModificationStatus.NotApproved)]
+    [InlineData(ModificationStatus.NotAuthorised)]
     public async Task PostApproval_Modifications_When_GetEnumStatus_Maps_Status_To_Expected_Order(string inputStatus)
     {
         // Arrange

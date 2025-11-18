@@ -518,6 +518,7 @@ public class ProjectOverviewController(
         ModificationStatus.WithReviewBody => nameof(ModificationStatusOrder.WithRegulator),
         ModificationStatus.Approved => nameof(ModificationStatusOrder.Approved),
         ModificationStatus.NotApproved => nameof(ModificationStatusOrder.NotApproved),
+        ModificationStatus.NotAuthorised => nameof(ModificationStatusOrder.NotAuthorised),
         _ => ModificationStatusOrder.None.ToString()
     };
 
