@@ -621,259 +621,262 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
                     TotalCount = 0
                 }
             });
-
-    [Theory, AutoData]
-    public async Task Index_Assigns_Correct_UserNation_To_SystemAdmin_User(
-       GetModificationsResponse modificationResponse)
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        var identity = new ClaimsIdentity(new[]
-        {
-            new Claim("userId", userId.ToString()),
-            new Claim(ClaimTypes.Role, "system_administrator")
-        }, authenticationType: "TestAuth");
-
-        _http.User = new ClaimsPrincipal(identity);
-
-        var reviewBodyId = Guid.NewGuid();
-
-        var userBodies = new List<ReviewBodyUserDto>
-        {
-            new ReviewBodyUserDto { Id = reviewBodyId }
-        };
-
-        var userBodiesResponse = new ServiceResponse<List<ReviewBodyUserDto>>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = userBodies
-        };
-
-        var reviewBodyDetail = new ReviewBodyDto
-        {
-            Countries = new List<string> { UkCountryNames.Scotland }
-        };
-
-        var reviewBodyByIdResponse = new ServiceResponse<ReviewBodyDto>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = reviewBodyDetail
-        };
-
-        var modsServiceResponse = new ServiceResponse<GetModificationsResponse>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = modificationResponse
-        };
-
-        Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, "CreatedAt", "asc"))
-            .ReturnsAsync(modsServiceResponse);
-
-        var rbSvc = Mocker.GetMock<IReviewBodyService>();
-
-        rbSvc.Setup(s => s.GetUserReviewBodies(userId))
-            .ReturnsAsync(userBodiesResponse);
-
-        rbSvc.Setup(s => s.GetReviewBodyById(reviewBodyId))
-            .ReturnsAsync(reviewBodyByIdResponse);
-
-        // Act
-        var result = await Sut.Index(1, 20, null, "CreatedAt", "asc");
-
-        // Assert
-        var resultView = result.ShouldBeOfType<ViewResult>();
-        var resultModel = resultView.Model.ShouldBeOfType<ModificationsTasklistViewModel>();
-        resultModel.LeadNation.Split(",").Count().ShouldBe(4);
     }
 
     [Theory, AutoData]
-    public async Task Index_Assigns_Correct_UserNation_To_TeamManager_User(
-      GetModificationsResponse modificationResponse,
-      Guid userId)
-    {
-        // Arrange
-
-        var country = UkCountryNames.Scotland;
-        var userResponse = new UserResponse
+        public async Task Index_Assigns_Correct_UserNation_To_SystemAdmin_User(
+            GetModificationsResponse modificationResponse)
         {
-            User = new Domain.Identity.User(
-                 userId.ToString(),
-                 It.IsAny<string>(),
-                 It.IsAny<string>(),
-                 It.IsAny<string>(),
-                 It.IsAny<string>(),
-                 It.IsAny<string>(),
-                 It.IsAny<string>(),
-                 It.IsAny<string>(),
-                 It.IsAny<string>(),
-                 country,
-                 It.IsAny<string>(),
-                 It.IsAny<DateTime>(),
-                 It.IsAny<DateTime>(),
-                 It.IsAny<DateTime>())
-        };
+            // Arrange
+            var userId = Guid.NewGuid();
+            var identity = new ClaimsIdentity(new[]
+            {
+                new Claim("userId", userId.ToString()),
+                new Claim(ClaimTypes.Role, "system_administrator")
+            }, authenticationType: "TestAuth");
 
-        var identity = new ClaimsIdentity(new[]
+            _http.User = new ClaimsPrincipal(identity);
+
+            var reviewBodyId = Guid.NewGuid();
+
+            var userBodies = new List<ReviewBodyUserDto>
+            {
+                new ReviewBodyUserDto { Id = reviewBodyId }
+            };
+
+            var userBodiesResponse = new ServiceResponse<List<ReviewBodyUserDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = userBodies
+            };
+
+            var reviewBodyDetail = new ReviewBodyDto
+            {
+                Countries = new List<string> { UkCountryNames.Scotland }
+            };
+
+            var reviewBodyByIdResponse = new ServiceResponse<ReviewBodyDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = reviewBodyDetail
+            };
+
+            var modsServiceResponse = new ServiceResponse<GetModificationsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = modificationResponse
+            };
+
+            Mocker.GetMock<IProjectModificationsService>()
+                .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, "CreatedAt", "asc"))
+                .ReturnsAsync(modsServiceResponse);
+
+            var rbSvc = Mocker.GetMock<IReviewBodyService>();
+
+            rbSvc.Setup(s => s.GetUserReviewBodies(userId))
+                .ReturnsAsync(userBodiesResponse);
+
+            rbSvc.Setup(s => s.GetReviewBodyById(reviewBodyId))
+                .ReturnsAsync(reviewBodyByIdResponse);
+
+            // Act
+            var result = await Sut.Index(1, 20, null, "CreatedAt", "asc");
+
+            // Assert
+            var resultView = result.ShouldBeOfType<ViewResult>();
+            var resultModel = resultView.Model.ShouldBeOfType<ModificationsTasklistViewModel>();
+            resultModel.LeadNation.Split(",").Count().ShouldBe(4);
+        }
+
+        [Theory, AutoData]
+        public async Task Index_Assigns_Correct_UserNation_To_TeamManager_User(
+            GetModificationsResponse modificationResponse,
+            Guid userId)
         {
-            new Claim("userId", userId.ToString()),
-            new Claim(ClaimTypes.Role, "team_manager")
-        }, authenticationType: "TestAuth");
+            // Arrange
 
-        _http.User = new ClaimsPrincipal(identity);
+            var country = UkCountryNames.Scotland;
+            var userResponse = new UserResponse
+            {
+                User = new Domain.Identity.User(
+                    userId.ToString(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    country,
+                    It.IsAny<string>(),
+                    It.IsAny<DateTime>(),
+                    It.IsAny<DateTime>(),
+                    It.IsAny<DateTime>())
+            };
 
-        var reviewBodyId = Guid.NewGuid();
+            var identity = new ClaimsIdentity(new[]
+            {
+                new Claim("userId", userId.ToString()),
+                new Claim(ClaimTypes.Role, "team_manager")
+            }, authenticationType: "TestAuth");
 
-        var userBodies = new List<ReviewBodyUserDto>
+            _http.User = new ClaimsPrincipal(identity);
+
+            var reviewBodyId = Guid.NewGuid();
+
+            var userBodies = new List<ReviewBodyUserDto>
+            {
+                new ReviewBodyUserDto { Id = reviewBodyId }
+            };
+
+            var userBodiesResponse = new ServiceResponse<List<ReviewBodyUserDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = userBodies
+            };
+
+            var reviewBodyDetail = new ReviewBodyDto
+            {
+                Countries = new List<string> { userResponse.User.Country! }
+            };
+
+            var reviewBodyByIdResponse = new ServiceResponse<ReviewBodyDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = reviewBodyDetail
+            };
+
+            var modsServiceResponse = new ServiceResponse<GetModificationsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = modificationResponse
+            };
+
+            var userServiceResponse = new ServiceResponse<UserResponse>()
+            {
+                Content = userResponse,
+                StatusCode = HttpStatusCode.OK,
+            };
+
+            Mocker.GetMock<IUserManagementService>()
+                .Setup(s => s.GetUser(userId.ToString(), It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(userServiceResponse);
+
+            Mocker.GetMock<IProjectModificationsService>()
+                .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, "CreatedAt", "asc"))
+                .ReturnsAsync(modsServiceResponse);
+
+            var rbSvc = Mocker.GetMock<IReviewBodyService>();
+
+            rbSvc.Setup(s => s.GetUserReviewBodies(userId))
+                .ReturnsAsync(userBodiesResponse);
+
+            rbSvc.Setup(s => s.GetReviewBodyById(reviewBodyId))
+                .ReturnsAsync(reviewBodyByIdResponse);
+
+            // Act
+            var result = await Sut.Index(1, 20, null, "CreatedAt", "asc");
+
+            // Assert
+            var resultView = result.ShouldBeOfType<ViewResult>();
+            var resultModel = resultView.Model.ShouldBeOfType<ModificationsTasklistViewModel>();
+            resultModel.LeadNation.ShouldBe(country);
+        }
+
+        [Theory, AutoData]
+        public async Task Index_Assigns_Correct_UserNation_To_WorkflowCoordinator_User(
+            GetModificationsResponse modificationResponse,
+            Guid userId)
         {
-            new ReviewBodyUserDto { Id = reviewBodyId }
-        };
+            // Arrange
 
-        var userBodiesResponse = new ServiceResponse<List<ReviewBodyUserDto>>
+            var country = UkCountryNames.Wales;
+
+            var identity = new ClaimsIdentity(new[]
+            {
+                new Claim("userId", userId.ToString()),
+                new Claim(ClaimTypes.Role, "workflow_coordinator")
+            }, authenticationType: "TestAuth");
+
+            _http.User = new ClaimsPrincipal(identity);
+
+            var reviewBodyId = Guid.NewGuid();
+
+            var userBodies = new List<ReviewBodyUserDto>
+            {
+                new ReviewBodyUserDto { Id = reviewBodyId }
+            };
+
+            var userBodiesResponse = new ServiceResponse<List<ReviewBodyUserDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = userBodies
+            };
+
+            var reviewBodyDetail = new ReviewBodyDto
+            {
+                Countries = new List<string> { country }
+            };
+
+            var reviewBodyByIdResponse = new ServiceResponse<ReviewBodyDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = reviewBodyDetail
+            };
+
+            var modsServiceResponse = new ServiceResponse<GetModificationsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = modificationResponse
+            };
+
+            Mocker.GetMock<IProjectModificationsService>()
+                .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, "CreatedAt", "asc"))
+                .ReturnsAsync(modsServiceResponse);
+
+            var rbSvc = Mocker.GetMock<IReviewBodyService>();
+
+            rbSvc.Setup(s => s.GetUserReviewBodies(userId))
+                .ReturnsAsync(userBodiesResponse);
+
+            rbSvc.Setup(s => s.GetReviewBodyById(reviewBodyId))
+                .ReturnsAsync(reviewBodyByIdResponse);
+
+            // Act
+            var result = await Sut.Index(1, 20, null, "CreatedAt", "asc");
+
+            // Assert
+            var resultView = result.ShouldBeOfType<ViewResult>();
+            var resultModel = resultView.Model.ShouldBeOfType<ModificationsTasklistViewModel>();
+            resultModel.LeadNation.ShouldBe(country);
+        }
+
+        // ---------------
+        // helpers
+        // ---------------
+        private void SetUserIdClaim(Guid userId)
+            => SetUserIdClaim(userId.ToString());
+
+        private void SetUserIdClaim(string userIdValue)
         {
-            StatusCode = HttpStatusCode.OK,
-            Content = userBodies
-        };
+            var identity = new ClaimsIdentity(new[]
+            {
+                new Claim("userId", userIdValue)
+            }, authenticationType: "TestAuth");
 
-        var reviewBodyDetail = new ReviewBodyDto
+            _http.User = new ClaimsPrincipal(identity);
+        }
+
+        private void SetUserRoles(params string[] roles)
         {
-            Countries = new List<string> { userResponse.User.Country! }
-        };
+            var claims = roles
+                .Select(r => new Claim(ClaimTypes.Role, r))
+                .ToList();
 
-        var reviewBodyByIdResponse = new ServiceResponse<ReviewBodyDto>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = reviewBodyDetail
-        };
+            var identity = new ClaimsIdentity(claims, authenticationType: "TestAuth");
+            _http.User = new ClaimsPrincipal(identity);
+        }
 
-        var modsServiceResponse = new ServiceResponse<GetModificationsResponse>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = modificationResponse
-        };
-
-        var userServiceResponse = new ServiceResponse<UserResponse>()
-        {
-            Content = userResponse,
-            StatusCode = HttpStatusCode.OK,
-        };
-
-        Mocker.GetMock<IUserManagementService>()
-            .Setup(s => s.GetUser(userId.ToString(), It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync(userServiceResponse);
-
-        Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, "CreatedAt", "asc"))
-            .ReturnsAsync(modsServiceResponse);
-
-        var rbSvc = Mocker.GetMock<IReviewBodyService>();
-
-        rbSvc.Setup(s => s.GetUserReviewBodies(userId))
-            .ReturnsAsync(userBodiesResponse);
-
-        rbSvc.Setup(s => s.GetReviewBodyById(reviewBodyId))
-            .ReturnsAsync(reviewBodyByIdResponse);
-
-        // Act
-        var result = await Sut.Index(1, 20, null, "CreatedAt", "asc");
-
-        // Assert
-        var resultView = result.ShouldBeOfType<ViewResult>();
-        var resultModel = resultView.Model.ShouldBeOfType<ModificationsTasklistViewModel>();
-        resultModel.LeadNation.ShouldBe(country);
-    }
-
-    [Theory, AutoData]
-    public async Task Index_Assigns_Correct_UserNation_To_WorkflowCoordinator_User(
-      GetModificationsResponse modificationResponse,
-      Guid userId)
-    {
-        // Arrange
-
-        var country = UkCountryNames.Wales;
-
-        var identity = new ClaimsIdentity(new[]
-        {
-            new Claim("userId", userId.ToString()),
-            new Claim(ClaimTypes.Role, "workflow_coordinator")
-        }, authenticationType: "TestAuth");
-
-        _http.User = new ClaimsPrincipal(identity);
-
-        var reviewBodyId = Guid.NewGuid();
-
-        var userBodies = new List<ReviewBodyUserDto>
-        {
-            new ReviewBodyUserDto { Id = reviewBodyId }
-        };
-
-        var userBodiesResponse = new ServiceResponse<List<ReviewBodyUserDto>>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = userBodies
-        };
-
-        var reviewBodyDetail = new ReviewBodyDto
-        {
-            Countries = new List<string> { country }
-        };
-
-        var reviewBodyByIdResponse = new ServiceResponse<ReviewBodyDto>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = reviewBodyDetail
-        };
-
-        var modsServiceResponse = new ServiceResponse<GetModificationsResponse>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = modificationResponse
-        };
-
-        Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, "CreatedAt", "asc"))
-            .ReturnsAsync(modsServiceResponse);
-
-        var rbSvc = Mocker.GetMock<IReviewBodyService>();
-
-        rbSvc.Setup(s => s.GetUserReviewBodies(userId))
-            .ReturnsAsync(userBodiesResponse);
-
-        rbSvc.Setup(s => s.GetReviewBodyById(reviewBodyId))
-            .ReturnsAsync(reviewBodyByIdResponse);
-
-        // Act
-        var result = await Sut.Index(1, 20, null, "CreatedAt", "asc");
-
-        // Assert
-        var resultView = result.ShouldBeOfType<ViewResult>();
-        var resultModel = resultView.Model.ShouldBeOfType<ModificationsTasklistViewModel>();
-        resultModel.LeadNation.ShouldBe(country);
-    }
-
-    // ---------------
-    // helpers
-    // ---------------
-    private void SetUserIdClaim(Guid userId)
-        => SetUserIdClaim(userId.ToString());
-
-    private void SetUserIdClaim(string userIdValue)
-    {
-        var identity = new ClaimsIdentity(new[]
-        {
-            new Claim("userId", userIdValue)
-        }, authenticationType: "TestAuth");
-
-        _http.User = new ClaimsPrincipal(identity);
-    }
-    private void SetUserRoles(params string[] roles)
-    {
-        var claims = roles
-            .Select(r => new Claim(ClaimTypes.Role, r))
-            .ToList();
-
-        var identity = new ClaimsIdentity(claims, authenticationType: "TestAuth");
-        _http.User = new ClaimsPrincipal(identity);
-    }
-
+    
 }
