@@ -163,7 +163,7 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
 
         var reviewBodyDetail = new ReviewBodyDto
         {
-            Countries = new List<string> { "Wales" }
+            Countries = new List<string> { UkCountryNames.Wales }
         };
 
         var reviewBodyByIdResponse = new ServiceResponse<ReviewBodyDto>
@@ -504,7 +504,7 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
 
         var reviewBodyDetail = new ReviewBodyDto
         {
-            Countries = new List<string> { "Scotland" }
+            Countries = new List<string> { UkCountryNames.Scotland }
         };
 
         var reviewBodyByIdResponse = new ServiceResponse<ReviewBodyDto>
@@ -547,7 +547,7 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
     {
         // Arrange
 
-        var country = "Scotland";
+        var country = UkCountryNames.Scotland;
         var userResponse = new UserResponse
         {
             User = new Domain.Identity.User(
@@ -643,7 +643,7 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
     {
         // Arrange
 
-        var country = "Wales";
+        var country = UkCountryNames.Wales;
 
         var identity = new ClaimsIdentity(new[]
         {
