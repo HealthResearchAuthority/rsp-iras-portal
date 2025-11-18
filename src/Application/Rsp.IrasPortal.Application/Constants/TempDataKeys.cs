@@ -24,6 +24,7 @@ public struct TempDataKeys
         public const string ReviewAllChanges = "td:modification_review_all_changes";
         public const string OverallReviewType = "td:modification_overall_review_type";
         public const string DateCreated = "td:created_date";
+        public const string OverallRanking = "td:modification_overall_ranking";
         public const string ProjectModificationsDetails = "td:project_modifications_details";
     }
 
@@ -33,6 +34,7 @@ public struct TempDataKeys
         public const string Navigation = "td:modification_change_navigation";
         public const string ChangeRemoved = "td:modification_change_removed";
         public const string ChangeName = "td:modification_change_name";
+        public const string RankingOfChange = "td:modification_ranking_of_change";
     }
 
     public const string ProjectRecordId = "td:project_record_id";

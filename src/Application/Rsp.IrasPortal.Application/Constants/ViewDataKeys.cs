@@ -14,4 +14,5 @@ public struct ViewDataKeys
     public const string ShowChangeLink = "vd:show_change_link";
     public const string ShowRemoveLink = "vd:show_remove_link";
     public const string UrlReferrer = "vd:url_referrer";
+    public const string IsSponsorCheckAndAuthorise = "vd:is_sponsor_check_authorise";
 }

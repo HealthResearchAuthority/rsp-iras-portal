@@ -22,12 +22,11 @@ public class ProjectModificationsService
     /// <summary>
     /// Gets the saved application by Id.
     /// </summary>
-    /// <param name="projectRecordId">Project Record Id.</param>
     /// <param name="projectModificationId">Modification Id.</param>
     /// <returns>An asynchronous operation that returns a saved application.</returns>
-    public async Task<ServiceResponse<ProjectModificationResponse>> GetModification(string projectRecordId, Guid projectModificationId)
+    public async Task<ServiceResponse<ProjectModificationResponse>> GetModification(Guid projectModificationId)
     {
-        var apiResponse = await projectModificationsServiceClient.GetModification(projectRecordId, projectModificationId);
+        var apiResponse = await projectModificationsServiceClient.GetModification(projectModificationId);
         return apiResponse.ToServiceResponse();
     }
 
@@ -43,6 +42,28 @@ public class ProjectModificationsService
     }
 
     /// <summary>
+    /// Gets all modifications with filtering, sorting and pagination
+    /// <param name="searchQuery">Object containing filtering criteria for modifications.</param>
+    /// <param name="pageNumber">The number of the page to retrieve (used for pagination - 1-based).</param>
+    /// <param name="pageSize">The number of items per page (used for pagination).</param>
+    /// <param name="sortField">The field name by which the results should be sorted.</param>
+    /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
+    /// <returns>Returns a paginated list of modifications matching the search criteria.</returns>
+    public async Task<ServiceResponse<GetModificationsResponse>> GetModifications
+    (
+        ModificationSearchRequest searchQuery,
+        int pageNumber = 1,
+        int pageSize = 20,
+        string sortField = nameof(ModificationsDto.ModificationId),
+        string sortDirection = SortDirections.Descending
+    )
+    {
+        var apiResponse = await projectModificationsServiceClient.GetModifications(searchQuery, pageNumber, pageSize, sortField, sortDirection);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    /// <summary>
     /// Gets the saved applications by Id and status.
     /// </summary>
     /// <param name="projectRecordId">Project Record Id.</param>
@@ -51,6 +72,66 @@ public class ProjectModificationsService
     public async Task<ServiceResponse<IEnumerable<ProjectModificationResponse>>> GetModificationsByStatus(string projectRecordId, string status)
     {
         var apiResponse = await projectModificationsServiceClient.GetModificationsByStatus(projectRecordId, status);
+        return apiResponse.ToServiceResponse();
+    }
+
+    /// <summary>
+    /// Gets modifications for specific ProjectRecordId with filtering, sorting and pagination
+    /// </summary>
+    /// <param name="projectRecordId">The unique identifier of the project record for which modifications are requested.</param>
+    /// <param name="searchQuery">Object containing filtering criteria for modifications.</param>
+    /// <param name="pageNumber">The number of the page to retrieve (used for pagination - 1-based).</param>
+    /// <param name="pageSize">The number of items per page (used for pagination).</param>
+    /// <param name="sortField">The field name by which the results should be sorted.</param>
+    /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
+    /// <returns>Returns a paginated list of modifications related to the specified project record.</returns>
+    public async Task<ServiceResponse<GetModificationsResponse>> GetModificationsForProject
+    (
+        string projectRecordId,
+        ModificationSearchRequest searchQuery,
+        int pageNumber = 1,
+        int pageSize = 20,
+        string sortField = nameof(ModificationsDto.ModificationId),
+        string sortDirection = SortDirections.Descending
+    )
+    {
+        var apiResponse = await projectModificationsServiceClient.GetModificationsForProject(projectRecordId, searchQuery, pageNumber, pageSize, sortField, sortDirection);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    /// <summary>
+    /// Retrieves modifications by a list of modification IDs.
+    /// </summary>
+    /// <param name="Ids">A list of IDs relating to modifications</param>
+    /// <returns>A list of modifications corresponding to the provided IDs</returns>
+    public async Task<ServiceResponse<GetModificationsResponse>> GetModificationsByIds(List<string> Ids)
+    {
+        var apiResponse = await projectModificationsServiceClient.GetModificationsByIds(Ids);
+        return apiResponse.ToServiceResponse();
+    }
+
+    /// <summary>
+    /// Gets modifications for specific sponsorOrganisationUserId with filtering, sorting and pagination
+    /// </summary>
+    /// <param name="sponsorOrganisationUserId">The unique identifier of the sponsor organisation user for which modifications are requested.</param>
+    /// <param name="searchQuery">Object containing filtering criteria for modifications.</param>
+    /// <param name="pageNumber">The number of the page to retrieve (used for pagination - 1-based).</param>
+    /// <param name="pageSize">The number of items per page (used for pagination).</param>
+    /// <param name="sortField">The field name by which the results should be sorted.</param>
+    /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
+    public async Task<ServiceResponse<GetModificationsResponse>> GetModificationsBySponsorOrganisationUserId
+    (
+       Guid sponsorOrganisationUserId,
+       SponsorAuthorisationsSearchRequest searchQuery,
+       int pageNumber = 1,
+       int pageSize = 20,
+       string sortField = nameof(ModificationsDto.SentToSponsorDate),
+       string sortDirection = SortDirections.Descending
+    )
+    {
+        var apiResponse = await projectModificationsServiceClient.GetModificationsBySponsorOrganisationUserId(sponsorOrganisationUserId, searchQuery, pageNumber, pageSize, sortField, sortDirection);
+
         return apiResponse.ToServiceResponse();
     }
 
@@ -94,64 +175,6 @@ public class ProjectModificationsService
     {
         var apiResponse = await projectModificationsServiceClient.CreateModificationDocument(projectModificationDocumentRequest);
 
-        return apiResponse.ToServiceResponse();
-    }
-
-    /// <summary>
-    /// Gets all modifications with filtering, sorting and pagination
-    /// <param name="searchQuery">Object containing filtering criteria for modifications.</param>
-    /// <param name="pageNumber">The number of the page to retrieve (used for pagination - 1-based).</param>
-    /// <param name="pageSize">The number of items per page (used for pagination).</param>
-    /// <param name="sortField">The field name by which the results should be sorted.</param>
-    /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
-    /// <returns>Returns a paginated list of modifications matching the search criteria.</returns>
-    public async Task<ServiceResponse<GetModificationsResponse>> GetModifications
-    (
-        ModificationSearchRequest searchQuery,
-        int pageNumber = 1,
-        int pageSize = 20,
-        string sortField = nameof(ModificationsDto.ModificationId),
-        string sortDirection = SortDirections.Descending
-    )
-    {
-        var apiResponse = await projectModificationsServiceClient.GetModifications(searchQuery, pageNumber, pageSize, sortField, sortDirection);
-
-        return apiResponse.ToServiceResponse();
-    }
-
-    /// <summary>
-    /// Gets modifications for specific ProjectRecordId with filtering, sorting and pagination
-    /// </summary>
-    /// <param name="projectRecordId">The unique identifier of the project record for which modifications are requested.</param>
-    /// <param name="searchQuery">Object containing filtering criteria for modifications.</param>
-    /// <param name="pageNumber">The number of the page to retrieve (used for pagination - 1-based).</param>
-    /// <param name="pageSize">The number of items per page (used for pagination).</param>
-    /// <param name="sortField">The field name by which the results should be sorted.</param>
-    /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
-    /// <returns>Returns a paginated list of modifications related to the specified project record.</returns>
-    public async Task<ServiceResponse<GetModificationsResponse>> GetModificationsForProject
-    (
-        string projectRecordId,
-        ModificationSearchRequest searchQuery,
-        int pageNumber = 1,
-        int pageSize = 20,
-        string sortField = nameof(ModificationsDto.ModificationId),
-        string sortDirection = SortDirections.Descending
-    )
-    {
-        var apiResponse = await projectModificationsServiceClient.GetModificationsForProject(projectRecordId, searchQuery, pageNumber, pageSize, sortField, sortDirection);
-
-        return apiResponse.ToServiceResponse();
-    }
-
-    /// <summary>
-    /// Retrieves modifications by a list of modification IDs.
-    /// </summary>
-    /// <param name="Ids">A list of IDs relating to modifications</param>
-    /// <returns>A list of modifications corresponding to the provided IDs</returns>
-    public async Task<ServiceResponse<GetModificationsResponse>> GetModificationsByIds(List<string> Ids)
-    {
-        var apiResponse = await projectModificationsServiceClient.GetModificationsByIds(Ids);
         return apiResponse.ToServiceResponse();
     }
 
@@ -264,26 +287,18 @@ public class ProjectModificationsService
         return apiResponse.ToServiceResponse();
     }
 
-    /// <summary>
-    /// Gets modifications for specific sponsorOrganisationUserId with filtering, sorting and pagination
-    /// </summary>
-    /// <param name="sponsorOrganisationUserId">The unique identifier of the sponsor organisation user for which modifications are requested.</param>
-    /// <param name="searchQuery">Object containing filtering criteria for modifications.</param>
-    /// <param name="pageNumber">The number of the page to retrieve (used for pagination - 1-based).</param>
-    /// <param name="pageSize">The number of items per page (used for pagination).</param>
-    /// <param name="sortField">The field name by which the results should be sorted.</param>
-    /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
-    public async Task<ServiceResponse<GetModificationsResponse>> GetModificationsBySponsorOrganisationUserId
-    (
-       Guid sponsorOrganisationUserId,
-       SponsorAuthorisationsSearchRequest searchQuery,
-       int pageNumber = 1,
-       int pageSize = 20,
-       string sortField = nameof(ModificationsDto.SentToSponsorDate),
-       string sortDirection = SortDirections.Descending
-    )
+    public async Task<ServiceResponse> UpdateModificationChange(ProjectModificationChangeRequest projectModificationChangeRequest)
     {
-        var apiResponse = await projectModificationsServiceClient.GetModificationsBySponsorOrganisationUserId(sponsorOrganisationUserId, searchQuery, pageNumber, pageSize, sortField, sortDirection);
+        // Invoke microservice client to update the modification change.
+        var apiResponse = await projectModificationsServiceClient.UpdateModificationChange(projectModificationChangeRequest);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse> UpdateModification(ProjectModificationRequest projectModificationRequest)
+    {
+        // Invoke microservice client to update the modification.
+        var apiResponse = await projectModificationsServiceClient.UpdateModification(projectModificationRequest);
 
         return apiResponse.ToServiceResponse();
     }
@@ -307,6 +322,23 @@ public class ProjectModificationsService
     public async Task<ServiceResponse<ProjectModificationReviewResponse>> GetModificationReviewResponses(Guid modificationId)
     {
         var apiResponse = await projectModificationsServiceClient.GetModificationReviewResponses(modificationId);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    /// <summary>
+    /// Gets modifications for specific ProjectRecordId with filtering, sorting and pagination
+    /// </summary>
+    /// <param name="modificationId">The unique identifier of the project record for which modifications are requested.</param>
+    /// <param name="searchQuery">Object containing filtering criteria for modifications.</param>
+    /// <param name="pageNumber">The number of the page to retrieve (used for pagination - 1-based).</param>
+    /// <param name="pageSize">The number of items per page (used for pagination).</param>
+    /// <param name="sortField">The field name by which the results should be sorted.</param>
+    /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
+    /// <returns>Returns a paginated list of modifications related to the specified project record.</returns>
+    public async Task<ServiceResponse<ProjectOverviewDocumentResponse>> GetDocumentsForModification(Guid modificationId, ProjectOverviewDocumentSearchRequest searchQuery, int pageNumber = 1, int pageSize = 20, string sortField = "DocumentType", string sortDirection = "desc")
+    {
+        var apiResponse = await projectModificationsServiceClient.GetDocumentsForModification(modificationId, searchQuery, pageNumber, pageSize, sortField, sortDirection);
 
         return apiResponse.ToServiceResponse();
     }

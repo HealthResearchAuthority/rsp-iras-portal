@@ -6,6 +6,13 @@
     var showStatus = ViewData[ViewDataKeys.ShowModificationChangeStatus];
     var showChangeLink = ViewData[ViewDataKeys.ShowChangeLink];
     var showRemoveLink = ViewData[ViewDataKeys.ShowRemoveLink];
+
+    var isSponsorCheckAndAuthorise = ViewData[ViewDataKeys.IsSponsorCheckAndAuthorise] as bool?;
+
+    bool showDetailedVersion = isSponsorCheckAndAuthorise == true
+    ? Model.Status != ModificationStatus.WithSponsor
+    : Model.Status != ModificationStatus.InDraft;
+
 }
 
 @foreach (var (change, changeIndex) in Model.ModificationChanges.Select((change, changeIndex) => (change, changeIndex)))
@@ -15,24 +22,24 @@
             <h2 class="govuk-summary-card__title">
                 Change @(changeIndex + 1) - @change.AreaOfChangeName<br />
 
-				@if (showStatus is null or true && Model.Status is ModificationStatus.InDraft)
+                @if ((showStatus == null || showStatus.Equals(true)) && Model.Status is ModificationStatus.InDraft)
                 {
-					<strong class="govuk-!-margin-top-2 text-nowrap govuk-tag @(change.ChangeStatus == ModificationStatus.Unfinished ? "govuk-tag--red" : "govuk-tag--green") non-max-width-govuk-tag">
+                    <strong class="govuk-!-margin-top-2 text-nowrap govuk-tag @(change.ChangeStatus == ModificationStatus.Unfinished ? "govuk-tag--red" : "govuk-tag--green") non-max-width-govuk-tag">
                         @change.ChangeStatus
                     </strong>
                 }
             </h2>
             <ul class="govuk-summary-card__actions">
-				@if (showChangeLink is null or true && Model.Status is ModificationStatus.InDraft)
+                @if ((showChangeLink == null || showChangeLink.Equals(true)) && Model.Status is ModificationStatus.InDraft)
                 {
                     <li class="govuk-summary-card__action">
 
                         @{
                             var reviewChangesParams = new Dictionary<string, string> {
-                                    { "projectRecordId", Model.ProjectRecordId },
-                                    { "specificAreaOfChangeId", change.SpecificAreaOfChangeId },
-                                    { "modificationChangeId", change.ModificationChangeId.ToString() },
-                                    { "reviseChange", bool.TrueString },
+                                { "projectRecordId", Model.ProjectRecordId },
+                                { "specificAreaOfChangeId", change.SpecificAreaOfChangeId },
+                                { "modificationChangeId", change.ModificationChangeId.ToString() },
+                                { "reviseChange", bool.TrueString },
                                 };
 
                             <a class="govuk-link" asp-route="pmc:reviewchanges" asp-all-route-data="reviewChangesParams">Change</a>
@@ -40,7 +47,7 @@
                     </li>
                 }
 
-				@if (showRemoveLink is null or true && Model.Status is ModificationStatus.InDraft)
+                @if ((showRemoveLink == null || showRemoveLink.Equals(true)) && Model.Status is ModificationStatus.InDraft)
                 {
                     <li class="govuk-summary-card__action">
                         <a class="govuk-link"
@@ -63,23 +70,26 @@
                         @change.SpecificChangeAnswer
                     </dd>
                 </div>
-                @foreach (var question in change.Questions)
+                @if (Model.ModificationChanges.Any() && showDetailedVersion)
                 {
-                    <div class="govuk-summary-list__row">
-                        <dt class="govuk-summary-list__key">
-                            @(string.IsNullOrWhiteSpace(question.ShortQuestionText) ? question.QuestionText : question.ShortQuestionText)
-                        </dt>
-                        <dd class="govuk-summary-list__value">
-							@Html.Raw(question.GetDisplayText(false))
-						</dd>
-                    </div>
+                    @foreach (var question in change.Questions)
+                    {
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">
+                                @(string.IsNullOrWhiteSpace(question.ShortQuestionText) ? question.QuestionText : question.ShortQuestionText)
+                            </dt>
+                            <dd class="govuk-summary-list__value">
+                                @Html.Raw(question.GetDisplayText(false))
+                            </dd>
+                        </div>
+                    }
                 }
                 <div class="govuk-summary-list__row">
                     <dt class="govuk-summary-list__key">
                         Modification type
                     </dt>
                     <dd class="govuk-summary-list__value">
-                        @change.ModificationType.Substantiality
+                        @change.ModificationType
                     </dd>
                 </div>
                 <div class="govuk-summary-list__row">
@@ -87,7 +97,7 @@
                         Category
                     </dt>
                     <dd class="govuk-summary-list__value">
-						@(string.IsNullOrWhiteSpace(change.Categorisation.Category) ? "N/A" : change.Categorisation.Category)
+                        @change.Category
                     </dd>
                 </div>
                 <div class="govuk-summary-list__row">

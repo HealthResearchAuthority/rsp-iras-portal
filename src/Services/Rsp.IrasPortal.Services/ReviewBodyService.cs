@@ -11,17 +11,17 @@ namespace Rsp.IrasPortal.Services;
 
 public class ReviewBodyService(IReviewBodyServiceClient client) : IReviewBodyService
 {
-    public async Task<ServiceResponse<AllReviewBodiesResponse>> GetAllReviewBodies(ReviewBodySearchRequest searchQuery,
+    public async Task<ServiceResponse<AllReviewBodiesResponse>> GetAllReviewBodies(ReviewBodySearchRequest? searchQuery = null,
         int pageNumber = 1, int pageSize = 20, string? sortField = nameof(ReviewBodyDto.RegulatoryBodyName), string? sortDirection = SortDirections.Ascending)
     {
-        var apiResponse = await client.GetAllReviewBodies(pageNumber, pageSize,sortField,sortDirection, searchQuery);
+        var apiResponse = await client.GetAllReviewBodies(pageNumber, pageSize, sortField, sortDirection, searchQuery);
 
         return apiResponse.ToServiceResponse();
     }
 
     public async Task<ServiceResponse<AllReviewBodiesResponse>> GetAllActiveReviewBodies(string? sortField = nameof(ReviewBodyDto.RegulatoryBodyName), string? sortDirection = SortDirections.Ascending)
     {
-        var apiResponse = await client.GetAllActiveReviewBodies( sortField, sortDirection);
+        var apiResponse = await client.GetAllActiveReviewBodies(sortField, sortDirection);
 
         return apiResponse.ToServiceResponse();
     }
@@ -81,7 +81,6 @@ public class ReviewBodyService(IReviewBodyServiceClient client) : IReviewBodySer
 
         return apiResponse.ToServiceResponse();
     }
-
 
     public async Task<ServiceResponse<List<ReviewBodyUserDto>>> GetUserReviewBodies(Guid userId)
     {

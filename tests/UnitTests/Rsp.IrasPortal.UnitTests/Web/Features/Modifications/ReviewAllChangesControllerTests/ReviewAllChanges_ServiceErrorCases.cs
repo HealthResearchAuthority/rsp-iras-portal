@@ -13,22 +13,24 @@ namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.ReviewAllChangesCo
 public class ReviewAllChanges_ServiceErrorCases : TestServiceBase<ReviewAllChangesController>
 {
     [Fact]
-    public async Task Returns_StatusCode_When_GetModificationsByIds_Fails()
+    public async Task Returns_StatusCode_When_GetModification_Fails()
     {
         // Arrange
         var http = new DefaultHttpContext();
         Sut.ControllerContext = new() { HttpContext = http };
         Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>());
 
+        var modId = Guid.NewGuid();
+
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModificationsByIds(It.IsAny<List<string>>()))
-            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+            .Setup(s => s.GetModification(modId))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationResponse>
             {
                 StatusCode = HttpStatusCode.InternalServerError
             });
 
         // Act
-        var result = await Sut.ReviewAllChanges("PR1", "IRAS", "Short", Guid.NewGuid());
+        var result = await Sut.ReviewAllChanges("PR1", "IRAS", "Short", modId);
 
         // Assert
         var status = result.ShouldBeOfType<StatusCodeResult>();
@@ -43,16 +45,18 @@ public class ReviewAllChanges_ServiceErrorCases : TestServiceBase<ReviewAllChang
         Sut.ControllerContext = new() { HttpContext = http };
         Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>());
 
+        var modId = Guid.NewGuid();
+
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModificationsByIds(It.IsAny<List<string>>()))
-            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+            .Setup(s => s.GetModification(modId))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new() { Modifications = [] }
+                Content = null
             });
 
         // Act
-        var result = await Sut.ReviewAllChanges("PR1", "IRAS", "Short", Guid.NewGuid());
+        var result = await Sut.ReviewAllChanges("PR1", "IRAS", "Short", modId);
 
         // Assert
         var status = result.ShouldBeOfType<StatusCodeResult>();
@@ -67,25 +71,36 @@ public class ReviewAllChanges_ServiceErrorCases : TestServiceBase<ReviewAllChang
         Sut.ControllerContext = new() { HttpContext = http };
         Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>());
 
-        var modId = Guid.NewGuid().ToString();
+        var modId = Guid.NewGuid();
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModificationsByIds(It.IsAny<List<string>>()))
-            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+            .Setup(s => s.GetModification(modId))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new() { Modifications = [new ModificationsDto { Id = modId, ModificationId = modId, Status = ModificationStatus.InDraft }] }
+                Content = new ProjectModificationResponse
+                {
+                    Id = modId,
+                    ModificationIdentifier = modId.ToString(),
+                    Status = ModificationStatus.InDraft,
+                    ProjectRecordId = "PR1",
+                    ModificationNumber = 1,
+                    CreatedDate = DateTime.UtcNow,
+                    UpdatedDate = DateTime.UtcNow,
+                    CreatedBy = "TestUser",
+                    UpdatedBy = "TestUser"
+                }
             });
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModificationChanges(Guid.Parse(modId)))
+            .Setup(s => s.GetModificationChanges(modId))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>
             {
                 StatusCode = HttpStatusCode.BadGateway
             });
 
         // Act
-        var result = await Sut.ReviewAllChanges("PR1", "IRAS", "Short", Guid.Parse(modId));
+        var result = await Sut.ReviewAllChanges("PR1", "IRAS", "Short", modId);
 
         // Assert
         var status = result.ShouldBeOfType<StatusCodeResult>();
@@ -100,18 +115,29 @@ public class ReviewAllChanges_ServiceErrorCases : TestServiceBase<ReviewAllChang
         Sut.ControllerContext = new() { HttpContext = http };
         Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>());
 
-        var modId = Guid.NewGuid().ToString();
+        var modId = Guid.NewGuid();
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModificationsByIds(It.IsAny<List<string>>()))
-            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+            .Setup(s => s.GetModification(modId))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new() { Modifications = [new ModificationsDto { Id = modId, ModificationId = modId, Status = ModificationStatus.InDraft }] }
+                Content = new ProjectModificationResponse
+                {
+                    Id = modId,
+                    ModificationIdentifier = modId.ToString(),
+                    Status = ModificationStatus.InDraft,
+                    ProjectRecordId = "PR1",
+                    ModificationNumber = 1,
+                    CreatedDate = DateTime.UtcNow,
+                    UpdatedDate = DateTime.UtcNow,
+                    CreatedBy = "TestUser",
+                    UpdatedBy = "TestUser"
+                }
             });
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModificationChanges(Guid.Parse(modId)))
+            .Setup(s => s.GetModificationChanges(modId))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -126,7 +152,7 @@ public class ReviewAllChanges_ServiceErrorCases : TestServiceBase<ReviewAllChang
             });
 
         // Act
-        var result = await Sut.ReviewAllChanges("PR1", "IRAS", "Short", Guid.Parse(modId));
+        var result = await Sut.ReviewAllChanges("PR1", "IRAS", "Short", modId);
 
         // Assert
         var status = result.ShouldBeOfType<StatusCodeResult>();

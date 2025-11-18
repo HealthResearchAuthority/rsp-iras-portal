@@ -50,10 +50,10 @@ public class ListFilesTests
             .Setup(b => b.GetBlobContainerClient(containerName))
             .Returns(containerClientMock.Object);
 
-        var sut = new BlobStorageService(blobServiceClientMock.Object);
+        var sut = new BlobStorageService();
 
         // Act
-        var result = await sut.ListFilesAsync(containerName, folderPrefix);
+        var result = await sut.ListFilesAsync(blobServiceClientMock.Object, containerName, folderPrefix);
 
         // Assert
         result.ShouldNotBeNull();

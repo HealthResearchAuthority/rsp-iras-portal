@@ -171,7 +171,7 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
         // Arrange
         var authoriseOutcomeViewModel = SetupAuthoriseOutcomeViewModel();
 
-        authoriseOutcomeViewModel.Outcome = "Notuthorised";
+        authoriseOutcomeViewModel.Outcome = "Notauthorised";
 
         // Act
         var result = await Sut.CheckAndAuthorise(authoriseOutcomeViewModel);
@@ -213,22 +213,26 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
         var sponsorDetailsSectionId = "pm-sponsor-reference";
         var changeId = Guid.Parse("33333333-3333-3333-3333-333333333333");
 
-        // 1. GetModificationsByIds -> one modification entry
+        // 1. GetModification -> one modification entry
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModificationsByIds(It.IsAny<List<string>>()))
-            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+            .Setup(s => s.GetModification(It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new GetModificationsResponse
+                Content = new ProjectModificationResponse
                 {
-                    Modifications =
-                    [
-                        new ModificationsDto
-                        {
-                            Id = projectModificationId.ToString(), ModificationId = projectModificationId.ToString(),
-                            Status = ModificationStatus.InDraft
-                        }
-                    ]
+                    Id = projectModificationId,
+                    ModificationIdentifier = projectModificationId.ToString(),
+                    Status = ModificationStatus.InDraft,
+                    ProjectRecordId = projectRecordId,
+                    ModificationNumber = 1,
+                    CreatedDate = DateTime.UtcNow,
+                    UpdatedDate = DateTime.UtcNow,
+                    CreatedBy = "TestUser",
+                    UpdatedBy = "TestUser",
+                    ModificationType = "Substantial",
+                    Category = "Category A",
+                    ReviewType = "Full Review"
                 }
             });
 
@@ -369,12 +373,16 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
                 Content = respondentAnswers
             });
 
-        // This is your domain object you’re enriching
+        // This is your domain object you're enriching
         var modification = new ModificationDetailsViewModel
         {
             ModificationId = projectModificationId.ToString(),
             ProjectRecordId = projectRecordId
         };
+
+        TypeAdapterConfig<ModificationDetailsViewModel, AuthoriseOutcomeViewModel>
+        .NewConfig()
+        .Ignore(dest => dest.ProjectOverviewDocumentViewModel);
 
         var authoriseOutcomeViewModel = modification.Adapt<AuthoriseOutcomeViewModel>();
         authoriseOutcomeViewModel.SponsorOrganisationUserId = sponsorOrganisationUserId;

@@ -9,6 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.24.0" />
     <PackageReference Include="Microsoft.Extensions.Telemetry.Abstractions" Version="9.4.0" />
     <PackageReference Include="Refit" Version="8.0.0" />
     <PackageReference Include="Rsp.Logging" Version="1.0.10" />

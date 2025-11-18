@@ -1,4 +1,7 @@
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
@@ -10,17 +13,21 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.Components;
 
-public class RankingOfChangeTests
+public class RankingOfChangeTests : TestServiceBase<RankingOfChange>
 {
-    private readonly Mock<ICmsQuestionsetService> _cmsQuestionsetService;
-    private readonly Mock<IRespondentService> _respondentService;
-    private readonly RankingOfChange _sut;
-
     public RankingOfChangeTests()
     {
-        _cmsQuestionsetService = new Mock<ICmsQuestionsetService>();
-        _respondentService = new Mock<IRespondentService>();
-        _sut = new RankingOfChange(_cmsQuestionsetService.Object, _respondentService.Object);
+        // Setup ViewComponentContext with TempData to avoid NullReferenceException
+        var httpContext = new DefaultHttpContext();
+        var tempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
+        Sut.ViewComponentContext = new ViewComponentContext
+        {
+            ViewContext = new ViewContext
+            {
+                HttpContext = httpContext,
+                TempData = tempData
+            }
+        };
     }
 
     [Fact]
@@ -34,16 +41,18 @@ public class RankingOfChangeTests
             Categorisation = new CategoryRank { Category = "CatA", Order = 2 },
             ReviewType = "TypeA"
         };
-        _cmsQuestionsetService
+        Mocker
+            .GetMock<ICmsQuestionsetService>()
             .Setup(s => s.GetModificationRanking(It.IsAny<RankingOfChangeRequest>()))
             .ReturnsAsync(new ServiceResponse<RankingOfChangeResponse> { Content = rankingResponse });
 
         // Act
-        var result = await _sut.InvokeAsync(It.IsAny<string>(), "areaId", true, questions);
+        var result = await Sut.InvokeAsync(It.IsAny<string>(), "areaId", true, questions);
 
         // Assert
         var view = result.ShouldBeOfType<ViewViewComponentResult>();
         view.ViewName.ShouldBe("/Features/Modifications/Shared/RankingOfChange.cshtml");
+        view.ViewData.ShouldNotBeNull();
         var model = view.ViewData.Model.ShouldBeOfType<RankingOfChangeViewModel>();
         model.ModificationType.ShouldBe("Substantial");
         model.Category.ShouldBe("CatA");
@@ -61,16 +70,18 @@ public class RankingOfChangeTests
             Categorisation = new CategoryRank { Category = "CatA", Order = 2 },
             ReviewType = "TypeA"
         };
-        _cmsQuestionsetService
+        Mocker
+            .GetMock<ICmsQuestionsetService>()
             .Setup(s => s.GetModificationRanking(It.IsAny<RankingOfChangeRequest>()))
             .ReturnsAsync(new ServiceResponse<RankingOfChangeResponse> { Content = rankingResponse });
 
         // Act
-        var result = await _sut.InvokeAsync(It.IsAny<string>(), "areaId", true, questions);
+        var result = await Sut.InvokeAsync(It.IsAny<string>(), "areaId", true, questions);
 
         // Assert
         var view = result.ShouldBeOfType<ViewViewComponentResult>();
         view.ViewName.ShouldBe("/Features/Modifications/Shared/RankingOfChange.cshtml");
+        view.ViewData.ShouldNotBeNull();
         var model = view.ViewData.Model.ShouldBeOfType<RankingOfChangeViewModel>();
         model.ModificationType.ShouldBe("Non-Notifiable");
         model.Category.ShouldBe("N/A");
@@ -88,19 +99,22 @@ public class RankingOfChangeTests
             };
 
         var questions = new List<QuestionViewModel>();
-        _cmsQuestionsetService
+        Mocker
+            .GetMock<ICmsQuestionsetService>()
             .Setup(s => s.GetModificationRanking(It.IsAny<RankingOfChangeRequest>()))
             .ReturnsAsync(new ServiceResponse<RankingOfChangeResponse> { Content = null });
 
-        _respondentService
+        Mocker
+            .GetMock<IRespondentService>()
             .Setup(s => s.GetRespondentAnswers(It.IsAny<string>(), QuestionCategories.ProjectRecord))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = answers });
 
         // Act
-        var result = await _sut.InvokeAsync(It.IsAny<string>(), "areaId", false, questions);
+        var result = await Sut.InvokeAsync(It.IsAny<string>(), "areaId", false, questions);
 
         // Assert
         var view = result.ShouldBeOfType<ViewViewComponentResult>();
+        view.ViewData.ShouldNotBeNull();
         var model = view.ViewData.Model.ShouldBeOfType<RankingOfChangeViewModel>();
         model.ModificationType.ShouldBe(Ranking.NotAvailable);
         model.Category.ShouldBe(Ranking.NotAvailable);
@@ -117,13 +131,14 @@ public class RankingOfChangeTests
             new() { NonNhsInvolvment = "Non-NHS", Answers = [ new() { AnswerId = "B", AnswerText = "Non-NHS", IsSelected = true } ] }
         };
         RankingOfChangeRequest? capturedRequest = null;
-        _cmsQuestionsetService
+        Mocker
+            .GetMock<ICmsQuestionsetService>()
             .Setup(s => s.GetModificationRanking(It.IsAny<RankingOfChangeRequest>()))
             .Callback<RankingOfChangeRequest>(req => capturedRequest = req)
             .ReturnsAsync(new ServiceResponse<RankingOfChangeResponse> { Content = null });
 
         // Act
-        await _sut.InvokeAsync(It.IsAny<string>(), "areaId", true, questions);
+        await Sut.InvokeAsync(It.IsAny<string>(), "areaId", true, questions);
 
         // Assert
         capturedRequest.ShouldNotBeNull();

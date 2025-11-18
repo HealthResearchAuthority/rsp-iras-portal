@@ -11,6 +11,7 @@
     ViewData[ViewDataKeys.ShowRemoveLink] = false;
     ViewData[ViewDataKeys.ShowModificationChangeStatus] = false;
     ViewData[ViewDataKeys.ShowModificationStatus] = true;
+    ViewData[ViewDataKeys.IsSponsorCheckAndAuthorise] = true;
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData ?? new Dictionary<string, MixedContentPageItem?>();
@@ -25,7 +26,7 @@
 
     // Radio options for the TagHelper
     var outcomeOptions = new List<GdsOption>
-    {
+{
         new() { Value = "Authorised", Label = "Authorised" },
         new() { Value = "NotAuthorised", Label = "Not authorised" }
     };

@@ -1,3 +1,6 @@
+using Azure;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -27,7 +30,7 @@ public class DeleteModificationConfirmedTests : TestServiceBase<ModificationsCon
     [Theory]
     [AutoData]
     public async Task DeleteModificationConfirmed_Should_Redirect_With_Banner_When_Service_Succeeds(
-        string projectRecordId)
+        string projectRecordId, string containerName)
     {
         // Arrange
         var projectModificationId = Guid.NewGuid();
@@ -65,20 +68,37 @@ public class DeleteModificationConfirmedTests : TestServiceBase<ModificationsCon
                     new()
                     {
                         ProjectRecordId = projectRecordId,
-                        ProjectModificationChangeId = projectModificationChangeId,
+                        ProjectModificationId = projectModificationChangeId,
                         DocumentStoragePath = "IRAS/TEST.PDF"
                     }
                 },
                 StatusCode = HttpStatusCode.OK
             });
 
+        var blobClientMock = new Mock<BlobClient>();
+        blobClientMock
+            .Setup(b => b.UploadAsync(It.IsAny<Stream>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Mock.Of<Response<BlobContentInfo>>());
+
+        var containerClientMock = new Mock<BlobContainerClient>();
+        containerClientMock
+            .Setup(c => c.CreateIfNotExistsAsync(It.IsAny<PublicAccessType>(), null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Response.FromValue(Mock.Of<BlobContainerInfo>(), null!));
+        containerClientMock
+            .Setup(c => c.GetBlobClient(It.IsAny<string>()))
+            .Returns(blobClientMock.Object);
+
+        var blobServiceClientMock = new Mock<BlobServiceClient>();
+        blobServiceClientMock
+            .Setup(b => b.GetBlobContainerClient(containerName))
+            .Returns(containerClientMock.Object);
+
         _blobService
-            .Setup(x => x.DeleteFileAsync("staging", "IRAS/TEST.PDF"))
+            .Setup(x => x.DeleteFileAsync(blobServiceClientMock.Object, "staging", "IRAS/TEST.PDF"))
             .ReturnsAsync(new ServiceResponse
             {
                 StatusCode = HttpStatusCode.OK
             });
-
 
         // Act
         var result =
@@ -106,7 +126,7 @@ public class DeleteModificationConfirmedTests : TestServiceBase<ModificationsCon
     [Theory]
     [AutoData]
     public async Task DeleteModificationConfirmed_Should_Fail_When_NoModification(
-        string projectRecordId)
+        string projectRecordId, string containerName)
     {
         // Arrange
         var projectModificationId = Guid.NewGuid();
@@ -144,15 +164,33 @@ public class DeleteModificationConfirmedTests : TestServiceBase<ModificationsCon
                     new()
                     {
                         ProjectRecordId = projectRecordId,
-                        ProjectModificationChangeId = projectModificationChangeId,
+                        ProjectModificationId = projectModificationChangeId,
                         DocumentStoragePath = "IRAS/TEST.PDF"
                     }
                 },
                 StatusCode = HttpStatusCode.OK
             });
 
+        var blobClientMock = new Mock<BlobClient>();
+        blobClientMock
+            .Setup(b => b.UploadAsync(It.IsAny<Stream>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Mock.Of<Response<BlobContentInfo>>());
+
+        var containerClientMock = new Mock<BlobContainerClient>();
+        containerClientMock
+            .Setup(c => c.CreateIfNotExistsAsync(It.IsAny<PublicAccessType>(), null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Response.FromValue(Mock.Of<BlobContainerInfo>(), null!));
+        containerClientMock
+            .Setup(c => c.GetBlobClient(It.IsAny<string>()))
+            .Returns(blobClientMock.Object);
+
+        var blobServiceClientMock = new Mock<BlobServiceClient>();
+        blobServiceClientMock
+            .Setup(b => b.GetBlobContainerClient(containerName))
+            .Returns(containerClientMock.Object);
+
         _blobService
-            .Setup(x => x.DeleteFileAsync("staging", "IRAS/TEST.PDF"))
+            .Setup(x => x.DeleteFileAsync(blobServiceClientMock.Object, "staging", "IRAS/TEST.PDF"))
             .ReturnsAsync(new ServiceResponse
             {
                 StatusCode = HttpStatusCode.OK
@@ -174,7 +212,7 @@ public class DeleteModificationConfirmedTests : TestServiceBase<ModificationsCon
     [Theory]
     [AutoData]
     public async Task DeleteModificationConfirmed_Should_Fail_When_NoModificationDocuments(
-        string projectRecordId)
+        string projectRecordId, string containerName)
     {
         // Arrange
         var projectModificationId = Guid.NewGuid();
@@ -212,15 +250,33 @@ public class DeleteModificationConfirmedTests : TestServiceBase<ModificationsCon
                     new()
                     {
                         ProjectRecordId = projectRecordId,
-                        ProjectModificationChangeId = projectModificationChangeId,
+                        ProjectModificationId = projectModificationChangeId,
                         DocumentStoragePath = "IRAS/TEST.PDF"
                     }
                 },
                 StatusCode = HttpStatusCode.BadGateway
             });
 
+        var blobClientMock = new Mock<BlobClient>();
+        blobClientMock
+            .Setup(b => b.UploadAsync(It.IsAny<Stream>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Mock.Of<Response<BlobContentInfo>>());
+
+        var containerClientMock = new Mock<BlobContainerClient>();
+        containerClientMock
+            .Setup(c => c.CreateIfNotExistsAsync(It.IsAny<PublicAccessType>(), null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Response.FromValue(Mock.Of<BlobContainerInfo>(), null!));
+        containerClientMock
+            .Setup(c => c.GetBlobClient(It.IsAny<string>()))
+            .Returns(blobClientMock.Object);
+
+        var blobServiceClientMock = new Mock<BlobServiceClient>();
+        blobServiceClientMock
+            .Setup(b => b.GetBlobContainerClient(containerName))
+            .Returns(containerClientMock.Object);
+
         _blobService
-            .Setup(x => x.DeleteFileAsync("staging", "IRAS/TEST.PDF"))
+            .Setup(x => x.DeleteFileAsync(blobServiceClientMock.Object, "staging", "IRAS/TEST.PDF"))
             .ReturnsAsync(new ServiceResponse
             {
                 StatusCode = HttpStatusCode.OK
@@ -242,7 +298,7 @@ public class DeleteModificationConfirmedTests : TestServiceBase<ModificationsCon
     [Theory]
     [AutoData]
     public async Task DeleteModificationConfirmed_Should_Fail_When_DeleteModification(
-    string projectRecordId)
+    string projectRecordId, string containerName)
     {
         // Arrange
         var projectModificationId = Guid.NewGuid();
@@ -280,15 +336,33 @@ public class DeleteModificationConfirmedTests : TestServiceBase<ModificationsCon
                     new()
                     {
                         ProjectRecordId = projectRecordId,
-                        ProjectModificationChangeId = projectModificationChangeId,
+                        ProjectModificationId = projectModificationChangeId,
                         DocumentStoragePath = "IRAS/TEST.PDF"
                     }
                 },
                 StatusCode = HttpStatusCode.OK
             });
 
+        var blobClientMock = new Mock<BlobClient>();
+        blobClientMock
+            .Setup(b => b.UploadAsync(It.IsAny<Stream>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Mock.Of<Response<BlobContentInfo>>());
+
+        var containerClientMock = new Mock<BlobContainerClient>();
+        containerClientMock
+            .Setup(c => c.CreateIfNotExistsAsync(It.IsAny<PublicAccessType>(), null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Response.FromValue(Mock.Of<BlobContainerInfo>(), null!));
+        containerClientMock
+            .Setup(c => c.GetBlobClient(It.IsAny<string>()))
+            .Returns(blobClientMock.Object);
+
+        var blobServiceClientMock = new Mock<BlobServiceClient>();
+        blobServiceClientMock
+            .Setup(b => b.GetBlobContainerClient(containerName))
+            .Returns(containerClientMock.Object);
+
         _blobService
-            .Setup(x => x.DeleteFileAsync("staging", "IRAS/TEST.PDF"))
+            .Setup(x => x.DeleteFileAsync(blobServiceClientMock.Object, "staging", "IRAS/TEST.PDF"))
             .ReturnsAsync(new ServiceResponse
             {
                 StatusCode = HttpStatusCode.OK

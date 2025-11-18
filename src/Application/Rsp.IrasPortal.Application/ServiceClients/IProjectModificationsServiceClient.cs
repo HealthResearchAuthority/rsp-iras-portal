@@ -15,11 +15,10 @@ public interface IProjectModificationsServiceClient
     /// <summary>
     /// Gets the saved project modification by project record Id and modification Id.
     /// </summary>
-    /// <param name="projectRecordId">The unique identifier of the project record.</param>
     /// <param name="projectModificationId">The unique identifier of the project modification.</param>
     /// <returns>An asynchronous operation that returns the saved project modification.</returns>
-    [Get("/projectmodifications/{projectRecordId}")]
-    public Task<ApiResponse<ProjectModificationResponse>> GetModification(string projectRecordId, Guid projectModificationId);
+    [Get("/projectmodifications/{projectModificationId}")]
+    public Task<ApiResponse<ProjectModificationResponse>> GetModification(Guid projectModificationId);
 
     /// <summary>
     /// Gets all saved project modifications for a given project record Id.
@@ -172,7 +171,7 @@ public interface IProjectModificationsServiceClient
     /// </summary>
     /// <param name="modificationId">The unique identifier of the project modification.</param>
     /// <returns>An asynchronous operation that returns the requested project modification change.</returns>
-    [Post("/projectmodifications/update")]
+    [Patch("/projectmodifications/status")]
     public Task<IApiResponse> UpdateModificationStatus(Guid modificationId, string status);
 
     /// <summary>
@@ -238,4 +237,39 @@ public interface IProjectModificationsServiceClient
     /// <returns>Returns the modification review properties</returns>
     [Get("/projectmodifications/getreviewresponses")]
     public Task<ApiResponse<ProjectModificationReviewResponse>> GetModificationReviewResponses(Guid modificationId);
+
+    /// <summary>
+    /// Gets modifications for specific ProjectRecordId with filtering, sorting and pagination
+    /// </summary>
+    /// <param name="projectRecordId">The unique identifier of the project record for which modifications are requested.</param>
+    /// <param name="searchQuery">Object containing filtering criteria for modifications.</param>
+    /// <param name="pageNumber">The number of the page to retrieve (used for pagination - 1-based).</param>
+    /// <param name="pageSize">The number of items per page (used for pagination).</param>
+    /// <param name="sortField">The field name by which the results should be sorted.</param>
+    /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
+    /// <returns>Returns a paginated list of modifications related to the specified project record.</returns>
+    [Post("/projectmodifications/getdocumentsformodification")]
+    public Task<ApiResponse<ProjectOverviewDocumentResponse>> GetDocumentsForModification
+    (
+        Guid modificationId,
+        [Body] ProjectOverviewDocumentSearchRequest searchQuery,
+        int pageNumber = 1,
+        int pageSize = 20,
+        string sortField = nameof(ProjectOverviewDocumentDto.DocumentType),
+        string sortDirection = SortDirections.Descending
+    );
+
+    /// <summary>
+    /// Updates an existing project modification.
+    /// </summary>
+    /// <param name="projectModificationRequest">The request object containing the updated details for the project modification.</param>
+    [Patch("/projectmodifications")]
+    Task<IApiResponse> UpdateModification(ProjectModificationRequest projectModificationRequest);
+
+    /// <summary>
+    /// Updates an existing project modification change.
+    /// </summary>
+    /// <param name="projectModificationChangeRequest">The request object containing the updated details for the modification change.</param>
+    [Patch("/projectmodifications/change")]
+    Task<IApiResponse> UpdateModificationChange(ProjectModificationChangeRequest projectModificationChangeRequest);
 }

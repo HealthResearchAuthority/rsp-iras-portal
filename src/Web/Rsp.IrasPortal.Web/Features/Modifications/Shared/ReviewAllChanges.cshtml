@@ -4,42 +4,43 @@
 @using Microsoft.AspNetCore.Http.Extensions
 @using Microsoft.FeatureManagement
 @using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Application.DTOs
 @using Rsp.IrasPortal.Web.Features.Modifications.Models
 @model ModificationDetailsViewModel
 
 @{
 
-    ViewBag.Title = "Review all changes";
+	ViewBag.Title = "Review all changes";
 
-    TempData[TempDataKeys.ProjectModification.ReviewAllChanges] = true;
+	TempData[TempDataKeys.ProjectModification.ReviewAllChanges] = true;
 
-    ViewData[ViewDataKeys.ShowRemoveLink] = false;
-    ViewData[ViewDataKeys.ShowModificationChangeStatus] = false;
-    ViewData[ViewDataKeys.ShowModificationStatus] = true;
+	ViewData[ViewDataKeys.ShowRemoveLink] = false;
+	ViewData[ViewDataKeys.ShowModificationChangeStatus] = false;
+	ViewData[ViewDataKeys.ShowModificationStatus] = true;
 
 }
 
 @section BackNavigation {
 
-    @* if we have a urlReferrer use that for back navigation *@
-    @{
-        // set this TempData key to true on the referrer page like PostApprovals
-        // or any other BackStage or FrontStage page so that we can link back to that page.
-        // If this Key is not set, the Back link won't be displayed
-        var linkBackToReferrer = TempData[TempDataKeys.ProjectModification.LinkBackToReferrer];
-        var urlReferrer = TempData[TempDataKeys.ProjectModification.UrlReferrer];
+	@* if we have a urlReferrer use that for back navigation *@
+	@{
+		// set this TempData key to true on the referrer page like PostApprovals
+		// or any other BackStage or FrontStage page so that we can link back to that page.
+		// If this Key is not set, the Back link won't be displayed
+		var linkBackToReferrer = TempData[TempDataKeys.ProjectModification.LinkBackToReferrer];
+		var urlReferrer = TempData[TempDataKeys.ProjectModification.UrlReferrer];
 
-        if (linkBackToReferrer is true && urlReferrer is not null)
-        {
-            ViewData[ViewDataKeys.UrlReferrer] = urlReferrer;
+		if (linkBackToReferrer is true && urlReferrer is not null)
+		{
+			ViewData[ViewDataKeys.UrlReferrer] = urlReferrer;
 
-            // no route for back navigation, as this page will
-            // only show back button when you are navigating from some other url
-            // given the LinkBackToReferrer is set
-            <partial name="_BackNavigation" model="@("", "Back", new Dictionary<string, string>())" />
-        }
-    }
-    @*<partial name="_BackNavigation" model="@("pmc:sponsorreference", "Back", new Dictionary<string, string>() { { "projectRecordId", Model.ProjectRecordId } })" />*@
+			// no route for back navigation, as this page will
+			// only show back button when you are navigating from some other url
+			// given the LinkBackToReferrer is set
+			<partial name="_BackNavigation" model="@("", "Back", new Dictionary<string, string>())" />
+		}
+	}
+	@*<partial name="_BackNavigation" model="@("pmc:sponsorreference", "Back", new Dictionary<string, string>() { { "projectRecordId", Model.ProjectRecordId } })" />*@
 }
 
 <partial name="_ReviewModification" model="Model" />
@@ -63,18 +64,18 @@
                                         ["projectRecordId"] = Model.ProjectRecordId
                                     })" />
 
-                            ViewBag.Style = "govuk-button govuk-button--secondary";
+							ViewBag.Style = "govuk-button govuk-button--secondary";
 
                             <partial name="_SubmitButton" model="@("pmc:saveforlater", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId, ["routeName"] = "pov:postapproval" })" />
                         }
                     </div>
                 </form>
                 <a asp-route="pmc:deletemodification"
-                asp-route-projectRecordId="@Model.ProjectRecordId"
-                asp-route-irasId="@(Model.ModificationIdentifier?.Split('/')[0])"
-                asp-route-shortTitle="@Model.ShortTitle"
-                asp-route-projectModificationId="@Model.ModificationId"
-                class="govuk-link">
+                   asp-route-projectRecordId="@Model.ProjectRecordId"
+                   asp-route-irasId="@(Model.ModificationIdentifier?.Split('/')[0])"
+                   asp-route-shortTitle="@Model.ShortTitle"
+                   asp-route-projectModificationId="@Model.ModificationId"
+                   class="govuk-link">
                     Delete modification
                 </a>
             </div>
@@ -83,7 +84,7 @@
 </authorized>
 
 <authorized auth-params="@new(Roles: "study-wide_reviewer")">
-    @if (Model.Status is ModificationStatus.WithReviewBody)
+    @if (Model.Status == ModificationStatus.WithReviewBody)
     {
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
@@ -94,10 +95,8 @@
                     When you've completed your review of all the information on this page,
                     continue to the next step where you'll enter the review outcome
                 </div>
-                <a
-                    asp-route="pmc:reviewoutcome"
-                    class="govuk-button"
-                >
+                <a asp-route="pmc:reviewoutcome"
+                   class="govuk-button">
                     Continue
                 </a>
             </div>
