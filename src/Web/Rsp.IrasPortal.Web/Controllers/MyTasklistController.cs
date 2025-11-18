@@ -20,7 +20,7 @@ public class MyTasklistController(IProjectModificationsService projectModificati
         int pageNumber = 1,
         int pageSize = 20,
         List<string>? selectedModificationIds = null,
-        string? sortField = nameof(ModificationsModel.DateSubmitted),
+        string? sortField = nameof(ModificationsModel.SentToRegulatorDate),
         string? sortDirection = SortDirections.Ascending)
     {
         var json = HttpContext.Session.GetString(SessionKeys.MyTasklist);
@@ -58,10 +58,10 @@ public class MyTasklistController(IProjectModificationsService projectModificati
         if (search.ToSubmission is int toSub)
             searchQuery.FromDate = DateTime.UtcNow.AddDays(-toSub).AddDays(-1).AddTicks(1);
 
-        // Map sort for DaysSinceSubmission -> DateSubmitted with flipped direction
+        // Map sort for DaysSinceSubmission -> SentToRegulatorDate with flipped direction
         (string qSortField, string qSortDir) =
             sortField == nameof(ModificationsModel.DaysSinceSubmission)
-                ? (nameof(ModificationsModel.DateSubmitted),
+                ? (nameof(ModificationsModel.SentToRegulatorDate),
                    sortDirection == SortDirections.Ascending ? SortDirections.Descending : SortDirections.Ascending)
                 : (sortField!, sortDirection!);
 
