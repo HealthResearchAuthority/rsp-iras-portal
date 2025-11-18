@@ -10,6 +10,7 @@ using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Features.Modifications;
+using Rsp.IrasPortal.Web.Features.Modifications.Models;
 using Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Models;
 using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
@@ -71,6 +72,7 @@ public class AuthorisationsController(
                 ProjectRecordId = dto.ProjectRecordId,
                 SentToRegulatorDate = dto.SentToRegulatorDate,
                 SentToSponsorDate = dto.SentToSponsorDate,
+                CreatedAt = dto.CreatedAt,
                 Status = dto.Status,
             })
             .ToList() ?? [];
@@ -141,9 +143,14 @@ public class AuthorisationsController(
             QuestionsetHelpers.BuildQuestionnaireViewModel(sponsorDetailsQuestionsResponse.Content!);
         sponsorDetailsQuestionnaire.UpdateWithRespondentAnswers(sponsorDetailsAnswers);
 
-        modification.SponsorDetails = sponsorDetailsQuestionnaire.Questions;
+        modification.SponsorDetails = sponsorDetailsQuestionnaire.Questions;        
 
-        var authoriseOutcomeViewModel = modification.Adapt<AuthoriseOutcomeViewModel>();
+        var config = new TypeAdapterConfig();
+        config.ForType<ModificationDetailsViewModel, AuthoriseOutcomeViewModel>()
+              .Ignore(dest => dest.ProjectOverviewDocumentViewModel);
+
+        var authoriseOutcomeViewModel = modification.Adapt<AuthoriseOutcomeViewModel>(config);
+
         authoriseOutcomeViewModel.SponsorOrganisationUserId = sponsorOrganisationUserId;
         authoriseOutcomeViewModel.ProjectModificationId = projectModificationId;
 

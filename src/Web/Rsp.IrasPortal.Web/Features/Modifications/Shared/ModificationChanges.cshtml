@@ -13,6 +13,9 @@
     ? Model.Status != ModificationStatus.WithSponsor
     : Model.Status != ModificationStatus.InDraft;
 
+    var showViewDetailsLink = true; //TODO to be changed
+
+    var sponsorOrganisationUserId = ViewBag.SponsorOrganisationUserId;
 }
 
 @foreach (var (change, changeIndex) in Model.ModificationChanges.Select((change, changeIndex) => (change, changeIndex)))
@@ -56,6 +59,24 @@
                            asp-route-modificationChangeName="@change.SpecificChangeName">
                             Remove
                         </a>
+                    </li>
+                }
+
+                @if (showViewDetailsLink is true && sponsorOrganisationUserId is not null && Model.Status is ModificationStatus.WithSponsor)
+                {
+                    <li class="govuk-summary-card__action">                        
+                        @{
+                            var viewDetailsParams = new Dictionary<string, string> {
+                                { "projectRecordId", Model.ProjectRecordId },
+                                { "irasId", Model.IrasId },
+                                { "shortTitle", Model.ShortTitle ?? "" },
+                                { "projectModificationId", Model.ModificationId ?? "" },
+                                { "sponsorOrganisationUserId", sponsorOrganisationUserId.ToString() },
+                                { "modificationChangeId", change.ModificationChangeId.ToString() },                                
+                                };
+                            
+                            <a class="govuk-link" asp-route="sws:changedetails" asp-all-route-data="viewDetailsParams">View details</a>
+                        }
                     </li>
                 }
             </ul>

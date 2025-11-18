@@ -69,7 +69,7 @@ public abstract class ModificationsControllerBase
             ModificationType = modification.ModificationType ?? Ranking.NotAvailable,
             Category = modification.Category ?? Ranking.NotAvailable,
             ReviewType = modification.ReviewType ?? Ranking.NotAvailable,
-            DateCreated = DateHelper.ConvertDateToString(modification.CreatedDate.ToString())
+            DateCreated = DateHelper.ConvertDateToString(modification.CreatedDate)
         });
     }
 
@@ -287,7 +287,7 @@ public abstract class ModificationsControllerBase
         if (response?.StatusCode != HttpStatusCode.OK || response.Content == null)
             return [];
 
-        // Evaluate each document’s completeness
+        // Evaluate each documentï¿½s completeness
         var tasks = response.Content
             .OrderBy(a => a.FileName, StringComparer.OrdinalIgnoreCase)
             .Select(a => GetDocumentSummary(a, questionnaire));
@@ -331,7 +331,7 @@ public abstract class ModificationsControllerBase
     }
 
     /// <summary>
-    /// Evaluates whether a single document’s answers are complete.
+    /// Evaluates whether a single documentï¿½s answers are complete.
     /// </summary>
     private async Task<DocumentSummaryItemDto> GetDocumentSummary(ProjectModificationDocumentRequest a, QuestionnaireViewModel questionnaire)
     {
@@ -346,7 +346,7 @@ public abstract class ModificationsControllerBase
     }
 
     /// <summary>
-    /// Evaluates whether a single document’s answers are complete.
+    /// Evaluates whether a single documentï¿½s answers are complete.
     /// </summary>
     protected async Task<bool> EvaluateDocumentCompletion(ProjectModificationDocumentRequest a, QuestionnaireViewModel questionnaire)
     {
