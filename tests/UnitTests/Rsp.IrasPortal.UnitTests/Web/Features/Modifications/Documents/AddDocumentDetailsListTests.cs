@@ -129,8 +129,8 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
                 StatusCode = HttpStatusCode.OK,
                 Content = new List<ProjectModificationDocumentRequest>
                 {
-                new() { Id = docWithAnswers, FileName = "doc1.pdf", FileSize = 123, DocumentStoragePath = "https://storage/doc1.pdf" },
-                new() { Id = docWithoutAnswers, FileName = "doc2.pdf", FileSize = 456, DocumentStoragePath = "https://storage/doc2.pdf" }
+                new() { Id = docWithAnswers, Status = DocumentStatus.Uploaded, FileName = "doc1.pdf", FileSize = 123, DocumentStoragePath = "https://storage/doc1.pdf" },
+                new() { Id = docWithoutAnswers, Status = DocumentStatus.Uploaded, FileName = "doc2.pdf", FileSize = 456, DocumentStoragePath = "https://storage/doc2.pdf" }
                 }
             });
 
@@ -319,7 +319,7 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
                 StatusCode = HttpStatusCode.OK,
                 Content = new List<ProjectModificationDocumentRequest>
                 {
-                new() { Id = docId, FileName = "doc.pdf", FileSize = 123, DocumentStoragePath = "https://storage/doc.pdf" }
+                new() { Id = docId, Status = DocumentStatus.Uploaded, FileName = "doc.pdf", FileSize = 123, DocumentStoragePath = "https://storage/doc.pdf" }
                 }
             });
 
@@ -429,7 +429,7 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
                 {
                     new ProjectModificationDocumentRequest
                     {
-                        Id = docId, FileName = "doc1.pdf", FileSize = 123, DocumentStoragePath = "path"
+                        Id = docId, FileName = "doc1.pdf", Status = DocumentStatus.Uploaded, FileSize = 123, DocumentStoragePath = "path"
                     }
                 }
             });
@@ -496,7 +496,7 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
                 {
                     new ProjectModificationDocumentRequest
                     {
-                        Id = docId, FileName = "doc1.pdf", FileSize = 123, DocumentStoragePath = "path"
+                        Id = docId, FileName = "doc1.pdf", Status = DocumentStatus.Uploaded, FileSize = 123, DocumentStoragePath = "path"
                     }
                 }
             });
