@@ -478,9 +478,9 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
     }
 
     [Theory]
-    [InlineData("team_manager")]
-    [InlineData("study-wide_reviewer")]
-    [InlineData("workflow_co-ordinator")]
+    [InlineData(Roles.TeamManager)]
+    [InlineData(Roles.StudyWideReviewer)]
+    [InlineData(Roles.WorkflowCoordinator)]
     public async Task Index_WhenUserHasReviewerRole_SetsAllowedStatuses_ToApprovedNotApprovedWithReviewBody(string role)
     {
         // Arrange
@@ -522,7 +522,7 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
     public async Task Index_WhenUserIsSystemAdministrator_AllowsAllStatuses_LeavesAllowedStatusesEmpty()
     {
         // Arrange
-        SetUserRoles("system_administrator");
+        SetUserRoles(Roles.SystemAdministrator);
 
         ModificationSearchRequest? capturedRequest = null;
 
@@ -561,7 +561,7 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
     public async Task Index_WhenUserIsSystemAdministrator_AndReviewerRole_AdminPrecedence_LeavesAllowedStatusesEmpty()
     {
         // Arrange: user has both system_admin and a reviewer role
-        SetUserRoles("team_manager", "system_administrator");
+        SetUserRoles(Roles.TeamManager, Roles.SystemAdministrator);
 
         ModificationSearchRequest? capturedRequest = null;
 

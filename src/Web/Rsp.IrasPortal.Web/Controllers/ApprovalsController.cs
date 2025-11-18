@@ -61,13 +61,13 @@ public class ApprovalsController
                 IncludeReviewerId = false
             };
 
-            if (User.IsInRole("team_manager") || User.IsInRole("study-wide_reviewer") || User.IsInRole("workflow_co-ordinator"))
+            if (User.IsInRole(Roles.TeamManager) || User.IsInRole(Roles.StudyWideReviewer) || User.IsInRole(Roles.WorkflowCoordinator))
             {
                 searchQuery.AllowedStatuses.Add(ModificationStatus.Approved);
                 searchQuery.AllowedStatuses.Add(ModificationStatus.NotApproved);
                 searchQuery.AllowedStatuses.Add(ModificationStatus.WithReviewBody);
             }
-            if (User.IsInRole("system_administrator"))
+            if (User.IsInRole(Roles.SystemAdministrator))
             {
                 // ALLOW ALL STATUS
                 searchQuery.AllowedStatuses = [];

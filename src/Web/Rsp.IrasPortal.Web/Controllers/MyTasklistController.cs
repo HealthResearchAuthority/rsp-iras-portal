@@ -12,7 +12,7 @@ using Rsp.IrasPortal.Web.Models;
 namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "mytasklist:[action]")]
-[Authorize(Roles = "study-wide_reviewer")]
+[Authorize(Roles = Roles.StudyWideReviewer)]
 public class MyTasklistController(IProjectModificationsService projectModificationsService, IValidator<ApprovalsSearchModel> validator) : Controller
 {
     [HttpGet]
@@ -46,7 +46,7 @@ public class MyTasklistController(IProjectModificationsService projectModificati
             IncludeReviewerId = true
         };
 
-        if (User.IsInRole("team_manager") || User.IsInRole("study-wide_reviewer"))
+        if (User.IsInRole(Roles.TeamManager) || User.IsInRole(Roles.StudyWideReviewer))
         {
             searchQuery.AllowedStatuses.Add(ModificationStatus.WithReviewBody);
         }

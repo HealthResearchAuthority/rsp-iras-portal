@@ -94,7 +94,7 @@ public class IndexTests : TestServiceBase<MyTasklistController>
         };
 
         // Arrange
-        SetUserRoles("study-wide_reviewer");
+        SetUserRoles(Roles.StudyWideReviewer);
 
         var json = JsonSerializer.Serialize(model);
         _http.Session.SetString(SessionKeys.MyTasklist, json);

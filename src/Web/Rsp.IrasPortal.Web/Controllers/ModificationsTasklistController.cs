@@ -105,12 +105,12 @@ public class ModificationsTasklistController(
             ToDate = model.Search.ToDate,
             IrasId = model.Search.IrasId,
             ReviewerId = null,
-            IncludeReviewerId = !User.IsInRole("team_manager"),
+            IncludeReviewerId = !User.IsInRole(Roles.TeamManager),
             ReviewerName = model.Search.ReviewerName,
             IncludeReviewerName = !string.IsNullOrWhiteSpace(model.Search.ReviewerName),
         };
 
-        if (User.IsInRole("team_manager") || User.IsInRole("workflow_co-ordinator"))
+        if (User.IsInRole(Roles.TeamManager) || User.IsInRole(Roles.WorkflowCoordinator))
         {
             searchQuery.AllowedStatuses.Add(ModificationStatus.WithReviewBody);
         }

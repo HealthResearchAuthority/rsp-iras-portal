@@ -155,7 +155,7 @@ public class SearchTests : TestServiceBase<ApprovalsController>
     [Theory, AutoData]
     public async Task Search_ShouldReturnModifications_WhenSponsorOrganisationIsSet(GetModificationsResponse mockResponse)
     {
-        SetUserRoles("team_manager");
+        SetUserRoles(Roles.TeamManager);
 
         // Arrange
         var searchModel = new ApprovalsSearchModel { SponsorOrganisation = "71" };
@@ -183,7 +183,7 @@ public class SearchTests : TestServiceBase<ApprovalsController>
     [Theory, AutoData]
     public async Task Search_ShouldReturnModifications_WhenDateRangeIsSet(GetModificationsResponse mockResponse)
     {
-        SetUserRoles("system_administrator");
+        SetUserRoles(Roles.SystemAdministrator);
 
         // Arrange
         var searchModel = new ApprovalsSearchModel
