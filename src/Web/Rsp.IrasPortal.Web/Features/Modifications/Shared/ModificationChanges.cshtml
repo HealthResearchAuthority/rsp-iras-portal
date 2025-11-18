@@ -13,8 +13,6 @@
     ? Model.Status != ModificationStatus.WithSponsor
     : Model.Status != ModificationStatus.InDraft;
 
-    var showViewDetailsLink = true; //TODO to be changed
-
     var sponsorOrganisationUserId = ViewBag.SponsorOrganisationUserId;
 }
 
@@ -62,7 +60,7 @@
                     </li>
                 }
 
-                @if (showViewDetailsLink is true && sponsorOrganisationUserId is not null && Model.Status is ModificationStatus.WithSponsor)
+                @if (isSponsorCheckAndAuthorise is true && sponsorOrganisationUserId is not null && Model.Status is ModificationStatus.WithSponsor)
                 {
                     <li class="govuk-summary-card__action">                        
                         @{

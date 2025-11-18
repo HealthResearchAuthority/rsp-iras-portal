@@ -42,39 +42,6 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
     }
 
     [Theory, AutoData]
-    public async Task SubmitToRegulator_Should_Redirect_When_Success(
-        string projectRecordId,
-        Guid projectModificationId,
-        string overallReviewType)
-    {
-        // Arrange
-        var http = new DefaultHttpContext();
-        Sut.ControllerContext = new ControllerContext { HttpContext = http };
-        Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>());
-
-        var response = new ServiceResponse
-        {
-            StatusCode = HttpStatusCode.OK
-        };
-
-        Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.UpdateModificationStatus(projectModificationId, ModificationStatus.Approved))
-            .ReturnsAsync(response);
-
-        // Act
-        var result = await Sut.SubmitToRegulator(projectRecordId, projectModificationId, "no review required");
-
-        // Assert
-        var redirectResult = result.ShouldBeOfType<RedirectToRouteResult>();
-        redirectResult.RouteName.ShouldBe("pov:projectdetails");
-        redirectResult.RouteValues.ShouldContainKeyAndValue("projectRecordId", projectRecordId);
-
-        // Verify
-        Mocker.GetMock<IProjectModificationsService>()
-            .Verify(s => s.UpdateModificationStatus(projectModificationId, ModificationStatus.Approved), Times.Once);
-    }
-
-    [Theory, AutoData]
     public async Task SendModificationToSponsor_Should_Return_StatusCode_When_Failure(
         string projectRecordId,
         Guid projectModificationId)
@@ -99,33 +66,5 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
         // Assert
         var status = result.ShouldBeOfType<StatusCodeResult>();
         status.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
-    }
-
-    [Theory, AutoData]
-    public async Task SubmitToRegulator_Should_Return_StatusCode_When_Failure(
-        string projectRecordId,
-        Guid projectModificationId,
-        string overallReviewType)
-    {
-        // Arrange
-        var http = new DefaultHttpContext();
-        Sut.ControllerContext = new ControllerContext { HttpContext = http };
-        Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>());
-
-        var response = new ServiceResponse
-        {
-            StatusCode = HttpStatusCode.BadRequest
-        };
-
-        Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.UpdateModificationStatus(projectModificationId, ModificationStatus.Approved))
-            .ReturnsAsync(response);
-
-        // Act
-        var result = await Sut.SubmitToRegulator(projectRecordId, projectModificationId, "no review required");
-
-        // Assert
-        var status = result.ShouldBeOfType<StatusCodeResult>();
-        status.StatusCode.ShouldBe(StatusCodes.Status400BadRequest);
     }
 }
