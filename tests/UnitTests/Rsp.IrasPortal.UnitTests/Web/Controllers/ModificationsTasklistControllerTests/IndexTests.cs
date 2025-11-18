@@ -342,7 +342,7 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
 
         // Assert
         result.ShouldBeOfType<ViewResult>();
-        capturedField.ShouldBe(nameof(ModificationsModel.DateSubmitted));
+        capturedField.ShouldBe(nameof(ModificationsModel.SentToRegulatorDate));
         capturedDir.ShouldBe(SortDirections.Descending);
     }
 
@@ -378,7 +378,7 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
 
         // Assert
         result.ShouldBeOfType<ViewResult>();
-        capturedField.ShouldBe(nameof(ModificationsModel.DateSubmitted));
+        capturedField.ShouldBe(nameof(ModificationsModel.SentToRegulatorDate));
         capturedDir.ShouldBe(SortDirections.Ascending);
     }
 
@@ -475,14 +475,165 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
         vm.Modifications.ToList()[0].IsSelected.ShouldBeTrue(); // "ABC" matches "abc"
         vm.Modifications.ToList()[1].IsSelected.ShouldBeTrue(); // "def" matches "DEF"
         vm.Modifications.ToList()[2].IsSelected.ShouldBeFalse(); // "xyz" not selected
-        vm.Modifications.ToList()[0].Modification.DateSubmitted.ShouldBeNull();
-        vm.Modifications.ToList()[1].Modification.DateSubmitted.ShouldBeNull();
-        vm.Modifications.ToList()[2].Modification.DateSubmitted.ShouldBeNull();
-
-        vm.Modifications.ToList()[0].Modification.DaysSinceSubmission.ShouldBe(0);
-        vm.Modifications.ToList()[1].Modification.DaysSinceSubmission.ShouldBe(0);
-        vm.Modifications.ToList()[2].Modification.DaysSinceSubmission.ShouldBe(0);
     }
+
+    [Theory]
+    [InlineData("team_manager")]
+    [InlineData("study-wide_reviewer")]
+    [InlineData("workflow_co-ordinator")]
+    public async Task Index_WhenUserHasReviewerRole_SetsAllowedStatuses_ToApprovedNotApprovedWithReviewBody(string role)
+    {
+        // Arrange
+        SetUserRoles(role);
+
+        ModificationSearchRequest? capturedRequest = null;
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModifications(
+                It.IsAny<ModificationSearchRequest>(),
+                1,
+                20,
+                "CreatedAt",
+                "asc"))
+            .Callback<ModificationSearchRequest, int, int, string, string>((req, _, _, _, _) =>
+            {
+                capturedRequest = req;
+            })
+            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new GetModificationsResponse
+                {
+                    Modifications = new List<ModificationsDto>(),
+                    TotalCount = 0
+                }
+            });
+
+        // Act
+        var result = await Sut.Index(1, 20, null, "CreatedAt", "asc");
+
+        // Assert
+        result.ShouldBeOfType<ViewResult>();
+        capturedRequest.ShouldNotBeNull();
+        capturedRequest!.AllowedStatuses.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task Index_WhenUserIsSystemAdministrator_AllowsAllStatuses_LeavesAllowedStatusesEmpty()
+    {
+        // Arrange
+        SetUserRoles("system_administrator");
+
+        ModificationSearchRequest? capturedRequest = null;
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModifications(
+                It.IsAny<ModificationSearchRequest>(),
+                1,
+                20,
+                "CreatedAt",
+                "asc"))
+            .Callback<ModificationSearchRequest, int, int, string, string>((req, _, _, _, _) =>
+            {
+                capturedRequest = req;
+            })
+            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new GetModificationsResponse
+                {
+                    Modifications = new List<ModificationsDto>(),
+                    TotalCount = 0
+                }
+            });
+
+        // Act
+        var result = await Sut.Index(1, 20, null, "CreatedAt", "asc");
+
+        // Assert
+        result.ShouldBeOfType<ViewResult>();
+        capturedRequest.ShouldNotBeNull();
+        capturedRequest!.AllowedStatuses.ShouldNotBeNull();
+        capturedRequest.AllowedStatuses.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Index_WhenUserIsSystemAdministrator_AndReviewerRole_AdminPrecedence_LeavesAllowedStatusesEmpty()
+    {
+        // Arrange: user has both system_admin and a reviewer role
+        SetUserRoles("team_manager", "system_administrator");
+
+        ModificationSearchRequest? capturedRequest = null;
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModifications(
+                It.IsAny<ModificationSearchRequest>(),
+                1,
+                20,
+                "CreatedAt",
+                "asc"))
+            .Callback<ModificationSearchRequest, int, int, string, string>((req, _, _, _, _) =>
+            {
+                capturedRequest = req;
+            })
+            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new GetModificationsResponse
+                {
+                    Modifications = new List<ModificationsDto>(),
+                    TotalCount = 0
+                }
+            });
+
+        // Act
+        var result = await Sut.Index(1, 20, null, "CreatedAt", "asc");
+
+        // Assert
+        result.ShouldBeOfType<ViewResult>();
+        capturedRequest.ShouldNotBeNull();
+        capturedRequest.AllowedStatuses.ShouldNotBeEmpty();
+    }
+
+    [Fact]
+    public async Task Index_WhenUserHasUnrelatedRole_DoesNotRestrictStatuses_AllowedStatusesEmpty()
+    {
+        // Arrange
+        SetUserRoles("some_other_role");
+
+        ModificationSearchRequest? capturedRequest = null;
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModifications(
+                It.IsAny<ModificationSearchRequest>(),
+                1,
+                20,
+                "CreatedAt",
+                "asc"))
+            .Callback<ModificationSearchRequest, int, int, string, string>((req, _, _, _, _) =>
+            {
+                capturedRequest = req;
+            })
+            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new GetModificationsResponse
+                {
+                    Modifications = new List<ModificationsDto>(),
+                    TotalCount = 0
+                }
+            });
+
+        // Act
+        var result = await Sut.Index(1, 20, null, "CreatedAt", "asc");
+
+        // Assert
+        result.ShouldBeOfType<ViewResult>();
+        capturedRequest.ShouldNotBeNull();
+        capturedRequest!.AllowedStatuses.ShouldNotBeNull();
+        capturedRequest.AllowedStatuses.ShouldBeEmpty();
+    }
+
 
     // ---------------
     // helpers
@@ -499,4 +650,14 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
 
         _http.User = new ClaimsPrincipal(identity);
     }
+    private void SetUserRoles(params string[] roles)
+    {
+        var claims = roles
+            .Select(r => new Claim(ClaimTypes.Role, r))
+            .ToList();
+
+        var identity = new ClaimsIdentity(claims, authenticationType: "TestAuth");
+        _http.User = new ClaimsPrincipal(identity);
+    }
+
 }

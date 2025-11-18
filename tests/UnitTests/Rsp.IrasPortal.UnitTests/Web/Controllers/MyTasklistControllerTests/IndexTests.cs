@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -92,6 +93,9 @@ public class IndexTests : TestServiceBase<MyTasklistController>
             ToDaysSinceSubmission = toDays.ToString(),
         };
 
+        // Arrange
+        SetUserRoles("study-wide_reviewer");
+
         var json = JsonSerializer.Serialize(model);
         _http.Session.SetString(SessionKeys.MyTasklist, json);
 
@@ -110,5 +114,15 @@ public class IndexTests : TestServiceBase<MyTasklistController>
         var viewResult = result.ShouldBeOfType<ViewResult>();
         var modelResult = viewResult.Model.ShouldBeAssignableTo<MyTasklistViewModel>();
         var modifications = modelResult?.Modifications.ShouldBeOfType<List<ModificationsModel>>();
+    }
+
+    private void SetUserRoles(params string[] roles)
+    {
+        var claims = roles
+            .Select(r => new Claim(ClaimTypes.Role, r))
+            .ToList();
+
+        var identity = new ClaimsIdentity(claims, authenticationType: "TestAuth");
+        _http.User = new ClaimsPrincipal(identity);
     }
 }

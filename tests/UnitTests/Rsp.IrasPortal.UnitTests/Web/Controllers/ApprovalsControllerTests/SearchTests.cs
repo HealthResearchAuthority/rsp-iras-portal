@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Security.Claims;
+using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -154,6 +155,8 @@ public class SearchTests : TestServiceBase<ApprovalsController>
     [Theory, AutoData]
     public async Task Search_ShouldReturnModifications_WhenSponsorOrganisationIsSet(GetModificationsResponse mockResponse)
     {
+        SetUserRoles("team_manager");
+
         // Arrange
         var searchModel = new ApprovalsSearchModel { SponsorOrganisation = "71" };
         _http.Session.SetString(SessionKeys.ApprovalsSearch, JsonSerializer.Serialize(searchModel));
@@ -180,6 +183,8 @@ public class SearchTests : TestServiceBase<ApprovalsController>
     [Theory, AutoData]
     public async Task Search_ShouldReturnModifications_WhenDateRangeIsSet(GetModificationsResponse mockResponse)
     {
+        SetUserRoles("system_administrator");
+
         // Arrange
         var searchModel = new ApprovalsSearchModel
         {
@@ -277,5 +282,15 @@ public class SearchTests : TestServiceBase<ApprovalsController>
 
         // Act & Assert
         await Assert.ThrowsAsync<JsonException>(() => Sut.Index());
+    }
+
+    private void SetUserRoles(params string[] roles)
+    {
+        var claims = roles
+            .Select(r => new Claim(ClaimTypes.Role, r))
+            .ToList();
+
+        var identity = new ClaimsIdentity(claims, authenticationType: "TestAuth");
+        _http.User = new ClaimsPrincipal(identity);
     }
 }
