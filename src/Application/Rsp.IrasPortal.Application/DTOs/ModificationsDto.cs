@@ -21,4 +21,6 @@ public class ModificationsDto
     public ModificationStatusOrder StatusOrder { get; set; }
     public DateTime? SentToRegulatorDate { get; set; }
     public DateTime? SentToSponsorDate { get; set; }
+    // Virtual / computed field
+    public DateTime? DateSubmitted => SentToRegulatorDate ?? SentToSponsorDate;
 }

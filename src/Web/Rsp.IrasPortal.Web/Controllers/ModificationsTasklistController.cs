@@ -29,7 +29,7 @@ public class ModificationsTasklistController(
         int pageNumber = 1,
         int pageSize = 20,
         List<string>? selectedModificationIds = null,
-        string sortField = nameof(ModificationsModel.CreatedAt),
+        string sortField = nameof(ModificationsModel.DateSubmitted),
         string sortDirection = SortDirections.Ascending)
     {
         const string SessionSelectedKey = "Tasklist:SelectedModificationIds";
@@ -127,7 +127,7 @@ public class ModificationsTasklistController(
 
         if (sortField == nameof(ModificationsModel.DaysSinceSubmission))
         {
-            querySortField = nameof(ModificationsModel.CreatedAt);
+            querySortField = nameof(ModificationsModel.DateSubmitted);
             querySortDirection = sortDirection == SortDirections.Ascending
                 ? SortDirections.Descending
                 : SortDirections.Ascending;

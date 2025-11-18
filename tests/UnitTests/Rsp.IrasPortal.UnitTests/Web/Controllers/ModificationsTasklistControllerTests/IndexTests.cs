@@ -342,7 +342,7 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
 
         // Assert
         result.ShouldBeOfType<ViewResult>();
-        capturedField.ShouldBe(nameof(ModificationsModel.CreatedAt));
+        capturedField.ShouldBe(nameof(ModificationsModel.DateSubmitted));
         capturedDir.ShouldBe(SortDirections.Descending);
     }
 
@@ -378,7 +378,7 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
 
         // Assert
         result.ShouldBeOfType<ViewResult>();
-        capturedField.ShouldBe(nameof(ModificationsModel.CreatedAt));
+        capturedField.ShouldBe(nameof(ModificationsModel.DateSubmitted));
         capturedDir.ShouldBe(SortDirections.Ascending);
     }
 

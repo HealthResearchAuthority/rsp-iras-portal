@@ -11,10 +11,16 @@ public class ModificationsModel
     public string LeadNation { get; set; } = null!;
     public string SponsorOrganisation { get; set; } = null!;
     public DateTime CreatedAt { get; set; }
-    public int DaysSinceSubmission => (DateTime.UtcNow - CreatedAt).Days;
+    public int DaysSinceSubmission =>
+        DateSubmitted.HasValue
+            ? (DateTime.UtcNow.Date - DateSubmitted.Value.Date).Days
+            : 0;
+
     public string Status { get; set; } = null!;
     public int ModificationNumber { get; set; }
     public DateTime? SentToSponsorDate { get; set; } = null;
     public DateTime? SentToRegulatorDate { get; set; } = null;
     public string ReviewerName { get; set; }
+    // Virtual / computed field
+    public DateTime? DateSubmitted => SentToRegulatorDate ?? SentToSponsorDate;
 }

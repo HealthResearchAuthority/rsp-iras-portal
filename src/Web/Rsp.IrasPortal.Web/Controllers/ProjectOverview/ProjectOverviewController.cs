@@ -120,6 +120,7 @@ public class ProjectOverviewController(
                 ModificationType = dto.ModificationType,
                 ReviewType = null,
                 Category = null,
+                SentToSponsorDate = dto.SentToSponsorDate,
                 SentToRegulatorDate = dto.SentToRegulatorDate,
                 Status = dto.Status,
             })

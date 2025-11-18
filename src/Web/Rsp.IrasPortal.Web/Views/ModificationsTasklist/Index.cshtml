@@ -308,7 +308,7 @@ else
                                 {
                                     new { Field = nameof(ModificationsModel.ModificationId),   Label = "Modification ID" },
                                     new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
-                                    new { Field = nameof(ModificationsModel.CreatedAt),         Label = "Date submitted" },
+                                    new { Field = nameof(ModificationsModel.DateSubmitted),         Label = "Date submitted" },
                                     new { Field = nameof(ModificationsModel.DaysSinceSubmission), Label = "Days since submission" },
                                     new { Field = nameof(ModificationsModel.Status),            Label = "Status" }
                                 }.ToList();
@@ -387,7 +387,7 @@ else
                                             <strong>@modification.Modification.ShortProjectTitle</strong>
                                         </a>
                                     </td>
-									<td class="govuk-table__cell">@modification.Modification.CreatedAt.ToString("dd MMM yyyy")
+									<td class="govuk-table__cell">@modification.Modification.DateSubmitted?.ToString("dd MMM yyyy")
 									</td>
                                     <td class="govuk-table__cell">@modification.Modification.DaysSinceSubmission @daysText</td>
                                     @if (User.IsInRole("team_manager"))

@@ -20,7 +20,7 @@ public class MyTasklistController(IProjectModificationsService projectModificati
         int pageNumber = 1,
         int pageSize = 20,
         List<string>? selectedModificationIds = null,
-        string? sortField = nameof(ModificationsModel.CreatedAt),
+        string? sortField = nameof(ModificationsModel.DateSubmitted),
         string? sortDirection = SortDirections.Ascending)
     {
         var json = HttpContext.Session.GetString(SessionKeys.MyTasklist);
@@ -53,10 +53,10 @@ public class MyTasklistController(IProjectModificationsService projectModificati
         if (search.ToSubmission is int toSub)
             searchQuery.FromDate = DateTime.UtcNow.AddDays(-toSub).AddDays(-1).AddTicks(1);
 
-        // Map sort for DaysSinceSubmission -> CreatedAt with flipped direction
+        // Map sort for DaysSinceSubmission -> DateSubmitted with flipped direction
         (string qSortField, string qSortDir) =
             sortField == nameof(ModificationsModel.DaysSinceSubmission)
-                ? (nameof(ModificationsModel.CreatedAt),
+                ? (nameof(ModificationsModel.DateSubmitted),
                    sortDirection == SortDirections.Ascending ? SortDirections.Descending : SortDirections.Ascending)
                 : (sortField!, sortDirection!);
 
@@ -75,7 +75,9 @@ public class MyTasklistController(IProjectModificationsService projectModificati
                 SponsorOrganisation = dto.SponsorOrganisation,
                 CreatedAt = dto.CreatedAt,
                 ProjectRecordId = dto.ProjectRecordId,
-                Status = dto.Status
+                Status = dto.Status,
+                SentToRegulatorDate = dto.SentToRegulatorDate,
+                SentToSponsorDate = dto.SentToSponsorDate
             }).ToList() ?? new();
 
         model.Pagination = new PaginationViewModel(pageNumber, pageSize, result?.Content?.TotalCount ?? 0)
