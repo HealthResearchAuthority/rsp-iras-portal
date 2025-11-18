@@ -128,17 +128,17 @@
 
 								<th scope="col" class="govuk-table__header govuk-table__header-sortable">
 									@await Html.PartialAsync("_SortableHeaderButton", new SortableHeaderModel
-   {
-	   FieldName = header.Field,
-	   DisplayText = displayText,
-	   CurrentSortField = Model.Pagination?.SortField,
-	   CurrentSortDirection = Model.Pagination?.SortDirection,
-	   TableId = tableId,
-	   AdditionalParameters = new Dictionary<string, string>
-								{
-								{ "projectRecordId", Model.ProjectOverviewModel.ProjectRecordId }
-								}
-   })
+									   {
+										   FieldName = header.Field,
+										   DisplayText = displayText,
+										   CurrentSortField = Model.Pagination?.SortField,
+										   CurrentSortDirection = Model.Pagination?.SortDirection,
+										   TableId = tableId,
+										   AdditionalParameters = new Dictionary<string, string>
+																	{
+																	{ "projectRecordId", Model.ProjectOverviewModel.ProjectRecordId }
+																	}
+									   })
 								</th>
 							}
 							<th scope="col" class="govuk-table__header">Action</th>

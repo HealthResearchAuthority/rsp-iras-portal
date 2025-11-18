@@ -48,6 +48,11 @@ public class ProjectModificationDocumentRequest
     public long? FileSize { get; set; }
 
     /// <summary>
+    /// Gets or sets the date the document was created.
+    /// </summary>
+    public DateTime CreatedDate { get; set; } = DateTime.Now;
+
+    /// <summary>
     /// Gets the display size in KB, MB or GB, rounded to 2 decimal places.
     /// Returns "-" if size is null or zero.
     /// </summary>
