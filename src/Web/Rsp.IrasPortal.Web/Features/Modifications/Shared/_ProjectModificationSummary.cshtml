@@ -6,23 +6,14 @@
 @{
 	var modificationBaseModel = new BaseProjectModificationViewModel();
 
-	if (Model is BaseProjectModificationViewModel viewModel)
-	{
-		modificationBaseModel = viewModel.Adapt<BaseProjectModificationViewModel>();
-	}
-	else
-	{
-		modificationBaseModel = TempData.PopulateBaseProjectModificationProperties(modificationBaseModel);
-	}
-
-	var statusDisplayMap = new Dictionary<string, string>
-	{
-		{ ModificationStatus.InDraft, "In draft" },
-		{ ModificationStatus.Approved, "Authorised" },
-		{ ModificationStatus.WithReviewBody, "Authorised" },
-		{ ModificationStatus.NotApproved, "Not authorised" },
-		{ ModificationStatus.WithSponsor, "With sponsor" }
-	};
+    if (Model is BaseProjectModificationViewModel viewModel)
+    {
+        modificationBaseModel = viewModel.Adapt<BaseProjectModificationViewModel>();
+    }
+    else
+    {
+        modificationBaseModel = TempData.PopulateBaseProjectModificationProperties(modificationBaseModel);
+    }   
 }
 
 <dl class="govuk-summary-list">
@@ -80,7 +71,7 @@
                     };
                 }
                 <strong class="govuk-tag @tagClass">
-                    @statusDisplayMap.GetValueOrDefault(modificationBaseModel.Status, modificationBaseModel.Status)
+                    @modificationBaseModel.Status
                 </strong>
             </dd>
         </div>

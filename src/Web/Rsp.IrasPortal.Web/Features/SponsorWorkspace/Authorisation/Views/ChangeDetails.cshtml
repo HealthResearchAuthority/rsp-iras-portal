@@ -1,0 +1,39 @@
+﻿@using Rsp.Gds.Component.Models
+@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
+@using Rsp.IrasPortal.Web.Features.Modifications.Models
+@model Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Models.AuthoriseOutcomeViewModel
+
+@{
+    ViewBag.Title = "Check and authorise";
+
+    TempData[TempDataKeys.ProjectModification.ReviewAllChanges] = true;
+    ViewData[ViewDataKeys.ShowRemoveLink] = false;
+    ViewData[ViewDataKeys.ShowChangeLink] = false;    
+    ViewData[ViewDataKeys.ShowModificationChangeStatus] = false;
+    ViewData[ViewDataKeys.ShowModificationStatus] = true;
+
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData ?? new Dictionary<string, MixedContentPageItem?>();
+
+    var headline = pageContent.GetValueOrDefault("SponsorWorkspace.ChangeDetails.Title", null);
+
+    var checkAndAuthoriseNavParams = new { 
+        projectRecordId = Model.ProjectRecordId,
+        irasId = Model.IrasId,
+        shortTitle = Model.ShortTitle,
+        projectModificationId = Model.ProjectModificationId,
+        sponsorOrganisationUserId = Model.SponsorOrganisationUserId
+    };
+}
+
+@section Breadcrumb {
+    @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+    {
+        ("Sponsor workspace", Url.RouteUrl("sws:sponsorworkspace")),
+        ("Authorisations", Url.RouteUrl("sws:authorisations", new { sponsorOrganisationUserId = Model.SponsorOrganisationUserId })),
+        ("Check and authorise", Url.RouteUrl("sws:checkandauthorise", checkAndAuthoriseNavParams))
+    })
+}
+
+<p>Page works!</p>
