@@ -149,7 +149,13 @@ public class AuthorisationsController(
             QuestionsetHelpers.BuildQuestionnaireViewModel(sponsorDetailsQuestionsResponse.Content!);
         sponsorDetailsQuestionnaire.UpdateWithRespondentAnswers(sponsorDetailsAnswers);
 
-        modification.SponsorDetails = sponsorDetailsQuestionnaire.Questions;
+        modification.SponsorDetails = sponsorDetailsQuestionnaire.Questions;        
+
+        var config = new TypeAdapterConfig();
+        config.ForType<ModificationDetailsViewModel, AuthoriseOutcomeViewModel>()
+              .Ignore(dest => dest.ProjectOverviewDocumentViewModel);
+
+        var authoriseOutcomeViewModel = modification.Adapt<AuthoriseOutcomeViewModel>(config);
 
         var config = new TypeAdapterConfig();
         config.ForType<ModificationDetailsViewModel, AuthoriseOutcomeViewModel>()
