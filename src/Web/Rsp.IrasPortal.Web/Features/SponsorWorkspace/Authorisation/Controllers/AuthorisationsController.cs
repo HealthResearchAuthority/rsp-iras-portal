@@ -157,12 +157,6 @@ public class AuthorisationsController(
 
         var authoriseOutcomeViewModel = modification.Adapt<AuthoriseOutcomeViewModel>(config);
 
-        var config = new TypeAdapterConfig();
-        config.ForType<ModificationDetailsViewModel, AuthoriseOutcomeViewModel>()
-              .Ignore(dest => dest.ProjectOverviewDocumentViewModel);
-
-        var authoriseOutcomeViewModel = modification.Adapt<AuthoriseOutcomeViewModel>(config);
-
         authoriseOutcomeViewModel.SponsorOrganisationUserId = sponsorOrganisationUserId;
         authoriseOutcomeViewModel.ProjectModificationId = projectModificationId;
         authoriseOutcomeViewModel.ModificationChangeId = modificationChangeId is null ? null : modificationChangeId.ToString();
