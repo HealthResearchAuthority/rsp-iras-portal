@@ -12,7 +12,7 @@ using Rsp.IrasPortal.Web.Models;
 namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "mytasklist:[action]")]
-[Authorize(Roles = "study-wide_reviewer")]
+[Authorize(Roles = Roles.StudyWideReviewer)]
 public class MyTasklistController(IProjectModificationsService projectModificationsService, IValidator<ApprovalsSearchModel> validator) : Controller
 {
     [HttpGet]
@@ -20,7 +20,7 @@ public class MyTasklistController(IProjectModificationsService projectModificati
         int pageNumber = 1,
         int pageSize = 20,
         List<string>? selectedModificationIds = null,
-        string? sortField = nameof(ModificationsModel.CreatedAt),
+        string? sortField = nameof(ModificationsModel.SentToRegulatorDate),
         string? sortDirection = SortDirections.Ascending)
     {
         var json = HttpContext.Session.GetString(SessionKeys.MyTasklist);
@@ -46,6 +46,11 @@ public class MyTasklistController(IProjectModificationsService projectModificati
             IncludeReviewerId = true
         };
 
+        if (User.IsInRole(Roles.TeamManager) || User.IsInRole(Roles.StudyWideReviewer))
+        {
+            searchQuery.AllowedStatuses.Add(ModificationStatus.WithReviewBody);
+        }
+
         // Reverse date logic when searching by "days since submission"
         if (search.FromSubmission is int fromSub)
             searchQuery.ToDate = DateTime.UtcNow.AddDays(-fromSub);
@@ -53,10 +58,10 @@ public class MyTasklistController(IProjectModificationsService projectModificati
         if (search.ToSubmission is int toSub)
             searchQuery.FromDate = DateTime.UtcNow.AddDays(-toSub).AddDays(-1).AddTicks(1);
 
-        // Map sort for DaysSinceSubmission -> CreatedAt with flipped direction
+        // Map sort for DaysSinceSubmission -> SentToRegulatorDate with flipped direction
         (string qSortField, string qSortDir) =
             sortField == nameof(ModificationsModel.DaysSinceSubmission)
-                ? (nameof(ModificationsModel.CreatedAt),
+                ? (nameof(ModificationsModel.SentToRegulatorDate),
                    sortDirection == SortDirections.Ascending ? SortDirections.Descending : SortDirections.Ascending)
                 : (sortField!, sortDirection!);
 
@@ -75,7 +80,9 @@ public class MyTasklistController(IProjectModificationsService projectModificati
                 SponsorOrganisation = dto.SponsorOrganisation,
                 CreatedAt = dto.CreatedAt,
                 ProjectRecordId = dto.ProjectRecordId,
-                Status = dto.Status
+                Status = dto.Status,
+                SentToRegulatorDate = dto.SentToRegulatorDate,
+                SentToSponsorDate = dto.SentToSponsorDate
             }).ToList() ?? new();
 
         model.Pagination = new PaginationViewModel(pageNumber, pageSize, result?.Content?.TotalCount ?? 0)

@@ -16,16 +16,6 @@ namespace Rsp.IrasPortal.Configuration.Auth;
 /// </summary>
 public static class AuthConfiguration
 {
-    private struct Roles
-    {
-        public const string systemAdministrator = "system_administrator";
-        public const string applicant = nameof(applicant);
-        public const string reviewer = nameof(reviewer);
-        public const string sponsor = nameof(sponsor);
-        public const string studyWideReviewer = "study-wide_reviewer";
-        public const string teamManager = "team_manager";
-        public const string workflowCoordinator = "workflow_co-ordinator";
-    };
 
     /// <summary>
     /// Adds the Authentication and Authorization to the service
@@ -238,19 +228,19 @@ public static class AuthConfiguration
 
         services
             .AddAuthorizationBuilder()
-            .AddPolicy("IsReviewer", policy => policy.RequireRole(Roles.reviewer))
-            .AddPolicy("IsSystemAdministrator", policy => policy.RequireRole(Roles.systemAdministrator))
-            .AddPolicy("IsApplicant", policy => policy.RequireRole(Roles.applicant))
-            .AddPolicy("IsSponsor", policy => policy.RequireRole(Roles.sponsor))
-            .AddPolicy("IsStudyWideReviewer", policy => policy.RequireRole(Roles.studyWideReviewer))
-            .AddPolicy("IsTeamManager", policy => policy.RequireRole(Roles.teamManager))
-            .AddPolicy("IsWorkflowCoordinator", policy => policy.RequireRole(Roles.workflowCoordinator))
+            .AddPolicy("IsReviewer", policy => policy.RequireRole(Roles.Reviewer))
+            .AddPolicy("IsSystemAdministrator", policy => policy.RequireRole(Roles.SystemAdministrator))
+            .AddPolicy("IsApplicant", policy => policy.RequireRole(Roles.Applicant))
+            .AddPolicy("IsSponsor", policy => policy.RequireRole(Roles.Sponsor))
+            .AddPolicy("IsStudyWideReviewer", policy => policy.RequireRole(Roles.StudyWideReviewer))
+            .AddPolicy("IsTeamManager", policy => policy.RequireRole(Roles.TeamManager))
+            .AddPolicy("IsWorkflowCoordinator", policy => policy.RequireRole(Roles.WorkflowCoordinator))
             .AddPolicy("IsBackstageUser", p => p.RequireRole(
-                Roles.applicant,
-                Roles.systemAdministrator,
-                Roles.studyWideReviewer,
-                Roles.teamManager,
-                Roles.workflowCoordinator))
+                Roles.Applicant,
+                Roles.SystemAdministrator,
+                Roles.StudyWideReviewer,
+                Roles.TeamManager,
+                Roles.WorkflowCoordinator))
             .SetDefaultPolicy(policy);
     }
 }

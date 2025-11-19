@@ -27,7 +27,7 @@ public class ProjectRecordSearchController(
         string? sortField = "irasid",
         string? sortDirection = SortDirections.Ascending)
     {
-        var userIsSystemAdmin = User.IsInRole("system_administrator");
+        var userIsSystemAdmin = User.IsInRole(Roles.SystemAdministrator);
 
         var model = new ProjectRecordSearchViewModel();
 

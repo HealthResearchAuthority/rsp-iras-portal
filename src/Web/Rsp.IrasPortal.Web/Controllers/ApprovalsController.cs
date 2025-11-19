@@ -61,6 +61,18 @@ public class ApprovalsController
                 IncludeReviewerId = false
             };
 
+            if (User.IsInRole(Roles.TeamManager) || User.IsInRole(Roles.StudyWideReviewer) || User.IsInRole(Roles.WorkflowCoordinator))
+            {
+                searchQuery.AllowedStatuses.Add(ModificationStatus.Approved);
+                searchQuery.AllowedStatuses.Add(ModificationStatus.NotApproved);
+                searchQuery.AllowedStatuses.Add(ModificationStatus.WithReviewBody);
+            }
+            if (User.IsInRole(Roles.SystemAdministrator))
+            {
+                // ALLOW ALL STATUS
+                searchQuery.AllowedStatuses = [];
+            }
+
             var result = await projectModificationsService.GetModifications(searchQuery, pageNumber, pageSize, sortField, sortDirection);
 
             model.Modifications = result?.Content?.Modifications?

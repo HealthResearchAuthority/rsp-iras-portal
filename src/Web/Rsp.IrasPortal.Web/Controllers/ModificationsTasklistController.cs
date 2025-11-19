@@ -29,7 +29,7 @@ public class ModificationsTasklistController(
         int pageNumber = 1,
         int pageSize = 20,
         List<string>? selectedModificationIds = null,
-        string sortField = nameof(ModificationsModel.CreatedAt),
+        string sortField = nameof(ModificationsModel.SentToRegulatorDate),
         string sortDirection = SortDirections.Ascending)
     {
         const string SessionSelectedKey = "Tasklist:SelectedModificationIds";
@@ -90,10 +90,15 @@ public class ModificationsTasklistController(
             ToDate = model.Search.ToDate,
             IrasId = model.Search.IrasId,
             ReviewerId = null,
-            IncludeReviewerId = !User.IsInRole("team_manager"),
+            IncludeReviewerId = !User.IsInRole(Roles.TeamManager),
             ReviewerName = model.Search.ReviewerName,
             IncludeReviewerName = !string.IsNullOrWhiteSpace(model.Search.ReviewerName),
         };
+
+        if (User.IsInRole(Roles.TeamManager) || User.IsInRole(Roles.WorkflowCoordinator))
+        {
+            searchQuery.AllowedStatuses.Add(ModificationStatus.WithReviewBody);
+        }
 
         if (model.Search.FromSubmission != null)
         {
@@ -112,7 +117,7 @@ public class ModificationsTasklistController(
 
         if (sortField == nameof(ModificationsModel.DaysSinceSubmission))
         {
-            querySortField = nameof(ModificationsModel.CreatedAt);
+            querySortField = nameof(ModificationsModel.SentToRegulatorDate);
             querySortDirection = sortDirection == SortDirections.Ascending
                 ? SortDirections.Descending
                 : SortDirections.Ascending;
