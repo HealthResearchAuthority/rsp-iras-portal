@@ -124,9 +124,6 @@ public class ProjectOverviewController(
                 SentToRegulatorDate = dto.SentToRegulatorDate,
                 Status = dto.Status,
             })
-            .OrderBy(item => Enum.TryParse<ModificationStatusOrder>(GetEnumStatus(item.Status!), true, out var statusEnum)
-            ? (int)statusEnum
-            : (int)ModificationStatusOrder.None)
             .ToList() ?? [];
 
         model.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationsResponseResult?.Content?.TotalCount ?? 0)
