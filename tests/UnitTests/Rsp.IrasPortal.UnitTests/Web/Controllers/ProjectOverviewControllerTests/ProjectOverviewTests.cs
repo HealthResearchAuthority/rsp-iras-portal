@@ -68,6 +68,17 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
                     Status = ProjectRecordStatus.InDraft
                 }
             });
+
+        applicationService
+            .Setup(s => s.GetProjectRecordAuditTrail(It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<ProjectRecordAuditTrailResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectRecordAuditTrailResponse
+                {
+                    Items = []
+                }
+            });
     }
 
     private void SetupRespondentAnswers(string projectRecordId, IEnumerable<RespondentAnswerDto> answers)
@@ -199,6 +210,17 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
                 }
             });
 
+        applicationService
+            .Setup(s => s.GetProjectRecordAuditTrail(It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<ProjectRecordAuditTrailResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectRecordAuditTrailResponse
+                {
+                    Items = []
+                }
+            });
+
         SetupRespondentAnswers(DefaultProjectRecordId, answers);
         SetupControllerContext(httpContext, tempData);
         SetupCMSService();
@@ -240,6 +262,17 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
                     Id = DefaultProjectRecordId,
                     IrasId = 1,
                     Status = ProjectRecordStatus.Active
+                }
+            });
+
+        applicationService
+            .Setup(s => s.GetProjectRecordAuditTrail(It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<ProjectRecordAuditTrailResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectRecordAuditTrailResponse
+                {
+                    Items = []
                 }
             });
 
@@ -787,11 +820,23 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var tempDataProvider = new Mock<ITempDataProvider>();
         var tempData = CreateTempData(tempDataProvider, httpContext);
 
+        Mocker.GetMock<IApplicationsService>()
+            .Setup(s => s.GetProjectRecordAuditTrail(It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<ProjectRecordAuditTrailResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectRecordAuditTrailResponse
+                {
+                    Items = []
+                }
+            });
+
         SetupProjectRecord(projectRecordId);
-        SetupRespondentAnswers(projectRecordId, new[]
-        {
-        new RespondentAnswerDto { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "X" }
-    });
+        SetupRespondentAnswers(projectRecordId,
+        [
+            new RespondentAnswerDto { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "X" }
+        ]);
+
         SetupControllerContext(httpContext, tempData);
         SetupCMSService("ProjectDetails", "Project details");
 
@@ -1033,6 +1078,18 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
             .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(serviceResponse);
 
+        Mocker
+            .GetMock<IApplicationsService>()
+            .Setup(s => s.GetProjectRecordAuditTrail(It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<ProjectRecordAuditTrailResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectRecordAuditTrailResponse
+                {
+                    Items = []
+                }
+            });
+
         // Act
         var result = await Sut.PostApproval(projectRecordId, "");
 
@@ -1080,6 +1137,17 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
                     Id = projectRecordId,
                     IrasId = 1,
                     Status = ProjectRecordStatus.InDraft
+                }
+            });
+
+        applicationService
+            .Setup(s => s.GetProjectRecordAuditTrail(It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<ProjectRecordAuditTrailResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectRecordAuditTrailResponse
+                {
+                    Items = []
                 }
             });
 
@@ -1199,5 +1267,63 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         model.Pagination.PageSize.ShouldBe(pageSize);
         model.Pagination.SortField.ShouldBe(sortField);
         model.Pagination.SortDirection.ShouldBe(sortDirection);
+    }
+
+    [Fact]
+    public async Task ProjectHistory_ReturnsViewResult_WhenServiceReturnsOkObject()
+    {
+        // Arrange
+        var projectRecordId = "456";
+        var httpContext = CreateHttpContextWithSession(); // CHANGED
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempData = CreateTempData(tempDataProvider, httpContext);
+
+        var answers = new List<RespondentAnswerDto>
+        {
+            new() { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "Project Y" }
+        };
+
+        SetupProjectRecord(projectRecordId);
+        SetupRespondentAnswers(projectRecordId, answers);
+        SetupControllerContext(httpContext, tempData);
+        SetupCMSService();
+
+        // Act
+        var result = await Sut.ProjectHistory(projectRecordId, null);
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var model = viewResult.Model.ShouldBeOfType<ProjectOverviewModel>();
+
+        model.ProjectRecordId.ShouldBe(projectRecordId);
+        model.ProjectTitle.ShouldBe("Project Y");
+        model.CategoryId.ShouldBe(QuestionCategories.ProjectRecord);
+    }
+
+    [Fact]
+    public async Task ProjectHistory_PropagatesError_WhenGetProjectOverviewFails()
+    {
+        // Arrange
+        var projectRecordId = "err-1";
+        var httpContext = CreateHttpContextWithSession();
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempData = CreateTempData(tempDataProvider, httpContext);
+
+        SetupControllerContext(httpContext, tempData);
+        SetupCMSService();
+
+        Mocker.GetMock<IApplicationsService>()
+            .Setup(s => s.GetProjectRecord(projectRecordId))
+            .ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
+            {
+                StatusCode = HttpStatusCode.InternalServerError
+            });
+
+        // Act
+        var result = await Sut.ProjectHistory(projectRecordId, "");
+
+        // Assert
+        var status = result.ShouldBeOfType<StatusCodeResult>();
+        status.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
     }
 }

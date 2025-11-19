@@ -335,23 +335,33 @@ public abstract class ModificationsControllerBase
     /// </summary>
     private async Task<DocumentSummaryItemDto> GetDocumentSummary(ProjectModificationDocumentRequest a, QuestionnaireViewModel questionnaire)
     {
+        var status = a.Status;
+
+        if (!a.Status.Equals(DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase) &&
+            a.Status.Equals(DocumentStatus.Uploaded, StringComparison.OrdinalIgnoreCase))
+        {
+            status = (await EvaluateDocumentCompletion(a.Id, questionnaire)
+                ? DocumentDetailStatus.Incomplete
+                : DocumentDetailStatus.Complete).ToString();
+        }
+
         return new DocumentSummaryItemDto
         {
             DocumentId = a.Id,
             FileName = $"Add details for {a.FileName}",
             FileSize = a.FileSize ?? 0,
             BlobUri = a.DocumentStoragePath ?? string.Empty,
-            Status = (await EvaluateDocumentCompletion(a, questionnaire) ? DocumentDetailStatus.Incomplete : DocumentDetailStatus.Completed).ToString(),
+            Status = status
         };
     }
 
     /// <summary>
     /// Evaluates whether a single document�s answers are complete.
     /// </summary>
-    protected async Task<bool> EvaluateDocumentCompletion(ProjectModificationDocumentRequest a, QuestionnaireViewModel questionnaire)
+    protected async Task<bool> EvaluateDocumentCompletion(Guid documentId, QuestionnaireViewModel questionnaire)
     {
         // Fetch document answers
-        var answersResponse = await respondentService.GetModificationDocumentAnswers(a.Id);
+        var answersResponse = await respondentService.GetModificationDocumentAnswers(documentId);
         var answers = answersResponse?.StatusCode == HttpStatusCode.OK
             ? answersResponse.Content ?? []
             : [];
@@ -365,6 +375,50 @@ public abstract class ModificationsControllerBase
         // Validate questionnaire
         var isValid = await this.ValidateQuestionnaire(validator, clonedQuestionnaire, true);
         return !answers.Any() || !isValid;
+    }
+
+    protected async Task MapDocumentTypesAndStatusesAsync(
+      QuestionnaireViewModel questionnaire,
+      IEnumerable<ProjectOverviewDocumentDto> documents)
+    {
+        if (questionnaire?.Questions == null || documents == null)
+            return;
+
+        // 1. Locate the "Document Type" question
+        var documentTypeQuestion = questionnaire.Questions
+            .FirstOrDefault(q =>
+                string.Equals(q.QuestionId?.ToString(),
+                QuestionIds.SelectedDocumentType,
+                StringComparison.OrdinalIgnoreCase));
+
+        if (documentTypeQuestion?.Answers?.Any() != true)
+            return;
+
+        // **Answer dictionary for fast lookup**
+        var answerLookup = documentTypeQuestion.Answers
+            .ToDictionary(a => a.AnswerId, a => a.AnswerText, StringComparer.OrdinalIgnoreCase);
+
+        // 2. Loop through documents
+        foreach (var doc in documents)
+        {
+            // ---- A. Map DocumentType AnswerId → AnswerText ----
+            if (!string.IsNullOrWhiteSpace(doc.DocumentType) &&
+                answerLookup.TryGetValue(doc.DocumentType, out var friendlyName))
+            {
+                doc.DocumentType = friendlyName;
+            }
+
+            // ---- B. Update completion status ----
+            if (!doc.Status.Equals(DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase) &&
+                doc.Status.Equals(DocumentStatus.Uploaded, StringComparison.OrdinalIgnoreCase))
+            {
+                bool isIncomplete = await EvaluateDocumentCompletion(doc.Id, questionnaire);
+
+                doc.Status = isIncomplete
+                    ? DocumentDetailStatus.Incomplete.ToString()
+                    : DocumentDetailStatus.Complete.ToString();
+            }
+        }
     }
 
     /// <summary>

@@ -11,6 +11,7 @@ using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
+using Rsp.IrasPortal.Web.Features.Modifications;
 using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
 
@@ -24,8 +25,9 @@ public class ProjectOverviewController(
     IRespondentService respondentService,
     ICmsQuestionsetService cmsQuestionsetService,
     IRtsService rtsService,
-    IValidator<ApprovalsSearchModel> validator
-    ) : Controller
+    IValidator<ApprovalsSearchModel> validator,
+    IValidator<QuestionnaireViewModel> docValidator
+    ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, docValidator)
 {
     private const string DocumentDetailsSection = "pdm-document-metadata";
 
@@ -124,9 +126,6 @@ public class ProjectOverviewController(
                 SentToRegulatorDate = dto.SentToRegulatorDate,
                 Status = dto.Status,
             })
-            .OrderBy(item => Enum.TryParse<ModificationStatusOrder>(GetEnumStatus(item.Status!), true, out var statusEnum)
-            ? (int)statusEnum
-            : (int)ModificationStatusOrder.None)
             .ToList() ?? [];
 
         model.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationsResponseResult?.Content?.TotalCount ?? 0)
@@ -261,6 +260,8 @@ public class ProjectOverviewController(
         // Get organisation name from RTS service
         var organisationName = await SponsorOrganisationNameHelper.GetSponsorOrganisationNameFromQuestions(rtsService, questionnaire.Questions);
 
+        var auditTrails = await applicationService.GetProjectRecordAuditTrail(projectRecordId);
+
         // Populate TempData with project details for actual modification journey
         TempData[TempDataKeys.IrasId] = projectRecord.IrasId;
         TempData[TempDataKeys.ProjectRecordId] = projectRecord.Id;
@@ -277,6 +278,7 @@ public class ProjectOverviewController(
             IrasId = projectRecord.IrasId,
             OrganisationName = organisationName,
             SectionGroupQuestions = sectionGroupQuestions,
+            AuditTrails = auditTrails.Content?.Items ?? []
         };
 
         return Ok(model);
@@ -323,6 +325,8 @@ public class ProjectOverviewController(
 
         model.Documents = modificationsResponseResult?.Content?.Documents ?? [];
 
+        await MapDocumentTypesAndStatusesAsync(questionnaire, model.Documents);
+
         model.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationsResponseResult?.Content?.TotalCount ?? 0)
         {
             SortDirection = sortDirection,
@@ -333,6 +337,20 @@ public class ProjectOverviewController(
         };
 
         return View(model);
+    }
+
+    public async Task<IActionResult> ProjectHistory(string projectRecordId, string? backRoute)
+    {
+        UpdateModificationRelatedTempData();
+
+        var result = await GetProjectOverviewResult(projectRecordId!, backRoute, nameof(ProjectHistory));
+
+        if (result is not OkObjectResult projectOverview)
+        {
+            return result;
+        }
+
+        return View(projectOverview.Value);
     }
 
     [HttpPost]
