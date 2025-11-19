@@ -12,6 +12,7 @@ public class ModificationDetailsViewModel : BaseProjectModificationViewModel
     public bool ChangesReadyForSubmission { get; set; }
     public List<QuestionViewModel> SponsorDetails { get; set; } = [];
     public ProjectOverviewDocumentViewModel ProjectOverviewDocumentViewModel { get; set; } = new();
+    public AuditTrailModel? AuditTrailModel { get; set; }
 
     public string? Outcome { get; set; }
 

@@ -48,8 +48,6 @@
     </div>
 </div>
 
-<br/>
-
 <!-- Panels (toggle visibility via CSS) -->
 <div id="sponsor-details" class="tab-content">
     <partial name="SponsorDetails" model="Model" viewData="ViewData"/>
@@ -64,5 +62,5 @@
 </div>
 
 <div id="history" class="tab-content">
-    <p class="govuk-body">History content here...</p>
+    <partial name="_ProjectModificationAuditTrail" model="Model.AuditTrailModel" viewData="ViewData" />
 </div>

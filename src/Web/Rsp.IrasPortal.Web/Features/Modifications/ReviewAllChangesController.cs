@@ -37,7 +37,7 @@ public class ReviewAllChangesController
     [HttpGet]
     public async Task<IActionResult> ReviewAllChanges
 #pragma warning disable S107 // Methods should not have too many parameters
-        (
+    (
         string projectRecordId,
         string irasId,
         string shortTitle,
@@ -46,8 +46,7 @@ public class ReviewAllChangesController
         int pageSize = 20,
         string sortField = nameof(ProjectOverviewDocumentDto.DocumentType),
         string sortDirection = SortDirections.Ascending
-        )
-#pragma warning restore S107 // Methods should not have too many parameters
+    )
     {
         // Fetch the modification by its identifier
         var (result, modification) = await PrepareModificationAsync(projectModificationId, irasId, shortTitle, projectRecordId);
@@ -71,6 +70,18 @@ public class ReviewAllChangesController
         sponsorDetailsQuestionnaire.UpdateWithRespondentAnswers(sponsorDetailsAnswers);
 
         modification.SponsorDetails = sponsorDetailsQuestionnaire.Questions;
+
+        var modificationAuditResponse = await projectModificationsService.GetModificationAuditTrail(projectModificationId);
+
+        if (modificationAuditResponse.IsSuccessStatusCode && modificationAuditResponse.Content is not null)
+        {
+            modification.AuditTrailModel = new AuditTrailModel
+            {
+                AuditTrail = modificationAuditResponse.Content,
+                ModificationIdentifier = modification.ModificationId ?? "",
+                ShortTitle = shortTitle,
+            };
+        }
 
         // Store the modification details in TempData for later use
         var reviewOutcomeModel = new ReviewOutcomeViewModel

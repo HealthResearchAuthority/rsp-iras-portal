@@ -92,6 +92,19 @@ public class ReviewAllChanges_Success : TestServiceBase<ReviewAllChangesControll
             .Setup(s => s.GetModificationChangeAnswers(changeId, It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = [] });
 
+        Mocker
+            .GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationAuditTrail(It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationAuditTrailResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectModificationAuditTrailResponse
+                {
+                    Items = [],
+                    TotalCount = 0
+                }
+            });
+
         var answers = new List<RespondentAnswerDto>
             {
                 new() { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "Project X" },
@@ -261,6 +274,19 @@ public class ReviewAllChanges_Success : TestServiceBase<ReviewAllChangesControll
             .GetMock<IRespondentService>()
             .Setup(s => s.GetModificationChangeAnswers(changeId, It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = [] });
+
+        Mocker
+            .GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationAuditTrail(It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationAuditTrailResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectModificationAuditTrailResponse
+                {
+                    Items = [],
+                    TotalCount = 0
+                }
+            });
 
         var answers = new List<RespondentAnswerDto>
             {
