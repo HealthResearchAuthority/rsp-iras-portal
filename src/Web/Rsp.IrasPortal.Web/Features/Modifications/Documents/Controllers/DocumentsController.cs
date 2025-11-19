@@ -551,11 +551,14 @@ public class DocumentsController
             return View(model);
         }
 
-        // Upload valid files to blob storage
-        var uploadedDocuments = await UploadValidFilesAsync(validationResult.ValidFiles, irasId, projectModificationId, projectRecordId, respondentId);
+        if (validationResult.ValidFiles.Count > 0)
+        {
+            // Upload valid files to blob storage
+            var uploadedDocuments = await UploadValidFilesAsync(validationResult.ValidFiles, irasId, projectModificationId, projectRecordId, respondentId);
 
-        // Append and sort the newly uploaded documents
-        model.UploadedDocuments = AppendAndSortDocuments(model.UploadedDocuments, uploadedDocuments);
+            // Append and sort the newly uploaded documents
+            model.UploadedDocuments = AppendAndSortDocuments(model.UploadedDocuments, uploadedDocuments);
+        }
 
         // Stay on the same view to show all documents
         return View(model);
