@@ -35,4 +35,12 @@ public interface IBlobStorageService
     Task<ServiceResponse> DeleteFileAsync(BlobServiceClient blobServiceClient, string containerName, string blobPath);
 
     Task<ServiceResponse<IActionResult>> DownloadFileToHttpResponseAsync(BlobServiceClient blobServiceClient, string containerName, string blobPath, string fileName);
+
+    Task<(byte[] FileBytes, string FileName)> DownloadFolderAsZipAsync
+        (
+            BlobServiceClient blobServiceClient,
+            string containerName,
+            string folderName,
+            string saveAsFileName
+        );
 }

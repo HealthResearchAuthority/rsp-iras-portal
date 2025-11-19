@@ -11,6 +11,7 @@ using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
+using Rsp.IrasPortal.Web.Features.Modifications;
 using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
 
@@ -24,8 +25,9 @@ public class ProjectOverviewController(
     IRespondentService respondentService,
     ICmsQuestionsetService cmsQuestionsetService,
     IRtsService rtsService,
-    IValidator<ApprovalsSearchModel> validator
-    ) : Controller
+    IValidator<ApprovalsSearchModel> validator,
+    IValidator<QuestionnaireViewModel> docValidator
+    ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, docValidator)
 {
     private const string DocumentDetailsSection = "pdm-document-metadata";
 
@@ -322,6 +324,8 @@ public class ProjectOverviewController(
             searchQuery, pageNumber, pageSize, sortField, sortDirection);
 
         model.Documents = modificationsResponseResult?.Content?.Documents ?? [];
+
+        await MapDocumentTypesAndStatusesAsync(questionnaire, model.Documents);
 
         model.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationsResponseResult?.Content?.TotalCount ?? 0)
         {

@@ -43,19 +43,12 @@
 <partial name="_NavigationHeaderPartial" model="@Model.ProjectOverviewModel" />
 
 <div class="govuk-grid-row">
-	<div class="govuk-grid-row">
-		<div class="govuk-grid-column-two-thirds">
-			<partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
-		</div>
-	</div>
-
 	<div class="govuk-grid-column-two-thirds">
 		<br />
 		<label class="govuk-label" for="Search.SearchQuery">
 			<b>Project documents</b>
 		</label>
 		<div class="govuk-hint" id="Search.SearchQuery-hint">
-			
 		</div>
 
 		<div class="review-body-search">
@@ -107,6 +100,8 @@
 					<thead class="govuk-table__head">
 						<tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
 							@{
+
+								// Sortable headers (Status removed)
 								var sortableHeaders = new[]
 								{
 							new { Field = nameof(ProjectOverviewDocumentDto.DocumentType), Label = "Document type" },
@@ -114,35 +109,48 @@
 							new { Field = nameof(ProjectOverviewDocumentDto.FileName), Label = "File name" },
 							new { Field = nameof(ProjectOverviewDocumentDto.DocumentVersion), Label = "Version" },
 							new { Field = nameof(ProjectOverviewDocumentDto.DocumentDate), Label = "Document date" },
-							new { Field = nameof(ProjectOverviewDocumentDto.Status), Label = "Status" },
+
+							// Modification ID remains sortable
 							new { Field = nameof(ProjectOverviewDocumentDto.ModificationIdentifier), Label = "Modification ID" }
 							};
+
 								var tableId = "projectDocumentsTable";
 							}
 
+							<!-- Sortable headers -->
 							@foreach (var header in sortableHeaders)
 							{
+								// Insert STATUS column *before* Modification ID index
+								if (header.Field == nameof(ProjectOverviewDocumentDto.ModificationIdentifier))
+								{
+									<!-- NON-sortable Status column -->
+									<th scope="col" class="govuk-table__header">Status</th>
+								}
+
 								var displayText = header.Label.Contains(" ")
 								? header.Label.Replace(" ", "<br />")
 								: header.Label;
 
 								<th scope="col" class="govuk-table__header govuk-table__header-sortable">
 									@await Html.PartialAsync("_SortableHeaderButton", new SortableHeaderModel
-   {
-	   FieldName = header.Field,
-	   DisplayText = displayText,
-	   CurrentSortField = Model.Pagination?.SortField,
-	   CurrentSortDirection = Model.Pagination?.SortDirection,
-	   TableId = tableId,
-	   AdditionalParameters = new Dictionary<string, string>
-								{
-								{ "projectRecordId", Model.ProjectOverviewModel.ProjectRecordId }
-								}
-   })
+									   {
+										   FieldName = header.Field,
+										   DisplayText = displayText,
+										   CurrentSortField = Model.Pagination?.SortField,
+										   CurrentSortDirection = Model.Pagination?.SortDirection,
+										   TableId = tableId,
+										   AdditionalParameters = new Dictionary<string, string>
+											{
+											{ "projectRecordId", Model.ProjectOverviewModel.ProjectRecordId }
+											}
+									   })
 								</th>
 							}
+
+							<!-- Action column -->
 							<th scope="col" class="govuk-table__header">Action</th>
 						</tr>
+
 					</thead>
 
 					<form method="get" id="projectdocuments-selection">
@@ -174,7 +182,25 @@
 										@{
 										<td class="govuk-table__cell">@modification.DocumentDate?.ToString("dd MMM yyyy")</td>
 										}
-									<td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">@modification.Status</strong></td>
+									<td class="govuk-table__cell">
+											@{
+												var tagClass = modification.Status switch
+												{
+													DocumentStatus.Failed => "govuk-tag--red",
+													DocumentStatus.Incomplete => "govuk-tag--blue",
+													DocumentStatus.Complete => "govuk-tag--blue",
+													ModificationStatus.WithSponsor => "govuk-tag--yellow",
+													ModificationStatus.Approved => "govuk-tag--green",
+													ModificationStatus.WithReviewBody => "govuk-tag--green",
+													ModificationStatus.NotApproved => "govuk-tag--red",
+													ModificationStatus.NotAuthorised => "govuk-tag--red",
+													_ => "govuk-tag--blue"
+												};
+											}
+										<strong class="govuk-tag @(tagClass)">
+												@modification.Status
+										</strong>
+									</td>
 									<td class="govuk-table__cell">
 										<a class="govuk-link" href="#">
 											<strong>@modification.ModificationIdentifier</strong>

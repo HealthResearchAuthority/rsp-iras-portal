@@ -77,6 +77,22 @@ public class ModificationDetailsController
     }
 
     [HttpGet]
+    public IActionResult DocumentsScanInProgress()
+    {
+        var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationDetailsViewModel());
+
+        return View("DocumentsScanInProgress", viewModel);
+    }
+
+    [HttpGet]
+    public IActionResult DocumentDetailsIncomplete()
+    {
+        var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationDetailsViewModel());
+
+        return View("DocumentDetailsIncomplete", viewModel);
+    }
+
+    [HttpGet]
     public IActionResult ConfirmRemoveChange(string modificationChangeId, string modificationChangeName)
     {
         var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationDetailsViewModel());

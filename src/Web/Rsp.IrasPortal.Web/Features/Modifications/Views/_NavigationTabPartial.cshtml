@@ -1,9 +1,8 @@
 ﻿@using Rsp.IrasPortal.Application.Constants
 @model Rsp.IrasPortal.Web.Features.Modifications.Models.ModificationDetailsViewModel
 @{
-    var active = ViewBag.Active as string;
+	var active = "tab-documents";
 }
-
 
 <!-- Hidden controls -->
 <input type="radio" id="tab-sponsor-details" name="tab-toggle" class="govuk-tab-toggle" >
@@ -30,7 +29,7 @@
                         </label>
                     </li>
 
-                    <li class="govuk-service-navigation__item small-margin govuk-service-navigation__item--documents">
+					<li class="govuk-service-navigation__item small-margin govuk-service-navigation__item--documents">
                         <label for="tab-documents" class="govuk-service-navigation__link govuk-service-navigation__link-label">
                             @ModificationOverview.Documents
                         </label>
@@ -58,7 +57,7 @@
 </div>
 
 <div id="documents" class="tab-content">
-    <p class="govuk-body">Documents content here...</p>
+	<partial name="SupportingDocuments" model="Model" viewData="ViewData" />
 </div>
 
 <div id="history" class="tab-content">

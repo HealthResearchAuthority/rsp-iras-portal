@@ -1,0 +1,35 @@
+﻿@using System.Globalization
+@using System.Text.Json
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Microsoft.FeatureManagement
+@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Web.Features.Modifications.Models
+@model ModificationDetailsViewModel
+
+@{
+	var modificationParams = new Dictionary<string, string> {
+			{ "projectRecordId", Model.ProjectRecordId },
+			{ "irasId", Model.IrasId  },
+			{ "shortTitle", Model.ShortTitle ?? string.Empty },
+			{ "projectModificationId", Model.ModificationId ?? string.Empty }
+		};
+}
+
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-two-thirds">
+		<h1 class="govuk-heading-l">You cannot proceed whilst documents 
+			are being scanned</h1>
+		<partial name="_ProjectModificationSummary" model="Model" />
+		<p class="govuk-body">
+			Some of your supporting documents are still being scanned by the system for 
+			malware. You will need to wait until this is complete before you can continue. 
+			You can leave the modification and come back later - the scan will continue 
+			while you are logged out.
+		</p>
+		<div class="save-buttons">
+			<a class="govuk-button" asp-route="pmc:modificationdetails" asp-all-route-data="modificationParams">
+				Return to modification details
+			</a>
+		</div>
+	</div>
+</div>
