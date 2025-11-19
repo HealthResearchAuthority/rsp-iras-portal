@@ -151,6 +151,19 @@ public class AuthorisationsController(
 
         modification.SponsorDetails = sponsorDetailsQuestionnaire.Questions;
 
+        var modificationAuditResponse = await projectModificationsService.GetModificationAuditTrail(projectModificationId);
+
+        if (modificationAuditResponse.IsSuccessStatusCode && modificationAuditResponse.Content is not null)
+        {
+            modification.AuditTrailModel = new AuditTrailModel
+            {
+                AuditTrail = modificationAuditResponse.Content,
+                ModificationIdentifier = modification.ModificationId ?? "",
+                ShortTitle = shortTitle,
+            };
+        }
+
+        // ignore mapping unused properties like ProjectOverviewDocumentViewModel
         var config = new TypeAdapterConfig();
         config.ForType<ModificationDetailsViewModel, AuthoriseOutcomeViewModel>()
               .Ignore(dest => dest.ProjectOverviewDocumentViewModel);
@@ -160,6 +173,9 @@ public class AuthorisationsController(
         authoriseOutcomeViewModel.SponsorOrganisationUserId = sponsorOrganisationUserId;
         authoriseOutcomeViewModel.ProjectModificationId = projectModificationId;
         authoriseOutcomeViewModel.ModificationChangeId = modificationChangeId is null ? null : modificationChangeId.ToString();
+        authoriseOutcomeViewModel.IrasId = irasId;
+        authoriseOutcomeViewModel.ShortTitle = shortTitle;
+        authoriseOutcomeViewModel.ProjectRecordId = projectRecordId;
 
         return authoriseOutcomeViewModel;
     }

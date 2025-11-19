@@ -65,14 +65,14 @@
                     <li class="govuk-summary-card__action">                        
                         @{
                             var viewDetailsParams = new Dictionary<string, string> {
-                                { "projectRecordId", Model.ProjectRecordId },
-                                { "irasId", Model.IrasId },
+                                { "projectRecordId", Model.ProjectRecordId ?? "" },
+                                { "irasId", Model.IrasId ?? "" },
                                 { "shortTitle", Model.ShortTitle ?? "" },
                                 { "projectModificationId", Model.ModificationId ?? "" },
                                 { "sponsorOrganisationUserId", sponsorOrganisationUserId.ToString() },
                                 { "modificationChangeId", change.ModificationChangeId.ToString() },                                
                                 };
-                            
+
                             <a class="govuk-link" asp-route="sws:changedetails" asp-all-route-data="viewDetailsParams">View details</a>
                         }
                     </li>
