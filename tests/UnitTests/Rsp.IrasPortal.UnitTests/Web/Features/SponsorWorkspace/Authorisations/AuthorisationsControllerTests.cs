@@ -299,6 +299,19 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
             });
 
         Mocker
+           .GetMock<IProjectModificationsService>()
+           .Setup(s => s.GetModificationAuditTrail(It.IsAny<Guid>()))
+           .ReturnsAsync(new ServiceResponse<ProjectModificationAuditTrailResponse>
+           {
+               StatusCode = HttpStatusCode.OK,
+               Content = new ProjectModificationAuditTrailResponse
+               {
+                   Items = [],
+                   TotalCount = 0
+               }
+           });
+
+        Mocker
             .GetMock<IRespondentService>()
             .Setup(s => s.GetModificationChangeAnswers(changeId, It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>>
