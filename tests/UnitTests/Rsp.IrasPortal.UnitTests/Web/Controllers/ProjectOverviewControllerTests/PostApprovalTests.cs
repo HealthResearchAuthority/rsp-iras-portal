@@ -61,6 +61,18 @@ public class PostApprovalTests : TestServiceBase<ProjectOverviewController>
                 Content = new() { TotalCount = 1, Modifications = [new ModificationsDto { Id = Guid.NewGuid().ToString(), ModificationId = "MOD1", ModificationType = "Type", ReviewType = "Review", Category = "A", Status = ModificationStatus.InDraft }] }
             });
 
+        Mocker
+            .GetMock<IApplicationsService>()
+            .Setup(s => s.GetProjectRecordAuditTrail(It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<ProjectRecordAuditTrailResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectRecordAuditTrailResponse
+                {
+                    Items = []
+                }
+            });
+
         // Act
         var result = await Sut.PostApproval("PR1", backRoute: null);
 

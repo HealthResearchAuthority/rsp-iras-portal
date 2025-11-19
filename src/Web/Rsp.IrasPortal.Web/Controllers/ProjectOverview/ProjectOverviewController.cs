@@ -263,6 +263,8 @@ public class ProjectOverviewController(
         // Get organisation name from RTS service
         var organisationName = await SponsorOrganisationNameHelper.GetSponsorOrganisationNameFromQuestions(rtsService, questionnaire.Questions);
 
+        var auditTrails = await applicationService.GetProjectRecordAuditTrail(projectRecordId);
+
         // Populate TempData with project details for actual modification journey
         TempData[TempDataKeys.IrasId] = projectRecord.IrasId;
         TempData[TempDataKeys.ProjectRecordId] = projectRecord.Id;
@@ -279,6 +281,7 @@ public class ProjectOverviewController(
             IrasId = projectRecord.IrasId,
             OrganisationName = organisationName,
             SectionGroupQuestions = sectionGroupQuestions,
+            AuditTrails = auditTrails.Content?.Items ?? []
         };
 
         return Ok(model);
@@ -337,6 +340,20 @@ public class ProjectOverviewController(
         };
 
         return View(model);
+    }
+
+    public async Task<IActionResult> ProjectHistory(string projectRecordId, string? backRoute)
+    {
+        UpdateModificationRelatedTempData();
+
+        var result = await GetProjectOverviewResult(projectRecordId!, backRoute, nameof(ProjectHistory));
+
+        if (result is not OkObjectResult projectOverview)
+        {
+            return result;
+        }
+
+        return View(projectOverview.Value);
     }
 
     [HttpPost]
