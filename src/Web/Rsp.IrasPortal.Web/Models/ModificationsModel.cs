@@ -12,8 +12,8 @@ public class ModificationsModel
     public string SponsorOrganisation { get; set; } = null!;
     public DateTime CreatedAt { get; set; }
     public int DaysSinceSubmission =>
-        DateSubmitted.HasValue
-            ? (DateTime.UtcNow.Date - DateSubmitted.Value.Date).Days
+        SentToRegulatorDate.HasValue
+            ? (DateTime.UtcNow.Date - SentToRegulatorDate.Value.Date).Days
             : 0;
 
     public string Status { get; set; } = null!;
@@ -21,6 +21,4 @@ public class ModificationsModel
     public DateTime? SentToSponsorDate { get; set; } = null;
     public DateTime? SentToRegulatorDate { get; set; } = null;
     public string ReviewerName { get; set; }
-    // Virtual / computed field
-    public DateTime? DateSubmitted => SentToRegulatorDate ?? SentToSponsorDate;
 }

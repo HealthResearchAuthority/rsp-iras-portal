@@ -489,7 +489,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var projectRecordId = "123";
         var pageNumber = 1;
         var pageSize = 20;
-        var sortField = nameof(ModificationsModel.DateSubmitted);
+        var sortField = nameof(ModificationsModel.SentToRegulatorDate);
         var sortDirection = SortDirections.Ascending;
 
         var httpContext = CreateHttpContextWithSession(); // CHANGED
@@ -825,7 +825,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var projectRecordId = "123";
         var pageNumber = 1;
         var pageSize = 20;
-        var sortField = nameof(ModificationsModel.DateSubmitted);
+        var sortField = nameof(ModificationsModel.SentToRegulatorDate);
         var sortDirection = SortDirections.Ascending;
 
         var httpContext = CreateHttpContextWithSession(); // CHANGED
@@ -1138,7 +1138,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var tempData = CreateTempData(tempDataProvider, httpContext);
         var pageNumber = 1;
         var pageSize = 20;
-        var sortField = nameof(ModificationsModel.DateSubmitted);
+        var sortField = nameof(ModificationsModel.SentToRegulatorDate);
         var sortDirection = SortDirections.Descending;
 
         var answers = new List<RespondentAnswerDto>
