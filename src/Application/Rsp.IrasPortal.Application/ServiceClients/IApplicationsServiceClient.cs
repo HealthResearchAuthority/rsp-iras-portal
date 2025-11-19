@@ -101,4 +101,7 @@ public interface IApplicationsServiceClient
         string? sortField = null,
         string? sortDirection = null
         );
+
+    [Get("/applications/audittrail")]
+    public Task<ApiResponse<ProjectRecordAuditTrailResponse>> GetProjectRecordAuditTrail(string projectRecordId);
 }

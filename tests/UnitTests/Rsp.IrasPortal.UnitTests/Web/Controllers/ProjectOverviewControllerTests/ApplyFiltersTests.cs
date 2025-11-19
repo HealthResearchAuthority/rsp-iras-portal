@@ -83,6 +83,17 @@ public class ApplyFiltersTests : TestServiceBase<ProjectOverviewController>
                 Content = new CmsQuestionSetResponse { Id = "123", Status = "Active", }
             });
 
+        applicationService
+            .Setup(s => s.GetProjectRecordAuditTrail("rec-1"))
+            .ReturnsAsync(new ServiceResponse<ProjectRecordAuditTrailResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectRecordAuditTrailResponse
+                {
+                    Items = []
+                }
+            });
+
         var httpContext = new DefaultHttpContext
         {
             Session = new InMemorySession()

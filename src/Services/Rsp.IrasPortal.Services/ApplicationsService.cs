@@ -106,4 +106,11 @@ public class ApplicationsService(IApplicationsServiceClient applicationsClient) 
 
         return apiResponse.ToServiceResponse();
     }
+
+    public async Task<ServiceResponse<ProjectRecordAuditTrailResponse>> GetProjectRecordAuditTrail(string projectRecordId)
+    {
+        var apiResponse = await applicationsClient.GetProjectRecordAuditTrail(projectRecordId);
+
+        return apiResponse.ToServiceResponse();
+    }
 }

@@ -1,4 +1,5 @@
-﻿@using Rsp.IrasPortal.Web.Helpers
+﻿@using Rsp.IrasPortal.Domain.Enums
+@using Rsp.IrasPortal.Web.Helpers
 @model Rsp.IrasPortal.Web.Models.ModificationReviewDocumentsViewModel
 
 @{
@@ -39,7 +40,7 @@
 								</a>
 							</div>
 							<div class="govuk-task-list__status">
-								@if (doc.Status == "Completed")
+								@if (doc.Status == DocumentDetailStatus.Complete.ToString())
 								{
 									@doc.Status
 								}
