@@ -81,7 +81,12 @@
 		{
 	new
 	{
-	Roles = "study-wide_reviewer,team_manager,system_administrator,workflow_co-ordinator",
+	Roles =  string.Join(",",
+        Roles.StudyWideReviewer,
+        Roles.TeamManager,
+        Roles.SystemAdministrator,
+        Roles.WorkflowCoordinator
+    ),
 	Title = approvalsLabel?.Value,
 	Desc = approvalsDescription?.Value,
 	Link = "approvalsmenu:welcome"
@@ -102,14 +107,18 @@
 	},
 	new
 	{
-	Roles = "study-wide_reviewer,team_manager,system_administrator",
+	Roles = string.Join(",",
+        Roles.StudyWideReviewer,
+        Roles.TeamManager,
+        Roles.SystemAdministrator
+    ),
 	Title = memberManagementLabel?.Value,
 	Desc = memberManagementDescription?.Value,
 	Link = ""
 	},
 	new
 	{
-	Roles = "applicant",
+	Roles = Roles.Applicant,
 	Title = myResearchLabel?.Value,
 	Desc = myResearchDescription?.Value,
 	Link = "app:welcome"
@@ -123,7 +132,7 @@
 	},
 	new
 	{
-	Roles = "sponsor",
+	Roles = Roles.Sponsor,
     Title = sponsorsLabel?.Value,
     Desc = sponsorsDescription?.Value,
     Link = "sws:sponsorworkspace"
