@@ -166,6 +166,9 @@ public class AuthorisationsController(
         authoriseOutcomeViewModel.SponsorOrganisationUserId = sponsorOrganisationUserId;
         authoriseOutcomeViewModel.ProjectModificationId = projectModificationId;
         authoriseOutcomeViewModel.ModificationChangeId = modificationChangeId is null ? null : modificationChangeId.ToString();
+        authoriseOutcomeViewModel.IrasId = irasId;
+        authoriseOutcomeViewModel.ShortTitle = shortTitle;
+        authoriseOutcomeViewModel.ProjectRecordId = projectRecordId;
 
         return authoriseOutcomeViewModel;
     }
