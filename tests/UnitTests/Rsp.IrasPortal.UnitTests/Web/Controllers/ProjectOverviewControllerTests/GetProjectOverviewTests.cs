@@ -139,6 +139,17 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
                 Content = cmsResponse
             });
 
+        applicationService
+            .Setup(s => s.GetProjectRecordAuditTrail("rec-1"))
+            .ReturnsAsync(new ServiceResponse<ProjectRecordAuditTrailResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectRecordAuditTrailResponse
+                {
+                    Items = []
+                }
+            });
+
         // Initialize TempData for the controller
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
 
@@ -191,6 +202,17 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
                 Content = cmsResponse
             });
 
+        applicationService
+            .Setup(s => s.GetProjectRecordAuditTrail("rec-1"))
+            .ReturnsAsync(new ServiceResponse<ProjectRecordAuditTrailResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectRecordAuditTrailResponse
+                {
+                    Items = []
+                }
+            });
+
         // Initialize TempData for the controller
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
 
@@ -239,6 +261,17 @@ public class GetProjectOverviewTests : TestServiceBase<ProjectOverviewController
             {
                 StatusCode = HttpStatusCode.OK,
                 Content = answers
+            });
+
+        applicationService
+            .Setup(s => s.GetProjectRecordAuditTrail("rec-1"))
+            .ReturnsAsync(new ServiceResponse<ProjectRecordAuditTrailResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectRecordAuditTrailResponse
+                {
+                    Items = []
+                }
             });
 
         // Add primary sponsor organisation question to cms response

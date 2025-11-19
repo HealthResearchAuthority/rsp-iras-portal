@@ -98,4 +98,6 @@ public interface IApplicationsService : IInterceptable
         string? sortField = nameof(IrasApplicationResponse.CreatedDate),
         string? sortDirection = SortDirections.Descending
     );
+
+    public Task<ServiceResponse<ProjectRecordAuditTrailResponse>> GetProjectRecordAuditTrail(string projectRecordId);
 }
