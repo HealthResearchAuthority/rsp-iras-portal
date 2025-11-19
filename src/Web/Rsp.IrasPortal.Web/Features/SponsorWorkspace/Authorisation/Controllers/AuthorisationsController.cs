@@ -4,6 +4,7 @@ using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Filters;
 using Rsp.IrasPortal.Application.Services;
@@ -29,6 +30,7 @@ public class AuthorisationsController(
     IValidator<SponsorAuthorisationsSearchModel> searchValidator
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, null!)
 {
+    private const string DocumentDetailsSection = "pdm-document-metadata";
     private const string SponsorDetailsSectionId = "pm-sponsor-reference";
     private readonly IRespondentService _respondentService = respondentService;
 
@@ -126,7 +128,11 @@ public class AuthorisationsController(
         string shortTitle,
         string projectRecordId,
         Guid sponsorOrganisationUserId,
-        Guid? modificationChangeId = null
+        Guid? modificationChangeId = null,
+        int pageNumber = 1,
+        int pageSize = 20,
+        string sortField = nameof(ProjectOverviewDocumentDto.DocumentType),
+        string sortDirection = SortDirections.Ascending
     )
     {
         // Fetch the modification by its identifier
@@ -163,12 +169,41 @@ public class AuthorisationsController(
             };
         }
 
-        // ignore mapping unused properties like ProjectOverviewDocumentViewModel
         var config = new TypeAdapterConfig();
         config.ForType<ModificationDetailsViewModel, AuthoriseOutcomeViewModel>()
               .Ignore(dest => dest.ProjectOverviewDocumentViewModel);
 
         var authoriseOutcomeViewModel = modification.Adapt<AuthoriseOutcomeViewModel>(config);
+
+        var searchQuery = new ProjectOverviewDocumentSearchRequest();
+        var modificationDocumentsResponseResult = await projectModificationsService.GetDocumentsForModification(projectModificationId,
+            searchQuery, pageNumber, pageSize, sortField, sortDirection);
+
+        authoriseOutcomeViewModel.ProjectOverviewDocumentViewModel.Documents = modificationDocumentsResponseResult?.Content?.Documents ?? [];
+
+        // Fetch the CMS question set that defines what metadata must be collected for this document.
+        var additionalQuestionsResponse = await cmsQuestionsetService
+            .GetModificationQuestionSet(DocumentDetailsSection);
+
+        // Build the questionnaire model containing all questions for the details section.
+        var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(additionalQuestionsResponse.Content!);
+
+        await MapDocumentTypesAndStatusesAsync(questionnaire, modification.ProjectOverviewDocumentViewModel.Documents);
+
+        authoriseOutcomeViewModel.ProjectOverviewDocumentViewModel.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationDocumentsResponseResult?.Content?.TotalCount ?? 0)
+        {
+            SortDirection = sortDirection,
+            SortField = sortField,
+            FormName = "projectdocuments-selection",
+            RouteName = "pmc:reviewallchanges",
+            AdditionalParameters = new Dictionary<string, string>()
+            {
+                { "projectRecordId", projectRecordId },
+                { "irasId", irasId },
+                { "shortTitle", shortTitle },
+                { "projectModificationId", projectModificationId.ToString() }
+            }
+        };
 
         authoriseOutcomeViewModel.SponsorOrganisationUserId = sponsorOrganisationUserId;
         authoriseOutcomeViewModel.ProjectModificationId = projectModificationId;
