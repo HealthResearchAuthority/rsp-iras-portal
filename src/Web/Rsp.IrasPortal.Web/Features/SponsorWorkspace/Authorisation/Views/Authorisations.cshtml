@@ -24,17 +24,7 @@
         ? pageContentData
         : new Dictionary<string, MixedContentPageItem?>();
 
-    var headline = pageContent.GetValueOrDefault("SponsorWorkspace.Authorisations.Title", null);
-
-
-    var statusDisplayMap = new Dictionary<string, string>
-    {
-        { ModificationStatus.Approved, "Authorised" },
-        { ModificationStatus.WithReviewBody, "Authorised" },
-        { ModificationStatus.NotApproved, "Not authorised" },
-        { ModificationStatus.WithSponsor, "With sponsor" }
-    };
-
+    var headline = pageContent.GetValueOrDefault("SponsorWorkspace.Authorisations.Title", null);    
 }
 
 <div class="govuk-grid-row">
@@ -140,11 +130,12 @@
                                                             ModificationStatus.Approved => "govuk-tag--green",
                                                             ModificationStatus.WithReviewBody => "govuk-tag--green",
                                                             ModificationStatus.NotApproved => "govuk-tag--red",
+                                                            ModificationStatus.NotAuthorised => "govuk-tag--red",
                                                             _ => "govuk-tag--blue"
                                                         };
                                                     }
                                                     <strong class="govuk-tag @tagClass">
-                                                        @statusDisplayMap.GetValueOrDefault(modification.Status, modification.Status)
+                                                        @modification.Status
                                                     </strong>
                                                 </td>
                                             </tr>

@@ -1,0 +1,124 @@
+﻿@using Rsp.Gds.Component.Models
+@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
+@using Rsp.IrasPortal.Web.Features.Modifications.Models
+@model Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Models.AuthoriseOutcomeViewModel
+
+@{
+    ViewBag.Title = "Check and authorise";
+
+    TempData[TempDataKeys.ProjectModification.ReviewAllChanges] = true;       
+    ViewData[ViewDataKeys.ShowModificationChangeStatus] = false;
+    ViewData[ViewDataKeys.ShowModificationStatus] = true;
+
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData ?? new Dictionary<string, MixedContentPageItem?>();
+
+    var headline = pageContent.GetValueOrDefault("SponsorWorkspace.ChangeDetails.Title", null);
+    var rankingTitle = pageContent.GetValueOrDefault("SponsorWorkspace.ChangeDetails.RankingTitle", null);
+
+    var selectedChange = Model.ModificationChanges.FirstOrDefault(c => c.ModificationChangeId.ToString() == Model.ModificationChangeId);
+
+    var checkAndAuthoriseNavParams = new { 
+        projectRecordId = Model.ProjectRecordId,
+        irasId = Model.IrasId,
+        shortTitle = Model.ShortTitle,
+        projectModificationId = Model.ProjectModificationId,
+        sponsorOrganisationUserId = Model.SponsorOrganisationUserId
+    };
+}
+
+@section Breadcrumb {
+    @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+    {
+        ("Sponsor workspace", Url.RouteUrl("sws:sponsorworkspace")),
+        ("Authorisations", Url.RouteUrl("sws:authorisations", new { sponsorOrganisationUserId = Model.SponsorOrganisationUserId })),
+        ("Check and authorise", Url.RouteUrl("sws:checkandauthorise", checkAndAuthoriseNavParams))
+    })
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">@Html.Raw(headline?.Value)</h1>       
+
+        <partial name="~/Features/Modifications/Shared/_ProjectModificationSummary.cshtml"
+                 model="Model"
+                 view-data="ViewData" />
+
+        <h2 class="govuk-heading-m">Overall modification ranking</h2>
+        <div class="govuk-summary-card">
+            <div class="govuk-summary-card__title-wrapper">
+                <h2 class="govuk-summary-card__title">
+                    @Html.Raw(rankingTitle?.Value)
+                </h2>
+            </div>
+            <div class="govuk-summary-card__content">
+                @{
+                    var ranking = new RankingOfChangeViewModel
+                    {
+                        ModificationType = Model.ModificationType,
+                        Category = Model.Category,
+                        ReviewType = Model.ReviewType 
+                    };                  
+
+                }
+                <partial name="~/Features/Modifications/Shared/RankingOfChange.cshtml"
+                         model="ranking" />
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+        @if (selectedChange != null)
+        {
+            <h2 class="govuk-heading-m govuk-!-margin-top-5">
+                @selectedChange.AreaOfChangeName
+            </h2>
+            <dl class="govuk-summary-list">
+                <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">
+                        @selectedChange.SpecificChangeName
+                    </dt>
+                    <dd class="govuk-summary-list__value">
+                        @selectedChange.SpecificChangeAnswer
+                    </dd>
+                </div>
+                @foreach (var question in selectedChange.Questions)
+                {
+                    <div class="govuk-summary-list__row">
+                        <dt class="govuk-summary-list__key">
+                            @(string.IsNullOrWhiteSpace(question.ShortQuestionText) ? question.QuestionText : question.ShortQuestionText)
+                        </dt>
+                        <dd class="govuk-summary-list__value">
+                            @Html.Raw(question.GetDisplayText(false))
+                        </dd>
+                    </div>
+                }
+            </dl>
+        }
+    </div>
+</div>
+
+<form asp-route="sws:checkandauthorise" method="get">
+
+    <input type="hidden" name="ProjectRecordId" value="@Model.ProjectRecordId" />
+    <input type="hidden" name="IrasId" value="@Model.IrasId" />
+    <input type="hidden" name="ShortTitle" value="@Model.ShortTitle" />
+    <input type="hidden" name="ProjectModificationId" value="@Model.ProjectModificationId" />
+    <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
+
+    <partial name="_SubmitButton"
+             model=@(("sws:checkandauthorise",
+                          "Return to modification",
+                          new Dictionary<string, string>
+                          {
+                              ["projectRecordId"] = Model.ProjectRecordId,
+                              ["irasId"] = Model.IrasId,
+                              ["shortTitle"] = Model.ShortTitle,
+                              ["projectModificationId"] = Model.ProjectModificationId.ToString(),
+                              ["sponsorOrganisationUserId"] = Model.SponsorOrganisationUserId.ToString()
+                          })) />
+</form>

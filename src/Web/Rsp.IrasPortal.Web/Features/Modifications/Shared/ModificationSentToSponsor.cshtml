@@ -28,18 +28,6 @@
             <a class="govuk-button" asp-route="pov:postapproval" asp-route-projectRecordId="@projectRecordId">
                 Return to project overview
             </a>
-
-            <form method="post" class="govuk-!-display-inline">
-                <partial name="_SubmitButton" model="@(
-					"pmc:submittoregulator",
-					"Submit to regulator",
-					new Dictionary<string, string>
-					{
-						["projectModificationId"] = projectModificationId?.ToString(),
-						["projectRecordId"] = projectRecordId?.ToString(),
-						["overallReviewType"] = overallReviewType?.ToString()
-					})" />
-            </form>
         </div>
     </div>
 </div>

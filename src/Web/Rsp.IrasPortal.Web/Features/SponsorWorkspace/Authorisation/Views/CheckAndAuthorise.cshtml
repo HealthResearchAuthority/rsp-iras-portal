@@ -8,15 +8,18 @@
     ViewBag.Title = "Review all changes";
 
     TempData[TempDataKeys.ProjectModification.ReviewAllChanges] = true;
-    ViewData[ViewDataKeys.ShowRemoveLink] = false;
+    ViewData[ViewDataKeys.ShowRemoveLink] = false;   
     ViewData[ViewDataKeys.ShowModificationChangeStatus] = false;
     ViewData[ViewDataKeys.ShowModificationStatus] = true;
     ViewData[ViewDataKeys.IsSponsorCheckAndAuthorise] = true;
+
+    ViewBag.SponsorOrganisationUserId = Model.SponsorOrganisationUserId;
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData ?? new Dictionary<string, MixedContentPageItem?>();
 
     var headline = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.Title", null);
+    var actionedModificationHeadline = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.ModificationActionedTitle", null);
     var rankingTitle = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.RankingTitle", null);
     var outcomeTitle = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.OutcomeTitle", null);
     var outcome = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.Outcome", null);
@@ -29,7 +32,7 @@
 {
         new() { Value = "Authorised", Label = "Authorised" },
         new() { Value = "NotAuthorised", Label = "Not authorised" }
-    };
+    };    
 }
 
 @section Breadcrumb {
@@ -42,7 +45,14 @@
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-        <h1 class="govuk-heading-l">@Html.Raw(headline?.Value)</h1>
+        @if (Model.Status is ModificationStatus.WithSponsor)
+        {
+            <h1 class="govuk-heading-l">@Html.Raw(headline?.Value)</h1>
+        }
+        else
+        {
+            <h1 class="govuk-heading-l">@Html.Raw(actionedModificationHeadline?.Value)</h1>
+        }
 
         <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
 
@@ -74,7 +84,7 @@
 </div>
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-full">
+    <div class="govuk-grid-column-full">       
         <partial name="~/Features/Modifications/Views/_NavigationTabPartial.cshtml"
                  model="Model"
                  view-data="ViewData" />
@@ -98,6 +108,7 @@
         <input type="hidden" name="ModificationId" value="@Model.ModificationId" />
         <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
         <input type="hidden" name="ProjectModificationId" value="@Model.ProjectModificationId" />
+        <input type="hidden" name="ReviewType" value="@Model.ReviewType" />
 
         <div class="govuk-form-group @(hasError ? "govuk-form-group--error" : "")">
 

@@ -10,37 +10,57 @@
 
 @{
 
-	ViewBag.Title = "Review all changes";
+    ViewBag.Title = "Review all changes";
 
-	TempData[TempDataKeys.ProjectModification.ReviewAllChanges] = true;
-
-	ViewData[ViewDataKeys.ShowRemoveLink] = false;
-	ViewData[ViewDataKeys.ShowModificationChangeStatus] = false;
-	ViewData[ViewDataKeys.ShowModificationStatus] = true;
-
+    TempData[TempDataKeys.ProjectModification.ReviewAllChanges] = true;
+    ViewData[ViewDataKeys.ShowRemoveLink] = false;
+    ViewData[ViewDataKeys.ShowModificationChangeStatus] = false;
+    ViewData[ViewDataKeys.ShowModificationStatus] = true;
+    var projectTitle = !string.IsNullOrEmpty(Model.ShortTitle) ? Model.ShortTitle : "Project overview";
+    var linkBackToReferrer = TempData[TempDataKeys.ProjectModification.LinkBackToReferrer];
+    var urlReferrer = TempData[TempDataKeys.ProjectModification.UrlReferrer];
+    var urlSegments = urlReferrer?.ToString()!.Split('/', StringSplitOptions.RemoveEmptyEntries);
+    var previousController = string.Empty;
+    // Assuming URL pattern: /Controller/Action
+    if (urlSegments?.Length > 0)
+    {
+        previousController = urlSegments[2]; // This is usually the controller
+    }
 }
 
-@section BackNavigation {
+@if (Model.Status != ModificationStatus.InDraft && !(previousController is ApprovalsSearch.ControllerName or ModificationsTasklist.ControllerName))
+{
+    <authorized auth-params="@new(Roles: "applicant")">
 
-	@* if we have a urlReferrer use that for back navigation *@
-	@{
-		// set this TempData key to true on the referrer page like PostApprovals
-		// or any other BackStage or FrontStage page so that we can link back to that page.
-		// If this Key is not set, the Back link won't be displayed
-		var linkBackToReferrer = TempData[TempDataKeys.ProjectModification.LinkBackToReferrer];
-		var urlReferrer = TempData[TempDataKeys.ProjectModification.UrlReferrer];
+        @section Breadcrumb {
 
-		if (linkBackToReferrer is true && urlReferrer is not null)
-		{
-			ViewData[ViewDataKeys.UrlReferrer] = urlReferrer;
+            @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+            {
+                ("My research",Url.RouteUrl("app:welcome")),
+                (projectTitle, Url.RouteUrl("pov:postapproval", new Dictionary<string, string>{{"projectRecordId", Model.ProjectRecordId!}}))
+            })
+        }
+    </authorized>
+}
+else
+{
+    @section BackNavigation {
 
-			// no route for back navigation, as this page will
-			// only show back button when you are navigating from some other url
-			// given the LinkBackToReferrer is set
-			<partial name="_BackNavigation" model="@("", "Back", new Dictionary<string, string>())" />
-		}
-	}
-	@*<partial name="_BackNavigation" model="@("pmc:sponsorreference", "Back", new Dictionary<string, string>() { { "projectRecordId", Model.ProjectRecordId } })" />*@
+        @{
+            // set this TempData key to true on the referrer page like PostApprovals
+            // or any other BackStage or FrontStage page so that we can link back to that page.
+            // If this Key is not set, the Back link won't be displayed
+            if (linkBackToReferrer is true && urlReferrer is not null)
+            {
+                ViewData[ViewDataKeys.UrlReferrer] = urlReferrer;
+
+                // no route for back navigation, as this page will
+                // only show back button when you are navigating from some other url
+                // given the LinkBackToReferrer is set
+                <partial name="_BackNavigation" model="@("", "Back", new Dictionary<string, string>())" />
+            }
+        }
+    }
 }
 
 <partial name="_ReviewModification" model="Model" />
@@ -64,7 +84,7 @@
                                         ["projectRecordId"] = Model.ProjectRecordId
                                     })" />
 
-							ViewBag.Style = "govuk-button govuk-button--secondary";
+                            ViewBag.Style = "govuk-button govuk-button--secondary";
 
                             <partial name="_SubmitButton" model="@("pmc:saveforlater", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId, ["routeName"] = "pov:postapproval" })" />
                         }
@@ -83,7 +103,7 @@
     }
 </authorized>
 
-<authorized auth-params="@new(Roles: "study-wide_reviewer")">
+<authorized auth-params="@new(Roles: Roles.StudyWideReviewer)">
     @if (Model.Status == ModificationStatus.WithReviewBody)
     {
         <div class="govuk-grid-row">

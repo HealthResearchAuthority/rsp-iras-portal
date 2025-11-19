@@ -551,14 +551,49 @@ public class DocumentsController
             return View(model);
         }
 
-        // Upload valid files to blob storage
-        var uploadedDocuments = await UploadValidFilesAsync(validationResult.ValidFiles, irasId, projectModificationId, projectRecordId, respondentId);
+        if (validationResult.ValidFiles.Count > 0)
+        {
+            // Upload valid files to blob storage
+            var uploadedDocuments = await UploadValidFilesAsync(validationResult.ValidFiles, irasId, projectModificationId, projectRecordId, respondentId);
 
-        // Append and sort the newly uploaded documents
-        model.UploadedDocuments = AppendAndSortDocuments(model.UploadedDocuments, uploadedDocuments);
+            // Append and sort the newly uploaded documents
+            model.UploadedDocuments = AppendAndSortDocuments(model.UploadedDocuments, uploadedDocuments);
+        }
 
         // Stay on the same view to show all documents
         return View(model);
+    }
+
+    public async Task<IActionResult> DownloadDocumentsAsZip(string folderName)
+    {
+        var blobClient = GetBlobClient(true);
+
+        var irasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty;
+        var modificationIdentifier =
+            TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string;
+
+        // Build the file name
+        var saveAsFileName = BuildZipFileName(modificationIdentifier);
+
+        var response = await blobStorageService.DownloadFolderAsZipAsync(
+            blobClient,
+            CleanContainerName,
+            $"{irasId}/{folderName}",
+            saveAsFileName);
+
+        return File(response.FileBytes, "application/zip", response.FileName);
+    }
+
+    private static string BuildZipFileName(string? modificationIdentifier)
+    {
+        if (string.IsNullOrWhiteSpace(modificationIdentifier))
+            return $"Documents-{DateTime.UtcNow:ddMMMyy}";
+
+        // Replace the slash with a dash
+        var cleanIdentifier = modificationIdentifier.Replace("/", "-");
+
+        // Append today's date
+        return $"{cleanIdentifier}-{DateTime.UtcNow:ddMMMyy}";
     }
 
     private static List<DocumentSummaryItemDto> MapDocuments(IEnumerable<ProjectModificationDocumentRequest> content)

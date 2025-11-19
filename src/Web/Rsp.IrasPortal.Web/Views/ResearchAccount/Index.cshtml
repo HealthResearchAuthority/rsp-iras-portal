@@ -81,70 +81,79 @@
 		{
 	new
 	{
-	Roles = "study-wide_reviewer,team_manager,system_administrator,workflow_co-ordinator",
+	Roles =  string.Join(",",
+        Roles.StudyWideReviewer,
+        Roles.TeamManager,
+        Roles.SystemAdministrator,
+        Roles.WorkflowCoordinator
+    ),
 	Title = approvalsLabel?.Value,
 	Desc = approvalsDescription?.Value,
 	Link = "approvalsmenu:welcome"
 	},
 	new
 	{
-	Roles = "system_administrator",
+	Roles = Roles.SystemAdministrator,
 	Title = cagLabel?.Value,
 	Desc = cagDescription?.Value,
 	Link = ""
 	},
 	new
 	{
-	Roles = "system_administrator",
+	Roles = Roles.SystemAdministrator,
 	Title = catLabel?.Value,
 	Desc = catDescription?.Value,
 	Link = ""
 	},
 	new
 	{
-	Roles = "study-wide_reviewer,team_manager,system_administrator",
+	Roles = string.Join(",",
+        Roles.StudyWideReviewer,
+        Roles.TeamManager,
+        Roles.SystemAdministrator
+    ),
 	Title = memberManagementLabel?.Value,
 	Desc = memberManagementDescription?.Value,
 	Link = ""
 	},
 	new
 	{
-	Roles = "applicant",
+	Roles = Roles.Applicant,
 	Title = myResearchLabel?.Value,
 	Desc = myResearchDescription?.Value,
 	Link = "app:welcome"
 	},
 	new
 	{
-	Roles = "system_administrator",
+	Roles = Roles.SystemAdministrator,
 	Title = recLabel?.Value,
 	Desc = recDescription?.Value,
 	Link = ""
 	},
 	new
 	{
-	Roles = "sponsor",
+	Roles = Roles.Sponsor,
     Title = sponsorsLabel?.Value,
     Desc = sponsorsDescription?.Value,
     Link = "sws:sponsorworkspace"
 	},
 	new
 	{
-	Roles = "system_administrator",
+	Roles = Roles.SystemAdministrator,
 	Title = systemAdministrationLabel?.Value,
 	Desc = systemAdministrationDescription?.Value,
 	Link = "systemadmin:view"
 	},
 	new
 	{
-	Roles = "system_administrator",
+	Roles = Roles.SystemAdministrator,
 	Title = technicalAssuranceLabel?.Value,
 	Desc = technicalAssuranceDescription?.Value,
 	Link = ""
 	},
 	new
 	{
-	Roles = "system_administrator",
+	Roles = Roles.SystemAdministrator,
 	Title = technicalAssuranceReviewersLabel?.Value,
 	Desc = technicalAssuranceReviewersDescription?.Value,
 	Link = ""

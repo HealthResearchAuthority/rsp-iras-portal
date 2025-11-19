@@ -4,12 +4,14 @@ using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Filters;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Features.Modifications;
+using Rsp.IrasPortal.Web.Features.Modifications.Models;
 using Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Models;
 using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
@@ -28,6 +30,7 @@ public class AuthorisationsController(
     IValidator<SponsorAuthorisationsSearchModel> searchValidator
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, null!)
 {
+    private const string DocumentDetailsSection = "pdm-document-metadata";
     private const string SponsorDetailsSectionId = "pm-sponsor-reference";
     private readonly IRespondentService _respondentService = respondentService;
 
@@ -71,6 +74,7 @@ public class AuthorisationsController(
                 ProjectRecordId = dto.ProjectRecordId,
                 SentToRegulatorDate = dto.SentToRegulatorDate,
                 SentToSponsorDate = dto.SentToSponsorDate,
+                CreatedAt = dto.CreatedAt,
                 Status = dto.Status,
             })
             .ToList() ?? [];
@@ -83,9 +87,9 @@ public class AuthorisationsController(
             SortField = sortField,
             FormName = "authorisations-selection",
             AdditionalParameters = new Dictionary<string, string>
-            {
-                { "SponsorOrganisationUserId", sponsorOrganisationUserId.ToString() }
-            }
+                {
+                    { "SponsorOrganisationUserId", sponsorOrganisationUserId.ToString() }
+                }
         };
 
         model.SponsorOrganisationUserId = sponsorOrganisationUserId;
@@ -117,9 +121,19 @@ public class AuthorisationsController(
     }
 
     // 1) Shared builder used by both GET and POST
-    private async Task<AuthoriseOutcomeViewModel?> BuildCheckAndAuthorisePageAsync(Guid projectModificationId,
-        string irasId, string shortTitle,
-        string projectRecordId, Guid sponsorOrganisationUserId)
+    private async Task<AuthoriseOutcomeViewModel?> BuildCheckAndAuthorisePageAsync
+    (
+        Guid projectModificationId,
+        string irasId,
+        string shortTitle,
+        string projectRecordId,
+        Guid sponsorOrganisationUserId,
+        Guid? modificationChangeId = null,
+        int pageNumber = 1,
+        int pageSize = 20,
+        string sortField = nameof(ProjectOverviewDocumentDto.DocumentType),
+        string sortDirection = SortDirections.Ascending
+    )
     {
         // Fetch the modification by its identifier
         var (result, modification) =
@@ -143,9 +157,60 @@ public class AuthorisationsController(
 
         modification.SponsorDetails = sponsorDetailsQuestionnaire.Questions;
 
-        var authoriseOutcomeViewModel = modification.Adapt<AuthoriseOutcomeViewModel>();
+        var modificationAuditResponse = await projectModificationsService.GetModificationAuditTrail(projectModificationId);
+
+        if (modificationAuditResponse.IsSuccessStatusCode && modificationAuditResponse.Content is not null)
+        {
+            modification.AuditTrailModel = new AuditTrailModel
+            {
+                AuditTrail = modificationAuditResponse.Content,
+                ModificationIdentifier = modification.ModificationId ?? "",
+                ShortTitle = shortTitle,
+            };
+        }
+
+        var config = new TypeAdapterConfig();
+        config.ForType<ModificationDetailsViewModel, AuthoriseOutcomeViewModel>()
+              .Ignore(dest => dest.ProjectOverviewDocumentViewModel);
+
+        var authoriseOutcomeViewModel = modification.Adapt<AuthoriseOutcomeViewModel>(config);
+
+        var searchQuery = new ProjectOverviewDocumentSearchRequest();
+        var modificationDocumentsResponseResult = await projectModificationsService.GetDocumentsForModification(projectModificationId,
+            searchQuery, pageNumber, pageSize, sortField, sortDirection);
+
+        authoriseOutcomeViewModel.ProjectOverviewDocumentViewModel.Documents = modificationDocumentsResponseResult?.Content?.Documents ?? [];
+
+        // Fetch the CMS question set that defines what metadata must be collected for this document.
+        var additionalQuestionsResponse = await cmsQuestionsetService
+            .GetModificationQuestionSet(DocumentDetailsSection);
+
+        // Build the questionnaire model containing all questions for the details section.
+        var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(additionalQuestionsResponse.Content!);
+
+        await MapDocumentTypesAndStatusesAsync(questionnaire, modification.ProjectOverviewDocumentViewModel.Documents);
+
+        authoriseOutcomeViewModel.ProjectOverviewDocumentViewModel.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationDocumentsResponseResult?.Content?.TotalCount ?? 0)
+        {
+            SortDirection = sortDirection,
+            SortField = sortField,
+            FormName = "projectdocuments-selection",
+            RouteName = "pmc:reviewallchanges",
+            AdditionalParameters = new Dictionary<string, string>()
+            {
+                { "projectRecordId", projectRecordId },
+                { "irasId", irasId },
+                { "shortTitle", shortTitle },
+                { "projectModificationId", projectModificationId.ToString() }
+            }
+        };
+
         authoriseOutcomeViewModel.SponsorOrganisationUserId = sponsorOrganisationUserId;
         authoriseOutcomeViewModel.ProjectModificationId = projectModificationId;
+        authoriseOutcomeViewModel.ModificationChangeId = modificationChangeId is null ? null : modificationChangeId.ToString();
+        authoriseOutcomeViewModel.IrasId = irasId;
+        authoriseOutcomeViewModel.ShortTitle = shortTitle;
+        authoriseOutcomeViewModel.ProjectRecordId = projectRecordId;
 
         return authoriseOutcomeViewModel;
     }
@@ -222,7 +287,7 @@ public class AuthorisationsController(
                 {
                     await projectModificationsService.UpdateModificationStatus(
                         Guid.Parse(model.ModificationId),
-                        ModificationStatus.NotApproved
+                        ModificationStatus.NotAuthorised
                     );
                     break;
                 }
@@ -235,5 +300,23 @@ public class AuthorisationsController(
     public IActionResult Confirmation(AuthoriseOutcomeViewModel model)
     {
         return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ChangeDetails
+    (
+        string projectRecordId,
+        string irasId,
+        string shortTitle,
+        Guid projectModificationId,
+        Guid sponsorOrganisationUserId,
+        Guid modificationChangeId
+    )
+    {
+        var response =
+            await BuildCheckAndAuthorisePageAsync(projectModificationId, irasId, shortTitle, projectRecordId,
+                sponsorOrganisationUserId, modificationChangeId);
+
+        return View(response);
     }
 }

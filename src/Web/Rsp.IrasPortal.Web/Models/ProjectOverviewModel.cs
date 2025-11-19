@@ -1,4 +1,6 @@
-﻿namespace Rsp.IrasPortal.Web.Models;
+﻿using Rsp.IrasPortal.Application.DTOs.Responses;
+
+namespace Rsp.IrasPortal.Web.Models;
 
 /// <summary>
 /// Represents an overview of a project, including its title, category, and record identifier.
@@ -44,4 +46,9 @@ public class ProjectOverviewModel
     /// Get or sets organisation name for Project Details
     /// </summary>
     public string? OrganisationName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the audit trails associated with the project.
+    /// </summary>
+    public IEnumerable<ProjectRecordAuditTrailDto> AuditTrails { get; set; } = [];
 }

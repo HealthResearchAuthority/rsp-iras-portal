@@ -171,7 +171,7 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
         // Arrange
         var authoriseOutcomeViewModel = SetupAuthoriseOutcomeViewModel();
 
-        authoriseOutcomeViewModel.Outcome = "Notuthorised";
+        authoriseOutcomeViewModel.Outcome = "Notauthorised";
 
         // Act
         var result = await Sut.CheckAndAuthorise(authoriseOutcomeViewModel);
@@ -213,22 +213,26 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
         var sponsorDetailsSectionId = "pm-sponsor-reference";
         var changeId = Guid.Parse("33333333-3333-3333-3333-333333333333");
 
-        // 1. GetModificationsByIds -> one modification entry
+        // 1. GetModification -> one modification entry
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModificationsByIds(It.IsAny<List<string>>()))
-            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+            .Setup(s => s.GetModification(It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new GetModificationsResponse
+                Content = new ProjectModificationResponse
                 {
-                    Modifications =
-                    [
-                        new ModificationsDto
-                        {
-                            Id = projectModificationId.ToString(), ModificationId = projectModificationId.ToString(),
-                            Status = ModificationStatus.InDraft
-                        }
-                    ]
+                    Id = projectModificationId,
+                    ModificationIdentifier = projectModificationId.ToString(),
+                    Status = ModificationStatus.InDraft,
+                    ProjectRecordId = projectRecordId,
+                    ModificationNumber = 1,
+                    CreatedDate = DateTime.UtcNow,
+                    UpdatedDate = DateTime.UtcNow,
+                    CreatedBy = "TestUser",
+                    UpdatedBy = "TestUser",
+                    ModificationType = "Substantial",
+                    Category = "Category A",
+                    ReviewType = "Full Review"
                 }
             });
 
@@ -294,6 +298,19 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
                     ]
                 }
             });
+
+        Mocker
+           .GetMock<IProjectModificationsService>()
+           .Setup(s => s.GetModificationAuditTrail(It.IsAny<Guid>()))
+           .ReturnsAsync(new ServiceResponse<ProjectModificationAuditTrailResponse>
+           {
+               StatusCode = HttpStatusCode.OK,
+               Content = new ProjectModificationAuditTrailResponse
+               {
+                   Items = [],
+                   TotalCount = 0
+               }
+           });
 
         Mocker
             .GetMock<IRespondentService>()
@@ -362,14 +379,62 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
                 "pm-sponsor-reference", null))
             .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse> { Content = cmsResponse });
 
-        Mocker.GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationAnswers(It.IsAny<Guid>(), It.IsAny<string>()))
-            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>>
+        // sponsor details question set and answers
+        Mocker
+            .GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet("pm-sponsor-reference", null))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
             {
-                Content = respondentAnswers
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse { Sections = [new() { Id = "S2", CategoryId = "SCAT", Questions = [new QuestionModel { Id = "SQ1", QuestionId = "SQ1", Name = "SQ1", CategoryId = "SCAT", AnswerDataType = "Text" }] }] }
             });
 
-        // This is your domain object you’re enriching
+        var documents = new List<ProjectOverviewDocumentDto>
+        {
+            new() { FileName = "mod1", DocumentType = "TypeA" },
+            new() { FileName = "mod2", DocumentType = "TypeB" }
+        };
+
+        var documentsResponse = new ProjectOverviewDocumentResponse
+        {
+            Documents = documents,
+            TotalCount = documents.Count
+        };
+
+        var serviceResponse = new ServiceResponse<ProjectOverviewDocumentResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = documentsResponse
+        };
+
+        var projectModificationsService = Mocker.GetMock<IProjectModificationsService>();
+        projectModificationsService
+            .Setup(s => s.GetDocumentsForModification(It.IsAny<Guid>(), It.IsAny<ProjectOverviewDocumentSearchRequest>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(serviceResponse);
+
+        // sponsor details question set and answers
+        Mocker
+            .GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet("pdm-document-metadata", null))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse
+                {
+                    Sections = [new() { Id = "IQA0600", CategoryId = "SCAT", Questions = [new QuestionModel { Id = "IQA0600", QuestionId = "IQA0600", Name = "IQA0600", CategoryId = "SCAT", AnswerDataType = "Text",
+                    Answers = new List<AnswerModel>
+                        {
+                            new AnswerModel { Id = "TypeB", OptionName = "actual text" }
+                        } }] }]
+                }
+            });
+
+        Mocker
+            .GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationAnswers(It.IsAny<Guid>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = [] });
+
+        // This is your domain object you're enriching
         var modification = new ModificationDetailsViewModel
         {
             ModificationId = projectModificationId.ToString(),
@@ -383,5 +448,19 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
         var authoriseOutcomeViewModel = modification.Adapt<AuthoriseOutcomeViewModel>();
         authoriseOutcomeViewModel.SponsorOrganisationUserId = sponsorOrganisationUserId;
         return authoriseOutcomeViewModel;
+    }
+
+    [Fact]
+    public async Task ChangeDetails_Returns_View_With_Mapped_Changes_And_Flags()
+    {
+        SetupAuthoriseOutcomeViewModel();
+        var modificationChangeId = Guid.NewGuid();
+
+        // Act
+        var result = await Sut.ChangeDetails("PR1", "IRAS", "Short", _sponsorOrganisationUserId,
+            _sponsorOrganisationUserId, modificationChangeId);
+
+        // Assert
+        result.ShouldBeOfType<ViewResult>();
     }
 }

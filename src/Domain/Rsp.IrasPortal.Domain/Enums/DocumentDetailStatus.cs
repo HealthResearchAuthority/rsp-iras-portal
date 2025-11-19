@@ -3,5 +3,5 @@
 public enum DocumentDetailStatus
 {
     Incomplete,
-    Completed
+    Complete
 }

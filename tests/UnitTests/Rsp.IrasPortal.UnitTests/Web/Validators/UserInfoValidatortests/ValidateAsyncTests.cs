@@ -1,4 +1,5 @@
 ﻿using FluentValidation.TestHelper;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Validators;
 
@@ -53,7 +54,7 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
         {
             UserRoles = [ new()
             {
-                 Name = "team_manager",
+                 Name = Roles.TeamManager,
                  IsSelected = true
             }],
             Country = null!
@@ -77,7 +78,7 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
             UserRoles =
             [ new()
                 {
-                    Name = "team_manager",
+                    Name = Roles.TeamManager,
                 }
             ],
             Country = null!
@@ -203,7 +204,7 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
         {
             UserRoles =
             [
-                new() { Name = "study-wide_reviewer", IsSelected = true }
+                new() { Name = Roles.StudyWideReviewer, IsSelected = true }
             ],
             ReviewBodies = [] // none selected
         };
@@ -225,7 +226,7 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
         {
             UserRoles =
             [
-                new() { Name = "workflow_co-ordinator", IsSelected = true }
+                new() { Name = Roles.WorkflowCoordinator, IsSelected = true }
             ],
             ReviewBodies = [] // none selected
         };
@@ -247,7 +248,7 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
         {
             UserRoles =
             [
-                new() { Name = "study-wide_reviewer", IsSelected = true }
+                new() { Name = Roles.StudyWideReviewer, IsSelected = true }
             ],
             ReviewBodies =
             [
@@ -271,7 +272,7 @@ public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
         {
             UserRoles =
             [
-                new() { Name = "team_manager", IsSelected = true } // not one of the conditional roles
+                new() { Name = Roles.TeamManager, IsSelected = true } // not one of the conditional roles
             ],
             ReviewBodies = [] // shouldn’t matter if none chosen
         };

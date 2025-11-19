@@ -18,6 +18,7 @@ public class ModificationDetailsController
     IProjectModificationsService projectModificationsService,
     IRespondentService respondentService,
     ICmsQuestionsetService cmsQuestionsetService,
+    IModificationRankingService modificationRankingService,
     IValidator<QuestionnaireViewModel> validator
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator)
 {
@@ -76,6 +77,22 @@ public class ModificationDetailsController
     }
 
     [HttpGet]
+    public IActionResult DocumentsScanInProgress()
+    {
+        var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationDetailsViewModel());
+
+        return View("DocumentsScanInProgress", viewModel);
+    }
+
+    [HttpGet]
+    public IActionResult DocumentDetailsIncomplete()
+    {
+        var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationDetailsViewModel());
+
+        return View("DocumentDetailsIncomplete", viewModel);
+    }
+
+    [HttpGet]
     public IActionResult ConfirmRemoveChange(string modificationChangeId, string modificationChangeName)
     {
         var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationDetailsViewModel());
@@ -98,6 +115,9 @@ public class ModificationDetailsController
         {
             return this.ServiceError(removeChangeResponse);
         }
+
+        // update the overall ranking after removing the change
+        await modificationRankingService.UpdateOverallRanking(Guid.Parse(viewModel.ModificationId!), viewModel.ProjectRecordId);
 
         TempData[TempDataKeys.ProjectModificationChange.ChangeRemoved] = true;
         TempData[TempDataKeys.ProjectModificationChange.ChangeName] = modificationChangeName;

@@ -11,4 +11,6 @@ public class PostApprovalModificationsModel
     public string? Status { get; set; } = null!;
     public DateTime? SentToSponsorDate { get; set; }
     public int ModificationNumber { get; set; }
+    // Virtual / computed field
+    public DateTime? DateSubmitted => SentToRegulatorDate ?? SentToSponsorDate;
 }

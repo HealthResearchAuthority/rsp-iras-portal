@@ -13,6 +13,7 @@
     ? Model.Status != ModificationStatus.WithSponsor
     : Model.Status != ModificationStatus.InDraft;
 
+    var sponsorOrganisationUserId = ViewBag.SponsorOrganisationUserId;
 }
 
 @foreach (var (change, changeIndex) in Model.ModificationChanges.Select((change, changeIndex) => (change, changeIndex)))
@@ -36,10 +37,10 @@
 
                         @{
                             var reviewChangesParams = new Dictionary<string, string> {
-                                    { "projectRecordId", Model.ProjectRecordId },
-                                    { "specificAreaOfChangeId", change.SpecificAreaOfChangeId },
-                                    { "modificationChangeId", change.ModificationChangeId.ToString() },
-                                    { "reviseChange", bool.TrueString },
+                                { "projectRecordId", Model.ProjectRecordId },
+                                { "specificAreaOfChangeId", change.SpecificAreaOfChangeId },
+                                { "modificationChangeId", change.ModificationChangeId.ToString() },
+                                { "reviseChange", bool.TrueString },
                                 };
 
                             <a class="govuk-link" asp-route="pmc:reviewchanges" asp-all-route-data="reviewChangesParams">Change</a>
@@ -56,6 +57,24 @@
                            asp-route-modificationChangeName="@change.SpecificChangeName">
                             Remove
                         </a>
+                    </li>
+                }
+
+                @if (isSponsorCheckAndAuthorise is true && sponsorOrganisationUserId is not null && Model.Status is ModificationStatus.WithSponsor)
+                {
+                    <li class="govuk-summary-card__action">                        
+                        @{
+                            var viewDetailsParams = new Dictionary<string, string> {
+                                { "projectRecordId", Model.ProjectRecordId ?? "" },
+                                { "irasId", Model.IrasId ?? "" },
+                                { "shortTitle", Model.ShortTitle ?? "" },
+                                { "projectModificationId", Model.ModificationId ?? "" },
+                                { "sponsorOrganisationUserId", sponsorOrganisationUserId.ToString() },
+                                { "modificationChangeId", change.ModificationChangeId.ToString() },                                
+                                };
+
+                            <a class="govuk-link" asp-route="sws:changedetails" asp-all-route-data="viewDetailsParams">View details</a>
+                        }
                     </li>
                 }
             </ul>
@@ -89,7 +108,7 @@
                         Modification type
                     </dt>
                     <dd class="govuk-summary-list__value">
-                        @change.ModificationType.Substantiality
+                        @change.ModificationType
                     </dd>
                 </div>
                 <div class="govuk-summary-list__row">
@@ -97,7 +116,7 @@
                         Category
                     </dt>
                     <dd class="govuk-summary-list__value">
-                        @(string.IsNullOrWhiteSpace(change.Categorisation.Category) ? "N/A" : change.Categorisation.Category)
+                        @change.Category
                     </dd>
                 </div>
                 <div class="govuk-summary-list__row">

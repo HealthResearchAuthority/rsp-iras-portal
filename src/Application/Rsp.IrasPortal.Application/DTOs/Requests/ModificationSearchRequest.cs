@@ -20,4 +20,5 @@ public class ModificationSearchRequest
     public string? ModificationId { get; set; }
     public string? ReviewerName { get; set; } = null;
     public bool IncludeReviewerName { get; set; }
+    public List<string> AllowedStatuses { get; set; } = [];
 }

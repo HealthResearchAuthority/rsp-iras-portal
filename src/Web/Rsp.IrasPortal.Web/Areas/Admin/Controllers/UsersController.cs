@@ -38,9 +38,9 @@ public class UsersController(
     private const string ConfirmDisableUser = nameof(ConfirmDisableUser);
     private const string EnableUserSuccessMessage = nameof(EnableUserSuccessMessage);
     private const string ConfirmEnableUser = nameof(ConfirmEnableUser);
-    private const string TeamManagerRole = "team_manager";
-    private const string StudyWideReviewerRole = "study-wide_reviewer";
-    private const string WorkflowCoordinatorRole = "workflow_co-ordinator";
+    private const string TeamManagerRole = Roles.TeamManager;
+    private const string StudyWideReviewerRole = Roles.StudyWideReviewer;
+    private const string WorkflowCoordinatorRole = Roles.WorkflowCoordinator;
 
     private const string EditMode = "edit";
     private const string CreateMode = "create";

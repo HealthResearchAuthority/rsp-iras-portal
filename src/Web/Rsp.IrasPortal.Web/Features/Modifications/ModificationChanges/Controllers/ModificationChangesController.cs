@@ -22,11 +22,13 @@ public class ModificationChangesController
 (
     IRespondentService respondentService,
     ICmsQuestionsetService cmsQuestionsetService,
+    IModificationRankingService modificationRankingService,
     IValidator<QuestionnaireViewModel> validator
-) : ModificationChangesBaseController(respondentService, cmsQuestionsetService, validator)
+) : ModificationChangesBaseController(respondentService, cmsQuestionsetService, modificationRankingService, validator)
 {
     private readonly IRespondentService _respondentService = respondentService;
     private readonly ICmsQuestionsetService _cmsQuestionsetService = cmsQuestionsetService;
+    private readonly IValidator<QuestionnaireViewModel> _validator = validator;
     private const string PostApprovalRoute = "pov:postapproval";
 
     [RequestFormLimits(ValueCountLimit = int.MaxValue)]
@@ -59,7 +61,7 @@ public class ModificationChangesController
         // At this point only validating the data format like date, email, length etc if provided
         // so that users can continue without entering the information. From the review screen
         // all mandatory questions will be validated
-        var isValid = await this.ValidateQuestionnaire(validator, model);
+        var isValid = await this.ValidateQuestionnaire(_validator, model);
 
         // set the previous, current and next stages
         var sectionQuestions = questionnaire.Questions.FindAll(q => q.SectionId.Equals(model.CurrentStage!, StringComparison.OrdinalIgnoreCase));

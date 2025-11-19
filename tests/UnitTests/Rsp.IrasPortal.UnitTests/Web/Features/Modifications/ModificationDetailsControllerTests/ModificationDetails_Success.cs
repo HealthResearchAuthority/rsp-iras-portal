@@ -30,15 +30,26 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
         var modId = Guid.NewGuid();
         var changeId = Guid.NewGuid();
 
-        // 1. GetModificationsByIds -> one modification entry
+        // 1. GetModification -> one modification entry
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModificationsByIds(It.IsAny<List<string>>()))
-            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+            .Setup(s => s.GetModification(It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new()
+                Content = new ProjectModificationResponse
                 {
-                    Modifications = [new ModificationsDto { Id = modId.ToString(), ModificationId = modId.ToString(), Status = ModificationStatus.InDraft }]
+                    Id = modId,
+                    ModificationIdentifier = modId.ToString(),
+                    Status = ModificationStatus.InDraft,
+                    ProjectRecordId = "PR1",
+                    ModificationNumber = 1,
+                    CreatedDate = DateTime.UtcNow,
+                    UpdatedDate = DateTime.UtcNow,
+                    CreatedBy = "TestUser",
+                    UpdatedBy = "TestUser",
+                    ModificationType = "Substantial",
+                    Category = "Category A",
+                    ReviewType = "Full Review"
                 }
             });
 

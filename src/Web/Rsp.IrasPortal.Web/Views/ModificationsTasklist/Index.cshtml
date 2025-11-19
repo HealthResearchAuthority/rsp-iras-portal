@@ -10,11 +10,11 @@
 	var errorSummaryTitle = "There is a problem";
 
 	var pageTitle = "Modifications ready to assign";
-	if (User.IsInRole("study-wide_reviewer"))
+	if (User.IsInRole(Roles.StudyWideReviewer))
 	{
 		pageTitle = "Assign modifications task list";
 	}
-    if (User.IsInRole("team_manager"))
+    if (User.IsInRole(Roles.TeamManager))
     {
         pageTitle = "Team manager dashboard";
     }
@@ -33,7 +33,7 @@
 	var noResultsBodyText = pageContent.GetValueOrDefault("Approvals.ModificationsTasklist.NoResultsBodyText", null);
 	var pageSummary = pageContent.GetValueOrDefault("Approvals.ModificationsTasklist.PageSummarySWR", null);
 
-    if (User.IsInRole("team_manager"))
+    if (User.IsInRole(Roles.TeamManager))
     {
 		pageSummary = pageContent.GetValueOrDefault("Approvals.ModificationsTasklist.PageSummaryTeamManager", null);
     }
@@ -168,7 +168,7 @@
 								</div>
 							</details>
                             
-                            @if (!User.IsInRole("team_manager"))
+                            @if (!User.IsInRole(Roles.TeamManager))
                             {
                                 <!-- Short project title -->
                                 <details class="search-filter-section" @(CanOpenPanelForField("ShortProjectTitle") ? "open" :
@@ -188,7 +188,7 @@
                                     </div>
                                 </details>
                             }
-                            @if (User.IsInRole("team_manager"))
+                            @if (User.IsInRole(Roles.TeamManager))
 							{
 								<!-- Study-wide reviewer -->
                                 <details class="search-filter-section" @(CanOpenPanelForField("ReviewerName") ? "open" : null)>
@@ -297,7 +297,7 @@ else
 						<tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
 							<th scope="col" class="govuk-table__header govuk-!-text-align-right checkbox-cell">
 								<div class="govuk-checkboxes__item govuk-checkboxes--small">
-									<input id="select-all-modifications" name=""
+									<input id="select-all-modifications" name="select-all-modifications"
 										class="govuk-checkboxes__input select-all-modifications" type="checkbox">
 									<label for="select-all-modifications"
 										class="govuk-label govuk-checkboxes__label"></label>
@@ -308,12 +308,12 @@ else
                                 {
                                     new { Field = nameof(ModificationsModel.ModificationId),   Label = "Modification ID" },
                                     new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
-                                    new { Field = nameof(ModificationsModel.CreatedAt),         Label = "Date submitted" },
+                                    new { Field = nameof(ModificationsModel.SentToRegulatorDate),         Label = "Date submitted" },
                                     new { Field = nameof(ModificationsModel.DaysSinceSubmission), Label = "Days since submission" },
                                     new { Field = nameof(ModificationsModel.Status),            Label = "Status" }
                                 }.ToList();
 
-                                if (User.IsInRole("team_manager"))
+                                if (User.IsInRole(Roles.TeamManager))
                                 {
                                     // Insert at index 4 (0-based): after DaysSinceSubmission, before Status
                                     sortableHeaders.Insert(4, new
@@ -387,10 +387,10 @@ else
                                             <strong>@modification.Modification.ShortProjectTitle</strong>
                                         </a>
                                     </td>
-									<td class="govuk-table__cell">@modification.Modification.CreatedAt.ToString("dd MMM yyyy")
+									<td class="govuk-table__cell">@modification.Modification.SentToRegulatorDate?.ToString("dd MMM yyyy")
 									</td>
                                     <td class="govuk-table__cell">@modification.Modification.DaysSinceSubmission @daysText</td>
-                                    @if (User.IsInRole("team_manager"))
+                                    @if (User.IsInRole(Roles.TeamManager))
                                     {
                                         <td class="govuk-table__cell">
                                             @(string.IsNullOrWhiteSpace(modification.Modification.ReviewerName)

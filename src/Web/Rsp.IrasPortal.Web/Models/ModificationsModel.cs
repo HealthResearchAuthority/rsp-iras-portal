@@ -11,7 +11,11 @@ public class ModificationsModel
     public string LeadNation { get; set; } = null!;
     public string SponsorOrganisation { get; set; } = null!;
     public DateTime CreatedAt { get; set; }
-    public int DaysSinceSubmission => (DateTime.UtcNow - CreatedAt).Days;
+    public int DaysSinceSubmission =>
+        SentToRegulatorDate.HasValue
+            ? (DateTime.UtcNow.Date - SentToRegulatorDate.Value.Date).Days
+            : 0;
+
     public string Status { get; set; } = null!;
     public int ModificationNumber { get; set; }
     public DateTime? SentToSponsorDate { get; set; } = null;

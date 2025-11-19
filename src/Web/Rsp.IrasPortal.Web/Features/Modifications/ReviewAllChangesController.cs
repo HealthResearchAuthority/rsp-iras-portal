@@ -1,11 +1,11 @@
-﻿using System.Text.Json;
-using System.Net;
+﻿using System.Reflection;
+using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Enums;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
@@ -38,7 +38,7 @@ public class ReviewAllChangesController
     [HttpGet]
     public async Task<IActionResult> ReviewAllChanges
 #pragma warning disable S107 // Methods should not have too many parameters
-        (
+    (
         string projectRecordId,
         string irasId,
         string shortTitle,
@@ -47,8 +47,7 @@ public class ReviewAllChangesController
         int pageSize = 20,
         string sortField = nameof(ProjectOverviewDocumentDto.DocumentType),
         string sortDirection = SortDirections.Ascending
-        )
-#pragma warning restore S107 // Methods should not have too many parameters
+    )
     {
         // Fetch the modification by its identifier
         var (result, modification) = await PrepareModificationAsync(projectModificationId, irasId, shortTitle, projectRecordId);
@@ -73,6 +72,18 @@ public class ReviewAllChangesController
 
         modification.SponsorDetails = sponsorDetailsQuestionnaire.Questions;
 
+        var modificationAuditResponse = await projectModificationsService.GetModificationAuditTrail(projectModificationId);
+
+        if (modificationAuditResponse.IsSuccessStatusCode && modificationAuditResponse.Content is not null)
+        {
+            modification.AuditTrailModel = new AuditTrailModel
+            {
+                AuditTrail = modificationAuditResponse.Content,
+                ModificationIdentifier = modification.ModificationId ?? "",
+                ShortTitle = shortTitle,
+            };
+        }
+
         // Store the modification details in TempData for later use
         var reviewOutcomeModel = new ReviewOutcomeViewModel
         {
@@ -95,39 +106,7 @@ public class ReviewAllChangesController
         // Build the questionnaire model containing all questions for the details section.
         var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(additionalQuestionsResponse.Content!);
 
-        // Locate the question defining "Document Type"
-        var documentTypeQuestion = questionnaire.Questions
-            .FirstOrDefault(q =>
-                string.Equals(q.QuestionId?.ToString(),
-                QuestionIds.SelectedDocumentType,
-                StringComparison.OrdinalIgnoreCase));
-
-        if (documentTypeQuestion?.Answers?.Any() == true)
-        {
-            var documentChangeRequest = BuildDocumentRequest();
-            // For each document, replace the dropdown value (AnswerId) with the corresponding AnswerText
-            foreach (var doc in modification.ProjectOverviewDocumentViewModel.Documents)
-            {
-                if (!string.IsNullOrWhiteSpace(doc.DocumentType))
-                {
-                    var matchingAnswer = documentTypeQuestion.Answers
-                        .FirstOrDefault(a =>
-                            string.Equals(a.AnswerId, doc.DocumentType, StringComparison.OrdinalIgnoreCase));
-
-                    if (matchingAnswer != null)
-                    {
-                        // Replace the stored AnswerId with the friendly AnswerText
-                        doc.DocumentType = matchingAnswer.AnswerText;
-                    }
-                }
-
-                documentChangeRequest.Id = doc.Id;
-                if (!doc.Status.Equals(DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase))
-                {
-                    doc.Status = (await EvaluateDocumentCompletion(documentChangeRequest, questionnaire) ? DocumentDetailStatus.Incomplete : DocumentDetailStatus.Completed).ToString();
-                }
-            }
-        }
+        await MapDocumentTypesAndStatusesAsync(questionnaire, modification.ProjectOverviewDocumentViewModel.Documents);
 
         modification.ProjectOverviewDocumentViewModel.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationDocumentsResponseResult?.Content?.TotalCount ?? 0)
         {
@@ -318,61 +297,45 @@ public class ReviewAllChangesController
 
     public async Task<IActionResult> SendModificationToSponsor(string projectRecordId, Guid projectModificationId)
     {
-        // Verify upload success
+        // Fetch all modification documents (up to 200)
         var searchQuery = new ProjectOverviewDocumentSearchRequest();
         var modificationDocumentsResponseResult = await projectModificationsService.GetDocumentsForModification(
             projectModificationId,
-            searchQuery, 1, 200,
+            searchQuery, 1, 300,
             nameof(ProjectOverviewDocumentDto.DocumentType),
             SortDirections.Ascending);
 
         var documents = modificationDocumentsResponseResult?.Content?.Documents ?? [];
-        var hasUnfinishedDocuments = documents.Any(d => d.IsMalwareScanSuccessful != true);
 
-        // Verify each document’s detail completeness
-        if (!hasUnfinishedDocuments && documents.Any())
+        // CHECK FOR INCOMPLETE DOCUMENT DETAILS
+        if (documents.Any())
         {
             var documentChangeRequest = BuildDocumentRequest();
             var documentStatuses = await GetDocumentCompletionStatuses(documentChangeRequest);
-            hasUnfinishedDocuments = documentStatuses.Any(d => d.Status.Equals(DocumentDetailStatus.Incomplete.ToString(), StringComparison.OrdinalIgnoreCase));
+
+            bool hasIncompleteDocuments = documentStatuses
+                .Any(d => d.Status.Equals(DocumentDetailStatus.Incomplete.ToString(), StringComparison.OrdinalIgnoreCase));
+
+            if (hasIncompleteDocuments)
+            {
+                return RedirectToRoute("pmc:DocumentDetailsIncomplete");
+            }
         }
 
-        // If any document is unfinished, redirect directly to the UnfinishedChanges view
-        if (hasUnfinishedDocuments)
-            return RedirectToRoute("pmc:unfinishedchanges");
+        // CHECK MALWARE SCAN STATUS
+        bool allMalwareScansCompleted = documents.All(d => d.IsMalwareScanSuccessful == true);
 
-        // Otherwise, proceed with updating the modification status
+        if (!allMalwareScansCompleted)
+        {
+            return RedirectToRoute("pmc:DocumentsScanInProgress");
+        }
+
+        // PASS ALL CHECKS → CONTINUE WORKFLOW
         return await HandleModificationStatusUpdate(
             projectRecordId,
             projectModificationId,
             ModificationStatus.WithSponsor,
             onSuccess: () => View("ModificationSentToSponsor"));
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> SubmitToRegulator(string projectRecordId, Guid projectModificationId, string overallReviewType)
-    {
-        // Default to WithReviewBody if not set or review required
-        var statusToSet = ModificationStatus.WithReviewBody;
-
-        // Evaluate the review type (case-insensitive, null-safe)
-        if (!string.IsNullOrWhiteSpace(overallReviewType))
-        {
-            var reviewTypeNormalized = overallReviewType.Trim().ToLowerInvariant();
-            statusToSet = reviewTypeNormalized switch
-            {
-                "no review required" => ModificationStatus.Approved,
-                _ => ModificationStatus.WithReviewBody
-            };
-        }
-
-        // Call your existing handler with the determined status
-        return await HandleModificationStatusUpdate(
-            projectRecordId,
-            projectModificationId,
-            statusToSet,
-            onSuccess: () => RedirectToRoute("pov:projectdetails", new { projectRecordId })
-        );
     }
 
     private async Task<IActionResult> HandleModificationStatusUpdate(
