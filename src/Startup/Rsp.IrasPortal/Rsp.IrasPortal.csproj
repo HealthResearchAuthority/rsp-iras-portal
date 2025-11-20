@@ -21,7 +21,7 @@
         <PackageReference Include="Microsoft.Extensions.Azure" Version="1.11.0" />
         <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.9.0" />
         <PackageReference Include="Refit.HttpClientFactory" Version="8.0.0" />
-        <PackageReference Include="Rsp.Gds.Component" Version="1.0.23" />
+        <PackageReference Include="Rsp.Gds.Component" Version="1.0.25" />
     </ItemGroup>
 
     <ItemGroup>
