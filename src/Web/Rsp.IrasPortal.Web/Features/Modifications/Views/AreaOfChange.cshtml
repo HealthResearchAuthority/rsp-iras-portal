@@ -60,6 +60,14 @@
                             <option value="@item.Value" selected="@item.Selected" title="@item.Text">@item.Text</option>
                         }
                     </select>
+
+                    <noscript>
+                        <button type="submit"
+                                asp-action="ApplySelectionToAreaOfChange"
+                                class="govuk-button govuk-button--secondary govuk-!-margin-left-4 govuk-!-margin-bottom-0">
+                            Apply selection
+                        </button>
+                    </noscript>
                 </div>
 
                 <div class="govuk-form-group" error-class-for="SpecificChangeId">
@@ -93,13 +101,13 @@
 
                     <partial name="_SubmitButton" model="@("pmc:confirmmodificationjourney", "Save for later", actionParams)" />
                 </div>
-            </form>
+            </form>                   
         </div>
     </div>
 
     @* store the previously select areaId and specificAreaId in hidden fields *@
     <input id="areaOfChangeId" type="hidden" value="@areaId" />
-    <input id="specificAreaOfChangeId" type="hidden" value="@specificAreaId" />
+    <input id="specificAreaOfChangeId" type="hidden" value="@specificAreaId" />  
 </div>
 
 <script>

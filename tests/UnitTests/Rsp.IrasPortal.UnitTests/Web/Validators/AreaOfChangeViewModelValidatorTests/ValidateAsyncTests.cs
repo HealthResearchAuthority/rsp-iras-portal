@@ -1,4 +1,5 @@
 ﻿using FluentValidation.TestHelper;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Rsp.IrasPortal.Web.Models;
 using Rsp.IrasPortal.Web.Validators;
 
@@ -40,5 +41,27 @@ public class ValidateAsyncTests : TestServiceBase<AreaOfChangeViewModelValidator
         // Assert
         result.ShouldHaveValidationErrorFor(x => x.SpecificChangeId)
               .WithErrorMessage("Select specific change");
+    }
+
+    [Fact]
+    public async Task Should_Fail_When_SpecificChangeId_NotInOptions()
+    {
+        // Arrange
+        var model = new AreaOfChangeViewModel
+        {
+            AreaOfChangeId = Guid.NewGuid().ToString(),
+            SpecificChangeId = Guid.NewGuid().ToString(),
+            SpecificChangeOptions = new List<SelectListItem>
+            {
+                new SelectListItem { Value = Guid.NewGuid().ToString(), Text = "Option 1" }
+            }
+        };
+
+        // Act
+        var result = await Sut.TestValidateAsync(model);
+
+        // Assert
+        result.ShouldHaveValidationErrorFor(x => x)
+              .WithErrorMessage("Select ‘Apply selection' to confirm the area of change, then select a specific change");
     }
 }
