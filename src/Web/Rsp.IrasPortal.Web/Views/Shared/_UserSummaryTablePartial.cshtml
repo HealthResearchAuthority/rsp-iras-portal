@@ -263,12 +263,14 @@
 			if (edit)
 			{
 				<a class="govuk-link" asp-route="admin:edituser" asp-route-userId="@Model.Id"
-				   asp-route-email="@Model.Email">Change<span class="govuk-visually-hidden">@fieldName</span>
+				   asp-route-email="@Model.Email">
+					Change<span class="govuk-visually-hidden">@fieldName</span>
 				</a>
 			}
 			else
 			{
-				<button class="govuk-link-button" type="submit" formaction="@editNewUserUrl">Change<span class="govuk-visually-hidden">@fieldName</span>
+				<button class="govuk-link-button" type="submit" formaction="@editNewUserUrl">
+					Change<span class="govuk-visually-hidden">@fieldName</span>
 				</button>
 			}
 		}
