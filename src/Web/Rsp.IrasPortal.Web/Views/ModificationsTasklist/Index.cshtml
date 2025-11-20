@@ -14,10 +14,10 @@
 	{
 		pageTitle = "Assign modifications task list";
 	}
-    if (User.IsInRole(Roles.TeamManager))
-    {
-        pageTitle = "Team manager dashboard";
-    }
+	if (User.IsInRole(Roles.TeamManager))
+	{
+		pageTitle = "Team manager dashboard";
+	}
 
 	ViewData["Title"] = pageTitle + " - Modifications - Approvals - System Administration";
 
@@ -33,8 +33,8 @@
 	var noResultsBodyText = pageContent.GetValueOrDefault("Approvals.ModificationsTasklist.NoResultsBodyText", null);
 	var pageSummary = pageContent.GetValueOrDefault("Approvals.ModificationsTasklist.PageSummarySWR", null);
 
-    if (User.IsInRole(Roles.TeamManager))
-    {
+	if (User.IsInRole(Roles.TeamManager))
+	{
 		pageSummary = pageContent.GetValueOrDefault("Approvals.ModificationsTasklist.PageSummaryTeamManager", null);
 	}
 
@@ -300,30 +300,30 @@ else
 							<th scope="col" class="govuk-table__header govuk-!-text-align-right checkbox-cell">
 								<div class="govuk-checkboxes__item govuk-checkboxes--small">
 									<input id="select-all-modifications" name="select-all-modifications"
-										class="govuk-checkboxes__input select-all-modifications" type="checkbox" aria-label="Select all records">
+										   class="govuk-checkboxes__input select-all-modifications" type="checkbox" aria-label="Select all records">
 									<label for="select-all-modifications"
 										   class="govuk-label govuk-checkboxes__label"></label>
 								</div>
 							</th>
 							@{
-                                var sortableHeaders = new[]
-                                {
-                                    new { Field = nameof(ModificationsModel.ModificationId),   Label = "Modification ID" },
-                                    new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
-                                    new { Field = nameof(ModificationsModel.SentToRegulatorDate),         Label = "Date submitted" },
-                                    new { Field = nameof(ModificationsModel.DaysSinceSubmission), Label = "Days since submission" },
-                                    new { Field = nameof(ModificationsModel.Status),            Label = "Status" }
-                                }.ToList();
+								var sortableHeaders = new[]
+								{
+						new { Field = nameof(ModificationsModel.ModificationId),   Label = "Modification ID" },
+						new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
+						new { Field = nameof(ModificationsModel.SentToRegulatorDate),         Label = "Date submitted" },
+						new { Field = nameof(ModificationsModel.DaysSinceSubmission), Label = "Days since submission" },
+						new { Field = nameof(ModificationsModel.Status),            Label = "Status" }
+						}.ToList();
 
-                                if (User.IsInRole(Roles.TeamManager))
-                                {
-                                    // Insert at index 4 (0-based): after DaysSinceSubmission, before Status
-                                    sortableHeaders.Insert(4, new
-                                    {
-                                        Field = nameof(ModificationsModel.ReviewerName),
-                                        Label = "Study-wide reviewer"
-                                    });
-                                }
+								if (User.IsInRole(Roles.TeamManager))
+								{
+									// Insert at index 4 (0-based): after DaysSinceSubmission, before Status
+									sortableHeaders.Insert(4, new
+									{
+										Field = nameof(ModificationsModel.ReviewerName),
+										Label = "Study-wide reviewer"
+									});
+								}
 
 								var tableId = "modificationsTasklistTable";
 							}
@@ -384,25 +384,26 @@ else
 								</td>
 								<td class="govuk-table__cell">
 									<a asp-route="pov:projectdetails"
-                                           asp-route-projectRecordId="@modification.Modification.ProjectRecordId"
-                                           asp-route-backRoute="tasklist:index"
-                                           class="govuk-link">
-                                            <strong>@modification.Modification.ShortProjectTitle</strong>
-                                        </a>
-                                    </td>
-									<td class="govuk-table__cell">@modification.Modification.CreatedAt.ToString("dd MMM yyyy")
+									   asp-route-projectRecordId="@modification.Modification.ProjectRecordId"
+									   asp-route-backRoute="tasklist:index"
+									   class="govuk-link">
+										<strong>@modification.Modification.ShortProjectTitle</strong>
+									</a>
+								</td>
+								<td class="govuk-table__cell">
+										@modification.Modification.CreatedAt.ToString("dd MMM yyyy")
+								</td>
+								<td class="govuk-table__cell">@modification.Modification.DaysSinceSubmission @daysText</td>
+									@if (User.IsInRole("team_manager"))
+									{
+									<td class="govuk-table__cell">
+											@(string.IsNullOrWhiteSpace(modification.Modification.ReviewerName)
+																		? "Unassigned"
+																		: modification.Modification.ReviewerName)
 									</td>
-                                    <td class="govuk-table__cell">@modification.Modification.DaysSinceSubmission @daysText</td>
-                                    @if (User.IsInRole("team_manager"))
-                                    {
-                                        <td class="govuk-table__cell">
-                                            @(string.IsNullOrWhiteSpace(modification.Modification.ReviewerName)
-                                                ? "Unassigned"
-                                                : modification.Modification.ReviewerName)
-                                        </td>
-                                    }
-                                    <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">@modification.Modification.Status</strong></td>
-								</tr>
+									}
+								<td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">@modification.Modification.Status</strong></td>
+							</tr>
 							}
 					</tbody>
 					</form>
