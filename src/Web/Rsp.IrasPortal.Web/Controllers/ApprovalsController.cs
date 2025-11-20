@@ -87,12 +87,7 @@ public class ApprovalsController
                     SponsorOrganisation = dto.SponsorOrganisation,
                     CreatedAt = dto.CreatedAt,
                     ProjectRecordId = dto.ProjectRecordId,
-                    Status =
-                        !string.IsNullOrWhiteSpace(dto.ReviewerName) && dto.Status == ModificationStatus.WithReviewBody
-                            ? ModificationStatus.ReviewInProgress
-                            : dto.Status == ModificationStatus.WithReviewBody
-                                ? ModificationStatus.Received
-                                : dto.Status,
+                    Status = dto.Status.ToBackstageDisplayStatus(dto.ReviewerName)
                 })
                 .ToList() ?? [];
 
