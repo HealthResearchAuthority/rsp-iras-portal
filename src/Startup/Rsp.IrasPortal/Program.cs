@@ -41,6 +41,13 @@ builder
 // would need it
 builder.AddServiceDefaults();
 
+builder.Services.AddAntiforgery(options =>
+{
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.Strict;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+});
+
 // Add services to the container.
 var services = builder.Services;
 var configuration = builder.Configuration;
