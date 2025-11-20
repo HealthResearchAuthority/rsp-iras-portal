@@ -6,8 +6,12 @@ namespace Rsp.IrasPortal.Web.Extensions;
 [ExcludeFromCodeCoverage]
 public static class ModificationStatusExtensions
 {
-    public static string ToBackstageDisplayStatus(this string status, string? reviewerName)
+    public static string ToBackstageDisplayStatus(this string? status, string? reviewerName)
     {
+        // If status is null → return empty string or fallback
+        if (string.IsNullOrWhiteSpace(status))
+            return string.Empty;
+
         // Only care about WithReviewBody — everything else returns unchanged
         if (!status.Equals(nameof(ModificationStatus.WithReviewBody), StringComparison.OrdinalIgnoreCase))
             return status;
