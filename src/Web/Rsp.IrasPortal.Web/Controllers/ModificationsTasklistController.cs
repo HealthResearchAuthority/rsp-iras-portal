@@ -140,7 +140,12 @@ public class ModificationsTasklistController(
                     SentToRegulatorDate = dto.SentToRegulatorDate,
                     ChiefInvestigator = dto.ChiefInvestigator,
                     CreatedAt = dto.CreatedAt,
-                    Status = dto.Status is ModificationStatus.WithReviewBody ? "Received" : dto.Status,
+                    Status =
+                        !string.IsNullOrWhiteSpace(dto.ReviewerName) && dto.Status == ModificationStatus.WithReviewBody
+                            ? "Review in progress"
+                            : dto.Status == ModificationStatus.WithReviewBody
+                                ? "Received"
+                                : dto.Status,
                     ReviewerName = dto.ReviewerName
                 },
                 IsSelected = selectedFromSession.Contains(dto.Id, StringComparer.OrdinalIgnoreCase),
