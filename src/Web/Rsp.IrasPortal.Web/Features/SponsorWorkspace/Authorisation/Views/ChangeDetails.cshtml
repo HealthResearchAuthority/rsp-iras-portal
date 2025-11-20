@@ -44,28 +44,6 @@
         <partial name="~/Features/Modifications/Shared/_ProjectModificationSummary.cshtml"
                  model="Model"
                  view-data="ViewData" />
-
-        <h2 class="govuk-heading-m">Overall modification ranking</h2>
-        <div class="govuk-summary-card">
-            <div class="govuk-summary-card__title-wrapper">
-                <h2 class="govuk-summary-card__title">
-                    @Html.Raw(rankingTitle?.Value)
-                </h2>
-            </div>
-            <div class="govuk-summary-card__content">
-                @{
-                    var ranking = new RankingOfChangeViewModel
-                    {
-                        ModificationType = Model.ModificationType,
-                        Category = Model.Category,
-                        ReviewType = Model.ReviewType 
-                    };                  
-
-                }
-                <partial name="~/Features/Modifications/Shared/RankingOfChange.cshtml"
-                         model="ranking" />
-            </div>
-        </div>
     </div>
 </div>
 
@@ -74,6 +52,18 @@
     <div class="govuk-grid-column-full">
         @if (selectedChange != null)
         {
+            <h2 class="govuk-heading-m govuk-!-margin-top-5">
+                @Html.Raw(rankingTitle?.Value)
+            </h2>
+            var ranking = new RankingOfChangeViewModel
+            {
+                ModificationType = selectedChange.ModificationType,
+                Category = selectedChange.Category,
+                ReviewType = selectedChange.ReviewType
+            };
+            <partial name="~/Features/Modifications/Shared/RankingOfChange.cshtml"
+                     model="ranking" />
+
             <h2 class="govuk-heading-m govuk-!-margin-top-5">
                 @selectedChange.AreaOfChangeName
             </h2>
