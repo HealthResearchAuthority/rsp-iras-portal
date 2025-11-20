@@ -26,7 +26,7 @@
 <div class="govuk-grid-row">
 	<div class="govuk-grid-column-full">
 		<form method="get">
-			<label class="govuk-label" for="SearchUser"><b>Find a user</b></label>
+			<label class="govuk-label" for="SearchQuery"><b>Find a user</b></label>
 			<label class="govuk-label">You can search by first name, last name or email address</label>
 			<input class="govuk-input govuk-!-width-two-thirds" id="SearchQuery" name="SearchQuery" type="text" value="@(Model.Pagination?.SearchQuery ?? string.Empty)">
 			<input hidden readonly name="ReviewBodyId" value="@Model.ReviewBody.Id" />

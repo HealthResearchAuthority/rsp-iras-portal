@@ -17,7 +17,7 @@
 	var clarityProjectId = appSettings.ClarityProjectId;
 	var googleTagId = appSettings.GoogleTagId;
 
-	bool allowAdditionalCookies = Context.Request.Cookies[CookieConsentNames.AdditionalCookies] == "true";	
+	bool allowAdditionalCookies = Context.Request.Cookies[CookieConsentNames.AdditionalCookies] == "true";
 }
 
 <!DOCTYPE html>
@@ -133,8 +133,14 @@
 
 	<partial name="_ServiceNavigation" />
 
+	<header>
+		<div class="govuk-width-container">
+			@*Render beta phase banner*@
+			<partial name="_PhaseBanner" />
+		</div>
+	</header>
+
 	<div class="govuk-width-container">
-		<partial name="_PhaseBanner" />
 
 		@*Render optional breadcrumb partial if it exists*@
 		@await RenderSectionAsync("Breadcrumb", required: false)

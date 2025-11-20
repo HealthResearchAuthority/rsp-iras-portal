@@ -36,10 +36,10 @@
     if (User.IsInRole(Roles.TeamManager))
     {
 		pageSummary = pageContent.GetValueOrDefault("Approvals.ModificationsTasklist.PageSummaryTeamManager", null);
-    }
+	}
 
-    TempData[TempDataKeys.ProjectModification.LinkBackToReferrer] = true;
-    TempData[TempDataKeys.ProjectModification.UrlReferrer] = Context.Request.GetDisplayUrl();
+	TempData[TempDataKeys.ProjectModification.LinkBackToReferrer] = true;
+	TempData[TempDataKeys.ProjectModification.UrlReferrer] = Context.Request.GetDisplayUrl();
 }
 
 @section Breadcrumb {
@@ -73,9 +73,9 @@
 	<div class="govuk-grid-column-two-thirds search-filter-bottom-border">
 		<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
 		<h2 class="govuk-heading-xl" id="title">@pageTitle</h2>
-        <p class="govuk-body">
+		<p class="govuk-body">
 			@pageSummary?.Value @Model.LeadNation.
-        </p>
+		</p>
 
 		@if (!Model.EmptySearchPerformed || (Model.Modifications != null && Model.Modifications.Any()))
 		{
@@ -84,7 +84,7 @@
 				<div class="search-flex-container">
 					<span id="iras-id-label" class="govuk-visually-hidden">IRAS ID</span>
 					<input class="govuk-input search-flex-input" asp-for="Search.IrasId" type="text"
-						aria-labelledby="iras-id-label" />
+						   aria-labelledby="iras-id-label" />
 					<div class="search-flex-button">
 						<button type="submit" class="govuk-button">Search</button>
 					</div>
@@ -94,7 +94,7 @@
 				<div class="search-filter-panel">
 					<details class="search-filter-toggle" @(HasFilterErrors() ? "open" : null)>
 						<summary class="search-filter-panel__header" tabindex="-1" role="button"
-							aria-controls="filter-panel" aria-expanded="@(HasFilterErrors().ToString().ToLower())">
+								 aria-controls="filter-panel" aria-expanded="@(HasFilterErrors().ToString().ToLower())">
 
 							<span class="search-filter-panel__button-inner govuk-link" tabindex="0">
 								Advanced filters
@@ -106,10 +106,10 @@
 						</summary>
 
 						<div class="search-filter-panel__content" id="filter-panel" role="region"
-							aria-labelledby="toggle-filter">
+							 aria-labelledby="toggle-filter">
 							<!-- Date submitted -->
 							<details class="search-filter-section" @(CanOpenPanelForAnyField("FromDate", "ToDate") ? "open"
-																			 : null)>
+								 : null)>
 								<summary class="search-filter-section__summary">
 									<h2 class="search-filter-section__summary-heading">Date submitted</h2>
 								</summary>
@@ -117,20 +117,20 @@
 									<div class="govuk-form-group govuk-!-margin-bottom-2">
 										<fieldset class="govuk-fieldset">
 											<rsp-gds-date-input asp-for="Search.FromDate" day-name="Search.FromDay"
-												day-value="@Model.Search.FromDay" month-name="Search.FromMonth"
-												month-value="@Model.Search.FromMonth" year-name="Search.FromYear"
-												year-value="@Model.Search.FromYear"
-												label-text="Enter the date you want to search from"
-												hint-html="For example, 28 February 2023" error-key="FromDate" id="FromDate"
-												label-html-class="font-weight-none" />
+																day-value="@Model.Search.FromDay" month-name="Search.FromMonth"
+																month-value="@Model.Search.FromMonth" year-name="Search.FromYear"
+																year-value="@Model.Search.FromYear"
+																label-text="Enter the date you want to search from"
+																hint-html="For example, 28 February 2023" error-key="FromDate" id="FromDate"
+																label-html-class="font-weight-none" />
 
 											<rsp-gds-date-input asp-for="Search.ToDate" day-name="Search.ToDay"
-												day-value="@Model.Search.ToDay" month-name="Search.ToMonth"
-												month-value="@Model.Search.ToMonth" year-name="Search.ToYear"
-												year-value="@Model.Search.ToYear"
-												label-text="Enter the date you want to search to"
-												hint-html="For example, 12 October 2024" error-key="ToDate" id="ToDate"
-												label-html-class="font-weight-none" />
+																day-value="@Model.Search.ToDay" month-name="Search.ToMonth"
+																month-value="@Model.Search.ToMonth" year-name="Search.ToYear"
+																year-value="@Model.Search.ToYear"
+																label-text="Enter the date you want to search to"
+																hint-html="For example, 12 October 2024" error-key="ToDate" id="ToDate"
+																label-html-class="font-weight-none" />
 										</fieldset>
 									</div>
 								</div>
@@ -138,7 +138,7 @@
 
 							<!-- Days since submission -->
 							<details class="search-filter-section" @(CanOpenPanelForAnyField("FromSubmission",
-																			 "ToSubmission") ? "open" : null)>
+								 "ToSubmission") ? "open" : null)>
 								<summary class="search-filter-section__summary">
 									<h2 class="search-filter-section__summary-heading">Days since submission</h2>
 								</summary>
@@ -148,71 +148,73 @@
 									<div class="govuk-form-group govuk-!-margin-bottom-2">
 										<div class="display-inline-block govuk-!-padding-right-4">
 											<rsp-gds-input asp-for="Search.FromDaysSinceSubmission"
-												width-class="govuk-input--width-4" label-text=" "
-												label-html-class="font-weight-none" />
+														   width-class="govuk-input--width-4" label-text="Days since submission"
+														   label-html-class="govuk-label govuk-visually-hidden"
+														   field-id="Search.FromDaysSinceSubmission" />
 										</div>
-										<div
-											class="govuk-body govuk-!-padding-top-7 govuk-!-margin-bottom-0 govuk-!-padding-right-4 display-inline-block">
+										<div class="govuk-body govuk-!-padding-top-7 govuk-!-margin-bottom-0 govuk-!-padding-right-4 display-inline-block">
 											to
 										</div>
 										<div class="display-inline-block govuk-!-padding-right-4">
 											<rsp-gds-input asp-for="Search.ToDaysSinceSubmission"
-												width-class="govuk-input--width-4" label-text=" "
-												label-html-class="font-weight-none" />
+														   width-class="govuk-input--width-4" label-text="Days to submission"
+														   label-html-class="govuk-label govuk-visually-hidden"
+														   field-id="Search.ToDaysSinceSubmission" />
 										</div>
-										<div
-											class="govuk-body govuk-!-padding-top-7 govuk-!-margin-bottom-0 display-inline-block">
+										<div class="govuk-body govuk-!-padding-top-7 govuk-!-margin-bottom-0 display-inline-block">
 											days
 										</div>
 									</div>
 								</div>
 							</details>
-                            
-                            @if (!User.IsInRole(Roles.TeamManager))
-                            {
-                                <!-- Short project title -->
-                                <details class="search-filter-section" @(CanOpenPanelForField("ShortProjectTitle") ? "open" :
-                                    null)>
-                                    <summary class="search-filter-section__summary">
-                                        <h2 class="search-filter-section__summary-heading">Short project title</h2>
-                                    </summary>
-                                    <div class="search-filter-section__content">
-                                        <div class="govuk-form-group govuk-!-margin-bottom-2">
-                                            <fieldset class="govuk-fieldset">
-                                                <rsp-gds-input asp-for="Search.ShortProjectTitle"
-                                                               label-text="Enter the name of the short project title"
-                                                               width-class="govuk-!-width-three-quarters"
-                                                               label-html-class="font-weight-none"/>
-                                            </fieldset>
-                                        </div>
-                                    </div>
-                                </details>
-                            }
-                            @if (User.IsInRole(Roles.TeamManager))
+
+							@if (!User.IsInRole(Roles.TeamManager))
+							{
+								<!-- Short project title -->
+								<details class="search-filter-section" @(CanOpenPanelForField("ShortProjectTitle") ? "open" :
+						null)>
+									<summary class="search-filter-section__summary">
+										<h2 class="search-filter-section__summary-heading">Short project title</h2>
+									</summary>
+									<div class="search-filter-section__content">
+										<div class="govuk-form-group govuk-!-margin-bottom-2">
+											<fieldset class="govuk-fieldset">
+												<rsp-gds-input asp-for="Search.ShortProjectTitle"
+															   label-text="Enter the name of the short project title"
+															   width-class="govuk-!-width-three-quarters"
+															   label-html-class="font-weight-none"
+															   field-id="Search.ShortProjectTitle" />
+											</fieldset>
+										</div>
+									</div>
+								</details>
+							}
+							@if (User.IsInRole(Roles.TeamManager))
 							{
 								<!-- Study-wide reviewer -->
-                                <details class="search-filter-section" @(CanOpenPanelForField("ReviewerName") ? "open" : null)>
-                                    <summary class="search-filter-section__summary">
-                                        <h2 class="search-filter-section__summary-heading">Study-wide reviewer</h2>
-                                    </summary>
-                                    <div class="search-filter-section__content">
-                                        <div class="govuk-form-group govuk-!-margin-bottom-2">
-                                            <fieldset class="govuk-fieldset">
-										<rsp-gds-input asp-for="Search.ReviewerName"
-													   label-text="Enter the name of the study wide reviewer"
-                                                               width-class="govuk-!-width-three-quarters"
-                                                               label-html-class="font-weight-none" />
-                                            </fieldset>
-                                        </div>
-                                    </div>
-                                </details>
+								<details class="search-filter-section" @(CanOpenPanelForField("ReviewerName") ? "open" : null)>
+									<summary class="search-filter-section__summary">
+										<h2 class="search-filter-section__summary-heading">Study-wide reviewer</h2>
+									</summary>
+									<div class="search-filter-section__content">
+										<div class="govuk-form-group govuk-!-margin-bottom-2">
+											<fieldset class="govuk-fieldset">
+												<rsp-gds-input asp-for="Search.ReviewerName"
+															   label-text="Enter the name of the study wide reviewer"
+															   width-class="govuk-!-width-three-quarters"
+															   label-html-class="font-weight-none" />
+											</fieldset>
+										</div>
+									</div>
+								</details>
 							}
 
-                            <!-- Apply -->
+							<!-- Apply -->
 							<div class="search-filter-panel__actions">
-								<button
-									class="govuk-button search-filter-panel__action search-filter-panel__action--submit">Apply
-									filters</button>
+								<button class="govuk-button search-filter-panel__action search-filter-panel__action--submit">
+									Apply
+									filters
+								</button>
 							</div>
 						</div>
 					</details>
@@ -234,12 +236,12 @@
 							{
 								<li>
 									<a asp-route="tasklist:removefilter" asp-route-key="@filterKey"
-										class="search-filter-summary__remove-filter">
+									   class="search-filter-summary__remove-filter">
 										<span class="search-filter-summary__remove-filter-text">
 											<span class="govuk-visually-hidden">Remove filter</span>
 											@if (filterKey.Contains("submission", StringComparison.OrdinalIgnoreCase)
-																		|| filterKey.Contains("date submitted - from", StringComparison.OrdinalIgnoreCase)
-																		|| filterKey.Contains("date submitted - to", StringComparison.OrdinalIgnoreCase))
+																|| filterKey.Contains("date submitted - from", StringComparison.OrdinalIgnoreCase)
+																|| filterKey.Contains("date submitted - to", StringComparison.OrdinalIgnoreCase))
 											{
 												@($"{filterKey} {val}")
 											}
@@ -255,7 +257,7 @@
 					</ul>
 					<div>
 						<a asp-route="tasklist:clearfilters"
-							class="search-filter-summary__clear-filters govuk-link govuk-link--no-visited-state">
+						   class="search-filter-summary__clear-filters govuk-link govuk-link--no-visited-state">
 							Clear all filters
 						</a>
 					</div>
@@ -281,7 +283,7 @@
 	{
 		<div class="govuk-grid-row">
 			<div class="govuk-grid-column-two-thirds search-filter-error-border">
-				<h2 class="govuk-heading-l">@Html.Raw(emptySearchTitle?.Value)</h2>				
+				<h2 class="govuk-heading-l">@Html.Raw(emptySearchTitle?.Value)</h2>
 				@Html.Raw(emptySearchBodyText?.Value)
 			</div>
 		</div>
@@ -298,9 +300,9 @@ else
 							<th scope="col" class="govuk-table__header govuk-!-text-align-right checkbox-cell">
 								<div class="govuk-checkboxes__item govuk-checkboxes--small">
 									<input id="select-all-modifications" name="select-all-modifications"
-										class="govuk-checkboxes__input select-all-modifications" type="checkbox">
+										class="govuk-checkboxes__input select-all-modifications" type="checkbox" aria-label="Select all records">
 									<label for="select-all-modifications"
-										class="govuk-label govuk-checkboxes__label"></label>
+										   class="govuk-label govuk-checkboxes__label"></label>
 								</div>
 							</th>
 							@{
@@ -323,18 +325,18 @@ else
                                     });
                                 }
 
-                                var tableId = "modificationsTasklistTable";
+								var tableId = "modificationsTasklistTable";
 							}
 							@foreach (var header in sortableHeaders)
 							{
 								var sortableHeaderModel = new SortableHeaderModel
-								{
-									FieldName = header.Field,
-									DisplayText = header.Label,
-									CurrentSortField = Model.Pagination?.SortField,
-									CurrentSortDirection = Model.Pagination?.SortDirection,
-									TableId = tableId,
-								};
+					{
+						FieldName = header.Field,
+						DisplayText = header.Label,
+						CurrentSortField = Model.Pagination?.SortField,
+						CurrentSortDirection = Model.Pagination?.SortDirection,
+						TableId = tableId,
+					};
 
 								<th scope="col" class="govuk-table__header govuk-table__header-sortable">
 									<partial name="_SortableHeaderButton" model="@sortableHeaderModel" />
@@ -343,43 +345,44 @@ else
 						</tr>
 					</thead>
 					<form method="get" id="tasklist-selection">
-                        <!--Keep track of selected modifications that are not displayed on this page for continuity-->
-                        <input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
-                        <input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
+						<!--Keep track of selected modifications that are not displayed on this page for continuity-->
+						<input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
+						<input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
 
-                        @foreach (var selectedMod in Model.SelectedModificationIds.Except(Model.Modifications.Select(m =>
+						@foreach (var selectedMod in Model.SelectedModificationIds.Except(Model.Modifications.Select(m =>
 											m.Modification.ModificationId)))
 						{
 							<input hidden="hidden" type="text" value="@selectedMod" name="selectedModificationIds" />
 						}
 
-						<tbody class="govuk-table__body govuk-body-s">
+					<tbody class="govuk-table__body govuk-body-s">
 							@foreach (var modification in Model.Modifications)
 							{
 								var daysText = modification.Modification.DaysSinceSubmission == 1 ? "day" : "days";
 
-								<tr class="govuk-table__row">
-									<td class="govuk-table__cell checkbox-cell">
-										<div class="govuk-checkboxes__item govuk-checkboxes--small">
-											<input id="@modification.Modification.ModificationId" name="selectedModificationIds"
-												value="@modification.Modification.Id"
-												class="govuk-checkboxes__input child-checkbox" type="checkbox"
-												@(modification.IsSelected ? "checked" : "")>
-											<label for="@modification.Modification.ModificationId"
-												class="govuk-label govuk-checkboxes__label modification-checkbox-label"></label>
-										</div>
-									</td>
-                                    <td class="govuk-table__cell">
-                                        <a asp-route="pmc:reviewallchanges"
-                                           asp-route-projectRecordId="@modification.Modification.ProjectRecordId"
-                                           asp-route-irasId="@(modification.Modification.ModificationId?.Split('/')[0])"
-                                           asp-route-shortTitle="@modification.Modification.ShortProjectTitle"
-                                           asp-route-projectModificationId="@modification.Modification.Id"
-                                           class="govuk-link">
-                                            @modification.Modification.ModificationId
-                                        </a>
-                                    </td>
-                                    <td class="govuk-table__cell">
+							<tr class="govuk-table__row">
+								<td class="govuk-table__cell checkbox-cell">
+									<div class="govuk-checkboxes__item govuk-checkboxes--small">
+										<input id="@modification.Modification.ModificationId" name="selectedModificationIds"
+											   value="@modification.Modification.Id"
+											   class="govuk-checkboxes__input child-checkbox" type="checkbox"
+											   aria-label="Select record @modification.Modification.ModificationId"
+											@(modification.IsSelected ? "checked" : "")>
+										<label for="@modification.Modification.ModificationId"
+											   class="govuk-label govuk-checkboxes__label modification-checkbox-label"></label>
+									</div>
+								</td>
+								<td class="govuk-table__cell">
+									<a asp-route="pmc:reviewallchanges"
+									   asp-route-projectRecordId="@modification.Modification.ProjectRecordId"
+									   asp-route-irasId="@(modification.Modification.ModificationId?.Split('/')[0])"
+									   asp-route-shortTitle="@modification.Modification.ShortProjectTitle"
+									   asp-route-projectModificationId="@modification.Modification.Id"
+									   class="govuk-link">
+											@modification.Modification.ModificationId
+									</a>
+								</td>
+								<td class="govuk-table__cell">
 									<a asp-route="pov:projectdetails"
                                            asp-route-projectRecordId="@modification.Modification.ProjectRecordId"
                                            asp-route-backRoute="tasklist:index"
@@ -387,10 +390,10 @@ else
                                             <strong>@modification.Modification.ShortProjectTitle</strong>
                                         </a>
                                     </td>
-									<td class="govuk-table__cell">@modification.Modification.SentToRegulatorDate?.ToString("dd MMM yyyy")
+									<td class="govuk-table__cell">@modification.Modification.CreatedAt.ToString("dd MMM yyyy")
 									</td>
                                     <td class="govuk-table__cell">@modification.Modification.DaysSinceSubmission @daysText</td>
-                                    @if (User.IsInRole(Roles.TeamManager))
+                                    @if (User.IsInRole("team_manager"))
                                     {
                                         <td class="govuk-table__cell">
                                             @(string.IsNullOrWhiteSpace(modification.Modification.ReviewerName)
@@ -401,14 +404,16 @@ else
                                     <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">@modification.Modification.Status</strong></td>
 								</tr>
 							}
-						</tbody>
+					</tbody>
 					</form>
 				</table>
 			</div>
 			<partial name="_PaginationForm" model="@Model.Pagination" />
 			<div class="search-flex-button">
 				<button type="submit" class="govuk-button" asp-route="tasklist:AssignModifications"
-					form="tasklist-selection">Continue to assign modifications</button>
+						form="tasklist-selection">
+					Continue to assign modifications
+				</button>
 			</div>
 		</div>
 	</div>
@@ -418,7 +423,7 @@ else
 @if (await featureManager.IsEnabledAsync(FeatureFlags.ProgressiveEnhancement))
 {
 	@section FooterResources {
-		<script src="~/lib/jquery/dist/jquery.js"></script>
-		<script src="~/js/modificationsTasklist.js"></script>
+	<script src="~/lib/jquery/dist/jquery.js"></script>
+	<script src="~/js/modificationsTasklist.js"></script>
 	}
 }
