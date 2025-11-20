@@ -284,7 +284,7 @@ button.govuk-link {
 }
 
 .govuk-back-link-button--inverse:active, .govuk-back-link-button--inverse:hover {
-  color: hsla(0, 0%, 100%, 0.99);
+  color: hsla(0deg, 0%, 100%, 0.99);
 }
 
 .govuk-back-link-button--inverse:focus {
@@ -986,7 +986,7 @@ button.govuk-pagination__item--current {
 .govuk-service-navigation__wrapper,
 .govuk-service-navigation__list,
 .govuk-service-navigation__item {
-  background: var(--background-govuk-body-background-colour, #FFF);
+  background: var(--background-govuk-body-background-colour, #f4f8fb);
 }
 
 /* Hide all panels by default */

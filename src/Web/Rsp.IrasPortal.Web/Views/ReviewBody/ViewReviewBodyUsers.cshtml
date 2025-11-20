@@ -3,10 +3,10 @@
 @model ReviewBodyListUsersModel
 
 @{
-    ViewBag.Active = "reviewBodies";
-    var errorPrefix = "";
-    if ((Model.Users is null || !Model.Users.Any()) && !string.IsNullOrEmpty(Model.Pagination?.SearchQuery)) { errorPrefix = "Error - "; }
-    ViewBag.Title = $"{errorPrefix}Users - Manage review bodies - System Administration";
+	ViewBag.Active = "reviewBodies";
+	var errorPrefix = "";
+	if ((Model.Users is null || !Model.Users.Any()) && !string.IsNullOrEmpty(Model.Pagination?.SearchQuery)) { errorPrefix = "Error - "; }
+	ViewBag.Title = $"{errorPrefix}Users - Manage review bodies - System Administration";
 }
 
 @* @section is added for the back button, so that we can render something below the back button
@@ -31,7 +31,7 @@
 	<div class="govuk-grid-column-full">
 
 		<form method="get">
-			<label class="govuk-label" for="SearchUser"><b>Find a user</b></label>
+			<label class="govuk-label" for="SearchQuery"><b>Find a user</b></label>
 			<input class="govuk-input govuk-!-width-two-thirds" id="SearchQuery" name="SearchQuery" type="text" value="@(Model.Pagination?.SearchQuery ?? string.Empty)">
 			<input hidden readonly name="ReviewBodyId" value="@Model.ReviewBody.Id" />
 			<input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize" />
@@ -89,6 +89,7 @@
 									   asp-route-reviewBodyId="@Model.ReviewBody.Id"
 									   asp-route-userId="@user.Id">
 										Remove
+										<span class="govuk-visually-hidden">@user.GivenName @user.FamilyName</span>
 									</a>
 								</td>
 							</tr>
