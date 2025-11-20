@@ -44,9 +44,9 @@
 }
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-        <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
-    </div>
+	<div class="govuk-grid-column-two-thirds">
+		<partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
+	</div>
 </div>
 
 <div class="govuk-grid-row">
@@ -123,97 +123,95 @@
 						</details>
 
 						<!-- Last logged in -->
-                        <details class="search-filter-section" @(CanOpenPanelForAnyField("Search.FromDate", "Search.ToDate") ? "open" : null)>
-                            <summary class="search-filter-section__summary">
-                                <h2 class="search-filter-section__summary-heading">Last logged in</h2>
-                            </summary>
-                            <div class="search-filter-section__content">
-                                <div class="govuk-form-group govuk-!-margin-bottom-2">
-                                    <fieldset class="govuk-fieldset">
-                                        <rsp-gds-date-input asp-for="Search.FromDate"
-                                                            day-name="Search.FromDay"
-                                                            day-value="@Model.Search.FromDay"
-                                                            month-name="Search.FromMonth"
-                                                            month-value="@Model.Search.FromMonth"
-                                                            year-name="Search.FromYear"
-                                                            year-value="@Model.Search.FromYear"
-                                                            label-text="Enter the date you want to search from"
-                                                            hint-html="For example, 28 February 2023"
-                                                            error-key="FromDate"
-                                                            id="FromDate"
-                                                            label-html-class="font-weight-none" />
+						<details class="search-filter-section" @(CanOpenPanelForAnyField("Search.FromDate", "Search.ToDate") ? "open" : null)>
+							<summary class="search-filter-section__summary">
+								<h2 class="search-filter-section__summary-heading">Last logged in</h2>
+							</summary>
+							<div class="search-filter-section__content">
+								<div class="govuk-form-group govuk-!-margin-bottom-2">
+									<fieldset class="govuk-fieldset">
+										<rsp-gds-date-input asp-for="Search.FromDate"
+															day-name="Search.FromDay"
+															day-value="@Model.Search.FromDay"
+															month-name="Search.FromMonth"
+															month-value="@Model.Search.FromMonth"
+															year-name="Search.FromYear"
+															year-value="@Model.Search.FromYear"
+															label-text="Enter the date you want to search from"
+															hint-html="For example, 28 February 2023"
+															error-key="FromDate"
+															id="FromDate"
+															label-html-class="font-weight-none" />
 
-                                        <rsp-gds-date-input asp-for="Search.ToDate"
-                                                            day-name="Search.ToDay"
-                                                            day-value="@Model.Search.ToDay"
-                                                            month-name="Search.ToMonth"
-                                                            month-value="@Model.Search.ToMonth"
-                                                            year-name="Search.ToYear"
-                                                            year-value="@Model.Search.ToYear"
-                                                            label-text="Enter the date you want to search to"
-                                                            hint-html="For example, 12 October 2024"
-                                                            error-key="ToDate"
-                                                            id="ToDate"
-                                                            label-html-class="font-weight-none" />
-                                    </fieldset>
-                                </div>
-                            </div>
-                        </details>
-                        
-                        <!-- Review body -->
-                        <details class="search-filter-section" @(CanOpenPanelForField("Search.ReviewBody") ? "open" : null)>
-                            <summary class="search-filter-section__summary">
-                                <h2 class="search-filter-section__summary-heading">Review body</h2>
-                            </summary>
-                            <div class="search-filter-section__content">
-                                <div class="govuk-form-group govuk-!-margin-bottom-2">
-                                    <fieldset class="govuk-fieldset">
-                          
-                                        
-										
-                                        <rsp-gds-checkbox-group
-                                            asp-for="Search.ReviewBodies"
-                                            label-text="Select all that apply"
-                                            item-label-property="RegulatoryBodyName"
-                                            item-value-property="IsSelected"
-                                            item-hidden-properties="Id,RegulatoryBodyName"
-                                            conditional-field="false"
-                                            legend-class="govuk-label govuk-label--s font-weight-none"
-                                            hint-id="reviewbody-hint"
-                                            hint-html="@($"{Model.Search.ReviewBodies.Count(x => x.IsSelected)} selected")" >
-                                        
-                                        </rsp-gds-checkbox-group>
+										<rsp-gds-date-input asp-for="Search.ToDate"
+															day-name="Search.ToDay"
+															day-value="@Model.Search.ToDay"
+															month-name="Search.ToMonth"
+															month-value="@Model.Search.ToMonth"
+															year-name="Search.ToYear"
+															year-value="@Model.Search.ToYear"
+															label-text="Enter the date you want to search to"
+															hint-html="For example, 12 October 2024"
+															error-key="ToDate"
+															id="ToDate"
+															label-html-class="font-weight-none" />
+									</fieldset>
+								</div>
+							</div>
+						</details>
 
-                                    </fieldset>
-                                </div>
-                            </div>
-                        </details>
-                        
-                        <!-- Role -->
+						<!-- Review body -->
+						<details class="search-filter-section" @(CanOpenPanelForField("Search.ReviewBody") ? "open" : null)>
+							<summary class="search-filter-section__summary">
+								<h2 class="search-filter-section__summary-heading">Review body</h2>
+							</summary>
+							<div class="search-filter-section__content">
+								<div class="govuk-form-group govuk-!-margin-bottom-2">
+									<fieldset class="govuk-fieldset">
+
+
+
+										<rsp-gds-checkbox-group asp-for="Search.ReviewBodies"
+																label-text="Select all that apply"
+																item-label-property="RegulatoryBodyName"
+																item-value-property="IsSelected"
+																item-hidden-properties="Id,RegulatoryBodyName"
+																conditional-field="false"
+																legend-class="govuk-label govuk-label--s font-weight-none"
+																hint-id="reviewbody-hint"
+																hint-html="@($"{Model.Search.ReviewBodies.Count(x => x.IsSelected)} selected")">
+
+										</rsp-gds-checkbox-group>
+
+									</fieldset>
+								</div>
+							</div>
+						</details>
+
+						<!-- Role -->
 						<details class="search-filter-section" @(CanOpenPanelForField("Search.UserRoles") ? "open" : null)>
-                            <summary class="search-filter-section__summary">
-                                <h2 class="search-filter-section__summary-heading">Role</h2>
-                            </summary>
-                            <div class="search-filter-section__content">
-                                <div class="govuk-form-group govuk-!-margin-bottom-2">
-                                    <fieldset class="govuk-fieldset">
-                                        <rsp-gds-checkbox-group 
-                                            asp-for="Search.UserRoles"
-                                                                label-text="Select all that apply"
-                                                                item-label-property="DisplayName"
-                                                                item-value-property="IsSelected"
-                                                                item-hidden-properties="Id,Name"
-                                                                conditional-field="false"
-                                                                legend-class="govuk-label govuk-label--s font-weight-none"
-                                                                hint-id="userroles-hint"
+							<summary class="search-filter-section__summary">
+								<h2 class="search-filter-section__summary-heading">Role</h2>
+							</summary>
+							<div class="search-filter-section__content">
+								<div class="govuk-form-group govuk-!-margin-bottom-2">
+									<fieldset class="govuk-fieldset">
+										<rsp-gds-checkbox-group asp-for="Search.UserRoles"
+																label-text="Select all that apply"
+																item-label-property="DisplayName"
+																item-value-property="IsSelected"
+																item-hidden-properties="Id,Name"
+																conditional-field="false"
+																legend-class="govuk-label govuk-label--s font-weight-none"
+																hint-id="userroles-hint"
 																hint-html="@($"{(Model?.Search?.UserRoles?.Count(x => x.IsSelected) ?? 0)} selected")" />
 
-                                    </fieldset>
-                                </div>
-                            </div>
-                        </details>
+									</fieldset>
+								</div>
+							</div>
+						</details>
 
-                        <!-- Status -->
+						<!-- Status -->
 						<details class="search-filter-section" @(CanOpenPanelForField("Search.Status") ? "open" : null)>
 							<summary class="search-filter-section__summary">
 								<h2 class="search-filter-section__summary-heading">Status</h2>
@@ -294,13 +292,13 @@
 							@foreach (var header in sortableHeaders)
 							{
 								var sortableHeaderModel = new SortableHeaderModel
-								{
-									FieldName = header.Field,
-									DisplayText = header.Label,
-									CurrentSortField = Model.Pagination?.SortField,
-									CurrentSortDirection = Model.Pagination?.SortDirection,
-									TableId = tableId,
-								};
+					{
+						FieldName = header.Field,
+						DisplayText = header.Label,
+						CurrentSortField = Model.Pagination?.SortField,
+						CurrentSortDirection = Model.Pagination?.SortDirection,
+						TableId = tableId,
+					};
 
 								<th scope="col" class="govuk-table__header govuk-table__header-sortable @(header.Label.Contains("name") ? "govuk-table--name" : "") @(header.Label == "Email address" ? "line-break-anywhere" : "")">
 									<partial name="_SortableHeaderButton" model="@sortableHeaderModel" />
@@ -344,7 +342,7 @@
 									   asp-route="admin:viewuser"
 									   asp-route-userId="@user.Id"
 									   asp-route-email="@user.Email">
-										View/Edit
+										View/Edit<span class="govuk-visually-hidden">@user.GivenName @user.FamilyName</span>
 									</a>
 								</td>
 							</tr>

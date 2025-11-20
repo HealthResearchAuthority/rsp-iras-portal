@@ -18,4 +18,5 @@ public class ApprovalsSearch
     public const string StatusKey = "Status";
     public const string ModificationId = "ModificationId";
     public const string ReviewerNameKey = "Study-wide reviewer";
+    public const string ControllerName = "approvals";
 }
