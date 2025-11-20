@@ -13,7 +13,7 @@ public static class ModificationStatusExtensions
             return string.Empty;
 
         // Only care about WithReviewBody — everything else returns unchanged
-        if (!status.Equals(nameof(ModificationStatus.WithReviewBody), StringComparison.OrdinalIgnoreCase))
+        if (!status.Equals(ModificationStatus.WithReviewBody, StringComparison.OrdinalIgnoreCase))
             return status;
 
         // With reviewer name → Review in progress
