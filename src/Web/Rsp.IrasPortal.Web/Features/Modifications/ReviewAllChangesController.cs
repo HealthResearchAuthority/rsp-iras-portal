@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using System.Text.Json;
+﻿using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
@@ -84,15 +83,6 @@ public class ReviewAllChangesController
             };
         }
 
-        // Store the modification details in TempData for later use
-        var reviewOutcomeModel = new ReviewOutcomeViewModel
-        {
-            ModificationDetails = modification,
-        };
-
-        TempData[TempDataKeys.ProjectModification.ProjectModificationsDetails] =
-            JsonSerializer.Serialize(reviewOutcomeModel);
-
         var searchQuery = new ProjectOverviewDocumentSearchRequest();
         var modificationDocumentsResponseResult = await projectModificationsService.GetDocumentsForModification(projectModificationId,
             searchQuery, pageNumber, pageSize, sortField, sortDirection);
@@ -122,6 +112,15 @@ public class ReviewAllChangesController
                 { "projectModificationId", projectModificationId.ToString() }
             }
         };
+
+        // Store the modification details in TempData for later use
+        var reviewOutcomeModel = new ReviewOutcomeViewModel
+        {
+            ModificationDetails = modification,
+        };
+
+        TempData[TempDataKeys.ProjectModification.ProjectModificationsDetails] =
+            JsonSerializer.Serialize(reviewOutcomeModel);
 
         // Render the details view
         return View(modification);
