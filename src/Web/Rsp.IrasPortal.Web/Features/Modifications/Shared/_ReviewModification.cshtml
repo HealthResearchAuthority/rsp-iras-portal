@@ -6,7 +6,7 @@
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
 
-        <authorized auth-params="@new(Roles: "applicant,sponsor")">
+        <authorized auth-params="@new(Roles: "applicant,sponsor,study-wide_reviewer")">
             @if (Model.Status != ModificationStatus.InDraft)
             {
                 <h1 class="govuk-heading-l">Modification</h1>
@@ -46,7 +46,7 @@
 </div>
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-        <authorized auth-params="@new(Roles: "applicant,sponsor")">
+        <authorized auth-params="@new(Roles: "applicant,sponsor,study-wide_reviewer")">
             @if (Model.Status != ModificationStatus.InDraft)
             {
                 <partial name="_NavigationTabPartial" model="Model" view-data="ViewData" />
