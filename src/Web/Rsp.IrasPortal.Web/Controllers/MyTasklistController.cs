@@ -7,6 +7,7 @@ using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Filters;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
+using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers;
@@ -80,7 +81,7 @@ public class MyTasklistController(IProjectModificationsService projectModificati
                 SponsorOrganisation = dto.SponsorOrganisation,
                 CreatedAt = dto.CreatedAt,
                 ProjectRecordId = dto.ProjectRecordId,
-                Status = dto.Status,
+                Status = dto.Status.ToBackstageDisplayStatus(dto.ReviewerName),
                 SentToRegulatorDate = dto.SentToRegulatorDate,
                 SentToSponsorDate = dto.SentToSponsorDate
             }).ToList() ?? new();

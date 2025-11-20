@@ -35,7 +35,7 @@
 		return ViewData.ModelState.TryGetValue(fieldName, out var state) && state.Errors.Any();
 	}
 
-    private bool HasFilterErrors()
+	private bool HasFilterErrors()
 	{
 		return ViewData.ModelState.Values.Any(v => v.Errors.Count > 0);
 	}
@@ -198,13 +198,13 @@
 								@foreach (var header in sortableHeaders)
 								{
 									var sortableHeaderModel = new SortableHeaderModel
-									{
-										FieldName = header.Field,
-										DisplayText = header.Label,
-										CurrentSortField = Model.Pagination?.SortField,
-										CurrentSortDirection = Model.Pagination?.SortDirection,
-										TableId = tableId,
-									};
+					{
+						FieldName = header.Field,
+						DisplayText = header.Label,
+						CurrentSortField = Model.Pagination?.SortField,
+						CurrentSortDirection = Model.Pagination?.SortDirection,
+						TableId = tableId,
+					};
 
 									<th scope="col" class="govuk-table__header govuk-table__header-sortable">
 										<partial name="_SortableHeaderButton" model="@sortableHeaderModel" />
@@ -225,7 +225,10 @@
 										</span>
 									</td>
 									<td class="govuk-table__cell">
-										<a class="govuk-link" asp-route="rbc:viewreviewbody" asp-route-id="@reviewBody.Id">View/Edit</a>
+										<a class="govuk-link" asp-route="rbc:viewreviewbody" asp-route-id="@reviewBody.Id">
+											View/Edit
+											<span class="govuk-visually-hidden">@reviewBody.RegulatoryBodyName</span>
+										</a>
 									</td>
 								</tr>
 							}

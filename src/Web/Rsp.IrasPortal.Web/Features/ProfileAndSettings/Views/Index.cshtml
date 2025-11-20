@@ -18,7 +18,7 @@
 
 	var editProfileTitle = pageContent.GetValueOrDefault("P&S.Title", null);
 	var completeProfileTitle = pageContent.GetValueOrDefault("P&S.CompleteProfileTitle", null);
-	var profileDetailsTitle = pageContent.GetValueOrDefault("P&S.ProfileDetailsTitle", null);	
+	var profileDetailsTitle = pageContent.GetValueOrDefault("P&S.ProfileDetailsTitle", null);
 	var oneLoginTitle = pageContent.GetValueOrDefault("P&S.OneLoginTitle", null);
 	var completeProfileBody = pageContent.GetValueOrDefault("P&S.CompleteProfileBody", null);
 	var editProfileBody = pageContent.GetValueOrDefault("P&S.EditProfileBody", null);
@@ -117,7 +117,7 @@
 						</td>
 						<td class="govuk-table__cell govuk-table__cell--numeric">
 							@{
-								await RenderEditLink();
+								await RenderEditLink("title");
 							}
 						</td>
 					</tr>
@@ -130,7 +130,7 @@
 						</td>
 						<td class="govuk-table__cell govuk-table__cell--numeric">
 							@{
-								await RenderEditLink();
+								await RenderEditLink("given name");
 							}
 						</td>
 					</tr>
@@ -143,7 +143,7 @@
 						</td>
 						<td class="govuk-table__cell govuk-table__cell--numeric">
 							@{
-								await RenderEditLink();
+								await RenderEditLink("family name");
 							}
 						</td>
 					</tr>
@@ -156,7 +156,7 @@
 						</td>
 						<td class="govuk-table__cell govuk-table__cell--numeric">
 							@{
-								await RenderEditLink();
+								await RenderEditLink("job title");
 							}
 						</td>
 					</tr>
@@ -169,7 +169,7 @@
 						</td>
 						<td class="govuk-table__cell govuk-table__cell--numeric">
 							@{
-								await RenderEditLink();
+								await RenderEditLink("organisation");
 							}
 						</td>
 					</tr>
@@ -186,15 +186,15 @@
 	</div>
 
 	@{
-		async Task RenderEditLink()
+		async Task RenderEditLink(string fieldName)
 		{
 			if (edit)
 			{
-				<a class="govuk-link" asp-route="profilesettings:editprofile">Change</a>
+				<a class="govuk-link" asp-route="profilesettings:editprofile">Change<span class="govuk-visually-hidden">@fieldName</span></a>
 			}
 			else
 			{
-				<button class="govuk-link-button" type="submit" formaction="@editNewUserUrl">Change</button>
+				<button class="govuk-link-button" type="submit" formaction="@editNewUserUrl">Change<span class="govuk-visually-hidden">@fieldName</span></button>
 			}
 		}
 	}
