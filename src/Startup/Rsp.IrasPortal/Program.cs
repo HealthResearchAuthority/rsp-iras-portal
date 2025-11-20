@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Mapster;
+using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
@@ -43,9 +44,7 @@ builder.AddServiceDefaults();
 
 builder.Services.AddAntiforgery(options =>
 {
-    options.Cookie.HttpOnly = true;
-    options.Cookie.SameSite = SameSiteMode.Strict;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.SuppressXFrameOptionsHeader = false;
 });
 
 // Add services to the container.
@@ -221,6 +220,13 @@ var app = builder.Build();
 app.UseForwardedHeaders();
 
 app.MapDefaultEndpoints();
+app.UseCookiePolicy(
+    new CookiePolicyOptions
+        {
+            Secure = CookieSecurePolicy.Always,
+            MinimumSameSitePolicy = SameSiteMode.Strict,
+            HttpOnly = HttpOnlyPolicy.Always
+        });
 
 app.UseStaticFiles(); // this will serve the static files from wwwroot folder
 
