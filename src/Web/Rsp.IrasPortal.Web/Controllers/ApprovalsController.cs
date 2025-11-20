@@ -87,7 +87,7 @@ public class ApprovalsController
                     SponsorOrganisation = dto.SponsorOrganisation,
                     CreatedAt = dto.CreatedAt,
                     ProjectRecordId = dto.ProjectRecordId,
-                    Status = dto.Status
+                    Status = dto.Status.ToBackstageDisplayStatus(dto.ReviewerName)
                 })
                 .ToList() ?? [];
 
