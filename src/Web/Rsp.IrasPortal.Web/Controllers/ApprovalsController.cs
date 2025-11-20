@@ -89,9 +89,9 @@ public class ApprovalsController
                     ProjectRecordId = dto.ProjectRecordId,
                     Status =
                         !string.IsNullOrWhiteSpace(dto.ReviewerName) && dto.Status == ModificationStatus.WithReviewBody
-                            ? "Review in progress"
+                            ? ModificationStatus.ReviewInProgress
                             : dto.Status == ModificationStatus.WithReviewBody
-                                ? "Received"
+                                ? ModificationStatus.Received
                                 : dto.Status,
                 })
                 .ToList() ?? [];
