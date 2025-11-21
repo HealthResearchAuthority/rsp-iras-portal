@@ -5,11 +5,11 @@
 }
 
 <!-- Hidden controls -->
-<authorized auth-params="@new(Roles: "applicant")">
+<authorized auth-params="@new(Roles: "applicant,study-wide_reviewer")">
     <input type="radio" id="tab-modifications-changes" name="tab-toggle" class="govuk-tab-toggle" checked>
     <input type="radio" id="tab-sponsor-details" name="tab-toggle" class="govuk-tab-toggle">
 </authorized>
-<authorized auth-params="@new(Roles: "sponsor")">
+<authorized auth-params="@new(Roles: "sponsor,study-wide_reviewer")">
     <input type="radio" id="tab-sponsor-details" name="tab-toggle" class="govuk-tab-toggle" checked>
     <input type="radio" id="tab-modifications-changes" name="tab-toggle" class="govuk-tab-toggle">
 </authorized>
