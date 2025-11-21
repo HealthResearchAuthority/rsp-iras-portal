@@ -4,14 +4,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Domain.AccessControl;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 
 namespace Rsp.IrasPortal.Web.Areas.Admin.Controllers;
 
+[Authorize(Policy = Workspaces.SystemAdministration)]
 [Area("Admin")]
 [Route("[area]/[controller]/[action]", Name = "admin:[action]")]
-[Authorize(Policy = "IsSystemAdministrator")]
 [FeatureGate(FeatureFlags.Admin)]
 public class RolesController(IUserManagementService userManagementService) : Controller
 {

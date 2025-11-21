@@ -1,8 +1,10 @@
 ﻿using System.Text.Json;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Domain.AccessControl;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
@@ -12,6 +14,7 @@ namespace Rsp.IrasPortal.Web.Features.Modifications.ParticipatingOrganisations.C
 /// <summary>
 /// Controller responsible for handling project modification related actions.
 /// </summary>
+[Authorize(Policy = Workspaces.MyResearch)]
 [Route("modifications/participatingorganisations/[action]", Name = "pmc:[action]")]
 public class ParticipatingOrganisationsController
 (
@@ -23,6 +26,7 @@ public class ParticipatingOrganisationsController
     /// Returns the view for selecting a participating organisation.
     /// Populates metadata from TempData.
     /// </summary>
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Update)]
     [HttpGet("/modifications/participatingorganisations", Name = "pmc:[action]")]
     public async Task<IActionResult> ParticipatingOrganisation(int pageNumber = 1, int pageSize = 10, List<string>? selectedOrganisationIds = null)
     {
@@ -91,6 +95,7 @@ public class ParticipatingOrganisationsController
         return RedirectToAction(nameof(ParticipatingOrganisation));
     }
 
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Update)]
     [HttpPost]
     public IActionResult SaveSelection(bool saveForLater)
     {

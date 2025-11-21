@@ -8,7 +8,7 @@ using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Filters;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Domain.Entities;
+using Rsp.IrasPortal.Domain.AccessControl;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
@@ -16,7 +16,7 @@ using Rsp.IrasPortal.Web.Models;
 namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "app:[action]")]
-[Authorize(Policy = "IsApplicant")]
+[Authorize(Policy = Workspaces.MyResearch)]
 public class ApplicationController
 (
     IApplicationsService applicationsService,
@@ -26,6 +26,7 @@ public class ApplicationController
     IValidator<ApplicationSearchModel> searchValidator
 ) : Controller
 {
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Search)]
     public async Task<IActionResult> Welcome
     (
         int pageNumber = 1,
@@ -86,6 +87,7 @@ public class ApplicationController
         return View(nameof(Index), model);
     }
 
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Create)]
     public IActionResult StartProject() => View(nameof(StartProject));
 
     /// <summary>
@@ -98,6 +100,7 @@ public class ApplicationController
     /// If the application is created successfully, redirects to the Questionnaire Resume action.
     /// Otherwise, returns a service error view.
     /// </returns>
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Create)]
     [HttpPost]
     [CmsContentAction(nameof(StartProject))]
     public async Task<IActionResult> StartProject(IrasIdViewModel model)
@@ -182,36 +185,10 @@ public class ApplicationController
         });
     }
 
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Create)]
     public IActionResult CreateApplication() => View(nameof(CreateApplication));
 
-    public IActionResult DocumentUpload(string projectRecordId)
-    {
-        TempData.TryGetValue<List<Document>>(TempDataKeys.UploadedDocuments, out var documents, true);
-        ViewBag.ProjectRecordId = projectRecordId;
-
-        return View(documents);
-    }
-
-    [HttpPost]
-    public IActionResult Upload(IFormFileCollection formFiles, string projectRecordId)
-    {
-        List<Document> documents = [];
-
-        foreach (var file in formFiles)
-        {
-            documents.Add(new Document
-            {
-                Name = file.FileName,
-                Size = file.Length,
-                Type = Path.GetExtension(file.FileName)
-            });
-        }
-
-        TempData.TryAdd(TempDataKeys.UploadedDocuments, documents, true);
-
-        return RedirectToAction(nameof(DocumentUpload), new { projectRecordId });
-    }
-
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Delete)]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteProject(string projectRecordId)
@@ -234,6 +211,7 @@ public class ApplicationController
         return View();
     }
 
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Search)]
     [HttpPost]
     [CmsContentAction(nameof(Welcome))]
     public async Task<IActionResult> ApplyFilters(ApplicationsViewModel model)
@@ -254,6 +232,7 @@ public class ApplicationController
         return RedirectToAction(nameof(Welcome));
     }
 
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Search)]
     [HttpGet]
     public async Task<IActionResult> RemoveFilter(string key, string? value)
     {
@@ -296,6 +275,7 @@ public class ApplicationController
         return await ApplyFilters(new ApplicationsViewModel { Search = search });
     }
 
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Search)]
     [HttpGet]
     public IActionResult ClearFilters()
     {

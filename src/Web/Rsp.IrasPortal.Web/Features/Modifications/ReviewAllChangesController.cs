@@ -1,12 +1,15 @@
-﻿using System.Reflection;
+﻿#pragma warning disable S107 // Methods should not have too many parameters
+
 using System.Text.Json;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Domain.AccessControl;
 using Rsp.IrasPortal.Domain.Enums;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
@@ -16,6 +19,7 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Features.Modifications;
 
+[Authorize(Policy = Workspaces.MyResearch)]
 [Route("/modifications/[action]", Name = "pmc:[action]")]
 public class ReviewAllChangesController
 (
@@ -35,9 +39,9 @@ public class ReviewAllChangesController
         Error = "Unable to retrieve modification review outcome details from session."
     };
 
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Review)]
     [HttpGet]
     public async Task<IActionResult> ReviewAllChanges
-#pragma warning disable S107 // Methods should not have too many parameters
     (
         string projectRecordId,
         string irasId,
@@ -127,6 +131,7 @@ public class ReviewAllChangesController
         return View(modification);
     }
 
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Review)]
     [HttpGet]
     public async Task<IActionResult> ReviewOutcome()
     {
@@ -152,6 +157,7 @@ public class ReviewAllChangesController
         return View(model);
     }
 
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Review)]
     [HttpPost]
     public async Task<IActionResult> ReviewOutcome(ReviewOutcomeViewModel model, bool saveForLater = false)
     {
@@ -199,6 +205,7 @@ public class ReviewAllChangesController
         return RedirectToAction(nameof(ConfirmReviewOutcome));
     }
 
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Review)]
     [HttpGet]
     public IActionResult ReasonNotApproved()
     {
@@ -212,6 +219,7 @@ public class ReviewAllChangesController
         return View(model);
     }
 
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Review)]
     [HttpPost]
     public async Task<IActionResult> ReasonNotApproved(ReviewOutcomeViewModel model, bool saveForLater = false)
     {
@@ -248,6 +256,7 @@ public class ReviewAllChangesController
         return RedirectToAction(nameof(ConfirmReviewOutcome));
     }
 
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Review)]
     [HttpGet]
     public IActionResult ConfirmReviewOutcome()
     {
@@ -261,6 +270,7 @@ public class ReviewAllChangesController
         return View(model);
     }
 
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Review)]
     [HttpPost]
     public async Task<IActionResult> SubmitReviewOutcome()
     {
@@ -287,6 +297,7 @@ public class ReviewAllChangesController
         return RedirectToAction(nameof(ReviewOutcomeSubmitted));
     }
 
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Review)]
     [HttpGet]
     public IActionResult ReviewOutcomeSubmitted()
     {
@@ -295,6 +306,7 @@ public class ReviewAllChangesController
         return View();
     }
 
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Submit)]
     public async Task<IActionResult> SendModificationToSponsor(string projectRecordId, Guid projectModificationId)
     {
         // Fetch all modification documents (up to 200)
@@ -424,3 +436,5 @@ public class ReviewAllChangesController
         return questionnaire;
     }
 }
+
+#pragma warning restore S107 // Methods should not have too many parameters

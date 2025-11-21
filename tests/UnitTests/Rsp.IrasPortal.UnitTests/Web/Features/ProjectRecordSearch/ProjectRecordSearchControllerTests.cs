@@ -6,8 +6,8 @@ using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Web.Features.Approvals.ProjectRecord.Controllers;
-using Rsp.IrasPortal.Web.Features.Approvals.ProjectRecord.Models;
+using Rsp.IrasPortal.Web.Features.Approvals.ProjectRecordSearch.Controllers;
+using Rsp.IrasPortal.Web.Features.Approvals.ProjectRecordSearch.Models;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Features.ProjectRecordSearch;

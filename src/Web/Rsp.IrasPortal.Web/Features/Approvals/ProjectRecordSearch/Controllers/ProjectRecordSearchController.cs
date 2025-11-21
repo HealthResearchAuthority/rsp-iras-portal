@@ -5,27 +5,32 @@ using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Filters;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Domain.AccessControl;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
-using Rsp.IrasPortal.Web.Features.Approvals.ProjectRecord.Models;
+using Rsp.IrasPortal.Web.Features.Approvals.ProjectRecordSearch.Models;
 using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
 
-namespace Rsp.IrasPortal.Web.Features.Approvals.ProjectRecord.Controllers;
+namespace Rsp.IrasPortal.Web.Features.Approvals.ProjectRecordSearch.Controllers;
 
-[Route("[controller]/[action]", Name = "projectrecordsearch:[action]")]
-[Authorize]
-public class ProjectRecordSearchController(
+[Authorize(Policy = Workspaces.Approvals)]
+[Route("approvals/[controller]/[action]", Name = "projectrecordsearch:[action]")]
+public class ProjectRecordSearchController
+(
     IApplicationsService applicationService,
     IRtsService rtsService
-    ) : Controller
+) : Controller
 {
-    [HttpGet("~/[controller]", Name = "projectrecordsearch")]
-    public async Task<IActionResult> Index(
+    [Authorize(Policy = Permissions.Approvals.ProjectRecords_Search)]
+    [HttpGet("/approvals/[controller]", Name = "projectrecordsearch")]
+    public async Task<IActionResult> Index
+    (
         int pageNumber = 1,
         int pageSize = 20,
         string? sortField = "irasid",
-        string? sortDirection = SortDirections.Ascending)
+        string? sortDirection = SortDirections.Ascending
+    )
     {
         var userIsSystemAdmin = User.IsInRole(Roles.SystemAdministrator);
 
@@ -39,7 +44,7 @@ public class ProjectRecordSearchController(
             if (model.Search?.Filters?.Count == 0 && string.IsNullOrEmpty(model.Search.IrasId))
             {
                 model.EmptySearchPerformed = true;
-                return View("~/Features/Approvals/ProjectRecordSearch/Views/Index.cshtml", model);
+                return View(model);
             }
 
             var searchQuery = new ProjectRecordSearchRequest()
@@ -83,9 +88,10 @@ public class ProjectRecordSearchController(
             }
         }
 
-        return View("~/Features/Approvals/ProjectRecordSearch/Views/Index.cshtml", model);
+        return View(model);
     }
 
+    [Authorize(Policy = Permissions.Approvals.ProjectRecords_Search)]
     [HttpPost]
     [CmsContentAction(nameof(Index))]
     public IActionResult ApplyFilters(ProjectRecordSearchViewModel model)
@@ -94,6 +100,7 @@ public class ProjectRecordSearchController(
         return RedirectToAction(nameof(Index));
     }
 
+    [Authorize(Policy = Permissions.Approvals.ProjectRecords_Search)]
     [HttpGet]
     [CmsContentAction(nameof(Index))]
     public IActionResult ClearFilters()
@@ -121,6 +128,7 @@ public class ProjectRecordSearchController(
         return RedirectToAction(nameof(Index));
     }
 
+    [Authorize(Policy = Permissions.Approvals.ProjectRecords_Search)]
     [HttpGet]
     [CmsContentAction(nameof(Index))]
     public IActionResult RemoveFilter(string key, string? value)

@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Rsp.IrasPortal.Application.Configuration;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Infrastructure.Authorization;
 
 namespace Rsp.IrasPortal.Configuration.Auth;
 
@@ -16,7 +17,6 @@ namespace Rsp.IrasPortal.Configuration.Auth;
 /// </summary>
 public static class AuthConfiguration
 {
-
     /// <summary>
     /// Adds the Authentication and Authorization to the service
     /// </summary>
@@ -228,19 +228,14 @@ public static class AuthConfiguration
 
         services
             .AddAuthorizationBuilder()
-            .AddPolicy("IsReviewer", policy => policy.RequireRole(Roles.Reviewer))
-            .AddPolicy("IsSystemAdministrator", policy => policy.RequireRole(Roles.SystemAdministrator))
-            .AddPolicy("IsApplicant", policy => policy.RequireRole(Roles.Applicant))
-            .AddPolicy("IsSponsor", policy => policy.RequireRole(Roles.Sponsor))
-            .AddPolicy("IsStudyWideReviewer", policy => policy.RequireRole(Roles.StudyWideReviewer))
-            .AddPolicy("IsTeamManager", policy => policy.RequireRole(Roles.TeamManager))
-            .AddPolicy("IsWorkflowCoordinator", policy => policy.RequireRole(Roles.WorkflowCoordinator))
-            .AddPolicy("IsBackstageUser", p => p.RequireRole(
-                Roles.Applicant,
-                Roles.SystemAdministrator,
-                Roles.StudyWideReviewer,
-                Roles.TeamManager,
-                Roles.WorkflowCoordinator))
             .SetDefaultPolicy(policy);
+
+        // Replace the default authorization policy handler with a custom one.
+        services.AddSingleton<IAuthorizationPolicyProvider, WorkspacePermissionsPolicyProvider>();
+
+        // Register authorization handlers
+        services.AddSingleton<IAuthorizationHandler, WorkspaceRequirementHandler>();
+        services.AddSingleton<IAuthorizationHandler, PermissionRequirementHandler>();
+        //services.AddSingleton<IAuthorizationHandler, RecordStatusAuthorizationHandler>();
     }
 }

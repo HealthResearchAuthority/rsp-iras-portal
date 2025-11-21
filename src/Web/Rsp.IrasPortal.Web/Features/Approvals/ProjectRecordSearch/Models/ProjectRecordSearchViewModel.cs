@@ -3,7 +3,7 @@ using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Models;
 
-namespace Rsp.IrasPortal.Web.Features.Approvals.ProjectRecord.Models;
+namespace Rsp.IrasPortal.Web.Features.Approvals.ProjectRecordSearch.Models;
 
 public class ProjectRecordSearchViewModel
 {

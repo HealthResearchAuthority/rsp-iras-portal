@@ -2,7 +2,7 @@
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.UnitTests.Web.Features.Approvals.ProjectRecordSearch.Controllers;
+using Rsp.IrasPortal.Web.Features.Approvals.RecordSearch.Controllers;
 using Rsp.IrasPortal.Web.Features.Approvals.RecordSearch.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Features.Approvals.RecordSearch;

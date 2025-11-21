@@ -1,12 +1,13 @@
-﻿@using Microsoft.AspNetCore.Http.Extensions
+﻿@using System.Text.RegularExpressions
+@using Microsoft.AspNetCore.Http.Extensions
 @using Microsoft.AspNetCore.Mvc.ModelBinding
 @using Rsp.Gds.Component.Models
 @using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.DTOs.Responses
 @using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
 @using Rsp.IrasPortal.Web.Extensions
-@using Rsp.IrasPortal.Web.Features.Approvals.ProjectRecord.Models
-@using System.Text.RegularExpressions
+@using Rsp.IrasPortal.Web.Features.Approvals.RecordSearch.Models
+@using Rsp.IrasPortal.Web.Features.Approvals.ProjectRecordSearch.Models
 @model ProjectRecordSearchViewModel
 @inject IHttpContextAccessor httpContextAccessor
 
@@ -348,7 +349,6 @@
 					</div>
 				</details>
 			</div>
-
 		</form>
 		<noscript>
 			<form id="sponsorOrgSearchForm" method="post" action="@Url.RouteUrl("projectrecordsearch:searchorganisations")">

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Domain.AccessControl;
 using Rsp.IrasPortal.Web.Extensions;
 
 namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace.Controllers;
@@ -12,8 +13,8 @@ namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace.Controllers;
 /// <summary>
 /// Controller responsible for handling sponsor workspace related actions.
 /// </summary>
+[Authorize(Policy = Workspaces.Sponsor)]
 [Route("[action]", Name = "sws:[action]")]
-[Authorize(Policy = "IsSponsor")]
 public class SponsorWorkspaceController
 (
     IUserManagementService userService,

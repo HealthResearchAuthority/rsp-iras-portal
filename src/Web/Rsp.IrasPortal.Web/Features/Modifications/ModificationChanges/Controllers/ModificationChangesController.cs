@@ -1,12 +1,14 @@
 ﻿using System.Net;
 using System.Text.Json;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Domain.AccessControl;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
@@ -17,6 +19,7 @@ namespace Rsp.IrasPortal.Web.Features.Modifications.ModificationChanges.Controll
 /// <summary>
 /// Controller responsible for handling project modification related actions.
 /// </summary>
+[Authorize(Policy = Workspaces.MyResearch)]
 [Route("modifications/modificationchanges/[action]", Name = "pmc:[action]")]
 public class ModificationChangesController
 (
@@ -31,6 +34,7 @@ public class ModificationChangesController
     private readonly IValidator<QuestionnaireViewModel> _validator = validator;
     private const string PostApprovalRoute = "pov:postapproval";
 
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Update)]
     [RequestFormLimits(ValueCountLimit = int.MaxValue)]
     [HttpPost]
     public async Task<IActionResult> SaveResponses(QuestionnaireViewModel model, bool saveForLater = false)
@@ -156,6 +160,7 @@ public class ModificationChangesController
         });
     }
 
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Update)]
     public async Task<IActionResult> DisplayQuestionnaire(string projectRecordId, string categoryId, string sectionId, bool reviewAnswers, string viewName)
     {
         // check if we are in the modification journey, so only get the modfication questions

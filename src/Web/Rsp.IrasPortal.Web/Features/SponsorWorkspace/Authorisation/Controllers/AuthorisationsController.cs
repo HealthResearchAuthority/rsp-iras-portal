@@ -8,6 +8,7 @@ using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Filters;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Domain.AccessControl;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Features.Modifications;
@@ -16,14 +17,15 @@ using Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Models;
 using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
 
-namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation;
+namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Controllers;
 
 /// <summary>
 ///     Controller responsible for handling sponsor workspace related actions.
 /// </summary>
+[Authorize(Policy = Workspaces.Sponsor)]
 [Route("sponsorworkspace/[action]", Name = "sws:[action]")]
-[Authorize(Policy = "IsSponsor")]
-public class AuthorisationsController(
+public class AuthorisationsController
+(
     IProjectModificationsService projectModificationsService,
     IRespondentService respondentService,
     ICmsQuestionsetService cmsQuestionsetService,
@@ -34,6 +36,7 @@ public class AuthorisationsController(
     private const string SponsorDetailsSectionId = "pm-sponsor-reference";
     private readonly IRespondentService _respondentService = respondentService;
 
+    [Authorize(Policy = Permissions.Sponsor.Modifications_Search)]
     [HttpGet]
     public async Task<IActionResult> Authorisations
     (
@@ -97,6 +100,7 @@ public class AuthorisationsController(
         return View(model);
     }
 
+    [Authorize(Policy = Permissions.Sponsor.Modifications_Search)]
     [HttpPost]
     [CmsContentAction(nameof(Authorisations))]
     public async Task<IActionResult> ApplyFilters(SponsorAuthorisationsViewModel model)
@@ -216,6 +220,7 @@ public class AuthorisationsController(
     }
 
     // 2) GET stays tiny and calls the builder
+    [Authorize(Policy = Permissions.Sponsor.Modifications_Review)]
     [HttpGet]
     public async Task<IActionResult> CheckAndAuthorise(string projectRecordId, string irasId, string shortTitle,
         Guid projectModificationId, Guid sponsorOrganisationUserId)
@@ -228,6 +233,7 @@ public class AuthorisationsController(
     }
 
     // 3) POST: on invalid, rebuild the page VM and return the same view with ModelState errors
+    [Authorize(Policy = Permissions.Sponsor.Modifications_Authorise)]
     [HttpPost]
     public async Task<IActionResult> CheckAndAuthorise(AuthoriseOutcomeViewModel model)
     {
@@ -296,12 +302,14 @@ public class AuthorisationsController(
         return RedirectToAction(nameof(Confirmation), model);
     }
 
+    [Authorize(Policy = Permissions.Sponsor.Modifications_Review)]
     [HttpGet]
     public IActionResult Confirmation(AuthoriseOutcomeViewModel model)
     {
         return View(model);
     }
 
+    [Authorize(Policy = Permissions.Sponsor.Modifications_Review)]
     [HttpGet]
     public async Task<IActionResult> ChangeDetails
     (

@@ -9,6 +9,7 @@ using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Domain.AccessControl;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
@@ -19,7 +20,7 @@ namespace Rsp.IrasPortal.Web.Features.Modifications;
 /// <summary>
 /// Controller responsible for handling project modification related actions.
 /// </summary>
-[Authorize(Policy = "IsApplicant")]
+[Authorize(Policy = Workspaces.MyResearch)]
 public class ModificationChangesBaseController
 (
     IRespondentService respondentService,

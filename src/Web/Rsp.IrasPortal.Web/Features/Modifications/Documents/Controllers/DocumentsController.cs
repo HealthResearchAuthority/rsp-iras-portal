@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Azure.Storage.Blobs;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Azure;
 using Rsp.IrasPortal.Application.Constants;
@@ -9,6 +10,7 @@ using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Domain.AccessControl;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
@@ -18,6 +20,7 @@ namespace Rsp.IrasPortal.Web.Features.Modifications.Documents.Controllers;
 /// <summary>
 /// Controller responsible for handling project modification documents related actions.
 /// </summary>
+[Authorize(Policy = Workspaces.MyResearch)]
 [Route("modifications/documents/[action]", Name = "pmc:[action]")]
 public class DocumentsController
     (
@@ -45,6 +48,7 @@ public class DocumentsController
     /// This action prepares the view model for uploading project documents
     /// by reading relevant metadata from TempData (such as the project modification context).
     /// </summary>
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Upload)]
     [HttpGet]
     public async Task<IActionResult> ProjectDocument()
     {
@@ -81,6 +85,7 @@ public class DocumentsController
     /// - A populated list of uploaded documents if retrieval is successful.
     /// - An empty list with an error message if no documents are found or the service call fails.
     /// </returns>
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Read)]
     [HttpGet]
     public async Task<IActionResult> ModificationDocumentsAdded()
     {
@@ -134,6 +139,7 @@ public class DocumentsController
     /// <returns>
     /// A view showing the list of uploaded documents, each annotated with its current detail status.
     /// </returns>
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Read)]
     [HttpGet]
     public async Task<IActionResult> AddDocumentDetailsList()
     {
@@ -161,6 +167,7 @@ public class DocumentsController
     /// A view that allows the user to provide or review details for the selected document.
     /// Redirects back to <see cref="AddDocumentDetailsList"/> if document details cannot be retrieved.
     /// </returns>
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Update)]
     [HttpGet]
     public async Task<IActionResult> ContinueToDetails(Guid documentId, bool reviewAnswers = false, bool reviewAllChanges = false)
     {
@@ -237,6 +244,7 @@ public class DocumentsController
     /// <returns>
     /// A view showing the list of documents along with the applicant's answers for review.
     /// </returns>
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Read)]
     [HttpGet]
     public async Task<IActionResult> ReviewDocumentDetails()
     {
@@ -255,6 +263,7 @@ public class DocumentsController
     /// - If validation fails: redisplays the review page with errors.
     /// - If validation passes: redirects to the PostApproval action in ProjectOverview controller.
     /// </returns>
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Read)]
     [HttpPost]
     public async Task<IActionResult> ReviewAllDocumentDetails()
     {
@@ -289,6 +298,7 @@ public class DocumentsController
     /// Redirects the user to the document upload page.
     /// </summary>
     /// <returns>A redirection to the UploadDocuments action.</returns>
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Upload)]
     [HttpPost]
     public IActionResult AddAnotherDocument()
     {
@@ -304,6 +314,7 @@ public class DocumentsController
     /// - If validation fails: redisplays the AddDocumentDetails view with validation errors.
     /// - If validation succeeds: saves answers and redirects to review or list page based on ReviewAnswers flag.
     /// </returns>
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Update)]
     [HttpPost]
     public async Task<IActionResult> SaveDocumentDetails(ModificationAddDocumentDetailsViewModel viewModel, bool saveForLater = false, bool reviewAllChanges = false)
     {
@@ -354,6 +365,7 @@ public class DocumentsController
             : RedirectAfterSubmit(viewModel); // Continue flow or review answers
     }
 
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Delete)]
     [HttpGet]
     public async Task<IActionResult> ConfirmDeleteDocument(Guid id, string backRoute)
     {
@@ -376,6 +388,7 @@ public class DocumentsController
         return View("DeleteDocuments", viewModel);
     }
 
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Delete)]
     [HttpGet]
     public async Task<IActionResult> ConfirmDeleteDocuments(string? backRoute)
     {
@@ -410,6 +423,7 @@ public class DocumentsController
         return RedirectToAction(nameof(ProjectDocument));
     }
 
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Delete)]
     [HttpPost("deletedocument")]
     public async Task<IActionResult> DeleteDocuments(ModificationDeleteDocumentViewModel model)
     {
@@ -485,6 +499,7 @@ public class DocumentsController
         }
     }
 
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Download)]
     [HttpGet]
     public async Task<IActionResult> DownloadDocument(string path, string fileName)
     {
@@ -505,6 +520,7 @@ public class DocumentsController
     /// - If documents already exist: redirects to the review page.
     /// - If no files uploaded or service errors occur: returns the current view with validation errors.
     /// </returns>
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Upload)]
     [HttpPost]
     public async Task<IActionResult> UploadDocuments(ModificationUploadDocumentsViewModel model)
     {
@@ -564,6 +580,7 @@ public class DocumentsController
         return View(model);
     }
 
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Download)]
     public async Task<IActionResult> DownloadDocumentsAsZip(string folderName)
     {
         var blobClient = GetBlobClient(true);

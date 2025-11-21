@@ -14,7 +14,7 @@ using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Features.Modifications.Models;
-using Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation;
+using Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Controllers;
 using Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Models;
 using Rsp.IrasPortal.Web.Models;
 

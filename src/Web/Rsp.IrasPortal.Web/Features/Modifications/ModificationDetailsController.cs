@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Domain.AccessControl;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Features.Modifications.Helpers;
 using Rsp.IrasPortal.Web.Features.Modifications.Models;
@@ -11,8 +12,8 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Features.Modifications;
 
+[Authorize(Policy = Workspaces.MyResearch)]
 [Route("/modifications/[action]", Name = "pmc:[action]")]
-[Authorize(Policy = "IsApplicant")]
 public class ModificationDetailsController
 (
     IProjectModificationsService projectModificationsService,
@@ -35,6 +36,7 @@ public class ModificationDetailsController
     /// An <see cref="IActionResult"/> that renders the details view when successful; otherwise,
     /// an error result produced by <c>this.ServiceError(...)</c> when a service call fails.
     /// </returns>
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Read)]
     [HttpGet]
     public async Task<IActionResult> ModificationDetails(string projectRecordId, string irasId, string shortTitle, Guid projectModificationId)
     {
@@ -68,6 +70,7 @@ public class ModificationDetailsController
         return View(modification);
     }
 
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Read)]
     [HttpGet]
     public IActionResult UnfinishedChanges()
     {
@@ -76,6 +79,7 @@ public class ModificationDetailsController
         return View("UnfinishedChanges", viewModel);
     }
 
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Read)]
     [HttpGet]
     public IActionResult DocumentsScanInProgress()
     {
@@ -84,6 +88,7 @@ public class ModificationDetailsController
         return View("DocumentsScanInProgress", viewModel);
     }
 
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Read)]
     [HttpGet]
     public IActionResult DocumentDetailsIncomplete()
     {
@@ -92,6 +97,7 @@ public class ModificationDetailsController
         return View("DocumentDetailsIncomplete", viewModel);
     }
 
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Delete)]
     [HttpGet]
     public IActionResult ConfirmRemoveChange(string modificationChangeId, string modificationChangeName)
     {
@@ -103,6 +109,7 @@ public class ModificationDetailsController
         return View(viewModel);
     }
 
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Delete)]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> RemoveChange(Guid modificationChangeId, string modificationChangeName)

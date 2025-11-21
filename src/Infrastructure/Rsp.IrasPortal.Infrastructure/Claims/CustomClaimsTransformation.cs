@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement;
 using Microsoft.IdentityModel.Tokens;
 using NetDevPack.Security.Jwt.Core.Interfaces;
+using Rsp.IrasPortal.Application.AccessControl;
 using Rsp.IrasPortal.Application.Configuration;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.Services;
@@ -121,6 +122,24 @@ public class CustomClaimsTransformation
             foreach (var role in user.Roles)
             {
                 claimsIdentity.AddClaim(new Claim(roleClaim, role));
+            }
+
+            // get permissions for the role
+            var rolePermissions = RolePermissions.GetPermissionsForRoles(user.Roles);
+
+            // add permissions as claims
+            var permissionsClaims = rolePermissions
+                .Select(permission => new Claim("permissions", permission))
+                .ToList();
+
+            claimsIdentity.AddClaims(permissionsClaims);
+
+            // get allowed statuses for the user
+            var allowedStatuses = RoleStatusPermissions.GetAllowedStatusesForRoles(user.Roles);
+
+            foreach (var (entityType, statuses) in allowedStatuses)
+            {
+                claimsIdentity.AddClaims(statuses.Select(status => new Claim($"allowed_statuses/{entityType}", status)));
             }
 
             // for one login
