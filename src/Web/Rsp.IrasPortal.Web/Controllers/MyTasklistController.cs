@@ -81,7 +81,7 @@ public class MyTasklistController(IProjectModificationsService projectModificati
                 SponsorOrganisation = dto.SponsorOrganisation,
                 CreatedAt = dto.CreatedAt,
                 ProjectRecordId = dto.ProjectRecordId,
-                Status = dto.Status.ToBackstageDisplayStatus(dto.ReviewerName),
+                Status = dto.Status,
                 SentToRegulatorDate = dto.SentToRegulatorDate,
                 SentToSponsorDate = dto.SentToSponsorDate
             }).ToList() ?? new();

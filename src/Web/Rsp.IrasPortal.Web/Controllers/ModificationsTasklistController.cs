@@ -93,6 +93,7 @@ public class ModificationsTasklistController(
             IncludeReviewerId = !User.IsInRole(Roles.TeamManager),
             ReviewerName = model.Search.ReviewerName,
             IncludeReviewerName = !string.IsNullOrWhiteSpace(model.Search.ReviewerName),
+            UseBackstageStatus = true
         };
 
         if (User.IsInRole(Roles.TeamManager) || User.IsInRole(Roles.WorkflowCoordinator))
@@ -140,7 +141,7 @@ public class ModificationsTasklistController(
                     SentToRegulatorDate = dto.SentToRegulatorDate,
                     ChiefInvestigator = dto.ChiefInvestigator,
                     CreatedAt = dto.CreatedAt,
-                    Status = dto.Status.ToBackstageDisplayStatus(dto.ReviewerName),
+                    Status = dto.Status,
                     ReviewerName = dto.ReviewerName
                 },
                 IsSelected = selectedFromSession.Contains(dto.Id, StringComparer.OrdinalIgnoreCase),
