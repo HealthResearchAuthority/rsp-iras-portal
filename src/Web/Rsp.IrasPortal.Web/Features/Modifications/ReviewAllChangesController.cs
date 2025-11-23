@@ -187,7 +187,8 @@ public class ReviewAllChangesController
         if (saveForLater)
         {
             TempData.Clear();
-            return RedirectToAction("Index", "MyTasklist");
+            TempData[TempDataKeys.ChangeSuccess] = true;
+            return RedirectToAction("Index", "ModificationsTasklist");
         }
 
         if (model.ReviewOutcome == ModificationStatus.NotApproved)
@@ -241,7 +242,8 @@ public class ReviewAllChangesController
         if (saveForLater)
         {
             TempData.Clear();
-            return RedirectToAction("Index", "MyTasklist");
+            TempData[TempDataKeys.ChangeSuccess] = true;
+            return RedirectToAction("Index", "ModificationsTasklist");
         }
 
         return RedirectToAction(nameof(ConfirmReviewOutcome));

@@ -103,7 +103,7 @@ else
     }
 </authorized>
 
-<authorized auth-params="@new(Roles: Roles.StudyWideReviewer)">
+<authorized auth-params="@new(Roles: "system_administrator,study-wide_reviewer,team_manager,workflow_co-ordinator" )">
     @if (Model.Status == ModificationStatus.WithReviewBody)
     {
         <div class="govuk-grid-row">

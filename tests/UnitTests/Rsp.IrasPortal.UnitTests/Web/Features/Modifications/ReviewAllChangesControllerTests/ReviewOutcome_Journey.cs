@@ -107,7 +107,7 @@ public class ReviewOutcome_Journey : TestServiceBase<ReviewAllChangesController>
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
         redirect.ActionName.ShouldBe("Index");
-        redirect.ControllerName.ShouldBe("MyTasklist");
+        redirect.ControllerName.ShouldBe("ModificationsTasklist");
     }
 
     [Theory, AutoData]
@@ -233,7 +233,7 @@ public class ReviewOutcome_Journey : TestServiceBase<ReviewAllChangesController>
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
         redirect.ActionName.ShouldBe("Index");
-        redirect.ControllerName.ShouldBe("MyTasklist");
+        redirect.ControllerName.ShouldBe("ModificationsTasklist");
     }
 
     [Theory, AutoData]
