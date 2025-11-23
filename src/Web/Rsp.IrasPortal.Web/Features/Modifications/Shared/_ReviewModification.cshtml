@@ -6,16 +6,14 @@
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
 
-        <authorized auth-params="@new(Roles: "applicant,sponsor,study-wide_reviewer")">
-            @if (Model.Status != ModificationStatus.InDraft)
-            {
-                <h1 class="govuk-heading-l">Modification</h1>
-            }
-            else
-            {
-                <h1 class="govuk-heading-l">Review all changes</h1>
-            }
-        </authorized>
+        @if (Model.Status != ModificationStatus.InDraft)
+        {
+            <h1 class="govuk-heading-l">Modification</h1>
+        }
+        else
+        {
+            <h1 class="govuk-heading-l">Review all changes</h1>
+        }
 
         @{
             <partial name="_ProjectModificationSummary" model="Model" viewData="ViewData" />
@@ -46,20 +44,18 @@
 </div>
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-        <authorized auth-params="@new(Roles: "applicant,sponsor,study-wide_reviewer")">
-            @if (Model.Status != ModificationStatus.InDraft)
-            {
-                <partial name="_NavigationTabPartial" model="Model" view-data="ViewData" />
-            }
-            else
-            {
-                <h2 class="govuk-heading-m">Changes</h2>
-                <partial name="ModificationChanges" model="Model" view-data="ViewData" />
+        @if (Model.Status != ModificationStatus.InDraft)
+        {
+            <partial name="_NavigationTabPartial" model="Model" view-data="ViewData" />
+        }
+        else
+        {
+            <h2 class="govuk-heading-m">Changes</h2>
+            <partial name="ModificationChanges" model="Model" view-data="ViewData" />
 
-				<partial name="SupportingDocuments" model="Model" view-data="ViewData" />
+			<partial name="SupportingDocuments" model="Model" view-data="ViewData" />
 
-                <partial name="SponsorDetails" model="Model" view-data="ViewData" />
-            }
-        </authorized>
+            <partial name="SponsorDetails" model="Model" view-data="ViewData" />
+        }
     </div>
 </div>

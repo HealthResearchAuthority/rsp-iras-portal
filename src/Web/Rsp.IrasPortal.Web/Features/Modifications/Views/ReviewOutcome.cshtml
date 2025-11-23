@@ -29,6 +29,19 @@
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
             <h2 class="govuk-heading-m">Leave a comment</h2>
+            <span class="govuk-accordion__section-toggle govuk-!-margin-bottom-4" data-nosnippet="">
+                <span class="govuk-accordion__section-toggle-focus">
+                    <span class="govuk-accordion-nav__chevron govuk-accordion-nav__chevron--down"></span>
+                    <span class="govuk-accordion__section-toggle-text">Show</span>
+                </span>
+            </span>
+            <span class="govuk-accordion__section-toggle" data-nosnippet="">
+                <span class="govuk-accordion__section-toggle-focus">
+                    <span class="govuk-accordion-nav__chevron"></span>
+                    <span class="govuk-accordion__section-toggle-text">Hide</span>
+                </span>
+            </span>
+
             <p class="govuk-hint">If you have any comments on this document add them to the box below. Comments are only visible to other reviewers and are not shared with the applicant.</p>
             <div class="govuk-form-group govuk-character-count"
                  data-module="govuk-character-count"
@@ -83,3 +96,32 @@
         </div>
     </div>
 </form>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const showBtn = document.querySelectorAll(".govuk-accordion__section-toggle")[0];
+        const hideBtn = document.querySelectorAll(".govuk-accordion__section-toggle")[1];
+
+        const textareaContainer = document.querySelector(".govuk-form-group.govuk-character-count");
+        const hintText = document.querySelector(".govuk-hint:not(.govuk-character-count__message)");
+
+        // Hide by default
+        textareaContainer.style.display = "none";
+        hintText.style.display = "none";
+        hideBtn.style.display = "none";
+
+        showBtn.addEventListener("click", () => {
+            textareaContainer.style.display = "block";
+            hintText.style.display = "block";
+            showBtn.style.display = "none";
+            hideBtn.style.display = "inline-block";
+        });
+
+        hideBtn.addEventListener("click", () => {
+            textareaContainer.style.display = "none";
+            hintText.style.display = "none";
+            hideBtn.style.display = "none";
+            showBtn.style.display = "inline-block";
+        });
+    });
+</script>

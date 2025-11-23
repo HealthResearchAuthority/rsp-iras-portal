@@ -23,11 +23,27 @@
     </div>
     <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key">Short project title</dt>
-        <dd class="govuk-summary-list__value">@modificationBaseModel.ShortTitle</dd>
+        <dd class="govuk-summary-list__value">
+            <a asp-route="pov:projectdetails"
+               asp-route-projectRecordId="@modificationBaseModel.ProjectRecordId"
+               asp-route-backRoute="tasklist:index"
+               class="govuk-link">
+                @modificationBaseModel.ShortTitle
+            </a>
+        </dd>
     </div>
     <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key">Modification ID</dt>
-        <dd class="govuk-summary-list__value">@modificationBaseModel.ModificationIdentifier</dd>
+        <dd class="govuk-summary-list__value">
+            <a asp-route="pmc:reviewallchanges"
+               asp-route-projectRecordId="@modificationBaseModel.ProjectRecordId"
+               asp-route-irasId="@modificationBaseModel.IrasId"
+               asp-route-projectModificationId="@modificationBaseModel.ModificationId"
+               asp-route-shortTitle="@modificationBaseModel.ShortTitle"
+               class="govuk-link">
+                @modificationBaseModel.ModificationIdentifier
+            </a>
+        </dd>
     </div>
     <authorized auth-params="@new(Roles: "sponsor,applicant")">
         @if (modificationBaseModel.Status != ModificationStatus.InDraft)
@@ -38,22 +54,19 @@
             </div>
         }
     </authorized>
-    <authorized auth-params="@new(Roles: "applicant")">
-        @if (modificationBaseModel.Status == ModificationStatus.InDraft)
-        {
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key">Audit</dt>
-                <dd class="govuk-summary-list__value">
-                    <a asp-route="pmc:audittrail"
-                       asp-route-modificationId="@modificationBaseModel.ModificationId"
-                       asp-route-shortTitle="@modificationBaseModel.ShortTitle"
-                       asp-route-modificationIdentifier="@modificationBaseModel.ModificationIdentifier"
-                       class="govuk-link">
-                        View modification audit history
-                    </a>
-                </dd>
-            </div>
-        }
+    <authorized auth-params="@new(Roles: "system_administrator,study-wide_reviewer,team_manager,workflow_co-ordinator")">
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Audit</dt>
+            <dd class="govuk-summary-list__value">
+                <a asp-route="pmc:audittrail"
+                    asp-route-modificationId="@modificationBaseModel.ModificationId"
+                    asp-route-shortTitle="@modificationBaseModel.ShortTitle"
+                    asp-route-modificationIdentifier="@modificationBaseModel.ModificationIdentifier"
+                    class="govuk-link">
+                    View modification audit history
+                </a>
+            </dd>
+        </div>
     </authorized>
     @if (ViewData[ViewDataKeys.ShowModificationStatus] is true)
     {
