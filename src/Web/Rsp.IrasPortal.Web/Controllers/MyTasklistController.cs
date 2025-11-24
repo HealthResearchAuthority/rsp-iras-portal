@@ -50,7 +50,8 @@ public class MyTasklistController(
             IrasId = search.IrasId,
             ReviewerId = User?.FindFirst("userId")?.Value,
             ShortProjectTitle = search.ShortProjectTitle,
-            IncludeReviewerId = true
+            IncludeReviewerId = true,
+            UseBackstageStatus = true
         };
 
         // only show modififications with status "with review body" for team manager and Study wide reviewer
