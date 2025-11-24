@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using System.Text.Json;
+﻿using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -63,7 +62,7 @@ public class ModificationsTasklistController(
             ? JsonSerializer.Deserialize<List<string>>(persistedSelections) ?? []
             : [];
 
-        var leadNation = await GetRelevantCountriesForUser();
+        var leadNation = await this.GetRelevantCountriesForUser(reviewBodyService, userManagementService);
 
         var model = new ModificationsTasklistViewModel
         {
@@ -205,7 +204,7 @@ public class ModificationsTasklistController(
             return RedirectToAction(nameof(Index));
         }
 
-        var leadNation = await GetRelevantCountriesForUser();
+        var leadNation = await this.GetRelevantCountriesForUser(reviewBodyService, userManagementService);
 
         var getReviewBodiesResponse = await reviewBodyService.GetAllReviewBodies
         (
@@ -386,49 +385,5 @@ public class ModificationsTasklistController(
             JsonSerializer.Serialize(cleanedSearch));
 
         return RedirectToAction(nameof(Index));
-    }
-
-    private async Task<List<string>?> GetRelevantCountriesForUser()
-    {
-        var leadNation = new List<string> { UkCountryNames.England };
-
-        if (!Guid.TryParse(User?.FindFirstValue("userId"), out var userId))
-        {
-            // userId does not exist so exit block
-            return leadNation;
-        }
-
-        if (User.IsInRole("system_administrator"))
-        {
-            // user is admin so they can see modifications for all contries
-            leadNation = UkCountryNames.Countries;
-        }
-        else if (User.IsInRole("team_manager"))
-        {
-            // if user is team manager, then take their assigned country into account
-            var userEntity = await userManagementService.GetUser(userId.ToString(), null);
-            leadNation = userEntity?.Content?.User?.Country != null ?
-                userEntity?.Content?.User?.Country?.Split(',')?.ToList() :
-                leadNation;
-        }
-        else
-        {
-            // if user is not team manager, then take their assigned review body into account if applicable
-            var bodiesResp = await reviewBodyService.GetUserReviewBodies(userId);
-
-            var reviewBodyId = bodiesResp.IsSuccessStatusCode
-                ? bodiesResp.Content?.FirstOrDefault()?.Id
-                : null;
-
-            if (reviewBodyId is { } rbId)
-            {
-                var rbResp = await reviewBodyService.GetReviewBodyById(rbId);
-                leadNation = rbResp.Content?.Countries != null ?
-                    rbResp.Content?.Countries :
-                    leadNation;
-            }
-        }
-
-        return leadNation;
     }
 }
