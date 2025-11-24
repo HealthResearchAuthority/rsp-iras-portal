@@ -61,10 +61,10 @@
 }
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-one-half">
-        <h1 class="govuk-heading-l gov-heading-nowrap">@Html.Raw(headline?.Value)</h1>
+	<div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">@Html.Raw(headline?.Value)</h1>
     </div>
-    <div class="govuk-grid-column-one-half">
+    <div class="govuk-grid-column-one-third">
         <a class="govuk-link govuk-body float-right" asp-route="soc:setupsponsororganisation">@Html.Raw(addNewLink?.Value)</a>
     </div>
 </div>
