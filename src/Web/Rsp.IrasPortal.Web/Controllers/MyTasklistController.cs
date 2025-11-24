@@ -14,7 +14,11 @@ namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "mytasklist:[action]")]
 [Authorize(Roles = Roles.StudyWideReviewer)]
-public class MyTasklistController(IProjectModificationsService projectModificationsService, IValidator<ApprovalsSearchModel> validator) : Controller
+public class MyTasklistController(
+    IProjectModificationsService projectModificationsService,
+    IValidator<ApprovalsSearchModel> validator,
+    IReviewBodyService reviewBodyService,
+    IUserManagementService userManagementService) : Controller
 {
     [HttpGet]
     public async Task<IActionResult> Index(
@@ -36,9 +40,11 @@ public class MyTasklistController(IProjectModificationsService projectModificati
             EmptySearchPerformed = (search.Filters?.Count ?? 0) == 0 && string.IsNullOrEmpty(search.IrasId)
         };
 
+        var leadNation = await this.GetRelevantCountriesForUser(reviewBodyService, userManagementService);
+
         var searchQuery = new ModificationSearchRequest
         {
-            LeadNation = ["England"],
+            LeadNation = leadNation,
             FromDate = search.FromDate,
             ToDate = search.ToDate,
             IrasId = search.IrasId,
@@ -47,6 +53,7 @@ public class MyTasklistController(IProjectModificationsService projectModificati
             IncludeReviewerId = true
         };
 
+        // only show modififications with status "with review body" for team manager and Study wide reviewer
         if (User.IsInRole(Roles.TeamManager) || User.IsInRole(Roles.StudyWideReviewer))
         {
             searchQuery.AllowedStatuses.Add(ModificationStatus.WithReviewBody);
