@@ -42,11 +42,6 @@ builder
 // would need it
 builder.AddServiceDefaults();
 
-builder.Services.AddAntiforgery(options =>
-{
-    options.SuppressXFrameOptionsHeader = false;
-});
-
 // Add services to the container.
 var services = builder.Services;
 var configuration = builder.Configuration;
@@ -229,6 +224,17 @@ app.UseCookiePolicy(
         });
 
 app.UseStaticFiles(); // this will serve the static files from wwwroot folder
+
+app.Use(async (context, next) =>
+{
+    var headers = context.Response.Headers;
+
+    headers.Referer = "no-referrer";
+    headers.XFrameOptions = "DENY";
+    headers.XContentTypeOptions = "nosniff";
+
+    await next();
+});
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
