@@ -70,6 +70,16 @@ public record ProjectModificationChangeRequest
     public (string Category, int Order) Categorisation { get; set; }
 
     /// <summary>
+    /// Gets or sets the date the modification change was created.
+    /// </summary>
+    public DateTime CreatedDate { get; set; } = DateTime.Now;
+
+    /// <summary>
+    /// Gets or sets the date the modification change was last updated.
+    /// </summary>
+    public DateTime UpdatedDate { get; set; } = DateTime.Now;
+
+    /// <summary>
     /// Prevents the Categorisation property from being serialized.
     /// </summary>
     /// <remarks>ShouldSerialize[PropertyName] is a convention used by JsonSerializer to determine whether a property should be serialized.</remarks>
