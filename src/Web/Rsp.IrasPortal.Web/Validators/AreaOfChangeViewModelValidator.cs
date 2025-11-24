@@ -14,5 +14,16 @@ public class AreaOfChangeViewModelValidator : AbstractValidator<AreaOfChangeView
         RuleFor(x => x.SpecificChangeId)
             .Must(id => id != null && id != Guid.Empty.ToString())
             .WithMessage("Select specific change");
+
+        RuleFor(x => x)
+                    .Must(model =>
+                    {
+                        if (!string.IsNullOrEmpty(model.SpecificChangeId) && model.SpecificChangeId != Guid.Empty.ToString())
+                        {
+                            return model.SpecificChangeOptions.Any(opt => opt.Value == model.SpecificChangeId);
+                        }
+                        return true;
+                    })
+                    .WithMessage("Select ‘Apply selection' to confirm the area of change, then select a specific change");
     }
 }

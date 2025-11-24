@@ -687,7 +687,7 @@ public class DocumentsController
         var blobClient = GetBlobClient(false);
 
         // Upload only valid files to blob storage
-        var uploadedBlobs = await blobStorageService.UploadFilesAsync(blobClient, validFiles, StagingContainerName, irasId);
+        var uploadedBlobs = await blobStorageService.UploadFilesAsync(blobClient, validFiles, StagingContainerName, $"{irasId}/{projectModificationId}");
 
         // Map uploaded blob metadata to DTOs for backend service
         var uploadedDocuments = uploadedBlobs.ConvertAll(blob => new ProjectModificationDocumentRequest

@@ -58,7 +58,8 @@ public class ApprovalsController
                 ModificationTypes = search.ModificationTypes,
                 ShortProjectTitle = search.ShortProjectTitle,
                 SponsorOrganisation = search.SponsorOrganisation,
-                IncludeReviewerId = false
+                IncludeReviewerId = false,
+                UseBackstageStatus = true,
             };
 
             if (User.IsInRole(Roles.TeamManager) || User.IsInRole(Roles.StudyWideReviewer) || User.IsInRole(Roles.WorkflowCoordinator))
@@ -87,7 +88,7 @@ public class ApprovalsController
                     SponsorOrganisation = dto.SponsorOrganisation,
                     CreatedAt = dto.CreatedAt,
                     ProjectRecordId = dto.ProjectRecordId,
-                    Status = dto.Status.ToBackstageDisplayStatus(dto.ReviewerName)
+                    Status = dto.Status
                 })
                 .ToList() ?? [];
 

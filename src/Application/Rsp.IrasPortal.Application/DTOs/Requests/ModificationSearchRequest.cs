@@ -21,4 +21,5 @@ public class ModificationSearchRequest
     public string? ReviewerName { get; set; } = null;
     public bool IncludeReviewerName { get; set; }
     public List<string> AllowedStatuses { get; set; } = [];
+    public bool UseBackstageStatus { get; set; } = false;
 }

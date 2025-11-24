@@ -28,11 +28,27 @@
     <dl class="govuk-summary-list">
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key">Short project title</dt>
-            <dd class="govuk-summary-list__value">@Model.ModificationDetails.ShortTitle</dd>
+            <dd class="govuk-summary-list__value">
+                <a asp-route="pov:projectdetails"
+                   asp-route-projectRecordId="@Model.ModificationDetails.ProjectRecordId"
+                   asp-route-backRoute="tasklist:index"
+                   class="govuk-link">
+                    @Model.ModificationDetails.ShortTitle
+                </a>
+            </dd>
         </div>
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key">Modification ID</dt>
-            <dd class="govuk-summary-list__value">@Model.ModificationDetails.ModificationIdentifier</dd>
+            <dd class="govuk-summary-list__value">
+                <a asp-route="pmc:reviewallchanges"
+                   asp-route-projectRecordId="@Model.ModificationDetails.ProjectRecordId"
+                   asp-route-irasId="@Model.ModificationDetails.IrasId"
+                   asp-route-projectModificationId="@Model.ModificationDetails.ModificationId"
+                   asp-route-shortTitle="@Model.ModificationDetails.ShortTitle"
+                   class="govuk-link">
+                    @Model.ModificationDetails.ModificationIdentifier
+                </a>
+            </dd>
         </div>
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key">Decision</dt>
