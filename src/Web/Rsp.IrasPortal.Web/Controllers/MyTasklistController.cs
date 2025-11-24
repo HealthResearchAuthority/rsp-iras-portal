@@ -44,7 +44,8 @@ public class MyTasklistController(IProjectModificationsService projectModificati
             IrasId = search.IrasId,
             ReviewerId = User?.FindFirst("userId")?.Value,
             ShortProjectTitle = search.ShortProjectTitle,
-            IncludeReviewerId = true
+            IncludeReviewerId = true,
+            UseBackstageStatus = true
         };
 
         if (User.IsInRole(Roles.TeamManager) || User.IsInRole(Roles.StudyWideReviewer))
