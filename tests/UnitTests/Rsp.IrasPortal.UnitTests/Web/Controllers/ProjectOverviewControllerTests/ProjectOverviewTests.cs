@@ -1371,10 +1371,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 
         var modificationsResponse = new GetModificationsResponse
         {
-            Modifications = modifications.OrderBy(item => Enum.TryParse<ModificationStatusOrder>(item.Status, true, out var statusEnum)
-            ? (int)statusEnum
-            : (int)ModificationStatusOrder.None)
-            .ToList() ?? [],
+            Modifications = modifications,
             TotalCount = 1
         };
 
@@ -1386,7 +1383,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), 1, 20, sortField!, sortDirection!))
-            .ReturnsAsync(serviceResponse);
+             .ReturnsAsync(serviceResponse);
 
         // Act
         var result = await Sut.PostApproval(projectRecordId, "");
