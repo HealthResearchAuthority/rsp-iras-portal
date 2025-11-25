@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Mapster;
+using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
@@ -40,13 +41,6 @@ builder
 // serilog settings has been moved here, as all projects
 // would need it
 builder.AddServiceDefaults();
-
-builder.Services.AddAntiforgery(options =>
-{
-    options.Cookie.HttpOnly = true;
-    options.Cookie.SameSite = SameSiteMode.Strict;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-});
 
 // Add services to the container.
 var services = builder.Services;
@@ -221,8 +215,26 @@ var app = builder.Build();
 app.UseForwardedHeaders();
 
 app.MapDefaultEndpoints();
+app.UseCookiePolicy(
+    new CookiePolicyOptions
+        {
+            Secure = CookieSecurePolicy.Always,
+            MinimumSameSitePolicy = SameSiteMode.Strict,
+            HttpOnly = HttpOnlyPolicy.Always
+        });
 
 app.UseStaticFiles(); // this will serve the static files from wwwroot folder
+
+app.Use(async (context, next) =>
+{
+    var headers = context.Response.Headers;
+
+    headers.Referer = "no-referrer";
+    headers.XFrameOptions = "DENY";
+    headers.XContentTypeOptions = "nosniff";
+
+    await next();
+});
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
