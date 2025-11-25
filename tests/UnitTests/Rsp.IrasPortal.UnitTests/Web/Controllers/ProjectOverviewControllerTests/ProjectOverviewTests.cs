@@ -1324,11 +1324,13 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
     }
 
     [Theory]
-    [InlineData(null, null)]
-    [InlineData("Status", "asc")]
-    [InlineData("Status", "desc")]
-    [InlineData("ModificationId", "desc")]
-    public async Task PostApproval_When_SortFild_SortDirection_Is_Null(string? sortField, string? sortDirection)
+    [InlineData(null, null, ModificationStatus.InDraft)]
+    [InlineData("Status", "asc", ModificationStatus.NotApproved)]
+    [InlineData("Status", "desc", ModificationStatus.Approved)]
+    [InlineData("ModificationId", "desc", ModificationStatus.WithReviewBody)]
+    [InlineData("ModificationId", "desc", ModificationStatus.WithSponsor)]
+    [InlineData("ModificationId", "desc", ModificationStatus.NotAuthorised)]
+    public async Task PostApproval_When_SortFild_SortDirection_Is_Null(string? sortField, string? sortDirection, string inputStatus)
     {
         // Arrange
         var projectRecordId = "123";
@@ -1348,7 +1350,23 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 
         var modifications = new List<ModificationsDto>
         {
-            new() { ModificationId = "m1", ModificationType = "Type1", Status = ModificationStatus.InDraft }
+            new() { ModificationId = "m1", ModificationType = "Type1", Status = inputStatus, CreatedAt=new DateTime(2025,10,12),
+                SentToRegulatorDate= new DateTime(2025,10,02),
+            },
+                  new() { ModificationId = "m1", ModificationType = "Type1", Status = inputStatus, CreatedAt=new DateTime(2025,10,03),
+                SentToRegulatorDate= new DateTime(2025,10,02),
+            },
+                        new() { ModificationId = "m1", ModificationType = "Type1", Status = inputStatus, CreatedAt=new DateTime(2025,10,03),
+                SentToRegulatorDate= new DateTime(2025,10,02),
+            },
+                              new() { ModificationId = "m1", ModificationType = "Type1", Status = inputStatus, CreatedAt=new DateTime(2025,10,04),
+                SentToRegulatorDate= new DateTime(2025,10,02),
+            },
+                                    new() { ModificationId = "m1", ModificationType = "Type1", Status = inputStatus, CreatedAt=new DateTime(2025,10,05),
+                SentToRegulatorDate= new DateTime(2025,10,02),
+            },      new() { ModificationId = "m1", ModificationType = "Type1", Status = inputStatus, CreatedAt=new DateTime(2025,10,06),
+                SentToRegulatorDate= new DateTime(2025,10,02),
+            }
         };
 
         var modificationsResponse = new GetModificationsResponse
