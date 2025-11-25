@@ -79,8 +79,8 @@ public class ProjectOverviewController
         string? backRoute,
         int pageNumber = 1,
         int pageSize = 20,
-        string? sortField = null,
-        string? sortDirection = null
+        string sortField = nameof(ModificationsModel.ModificationNumber),
+        string sortDirection = SortDirections.Descending
     )
     {
         UpdateModificationRelatedTempData();

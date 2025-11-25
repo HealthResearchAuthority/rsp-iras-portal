@@ -971,6 +971,8 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var tempData = CreateTempData(tempDataProvider, httpContext);
         var pageNumber = 1;
         var pageSize = 20;
+        var sortField = nameof(ModificationsModel.ModificationNumber);
+        var sortDirection = SortDirections.Descending;
 
         var answers = new List<RespondentAnswerDto>
         {
@@ -1003,7 +1005,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         };
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), 1, 20, sortField, sortDirection))
             .ReturnsAsync(serviceResponse);
 
         // Act
@@ -1015,8 +1017,8 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         model.Pagination.ShouldNotBeNull();
         model.Pagination.PageNumber.ShouldBe(pageNumber);
         model.Pagination.PageSize.ShouldBe(pageSize);
-        model.Pagination.SortField.ShouldBe(null);
-        model.Pagination.SortDirection.ShouldBe(null);
+        model.Pagination.SortField.ShouldBe(sortField);
+        model.Pagination.SortDirection.ShouldBe(sortDirection);
         var mod = model.Modifications.Single();
         mod.ModificationIdentifier.ShouldBe("m1");
         mod.ModificationType.ShouldBe("Type1");
@@ -1037,6 +1039,8 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var tempData = CreateTempData(tempDataProvider, httpContext);
         var pageNumber = 1;
         var pageSize = 20;
+        var sortField = nameof(ModificationsModel.ModificationNumber);
+        var sortDirection = SortDirections.Descending;
 
         var answers = new List<RespondentAnswerDto>
         {
@@ -1103,8 +1107,8 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         model.Pagination.ShouldNotBeNull();
         model.Pagination.PageNumber.ShouldBe(pageNumber);
         model.Pagination.PageSize.ShouldBe(pageSize);
-        model.Pagination.SortField.ShouldBe(null);
-        model.Pagination.SortDirection.ShouldBe(null);
+        model.Pagination.SortField.ShouldBe(sortField);
+        model.Pagination.SortDirection.ShouldBe(sortDirection);
     }
 
     [Fact]
@@ -1321,76 +1325,5 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         // Assert
         var status = result.ShouldBeOfType<StatusCodeResult>();
         status.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
-    }
-
-    [Theory]
-    [InlineData(null, null, ModificationStatus.InDraft)]
-    [InlineData("Status", "asc", ModificationStatus.NotApproved)]
-    [InlineData("Status", "desc", ModificationStatus.Approved)]
-    [InlineData("ModificationId", "desc", ModificationStatus.WithReviewBody)]
-    [InlineData("ModificationId", "desc", ModificationStatus.WithSponsor)]
-    [InlineData("ModificationId", "desc", ModificationStatus.NotAuthorised)]
-    public async Task PostApproval_When_SortFild_SortDirection_Is_Null(string? sortField, string? sortDirection, string inputStatus)
-    {
-        // Arrange
-        var projectRecordId = "123";
-        var httpContext = CreateHttpContextWithSession();
-        var tempDataProvider = new Mock<ITempDataProvider>();
-        var tempData = CreateTempData(tempDataProvider, httpContext);
-
-        var answers = new List<RespondentAnswerDto>
-        {
-            new() { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "Project Y" }
-        };
-
-        SetupProjectRecord(projectRecordId);
-        SetupRespondentAnswers(projectRecordId, answers);
-        SetupControllerContext(httpContext, tempData);
-        SetupCMSService();
-
-        var modifications = new List<ModificationsDto>
-        {
-            new() { ModificationId = "m1", ModificationType = "Type1", Status = inputStatus, CreatedAt=new DateTime(2025,10,12),
-                SentToRegulatorDate= new DateTime(2025,10,02),
-            },
-                  new() { ModificationId = "m1", ModificationType = "Type1", Status = inputStatus, CreatedAt=new DateTime(2025,10,03),
-                SentToRegulatorDate= new DateTime(2025,10,02),
-            },
-                        new() { ModificationId = "m1", ModificationType = "Type1", Status = inputStatus, CreatedAt=new DateTime(2025,10,03),
-                SentToRegulatorDate= new DateTime(2025,10,02),
-            },
-                              new() { ModificationId = "m1", ModificationType = "Type1", Status = inputStatus, CreatedAt=new DateTime(2025,10,04),
-                SentToRegulatorDate= new DateTime(2025,10,02),
-            },
-                                    new() { ModificationId = "m1", ModificationType = "Type1", Status = inputStatus, CreatedAt=new DateTime(2025,10,05),
-                SentToRegulatorDate= new DateTime(2025,10,02),
-            },      new() { ModificationId = "m1", ModificationType = "Type1", Status = inputStatus, CreatedAt=new DateTime(2025,10,06),
-                SentToRegulatorDate= new DateTime(2025,10,02),
-            }
-        };
-
-        var modificationsResponse = new GetModificationsResponse
-        {
-            Modifications = modifications,
-            TotalCount = 1
-        };
-
-        var serviceResponse = new ServiceResponse<GetModificationsResponse>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = modificationsResponse
-        };
-
-        Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), 1, 20, sortField!, sortDirection!))
-             .ReturnsAsync(serviceResponse);
-
-        // Act
-        var result = await Sut.PostApproval(projectRecordId, "");
-
-        // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        var model = viewResult.Model.ShouldBeOfType<PostApprovalViewModel>();
-        model.Pagination.ShouldNotBeNull();
     }
 }
