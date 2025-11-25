@@ -132,7 +132,7 @@ public class ProjectOverviewController(
             model.Modifications = model.Modifications.OrderBy(item => Enum.TryParse<ModificationStatusOrder>(GetEnumStatus(item.Status!), true, out var statusEnum)
                     ? (int)statusEnum
                     : (int)ModificationStatusOrder.None)
-                .ToList() ?? [];
+                .ToList();
         }
         model.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationsResponseResult?.Content?.TotalCount ?? 0)
         {
