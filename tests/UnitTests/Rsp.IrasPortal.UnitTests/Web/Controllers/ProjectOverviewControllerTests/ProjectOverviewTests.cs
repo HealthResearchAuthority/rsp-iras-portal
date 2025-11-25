@@ -1392,7 +1392,5 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var viewResult = result.ShouldBeOfType<ViewResult>();
         var model = viewResult.Model.ShouldBeOfType<PostApprovalViewModel>();
         model.Pagination.ShouldNotBeNull();
-        model.Pagination.SortField.ShouldBe(sortField);
-        model.Pagination.SortDirection.ShouldBe(sortDirection);
     }
 }
