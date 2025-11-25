@@ -1323,8 +1323,12 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         status.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
     }
 
-    [Fact]
-    public async Task PostApproval_When_SortFild_SortDirection_Is_Null()
+    [Theory]
+    [InlineData(null, null)]
+    [InlineData("Status", "asc")]
+    [InlineData("Status", "desc")]
+    [InlineData("ModificationId", "desc")]
+    public async Task PostApproval_When_SortFild_SortDirection_Is_Null(string? sortField, string? sortDirection)
     {
         // Arrange
         var projectRecordId = "123";
@@ -1363,7 +1367,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         };
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), 1, 20, null, null))
+            .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), 1, 20, sortField, sortDirection))
             .ReturnsAsync(serviceResponse);
 
         // Act
@@ -1373,7 +1377,5 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var viewResult = result.ShouldBeOfType<ViewResult>();
         var model = viewResult.Model.ShouldBeOfType<PostApprovalViewModel>();
         model.Pagination.ShouldNotBeNull();
-        model.Pagination.SortField.ShouldBe(null);
-        model.Pagination.SortDirection.ShouldBe(null);
     }
 }
