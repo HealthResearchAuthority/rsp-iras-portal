@@ -112,7 +112,7 @@ public class ProjectOverviewController(
         };
 
         var modificationsResponseResult =
-            await projectModificationsService.GetModificationsForProject(projectRecordId, searchQuery, pageNumber, pageSize, sortField, sortDirection);
+            await projectModificationsService.GetModificationsForProject(projectRecordId, searchQuery, pageNumber, pageSize, sortField!, sortDirection!);
 
         model.Modifications = modificationsResponseResult?.Content?.Modifications?
             .Select(dto => new PostApprovalModificationsModel
