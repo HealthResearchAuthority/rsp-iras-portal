@@ -971,6 +971,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var tempData = CreateTempData(tempDataProvider, httpContext);
         var pageNumber = 1;
         var pageSize = 20;
+
         var answers = new List<RespondentAnswerDto>
         {
             new() { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "Project Y" }
@@ -1002,7 +1003,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         };
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), 1, 20, null!, null!))
+            .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(serviceResponse);
 
         // Act
@@ -1014,11 +1015,11 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         model.Pagination.ShouldNotBeNull();
         model.Pagination.PageNumber.ShouldBe(pageNumber);
         model.Pagination.PageSize.ShouldBe(pageSize);
+        model.Pagination.SortField.ShouldBe(null);
+        model.Pagination.SortDirection.ShouldBe(null);
         var mod = model.Modifications.Single();
         mod.ModificationIdentifier.ShouldBe("m1");
         mod.ModificationType.ShouldBe("Type1");
-        model.Pagination.SortField.ShouldBe(null);
-        model.Pagination.SortDirection.ShouldBe(null);
         mod.Status.ShouldBe(ModificationStatus.InDraft);
         mod.ReviewType.ShouldBeNull();
         mod.Category.ShouldBeNull();
@@ -1070,7 +1071,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         };
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), 1, 20, null!, null!))
+            .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(serviceResponse);
 
         Mocker
