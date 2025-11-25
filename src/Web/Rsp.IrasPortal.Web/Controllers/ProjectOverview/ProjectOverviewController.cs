@@ -74,8 +74,8 @@ public class ProjectOverviewController(
         string? backRoute,
         int pageNumber = 1,
         int pageSize = 20,
-        string? sortField = null,
-        string? sortDirection = null
+        string sortField = nameof(ModificationsModel.ModificationNumber),
+        string sortDirection = SortDirections.Descending
     )
     {
         UpdateModificationRelatedTempData();
@@ -127,13 +127,6 @@ public class ProjectOverviewController(
                 Status = dto.Status,
             })
             .ToList() ?? [];
-        if (string.IsNullOrEmpty(sortField) && string.IsNullOrEmpty(sortDirection))
-        {
-            model.Modifications = model.Modifications.OrderBy(item => Enum.TryParse<ModificationStatusOrder>(GetEnumStatus(item.Status!), true, out var statusEnum)
-                    ? (int)statusEnum
-                    : (int)ModificationStatusOrder.None)
-                .ToList();
-        }
         model.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationsResponseResult?.Content?.TotalCount ?? 0)
         {
             SortDirection = sortDirection,
