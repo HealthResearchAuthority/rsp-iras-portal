@@ -219,6 +219,7 @@ app.UseCookiePolicy(
     new CookiePolicyOptions
     {
         Secure = CookieSecurePolicy.Always,
+        MinimumSameSitePolicy = SameSiteMode.Strict,
         HttpOnly = HttpOnlyPolicy.Always
     });
 
