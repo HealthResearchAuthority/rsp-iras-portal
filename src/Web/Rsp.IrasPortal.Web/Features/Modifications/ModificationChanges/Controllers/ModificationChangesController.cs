@@ -266,7 +266,7 @@ public class ModificationChangesController
                             // update the question text from the original question set
                             originalAnswer.QuestionText = projectRecordQuestion?.Name;
 
-                            viewModel.ProjectRecordAnswers.Add(originalQuestionId, originalAnswer);
+                            viewModel.ProjectRecordAnswers.TryAdd(originalQuestionId, originalAnswer);
                         }
                     }
                 }
