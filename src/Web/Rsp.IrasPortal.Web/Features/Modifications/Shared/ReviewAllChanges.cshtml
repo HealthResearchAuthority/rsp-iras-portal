@@ -5,6 +5,7 @@
 @using Microsoft.FeatureManagement
 @using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.DTOs
+@using Rsp.IrasPortal.Domain.AccessControl
 @using Rsp.IrasPortal.Web.Features.Modifications.Models
 @model ModificationDetailsViewModel
 
@@ -30,17 +31,17 @@
 
 @if (Model.Status != ModificationStatus.InDraft && !(previousController is ApprovalsSearch.ControllerName or ModificationsTasklist.ControllerName))
 {
-    <authorized auth-params="@new(Roles: "applicant")">
+    <authorized-when role="@Roles.Applicant">
 
         @section Breadcrumb {
 
             @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
             {
-                ("My research",Url.RouteUrl("app:welcome")),
-                (projectTitle, Url.RouteUrl("pov:postapproval", new Dictionary<string, string>{{"projectRecordId", Model.ProjectRecordId!}}))
-            })
+                ("My research", Url.RouteUrl("app:welcome")),
+        (projectTitle, Url.RouteUrl("pov:postapproval", new Dictionary<string, string> { { "projectRecordId", Model.ProjectRecordId! } }))
+        })
         }
-    </authorized>
+    </authorized-when>
 }
 else
 {
@@ -65,7 +66,7 @@ else
 
 <partial name="_ReviewModification" model="Model" />
 
-<authorized auth-params="@new(Roles: "applicant")">
+<authorized-when role="@Roles.Applicant">
     @if (Model.Status is ModificationStatus.InDraft)
     {
         <div class="govuk-grid-row">
@@ -79,12 +80,12 @@ else
                         @{
                             <input type="hidden" name="projectRecordId" value="@Model.ProjectRecordId" />
                             <partial name="_SubmitButton" model="@("pmc:sendmodificationtosponsor", "Send modification to sponsor", new Dictionary<string, string>()
-                                    {
-                                        ["projectModificationId"] = Model.ModificationId!,
-                                        ["projectRecordId"] = Model.ProjectRecordId
-                                    })" />
+                                                          {
+                                                              ["projectModificationId"] = Model.ModificationId!,
+                                                              ["projectRecordId"] = Model.ProjectRecordId
+                                                          })" />
 
-                            ViewBag.Style = "govuk-button govuk-button--secondary";
+                                        ViewBag.Style = "govuk-button govuk-button--secondary";
 
                             <partial name="_SubmitButton" model="@("pmc:saveforlater", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId, ["routeName"] = "pov:postapproval" })" />
                         }
@@ -101,25 +102,22 @@ else
             </div>
         </div>
     }
-</authorized>
+</authorized-when>
 
-<authorized auth-params="@new(Roles: "system_administrator,study-wide_reviewer,team_manager,workflow_co-ordinator" )">
-    @if (Model.Status == ModificationStatus.WithReviewBody)
-    {
-        <div class="govuk-grid-row">
-            <div class="govuk-grid-column-two-thirds">
-                <div class="govuk-heading-m">
-                    Next steps
-                </div>
-                <div class="govuk-body">
-                    When you've completed your review of all the information on this page,
-                    continue to the next step where you'll enter the review outcome
-                </div>
-                <a asp-route="pmc:reviewoutcome"
-                   class="govuk-button">
-                    Continue
-                </a>
+<authorized-when permission="@Permissions.Approvals.Modifications_Approve">
+    <div status-for="Status" status-is="@ModificationStatus.WithReviewBody" class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <div class="govuk-heading-m">
+                Next steps
             </div>
+            <div class="govuk-body">
+                When you've completed your review of all the information on this page,
+                continue to the next step where you'll enter the review outcome
+            </div>
+            <a asp-route="pmc:reviewoutcome"
+               class="govuk-button">
+                Continue
+            </a>
         </div>
-    }
-</authorized>
+    </div>
+</authorized-when>

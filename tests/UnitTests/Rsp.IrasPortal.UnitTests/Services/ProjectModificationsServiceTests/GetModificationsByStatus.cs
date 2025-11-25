@@ -1,3 +1,4 @@
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Services;
 using Rsp.IrasPortal.UnitTests.TestHelpers;
@@ -10,7 +11,7 @@ public class GetModificationsByStatus : TestServiceBase<ProjectModificationsServ
     public async Task Returns_List_From_Client(string projectRecordId, string status)
     {
         // Arrange
-        var list = new List<Application.DTOs.Responses.ProjectModificationResponse>
+        var list = new List<ProjectModificationResponse>
         {
             new() { Id = Guid.NewGuid(), Status = status }
         };
@@ -18,7 +19,7 @@ public class GetModificationsByStatus : TestServiceBase<ProjectModificationsServ
         Mocker
             .GetMock<IProjectModificationsServiceClient>()
             .Setup(c => c.GetModificationsByStatus(projectRecordId, status))
-            .ReturnsAsync(ApiResponseFactory.Success<IEnumerable<Application.DTOs.Responses.ProjectModificationResponse>>(list));
+            .ReturnsAsync(ApiResponseFactory.Success<IEnumerable<ProjectModificationResponse>>(list));
 
         // Act
         var result = await Sut.GetModificationsByStatus(projectRecordId, status);

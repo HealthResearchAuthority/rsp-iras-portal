@@ -12,6 +12,7 @@ using Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Domain.AccessControl;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Features.Modifications.Models;
 using Rsp.IrasPortal.Web.Models;
@@ -22,8 +23,8 @@ namespace Rsp.IrasPortal.Web.Features.Modifications;
 /// <summary>
 /// Controller responsible for handling project modification related actions.
 /// </summary>
+[Authorize(Policy = Workspaces.MyResearch)]
 [Route("[controller]/[action]", Name = "pmc:[action]")]
-[Authorize(Policy = "IsApplicant")]
 public class ModificationsController
 (
     IProjectModificationsService projectModificationsService,
@@ -46,6 +47,7 @@ public class ModificationsController
     /// </summary>
     /// <param name="separator">Separator to use in the modification identifier. Default is "/".</param>
     /// <returns>Redirects to the resume route if successful, otherwise returns an error page.</returns>
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Create)]
     [HttpGet]
     public async Task<IActionResult> CreateModification(string separator = "/")
     {
@@ -106,6 +108,7 @@ public class ModificationsController
     /// Displays the Area of Change selection screen.
     /// Retrieves area of change data and stores it in session for later reuse.
     /// </summary>
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Create)]
     [HttpGet]
     public async Task<IActionResult> AreaOfChange(Guid? projectModificationId)
     {
@@ -198,6 +201,7 @@ public class ModificationsController
     /// Returns the specific changes related to a selected Area of Change.
     /// Pulls data from session cache for performance.
     /// </summary>
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Create)]
     [HttpGet]
     public IActionResult GetSpecificChangesByAreaId(string areaOfChangeId)
     {
@@ -239,6 +243,7 @@ public class ModificationsController
     /// Processes user’s selection of Area and Specific Change and redirects based on journey type.
     /// Saves the modification change to backend and handles validation.
     /// </summary>
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Create)]
     [HttpPost]
     public async Task<IActionResult> ConfirmModificationJourney(AreaOfChangeViewModel model, bool saveForLater = false)
     {
@@ -315,6 +320,7 @@ public class ModificationsController
         });
     }
 
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Delete)]
     [HttpGet]
     public async Task<IActionResult> DeleteModification(string projectRecordId, string irasId, string shortTitle, Guid projectModificationId)
     {
@@ -358,11 +364,14 @@ public class ModificationsController
         return View(viewModel);
     }
 
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Delete)]
     [HttpPost]
-    public async Task<IActionResult> DeleteModificationConfirmed(
+    public async Task<IActionResult> DeleteModificationConfirmed
+    (
         string projectRecordId,
         Guid projectModificationId,
-        string projectModificationIdentifier)
+        string projectModificationIdentifier
+    )
     {
         // Call the respondent service to fetch metadata for documents
         var response = await projectModificationsService.GetModificationChanges(projectModificationId);

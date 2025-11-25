@@ -7,29 +7,35 @@ using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
 using Rsp.IrasPortal.Application.Filters;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Domain.AccessControl;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
+[Authorize(Policy = Workspaces.Approvals)]
 [Route("[controller]/[action]", Name = "tasklist:[action]")]
-[Authorize(Roles = "system_administrator,workflow_co-ordinator,team_manager,study-wide_reviewer")]
-public class ModificationsTasklistController(
+public class ModificationsTasklistController
+(
     IProjectModificationsService projectModificationsService,
     IUserManagementService userManagementService,
     IReviewBodyService reviewBodyService,
-    IValidator<ApprovalsSearchModel> validator) : Controller
+    IValidator<ApprovalsSearchModel> validator
+) : Controller
 {
     private const string ModificationToAssignNotSelectedErrorMessage = "Select at least one modification";
 
+    [Authorize(Policy = Permissions.Approvals.ModificationRecords_Search)]
     [HttpGet]
-    public async Task<IActionResult> Index(
+    public async Task<IActionResult> Index
+    (
         int pageNumber = 1,
         int pageSize = 20,
         List<string>? selectedModificationIds = null,
         string sortField = nameof(ModificationsModel.SentToRegulatorDate),
-        string sortDirection = SortDirections.Ascending)
+        string sortDirection = SortDirections.Ascending
+    )
     {
         const string SessionSelectedKey = "Tasklist:SelectedModificationIds";
 
@@ -157,6 +163,7 @@ public class ModificationsTasklistController(
         return View(model);
     }
 
+    [Authorize(Policy = Permissions.Approvals.Modifications_Assign)]
     [HttpGet]
     public async Task<IActionResult> AssignModifications(List<string> selectedModificationIds)
     {
@@ -247,6 +254,7 @@ public class ModificationsTasklistController(
         return View((modifications, reviewers));
     }
 
+    [Authorize(Policy = Permissions.Approvals.Modifications_Assign)]
     [HttpPost]
     public async Task<IActionResult> AssignModifications(List<string> modificationIds, string reviewerId)
     {
@@ -281,6 +289,7 @@ public class ModificationsTasklistController(
         return RedirectToAction(nameof(AssignmentSuccess));
     }
 
+    [Authorize(Policy = Permissions.Approvals.Modifications_Assign)]
     [HttpGet]
     public async Task<IActionResult> AssignmentSuccess()
     {
@@ -293,6 +302,7 @@ public class ModificationsTasklistController(
         return View(reviewer);
     }
 
+    [Authorize(Policy = Permissions.Approvals.ModificationRecords_Search)]
     [HttpPost]
     [CmsContentAction(nameof(Index))]
     public async Task<IActionResult> ApplyFilters(ModificationsTasklistViewModel model)
@@ -313,6 +323,7 @@ public class ModificationsTasklistController(
         return RedirectToAction(nameof(Index));
     }
 
+    [Authorize(Policy = Permissions.Approvals.ModificationRecords_Search)]
     [HttpGet]
     public async Task<IActionResult> RemoveFilter(string key)
     {
@@ -361,6 +372,7 @@ public class ModificationsTasklistController(
         return await ApplyFilters(new ModificationsTasklistViewModel { Search = search });
     }
 
+    [Authorize(Policy = Permissions.Approvals.ModificationRecords_Search)]
     [HttpGet]
     public IActionResult ClearFilters()
     {

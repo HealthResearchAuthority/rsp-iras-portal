@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
@@ -146,7 +146,7 @@ public class ReviewAllChanges_ServiceErrorCases : TestServiceBase<ReviewAllChang
 
         Mocker.GetMock<ICmsQuestionsetService>()
             .Setup(s => s.GetInitialModificationQuestions())
-            .ReturnsAsync(new ServiceResponse<Application.DTOs.CmsQuestionset.Modifications.StartingQuestionsDto>
+            .ReturnsAsync(new ServiceResponse<StartingQuestionsDto>
             {
                 StatusCode = HttpStatusCode.BadRequest
             });

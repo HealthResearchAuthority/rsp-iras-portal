@@ -2,11 +2,11 @@
 @using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
 
 @section Breadcrumb {
-	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>())
+    @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>())
 }
 
 @{
-	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null
         ? pageContentData
         : new Dictionary<string, MixedContentPageItem?>();
