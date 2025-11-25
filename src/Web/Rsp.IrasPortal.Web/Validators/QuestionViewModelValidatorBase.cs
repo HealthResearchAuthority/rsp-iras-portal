@@ -154,7 +154,12 @@ public class QuestionViewModelValidatorBase : AbstractValidator<QuestionViewMode
                             {
                                 continue;
                             }
-                            if (date.Date <= DateTime.Now.Date)
+
+                            bool conditionFailure = condition.Negate
+                                    ? date.Date > DateTime.Now.Date
+                                    : date.Date <= DateTime.Now.Date;
+
+                            if (conditionFailure)
                             {
                                 // by setting IsApplicable property
                                 // it will display the Description of the condition
@@ -170,7 +175,12 @@ public class QuestionViewModelValidatorBase : AbstractValidator<QuestionViewMode
                             {
                                 continue;
                             }
-                            if (date.Date > DateTime.Now.Date)
+
+                            bool conditionFailure = condition.Negate
+                                    ? date.Date < DateTime.Now.Date
+                                    : date.Date >= DateTime.Now.Date;
+
+                            if (conditionFailure)
                             {
                                 // by setting IsApplicable property
                                 // it will display the Description of the condition

@@ -490,6 +490,45 @@ public class ValidateAsyncTests : TestServiceBase<QuestionViewModelValidator>
     }
 
     [Fact]
+    public async Task ValidateAsync_WithFutureDateRuleAndNegate_ShouldAddFailureForFutureDate()
+    {
+        // Arrange
+        var question = new QuestionViewModel
+        {
+            QuestionId = "Q4",
+            Heading = "Planned end date",
+            Section = "Project Details",
+            DataType = "Date",
+            AnswerText = DateTime.Now.AddDays(5).ToString("yyyy-MM-dd"),
+            IsMandatory = true,
+            Rules =
+            [
+                new RuleDto
+            {
+                Conditions =
+                [
+                    new ConditionDto
+                    {
+                        Operator = "DATE",
+                        Value = @"FORMAT:yyyy-MM-dd,FUTUREDATE",
+                        Description = "Date must NOT be in the future",
+                        Negate = true
+                    }
+                ]
+            }
+            ]
+        };
+
+        // Act
+        var result = await Sut.TestValidateAsync(CreateValidationContext(question));
+
+        // Assert
+        result
+            .ShouldHaveValidationErrorFor(q => q.AnswerText)
+            .WithErrorMessage("Date must NOT be in the future");
+    }
+
+    [Fact]
     public async Task ValidateAsync_WithPastDateRule_ShouldAddFailureForNonPastDate()
     {
         // Arrange
@@ -525,6 +564,83 @@ public class ValidateAsyncTests : TestServiceBase<QuestionViewModelValidator>
         result
             .ShouldHaveValidationErrorFor(q => q.AnswerText)
             .WithErrorMessage("Date must be in the past");
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WithPastDateRuleAndNegate_ShouldAddFailureForPastDate()
+    {
+        // Arrange
+        var question = new QuestionViewModel
+        {
+            QuestionId = "Q3",
+            Heading = "Start date",
+            Section = "Project Details",
+            DataType = "Date",
+            AnswerText = DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd"),
+            IsMandatory = true,
+            Rules =
+            [
+                new RuleDto
+            {
+                Conditions =
+                [
+                    new ConditionDto
+                    {
+                        Operator = "DATE",
+                        Value = @"FORMAT:yyyy-MM-dd,PASTDATE",
+                        Description = "Date must NOT be in the past",
+                        Negate = true
+                    }
+                ]
+            }
+            ]
+        };
+
+        // Act
+        var result = await Sut.TestValidateAsync(CreateValidationContext(question));
+
+        // Assert
+        result
+            .ShouldHaveValidationErrorFor(q => q.AnswerText)
+            .WithErrorMessage("Date must NOT be in the past");
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WithPastDateRuleAndNegate_ShouldPassForTodayDate()
+    {
+        // Arrange
+        var question = new QuestionViewModel
+        {
+            QuestionId = "Q3",
+            Heading = "Start date",
+            Section = "Project Details",
+            DataType = "Date",
+            AnswerText = DateTime.Now.ToString("yyyy-MM-dd"),
+            IsMandatory = true,
+            Rules =
+            [
+                new RuleDto
+            {
+                Conditions =
+                [
+                    new ConditionDto
+                    {
+                        Operator = "DATE",
+                        Value = @"FORMAT:yyyy-MM-dd,PASTDATE",
+                        Description = "Date must NOT be in the past",
+                        Negate = true
+                    }
+                ]
+            }
+            ]
+        };
+
+        // Act
+        var result = await Sut.TestValidateAsync(CreateValidationContext(question));
+
+        // Assert
+        result
+            .ShouldNotHaveValidationErrorFor(q => q.AnswerText);
     }
 
     [Fact]
