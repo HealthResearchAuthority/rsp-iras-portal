@@ -1385,7 +1385,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         };
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), 1, 20, sortField, sortDirection))
+            .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), 1, 20, sortField!, sortDirection!))
             .ReturnsAsync(serviceResponse);
 
         // Act
