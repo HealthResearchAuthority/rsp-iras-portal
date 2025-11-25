@@ -227,7 +227,7 @@
                             <span class="search-filter-summary__remove-filter-text">
                                 <span class="govuk-visually-hidden">Remove filter</span>
                                 @if (filterKey.Contains("date submitted - from", StringComparison.OrdinalIgnoreCase)
-                                     || filterKey.Contains("date submitted - to", StringComparison.OrdinalIgnoreCase))
+                               || filterKey.Contains("date submitted - to", StringComparison.OrdinalIgnoreCase))
                                 {
                                     @($"{filterKey} {val}")
                                 }
@@ -268,7 +268,7 @@
                                                 new { Field = nameof(PostApprovalModificationsModel.ModificationType), Label = "Modification type" },
                                                 new { Field = nameof(PostApprovalModificationsModel.ReviewType), Label = "Review type" },
                                                 new { Field = nameof(PostApprovalModificationsModel.Category), Label = "Category" },
-                                                new { Field = nameof(PostApprovalModificationsModel.DateSubmitted), Label = "Date submitted" },
+                                                new { Field = nameof(PostApprovalModificationsModel.SentToRegulatorDate), Label = "Date submitted" },
                                                 new { Field = nameof(PostApprovalModificationsModel.Status), Label = "Status" }
                                                 };
                                 var tableId = "postApprovalTable";
@@ -308,7 +308,7 @@
 
                                 var modificationReviewRoute = "pmc:modificationdetails";
 
-                                if (modification.Status is ModificationStatus.Approved or ModificationStatus.WithSponsor or ModificationStatus.WithReviewBody)
+                                if (modification.Status != ModificationStatus.InDraft)
                                 {
                                     modificationReviewRoute = "pmc:reviewallchanges";
                                 }

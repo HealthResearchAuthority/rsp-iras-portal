@@ -217,10 +217,10 @@ app.UseForwardedHeaders();
 app.MapDefaultEndpoints();
 app.UseCookiePolicy(
     new CookiePolicyOptions
-        {
-            Secure = CookieSecurePolicy.Always,
-            HttpOnly = HttpOnlyPolicy.Always
-        });
+    {
+        Secure = CookieSecurePolicy.Always,
+        HttpOnly = HttpOnlyPolicy.Always
+    });
 
 app.UseStaticFiles(); // this will serve the static files from wwwroot folder
 

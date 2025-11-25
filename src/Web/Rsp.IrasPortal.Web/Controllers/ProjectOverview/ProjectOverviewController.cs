@@ -112,7 +112,7 @@ public class ProjectOverviewController(
         };
 
         var modificationsResponseResult =
-            await projectModificationsService.GetModificationsForProject(projectRecordId, searchQuery, pageNumber, pageSize, sortField, sortDirection);
+            await projectModificationsService.GetModificationsForProject(projectRecordId, searchQuery, pageNumber, pageSize, sortField!, sortDirection!);
 
         model.Modifications = modificationsResponseResult?.Content?.Modifications?
             .Select(dto => new PostApprovalModificationsModel
@@ -127,7 +127,6 @@ public class ProjectOverviewController(
                 Status = dto.Status,
             })
             .ToList() ?? [];
-
         model.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationsResponseResult?.Content?.TotalCount ?? 0)
         {
             SortDirection = sortDirection,
