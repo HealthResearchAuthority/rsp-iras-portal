@@ -2,7 +2,7 @@
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.UnitTests.Web.Features.Approvals.ProjectRecordSearch.Controllers;
+using Rsp.IrasPortal.Web.Features.Approvals.RecordSearch.Controllers;
 using Rsp.IrasPortal.Web.Features.Approvals.RecordSearch.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Features.Approvals.RecordSearch;
@@ -19,7 +19,7 @@ public class RecordSearchControllerTests : TestServiceBase<RecordSearchControlle
 
         // assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("~/Features/Approvals/RecordSearch/Views/Index.cshtml");
+        viewResult.ViewName.ShouldBeNull();
     }
 
     [Fact]
@@ -40,8 +40,8 @@ public class RecordSearchControllerTests : TestServiceBase<RecordSearchControlle
         var result = await Sut.Navigate(viewModel);
 
         // assert
-        var viewResult = result.ShouldBeOfType<RedirectToActionResult>();
-        viewResult.ActionName.ShouldBe("Index");
+        var viewResult = result.ShouldBeOfType<RedirectToRouteResult>();
+        viewResult.RouteName.ShouldBe("projectrecordsearch");
     }
 
     [Fact]
@@ -61,9 +61,8 @@ public class RecordSearchControllerTests : TestServiceBase<RecordSearchControlle
         var result = await Sut.Navigate(viewModel);
 
         // assert
-        var viewResult = result.ShouldBeOfType<RedirectToActionResult>();
-        viewResult.ActionName.ShouldBe("Index");
-        viewResult.ControllerName.ShouldBe("Approvals");
+        var viewResult = result.ShouldBeOfType<RedirectToRouteResult>();
+        viewResult.RouteName.ShouldBe("approvals:index");
     }
 
     [Fact]
@@ -87,6 +86,6 @@ public class RecordSearchControllerTests : TestServiceBase<RecordSearchControlle
 
         // assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.ViewName.ShouldBe("~/Features/Approvals/RecordSearch/Views/Index.cshtml");
+        viewResult.ViewName.ShouldBe("Index");
     }
 }

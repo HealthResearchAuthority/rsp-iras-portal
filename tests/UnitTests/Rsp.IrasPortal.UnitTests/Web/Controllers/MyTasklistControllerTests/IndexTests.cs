@@ -37,7 +37,7 @@ public class IndexTests : TestServiceBase<MyTasklistController>
     public async Task Welcome_ReturnsViewResult_WithIndexViewName()
     {
         // Act
-        var result = await Sut.Index(1, 20, null, "CreatedAt", "asc");
+        var result = await Sut.Index(1, 20, "CreatedAt", "asc");
 
         // Assert
         result.ShouldBeOfType<ViewResult>();
@@ -56,7 +56,7 @@ public class IndexTests : TestServiceBase<MyTasklistController>
             .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, "CreatedAt", "asc"))
             .ReturnsAsync(serviceResponse);
 
-        var result = await Sut.Index(1, 20, null, "CreatedAt", "asc");
+        var result = await Sut.Index(1, 20, "CreatedAt", "asc");
 
         var viewResult = result.ShouldBeOfType<ViewResult>();
         var model = viewResult.Model.ShouldBeAssignableTo<MyTasklistViewModel>();
@@ -72,7 +72,7 @@ public class IndexTests : TestServiceBase<MyTasklistController>
     {
         _http.Session.SetString(SessionKeys.MyTasklist, json);
 
-        var result = await Sut.Index(1, 20, null, "CreatedAt", "asc");
+        var result = await Sut.Index(1, 20, "CreatedAt", "asc");
 
         var viewResult = result.ShouldBeOfType<ViewResult>();
         viewResult.Model.ShouldNotBeNull();
@@ -109,7 +109,7 @@ public class IndexTests : TestServiceBase<MyTasklistController>
             .Setup(s => s.GetModifications(It.IsAny<ModificationSearchRequest>(), 1, 20, "CreatedAt", "asc"))
             .ReturnsAsync(serviceResponse);
 
-        var result = await Sut.Index(1, 20, null, "CreatedAt", "asc");
+        var result = await Sut.Index(1, 20, "CreatedAt", "asc");
 
         var viewResult = result.ShouldBeOfType<ViewResult>();
         var modelResult = viewResult.Model.ShouldBeAssignableTo<MyTasklistViewModel>();

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Domain.AccessControl;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
@@ -12,8 +13,8 @@ using static Rsp.IrasPortal.Application.Constants.TempDataKeys;
 
 namespace Rsp.IrasPortal.Web.Features.Modifications;
 
+[Authorize(Policy = Workspaces.MyResearch)]
 [Route("/modifications/[action]", Name = "pmc:[action]")]
-[Authorize(Policy = "IsApplicant")]
 public class SponsorReferenceController
 (
     IProjectModificationsService projectModificationsService,
@@ -27,6 +28,7 @@ public class SponsorReferenceController
     private const string SectionId = "pm-sponsor-reference";
     private const string CategoryId = "Sponsor reference";
 
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Update)]
     [HttpGet]
     public async Task<IActionResult> SponsorReference(string projectRecordId)
     {
@@ -89,6 +91,7 @@ public class SponsorReferenceController
         return View(nameof(SponsorReference), viewModel);
     }
 
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Update)]
     [HttpPost]
     public async Task<IActionResult> SaveSponsorReference(QuestionnaireViewModel model, bool saveForLater = false)
     {

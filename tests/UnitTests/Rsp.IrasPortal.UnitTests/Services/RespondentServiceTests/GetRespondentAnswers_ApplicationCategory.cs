@@ -1,3 +1,4 @@
+using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Services;
 using Rsp.IrasPortal.UnitTests.TestHelpers;
@@ -10,10 +11,10 @@ public class GetRespondentAnswers_ApplicationCategory : TestServiceBase<Responde
     public async Task Returns_List(string applicationId, string category)
     {
         // Arrange
-        var answers = new List<Application.DTOs.Requests.RespondentAnswerDto>();
+        var answers = new List<RespondentAnswerDto>();
         Mocker.GetMock<IRespondentServiceClient>()
             .Setup(c => c.GetRespondentAnswers(applicationId, category))
-            .ReturnsAsync(ApiResponseFactory.Success<IEnumerable<Application.DTOs.Requests.RespondentAnswerDto>>(answers));
+            .ReturnsAsync(ApiResponseFactory.Success<IEnumerable<RespondentAnswerDto>>(answers));
 
         // Act
         var result = await Sut.GetRespondentAnswers(applicationId, category);

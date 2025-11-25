@@ -6,7 +6,7 @@
 
 @section Breadcrumb {
     @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>{
-        ("Approvals", Url.RouteUrl("approvalsmenu:welcome"))
+    ("Approvals", Url.RouteUrl("approvalsmenu:welcome"))
     })
 }
 @{
@@ -33,7 +33,7 @@
     <div class="govuk-grid-column-full">
         <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
 
-        <form asp-controller="RecordSearch" asp-action="Navigate" method="post">
+        <form asp-route="recordsearch:navigate" method="post">
             <div class="govuk-form-group @(hasRecordTypeError ? "govuk-form-group--error" : "")">
                 <fieldset class="govuk-fieldset" aria-describedby="@describedByIds">
                     <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
@@ -53,26 +53,24 @@
                     }
                     <div class="govuk-radios" data-module="govuk-radios">
                         <div class="govuk-radios__item">
-                            <input
-                                class="govuk-radios__input"
-                                id="recordType-project"
-                                name="RecordType"
-                                type="radio"
-                                value="@SearchRecordTypes.ProjectRecord"
-                                @(Model.RecordType == SearchRecordTypes.ProjectRecord ? "checked" : "") />
+                            <input class="govuk-radios__input"
+                                   id="recordType-project"
+                                   name="RecordType"
+                                   type="radio"
+                                   value="@SearchRecordTypes.ProjectRecord"
+                                   @(Model.RecordType == SearchRecordTypes.ProjectRecord ? "checked" : "") />
                             <label class="govuk-label govuk-radios__label" for="recordType-project">
                                 Project record
                             </label>
                         </div>
 
                         <div class="govuk-radios__item">
-                            <input
-                                class="govuk-radios__input"
-                                id="recordType-modification"
-                                name="RecordType"
-                                type="radio"
-                                value="@SearchRecordTypes.ModificationRecord"
-                                @(Model.RecordType == SearchRecordTypes.ModificationRecord ? "checked" : "") />
+                            <input class="govuk-radios__input"
+                                   id="recordType-modification"
+                                   name="RecordType"
+                                   type="radio"
+                                   value="@SearchRecordTypes.ModificationRecord"
+                                   @(Model.RecordType == SearchRecordTypes.ModificationRecord ? "checked" : "") />
                             <label class="govuk-label govuk-radios__label" for="recordType-modification">
                                 Modification record
                             </label>

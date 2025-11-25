@@ -7,10 +7,10 @@ using Rsp.Logging.Extensions;
 
 namespace Rsp.IrasPortal.Web.Features.ExceptionHandling.Controllers;
 
+[AllowAnonymous]
 [Route("error")]
 public class ExceptionHandlingController(ILogger<ExceptionHandlingController> logger) : Controller
 {
-    [AllowAnonymous]
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     [Route("servererror")]
     public IActionResult Error()
@@ -18,7 +18,6 @@ public class ExceptionHandlingController(ILogger<ExceptionHandlingController> lo
         return View();
     }
 
-    [AllowAnonymous]
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     [Route("statuscode")]
     public IActionResult HandleStatusCode(int statusCode)
@@ -60,7 +59,6 @@ public class ExceptionHandlingController(ILogger<ExceptionHandlingController> lo
         };
     }
 
-    [AllowAnonymous]
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     [Route("forbidden")]
     public IActionResult Forbidden(bool logError = true)

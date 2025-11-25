@@ -9,6 +9,7 @@ using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Enum;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Domain.AccessControl;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Features.Modifications;
@@ -17,9 +18,10 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers.ProjectOverview;
 
+[Authorize(Policy = Workspaces.MyResearch)]
 [Route("[controller]/[action]", Name = "pov:[action]")]
-[Authorize(Policy = "IsBackstageUser")]
-public class ProjectOverviewController(
+public class ProjectOverviewController
+(
     IApplicationsService applicationService,
     IProjectModificationsService projectModificationsService,
     IRespondentService respondentService,
@@ -27,10 +29,12 @@ public class ProjectOverviewController(
     IRtsService rtsService,
     IValidator<ApprovalsSearchModel> validator,
     IValidator<QuestionnaireViewModel> docValidator
-    ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, docValidator)
+) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, docValidator)
 {
+    private readonly IRespondentService _respondentService = respondentService;
     private const string DocumentDetailsSection = "pdm-document-metadata";
 
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Read)]
     [Route("/projectoverview", Name = "pov:index")]
     public async Task<IActionResult> Index(string projectRecordId, string? backRoute, string? modificationId)
     {
@@ -48,6 +52,7 @@ public class ProjectOverviewController(
         return View(projectOverview.Value);
     }
 
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Read)]
     public async Task<IActionResult> ProjectDetails(string projectRecordId, string? backRoute, string? modificationId)
     {
         // IF NAVIGATED FROM SHORT PROJECT TITLE LINKS
@@ -68,6 +73,7 @@ public class ProjectOverviewController(
         return View(projectOverview.Value);
     }
 
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Read)]
     public async Task<IActionResult> PostApproval
     (
         string projectRecordId,
@@ -139,6 +145,7 @@ public class ProjectOverviewController(
         return View(model);
     }
 
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Read)]
     public async Task<IActionResult> ProjectTeam(string projectRecordId, string? backRoute)
     {
         var result = await GetProjectOverviewResult(projectRecordId!, backRoute, nameof(ProjectTeam));
@@ -150,6 +157,7 @@ public class ProjectOverviewController(
         return View(okResult.Value);
     }
 
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Read)]
     public async Task<IActionResult> ResearchLocations(string projectRecordId, string? backRoute)
     {
         var result = await GetProjectOverviewResult(projectRecordId!, backRoute, nameof(ResearchLocations));
@@ -196,7 +204,7 @@ public class ProjectOverviewController(
 
         // Get all respondent answers for the project and category
         var respondentAnswersResponse =
-            await respondentService.GetRespondentAnswers(projectRecordId, QuestionCategories.ProjectRecord);
+            await _respondentService.GetRespondentAnswers(projectRecordId, QuestionCategories.ProjectRecord);
 
         if (!respondentAnswersResponse.IsSuccessStatusCode)
         {
@@ -283,6 +291,7 @@ public class ProjectOverviewController(
         return Ok(model);
     }
 
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Read)]
     public async Task<IActionResult> ProjectDocuments
         (
         string projectRecordId,
@@ -338,6 +347,7 @@ public class ProjectOverviewController(
         return View(model);
     }
 
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecordHistory_Read)]
     public async Task<IActionResult> ProjectHistory(string projectRecordId, string? backRoute)
     {
         UpdateModificationRelatedTempData();
@@ -352,6 +362,7 @@ public class ProjectOverviewController(
         return View(projectOverview.Value);
     }
 
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Delete)]
     [HttpPost]
     public async Task<IActionResult> ConfirmDeleteProject(string projectRecordId)
     {
@@ -367,8 +378,8 @@ public class ProjectOverviewController(
         return View("/Features/ProjectOverview/Views/DeleteProject.cshtml", model);
     }
 
-    [Route("/projectoverview/applyfilters", Name = "pov:applyfilters")]
-    [HttpPost]
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Search)]
+    [HttpPost("/projectoverview/applyfilters", Name = "pov:applyfilters")]
     public async Task<IActionResult> ApplyFilters(PostApprovalViewModel model)
     {
         var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
@@ -400,8 +411,8 @@ public class ProjectOverviewController(
         return RedirectToRoute("pov:postapproval", new { projectRecordId });
     }
 
-    [Route("/projectoverview/clearfilters", Name = "pov:clearfilters")]
-    [HttpGet]
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Search)]
+    [HttpGet("/projectoverview/clearfilters", Name = "pov:clearfilters")]
     public IActionResult ClearFilters()
     {
         var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId);
@@ -409,8 +420,8 @@ public class ProjectOverviewController(
         return RedirectToRoute("pov:postapproval", new { projectRecordId });
     }
 
-    [Route("/projectoverview/removefilter", Name = "pov:removefilter")]
-    [HttpGet]
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Search)]
+    [HttpGet("/projectoverview/removefilter", Name = "pov:removefilter")]
     public IActionResult RemoveFilter(string key, [FromQuery] string? model = null)
     {
         var viewModel = new PostApprovalViewModel();

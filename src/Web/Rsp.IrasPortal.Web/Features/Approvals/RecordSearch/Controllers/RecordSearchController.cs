@@ -3,19 +3,19 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.Filters;
-using Rsp.IrasPortal.Web.Controllers;
+using Rsp.IrasPortal.Domain.AccessControl;
 using Rsp.IrasPortal.Web.Features.Approvals.RecordSearch.Models;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Features.Approvals.ProjectRecordSearch.Controllers;
+namespace Rsp.IrasPortal.Web.Features.Approvals.RecordSearch.Controllers;
 
-[Route("[controller]/[action]", Name = "recordsearch:[action]")]
-[Authorize]
+[Authorize(Policy = Workspaces.Approvals)]
+[Route("approvals/[controller]/[action]", Name = "recordsearch:[action]")]
 public class RecordSearchController(IValidator<RecordSearchNavigationModel> validator) : Controller
 {
-    [HttpGet("~/[controller]", Name = "recordsearch")]
+    [HttpGet("/approvals/[controller]", Name = "recordsearch")]
     public IActionResult Index()
     {
-        return View("~/Features/Approvals/RecordSearch/Views/Index.cshtml", new RecordSearchNavigationModel());
+        return View(new RecordSearchNavigationModel());
     }
 
     [HttpPost]
@@ -35,19 +35,15 @@ public class RecordSearchController(IValidator<RecordSearchNavigationModel> vali
                 ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
             }
 
-            return View("~/Features/Approvals/RecordSearch/Views/Index.cshtml", model);
+            return View(nameof(Index), model);
         }
 
         // redirect user based on their selected record type
-        switch (model.RecordType)
+        return model.RecordType switch
         {
-            case SearchRecordTypes.ProjectRecord:
-                return RedirectToAction(nameof(Index), "ProjectRecordSearch");
-
-            case SearchRecordTypes.ModificationRecord:
-                return RedirectToAction(nameof(ApprovalsController.Index), "Approvals");
-        }
-
-        return RedirectToAction(nameof(Index));
+            SearchRecordTypes.ProjectRecord => RedirectToRoute("projectrecordsearch"),
+            SearchRecordTypes.ModificationRecord => RedirectToRoute("approvals:index"),
+            _ => RedirectToAction(nameof(Index)),
+        };
     }
 }

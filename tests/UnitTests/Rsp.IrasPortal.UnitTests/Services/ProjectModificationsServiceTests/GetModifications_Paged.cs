@@ -1,6 +1,7 @@
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Services;
 using Rsp.IrasPortal.UnitTests.TestHelpers;
@@ -14,7 +15,7 @@ public class GetModifications_Paged : TestServiceBase<ProjectModificationsServic
     {
         // Arrange
         var request = new ModificationSearchRequest();
-        var response = new Application.DTOs.Responses.GetModificationsResponse
+        var response = new GetModificationsResponse
         {
             Modifications = [new() { Id = Guid.NewGuid().ToString(), ModificationId = "MID" }],
             TotalCount = 1
