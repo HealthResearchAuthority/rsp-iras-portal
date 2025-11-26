@@ -51,4 +51,9 @@ public class ProjectOverviewDocumentDto
     /// Gets or sets the identifier of the modification, if specified.
     /// </summary>
     public string ModificationIdentifier { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the unique identifier for this modification.
+    /// </summary>
+    public Guid ProjectModificationId { get; set; }
 }

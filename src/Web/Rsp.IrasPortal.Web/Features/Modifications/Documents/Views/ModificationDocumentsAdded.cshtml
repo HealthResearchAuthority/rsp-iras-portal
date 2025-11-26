@@ -100,8 +100,10 @@
 					@{
 						ViewBag.Style = "govuk-button govuk-button--secondary";
 					}
-					<partial name="_SubmitButton" model="@("pov:postapproval", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId })" />
-				</form>
+                    <a asp-route="pmc:saveforlater" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-routeName="pov:postapproval" class="govuk-button govuk-button--secondary">
+                        Save for later
+                    </a>
+                </form>
 			</div>
 		</div>
 	</div>

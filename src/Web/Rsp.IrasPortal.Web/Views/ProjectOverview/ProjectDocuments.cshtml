@@ -146,9 +146,6 @@
 									   })
 								</th>
 							}
-
-							<!-- Action column -->
-							<th scope="col" class="govuk-table__header">Action</th>
 						</tr>
 
 					</thead>
@@ -161,6 +158,21 @@
 							@{
 								foreach (var modification in Model.Documents)
 								{
+                                    
+                                var modificationParams = new Dictionary<string, string> {
+                                        { "projectRecordId", Model.ProjectOverviewModel.ProjectRecordId },
+                                        { "irasId", Model.ProjectOverviewModel.IrasId?.ToString()  },
+                                        { "shortTitle", Model.ProjectOverviewModel.ProjectTitle?.ToString() },
+                                        { "projectModificationId", modification.ProjectModificationId.ToString()  }
+                                        };
+
+                                var modificationReviewRoute = "pmc:modificationdetails";
+
+                                if (modification.Status != ModificationStatus.InDraft)
+                                {
+                                    modificationReviewRoute = "pmc:reviewallchanges";
+                                }
+
 								<tr class="govuk-table__row">
 									<td class="govuk-table__cell">@modification.DocumentType</td>
 									<td class="govuk-table__cell">@modification.DocumentName</td>
@@ -202,15 +214,10 @@
 										</strong>
 									</td>
 									<td class="govuk-table__cell">
-										<a class="govuk-link" href="#">
-											<strong>@modification.ModificationIdentifier</strong>
-										</a>
-									</td>
-									<td class="govuk-table__cell">
-										<a class="govuk-link" href="#">
-											View details
-										</a>
-									</td>
+                                        <a class="govuk-link" asp-route="@modificationReviewRoute" asp-all-route-data="modificationParams">
+                                            <strong>@modification.ModificationIdentifier</strong>
+                                        </a>
+                                    </td>
 								</tr>
 								}
 							}
