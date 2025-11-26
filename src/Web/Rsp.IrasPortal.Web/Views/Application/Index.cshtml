@@ -58,7 +58,7 @@
         <authorized auth-params="@new(Roles:"applicant,system_administrator,reviewer")">
 
             <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
-            <h2 class="govuk-heading-l" id="title">@Html.Raw(headline?.Value)</h2>
+            <h1 class="govuk-heading-l" id="title">@Html.Raw(headline?.Value)</h1>
 
             @if ((Model.Applications != null && Model.Applications.Any()) || !Model.EmptySearchPerformed)
             {

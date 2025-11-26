@@ -2,7 +2,7 @@ using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Services;
 using Rsp.IrasPortal.UnitTests.TestHelpers;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApplicationsServiceTests;
+namespace Rsp.IrasPortal.UnitTests.Services.ApplicationsServiceTests;
 
 public class DeleteProjectTests : TestServiceBase<ApplicationsService>
 {

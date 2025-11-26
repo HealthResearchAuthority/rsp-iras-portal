@@ -6,27 +6,30 @@ using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Filters;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Domain.AccessControl;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
+[Authorize(Policy = Workspaces.Approvals)]
 [Route("[controller]/[action]", Name = "mytasklist:[action]")]
-[Authorize(Roles = Roles.StudyWideReviewer)]
 public class MyTasklistController(
     IProjectModificationsService projectModificationsService,
     IValidator<ApprovalsSearchModel> validator,
     IReviewBodyService reviewBodyService,
     IUserManagementService userManagementService) : Controller
 {
+    [Authorize(Policy = Permissions.Approvals.ModificationRecords_Search)]
     [HttpGet]
-    public async Task<IActionResult> Index(
+    public async Task<IActionResult> Index
+    (
         int pageNumber = 1,
         int pageSize = 20,
-        List<string>? selectedModificationIds = null,
         string? sortField = nameof(ModificationsModel.SentToRegulatorDate),
-        string? sortDirection = SortDirections.Ascending)
+        string? sortDirection = SortDirections.Ascending
+    )
     {
         var json = HttpContext.Session.GetString(SessionKeys.MyTasklist);
 
@@ -74,8 +77,14 @@ public class MyTasklistController(
                    sortDirection == SortDirections.Ascending ? SortDirections.Descending : SortDirections.Ascending)
                 : (sortField!, sortDirection!);
 
-        var result = await projectModificationsService.GetModifications(
-            searchQuery, pageNumber, pageSize, qSortField, qSortDir);
+        var result = await projectModificationsService.GetModifications
+        (
+            searchQuery,
+            pageNumber,
+            pageSize,
+            qSortField,
+            qSortDir
+        );
 
         model.Modifications = result?.Content?.Modifications?
             .Select(dto => new ModificationsModel
@@ -92,7 +101,7 @@ public class MyTasklistController(
                 Status = dto.Status,
                 SentToRegulatorDate = dto.SentToRegulatorDate,
                 SentToSponsorDate = dto.SentToSponsorDate
-            }).ToList() ?? new();
+            }).ToList() ?? [];
 
         model.Pagination = new PaginationViewModel(pageNumber, pageSize, result?.Content?.TotalCount ?? 0)
         {
@@ -104,6 +113,7 @@ public class MyTasklistController(
         return View(model);
     }
 
+    [Authorize(Policy = Permissions.Approvals.ModificationRecords_Search)]
     [HttpPost]
     [CmsContentAction(nameof(Index))]
     public async Task<IActionResult> ApplyFilters(MyTasklistViewModel model)
@@ -124,6 +134,7 @@ public class MyTasklistController(
         return RedirectToAction(nameof(Index));
     }
 
+    [Authorize(Policy = Permissions.Approvals.ModificationRecords_Search)]
     [HttpGet]
     public async Task<IActionResult> RemoveFilter(string key)
     {
@@ -154,6 +165,7 @@ public class MyTasklistController(
         return await ApplyFilters(new MyTasklistViewModel { Search = search });
     }
 
+    [Authorize(Policy = Permissions.Approvals.ModificationRecords_Search)]
     [HttpGet]
     public IActionResult ClearFilters()
     {

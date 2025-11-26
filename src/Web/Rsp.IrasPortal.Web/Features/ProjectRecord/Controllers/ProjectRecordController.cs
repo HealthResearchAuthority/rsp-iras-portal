@@ -10,6 +10,7 @@ using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Domain.AccessControl;
 using Rsp.IrasPortal.Web.Controllers;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Helpers;
@@ -17,8 +18,8 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Features.ProjectRecord.Controllers;
 
+[Authorize(Policy = Workspaces.MyResearch)]
 [Route("[controller]/[action]", Name = "prc:[action]")]
-[Authorize(Policy = "IsApplicant")]
 public class ProjectRecordController
 (
     IApplicationsService applicationsService,
@@ -38,6 +39,7 @@ public class ProjectRecordController
         return View();
     }
 
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Create)]
     [Route("/[controller]", Name = "prc:projectrecord")]
     public async Task<IActionResult> ProjectRecord(string sectionId)
     {
@@ -92,6 +94,7 @@ public class ProjectRecordController
         return View(projectRecordViewModel);
     }
 
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Create)]
     [HttpPost]
     public async Task<IActionResult> ConfirmProjectRecord(ProjectRecordViewModel model)
     {

@@ -61,7 +61,7 @@
 <div class="govuk-grid-row">
 	<div class="govuk-grid-column-two-thirds search-filter-bottom-border">
 		<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
-		<h2 class="govuk-heading-xl" id="title">@Html.Raw(pageTitle?.Value)</h2>
+		<h1 class="govuk-heading-xl" id="title">@Html.Raw(pageTitle?.Value)</h1>
 		@Html.Raw(bodyText?.Value)
 
 		@if (!Model.EmptySearchPerformed || (Model.Modifications != null && Model.Modifications.Any()))

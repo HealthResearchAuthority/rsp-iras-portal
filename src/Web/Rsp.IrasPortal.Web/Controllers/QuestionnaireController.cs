@@ -7,6 +7,7 @@ using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Domain.AccessControl;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Features.ProjectRecord.Controllers;
 using Rsp.IrasPortal.Web.Helpers;
@@ -15,7 +16,7 @@ using Rsp.IrasPortal.Web.Models;
 namespace Rsp.IrasPortal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "qnc:[action]")]
-[Authorize(Policy = "IsApplicant")]
+[Authorize(Policy = Workspaces.MyResearch)]
 public class QuestionnaireController
 (
     IApplicationsService applicationsService,
@@ -36,6 +37,7 @@ public class QuestionnaireController
     /// <param name="projectRecordId">Application Id</param>
     /// <param name="categoryId">CategoryId to resume from</param>
     /// <param name="validate">Indicates whether to validate or not</param>
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Update)]
     public async Task<IActionResult> Resume(string projectRecordId, string categoryId, string validate = "False", string? sectionId = null)
     {
         // load existing application in session
@@ -142,6 +144,7 @@ public class QuestionnaireController
     /// Renders all of the questions for the categoryId
     /// </summary>
     ///<param name="sectionId">sectionId of the questions to be rendered</param>
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Update)]
     public async Task<IActionResult> DisplayQuestionnaire(string sectionId, bool reviewAnswers = false)
     {
         // get the questions for the category
@@ -208,6 +211,7 @@ public class QuestionnaireController
         return this.ServiceError(questionSectionsResponse);
     }
 
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Update)]
     [RequestFormLimits(ValueCountLimit = int.MaxValue)]
     [HttpPost]
     public async Task<IActionResult> SaveResponses(QuestionnaireViewModel model, string searchedPerformed, bool autoSearchEnabled, bool submit = false, string saveAndContinue = "False", string saveForLater = "False")
@@ -354,6 +358,7 @@ public class QuestionnaireController
     /// and display the progress of the application
     /// </summary>
     /// <param name="projectRecordId">ApplicationId to submit</param>
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Update)]
     public async Task<IActionResult> SubmitApplication(string projectRecordId)
     {
         var categoryId = (TempData.Peek(TempDataKeys.CategoryId) as string)!;
@@ -397,6 +402,7 @@ public class QuestionnaireController
     /// Gets all questions for the application. Validates for each category
     /// and display the progress of the application
     /// </summary>
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Update)]
     public async Task<IActionResult> ConfirmProjectDetails()
     {
         var categoryId = (TempData.Peek(TempDataKeys.CategoryId) as string)!;
@@ -467,6 +473,7 @@ public class QuestionnaireController
     /// <summary>
     /// Displays the 'Project record created' page with IRAS ID and project title
     /// </summary>
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Read)]
     public async Task<IActionResult> ProjectRecordCreated()
     {
         var categoryId = (TempData.Peek(TempDataKeys.CategoryId) as string)!;

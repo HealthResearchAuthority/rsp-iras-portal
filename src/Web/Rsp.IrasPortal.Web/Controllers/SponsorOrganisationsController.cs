@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,14 +9,15 @@ using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Filters;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Domain.AccessControl;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
+[Authorize(Policy = Workspaces.SystemAdministration)]
 [Route("[controller]/[action]", Name = "soc:[action]")]
-[Authorize(Policy = "IsSystemAdministrator")]
 public class SponsorOrganisationsController(
     ISponsorOrganisationService sponsorOrganisationService,
     IRtsService rtsService,
@@ -351,7 +351,6 @@ public class SponsorOrganisationsController(
         return View("ViewSponsorOrganisationUser", model);
     }
 
-
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Route("/sponsororganisations/enableuser", Name = "soc:enableuser")]
@@ -564,7 +563,6 @@ public class SponsorOrganisationsController(
 
         return sorted.Skip(skip).Take(pageSize);
     }
-
 
     [NonAction]
     private static IEnumerable<UserViewModel> SortSponsorOrganisationUsers(

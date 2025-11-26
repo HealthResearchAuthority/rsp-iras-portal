@@ -60,6 +60,16 @@ public record ProjectModificationChangeRequest
     public string UpdatedBy { get; set; } = null!;
 
     /// <summary>
+    /// Gets or sets the date the modification change was created.
+    /// </summary>
+    public DateTime CreatedDate { get; set; } = DateTime.Now;
+
+    /// <summary>
+    /// Gets or sets the date the modification change was last updated.
+    /// </summary>
+    public DateTime UpdatedDate { get; set; } = DateTime.Now;
+
+    /// <summary>
     /// Overall ranking type of the modification
     /// </summary>
     public (string Substantiality, int Order) ModificationSubstantiality { get; set; }

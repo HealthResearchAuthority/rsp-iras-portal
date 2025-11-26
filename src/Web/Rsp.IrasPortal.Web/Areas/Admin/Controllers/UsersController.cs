@@ -11,6 +11,7 @@ using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Domain.AccessControl;
 using Rsp.IrasPortal.Domain.Identity;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
@@ -18,9 +19,9 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Areas.Admin.Controllers;
 
+[Authorize(Policy = Workspaces.SystemAdministration)]
 [Area("Admin")]
 [Route("[area]/[controller]/[action]", Name = "admin:[action]")]
-[Authorize(Policy = "IsSystemAdministrator")]
 [FeatureGate(FeatureFlags.Admin)]
 public class UsersController(
     IUserManagementService userManagementService,
@@ -696,7 +697,7 @@ public class UsersController(
         if (HttpContext.Request.Method == HttpMethods.Get)
         {
             //Always attempt to restore from session if nothing is currently set
-             var savedSearch = HttpContext.Session.GetString(SessionKeys.UsersSearch);
+            var savedSearch = HttpContext.Session.GetString(SessionKeys.UsersSearch);
             if (!string.IsNullOrWhiteSpace(savedSearch))
             {
                 model.Search = JsonSerializer.Deserialize<UserSearchModel>(savedSearch);
