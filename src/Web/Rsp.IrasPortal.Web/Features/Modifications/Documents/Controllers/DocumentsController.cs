@@ -1030,6 +1030,7 @@ public class DocumentsController
     /// </summary>
     private RedirectToRouteResult RedirectToSaveForLater()
     {
+        TempData[TempDataKeys.ShowNotificationBanner] = true;
         var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
         return RedirectToRoute(PostApprovalRoute, new { projectRecordId });
     }
