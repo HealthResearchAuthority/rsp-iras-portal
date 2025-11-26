@@ -100,9 +100,9 @@
 
                 <govuk-fieldset class="sections">
                     <govuk-fieldset-legend class="govuk-fieldset__legend--l">
-                        <h2 class="govuk-heading-l" id="title">
+                        <h1 class="govuk-heading-l" id="title">
                             @(Model.Questions.FirstOrDefault()?.Section)
-                        </h2>
+                        </h1>
                     </govuk-fieldset-legend>
 
                     <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
