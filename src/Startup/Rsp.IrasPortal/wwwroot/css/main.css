@@ -817,6 +817,7 @@ button.govuk-pagination__item--current {
   display: inline-flex;
   gap: 5px;
   align-items: center;
+  justify-content: space-between;
   background: none;
   border: none;
   color: #1d70b8;
@@ -825,6 +826,11 @@ button.govuk-pagination__item--current {
   font: inherit;
   padding: 0;
   text-underline-offset: 0.1578em;
+}
+.table-header-sort-button span {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
 }
 .table-header-sort-button:hover {
   color: #003078;
