@@ -1,10 +1,11 @@
 ﻿@using Mapster;
+@using Rsp.IrasPortal.Domain.AccessControl
 @using Rsp.IrasPortal.Web.Extensions
 @using Rsp.IrasPortal.Application.Constants
 @model dynamic
 
 @{
-	var modificationBaseModel = new BaseProjectModificationViewModel();
+    var modificationBaseModel = new BaseProjectModificationViewModel();
 
     if (Model is BaseProjectModificationViewModel viewModel)
     {
@@ -13,7 +14,7 @@
     else
     {
         modificationBaseModel = TempData.PopulateBaseProjectModificationProperties(modificationBaseModel);
-    }   
+    }
 }
 
 <dl class="govuk-summary-list">
@@ -45,29 +46,32 @@
             </a>
         </dd>
     </div>
-    <authorized auth-params="@new(Roles: "sponsor,applicant")">
-        @if (modificationBaseModel.Status != ModificationStatus.InDraft)
-        {
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key">Date created</dt>
-                <dd class="govuk-summary-list__value">@modificationBaseModel.DateCreated</dd>
-            </div>
-        }
+
+    <authorized permission="@Permissions.MyResearch.Modifications_Review"
+                status-for="@modificationBaseModel.Status"
+                status-is="@ModificationStatus.InDraft"
+                status-mode="Hide">
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Date created</dt>
+            <dd class="govuk-summary-list__value">@modificationBaseModel.DateCreated</dd>
+        </div>
     </authorized>
-    <authorized auth-params="@new(Roles: "system_administrator,study-wide_reviewer,team_manager,workflow_co-ordinator")">
+
+    <authorized permission="@Permissions.MyResearch.ModificationsHistory_BackStage_Read">
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key">Audit</dt>
             <dd class="govuk-summary-list__value">
                 <a asp-route="pmc:audittrail"
-                    asp-route-modificationId="@modificationBaseModel.ModificationId"
-                    asp-route-shortTitle="@modificationBaseModel.ShortTitle"
-                    asp-route-modificationIdentifier="@modificationBaseModel.ModificationIdentifier"
-                    class="govuk-link">
+                   asp-route-modificationId="@modificationBaseModel.ModificationId"
+                   asp-route-shortTitle="@modificationBaseModel.ShortTitle"
+                   asp-route-modificationIdentifier="@modificationBaseModel.ModificationIdentifier"
+                   class="govuk-link">
                     View modification audit history
                 </a>
             </dd>
         </div>
     </authorized>
+
     @if (ViewData[ViewDataKeys.ShowModificationStatus] is true)
     {
         <div class="govuk-summary-list__row">
@@ -90,5 +94,5 @@
             </dd>
         </div>
 
-	}
+    }
 </dl>

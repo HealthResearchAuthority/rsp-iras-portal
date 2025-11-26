@@ -20,7 +20,7 @@
     var myTasklistDescription = pageContent.GetValueOrDefault("Approvals.MyTasklistDescription", null);
 
     // ✅ Override for team manager roles
-    if (User.IsInRole(Roles.TeamManager) || User.IsInRole("assistant_team_manager"))
+    if (User.IsInRole(Roles.TeamManager))
     {
         tasklistTitle = new MixedContentPageItem { Value = "Team manager dashboard" };
         tasklistDescription = new MixedContentPageItem { Value = "Review and manage all tasks for your team." };
@@ -31,11 +31,13 @@
     <div class="govuk-grid-column-full">
         <h1 class="govuk-heading-xl">@Html.Raw(headline?.Value)</h1>
         <partial name="_ActionItem" model="@((searchTitle?.Value, searchDescription?.Value, "recordsearch", new Dictionary<string, string>()))" />
-        <authorized auth-params="@new(Roles:"system_administrator,workflow_co-ordinator,team_manager")">
-            <partial name="_ActionItem" model="@((tasklistTitle?.Value, tasklistDescription?.Value, "tasklist:index", new Dictionary<string, string>()))" />
-        </authorized>
-        <authorized auth-params="@new(Roles:Roles.StudyWideReviewer)">
-            <partial name="_ActionItem" model="@((myTasklistTitle?.Value, myTasklistDescription?.Value, "mytasklist:index", new Dictionary<string, string>()))" />
-        </authorized>
+
+        <partial role-in="@([Roles.TeamManager, Roles.WorkflowCoordinator])"
+                 name="_ActionItem"
+                 model="@((tasklistTitle?.Value, tasklistDescription?.Value, "tasklist:index", new Dictionary<string, string>()))" />
+
+        <partial role-is="@Roles.StudyWideReviewer"
+                 name="_ActionItem"
+                 model="@((myTasklistTitle?.Value, myTasklistDescription?.Value, "mytasklist:index", new Dictionary<string, string>()))" />
     </div>
 </div>

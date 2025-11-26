@@ -329,7 +329,7 @@ public class SponsorOrganisationsController(
         }
 
         // Assign sponsor role on success
-        await userService.UpdateRoles(user.Content!.User.Email, null, "sponsor");
+        await userService.UpdateRoles(user.Content!.User.Email, null, Roles.Sponsor);
 
         TempData[TempDataKeys.ShowNotificationBanner] = true;
         TempData[TempDataKeys.SponsorOrganisationUserType] = "add";

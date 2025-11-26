@@ -7,64 +7,65 @@
     The visible timer and accessible timer are updated via JavaScript.
     The noscript block provides a static warning for users with JavaScript disabled.
 -->
+@if (!User.Identity.IsAuthenticated)
+{
+    return;
+}
 
-<authorized auth-params="new()">
+<!-- Overlay for modal background, hidden by default -->
+<div id="timeout-warning-overlay" class="govuk-modal-overlay" hidden></div>
 
-    <!-- Overlay for modal background, hidden by default -->
-    <div id="timeout-warning-overlay" class="govuk-modal-overlay" hidden></div>
+<!-- Session timeout warning modal dialog -->
+<dialog id="timeout-warning"
+        class="govuk-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="timeout-title">
 
-    <!-- Session timeout warning modal dialog -->
-    <dialog id="timeout-warning"
-            class="govuk-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="timeout-title">
+    <div class="govuk-modal__content">
+        <!-- Modal title, hidden from assistive tech by default -->
+        <p class="govuk-heading-m" id="timeout-title">We’re about to sign you out</p>
 
-        <div class="govuk-modal__content">
-            <!-- Modal title, hidden from assistive tech by default -->
-            <p class="govuk-heading-m" id="timeout-title">We’re about to sign you out</p>
+        <!-- Visible timer for non-assistive technology users -->
+        <p class="govuk-body" id="visible-timer-description" aria-hidden="true">
+            We'll sign you out in <span id="timeout-countdown-visible">@(appSettings.WarningBeforeSeconds / 60) minutes</span> to protect your data.
+        </p>
 
-            <!-- Visible timer for non-assistive technology users -->
-            <p class="govuk-body" id="visible-timer-description" aria-hidden="true">
-                We'll sign you out in <span id="timeout-countdown-visible">@(appSettings.WarningBeforeSeconds / 60) minutes</span> to protect your data.
-            </p>
-
-            <!-- Accessible timer for assistive technology users -->
-            <p class="govuk-visually-hidden" id="at-timer-description">
-                <span id="timeout-countdown"
-                      aria-live="assertive">
-                </span>
-            </p>
-
-            <!-- Template for timeout message, used by JavaScript -->
-            <span id="timeout-message-template" class="govuk-visually-hidden" aria-hidden="true">
-                We will sign you out in {0} to protect your data.
+        <!-- Accessible timer for assistive technology users -->
+        <p class="govuk-visually-hidden" id="at-timer-description">
+            <span id="timeout-countdown"
+                  aria-live="assertive">
             </span>
+        </p>
 
-            <!-- Focusable element for accessibility management -->
-            <div id="focus-element" tabindex="-1"></div>
-        </div>
+        <!-- Template for timeout message, used by JavaScript -->
+        <span id="timeout-message-template" class="govuk-visually-hidden" aria-hidden="true">
+            We will sign you out in {0} to protect your data.
+        </span>
 
-        <!-- Action buttons: stay signed in or sign out -->
-        <div class="govuk-button-group">
-            <button id="stay-signed-in" class="govuk-button" role="button">Stay signed in</button>
-            <a asp-route="auth:signout" class="govuk-button govuk-button--secondary" role="button">Sign out</a>
-        </div>
-    </dialog>
+        <!-- Focusable element for accessibility management -->
+        <div id="focus-element" tabindex="-1"></div>
+    </div>
 
-    <!-- Static notification for users with JavaScript disabled -->
-    <noscript>
-        <div class="govuk-notification-banner govuk-notification-banner--blue" role="region" aria-labelledby="js-disabled-title" data-module="govuk-notification-banner">
-            <div class="govuk-notification-banner__header">
-                <h2 class="govuk-notification-banner__title" id="js-disabled-title">
-                    Important
-                </h2>
-            </div>
-            <div class="govuk-notification-banner__content">
-                <span class="govuk-notification-banner__heading">
-                    If there is no activity for @(appSettings.SessionTimeout / 60) minutes we'll sign you out automatically to protect your data. Any answers you have saved will not be affected.
-                </span>
-            </div>
+    <!-- Action buttons: stay signed in or sign out -->
+    <div class="govuk-button-group">
+        <button id="stay-signed-in" class="govuk-button" role="button">Stay signed in</button>
+        <a asp-route="auth:signout" class="govuk-button govuk-button--secondary" role="button">Sign out</a>
+    </div>
+</dialog>
+
+<!-- Static notification for users with JavaScript disabled -->
+<noscript>
+    <div class="govuk-notification-banner govuk-notification-banner--blue" role="region" aria-labelledby="js-disabled-title" data-module="govuk-notification-banner">
+        <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="js-disabled-title">
+                Important
+            </h2>
         </div>
-    </noscript>
-</authorized>
+        <div class="govuk-notification-banner__content">
+            <span class="govuk-notification-banner__heading">
+                If there is no activity for @(appSettings.SessionTimeout / 60) minutes we'll sign you out automatically to protect your data. Any answers you have saved will not be affected.
+            </span>
+        </div>
+    </div>
+</noscript>

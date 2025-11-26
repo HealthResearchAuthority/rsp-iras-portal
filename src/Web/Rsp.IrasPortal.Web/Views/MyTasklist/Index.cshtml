@@ -7,7 +7,6 @@
 @using Rsp.IrasPortal.Application.DTOs.Responses
 @using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
 @using Rsp.IrasPortal.Web.Extensions
-@using Rsp.IrasPortal.Web.TagHelpers.Models
 @model MyTasklistViewModel
 @inject IFeatureManager featureManager
 
@@ -294,7 +293,6 @@ else
 					<form method="get" id="mytasklist-selection">
 						<input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
 						<input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
-
 
 					<tbody class="govuk-table__body govuk-body-s">
 							@{

@@ -295,12 +295,12 @@ public static class ControllerExtensions
             return leadNation;
         }
 
-        if (controller.User.IsInRole("system_administrator"))
+        if (controller.User.IsInRole(Roles.SystemAdministrator))
         {
             // user is admin so they can see modifications for all contries
             leadNation = UkCountryNames.Countries;
         }
-        else if (controller.User.IsInRole("team_manager"))
+        else if (controller.User.IsInRole(Roles.TeamManager))
         {
             // if user is team manager, then take their assigned country into account
             var userEntity = await userManagementService.GetUser(userId.ToString(), null);

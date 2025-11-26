@@ -417,14 +417,11 @@ else
 										@modification.Modification.CreatedAt.ToString("dd MMM yyyy")
 								</td>
 								<td class="govuk-table__cell">@modification.Modification.DaysSinceSubmission @daysText</td>
-									@if (User.IsInRole("team_manager"))
-									{
-									<td class="govuk-table__cell">
+									<td role-is="@Roles.TeamManager" class="govuk-table__cell">
 											@(string.IsNullOrWhiteSpace(modification.Modification.ReviewerName)
 																		? "Unassigned"
 																		: modification.Modification.ReviewerName)
 									</td>
-									}
 								<td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">@modification.Modification.Status</strong></td>
 							</tr>
 							}

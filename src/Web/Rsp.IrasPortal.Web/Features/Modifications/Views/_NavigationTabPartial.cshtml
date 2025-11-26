@@ -1,15 +1,15 @@
 ﻿@using Rsp.IrasPortal.Application.Constants
 @model Rsp.IrasPortal.Web.Features.Modifications.Models.ModificationDetailsViewModel
 @{
-	var active = "tab-documents";
+    var active = "tab-documents";
 }
 
 <!-- Hidden controls -->
-<authorized auth-params="@new(Roles: "applicant")">
+<authorized role-is="@Roles.Applicant">
     <input type="radio" id="tab-modifications-changes" name="tab-toggle" class="govuk-tab-toggle" checked>
     <input type="radio" id="tab-sponsor-details" name="tab-toggle" class="govuk-tab-toggle">
 </authorized>
-<authorized auth-params="@new(Roles: "sponsor,study-wide_reviewer,team_manager,workflow_co-ordinator,system_administrator")">
+<authorized role-in="@([Roles.Sponsor, Roles.StudyWideReviewer, Roles.TeamManager, Roles.WorkflowCoordinator])">
     <input type="radio" id="tab-sponsor-details" name="tab-toggle" class="govuk-tab-toggle" checked>
     <input type="radio" id="tab-modifications-changes" name="tab-toggle" class="govuk-tab-toggle">
 </authorized>
@@ -36,7 +36,7 @@
                         </label>
                     </li>
 
-					<li class="govuk-service-navigation__item small-margin govuk-service-navigation__item--documents">
+                    <li class="govuk-service-navigation__item small-margin govuk-service-navigation__item--documents">
                         <label for="tab-documents" class="govuk-service-navigation__link govuk-service-navigation__link-label">
                             @ModificationOverview.Documents
                         </label>
@@ -63,7 +63,7 @@
 </div>
 
 <div id="documents" class="tab-content">
-	<partial name="SupportingDocuments" model="Model" viewData="ViewData" />
+    <partial name="SupportingDocuments" model="Model" viewData="ViewData" />
 </div>
 
 <div id="history" class="tab-content">

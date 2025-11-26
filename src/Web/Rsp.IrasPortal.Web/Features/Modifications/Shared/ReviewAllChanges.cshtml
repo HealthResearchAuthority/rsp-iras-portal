@@ -31,7 +31,7 @@
 
 @if (Model.Status != ModificationStatus.InDraft && !(previousController is ApprovalsSearch.ControllerName or ModificationsTasklist.ControllerName))
 {
-    <authorized-when role="@Roles.Applicant">
+    <authorized role-is="@Roles.Applicant">
 
         @section Breadcrumb {
 
@@ -41,7 +41,7 @@
         (projectTitle, Url.RouteUrl("pov:postapproval", new Dictionary<string, string> { { "projectRecordId", Model.ProjectRecordId! } }))
         })
         }
-    </authorized-when>
+    </authorized>
 }
 else
 {
@@ -66,7 +66,7 @@ else
 
 <partial name="_ReviewModification" model="Model" />
 
-<authorized-when role="@Roles.Applicant">
+<authorized role-is="@Roles.Applicant">
     @if (Model.Status is ModificationStatus.InDraft)
     {
         <div class="govuk-grid-row">
@@ -102,10 +102,12 @@ else
             </div>
         </div>
     }
-</authorized-when>
+</authorized>
 
-<authorized-when permission="@Permissions.Approvals.Modifications_Approve">
-    <div status-for="Status" status-is="@ModificationStatus.WithReviewBody" class="govuk-grid-row">
+<authorized permission="@Permissions.MyResearch.Modifications_Approve"
+            status-for="Status"
+            status-is="@ModificationStatus.WithReviewBody">
+    <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
             <div class="govuk-heading-m">
                 Next steps
@@ -120,4 +122,4 @@ else
             </a>
         </div>
     </div>
-</authorized-when>
+</authorized>

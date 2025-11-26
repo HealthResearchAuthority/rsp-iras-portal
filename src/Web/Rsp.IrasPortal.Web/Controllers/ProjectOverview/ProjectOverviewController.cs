@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.Enum;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.AccessControl;
@@ -34,7 +33,7 @@ public class ProjectOverviewController
     private readonly IRespondentService _respondentService = respondentService;
     private const string DocumentDetailsSection = "pdm-document-metadata";
 
-    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Read)]
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Update)]
     [Route("/projectoverview", Name = "pov:index")]
     public async Task<IActionResult> Index(string projectRecordId, string? backRoute, string? modificationId)
     {
@@ -73,7 +72,7 @@ public class ProjectOverviewController
         return View(projectOverview.Value);
     }
 
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Read)]
+    [Authorize(Policy = Permissions.MyResearch.Modifications_List)]
     public async Task<IActionResult> PostApproval
     (
         string projectRecordId,
@@ -291,7 +290,7 @@ public class ProjectOverviewController
         return Ok(model);
     }
 
-    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Read)]
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_List)]
     public async Task<IActionResult> ProjectDocuments
         (
         string projectRecordId,
@@ -538,17 +537,6 @@ public class ProjectOverviewController
             ViewData["BackRoute"] = defaultRoute;
         }
     }
-
-    private static string? GetEnumStatus(string status) => status switch
-    {
-        ModificationStatus.InDraft => nameof(ModificationStatusOrder.InDraft),
-        ModificationStatus.WithSponsor => nameof(ModificationStatusOrder.WithSponsor),
-        ModificationStatus.WithReviewBody => nameof(ModificationStatusOrder.WithRegulator),
-        ModificationStatus.Approved => nameof(ModificationStatusOrder.Approved),
-        ModificationStatus.NotApproved => nameof(ModificationStatusOrder.NotApproved),
-        ModificationStatus.NotAuthorised => nameof(ModificationStatusOrder.NotAuthorised),
-        _ => ModificationStatusOrder.None.ToString()
-    };
 
     private async Task<IActionResult> GetProjectOverviewResult(string projectRecordId, string? backRoute, string? specificViewName = null)
     {

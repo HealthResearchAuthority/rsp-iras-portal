@@ -7,7 +7,6 @@
 @using Rsp.IrasPortal.Application.DTOs.Responses
 @using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
 @using Rsp.IrasPortal.Web.Extensions
-@using Rsp.IrasPortal.Web.TagHelpers.Models
 @model ApprovalsSearchViewModel
 @inject IHttpContextAccessor httpContextAccessor
 
@@ -395,7 +394,6 @@
 </div>
 </details>
 </div>
-
 </form>
 <noscript>
     <form id="sponsorOrgSearchForm" method="post" action="@Url.RouteUrl("approvals:searchorganisations")">
