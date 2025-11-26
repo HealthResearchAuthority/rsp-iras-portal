@@ -128,11 +128,14 @@ public class SponsorReferenceController
         // with the updated model with answers and rules
         model.Questions = questionnaire.Questions;
 
-        var isValid = await this.ValidateQuestionnaire(validator, model) && await this.ValidateQuestionnaire(validator, model, true);
-
-        if (!isValid)
+        if (!saveForLater)
         {
-            return View(nameof(SponsorReference), model);
+            var isValid = await this.ValidateQuestionnaire(validator, model) && await this.ValidateQuestionnaire(validator, model, true);
+
+            if (!isValid)
+            {
+                return View(nameof(SponsorReference), model);
+            }
         }
 
         // ------------------Save Modification Answers-------------------------
