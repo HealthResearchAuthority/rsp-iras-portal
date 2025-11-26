@@ -6,7 +6,9 @@ public struct DocumentStatus
     public const string Failed = "Failed";
     public const string Incomplete = "Incomplete";
     public const string Complete = "Complete";
-    public const string WithRegulator = "With regulator";
+    public const string WithSponsor = "With sponsor";
+    public const string WithReviewBody = "With review body";
     public const string Approved = "Approved";
+    public const string NotAuthorised = "Not authorised";
     public const string NotApproved = "Not approved";
 }

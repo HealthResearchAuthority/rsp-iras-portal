@@ -6,6 +6,7 @@ using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Filters;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Domain.AccessControl;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Helpers;
@@ -13,8 +14,8 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
+[Authorize(Policy = Workspaces.Approvals)]
 [Route("[controller]/[action]", Name = "approvals:[action]")]
-[Authorize(Roles = "system_administrator,workflow_co-ordinator,team_manager,study-wide_reviewer")]
 public class ApprovalsController
 (
     IProjectModificationsService projectModificationsService,
@@ -22,6 +23,7 @@ public class ApprovalsController
     IValidator<ApprovalsSearchModel> validator
 ) : Controller
 {
+    [Authorize(Policy = Permissions.Approvals.ModificationRecords_Search)]
     [HttpGet]
     public async Task<IActionResult> Index
     (
@@ -102,6 +104,7 @@ public class ApprovalsController
         return View(model);
     }
 
+    [Authorize(Policy = Permissions.Approvals.ModificationRecords_Search)]
     [HttpPost]
     [CmsContentAction(nameof(Index))]
     public async Task<IActionResult> ApplyFilters(ApprovalsSearchViewModel model)
@@ -122,6 +125,7 @@ public class ApprovalsController
         return RedirectToAction(nameof(Index));
     }
 
+    [Authorize(Policy = Permissions.Approvals.ModificationRecords_Search)]
     [HttpGet]
     public IActionResult ClearFilters()
     {
@@ -148,6 +152,7 @@ public class ApprovalsController
         return RedirectToAction(nameof(Index));
     }
 
+    [Authorize(Policy = Permissions.Approvals.ModificationRecords_Search)]
     [HttpGet]
     public async Task<IActionResult> RemoveFilter(string key, string? value)
     {

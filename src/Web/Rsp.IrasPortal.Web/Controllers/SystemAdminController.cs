@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Rsp.IrasPortal.Domain.AccessControl;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
+[Authorize(Policy = Workspaces.SystemAdministration)]
 [Route("[controller]/[action]", Name = "systemadmin:[action]")]
-[Authorize(Policy = "IsSystemAdministrator")]
 public class SystemAdminController : Controller
 {
     private const string SystemAdminView = nameof(Index);
