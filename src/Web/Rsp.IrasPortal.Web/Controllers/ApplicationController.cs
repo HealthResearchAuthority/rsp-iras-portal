@@ -26,7 +26,7 @@ public class ApplicationController
     IValidator<ApplicationSearchModel> searchValidator
 ) : Controller
 {
-    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Search)]
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_List)]
     public async Task<IActionResult> Welcome
     (
         int pageNumber = 1,

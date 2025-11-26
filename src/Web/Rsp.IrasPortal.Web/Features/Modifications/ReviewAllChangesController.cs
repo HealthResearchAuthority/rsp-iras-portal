@@ -131,7 +131,7 @@ public class ReviewAllChangesController
         return View(modification);
     }
 
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Review)]
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Approve)]
     [HttpGet]
     public async Task<IActionResult> ReviewOutcome()
     {
@@ -157,7 +157,7 @@ public class ReviewAllChangesController
         return View(model);
     }
 
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Review)]
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Approve)]
     [HttpPost]
     public async Task<IActionResult> ReviewOutcome(ReviewOutcomeViewModel model, bool saveForLater = false)
     {
@@ -206,7 +206,7 @@ public class ReviewAllChangesController
         return RedirectToAction(nameof(ConfirmReviewOutcome));
     }
 
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Review)]
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Approve)]
     [HttpGet]
     public IActionResult ReasonNotApproved()
     {
@@ -220,7 +220,7 @@ public class ReviewAllChangesController
         return View(model);
     }
 
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Review)]
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Approve)]
     [HttpPost]
     public async Task<IActionResult> ReasonNotApproved(ReviewOutcomeViewModel model, bool saveForLater = false)
     {
@@ -258,7 +258,7 @@ public class ReviewAllChangesController
         return RedirectToAction(nameof(ConfirmReviewOutcome));
     }
 
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Review)]
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Approve)]
     [HttpGet]
     public IActionResult ConfirmReviewOutcome()
     {
@@ -272,7 +272,7 @@ public class ReviewAllChangesController
         return View(model);
     }
 
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Review)]
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Approve)]
     [HttpPost]
     public async Task<IActionResult> SubmitReviewOutcome()
     {
@@ -299,7 +299,7 @@ public class ReviewAllChangesController
         return RedirectToAction(nameof(ReviewOutcomeSubmitted));
     }
 
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Review)]
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Approve)]
     [HttpGet]
     public IActionResult ReviewOutcomeSubmitted()
     {

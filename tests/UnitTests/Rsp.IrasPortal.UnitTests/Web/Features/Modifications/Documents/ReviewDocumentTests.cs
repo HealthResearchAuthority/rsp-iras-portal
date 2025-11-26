@@ -59,7 +59,7 @@ public class ReviewDocumentTests : TestServiceBase<DocumentsController>
         // Assert
         result.ShouldBeOfType<ViewResult>();
         var viewResult = result as ViewResult;
-        viewResult!.ViewName.ShouldBe("ModificationDocumentsAdded");
+        viewResult!.ViewName.ShouldBeNull();
 
         var model = viewResult.Model.ShouldBeOfType<ModificationReviewDocumentsViewModel>();
         model.ShortTitle.ShouldBe(shortTitle);
@@ -114,7 +114,7 @@ public class ReviewDocumentTests : TestServiceBase<DocumentsController>
         // Assert
         result.ShouldBeOfType<ViewResult>();
         var viewResult = result as ViewResult;
-        viewResult!.ViewName.ShouldBe("ModificationDocumentsAdded");
+        viewResult!.ViewName.ShouldBeNull();
 
         var model = viewResult.Model.ShouldBeOfType<ModificationReviewDocumentsViewModel>();
         model.UploadedDocuments.ShouldBeEmpty();

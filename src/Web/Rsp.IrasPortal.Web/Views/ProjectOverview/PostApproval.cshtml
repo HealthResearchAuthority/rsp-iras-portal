@@ -2,8 +2,10 @@
 @using Rsp.IrasPortal.Application.Constants
 @using Microsoft.AspNetCore.Http.Extensions
 @using System.Collections
+@using Rsp.IrasPortal.Domain.AccessControl
 @model PostApprovalViewModel
 @inject IHttpContextAccessor httpContextAccessor
+
 @{
     // set this to true if you want to navigate back to this
     // page via the Back button on the ModificationDetails page
@@ -23,8 +25,8 @@
 @section Breadcrumb {
     @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
     {
-        ("My research",Url.RouteUrl("app:welcome")),
-        (projectTitle, Url.RouteUrl("pov:projectdetails", new Dictionary<string, string>{{"projectRecordId", Model.ProjectOverviewModel?.ProjectRecordId!}}))
+        ("My research", Url.RouteUrl("app:welcome")),
+        (projectTitle, Url.RouteUrl("pov:projectdetails", new Dictionary<string, string> { { "projectRecordId", Model.ProjectOverviewModel?.ProjectRecordId! } }))
     })
 }
 
@@ -227,7 +229,7 @@
                             <span class="search-filter-summary__remove-filter-text">
                                 <span class="govuk-visually-hidden">Remove filter</span>
                                 @if (filterKey.Contains("date submitted - from", StringComparison.OrdinalIgnoreCase)
-                               || filterKey.Contains("date submitted - to", StringComparison.OrdinalIgnoreCase))
+                                                    || filterKey.Contains("date submitted - to", StringComparison.OrdinalIgnoreCase))
                                 {
                                     @($"{filterKey} {val}")
                                 }
@@ -288,8 +290,8 @@
                                                         { "projectRecordId", Model.ProjectOverviewModel.ProjectRecordId }
                                                         }
                                                         })
-                                </th>
-                            }
+                        </th>
+                                                }
                         </tr>
                     </thead>
 
@@ -362,7 +364,9 @@
     </div>
 }
 
-<div class="govuk-grid-row">
+<div permission="@Permissions.MyResearch.Modifications_Create"
+     status-for="ProjectOverviewModel.Status"
+     status-is="@ProjectRecordStatus.Active" class="govuk-grid-row">
     <div class="govuk-grid-column-full">
         <a asp-route="pmc:createmodification"
            class="govuk-button govuk-button--secondary">

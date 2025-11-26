@@ -21,21 +21,25 @@ public static class RolePermissions
                 MyResearch.ProjectRecord_Create,
                 MyResearch.ProjectRecord_Update,
                 MyResearch.ProjectRecord_Delete,
+                MyResearch.ProjectRecord_List,
                 MyResearch.ProjectRecord_Search,
                 MyResearch.ProjectRecordHistory_Read,
 
-                MyResearch.ProjectDocuments_Read,
                 MyResearch.ProjectDocuments_Upload,
                 MyResearch.ProjectDocuments_Update,
-                MyResearch.ProjectDocuments_Download,
+                MyResearch.ProjectDocuments_Review,
                 MyResearch.ProjectDocuments_Delete,
+                MyResearch.ProjectDocuments_Download,
+                MyResearch.ProjectDocuments_List,
 
                 MyResearch.Modifications_Create,
                 MyResearch.Modifications_Read,
                 MyResearch.Modifications_Update,
                 MyResearch.Modifications_Delete,
                 MyResearch.Modifications_Review,
+                MyResearch.Modifications_List,
                 MyResearch.Modifications_Search,
+                MyResearch.Modifications_Submit,
 
                 MyResearch.ModificationsHistory_Read
             }
@@ -50,10 +54,11 @@ public static class RolePermissions
                 MyResearch.ProjectRecord_Read,
                 MyResearch.ProjectRecordHistory_Read,
 
-                MyResearch.ProjectDocuments_Read,
+                MyResearch.ProjectDocuments_List,
                 MyResearch.ProjectDocuments_Download,
 
-                MyResearch.Modifications_Read,
+                MyResearch.Modifications_List,
+                MyResearch.Modifications_Review,
                 MyResearch.ModificationsHistory_Read,
 
                 // Sponsor Workspace
@@ -72,13 +77,19 @@ public static class RolePermissions
                 MyResearch.ProjectRecord_Read,
                 MyResearch.ProjectRecordHistory_Read,
 
+                MyResearch.ProjectDocuments_List,
+                MyResearch.ProjectDocuments_Download,
+
+                MyResearch.Modifications_List,
+                MyResearch.Modifications_Review,
+                MyResearch.ModificationsHistory_Read,
+                MyResearch.ModificationsHistory_BackStage_Read,
+                MyResearch.Modifications_Approve,
+
                 // Approvals Workspace
                 Approvals.ProjectRecords_Search,
-
                 Approvals.ModificationRecords_Search,
-                Approvals.Modifications_Assign,
-                Approvals.Modifications_Approve,
-                Approvals.Modifications_Review
+                Approvals.Modifications_Assign
             }
         },
         {
@@ -90,13 +101,19 @@ public static class RolePermissions
                 MyResearch.ProjectRecord_Read,
                 MyResearch.ProjectRecordHistory_Read,
 
+                MyResearch.ProjectDocuments_List,
+                MyResearch.ProjectDocuments_Download,
+
+                MyResearch.Modifications_List,
+                MyResearch.Modifications_Review,
+                MyResearch.ModificationsHistory_Read,
+                MyResearch.ModificationsHistory_BackStage_Read,
+                MyResearch.Modifications_Approve,
+
                 // Approvals Workspace
                 Approvals.ProjectRecords_Search,
-
                 Approvals.ModificationRecords_Search,
-                Approvals.Modifications_ReAssign,
-                Approvals.Modifications_Approve,
-                Approvals.Modifications_Review
+                Approvals.Modifications_ReAssign
             }
         },
         {
@@ -108,13 +125,18 @@ public static class RolePermissions
                 MyResearch.ProjectRecord_Read,
                 MyResearch.ProjectRecordHistory_Read,
 
+                MyResearch.ProjectDocuments_List,
+                MyResearch.ProjectDocuments_Download,
+
+                MyResearch.Modifications_List,
+                MyResearch.Modifications_Review,
+                MyResearch.ModificationsHistory_Read,
+                MyResearch.ModificationsHistory_BackStage_Read,
+                MyResearch.Modifications_Approve,
+
                 // Approvals Workspace
                 Approvals.ProjectRecords_Search,
-
-                Approvals.ModificationRecords_Search,
-                Approvals.Modifications_Approve,
-                Approvals.Modifications_Review,
-                Approvals.Modifications_Update
+                Approvals.ModificationRecords_Search
             }
         }
     };
@@ -146,21 +168,5 @@ public static class RolePermissions
         }
 
         return [.. allPermissions];
-    }
-
-    /// <summary>
-    /// Checks if a role has a specific permission
-    /// </summary>
-    public static bool HasPermission(string role, string permission)
-    {
-        return GetPermissionsForRole(role).Contains(permission);
-    }
-
-    /// <summary>
-    /// Checks if any of the roles has a specific permission
-    /// </summary>
-    public static bool HasPermission(IEnumerable<string> roles, string permission)
-    {
-        return roles.Any(role => HasPermission(role, permission));
     }
 }

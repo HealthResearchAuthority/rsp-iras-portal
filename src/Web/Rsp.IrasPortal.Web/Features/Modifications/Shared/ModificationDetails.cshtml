@@ -122,7 +122,7 @@
     </div>
 </div>
 
-<authorized-when role="@Roles.Applicant">
+<authorized role-is="@Roles.Applicant">
     @* Only show the Overall ranking if we have the changes *@
     @if (Model.ModificationChanges.Any() && Model.Status is ModificationStatus.InDraft)
     {
@@ -177,4 +177,4 @@
        class="govuk-link">
         Delete modification
     </a>
-</authorized-when>
+</authorized>

@@ -46,14 +46,18 @@
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-        @if (Model.Status is ModificationStatus.WithSponsor)
-        {
-            <h1 class="govuk-heading-l">@Html.Raw(headline?.Value)</h1>
-        }
-        else
-        {
-            <h1 class="govuk-heading-l">@Html.Raw(actionedModificationHeadline?.Value)</h1>
-        }
+        <h1 status-for="Status"
+            status-is="@ModificationStatus.WithSponsor"
+            class="govuk-heading-l">
+            @Html.Raw(headline?.Value)
+        </h1>
+
+        <h1 status-for="Status"
+            status-is="@ModificationStatus.WithSponsor"
+            status-mode="Hide"
+            class="govuk-heading-l">
+            @Html.Raw(actionedModificationHeadline?.Value)
+        </h1>
 
         <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
 
@@ -92,8 +96,9 @@
     </div>
 </div>
 
-@if (Model.Status.Equals(ModificationStatus.WithSponsor))
-{
+<authorized permission="@Permissions.Sponsor.Modifications_Authorise"
+            status-for="Status"
+            status-is="@ModificationStatus.WithSponsor">
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
             <h2 class="govuk-heading-m">@Html.Raw(outcomeTitle?.Value)</h2>
@@ -111,27 +116,25 @@
         <input type="hidden" name="ProjectModificationId" value="@Model.ProjectModificationId" />
         <input type="hidden" name="ReviewType" value="@Model.ReviewType" />
 
-        <div permission="@Permissions.Sponsor.Modifications_Authorise">
-            <div class="govuk-form-group @(hasError ? "govuk-form-group--error" : "")">
+        <div class="govuk-form-group @(hasError ? "govuk-form-group--error" : "")">
 
-                @if (hasError)
-                {
-                    <p class="govuk-error-message">
-                        @ViewData.ModelState[nameof(Model.Outcome)]?.Errors?.FirstOrDefault()?.ErrorMessage
-                    </p>
-                }
+            @if (hasError)
+            {
+                <p class="govuk-error-message">
+                    @ViewData.ModelState[nameof(Model.Outcome)]?.Errors?.FirstOrDefault()?.ErrorMessage
+                </p>
+            }
 
-                <rsp-gds-radio-group asp-for="Outcome"
-                                     label-text=" "
-                                     label-css-class="govuk-label govuk-label--s font-weight-none"
-                                     options="outcomeOptions"
-                                     div-inline-class="govuk-radios"
-                                     hint-html="">
-                </rsp-gds-radio-group>
-            </div>
-
-            <partial name="_SubmitButton"
-                     model="@("sws:checkandauthorise", "Confirm selection", new Dictionary<string, string>())" />
+            <rsp-gds-radio-group asp-for="Outcome"
+                                 label-text=" "
+                                 label-css-class="govuk-label govuk-label--s font-weight-none"
+                                 options="outcomeOptions"
+                                 div-inline-class="govuk-radios"
+                                 hint-html="">
+            </rsp-gds-radio-group>
         </div>
+
+        <partial name="_SubmitButton"
+                 model="@("sws:checkandauthorise", "Confirm selection", new Dictionary<string, string>())" />
     </form>
-}
+</authorized>

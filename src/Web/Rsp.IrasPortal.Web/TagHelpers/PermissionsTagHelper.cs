@@ -10,7 +10,7 @@ namespace Rsp.IrasPortal.Web.TagHelpers;
 /// <summary>
 /// A TagHelper to conditionally render content based on the current user's roles, permissions,
 /// and optionally a record status value. Can be used either as a standalone element
-/// (`<authorized-when>...`) or via attributes on other elements (e.g. `permission="..."`).
+/// (`<authorized>`...) or via attributes on other elements (e.g. `permission="..."`).
 ///
 /// Behavior summary:
 /// - If the user is not authenticated and `user-is-not-authenticated` is false (default), the content is suppressed.
@@ -19,7 +19,7 @@ namespace Rsp.IrasPortal.Web.TagHelpers;
 /// - Optionally, the helper can also enforce access based on a model status value and a named status entity.
 /// - Final visibility is the logical AND of the role/permission evaluation and the status evaluation.
 /// </summary>
-[HtmlTargetElement("authorized-when")] // standalone tag
+[HtmlTargetElement("authorized")] // standalone tag
 [HtmlTargetElement(Attributes = UserNotAuthenticatedAttributeName)]
 [HtmlTargetElement(Attributes = PermissionAttributeName)]
 [HtmlTargetElement(Attributes = PermissionsAttributeName)]
@@ -44,8 +44,8 @@ public class PermissionsTagHelper : TagHelper
     // Role attributes: Html attribute names for role based checks
     // -------------------------------
 
-    private const string RoleAttributeName = "role";
-    private const string RolesAttributeName = "roles";
+    private const string RoleAttributeName = "role-is";
+    private const string RolesAttributeName = "role-in";
     private const string RoleModeAttributeName = "role-mode";
 
     /// <summary>
@@ -197,7 +197,7 @@ public class PermissionsTagHelper : TagHelper
         // case 1: show to anonymous users only
         if (ShowWhenUserIsNotAuthenticated && !isUserAuthenticated)
         {
-            if (output.TagName == "authorized-when")
+            if (output.TagName == "authorized")
             {
                 output.TagName = null;
             }
@@ -229,9 +229,9 @@ public class PermissionsTagHelper : TagHelper
             return;
         }
 
-        // When used as the standalone element <authorized-when>...</authorized-when>, unwrap the element
+        // When used as the standalone element <authorized>...</authorized>, unwrap the element
         // so that only the child content is rendered (remove the tag wrapper).
-        if (output.TagName == "authorized-when")
+        if (output.TagName == "authorized")
         {
             output.TagName = null;
         }

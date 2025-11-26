@@ -40,12 +40,12 @@
     var successBannerBody = pageContent.GetValueOrDefault("HomeDashboard.SuccessProfileCreationBanner.Body", null);
 }
 
-<authorized-when user-is-not-authenticated="true">
+<authorized user-is-not-authenticated="true">
     <div class="govuk-body">
 
         @await Component.InvokeAsync("LoginLandingPage")
     </div>
-</authorized-when>
+</authorized>
 
 @if (User.Identity?.IsAuthenticated is not true)
 {
