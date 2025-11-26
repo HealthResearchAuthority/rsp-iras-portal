@@ -1,4 +1,5 @@
-﻿using Rsp.IrasPortal.Application.DTOs;
+﻿using System.Text.RegularExpressions;
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
 using Rsp.IrasPortal.Web.Helpers;
 
@@ -103,7 +104,8 @@ public class QuestionViewModel
                 return answerText;
             }
 
-            return includePrompt ? $"Enter {QuestionText.ToLowerInvariant()}" : string.Empty;
+            var labelText = Regex.Replace(QuestionText.ToLowerInvariant(), @"\b(nhs|hsc)\b", m => m.Value.ToUpperInvariant(), RegexOptions.None, TimeSpan.FromMilliseconds(100));
+            return includePrompt ? $"Enter {labelText}" : string.Empty;
         }
 
         if (Answers?.Any(a => a.IsSelected) == true)
@@ -114,7 +116,8 @@ public class QuestionViewModel
         if (includePrompt)
         {
             var label = string.IsNullOrWhiteSpace(ShortQuestionText) ? QuestionText : ShortQuestionText;
-            return $"Enter {label.ToLowerInvariant()}";
+            var labelText = Regex.Replace(label.ToLowerInvariant(), @"\b(nhs|hsc)\b", m => m.Value.ToUpperInvariant(), RegexOptions.None, TimeSpan.FromMilliseconds(100));
+            return $"Enter {labelText}";
         }
 
         return string.Empty;
@@ -128,9 +131,7 @@ public class QuestionViewModel
                      || Answers.Any(a => a.IsSelected)
                      || (!string.IsNullOrWhiteSpace(SelectedOption) && Answers.Any(a => a.AnswerId == SelectedOption));
 
-        var labelText = label.Contains("NHS / HSC", StringComparison.OrdinalIgnoreCase)
-            ? label
-            : label.ToLowerInvariant();
+        var labelText = Regex.Replace(label.ToLowerInvariant(), @"\b(nhs|hsc)\b", m => m.Value.ToUpperInvariant(), RegexOptions.None, TimeSpan.FromMilliseconds(100));
 
         return isAnswered ? "Change" : $"Enter {labelText}";
     }

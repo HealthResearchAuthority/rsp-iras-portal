@@ -200,9 +200,7 @@ public class QuestionViewModelValidatorBase : AbstractValidator<QuestionViewMode
             ? question.ShortQuestionText
             : question.QuestionText;
 
-        var labelText = label.Contains("NHS / HSC", StringComparison.OrdinalIgnoreCase)
-            ? label
-            : label.ToLowerInvariant();
+        var labelText = Regex.Replace(label.ToLowerInvariant(), @"\b(nhs|hsc)\b", m => m.Value.ToUpperInvariant(), RegexOptions.None, TimeSpan.FromMilliseconds(100));
 
         return $"Enter {labelText}";
     }
