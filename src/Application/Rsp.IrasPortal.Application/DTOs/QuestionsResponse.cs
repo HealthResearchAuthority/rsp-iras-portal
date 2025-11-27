@@ -129,4 +129,9 @@ public record QuestionsResponse
     public bool AffectedOrganisations { get; set; }
     public bool RequireAdditionalResources { get; set; }
     public bool UseAnswerForNextSection { get; set; }
+
+    /// <summary>
+    /// Indicates on which pages answer to this question should be shown
+    /// </summary>
+    public string PlaybackQuestionId { get; set; } = string.Empty;
 }

@@ -21,7 +21,15 @@
     }
 
     // get the question id of the project record question
-    var projectRecordQuestionId = projectRecordQuestion.QuestionId;
+    string? projectRecordQuestionId = null;
+    if (!string.IsNullOrWhiteSpace(currentQuestion.PlaybackQuestionId))
+    {
+        projectRecordQuestionId = currentQuestion.PlaybackQuestionId;
+    }
+    else
+    {
+        projectRecordQuestionId = projectRecordQuestion.QuestionId;
+    }
 
     var projectRecordAnswer = string.Empty;
 
