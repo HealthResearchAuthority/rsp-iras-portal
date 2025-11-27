@@ -19,7 +19,7 @@ public static class Permissions
         public const string ProjectRecord_Create = "myresearch.projectrecord.create";
 
         /// <summary>
-        /// allows reading project records
+        /// allows reading project record details
         /// </summary>
         public const string ProjectRecord_Read = "myresearch.projectrecord.read";
 
@@ -34,6 +34,11 @@ public static class Permissions
         public const string ProjectRecord_Delete = "myresearch.projectrecord.delete";
 
         /// <summary>
+        /// allows viewing list of project records
+        /// </summary>
+        public const string ProjectRecord_List = "myresearch.projectrecord.list";
+
+        /// <summary>
         /// allows searching project records
         /// </summary>
         public const string ProjectRecord_Search = "myresearch.projectrecord.search";
@@ -46,7 +51,12 @@ public static class Permissions
         /// <summary>
         /// allows viewing the list of project documents
         /// </summary>
-        public const string ProjectDocuments_Read = "myresearch.projectdocuments.read";
+        public const string ProjectDocuments_List = "myresearch.projectdocuments.list";
+
+        /// <summary>
+        /// allows reviewing the details of project documents before the final action
+        /// </summary>
+        public const string ProjectDocuments_Review = "myresearch.projectdocuments.review";
 
         /// <summary>
         /// allows adding/updating documents metadata
@@ -74,7 +84,7 @@ public static class Permissions
         public const string Modifications_Create = "myresearch.modifications.create";
 
         /// <summary>
-        /// allows reading modifications
+        /// allows reading modification details
         /// </summary>
         public const string Modifications_Read = "myresearch.modifications.read";
 
@@ -89,17 +99,28 @@ public static class Permissions
         public const string Modifications_Delete = "myresearch.modifications.delete";
 
         /// <summary>
+        /// allows viewing list of modifications
+        /// </summary>
+        public const string Modifications_List = "myresearch.modifications.list";
+
+        /// <summary>
         /// allows searching modifications
         /// </summary>
         public const string Modifications_Search = "myresearch.modifications.search";
 
         /// <summary>
-        /// allows reviwing modifications
+        /// allows reviewing modifications before the final action
+        /// i.e. sending to sponsor, approving
         /// </summary>
         public const string Modifications_Review = "myresearch.modifications.review";
 
         /// <summary>
-        /// allows submitting modifications
+        /// allows approving modifications
+        /// </summary>
+        public const string Modifications_Approve = "myresearch.modifications.approve";
+
+        /// <summary>
+        /// allows submitting modifications for approval
         /// </summary>
         public const string Modifications_Submit = "myresearch.modifications.submit";
 
@@ -107,6 +128,11 @@ public static class Permissions
         /// allows reading modifications history
         /// </summary>
         public const string ModificationsHistory_Read = "myresearch.modificationshistory.read";
+
+        /// <summary>
+        /// allows reading modifications backstage history
+        /// </summary>
+        public const string ModificationsHistory_BackStage_Read = "myresearch.modificationshistory_backstage.read";
     }
 
     // Sponsor Workspace Permissions
@@ -123,12 +149,13 @@ public static class Permissions
         public const string Modifications_Search = "sponsor.modifications.search";
 
         /// <summary>
-        /// allows reviwing modifications
+        /// allows reviewing modifications before the final action
+        /// i.e. authorising, not authorising
         /// </summary>
         public const string Modifications_Review = "sponsor.modifications.review";
 
         /// <summary>
-        /// allows authorising modifications
+        /// allows authorising/not authorising modifications
         /// </summary>
         public const string Modifications_Authorise = "sponsor.modifications.authorise";
     }
@@ -166,29 +193,9 @@ public static class Permissions
         public const string Modifications_Assign = "approvals.modifications.assign";
 
         /// <summary>
-        /// allows re-assigning modifications for review
-        /// </summary>
-        public const string Modifications_ReAssign = "approvals.modifications.reassign";
-
-        /// <summary>
         /// allows reading modifications
         /// </summary>
         public const string Modifications_Read = "approvals.modifications.read";
-
-        /// <summary>
-        /// allows reviewing modifications
-        /// </summary>
-        public const string Modifications_Review = "approvals.modifications.review";
-
-        /// <summary>
-        /// allows approving modifications
-        /// </summary>
-        public const string Modifications_Approve = "approvals.modifications.approve";
-
-        /// <summary>
-        /// allows updating modifications e.g. to add review comments
-        /// </summary>
-        public const string Modifications_Update = "approvals.modifications.update";
     }
 
     // Cag Members Workspace Permissions

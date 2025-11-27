@@ -621,7 +621,7 @@ public class PermissionsTagHelperTests
         tagHelper.ViewContext = new ViewContext { HttpContext = http };
 
         var output = new TagHelperOutput(
-            "authorized-when",
+            "authorized",
             [],
             (_, _) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent())
         );

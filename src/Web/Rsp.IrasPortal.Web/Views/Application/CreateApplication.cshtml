@@ -5,36 +5,34 @@
 @{
     ViewBag.Title = "Create a project record - Make changes to research";
 
-	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
-	var pageContent = pageContentData != null
-		? pageContentData
-		: new Dictionary<string, MixedContentPageItem?>();
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData != null
+        ? pageContentData
+        : new Dictionary<string, MixedContentPageItem?>();
 
-	var headline = pageContent.GetValueOrDefault("Application.CreateApplication.Title", null);
-	var body = pageContent.GetValueOrDefault("Application.CreateApplication.Body", null);
+    var headline = pageContent.GetValueOrDefault("Application.CreateApplication.Title", null);
+    var body = pageContent.GetValueOrDefault("Application.CreateApplication.Body", null);
 }
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-		<div class="govuk-grid-row">
-			<div class="govuk-grid-column-two-thirds">
-				<h2 class="govuk-heading-l" id="page-title">@Html.Raw(headline?.Value)</h2>
-			</div>
-		</div>
-        <authorized auth-params="@new(Roles:"applicant")">
-
-            <div class="govuk-grid-row">
-                <div class="govuk-grid-column-two-thirds">
-                    @Html.Raw(body?.Value)
-                </div>
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <h2 class="govuk-heading-l" id="page-title">@Html.Raw(headline?.Value)</h2>
             </div>
+        </div>
 
-            <a class="gem-c-button govuk-button govuk-button--start govuk-!-margin-top-2" asp-route="app:startproject" aria-label="Start creating a project record">
-				Start
-				<svg class="govuk-button__start-icon govuk-!-display-none-print" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19" viewBox="0 0 33 40" focusable="false" aria-hidden="true">
-					<path fill="currentColor" d="M0 0h13l20 20-20 20H0l20-20z"></path>
-				</svg>
-			</a>
-        </authorized>
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                @Html.Raw(body?.Value)
+            </div>
+        </div>
+
+        <a class="gem-c-button govuk-button govuk-button--start govuk-!-margin-top-2" asp-route="app:startproject" aria-label="Start creating a project record">
+            Start
+            <svg class="govuk-button__start-icon govuk-!-display-none-print" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19" viewBox="0 0 33 40" focusable="false" aria-hidden="true">
+                <path fill="currentColor" d="M0 0h13l20 20-20 20H0l20-20z"></path>
+            </svg>
+        </a>
     </div>
 </div>

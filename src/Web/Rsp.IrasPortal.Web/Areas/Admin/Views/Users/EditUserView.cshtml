@@ -36,7 +36,6 @@
             <input hidden readonly name="Status" asp-for="Status" value="@(Model.Status ?? string.Empty)" />
 			<input hidden readonly name="IdentityProviderId" asp-for="IdentityProviderId" value="@(Model.IdentityProviderId ?? string.Empty)" />
 
-
             <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
 
             <rsp-gds-input asp-for="Title" label-text="Title" width-class="govuk-!-width-one-quarter" />

@@ -94,131 +94,135 @@
 
 <div class="govuk-grid-row">
 	<div class="govuk-grid-column-full">
-		<authorized auth-params="@new(Roles:"applicant,system_administrator,reviewer")">
-			<div class="govuk-table-wrapper">
-				<table class="govuk-table modifications-tasklist-table" id="projectDocumentsTable">
-					<thead class="govuk-table__head">
-						<tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
-							@{
+		<div class="govuk-table-wrapper">
+			<table class="govuk-table modifications-tasklist-table" id="projectDocumentsTable">
+				<thead class="govuk-table__head">
+					<tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+						@{
 
-								// Sortable headers (Status removed)
-								var sortableHeaders = new[]
-								{
-							new { Field = nameof(ProjectOverviewDocumentDto.DocumentType), Label = "Document type" },
-							new { Field = nameof(ProjectOverviewDocumentDto.DocumentName), Label = "Document name" },
-							new { Field = nameof(ProjectOverviewDocumentDto.FileName), Label = "File name" },
-							new { Field = nameof(ProjectOverviewDocumentDto.DocumentVersion), Label = "Version" },
-							new { Field = nameof(ProjectOverviewDocumentDto.DocumentDate), Label = "Document date" },
-
-							// Modification ID remains sortable
-							new { Field = nameof(ProjectOverviewDocumentDto.ModificationIdentifier), Label = "Modification ID" }
-							};
-
-								var tableId = "projectDocumentsTable";
-							}
-
-							<!-- Sortable headers -->
-							@foreach (var header in sortableHeaders)
+							// Sortable headers (Status removed)
+							var sortableHeaders = new[]
 							{
-								// Insert STATUS column *before* Modification ID index
-								if (header.Field == nameof(ProjectOverviewDocumentDto.ModificationIdentifier))
-								{
-									<!-- NON-sortable Status column -->
-									<th scope="col" class="govuk-table__header">Status</th>
-								}
+						new { Field = nameof(ProjectOverviewDocumentDto.DocumentType), Label = "Document type" },
+						new { Field = nameof(ProjectOverviewDocumentDto.DocumentName), Label = "Document name" },
+						new { Field = nameof(ProjectOverviewDocumentDto.FileName), Label = "File name" },
+						new { Field = nameof(ProjectOverviewDocumentDto.DocumentVersion), Label = "Version" },
+						new { Field = nameof(ProjectOverviewDocumentDto.DocumentDate), Label = "Document date" },
 
-								var displayText = header.Label.Contains(" ")
-								? header.Label.Replace(" ", "<br />")
-								: header.Label;
+						// Modification ID remains sortable
+						new { Field = nameof(ProjectOverviewDocumentDto.ModificationIdentifier), Label = "Modification ID" }
+						};
 
-								<th scope="col" class="govuk-table__header govuk-table__header-sortable">
-									@await Html.PartialAsync("_SortableHeaderButton", new SortableHeaderModel
-									   {
-										   FieldName = header.Field,
-										   DisplayText = displayText,
-										   CurrentSortField = Model.Pagination?.SortField,
-										   CurrentSortDirection = Model.Pagination?.SortDirection,
-										   TableId = tableId,
-										   AdditionalParameters = new Dictionary<string, string>
-											{
-											{ "projectRecordId", Model.ProjectOverviewModel.ProjectRecordId }
-											}
-									   })
-								</th>
+							var tableId = "projectDocumentsTable";
+						}
+
+						<!-- Sortable headers -->
+						@foreach (var header in sortableHeaders)
+						{
+							// Insert STATUS column *before* Modification ID index
+							if (header.Field == nameof(ProjectOverviewDocumentDto.ModificationIdentifier))
+							{
+								<!-- NON-sortable Status column -->
+								<th scope="col" class="govuk-table__header">Status</th>
 							}
 
-							<!-- Action column -->
-							<th scope="col" class="govuk-table__header">Action</th>
-						</tr>
+							var displayText = header.Label.Contains(" ")
+							? header.Label.Replace(" ", "<br />")
+							: header.Label;
 
-					</thead>
-
-					<form method="get" id="projectdocuments-selection">
-						<input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
-						<input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
-
-					<tbody class="govuk-table__body govuk-body-s">
-							@{
-								foreach (var modification in Model.Documents)
-								{
-								<tr class="govuk-table__row">
-									<td class="govuk-table__cell">@modification.DocumentType</td>
-									<td class="govuk-table__cell">@modification.DocumentName</td>
-									<td class="govuk-table__cell">
-											@if (modification.IsMalwareScanSuccessful == true)
-											{
-											<a asp-route="pmc:downloaddocument"
-											   asp-route-fileName="@modification.FileName"
-											   asp-route-path="@modification.DocumentStoragePath" class="govuk-link">
-													@modification.FileName
-											</a>
-											}
-											else
-											{
-												@modification.FileName
-											}
-									</td>
-									<td class="govuk-table__cell">@modification.DocumentVersion</td>
-										@{
-										<td class="govuk-table__cell">@modification.DocumentDate?.ToString("dd MMM yyyy")</td>
+							<th scope="col" class="govuk-table__header govuk-table__header-sortable">
+								@await Html.PartialAsync("_SortableHeaderButton", new SortableHeaderModel
+									{
+										FieldName = header.Field,
+										DisplayText = displayText,
+										CurrentSortField = Model.Pagination?.SortField,
+										CurrentSortDirection = Model.Pagination?.SortDirection,
+										TableId = tableId,
+										AdditionalParameters = new Dictionary<string, string>
+										{
+										{ "projectRecordId", Model.ProjectOverviewModel.ProjectRecordId }
 										}
-									<td class="govuk-table__cell">
-											@{
-												var tagClass = modification.Status switch
-												{
-													DocumentStatus.Failed => "govuk-tag--red",
-													DocumentStatus.Incomplete => "govuk-tag--blue",
-													DocumentStatus.Complete => "govuk-tag--blue",
-													ModificationStatus.WithSponsor => "govuk-tag--yellow",
-													ModificationStatus.Approved => "govuk-tag--green",
-													ModificationStatus.WithReviewBody => "govuk-tag--green",
-													ModificationStatus.NotApproved => "govuk-tag--red",
-													ModificationStatus.NotAuthorised => "govuk-tag--red",
-													_ => "govuk-tag--blue"
-												};
-											}
-										<strong class="govuk-tag @(tagClass)">
-												@modification.Status
-										</strong>
-									</td>
-									<td class="govuk-table__cell">
-										<a class="govuk-link" href="#">
+									})
+							</th>
+						}
+					</tr>
+				</thead>
+
+				<form method="get" id="projectdocuments-selection">
+					<input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
+					<input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
+
+				<tbody class="govuk-table__body govuk-body-s">
+						@{
+							foreach (var modification in Model.Documents)
+							{
+                                    
+                                var modificationParams = new Dictionary<string, string> {
+                                        { "projectRecordId", Model.ProjectOverviewModel.ProjectRecordId },
+                                        { "irasId", Model.ProjectOverviewModel.IrasId?.ToString()  },
+                                        { "shortTitle", Model.ProjectOverviewModel.ProjectTitle?.ToString() },
+                                        { "projectModificationId", modification.ProjectModificationId.ToString()  }
+                                        };
+
+                                var modificationReviewRoute = "pmc:modificationdetails";
+
+                                if (modification.Status != ModificationStatus.InDraft)
+                                {
+                                    modificationReviewRoute = "pmc:reviewallchanges";
+                                }
+
+							<tr class="govuk-table__row">
+								<td class="govuk-table__cell">@modification.DocumentType</td>
+								<td class="govuk-table__cell">@modification.DocumentName</td>
+								<td class="govuk-table__cell">
+										@if (modification.IsMalwareScanSuccessful == true)
+										{
+										<a asp-route="pmc:downloaddocument"
+											asp-route-fileName="@modification.FileName"
+											asp-route-path="@modification.DocumentStoragePath" class="govuk-link">
+												@modification.FileName
+										</a>
+										}
+										else
+										{
+											@modification.FileName
+										}
+								</td>
+								<td class="govuk-table__cell">@modification.DocumentVersion</td>
+									@{
+									<td class="govuk-table__cell">@modification.DocumentDate?.ToString("dd MMM yyyy")</td>
+									}
+								<td class="govuk-table__cell">
+										@{
+											var tagClass = modification.Status switch
+											{
+												DocumentStatus.Failed => "govuk-tag--red",
+												DocumentStatus.Incomplete => "govuk-tag--blue",
+												DocumentStatus.Complete => "govuk-tag--blue",
+												ModificationStatus.WithSponsor => "govuk-tag--yellow",
+												ModificationStatus.Approved => "govuk-tag--green",
+												ModificationStatus.WithReviewBody => "govuk-tag--green",
+												ModificationStatus.NotApproved => "govuk-tag--red",
+												ModificationStatus.NotAuthorised => "govuk-tag--red",
+												_ => "govuk-tag--blue"
+											};
+										}
+									<strong class="govuk-tag @(tagClass)">
+											@modification.Status
+									</strong>
+								</td>
+								<td class="govuk-table__cell">
+                                        <a class="govuk-link" asp-route="@modificationReviewRoute" asp-all-route-data="modificationParams">
 											<strong>@modification.ModificationIdentifier</strong>
 										</a>
 									</td>
-									<td class="govuk-table__cell">
-										<a class="govuk-link" href="#">
-											View details
-										</a>
-									</td>
-								</tr>
-								}
+							</tr>
 							}
-					</tbody>
-					</form>
-				</table>
-			</div>
-			<partial name="_Pagination" model="@Model.Pagination" />
-		</authorized>
+						}
+				</tbody>
+				</form>
+			</table>
+		</div>
+		<partial name="_Pagination" model="@Model.Pagination" />
 	</div>
 </div>

@@ -85,7 +85,7 @@ public class DocumentsController
     /// - A populated list of uploaded documents if retrieval is successful.
     /// - An empty list with an error message if no documents are found or the service call fails.
     /// </returns>
-    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Read)]
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Upload)]
     [HttpGet]
     public async Task<IActionResult> ModificationDocumentsAdded()
     {
@@ -129,7 +129,7 @@ public class DocumentsController
         }
 
         // Render the view with the populated (or empty) view model.
-        return View(nameof(ModificationDocumentsAdded), viewModel);
+        return View(viewModel);
     }
 
     /// <summary>
@@ -139,7 +139,7 @@ public class DocumentsController
     /// <returns>
     /// A view showing the list of uploaded documents, each annotated with its current detail status.
     /// </returns>
-    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Read)]
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Upload)]
     [HttpGet]
     public async Task<IActionResult> AddDocumentDetailsList()
     {
@@ -167,7 +167,7 @@ public class DocumentsController
     /// A view that allows the user to provide or review details for the selected document.
     /// Redirects back to <see cref="AddDocumentDetailsList"/> if document details cannot be retrieved.
     /// </returns>
-    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Update)]
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Upload)]
     [HttpGet]
     public async Task<IActionResult> ContinueToDetails(Guid documentId, bool reviewAnswers = false, bool reviewAllChanges = false)
     {
@@ -244,7 +244,7 @@ public class DocumentsController
     /// <returns>
     /// A view showing the list of documents along with the applicant's answers for review.
     /// </returns>
-    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Read)]
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Review)]
     [HttpGet]
     public async Task<IActionResult> ReviewDocumentDetails()
     {
@@ -263,7 +263,7 @@ public class DocumentsController
     /// - If validation fails: redisplays the review page with errors.
     /// - If validation passes: redirects to the PostApproval action in ProjectOverview controller.
     /// </returns>
-    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Read)]
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Review)]
     [HttpPost]
     public async Task<IActionResult> ReviewAllDocumentDetails()
     {
@@ -1030,6 +1030,7 @@ public class DocumentsController
     /// </summary>
     private RedirectToRouteResult RedirectToSaveForLater()
     {
+        TempData[TempDataKeys.ShowNotificationBanner] = true;
         var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
         return RedirectToRoute(PostApprovalRoute, new { projectRecordId });
     }

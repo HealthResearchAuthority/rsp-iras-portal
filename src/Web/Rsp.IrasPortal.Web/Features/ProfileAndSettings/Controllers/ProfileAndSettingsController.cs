@@ -153,7 +153,7 @@ public class ProfileAndSettingsController(
             var createUserStatus = await userService.CreateUser(request);
 
             // user was created succesfully so let's assign them the 'applicant' role
-            var assignRolesStatus = await userService.UpdateRoles(userModel.Email, null, "applicant");
+            var assignRolesStatus = await userService.UpdateRoles(userModel.Email, null, Roles.Applicant);
 
             if (!createUserStatus.IsSuccessStatusCode || !assignRolesStatus.IsSuccessStatusCode)
             {

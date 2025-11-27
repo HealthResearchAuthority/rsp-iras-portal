@@ -9,12 +9,11 @@
         : "pmc:reasonnotapproved";
 }
 
-<partial 
-    name="_BackNavigation"
-    model="@(
-        backRoute,
-        "Back",
-        new Dictionary<string, string>())" />
+<partial name="_BackNavigation"
+         model="@(
+         backRoute,
+                                                                       "Back",
+                                                                       new Dictionary<string, string>())" />
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
@@ -54,10 +53,7 @@
             <dt class="govuk-summary-list__key">Decision</dt>
             <dd class="govuk-summary-list__value">@Model.ReviewOutcome</dd>
             <dd class="govuk-summary-list__actions">
-                <a 
-                    class="govuk-link" 
-                    asp-route="pmc:reviewoutcome"
-                >
+                <a class="govuk-link" asp-route="pmc:reviewoutcome">
                     Change
                     <span class="govuk-visually-hidden"> decision</span>
                 </a>
@@ -69,10 +65,8 @@
                 <dt class="govuk-summary-list__key">Reason</dt>
                 <dd class="govuk-summary-list__value">@Model.ReasonNotApproved</dd>
                 <dd class="govuk-summary-list__actions">
-                    <a
-                        class="govuk-link"
-                        asp-route="pmc:reasonnotapproved"
-                    >
+                    <a class="govuk-link"
+                       asp-route="pmc:reasonnotapproved">
                         Change
                         <span class="govuk-visually-hidden"> reason modification not approved</span>
                     </a>

@@ -24,130 +24,126 @@
         ? pageContentData
         : new Dictionary<string, MixedContentPageItem?>();
 
-    var headline = pageContent.GetValueOrDefault("SponsorWorkspace.Authorisations.Title", null);    
+    var headline = pageContent.GetValueOrDefault("SponsorWorkspace.Authorisations.Title", null);
 }
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-        <authorized auth-params="@new(Roles:"sponsor")">
 
-            <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
-            <h2 class="govuk-heading-l" id="title">@Html.Raw(headline?.Value)</h2>
-            
-            <div class="govuk-grid-row">
-                <div class="govuk-grid-column-two-thirds">
+        <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
+        <h2 class="govuk-heading-l" id="title">@Html.Raw(headline?.Value)</h2>
 
-                    <form asp-route="sws:applyfilters" method="post" class="govuk-form-group govuk-!-margin-bottom-0">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
 
-                        <div class="govuk-form-group govuk-!-margin-bottom-2" error-class-for="Search.SearchTerm">
+                <form asp-route="sws:applyfilters" method="post" class="govuk-form-group govuk-!-margin-bottom-0">
 
-                            @Html.ValidationMessageFor(model => model.Search.SearchTerm, "", new { @class = "govuk-error-message" })
+                    <div class="govuk-form-group govuk-!-margin-bottom-2" error-class-for="Search.SearchTerm">
 
-                            <div class="govuk-input__wrapper">
-                                <span id="find-project-label" class="govuk-visually-hidden">Find a project</span>
-                                <input asp-for="Search.SearchTerm" class="govuk-input" type="text" id="SearchTerm" aria-labelledby="find-project-label" />
-                                <button class="govuk-button mb-0" style="margin-left:10px" type="submit">
-                                    Search
-                                </button>
-                            </div>
+                        @Html.ValidationMessageFor(model => model.Search.SearchTerm, "", new { @class = "govuk-error-message" })
+
+                        <div class="govuk-input__wrapper">
+                            <span id="find-project-label" class="govuk-visually-hidden">Find a project</span>
+                            <input asp-for="Search.SearchTerm" class="govuk-input" type="text" id="SearchTerm" aria-labelledby="find-project-label" />
+                            <button class="govuk-button mb-0" style="margin-left:10px" type="submit">
+                                Search
+                            </button>
                         </div>
-
-                        <input hidden asp-for="SponsorOrganisationUserId" />
-                        <input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize" />
-                        <input hidden readonly name="PageNumber" value="@Model.Pagination?.PageNumber" />
-                    </form>
-                </div>
-            </div>
-            <div class="govuk-grid-row">
-                <div class="govuk-grid-column-full">
-                    <div class="govuk-table-wrapper">
-                        <table class="govuk-table modifications-tasklist-table" id="authorisationsTable">
-                            <thead class="govuk-table__head">
-                                <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
-                                    @{
-                                        var sortableHeaders = new[]
-                                        {
-                                            new { Field = nameof(ModificationsModel.ModificationNumber), Label = "Modification ID" },
-                                            new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
-                                            new { Field = nameof(ModificationsModel.SentToSponsorDate), Label = "Date received" },
-                                            new { Field = nameof(ModificationsModel.SentToRegulatorDate), Label = "Date actioned" },
-                                            new { Field = nameof(ModificationsModel.ChiefInvestigator), Label = "Chief investigator" },
-                                            new { Field = nameof(ModificationsModel.Status), Label = "Status" }
-								        };
-                                        var tableId = "authorisationsTable";
-                                    }
-                                    @foreach (var header in sortableHeaders)
-                                    {
-                                        <th scope="col" class="govuk-table__header govuk-table__header-sortable">
-                                            <partial name="_SortableHeaderButton" model="@(new SortableHeaderModel
-                                            {
-                                                FieldName = header.Field,
-                                                DisplayText = header.Label,
-                                                CurrentSortField = Model.Pagination?.SortField,
-                                                CurrentSortDirection = Model.Pagination?.SortDirection,
-                                                TableId = tableId,                                                
-                                                AdditionalParameters = new Dictionary<string, string>
-                                                {
-                                                    { "SponsorOrganisationUserId", Model.SponsorOrganisationUserId.ToString() }
-                                                }
-                                            })" />
-                                        </th>
-                                    }
-                                </tr>
-                            </thead>
-
-                            <form method="get" id="authorisations-selection">
-                                <input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
-                                <input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
-
-                                <tbody class="govuk-table__body govuk-body-s">
-                                    @{
-                                        foreach (var modification in Model.Modifications)
-                                        {
-                                            <tr class="govuk-table__row">
-                                                <td class="govuk-table__cell">
-                                                    <a class="govuk-link"
-                                                       asp-route="sws:checkandauthorise"
-                                                       asp-route-projectRecordId="@modification.ProjectRecordId"
-                                                       asp-route-irasId="@(modification.ModificationId?.Split('/')[0])"
-                                                       asp-route-shortTitle="@modification.ShortProjectTitle"
-                                                       asp-route-projectModificationId="@modification.Id"
-                                                       asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId"
-                                                    
-                                                       >
-                                                        <strong>@modification.ModificationId</strong>
-                                                    </a>
-                                                </td>
-                                                <td class="govuk-table__cell">@modification.ShortProjectTitle</td>
-                                                <td class="govuk-table__cell">@(modification.SentToSponsorDate?.ToString("dd MMM yyyy") ?? string.Empty)</td>
-                                                <td class="govuk-table__cell">@(modification.SentToRegulatorDate?.ToString("dd MMM yyyy") ?? string.Empty)</td>
-                                                <td class="govuk-table__cell">@modification.ChiefInvestigator</td>
-                                                <td class="govuk-table__cell">
-                                                    @{
-                                                        var tagClass = modification.Status switch
-                                                        {
-                                                            ModificationStatus.WithSponsor => "govuk-tag--yellow",
-                                                            ModificationStatus.Approved => "govuk-tag--green",
-                                                            ModificationStatus.WithReviewBody => "govuk-tag--green",
-                                                            ModificationStatus.NotApproved => "govuk-tag--red",
-                                                            ModificationStatus.NotAuthorised => "govuk-tag--red",
-                                                            _ => "govuk-tag--blue"
-                                                        };
-                                                    }
-                                                    <strong class="govuk-tag @tagClass">
-                                                        @modification.Status
-                                                    </strong>
-                                                </td>
-                                            </tr>
-                                        }
-                                    }
-                                </tbody>
-                            </form>
-                        </table>
                     </div>
-                    <partial name="_Pagination" model="@Model.Pagination" />
-                </div>                
-            </div>                    
-        </authorized>
+
+                    <input hidden asp-for="SponsorOrganisationUserId" />
+                    <input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize" />
+                    <input hidden readonly name="PageNumber" value="@Model.Pagination?.PageNumber" />
+                </form>
+            </div>
+        </div>
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-full">
+                <div class="govuk-table-wrapper">
+                    <table class="govuk-table modifications-tasklist-table" id="authorisationsTable">
+                        <thead class="govuk-table__head">
+                            <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+                                @{
+                                    var sortableHeaders = new[]
+                                    {
+                                                                new { Field = nameof(ModificationsModel.ModificationNumber), Label = "Modification ID" },
+                                                                new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
+                                                                new { Field = nameof(ModificationsModel.SentToSponsorDate), Label = "Date received" },
+                                                                new { Field = nameof(ModificationsModel.SentToRegulatorDate), Label = "Date actioned" },
+                                                                new { Field = nameof(ModificationsModel.ChiefInvestigator), Label = "Chief investigator" },
+                                                                new { Field = nameof(ModificationsModel.Status), Label = "Status" }
+                                                                };
+                                    var tableId = "authorisationsTable";
+                                }
+                                @foreach (var header in sortableHeaders)
+                                {
+                                    <th scope="col" class="govuk-table__header govuk-table__header-sortable">
+                                        <partial name="_SortableHeaderButton" model="@(new SortableHeaderModel
+                                                                              {
+                                                                                  FieldName = header.Field,
+                                                                                  DisplayText = header.Label,
+                                                                                  CurrentSortField = Model.Pagination?.SortField,
+                                                                                  CurrentSortDirection = Model.Pagination?.SortDirection,
+                                                                                  TableId = tableId,
+                                                                                  AdditionalParameters = new Dictionary<string, string>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        { "SponsorOrganisationUserId", Model.SponsorOrganisationUserId.ToString() }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    }
+                                                                              })" />
+                                </th>
+                                                                }
+                            </tr>
+                        </thead>
+
+                        <form method="get" id="authorisations-selection">
+                            <input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
+                            <input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
+
+                        <tbody class="govuk-table__body govuk-body-s">
+                            @{
+                                foreach (var modification in Model.Modifications)
+                                {
+                                    <tr class="govuk-table__row">
+                                        <td class="govuk-table__cell">
+                                            <a class="govuk-link"
+                                               asp-route="sws:checkandauthorise"
+                                               asp-route-projectRecordId="@modification.ProjectRecordId"
+                                               asp-route-irasId="@(modification.ModificationId?.Split('/')[0])"
+                                               asp-route-shortTitle="@modification.ShortProjectTitle"
+                                               asp-route-projectModificationId="@modification.Id"
+                                               asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId">
+                                                <strong>@modification.ModificationId</strong>
+                                            </a>
+                                        </td>
+                                        <td class="govuk-table__cell">@modification.ShortProjectTitle</td>
+                                        <td class="govuk-table__cell">@(modification.SentToSponsorDate?.ToString("dd MMM yyyy") ?? string.Empty)</td>
+                                        <td class="govuk-table__cell">@(modification.SentToRegulatorDate?.ToString("dd MMM yyyy") ?? string.Empty)</td>
+                                        <td class="govuk-table__cell">@modification.ChiefInvestigator</td>
+                                        <td class="govuk-table__cell">
+                                            @{
+                                                var tagClass = modification.Status switch
+                                                {
+                                                    ModificationStatus.WithSponsor => "govuk-tag--yellow",
+                                                    ModificationStatus.Approved => "govuk-tag--green",
+                                                    ModificationStatus.WithReviewBody => "govuk-tag--green",
+                                                    ModificationStatus.NotApproved => "govuk-tag--red",
+                                                    ModificationStatus.NotAuthorised => "govuk-tag--red",
+                                                    _ => "govuk-tag--blue"
+                                                };
+                                            }
+                                            <strong class="govuk-tag @tagClass">
+                                                @modification.Status
+                                            </strong>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                        </form>
+                    </table>
+                </div>
+                <partial name="_Pagination" model="@Model.Pagination" />
+            </div>
+        </div>
     </div>
 </div>
