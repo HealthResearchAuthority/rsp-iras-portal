@@ -552,7 +552,7 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
         result.ShouldBeOfType<ViewResult>();
         capturedRequest.ShouldNotBeNull();
         capturedRequest!.AllowedStatuses.ShouldNotBeNull();
-        capturedRequest.AllowedStatuses.ShouldBeEmpty();
+        capturedRequest.AllowedStatuses.Count.ShouldBe(3);
     }
 
     [Fact]
