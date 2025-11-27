@@ -51,6 +51,7 @@ public class QuestionViewModel
     public bool AffectedOrganisations { get; set; }
     public bool RequireAdditionalResources { get; set; }
     public bool UseAnswerForNextSection { get; set; }
+    public string PlaybackQuestionId { get; set; } = string.Empty;
 
     private string? _day, _month, _year;
 

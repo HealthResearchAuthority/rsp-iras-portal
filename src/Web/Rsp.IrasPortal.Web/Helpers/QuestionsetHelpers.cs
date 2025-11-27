@@ -77,7 +77,8 @@ public static class QuestionsetHelpers
                 NonNhsInvolvment = question.NonNhsInvolvment,
                 AffectedOrganisations = question.AffectedOrganisations,
                 RequireAdditionalResources = question.RequireAdditionalResources,
-                UseAnswerForNextSection = question.UseAnswerForNextSection
+                UseAnswerForNextSection = question.UseAnswerForNextSection,
+                PlaybackQuestionId = question.PlaybackQuestionId
             });
         }
 
@@ -117,7 +118,8 @@ public static class QuestionsetHelpers
                 NonNhsInvolvment = question.NonNhsInvolvment,
                 AffectedOrganisations = question.AffectedOrganisations,
                 RequireAdditionalResources = question.RequireAdditionalResources,
-                UseAnswerForNextSection = question.UseAnswerForNextSection
+                UseAnswerForNextSection = question.UseAnswerForNextSection,
+                PlaybackQuestionId = question.PlaybackQuestionId
             };
 
             if (question.Answers != null && question.Answers.Any())
