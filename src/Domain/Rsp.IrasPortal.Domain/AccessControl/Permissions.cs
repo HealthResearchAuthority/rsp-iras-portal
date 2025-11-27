@@ -193,11 +193,6 @@ public static class Permissions
         public const string Modifications_Assign = "approvals.modifications.assign";
 
         /// <summary>
-        /// allows re-assigning modifications for review
-        /// </summary>
-        public const string Modifications_ReAssign = "approvals.modifications.reassign";
-
-        /// <summary>
         /// allows reading modifications
         /// </summary>
         public const string Modifications_Read = "approvals.modifications.read";

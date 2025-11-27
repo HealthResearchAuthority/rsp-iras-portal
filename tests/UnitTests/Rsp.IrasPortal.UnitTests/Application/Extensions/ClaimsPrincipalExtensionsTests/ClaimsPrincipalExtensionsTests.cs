@@ -434,7 +434,7 @@ public class ClaimsPrincipalExtensionsTests
 
         // Should also have team manager permissions
         user.HasPermission(Permissions.Approvals.Workspace_Access).ShouldBeTrue();
-        user.HasPermission(Permissions.Approvals.Modifications_ReAssign).ShouldBeTrue();
+        user.HasPermission(Permissions.Approvals.Modifications_Assign).ShouldBeTrue();
 
         // Should have combined statuses
         var modStatuses = user.GetAllowedStatuses(StatusEntitiy.Modification);

@@ -63,7 +63,6 @@ public static class RolePermissions
 
                 // Sponsor Workspace
                 Sponsor.Modifications_Review,
-                Sponsor.Modifications_Authorise,
                 Sponsor.Modifications_Search,
                 Sponsor.Modifications_Authorise
             }
@@ -113,7 +112,7 @@ public static class RolePermissions
                 // Approvals Workspace
                 Approvals.ProjectRecords_Search,
                 Approvals.ModificationRecords_Search,
-                Approvals.Modifications_ReAssign
+                Approvals.Modifications_Assign
             }
         },
         {
