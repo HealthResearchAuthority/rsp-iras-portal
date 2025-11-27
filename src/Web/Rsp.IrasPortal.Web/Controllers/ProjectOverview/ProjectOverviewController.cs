@@ -17,7 +17,6 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Controllers.ProjectOverview;
 
-[Authorize(Policy = Workspaces.MyResearch)]
 [Route("[controller]/[action]", Name = "pov:[action]")]
 public class ProjectOverviewController
 (

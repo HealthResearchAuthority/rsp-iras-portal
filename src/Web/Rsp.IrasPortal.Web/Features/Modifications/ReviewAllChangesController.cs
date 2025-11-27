@@ -19,7 +19,6 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Features.Modifications;
 
-[Authorize(Policy = Workspaces.MyResearch)]
 [Route("/modifications/[action]", Name = "pmc:[action]")]
 public class ReviewAllChangesController
 (
