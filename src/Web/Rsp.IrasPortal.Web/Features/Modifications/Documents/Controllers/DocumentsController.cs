@@ -660,7 +660,7 @@ public class DocumentsController
             if (!FileConstants.AllowedExtensions.Contains(ext, StringComparer.OrdinalIgnoreCase))
             {
                 hasErrors = true;
-                ModelState.AddModelError("Files", $"{fileName} must be a permitted file type");
+                ModelState.AddModelError("Files", "The selected file must be a permitted file type");
                 continue;
             }
 
@@ -688,7 +688,7 @@ public class DocumentsController
         if (totalFileSize > maxFileSize)
         {
             hasErrors = true;
-            ModelState.AddModelError("Files", "The combined size of all files must not exceed 100 MB");
+            ModelState.AddModelError("Files", "The combined size of all files must be less than 100MB");
         }
 
         return (validFiles, hasErrors);
