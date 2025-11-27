@@ -131,11 +131,17 @@ public static class AuthConfiguration
                         // save the original access_token in the memory, this will be needed
                         // to regenerate the JwtToken with additional claims
                         context.HttpContext.Items[ContextItemKeys.BearerToken] = context.Properties.GetTokenValue(ContextItemKeys.IdToken);
+                        context.ShouldRenew = true;
+                        context.Properties.AllowRefresh = true;
 
                         return Task.CompletedTask;
                     }
                 };
 
+                options.Cookie.IsEssential = true;
+                options.Cookie.HttpOnly = true;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                options.Cookie.SameSite = SameSiteMode.Lax;
                 options.LoginPath = "/";
                 options.LogoutPath = "/";
                 options.ExpireTimeSpan = TimeSpan.FromSeconds(appSettings.OneLogin.AuthCookieTimeout + 60);
@@ -201,6 +207,10 @@ public static class AuthConfiguration
 
                 options.Events.OnTokenValidated = context =>
                 {
+                    context.Properties.IsPersistent = true;
+                    context.Properties.AllowRefresh = true;
+                    context.Properties.ExpiresUtc = DateTimeOffset.UtcNow.AddSeconds(appSettings.OneLogin.AuthCookieTimeout + 60);
+
                     // this key is used to indicate that the user is logged in for the first time
                     // will be used to update the LastLogin during the claims transformation
                     // to indicate when the user was logged in last time.
