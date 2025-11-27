@@ -61,6 +61,7 @@ public class MyTasklistController(
         if (User.IsInRole(Roles.TeamManager) || User.IsInRole(Roles.StudyWideReviewer))
         {
             searchQuery.AllowedStatuses.Add(ModificationStatus.WithReviewBody);
+            searchQuery.AllowedStatuses.Add(ModificationStatus.ReviewInProgress);
         }
 
         // Reverse date logic when searching by "days since submission"
