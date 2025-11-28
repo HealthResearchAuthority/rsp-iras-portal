@@ -1,5 +1,6 @@
 ﻿@using Rsp.IrasPortal.Application.DTOs.Requests
 @using Rsp.IrasPortal.Web.Features.Modifications.Models
+@using Rsp.IrasPortal.Web.Extensions
 @model (QuestionnaireViewModel Questionnaire, QuestionViewModel CurrentQuestion)
 
 @{
@@ -40,10 +41,14 @@
         var answer = questionnaire.ProjectRecordAnswers[projectRecordQuestionId];
 
         // format the answer based on the question data type
-        projectRecordAnswer = answer.GetDisplayText(projectRecordQuestion.DataType);
+        projectRecordAnswer = answer.GetDisplayText(projectRecordQuestion.DataType);        
 
         <div class="govuk-!-margin-bottom-3 flex-gap-2 @(conditional ? "conditional" : "")" data-parents="@parents" data-questionid="@questionId">
-            <span class="govuk-label">Current @(answer!.QuestionText?.ToLower() ?? "value")</span>
+            <span class="govuk-label">
+                Current @(projectRecordQuestion!.QuestionText?
+                        .GetLabelText()
+                        .Replace("new ", "") ?? "value")
+            </span>
             <span class="govuk-body govuk-!-font-weight-bold">@Html.Raw(projectRecordAnswer)</span>
         </div>
 
