@@ -19,7 +19,9 @@
 	<input type="hidden" name="sortDirection" value="@nextSortDirection" />
 	<input type="hidden" name="fromPagination" value="true" />
 	<button type="submit" class="table-header-sort-button js-sort-link">
-		@Html.Raw(Model.DisplayText)
+        <span>
+            @Html.Raw(Model.DisplayText)
+        </span>		
 		@Html.Raw(GetSortIcon(Model.FieldName, Model.CurrentSortField, Model.CurrentSortDirection))
 	</button>
 </form>

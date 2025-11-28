@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.Text.RegularExpressions;
 using FluentValidation;
+using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Validators;
@@ -98,15 +99,15 @@ public class QuestionViewModelValidatorBase : AbstractValidator<QuestionViewMode
                         {
                             var missingParts = new List<string>();
 
-                            if (string.IsNullOrWhiteSpace(question.Day))
+                            if (string.IsNullOrWhiteSpace(question.Day) || question.Day == "00")
                             {
                                 missingParts.Add("day");
                             }
-                            if (string.IsNullOrWhiteSpace(question.Month))
+                            if (string.IsNullOrWhiteSpace(question.Month) || question.Month == "00")
                             {
                                 missingParts.Add("month");
                             }
-                            if (string.IsNullOrWhiteSpace(question.Year))
+                            if (string.IsNullOrWhiteSpace(question.Year) || question.Year == "0000")
                             {
                                 missingParts.Add("year");
                             }
@@ -118,15 +119,16 @@ public class QuestionViewModelValidatorBase : AbstractValidator<QuestionViewMode
                             else if (missingParts.Count > 0)
                             {
                                 condition.IsApplicable = true;
+                                var labelText = question.QuestionText?.GetLabelText().Replace("new ", "").ToSentenceCase() ?? "Date";
 
                                 switch (missingParts.Count)
                                 {
                                     case 2:
-                                        context.AddFailure(nameof(question.AnswerText), $"Date must include a {missingParts[0]} and {missingParts[1]}");
+                                        context.AddFailure(nameof(question.AnswerText), $"{labelText} must include a {missingParts[0]} and {missingParts[1]}");
                                         break;
 
                                     case 1:
-                                        context.AddFailure(nameof(question.AnswerText), $"Date must include a {missingParts[0]}");
+                                        context.AddFailure(nameof(question.AnswerText), $"{labelText} must include a {missingParts[0]}");
                                         break;
                                 }
 
@@ -200,9 +202,7 @@ public class QuestionViewModelValidatorBase : AbstractValidator<QuestionViewMode
             ? question.ShortQuestionText
             : question.QuestionText;
 
-        var labelText = label.Contains("NHS / HSC", StringComparison.OrdinalIgnoreCase)
-            ? label
-            : label.ToLowerInvariant();
+        var labelText = label.GetLabelText();
 
         return $"Enter {labelText}";
     }

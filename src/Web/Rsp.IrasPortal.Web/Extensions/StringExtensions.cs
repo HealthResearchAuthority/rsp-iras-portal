@@ -1,4 +1,6 @@
-﻿namespace Rsp.IrasPortal.Web.Extensions;
+﻿using System.Text.RegularExpressions;
+
+namespace Rsp.IrasPortal.Web.Extensions;
 
 public static class StringExtensions
 {
@@ -13,5 +15,27 @@ public static class StringExtensions
             return input.ToUpper();
 
         return char.ToUpper(input[0]) + input.Substring(1).ToLower();
+    }
+
+    public static string GetLabelText(this string label)
+    {
+        if (string.IsNullOrWhiteSpace(label)) return label;
+
+        var acronymsPattern = @"\b(nhs|hsc|nct|isrctn)\b";
+        var phrasesPattern = @"\b(chief investigator|principal investigator)\b";
+
+        return Regex.Replace(
+            label.ToLowerInvariant(),
+            $"{acronymsPattern}|{phrasesPattern}",
+            m =>
+            {
+                var value = m.Value;
+                return Regex.IsMatch(value, acronymsPattern, RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(100))
+                    ? value.ToUpperInvariant()
+                    : string.Join(" ", value.Split(' ').Select(w => char.ToUpper(w[0]) + w.Substring(1)));
+            },
+            RegexOptions.IgnoreCase,
+            TimeSpan.FromMilliseconds(100)
+        );
     }
 }

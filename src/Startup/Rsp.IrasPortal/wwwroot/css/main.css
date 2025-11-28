@@ -1029,3 +1029,7 @@ button.govuk-pagination__item--current {
 .govuk-accordion__section-toggle {
   cursor: pointer;
 }
+
+.govuk-summary-card__actions {
+  font-weight: normal;
+}

@@ -1,5 +1,6 @@
 ﻿using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
+using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Helpers;
 
 namespace Rsp.IrasPortal.Web.Models;
@@ -103,7 +104,8 @@ public class QuestionViewModel
                 return answerText;
             }
 
-            return includePrompt ? $"Enter {QuestionText.ToLowerInvariant()}" : string.Empty;
+            var labelText = QuestionText.GetLabelText();
+            return includePrompt ? $"Enter {labelText}" : string.Empty;
         }
 
         if (Answers?.Any(a => a.IsSelected) == true)
@@ -114,7 +116,8 @@ public class QuestionViewModel
         if (includePrompt)
         {
             var label = string.IsNullOrWhiteSpace(ShortQuestionText) ? QuestionText : ShortQuestionText;
-            return $"Enter {label.ToLowerInvariant()}";
+            var labelText = label.GetLabelText();
+            return $"Enter {labelText}";
         }
 
         return string.Empty;
@@ -128,9 +131,7 @@ public class QuestionViewModel
                      || Answers.Any(a => a.IsSelected)
                      || (!string.IsNullOrWhiteSpace(SelectedOption) && Answers.Any(a => a.AnswerId == SelectedOption));
 
-        var labelText = label.Contains("NHS / HSC", StringComparison.OrdinalIgnoreCase)
-            ? label
-            : label.ToLowerInvariant();
+        var labelText = label.GetLabelText();
 
         return isAnswered ? "Change" : $"Enter {labelText}";
     }

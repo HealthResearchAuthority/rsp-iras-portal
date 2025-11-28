@@ -24,7 +24,9 @@
 <rsp-gds-select asp-for="Questions[@index].SelectedOption"
                 label-text="@question.QuestionText"
                 label-html-class="govuk-label"
-                options="@(question.Answers.Select(a => new GdsOption { Value = a.AnswerId.ToString(), Label = a.AnswerText }))"
+                options="@(question.Answers
+                                    .OrderBy(a => a.AnswerText)
+                                    .Select(a => new GdsOption { Value = a.AnswerId.ToString(), Label = a.AnswerText }))"
                 conditional-field="conditional"
                 conditional-class="conditional-field govuk-select__conditional"
                 dataquestionid-attr="@questionId"
