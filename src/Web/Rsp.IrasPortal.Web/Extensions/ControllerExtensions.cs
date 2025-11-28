@@ -287,11 +287,12 @@ public static class ControllerExtensions
         IReviewBodyService reviewBodyService,
         IUserManagementService userManagementService)
     {
-        var leadNation = new List<string> { UkCountryNames.England };
+        var leadNation = new List<string>();
 
         if (!Guid.TryParse(controller.User?.FindFirstValue("userId"), out var userId))
         {
             // userId does not exist so exit block
+            leadNation.Add(UkCountryNames.England);
             return leadNation;
         }
 
@@ -313,16 +314,21 @@ public static class ControllerExtensions
             // if user is not team manager, then take their assigned review body into account if applicable
             var bodiesResp = await reviewBodyService.GetUserReviewBodies(userId);
 
-            var reviewBodyId = bodiesResp.IsSuccessStatusCode
-                ? bodiesResp.Content?.FirstOrDefault()?.Id
+            var reviewBodies = bodiesResp.IsSuccessStatusCode
+                ? bodiesResp.Content
                 : null;
 
-            if (reviewBodyId is { } rbId)
+            if (reviewBodies != null)
             {
-                var rbResp = await reviewBodyService.GetReviewBodyById(rbId);
-                leadNation = rbResp.Content?.Countries != null ?
-                    rbResp.Content?.Countries :
-                    leadNation;
+                foreach (var body in reviewBodies)
+                {
+                    var rbResp = await reviewBodyService.GetReviewBodyById(body.Id);
+
+                    if (rbResp?.Content?.Countries != null)
+                    {
+                        leadNation.AddRange(rbResp.Content.Countries);
+                    }
+                }
             }
         }
 
