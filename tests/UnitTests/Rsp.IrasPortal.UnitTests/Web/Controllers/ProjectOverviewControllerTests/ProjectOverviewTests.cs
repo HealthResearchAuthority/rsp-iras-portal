@@ -1372,7 +1372,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var result = await Sut.PostApproval(projectRecordId, "", It.IsAny<int>(), It.IsAny<int>(), sortField, sortDirection);
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var viewResult = Assert.IsType<ViewResult>(result);
         var model = Assert.IsType<PostApprovalViewModel>(viewResult.Model);
 
         Assert.NotNull(model.Modifications);
