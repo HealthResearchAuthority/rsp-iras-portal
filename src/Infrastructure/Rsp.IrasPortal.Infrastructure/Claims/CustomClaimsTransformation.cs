@@ -216,11 +216,12 @@ public class CustomClaimsTransformation
             SigningCredentials = signingCredentials
         };
 
-        var n = context.Items.TryGetValue(ContextItemKeys.AccessTokenCookieExpiryDate, out var newTokenExpiryObject);
+        var newTokenExpirationExists = context.Items.TryGetValue(ContextItemKeys.AccessTokenCookieExpiryDate, out var newTokenExpiryObject);
 
-        if (n && newTokenExpiryObject is DateTime newTokenExpiry)
+        if (newTokenExpirationExists && newTokenExpiryObject is DateTimeOffset newTokenExpiry)
         {
-            tokenDescriptor.Expires = newTokenExpiry;
+            // extend new token expiration
+            tokenDescriptor.Expires = newTokenExpiry.UtcDateTime;
         }
 
         // generate the security token
