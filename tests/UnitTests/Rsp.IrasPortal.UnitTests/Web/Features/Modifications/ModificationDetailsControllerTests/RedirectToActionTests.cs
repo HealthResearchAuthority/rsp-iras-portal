@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Web.Features.Modifications;
-using Rsp.IrasPortal.Web.Features.Modifications.Models;
+using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.ModificationDetailsControllerTests;
 
@@ -33,7 +33,7 @@ public class RedirectToActionTests : TestServiceBase<ModificationDetailsControll
         var viewResult = result.ShouldBeOfType<ViewResult>();
         viewResult.ViewName.ShouldBe("UnfinishedChanges");
 
-        viewResult.Model.ShouldBeOfType<ModificationDetailsViewModel>();
+        viewResult.Model.ShouldBeOfType<BaseProjectModificationViewModel>();
     }
 
     // --------------------------------------------------------------
@@ -60,7 +60,7 @@ public class RedirectToActionTests : TestServiceBase<ModificationDetailsControll
         var viewResult = result.ShouldBeOfType<ViewResult>();
         viewResult.ViewName.ShouldBe("DocumentsScanInProgress");
 
-        viewResult.Model.ShouldBeOfType<ModificationDetailsViewModel>();
+        viewResult.Model.ShouldBeOfType<BaseProjectModificationViewModel>();
     }
 
     // --------------------------------------------------------------
@@ -87,6 +87,6 @@ public class RedirectToActionTests : TestServiceBase<ModificationDetailsControll
         var viewResult = result.ShouldBeOfType<ViewResult>();
         viewResult.ViewName.ShouldBe("DocumentDetailsIncomplete");
 
-        viewResult.Model.ShouldBeOfType<ModificationDetailsViewModel>();
+        viewResult.Model.ShouldBeOfType<BaseProjectModificationViewModel>();
     }
 }

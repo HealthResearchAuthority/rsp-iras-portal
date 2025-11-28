@@ -26,6 +26,7 @@ public struct TempDataKeys
         public const string DateCreated = "td:created_date";
         public const string OverallRanking = "td:modification_overall_ranking";
         public const string ProjectModificationsDetails = "td:project_modifications_details";
+        public const string ProjectModificationStatus = "td:project_modification_status";
     }
 
     public struct ProjectModificationChange

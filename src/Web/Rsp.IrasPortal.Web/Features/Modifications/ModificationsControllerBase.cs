@@ -57,6 +57,8 @@ public abstract class ModificationsControllerBase
         // Select the first (and only) modification result
         var modification = modificationResponse.Content;
 
+        TempData[TempDataKeys.ProjectModification.ProjectModificationStatus] = modification.Status;
+
         // Build the base view model with project metadata
         return (null, new ModificationDetailsViewModel
         {
@@ -470,6 +472,7 @@ public abstract class ModificationsControllerBase
 
         return modificationChanges;
     }
+
     /// <summary>
     /// Clones a questionnaire deeply to avoid shared references.
     /// </summary>
