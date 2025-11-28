@@ -112,7 +112,8 @@ public static class RolePermissions
                 // Approvals Workspace
                 Approvals.ProjectRecords_Search,
                 Approvals.ModificationRecords_Search,
-                Approvals.Modifications_Assign
+                Approvals.Modifications_Assign,
+                Approvals.Modifications_Reassign
             }
         },
         {

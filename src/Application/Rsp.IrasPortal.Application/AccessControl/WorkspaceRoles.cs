@@ -27,7 +27,7 @@ public static class WorkspaceRolesMatrix
         // - System administrators (full access)
         [Workspaces.MyResearch] =
         [
-            Roles.Applicant, Roles.Sponsor, Roles.WorkflowCoordinator, Roles.TeamManager, Roles.SystemAdministrator
+            Roles.Applicant, Roles.Sponsor, Roles.WorkflowCoordinator, Roles.TeamManager, Roles.SystemAdministrator,Roles.StudyWideReviewer
         ],
 
         // Roles allowed in the "Sponsor" workspace:
