@@ -1,6 +1,6 @@
-﻿using System.Text.RegularExpressions;
-using Rsp.IrasPortal.Application.DTOs;
+﻿using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
+using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Helpers;
 
 namespace Rsp.IrasPortal.Web.Models;
@@ -104,7 +104,7 @@ public class QuestionViewModel
                 return answerText;
             }
 
-            var labelText = Regex.Replace(QuestionText.ToLowerInvariant(), @"\b(nhs|hsc)\b", m => m.Value.ToUpperInvariant(), RegexOptions.None, TimeSpan.FromMilliseconds(100));
+            var labelText = QuestionText.GetLabelText();
             return includePrompt ? $"Enter {labelText}" : string.Empty;
         }
 
@@ -116,7 +116,7 @@ public class QuestionViewModel
         if (includePrompt)
         {
             var label = string.IsNullOrWhiteSpace(ShortQuestionText) ? QuestionText : ShortQuestionText;
-            var labelText = Regex.Replace(label.ToLowerInvariant(), @"\b(nhs|hsc)\b", m => m.Value.ToUpperInvariant(), RegexOptions.None, TimeSpan.FromMilliseconds(100));
+            var labelText = label.GetLabelText();
             return $"Enter {labelText}";
         }
 
@@ -131,7 +131,7 @@ public class QuestionViewModel
                      || Answers.Any(a => a.IsSelected)
                      || (!string.IsNullOrWhiteSpace(SelectedOption) && Answers.Any(a => a.AnswerId == SelectedOption));
 
-        var labelText = Regex.Replace(label.ToLowerInvariant(), @"\b(nhs|hsc)\b", m => m.Value.ToUpperInvariant(), RegexOptions.None, TimeSpan.FromMilliseconds(100));
+        var labelText = label.GetLabelText();
 
         return isAnswered ? "Change" : $"Enter {labelText}";
     }
