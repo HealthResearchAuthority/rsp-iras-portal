@@ -259,7 +259,10 @@ public class ModificationChangesController
 
                 if (answers?.Any() is true)
                 {
-                    foreach (var originalQuestionId in originalQuestions.Select(originalQuestion => originalQuestion.QuestionId))
+                    foreach (var originalQuestionId in originalQuestions.Select(q =>
+                    !string.IsNullOrWhiteSpace(q.PlaybackQuestionId)
+                    ? q.PlaybackQuestionId
+                    : q.QuestionId))
                     {
                         var projectRecordQuestion = projectRecordQuestions.SingleOrDefault(q => q.Id == originalQuestionId);
 
