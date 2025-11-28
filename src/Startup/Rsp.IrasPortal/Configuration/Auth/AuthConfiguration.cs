@@ -59,10 +59,13 @@ public static class AuthConfiguration
                             var accessToken = context.Properties.GetTokenValue(ContextItemKeys.AcessToken);
 
                             var cookieExpiry = context.Properties.ExpiresUtc;
-                            var cookieExpiryEpoch = cookieExpiry.Value.ToUnixTimeSeconds();
+
+                            if (cookieExpiry.HasValue)
+                            {
+                                context.HttpContext.Items[ContextItemKeys.AccessTokenCookieExpiryDate] = cookieExpiry;
+                            }
 
                             context.HttpContext.Items[ContextItemKeys.BearerToken] = accessToken;
-                            context.HttpContext.Items[ContextItemKeys.AccessTokenCookieExpiryDate] = cookieExpiryEpoch;
 
                             return Task.CompletedTask;
                         }
@@ -99,9 +102,11 @@ public static class AuthConfiguration
 
                     options.Events.OnTokenValidated = context =>
                     {
-                        context.Properties.IsPersistent = true;
-                        context.Properties.ExpiresUtc = DateTimeOffset.UtcNow.AddSeconds(appSettings.AuthSettings.AuthCookieTimeout + 60);
-
+                        if (context.Properties != null)
+                        {
+                            context.Properties.IsPersistent = true;
+                            context.Properties.ExpiresUtc = DateTimeOffset.UtcNow.AddSeconds(appSettings.AuthSettings.AuthCookieTimeout + 60);
+                        }
                         // this key is used to indicate that the user is logged in for the first time
                         // will be used to update the LastLogin during the claims transformation
                         // to indicate when the user was logged in last time.
@@ -111,11 +116,6 @@ public static class AuthConfiguration
                         // and signout the user if the session is expired
                         context.HttpContext.Session.SetString(SessionKeys.Alive, bool.TrueString);
 
-                        return Task.CompletedTask;
-                    };
-
-                    options.Events.OnTokenResponseReceived = context =>
-                    {
                         return Task.CompletedTask;
                     };
                 }
@@ -152,14 +152,22 @@ public static class AuthConfiguration
                     // to validate that the current principal is still valid
                     OnValidatePrincipal = context =>
                     {
-                        //context.ShouldRenew = true;
-                        //context.Properties.AllowRefresh = true;
-                        //context.Options.ExpireTimeSpan = TimeSpan.FromSeconds(appSettings.OneLogin.AuthCookieTimeout + 60);
-                        //context.Options.SlidingExpiration = true;
+                        context.ShouldRenew = true;
+                        context.Properties.AllowRefresh = true;
+                        context.Options.ExpireTimeSpan = TimeSpan.FromSeconds(appSettings.AuthSettings.AuthCookieTimeout + 60);
+                        context.Options.SlidingExpiration = true;
 
                         // save the original access_token in the memory, this will be needed
                         // to regenerate the JwtToken with additional claims
-                        context.HttpContext.Items[ContextItemKeys.BearerToken] = context.Properties.GetTokenValue(ContextItemKeys.AcessToken);
+                        var accessToken = context.Properties.GetTokenValue(ContextItemKeys.AcessToken);
+
+                        var cookieExpiry = context.Properties.ExpiresUtc;
+                        if (cookieExpiry.HasValue)
+                        {
+                            context.HttpContext.Items[ContextItemKeys.AccessTokenCookieExpiryDate] = cookieExpiry;
+                        }
+
+                        context.HttpContext.Items[ContextItemKeys.BearerToken] = accessToken;
 
                         return Task.CompletedTask;
                     }
@@ -230,6 +238,12 @@ public static class AuthConfiguration
 
                 options.Events.OnTokenValidated = context =>
                 {
+                    if (context.Properties != null)
+                    {
+                        context.Properties.IsPersistent = true;
+                        context.Properties.ExpiresUtc = DateTimeOffset.UtcNow.AddSeconds(appSettings.OneLogin.AuthCookieTimeout + 60);
+                    }
+
                     // this key is used to indicate that the user is logged in for the first time
                     // will be used to update the LastLogin during the claims transformation
                     // to indicate when the user was logged in last time.
