@@ -971,7 +971,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var tempData = CreateTempData(tempDataProvider, httpContext);
         var pageNumber = 1;
         var pageSize = 20;
-        var sortField = nameof(ModificationsModel.ModificationNumber);
+        var sortField = nameof(ModificationsModel.CreatedAt);
         var sortDirection = SortDirections.Descending;
 
         var answers = new List<RespondentAnswerDto>
@@ -1039,7 +1039,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var tempData = CreateTempData(tempDataProvider, httpContext);
         var pageNumber = 1;
         var pageSize = 20;
-        var sortField = nameof(ModificationsModel.ModificationNumber);
+        var sortField = nameof(ModificationsModel.CreatedAt);
         var sortDirection = SortDirections.Descending;
 
         var answers = new List<RespondentAnswerDto>
@@ -1206,7 +1206,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var tempData = CreateTempData(tempDataProvider, httpContext);
         var pageNumber = 1;
         var pageSize = 20;
-        var sortField = nameof(ModificationsModel.SentToRegulatorDate);
+        var sortField = nameof(ModificationsModel.CreatedAt);
         var sortDirection = SortDirections.Descending;
 
         var answers = new List<RespondentAnswerDto>
@@ -1325,5 +1325,57 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         // Assert
         var status = result.ShouldBeOfType<StatusCodeResult>();
         status.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
+    }
+
+    [Fact]
+    public async Task PostApproval_ShouldReturnView_WithSortedModifications_WhenSortFieldIsCreatedAt()
+    {
+        // Arrange
+        var projectRecordId = "PRJ123";
+        var sortField = nameof(ModificationsModel.CreatedAt);
+        var sortDirection = SortDirections.Descending;
+        var httpContext = CreateHttpContextWithSession(); // CHANGED
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempData = CreateTempData(tempDataProvider, httpContext);
+        var answers = new List<RespondentAnswerDto>
+        {
+            new() { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "Project Y" }
+        };
+
+        SetupProjectRecord(projectRecordId);
+        SetupRespondentAnswers(projectRecordId, answers);
+        SetupControllerContext(httpContext, tempData);
+        SetupCMSService();
+
+        var serviceResponse = new ServiceResponse<GetModificationsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new GetModificationsResponse
+            {
+                TotalCount = 4,
+                Modifications = new List<ModificationsDto>
+                                {
+                                    new () { Id = "1", ModificationId = "M1", Status = "In draft" },
+                                    new () { Id = "2", ModificationId = "M2", Status = "With sponsor" },
+                                    new () { Id = "3", ModificationId = "M3", Status = "With review body" },
+                                    new () { Id = "4", ModificationId = "M4", Status = "Approved" },
+                                    new () { Id = "5", ModificationId = "M4", Status = "Not approved" },
+                                    new () { Id = "6", ModificationId = "M4", Status = "Not authorised" }
+                                }
+            }
+        };
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), 1, 20, sortField, sortDirection))
+            .ReturnsAsync(serviceResponse);
+        // Act
+        var result = await Sut.PostApproval(projectRecordId, "", It.IsAny<int>(), It.IsAny<int>(), sortField, sortDirection);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<PostApprovalViewModel>(viewResult.Model);
+        Assert.NotNull(model.Modifications);
+        Assert.Equal(sortField, model.Pagination.SortField);
+        Assert.Equal(sortDirection, model.Pagination.SortDirection);
     }
 }

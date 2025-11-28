@@ -421,6 +421,55 @@ public abstract class ModificationsControllerBase
         }
     }
 
+    protected async Task<List<ModificationChangeModel>> UpdateModificationChanges(string projectRecordId, List<ModificationChangeModel> modificationChanges)
+    {
+        foreach (var modificationChange in modificationChanges)
+        {
+            // get the responent answers for the category
+            var respondentServiceResponse = await respondentService.GetModificationChangeAnswers(modificationChange.ModificationChangeId, projectRecordId);
+
+            // get the questions for the modification journey
+            var questionSetServiceResponse = await cmsQuestionsetService.GetModificationsJourney(modificationChange.SpecificAreaOfChangeId);
+
+            // return the error view if unsuccessfull
+            if (!respondentServiceResponse.IsSuccessStatusCode || !questionSetServiceResponse.IsSuccessStatusCode)
+            {
+                // return the modificationChanges unchanged in case of error
+                return modificationChanges;
+            }
+
+            var respondentAnswers = respondentServiceResponse.Content!;
+
+            // convert the questions response to QuestionnaireViewModel
+            var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(questionSetServiceResponse.Content!);
+
+            var questions = questionnaire.Questions;
+
+            if (questions.Count == 0)
+            {
+                modificationChange.ChangeStatus = ModificationStatus.ChangeReadyForSubmission;
+            }
+
+            // Apply respondent answers to the questionnaire
+            questionnaire.UpdateWithRespondentAnswers(respondentAnswers);
+
+            // Validate the questionnaire (mandatory-only) using FluentValidation
+            var result = await this.ValidateQuestionnaire(validator, questionnaire, true, false);
+
+            modificationChange.ChangeStatus = result ?
+                ModificationStatus.ChangeReadyForSubmission :
+                ModificationStatus.Unfinished;
+
+            // show surfacing questions
+            ModificationHelpers.ShowSurfacingQuestion(questions, modificationChange, "ModificationDetails");
+
+            // remove all questions as they are not needed in the details view
+            // they are only needed to calculate the ranking
+            modificationChange.Questions.Clear();
+        }
+
+        return modificationChanges;
+    }
     /// <summary>
     /// Clones a questionnaire deeply to avoid shared references.
     /// </summary>
