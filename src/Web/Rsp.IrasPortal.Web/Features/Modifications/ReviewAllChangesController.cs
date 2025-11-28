@@ -53,6 +53,11 @@ public class ReviewAllChangesController
         string sortDirection = SortDirections.Ascending
     )
     {
+        // Populate TempData with project details for actual modification journey
+        TempData[TempDataKeys.IrasId] = irasId;
+        TempData[TempDataKeys.ProjectRecordId] = projectRecordId;
+        TempData[TempDataKeys.ShortProjectTitle] = shortTitle ?? string.Empty;
+
         // Fetch the modification by its identifier
         var (result, modification) = await PrepareModificationAsync(projectModificationId, irasId, shortTitle, projectRecordId);
 
