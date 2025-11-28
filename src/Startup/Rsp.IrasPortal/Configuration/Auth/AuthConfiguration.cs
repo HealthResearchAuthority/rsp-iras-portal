@@ -228,7 +228,6 @@ public static class AuthConfiguration
         // Register authorization handlers
         services.AddSingleton<IAuthorizationHandler, WorkspaceRequirementHandler>();
         services.AddSingleton<IAuthorizationHandler, PermissionRequirementHandler>();
-        //services.AddSingleton<IAuthorizationHandler, RecordStatusAuthorizationHandler>();
     }
 
     private static CookieAuthenticationEvents GenerateCookieAuthenticationEvent(uint cookieAuthenticationTimeout)

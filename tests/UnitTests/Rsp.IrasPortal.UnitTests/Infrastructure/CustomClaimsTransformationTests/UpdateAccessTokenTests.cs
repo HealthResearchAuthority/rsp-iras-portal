@@ -100,4 +100,54 @@ public class UpdateAccessTokenTests : TestServiceBase<CustomClaimsTransformation
 
         return handler.WriteToken(token);
     }
+
+    [Theory, AutoData]
+    public async Task UpdateAccessToken_Should_Contain_Updated_Expiry_DateTime(string roleClaim)
+    {
+        // Arrange
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Role, roleClaim)
+        };
+
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(claims));
+
+        // Mock JwtService to return signing credentials
+        var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(new byte[32]), SecurityAlgorithms.HmacSha256);
+        _jwtService
+            .Setup(x => x.GetCurrentSigningCredentials())
+            .ReturnsAsync(signingCredentials);
+
+        var token = GenerateToken(principal, signingCredentials);
+
+        var expiryDateTime = DateTime.UtcNow.AddSeconds(60);
+        var offset = new DateTimeOffset(expiryDateTime);
+        var expiryEpoch = offset.ToUnixTimeSeconds();
+
+        // Mock HttpContext
+        var httpContext = new DefaultHttpContext();
+        httpContext.Items[ContextItemKeys.BearerToken] = token;
+        httpContext.Items[ContextItemKeys.AccessTokenCookieExpiryDate] = offset;
+        _httpContextAccessor
+            .SetupGet(x => x.HttpContext)
+            .Returns(httpContext);
+
+        // Act
+        await Sut.UpdateAccessToken(principal);
+
+        // Assert
+        httpContext.Items[ContextItemKeys.BearerToken]
+            .ShouldNotBeNull()
+            .ShouldNotBe(token);
+
+        // Verify
+        var handler = new JwtSecurityTokenHandler();
+
+        // get the updated access token
+        var jsonToken = handler.ReadJwtToken(httpContext.Items[ContextItemKeys.BearerToken] as string);
+
+        var tokenExpiry = jsonToken.Payload.Expiration;
+
+        tokenExpiry.ShouldBe(expiryEpoch);
+    }
 }
