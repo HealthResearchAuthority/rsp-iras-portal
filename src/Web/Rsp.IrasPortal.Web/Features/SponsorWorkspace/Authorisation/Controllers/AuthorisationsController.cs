@@ -180,17 +180,21 @@ public class AuthorisationsController
         var authoriseOutcomeViewModel = modification.Adapt<AuthoriseOutcomeViewModel>(config);
 
         var searchQuery = new ProjectOverviewDocumentSearchRequest();
-        var modificationDocumentsResponseResult = await projectModificationsService.GetDocumentsForModification(projectModificationId,
-            searchQuery, pageNumber, pageSize, sortField, sortDirection);
-
-        authoriseOutcomeViewModel.ProjectOverviewDocumentViewModel.Documents = modificationDocumentsResponseResult?.Content?.Documents ?? [];
-
         // Fetch the CMS question set that defines what metadata must be collected for this document.
         var additionalQuestionsResponse = await cmsQuestionsetService
             .GetModificationQuestionSet(DocumentDetailsSection);
 
         // Build the questionnaire model containing all questions for the details section.
         var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(additionalQuestionsResponse.Content!);
+        var matchingQuestion = questionnaire.Questions.FirstOrDefault(q => q.QuestionId == ModificationQuestionIds.DocumentType);
+
+        searchQuery.DocumentTypes = matchingQuestion?.Answers?
+            .ToDictionary(a => a.AnswerId, a => a.AnswerText) ?? [];
+
+        var modificationDocumentsResponseResult = await projectModificationsService.GetDocumentsForModification(projectModificationId,
+            searchQuery, pageNumber, pageSize, sortField, sortDirection);
+
+        authoriseOutcomeViewModel.ProjectOverviewDocumentViewModel.Documents = modificationDocumentsResponseResult?.Content?.Documents ?? [];
 
         await MapDocumentTypesAndStatusesAsync(questionnaire, modification.ProjectOverviewDocumentViewModel.Documents);
 

@@ -95,19 +95,20 @@ public class ModificationsTasklistController
             ToDate = model.Search.ToDate,
             IrasId = model.Search.IrasId,
             ReviewerId = null,
+            IncludeReviewerId = User.IsInRole(Roles.WorkflowCoordinator),
             ReviewerName = model.Search.ReviewerName,
             IncludeReviewerName = !string.IsNullOrWhiteSpace(model.Search.ReviewerName),
             UseBackstageStatus = true
         };
 
-        if (User.IsInRole(Roles.WorkflowCoordinator) || User.IsInRole(Roles.SystemAdministrator))
+        if (User.IsInRole(Roles.TeamManager) || User.IsInRole(Roles.SystemAdministrator))
         {
             searchQuery.AllowedStatuses.Add(ModificationStatus.WithReviewBody);
             searchQuery.AllowedStatuses.Add(ModificationStatus.Received);
             searchQuery.AllowedStatuses.Add(ModificationStatus.ReviewInProgress);
         }
 
-        if (User.IsInRole(Roles.TeamManager))
+        if (User.IsInRole(Roles.WorkflowCoordinator))
         {
             searchQuery.AllowedStatuses.Add(ModificationStatus.WithReviewBody);
             searchQuery.AllowedStatuses.Add(ModificationStatus.Received);

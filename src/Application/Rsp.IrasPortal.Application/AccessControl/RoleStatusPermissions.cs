@@ -104,8 +104,7 @@ public static class RoleStatusPermissions
                     ModificationStatus.WithReviewBody,
                     ModificationStatus.Approved,
                     ModificationStatus.NotApproved,
-                    ModificationStatus.Received,
-                    ModificationStatus.ReviewInProgress
+                    ModificationStatus.Received
                 }
             },
             {
@@ -114,7 +113,8 @@ public static class RoleStatusPermissions
                     ModificationStatus.WithReviewBody,
                     ModificationStatus.Approved,
                     ModificationStatus.NotApproved,
-                    ModificationStatus.Received
+                    ModificationStatus.Received,
+                    ModificationStatus.ReviewInProgress
                 }
             },
             {
@@ -123,7 +123,8 @@ public static class RoleStatusPermissions
                     ModificationStatus.WithReviewBody,
                     ModificationStatus.Approved,
                     ModificationStatus.NotApproved,
-                    ModificationStatus.ReviewInProgress
+                    ModificationStatus.ReviewInProgress,
+                    ModificationStatus.Received
                 }
             }
         };
