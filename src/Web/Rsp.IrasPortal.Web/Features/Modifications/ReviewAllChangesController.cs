@@ -53,12 +53,26 @@ public class ReviewAllChangesController
         string sortDirection = SortDirections.Ascending
     )
     {
+        // Populate TempData with project details for actual modification journey
+        TempData[TempDataKeys.IrasId] = irasId;
+        TempData[TempDataKeys.ProjectRecordId] = projectRecordId;
+        TempData[TempDataKeys.ShortProjectTitle] = shortTitle ?? string.Empty;
+
         // Fetch the modification by its identifier
         var (result, modification) = await PrepareModificationAsync(projectModificationId, irasId, shortTitle, projectRecordId);
 
         if (result is not null)
         {
             return result;
+        }
+
+        // validate and update the status and answers for the change
+        modification.ModificationChanges = await UpdateModificationChanges(projectRecordId, modification.ModificationChanges);
+
+        // Set the 'ready for submission' flag if all changes are ready
+        if (modification.ModificationChanges.All(c => c.ChangeStatus == ModificationStatus.ChangeReadyForSubmission))
+        {
+            modification.ChangesReadyForSubmission = true;
         }
 
         var sponsorDetailsQuestionsResponse = await cmsQuestionsetService.GetModificationQuestionSet(SponsorDetailsSectionId);
@@ -89,17 +103,21 @@ public class ReviewAllChangesController
         }
 
         var searchQuery = new ProjectOverviewDocumentSearchRequest();
-        var modificationDocumentsResponseResult = await projectModificationsService.GetDocumentsForModification(projectModificationId,
-            searchQuery, pageNumber, pageSize, sortField, sortDirection);
-
-        modification.ProjectOverviewDocumentViewModel.Documents = modificationDocumentsResponseResult?.Content?.Documents ?? [];
-
         // Fetch the CMS question set that defines what metadata must be collected for this document.
         var additionalQuestionsResponse = await cmsQuestionsetService
             .GetModificationQuestionSet(DocumentDetailsSection);
 
         // Build the questionnaire model containing all questions for the details section.
         var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(additionalQuestionsResponse.Content!);
+        var matchingQuestion = questionnaire.Questions.FirstOrDefault(q => q.QuestionId == ModificationQuestionIds.DocumentType);
+
+        searchQuery.DocumentTypes = matchingQuestion?.Answers?
+            .ToDictionary(a => a.AnswerId, a => a.AnswerText) ?? [];
+
+        var modificationDocumentsResponseResult = await projectModificationsService.GetDocumentsForModification(projectModificationId,
+            searchQuery, pageNumber, pageSize, sortField, sortDirection);
+
+        modification.ProjectOverviewDocumentViewModel.Documents = modificationDocumentsResponseResult?.Content?.Documents ?? [];
 
         await MapDocumentTypesAndStatusesAsync(questionnaire, modification.ProjectOverviewDocumentViewModel.Documents);
 

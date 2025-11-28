@@ -455,6 +455,27 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
     {
         SetupAuthoriseOutcomeViewModel();
         var modificationChangeId = Guid.NewGuid();
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModification(It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectModificationResponse
+                {
+                    Id = Guid.NewGuid(),
+                    ModificationIdentifier = Guid.NewGuid().ToString(),
+                    Status = ModificationStatus.ChangeReadyForSubmission,
+                    ProjectRecordId = Guid.NewGuid().ToString(),
+                    ModificationNumber = 1,
+                    CreatedDate = DateTime.UtcNow,
+                    UpdatedDate = DateTime.UtcNow,
+                    CreatedBy = "TestUser",
+                    UpdatedBy = "TestUser",
+                    ModificationType = "Substantial",
+                    Category = "Category A",
+                    ReviewType = "Full Review"
+                }
+            });
 
         // Act
         var result = await Sut.ChangeDetails("PR1", "IRAS", "Short", _sponsorOrganisationUserId,
