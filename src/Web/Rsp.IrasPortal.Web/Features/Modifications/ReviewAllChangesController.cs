@@ -61,6 +61,15 @@ public class ReviewAllChangesController
             return result;
         }
 
+        // validate and update the status and answers for the change
+        modification.ModificationChanges = await UpdateModificationChanges(projectRecordId, modification.ModificationChanges);
+
+        // Set the 'ready for submission' flag if all changes are ready
+        if (modification.ModificationChanges.All(c => c.ChangeStatus == ModificationStatus.ChangeReadyForSubmission))
+        {
+            modification.ChangesReadyForSubmission = true;
+        }
+
         var sponsorDetailsQuestionsResponse = await cmsQuestionsetService.GetModificationQuestionSet(SponsorDetailsSectionId);
 
         // get the responent answers for the sponsor details
