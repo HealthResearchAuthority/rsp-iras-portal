@@ -43,39 +43,7 @@ public static class AuthConfiguration
             (
                 options =>
                 {
-                    options.Events = new CookieAuthenticationEvents
-                    {
-                        // this event is called on each request
-                        // to validate that the current principal is still valid
-                        OnValidatePrincipal = context =>
-                        {
-                            context.ShouldRenew = true;
-                            context.Properties.AllowRefresh = true;
-                            context.Options.ExpireTimeSpan = TimeSpan.FromSeconds(appSettings.AuthSettings.AuthCookieTimeout + 60);
-                            context.Options.SlidingExpiration = true;
-
-                            // save the original access_token in the memory, this will be needed
-                            // to regenerate the JwtToken with additional claims
-                            var accessToken = context.Properties.GetTokenValue(ContextItemKeys.AcessToken);
-
-                            // auth cookie already contains updated expiry datetime
-                            // so let's use that for the token
-                            var cookieExpiry = context.Properties.ExpiresUtc;
-
-                            if (cookieExpiry.HasValue)
-                            {
-                                // save the updated expiry date so we can
-                                // use it in the CustomClaimsTransformation.cs
-                                // when creating new token
-                                context.HttpContext.Items[ContextItemKeys.AccessTokenCookieExpiryDate] = cookieExpiry;
-                            }
-
-                            // save original access token
-                            context.HttpContext.Items[ContextItemKeys.BearerToken] = accessToken;
-
-                            return Task.CompletedTask;
-                        }
-                    };
+                    options.Events = GenerateCookieAuthenticationEvent(appSettings.AuthSettings.AuthCookieTimeout);
 
                     options.Cookie.IsEssential = true;
                     options.LoginPath = "/";
@@ -152,38 +120,7 @@ public static class AuthConfiguration
             })
             .AddCookie(options =>
             {
-                options.Events = new CookieAuthenticationEvents
-                {
-                    // this event is called on each request
-                    // to validate that the current principal is still valid
-                    OnValidatePrincipal = context =>
-                    {
-                        context.ShouldRenew = true;
-                        context.Properties.AllowRefresh = true;
-                        context.Options.ExpireTimeSpan = TimeSpan.FromSeconds(appSettings.AuthSettings.AuthCookieTimeout + 60);
-                        context.Options.SlidingExpiration = true;
-
-                        // save the original access_token in the memory, this will be needed
-                        // to regenerate the JwtToken with additional claims
-                        var accessToken = context.Properties.GetTokenValue(ContextItemKeys.AcessToken);
-
-                        // auth cookie already contains updated expiry datetime
-                        // so let's use that for the token
-                        var cookieExpiry = context.Properties.ExpiresUtc;
-                        if (cookieExpiry.HasValue)
-                        {
-                            // save the updated expiry date so we can
-                            // use it in the CustomClaimsTransformation.cs
-                            // when creating new token
-                            context.HttpContext.Items[ContextItemKeys.AccessTokenCookieExpiryDate] = cookieExpiry;
-                        }
-
-                        // save original access token
-                        context.HttpContext.Items[ContextItemKeys.BearerToken] = accessToken;
-
-                        return Task.CompletedTask;
-                    }
-                };
+                options.Events = GenerateCookieAuthenticationEvent(appSettings.OneLogin.AuthCookieTimeout);
 
                 options.LoginPath = "/";
                 options.LogoutPath = "/";
@@ -292,5 +229,41 @@ public static class AuthConfiguration
         services.AddSingleton<IAuthorizationHandler, WorkspaceRequirementHandler>();
         services.AddSingleton<IAuthorizationHandler, PermissionRequirementHandler>();
         //services.AddSingleton<IAuthorizationHandler, RecordStatusAuthorizationHandler>();
+    }
+
+    private static CookieAuthenticationEvents GenerateCookieAuthenticationEvent(uint cookieAuthenticationTimeout)
+    {
+        return new CookieAuthenticationEvents
+        {
+            // this event is called on each request
+            // to validate that the current principal is still valid
+            OnValidatePrincipal = context =>
+            {
+                context.ShouldRenew = true;
+                context.Properties.AllowRefresh = true;
+                context.Options.ExpireTimeSpan = TimeSpan.FromSeconds(cookieAuthenticationTimeout + 60);
+                context.Options.SlidingExpiration = true;
+
+                // save the original access_token in the memory, this will be needed
+                // to regenerate the JwtToken with additional claims
+                var accessToken = context.Properties.GetTokenValue(ContextItemKeys.AcessToken);
+
+                // auth cookie already contains updated expiry datetime
+                // so let's use that for the token
+                var cookieExpiry = context.Properties.ExpiresUtc;
+                if (cookieExpiry.HasValue)
+                {
+                    // save the updated expiry date so we can
+                    // use it in the CustomClaimsTransformation.cs
+                    // when creating new token
+                    context.HttpContext.Items[ContextItemKeys.AccessTokenCookieExpiryDate] = cookieExpiry;
+                }
+
+                // save original access token
+                context.HttpContext.Items[ContextItemKeys.BearerToken] = accessToken;
+
+                return Task.CompletedTask;
+            }
+        };
     }
 }
