@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.Enum;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.AccessControl;
@@ -79,7 +80,7 @@ public class ProjectOverviewController
         string? backRoute,
         int pageNumber = 1,
         int pageSize = 20,
-        string sortField = nameof(ModificationsModel.ModificationNumber),
+        string sortField = nameof(ModificationsModel.CreatedAt),
         string sortDirection = SortDirections.Descending
     )
     {
@@ -132,6 +133,13 @@ public class ProjectOverviewController
                 Status = dto.Status,
             })
             .ToList() ?? [];
+        if (sortField == nameof(ModificationsModel.CreatedAt))
+        {
+            model.Modifications = model.Modifications.OrderBy(item => Enum.TryParse<ModificationStatusOrder>(GetEnumStatus(item.Status!), true, out var statusEnum)
+                  ? (int)statusEnum
+                  : (int)ModificationStatusOrder.None)
+              .ToList() ?? [];
+        }
         model.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationsResponseResult?.Content?.TotalCount ?? 0)
         {
             SortDirection = sortDirection,
@@ -553,4 +561,15 @@ public class ProjectOverviewController
 
         return response;
     }
+
+    private static string? GetEnumStatus(string status) => status switch
+    {
+        ModificationStatus.InDraft => nameof(ModificationStatusOrder.InDraft),
+        ModificationStatus.WithSponsor => nameof(ModificationStatusOrder.WithSponsor),
+        ModificationStatus.WithReviewBody => nameof(ModificationStatusOrder.WithRegulator),
+        ModificationStatus.Approved => nameof(ModificationStatusOrder.Approved),
+        ModificationStatus.NotApproved => nameof(ModificationStatusOrder.NotApproved),
+        ModificationStatus.NotAuthorised => nameof(ModificationStatusOrder.NotAuthorised),
+        _ => ModificationStatusOrder.None.ToString()
+    };
 }
