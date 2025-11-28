@@ -213,9 +213,15 @@ public class CustomClaimsTransformation
             IssuedAt = jsonToken.IssuedAt,
             NotBefore = jsonToken.ValidFrom,
             Subject = (ClaimsIdentity)principal.Identity!,
-            Expires = jsonToken.IssuedAt.AddSeconds(expires),
             SigningCredentials = signingCredentials
         };
+
+        var n = context.Items.TryGetValue(ContextItemKeys.AccessTokenCookieExpiryDate, out var newTokenExpiryObject);
+
+        if (n && newTokenExpiryObject is DateTime newTokenExpiry)
+        {
+            tokenDescriptor.Expires = newTokenExpiry;
+        }
 
         // generate the security token
         var token = handler.CreateJwtSecurityToken(tokenDescriptor);
