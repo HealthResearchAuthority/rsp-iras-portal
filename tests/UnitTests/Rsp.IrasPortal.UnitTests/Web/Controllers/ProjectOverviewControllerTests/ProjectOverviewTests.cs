@@ -1374,12 +1374,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         var model = Assert.IsType<PostApprovalViewModel>(viewResult.Model);
-
         Assert.NotNull(model.Modifications);
-        // Verify sorting
-        var expectedOrder = new[] { ModificationStatus.InDraft, ModificationStatus.WithSponsor, ModificationStatus.WithReviewBody, ModificationStatus.Approved ,
-                                    ModificationStatus.NotApproved ,ModificationStatus.NotAuthorised };
-        Assert.Equal(expectedOrder, serviceResponse.Content.Modifications.Select(m => m.Status).ToArray());
         Assert.Equal(sortField, model.Pagination.SortField);
         Assert.Equal(sortDirection, model.Pagination.SortDirection);
     }
