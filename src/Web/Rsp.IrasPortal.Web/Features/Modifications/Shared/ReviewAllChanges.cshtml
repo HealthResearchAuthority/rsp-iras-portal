@@ -79,13 +79,21 @@ else
                     <div class="save-buttons">
                         @{
                             <input type="hidden" name="projectRecordId" value="@Model.ProjectRecordId" />
-                            <partial name="_SubmitButton" model="@("pmc:sendmodificationtosponsor", "Send modification to sponsor", new Dictionary<string, string>()
-                                                          {
-                                                              ["projectModificationId"] = Model.ModificationId!,
-                                                              ["projectRecordId"] = Model.ProjectRecordId
-                                                          })" />
-
-                                        ViewBag.Style = "govuk-button govuk-button--secondary";
+                            @if (Model.ChangesReadyForSubmission)
+                            {
+                                <partial name="_SubmitButton" model="@("pmc:sendmodificationtosponsor", "Send modification to sponsor", new Dictionary<string, string>()
+                                                              {
+                                                                  ["projectModificationId"] = Model.ModificationId!,
+                                                                  ["projectRecordId"] = Model.ProjectRecordId
+                                                              })" />
+                                        }
+                            else
+                            {
+                                <a asp-route="pmc:unfinishedchanges" asp-route-projectRecordId="@Model.ProjectRecordId" class="govuk-button">
+                                    Send modification to sponsor
+                                </a>
+                            }
+                            ViewBag.Style = "govuk-button govuk-button--secondary";
 
                             <partial name="_SubmitButton" model="@("pmc:saveforlater", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId, ["routeName"] = "pov:postapproval" })" />
                         }

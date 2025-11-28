@@ -5,9 +5,7 @@ using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.AccessControl;
 using Rsp.IrasPortal.Web.Extensions;
-using Rsp.IrasPortal.Web.Features.Modifications.Helpers;
 using Rsp.IrasPortal.Web.Features.Modifications.Models;
-using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Features.Modifications;
@@ -23,8 +21,6 @@ public class ModificationDetailsController
     IValidator<QuestionnaireViewModel> validator
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator)
 {
-    private readonly IRespondentService _respondentService = respondentService;
-
     /// <summary>
     /// Displays the modification details page for a given project modification.
     /// </summary>
@@ -138,53 +134,4 @@ public class ModificationDetailsController
         });
     }
 
-    private async Task<List<ModificationChangeModel>> UpdateModificationChanges(string projectRecordId, List<ModificationChangeModel> modificationChanges)
-    {
-        foreach (var modificationChange in modificationChanges)
-        {
-            // get the responent answers for the category
-            var respondentServiceResponse = await _respondentService.GetModificationChangeAnswers(modificationChange.ModificationChangeId, projectRecordId);
-
-            // get the questions for the modification journey
-            var questionSetServiceResponse = await cmsQuestionsetService.GetModificationsJourney(modificationChange.SpecificAreaOfChangeId);
-
-            // return the error view if unsuccessfull
-            if (!respondentServiceResponse.IsSuccessStatusCode || !questionSetServiceResponse.IsSuccessStatusCode)
-            {
-                // return the modificationChanges unchanged in case of error
-                return modificationChanges;
-            }
-
-            var respondentAnswers = respondentServiceResponse.Content!;
-
-            // convert the questions response to QuestionnaireViewModel
-            var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(questionSetServiceResponse.Content!);
-
-            var questions = questionnaire.Questions;
-
-            if (questions.Count == 0)
-            {
-                modificationChange.ChangeStatus = ModificationStatus.ChangeReadyForSubmission;
-            }
-
-            // Apply respondent answers to the questionnaire
-            questionnaire.UpdateWithRespondentAnswers(respondentAnswers);
-
-            // Validate the questionnaire (mandatory-only) using FluentValidation
-            var result = await this.ValidateQuestionnaire(validator, questionnaire, true, false);
-
-            modificationChange.ChangeStatus = result ?
-                ModificationStatus.ChangeReadyForSubmission :
-                ModificationStatus.Unfinished;
-
-            // show surfacing questions
-            ModificationHelpers.ShowSurfacingQuestion(questions, modificationChange, nameof(ModificationDetails));
-
-            // remove all questions as they are not needed in the details view
-            // they are only needed to calculate the ranking
-            modificationChange.Questions.Clear();
-        }
-
-        return modificationChanges;
-    }
 }

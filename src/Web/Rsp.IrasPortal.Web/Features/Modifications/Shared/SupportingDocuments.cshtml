@@ -22,7 +22,6 @@
                                                                         new { Field = nameof(ProjectOverviewDocumentDto.DocumentDate), Label = "Document date" }
                                                                         };
 
-                                        var tableId = "projectDocumentsTable";
                                     }
 
                                     @foreach (var header in sortableHeaders)
@@ -38,17 +37,17 @@
                                                                                 DisplayText = displayText,
                                                                                 CurrentSortField = Model.ProjectOverviewDocumentViewModel.Pagination?.SortField,
                                                                                 CurrentSortDirection = Model.ProjectOverviewDocumentViewModel.Pagination?.SortDirection,
-                                                                                TableId = tableId,
                                                                                 AdditionalParameters = new Dictionary<string, string>
                                                                                 {
                                                                                 { "projectRecordId", Model.ProjectRecordId },
                                                                                 { "irasId", Model.IrasId },
                                                                                 { "shortTitle", Model.ShortTitle! },
-                                                                                { "projectModificationId", Model.ModificationId }
+                                                                                { "projectModificationId", Model.ModificationId },
+                                                                                { "documents", ModificationOverview.Documents }
                                                                                 }
                                                                                 })
-                                    </th>
-                                                                        }
+                                        </th>
+                                    }
                                     <th scope="col" class="govuk-table__header">Status</th>
                                     @if (Model.Status is ModificationStatus.InDraft)
                                     {
