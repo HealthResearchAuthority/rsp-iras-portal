@@ -95,6 +95,7 @@ public class ModificationsTasklistController
             ToDate = model.Search.ToDate,
             IrasId = model.Search.IrasId,
             ReviewerId = null,
+            IncludeReviewerId = User.IsInRole(Roles.TeamManager),
             ReviewerName = model.Search.ReviewerName,
             IncludeReviewerName = !string.IsNullOrWhiteSpace(model.Search.ReviewerName),
             UseBackstageStatus = true
