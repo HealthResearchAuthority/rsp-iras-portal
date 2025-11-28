@@ -1,7 +1,7 @@
 ﻿@using Rsp.IrasPortal.Application.Constants
 @model Rsp.IrasPortal.Web.Features.Modifications.Models.ModificationDetailsViewModel
 @{
-    var active = "tab-documents";
+    var activeTab = Context.Request.Query["documents"].ToString();
 }
 
 <!-- Hidden controls -->
@@ -13,9 +13,12 @@
     <input type="radio" id="tab-sponsor-details" name="tab-toggle" class="govuk-tab-toggle" checked>
     <input type="radio" id="tab-modifications-changes" name="tab-toggle" class="govuk-tab-toggle">
 </authorized>
-
 <input type="radio" id="tab-documents" name="tab-toggle" class="govuk-tab-toggle">
 <input type="radio" id="tab-history" name="tab-toggle" class="govuk-tab-toggle">
+@if (activeTab == ModificationOverview.Documents)
+{
+    <input type="radio" id="tab-documents" name="tab-toggle" class="govuk-tab-toggle" checked>
+}
 
 <!-- Keep the same GOV.UK Service Navigation look -->
 <div class="govuk-service-navigation">
