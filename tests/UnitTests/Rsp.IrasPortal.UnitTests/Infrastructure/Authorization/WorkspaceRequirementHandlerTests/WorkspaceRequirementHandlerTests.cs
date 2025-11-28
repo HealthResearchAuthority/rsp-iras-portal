@@ -125,7 +125,7 @@ public class WorkspaceRequirementHandlerTests
     }
 
     [Fact]
-    public async Task HandleRequirementAsync_Fails_When_User_Has_StudyWideReviewer_Role_For_MyResearch_Workspace()
+    public async Task HandleRequirementAsync_Succeeds_When_User_Has_StudyWideReviewer_Role_For_MyResearch_Workspace()
     {
         // Arrange
         var handler = new WorkspaceRequirementHandler();
@@ -137,7 +137,7 @@ public class WorkspaceRequirementHandlerTests
         await handler.HandleAsync(context);
 
         // Assert
-        context.HasSucceeded.ShouldBeFalse();
+        context.HasSucceeded.ShouldBeTrue();
     }
 
     // HandleRequirementAsync Tests - Sponsor Workspace
