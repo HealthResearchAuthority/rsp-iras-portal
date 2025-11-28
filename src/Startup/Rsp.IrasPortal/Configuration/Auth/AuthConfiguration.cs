@@ -58,13 +58,19 @@ public static class AuthConfiguration
                             // to regenerate the JwtToken with additional claims
                             var accessToken = context.Properties.GetTokenValue(ContextItemKeys.AcessToken);
 
+                            // auth cookie already contains updated expiry datetime
+                            // so let's use that for the token
                             var cookieExpiry = context.Properties.ExpiresUtc;
 
                             if (cookieExpiry.HasValue)
                             {
+                                // save the updated expiry date so we can
+                                // use it in the CustomClaimsTransformation.cs
+                                // when creating new token
                                 context.HttpContext.Items[ContextItemKeys.AccessTokenCookieExpiryDate] = cookieExpiry;
                             }
 
+                            // save original access token
                             context.HttpContext.Items[ContextItemKeys.BearerToken] = accessToken;
 
                             return Task.CompletedTask;
@@ -161,12 +167,18 @@ public static class AuthConfiguration
                         // to regenerate the JwtToken with additional claims
                         var accessToken = context.Properties.GetTokenValue(ContextItemKeys.AcessToken);
 
+                        // auth cookie already contains updated expiry datetime
+                        // so let's use that for the token
                         var cookieExpiry = context.Properties.ExpiresUtc;
                         if (cookieExpiry.HasValue)
                         {
+                            // save the updated expiry date so we can
+                            // use it in the CustomClaimsTransformation.cs
+                            // when creating new token
                             context.HttpContext.Items[ContextItemKeys.AccessTokenCookieExpiryDate] = cookieExpiry;
                         }
 
+                        // save original access token
                         context.HttpContext.Items[ContextItemKeys.BearerToken] = accessToken;
 
                         return Task.CompletedTask;

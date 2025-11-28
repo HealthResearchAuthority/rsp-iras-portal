@@ -198,10 +198,6 @@ public class CustomClaimsTransformation
             appSettings.Value.OneLogin.ClientId :
             appSettings.Value.AuthSettings.ClientId;
 
-        var expires = oneLoginEnabled ?
-            appSettings.Value.OneLogin.AuthCookieTimeout :
-            appSettings.Value.AuthSettings.AuthCookieTimeout;
-
         // configure the new token using the existing
         // bearer_token properties but with newly added
         // claims.
