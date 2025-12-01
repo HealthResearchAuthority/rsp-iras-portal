@@ -212,6 +212,26 @@ services.AddExceptionHandler<GlobalExceptionHandler>();
 
 var app = builder.Build();
 
+// --- DEBUG START: Remove after fixing ---
+var allKeys = app.Configuration.AsEnumerable()
+    .Where(k => k.Key.Contains("AppSettings:DocumentStorage:CleanBlobConnectionString") || k.Key.Contains("AppSettings:DocumentStorage:StagingBlobConnectionString"))
+    .ToList();
+
+if (allKeys.Count == 0)
+{
+    // This will appear in your Application Insights or logs
+    app.Logger.LogCritical("No keys found containing 'CleanBlobConnectionString' or 'StagingBlobConnectionString'");
+}
+else
+{
+    foreach (var k in allKeys)
+    {
+        // This tells you exactly what key and value is loaded
+        app.Logger.LogInformation("Loaded Key: '{Key}', Value: '{Value}'", k.Key, k.Value ?? "NULL");
+    }
+}
+// --- DEBUG END ---
+
 app.UseForwardedHeaders();
 
 app.MapDefaultEndpoints();
