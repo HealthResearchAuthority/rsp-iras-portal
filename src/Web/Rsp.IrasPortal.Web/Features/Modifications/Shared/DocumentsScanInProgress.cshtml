@@ -4,7 +4,7 @@
 @using Microsoft.FeatureManagement
 @using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Web.Features.Modifications.Models
-@model ModificationDetailsViewModel
+@model BaseProjectModificationViewModel
 
 @{
 	var modificationParams = new Dictionary<string, string> {
@@ -19,7 +19,7 @@
 	<div class="govuk-grid-column-two-thirds">
 		<h1 class="govuk-heading-l">You cannot proceed whilst documents 
 			are being scanned</h1>
-		<partial name="_ProjectModificationSummary" model="Model" />
+        <partial name="_ProjectModificationSummary" model="Model" view-data="ViewData" />
 		<p class="govuk-body">
 			Some of your supporting documents are still being scanned by the system for 
 			malware. You will need to wait until this is complete before you can continue. 
