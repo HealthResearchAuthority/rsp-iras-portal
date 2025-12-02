@@ -148,7 +148,7 @@ public class ProjectRecordControllerTests : TestServiceBase<ProjectRecordControl
         Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
 
         // Needed for GetRespondentFromContext
-        httpContext.Items[ContextItemKeys.RespondentId] = "user-1";
+        httpContext.Items[ContextItemKeys.UserId] = "user-1";
 
         var model = new ProjectRecordViewModel
         {
@@ -185,7 +185,7 @@ public class ProjectRecordControllerTests : TestServiceBase<ProjectRecordControl
         var httpContext = CreateHttpContextWithSession(out var session);
         Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
         Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
-        httpContext.Items[ContextItemKeys.RespondentId] = "user-1";
+        httpContext.Items[ContextItemKeys.UserId] = "user-1";
 
         var model = new ProjectRecordViewModel
         {
@@ -228,7 +228,7 @@ public class ProjectRecordControllerTests : TestServiceBase<ProjectRecordControl
         var httpContext = CreateHttpContextWithSession(out var session);
         Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
         Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
-        httpContext.Items[ContextItemKeys.RespondentId] = "user-1";
+        httpContext.Items[ContextItemKeys.UserId] = "user-1";
 
         var model = new ProjectRecordViewModel
         {
@@ -284,7 +284,7 @@ public class ProjectRecordControllerTests : TestServiceBase<ProjectRecordControl
         Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
 
         // Required for GetRespondentFromContext and SaveProjectRecordAnswers
-        httpContext.Items[ContextItemKeys.RespondentId] = "user-1";
+        httpContext.Items[ContextItemKeys.UserId] = "user-1";
 
         var model = new ProjectRecordViewModel
         {

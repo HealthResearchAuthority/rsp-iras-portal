@@ -160,7 +160,7 @@ public class SubmitApplicationTests : TestServiceBase<QuestionnaireController>
 
         Sut.TempData = new TempDataDictionary(context, Mock.Of<ITempDataProvider>());
 
-        context.Items[ContextItemKeys.RespondentId] = "RespondentId1";
+        context.Items[ContextItemKeys.UserId] = "RespondentId1";
 
         Sut.ControllerContext = new ControllerContext { HttpContext = context };
 
@@ -338,7 +338,7 @@ public class SubmitApplicationTests : TestServiceBase<QuestionnaireController>
 
         Sut.TempData = new TempDataDictionary(context, Mock.Of<ITempDataProvider>());
 
-        context.Items[ContextItemKeys.RespondentId] = "RespondentId1";
+        context.Items[ContextItemKeys.UserId] = "RespondentId1";
 
         Sut.ControllerContext = new ControllerContext { HttpContext = context };
 
@@ -470,7 +470,7 @@ public class SubmitApplicationTests : TestServiceBase<QuestionnaireController>
 
         Sut.TempData = new TempDataDictionary(context, Mock.Of<ITempDataProvider>());
 
-        context.Items[ContextItemKeys.RespondentId] = "RespondentId1";
+        context.Items[ContextItemKeys.UserId] = "RespondentId1";
 
         Sut.ControllerContext = new ControllerContext { HttpContext = context };
 

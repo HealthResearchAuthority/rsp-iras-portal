@@ -15,7 +15,7 @@ public abstract class ProjectRecordControllerBase
     protected async Task SaveProjectRecordAnswers(string projectRecordId, List<QuestionViewModel> questions)
     {
         // save the responses
-        var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
+        var respondentId = (HttpContext.Items[ContextItemKeys.UserId] as string)!;
 
         // to save the responses
         // we need to build the RespondentAnswerRequest

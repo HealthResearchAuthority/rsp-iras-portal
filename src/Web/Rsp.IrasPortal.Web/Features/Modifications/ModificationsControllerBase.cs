@@ -168,7 +168,7 @@ public abstract class ModificationsControllerBase
     protected async Task SaveModificationAnswers(Guid projectModificationId, string projectRecordId, List<QuestionViewModel> questions)
     {
         // save the responses
-        var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
+        var userId = (HttpContext.Items[ContextItemKeys.UserId] as string)!;
 
         // to save the responses
         // we need to build the RespondentAnswerRequest
@@ -177,7 +177,7 @@ public abstract class ModificationsControllerBase
         {
             ProjectModificationId = projectModificationId,
             ProjectRecordId = projectRecordId,
-            ProjectPersonnelId = respondentId
+            UserId = userId
         };
 
         foreach (var question in questions)
@@ -267,7 +267,7 @@ public abstract class ModificationsControllerBase
         {
             ProjectModificationId = projectModificationId,
             ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty,
-            ProjectPersonnelId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!,
+            UserId = (HttpContext.Items[ContextItemKeys.UserId] as string)!,
         };
     }
 
@@ -284,7 +284,7 @@ public abstract class ModificationsControllerBase
         var response = await respondentService.GetModificationChangesDocuments(
             documentChangeRequest.ProjectModificationId,
             documentChangeRequest.ProjectRecordId,
-            documentChangeRequest.ProjectPersonnelId);
+            documentChangeRequest.UserId);
 
         if (response?.StatusCode != HttpStatusCode.OK || response.Content == null)
             return [];

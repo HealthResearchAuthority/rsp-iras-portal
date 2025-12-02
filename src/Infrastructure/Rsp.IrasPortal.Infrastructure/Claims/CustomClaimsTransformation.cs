@@ -101,18 +101,18 @@ public class CustomClaimsTransformation
 
         if (userResponse.IsSuccessStatusCode && userResponse.Content != null)
         {
-            var respondentId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var user = userResponse.Content;
+
+            var userId = user.User.Id;
             var firstName = principal.FindFirst(ClaimTypes.GivenName)?.Value;
             var surName = principal.FindFirst(ClaimTypes.Surname)?.Value;
             var lastLogin = userResponse.Content.User?.LastLogin;
 
-            context.Items.Add(ContextItemKeys.RespondentId, respondentId);
+            context.Items.Add(ContextItemKeys.UserId, userId);
             context.Items.Add(ContextItemKeys.Email, email);
             context.Items.Add(ContextItemKeys.FirstName, firstName);
             context.Items.Add(ContextItemKeys.LastName, surName);
             context.Items.Add(ContextItemKeys.LastLogin, lastLogin);
-
-            var user = userResponse.Content;
 
             if (!string.IsNullOrWhiteSpace(user.User?.Id))
             {

@@ -457,7 +457,7 @@ public class QuestionnaireController
                 Status = ProjectRecordStatus.Active,
                 CreatedBy = application.CreatedBy,
                 UpdatedBy = application.UpdatedBy,
-                Respondent = this.GetRespondentFromContext(),
+                UserId = this.GetUserIdFromContext(),
                 IrasId = application.IrasId
             }
         );

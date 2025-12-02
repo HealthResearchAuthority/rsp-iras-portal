@@ -117,17 +117,17 @@ public class ProjectRecordController
         }
 
         // Get the respondent information from the current context
-        var respondent = this.GetRespondentFromContext();
+        var userId = this.GetUserIdFromContext();
 
         // Create a new application request object
         var projectRecordRequest = new IrasApplicationRequest
         {
             ShortProjectTitle = model.ShortProjectTitle,
             FullProjectTitle = model.FullProjectTitle,
-            CreatedBy = respondent.Id,
-            UpdatedBy = respondent.Id,
+            CreatedBy = userId,
+            UpdatedBy = userId,
             StartDate = DateTime.Now,
-            Respondent = respondent,
+            UserId = userId,
             IrasId = model.IrasId,
         };
 
