@@ -5,6 +5,7 @@ using Rsp.IrasPortal.Application.Configuration;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Domain.Identity;
 using Rsp.IrasPortal.Infrastructure.Claims;
 using Rsp.IrasPortal.Services.Extensions;
 using Claim = System.Security.Claims.Claim;
@@ -95,7 +96,7 @@ public class TransformAsyncTests : TestServiceBase<CustomClaimsTransformation>
 
     [Theory, AutoData]
     public async Task TransformAsync_Should_Add_Roles_From_UserManagementService_When_EmailClaim_Is_Present(
-        string email, string firstName, string lastName, string identityProviderId, List<string> roles)
+        string email, string firstName, string lastName, string identityProviderId, List<string> roles, User user)
     {
         // Arrange
         var claims = new List<Claim>
@@ -124,8 +125,10 @@ public class TransformAsyncTests : TestServiceBase<CustomClaimsTransformation>
         // Mock UserManagementService to return a success response with roles
         var userResponse = new UserResponse
         {
-            Roles = roles
+            Roles = roles,
+            User = user
         };
+
         var apiResponse = new ApiResponse<UserResponse>(
             new HttpResponseMessage(HttpStatusCode.OK),
             userResponse,

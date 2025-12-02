@@ -13,6 +13,7 @@
     ViewData[ViewDataKeys.ShowModificationChangeStatus] = false;
     ViewData[ViewDataKeys.ShowModificationStatus] = true;
     ViewData[ViewDataKeys.IsSponsorCheckAndAuthorise] = true;
+	ViewData[ViewDataKeys.ShowModificationDetails] = Model.Status != ModificationStatus.WithSponsor;
 
     ViewBag.SponsorOrganisationUserId = Model.SponsorOrganisationUserId;
 

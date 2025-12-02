@@ -53,7 +53,7 @@ public class SaveSponsorReference_Tests : TestServiceBase<SponsorReferenceContro
     public async Task Returns_View_When_Validation_Fails()
     {
         var http = new DefaultHttpContext();
-        http.Items[Rsp.IrasPortal.Application.Constants.ContextItemKeys.RespondentId] = "R1";
+        http.Items[Rsp.IrasPortal.Application.Constants.ContextItemKeys.UserId] = "R1";
         Sut.ControllerContext = new() { HttpContext = http };
         Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>())
         {
@@ -93,7 +93,7 @@ public class SaveSponsorReference_Tests : TestServiceBase<SponsorReferenceContro
     public async Task Redirects_To_ReviewAllChanges_On_Success()
     {
         var http = new DefaultHttpContext();
-        http.Items[Rsp.IrasPortal.Application.Constants.ContextItemKeys.RespondentId] = "R1";
+        http.Items[Rsp.IrasPortal.Application.Constants.ContextItemKeys.UserId] = "R1";
         Sut.ControllerContext = new() { HttpContext = http };
         var modId = Guid.NewGuid();
         Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>())
@@ -145,7 +145,7 @@ public class SaveSponsorReference_Tests : TestServiceBase<SponsorReferenceContro
     public async Task Redirects_To_PostApproval_When_SaveForLater()
     {
         var http = new DefaultHttpContext();
-        http.Items[Rsp.IrasPortal.Application.Constants.ContextItemKeys.RespondentId] = "R1";
+        http.Items[Rsp.IrasPortal.Application.Constants.ContextItemKeys.UserId] = "R1";
         Sut.ControllerContext = new() { HttpContext = http };
         Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>())
         {

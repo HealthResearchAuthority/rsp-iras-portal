@@ -53,7 +53,7 @@ public class ModificationChangesBaseController
     protected async Task SaveModificationChangeAnswers(Guid projectModificationChangeId, string projectRecordId, List<QuestionViewModel> questions)
     {
         // save the responses
-        var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
+        var userId = (HttpContext.Items[ContextItemKeys.UserId] as string)!;
 
         // to save the responses
         // we need to build the RespondentAnswerRequest
@@ -62,7 +62,7 @@ public class ModificationChangesBaseController
         {
             ProjectModificationChangeId = projectModificationChangeId,
             ProjectRecordId = projectRecordId,
-            ProjectPersonnelId = respondentId
+            UserId = userId
         };
 
         foreach (var question in questions)

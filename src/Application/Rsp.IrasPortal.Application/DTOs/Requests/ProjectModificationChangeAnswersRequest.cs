@@ -17,9 +17,9 @@ public record ProjectModificationChangeAnswersRequest
     public string ProjectRecordId { get; set; } = null!;
 
     /// <summary>
-    /// Project personnel
+    /// User Id
     /// </summary>
-    public string ProjectPersonnelId { get; set; } = null!;
+    public string UserId { get; set; } = null!;
 
     /// <summary>
     /// Respondent Answers

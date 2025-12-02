@@ -80,7 +80,7 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
             [TempDataKeys.IrasId] = 999
         };
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
-        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
+        Sut.HttpContext.Items[ContextItemKeys.UserId] = "respondent-1";
 
         var result = await Sut.UploadDocuments(model);
 
@@ -144,7 +144,7 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
             [TempDataKeys.IrasId] = 999
         };
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
-        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
+        Sut.HttpContext.Items[ContextItemKeys.UserId] = "respondent-1";
 
         var result = await Sut.UploadDocuments(model);
 
@@ -175,7 +175,7 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
             [TempDataKeys.IrasId] = 999
         };
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
-        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
+        Sut.HttpContext.Items[ContextItemKeys.UserId] = "respondent-1";
 
         var result = await Sut.UploadDocuments(model);
 
@@ -237,7 +237,7 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
             [TempDataKeys.IrasId] = 999
         };
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
-        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
+        Sut.HttpContext.Items[ContextItemKeys.UserId] = "respondent-1";
 
         var result = await Sut.UploadDocuments(model);
 
@@ -298,7 +298,7 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
             [TempDataKeys.IrasId] = 999
         };
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
-        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
+        Sut.HttpContext.Items[ContextItemKeys.UserId] = "respondent-1";
 
         var result = await Sut.UploadDocuments(model);
 
@@ -325,7 +325,7 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
             [TempDataKeys.IrasId] = 999
         };
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
-        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
+        Sut.HttpContext.Items[ContextItemKeys.UserId] = "respondent-1";
 
         var result = await Sut.UploadDocuments(model);
 
@@ -349,7 +349,7 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
             [TempDataKeys.IrasId] = 999
         };
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
-        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
+        Sut.HttpContext.Items[ContextItemKeys.UserId] = "respondent-1";
 
         var result = await Sut.UploadDocuments(model);
 
@@ -374,7 +374,7 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
             [TempDataKeys.IrasId] = 999
         };
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
-        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
+        Sut.HttpContext.Items[ContextItemKeys.UserId] = "respondent-1";
 
         var result = await Sut.UploadDocuments(model);
 

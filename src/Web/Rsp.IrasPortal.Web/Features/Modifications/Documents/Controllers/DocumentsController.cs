@@ -57,7 +57,7 @@ public class DocumentsController
         var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationUploadDocumentsViewModel());
 
         // Retrieve contextual identifiers from TempData and HttpContext
-        var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
+        var respondentId = (HttpContext.Items[ContextItemKeys.UserId] as string)!;
 
         // Fetch existing documents for this modification
         var response = await respondentService.GetModificationChangesDocuments(
@@ -99,7 +99,7 @@ public class DocumentsController
         // Call the respondent service to fetch metadata for documents
         // that have already been uploaded for this project modification.
         var response = await respondentService.GetModificationChangesDocuments(
-            request.ProjectModificationId, request.ProjectRecordId, request.ProjectPersonnelId);
+            request.ProjectModificationId, request.ProjectRecordId, request.UserId);
 
         if (response?.StatusCode == HttpStatusCode.OK && response.Content != null)
         {
@@ -397,7 +397,7 @@ public class DocumentsController
 
         // Call the respondent service to fetch metadata for documents
         var response = await respondentService.GetModificationChangesDocuments(
-            request.ProjectModificationId, request.ProjectRecordId, request.ProjectPersonnelId);
+            request.ProjectModificationId, request.ProjectRecordId, request.UserId);
 
         if (response?.StatusCode == HttpStatusCode.OK && response.Content != null)
         {
@@ -409,7 +409,7 @@ public class DocumentsController
                     Id = doc.Id,
                     ProjectModificationId = request.ProjectModificationId,
                     ProjectRecordId = request.ProjectRecordId,
-                    ProjectPersonnelId = request.ProjectPersonnelId,
+                    UserId = request.UserId,
                     FileName = doc.FileName,
                     DocumentStoragePath = doc.DocumentStoragePath,
                     FileSize = doc.FileSize
@@ -443,7 +443,7 @@ public class DocumentsController
                 Id = d.Id,
                 ProjectModificationId = request.ProjectModificationId,
                 ProjectRecordId = request.ProjectRecordId,
-                ProjectPersonnelId = request.ProjectPersonnelId,
+                UserId = request.UserId,
                 FileName = d.FileName,
                 DocumentStoragePath = d.DocumentStoragePath,
                 FileSize = d.FileSize,
@@ -480,7 +480,7 @@ public class DocumentsController
         {
             // Call the respondent service to fetch metadata for documents
             var response = await respondentService.GetModificationChangesDocuments(
-                request.ProjectModificationId, request.ProjectRecordId, request.ProjectPersonnelId);
+                request.ProjectModificationId, request.ProjectRecordId, request.UserId);
 
             // Check if there are any remaining documents in the response
             if (response?.Content == null || !response.Content.Any())
@@ -530,7 +530,7 @@ public class DocumentsController
 
         // Retrieve contextual identifiers from TempData and HttpContext
         var projectModificationId = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId);
-        var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
+        var respondentId = (HttpContext.Items[ContextItemKeys.UserId] as string)!;
         var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty;
         var irasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty;
 
@@ -711,7 +711,7 @@ public class DocumentsController
         {
             ProjectModificationId = projectModificationId == null ? Guid.Empty : (Guid)projectModificationId!,
             ProjectRecordId = projectRecordId,
-            ProjectPersonnelId = respondentId,
+            UserId = respondentId,
             FileName = blob.FileName,
             DocumentStoragePath = blob.BlobUri,
             FileSize = blob.FileSize,
@@ -816,7 +816,7 @@ public class DocumentsController
         var response = await respondentService.GetModificationChangesDocuments(
             documentChangeRequest.ProjectModificationId,
             documentChangeRequest.ProjectRecordId,
-            documentChangeRequest.ProjectPersonnelId);
+            documentChangeRequest.UserId);
 
         // Retrieve the CMS question set for the document details section
         var additionalQuestionsResponse = await cmsQuestionsetService
@@ -979,7 +979,7 @@ public class DocumentsController
         var documentsResponse = await respondentService.GetModificationChangesDocuments(
             request.ProjectModificationId,
             request.ProjectRecordId,
-            request.ProjectPersonnelId);
+            request.UserId);
 
         // Skip validation if service call fails or no documents exist
         if (documentsResponse?.StatusCode != HttpStatusCode.OK || documentsResponse.Content == null)

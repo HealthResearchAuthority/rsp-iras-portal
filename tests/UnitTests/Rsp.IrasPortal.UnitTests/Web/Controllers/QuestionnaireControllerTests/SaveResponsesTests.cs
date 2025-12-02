@@ -92,7 +92,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
 
         Sut.TempData = new TempDataDictionary(context, Mock.Of<ITempDataProvider>());
 
-        context.Items[ContextItemKeys.RespondentId] = "RespondentId1";
+        context.Items[ContextItemKeys.UserId] = "RespondentId1";
 
         Sut.ControllerContext = new ControllerContext { HttpContext = context };
 
@@ -198,7 +198,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
 
         Sut.TempData = new TempDataDictionary(context, Mock.Of<ITempDataProvider>());
 
-        context.Items[ContextItemKeys.RespondentId] = "RespondentId1";
+        context.Items[ContextItemKeys.UserId] = "RespondentId1";
 
         Sut.ControllerContext = new ControllerContext { HttpContext = context };
 
@@ -303,7 +303,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
             [TempDataKeys.CategoryId] = categoryId
         };
 
-        context.Items[ContextItemKeys.RespondentId] = "RespondentId1";
+        context.Items[ContextItemKeys.UserId] = "RespondentId1";
 
         Sut.ControllerContext = new ControllerContext { HttpContext = context };
 
@@ -382,7 +382,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
         };
 
         Sut.TempData = new TempDataDictionary(context, Mock.Of<ITempDataProvider>());
-        context.Items[ContextItemKeys.RespondentId] = "RespondentId1";
+        context.Items[ContextItemKeys.UserId] = "RespondentId1";
         Sut.ControllerContext = new ControllerContext { HttpContext = context };
 
         var responseQuestionSections = new ServiceResponse<IEnumerable<QuestionSectionsResponse>>
@@ -509,7 +509,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
 
         Sut.TempData = new TempDataDictionary(context, Mock.Of<ITempDataProvider>());
 
-        context.Items[ContextItemKeys.RespondentId] = "RespondentId1";
+        context.Items[ContextItemKeys.UserId] = "RespondentId1";
 
         Sut.ControllerContext = new ControllerContext { HttpContext = context };
 
@@ -599,7 +599,7 @@ public class SaveResponsesTests : TestServiceBase<QuestionnaireController>
             Session = session.Object
         };
 
-        context.Items[ContextItemKeys.RespondentId] = "RespondentId1";
+        context.Items[ContextItemKeys.UserId] = "RespondentId1";
         Sut.ControllerContext = new ControllerContext { HttpContext = context };
         Sut.TempData = new TempDataDictionary(context, Mock.Of<ITempDataProvider>());
 

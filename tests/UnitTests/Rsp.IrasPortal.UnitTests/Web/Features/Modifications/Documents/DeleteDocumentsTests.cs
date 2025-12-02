@@ -221,7 +221,7 @@ public class DeleteDocumentsTests : TestServiceBase<DocumentsController>
         {
             HttpContext = new DefaultHttpContext
             {
-                Items = { [ContextItemKeys.RespondentId] = respondentId }
+                Items = { [ContextItemKeys.UserId] = respondentId }
             }
         };
     }

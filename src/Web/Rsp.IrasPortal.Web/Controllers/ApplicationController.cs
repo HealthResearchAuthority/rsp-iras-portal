@@ -41,7 +41,7 @@ public class ApplicationController
         };
 
         // getting respondentID from Http context
-        var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
+        var respondentId = (HttpContext.Items[ContextItemKeys.UserId] as string)!;
 
         // getting search query
         var json = HttpContext.Session.GetString(SessionKeys.ProjectRecordSearch);

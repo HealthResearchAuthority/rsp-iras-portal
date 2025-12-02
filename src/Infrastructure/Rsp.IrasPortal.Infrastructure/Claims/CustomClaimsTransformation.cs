@@ -101,18 +101,18 @@ public class CustomClaimsTransformation
 
         if (userResponse.IsSuccessStatusCode && userResponse.Content != null)
         {
-            var respondentId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var user = userResponse.Content;
+
+            var userId = user.User.Id;
             var firstName = principal.FindFirst(ClaimTypes.GivenName)?.Value;
             var surName = principal.FindFirst(ClaimTypes.Surname)?.Value;
             var lastLogin = userResponse.Content.User?.LastLogin;
 
-            context.Items.Add(ContextItemKeys.RespondentId, respondentId);
+            context.Items.Add(ContextItemKeys.UserId, userId);
             context.Items.Add(ContextItemKeys.Email, email);
             context.Items.Add(ContextItemKeys.FirstName, firstName);
             context.Items.Add(ContextItemKeys.LastName, surName);
             context.Items.Add(ContextItemKeys.LastLogin, lastLogin);
-
-            var user = userResponse.Content;
 
             if (!string.IsNullOrWhiteSpace(user.User?.Id))
             {
@@ -198,10 +198,6 @@ public class CustomClaimsTransformation
             appSettings.Value.OneLogin.ClientId :
             appSettings.Value.AuthSettings.ClientId;
 
-        var expires = oneLoginEnabled ?
-            appSettings.Value.OneLogin.AuthCookieTimeout :
-            appSettings.Value.AuthSettings.AuthCookieTimeout;
-
         // configure the new token using the existing
         // bearer_token properties but with newly added
         // claims.
@@ -213,9 +209,16 @@ public class CustomClaimsTransformation
             IssuedAt = jsonToken.IssuedAt,
             NotBefore = jsonToken.ValidFrom,
             Subject = (ClaimsIdentity)principal.Identity!,
-            Expires = jsonToken.IssuedAt.AddSeconds(expires),
             SigningCredentials = signingCredentials
         };
+
+        var newTokenExpirationExists = context.Items.TryGetValue(ContextItemKeys.AccessTokenCookieExpiryDate, out var newTokenExpiryObject);
+
+        if (newTokenExpirationExists && newTokenExpiryObject is DateTimeOffset newTokenExpiry)
+        {
+            // extend new token expiration
+            tokenDescriptor.Expires = newTokenExpiry.UtcDateTime;
+        }
 
         // generate the security token
         var token = handler.CreateJwtSecurityToken(tokenDescriptor);
