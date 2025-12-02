@@ -81,14 +81,20 @@ public class CookiePolicyControllerTests : TestServiceBase<CookiesController>
         // Arrange
         var settingsSource = CookieConfirmationSource.CookieBanner;
         var requestCookies = "_ga=123; _clck=aaa; SomeOtherCookie=bbb";
+
         _http.Request.Headers["Cookie"] = requestCookies;
-        _http.Response.Headers["Cookie"] = requestCookies;
-        var userConsent = "no";
+        var userConsent = CookieConsentValues.No;
 
         // Act
-        var result = Sut.AcceptConsent(userConsent, settingsSource);
+        Sut.AcceptConsent(userConsent, settingsSource);
 
         // Assert
-        var cook = _http.Response.Cookies;
+        var setCookieHeader = _http.Response.Headers["Set-Cookie"].ToString();
+
+        // check that _ga and _clck have been added to the 'Set-Cookie'
+        // header with expiry date as DateTime.Min marked to be deleted from the response
+        setCookieHeader.ShouldContain("_ga=; expires=Thu, 01 Jan 1970 00:00:00 GMT");
+        setCookieHeader.ShouldContain("_clck=; expires=Thu, 01 Jan 1970 00:00:00 GMT");
+        setCookieHeader.ShouldNotContain("SomeOtherCookie=; expires=Thu, 01 Jan 1970 00:00:00 GMT");
     }
 }
