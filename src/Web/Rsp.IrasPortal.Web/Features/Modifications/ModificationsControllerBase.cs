@@ -464,10 +464,6 @@ public abstract class ModificationsControllerBase
 
             // show surfacing questions
             ModificationHelpers.ShowSurfacingQuestion(questions, modificationChange, "ModificationDetails");
-
-            // remove all questions as they are not needed in the details view
-            // they are only needed to calculate the ranking
-            modificationChange.Questions.Clear();
         }
 
         return modificationChanges;
