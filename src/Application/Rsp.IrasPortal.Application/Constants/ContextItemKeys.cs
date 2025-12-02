@@ -16,4 +16,5 @@ public struct ContextItemKeys
     public const string LastLogin = "context:lastlogin";
     public const string ProblemDetails = "context:problem_details";
     public const string RequireProfileCompletion = "context:require_profile_completion";
+    public const string AccessTokenCookieExpiryDate = "context:access_token_expiry";
 }

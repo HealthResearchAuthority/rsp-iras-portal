@@ -22,7 +22,9 @@ public static class AuthConfiguration
     /// </summary>
     /// <param name="services"><see cref="IServiceCollection"/></param>
     /// <param name="appSettings">Application Settinghs</param>
-    public static IServiceCollection AddAuthenticationAndAuthorization(this IServiceCollection services, AppSettings appSettings)
+    public static IServiceCollection AddAuthenticationAndAuthorization(
+        this IServiceCollection services,
+        AppSettings appSettings)
     {
         services
             .AddAuthentication
@@ -41,23 +43,12 @@ public static class AuthConfiguration
             (
                 options =>
                 {
-                    options.Events = new CookieAuthenticationEvents
-                    {
-                        // this event is called on each request
-                        // to validate that the current principal is still valid
-                        OnValidatePrincipal = context =>
-                        {
-                            // save the original access_token in the memory, this will be needed
-                            // to regenerate the JwtToken with additional claims
-                            context.HttpContext.Items[ContextItemKeys.BearerToken] = context.Properties.GetTokenValue(ContextItemKeys.AcessToken);
+                    options.Events = GenerateCookieAuthenticationEvent(appSettings.AuthSettings.AuthCookieTimeout, ContextItemKeys.AcessToken);
 
-                            return Task.CompletedTask;
-                        }
-                    };
-
+                    options.Cookie.IsEssential = true;
                     options.LoginPath = "/";
                     options.LogoutPath = "/";
-                    options.ExpireTimeSpan = TimeSpan.FromSeconds(appSettings.AuthSettings.AuthCookieTimeout + 60);
+                    options.ExpireTimeSpan = TimeSpan.FromSeconds(appSettings.AuthSettings.AuthCookieTimeout);
                     options.SlidingExpiration = true;
                     options.AccessDeniedPath = "/error/forbidden";
                 }
@@ -75,14 +66,20 @@ public static class AuthConfiguration
                     options.Scope.Add("openid");
                     options.Scope.Add("profile");
                     options.Scope.Add("email");
+                    options.Scope.Add("offline_access");
                     options.CallbackPath = "/signin-oidc"; // Default callback path
                     options.SignedOutCallbackPath = "/oidc/logout";
                     options.GetClaimsFromUserInfoEndpoint = true;
                     options.UsePkce = false;
                     options.ClaimActions.MapUniqueJsonKey(ClaimTypes.Name, "given_name");
+                    options.UseTokenLifetime = false;
 
                     options.Events.OnTokenValidated = context =>
                     {
+                        if (context.Properties != null)
+                        {
+                            context.Properties.ExpiresUtc = DateTimeOffset.UtcNow.AddSeconds(appSettings.AuthSettings.AuthCookieTimeout);
+                        }
                         // this key is used to indicate that the user is logged in for the first time
                         // will be used to update the LastLogin during the claims transformation
                         // to indicate when the user was logged in last time.
@@ -122,23 +119,11 @@ public static class AuthConfiguration
             })
             .AddCookie(options =>
             {
-                options.Events = new CookieAuthenticationEvents
-                {
-                    // this event is called on each request
-                    // to validate that the current principal is still valid
-                    OnValidatePrincipal = context =>
-                    {
-                        // save the original access_token in the memory, this will be needed
-                        // to regenerate the JwtToken with additional claims
-                        context.HttpContext.Items[ContextItemKeys.BearerToken] = context.Properties.GetTokenValue(ContextItemKeys.IdToken);
-
-                        return Task.CompletedTask;
-                    }
-                };
+                options.Events = GenerateCookieAuthenticationEvent(appSettings.OneLogin.AuthCookieTimeout, ContextItemKeys.IdToken);
 
                 options.LoginPath = "/";
                 options.LogoutPath = "/";
-                options.ExpireTimeSpan = TimeSpan.FromSeconds(appSettings.OneLogin.AuthCookieTimeout + 60);
+                options.ExpireTimeSpan = TimeSpan.FromSeconds(appSettings.OneLogin.AuthCookieTimeout);
                 options.SlidingExpiration = true;
                 options.AccessDeniedPath = "/error/forbidden";
             })
@@ -201,6 +186,11 @@ public static class AuthConfiguration
 
                 options.Events.OnTokenValidated = context =>
                 {
+                    if (context.Properties != null)
+                    {
+                        context.Properties.ExpiresUtc = DateTimeOffset.UtcNow.AddSeconds(appSettings.OneLogin.AuthCookieTimeout);
+                    }
+
                     // this key is used to indicate that the user is logged in for the first time
                     // will be used to update the LastLogin during the claims transformation
                     // to indicate when the user was logged in last time.
@@ -236,6 +226,41 @@ public static class AuthConfiguration
         // Register authorization handlers
         services.AddSingleton<IAuthorizationHandler, WorkspaceRequirementHandler>();
         services.AddSingleton<IAuthorizationHandler, PermissionRequirementHandler>();
-        //services.AddSingleton<IAuthorizationHandler, RecordStatusAuthorizationHandler>();
+    }
+
+    private static CookieAuthenticationEvents GenerateCookieAuthenticationEvent(uint cookieAuthenticationTimeout, string accessTokenName)
+    {
+        return new CookieAuthenticationEvents
+        {
+            // this event is called on each request
+            // to validate that the current principal is still valid
+            OnValidatePrincipal = context =>
+            {
+                context.ShouldRenew = true;
+                context.Properties.AllowRefresh = true;
+                context.Options.ExpireTimeSpan = TimeSpan.FromSeconds(cookieAuthenticationTimeout);
+                context.Options.SlidingExpiration = true;
+
+                // save the original access_token in the memory, this will be needed
+                // to regenerate the JwtToken with additional claims
+                var accessToken = context.Properties.GetTokenValue(accessTokenName);
+
+                // auth cookie already contains updated expiry datetime
+                // so let's use that for the token
+                var cookieExpiry = context.Properties.ExpiresUtc;
+                if (cookieExpiry.HasValue)
+                {
+                    // save the updated expiry date so we can
+                    // use it in the CustomClaimsTransformation.cs
+                    // when creating new token
+                    context.HttpContext.Items[ContextItemKeys.AccessTokenCookieExpiryDate] = cookieExpiry;
+                }
+
+                // save original access token
+                context.HttpContext.Items[ContextItemKeys.BearerToken] = accessToken;
+
+                return Task.CompletedTask;
+            }
+        };
     }
 }
