@@ -337,7 +337,7 @@ else
                                         <td class="govuk-table__cell">@modification.ReviewType</td>
                                         <td class="govuk-table__cell">@modification.Category</td>
                                         @{
-                                            <td class="govuk-table__cell">@modification.DateSubmitted?.ToString("dd MMM yyyy")</td>
+                                            <td class="govuk-table__cell">@modification.SentToRegulatorDate?.ToString("dd MMM yyyy")</td>
                                         }
                                         <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">@modification.Status</strong></td>
                                     </tr>
@@ -352,7 +352,7 @@ else
     }
 }
 @if ((Model.Modifications.Count() == 0 && string.IsNullOrEmpty(backRoute)) &&
- (Model.Search.Filters.Count >= 0 || string.IsNullOrEmpty(Model.Search?.ModificationId) || !string.IsNullOrEmpty(Model.Search?.ModificationId)))
+(Model.Search.Filters.Count >= 0 || string.IsNullOrEmpty(Model.Search?.ModificationId) || !string.IsNullOrEmpty(Model.Search?.ModificationId)))
 {
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
