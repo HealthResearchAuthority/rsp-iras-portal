@@ -374,7 +374,7 @@ public class ModificationsController
     )
     {
         // Call the respondent service to fetch metadata for documents
-        var response = await projectModificationsService.GetModificationChanges(projectModificationId);
+        var response = await projectModificationsService.GetModificationChanges(projectRecordId, projectModificationId);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -418,7 +418,7 @@ public class ModificationsController
         }
 
         // Delete from the DB
-        var deleteResponse = await projectModificationsService.DeleteModification(projectModificationId);
+        var deleteResponse = await projectModificationsService.DeleteModification(projectRecordId, projectModificationId);
 
         if (!deleteResponse.IsSuccessStatusCode)
         {

@@ -16,9 +16,11 @@ namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.ReviewAllChangesCo
 public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesController>
 {
     [Theory, AutoData]
-    public async Task SendModificationToSponsor_Should_Return_View_When_Success(
+    public async Task SendModificationToSponsor_Should_Return_View_When_Success
+    (
         string projectRecordId,
-        Guid projectModificationId)
+        Guid projectModificationId
+    )
     {
         // Arrange
         var http = new DefaultHttpContext();
@@ -31,7 +33,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
         };
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.UpdateModificationStatus(projectModificationId, ModificationStatus.WithSponsor))
+            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(response);
 
         // Act
@@ -43,13 +45,15 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
 
         // Verify
         Mocker.GetMock<IProjectModificationsService>()
-            .Verify(s => s.UpdateModificationStatus(projectModificationId, ModificationStatus.WithSponsor), Times.Once);
+            .Verify(s => s.UpdateModificationStatus(projectRecordId, projectModificationId, ModificationStatus.WithSponsor), Times.Once);
     }
 
     [Theory, AutoData]
-    public async Task SendModificationToSponsor_Should_Return_StatusCode_When_Failure(
+    public async Task SendModificationToSponsor_Should_Return_StatusCode_When_Failure
+    (
         string projectRecordId,
-        Guid projectModificationId)
+        Guid projectModificationId
+    )
     {
         // Arrange
         var http = new DefaultHttpContext();
@@ -62,7 +66,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
         };
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.UpdateModificationStatus(projectModificationId, ModificationStatus.WithSponsor))
+            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(response);
 
         // Act
@@ -74,9 +78,11 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
     }
 
     [Theory, AutoData]
-    public async Task SendModificationToSponsor_Should_Redirect_When_MalwareScanNotCompleted(
-    string projectRecordId,
-    Guid projectModificationId)
+    public async Task SendModificationToSponsor_Should_Redirect_When_MalwareScanNotCompleted
+    (
+        string projectRecordId,
+        Guid projectModificationId
+    )
     {
         var http = new DefaultHttpContext();
         Sut.ControllerContext = new ControllerContext { HttpContext = http };

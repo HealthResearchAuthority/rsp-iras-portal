@@ -37,7 +37,7 @@ public abstract class ModificationsControllerBase
     protected async Task<(IActionResult?, ModificationDetailsViewModel?)> GetModificationDetails(Guid projectModificationId, string irasId, string shortTitle, string projectRecordId)
     {
         // Fetch the modification by its identifier
-        var modificationResponse = await projectModificationsService.GetModification(projectModificationId);
+        var modificationResponse = await projectModificationsService.GetModification(projectRecordId, projectModificationId);
 
         // Short-circuit with a service error if the call failed
         if (!modificationResponse.IsSuccessStatusCode)
@@ -84,7 +84,7 @@ public abstract class ModificationsControllerBase
     )
     {
         // Retrieve all changes related to this modification
-        var modificationsResponse = await projectModificationsService.GetModificationChanges(Guid.Parse(modification.ModificationId!));
+        var modificationsResponse = await projectModificationsService.GetModificationChanges(modification.ProjectRecordId, Guid.Parse(modification.ModificationId!));
 
         if (!modificationsResponse.IsSuccessStatusCode)
         {

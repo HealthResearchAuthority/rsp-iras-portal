@@ -68,7 +68,7 @@ public class ExceptionHandlingController(ILogger<ExceptionHandlingController> lo
             LogStatusError(ErrorCodes.ERR_FORBIDDEN, StatusCodes.Status403Forbidden);
         }
 
-        return View();
+        return View(nameof(Forbidden));
     }
 
     private void LogStatusError(string errorCode, int statusCode)

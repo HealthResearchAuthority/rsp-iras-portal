@@ -160,9 +160,11 @@ public class ReviewAllChangesController
             return this.ServiceError(_reviewOutcomeNotFoundError);
         }
 
-        var reviewResponses =
-            await projectModificationsService
-            .GetModificationReviewResponses(Guid.Parse(model.ModificationDetails.ModificationId!));
+        var reviewResponses = await projectModificationsService.GetModificationReviewResponses
+        (
+            model.ModificationDetails.ProjectRecordId,
+            Guid.Parse(model.ModificationDetails.ModificationId!)
+        );
 
         if (reviewResponses.IsSuccessStatusCode && reviewResponses.Content is not null)
         {
@@ -307,7 +309,12 @@ public class ReviewAllChangesController
 
         var newStatus = storedModel.ReviewOutcome;
 
-        var updateResponse = await projectModificationsService.UpdateModificationStatus(Guid.Parse(modificationId!), newStatus!);
+        var updateResponse = await projectModificationsService.UpdateModificationStatus
+        (
+            storedModel.ModificationDetails.ProjectRecordId,
+            Guid.Parse(modificationId!),
+            newStatus!
+        );
 
         if (!updateResponse.IsSuccessStatusCode)
         {
@@ -379,7 +386,12 @@ public class ReviewAllChangesController
         TempData[TempDataKeys.ProjectRecordId] = projectRecordId;
         TempData[TempDataKeys.ProjectModification.ProjectModificationId] = projectModificationId;
 
-        var updateResponse = await projectModificationsService.UpdateModificationStatus(projectModificationId, newStatus);
+        var updateResponse = await projectModificationsService.UpdateModificationStatus
+        (
+            projectRecordId,
+            projectModificationId,
+            newStatus
+        );
 
         if (!updateResponse.IsSuccessStatusCode)
         {
