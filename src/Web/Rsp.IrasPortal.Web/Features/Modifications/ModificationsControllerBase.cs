@@ -30,6 +30,7 @@ public abstract class ModificationsControllerBase
     IValidator<QuestionnaireViewModel> validator
 ) : Controller
 {
+    private const string SectionId = "pm-sponsor-reference";
     private const string DocumentDetailsSection = "pdm-document-metadata";
     protected readonly IProjectModificationsService projectModificationsService = projectModificationsService;
     protected readonly ICmsQuestionsetService cmsQuestionsetService = cmsQuestionsetService;
@@ -467,6 +468,32 @@ public abstract class ModificationsControllerBase
         }
 
         return modificationChanges;
+    }
+
+    protected async Task<QuestionnaireViewModel> BuildSponsorQuestionnaireViewModel(Guid projectModificationId, string projectRecordId, string categoryId)
+    {
+        // get the responent answers for the category
+        var respondentServiceResponse = await respondentService.GetModificationAnswers(projectModificationId, projectRecordId, categoryId);
+
+        var questionsSetServiceResponse = await cmsQuestionsetService.GetModificationQuestionSet(SectionId);
+
+        // get the respondent answers and questions
+        var respondentAnswers = respondentServiceResponse.Content!;
+
+        // convert the questions response to QuestionnaireViewModel
+        var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(questionsSetServiceResponse.Content!, true);
+
+        // if respondent has answerd any questions
+        if (respondentAnswers.Any())
+        {
+            questionnaire.UpdateWithRespondentAnswers(respondentAnswers);
+        }
+
+        return new QuestionnaireViewModel
+        {
+            CurrentStage = SectionId,
+            Questions = questionnaire.Questions
+        };
     }
 
     /// <summary>
