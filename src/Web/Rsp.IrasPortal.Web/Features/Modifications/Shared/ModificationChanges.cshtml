@@ -6,12 +6,9 @@
     var showStatus = ViewData[ViewDataKeys.ShowModificationChangeStatus];
     var showChangeLink = ViewData[ViewDataKeys.ShowChangeLink];
     var showRemoveLink = ViewData[ViewDataKeys.ShowRemoveLink];
+	var showModificationDetails = ViewData[ViewDataKeys.ShowModificationDetails] as bool?;
 
     var isSponsorCheckAndAuthorise = ViewData[ViewDataKeys.IsSponsorCheckAndAuthorise] as bool?;
-
-    bool showDetailedVersion = isSponsorCheckAndAuthorise == true
-    ? Model.Status != ModificationStatus.WithSponsor
-    : Model.Status != ModificationStatus.InDraft;
 
     var sponsorOrganisationUserId = ViewBag.SponsorOrganisationUserId;
 }
@@ -89,7 +86,7 @@
                         @change.SpecificChangeAnswer
                     </dd>
                 </div>
-                @if (Model.ModificationChanges.Any() && showDetailedVersion)
+				@if (Model.ModificationChanges.Any() && showModificationDetails.GetValueOrDefault())
                 {
                     @foreach (var question in change.Questions)
                     {
