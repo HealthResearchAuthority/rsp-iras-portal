@@ -43,7 +43,7 @@ public static class AuthConfiguration
             (
                 options =>
                 {
-                    options.Events = GenerateCookieAuthenticationEvent(appSettings.AuthSettings.AuthCookieTimeout);
+                    options.Events = GenerateCookieAuthenticationEvent(appSettings.AuthSettings.AuthCookieTimeout, ContextItemKeys.AcessToken);
 
                     options.Cookie.IsEssential = true;
                     options.LoginPath = "/";
@@ -78,7 +78,6 @@ public static class AuthConfiguration
                     {
                         if (context.Properties != null)
                         {
-                            context.Properties.IsPersistent = true;
                             context.Properties.ExpiresUtc = DateTimeOffset.UtcNow.AddSeconds(appSettings.AuthSettings.AuthCookieTimeout + 60);
                         }
                         // this key is used to indicate that the user is logged in for the first time
@@ -120,11 +119,11 @@ public static class AuthConfiguration
             })
             .AddCookie(options =>
             {
-                options.Events = GenerateCookieAuthenticationEvent(appSettings.OneLogin.AuthCookieTimeout);
+                options.Events = GenerateCookieAuthenticationEvent(appSettings.OneLogin.AuthCookieTimeout, ContextItemKeys.IdToken);
 
                 options.LoginPath = "/";
                 options.LogoutPath = "/";
-                options.ExpireTimeSpan = TimeSpan.FromSeconds(appSettings.OneLogin.AuthCookieTimeout + 60);
+                options.ExpireTimeSpan = TimeSpan.FromSeconds(appSettings.OneLogin.AuthCookieTimeout);
                 options.SlidingExpiration = true;
                 options.AccessDeniedPath = "/error/forbidden";
             })
@@ -189,8 +188,7 @@ public static class AuthConfiguration
                 {
                     if (context.Properties != null)
                     {
-                        context.Properties.IsPersistent = true;
-                        context.Properties.ExpiresUtc = DateTimeOffset.UtcNow.AddSeconds(appSettings.OneLogin.AuthCookieTimeout + 60);
+                        context.Properties.ExpiresUtc = DateTimeOffset.UtcNow.AddSeconds(appSettings.OneLogin.AuthCookieTimeout);
                     }
 
                     // this key is used to indicate that the user is logged in for the first time
@@ -230,7 +228,7 @@ public static class AuthConfiguration
         services.AddSingleton<IAuthorizationHandler, PermissionRequirementHandler>();
     }
 
-    private static CookieAuthenticationEvents GenerateCookieAuthenticationEvent(uint cookieAuthenticationTimeout)
+    private static CookieAuthenticationEvents GenerateCookieAuthenticationEvent(uint cookieAuthenticationTimeout, string accessTokenName)
     {
         return new CookieAuthenticationEvents
         {
@@ -245,7 +243,7 @@ public static class AuthConfiguration
 
                 // save the original access_token in the memory, this will be needed
                 // to regenerate the JwtToken with additional claims
-                var accessToken = context.Properties.GetTokenValue(ContextItemKeys.AcessToken);
+                var accessToken = context.Properties.GetTokenValue(accessTokenName);
 
                 // auth cookie already contains updated expiry datetime
                 // so let's use that for the token
