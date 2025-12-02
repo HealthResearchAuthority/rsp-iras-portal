@@ -23,7 +23,7 @@ public class CookiesController : Controller
         var analyticsValue = additionalConsent == CookieConsentValues.Yes ? "true" : "false";
 
         // clear existing analytics cookies if user rejected analytics consent
-        if (analyticsValue != CookieConsentValues.Yes && Request?.Cookies?.Keys != null)
+        if (analyticsValue != "true" && Request?.Cookies?.Keys != null)
         {
             // loop over existing analytics cookies and delete them from the response
             foreach (var cookie in Request.Cookies.Keys)
