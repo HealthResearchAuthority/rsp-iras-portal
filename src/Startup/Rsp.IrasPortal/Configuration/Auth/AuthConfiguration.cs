@@ -48,7 +48,7 @@ public static class AuthConfiguration
                     options.Cookie.IsEssential = true;
                     options.LoginPath = "/";
                     options.LogoutPath = "/";
-                    options.ExpireTimeSpan = TimeSpan.FromSeconds(appSettings.AuthSettings.AuthCookieTimeout + 60);
+                    options.ExpireTimeSpan = TimeSpan.FromSeconds(appSettings.AuthSettings.AuthCookieTimeout);
                     options.SlidingExpiration = true;
                     options.AccessDeniedPath = "/error/forbidden";
                 }
@@ -78,7 +78,7 @@ public static class AuthConfiguration
                     {
                         if (context.Properties != null)
                         {
-                            context.Properties.ExpiresUtc = DateTimeOffset.UtcNow.AddSeconds(appSettings.AuthSettings.AuthCookieTimeout + 60);
+                            context.Properties.ExpiresUtc = DateTimeOffset.UtcNow.AddSeconds(appSettings.AuthSettings.AuthCookieTimeout);
                         }
                         // this key is used to indicate that the user is logged in for the first time
                         // will be used to update the LastLogin during the claims transformation
@@ -238,7 +238,7 @@ public static class AuthConfiguration
             {
                 context.ShouldRenew = true;
                 context.Properties.AllowRefresh = true;
-                context.Options.ExpireTimeSpan = TimeSpan.FromSeconds(cookieAuthenticationTimeout + 60);
+                context.Options.ExpireTimeSpan = TimeSpan.FromSeconds(cookieAuthenticationTimeout);
                 context.Options.SlidingExpiration = true;
 
                 // save the original access_token in the memory, this will be needed
