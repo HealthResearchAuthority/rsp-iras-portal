@@ -570,6 +570,6 @@ public class ProjectOverviewController
         ModificationStatus.Approved => nameof(ModificationStatusOrder.Approved),
         ModificationStatus.NotApproved => nameof(ModificationStatusOrder.NotApproved),
         ModificationStatus.NotAuthorised => nameof(ModificationStatusOrder.NotAuthorised),
-        _ => ModificationStatusOrder.None.ToString()
+        _ => nameof(ModificationStatusOrder.None)
     };
 }
