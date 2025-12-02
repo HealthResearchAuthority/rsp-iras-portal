@@ -3,7 +3,9 @@ using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.Extensions.Azure;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Features.Modifications.Documents.Controllers;
 
@@ -17,25 +19,38 @@ public class DownloadDocumentsAsZipTests : TestServiceBase<DocumentsController>
         // Arrange
         var folderName = "ChildFolder";
         var cleanedFolderName = "358577/ChildFolder";
-        var expectedFileName = "MOD-1-" + DateTime.UtcNow.ToString("ddMMMyy");
 
         var blobClientMock = new Mock<BlobServiceClient>();
-        var blobStorageServiceMock = new Mock<IBlobStorageService>();
 
+        // Register the blob client factory to return our blob client mock
+        var factoryMock = Mocker.GetMock<IAzureClientFactory<BlobServiceClient>>();
+        factoryMock
+            .Setup(f => f.CreateClient("Clean"))
+            .Returns(blobClientMock.Object);
+
+        // Use the Mocker to setup the IBlobStorageService used by the controller
         var expectedBytes = new byte[] { 1, 2, 3, 4 };
 
-        blobStorageServiceMock
+        Mocker.GetMock<IBlobStorageService>()
             .Setup(s => s.DownloadFolderAsZipAsync(
                 It.IsAny<BlobServiceClient>(),
                 "clean-container",
                 cleanedFolderName,
-                expectedFileName))
-            .ReturnsAsync((expectedBytes, expectedFileName + ".zip"));
+                It.IsAny<string>()))
+            .ReturnsAsync((expectedBytes, "documents.zip"));
+
+        var modificationGuid = Guid.NewGuid().ToString();
+
+        // Mock access check for the GUID
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.CheckDocumentAccess(Guid.Parse(modificationGuid)))
+            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModification.ProjectModificationIdentifier] = Guid.NewGuid(),
-            [TempDataKeys.IrasId] = 999,
+            // Store the identifier as a string GUID so the controller can parse it
+            [TempDataKeys.ProjectModification.ProjectModificationIdentifier] = modificationGuid,
+            [TempDataKeys.IrasId] = 358577,
         };
 
         Sut.ControllerContext = new ControllerContext
@@ -96,5 +111,36 @@ public class DownloadDocumentsAsZipTests : TestServiceBase<DocumentsController>
             .GetMethod("BuildZipFileName", BindingFlags.NonPublic | BindingFlags.Static);
 
         return (string)method!.Invoke(null, new object?[] { value })!;
+    }
+
+    [Fact]
+    public async Task DownloadDocumentsAsZip_WhenAccessForbidden_Returns403()
+    {
+        // Arrange
+        var folderName = "ChildFolder";
+        var modificationGuid = Guid.NewGuid().ToString();
+
+        // Mock access check forbidden
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.CheckDocumentAccess(Guid.Parse(modificationGuid)))
+            .ReturnsAsync(new ServiceResponse().WithStatus(HttpStatusCode.Forbidden));
+
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.ProjectModificationIdentifier] = modificationGuid,
+            [TempDataKeys.IrasId] = 358577,
+        };
+
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext()
+        };
+
+        // Act
+        var result = await Sut.DownloadDocumentsAsZip(folderName);
+
+        // Assert
+        var status = result.ShouldBeOfType<StatusCodeResult>();
+        status.StatusCode.ShouldBe((int)HttpStatusCode.Forbidden);
     }
 }

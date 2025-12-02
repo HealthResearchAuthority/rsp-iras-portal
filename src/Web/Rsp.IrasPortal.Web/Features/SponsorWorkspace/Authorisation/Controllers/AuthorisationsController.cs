@@ -265,42 +265,43 @@ public class AuthorisationsController
         switch (model.Outcome)
         {
             case "Authorised":
+                // Default to "No review required" if ReviewType is null/empty
+                var reviewType = string.IsNullOrWhiteSpace(model.ReviewType)
+                    ? "No review required"
+                    : model.ReviewType;
+
+                switch (reviewType)
                 {
-                    // Default to "No review required" if ReviewType is null/empty
-                    var reviewType = string.IsNullOrWhiteSpace(model.ReviewType)
-                        ? "No review required"
-                        : model.ReviewType;
+                    case "Review required":
+                        await projectModificationsService.UpdateModificationStatus
+                        (
+                            model.ProjectRecordId,
+                            Guid.Parse(model.ModificationId),
+                            ModificationStatus.WithReviewBody
+                        );
+                        break;
 
-                    switch (reviewType)
-                    {
-                        case "Review required":
-                            await projectModificationsService.UpdateModificationStatus(
-                                Guid.Parse(model.ModificationId),
-                                ModificationStatus.WithReviewBody
-                            );
-                            break;
-
-                        case "No review required":
-                        default:
-                            await projectModificationsService.UpdateModificationStatus(
-                                Guid.Parse(model.ModificationId),
-                                ModificationStatus.Approved
-                            );
-                            break;
-                    }
-
-                    break;
+                    default:
+                        await projectModificationsService.UpdateModificationStatus
+                        (
+                            model.ProjectRecordId,
+                            Guid.Parse(model.ModificationId),
+                            ModificationStatus.Approved
+                        );
+                        break;
                 }
 
-            case "NotAuthorised":
+                break;
+
             default:
-                {
-                    await projectModificationsService.UpdateModificationStatus(
-                        Guid.Parse(model.ModificationId),
-                        ModificationStatus.NotAuthorised
-                    );
-                    break;
-                }
+                await projectModificationsService.UpdateModificationStatus
+                (
+                    model.ProjectRecordId,
+                    Guid.Parse(model.ModificationId),
+                    ModificationStatus.NotAuthorised
+                );
+
+                break;
         }
 
         return RedirectToAction(nameof(Confirmation), model);

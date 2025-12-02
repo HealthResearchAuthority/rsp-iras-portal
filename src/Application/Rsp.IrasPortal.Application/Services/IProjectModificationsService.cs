@@ -18,7 +18,7 @@ public interface IProjectModificationsService : IInterceptable
     /// </summary>
     /// <param name="projectModificationId">The unique identifier of the project modification.</param>
     /// <returns>A service response containing the project modification details.</returns>
-    Task<ServiceResponse<ProjectModificationResponse>> GetModification(Guid projectModificationId);
+    Task<ServiceResponse<ProjectModificationResponse>> GetModification(string projectRecordId, Guid projectModificationId);
 
     /// <summary>
     /// Retrieves all modifications for a given project record.
@@ -116,12 +116,13 @@ public interface IProjectModificationsService : IInterceptable
     /// <summary>
     /// Retrieves all changes associated with a specific project modification.
     /// </summary>
+    /// <param name="projectRecordId">The unique identifier of the project record for which to retrieve changes.</param>
     /// <param name="projectModificationId">The unique identifier of the project modification for which to retrieve changes.</param>
     /// <returns>
     /// An asynchronous operation that returns a service response containing a collection of
     /// <see cref="ProjectModificationChangeResponse"/> objects representing the changes for the specified project modification.
     /// </returns>
-    Task<ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>> GetModificationChanges(Guid projectModificationId);
+    Task<ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>> GetModificationChanges(string projectRecordId, Guid projectModificationId);
 
     ///<summary>
     /// Creates one or more project modification documents based on the provided request data.
@@ -169,14 +170,15 @@ public interface IProjectModificationsService : IInterceptable
     Task<ServiceResponse> RemoveModificationChange(Guid modificationChangeId);
 
     /// <summary>
-    /// Updates sttaus of an existing project modification by its unique identifier.
+    /// Updates the status of an existing project modification by its unique identifier.
     /// </summary>
+    /// <param name="projectRecordId">The unique identifier of the project record to which the modification belongs.</param>
     /// <param name="modificationId">The unique identifier of the project modification to update.</param>
     /// <returns>
     /// A task representing the asynchronous operation, containing a <see cref="ServiceResponse"/>
     /// that reflects the success or failure of the update operation.
     /// </returns>
-    Task<ServiceResponse> UpdateModificationStatus(Guid modificationId, string status);
+    Task<ServiceResponse> UpdateModificationStatus(string projectRecordId, Guid modificationId, string status);
 
     /// <summary>
     /// Updates an existing project modification.
@@ -209,7 +211,7 @@ public interface IProjectModificationsService : IInterceptable
     /// A task representing the asynchronous operation, containing a <see cref="ServiceResponse"/>
     /// that reflects the success or failure of the update operation.
     /// </returns>
-    Task<ServiceResponse> DeleteModification(Guid modificationId);
+    Task<ServiceResponse> DeleteModification(string projectRecordId, Guid modificationId);
 
     Task<ServiceResponse<ProjectModificationAuditTrailResponse>> GetModificationAuditTrail(Guid modificationId);
 
@@ -242,9 +244,10 @@ public interface IProjectModificationsService : IInterceptable
     /// <summary>
     /// Gets review responses for a project modification.
     /// </summary>
+    /// <param name="projectRecordId">The ID of the project record</param>
     /// <param name="modificationId">The ID of the modification</param>
     /// <returns>Returns the modification review properties</returns>
-    public Task<ServiceResponse<ProjectModificationReviewResponse>> GetModificationReviewResponses(Guid modificationId);
+    public Task<ServiceResponse<ProjectModificationReviewResponse>> GetModificationReviewResponses(string projectRecordId, Guid modificationId);
 
     /// <summary>
     /// Gets modifications for specific modificationId with filtering, sorting and pagination
@@ -265,4 +268,10 @@ public interface IProjectModificationsService : IInterceptable
        string sortField = nameof(ProjectOverviewDocumentDto.DocumentType),
        string sortDirection = SortDirections.Descending
    );
+
+    /// <summary>
+    /// Updates an existing project modification change.
+    /// </summary>
+    /// <param name="modificationId">The request object containing the updated details for the modification change.</param>
+    public Task<ServiceResponse> CheckDocumentAccess(Guid modificationId);
 }

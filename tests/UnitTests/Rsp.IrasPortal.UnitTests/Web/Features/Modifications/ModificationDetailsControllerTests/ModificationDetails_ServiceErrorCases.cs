@@ -19,10 +19,10 @@ public class ModificationDetails_ServiceErrorCases : TestServiceBase<Modificatio
         Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>());
 
         var projectModificationId = Guid.NewGuid();
-        
+
         var mods = Mocker.GetMock<IProjectModificationsService>();
         mods
-            .Setup(s => s.GetModification(projectModificationId))
+            .Setup(s => s.GetModification("PR1", projectModificationId))
             .ReturnsAsync(new ServiceResponse<ProjectModificationResponse>
             {
                 StatusCode = HttpStatusCode.InternalServerError,
@@ -46,10 +46,10 @@ public class ModificationDetails_ServiceErrorCases : TestServiceBase<Modificatio
         Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>());
 
         var projectModificationId = Guid.NewGuid();
-        
+
         var mods = Mocker.GetMock<IProjectModificationsService>();
         mods
-            .Setup(s => s.GetModification(projectModificationId))
+            .Setup(s => s.GetModification("PR1", projectModificationId))
             .ReturnsAsync(new ServiceResponse<ProjectModificationResponse>
             {
                 StatusCode = HttpStatusCode.OK,

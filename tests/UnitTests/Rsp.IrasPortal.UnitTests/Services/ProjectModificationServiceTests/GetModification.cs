@@ -21,17 +21,17 @@ public class GetModification : TestServiceBase<ProjectModificationsService>
         var projectModificationsServiceClient = Mocker.GetMock<IProjectModificationsServiceClient>();
 
         projectModificationsServiceClient
-            .Setup(c => c.GetModification(It.IsAny<Guid>()))
+            .Setup(c => c.GetModification(It.IsAny<string>(), It.IsAny<Guid>()))
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.GetModification(projectModificationId);
+        var result = await Sut.GetModification("PR1", projectModificationId);
 
         // Assert
         projectModificationsServiceClient
             .Verify
             (
-                c => c.GetModification(projectModificationId),
+                c => c.GetModification("PR1", projectModificationId),
                 Times.Once
             );
 

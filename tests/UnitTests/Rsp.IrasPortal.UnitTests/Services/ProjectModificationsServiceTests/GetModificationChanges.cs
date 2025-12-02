@@ -20,11 +20,11 @@ public class GetModificationChanges : TestServiceBase<ProjectModificationsServic
 
         Mocker
             .GetMock<IProjectModificationsServiceClient>()
-            .Setup(c => c.GetModificationChanges(id))
+            .Setup(c => c.GetModificationChanges(It.IsAny<string>(), It.IsAny<Guid>()))
             .ReturnsAsync(ApiResponseFactory.Success<IEnumerable<ProjectModificationChangeResponse>>(list));
 
         // Act
-        var result = await Sut.GetModificationChanges(id);
+        var result = await Sut.GetModificationChanges("PR-1", id);
 
         // Assert
         result.IsSuccessStatusCode.ShouldBeTrue();

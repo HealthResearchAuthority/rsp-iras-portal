@@ -25,7 +25,7 @@ public class ForbiddenTests : TestServiceBase<ExceptionHandlingController>
 
         // assert
         var view = result.ShouldBeOfType<ViewResult>();
-        view.ViewName.ShouldBeNull();
+        view.ViewName.ShouldBe("Forbidden");
         loggerMock.Verify(logger => logger.IsEnabled(LogLevel.Error), Times.AtLeastOnce());
     }
 }

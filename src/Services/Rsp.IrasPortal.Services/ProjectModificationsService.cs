@@ -24,9 +24,9 @@ public class ProjectModificationsService
     /// </summary>
     /// <param name="projectModificationId">Modification Id.</param>
     /// <returns>An asynchronous operation that returns a saved application.</returns>
-    public async Task<ServiceResponse<ProjectModificationResponse>> GetModification(Guid projectModificationId)
+    public async Task<ServiceResponse<ProjectModificationResponse>> GetModification(string projectRecordId, Guid projectModificationId)
     {
-        var apiResponse = await projectModificationsServiceClient.GetModification(projectModificationId);
+        var apiResponse = await projectModificationsServiceClient.GetModification(projectRecordId, projectModificationId);
         return apiResponse.ToServiceResponse();
     }
 
@@ -208,9 +208,9 @@ public class ProjectModificationsService
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>> GetModificationChanges(Guid projectModificationId)
+    public async Task<ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>> GetModificationChanges(string projectRecordId, Guid projectModificationId)
     {
-        var apiResponse = await projectModificationsServiceClient.GetModificationChanges(projectModificationId);
+        var apiResponse = await projectModificationsServiceClient.GetModificationChanges(projectRecordId, projectModificationId);
 
         return apiResponse.ToServiceResponse();
     }
@@ -232,17 +232,18 @@ public class ProjectModificationsService
     }
 
     /// <summary>
-    /// Updates sttaus of an existing project modification by its unique identifier.
+    /// Updates the status of an existing project modification by its unique identifier.
     /// </summary>
+    /// <param name="projectRecordId">The unique identifier of the project record to which the modification belongs.</param>
     /// <param name="modificationId">The unique identifier of the project modification to update.</param>
     /// <returns>
     /// A task representing the asynchronous operation, containing a <see cref="ServiceResponse"/>
     /// that reflects the success or failure of the update operation.
     /// </returns>
-    public async Task<ServiceResponse> UpdateModificationStatus(Guid modificationId, string status)
+    public async Task<ServiceResponse> UpdateModificationStatus(string projectRecordId, Guid modificationId, string status)
     {
         // Invoke microservice client to delete the modification change.
-        var apiResponse = await projectModificationsServiceClient.UpdateModificationStatus(modificationId, status);
+        var apiResponse = await projectModificationsServiceClient.UpdateModificationStatus(projectRecordId, modificationId, status);
 
         return apiResponse.ToServiceResponse();
     }
@@ -273,10 +274,10 @@ public class ProjectModificationsService
     /// A task representing the asynchronous operation, containing a <see cref="ServiceResponse"/>
     /// that reflects the success or failure of the update operation.
     /// </returns>
-    public async Task<ServiceResponse> DeleteModification(Guid modificationId)
+    public async Task<ServiceResponse> DeleteModification(string projectRecordId, Guid modificationId)
     {
         // Invoke microservice client to delete the modification change.
-        var apiResponse = await projectModificationsServiceClient.DeleteModification(modificationId);
+        var apiResponse = await projectModificationsServiceClient.DeleteModification(projectRecordId, modificationId);
 
         return apiResponse.ToServiceResponse();
     }
@@ -317,11 +318,12 @@ public class ProjectModificationsService
     /// <summary>
     /// Gets review responses for a project modification.
     /// </summary>
+    /// <param name="projectRecordId">The ID of the project record</param>
     /// <param name="modificationId">The ID of the modification</param>
     /// <returns>Returns the modification review properties</returns>
-    public async Task<ServiceResponse<ProjectModificationReviewResponse>> GetModificationReviewResponses(Guid modificationId)
+    public async Task<ServiceResponse<ProjectModificationReviewResponse>> GetModificationReviewResponses(string projectRecordId, Guid modificationId)
     {
-        var apiResponse = await projectModificationsServiceClient.GetModificationReviewResponses(modificationId);
+        var apiResponse = await projectModificationsServiceClient.GetModificationReviewResponses(projectRecordId, modificationId);
 
         return apiResponse.ToServiceResponse();
     }
@@ -339,6 +341,17 @@ public class ProjectModificationsService
     public async Task<ServiceResponse<ProjectOverviewDocumentResponse>> GetDocumentsForModification(Guid modificationId, ProjectOverviewDocumentSearchRequest searchQuery, int pageNumber = 1, int pageSize = 20, string sortField = "DocumentType", string sortDirection = "desc")
     {
         var apiResponse = await projectModificationsServiceClient.GetDocumentsForModification(modificationId, searchQuery, pageNumber, pageSize, sortField, sortDirection);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    /// <summary>
+    /// Updates an existing project modification change.
+    /// </summary>
+    /// <param name="modificationId">The request object containing the updated details for the modification change.</param>
+    public async Task<ServiceResponse> CheckDocumentAccess(Guid modificationId)
+    {
+        var apiResponse = await projectModificationsServiceClient.CheckDocumentAccess(modificationId);
 
         return apiResponse.ToServiceResponse();
     }

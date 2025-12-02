@@ -95,8 +95,15 @@ public class TransformAsyncTests : TestServiceBase<CustomClaimsTransformation>
     }
 
     [Theory, AutoData]
-    public async Task TransformAsync_Should_Add_Roles_From_UserManagementService_When_EmailClaim_Is_Present(
-        string email, string firstName, string lastName, string identityProviderId, List<string> roles, User user)
+    public async Task TransformAsync_Should_Add_Roles_From_UserManagementService_When_EmailClaim_Is_Present
+    (
+        string email,
+        string firstName,
+        string lastName,
+        string identityProviderId,
+        List<string> roles,
+		User user
+    )
     {
         // Arrange
         var claims = new List<Claim>
@@ -129,7 +136,8 @@ public class TransformAsyncTests : TestServiceBase<CustomClaimsTransformation>
             User = user
         };
 
-        var apiResponse = new ApiResponse<UserResponse>(
+        var apiResponse = new ApiResponse<UserResponse>
+        (
             new HttpResponseMessage(HttpStatusCode.OK),
             userResponse,
             new RefitSettings()

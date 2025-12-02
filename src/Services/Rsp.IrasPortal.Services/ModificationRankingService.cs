@@ -109,14 +109,14 @@ public class ModificationRankingService
     public async Task UpdateOverallRanking(Guid projectModificationId, string projectRecordId)
     {
         // Fetch the modification; exit if missing or failed.
-        var modificationResponse = await projectModificationsService.GetModification(projectModificationId);
+        var modificationResponse = await projectModificationsService.GetModification(projectRecordId, projectModificationId);
         if (!modificationResponse.IsSuccessStatusCode || modificationResponse.Content is null)
         {
             return;
         }
 
         // Fetch all changes for the modification; exit on failure.
-        var changesResponse = await projectModificationsService.GetModificationChanges(projectModificationId);
+        var changesResponse = await projectModificationsService.GetModificationChanges(projectRecordId, projectModificationId);
         if (!changesResponse.IsSuccessStatusCode || changesResponse.Content is null)
         {
             return;

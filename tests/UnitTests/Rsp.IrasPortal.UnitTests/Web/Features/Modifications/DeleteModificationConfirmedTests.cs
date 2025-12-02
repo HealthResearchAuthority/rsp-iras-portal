@@ -42,11 +42,11 @@ public class DeleteModificationConfirmedTests : TestServiceBase<ModificationsCon
         Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>());
 
         _modsService
-            .Setup(s => s.DeleteModification(projectModificationId))
+            .Setup(s => s.DeleteModification(It.IsAny<string>(), It.IsAny<Guid>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         _modsService
-            .Setup(x => x.GetModificationChanges(projectModificationId))
+            .Setup(x => x.GetModificationChanges(It.IsAny<string>(), It.IsAny<Guid>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>
             {
                 Content = new List<ProjectModificationChangeResponse>
@@ -120,7 +120,7 @@ public class DeleteModificationConfirmedTests : TestServiceBase<ModificationsCon
         http.Items.ContainsKey(ContextItemKeys.ProblemDetails).ShouldBeFalse();
 
         // Verify service interaction
-        _modsService.Verify(s => s.DeleteModification(projectModificationId), Times.Once);
+        _modsService.Verify(s => s.DeleteModification(projectRecordId, projectModificationId), Times.Once);
     }
 
     [Theory]
@@ -138,11 +138,11 @@ public class DeleteModificationConfirmedTests : TestServiceBase<ModificationsCon
         Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>());
 
         _modsService
-            .Setup(s => s.DeleteModification(projectModificationId))
+            .Setup(s => s.DeleteModification(It.IsAny<string>(), It.IsAny<Guid>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         _modsService
-            .Setup(x => x.GetModificationChanges(projectModificationId))
+            .Setup(x => x.GetModificationChanges(It.IsAny<string>(), It.IsAny<Guid>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>
             {
                 Content = new List<ProjectModificationChangeResponse>
@@ -224,11 +224,11 @@ public class DeleteModificationConfirmedTests : TestServiceBase<ModificationsCon
         Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>());
 
         _modsService
-            .Setup(s => s.DeleteModification(projectModificationId))
+            .Setup(s => s.DeleteModification(It.IsAny<string>(), It.IsAny<Guid>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         _modsService
-            .Setup(x => x.GetModificationChanges(projectModificationId))
+            .Setup(x => x.GetModificationChanges(It.IsAny<string>(), It.IsAny<Guid>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>
             {
                 Content = new List<ProjectModificationChangeResponse>
@@ -284,8 +284,7 @@ public class DeleteModificationConfirmedTests : TestServiceBase<ModificationsCon
 
         // Act
         var result =
-            await Sut.DeleteModificationConfirmed(projectRecordId, projectModificationId,
-                projectModificationIdentifier);
+            await Sut.DeleteModificationConfirmed(projectRecordId, projectModificationId, projectModificationIdentifier);
 
         // Assert: correct status
         AssertStatusCode(result, StatusCodes.Status502BadGateway);
@@ -310,11 +309,11 @@ public class DeleteModificationConfirmedTests : TestServiceBase<ModificationsCon
         Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>());
 
         _modsService
-            .Setup(s => s.DeleteModification(projectModificationId))
+            .Setup(s => s.DeleteModification(It.IsAny<string>(), It.IsAny<Guid>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.BadGateway });
 
         _modsService
-            .Setup(x => x.GetModificationChanges(projectModificationId))
+            .Setup(x => x.GetModificationChanges(It.IsAny<string>(), It.IsAny<Guid>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>
             {
                 Content = new List<ProjectModificationChangeResponse>

@@ -15,11 +15,11 @@ public class GetModification : TestServiceBase<ProjectModificationsService>
 
         Mocker
             .GetMock<IProjectModificationsServiceClient>()
-            .Setup(c => c.GetModification(It.IsAny<Guid>()))
+            .Setup(c => c.GetModification(It.IsAny<string>(), It.IsAny<Guid>()))
             .ReturnsAsync(ApiResponseFactory.Success(response));
 
         // Act
-        var result = await Sut.GetModification(modificationId);
+        var result = await Sut.GetModification("PR1", modificationId);
 
         // Assert
         result.IsSuccessStatusCode.ShouldBeTrue();

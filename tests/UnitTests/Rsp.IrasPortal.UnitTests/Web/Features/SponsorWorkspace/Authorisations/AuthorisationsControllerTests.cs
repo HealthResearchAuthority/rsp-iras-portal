@@ -215,7 +215,7 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
 
         // 1. GetModification -> one modification entry
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModification(It.IsAny<Guid>()))
+            .Setup(s => s.GetModification(It.IsAny<string>(), It.IsAny<Guid>()))
             .ReturnsAsync(new ServiceResponse<ProjectModificationResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -238,7 +238,7 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
 
         // 2. GetModificationChanges -> one change
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModificationChanges(It.IsAny<Guid>()))
+            .Setup(s => s.GetModificationChanges(It.IsAny<string>(), It.IsAny<Guid>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -456,7 +456,7 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
         SetupAuthoriseOutcomeViewModel();
         var modificationChangeId = Guid.NewGuid();
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModification(It.IsAny<Guid>()))
+            .Setup(s => s.GetModification("PR1", It.IsAny<Guid>()))
             .ReturnsAsync(new ServiceResponse<ProjectModificationResponse>
             {
                 StatusCode = HttpStatusCode.OK,

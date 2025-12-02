@@ -8,9 +8,12 @@ public class DeleteModificationTests : TestServiceBase<ProjectModificationsServi
 {
     [Theory]
     [AutoData]
-    public async Task DeleteModification_Should_Return_Success_Response_When_Client_Returns_Success(
+    public async Task DeleteModification_Should_Return_Success_Response_When_Client_Returns_Success
+    (
+        string projectRecordId,
         Guid modificationId,
-        string payload)
+        string payload
+    )
     {
         // Arrange
         var apiResponse = new ApiResponse<string>(
@@ -21,11 +24,11 @@ public class DeleteModificationTests : TestServiceBase<ProjectModificationsServi
         var projectModificationsServiceClient = Mocker.GetMock<IProjectModificationsServiceClient>();
 
         projectModificationsServiceClient
-            .Setup(c => c.DeleteModification(modificationId))
+            .Setup(c => c.DeleteModification(It.IsAny<string>(), It.IsAny<Guid>()))
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.DeleteModification(modificationId);
+        var result = await Sut.DeleteModification(projectRecordId, modificationId);
 
         // Assert
         result.ShouldBeOfType<ServiceResponse>();
@@ -33,14 +36,17 @@ public class DeleteModificationTests : TestServiceBase<ProjectModificationsServi
         result.StatusCode.ShouldBe(HttpStatusCode.OK);
 
         // Verify
-        projectModificationsServiceClient.Verify(c => c.DeleteModification(modificationId), Times.Once);
+        projectModificationsServiceClient.Verify(c => c.DeleteModification(projectRecordId, modificationId), Times.Once);
     }
 
     [Theory]
     [AutoData]
-    public async Task DeleteModification_Should_Return_Failure_Response_When_Client_Returns_Failure(
+    public async Task DeleteModification_Should_Return_Failure_Response_When_Client_Returns_Failure
+    (
+        string projectRecordId,
         Guid modificationId,
-        string payload)
+        string payload
+    )
     {
         // Arrange
         var apiResponse = new ApiResponse<string>(
@@ -51,11 +57,11 @@ public class DeleteModificationTests : TestServiceBase<ProjectModificationsServi
         var projectModificationsServiceClient = Mocker.GetMock<IProjectModificationsServiceClient>();
 
         projectModificationsServiceClient
-            .Setup(c => c.DeleteModification(modificationId))
+            .Setup(c => c.DeleteModification(It.IsAny<string>(), It.IsAny<Guid>()))
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.DeleteModification(modificationId);
+        var result = await Sut.DeleteModification(projectRecordId, modificationId);
 
         // Assert
         result.ShouldBeOfType<ServiceResponse>();
@@ -63,6 +69,6 @@ public class DeleteModificationTests : TestServiceBase<ProjectModificationsServi
         result.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
 
         // Verify
-        projectModificationsServiceClient.Verify(c => c.DeleteModification(modificationId), Times.Once);
+        projectModificationsServiceClient.Verify(c => c.DeleteModification(projectRecordId, modificationId), Times.Once);
     }
 }

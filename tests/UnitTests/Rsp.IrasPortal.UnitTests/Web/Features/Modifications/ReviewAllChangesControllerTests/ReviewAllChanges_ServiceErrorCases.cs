@@ -23,7 +23,7 @@ public class ReviewAllChanges_ServiceErrorCases : TestServiceBase<ReviewAllChang
         var modId = Guid.NewGuid();
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModification(modId))
+            .Setup(s => s.GetModification("PR1", modId))
             .ReturnsAsync(new ServiceResponse<ProjectModificationResponse>
             {
                 StatusCode = HttpStatusCode.InternalServerError
@@ -48,7 +48,7 @@ public class ReviewAllChanges_ServiceErrorCases : TestServiceBase<ReviewAllChang
         var modId = Guid.NewGuid();
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModification(modId))
+            .Setup(s => s.GetModification("PR1", modId))
             .ReturnsAsync(new ServiceResponse<ProjectModificationResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -74,7 +74,7 @@ public class ReviewAllChanges_ServiceErrorCases : TestServiceBase<ReviewAllChang
         var modId = Guid.NewGuid();
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModification(modId))
+            .Setup(s => s.GetModification("PR1", modId))
             .ReturnsAsync(new ServiceResponse<ProjectModificationResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -93,7 +93,7 @@ public class ReviewAllChanges_ServiceErrorCases : TestServiceBase<ReviewAllChang
             });
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModificationChanges(modId))
+            .Setup(s => s.GetModificationChanges(It.IsAny<string>(), It.IsAny<Guid>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>
             {
                 StatusCode = HttpStatusCode.BadGateway
@@ -118,7 +118,7 @@ public class ReviewAllChanges_ServiceErrorCases : TestServiceBase<ReviewAllChang
         var modId = Guid.NewGuid();
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModification(modId))
+            .Setup(s => s.GetModification("PR1", modId))
             .ReturnsAsync(new ServiceResponse<ProjectModificationResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -137,7 +137,7 @@ public class ReviewAllChanges_ServiceErrorCases : TestServiceBase<ReviewAllChang
             });
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModificationChanges(modId))
+            .Setup(s => s.GetModificationChanges(It.IsAny<string>(), It.IsAny<Guid>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>
             {
                 StatusCode = HttpStatusCode.OK,
