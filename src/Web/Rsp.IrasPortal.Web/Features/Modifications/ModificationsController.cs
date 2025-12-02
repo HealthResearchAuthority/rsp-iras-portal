@@ -492,7 +492,7 @@ public class ModificationsController
     public async Task<IActionResult> SaveModificationAnswers(List<RespondentAnswerDto> respondentAnswers, string routeName)
     {
         // Get required modification data for saving the planned end date
-        var respondentId = (HttpContext.Items[ContextItemKeys.RespondentId] as string)!;
+        var UserId = (HttpContext.Items[ContextItemKeys.UserId] as string)!;
         var projectModificationChangeId = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationChangeId);
         var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty;
 
@@ -501,7 +501,7 @@ public class ModificationsController
         {
             ProjectModificationChangeId = projectModificationChangeId == null ? Guid.Empty : (Guid)projectModificationChangeId!,
             ProjectRecordId = projectRecordId,
-            ProjectPersonnelId = respondentId
+            UserId = UserId
         };
 
         // Add the new planned end date answer to the request

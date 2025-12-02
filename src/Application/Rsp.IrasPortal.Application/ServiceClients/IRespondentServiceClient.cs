@@ -89,7 +89,6 @@ public interface IRespondentServiceClient
     /// </summary>
     /// <param name="modificationChangeId">The unique identifier for the project modification change.</param>
     /// <param name="projectRecordId">The identifier of the associated project record.</param>
-    /// <param name="projectPersonnelId">The identifier of the personnel who uploaded or is associated with the documents.</param>
     /// <returns>
     /// A task representing the asynchronous operation. The task result contains a list of <see cref="ProjectModificationDocumentRequest"/> wrapped in an <see cref="ApiResponse{T}"/>.
     /// </returns>
@@ -101,12 +100,12 @@ public interface IRespondentServiceClient
     /// </summary>
     /// <param name="modificationChangeId">The unique identifier for the project modification change.</param>
     /// <param name="projectRecordId">The identifier of the associated project record.</param>
-    /// <param name="projectPersonnelId">The identifier of the personnel who uploaded or is associated with the documents.</param>
+    /// <param name="userId">The identifier of the user who uploaded or is associated with the documents.</param>
     /// <returns>
     /// A task representing the asynchronous operation. The task result contains a list of <see cref="ProjectModificationDocumentRequest"/> wrapped in an <see cref="ApiResponse{T}"/>.
     /// </returns>
-    [Get("/respondent/modificationdocument/{modificationChangeId}/{projectRecordId}/{projectPersonnelId}")]
-    public Task<ApiResponse<IEnumerable<ProjectModificationDocumentRequest>>> GetModificationChangesDocuments(Guid modificationChangeId, string projectRecordId, string projectPersonnelId);
+    [Get("/respondent/modificationdocument/{modificationChangeId}/{projectRecordId}/{userId}")]
+    public Task<ApiResponse<IEnumerable<ProjectModificationDocumentRequest>>> GetModificationChangesDocuments(Guid modificationChangeId, string projectRecordId, string userId);
 
     [Get("/respondent/modificationdocumentdetails/{documentId}")]
     public Task<ApiResponse<ProjectModificationDocumentRequest>> GetModificationDocumentDetails(Guid documentId);

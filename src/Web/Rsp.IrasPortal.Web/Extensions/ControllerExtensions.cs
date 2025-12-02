@@ -85,7 +85,7 @@ public static class ControllerExtensions
 
         return new RespondentDto
         {
-            Id = httpContext.Items[ContextItemKeys.RespondentId]?.ToString() ?? string.Empty,
+            Id = httpContext.Items[ContextItemKeys.UserId]?.ToString() ?? string.Empty,
             EmailAddress = httpContext.Items[ContextItemKeys.Email]?.ToString() ?? string.Empty,
             GivenName = httpContext.Items[ContextItemKeys.FirstName]?.ToString() ?? string.Empty,
             FamilyName = httpContext.Items[ContextItemKeys.LastName]?.ToString() ?? string.Empty,
@@ -93,6 +93,12 @@ public static class ControllerExtensions
                        .Where(claim => claim.Type == ClaimTypes.Role)
                        .Select(claim => claim.Value))
         };
+    }
+
+    public static string GetUserIdFromContext(this Controller controller)
+    {
+        var httpContext = controller.HttpContext;
+        return httpContext.Items[ContextItemKeys.UserId]?.ToString() ?? string.Empty;
     }
 
     /// <summary>

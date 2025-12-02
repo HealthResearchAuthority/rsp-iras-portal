@@ -105,7 +105,7 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
 
         Sut.TempData = new TempDataDictionary(context, Mock.Of<ITempDataProvider>());
 
-        context.Items[ContextItemKeys.RespondentId] = "RespondentId1";
+        context.Items[ContextItemKeys.UserId] = "RespondentId1";
 
         Sut.ControllerContext = new ControllerContext { HttpContext = context };
         Sut.TempData[TempDataKeys.OrgSearchReturnUrl] = "/";
@@ -299,7 +299,7 @@ public class SearchOrganisationsTests : TestServiceBase<QuestionnaireController>
 
         Sut.TempData = new TempDataDictionary(context, Mock.Of<ITempDataProvider>());
 
-        context.Items[ContextItemKeys.RespondentId] = "RespondentId1";
+        context.Items[ContextItemKeys.UserId] = "RespondentId1";
 
         Sut.ControllerContext = new ControllerContext { HttpContext = context };
 

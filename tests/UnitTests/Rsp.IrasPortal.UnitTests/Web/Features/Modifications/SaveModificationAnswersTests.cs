@@ -18,7 +18,7 @@ public class SaveModificationAnswersTests : TestServiceBase<ModificationsControl
         _respondentService = Mocker.GetMock<IRespondentService>();
 
         var ctx = new DefaultHttpContext();
-        ctx.Items[ContextItemKeys.RespondentId] = "RESP1";
+        ctx.Items[ContextItemKeys.UserId] = "RESP1";
         Sut.ControllerContext = new ControllerContext { HttpContext = ctx };
         Sut.TempData = new TempDataDictionary(ctx, Mock.Of<ITempDataProvider>())
         {

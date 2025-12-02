@@ -11,7 +11,7 @@ public class GetModificationDocuments : TestServiceBase<RespondentService>
     (
         Guid projectModificationChangeId,
         string projectRecordId,
-        string projectPersonnelId,
+        string userId,
         List<ProjectModificationDocumentRequest> apiResponseContent
     )
     {
@@ -21,17 +21,17 @@ public class GetModificationDocuments : TestServiceBase<RespondentService>
 
         var respondentServiceClient = Mocker.GetMock<IRespondentServiceClient>();
         respondentServiceClient
-            .Setup(c => c.GetModificationChangesDocuments(projectModificationChangeId, projectRecordId, projectPersonnelId))
+            .Setup(c => c.GetModificationChangesDocuments(projectModificationChangeId, projectRecordId, userId))
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.GetModificationChangesDocuments(projectModificationChangeId, projectRecordId, projectPersonnelId);
+        var result = await Sut.GetModificationChangesDocuments(projectModificationChangeId, projectRecordId, userId);
 
         // Assert
         respondentServiceClient
             .Verify
             (
-                c => c.GetModificationChangesDocuments(projectModificationChangeId, projectRecordId, projectPersonnelId),
+                c => c.GetModificationChangesDocuments(projectModificationChangeId, projectRecordId, userId),
                 Times.Once
             );
 

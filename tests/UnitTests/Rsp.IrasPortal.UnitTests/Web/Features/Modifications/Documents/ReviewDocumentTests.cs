@@ -21,14 +21,14 @@ public class ReviewDocumentTests : TestServiceBase<DocumentsController>
         string specificAreaOfChange,
         Guid changeId,
         string projectRecordId,
-        string respondentId,
+        string userId,
         List<ProjectModificationDocumentRequest> documentResponses
     )
     {
         // Arrange
         Mocker
             .GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationChangesDocuments(changeId, projectRecordId, respondentId))
+            .Setup(s => s.GetModificationChangesDocuments(changeId, projectRecordId, userId))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -49,7 +49,7 @@ public class ReviewDocumentTests : TestServiceBase<DocumentsController>
         {
             HttpContext = new DefaultHttpContext
             {
-                Items = { [ContextItemKeys.RespondentId] = respondentId }
+                Items = { [ContextItemKeys.UserId] = userId }
             }
         };
 
@@ -77,13 +77,13 @@ public class ReviewDocumentTests : TestServiceBase<DocumentsController>
         string specificAreaOfChange,
         Guid changeId,
         string projectRecordId,
-        string respondentId
+        string userId
     )
     {
         // Arrange
         Mocker
             .GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationChangesDocuments(changeId, projectRecordId, respondentId))
+            .Setup(s => s.GetModificationChangesDocuments(changeId, projectRecordId, userId))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
             {
                 StatusCode = HttpStatusCode.InternalServerError,
@@ -104,7 +104,7 @@ public class ReviewDocumentTests : TestServiceBase<DocumentsController>
         {
             HttpContext = new DefaultHttpContext
             {
-                Items = { [ContextItemKeys.RespondentId] = respondentId }
+                Items = { [ContextItemKeys.UserId] = userId }
             }
         };
 

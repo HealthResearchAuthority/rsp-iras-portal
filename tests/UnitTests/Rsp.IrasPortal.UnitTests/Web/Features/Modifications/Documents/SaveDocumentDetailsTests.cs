@@ -53,7 +53,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
             [TempDataKeys.IrasId] = 999
         };
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
-        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
+        Sut.HttpContext.Items[ContextItemKeys.UserId] = "respondent-1";
 
         // Act
         var result = await Sut.SaveDocumentDetails(viewModel);
@@ -159,7 +159,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
             [TempDataKeys.IrasId] = 999
         };
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
-        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
+        Sut.HttpContext.Items[ContextItemKeys.UserId] = "respondent-1";
 
         // Validator fails so we stay on the same view
         Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
@@ -205,7 +205,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
             [TempDataKeys.IrasId] = 999
         };
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
-        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
+        Sut.HttpContext.Items[ContextItemKeys.UserId] = "respondent-1";
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
@@ -214,7 +214,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
             [TempDataKeys.IrasId] = 999
         };
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
-        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
+        Sut.HttpContext.Items[ContextItemKeys.UserId] = "respondent-1";
 
         // Validator fails so we stay on the same view
         Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
@@ -258,7 +258,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
             [TempDataKeys.IrasId] = 999
         };
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
-        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
+        Sut.HttpContext.Items[ContextItemKeys.UserId] = "respondent-1";
 
         // Act
         var result = await Sut.SaveDocumentDetails(viewModel);
@@ -307,7 +307,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
             [TempDataKeys.IrasId] = 999
         };
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
-        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
+        Sut.HttpContext.Items[ContextItemKeys.UserId] = "respondent-1";
 
         // Act
         var result = await Sut.SaveDocumentDetails(viewModel);
@@ -343,7 +343,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
             [TempDataKeys.IrasId] = 999
         };
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
-        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
+        Sut.HttpContext.Items[ContextItemKeys.UserId] = "respondent-1";
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
@@ -352,7 +352,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
             [TempDataKeys.IrasId] = 999
         };
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
-        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
+        Sut.HttpContext.Items[ContextItemKeys.UserId] = "respondent-1";
 
         // Mock CMS question set response
         Mocker.GetMock<ICmsQuestionsetService>()
@@ -473,7 +473,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
             [TempDataKeys.IrasId] = 999
         };
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
-        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
+        Sut.HttpContext.Items[ContextItemKeys.UserId] = "respondent-1";
 
         // Act
         var result = await Sut.SaveDocumentDetails(viewModel);
@@ -504,7 +504,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
             [TempDataKeys.IrasId] = 999
         };
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
-        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
+        Sut.HttpContext.Items[ContextItemKeys.UserId] = "respondent-1";
 
         // Mock CMS question set response
         Mocker.GetMock<ICmsQuestionsetService>()

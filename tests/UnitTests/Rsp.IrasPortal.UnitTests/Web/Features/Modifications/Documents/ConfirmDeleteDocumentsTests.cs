@@ -52,7 +52,7 @@ public class ConfirmDeleteDocumentsTests : TestServiceBase<DocumentsController>
         {
             HttpContext = new DefaultHttpContext
             {
-                Items = { [ContextItemKeys.RespondentId] = respondentId }
+                Items = { [ContextItemKeys.UserId] = respondentId }
             }
         };
 
@@ -76,7 +76,7 @@ public class ConfirmDeleteDocumentsTests : TestServiceBase<DocumentsController>
         actual.DocumentStoragePath.ShouldBe(expected.DocumentStoragePath);
         actual.ProjectModificationId.ShouldBe(changeId);
         actual.ProjectRecordId.ShouldBe(projectRecordId);
-        actual.ProjectPersonnelId.ShouldBe(respondentId);
+        actual.UserId.ShouldBe(respondentId);
 
         respondentServiceMock.Verify(s => s.GetModificationChangesDocuments(changeId, projectRecordId, respondentId), Times.Once);
     }
@@ -120,7 +120,7 @@ public class ConfirmDeleteDocumentsTests : TestServiceBase<DocumentsController>
         {
             HttpContext = new DefaultHttpContext
             {
-                Items = { [ContextItemKeys.RespondentId] = respondentId }
+                Items = { [ContextItemKeys.UserId] = respondentId }
             }
         };
 

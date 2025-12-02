@@ -120,7 +120,6 @@ public class RespondentService(IRespondentServiceClient respondentServiceClient)
     /// </summary>
     /// <param name="modificationId">The unique identifier of the project modification change.</param>
     /// <param name="projectRecordId">The unique identifier of the associated project record.</param>
-    /// <param name="projectPersonnelId">The unique identifier of the project personnel who uploaded or is linked to the documents.</param>
     /// <returns>
     /// A <see cref="Task"/> representing the asynchronous operation,
     /// containing a <see cref="ServiceResponse{T}"/> with a collection of <see cref="ProjectModificationDocumentRequest"/>
@@ -135,19 +134,19 @@ public class RespondentService(IRespondentServiceClient respondentServiceClient)
 
     /// <summary>
     /// Retrieves all documents associated with a specific project modification change,
-    /// filtered by the project record ID and the project personnel who submitted or are responsible for the documents.
+    /// filtered by the project record ID and the user who submitted or are responsible for the documents.
     /// </summary>
     /// <param name="modificationId">The unique identifier of the project modification change.</param>
     /// <param name="projectRecordId">The unique identifier of the associated project record.</param>
-    /// <param name="projectPersonnelId">The unique identifier of the project personnel who uploaded or is linked to the documents.</param>
+    /// <param name="userId">The unique identifier of the user who uploaded or is linked to the documents.</param>
     /// <returns>
     /// A <see cref="Task"/> representing the asynchronous operation,
     /// containing a <see cref="ServiceResponse{T}"/> with a collection of <see cref="ProjectModificationDocumentRequest"/>
     /// representing the associated documents.
     /// </returns>
-    public async Task<ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>> GetModificationChangesDocuments(Guid modificationId, string projectRecordId, string projectPersonnelId)
+    public async Task<ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>> GetModificationChangesDocuments(Guid modificationId, string projectRecordId, string userId)
     {
-        var apiResponse = await respondentServiceClient.GetModificationChangesDocuments(modificationId, projectRecordId, projectPersonnelId);
+        var apiResponse = await respondentServiceClient.GetModificationChangesDocuments(modificationId, projectRecordId, userId);
 
         return apiResponse.ToServiceResponse();
     }

@@ -443,7 +443,7 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
     private (DefaultHttpContext Ctx, Guid ModificationChangeId) SetupHttpContext()
     {
         var ctx = new DefaultHttpContext();
-        ctx.Items[ContextItemKeys.RespondentId] = "RESP1";
+        ctx.Items[ContextItemKeys.UserId] = "RESP1";
         Sut.ControllerContext = new ControllerContext { HttpContext = ctx };
         var modChangeId = Guid.NewGuid();
         Sut.TempData = new TempDataDictionary(ctx, Mock.Of<ITempDataProvider>())

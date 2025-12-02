@@ -53,7 +53,7 @@ public class ConfirmDeleteDocumentTests : TestServiceBase<DocumentsController>
         {
             HttpContext = new DefaultHttpContext
             {
-                Items = { [ContextItemKeys.RespondentId] = respondentId }
+                Items = { [ContextItemKeys.UserId] = respondentId }
             }
         };
 
@@ -114,7 +114,7 @@ public class ConfirmDeleteDocumentTests : TestServiceBase<DocumentsController>
         {
             HttpContext = new DefaultHttpContext
             {
-                Items = { [ContextItemKeys.RespondentId] = respondentId }
+                Items = { [ContextItemKeys.UserId] = respondentId }
             }
         };
 

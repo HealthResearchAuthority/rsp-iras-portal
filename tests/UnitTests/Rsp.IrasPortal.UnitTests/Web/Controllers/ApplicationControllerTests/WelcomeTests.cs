@@ -26,7 +26,7 @@ public class WelcomeTests : TestServiceBase<ApplicationController>
         {
             Session = session.Object
         };
-        httpContext.Items[ContextItemKeys.RespondentId] = respondentId;
+        httpContext.Items[ContextItemKeys.UserId] = respondentId;
 
         Sut.ControllerContext = new ControllerContext
         {
@@ -99,7 +99,7 @@ public class WelcomeTests : TestServiceBase<ApplicationController>
         // Arrange
         var respondentId = "RespondentId1";
         var httpContext = new DefaultHttpContext { Session = session.Object };
-        httpContext.Items[ContextItemKeys.RespondentId] = respondentId;
+        httpContext.Items[ContextItemKeys.UserId] = respondentId;
         Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
 
         // Session contains a search with a title term
@@ -134,7 +134,7 @@ public class WelcomeTests : TestServiceBase<ApplicationController>
         // Arrange
         var respondentId = "RespondentId1";
         var httpContext = new DefaultHttpContext { Session = session.Object };
-        httpContext.Items[ContextItemKeys.RespondentId] = respondentId;
+        httpContext.Items[ContextItemKeys.UserId] = respondentId;
         Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
 
         // Session contains a search with filters (status)

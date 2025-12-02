@@ -62,7 +62,7 @@ public class ReviewDocumentDetailsTests : TestServiceBase<DocumentsController>
         {
             HttpContext = new DefaultHttpContext()
         };
-        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
+        Sut.HttpContext.Items[ContextItemKeys.UserId] = "respondent-1";
 
         // Act
         var result = await Sut.ReviewDocumentDetails();
@@ -132,7 +132,7 @@ public class ReviewDocumentDetailsTests : TestServiceBase<DocumentsController>
         {
             HttpContext = new DefaultHttpContext()
         };
-        Sut.HttpContext.Items[ContextItemKeys.RespondentId] = "respondent-1";
+        Sut.HttpContext.Items[ContextItemKeys.UserId] = "respondent-1";
 
         // Act
         var result = await Sut.ReviewDocumentDetails();
