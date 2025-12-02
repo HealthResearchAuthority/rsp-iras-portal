@@ -74,4 +74,21 @@ public class CookiePolicyControllerTests : TestServiceBase<CookiesController>
         redirectResult.ActionName.ShouldBe("Index");
         redirectResult.ControllerName.ShouldBe("Home");
     }
+
+    [Fact]
+    public void Remove_Analytics_Cookies_When_User_Rejects_Them()
+    {
+        // Arrange
+        var settingsSource = CookieConfirmationSource.CookieBanner;
+        var requestCookies = "_ga=123; _clck=aaa; SomeOtherCookie=bbb";
+        _http.Request.Headers["Cookie"] = requestCookies;
+        _http.Response.Headers["Cookie"] = requestCookies;
+        var userConsent = "no";
+
+        // Act
+        var result = Sut.AcceptConsent(userConsent, settingsSource);
+
+        // Assert
+        var cook = _http.Response.Cookies;
+    }
 }
