@@ -4,7 +4,7 @@
 @using Microsoft.FeatureManagement
 @using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Web.Features.Modifications.Models
-@model ModificationDetailsViewModel
+@model BaseProjectModificationViewModel
 
 @{
     //string projectRecordId, string irasId, string shortTitle, Guid projectModificationId
@@ -24,7 +24,7 @@
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
         <h1 class="govuk-heading-l">You cannot proceed with ‘Unfinished’ changes</h1>
-        <partial name="_ProjectModificationSummary" model="Model" />
+        <partial name="_ProjectModificationSummary" model="Model" view-data="ViewData" />
         <p class="govuk-body">
             All changes must have the status 'ready for submission' before you can
             continue. For any changes with the status 'Unfinished', either select Change

@@ -70,7 +70,7 @@ public class ModificationDetailsController
     [HttpGet]
     public IActionResult UnfinishedChanges()
     {
-        var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationDetailsViewModel());
+        var viewModel = TempData.PopulateBaseProjectModificationProperties(new BaseProjectModificationViewModel());
 
         return View("UnfinishedChanges", viewModel);
     }
@@ -79,7 +79,7 @@ public class ModificationDetailsController
     [HttpGet]
     public IActionResult DocumentsScanInProgress()
     {
-        var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationDetailsViewModel());
+        var viewModel = TempData.PopulateBaseProjectModificationProperties(new BaseProjectModificationViewModel());
 
         return View("DocumentsScanInProgress", viewModel);
     }
@@ -88,7 +88,7 @@ public class ModificationDetailsController
     [HttpGet]
     public IActionResult DocumentDetailsIncomplete()
     {
-        var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationDetailsViewModel());
+        var viewModel = TempData.PopulateBaseProjectModificationProperties(new BaseProjectModificationViewModel());
 
         return View("DocumentDetailsIncomplete", viewModel);
     }
@@ -133,5 +133,4 @@ public class ModificationDetailsController
             projectModificationId = viewModel.ModificationId
         });
     }
-
 }
