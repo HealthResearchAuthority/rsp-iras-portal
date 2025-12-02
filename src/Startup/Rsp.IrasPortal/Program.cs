@@ -46,17 +46,17 @@ builder.AddServiceDefaults();
 var services = builder.Services;
 var configuration = builder.Configuration;
 
-// Allow uploads up to 110 MB
+// Allow uploads up to 200 MB
 services.Configure<FormOptions>(options =>
 {
-    options.MultipartBodyLengthLimit = 110 * 1024 * 1024; // 110 MB
+    options.MultipartBodyLengthLimit = 200 * 1024 * 1024; // 200 MB
     options.ValueCountLimit = int.MaxValue;
 });
 
 // Also configure Kestrel (important for large uploads)
 builder.WebHost.ConfigureKestrel(options =>
 {
-    options.Limits.MaxRequestBodySize = 110 * 1024 * 1024; // 110 MB
+    options.Limits.MaxRequestBodySize = 200 * 1024 * 1024; // 200 MB
 });
 
 // this will use the FeatureManagement section
