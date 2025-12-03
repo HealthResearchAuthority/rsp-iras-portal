@@ -17,8 +17,7 @@
 
 <h1 class="govuk-heading-l">@headline?.Value</h1>
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-
+    <div class="govuk-grid-column-two-thirds govuk-content-wrapper">
         <p class="govuk-body">
             @Html.Raw(body?.Value)
         </p>
@@ -26,7 +25,7 @@
 </div>
 
 <div class="govuk-grid-row">
-    <div class="save-buttons">
+    <div class="save-buttons govuk-grid-column-two-thirds">
         <a class="govuk-button" asp-route="app:startproject" aria-label="Back to start creating a project record">
             Return to IRAS ID
         </a>
