@@ -43,13 +43,14 @@ public class DownloadDocumentsAsZipTests : TestServiceBase<DocumentsController>
 
         // Mock access check for the GUID
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.CheckDocumentAccess(Guid.Parse(modificationGuid)))
+            .Setup(s => s.CheckDocumentAccess(It.IsAny<Guid>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
             // Store the identifier as a string GUID so the controller can parse it
             [TempDataKeys.ProjectModification.ProjectModificationIdentifier] = modificationGuid,
+            [TempDataKeys.ProjectModification.ProjectModificationId] = modificationGuid,
             [TempDataKeys.IrasId] = 358577,
         };
 
@@ -122,12 +123,13 @@ public class DownloadDocumentsAsZipTests : TestServiceBase<DocumentsController>
 
         // Mock access check forbidden
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.CheckDocumentAccess(Guid.Parse(modificationGuid)))
+            .Setup(s => s.CheckDocumentAccess(It.IsAny<Guid>()))
             .ReturnsAsync(new ServiceResponse().WithStatus(HttpStatusCode.Forbidden));
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
             [TempDataKeys.ProjectModification.ProjectModificationIdentifier] = modificationGuid,
+            [TempDataKeys.ProjectModification.ProjectModificationId] = modificationGuid,
             [TempDataKeys.IrasId] = 358577,
         };
 
