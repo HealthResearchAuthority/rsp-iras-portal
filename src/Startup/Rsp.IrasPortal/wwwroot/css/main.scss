@@ -1085,3 +1085,28 @@ button.govuk-pagination__item--current {
 .govuk-summary-card__actions {
     font-weight: normal;
 }
+
+.govuk-content-wrapper a {
+    color: #1d70b8;
+    text-decoration: underline;
+}
+
+.govuk-content-wrapper a:visited {
+    color: #4c2c92;
+}
+
+.govuk-content-wrapper a:hover {
+    color: #003078;
+}
+
+.govuk-content-wrapper a:active {
+    color: #0b0c0c;
+}
+
+.govuk-content-wrapper a:focus {
+    outline: 3px solid #fd0;
+    outline-offset: 0;
+    background-color: #fd0;
+    color: #0b0c0c;
+    text-decoration: none;
+}
