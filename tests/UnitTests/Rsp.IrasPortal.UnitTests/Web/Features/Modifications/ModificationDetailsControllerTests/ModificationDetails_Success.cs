@@ -3,14 +3,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Services;
 using Rsp.IrasPortal.Web.Features.Modifications;
 using Rsp.IrasPortal.Web.Features.Modifications.Models;
 using Rsp.IrasPortal.Web.Models;
@@ -32,7 +30,7 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
 
         // 1. GetModification -> one modification entry
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModification(It.IsAny<Guid>()))
+            .Setup(s => s.GetModification("PR1", It.IsAny<Guid>()))
             .ReturnsAsync(new ServiceResponse<ProjectModificationResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -55,7 +53,7 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
 
         // 2. GetModificationChanges -> one change
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModificationChanges(modId))
+            .Setup(s => s.GetModificationChanges(It.IsAny<string>(), It.IsAny<Guid>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -98,7 +96,7 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
             .GetMock<IRespondentService>()
             .Setup(s => s.GetModificationChangeAnswers(changeId, It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = [] });
-        
+
         var answers = new List<RespondentAnswerDto>
             {
                 new() { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "Project X" },

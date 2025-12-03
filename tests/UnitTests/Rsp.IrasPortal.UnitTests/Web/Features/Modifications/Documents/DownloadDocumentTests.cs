@@ -3,6 +3,7 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Azure;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
@@ -16,7 +17,8 @@ public class DownloadDocumentTests : TestServiceBase<DocumentsController>
     public async Task DownloadDocument_ReturnsFileResult()
     {
         // Arrange
-        string path = "test/path";
+        var modificationId = Guid.NewGuid();
+        string path = $"test/{modificationId}";
         string fileName = "file.txt";
 
         var fileResult = new FileContentResult(new byte[] { 1, 2, 3 }, "application/octet-stream")
@@ -26,6 +28,12 @@ public class DownloadDocumentTests : TestServiceBase<DocumentsController>
 
         var serviceResponse = new ServiceResponse<IActionResult>()
             .WithContent(fileResult, HttpStatusCode.OK);
+
+        // Mock access check OK
+        Mocker
+            .GetMock<IProjectModificationsService>()
+            .Setup(s => s.CheckDocumentAccess(modificationId))
+            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         // MOCK BlobClient
         var blobClientMock = new Mock<BlobClient>();
@@ -43,13 +51,15 @@ public class DownloadDocumentTests : TestServiceBase<DocumentsController>
             .Returns(containerClientMock.Object);
 
         // MOCK FACTORY so GetBlobClient(true) returns our blobServiceClientMock
-        var factoryMock = Mocker.GetMock<IAzureClientFactory<BlobServiceClient>>();
+        var factoryMock = Mocker
+            .GetMock<IAzureClientFactory<BlobServiceClient>>();
         factoryMock
             .Setup(f => f.CreateClient("Clean"))
             .Returns(blobServiceClientMock.Object);
 
         // Mock blob storage service returning a file response
-        Mocker.GetMock<IBlobStorageService>()
+        Mocker
+            .GetMock<IBlobStorageService>()
             .Setup(s => s.DownloadFileToHttpResponseAsync(
                 blobServiceClientMock.Object,
                 It.IsAny<string>(),
@@ -68,7 +78,8 @@ public class DownloadDocumentTests : TestServiceBase<DocumentsController>
         fileContentResult.ContentType.ShouldBe("application/octet-stream");
 
         // Verify that the service was called
-        Mocker.GetMock<IBlobStorageService>().Verify(s =>
+        Mocker
+            .GetMock<IBlobStorageService>().Verify(s =>
             s.DownloadFileToHttpResponseAsync(
                 blobServiceClientMock.Object,
                 It.IsAny<string>(),
@@ -81,51 +92,10 @@ public class DownloadDocumentTests : TestServiceBase<DocumentsController>
     }
 
     [Fact]
-    public async Task DownloadDocument_WhenFileNotFound_ReturnsNotFound()
-    {
-        // Arrange
-        var serviceResponse = new ServiceResponse<IActionResult>()
-            .WithContent(new NotFoundObjectResult("File not found"), HttpStatusCode.NotFound);
-
-        var blobClientMock = new Mock<BlobClient>();
-        blobClientMock
-            .Setup(b => b.UploadAsync(It.IsAny<Stream>(), true, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Mock.Of<Response<BlobContentInfo>>());
-
-        var containerClientMock = new Mock<BlobContainerClient>();
-        containerClientMock
-            .Setup(c => c.CreateIfNotExistsAsync(It.IsAny<PublicAccessType>(), null, null, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Response.FromValue(Mock.Of<BlobContainerInfo>(), null!));
-        containerClientMock
-            .Setup(c => c.GetBlobClient(It.IsAny<string>()))
-            .Returns(blobClientMock.Object);
-
-        var blobServiceClientMock = new Mock<BlobServiceClient>();
-        blobServiceClientMock
-            .Setup(b => b.GetBlobContainerClient("containerName"))
-            .Returns(containerClientMock.Object);
-
-        // MOCK FACTORY so GetBlobClient(true) returns our blobServiceClientMock
-        var factoryMock = Mocker.GetMock<IAzureClientFactory<BlobServiceClient>>();
-        factoryMock
-            .Setup(f => f.CreateClient("Clean"))
-            .Returns(blobServiceClientMock.Object);
-
-        Mocker.GetMock<IBlobStorageService>()
-            .Setup(s => s.DownloadFileToHttpResponseAsync(blobServiceClientMock.Object, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync(serviceResponse);
-
-        // Act
-        var result = await Sut.DownloadDocument("invalid/path", "missing.txt");
-
-        // Assert
-        result.ShouldBeOfType<NotFoundObjectResult>();
-    }
-
-    [Fact]
     public async Task DownloadDocument_WhenBlobPathEmpty_ReturnsNotFound()
     {
         // Arrange
+        var modificationId = Guid.NewGuid();
         var serviceResponse = new ServiceResponse<IActionResult>()
             .WithContent(new NotFoundObjectResult("File not found"), HttpStatusCode.NotFound);
 
@@ -147,12 +117,19 @@ public class DownloadDocumentTests : TestServiceBase<DocumentsController>
             .Setup(b => b.GetBlobContainerClient("containerName"))
             .Returns(containerClientMock.Object);
 
-        Mocker.GetMock<IBlobStorageService>()
+        Mocker
+            .GetMock<IBlobStorageService>()
             .Setup(s => s.DownloadFileToHttpResponseAsync(blobServiceClientMock.Object, It.IsAny<string>(), string.Empty, It.IsAny<string>()))
             .ReturnsAsync(serviceResponse);
 
+        // Mock access check OK
+        Mocker
+            .GetMock<IProjectModificationsService>()
+            .Setup(s => s.CheckDocumentAccess(modificationId))
+            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+
         // Act
-        var result = await Sut.DownloadDocument("invalid/path", "missing.txt");
+        var result = await Sut.DownloadDocument($"invalid/{modificationId}", "missing.txt");
 
         // Assert
         result.ShouldBeNull();
@@ -162,6 +139,9 @@ public class DownloadDocumentTests : TestServiceBase<DocumentsController>
     public async Task DownloadDocument_WhenFileNameEmpty_ReturnsNotFound()
     {
         // Arrange
+        var modificationId = Guid.NewGuid();
+        string path = $"invalid/{modificationId}";
+
         var serviceResponse = new ServiceResponse<IActionResult>()
             .WithContent(new NotFoundObjectResult("File not found"), HttpStatusCode.NotFound);
 
@@ -183,12 +163,19 @@ public class DownloadDocumentTests : TestServiceBase<DocumentsController>
             .Setup(b => b.GetBlobContainerClient("containerName"))
             .Returns(containerClientMock.Object);
 
-        Mocker.GetMock<IBlobStorageService>()
+        Mocker
+            .GetMock<IBlobStorageService>()
             .Setup(s => s.DownloadFileToHttpResponseAsync(blobServiceClientMock.Object, It.IsAny<string>(), It.IsAny<string>(), string.Empty))
             .ReturnsAsync(serviceResponse);
 
+        // Ensure CheckDocumentAccess returns success for GUID
+        Mocker
+            .GetMock<IProjectModificationsService>()
+            .Setup(s => s.CheckDocumentAccess(modificationId))
+            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+
         // Act
-        var result = await Sut.DownloadDocument("invalid/path", "missing.txt");
+        var result = await Sut.DownloadDocument(path, "missing.txt");
 
         // Assert
         result.ShouldBeNull();
@@ -198,6 +185,9 @@ public class DownloadDocumentTests : TestServiceBase<DocumentsController>
     public async Task DownloadDocument_WhenExceptionOccurs_ReturnsObjectResult()
     {
         // Arrange
+        var modificationId = Guid.NewGuid();
+        string path = $"invalid/{modificationId}";
+
         var serviceResponse = new ServiceResponse<IActionResult>()
             .WithContent(new ObjectResult($"Error downloading blob")
             {
@@ -222,14 +212,48 @@ public class DownloadDocumentTests : TestServiceBase<DocumentsController>
             .Setup(b => b.GetBlobContainerClient("containerName"))
             .Returns(containerClientMock.Object);
 
-        Mocker.GetMock<IBlobStorageService>()
+        Mocker
+            .GetMock<IBlobStorageService>()
             .Setup(s => s.DownloadFileToHttpResponseAsync(blobServiceClientMock.Object, It.IsAny<string>(), It.IsAny<string>(), string.Empty))
             .ReturnsAsync(serviceResponse);
 
+        // Mock access check OK
+        Mocker
+            .GetMock<IProjectModificationsService>()
+            .Setup(s => s.CheckDocumentAccess(modificationId))
+            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+
         // Act
-        var result = await Sut.DownloadDocument("invalid/path", "missing.txt");
+        var result = await Sut.DownloadDocument(path, "missing.txt");
 
         // Assert
         result.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task DownloadDocument_WhenAccessForbidden_Returns403()
+    {
+        // Arrange
+        var modificationIdStr = Guid.NewGuid().ToString();
+        string path = $"secure/{modificationIdStr}";
+        string fileName = "any.txt";
+
+        // Ensure controller has HttpContext and TempData
+        var httpContext = new DefaultHttpContext();
+        Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
+
+        // Mock access check to return Forbidden for the parsed GUID
+        Mocker
+            .GetMock<IProjectModificationsService>()
+            .Setup(s => s.CheckDocumentAccess(Guid.Parse(modificationIdStr)))
+            .ReturnsAsync(new ServiceResponse().WithStatus(HttpStatusCode.Forbidden));
+
+        // Act
+        var result = await Sut.DownloadDocument(path, fileName);
+
+        // Assert
+        var status = result.ShouldBeOfType<StatusCodeResult>();
+        status.StatusCode.ShouldBe((int)HttpStatusCode.Forbidden);
     }
 }

@@ -503,6 +503,16 @@ public class DocumentsController
     [HttpGet]
     public async Task<IActionResult> DownloadDocument(string path, string fileName)
     {
+        // get the modification id from the path
+        var modificationId = path.Split('/')[1];
+
+        var documentAccessResponse = await projectModificationsService.CheckDocumentAccess(Guid.Parse(modificationId));
+
+        if (!documentAccessResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(documentAccessResponse);
+        }
+
         var blobClient = GetBlobClient(true);
         var serviceResponse = await blobStorageService
             .DownloadFileToHttpResponseAsync(blobClient, CleanContainerName, path, fileName);
@@ -583,11 +593,18 @@ public class DocumentsController
     [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Download)]
     public async Task<IActionResult> DownloadDocumentsAsZip(string folderName)
     {
-        var blobClient = GetBlobClient(true);
-
         var irasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty;
         var modificationIdentifier =
             TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string;
+
+        var documentAccessResponse = await projectModificationsService.CheckDocumentAccess(Guid.Parse(modificationIdentifier));
+
+        if (!documentAccessResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(documentAccessResponse);
+        }
+
+        var blobClient = GetBlobClient(true);
 
         // Build the file name
         var saveAsFileName = BuildZipFileName(modificationIdentifier);

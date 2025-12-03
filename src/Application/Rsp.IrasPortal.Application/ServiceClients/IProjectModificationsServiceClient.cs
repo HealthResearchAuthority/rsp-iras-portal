@@ -17,8 +17,8 @@ public interface IProjectModificationsServiceClient
     /// </summary>
     /// <param name="projectModificationId">The unique identifier of the project modification.</param>
     /// <returns>An asynchronous operation that returns the saved project modification.</returns>
-    [Get("/projectmodifications/{projectModificationId}")]
-    public Task<ApiResponse<ProjectModificationResponse>> GetModification(Guid projectModificationId);
+    [Get("/projectmodifications/{projectRecordId}/{projectModificationId}")]
+    public Task<ApiResponse<ProjectModificationResponse>> GetModification(string projectRecordId, Guid projectModificationId);
 
     /// <summary>
     /// Gets all saved project modifications for a given project record Id.
@@ -114,7 +114,7 @@ public interface IProjectModificationsServiceClient
     /// <param name="projectModificationId">The unique identifier of the project modification.</param>
     /// <returns>An asynchronous operation that returns the requested project modification changes.</returns>
     [Get("/projectmodifications/changes")]
-    public Task<ApiResponse<IEnumerable<ProjectModificationChangeResponse>>> GetModificationChanges(Guid projectModificationId);
+    public Task<ApiResponse<IEnumerable<ProjectModificationChangeResponse>>> GetModificationChanges(string projectRecordId, Guid projectModificationId);
 
     /// <summary>
     /// Creates one or more modification documents associated with a project modification change.
@@ -169,10 +169,11 @@ public interface IProjectModificationsServiceClient
     /// <summary>
     /// Updates a project modification status by its unique identifier.
     /// </summary>
+    /// <param name="projectRecordId">The unique identifier of the project record.</param>
     /// <param name="modificationId">The unique identifier of the project modification.</param>
     /// <returns>An asynchronous operation that returns the requested project modification change.</returns>
     [Patch("/projectmodifications/status")]
-    public Task<IApiResponse> UpdateModificationStatus(Guid modificationId, string status);
+    public Task<IApiResponse> UpdateModificationStatus(string projectRecordId, Guid modificationId, string status);
 
     /// <summary>
     /// Deletes one or more modification documents associated with a project modification change.
@@ -189,10 +190,11 @@ public interface IProjectModificationsServiceClient
     /// <summary>
     /// Deletes a project modification by its unique identifier.
     /// </summary>
+    /// <param name="projectRecordId">The unique identifier of the project record.</param>
     /// <param name="modificationId">The unique identifier of the project modification.</param>
     /// <returns>An asynchronous operation that returns the requested project modification change.</returns>
     [Post("/projectmodifications/delete")]
-    public Task<IApiResponse> DeleteModification(Guid modificationId);
+    public Task<IApiResponse> DeleteModification(string projectRecordId, Guid modificationId);
 
     /// <summary>
     /// Gets the audit trail for a specific project modification.
@@ -233,15 +235,16 @@ public interface IProjectModificationsServiceClient
     /// <summary>
     /// Gets review responses for a project modification.
     /// </summary>
+    /// <param name="projectRecordId">The unique identifier of the project record.</param>
     /// <param name="modificationId">The ID of the modification</param>
     /// <returns>Returns the modification review properties</returns>
     [Get("/projectmodifications/getreviewresponses")]
-    public Task<ApiResponse<ProjectModificationReviewResponse>> GetModificationReviewResponses(Guid modificationId);
+    public Task<ApiResponse<ProjectModificationReviewResponse>> GetModificationReviewResponses(string projectRecordId, Guid modificationId);
 
     /// <summary>
     /// Gets modifications for specific ProjectRecordId with filtering, sorting and pagination
     /// </summary>
-    /// <param name="projectRecordId">The unique identifier of the project record for which modifications are requested.</param>
+    /// <param name="modificationId">The unique identifier of the modification for which documents are requested.</param>
     /// <param name="searchQuery">Object containing filtering criteria for modifications.</param>
     /// <param name="pageNumber">The number of the page to retrieve (used for pagination - 1-based).</param>
     /// <param name="pageSize">The number of items per page (used for pagination).</param>
@@ -272,4 +275,11 @@ public interface IProjectModificationsServiceClient
     /// <param name="projectModificationChangeRequest">The request object containing the updated details for the modification change.</param>
     [Patch("/projectmodifications/change")]
     Task<IApiResponse> UpdateModificationChange(ProjectModificationChangeRequest projectModificationChangeRequest);
+
+    /// <summary>
+    /// Updates an existing project modification change.
+    /// </summary>
+    /// <param name="modificationId">The request object containing the updated details for the modification change.</param>
+    [Get("/documents/access/{modificationId}")]
+    Task<IApiResponse> CheckDocumentAccess(Guid modificationId);
 }
