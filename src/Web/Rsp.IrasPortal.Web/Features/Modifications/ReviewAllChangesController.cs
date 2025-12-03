@@ -31,6 +31,7 @@ public class ReviewAllChangesController
 {
     private const string DocumentDetailsSection = "pdm-document-metadata";
     private const string SponsorDetailsSectionId = "pm-sponsor-reference";
+    private const string CategoryId = "Sponsor reference";
     private readonly IRespondentService _respondentService = respondentService;
 
     private readonly ServiceResponse _reviewOutcomeNotFoundError = new()
@@ -367,6 +368,14 @@ public class ReviewAllChangesController
         if (!allMalwareScansCompleted)
         {
             return RedirectToRoute("pmc:DocumentsScanInProgress");
+        }
+
+        var viewModel = await this.BuildSponsorQuestionnaireViewModel(projectModificationId, projectRecordId, CategoryId);
+        var isValid = await this.ValidateQuestionnaire(validator, viewModel, true);
+
+        if (!isValid)
+        {
+            return View("SponsorReference", viewModel);
         }
 
         // PASS ALL CHECKS → CONTINUE WORKFLOW
