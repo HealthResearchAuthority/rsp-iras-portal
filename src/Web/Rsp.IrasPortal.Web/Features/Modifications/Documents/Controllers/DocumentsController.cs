@@ -62,8 +62,7 @@ public class DocumentsController
         // Fetch existing documents for this modification
         var response = await respondentService.GetModificationChangesDocuments(
             viewModel.ModificationId == null ? Guid.Empty : Guid.Parse(viewModel.ModificationId),
-            viewModel.ProjectRecordId,
-            respondentId);
+            viewModel.ProjectRecordId);
 
         // Map and validate existing documents
         if (response?.StatusCode == HttpStatusCode.OK && response.Content != null)
@@ -99,7 +98,7 @@ public class DocumentsController
         // Call the respondent service to fetch metadata for documents
         // that have already been uploaded for this project modification.
         var response = await respondentService.GetModificationChangesDocuments(
-            request.ProjectModificationId, request.ProjectRecordId, request.UserId);
+            request.ProjectModificationId, request.ProjectRecordId);
 
         if (response?.StatusCode == HttpStatusCode.OK && response.Content != null)
         {
@@ -397,7 +396,7 @@ public class DocumentsController
 
         // Call the respondent service to fetch metadata for documents
         var response = await respondentService.GetModificationChangesDocuments(
-            request.ProjectModificationId, request.ProjectRecordId, request.UserId);
+            request.ProjectModificationId, request.ProjectRecordId);
 
         if (response?.StatusCode == HttpStatusCode.OK && response.Content != null)
         {
@@ -480,7 +479,7 @@ public class DocumentsController
         {
             // Call the respondent service to fetch metadata for documents
             var response = await respondentService.GetModificationChangesDocuments(
-                request.ProjectModificationId, request.ProjectRecordId, request.UserId);
+                request.ProjectModificationId, request.ProjectRecordId);
 
             // Check if there are any remaining documents in the response
             if (response?.Content == null || !response.Content.Any())
@@ -547,8 +546,7 @@ public class DocumentsController
         // Fetch existing documents for this modification
         var response = await respondentService.GetModificationChangesDocuments(
             projectModificationId == null ? Guid.Empty : (Guid)projectModificationId!,
-            projectRecordId,
-            respondentId);
+            projectRecordId);
 
         // Map and validate existing documents
         var atleastOneInvalidFile = false;
@@ -836,8 +834,7 @@ public class DocumentsController
         // Fetch uploaded documents for the modification
         var response = await respondentService.GetModificationChangesDocuments(
             documentChangeRequest.ProjectModificationId,
-            documentChangeRequest.ProjectRecordId,
-            documentChangeRequest.UserId);
+            documentChangeRequest.ProjectRecordId);
 
         // Retrieve the CMS question set for the document details section
         var additionalQuestionsResponse = await cmsQuestionsetService
@@ -999,8 +996,7 @@ public class DocumentsController
         // Fetch all existing uploaded documents for this modification
         var documentsResponse = await respondentService.GetModificationChangesDocuments(
             request.ProjectModificationId,
-            request.ProjectRecordId,
-            request.UserId);
+            request.ProjectRecordId);
 
         // Skip validation if service call fails or no documents exist
         if (documentsResponse?.StatusCode != HttpStatusCode.OK || documentsResponse.Content == null)

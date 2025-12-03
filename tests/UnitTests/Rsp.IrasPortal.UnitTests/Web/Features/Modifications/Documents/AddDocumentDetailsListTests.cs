@@ -24,7 +24,7 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
 
         Mocker
             .GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -123,7 +123,7 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
 
         // Mock: return two documents
         Mocker.GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -237,7 +237,7 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
     {
         // Arrange
         Mocker.GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -313,7 +313,7 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
         var docId = Guid.NewGuid();
 
         Mocker.GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -371,7 +371,7 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
         // Arrange
         Mocker
             .GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -421,7 +421,7 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
 
         Mocker
             .GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -488,7 +488,7 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
         var docId = Guid.NewGuid();
         Mocker
             .GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -560,7 +560,7 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
         // Arrange
         Mocker
             .GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
             {
                 StatusCode = HttpStatusCode.InternalServerError,

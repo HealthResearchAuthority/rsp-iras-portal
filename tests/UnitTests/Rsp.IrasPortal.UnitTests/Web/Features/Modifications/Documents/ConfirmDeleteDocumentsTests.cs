@@ -35,7 +35,7 @@ public class ConfirmDeleteDocumentsTests : TestServiceBase<DocumentsController>
         var respondentServiceMock = Mocker.GetMock<IRespondentService>();
 
         respondentServiceMock
-            .Setup(s => s.GetModificationChangesDocuments(changeId, projectRecordId, respondentId))
+            .Setup(s => s.GetModificationChangesDocuments(changeId, projectRecordId))
             .ReturnsAsync(serviceResponse);
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
@@ -78,7 +78,7 @@ public class ConfirmDeleteDocumentsTests : TestServiceBase<DocumentsController>
         actual.ProjectRecordId.ShouldBe(projectRecordId);
         actual.UserId.ShouldBe(respondentId);
 
-        respondentServiceMock.Verify(s => s.GetModificationChangesDocuments(changeId, projectRecordId, respondentId), Times.Once);
+        respondentServiceMock.Verify(s => s.GetModificationChangesDocuments(changeId, projectRecordId), Times.Once);
     }
 
     [Theory, AutoData]
@@ -103,7 +103,7 @@ public class ConfirmDeleteDocumentsTests : TestServiceBase<DocumentsController>
         var respondentServiceMock = Mocker.GetMock<IRespondentService>();
 
         respondentServiceMock
-            .Setup(s => s.GetModificationChangesDocuments(changeId, projectRecordId, respondentId))
+            .Setup(s => s.GetModificationChangesDocuments(changeId, projectRecordId))
             .ReturnsAsync(serviceResponse);
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
@@ -131,6 +131,6 @@ public class ConfirmDeleteDocumentsTests : TestServiceBase<DocumentsController>
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
         redirect.ActionName.ShouldBe(nameof(DocumentsController.ProjectDocument));
 
-        respondentServiceMock.Verify(s => s.GetModificationChangesDocuments(changeId, projectRecordId, respondentId), Times.Once);
+        respondentServiceMock.Verify(s => s.GetModificationChangesDocuments(changeId, projectRecordId), Times.Once);
     }
 }

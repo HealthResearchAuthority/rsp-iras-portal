@@ -69,7 +69,7 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
             });
 
         Mocker.GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
             { StatusCode = HttpStatusCode.OK, Content = new List<ProjectModificationDocumentRequest>() });
 
@@ -133,7 +133,7 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
             });
 
         Mocker.GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
             { StatusCode = HttpStatusCode.OK, Content = existingDocs });
 
@@ -164,7 +164,7 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
         };
 
         Mocker.GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
             { StatusCode = HttpStatusCode.OK, Content = new List<ProjectModificationDocumentRequest>() });
 
@@ -195,7 +195,7 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
         };
 
         Mocker.GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
             { StatusCode = HttpStatusCode.OK, Content = new List<ProjectModificationDocumentRequest>() });
 
@@ -256,7 +256,7 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
             }
         };
 
-        Mocker.GetMock<IRespondentService>().Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+        Mocker.GetMock<IRespondentService>().Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
             { StatusCode = HttpStatusCode.OK, Content = new List<ProjectModificationDocumentRequest>() });
 
@@ -315,7 +315,7 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
         };
 
         Mocker.GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>> { StatusCode = HttpStatusCode.InternalServerError });
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
@@ -338,7 +338,7 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
         var model = new ModificationUploadDocumentsViewModel { Files = new List<IFormFile>() };
 
         Mocker.GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
             { StatusCode = HttpStatusCode.OK, Content = new List<ProjectModificationDocumentRequest> { new() { FileName = "existing.pdf" } } });
 
@@ -363,7 +363,7 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
         var model = new ModificationUploadDocumentsViewModel { Files = new List<IFormFile>() };
 
         Mocker.GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
             { StatusCode = HttpStatusCode.OK, Content = new List<ProjectModificationDocumentRequest>() });
 
