@@ -2,9 +2,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
+using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Web.Features.Modifications;
 using Rsp.IrasPortal.Web.Models;
 
@@ -22,56 +22,6 @@ public class DisplayQuestionnaire_Tests : TestServiceBase<SponsorReferenceContro
         var http = new DefaultHttpContext();
         Sut.ControllerContext = new() { HttpContext = http };
         Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>());
-
-        // Act
-        var result = await Sut.DisplayQuestionnaire("PR1", CategoryId, SectionId);
-
-        // Assert
-        var status = result.ShouldBeOfType<StatusCodeResult>();
-        status.StatusCode.ShouldBe(StatusCodes.Status400BadRequest);
-    }
-
-    [Fact]
-    public async Task Returns_ServiceError_When_Respondent_Fails()
-    {
-        // Arrange
-        var http = new DefaultHttpContext();
-        Sut.ControllerContext = new() { HttpContext = http };
-        Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>())
-        {
-            [Rsp.IrasPortal.Application.Constants.TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid()
-        };
-
-        Mocker.GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationAnswers(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = System.Net.HttpStatusCode.BadGateway });
-
-        // Act
-        var result = await Sut.DisplayQuestionnaire("PR1", CategoryId, SectionId);
-
-        // Assert
-        var status = result.ShouldBeOfType<StatusCodeResult>();
-        status.StatusCode.ShouldBe(StatusCodes.Status502BadGateway);
-    }
-
-    [Fact]
-    public async Task Returns_ServiceError_When_Questionset_Fails()
-    {
-        // Arrange
-        var http = new DefaultHttpContext();
-        Sut.ControllerContext = new() { HttpContext = http };
-        Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>())
-        {
-            [Rsp.IrasPortal.Application.Constants.TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid()
-        };
-
-        Mocker.GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationAnswers(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = System.Net.HttpStatusCode.OK, Content = [] });
-
-        Mocker.GetMock<ICmsQuestionsetService>()
-            .Setup(s => s.GetModificationQuestionSet(It.Is<string?>(x => x == SectionId), It.IsAny<string?>()))
-            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse> { StatusCode = System.Net.HttpStatusCode.BadRequest });
 
         // Act
         var result = await Sut.DisplayQuestionnaire("PR1", CategoryId, SectionId);

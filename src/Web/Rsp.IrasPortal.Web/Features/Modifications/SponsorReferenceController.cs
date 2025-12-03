@@ -50,41 +50,7 @@ public class SponsorReferenceController
             });
         }
 
-        // get the responent answers for the category
-        var respondentServiceResponse = await _respondentService.GetModificationAnswers(projectModificationId, projectRecordId, categoryId);
-
-        if (!respondentServiceResponse.IsSuccessStatusCode)
-        {
-            // return the generic error page
-            return this.ServiceError(respondentServiceResponse);
-        }
-
-        var questionsSetServiceResponse = await cmsQuestionsetService.GetModificationQuestionSet(sectionId);
-
-        // return error page if unsuccessfull
-        if (!questionsSetServiceResponse.IsSuccessStatusCode)
-        {
-            // return the generic error page
-            return this.ServiceError(questionsSetServiceResponse);
-        }
-
-        // get the respondent answers and questions
-        var respondentAnswers = respondentServiceResponse.Content!;
-
-        // convert the questions response to QuestionnaireViewModel
-        var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(questionsSetServiceResponse.Content!, true);
-
-        // if respondent has answerd any questions
-        if (respondentAnswers.Any())
-        {
-            questionnaire.UpdateWithRespondentAnswers(respondentAnswers);
-        }
-
-        var viewModel = new QuestionnaireViewModel
-        {
-            CurrentStage = sectionId,
-            Questions = questionnaire.Questions
-        };
+        var viewModel = await this.BuildSponsorQuestionnaireViewModel(projectModificationId, projectRecordId, categoryId);
 
         // if we have questions in the session
         // then return the view with the model

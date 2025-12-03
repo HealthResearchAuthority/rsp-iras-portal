@@ -10,11 +10,15 @@ using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Enums;
 using Rsp.IrasPortal.Web.Features.Modifications;
+using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.ReviewAllChangesControllerTests;
 
 public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesController>
 {
+    private const string SectionId = "pm-sponsor-reference";
+    private const string CategoryId = "Sponsor reference";
+
     [Theory, AutoData]
     public async Task SendModificationToSponsor_Should_Return_View_When_Success
     (
@@ -35,6 +39,25 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(response);
+
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationAnswers(It.IsAny<Guid>(), It.IsAny<string>(), CategoryId))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = System.Net.HttpStatusCode.OK, Content = [] });
+
+        var qset = new CmsQuestionSetResponse
+        {
+            Sections = [new SectionModel { Id = SectionId, CategoryId = CategoryId, Questions = [new QuestionModel { Id = "Q1", QuestionId = "Q1", Name = "Q1", CategoryId = CategoryId, AnswerDataType = "Text" }] }]
+        };
+
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet(It.Is<string?>(x => x == SectionId), It.IsAny<string?>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse> { StatusCode = System.Net.HttpStatusCode.OK, Content = qset });
+
+        // Validator OK both passes
+        Mocker.GetMock<FluentValidation.IValidator<QuestionnaireViewModel>>()
+            .SetupSequence(v => v.ValidateAsync(It.IsAny<FluentValidation.ValidationContext<QuestionnaireViewModel>>(), default))
+            .ReturnsAsync(new FluentValidation.Results.ValidationResult())
+            .ReturnsAsync(new FluentValidation.Results.ValidationResult());
 
         // Act
         var result = await Sut.SendModificationToSponsor(projectRecordId, projectModificationId);
@@ -68,6 +91,25 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(response);
+
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationAnswers(It.IsAny<Guid>(), It.IsAny<string>(), CategoryId))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = System.Net.HttpStatusCode.OK, Content = [] });
+
+        var qset = new CmsQuestionSetResponse
+        {
+            Sections = [new SectionModel { Id = SectionId, CategoryId = CategoryId, Questions = [new QuestionModel { Id = "Q1", QuestionId = "Q1", Name = "Q1", CategoryId = CategoryId, AnswerDataType = "Text" }] }]
+        };
+
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet(It.Is<string?>(x => x == SectionId), It.IsAny<string?>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse> { StatusCode = System.Net.HttpStatusCode.OK, Content = qset });
+
+        // Validator OK both passes
+        Mocker.GetMock<FluentValidation.IValidator<QuestionnaireViewModel>>()
+            .SetupSequence(v => v.ValidateAsync(It.IsAny<FluentValidation.ValidationContext<QuestionnaireViewModel>>(), default))
+            .ReturnsAsync(new FluentValidation.Results.ValidationResult())
+            .ReturnsAsync(new FluentValidation.Results.ValidationResult());
 
         // Act
         var result = await Sut.SendModificationToSponsor(projectRecordId, projectModificationId);
