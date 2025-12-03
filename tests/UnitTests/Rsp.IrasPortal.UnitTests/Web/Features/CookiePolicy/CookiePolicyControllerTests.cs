@@ -74,4 +74,27 @@ public class CookiePolicyControllerTests : TestServiceBase<CookiesController>
         redirectResult.ActionName.ShouldBe("Index");
         redirectResult.ControllerName.ShouldBe("Home");
     }
+
+    [Fact]
+    public void Remove_Analytics_Cookies_When_User_Rejects_Them()
+    {
+        // Arrange
+        var settingsSource = CookieConfirmationSource.CookieBanner;
+        var requestCookies = "_ga=123; _clck=aaa; SomeOtherCookie=bbb";
+
+        _http.Request.Headers["Cookie"] = requestCookies;
+        var userConsent = CookieConsentValues.No;
+
+        // Act
+        Sut.AcceptConsent(userConsent, settingsSource);
+
+        // Assert
+        var setCookieHeader = _http.Response.Headers["Set-Cookie"].ToString();
+
+        // check that _ga and _clck have been added to the 'Set-Cookie'
+        // header with expiry date as DateTime.Min marked to be deleted from the response
+        setCookieHeader.ShouldContain("_ga=; expires=Thu, 01 Jan 1970 00:00:00 GMT");
+        setCookieHeader.ShouldContain("_clck=; expires=Thu, 01 Jan 1970 00:00:00 GMT");
+        setCookieHeader.ShouldNotContain("SomeOtherCookie=; expires=Thu, 01 Jan 1970 00:00:00 GMT");
+    }
 }

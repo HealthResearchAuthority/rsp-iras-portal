@@ -20,7 +20,20 @@ public class CookiesController : Controller
 
         // Essential cookies are always enabled, so no need to record separately
         // But we’ll track analytics preference
-        var analyticsValue = additionalConsent == "yes" ? "true" : "false";
+        var analyticsValue = additionalConsent == CookieConsentValues.Yes ? "true" : "false";
+
+        // clear existing analytics cookies if user rejected analytics consent
+        if (analyticsValue != "true" && Request?.Cookies?.Keys != null)
+        {
+            // loop over existing analytics cookies and delete them from the response
+            foreach (var cookie in Request.Cookies.Keys)
+            {
+                if (AnalyticsCookies.AnalyticsCookiePrefixes.Any(prefix => cookie.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+                {
+                    Response.Cookies.Delete(cookie);
+                }
+            }
+        }
 
         Response.Cookies.Append(CookieConsentNames.AdditionalCookies, analyticsValue, new CookieOptions
         {

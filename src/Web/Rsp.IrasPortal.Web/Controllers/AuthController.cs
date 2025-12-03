@@ -74,6 +74,9 @@ public class AuthController(AppSettings appSettings, IFeatureManager featureMana
     [NonAction]
     public async Task<string?> GetLogoutUrl(bool sessionTimedOut = false)
     {
+        // check if user is logged in
+        var userIsLoggedIn = User?.Identity?.IsAuthenticated != null && User.Identity.IsAuthenticated;
+
         // The SignOutResult below will handle federated sign-out
         // if configured. Signing out of the local cookie is sufficient, however
         // if we need to explicitly sign out from the external identity provider, then we need to
@@ -100,6 +103,13 @@ public class AuthController(AppSettings appSettings, IFeatureManager featureMana
             true => Url.ActionLink("SessionTimedOut", "Auth")?.TrimEnd('/'),
             false => Url.ActionLink("home", "researchaccount")?.TrimEnd('/')
         };
+
+        if (!userIsLoggedIn)
+        {
+            // user is already logged out (most likley from another tab or window)
+            // so just redirect elsewhere
+            return redirectUri;
+        }
 
         // token hint shouldn't be null as a 60 second buffer
         // is added to the AuthCookieTimeout and SessionTimeout to grab the token
