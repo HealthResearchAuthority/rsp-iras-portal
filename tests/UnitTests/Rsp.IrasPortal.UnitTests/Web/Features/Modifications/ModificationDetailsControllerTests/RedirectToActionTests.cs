@@ -37,6 +37,33 @@ public class RedirectToActionTests : TestServiceBase<ModificationDetailsControll
     }
 
     // --------------------------------------------------------------
+    // NoChangesToSubmit
+    // --------------------------------------------------------------
+    [Fact]
+    public void NoChangesToSubmit_Should_Return_Correct_View_And_Model()
+    {
+        // Arrange
+        var http = new DefaultHttpContext();
+        Sut.ControllerContext = new() { HttpContext = http };
+        Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectRecordId] = "PR1",
+            [TempDataKeys.IrasId] = "12345",
+            [TempDataKeys.ShortProjectTitle] = "Short"
+        };
+
+        // Act
+        var result = Sut.NoChangesToSubmit();
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.ViewName.ShouldBe("NoChangesToSubmit");
+
+        viewResult.Model.ShouldBeOfType<BaseProjectModificationViewModel>();
+    }
+
+    // --------------------------------------------------------------
     // DocumentsScanInProgress
     // --------------------------------------------------------------
     [Fact]
