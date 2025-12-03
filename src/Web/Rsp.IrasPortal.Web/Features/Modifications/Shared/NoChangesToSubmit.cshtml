@@ -23,13 +23,10 @@
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-        <h1 class="govuk-heading-l">You cannot proceed with ‘No’ changes</h1>
+        <h1 class="govuk-heading-l">Your modification needs to contain at least one change</h1>
         <partial name="_ProjectModificationSummary" model="Model" view-data="ViewData" />
         <p class="govuk-body">
-            All changes must have the status 'ready for submission' before you can
-            continue. For any changes with the status 'Unfinished', either select Change
-            to enter missing information, or select Remove if that change is no longer
-            needed.
+            You can't send this modification to sponsor for review until you've added at least one change. Return to the modification details page where you can add a change.
         </p>
         <div class="save-buttons">
             <a class="govuk-button" asp-route="pmc:modificationdetails" asp-all-route-data="modificationParams">
