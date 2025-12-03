@@ -21,20 +21,20 @@
 
 <govuk-header />
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
+	<div class="govuk-grid-column-two-thirds">
 		@section BackNavigation {
 			<partial name="_BackNavigation" model="@("pmc:modificationdetails", "Back", modificationParams)" />
-        }
+		}
 
-        <form asp-action="UploadDocuments" method="post" enctype="multipart/form-data">
+		<form asp-action="UploadDocuments" method="post" enctype="multipart/form-data">
 			<h1 class="govuk-heading-l">
 				@ViewBag.Title
 			</h1>
-            <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
-            <partial name="_ProjectModificationSummary" />
+			<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
+			<partial name="_ProjectModificationSummary" />
 
-            <p class="govuk-body">
-                Upload your documents here. You’ll add document details in the next step. <br />
+			<p class="govuk-body">
+				Upload your documents here. You’ll add document details in the next step. <br />
 				<br />
 				Documents must be less than 100MB and one of these file types: mp4, mov, avi, mkv, wmv, mpeg, mpg, webm,
 				png, gif, bmp, svg, jpg, jpeg,
@@ -43,7 +43,7 @@
 				ppt, pptx,
 				txt, xml, html, htm,
 				vcf, eml, msg
-            </p>
+			</p>
 
 			<input type="hidden" asp-for="@Model.ProjectRecordId" />
 			<input type="hidden" asp-for="@Model.ShortTitle" />
@@ -56,7 +56,7 @@
 			}
 
 			<div class="govuk-form-group @(hasFileErrors ? "govuk-form-group--error" : "")">
-				<label class="govuk-label" for="Files">Upload documents</label>
+				<label class="govuk-label" id="file-upload-label" for="Files" role=link tabindex=0>Upload documents</label>
 
 				@if (hasFileErrors)
 				{
@@ -70,11 +70,13 @@
 
 				<div class="govuk-drop-zone" data-module="govuk-file-upload">
 					<input asp-for="Files"
+						   tabindex=-1
 						   class="govuk-file-upload"
 						   id="Files"
 						   name="Files"
 						   type="file"
 						   aria-label="Upload documents"
+						   aria-labelledby="file-upload-label"
 						   multiple />
 				</div>
 			</div>
@@ -130,15 +132,15 @@
 				</table>
 			}
 
-            <div class="govuk-button-group govuk-!-margin-top-4">
-                <button class="govuk-button" data-module="govuk-button" name="action" value="continue">Save and continue</button>
-                @{
-                    ViewBag.Style = "govuk-button govuk-button--secondary";
-                }
-                <a asp-route="pmc:saveforlater" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-routeName="pov:postapproval" class="govuk-button govuk-button--secondary">
-                    Save for later
-                </a>
-            </div>
-        </form>
-    </div>
+			<div class="govuk-button-group govuk-!-margin-top-4">
+				<button class="govuk-button" data-module="govuk-button" name="action" value="continue">Save and continue</button>
+				@{
+					ViewBag.Style = "govuk-button govuk-button--secondary";
+				}
+				<a asp-route="pmc:saveforlater" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-routeName="pov:postapproval" class="govuk-button govuk-button--secondary">
+					Save for later
+				</a>
+			</div>
+		</form>
+	</div>
 </div>
