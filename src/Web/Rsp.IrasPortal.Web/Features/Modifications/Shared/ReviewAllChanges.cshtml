@@ -17,7 +17,7 @@
     ViewData[ViewDataKeys.ShowRemoveLink] = false;
     ViewData[ViewDataKeys.ShowModificationChangeStatus] = false;
     ViewData[ViewDataKeys.ShowModificationStatus] = true;
-	ViewData[ViewDataKeys.ShowModificationDetails] = true;
+    ViewData[ViewDataKeys.ShowModificationDetails] = true;
     var projectTitle = !string.IsNullOrEmpty(Model.ShortTitle) ? Model.ShortTitle : "Project overview";
     var linkBackToReferrer = TempData[TempDataKeys.ProjectModification.LinkBackToReferrer];
     var urlReferrer = TempData[TempDataKeys.ProjectModification.UrlReferrer];
@@ -80,14 +80,20 @@ else
                     <div class="save-buttons">
                         @{
                             <input type="hidden" name="projectRecordId" value="@Model.ProjectRecordId" />
-                            @if (Model.ChangesReadyForSubmission)
+                            @if (Model.NoChangesToSubmit)
+                            {
+                                <a asp-route="pmc:nochangestosubmit" asp-route-projectRecordId="@Model.ProjectRecordId" class="govuk-button">
+                                    Send modification to sponsor
+                                </a>
+                            }
+                            else if (Model.ChangesReadyForSubmission)
                             {
                                 <partial name="_SubmitButton" model="@("pmc:sendmodificationtosponsor", "Send modification to sponsor", new Dictionary<string, string>()
                                                               {
                                                                   ["projectModificationId"] = Model.ModificationId!,
                                                                   ["projectRecordId"] = Model.ProjectRecordId
                                                               })" />
-                                        }
+                            }
                             else
                             {
                                 <a asp-route="pmc:unfinishedchanges" asp-route-projectRecordId="@Model.ProjectRecordId" class="govuk-button">

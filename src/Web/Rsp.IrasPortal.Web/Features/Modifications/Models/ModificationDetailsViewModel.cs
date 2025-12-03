@@ -10,6 +10,7 @@ public class ModificationDetailsViewModel : BaseProjectModificationViewModel
     public string? ReviewType { get; set; }
     public List<ModificationChangeModel> ModificationChanges { get; set; } = [];
     public bool ChangesReadyForSubmission { get; set; }
+    public bool NoChangesToSubmit { get; set; }
     public List<QuestionViewModel> SponsorDetails { get; set; } = [];
     public ProjectOverviewDocumentViewModel ProjectOverviewDocumentViewModel { get; set; } = new();
     public AuditTrailModel? AuditTrailModel { get; set; }

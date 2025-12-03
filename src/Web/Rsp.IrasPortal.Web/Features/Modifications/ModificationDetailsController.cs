@@ -77,6 +77,15 @@ public class ModificationDetailsController
 
     [Authorize(Policy = Permissions.MyResearch.Modifications_Read)]
     [HttpGet]
+    public IActionResult NoChangesToSubmit()
+    {
+        var viewModel = TempData.PopulateBaseProjectModificationProperties(new BaseProjectModificationViewModel());
+
+        return View("NoChangesToSubmit", viewModel);
+    }
+
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Read)]
+    [HttpGet]
     public IActionResult DocumentsScanInProgress()
     {
         var viewModel = TempData.PopulateBaseProjectModificationProperties(new BaseProjectModificationViewModel());
