@@ -597,7 +597,11 @@ public class DocumentsController
         var modificationIdentifier =
             TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string;
 
-        var documentAccessResponse = await projectModificationsService.CheckDocumentAccess(Guid.Parse(modificationIdentifier));
+        var projectModificationId = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId) is Guid modificationId
+               ? modificationId
+               : Guid.NewGuid();
+
+        var documentAccessResponse = await projectModificationsService.CheckDocumentAccess(projectModificationId);
 
         if (!documentAccessResponse.IsSuccessStatusCode)
         {
