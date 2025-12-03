@@ -238,6 +238,7 @@ public abstract class ModificationsControllerBase
         TempData[TempDataKeys.ProjectModification.ProjectModificationIdentifier] = modification.ModificationIdentifier;
         TempData[TempDataKeys.ProjectModification.ProjectModificationId] = modification.ModificationId;
         TempData[TempDataKeys.ProjectModification.OverallReviewType] = modification.ReviewType;
+        TempData[TempDataKeys.IrasId] = irasId;
 
         var (changesResult, initialQuestions, modificationChanges) = await GetModificationChanges(modification);
         if (changesResult is not null)
@@ -284,8 +285,7 @@ public abstract class ModificationsControllerBase
         // Get uploaded documents
         var response = await respondentService.GetModificationChangesDocuments(
             documentChangeRequest.ProjectModificationId,
-            documentChangeRequest.ProjectRecordId,
-            documentChangeRequest.UserId);
+            documentChangeRequest.ProjectRecordId);
 
         if (response?.StatusCode != HttpStatusCode.OK || response.Content == null)
             return [];

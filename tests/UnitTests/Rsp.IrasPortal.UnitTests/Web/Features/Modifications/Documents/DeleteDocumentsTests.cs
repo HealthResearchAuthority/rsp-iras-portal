@@ -77,7 +77,7 @@ public class DeleteDocumentsTests : TestServiceBase<DocumentsController>
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         Mocker.GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationChangesDocuments(changeId, projectRecordId, respondentId))
+            .Setup(s => s.GetModificationChangesDocuments(changeId, projectRecordId))
             .ReturnsAsync(serviceResponse);
 
         SetupControllerContext(changeId, projectRecordId, respondentId);
@@ -93,7 +93,7 @@ public class DeleteDocumentsTests : TestServiceBase<DocumentsController>
             s => s.DeleteDocumentModification(It.IsAny<List<ProjectModificationDocumentRequest>>()), Times.Once);
 
         Mocker.GetMock<IRespondentService>().Verify(
-            s => s.GetModificationChangesDocuments(changeId, projectRecordId, respondentId), Times.Once);
+            s => s.GetModificationChangesDocuments(changeId, projectRecordId), Times.Once);
     }
 
     [Theory, AutoData]
@@ -146,7 +146,7 @@ public class DeleteDocumentsTests : TestServiceBase<DocumentsController>
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         Mocker.GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationChangesDocuments(changeId, projectRecordId, respondentId))
+            .Setup(s => s.GetModificationChangesDocuments(changeId, projectRecordId))
             .ReturnsAsync(serviceResponse);
 
         SetupControllerContext(changeId, projectRecordId, respondentId);

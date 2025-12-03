@@ -28,7 +28,7 @@ public class ReviewDocumentTests : TestServiceBase<DocumentsController>
         // Arrange
         Mocker
             .GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationChangesDocuments(changeId, projectRecordId, userId))
+            .Setup(s => s.GetModificationChangesDocuments(changeId, projectRecordId))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -83,7 +83,7 @@ public class ReviewDocumentTests : TestServiceBase<DocumentsController>
         // Arrange
         Mocker
             .GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationChangesDocuments(changeId, projectRecordId, userId))
+            .Setup(s => s.GetModificationChangesDocuments(changeId, projectRecordId))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
             {
                 StatusCode = HttpStatusCode.InternalServerError,

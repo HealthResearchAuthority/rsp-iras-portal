@@ -261,7 +261,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
-        redirect.RouteName.ShouldBe("pmc:DocumentDetailsIncomplete");
+        redirect.RouteName.ShouldBe("pmc:DocumentsScanInProgress");
     }
 
     [Theory, AutoData]

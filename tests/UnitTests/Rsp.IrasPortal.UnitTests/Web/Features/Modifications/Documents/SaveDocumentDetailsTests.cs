@@ -74,7 +74,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
 
         Mocker
             .GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -296,7 +296,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
             });
 
         Mocker.GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
             { StatusCode = HttpStatusCode.OK, Content = existingDocs });
 
