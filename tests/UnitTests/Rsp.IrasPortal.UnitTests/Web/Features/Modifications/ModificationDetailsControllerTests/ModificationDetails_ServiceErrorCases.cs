@@ -61,6 +61,6 @@ public class ModificationDetails_ServiceErrorCases : TestServiceBase<Modificatio
 
         // Assert
         var status = result.ShouldBeOfType<StatusCodeResult>();
-        status.StatusCode.ShouldBe(StatusCodes.Status400BadRequest);
+        status.StatusCode.ShouldBe(StatusCodes.Status404NotFound);
     }
 }

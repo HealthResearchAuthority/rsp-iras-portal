@@ -50,7 +50,7 @@ public abstract class ModificationsControllerBase
         {
             return (this.ServiceError(new ServiceResponse
             {
-                StatusCode = HttpStatusCode.BadRequest,
+                StatusCode = HttpStatusCode.NotFound,
                 Error = $"Error retrieving the modification for project record: {projectRecordId} modificationId: {projectModificationId}",
             }), null);
         }

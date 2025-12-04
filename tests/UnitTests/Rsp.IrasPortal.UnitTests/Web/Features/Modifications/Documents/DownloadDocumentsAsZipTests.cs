@@ -17,7 +17,7 @@ public class DownloadDocumentsAsZipTests : TestServiceBase<DocumentsController>
     public async Task DownloadDocumentsAsZip_Returns_FileResult_WithZip()
     {
         // Arrange
-        var folderName = "ChildFolder";
+        var folderName = Guid.NewGuid().ToString();
         var cleanedFolderName = "358577/ChildFolder";
 
         var blobClientMock = new Mock<BlobServiceClient>();
@@ -118,7 +118,7 @@ public class DownloadDocumentsAsZipTests : TestServiceBase<DocumentsController>
     public async Task DownloadDocumentsAsZip_WhenAccessForbidden_Returns403()
     {
         // Arrange
-        var folderName = "ChildFolder";
+        var folderName = Guid.NewGuid().ToString();
         var modificationGuid = Guid.NewGuid().ToString();
 
         // Mock access check forbidden
