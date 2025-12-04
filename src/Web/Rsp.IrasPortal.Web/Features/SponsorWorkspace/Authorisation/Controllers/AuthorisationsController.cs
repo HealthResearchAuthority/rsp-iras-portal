@@ -72,6 +72,8 @@ public class AuthorisationsController
                 Id = dto.Id,
                 ModificationId = dto.ModificationId,
                 ShortProjectTitle = dto.ShortProjectTitle,
+                ChiefInvestigatorFirstName = dto.ChiefInvestigatorFirstName,
+                ChiefInvestigatorLastName = dto.ChiefInvestigatorLastName,
                 ChiefInvestigator = dto.ChiefInvestigator,
                 SponsorOrganisation = dto.SponsorOrganisation,
                 ProjectRecordId = dto.ProjectRecordId,

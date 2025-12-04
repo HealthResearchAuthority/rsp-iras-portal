@@ -703,7 +703,7 @@ public class DocumentsController
         if (totalFileSize > maxFileSize)
         {
             hasErrors = true;
-            ModelState.AddModelError("Files", "The combined size of all files must be less than 100MB");
+            ModelState.AddModelError("Files", "The combined size of all files must be less than 100 MB");
         }
 
         return (validFiles, hasErrors);

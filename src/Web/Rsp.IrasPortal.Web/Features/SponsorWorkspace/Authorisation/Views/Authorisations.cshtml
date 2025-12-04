@@ -70,13 +70,19 @@
                                                                 new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
                                                                 new { Field = nameof(ModificationsModel.SentToSponsorDate), Label = "Date received" },
                                                                 new { Field = nameof(ModificationsModel.SentToRegulatorDate), Label = "Date actioned" },
-                                                                new { Field = nameof(ModificationsModel.ChiefInvestigator), Label = "Chief investigator" },
                                                                 new { Field = nameof(ModificationsModel.Status), Label = "Status" }
                                                                 };
                                     var tableId = "authorisationsTable";
                                 }
                                 @foreach (var header in sortableHeaders)
                                 {
+                                    // Insert Chief investigator column *before* Status
+                                    if (header.Field == nameof(ModificationsModel.Status))
+                                    {
+                                        <!-- NON-sortable Chief investigator column -->
+                                        <th scope="col" class="govuk-table__header">Chief investigator</th>
+                                    }
+
                                     <th scope="col" class="govuk-table__header govuk-table__header-sortable">
                                         <partial name="_SortableHeaderButton" model="@(new SortableHeaderModel
                                                                               {
@@ -118,7 +124,7 @@
                                         <td class="govuk-table__cell">@modification.ShortProjectTitle</td>
                                         <td class="govuk-table__cell">@(modification.SentToSponsorDate?.ToString("dd MMM yyyy") ?? string.Empty)</td>
                                         <td class="govuk-table__cell">@(modification.SentToRegulatorDate?.ToString("dd MMM yyyy") ?? string.Empty)</td>
-                                        <td class="govuk-table__cell">@modification.ChiefInvestigator</td>
+                                        <td class="govuk-table__cell">@modification.ChiefInvestigatorFirstName @modification.ChiefInvestigatorLastName</td>
                                         <td class="govuk-table__cell">
                                             @{
                                                 var tagClass = modification.Status switch
