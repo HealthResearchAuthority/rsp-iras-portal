@@ -49,8 +49,12 @@
 
     <authorized permission="@Permissions.MyResearch.Modifications_Review"
                 status-for="@modificationBaseModel.Status"
-                status-is="@ModificationStatus.InDraft"
-                status-mode="Hide">
+                status-in="@(new List<string> { ModificationStatus.WithSponsor,
+                                                ModificationStatus.WithReviewBody,
+                                                ModificationStatus.Approved,
+                                                ModificationStatus.NotApproved,
+                                                ModificationStatus.NotAuthorised })"
+                status-mode="Show">
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key">Date created</dt>
             <dd class="govuk-summary-list__value">@modificationBaseModel.DateCreated</dd>
