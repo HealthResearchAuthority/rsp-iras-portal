@@ -104,7 +104,8 @@ public static class RoleStatusPermissions
                     ModificationStatus.WithReviewBody,
                     ModificationStatus.Approved,
                     ModificationStatus.NotApproved,
-                    ModificationStatus.Received
+                    ModificationStatus.Received,
+                    ModificationStatus.ReviewInProgress
                 }
             },
             {
