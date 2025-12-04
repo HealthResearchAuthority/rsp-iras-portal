@@ -1,4 +1,4 @@
-﻿@charset "UTF-8";
+@charset "UTF-8";
 @import url("govuk-frontend.min.css");
 .govuk-form-group.questions {
   border: solid 1px lightgrey;
@@ -825,6 +825,9 @@ button.govuk-pagination__item--current {
   font: inherit;
   padding: 0;
   text-underline-offset: 0.1578em;
+  display: flex; /* or inline-flex + width: 100% */
+  justify-content: flex-start;
+  text-align: left;
 }
 .table-header-sort-button:hover {
   color: #003078;
@@ -1033,6 +1036,7 @@ button.govuk-pagination__item--current {
 .govuk-summary-card__actions {
   font-weight: normal;
 }
+
 
 .govuk-content-wrapper a {
   color: #1d70b8;
