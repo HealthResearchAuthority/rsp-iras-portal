@@ -9,6 +9,7 @@ using NetDevPack.Security.Jwt.Core.Interfaces;
 using Rsp.IrasPortal.Application.AccessControl;
 using Rsp.IrasPortal.Application.Configuration;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.Extensions;
 using Rsp.IrasPortal.Application.Services;
 
@@ -53,10 +54,31 @@ public class CustomClaimsTransformation
         // at this point we need to generate a new token
         await UpdateAccessToken(principal);
 
+        var userResponse = await userManagementService.GetUser(null, null, identityProviderId);
+
+        // returning the default principal for the disabled user without adding
+        // any additional claims, so that user will not be able to access the application
+        if
+        (
+            userResponse.IsSuccessStatusCode &&
+            userResponse.Content is UserResponse response
+        )
+        {
+            // add user status claim, so that we can use both active or disabled status
+            // where needed
+            claimsIdentity.AddClaim(new Claim(CustomClaimTypes.UserStatus, response.User.Status));
+
+            // return the claims principal without adding any additional claims
+            // i.e. roles or permissions
+            if (response.User.Status == IrasUserStatus.Disabled)
+            {
+                return principal;
+            }
+        }
+
         // now we can call the usermanagement api
         var context = httpContextAccessor.HttpContext!;
 
-        var userResponse = await userManagementService.GetUser(null, null, identityProviderId);
         if (context.Session.GetString(SessionKeys.FirstLogin) == bool.TrueString)
         {
             if (userResponse.IsSuccessStatusCode && userResponse.Content != null)
@@ -116,7 +138,7 @@ public class CustomClaimsTransformation
 
             if (!string.IsNullOrWhiteSpace(user.User?.Id))
             {
-                claimsIdentity.AddClaim(new Claim("userId", user.User.Id));
+                claimsIdentity.AddClaim(new Claim(CustomClaimTypes.UserId, user.User.Id));
             }
 
             // add the roles to claimsIdentity

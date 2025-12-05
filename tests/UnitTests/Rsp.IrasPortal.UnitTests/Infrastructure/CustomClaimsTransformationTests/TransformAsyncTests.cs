@@ -8,6 +8,7 @@ using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Identity;
 using Rsp.IrasPortal.Infrastructure.Claims;
 using Rsp.IrasPortal.Services.Extensions;
+using Rsp.IrasPortal.UnitTests.TestHelpers;
 using Claim = System.Security.Claims.Claim;
 
 namespace Rsp.IrasPortal.UnitTests.Infrastructure.CustomClaimsTransformationTests;
@@ -102,7 +103,7 @@ public class TransformAsyncTests : TestServiceBase<CustomClaimsTransformation>
         string lastName,
         string identityProviderId,
         List<string> roles,
-		User user
+        User user
     )
     {
         // Arrange
@@ -167,5 +168,175 @@ public class TransformAsyncTests : TestServiceBase<CustomClaimsTransformation>
         result.Claims
             .Count(c => c.Type == ClaimTypes.Role)
             .ShouldBe(roles.Count + 1); // Default role + roles from user management
+    }
+
+    [Theory, AutoData]
+    public async Task TransformAsync_Should_Add_UserStatus_Claim_When_UserManagementService_Returns_Success
+    (
+        string email,
+        string identityProviderId,
+        User user
+    )
+    {
+        // Arrange
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Email, email),
+            new(ClaimTypes.NameIdentifier, identityProviderId)
+        };
+
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(claims));
+
+        var httpContext = new DefaultHttpContext()
+        {
+            Session = new FakeSession(),
+        };
+
+        _httpContextAccessor
+            .Setup(x => x.HttpContext)
+            .Returns(httpContext);
+
+        var userResponse = new UserResponse
+        {
+            Roles = [],
+            User = user with { Status = IrasUserStatus.Active }
+        };
+
+        var apiResponse = ApiResponseFactory.Success(userResponse);
+
+        var serviceResponse = apiResponse.ToServiceResponse();
+
+        _userManagementService
+            .Setup(x => x.GetUser(null, null, identityProviderId))
+            .ReturnsAsync(serviceResponse);
+
+        // Act
+        var result = await Sut.TransformAsync(principal);
+
+        // Assert
+        result.Claims.ShouldContain(c =>
+            c.Type == CustomClaimTypes.UserStatus &&
+            c.Value == IrasUserStatus.Active);
+    }
+
+    [Theory, AutoData]
+    public async Task TransformAsync_Should_Return_Principal_Without_Additional_Claims_When_User_Status_Is_Disabled
+    (
+        string email,
+        string identityProviderId,
+        User user
+    )
+    {
+        // Arrange
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Email, email),
+            new(ClaimTypes.NameIdentifier, identityProviderId)
+        };
+
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(claims));
+
+        var httpContext = new DefaultHttpContext()
+        {
+            Session = new FakeSession(),
+        };
+
+        _httpContextAccessor
+            .Setup(x => x.HttpContext)
+            .Returns(httpContext);
+
+        var userResponse = new UserResponse
+        {
+            Roles = ["admin", "reviewer"],
+            User = user with { Status = IrasUserStatus.Disabled }
+        };
+
+        var apiResponse = new ApiResponse<UserResponse>
+        (
+            new HttpResponseMessage(HttpStatusCode.OK),
+            userResponse,
+            new RefitSettings()
+        );
+
+        var serviceResponse = apiResponse.ToServiceResponse();
+
+        _userManagementService
+            .Setup(x => x.GetUser(null, null, identityProviderId))
+            .ReturnsAsync(serviceResponse);
+
+        // Act
+        var result = await Sut.TransformAsync(principal);
+
+        // Assert
+        // Should have UserStatus claim with Disabled value
+        result.Claims.ShouldContain(c =>
+            c.Type == CustomClaimTypes.UserStatus &&
+            c.Value == IrasUserStatus.Disabled);
+
+        // Should have the default portal user role
+        result.Claims.ShouldContain(c =>
+            c.Type == ClaimTypes.Role &&
+            c.Value == "iras_portal_user");
+
+        // Should NOT have the user roles from the response since user is disabled
+        result.Claims.ShouldNotContain(c =>
+            c.Type == ClaimTypes.Role &&
+            (c.Value == "admin" || c.Value == "reviewer"));
+
+        // Should NOT have any other claims beyond the default role
+        result.Claims
+            .Count(c => c.Type == ClaimTypes.Role)
+            .ShouldBe(1); // Only the default role
+    }
+
+    [Theory, AutoData]
+    public async Task TransformAsync_Should_Add_UserStatus_Claim_With_Disabled_Value_For_Disabled_User
+    (
+        string email,
+        string identityProviderId,
+        User user
+    )
+    {
+        // Arrange
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Email, email),
+            new(ClaimTypes.NameIdentifier, identityProviderId)
+        };
+
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(claims));
+
+        var httpContext = new DefaultHttpContext()
+        {
+            Session = new FakeSession(),
+        };
+
+        _httpContextAccessor
+            .Setup(x => x.HttpContext)
+            .Returns(httpContext);
+
+        var userResponse = new UserResponse
+        {
+            Roles = [],
+            User = user with { Status = IrasUserStatus.Disabled }
+        };
+
+        var apiResponse = ApiResponseFactory.Success(userResponse);
+
+        var serviceResponse = apiResponse.ToServiceResponse();
+
+        _userManagementService
+            .Setup(x => x.GetUser(null, null, identityProviderId))
+            .ReturnsAsync(serviceResponse);
+
+        // Act
+        var result = await Sut.TransformAsync(principal);
+
+        // Assert
+        var userStatusClaim = result.Claims.FirstOrDefault(c =>
+            c.Type == CustomClaimTypes.UserStatus);
+
+        userStatusClaim.ShouldNotBeNull();
+        userStatusClaim.Value.ShouldBe(IrasUserStatus.Disabled);
     }
 }

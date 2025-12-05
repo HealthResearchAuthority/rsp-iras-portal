@@ -211,9 +211,22 @@ public static class AuthConfiguration
 
     private static void ConfigureAuthorization(IServiceCollection services)
     {
+        // the following default policy is used to ensure that
+        // the user is authenticated and has email and user_status claims with active value.
+        //
+        // This policy is applied on the pages where simple [Authorize] attribute is used. The user_status
+        // claim is added in the CustomClaimsTransformation class after fetching the user details from the
+        // UserManagement service.
+
+        // if the returned user's status is disabled, user_status claim will have disabled value
+        // this will prevent disabled users from accessing pages with simple [Authorize] attribute
+
+        // The other pages have more granular policies defined using the [Authorize(Policy = Workdspace.*)] attribute
+        // as the user won't have additonal claims when the user is disabled, so they won't be able to access those pages as well
         var policy = new AuthorizationPolicyBuilder()
            .RequireAuthenticatedUser()
            .RequireClaim(ClaimTypes.Email)
+           .RequireClaim(CustomClaimTypes.UserStatus, IrasUserStatus.Active) // if user is disabled, this claim will have disabled value
            .Build();
 
         services

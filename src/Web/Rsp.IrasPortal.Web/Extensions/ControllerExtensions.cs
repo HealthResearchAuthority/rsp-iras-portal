@@ -295,7 +295,7 @@ public static class ControllerExtensions
     {
         var leadNation = new List<string>();
 
-        if (!Guid.TryParse(controller.User?.FindFirstValue("userId"), out var userId))
+        if (!Guid.TryParse(controller.User?.FindFirstValue(CustomClaimTypes.UserId), out var userId))
         {
             // userId does not exist so exit block
             leadNation.Add(UkCountryNames.England);

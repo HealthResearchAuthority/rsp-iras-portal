@@ -3,7 +3,7 @@
 @{
     var model = (IList<ServiceNavigationItemModel>?)ViewData[PageContentElements.ServiceNavigation];
     var userLoggedIn = User?.Identity?.IsAuthenticated != null && User.Identity.IsAuthenticated;
-    var userName = (User?.Identity == null ? "No Identity" : User.Identity.Name);
+    var userIsDisabled = User?.FindFirst(CustomClaimTypes.UserStatus)?.Value is IrasUserStatus.Disabled;
 }
 
 <section aria-label="Service information" class="govuk-service-navigation"
@@ -33,6 +33,12 @@
 
                                 if (link.RequiresAuthorisation)
                                 {
+                                    // skip rendering the link if the user is disabled
+                                    if (userIsDisabled)
+                                    {
+                                        continue;
+                                    }
+
                                     <authorized>
                                         <li class="govuk-service-navigation__item @(isActive ? "govuk-service-navigation__item--active" : "")">
                                             <a class="govuk-service-navigation__link"

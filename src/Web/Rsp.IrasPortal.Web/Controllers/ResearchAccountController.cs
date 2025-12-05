@@ -11,6 +11,16 @@ public class ResearchAccountController : Controller
     // Home action clears session and temp data, then displays last login info if available
     public IActionResult Home()
     {
+        // after signing in, this is where user lands first
+        // if the user is disabled, block access
+        if (User.Identity?.IsAuthenticated is true)
+        {
+            if (User.FindFirst(CustomClaimTypes.UserStatus)?.Value is IrasUserStatus.Disabled)
+            {
+                return Forbid();
+            }
+        }
+
         // check if notification banner needs to be shown before clearing session
         var notificationBannerTemp = TempData[TempDataKeys.ShowNotificationBanner];
         var cookiesSavedBannerTemp = TempData[TempDataKeys.ShowCookiesSavedHeaderBanner];
