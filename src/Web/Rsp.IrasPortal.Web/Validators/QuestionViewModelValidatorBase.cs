@@ -27,17 +27,14 @@ public class QuestionViewModelValidatorBase : AbstractValidator<QuestionViewMode
                     if (minmax?.Length == 1)
                     {
                         // perform empty answer check
-                        if (minmax[0].Contains("EMPTY"))
+                        if (minmax[0].Contains("EMPTY") && string.IsNullOrEmpty(question.AnswerText?.Replace("\r\n", "\n")))
                         {
-                            if (string.IsNullOrEmpty(question.AnswerText?.Replace("\r\n", "\n")))
-                            {
-                                // by setting IsApplicable property
-                                // it will display the Description of the condition
-                                // for the property
-                                condition.IsApplicable = true;
-                                context.AddFailure(nameof(question.AnswerText), $"{condition.Description}");
-                                break; // Exit the loop immediately if EMPTY check fails
-                            }
+                            // by setting IsApplicable property
+                            // it will display the Description of the condition
+                            // for the property
+                            condition.IsApplicable = true;
+                            context.AddFailure(nameof(question.AnswerText), $"{condition.Description}");
+                            break; // Exit the loop immediately if EMPTY check fails
                         }
                     }
 
