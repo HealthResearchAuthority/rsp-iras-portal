@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.Extensions;
 using Rsp.IrasPortal.Application.Filters;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.AccessControl;
@@ -47,6 +48,8 @@ public class ProjectRecordSearchController
                 return View(model);
             }
 
+            var user = User;
+
             var searchQuery = new ProjectRecordSearchRequest()
             {
                 IrasId = model.Search?.IrasId,
@@ -57,7 +60,8 @@ public class ProjectRecordSearchController
                 LeadNation = model.Search?.LeadNation,
                 ParticipatingNation = model.Search?.ParticipatingNation,
                 SponsorOrganisation = model.Search?.SponsorOrganisation,
-                ActiveProjectsOnly = !userIsSystemAdmin
+                ActiveProjectsOnly = !userIsSystemAdmin,
+                AllowedStatuses = user.GetAllowedStatuses(StatusEntitiy.ProjectRecord),
             };
 
             var applicationServiceResponse = await applicationService.GetPaginatedApplications(

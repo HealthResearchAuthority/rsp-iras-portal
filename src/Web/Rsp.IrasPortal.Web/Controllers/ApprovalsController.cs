@@ -2,8 +2,11 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Rsp.IrasPortal.Application.AccessControl;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.Extensions;
 using Rsp.IrasPortal.Application.Filters;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.AccessControl;
@@ -33,6 +36,8 @@ public class ApprovalsController
         string sortDirection = SortDirections.Descending
     )
     {
+        var user = User;
+
         var model = new ApprovalsSearchViewModel();
 
         var json = HttpContext.Session.GetString(SessionKeys.ApprovalsSearch);
@@ -62,6 +67,7 @@ public class ApprovalsController
                 SponsorOrganisation = search.SponsorOrganisation,
                 IncludeReviewerId = false,
                 UseBackstageStatus = true,
+                AllowedStatuses = user.GetAllowedStatuses(StatusEntitiy.Modification),
             };
 
             var result = await projectModificationsService.GetModifications(searchQuery, pageNumber, pageSize, sortField, sortDirection);
