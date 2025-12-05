@@ -365,10 +365,13 @@ public class ValidateAsyncTests : TestServiceBase<QuestionViewModelValidator>
             ]
         };
 
+        var context = CreateValidationContext(question);
+
         // Act
-        var result = await Sut.TestValidateAsync(CreateValidationContext(question));
+        var result = await Sut.TestValidateAsync(context);
 
         // Assert
+        question.Rules[0]?.Conditions?.First().IsApplicable.ShouldBeFalse();
         result.Errors.Count.ShouldBe(0);
     }
 
