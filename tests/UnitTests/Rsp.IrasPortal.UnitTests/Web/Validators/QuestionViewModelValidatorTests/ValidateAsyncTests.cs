@@ -276,13 +276,60 @@ public class ValidateAsyncTests : TestServiceBase<QuestionViewModelValidator>
             ]
         };
 
+        var context = CreateValidationContext(question);
+
         // Act
-        var result = await Sut.TestValidateAsync(CreateValidationContext(question));
+        var result = await Sut.TestValidateAsync(context);
 
         // Assert
         result
             .ShouldHaveValidationErrorFor(x => x.AnswerText)
             .WithErrorMessage("Enter test questiontext");
+    }
+
+    [Fact]
+    public async Task ValidateAsync_EmptyAnswer_WithEmptyAndLengthRules_ShouldStopAfterEmpty()
+    {
+        // Arrange
+        var question = new QuestionViewModel
+        {
+            QuestionId = "Q1",
+            Heading = "Test Question",
+            Section = "Test Section",
+            DataType = "Text",
+            IsMandatory = true,
+            QuestionText = "Test QuestionText",
+            AnswerText = "",
+            Rules =
+            [
+                new RuleDto
+            {
+                Conditions =
+                [
+                    new ConditionDto
+                    {
+                        Operator = "LENGTH",
+                        Value = "EMPTY",
+                        Description = "Answer must not be empty"
+                    },
+                    new ConditionDto
+                    {
+                        Operator = "LENGTH",
+                        Value = "1,3600",
+                        Description = "Answer must be between 1 and 3600 characters"
+                    }
+                ]
+            }
+            ]
+        };
+
+        // Act
+        var result = await Sut.TestValidateAsync(CreateValidationContext(question));
+
+        result.Errors.Count.ShouldBe(1);
+        result
+           .ShouldHaveValidationErrorFor(x => x.AnswerText)
+           .WithErrorMessage("Enter test questiontext");
     }
 
     [Fact]
