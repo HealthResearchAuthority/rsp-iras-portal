@@ -248,6 +248,8 @@ public class ValidateAsyncTests : TestServiceBase<QuestionViewModelValidator>
     [Theory]
     [InlineData(null)]
     [InlineData("")]
+    [InlineData(" ")]
+    [InlineData("\r\n")]
     public async Task ValidateAsync_EmptyAnswer_WithEmptyRule_ShouldFail(string? answer)
     {
         // Arrange
@@ -290,7 +292,9 @@ public class ValidateAsyncTests : TestServiceBase<QuestionViewModelValidator>
     [Theory]
     [InlineData(null, true, 1)]
     [InlineData("", true, 1)]
+    [InlineData(" ", true, 1)]
     [InlineData("abc", false, 0)]
+    [InlineData("abc\r\nb", false, 0)]
     public async Task EmptyThenLength_BreaksOnEmpty_WhenApplicable(string? answer, bool expectError, int expectedErrorCount)
     {
         var question = new QuestionViewModel
