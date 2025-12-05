@@ -7,6 +7,7 @@ using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Enum;
+using Rsp.IrasPortal.Application.Extensions;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.AccessControl;
@@ -106,6 +107,8 @@ public class ProjectOverviewController
             }
         }
 
+        var user = User;
+
         var searchQuery = new ModificationSearchRequest()
         {
             FromDate = model.Search?.FromDate,
@@ -115,6 +118,7 @@ public class ProjectOverviewController
             ReviewType = model.Search?.ReviewType,
             Status = model.Search?.Status,
             ModificationId = model.Search?.ModificationId,
+            AllowedStatuses = user.GetAllowedStatuses(StatusEntitiy.Modification),
         };
 
         var modificationsResponseResult =
