@@ -319,7 +319,8 @@ public class ValidateAsyncTests : TestServiceBase<QuestionViewModelValidator>
             ]
         };
 
-        var result = await Sut.TestValidateAsync(CreateValidationContext(question));
+        var testSut = new QuestionLengthOnlyValidator();
+        var result = await testSut.TestValidateAsync(CreateValidationContext(question));
 
         // Assert
         result.Errors.Count.ShouldBe(expectedErrorCount);
@@ -328,7 +329,7 @@ public class ValidateAsyncTests : TestServiceBase<QuestionViewModelValidator>
         {
             result
                .ShouldHaveValidationErrorFor(x => x.AnswerText)
-               .WithErrorMessage("Enter test questiontext");
+               .WithErrorMessage("not empty");
         }
         else
         {
@@ -853,5 +854,13 @@ public class ValidateAsyncTests : TestServiceBase<QuestionViewModelValidator>
         result
             .ShouldHaveValidationErrorFor(q => q.AnswerText)
             .WithErrorMessage("Date must include a month and year");
+    }
+}
+
+public class QuestionLengthOnlyValidator : QuestionViewModelValidatorBase
+{
+    public QuestionLengthOnlyValidator()
+    {
+        ConfigureLengthRule();
     }
 }

@@ -27,7 +27,7 @@ public class QuestionViewModelValidatorBase : AbstractValidator<QuestionViewMode
                     if (minmax?.Length == 1)
                     {
                         // perform empty answer check
-                        if (minmax[0].Contains("EMPTY") && string.IsNullOrEmpty(question.AnswerText?.Replace("\r\n", "\n")))
+                        if (minmax[0].Contains("EMPTY") && string.IsNullOrWhiteSpace(question.AnswerText?.Replace("\r\n", "\n")))
                         {
                             // by setting IsApplicable property
                             // it will display the Description of the condition
