@@ -287,49 +287,89 @@ public class ValidateAsyncTests : TestServiceBase<QuestionViewModelValidator>
             .WithErrorMessage("Enter test questiontext");
     }
 
-    [Fact]
-    public async Task ValidateAsync_EmptyAnswer_WithEmptyAndLengthRules_ShouldStopAfterEmpty()
+    [Theory]
+    [InlineData(null, true, 1)]
+    [InlineData("", true, 1)]
+    [InlineData("abc", false, 0)]
+    public async Task EmptyThenLength_BreaksOnEmpty_WhenApplicable(string? answer, bool expectError, int expectedErrorCount)
     {
-        // Arrange
         var question = new QuestionViewModel
         {
-            QuestionId = "Q1",
+            QuestionId = "Q_empty_break",
             Heading = "Test Question",
             Section = "Test Section",
             DataType = "Text",
             IsMandatory = true,
             QuestionText = "Test QuestionText",
-            AnswerText = "",
+            AnswerText = answer,
             Rules =
             [
                 new RuleDto
-            {
-                Conditions =
-                [
-                    new ConditionDto
-                    {
-                        Operator = "LENGTH",
-                        Value = "EMPTY",
-                        Description = "Answer must not be empty"
-                    },
-                    new ConditionDto
-                    {
-                        Operator = "LENGTH",
-                        Value = "1,3600",
-                        Description = "Answer must be between 1 and 3600 characters"
-                    }
-                ]
-            }
+                {
+                    Conditions =
+                    [
+                        new ConditionDto { Operator = "LENGTH", Value = "EMPTY", Description = "not empty" },
+                        new ConditionDto { Operator = "LENGTH", Value = "1,3600", Description = "range" }
+                    ]
+                }
+            ]
+        };
+
+        var result = await Sut.TestValidateAsync(CreateValidationContext(question));
+
+        // Assert
+        result.Errors.Count.ShouldBe(expectedErrorCount);
+
+        if (expectError)
+        {
+            result
+               .ShouldHaveValidationErrorFor(x => x.AnswerText)
+               .WithErrorMessage("Enter test questiontext");
+        }
+        else
+        {
+            result
+            .ShouldNotHaveAnyValidationErrors();
+        }
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("FOO")]
+    [InlineData("A,B")]
+    [InlineData("0,10")]
+    [InlineData("5,5")]
+    [InlineData("10,5")]
+    public async Task LengthRule_TokenizationAndInvalidRanges_ShouldBeIgnored(string? value)
+    {
+        // Arrange
+        var question = new QuestionViewModel
+        {
+            QuestionId = "Q_tok",
+            Heading = "Test Question",
+            Section = "Test Section",
+            DataType = "Text",
+            IsMandatory = true,
+            AnswerText = "abc",
+            QuestionText = "Test QuestionText",
+            Rules =
+            [
+                new RuleDto
+                {
+                    Conditions =
+                    [
+                        new ConditionDto { Operator = "LENGTH", Value = value, Description = "ignored" }
+                    ]
+                }
             ]
         };
 
         // Act
         var result = await Sut.TestValidateAsync(CreateValidationContext(question));
 
-        result.Errors.Count.ShouldBe(1);
-        result
-           .ShouldHaveValidationErrorFor(x => x.AnswerText)
-           .WithErrorMessage("Enter test questiontext");
+        // Assert
+        result.Errors.Count.ShouldBe(0);
     }
 
     [Fact]
