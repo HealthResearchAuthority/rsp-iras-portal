@@ -108,28 +108,14 @@ public class ReviewAllChangesController
             };
         }
 
-        var searchQuery = new ProjectOverviewDocumentSearchRequest();
-        // Fetch the CMS question set that defines what metadata must be collected for this document.
-        var additionalQuestionsResponse = await cmsQuestionsetService
-            .GetModificationQuestionSet(DocumentDetailsSection);
+        var modificationDocumentsResponseResult = await this.GetModificationDocuments(projectModificationId,
+            DocumentDetailsSection, pageNumber, pageSize, sortField, sortDirection);
 
-        // Build the questionnaire model containing all questions for the details section.
-        var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(additionalQuestionsResponse.Content!);
-        var matchingQuestion = questionnaire.Questions.FirstOrDefault(q => q.QuestionId == ModificationQuestionIds.DocumentType);
+        modification.ProjectOverviewDocumentViewModel.Documents = modificationDocumentsResponseResult.Item1?.Content?.Documents ?? [];
 
-        searchQuery.DocumentTypes = matchingQuestion?.Answers?
-            .ToDictionary(a => a.AnswerId, a => a.AnswerText) ?? [];
+        await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, modification.ProjectOverviewDocumentViewModel.Documents);
 
-        searchQuery.AllowedStatuses = User.GetAllowedStatuses(StatusEntitiy.Document);
-
-        var modificationDocumentsResponseResult = await projectModificationsService.GetDocumentsForModification(projectModificationId,
-            searchQuery, pageNumber, pageSize, sortField, sortDirection);
-
-        modification.ProjectOverviewDocumentViewModel.Documents = modificationDocumentsResponseResult?.Content?.Documents ?? [];
-
-        await MapDocumentTypesAndStatusesAsync(questionnaire, modification.ProjectOverviewDocumentViewModel.Documents);
-
-        modification.ProjectOverviewDocumentViewModel.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationDocumentsResponseResult?.Content?.TotalCount ?? 0)
+        modification.ProjectOverviewDocumentViewModel.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationDocumentsResponseResult.Item1?.Content?.TotalCount ?? 0)
         {
             SortDirection = sortDirection,
             SortField = sortField,
