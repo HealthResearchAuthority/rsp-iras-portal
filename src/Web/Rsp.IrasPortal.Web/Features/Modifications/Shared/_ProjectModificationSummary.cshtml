@@ -55,10 +55,13 @@
                                                 ModificationStatus.NotApproved,
                                                 ModificationStatus.NotAuthorised })"
                 status-mode="Show">
-        <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">Date created</dt>
-            <dd class="govuk-summary-list__value">@modificationBaseModel.DateCreated</dd>
-        </div>
+                @if (modificationBaseModel.Status is not null)
+                {
+                    <div class="govuk-summary-list__row">
+                        <dt class="govuk-summary-list__key">Date created</dt>
+                        <dd class="govuk-summary-list__value">@modificationBaseModel.DateCreated</dd>
+                    </div>
+                }        
     </authorized>
 
     <authorized permission="@Permissions.MyResearch.ModificationsHistory_BackStage_Read">
