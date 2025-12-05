@@ -109,6 +109,28 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
     }
 
     [Fact]
+    public async Task Returns_View_With_Mapped_Changes_And_Flags_With_No_Documents()
+    {
+        SetupAuthoriseOutcomeViewModel();
+
+        var projectModificationsService = Mocker.GetMock<IProjectModificationsService>();
+        projectModificationsService
+            .Setup(s => s.GetDocumentsForModification(It.IsAny<Guid>(), It.IsAny<ProjectOverviewDocumentSearchRequest>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<ProjectOverviewDocumentResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = null
+            });
+
+        // Act
+        var result = await Sut.CheckAndAuthorise("PR1", "IRAS", "Short", _sponsorOrganisationUserId,
+            _sponsorOrganisationUserId);
+
+        // Assert
+        result.ShouldBeOfType<ViewResult>();
+    }
+
+    [Fact]
     public async Task CheckAndAuthorise_InvalidModelState_Should_Return_View_With_Hydrated_Model()
     {
         // Arrange
