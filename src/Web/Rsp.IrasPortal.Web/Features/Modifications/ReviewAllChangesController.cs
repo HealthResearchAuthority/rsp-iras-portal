@@ -435,41 +435,6 @@ public class ReviewAllChangesController
 
         return await projectModificationsService.SaveModificationReviewResponses(request);
     }
-
-    private async Task<QuestionnaireViewModel> PopulateAnswersFromDocuments(
-    QuestionnaireViewModel questionnaire,
-    IEnumerable<ProjectModificationDocumentAnswerDto> answers)
-    {
-        foreach (var question in questionnaire.Questions)
-        {
-            // Find the matching answer by QuestionId
-            var match = answers.FirstOrDefault(a => a.QuestionId == question.QuestionId);
-
-            if (match != null)
-            {
-                question.AnswerText = match.AnswerText;
-                question.SelectedOption = match.SelectedOption;
-
-                // carry over OptionType (if you want to track Single/Multiple)
-                question.QuestionType = match.OptionType ?? question.QuestionType;
-
-                // map multiple answers into AnswerViewModel list
-                if (match.Answers != null && match.Answers.Any())
-                {
-                    question.Answers = match.Answers
-                        .Select(ans => new AnswerViewModel
-                        {
-                            AnswerId = ans,        // if ans is an ID
-                            AnswerText = ans,      // or fetch the display text elsewhere if IDs map to text
-                            IsSelected = true
-                        })
-                        .ToList();
-                }
-            }
-        }
-
-        return questionnaire;
-    }
 }
 
 #pragma warning restore S107 // Methods should not have too many parameters
