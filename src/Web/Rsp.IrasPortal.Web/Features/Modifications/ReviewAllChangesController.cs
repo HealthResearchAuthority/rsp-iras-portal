@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.Extensions;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.AccessControl;
@@ -118,6 +119,8 @@ public class ReviewAllChangesController
 
         searchQuery.DocumentTypes = matchingQuestion?.Answers?
             .ToDictionary(a => a.AnswerId, a => a.AnswerText) ?? [];
+
+        searchQuery.AllowedStatuses = User.GetAllowedStatuses(StatusEntitiy.Document);
 
         var modificationDocumentsResponseResult = await projectModificationsService.GetDocumentsForModification(projectModificationId,
             searchQuery, pageNumber, pageSize, sortField, sortDirection);
@@ -343,6 +346,7 @@ public class ReviewAllChangesController
     {
         // Fetch all modification documents (up to 200)
         var searchQuery = new ProjectOverviewDocumentSearchRequest();
+        searchQuery.AllowedStatuses = User.GetAllowedStatuses(StatusEntitiy.Document);
         var modificationDocumentsResponseResult = await projectModificationsService.GetDocumentsForModification(
             projectModificationId,
             searchQuery, 1, 300,

@@ -11,4 +11,9 @@ public struct DocumentStatus
     public const string Approved = "Approved";
     public const string NotAuthorised = "Not authorised";
     public const string NotApproved = "Not approved";
+
+    // BACKSTAGE VALUES
+    public const string Received = "Received";
+
+    public const string ReviewInProgress = "Review in progress";
 }
