@@ -51,7 +51,7 @@ public class MyTasklistController(
             FromDate = search.FromDate,
             ToDate = search.ToDate,
             IrasId = search.IrasId,
-            ReviewerId = User?.FindFirst("userId")?.Value,
+            ReviewerId = User?.FindFirst(CustomClaimTypes.UserId)?.Value,
             ShortProjectTitle = search.ShortProjectTitle,
             IncludeReviewerId = true,
             UseBackstageStatus = true

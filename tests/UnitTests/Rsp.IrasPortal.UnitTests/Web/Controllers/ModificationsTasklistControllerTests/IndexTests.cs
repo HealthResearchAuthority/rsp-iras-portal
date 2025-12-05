@@ -26,7 +26,7 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
             Session = new InMemorySession()
         };
 
-        // Ensure a ClaimsPrincipal exists (controller uses User?.FindFirstValue("userId"))
+        // Ensure a ClaimsPrincipal exists (controller uses User?.FindFirstValue(CustomClaimTypes.UserId))
         _http.User = new ClaimsPrincipal(new ClaimsIdentity());
 
         Sut.ControllerContext = new ControllerContext
@@ -631,7 +631,7 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
         var userId = Guid.NewGuid();
         var identity = new ClaimsIdentity(new[]
         {
-                new Claim("userId", userId.ToString()),
+                new Claim(CustomClaimTypes.UserId, userId.ToString()),
                 new Claim(ClaimTypes.Role, Roles.SystemAdministrator)
             }, authenticationType: "TestAuth");
 
@@ -717,7 +717,7 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
 
         var identity = new ClaimsIdentity(new[]
         {
-                new Claim("userId", userId.ToString()),
+                new Claim(CustomClaimTypes.UserId, userId.ToString()),
                 new Claim(ClaimTypes.Role, Roles.TeamManager)
             }, authenticationType: "TestAuth");
 
@@ -795,7 +795,7 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
 
         var identity = new ClaimsIdentity(new[]
         {
-                new Claim("userId", userId.ToString()),
+                new Claim(CustomClaimTypes.UserId, userId.ToString()),
                 new Claim(ClaimTypes.Role, "workflow_coordinator")
             }, authenticationType: "TestAuth");
 
@@ -862,7 +862,7 @@ public class IndexTests : TestServiceBase<ModificationsTasklistController>
     {
         var identity = new ClaimsIdentity(new[]
         {
-                new Claim("userId", userIdValue)
+                new Claim(CustomClaimTypes.UserId, userIdValue)
             }, authenticationType: "TestAuth");
 
         _http.User = new ClaimsPrincipal(identity);
