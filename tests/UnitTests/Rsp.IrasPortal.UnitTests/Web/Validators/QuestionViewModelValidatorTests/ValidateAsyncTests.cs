@@ -209,6 +209,83 @@ public class ValidateAsyncTests : TestServiceBase<QuestionViewModelValidator>
     }
 
     [Fact]
+    public async Task ValidateAsync_QuestionWithLengthRuleAndEmptyAnswer_ShouldValidateCorrectly()
+    {
+        // Arrange
+        var question = new QuestionViewModel
+        {
+            QuestionId = "Q1",
+            Heading = "Test Question",
+            Section = "Test Section",
+            DataType = "Text",
+            IsMandatory = true,
+            AnswerText = "Any",
+            Rules =
+            [
+                new RuleDto
+                {
+                    Conditions =
+                    [
+                        new ConditionDto
+                        {
+                            Operator = "LENGTH",
+                            Value = "EMPTY",
+                            Description = "Answer must not be empty"
+                        }
+                    ]
+                }
+            ]
+        };
+
+        // Act
+        var result = await Sut.TestValidateAsync(CreateValidationContext(question));
+
+        // Assert
+        result
+            .ShouldNotHaveAnyValidationErrors();
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task ValidateAsync_EmptyAnswer_WithEmptyRule_ShouldFail(string? answer)
+    {
+        // Arrange
+        var question = new QuestionViewModel
+        {
+            QuestionId = "Q1",
+            Heading = "Test Question",
+            Section = "Test Section",
+            DataType = "Text",
+            IsMandatory = true,
+            AnswerText = answer,
+            QuestionText = "Test QuestionText",
+            Rules =
+            [
+                new RuleDto
+                {
+                    Conditions =
+                    [
+                        new ConditionDto
+                        {
+                            Operator = "LENGTH",
+                            Value = "EMPTY",
+                        }
+                    ]
+                }
+            ]
+        };
+
+        // Act
+        var result = await Sut.TestValidateAsync(CreateValidationContext(question));
+
+        // Assert
+        result
+            .ShouldHaveValidationErrorFor(x => x.AnswerText)
+            .WithErrorMessage("Enter test questiontext");
+    }
+
+    [Fact]
     public async Task Should_Evaluate_Complex_Rule_With_Multiple_AND_OR_Conditions()
     {
         // Arrange

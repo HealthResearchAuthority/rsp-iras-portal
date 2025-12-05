@@ -49,11 +49,11 @@
 
     <authorized permission="@Permissions.MyResearch.Modifications_Review"
                 status-for="@modificationBaseModel.Status"
-                status-in="@(new List<string> { ModificationStatus.WithSponsor,
-                                                ModificationStatus.WithReviewBody,
-                                                ModificationStatus.Approved,
-                                                ModificationStatus.NotApproved,
-                                                ModificationStatus.NotAuthorised })"
+                status-in="@([ ModificationStatus.WithSponsor,
+                               ModificationStatus.WithReviewBody,
+                               ModificationStatus.Approved,
+                               ModificationStatus.NotApproved,
+                               ModificationStatus.NotAuthorised])"
                 status-mode="Show">
                 @if (modificationBaseModel.Status is not null)
                 {

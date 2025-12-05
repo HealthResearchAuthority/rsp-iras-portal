@@ -860,7 +860,6 @@ button.govuk-pagination__item--current {
     font: inherit;
     padding: 0;
     text-underline-offset: .1578em;
-    display: flex; /* or inline-flex + width: 100% */
     justify-content: flex-start;
     text-align: left;
 
