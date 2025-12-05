@@ -188,7 +188,9 @@ public static class RoleStatusPermissions
                 {
                     DocumentStatus.WithReviewBody,
                     DocumentStatus.Approved,
-                    DocumentStatus.NotApproved
+                    DocumentStatus.NotApproved,
+                    DocumentStatus.ReviewInProgress,
+                    DocumentStatus.Received
                 }
             },
             {
@@ -196,7 +198,9 @@ public static class RoleStatusPermissions
                 {
                     DocumentStatus.WithReviewBody,
                     DocumentStatus.Approved,
-                    DocumentStatus.NotApproved
+                    DocumentStatus.NotApproved,
+                    DocumentStatus.ReviewInProgress,
+                    DocumentStatus.Received
                 }
             },
             {
@@ -204,7 +208,9 @@ public static class RoleStatusPermissions
                 {
                     DocumentStatus.WithReviewBody,
                     DocumentStatus.Approved,
-                    DocumentStatus.NotApproved
+                    DocumentStatus.NotApproved,
+                    DocumentStatus.ReviewInProgress,
+                    DocumentStatus.Received
                 }
             }
         };

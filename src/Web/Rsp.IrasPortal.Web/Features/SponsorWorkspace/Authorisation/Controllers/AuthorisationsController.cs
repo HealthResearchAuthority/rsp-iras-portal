@@ -181,26 +181,14 @@ public class AuthorisationsController
 
         var authoriseOutcomeViewModel = modification.Adapt<AuthoriseOutcomeViewModel>(config);
 
-        var searchQuery = new ProjectOverviewDocumentSearchRequest();
-        // Fetch the CMS question set that defines what metadata must be collected for this document.
-        var additionalQuestionsResponse = await cmsQuestionsetService
-            .GetModificationQuestionSet(DocumentDetailsSection);
+        var modificationDocumentsResponseResult = await this.GetModificationDocuments(projectModificationId,
+            DocumentDetailsSection, pageNumber, pageSize, sortField, sortDirection);
 
-        // Build the questionnaire model containing all questions for the details section.
-        var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(additionalQuestionsResponse.Content!);
-        var matchingQuestion = questionnaire.Questions.FirstOrDefault(q => q.QuestionId == ModificationQuestionIds.DocumentType);
+        authoriseOutcomeViewModel.ProjectOverviewDocumentViewModel.Documents = modificationDocumentsResponseResult.Item1?.Content?.Documents ?? [];
 
-        searchQuery.DocumentTypes = matchingQuestion?.Answers?
-            .ToDictionary(a => a.AnswerId, a => a.AnswerText) ?? [];
+        await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, modification.ProjectOverviewDocumentViewModel.Documents);
 
-        var modificationDocumentsResponseResult = await projectModificationsService.GetDocumentsForModification(projectModificationId,
-            searchQuery, pageNumber, pageSize, sortField, sortDirection);
-
-        authoriseOutcomeViewModel.ProjectOverviewDocumentViewModel.Documents = modificationDocumentsResponseResult?.Content?.Documents ?? [];
-
-        await MapDocumentTypesAndStatusesAsync(questionnaire, modification.ProjectOverviewDocumentViewModel.Documents);
-
-        authoriseOutcomeViewModel.ProjectOverviewDocumentViewModel.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationDocumentsResponseResult?.Content?.TotalCount ?? 0)
+        authoriseOutcomeViewModel.ProjectOverviewDocumentViewModel.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationDocumentsResponseResult.Item1?.Content?.TotalCount ?? 0)
         {
             SortDirection = sortDirection,
             SortField = sortField,

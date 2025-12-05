@@ -6,8 +6,10 @@ using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
+using Rsp.IrasPortal.Application.Extensions;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Domain.AccessControl;
 using Rsp.IrasPortal.Domain.Enums;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Features.Modifications.Helpers;
@@ -494,6 +496,46 @@ public abstract class ModificationsControllerBase
             CurrentStage = SectionId,
             Questions = questionnaire.Questions
         };
+    }
+
+    protected async Task<(ServiceResponse<ProjectOverviewDocumentResponse>, QuestionnaireViewModel)> GetModificationDocuments(
+        Guid projectModificationId,
+        string documentDetailsSection,
+        int pageNumber,
+        int pageSize,
+        string? sortField,
+        string? sortDirection)
+    {
+        var searchQuery = new ProjectOverviewDocumentSearchRequest();
+
+        // Fetch CMS question set
+        var qsResponse = await cmsQuestionsetService.GetModificationQuestionSet(documentDetailsSection);
+
+        // Build questionnaire
+        var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(qsResponse.Content!);
+
+        // Find the document type question
+        var docTypeQuestion = questionnaire.Questions
+            .FirstOrDefault(q => q.QuestionId == ModificationQuestionIds.DocumentType);
+
+        // Populate DocumentTypes
+        searchQuery.DocumentTypes = docTypeQuestion?.Answers?
+            .ToDictionary(a => a.AnswerId, a => a.AnswerText) ?? new();
+
+        // Allowed statuses based on user
+        searchQuery.AllowedStatuses = User.GetAllowedStatuses(StatusEntitiy.Document);
+
+        // Fetch documents
+        var documents = await projectModificationsService.GetDocumentsForModification(
+            projectModificationId,
+            searchQuery,
+            pageNumber,
+            pageSize,
+            sortField,
+            sortDirection
+        );
+
+        return (documents, questionnaire);
     }
 
     /// <summary>

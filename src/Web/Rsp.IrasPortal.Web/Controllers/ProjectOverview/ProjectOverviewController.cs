@@ -283,12 +283,12 @@ public class ProjectOverviewController
         // Populate TempData with project details for actual modification journey
         TempData[TempDataKeys.IrasId] = projectRecord.IrasId;
         TempData[TempDataKeys.ProjectRecordId] = projectRecord.Id;
-        TempData[TempDataKeys.ShortProjectTitle] = titleAnswer as string ?? string.Empty;
+        TempData[TempDataKeys.ShortProjectTitle] = titleAnswer ?? string.Empty;
         TempData[TempDataKeys.PlannedProjectEndDate] = DateHelper.ConvertDateToString(endDateAnswer);
 
         var model = new ProjectOverviewModel
         {
-            ProjectTitle = titleAnswer as string ?? string.Empty,
+            ProjectTitle = titleAnswer ?? string.Empty,
             CategoryId = QuestionCategories.ProjectRecord,
             ProjectRecordId = projectRecord.Id,
             ProjectPlannedEndDate = DateHelper.ConvertDateToString(endDateAnswer),
@@ -338,6 +338,8 @@ public class ProjectOverviewController
 
         searchQuery.DocumentTypes = matchingQuestion?.Answers?
             .ToDictionary(a => a.AnswerId, a => a.AnswerText) ?? [];
+
+        searchQuery.AllowedStatuses = User.GetAllowedStatuses(StatusEntitiy.Document);
 
         var modificationsResponseResult = await projectModificationsService.GetDocumentsForProjectOverview(projectRecordId,
             searchQuery, pageNumber, pageSize, sortField, sortDirection);

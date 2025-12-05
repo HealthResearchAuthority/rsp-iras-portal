@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.Extensions;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.AccessControl;
@@ -107,26 +108,14 @@ public class ReviewAllChangesController
             };
         }
 
-        var searchQuery = new ProjectOverviewDocumentSearchRequest();
-        // Fetch the CMS question set that defines what metadata must be collected for this document.
-        var additionalQuestionsResponse = await cmsQuestionsetService
-            .GetModificationQuestionSet(DocumentDetailsSection);
+        var modificationDocumentsResponseResult = await this.GetModificationDocuments(projectModificationId,
+            DocumentDetailsSection, pageNumber, pageSize, sortField, sortDirection);
 
-        // Build the questionnaire model containing all questions for the details section.
-        var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(additionalQuestionsResponse.Content!);
-        var matchingQuestion = questionnaire.Questions.FirstOrDefault(q => q.QuestionId == ModificationQuestionIds.DocumentType);
+        modification.ProjectOverviewDocumentViewModel.Documents = modificationDocumentsResponseResult.Item1?.Content?.Documents ?? [];
 
-        searchQuery.DocumentTypes = matchingQuestion?.Answers?
-            .ToDictionary(a => a.AnswerId, a => a.AnswerText) ?? [];
+        await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, modification.ProjectOverviewDocumentViewModel.Documents);
 
-        var modificationDocumentsResponseResult = await projectModificationsService.GetDocumentsForModification(projectModificationId,
-            searchQuery, pageNumber, pageSize, sortField, sortDirection);
-
-        modification.ProjectOverviewDocumentViewModel.Documents = modificationDocumentsResponseResult?.Content?.Documents ?? [];
-
-        await MapDocumentTypesAndStatusesAsync(questionnaire, modification.ProjectOverviewDocumentViewModel.Documents);
-
-        modification.ProjectOverviewDocumentViewModel.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationDocumentsResponseResult?.Content?.TotalCount ?? 0)
+        modification.ProjectOverviewDocumentViewModel.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationDocumentsResponseResult.Item1?.Content?.TotalCount ?? 0)
         {
             SortDirection = sortDirection,
             SortField = sortField,
@@ -343,6 +332,7 @@ public class ReviewAllChangesController
     {
         // Fetch all modification documents (up to 200)
         var searchQuery = new ProjectOverviewDocumentSearchRequest();
+        searchQuery.AllowedStatuses = User.GetAllowedStatuses(StatusEntitiy.Document);
         var modificationDocumentsResponseResult = await projectModificationsService.GetDocumentsForModification(
             projectModificationId,
             searchQuery, 1, 300,
@@ -444,41 +434,6 @@ public class ReviewAllChangesController
         };
 
         return await projectModificationsService.SaveModificationReviewResponses(request);
-    }
-
-    private async Task<QuestionnaireViewModel> PopulateAnswersFromDocuments(
-    QuestionnaireViewModel questionnaire,
-    IEnumerable<ProjectModificationDocumentAnswerDto> answers)
-    {
-        foreach (var question in questionnaire.Questions)
-        {
-            // Find the matching answer by QuestionId
-            var match = answers.FirstOrDefault(a => a.QuestionId == question.QuestionId);
-
-            if (match != null)
-            {
-                question.AnswerText = match.AnswerText;
-                question.SelectedOption = match.SelectedOption;
-
-                // carry over OptionType (if you want to track Single/Multiple)
-                question.QuestionType = match.OptionType ?? question.QuestionType;
-
-                // map multiple answers into AnswerViewModel list
-                if (match.Answers != null && match.Answers.Any())
-                {
-                    question.Answers = match.Answers
-                        .Select(ans => new AnswerViewModel
-                        {
-                            AnswerId = ans,        // if ans is an ID
-                            AnswerText = ans,      // or fetch the display text elsewhere if IDs map to text
-                            IsSelected = true
-                        })
-                        .ToList();
-                }
-            }
-        }
-
-        return questionnaire;
     }
 }
 
