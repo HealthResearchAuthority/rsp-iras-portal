@@ -14,4 +14,9 @@ public static class CustomClaimTypes
     /// The user's ID key for storing the userId claim value.
     /// </summary>
     public const string UserId = "userId";
+
+    /// <summary>
+    /// The permissions key for storing the permissions claim value.
+    /// </summary>
+    public const string Permissions = "permissions";
 }

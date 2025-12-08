@@ -1,5 +1,4 @@
 ﻿using System.Security.Claims;
-using System.Text.Json;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
@@ -67,24 +66,6 @@ public class ProfileAndSettingsControllerTests : TestServiceBase<ProfileAndSetti
         // Assert
         Mocker.GetMock<IUserManagementService>()
            .Verify(s => s.GetUser(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.Model.ShouldNotBeNull();
-        viewResult.Model.ShouldBeOfType<UserViewModel>();
-    }
-
-    [Theory, AutoData]
-    public void Index_Returns_View_When_User_In_TempData(UserViewModel userViewModel)
-    {
-        // Arrange
-        Sut.TempData["newUserProfile"] = JsonSerializer.Serialize(userViewModel);
-
-        // Act
-        var result = Sut.Index()?.Result;
-
-        // Assert
-        Mocker.GetMock<IUserManagementService>()
-           .Verify(s => s.GetUser(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
 
         var viewResult = result.ShouldBeOfType<ViewResult>();
         viewResult.Model.ShouldNotBeNull();
@@ -272,8 +253,8 @@ public class ProfileAndSettingsControllerTests : TestServiceBase<ProfileAndSetti
         var result = Sut.ConfirmProfileDetails(viewModel)?.Result;
 
         // Assert
-        var viewResult = result.ShouldBeOfType<RedirectToActionResult>();
-        viewResult.ActionName.ShouldBe("Index");
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.ViewName.ShouldBe("Index");
     }
 
     [Theory, AutoData]

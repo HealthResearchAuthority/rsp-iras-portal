@@ -1,5 +1,5 @@
-﻿using System.Security.Claims;
-using System.Text.Json;
+﻿using System.Net;
+using System.Security.Claims;
 using FluentValidation;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
@@ -8,6 +8,7 @@ using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
 using Rsp.IrasPortal.Application.Filters;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Domain.AccessControl;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Controllers;
 using Rsp.IrasPortal.Web.Extensions;
@@ -15,7 +16,7 @@ using Rsp.IrasPortal.Web.Extensions;
 namespace Rsp.IrasPortal.Web.Features.ProfileAndSettings.Controllers;
 
 [Route("[controller]/[action]", Name = "profilesettings:[action]")]
-[Authorize]
+[Authorize(Policy = Workspaces.Profile)]
 public class ProfileAndSettingsController(
     IUserManagementService userService,
     IValidator<UserViewModel> validator) : Controller
@@ -26,39 +27,26 @@ public class ProfileAndSettingsController(
     [HttpGet("~/[controller]", Name = "profilesettings")]
     public async Task<IActionResult> Index()
     {
-        // cehck if user model is in tempData
-        var userModel = TempData["newUserProfile"];
-        if (userModel is string json)
-        {
-            ViewBag.Mode = "complete";
-            var viewModel = JsonSerializer.Deserialize<UserViewModel>(json);
+        var currentUserEmail = HttpContext?.User.FindFirstValue(ClaimTypes.Email);
+        var userEntityResponse = await userService.GetUser(null, currentUserEmail);
 
-            return View(viewModel);
-        }
-        else
+        if (!userEntityResponse.IsSuccessStatusCode)
         {
-            ViewBag.Mode = "edit";
-            var currentUserEmail = HttpContext?.User.FindFirstValue(ClaimTypes.Email);
-            var userEntityResponse = await userService.GetUser(null, currentUserEmail);
-
-            if (!userEntityResponse.IsSuccessStatusCode)
+            if (userEntityResponse.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                if (userEntityResponse.StatusCode == System.Net.HttpStatusCode.NotFound)
-                {
-                    return RedirectToAction(nameof(EditProfile));
-                }
-
-                return this.ServiceError(userEntityResponse);
+                return RedirectToAction(nameof(EditProfile));
             }
 
-            var viewModel = new UserViewModel(userEntityResponse.Content!);
-
-            return View(viewModel);
+            return this.ServiceError(userEntityResponse);
         }
+
+        var viewModel = new UserViewModel(userEntityResponse.Content!);
+
+        return View(viewModel);
     }
 
     [HttpGet]
-    public async Task<IActionResult> EditProfile(UserViewModel? userModel = null)
+    public async Task<IActionResult> EditProfile()
     {
         // case for existing user editing their information
         var currentUserEmail = HttpContext?.User.FindFirstValue(ClaimTypes.Email);
@@ -66,7 +54,7 @@ public class ProfileAndSettingsController(
 
         if (!userEntityResponse.IsSuccessStatusCode)
         {
-            if (userEntityResponse.StatusCode == System.Net.HttpStatusCode.NotFound)
+            if (userEntityResponse.StatusCode == HttpStatusCode.NotFound)
             {
                 // user does not exist and they need to complete their profile
                 var phone = HttpContext?.User.FindFirstValue(ClaimTypes.MobilePhone);
@@ -105,6 +93,7 @@ public class ProfileAndSettingsController(
     public async Task<IActionResult> SaveProfile(UserViewModel userModel)
     {
         var mode = (userModel.Id == null) ? "complete" : "edit";
+
         ViewBag.Mode = mode;
 
         var context = new ValidationContext<UserViewModel>(userModel);
@@ -144,32 +133,32 @@ public class ProfileAndSettingsController(
 
             return RedirectToAction(nameof(Index));
         }
-        else
+
+        // create new user
+        var request = userModel.Adapt<CreateUserRequest>();
+        request.Status = IrasUserStatus.Active;
+
+        var createUserStatus = await userService.CreateUser(request);
+
+        // user was created succesfully so let's assign them the 'applicant' role
+        var assignRolesStatus = await userService.UpdateRoles(userModel.Email, null, Roles.Applicant);
+
+        if (!createUserStatus.IsSuccessStatusCode || !assignRolesStatus.IsSuccessStatusCode)
         {
-            // create new user
-            var request = userModel.Adapt<CreateUserRequest>();
-            request.Status = IrasUserStatus.Active;
-
-            var createUserStatus = await userService.CreateUser(request);
-
-            // user was created succesfully so let's assign them the 'applicant' role
-            var assignRolesStatus = await userService.UpdateRoles(userModel.Email, null, Roles.Applicant);
-
-            if (!createUserStatus.IsSuccessStatusCode || !assignRolesStatus.IsSuccessStatusCode)
-            {
-                return this.ServiceError(createUserStatus);
-            }
-
-            // show notification banner for success message
-            TempData[TempDataKeys.ShowNotificationBanner] = true;
-
-            //// redirect to homepage
-            return RedirectToAction(nameof(ResearchAccountController.Home), "ResearchAccount");
+            return this.ServiceError(createUserStatus);
         }
+
+        HttpContext.Session.Remove(SessionKeys.RequireProfileCreation);
+
+        // show notification banner for success message
+        TempData[TempDataKeys.ShowNotificationBanner] = true;
+
+        // redirect to homepage
+        return RedirectToAction(nameof(ResearchAccountController.Home), "ResearchAccount");
     }
 
     [HttpPost]
-    [CmsContentAction(nameof(EditProfile))]
+    [CmsContentAction(nameof(Index))]
     public async Task<IActionResult> ConfirmProfileDetails(UserViewModel userModel)
     {
         ViewBag.Mode = "complete";
@@ -189,9 +178,6 @@ public class ProfileAndSettingsController(
             return View(EditProfileView, userModel);
         }
 
-        // serialise userModel and store as tempData
-        TempData["newUserProfile"] = JsonSerializer.Serialize(userModel);
-
-        return RedirectToAction(nameof(Index));
+        return View(nameof(Index), userModel);
     }
 }

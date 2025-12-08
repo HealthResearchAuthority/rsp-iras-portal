@@ -3,6 +3,7 @@ namespace Rsp.IrasPortal.Domain.AccessControl;
 // Workspaces
 public static class Workspaces
 {
+    public const string Profile = "profile";
     public const string MyResearch = "myresearch";
     public const string Sponsor = "sponsor";
     public const string SystemAdministration = "systemadmin";
