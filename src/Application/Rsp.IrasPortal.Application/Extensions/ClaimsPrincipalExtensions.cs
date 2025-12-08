@@ -25,7 +25,7 @@ public static class ClaimsPrincipalExtensions
 
         // Extract permissions for the user
         var permissions = user.Claims
-            .Where(c => c.Type == "permissions")
+            .Where(c => c.Type == CustomClaimTypes.Permissions)
             .Select(c => c.Value)
             .ToList();
 

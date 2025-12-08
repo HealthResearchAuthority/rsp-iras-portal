@@ -4,120 +4,130 @@
 @model Rsp.IrasPortal.Web.Areas.Admin.Models.UserViewModel
 
 @{
-	var buttonText = ViewBag.Mode == "edit" ? "Save" : "Save and continue";
-	var submitActionName = ViewBag.Mode == "edit" ? "profilesettings:saveprofile" : "profilesettings:confirmprofiledetails";
-	var backButtonRoute = "profilesettings";
+    var buttonText = ViewBag.Mode == "edit" ? "Save" : "Save and continue";
+    var submitActionName = ViewBag.Mode == "edit" ? "profilesettings:saveprofile" : "profilesettings:confirmprofiledetails";
+    var backButtonRoute = "profilesettings";
 
-	string errorPrefix = ViewData.ModelState.IsValid ? "" : "Error - ";
+    string errorPrefix = ViewData.ModelState.IsValid ? "" : "Error - ";
 
-	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
-	var pageContent = pageContentData != null
-	? pageContentData
-	: new Dictionary<string, MixedContentPageItem?>();
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData != null
+    ? pageContentData
+    : new Dictionary<string, MixedContentPageItem?>();
 
-	var editProfileTitle = pageContent.GetValueOrDefault("P&S.EditProfile.Title", null);
-	var completeProfileTitle = pageContent.GetValueOrDefault("P&S.CompleteProfile.Title", null);
-	var profileDetailsTitle = pageContent.GetValueOrDefault("P&S.EditProfile.ProfileDetailsTitle", null);
-	var oneLoginTitle = pageContent.GetValueOrDefault("P&S.EditProfile.OneLoginTitle", null);
-	var bannerLabel = pageContent.GetValueOrDefault("P&S.EditProfile.OneLoginBanner.Label", null);
-	var bannerTitle = pageContent.GetValueOrDefault("P&S.EditProfile.OneLoginBanner.Title", null);
-	var bannerBody = pageContent.GetValueOrDefault("P&S.EditProfile.OneLoginBanner.Body", null);
+    var editProfileTitle = pageContent.GetValueOrDefault("P&S.EditProfile.Title", null);
+    var completeProfileTitle = pageContent.GetValueOrDefault("P&S.CompleteProfile.Title", null);
+    var profileDetailsTitle = pageContent.GetValueOrDefault("P&S.EditProfile.ProfileDetailsTitle", null);
+    var oneLoginTitle = pageContent.GetValueOrDefault("P&S.EditProfile.OneLoginTitle", null);
+    var bannerLabel = pageContent.GetValueOrDefault("P&S.EditProfile.OneLoginBanner.Label", null);
+    var bannerTitle = pageContent.GetValueOrDefault("P&S.EditProfile.OneLoginBanner.Title", null);
+    var bannerBody = pageContent.GetValueOrDefault("P&S.EditProfile.OneLoginBanner.Body", null);
 
-	var heading = ViewBag.Mode == "edit" ? editProfileTitle?.Value : completeProfileTitle?.Value;
-	ViewBag.Title = heading;
+    var heading = ViewBag.Mode == "edit" ? editProfileTitle?.Value : completeProfileTitle?.Value;
+    ViewBag.Title = heading;
+
+    var requireProfileCreation = Context.Session.GetString(SessionKeys.RequireProfileCreation) is not null;
 }
 <form method="post">
-	@if (ViewBag.Mode == "edit")
-	{
-		<a asp-route="@backButtonRoute" asp-all-route-data="@(new Dictionary<string, string> ())" class="govuk-back-link">Back</a>
-	}
+    @if (ViewBag.Mode == "edit")
+    {
+        <a asp-route="@backButtonRoute" asp-all-route-data="@(new Dictionary<string, string>())" class="govuk-back-link">Back</a>
+    }
 
-	<div class="govuk-grid-row">
-		<div class="govuk-grid-column-two-thirds">
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
 
-			<div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
-				<div class="govuk-notification-banner__header">
-					<h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
-						@Html.Raw(bannerLabel?.Value)
-					</h2>
-				</div>
-				<div class="govuk-notification-banner__content">
-					<h2 class="govuk-notification-banner__heading">@Html.Raw(bannerTitle?.Value)</h2>
-					@Html.Raw(bannerBody?.Value)
-				</div>
-			</div>
+            <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+                <div class="govuk-notification-banner__header">
+                    <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+                        @Html.Raw(bannerLabel?.Value)
+                    </h2>
+                </div>
+                <div class="govuk-notification-banner__content">
+                    <h2 class="govuk-notification-banner__heading">@Html.Raw(bannerTitle?.Value)</h2>
+                    @Html.Raw(bannerBody?.Value)
+                </div>
+            </div>
+        </div>
+    </div>
 
-		</div>
-	</div>
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+            <h1 class="govuk-heading-l">@Html.Raw(heading)</h1>
+        </div>
+    </div>
 
-	<div class="govuk-grid-row">
-		<div class="govuk-grid-column-full">
-			<h1 class="govuk-heading-l">@Html.Raw(heading)</h1>
-		</div>
-	</div>
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
 
-	<div class="govuk-grid-row">
-		<div class="govuk-grid-column-full">
+            <h3 class="govuk-heading-m">@Html.Raw(oneLoginTitle?.Value)</h3>
+            <table class="govuk-table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="govuk-table__row">
+                        <td class="govuk-table__cell"><b>Email address</b></td>
+                        <td class="govuk-table__cell">@Model.Email</td>
+                        <td></td>
+                    </tr>
+                    <tr class="govuk-table__row">
+                        <td class="govuk-table__cell"><b>Telephone</b></td>
+                        <td class="govuk-table__cell">@Model.Telephone</td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-			<h3 class="govuk-heading-m">@Html.Raw(oneLoginTitle?.Value)</h3>
-			<table class="govuk-table">
-				<thead>
-					<tr>
-						<th></th>
-						<th></th>
-						<th></th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr class="govuk-table__row">
-						<td class="govuk-table__cell"><b>Email address</b></td>
-						<td class="govuk-table__cell">@Model.Email</td>
-						<td></td>
-					</tr>
-					<tr class="govuk-table__row">
-						<td class="govuk-table__cell"><b>Telephone</b></td>
-						<td class="govuk-table__cell">@Model.Telephone</td>
-						<td></td>
-					</tr>
-				</tbody>
-			</table>
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
 
-		</div>
-	</div>
+            <h3 class="govuk-heading-m">@Html.Raw(profileDetailsTitle?.Value)</h3>
 
-	<div class="govuk-grid-row">
-		<div class="govuk-grid-column-two-thirds">
+            <input hidden readonly name="IdentityProviderId" asp-for="IdentityProviderId" value="@(Model.IdentityProviderId ?? string.Empty)" />
+            <input name="Id" asp-for="Id" value="@(Model.Id ?? string.Empty)" />
+            <input name="OriginalEmail" asp-for="OriginalEmail" value="@(Model.OriginalEmail ?? string.Empty)" />
+            <input hidden readonly name="Status" asp-for="Status" value="@(Model.Status ?? string.Empty)" />
+            <input hidden readonly name="Email" asp-for="Email" value="@(Model.Email ?? string.Empty)" />
+            <input hidden readonly name="Telephone" asp-for="Telephone" value="@(Model.Telephone ?? string.Empty)" />
 
-			<h3 class="govuk-heading-m">@Html.Raw(profileDetailsTitle?.Value)</h3>
+            <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
 
-			<input hidden readonly name="IdentityProviderId" asp-for="IdentityProviderId" value="@(Model.IdentityProviderId ?? string.Empty)" />
-			<input name="Id" asp-for="Id" value="@(Model.Id ?? string.Empty)" />
-			<input name="OriginalEmail" asp-for="OriginalEmail" value="@(Model.OriginalEmail ?? string.Empty)" />
-			<input hidden readonly name="Status" asp-for="Status" value="@(Model.Status ?? string.Empty)" />
-			<input hidden readonly name="Email" asp-for="Email" value="@(Model.Email ?? string.Empty)" />
-			<input hidden readonly name="Telephone" asp-for="Telephone" value="@(Model.Telephone ?? string.Empty)" />
+            <rsp-gds-input asp-for="Title" label-text="Title" width-class="govuk-!-width-one-quarter" />
 
-			<partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
+            <rsp-gds-input asp-for="GivenName" label-text="First name" width-class="govuk-!-width-one-half" />
 
-			<rsp-gds-input asp-for="Title" label-text="Title" width-class="govuk-!-width-one-quarter" />
+            <rsp-gds-input asp-for="FamilyName" label-text="Last name" width-class="govuk-!-width-one-half" />
 
-			<rsp-gds-input asp-for="GivenName" label-text="First name" width-class="govuk-!-width-one-half" />
+            <rsp-gds-input asp-for="JobTitle" label-text="Job title" width-class="govuk-!-width-full" />
 
-			<rsp-gds-input asp-for="FamilyName" label-text="Last name" width-class="govuk-!-width-one-half" />
+            <rsp-gds-input asp-for="Organisation" label-text="Organisation" width-class="govuk-!-width-full" />
 
-			<rsp-gds-input asp-for="JobTitle" label-text="Job title" width-class="govuk-!-width-full" />
+            @{
+                var parameters = new Dictionary<string, string>();
 
-			<rsp-gds-input asp-for="Organisation" label-text="Organisation" width-class="govuk-!-width-full" />
+                if (requireProfileCreation)
+                {
+                    parameters.Add("requireProfileCreation", bool.TrueString);
+                }
+            }
 
-			<partial name="_SubmitButton" model="@(submitActionName, buttonText, new Dictionary<string, string>())" />
-			@{
-				ViewBag.Style = "ms-3 govuk-button govuk-button--secondary";
-			}
-		</div>
-	</div>
+            <partial name="_SubmitButton" model="@(submitActionName, buttonText, parameters)" />
+
+            @{
+                ViewBag.Style = "ms-3 govuk-button govuk-button--secondary";
+            }
+        </div>
+    </div>
 </form>
 
 @section FooterResources {
-	<script src="~/lib/jquery/dist/jquery.js"></script>
-	<script src="~/js/manageUsers.js"></script>
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script src="~/js/manageUsers.js"></script>
 }

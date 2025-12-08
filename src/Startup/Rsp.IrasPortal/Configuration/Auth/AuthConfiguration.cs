@@ -226,7 +226,6 @@ public static class AuthConfiguration
         var policy = new AuthorizationPolicyBuilder()
            .RequireAuthenticatedUser()
            .RequireClaim(ClaimTypes.Email)
-           .RequireClaim(CustomClaimTypes.UserStatus, IrasUserStatus.Active) // if user is disabled, this claim will have disabled value
            .Build();
 
         services

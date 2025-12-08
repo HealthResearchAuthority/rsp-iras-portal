@@ -392,6 +392,50 @@ public class WorkspaceRequirementHandlerTests
         context.HasSucceeded.ShouldBeFalse();
     }
 
+    // NEW: Disabled user tests
+
+    [Fact]
+    public async Task HandleRequirementAsync_Fails_When_User_Is_Disabled_Even_If_Has_Allowed_Role()
+    {
+        // Arrange
+        var handler = new WorkspaceRequirementHandler();
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Role, Roles.Sponsor),
+            new(CustomClaimTypes.UserStatus, IrasUserStatus.Disabled)
+        };
+        var user = new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuth"));
+        var requirement = new WorkspaceRequirement(Workspaces.Sponsor);
+        var context = new AuthorizationHandlerContext([requirement], user, null);
+
+        // Act
+        await handler.HandleAsync(context);
+
+        // Assert
+        context.HasSucceeded.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task HandleRequirementAsync_Succeeds_For_SystemAdministrator_Even_When_User_Is_Disabled()
+    {
+        // Arrange
+        var handler = new WorkspaceRequirementHandler();
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Role, Roles.SystemAdministrator),
+            new(CustomClaimTypes.UserStatus, IrasUserStatus.Disabled)
+        };
+        var user = new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuth"));
+        var requirement = new WorkspaceRequirement(Workspaces.MyResearch);
+        var context = new AuthorizationHandlerContext([requirement], user, null);
+
+        // Act
+        await handler.HandleAsync(context);
+
+        // Assert
+        context.HasSucceeded.ShouldBeTrue();
+    }
+
     // HandleRequirementAsync Tests - Case Sensitivity
 
     [Fact]
