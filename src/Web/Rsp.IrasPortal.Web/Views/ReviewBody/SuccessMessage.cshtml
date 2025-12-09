@@ -6,23 +6,23 @@
     {
         case "create":
         {
-            heading = "Review body has been successfully added";
+            heading = "Review body has been added";
             messageText = $"A confirmation email will be sent to {Model.RegulatoryBodyName} to confirm that their profile has been added. Their status is now active.";
-            ViewData["Title"] = "Review body successfully added- Manage review bodies - System Administration";
+            ViewData["Title"] = "Review body added- Manage review bodies - System Administration";
         }
             break;
         case "disable":
         {
-            heading = "Review body successfully disabled";
+            heading = "Review body disabled";
             messageText = $"A confirmation email will be sent to {Model.RegulatoryBodyName} to confirm that their profile has been disabled.";
-            ViewData["Title"] = "Review body successfully disabled - Manage review bodies - System Administration";
+            ViewData["Title"] = "Review body disabled - Manage review bodies - System Administration";
         }
             break;
         case "enable":
         {
-            heading = "Review body successfully enabled";
+            heading = "Review body enabled";
             messageText = $"A confirmation email will be sent to {Model.RegulatoryBodyName} to confirm that their profile has been enabled.";
-            ViewData["Title"] = "Review body successfully enabled - Manage review bodies - System Administration";
+            ViewData["Title"] = "Review body enabled - Manage review bodies - System Administration";
         }
             break;
     }    

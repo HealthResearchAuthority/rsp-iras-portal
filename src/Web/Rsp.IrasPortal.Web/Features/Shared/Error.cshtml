@@ -1,27 +1,49 @@
 ﻿@using Microsoft.AspNetCore.Http.Features
 
 @{
-    var correlationId = Context.TraceIdentifier;
+	var correlationId = Context.TraceIdentifier;
 
-    ViewBag.Title = "Sorry, there is a problem with the service";
+	ViewBag.Title = "Sorry, there is a problem with the service";
 }
 
 <div class="govuk-width-container">
-    <main class="govuk-main-wrapper govuk-main-wrapper--l" id="main-content" role="main">
-        <div class="govuk-grid-row">
-            <div class="govuk-grid-column-two-thirds">
-                <h1 class="govuk-heading-l">Sorry, there is a problem with the service</h1>
-                <p class="govuk-body">Try again later.</p>
-                <p class="govuk-body">
-                    When the service is available, you will have to start again.
-                </p>
-                <p class="govuk-body">
-                    You can <a class="govuk-link" asp-route="acc:home">go back to home page</a>.
-                </p>
-                <p class="govuk-body">
-                    <strong>Correlation ID:</strong> <code>@correlationId</code>
-                </p>
-            </div>
-        </div>
-    </main>
+	<main class="govuk-main-wrapper govuk-main-wrapper--l" id="main-content" role="main">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds govuk-body">
+				<h1 class="govuk-heading-l">Sorry, there is a problem with the service</h1>
+				<p>Try again later.</p>
+				<p>Any information you saved has not been affected.</p>
+				<p>
+					You can contact the service desk if you need help.
+				</p>
+				<p>
+					You will need the following reference code when you contact us:
+				</p>
+				<p>
+					<strong>Correlation ID:</strong> <code>@correlationId</code>
+				</p>
+				<br />
+				<p>
+					<strong>Online</strong><br />
+					Visit the <a class="govuk-link" href="https://healthresearchauthority.haloitsm.com/portal" target="_blank">Plan and manage health and care research support site</a>
+				</p>
+
+				<p>
+					<strong>Email:</strong><br />
+					<a class="govuk-link" href="mailto:service.desk@hra.nhs.uk">service.desk@hra.nhs.uk</a>
+				</p>
+
+				<p>
+					<strong>Phone:</strong><br />
+					0207 104 8260
+				</p>
+
+				<p>
+					<strong>Opening times:</strong><br />
+					Monday to Friday: 8am to 5pm
+				</p>
+
+			</div>
+		</div>
+	</main>
 </div>
