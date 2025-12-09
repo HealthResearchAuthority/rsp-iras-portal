@@ -2,6 +2,7 @@
 using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
@@ -142,11 +143,11 @@ public static class ControllerExtensions
                     if (error.CustomState is QuestionViewModel qvm)
                     {
                         var adjustedPropertyName = PropertyNameHelper.AdjustPropertyName(error.PropertyName, qvm.Index);
-                        controller.ModelState.AddModelError(adjustedPropertyName, error.ErrorMessage);
+                        AddModelErrorIfNotExists(controller.ModelState, adjustedPropertyName, error.ErrorMessage);
                     }
                     else
                     {
-                        controller.ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                        AddModelErrorIfNotExists(controller.ModelState, error.PropertyName, error.ErrorMessage);
                     }
                 }
             }
@@ -339,5 +340,26 @@ public static class ControllerExtensions
         }
 
         return leadNation;
+    }
+
+    private static void AddModelErrorIfNotExists(
+    ModelStateDictionary modelState,
+    string propertyName,
+    string errorMessage)
+    {
+        if (!modelState.TryGetValue(propertyName, out var entry))
+        {
+            // Property not present at all, safe to add
+            modelState.AddModelError(propertyName, errorMessage);
+            return;
+        }
+
+        // Property exists — check if the same error is already present
+        var alreadyExists = entry.Errors.Any(e => e.ErrorMessage == errorMessage);
+
+        if (!alreadyExists)
+        {
+            modelState.AddModelError(propertyName, errorMessage);
+        }
     }
 }
