@@ -3,7 +3,7 @@
 @using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
 
 @{
-    var correlationId = Context.TraceIdentifier;
+	var correlationId = Context.TraceIdentifier;
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null ?
@@ -30,11 +30,9 @@
                 <p class="govuk-body">
                     @Html.Raw(referenceCode?.Value)
                 </p>
-
                 <p>
                     <strong>@correlationId</strong>
                 </p>
-
                 <p class="govuk-body">
                     @Html.Raw(contactDetails?.Value)
                 </p>
