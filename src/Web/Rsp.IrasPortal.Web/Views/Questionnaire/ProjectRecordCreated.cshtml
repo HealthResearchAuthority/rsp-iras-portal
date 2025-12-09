@@ -1,25 +1,25 @@
 ﻿@model (int? IrasId, string ShortProjectTitle, string ProjectRecordId)
 @{
-    ViewBag.Title = $"Project record created - Make changes to research";
+	ViewBag.Title = $"Project record created - Make changes to research";
 }
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-        <div class="govuk-panel govuk-panel--confirmation">
-            <h1 class="govuk-panel__title">
-                Project record created
-            </h1>
-            <div class="govuk-panel__body">
-				<p>For @Model.ShortProjectTitle,</p>
-				<p>IRAS ID: @Model.IrasId</p>
-            </div>
-        </div>
+	<div class="govuk-grid-column-two-thirds">
+		<div class="govuk-panel govuk-panel--confirmation">
+			<h1 class="govuk-panel__title">
+				Project record created
+			</h1>
+			<div class="govuk-panel__body">
+				For @Model.ShortProjectTitle,<br />
+				IRAS ID: @Model.IrasId
+			</div>
+		</div>
 
-        <p class="govuk-body">
-            Your project is now available to manage. 
-            <a class="govuk-link" asp-controller="ProjectOverview" asp-action="ProjectDetails" asp-route-projectRecordId="@Model.ProjectRecordId">
-                View project overview
-            </a>
-        </p>
-    </div>
+		<p class="govuk-body">
+			Your project is now available to manage.
+			<a class="govuk-link" asp-controller="ProjectOverview" asp-action="ProjectDetails" asp-route-projectRecordId="@Model.ProjectRecordId">
+				View project overview
+			</a>
+		</p>
+	</div>
 </div>
