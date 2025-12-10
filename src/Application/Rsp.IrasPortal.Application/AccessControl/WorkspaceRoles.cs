@@ -19,6 +19,12 @@ public static class WorkspaceRolesMatrix
     /// </summary>
     private static readonly Dictionary<string, string[]> _workspaceRoles = new()
     {
+        // All Roles allowed in the "Profile" workspace:
+        [Workspaces.Profile] =
+        [
+            Roles.Applicant, Roles.Sponsor, Roles.WorkflowCoordinator, Roles.TeamManager, Roles.SystemAdministrator,Roles.StudyWideReviewer
+        ],
+
         // Roles allowed in the "My Research" workspace:
         // - Applicants (owners of applications)
         // - Sponsors (sponsor users)

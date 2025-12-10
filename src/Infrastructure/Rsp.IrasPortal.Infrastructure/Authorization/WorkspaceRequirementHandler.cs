@@ -33,6 +33,12 @@ public class WorkspaceRequirementHandler : AuthorizationHandler<WorkspaceRequire
             return Task.CompletedTask;
         }
 
+        if (context.User.FindFirst(CustomClaimTypes.UserStatus)?.Value is IrasUserStatus.Disabled)
+        {
+            // Disabled users cannot access any workspace.
+            return Task.CompletedTask;
+        }
+
         // Try to lookup the allowed roles for the requested workspace.
         // If the workspace is not present in the matrix, no roles are allowed.
         if (!WorkspaceRolesMatrix.WorkspaceRoles.TryGetValue(requirement.Workspace, out var allowedRoles))

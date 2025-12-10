@@ -112,7 +112,7 @@ public class PermissionRequirementHandlerTests
         // Arrange
         var handler = new PermissionRequirementHandler();
         // Create an unauthenticated identity (authentication type == null)
-        var claims = new[] { new Claim("permissions", "some.permission") };
+        var claims = new[] { new Claim(CustomClaimTypes.Permissions, "some.permission") };
         var identity = new ClaimsIdentity(claims); // IsAuthenticated == false
         var user = new ClaimsPrincipal(identity);
 
@@ -136,7 +136,7 @@ public class PermissionRequirementHandlerTests
         if (roles.Length > 0)
         {
             var perms = RolePermissions.GetPermissionsForRoles(roles);
-            claims.AddRange(perms.Select(p => new Claim("permissions", p)));
+            claims.AddRange(perms.Select(p => new Claim(CustomClaimTypes.Permissions, p)));
 
             // Add allowed status claims for each entity type
             var allowedStatuses = RoleStatusPermissions.GetAllowedStatusesForRoles(roles);
