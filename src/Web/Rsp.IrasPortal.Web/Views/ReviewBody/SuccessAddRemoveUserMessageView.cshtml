@@ -1,8 +1,8 @@
 ﻿@model ConfirmAddRemoveReviewBodyUserModel
 @{
     ViewBag.Active = "reviewBodies";
-    var addedUserTitle = "User successfully added- Manage review bodies - System Administration";
-    var removedUserTitle = "User successfully removed- Manage review bodies - System Administration";
+    var addedUserTitle = "User added- Manage review bodies - System Administration";
+    var removedUserTitle = "User removed- Manage review bodies - System Administration";
     ViewBag.Title = !Model.IsRemove ? addedUserTitle : removedUserTitle;
 }
 
@@ -10,7 +10,7 @@
     <div class="govuk-grid-column-two-thirds">
         <div class="govuk-panel govuk-panel--confirmation">
             <h1 class="govuk-panel__title">
-                User has been successfully @(!Model.IsRemove ? "added" : "removed")
+                User has been @(!Model.IsRemove ? "added" : "removed")
             </h1>
         </div>
 
