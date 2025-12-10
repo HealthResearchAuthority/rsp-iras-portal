@@ -594,11 +594,22 @@ public class SponsorOrganisationsController(
         var desc = string.Equals(sortDirection, "desc", StringComparison.OrdinalIgnoreCase);
         var field = sortField?.ToLowerInvariant() ?? string.Empty;
 
-        // Primary: status ordering
-        var ordered =
-            field == "status"
-                ? desc ? list.OrderByDescending(IsActive) : list.OrderBy(IsActive)
-                : list.OrderByDescending(IsActive); // default bubble Active first
+        IOrderedEnumerable<UserViewModel> ordered;
+
+        // -------------------------
+        // 1. SORT BY STATUS ONLY IF REQUESTED
+        // -------------------------
+        if (field == "status")
+        {
+            ordered = desc
+                ? list.OrderByDescending(IsActive)
+                : list.OrderBy(IsActive);
+        }
+        else
+        {
+            // No default bubbling by status → simply order by selected field
+            ordered = list.OrderBy(_ => 0); // identity ordering
+        }
 
         // Secondary: selected field (text fields share the same path)
         if (field == "currentlogin")
