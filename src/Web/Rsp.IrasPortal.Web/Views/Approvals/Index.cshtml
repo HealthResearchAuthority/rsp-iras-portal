@@ -477,7 +477,6 @@ else if (showNoResultsMessage)
                                 new { Field = nameof(ModificationsModel.ModificationId), Label = "Modification ID" },
                                 new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
                                 new { Field = nameof(ModificationsModel.ModificationType), Label = "Modification type" },
-                                new { Field = nameof(ModificationsModel.ChiefInvestigator), Label = "Chief Investigator" },
                                 new { Field = nameof(ModificationsModel.LeadNation), Label = "Lead Nation" },
                                 new { Field = nameof(ModificationsModel.Status), Label = "Status" }
                             };
@@ -486,6 +485,13 @@ else if (showNoResultsMessage)
                         <tr class="govuk-table__row govuk-body-s">
                             @foreach (var header in sortableHeaders)
                             {
+								// Insert Chief investigator column *before* LeadNation
+                                if (header.Field == nameof(ModificationsModel.LeadNation))
+                                {
+                                  <!-- NON-sortable Chief investigator column -->
+								    <th scope="col" class="govuk-table__header govuk-table__header-sortable">Chief investigator</th>
+                                }
+
                                 var sortableHeaderModel = new SortableHeaderModel
                                 {
                                     FieldName = header.Field,
@@ -523,7 +529,7 @@ else if (showNoResultsMessage)
                                         </a>
                                     </td>
                                     <td class="govuk-table__cell">@modification.ModificationType</td>
-                                    <td class="govuk-table__cell">@modification.ChiefInvestigator</td>
+										<td class="govuk-table__cell">@modification.ChiefInvestigatorFirstName @modification.ChiefInvestigatorLastName</td>
                                     <td class="govuk-table__cell">@modification.LeadNation</td>
 										<td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">@modification.Status</strong></td>
                                 </tr>
