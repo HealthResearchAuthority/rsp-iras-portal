@@ -10,10 +10,8 @@
     and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
     the named section *@
 @section BackNavigation {
-    <partial name="_BackNavigation" model="@("app:welcome", "Back", new Dictionary<string, string>())" />
+    <partial name="_BackNavigation" model="@("app:startproject", "Back", new Dictionary<string, string>())" />
 }
-
-
 
 <h1 class="govuk-heading-l">
     Confirm project details
@@ -32,13 +30,13 @@
                     <dt class="govuk-summary-list__key">IRAS ID</dt>
                     <dd class="govuk-summary-list__value">@Model.IrasId</dd>
                 </div>
-                
+
                 <input type="hidden" asp-for="IrasId" />
                 <input type="hidden" asp-for="ShortProjectTitle" />
                 <input type="hidden" asp-for="FullProjectTitle" />
                 <input type="hidden" asp-for="SectionId" />
 
-                @foreach(var question in Model.Questions)
+                @foreach (var question in Model.Questions)
                 {
                     var index = question.Index;
 
@@ -82,7 +80,6 @@
                 Selecting 'Add project' will create a record for your project. Any future modifications will then be made using this service.
             </p>
 
-        
             <div class="save-buttons">
                 <button class="govuk-button" data-module="govuk-button" type="submit" asp-route="prc:confirmprojectrecord">Add project</button>
 
@@ -90,7 +87,6 @@
                     Return to IRAS ID
                 </a>
             </div>
-
         </form>
     </div>
 </div>
