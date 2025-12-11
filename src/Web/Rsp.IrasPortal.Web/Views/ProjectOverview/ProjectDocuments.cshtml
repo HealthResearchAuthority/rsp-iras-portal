@@ -37,7 +37,7 @@
 
 @if (TempData[TempDataKeys.ShowNotificationBanner] is not null)
 {
-	<partial name="_NotificationBanner" model="@("Success", "Modification progress successfully saved")" />
+	<partial name="_NotificationBanner" model="@("Success", "Modification progress saved")" />
 }
 
 <partial name="_NavigationHeaderPartial" model="@Model.ProjectOverviewModel" />
