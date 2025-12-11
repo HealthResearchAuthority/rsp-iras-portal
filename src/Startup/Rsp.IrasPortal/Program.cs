@@ -92,7 +92,7 @@ services.AddServices();
 
 services.AddHttpContextAccessor();
 
-services.AddHttpClients(appSettings!);
+services.AddHttpClients(appSettings!, builder.Environment);
 
 // routing configuration
 services.AddRouting(options => options.LowercaseUrls = true);
