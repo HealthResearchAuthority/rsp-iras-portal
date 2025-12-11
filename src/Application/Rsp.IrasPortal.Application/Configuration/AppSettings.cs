@@ -38,9 +38,9 @@ public class AppSettings
     public Uri ProjectRecordValidationUri { get; set; } = null!;
 
     /// <summary>
-    /// Function key to access the Project Record Validation Function
+    /// Gets or sets the scope of the Project Record Validation Function Http endpoint.
     /// </summary>
-    public string ProjectRecordValidationFunctionKey { get; set; } = null!;
+    public List<string> ProjectRecordValidationScopes { get; set; } = null!;
 
     /// <summary>
     /// Authentication settings for the application
@@ -86,4 +86,6 @@ public class AppSettings
     /// Number of seconds the global page CMS content is cached (eg. footer)
     /// </summary>
     public int? GlobalContentCacheDurationSeconds { get; set; }
+
+    //public string ValidationFunctionManagedId { get; set; } = null!;
 }
