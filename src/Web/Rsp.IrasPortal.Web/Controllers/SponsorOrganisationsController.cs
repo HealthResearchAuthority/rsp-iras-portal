@@ -25,7 +25,7 @@ public class SponsorOrganisationsController(
 ) : Controller
 {
     /// <summary>
-    ///     Displays a list of sponsor organisations
+    /// Displays a list of sponsor organisations
     /// </summary>
     [HttpGet]
     [HttpPost]
@@ -102,7 +102,9 @@ public class SponsorOrganisationsController(
         return Task.FromResult(result);
     }
 
-    /// <summary>Displays the empty review body to create</summary>
+    /// <summary>
+    /// Displays the empty review body to create
+    /// </summary>
     [HttpGet]
     [Route("/sponsororganisations/setup", Name = "soc:setupsponsororganisation")]
     public IActionResult SetupSponsorOrganisation()
@@ -110,7 +112,9 @@ public class SponsorOrganisationsController(
         return View("SetupSponsorOrganisation", new SponsorOrganisationSetupViewModel());
     }
 
-    /// <summary>Check sponsor organisation details</summary>
+    /// <summary>
+    /// Check sponsor organisation details
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Route("/sponsororganisations/check", Name = "soc:checksponsororganisation")]
@@ -169,7 +173,9 @@ public class SponsorOrganisationsController(
         return View("SetupSponsorOrganisation", model);
     }
 
-    /// <summary>Displays the confirmation page</summary>
+    /// <summary>
+    /// Displays the confirmation page
+    /// </summary>
     [HttpGet]
     [Route("/sponsororganisations/confirm", Name = "soc:sponsororganisation")]
     public IActionResult ConfirmSponsorOrganisation(SponsorOrganisationModel model)
@@ -177,7 +183,9 @@ public class SponsorOrganisationsController(
         return View("ConfirmSponsorOrganisation", model);
     }
 
-    /// <summary>Save sponsor organisation</summary>
+    /// <summary>
+    /// Save sponsor organisation
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Route("/sponsororganisations/save", Name = "soc:savesponsororganisation")]
@@ -199,7 +207,9 @@ public class SponsorOrganisationsController(
         return RedirectToAction("Index");
     }
 
-    /// <summary>Search RTS organisations</summary>
+    /// <summary>
+    /// Search RTS organisations
+    /// </summary>
     public async Task<IActionResult> SearchOrganisations(SponsorOrganisationSetupViewModel model, string? role,
         int? pageSize = 5, int pageIndex = 1)
     {
@@ -231,7 +241,9 @@ public class SponsorOrganisationsController(
         return Redirect(returnUrl!);
     }
 
-    /// <summary>Displays a single sponsor organisation</summary>
+    /// <summary>
+    /// Displays a single sponsor organisation
+    /// </summary>
     [HttpGet]
     [Route("/sponsororganisations/view", Name = "soc:viewsponsororganisation")]
     public async Task<IActionResult> ViewSponsorOrganisation(string rtsId)
@@ -245,7 +257,9 @@ public class SponsorOrganisationsController(
         return View(load.Model);
     }
 
-    /// <summary>Displays users for a sponsor organisation</summary>
+    /// <summary>
+    /// Displays users for a sponsor organisation
+    /// </summary>
     [HttpGet]
     [Route("/sponsororganisations/viewusers", Name = "soc:viewsponsororganisationusers")]
     public async Task<IActionResult> ViewSponsorOrganisationUsers(string rtsId, string? searchQuery = null,
@@ -464,9 +478,7 @@ public class SponsorOrganisationsController(
         return View("AuditTrail", resultModel);
     }
 
-    // ---------------------------
-    // Private helpers (de-duplication)
-    // ---------------------------
+    // --------------------------- Private helpers (de-duplication) ---------------------------
 
     // Centralised RTS + Portal fetch + mapping
     [NonAction]
@@ -597,13 +609,14 @@ public class SponsorOrganisationsController(
         IOrderedEnumerable<UserViewModel> ordered;
 
         // -------------------------
-        // 1. SORT BY STATUS ONLY IF REQUESTED
-        // -------------------------
+        // 1. SORT BY STATUS ONLY IF REQUESTED -------------------------
         if (field == "status")
         {
+            // ASC: Active first, then Disabled
+            // DESC: Disabled first, then Active
             ordered = desc
-                ? list.OrderByDescending(IsActive)
-                : list.OrderBy(IsActive);
+                ? list.OrderBy(IsActive)               // desc => Disabled first
+                : list.OrderByDescending(IsActive);    // asc  => Active first
         }
         else
         {
@@ -673,7 +686,8 @@ public class SponsorOrganisationsController(
 
                 if (!string.IsNullOrWhiteSpace(sponsorOrganisationName) && !string.IsNullOrWhiteSpace(x.RtsId))
                 {
-                    // Replace all occurrences of RtsId with sponsorOrganisationName (case-insensitive, no regex)
+                    // Replace all occurrences of RtsId with sponsorOrganisationName
+                    // (case-insensitive, no regex)
                     desc = desc.Replace(x.RtsId, sponsorOrganisationName!, StringComparison.OrdinalIgnoreCase);
                 }
 
