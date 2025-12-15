@@ -44,7 +44,7 @@
                     @foreach (var record in Model.AuditTrails)
                     {
                         <tr class="govuk-table__row">
-                            <td class="govuk-table__cell">@record.DateTimeStamp.ToString("dd MMM yyyy HH:mm")</td>
+                            <td class="govuk-table__cell">@record.DateTimeStamp.ToString("dd MMMM yyyy")</td>
                             <td class="govuk-table__cell">@record.Description</td>
                             <td class="govuk-table__cell line-break-anywhere">Not applicable</td>
                             <td class="govuk-table__cell line-break-anywhere">@record.User</td>
