@@ -3,7 +3,7 @@
 
 @{    
     var queryDocuments = Context.Request.Query["documents"].ToString();    
-    bool isNotApplicant = User.IsInRole(Roles.Sponsor)
+    bool isNotOnlyApplicant = User.IsInRole(Roles.Sponsor)
                        || User.IsInRole(Roles.StudyWideReviewer)
                        || User.IsInRole(Roles.TeamManager)
                        || User.IsInRole(Roles.SystemAdministrator)
@@ -11,30 +11,34 @@
     
     string activeTabId =
         queryDocuments == ModificationOverview.Documents ? "documents-tab" :
-        isNotApplicant ? "sponsor-details-tab" : "modifications-changes-tab";
+        isNotOnlyApplicant ? "sponsor-details-tab" : "modifications-changes-tab";
 }
 
 <!-- Hidden controls -->
 <input type="radio"
        id="tab-sponsor-details"
+       role="tab"
        name="tab-toggle"
        class="govuk-tab-toggle"
        aria-label="@ModificationOverview.SponsorDetails"
        @(activeTabId == "sponsor-details-tab" ? "checked" : null)>
 <input type="radio"
        id="tab-modifications-changes"
+       role="tab"
        name="tab-toggle"
        class="govuk-tab-toggle"
        aria-label="@ModificationOverview.ModificationDetails"
        @(activeTabId == "modifications-changes-tab" ? "checked" : null)>
 <input type="radio"
        id="tab-documents"
+       role="tab"
        name="tab-toggle"
        class="govuk-tab-toggle"
        aria-label="@ModificationOverview.Documents"
        @(activeTabId == "documents-tab" ? "checked" : null)>
 <input type="radio"
        id="tab-history"
+       role="tab"
        name="tab-toggle"
        class="govuk-tab-toggle"
        aria-label="@ModificationOverview.History"
