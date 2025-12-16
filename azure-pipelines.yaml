@@ -123,6 +123,7 @@ stages:
         parameters:
           install_aspire: true
           service_defaults_repo: service_defaults
+          environment: 'dev'
 
   - stage: systemtest_auto
     displayName: "System Test (Auto)"
@@ -168,6 +169,7 @@ stages:
         parameters:
           install_aspire: true
           service_defaults_repo: service_defaults
+          environment: 'uat'
 
   - stage: pre_prod
     variables:
@@ -180,6 +182,7 @@ stages:
           service_defaults_repo: service_defaults
           deployToSlot: true
           slotName: 'staging'
+          environment: 'pre_prod'
 
   - stage: production
     variables:
@@ -192,3 +195,4 @@ stages:
           service_defaults_repo: service_defaults
           deployToSlot: true
           slotName: 'staging'
+          environment: 'production'
