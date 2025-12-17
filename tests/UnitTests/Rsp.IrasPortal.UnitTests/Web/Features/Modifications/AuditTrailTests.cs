@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
@@ -15,13 +18,24 @@ public class AuditTrailTests : TestServiceBase<ModificationsController>
         ProjectModificationAuditTrailResponse auditTrailResponse,
         string modificationIdentifier,
         string shortTitle,
-        Guid modificationId
+        Guid modificationId,
+        Guid projectRecordId
     )
     {
-        // Arrange
+        var httpContext = new DefaultHttpContext();
+
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = httpContext
+        };
+
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        Sut.TempData = new TempDataDictionary(httpContext, tempDataProvider.Object);
+        Sut.TempData[TempDataKeys.ProjectRecordId] = projectRecordId;
+
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.GetModificationAuditTrail(modificationId))
-            .ReturnsAsync(new ServiceResponse<ProjectModificationAuditTrailResponse>()
+            .ReturnsAsync(new ServiceResponse<ProjectModificationAuditTrailResponse>
             {
                 StatusCode = HttpStatusCode.OK,
                 Content = auditTrailResponse
@@ -31,7 +45,8 @@ public class AuditTrailTests : TestServiceBase<ModificationsController>
         {
             AuditTrail = auditTrailResponse,
             ModificationIdentifier = modificationIdentifier,
-            ShortTitle = shortTitle
+            ShortTitle = shortTitle,
+            ProjectRecordId = projectRecordId.ToString()
         };
 
         // Act

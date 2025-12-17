@@ -563,11 +563,14 @@ public class ModificationsController
             return this.ServiceError(auditResponse);
         }
 
+        var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId);
+
         var viewModel = new AuditTrailModel
         {
             AuditTrail = auditResponse.Content!,
             ModificationIdentifier = modificationIdentifier,
             ShortTitle = shortTitle,
+            ProjectRecordId = projectRecordId?.ToString()
         };
 
         return View(viewModel);
