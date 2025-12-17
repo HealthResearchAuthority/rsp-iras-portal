@@ -49,4 +49,47 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         model.ShouldNotBeNull();
         model.SponsorOrganisationUserId.ShouldBe(_sponsorOrganisationUserId);
     }
+
+    [Theory]
+    [AutoData]
+    public void ViewModel_CanHold_List_Of_SponsorMyOrganisationModels(
+        Guid sponsorOrganisationUserId,
+        SponsorMyOrganisationModel organisation1,
+        SponsorMyOrganisationModel organisation2)
+    {
+        // Arrange
+        organisation1.Countries = new List<string> { "UK", "IE" };
+        organisation2.Countries = new List<string> { "FR" };
+
+        var organisations = new List<SponsorMyOrganisationModel>
+        {
+            organisation1,
+            organisation2
+        };
+
+        var viewModel = new SponsorMyOrganisationsViewModel
+        {
+            SponsorOrganisationUserId = sponsorOrganisationUserId,
+            MyOrganisations = organisations
+        };
+
+        // Act
+        var result = viewModel.MyOrganisations;
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.Count().ShouldBe(2);
+
+        var first = result.First();
+        first.Id.ShouldBe(organisation1.Id);
+        first.RtsId.ShouldBe(organisation1.RtsId);
+        first.SponsorOrganisationName.ShouldBe(organisation1.SponsorOrganisationName);
+        first.Countries.ShouldBe(organisation1.Countries);
+        first.Description.ShouldBe(organisation1.Description);
+        first.IsActive.ShouldBe(organisation1.IsActive);
+        first.CreatedBy.ShouldBe(organisation1.CreatedBy);
+        first.CreatedDate.ShouldBe(organisation1.CreatedDate);
+        first.UpdatedBy.ShouldBe(organisation1.UpdatedBy);
+        first.UpdatedDate.ShouldBe(organisation1.UpdatedDate);
+    }
 }
