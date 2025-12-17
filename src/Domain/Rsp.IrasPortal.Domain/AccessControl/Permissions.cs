@@ -109,8 +109,7 @@ public static class Permissions
         public const string Modifications_Search = "myresearch.modifications.search";
 
         /// <summary>
-        /// allows reviewing modifications before the final action
-        /// i.e. sending to sponsor, approving
+        /// allows reviewing modifications before the final action i.e. sending to sponsor, approving
         /// </summary>
         public const string Modifications_Review = "myresearch.modifications.review";
 
@@ -149,8 +148,7 @@ public static class Permissions
         public const string Modifications_Search = "sponsor.modifications.search";
 
         /// <summary>
-        /// allows reviewing modifications before the final action
-        /// i.e. authorising, not authorising
+        /// allows reviewing modifications before the final action i.e. authorising, not authorising
         /// </summary>
         public const string Modifications_Review = "sponsor.modifications.review";
 
@@ -158,6 +156,16 @@ public static class Permissions
         /// allows authorising/not authorising modifications
         /// </summary>
         public const string Modifications_Authorise = "sponsor.modifications.authorise";
+
+        /// <summary>
+        /// allows seeing the my organisations on the menu
+        /// </summary>
+        public const string MyOrganisations_Access = "sponsor.myorganisations.access";
+
+        /// <summary>
+        /// allows seeing the my organisations on the menu
+        /// </summary>
+        public const string MyOrganisations_Search = "sponsor.myorganisations.search";
     }
 
     // System Administration Workspace Permissions
