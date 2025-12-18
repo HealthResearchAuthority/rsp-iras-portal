@@ -1,6 +1,6 @@
 ﻿namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Models;
 
-public class SponsorAuthorisationsSearchModel
+public class AuthorisationsModificationsSearchModel
 {
     public string? SearchTerm { get; set; }
 }

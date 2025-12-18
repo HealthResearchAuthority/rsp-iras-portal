@@ -29,7 +29,7 @@ public class AuthorisationsController
     IProjectModificationsService projectModificationsService,
     IRespondentService respondentService,
     ICmsQuestionsetService cmsQuestionsetService,
-    IValidator<SponsorAuthorisationsSearchModel> searchValidator
+    IValidator<AuthorisationsModificationsSearchModel> searchValidator
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, null!)
 {
     private const string DocumentDetailsSection = "pdm-document-metadata";
@@ -38,7 +38,7 @@ public class AuthorisationsController
 
     [Authorize(Policy = Permissions.Sponsor.Modifications_Search)]
     [HttpGet]
-    public async Task<IActionResult> Authorisations
+    public async Task<IActionResult> Modifications
     (
         Guid sponsorOrganisationUserId,
         int pageNumber = 1,
@@ -47,13 +47,13 @@ public class AuthorisationsController
         string sortDirection = SortDirections.Descending
     )
     {
-        var model = new SponsorAuthorisationsViewModel();
+        var model = new AuthorisationsModificationsViewModel();
 
         // getting search query
-        var json = HttpContext.Session.GetString(SessionKeys.SponsorAuthorisationsSearch);
+        var json = HttpContext.Session.GetString(SessionKeys.SponsorAuthorisationsModificationsSearch);
         if (!string.IsNullOrEmpty(json))
         {
-            model.Search = JsonSerializer.Deserialize<SponsorAuthorisationsSearchModel>(json)!;
+            model.Search = JsonSerializer.Deserialize<AuthorisationsModificationsSearchModel>(json)!;
         }
 
         var searchQuery = new SponsorAuthorisationsSearchRequest
@@ -87,7 +87,73 @@ public class AuthorisationsController
         model.Pagination = new PaginationViewModel(pageNumber, pageSize,
             projectModificationsServiceResponse?.Content?.TotalCount ?? 0)
         {
-            RouteName = "sws:authorisations",
+            RouteName = "sws:modifications",
+            SortDirection = sortDirection,
+            SortField = sortField,
+            FormName = "authorisations-selection",
+            AdditionalParameters = new Dictionary<string, string>
+                {
+                    { "SponsorOrganisationUserId", sponsorOrganisationUserId.ToString() }
+                }
+        };
+
+        model.SponsorOrganisationUserId = sponsorOrganisationUserId;
+
+        return View(model);
+    }
+
+    [Authorize(Policy = Permissions.Sponsor.Modifications_Search)]
+    [HttpGet]
+    public async Task<IActionResult> ProjectClosures
+    (
+        Guid sponsorOrganisationUserId,
+        int pageNumber = 1,
+        int pageSize = 20,
+        string sortField = nameof(ModificationsModel.SentToSponsorDate),
+        string sortDirection = SortDirections.Descending
+    )
+    {
+        var model = new AuthorisationsModificationsViewModel();
+
+        // getting search query
+        var json = HttpContext.Session.GetString(SessionKeys.SponsorAuthorisationsProjectClosuresSearch);
+        if (!string.IsNullOrEmpty(json))
+        {
+            model.Search = JsonSerializer.Deserialize<AuthorisationsModificationsSearchModel>(json)!;
+        }
+
+        var searchQuery = new SponsorAuthorisationsSearchRequest
+        {
+            SearchTerm = model.Search.SearchTerm
+        };
+
+        // getting modifications by sponsor organisation name
+        var projectModificationsServiceResponse =
+            await projectModificationsService.GetModificationsBySponsorOrganisationUserId(sponsorOrganisationUserId,
+                searchQuery, pageNumber, pageSize, sortField, sortDirection);
+
+        model.Modifications = projectModificationsServiceResponse?.Content?.Modifications?
+            .Select(dto => new ModificationsModel
+            {
+                Id = dto.Id,
+                ModificationId = dto.ModificationId,
+                ShortProjectTitle = dto.ShortProjectTitle,
+                ChiefInvestigatorFirstName = dto.ChiefInvestigatorFirstName,
+                ChiefInvestigatorLastName = dto.ChiefInvestigatorLastName,
+                ChiefInvestigator = dto.ChiefInvestigator,
+                SponsorOrganisation = dto.SponsorOrganisation,
+                ProjectRecordId = dto.ProjectRecordId,
+                SentToRegulatorDate = dto.SentToRegulatorDate,
+                SentToSponsorDate = dto.SentToSponsorDate,
+                CreatedAt = dto.CreatedAt,
+                Status = dto.Status,
+            })
+            .ToList() ?? [];
+
+        model.Pagination = new PaginationViewModel(pageNumber, pageSize,
+            projectModificationsServiceResponse?.Content?.TotalCount ?? 0)
+        {
+            RouteName = "sws:modifications",
             SortDirection = sortDirection,
             SortField = sortField,
             FormName = "authorisations-selection",
@@ -104,8 +170,8 @@ public class AuthorisationsController
 
     [Authorize(Policy = Permissions.Sponsor.Modifications_Search)]
     [HttpPost]
-    [CmsContentAction(nameof(Authorisations))]
-    public async Task<IActionResult> ApplyFilters(SponsorAuthorisationsViewModel model)
+    [CmsContentAction(nameof(Modifications))]
+    public async Task<IActionResult> ApplyFilters(AuthorisationsModificationsViewModel model)
     {
         var validationResult = await searchValidator.ValidateAsync(model.Search);
 
@@ -117,17 +183,17 @@ public class AuthorisationsController
             }
 
             TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
-            return RedirectToAction(nameof(Authorisations),
+            return RedirectToAction(nameof(Modifications),
                 new { sponsorOrganisationUserId = model.SponsorOrganisationUserId });
         }
 
-        HttpContext.Session.SetString(SessionKeys.SponsorAuthorisationsSearch, JsonSerializer.Serialize(model.Search));
-        return RedirectToAction(nameof(Authorisations),
+        HttpContext.Session.SetString(SessionKeys.SponsorAuthorisationsModificationsSearch, JsonSerializer.Serialize(model.Search));
+        return RedirectToAction(nameof(Modifications),
             new { sponsorOrganisationUserId = model.SponsorOrganisationUserId });
     }
 
     // 1) Shared builder used by both GET and POST
-    private async Task<AuthoriseOutcomeViewModel?> BuildCheckAndAuthorisePageAsync
+    private async Task<AuthoriseModificationsOutcomeViewModel?> BuildCheckAndAuthorisePageAsync
     (
         Guid projectModificationId,
         string irasId,
@@ -176,10 +242,10 @@ public class AuthorisationsController
         }
 
         var config = new TypeAdapterConfig();
-        config.ForType<ModificationDetailsViewModel, AuthoriseOutcomeViewModel>()
+        config.ForType<ModificationDetailsViewModel, AuthoriseModificationsOutcomeViewModel>()
               .Ignore(dest => dest.ProjectOverviewDocumentViewModel);
 
-        var authoriseOutcomeViewModel = modification.Adapt<AuthoriseOutcomeViewModel>(config);
+        var authoriseOutcomeViewModel = modification.Adapt<AuthoriseModificationsOutcomeViewModel>(config);
 
         var modificationDocumentsResponseResult = await this.GetModificationDocuments(projectModificationId,
             DocumentDetailsSection, pageNumber, pageSize, sortField, sortDirection);
@@ -229,7 +295,7 @@ public class AuthorisationsController
     // 3) POST: on invalid, rebuild the page VM and return the same view with ModelState errors
     [Authorize(Policy = Permissions.Sponsor.Modifications_Authorise)]
     [HttpPost]
-    public async Task<IActionResult> CheckAndAuthorise(AuthoriseOutcomeViewModel model)
+    public async Task<IActionResult> CheckAndAuthorise(AuthoriseModificationsOutcomeViewModel model)
     {
         // 🟢 Always build the page first, so it's hydrated for both success and error paths
         var hydrated = await BuildCheckAndAuthorisePageAsync(
@@ -299,7 +365,7 @@ public class AuthorisationsController
 
     [Authorize(Policy = Permissions.Sponsor.Modifications_Review)]
     [HttpGet]
-    public IActionResult Confirmation(AuthoriseOutcomeViewModel model)
+    public IActionResult Confirmation(AuthoriseModificationsOutcomeViewModel model)
     {
         return View(model);
     }
