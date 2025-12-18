@@ -2,7 +2,7 @@
 @using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
 @using Rsp.IrasPortal.Web.Features.Modifications.Models
-@model Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Models.AuthoriseOutcomeViewModel
+@model Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Models.AuthoriseModificationsOutcomeViewModel
 
 @{
     ViewBag.Title = "Check and authorise";
@@ -32,7 +32,7 @@
     @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
     {
         ("Sponsor workspace", Url.RouteUrl("sws:sponsorworkspace")),
-        ("Authorisations", Url.RouteUrl("sws:authorisations", new { sponsorOrganisationUserId = Model.SponsorOrganisationUserId })),
+        ("Authorisations", Url.RouteUrl("sws:modifications", new { sponsorOrganisationUserId = Model.SponsorOrganisationUserId })),
         ("Check and authorise", Url.RouteUrl("sws:checkandauthorise", checkAndAuthoriseNavParams))
     })
 }

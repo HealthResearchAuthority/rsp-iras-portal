@@ -1,6 +1,6 @@
 ﻿@using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
-@model Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Models.AuthoriseOutcomeViewModel
+@model Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Models.AuthoriseModificationsOutcomeViewModel
 
 @{
     string heading;
@@ -71,11 +71,11 @@
             @messageText
         </p>
 
-        <form asp-route="sws:authorisations" method="get">
+        <form asp-route="sws:modifications" method="get">
             <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
 
             <partial name="_SubmitButton"
-                     model="@("sws:authorisations", "Return to authorisations", new Dictionary<string, string>
+                     model="@("sws:modifications", "Return to authorisations", new Dictionary<string, string>
                      {
                          ["SponsorOrganisationUserId"] = Model.SponsorOrganisationUserId.ToString()
                      })" />
