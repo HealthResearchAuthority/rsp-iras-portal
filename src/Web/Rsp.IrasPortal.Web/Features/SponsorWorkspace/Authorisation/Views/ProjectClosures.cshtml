@@ -6,7 +6,7 @@
 @using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
 @using Rsp.IrasPortal.Web.Areas.Admin.Models
 
-@model SponsorAuthorisationsViewModel
+@model AuthorisationsModificationsViewModel
 
 @section Breadcrumb {
     @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
@@ -18,6 +18,7 @@
 @{
     var errorSummaryTitle = "There is a problem";
     ViewBag.Title = "Authorisations";
+    ViewBag.Active = SponsorAuthorisations.ProjectClosures;
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null
@@ -57,6 +58,9 @@
                 </form>
             </div>
         </div>
+
+        <partial name="_AuthorisationsNavigationTabPartial" model="@Model.SponsorOrganisationUserId" />
+
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-full">
                 <div class="govuk-table-wrapper">

@@ -3,7 +3,7 @@ using Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Models;
 
 namespace Rsp.IrasPortal.Web.Validators;
 
-public class SponsorAuthorisationsSearchModelValidator : AbstractValidator<SponsorAuthorisationsSearchModel>
+public class SponsorAuthorisationsSearchModelValidator : AbstractValidator<AuthorisationsModificationsSearchModel>
 {
     public SponsorAuthorisationsSearchModelValidator()
     {
