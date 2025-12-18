@@ -24,7 +24,7 @@ namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Controllers
 /// </summary>
 [Authorize(Policy = Workspaces.Sponsor)]
 [Route("sponsorworkspace/[action]", Name = "sws:[action]")]
-public class AuthorisationsController
+public class AuthorisationsModificationsController
 (
     IProjectModificationsService projectModificationsService,
     IRespondentService respondentService,
@@ -56,7 +56,7 @@ public class AuthorisationsController
             model.Search = JsonSerializer.Deserialize<AuthorisationsModificationsSearchModel>(json)!;
         }
 
-        var searchQuery = new SponsorAuthorisationsSearchRequest
+        var searchQuery = new SponsorAuthorisationsModificationsSearchRequest
         {
             SearchTerm = model.Search.SearchTerm
         };
@@ -92,75 +92,9 @@ public class AuthorisationsController
             SortField = sortField,
             FormName = "authorisations-selection",
             AdditionalParameters = new Dictionary<string, string>
-                {
-                    { "SponsorOrganisationUserId", sponsorOrganisationUserId.ToString() }
-                }
-        };
-
-        model.SponsorOrganisationUserId = sponsorOrganisationUserId;
-
-        return View(model);
-    }
-
-    [Authorize(Policy = Permissions.Sponsor.Modifications_Search)]
-    [HttpGet]
-    public async Task<IActionResult> ProjectClosures
-    (
-        Guid sponsorOrganisationUserId,
-        int pageNumber = 1,
-        int pageSize = 20,
-        string sortField = nameof(ModificationsModel.SentToSponsorDate),
-        string sortDirection = SortDirections.Descending
-    )
-    {
-        var model = new AuthorisationsModificationsViewModel();
-
-        // getting search query
-        var json = HttpContext.Session.GetString(SessionKeys.SponsorAuthorisationsProjectClosuresSearch);
-        if (!string.IsNullOrEmpty(json))
-        {
-            model.Search = JsonSerializer.Deserialize<AuthorisationsModificationsSearchModel>(json)!;
-        }
-
-        var searchQuery = new SponsorAuthorisationsSearchRequest
-        {
-            SearchTerm = model.Search.SearchTerm
-        };
-
-        // getting modifications by sponsor organisation name
-        var projectModificationsServiceResponse =
-            await projectModificationsService.GetModificationsBySponsorOrganisationUserId(sponsorOrganisationUserId,
-                searchQuery, pageNumber, pageSize, sortField, sortDirection);
-
-        model.Modifications = projectModificationsServiceResponse?.Content?.Modifications?
-            .Select(dto => new ModificationsModel
             {
-                Id = dto.Id,
-                ModificationId = dto.ModificationId,
-                ShortProjectTitle = dto.ShortProjectTitle,
-                ChiefInvestigatorFirstName = dto.ChiefInvestigatorFirstName,
-                ChiefInvestigatorLastName = dto.ChiefInvestigatorLastName,
-                ChiefInvestigator = dto.ChiefInvestigator,
-                SponsorOrganisation = dto.SponsorOrganisation,
-                ProjectRecordId = dto.ProjectRecordId,
-                SentToRegulatorDate = dto.SentToRegulatorDate,
-                SentToSponsorDate = dto.SentToSponsorDate,
-                CreatedAt = dto.CreatedAt,
-                Status = dto.Status,
-            })
-            .ToList() ?? [];
-
-        model.Pagination = new PaginationViewModel(pageNumber, pageSize,
-            projectModificationsServiceResponse?.Content?.TotalCount ?? 0)
-        {
-            RouteName = "sws:modifications",
-            SortDirection = sortDirection,
-            SortField = sortField,
-            FormName = "authorisations-selection",
-            AdditionalParameters = new Dictionary<string, string>
-                {
-                    { "SponsorOrganisationUserId", sponsorOrganisationUserId.ToString() }
-                }
+                { "SponsorOrganisationUserId", sponsorOrganisationUserId.ToString() }
+            }
         };
 
         model.SponsorOrganisationUserId = sponsorOrganisationUserId;

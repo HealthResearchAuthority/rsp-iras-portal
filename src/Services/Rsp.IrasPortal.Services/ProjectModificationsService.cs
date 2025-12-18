@@ -123,7 +123,7 @@ public class ProjectModificationsService
     public async Task<ServiceResponse<GetModificationsResponse>> GetModificationsBySponsorOrganisationUserId
     (
        Guid sponsorOrganisationUserId,
-       SponsorAuthorisationsSearchRequest searchQuery,
+       SponsorAuthorisationsModificationsSearchRequest searchQuery,
        int pageNumber = 1,
        int pageSize = 20,
        string sortField = nameof(ModificationsDto.SentToSponsorDate),

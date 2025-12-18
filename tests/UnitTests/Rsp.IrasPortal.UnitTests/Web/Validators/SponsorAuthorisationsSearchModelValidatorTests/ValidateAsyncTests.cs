@@ -10,7 +10,7 @@ using Rsp.IrasPortal.Web.Validators;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Validators.SponsorAuthorisationsSearchModelValidatorTests;
 
-public class ValidateAsyncTests : TestServiceBase<SponsorAuthorisationsSearchModelValidator>
+public class ValidateAsyncTests : TestServiceBase<AuthorisationsModificationsSearchModelValidator>
 {
     [Fact]
     public async Task ShouldHaveValidationErrorForTooShortSearchTerm()

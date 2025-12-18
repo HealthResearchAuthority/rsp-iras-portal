@@ -20,12 +20,12 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Features.SponsorWorkspace.Authorisations;
 
-public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsController>
+public class AuthorisationsModificationsControllerTests : TestServiceBase<AuthorisationsModificationsController>
 {
     private readonly DefaultHttpContext _http;
     private readonly Guid _sponsorOrganisationUserId = Guid.NewGuid();
 
-    public AuthorisationsControllerTests()
+    public AuthorisationsModificationsControllerTests()
     {
         _http = new DefaultHttpContext
         {
@@ -54,7 +54,7 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
 
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.GetModificationsBySponsorOrganisationUserId(_sponsorOrganisationUserId,
-                It.IsAny<SponsorAuthorisationsSearchRequest>(), 1, 20, nameof(ModificationsModel.SentToSponsorDate),
+                It.IsAny<SponsorAuthorisationsModificationsSearchRequest>(), 1, 20, nameof(ModificationsModel.SentToSponsorDate),
                 SortDirections.Descending))
             .ReturnsAsync(serviceResponse);
 
@@ -167,7 +167,7 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
-        redirect.ActionName.ShouldBe(nameof(AuthorisationsController.Confirmation));
+        redirect.ActionName.ShouldBe(nameof(AuthorisationsModificationsController.Confirmation));
     }
 
     [Fact]
@@ -184,7 +184,7 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
-        redirect.ActionName.ShouldBe(nameof(AuthorisationsController.Confirmation));
+        redirect.ActionName.ShouldBe(nameof(AuthorisationsModificationsController.Confirmation));
     }
 
     [Fact]
@@ -200,7 +200,7 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
-        redirect.ActionName.ShouldBe(nameof(AuthorisationsController.Confirmation));
+        redirect.ActionName.ShouldBe(nameof(AuthorisationsModificationsController.Confirmation));
     }
 
     [Fact]

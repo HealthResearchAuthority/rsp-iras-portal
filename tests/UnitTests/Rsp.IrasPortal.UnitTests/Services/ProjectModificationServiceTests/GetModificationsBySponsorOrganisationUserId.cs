@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Rsp.IrasPortal.Application.Constants;
+﻿using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
@@ -18,7 +13,7 @@ public class GetModificationsBySponsorOrganisationUserIdTests : TestServiceBase<
     [Theory, AutoData]
     public async Task Should_Return_Success_Response_When_Client_Returns_Success(
         Guid sponsorOrganisationUserId,
-        SponsorAuthorisationsSearchRequest searchQuery,
+        SponsorAuthorisationsModificationsSearchRequest searchQuery,
         GetModificationsResponse modificationsResponse)
     {
         // Arrange
