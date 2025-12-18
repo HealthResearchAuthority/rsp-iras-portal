@@ -6,7 +6,7 @@
 @using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
 @using Rsp.IrasPortal.Web.Areas.Admin.Models
 
-@model AuthorisationsModificationsViewModel
+@model ProjectClosuresViewModel
 
 @section Breadcrumb {
     @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
@@ -37,7 +37,7 @@
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
 
-                <form asp-route="sws:applyfilters" method="post" class="govuk-form-group govuk-!-margin-bottom-0">
+                <form asp-route="sws:applyprojectclosuresfilters" method="post" class="govuk-form-group govuk-!-margin-bottom-0">
 
                     <div class="govuk-form-group govuk-!-margin-bottom-2" error-class-for="Search.SearchTerm">
 
@@ -64,29 +64,23 @@
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-full">
                 <div class="govuk-table-wrapper">
-                    <table class="govuk-table modifications-tasklist-table" id="authorisationsTable">
+                    <table class="govuk-table modifications-tasklist-table" id="projectClosureTable">
                         <thead class="govuk-table__head">
                             <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
                                 @{
                                     var sortableHeaders = new[]
                                     {
-                                                                new { Field = nameof(ModificationsModel.ModificationNumber), Label = "Modification ID" },
-                                                                new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
-                                                                new { Field = nameof(ModificationsModel.SentToSponsorDate), Label = "Date received" },
-                                                                new { Field = nameof(ModificationsModel.SentToRegulatorDate), Label = "Date actioned" },
-                                                                new { Field = nameof(ModificationsModel.Status), Label = "Status" }
+                                                                new { Field = nameof(ProjectClosuresModel.ShortProjectTitle), Label = "Short project title" },
+                                                                new { Field = nameof(ProjectClosuresModel.IrasId), Label = "IRAS ID" },
+                                                                new { Field = nameof(ProjectClosuresModel.SentToSponsorDate), Label = "Date received" },
+                                                                new { Field = nameof(ProjectClosuresModel.UserEmail), Label = "User email" },
+                                                                new { Field = nameof(ProjectClosuresModel.ClosureDate), Label = "Date closed" },
+                                                                new { Field = nameof(ProjectClosuresModel.Status), Label = "Status" }
                                                                 };
-                                    var tableId = "authorisationsTable";
+                                    var tableId = "projectClosureTable";
                                 }
                                 @foreach (var header in sortableHeaders)
-                                {
-                                    // Insert Chief investigator column *before* Status
-                                    if (header.Field == nameof(ModificationsModel.Status))
-                                    {
-                                        <!-- NON-sortable Chief investigator column -->
-                                        <th scope="col" class="govuk-table__header">Chief investigator</th>
-                                    }
-
+                                {                                    
                                     <th scope="col" class="govuk-table__header govuk-table__header-sortable">
                                         <partial name="_SortableHeaderButton" model="@(new SortableHeaderModel
                                                                               {
@@ -96,53 +90,48 @@
                                                                                   CurrentSortDirection = Model.Pagination?.SortDirection,
                                                                                   TableId = tableId,
                                                                                   AdditionalParameters = new Dictionary<string, string>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        { "SponsorOrganisationUserId", Model.SponsorOrganisationUserId.ToString() }
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    }
+                                                                                  {
+                                                                                      { "SponsorOrganisationUserId", Model.SponsorOrganisationUserId.ToString() }
+                                                                                  }
                                                                               })" />
-                                </th>
+                                    </th>
                                                                 }
                             </tr>
                         </thead>
 
-                        <form method="get" id="authorisations-selection">
+                        <form method="get" id="projectclosures-selection">
                             <input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
                             <input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
 
                         <tbody class="govuk-table__body govuk-body-s">
                             @{
-                                foreach (var modification in Model.Modifications)
+                                foreach (var projectRecord in Model.ProjectRecords)
                                 {
                                     <tr class="govuk-table__row">
                                         <td class="govuk-table__cell">
                                             <a class="govuk-link"
-                                               asp-route="sws:checkandauthorise"
-                                               asp-route-projectRecordId="@modification.ProjectRecordId"
-                                               asp-route-irasId="@(modification.ModificationId?.Split('/')[0])"
-                                               asp-route-shortTitle="@modification.ShortProjectTitle"
-                                               asp-route-projectModificationId="@modification.Id"
+                                               asp-route="sws:tobedone"
+                                               asp-route-projectRecordId="@projectRecord.ProjectRecordId"                                              
                                                asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId">
-                                                <strong>@modification.ModificationId</strong>
+                                                <strong>@projectRecord.ShortProjectTitle</strong>
                                             </a>
                                         </td>
-                                        <td class="govuk-table__cell">@modification.ShortProjectTitle</td>
-                                        <td class="govuk-table__cell">@(modification.SentToSponsorDate?.ToString("dd MMM yyyy") ?? string.Empty)</td>
-                                        <td class="govuk-table__cell">@(modification.SentToRegulatorDate?.ToString("dd MMM yyyy") ?? string.Empty)</td>
-                                        <td class="govuk-table__cell">@modification.ChiefInvestigatorFirstName @modification.ChiefInvestigatorLastName</td>
+                                        <td class="govuk-table__cell">@projectRecord.IrasId</td>
+                                        <td class="govuk-table__cell">@(projectRecord.SentToSponsorDate?.ToString("dd MMM yyyy") ?? string.Empty)</td>
+                                        <td class="govuk-table__cell">@projectRecord.UserEmail</td>
+                                        <td class="govuk-table__cell">@(projectRecord.ClosureDate?.ToString("dd MMM yyyy") ?? string.Empty)</td>
                                         <td class="govuk-table__cell">
                                             @{
-                                                var tagClass = modification.Status switch
+                                                var tagClass = projectRecord.Status switch
                                                 {
-                                                    ModificationStatus.WithSponsor => "govuk-tag--yellow",
-                                                    ModificationStatus.Approved => "govuk-tag--green",
-                                                    ModificationStatus.WithReviewBody => "govuk-tag--green",
-                                                    ModificationStatus.NotApproved => "govuk-tag--red",
-                                                    ModificationStatus.NotAuthorised => "govuk-tag--red",
+                                                    ProjectClosureStatus.WithSponsor => "govuk-tag--yellow",                                                    
+                                                    ProjectClosureStatus.Authorised => "govuk-tag--green",                                                    
+                                                    ProjectClosureStatus.NotAuthorised => "govuk-tag--red",
                                                     _ => "govuk-tag--blue"
                                                 };
                                             }
                                             <strong class="govuk-tag @tagClass">
-                                                @modification.Status
+                                                @projectRecord.Status
                                             </strong>
                                         </td>
                                     </tr>
