@@ -4,8 +4,8 @@ using static Rsp.IrasPortal.Domain.AccessControl.Permissions;
 namespace Rsp.IrasPortal.Application.AccessControl;
 
 /// <summary>
-/// Maps roles to their workspace, area, and action permissions
-/// This can later be moved to RoleClaims table in the database
+/// Maps roles to their workspace, area, and action permissions This can later be moved to
+/// RoleClaims table in the database
 /// </summary>
 public static class RolePermissions
 {
@@ -64,7 +64,9 @@ public static class RolePermissions
                 // Sponsor Workspace
                 Sponsor.Modifications_Review,
                 Sponsor.Modifications_Search,
-                Sponsor.Modifications_Authorise
+                Sponsor.Modifications_Authorise,
+                Sponsor.MyOrganisations_Access,
+                Sponsor.MyOrganisations_Search,
             }
         },
         {
@@ -138,7 +140,32 @@ public static class RolePermissions
                 Approvals.ProjectRecords_Search,
                 Approvals.ModificationRecords_Search
             }
-        }
+        },
+                {
+            // sponsor role has access to Sponsor Workspace and My Research Workspace (read-only)
+            Roles.OrganisationAdministrator, new List<string>
+            {
+                Sponsor.Workspace_Access,
+
+                // My Research Workspace (read-only)
+                MyResearch.ProjectRecord_Read,
+                MyResearch.ProjectRecordHistory_Read,
+
+                MyResearch.ProjectDocuments_List,
+                MyResearch.ProjectDocuments_Download,
+
+                MyResearch.Modifications_List,
+                MyResearch.Modifications_Review,
+                MyResearch.ModificationsHistory_Read,
+
+                // Sponsor Workspace
+                Sponsor.Modifications_Review,
+                Sponsor.Modifications_Search,
+                Sponsor.Modifications_Authorise,
+                Sponsor.MyOrganisations_Access,
+                Sponsor.MyOrganisations_Search,
+            }
+        },
     };
 
     /// <summary>
