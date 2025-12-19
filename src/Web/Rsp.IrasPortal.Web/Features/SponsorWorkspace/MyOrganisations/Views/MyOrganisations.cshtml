@@ -1,4 +1,5 @@
-﻿@using Rsp.IrasPortal.Web.Features.SponsorWorkspace.MyOrganisations.Models
+﻿@using Rsp.IrasPortal.Application.DTOs
+@using Rsp.IrasPortal.Web.Features.SponsorWorkspace.MyOrganisations.Models
 @using Microsoft.FeatureManagement
 @using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.DTOs.Responses;
@@ -16,17 +17,27 @@
 }
 
 @{
-    var errorSummaryTitle = "There is a problem";
-    ViewBag.Title = "My organisations";
+	var errorSummaryTitle = "There is a problem";
+	ViewBag.Title = "My organisations";
 
-    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
-    var pageContent = pageContentData != null
-        ? pageContentData
-        : new Dictionary<string, MixedContentPageItem?>();
+	var sortableHeaders = new[]
+    {
+        new { Field = nameof(SponsorOrganisationDto.SponsorOrganisationName), Label = "Organisation name" },
+        new { Field = nameof(SponsorOrganisationDto.Countries), Label = "Country" }
+    };
+	var tableId = "myOrganisationsTable";
 
-    var headline = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisations.Title", null);
-    var searchTitle = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisations.SearchTitle", null);
-    var searchHint = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisations.SearchHint", null);
+	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+	var pageContent = pageContentData != null
+		? pageContentData
+		: new Dictionary<string, MixedContentPageItem?>();
+
+	var headline = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisations.Title", null);
+	var searchTitle = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisations.SearchTitle", null);
+	var searchHint = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisations.SearchHint", null);
+
+	var userIsAdmin = User.IsInRole(Roles.SystemAdministrator) || User.IsInRole(Roles.OrganisationAdministrator);
+
 }
 
 <div class="govuk-grid-row">
@@ -38,7 +49,7 @@
 <div class="govuk-grid-row">
 
 	<div class="govuk-grid-column-two-thirds">
-		<form method="get" class="govuk-form-group" >
+		<form method="post" class="govuk-form-group" >
             <label class="govuk-label" for="SearchQuery">
                 <b>@Html.Raw(searchTitle?.Value)</b>
             </label>
@@ -47,12 +58,73 @@
             </div>
        
 			<div class="review-body-search">
-                <input class="govuk-input" id="SearchQuery" name="SearchQuery" type="text" value="@(Model.Search?.SearchTerm ?? string.Empty)">
+			<input class="govuk-input" id="Search_SearchTerm" name="Search.SearchTerm" type="text" value="@Model.Search?.SearchTerm" />
                 @{
                     ViewBag.Style = "govuk-button govuk-button--secondary";
                 }
-                <partial name="_SubmitButton" model="@("sws:myorganisations", "Search", new Dictionary<string, string>())"/>
+                <partial name="_SubmitButton" model="@("sws:searchmyorganisations", "Search", new Dictionary<string, string>())"/>
 			</div>
         </form>
     </div>
+  
+
+    <div class="govuk-grid-column-full">
+        @if (Model.MyOrganisations != null && Model.MyOrganisations.Any())
+        {
+            <div class="govuk-table-wrapper">
+                <table class="govuk-table govuk-table-users" id="@tableId">
+                    <thead>
+                    <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+                        @foreach (var header in sortableHeaders)
+                        {
+                            var sortableHeaderModel = new SortableHeaderModel
+                            {
+                                FieldName = header.Field,
+                                DisplayText = header.Label,
+                                CurrentSortField = Model.Pagination?.SortField,
+                                CurrentSortDirection = Model.Pagination?.SortDirection,
+                                TableId = tableId
+                            };
+
+                            <th scope="col" class="govuk-table__header govuk-table__header-sortable">
+                                <partial name="_SortableHeaderButton" model="@sortableHeaderModel"/>
+                            </th>
+                        }
+                        <th scope="col" class="govuk-table__header">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody class="govuk-table__body">
+                    @foreach (var sponsorOrganisation in Model.MyOrganisations)
+                    {
+                        <tr class="govuk-table__row">
+                            <td class="govuk-table__cell">@sponsorOrganisation.SponsorOrganisationName</td>
+                            <td class="govuk-table__cell">@string.Join(", ", sponsorOrganisation.Countries)</td>
+                            <td class="govuk-table__cell">
+									@{
+										var buttonText = userIsAdmin ? "Manage" : "View";
+									}
+                                <a class="govuk-link" asp-route="sws:myorganisationprofile" asp-route-rtsId="@sponsorOrganisation.RtsId">@buttonText</a>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else if (!Model.MyOrganisations.Any() || !string.IsNullOrEmpty(Model.Search?.SearchTerm))
+        {
+            <div class="govuk-grid-row">
+                <div class="govuk-grid-column-two-thirds search-filter-error-border">
+                    <h2 class="govuk-heading-l">There are no matching results</h2>
+                    <p class="govuk-body">Improve your search results by:</p>
+                    <ul class="govuk-list govuk-list--bullet">
+                        <li>removing filters</li>
+                        <li>double-checking your spelling</li>
+                        <li>using fewer keywords</li>
+                        <li>searching for something less specific</li>
+                    </ul>
+                </div>
+            </div>
+        }
     </div>
+</div>

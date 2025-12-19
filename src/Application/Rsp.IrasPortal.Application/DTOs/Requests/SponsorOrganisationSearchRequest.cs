@@ -6,4 +6,5 @@ public class SponsorOrganisationSearchRequest
     public List<string> Country { get; set; } = [];
     public List<string> RtsIds { get; set; } = [];
     public bool? Status { get; set; }
+    public Guid? UserId { get; set; }
 }
