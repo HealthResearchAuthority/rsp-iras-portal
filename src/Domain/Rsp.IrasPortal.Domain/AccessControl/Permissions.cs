@@ -166,6 +166,11 @@ public static class Permissions
         /// allows seeing the my organisations on the menu
         /// </summary>
         public const string MyOrganisations_Search = "sponsor.myorganisations.search";
+
+        /// <summary>
+        /// allows seeing the my organisations on the menu
+        /// </summary>
+        public const string MyOrganisations_Profile = "sponsor.myorganisations.profile";
     }
 
     // System Administration Workspace Permissions
