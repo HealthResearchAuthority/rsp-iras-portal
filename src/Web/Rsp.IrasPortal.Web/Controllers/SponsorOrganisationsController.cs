@@ -58,7 +58,7 @@ public class SponsorOrganisationsController(
             request, 1, int.MaxValue, sortField, sortDirection);
 
         var items = response.Content?.SponsorOrganisations ?? Enumerable.Empty<SponsorOrganisationDto>();
-        var sorted = SortSponsorOrganisations(items, sortField, sortDirection, pageNumber, pageSize).ToList();
+        var sorted = items.SortSponsorOrganisations(sortField, sortDirection, pageNumber, pageSize).ToList();
         var total = response.Content?.TotalCount ?? 0;
 
         var viewModel = new SponsorOrganisationSearchViewModel
@@ -515,65 +515,6 @@ public class SponsorOrganisationsController(
         };
 
         return (model, dto, null);
-    }
-
-    // Sorting extracted and made stable/consistent4
-    [NonAction]
-    private static IEnumerable<SponsorOrganisationDto> SortSponsorOrganisations(
-        IEnumerable<SponsorOrganisationDto> items,
-        string? sortField,
-        string? sortDirection,
-        int pageNumber = 1,
-        int pageSize = 20)
-    {
-        static string CountriesKey(SponsorOrganisationDto x)
-        {
-            return x.Countries == null || !x.Countries.Any()
-                ? string.Empty
-                : string.Join(", ", x.Countries.OrderBy(c => c, StringComparer.OrdinalIgnoreCase));
-        }
-
-        var desc = string.Equals(sortDirection, "desc", StringComparison.OrdinalIgnoreCase);
-
-        var sorted = sortField?.ToLowerInvariant() switch
-        {
-            "sponsororganisationname" => desc
-                ? items.OrderByDescending(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase)
-                    .ThenBy(x => CountriesKey(x), StringComparer.OrdinalIgnoreCase)
-                : items.OrderBy(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase)
-                    .ThenBy(x => CountriesKey(x), StringComparer.OrdinalIgnoreCase),
-
-            "countries" => desc
-                ? items.OrderByDescending(x => CountriesKey(x), StringComparer.OrdinalIgnoreCase)
-                    .ThenBy(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase)
-                : items.OrderBy(x => CountriesKey(x), StringComparer.OrdinalIgnoreCase)
-                    .ThenBy(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase),
-
-            "isactive" => desc
-                ? items.OrderByDescending(x => x.IsActive)
-                    .ThenBy(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase)
-                : items.OrderBy(x => x.IsActive)
-                    .ThenBy(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase),
-
-            _ => desc
-                ? items.OrderByDescending(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase)
-                : items.OrderBy(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase)
-        };
-
-        // Apply pagination
-        if (pageNumber < 1)
-        {
-            pageNumber = 1;
-        }
-
-        if (pageSize < 1)
-        {
-            pageSize = 20;
-        }
-
-        var skip = (pageNumber - 1) * pageSize;
-
-        return sorted.Skip(skip).Take(pageSize);
     }
 
     [NonAction]
