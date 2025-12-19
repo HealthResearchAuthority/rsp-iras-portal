@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Rsp.IrasPortal.Application.DTOs;
 
+namespace Rsp.IrasPortal.Web.Extensions;
+
 [ExcludeFromCodeCoverage]
 public static class SponsorOrganisationSortingExtensions
 {
