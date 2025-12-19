@@ -22,7 +22,7 @@ public interface IProjectClosuresServiceClient
     /// <param name="sortField">The field name by which the results should be sorted.</param>
     /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
     /// <returns>Returns a paginated list of project closures.</returns>
-    [Post("/projectclosures/getprojectclosuresbysponsororganisationuserid")]
+    [Post("/projectclosure/getprojectclosuresbysponsororganisationuserid")]
     public Task<ApiResponse<ProjectClosuresResponse>> GetProjectClosuresBySponsorOrganisationUserId
     (
         Guid sponsorOrganisationUserId,
