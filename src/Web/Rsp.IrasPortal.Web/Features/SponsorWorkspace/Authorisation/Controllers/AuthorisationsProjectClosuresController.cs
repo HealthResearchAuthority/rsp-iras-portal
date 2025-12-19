@@ -65,6 +65,7 @@ public class AuthorisationsProjectClosuresController
                 IrasId = dto.IrasId,
                 UserId = dto.UserId,
                 DateActioned = dto.DateActioned,
+                ClosureDate = dto.ClosureDate,
                 SentToSponsorDate = dto.SentToSponsorDate
             })
             .ToList() ?? [];
