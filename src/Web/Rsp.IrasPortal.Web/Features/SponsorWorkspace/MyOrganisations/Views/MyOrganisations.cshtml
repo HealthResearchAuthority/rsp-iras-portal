@@ -1,13 +1,7 @@
-﻿@using Rsp.IrasPortal.Application.DTOs
-@using Rsp.IrasPortal.Web.Features.SponsorWorkspace.MyOrganisations.Models
-@using Microsoft.FeatureManagement
-@using Rsp.IrasPortal.Application.Constants
-@using Rsp.IrasPortal.Application.DTOs.Responses;
-@using System.Linq
+﻿@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Application.DTOs
 @using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
-@using Rsp.IrasPortal.Web.Areas.Admin.Models
-
-@model SponsorMyOrganisationsViewModel
+@model Rsp.IrasPortal.Web.Features.SponsorWorkspace.MyOrganisations.Models.SponsorMyOrganisationsViewModel
 
 @section Breadcrumb {
     @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
@@ -17,27 +11,26 @@
 }
 
 @{
-	var errorSummaryTitle = "There is a problem";
-	ViewBag.Title = "My organisations";
+    var errorSummaryTitle = "There is a problem";
+    ViewBag.Title = "My organisations";
 
-	var sortableHeaders = new[]
+    var sortableHeaders = new[]
     {
         new { Field = nameof(SponsorOrganisationDto.SponsorOrganisationName), Label = "Organisation name" },
         new { Field = nameof(SponsorOrganisationDto.Countries), Label = "Country" }
     };
-	var tableId = "myOrganisationsTable";
+    var tableId = "myOrganisationsTable";
 
-	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
-	var pageContent = pageContentData != null
-		? pageContentData
-		: new Dictionary<string, MixedContentPageItem?>();
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData != null
+        ? pageContentData
+        : new Dictionary<string, MixedContentPageItem?>();
 
-	var headline = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisations.Title", null);
-	var searchTitle = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisations.SearchTitle", null);
-	var searchHint = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisations.SearchHint", null);
+    var headline = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisations.Title", null);
+    var searchTitle = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisations.SearchTitle", null);
+    var searchHint = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisations.SearchHint", null);
 
-	var userIsAdmin = User.IsInRole(Roles.SystemAdministrator) || User.IsInRole(Roles.OrganisationAdministrator);
-
+    var userIsAdmin = User.IsInRole(Roles.SystemAdministrator) || User.IsInRole(Roles.OrganisationAdministrator);
 }
 
 <div class="govuk-grid-row">
@@ -48,25 +41,25 @@
 
 <div class="govuk-grid-row">
 
-	<div class="govuk-grid-column-two-thirds">
-		<form method="post" class="govuk-form-group" >
+    <div class="govuk-grid-column-two-thirds">
+        <form method="post" class="govuk-form-group">
             <label class="govuk-label" for="SearchQuery">
                 <b>@Html.Raw(searchTitle?.Value)</b>
             </label>
             <div class="govuk-label">
                 @Html.Raw(searchHint?.Value)
             </div>
-       
-			<div class="review-body-search">
-			<input class="govuk-input" id="Search_SearchTerm" name="Search.SearchTerm" type="text" value="@Model.Search?.SearchTerm" />
+
+            <div class="review-body-search">
+                <input class="govuk-input" id="Search_SearchTerm" name="Search.SearchTerm" type="text" value="@Model.Search?.SearchTerm"/>
                 @{
                     ViewBag.Style = "govuk-button govuk-button--secondary";
                 }
                 <partial name="_SubmitButton" model="@("sws:searchmyorganisations", "Search", new Dictionary<string, string>())"/>
-			</div>
+            </div>
         </form>
     </div>
-  
+
 
     <div class="govuk-grid-column-full">
         @if (Model.MyOrganisations != null && Model.MyOrganisations.Any())
@@ -100,9 +93,9 @@
                             <td class="govuk-table__cell">@sponsorOrganisation.SponsorOrganisationName</td>
                             <td class="govuk-table__cell">@string.Join(", ", sponsorOrganisation.Countries)</td>
                             <td class="govuk-table__cell">
-									@{
-										var buttonText = userIsAdmin ? "Manage" : "View";
-									}
+                                @{
+                                    var buttonText = userIsAdmin ? "Manage" : "View";
+                                }
                                 <a class="govuk-link" asp-route="sws:myorganisationprofile" asp-route-rtsId="@sponsorOrganisation.RtsId">@buttonText</a>
                             </td>
                         </tr>

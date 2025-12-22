@@ -1053,6 +1053,9 @@ button.govuk-pagination__item--current {
 #tab-sponsor-details:checked ~ #sponsor-details,
 #tab-modifications-changes:checked ~ #modifications-changes,
 #tab-documents:checked ~ #documents,
+#tab-profile:checked ~ #profile,
+#tab-projects:checked ~ #projects,
+#tab-users:checked ~ #users,
 #tab-history:checked ~ #history {
     display: block;
 }
@@ -1061,6 +1064,9 @@ button.govuk-pagination__item--current {
 #tab-sponsor-details:checked ~ .govuk-service-navigation .govuk-service-navigation__item--sponsor-details > label,
 #tab-modifications-changes:checked ~ .govuk-service-navigation .govuk-service-navigation__item--modifications-changes > label,
 #tab-documents:checked ~ .govuk-service-navigation .govuk-service-navigation__item--documents > label,
+#tab-profile:checked ~ .govuk-service-navigation .govuk-service-navigation__item--profile > label,
+#tab-projects:checked ~ .govuk-service-navigation .govuk-service-navigation__item--projects > label,
+#tab-users:checked ~ .govuk-service-navigation .govuk-service-navigation__item--users > label,
 #tab-history:checked ~ .govuk-service-navigation .govuk-service-navigation__item--history > label {
     border-bottom: 4px solid #1d70b8;
     color: #0b0c0c;

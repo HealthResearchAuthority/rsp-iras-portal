@@ -7,13 +7,13 @@
 @using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
 @using Rsp.IrasPortal.Web.Areas.Admin.Models
 
-@model SponsorMyOrganisationsViewModel
+@model SponsorMyOrganisationProfileViewModel
 
 @section Breadcrumb {
     @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
     {
         ("Sponsor workspace", Url.RouteUrl("sws:sponsorworkspace")),
-        ("My organisations", Url.RouteUrl("sws:sponsorworkspace"))
+        ("My organisations", Url.RouteUrl("sws:myorganisations"))
     })
 }
 
@@ -36,3 +36,7 @@
         <h1 class="govuk-heading-l">Sponsor organisation's profile</h1>
     </div>
 </div>
+
+
+
+<partial name="_NavigationTabPartial" model="@Model" view-data="@ViewData" />
