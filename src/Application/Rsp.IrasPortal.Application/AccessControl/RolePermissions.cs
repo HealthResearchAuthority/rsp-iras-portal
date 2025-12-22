@@ -67,6 +67,7 @@ public static class RolePermissions
                 Sponsor.Modifications_Authorise,
                 Sponsor.MyOrganisations_Access,
                 Sponsor.MyOrganisations_Search,
+                Sponsor.MyOrganisations_Profile,
             }
         },
         {
