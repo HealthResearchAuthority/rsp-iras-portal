@@ -3,16 +3,13 @@
 
 @{
 	var queryDocuments = Context.Request.Query["documents"].ToString();
-	bool isNotOnlyApplicant = User.IsInRole(Roles.Sponsor)
-					   || User.IsInRole(Roles.StudyWideReviewer)
-					   || User.IsInRole(Roles.TeamManager)
-					   || User.IsInRole(Roles.SystemAdministrator)
-					   || User.IsInRole(Roles.OrganisationAdministrator)
-					   || User.IsInRole(Roles.WorkflowCoordinator);
+    var isAdmin =
+        User.IsInRole(Roles.SystemAdministrator)
+        || User.IsInRole(Roles.OrganisationAdministrator);
 
-	string activeTabId =
-		queryDocuments == ModificationOverview.Documents ? "users-tab" :
-		isNotOnlyApplicant ? "profile-tab" : "projects-tab";
+    var activeTabId = string.IsNullOrWhiteSpace(queryDocuments)
+        ? "profile-tab"
+        : queryDocuments;
 }
 
 <!-- Hidden controls -->
@@ -31,12 +28,14 @@
 	   aria-label="@ModificationOverview.ModificationDetails"
 	   @(activeTabId == "projects-tab" ? "checked" : null)>
 <input type="radio"
-	   id="tab-users"
-	   role="tab"
-	   name="tab-toggle"
-	   class="govuk-tab-toggle"
-	   aria-label="@ModificationOverview.Documents"
-	   @(activeTabId == "users-tab" ? "checked" : null)>
+       id="tab-users"
+       role="tab"
+       name="tab-toggle"
+       class="govuk-tab-toggle"
+       aria-label="@ModificationOverview.Documents"
+       @(activeTabId == "users-tab" ? "checked" : null)>
+
+
 <input type="radio"
 	   id="tab-history"
 	   role="tab"
@@ -69,12 +68,15 @@
                             @MyOrganisationProfileOverview.Users
 						</label>
 					</li>
-
-					<li class="govuk-service-navigation__item small-margin govuk-service-navigation__item--history">
-						<label for="tab-history" class="govuk-service-navigation__link govuk-service-navigation__link-label">
-							@MyOrganisationProfileOverview.Audit
-						</label>
-					</li>
+                    
+					@if (isAdmin)
+                    {
+                        <li class="govuk-service-navigation__item small-margin govuk-service-navigation__item--history">
+                            <label for="tab-history" class="govuk-service-navigation__link govuk-service-navigation__link-label">
+                                @MyOrganisationProfileOverview.Audit
+                            </label>
+                        </li>
+                    }
 				</ul>
 			</nav>
 		</div>

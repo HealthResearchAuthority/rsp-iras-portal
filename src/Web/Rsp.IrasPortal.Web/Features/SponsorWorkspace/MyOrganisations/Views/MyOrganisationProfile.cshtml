@@ -1,12 +1,6 @@
-﻿@using Rsp.IrasPortal.Application.DTOs
-@using Rsp.IrasPortal.Web.Features.SponsorWorkspace.MyOrganisations.Models
-@using Microsoft.FeatureManagement
-@using Rsp.IrasPortal.Application.Constants
-@using Rsp.IrasPortal.Application.DTOs.Responses;
-@using System.Linq
+﻿@using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
-
-@model SponsorMyOrganisationProfileViewModel
+@model Rsp.IrasPortal.Web.Features.SponsorWorkspace.MyOrganisations.Models.SponsorMyOrganisationProfileViewModel
 
 @section Breadcrumb {
     @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
@@ -17,15 +11,15 @@
 }
 
 @{
-	var errorSummaryTitle = "There is a problem";
-	ViewBag.Title = "Sponsor organisation's profile";
+    var errorSummaryTitle = "There is a problem";
+    ViewBag.Title = "Sponsor organisations profile";
 
-	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
-	var pageContent = pageContentData != null
-		? pageContentData
-		: new Dictionary<string, MixedContentPageItem?>();
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData != null
+        ? pageContentData
+        : new Dictionary<string, MixedContentPageItem?>();
 
-	var headline = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationProfile.Title", null);
+    var headline = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationProfile.Title", null);
 }
 
 <div class="govuk-grid-row">
@@ -37,4 +31,4 @@
     </div>
 </div>
 
-<partial name="_NavigationTabPartial" model="@Model" view-data="@ViewData" />
+<partial name="_NavigationTabPartial" model="@Model" view-data="@ViewData"/>
