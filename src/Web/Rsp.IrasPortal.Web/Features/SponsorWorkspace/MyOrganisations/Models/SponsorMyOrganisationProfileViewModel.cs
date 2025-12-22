@@ -6,4 +6,6 @@ namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace.MyOrganisations.Models;
 public class SponsorMyOrganisationProfileViewModel
 
 {
+    public string Name { get; set; }
+    public string RtsId { get; set; }
 }

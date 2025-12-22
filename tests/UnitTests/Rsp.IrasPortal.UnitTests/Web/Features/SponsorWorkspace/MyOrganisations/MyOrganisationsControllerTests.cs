@@ -9,8 +9,10 @@ using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Domain.Identity;
 using Rsp.IrasPortal.Web.Features.SponsorWorkspace.MyOrganisations.Controllers;
 using Rsp.IrasPortal.Web.Features.SponsorWorkspace.MyOrganisations.Models;
+using Claim = System.Security.Claims.Claim;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Features.SponsorWorkspace.MyOrganisations;
 
@@ -339,16 +341,67 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
                 Times.Never);
     }
 
-    [Fact]
-    public async Task MyOrganisationProfile_returns_view()
+    [Theory]
+    [AutoData]
+    public async Task MyOrganisationProfile_ShouldReturnView_WhenOrganisationExists(
+        ClaimsPrincipal userClaims,
+        SponsorOrganisationDto sponsorOrganisation,
+        OrganisationDto rtsOrganisation)
     {
         // Arrange
-        SetUser(Guid.NewGuid());
+        var gid = Guid.NewGuid();
+
+        sponsorOrganisation.Users = new List<SponsorOrganisationUserDto>
+        {
+            new()
+            {
+                Id = Guid.NewGuid(),
+                UserId = gid
+            }
+        };
+
+        var rtsResponse = new ServiceResponse<OrganisationDto>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = rtsOrganisation
+        };
+
+        Mocker.GetMock<IRtsService>()
+            .Setup(s => s.GetOrganisation(It.IsAny<string>()))
+            .ReturnsAsync(rtsResponse);
+
+        _http.User = userClaims;
 
         // Act
-        var result = await Sut.MyOrganisationProfile();
+        var result = await Sut.MyOrganisationProfile(gid.ToString());
 
         // Assert
-        result.ShouldBeOfType<ViewResult>();
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+    }
+
+    [Theory, AutoData]
+    public async Task MyOrganisationProfile_ShouldReturnServiceError_WhenRtsFails(
+        ClaimsPrincipal userClaims
+    )
+    {
+        // Arrange
+
+        var rtsResponse = new ServiceResponse<OrganisationDto>
+        {
+            StatusCode = HttpStatusCode.BadRequest
+        };
+
+        Mocker.GetMock<IRtsService>()
+            .Setup(s => s.GetOrganisation(It.IsAny<string>()))
+            .ReturnsAsync(rtsResponse);
+
+        _http.User = userClaims;
+
+        // Act
+        var result = await Sut.MyOrganisationProfile("");
+
+        // Assert
+        var statusResult = result.ShouldBeOfType<StatusCodeResult>();
+        statusResult.StatusCode.ShouldBe(400);
     }
 }

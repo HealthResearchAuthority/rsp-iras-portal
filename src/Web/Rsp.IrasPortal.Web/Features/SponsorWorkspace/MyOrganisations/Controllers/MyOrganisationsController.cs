@@ -85,8 +85,21 @@ public class MyOrganisationsController(
 
     [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Profile)]
     [HttpGet]
-    public async Task<IActionResult> MyOrganisationProfile()
+    public async Task<IActionResult> MyOrganisationProfile(string rtsId)
     {
-        return View();
+        var rtsResponse = await rtsService.GetOrganisation(rtsId);
+
+        if (!rtsResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(rtsResponse);
+        }
+
+        var model = new SponsorMyOrganisationProfileViewModel()
+        {
+            Name = rtsResponse.Content?.Name,
+            RtsId = rtsId
+        };
+
+        return View(model);
     }
 }
