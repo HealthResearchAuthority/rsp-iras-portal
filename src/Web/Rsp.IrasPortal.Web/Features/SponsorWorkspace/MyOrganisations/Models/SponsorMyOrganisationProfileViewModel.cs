@@ -8,4 +8,7 @@ public class SponsorMyOrganisationProfileViewModel
 {
     public string Name { get; set; }
     public string RtsId { get; set; }
+
+    public IEnumerable<UserViewModel> Users { get; set; } = [];
+    public PaginationViewModel? Pagination { get; set; }
 }

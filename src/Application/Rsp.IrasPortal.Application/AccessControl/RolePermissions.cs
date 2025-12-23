@@ -68,6 +68,8 @@ public static class RolePermissions
                 Sponsor.MyOrganisations_Access,
                 Sponsor.MyOrganisations_Search,
                 Sponsor.MyOrganisations_Profile,
+                Sponsor.MyOrganisations_Projects,
+                Sponsor.MyOrganisations_Users,
             }
         },
         {
@@ -165,6 +167,10 @@ public static class RolePermissions
                 Sponsor.Modifications_Authorise,
                 Sponsor.MyOrganisations_Access,
                 Sponsor.MyOrganisations_Search,
+                Sponsor.MyOrganisations_Profile,
+                Sponsor.MyOrganisations_Projects,
+                Sponsor.MyOrganisations_Users,
+                Sponsor.MyOrganisations_Audit
             }
         },
     };

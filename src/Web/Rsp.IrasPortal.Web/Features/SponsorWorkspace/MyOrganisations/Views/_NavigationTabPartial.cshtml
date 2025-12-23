@@ -2,100 +2,57 @@
 @model Rsp.IrasPortal.Web.Features.SponsorWorkspace.MyOrganisations.Models.SponsorMyOrganisationProfileViewModel;
 
 @{
-	var queryDocuments = Context.Request.Query["documents"].ToString();
     var isAdmin =
         User.IsInRole(Roles.SystemAdministrator)
         || User.IsInRole(Roles.OrganisationAdministrator);
 
-    var activeTabId = string.IsNullOrWhiteSpace(queryDocuments)
-        ? "profile-tab"
-        : queryDocuments;
-}
+        var active = ViewBag.Active as string;
+    }
 
-<!-- Hidden controls -->
-<input type="radio"
-	   id="tab-profile"
-	   role="tab"
-	   name="tab-toggle"
-	   class="govuk-tab-toggle"
-	   aria-label="@MyOrganisationProfileOverview.Profile"
-	   @(activeTabId == "profile-tab" ? "checked" : null)>
-<input type="radio"
-	   id="tab-projects"
-	   role="tab"
-	   name="tab-toggle"
-	   class="govuk-tab-toggle"
-	   aria-label="@ModificationOverview.ModificationDetails"
-	   @(activeTabId == "projects-tab" ? "checked" : null)>
-<input type="radio"
-       id="tab-users"
-       role="tab"
-       name="tab-toggle"
-       class="govuk-tab-toggle"
-       aria-label="@ModificationOverview.Documents"
-       @(activeTabId == "users-tab" ? "checked" : null)>
-
-
-<input type="radio"
-	   id="tab-history"
-	   role="tab"
-	   name="tab-toggle"
-	   class="govuk-tab-toggle"
-	   aria-label="@ModificationOverview.History"
-	   @(activeTabId == "history-tab" ? "checked" : null)>
 
 <!-- Keep the same GOV.UK Service Navigation look -->
-<div class="govuk-service-navigation" aria-hidden="true">
+
+<div class="govuk-service-navigation">
 	<div class="govuk-width-container">
 		<div class="govuk-service-navigation__container">
 			<nav class="govuk-service-navigation__wrapper">
 				<ul class="govuk-service-navigation__list">
-
-					<li class="govuk-service-navigation__item small-margin govuk-service-navigation__item--profile">
-						<label for="tab-profile" class="govuk-service-navigation__link govuk-service-navigation__link-label">
+					<li class="govuk-service-navigation__item small-margin @(active == MyOrganisationProfileOverview.Profile ? "govuk-service-navigation__item--active" : "")">
+						<a class="govuk-service-navigation__link"
+						   asp-route="sws:myorganisationprofile"
+                           asp-route-rtsId="@Model.RtsId">
 							@MyOrganisationProfileOverview.Profile
-						</label>
+						</a>
 					</li>
-
-					<li class="govuk-service-navigation__item small-margin govuk-service-navigation__item--projects">
-						<label for="tab-projects" class="govuk-service-navigation__link govuk-service-navigation__link-label">
-							@MyOrganisationProfileOverview.Projects
-						</label>
+					<li class="govuk-service-navigation__item small-margin @(active == MyOrganisationProfileOverview.Projects ? "govuk-service-navigation__item--active" : "")">
+						<a class="govuk-service-navigation__link"
+						   asp-route="sws:myorganisationprojects"
+                           asp-route-rtsId="@Model.RtsId">
+                            @MyOrganisationProfileOverview.Projects
+						</a>
 					</li>
-
-					<li class="govuk-service-navigation__item small-margin govuk-service-navigation__item--users">
-						<label for="tab-users" class="govuk-service-navigation__link govuk-service-navigation__link-label">
-                            @MyOrganisationProfileOverview.Users
-						</label>
-					</li>
+					<li class="govuk-service-navigation__item small-margin @(active == MyOrganisationProfileOverview.Users ? "govuk-service-navigation__item--active" : "")">
+                        <a class="govuk-service-navigation__link"
+						   asp-route="sws:myorganisationusers"
+                           asp-route-rtsId="@Model.RtsId">
+							@MyOrganisationProfileOverview.Users
+                        </a>
+                    </li>
                     
 					@if (isAdmin)
                     {
-                        <li class="govuk-service-navigation__item small-margin govuk-service-navigation__item--history">
-                            <label for="tab-history" class="govuk-service-navigation__link govuk-service-navigation__link-label">
-                                @MyOrganisationProfileOverview.Audit
-                            </label>
+						<li class="govuk-service-navigation__item small-margin @(active == MyOrganisationProfileOverview.Audit ? "govuk-service-navigation__item--active" : "")">
+                            <a class="govuk-service-navigation__link"
+							   asp-route="sws:myorganisationaudittrail"
+                               asp-route-rtsId="@Model.RtsId">
+								@MyOrganisationProfileOverview.Audit
+                            </a>
                         </li>
                     }
+              
+				
 				</ul>
 			</nav>
 		</div>
 	</div>
-</div>
-
-<!-- Panels (toggle visibility via CSS) -->
-<div id="profile" class="tab-content">
-	<partial name="Profile" model="Model" viewData="ViewData" />
-</div>
-
-<div id="projects" class="tab-content">
-	<partial name="Projects" model="Model" viewData="ViewData" />
-</div>
-
-<div id="users" class="tab-content">
-	<partial name="Users" model="Model" viewData="ViewData" />
-</div>
-
-<div id="history" class="tab-content">
-	<partial name="AuditTrail" model="Model" viewData="ViewData" />
 </div>

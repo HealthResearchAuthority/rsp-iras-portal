@@ -19,7 +19,7 @@
         ? pageContentData
         : new Dictionary<string, MixedContentPageItem?>();
 
-    var headline = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationProfile.Title", null);
+    var headline = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationProjects.Title", null);
 }
 
 <div class="govuk-grid-row">
@@ -33,10 +33,11 @@
 
 <partial name="_NavigationTabPartial" model="@Model" view-data="@ViewData"/>
 
+		
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
         <div class="govuk-label">
-            Profile
+            Projects
         </div>
     </div>
 </div>	
