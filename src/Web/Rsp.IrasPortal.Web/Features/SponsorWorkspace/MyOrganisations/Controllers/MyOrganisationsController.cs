@@ -87,6 +87,74 @@ public class MyOrganisationsController(
     [HttpGet]
     public async Task<IActionResult> MyOrganisationProfile(string rtsId)
     {
+        ViewBag.Active = MyOrganisationProfileOverview.Profile;
+
+        var rtsResponse = await rtsService.GetOrganisation(rtsId);
+
+        if (!rtsResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(rtsResponse);
+        }
+
+        var model = new SponsorMyOrganisationProfileViewModel()
+        {
+            Name = rtsResponse.Content?.Name,
+            RtsId = rtsId
+        };
+
+        return View(model);
+    }
+
+    [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Projects)]
+    [HttpGet]
+    public async Task<IActionResult> MyOrganisationProjects(string rtsId)
+    {
+        ViewBag.Active = MyOrganisationProfileOverview.Projects;
+
+        var rtsResponse = await rtsService.GetOrganisation(rtsId);
+
+        if (!rtsResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(rtsResponse);
+        }
+
+        var model = new SponsorMyOrganisationProfileViewModel()
+        {
+            Name = rtsResponse.Content?.Name,
+            RtsId = rtsId
+        };
+
+        return View(model);
+    }
+
+    [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Users)]
+    [HttpGet]
+    public async Task<IActionResult> MyOrganisationUsers(string rtsId)
+    {
+        ViewBag.Active = MyOrganisationProfileOverview.Users;
+
+        var rtsResponse = await rtsService.GetOrganisation(rtsId);
+
+        if (!rtsResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(rtsResponse);
+        }
+
+        var model = new SponsorMyOrganisationProfileViewModel()
+        {
+            Name = rtsResponse.Content?.Name,
+            RtsId = rtsId
+        };
+
+        return View(model);
+    }
+
+    [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Audit)]
+    [HttpGet]
+    public async Task<IActionResult> MyOrganisationAuditTrail(string rtsId)
+    {
+        ViewBag.Active = MyOrganisationProfileOverview.Audit;
+
         var rtsResponse = await rtsService.GetOrganisation(rtsId);
 
         if (!rtsResponse.IsSuccessStatusCode)
