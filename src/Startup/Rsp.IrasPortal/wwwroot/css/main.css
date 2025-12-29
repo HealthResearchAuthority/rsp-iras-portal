@@ -988,7 +988,14 @@ button.govuk-pagination__item--current {
 .govuk-service-navigation__wrapper,
 .govuk-service-navigation__list,
 .govuk-service-navigation__item {
-  background: #fff;
+  background: var(--background-govuk-body-background-colour, #f4f8fb);
+}
+
+.govuk-service-navigation__container.white-bg,
+.govuk-service-navigation__container.white-bg .govuk-service-navigation__wrapper,
+.govuk-service-navigation__container.white-bg .govuk-service-navigation__list,
+.govuk-service-navigation__container.white-bg .govuk-service-navigation__item {
+  background: #ffffff;
 }
 
 /* Hide all panels by default */

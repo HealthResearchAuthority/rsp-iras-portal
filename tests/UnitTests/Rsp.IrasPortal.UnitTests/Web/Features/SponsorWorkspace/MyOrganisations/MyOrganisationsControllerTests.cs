@@ -20,6 +20,81 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
 {
     private readonly DefaultHttpContext _http;
 
+    private const string DefaultEmail = "dan.hulmston@test.com";
+
+    private void SetUser(Guid userId, string? email = DefaultEmail)
+    {
+        var claims = new List<Claim>
+    {
+        new(CustomClaimTypes.UserId, userId.ToString())
+    };
+
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            claims.Add(new Claim(ClaimTypes.Email, email));
+        }
+
+        _http.User = new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuth"));
+    }
+
+    private void SetupSponsorOrgContextSuccess(
+        string rtsId,
+        string email,
+        SponsorOrganisationDto? sponsorOrganisation = null,
+        OrganisationDto? rtsOrganisation = null)
+    {
+        rtsOrganisation ??= new OrganisationDto
+        {
+            Name = "Test Org",
+            CountryName = "United Kingdom"
+        };
+
+        sponsorOrganisation ??= new SponsorOrganisationDto
+        {
+            Id = Guid.NewGuid(),
+            IsActive = true,
+            CreatedDate = DateTime.UtcNow,
+            Users = new List<SponsorOrganisationUserDto>()
+        };
+
+        // Ensure the calling user is in the org AND active, with matching email
+        sponsorOrganisation.Users = new List<SponsorOrganisationUserDto>()
+        {
+            new()
+            {
+                Id = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
+                Email = email,
+                IsActive = true,
+                SponsorRole = "Member",
+                IsAuthoriser = false
+            }
+        };
+
+        var rtsResponse = new ServiceResponse<OrganisationDto>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = rtsOrganisation
+        };
+
+        var rbResponse = new ServiceResponse<AllSponsorOrganisationsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new AllSponsorOrganisationsResponse
+            {
+                SponsorOrganisations = new[] { sponsorOrganisation }
+            }
+        };
+
+        Mocker.GetMock<IRtsService>()
+            .Setup(s => s.GetOrganisation(rtsId))
+            .ReturnsAsync(rtsResponse);
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.GetSponsorOrganisationByRtsId(rtsId))
+            .ReturnsAsync(rbResponse);
+    }
+
     public MyOrganisationsControllerTests()
     {
         _http = new DefaultHttpContext
@@ -341,42 +416,35 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
                 Times.Never);
     }
 
-    [Theory]
-    [AutoData]
-    public async Task MyOrganisationProfile_ShouldReturnView_WhenOrganisationExists(
-        ClaimsPrincipal userClaims,
-        SponsorOrganisationDto sponsorOrganisation,
-        OrganisationDto rtsOrganisation)
+    [Fact]
+    public async Task MyOrganisationProfile_ShouldReturnView_WhenContextPasses()
     {
-        // Arrange
-        var gid = Guid.NewGuid();
+        var rtsId = "87765";
+        var userId = Guid.NewGuid();
+        SetUser(userId, DefaultEmail);
 
-        sponsorOrganisation.Users = new List<SponsorOrganisationUserDto>
-        {
-            new()
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail,
+            sponsorOrganisation: new SponsorOrganisationDto
             {
                 Id = Guid.NewGuid(),
-                UserId = gid
-            }
-        };
+                IsActive = true,
+                CreatedDate = DateTime.UtcNow,
+                UpdatedDate = DateTime.UtcNow,
+                Users = new List<SponsorOrganisationUserDto>()
+            },
+            rtsOrganisation: new OrganisationDto
+            {
+                Name = "Acme Sponsor Org",
+                CountryName = "UK"
+            });
 
-        var rtsResponse = new ServiceResponse<OrganisationDto>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = rtsOrganisation
-        };
+        var result = await Sut.MyOrganisationProfile(rtsId);
 
-        Mocker.GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisation(It.IsAny<string>()))
-            .ReturnsAsync(rtsResponse);
+        var view = result.ShouldBeOfType<ViewResult>();
+        var model = view.Model.ShouldBeOfType<SponsorMyOrganisationProfileViewModel>();
 
-        _http.User = userClaims;
-
-        // Act
-        var result = await Sut.MyOrganisationProfile(gid.ToString());
-
-        // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
+        model.RtsId.ShouldBe(rtsId);
+        model.Name.ShouldBe("Acme Sponsor Org");
     }
 
     [Theory, AutoData]
@@ -405,42 +473,122 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         statusResult.StatusCode.ShouldBe(400);
     }
 
-    [Theory]
-    [AutoData]
-    public async Task MyOrganisationProjects_ShouldReturnView_WhenOrganisationExists(
-        ClaimsPrincipal userClaims,
-        SponsorOrganisationDto sponsorOrganisation,
-        OrganisationDto rtsOrganisation)
+    [Fact]
+    public async Task MyOrganisationProfile_ShouldForbid_WhenEmailClaimMissing()
     {
-        // Arrange
-        var gid = Guid.NewGuid();
+        var rtsId = "87765";
+        SetUser(Guid.NewGuid(), email: null);
 
-        sponsorOrganisation.Users = new List<SponsorOrganisationUserDto>
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail); // context has org info but user has no email claim
+
+        var result = await Sut.MyOrganisationProfile(rtsId);
+
+        result.ShouldBeOfType<ForbidResult>();
+    }
+
+    [Fact]
+    public async Task MyOrganisationProfile_ShouldForbid_WhenUserNotInOrgOrDisabled()
+    {
+        var rtsId = "87765";
+        var email = "user@test.com";
+        SetUser(Guid.NewGuid(), email);
+
+        var sponsorOrg = new SponsorOrganisationDto
         {
-            new()
+            Id = Guid.NewGuid(),
+            IsActive = false,
+            CreatedDate = DateTime.UtcNow,
+            Users = new List<SponsorOrganisationUserDto>
             {
-                Id = Guid.NewGuid(),
-                UserId = gid
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = Guid.NewGuid(),
+                    Email = email,
+                    IsActive = false // disabled membership
+                }
             }
         };
 
-        var rtsResponse = new ServiceResponse<OrganisationDto>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = rtsOrganisation
-        };
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail, sponsorOrganisation: sponsorOrg);
+
+        var result = await Sut.MyOrganisationProfile(rtsId);
+
+        result.ShouldBeOfType<ForbidResult>();
+    }
+
+    [Fact]
+    public async Task MyOrganisationProfile_ShouldReturnNotFound_WhenSponsorOrganisationMissing()
+    {
+        var rtsId = "87765";
+        SetUser(Guid.NewGuid(), DefaultEmail);
 
         Mocker.GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisation(It.IsAny<string>()))
-            .ReturnsAsync(rtsResponse);
+            .Setup(s => s.GetOrganisation(rtsId))
+            .ReturnsAsync(new ServiceResponse<OrganisationDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new OrganisationDto { Name = "Org", CountryName = "UK" }
+            });
 
-        _http.User = userClaims;
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.GetSponsorOrganisationByRtsId(rtsId))
+            .ReturnsAsync(new ServiceResponse<AllSponsorOrganisationsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new AllSponsorOrganisationsResponse
+                {
+                    SponsorOrganisations = Array.Empty<SponsorOrganisationDto>()
+                }
+            });
 
-        // Act
-        var result = await Sut.MyOrganisationProjects(gid.ToString());
+        var result = await Sut.MyOrganisationProfile(rtsId);
 
-        // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
+        result.ShouldBeOfType<NotFoundResult>();
+    }
+
+    [Fact]
+    public async Task MyOrganisationProfile_ShouldReturnServiceError_WhenSponsorOrgServiceFails()
+    {
+        var rtsId = "87765";
+        SetUser(Guid.NewGuid(), DefaultEmail);
+
+        Mocker.GetMock<IRtsService>()
+            .Setup(s => s.GetOrganisation(rtsId))
+            .ReturnsAsync(new ServiceResponse<OrganisationDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new OrganisationDto { Name = "Org", CountryName = "UK" }
+            });
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.GetSponsorOrganisationByRtsId(rtsId))
+            .ReturnsAsync(new ServiceResponse<AllSponsorOrganisationsResponse>
+            {
+                StatusCode = HttpStatusCode.BadRequest
+            });
+
+        var result = await Sut.MyOrganisationProfile(rtsId);
+
+        result.ShouldBeOfType<StatusCodeResult>().StatusCode.ShouldBe(400);
+    }
+
+    [Fact]
+    public async Task MyOrganisationProjects_ShouldReturnView_WhenContextPasses()
+    {
+        var rtsId = "87765";
+        SetUser(Guid.NewGuid(), DefaultEmail);
+
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail,
+            rtsOrganisation: new OrganisationDto { Name = "Project Org", CountryName = "UK" });
+
+        var result = await Sut.MyOrganisationProjects(rtsId);
+
+        var view = result.ShouldBeOfType<ViewResult>();
+        var model = view.Model.ShouldBeOfType<SponsorMyOrganisationProfileViewModel>();
+
+        model.RtsId.ShouldBe(rtsId);
+        model.Name.ShouldBe("Project Org");
     }
 
     [Theory, AutoData]
@@ -469,44 +617,6 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         statusResult.StatusCode.ShouldBe(400);
     }
 
-    [Theory]
-    [AutoData]
-    public async Task MyOrganisationUsers_ShouldReturnView_WhenOrganisationExists(
-        ClaimsPrincipal userClaims,
-        SponsorOrganisationDto sponsorOrganisation,
-        OrganisationDto rtsOrganisation)
-    {
-        // Arrange
-        var gid = Guid.NewGuid();
-
-        sponsorOrganisation.Users = new List<SponsorOrganisationUserDto>
-        {
-            new()
-            {
-                Id = Guid.NewGuid(),
-                UserId = gid
-            }
-        };
-
-        var rtsResponse = new ServiceResponse<OrganisationDto>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = rtsOrganisation
-        };
-
-        Mocker.GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisation(It.IsAny<string>()))
-            .ReturnsAsync(rtsResponse);
-
-        _http.User = userClaims;
-
-        // Act
-        var result = await Sut.MyOrganisationUsers(gid.ToString());
-
-        // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-    }
-
     [Theory, AutoData]
     public async Task MyOrganisationUsers_ShouldReturnServiceError_WhenRtsFails(
         ClaimsPrincipal userClaims
@@ -533,44 +643,6 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         statusResult.StatusCode.ShouldBe(400);
     }
 
-    [Theory]
-    [AutoData]
-    public async Task MyOrganisationAuditTrail_ShouldReturnView_WhenOrganisationExists(
-        ClaimsPrincipal userClaims,
-        SponsorOrganisationDto sponsorOrganisation,
-        OrganisationDto rtsOrganisation)
-    {
-        // Arrange
-        var gid = Guid.NewGuid();
-
-        sponsorOrganisation.Users = new List<SponsorOrganisationUserDto>
-        {
-            new()
-            {
-                Id = Guid.NewGuid(),
-                UserId = gid
-            }
-        };
-
-        var rtsResponse = new ServiceResponse<OrganisationDto>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = rtsOrganisation
-        };
-
-        Mocker.GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisation(It.IsAny<string>()))
-            .ReturnsAsync(rtsResponse);
-
-        _http.User = userClaims;
-
-        // Act
-        var result = await Sut.MyOrganisationAuditTrail(gid.ToString());
-
-        // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-    }
-
     [Theory, AutoData]
     public async Task MyOrganisationAuditTrail_ShouldReturnServiceError_WhenRtsFails(
         ClaimsPrincipal userClaims
@@ -595,5 +667,684 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         // Assert
         var statusResult = result.ShouldBeOfType<StatusCodeResult>();
         statusResult.StatusCode.ShouldBe(400);
+    }
+
+    [Fact]
+    public async Task MyOrganisationAuditTrail_ShouldReturnView_WhenContextPasses()
+    {
+        var rtsId = "87765";
+        SetUser(Guid.NewGuid(), DefaultEmail);
+
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail,
+            rtsOrganisation: new OrganisationDto { Name = "Audit Org", CountryName = "UK" });
+
+        var result = await Sut.MyOrganisationAuditTrail(rtsId);
+
+        var view = result.ShouldBeOfType<ViewResult>();
+        var model = view.Model.ShouldBeOfType<SponsorMyOrganisationProfileViewModel>();
+
+        model.RtsId.ShouldBe(rtsId);
+        model.Name.ShouldBe("Audit Org");
+    }
+
+    [Fact]
+    public async Task MyOrganisationUsers_sorts_by_status_asc_active_first_and_sets_status_from_latest_dto()
+    {
+        // Arrange
+        var rtsId = "87765";
+        SetUser(Guid.NewGuid(), DefaultEmail);
+
+        var activeUserId = Guid.NewGuid();
+        var disabledUserId = Guid.NewGuid();
+
+        var sponsorOrg = new SponsorOrganisationDto
+        {
+            Id = Guid.NewGuid(),
+            IsActive = true,
+            CreatedDate = DateTime.UtcNow,
+            UpdatedDate = DateTime.UtcNow,
+            Users = new List<SponsorOrganisationUserDto>
+        {
+            // calling user membership
+            new()
+            {
+                Id = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
+                Email = DefaultEmail,
+                IsActive = true,
+                SponsorRole = "Member",
+                IsAuthoriser = false
+            },
+
+            // Disabled user: include an older Active record first, then Disabled last (latest wins)
+            new()
+            {
+                Id = Guid.NewGuid(),
+                UserId = disabledUserId,
+                Email = "disabled@test.com",
+                IsActive = true,
+                SponsorRole = "Member",
+                IsAuthoriser = false
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                UserId = disabledUserId,
+                Email = "disabled@test.com",
+                IsActive = false,
+                SponsorRole = "Member",
+                IsAuthoriser = false
+            },
+
+            // Active user
+            new()
+            {
+                Id = Guid.NewGuid(),
+                UserId = activeUserId,
+                Email = "active@test.com",
+                IsActive = true,
+                SponsorRole = "Member",
+                IsAuthoriser = false
+            }
+        }
+        };
+
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail, sponsorOrganisation: sponsorOrg);
+
+        // Return users in "wrong" order so controller sorting is exercised
+        var usersResponse = new ServiceResponse<UsersResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new UsersResponse
+            {
+                TotalCount = 2,
+                Users = new[]
+                {
+                new User(
+                    Id: disabledUserId.ToString(),
+                    IdentityProviderId: null,
+                    Title: null,
+                    GivenName: "Zed",
+                    FamilyName: "Disabled",
+                    Email: "disabled@test.com",
+                    JobTitle: null,
+                    Organisation: null,
+                    Telephone: null,
+                    Country: null,
+                    Status: "Disabled",
+                    LastUpdated: null),
+
+                new User(
+                    Id: activeUserId.ToString(),
+                    IdentityProviderId: null,
+                    Title: null,
+                    GivenName: "Amy",
+                    FamilyName: "Active",
+                    Email: "active@test.com",
+                    JobTitle: null,
+                    Organisation: null,
+                    Telephone: null,
+                    Country: null,
+                    Status: "Active",
+                    LastUpdated: null)
+            }
+            }
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUsersByIds(
+                It.IsAny<IEnumerable<string>>(),
+                It.IsAny<string?>(),
+                1,
+                int.MaxValue))
+            .ReturnsAsync(usersResponse);
+
+        // Act
+        var result = await Sut.MyOrganisationUsers(
+            rtsId,
+            searchQuery: null,
+            pageNumber: 1,
+            pageSize: 20,
+            sortField: "status",
+            sortDirection: "asc");
+
+        // Assert
+        var view = result.ShouldBeOfType<ViewResult>();
+        var model = view.Model.ShouldBeOfType<SponsorMyOrganisationUsersViewModel>();
+
+        // Status values should be mapped from latest sponsor-org dto per userId
+        var active = model.Users.Single(u => u.Id == activeUserId.ToString());
+        var disabled = model.Users.Single(u => u.Id == disabledUserId.ToString());
+
+        active.Status.ShouldBe("Active");
+        disabled.Status.ShouldBe("Disabled");
+    }
+
+    [Fact]
+    public async Task MyOrganisationUsers_applies_pagination_after_sorting()
+    {
+        // Arrange
+        var rtsId = "87765";
+        SetUser(Guid.NewGuid(), DefaultEmail);
+
+        var u1 = Guid.NewGuid();
+        var u2 = Guid.NewGuid();
+
+        var sponsorOrg = new SponsorOrganisationDto
+        {
+            Id = Guid.NewGuid(),
+            IsActive = true,
+            CreatedDate = DateTime.UtcNow,
+            UpdatedDate = DateTime.UtcNow,
+            Users = new List<SponsorOrganisationUserDto>
+        {
+            new()
+            {
+                Id = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
+                Email = DefaultEmail,
+                IsActive = true,
+                SponsorRole = "Member",
+                IsAuthoriser = false
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                UserId = u1,
+                Email = "a@test.com",
+                IsActive = true,
+                SponsorRole = "Member",
+                IsAuthoriser = false
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                UserId = u2,
+                Email = "b@test.com",
+                IsActive = true,
+                SponsorRole = "Member",
+                IsAuthoriser = false
+            }
+        }
+        };
+
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail, sponsorOrganisation: sponsorOrg);
+
+        var usersResponse = new ServiceResponse<UsersResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new UsersResponse
+            {
+                TotalCount = 2,
+                Users = new[]
+                {
+                new User(
+                    Id: u2.ToString(),
+                    IdentityProviderId: null,
+                    Title: null,
+                    GivenName: "X",
+                    FamilyName: "Two",
+                    Email: "b@test.com",
+                    JobTitle: null,
+                    Organisation: null,
+                    Telephone: null,
+                    Country: null,
+                    Status: "Unknown",
+                    LastUpdated: null),
+
+                new User(
+                    Id: u1.ToString(),
+                    IdentityProviderId: null,
+                    Title: null,
+                    GivenName: "Y",
+                    FamilyName: "One",
+                    Email: "a@test.com",
+                    JobTitle: null,
+                    Organisation: null,
+                    Telephone: null,
+                    Country: null,
+                    Status: "Unknown",
+                    LastUpdated: null)
+            }
+            }
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUsersByIds(
+                It.IsAny<IEnumerable<string>>(),
+                It.IsAny<string?>(),
+                1,
+                int.MaxValue))
+            .ReturnsAsync(usersResponse);
+
+        // Act: sort by email asc => a@test.com then b@test.com, then take page 2 size 1 => b@test.com
+        var result = await Sut.MyOrganisationUsers(
+            rtsId,
+            searchQuery: null,
+            pageNumber: 2,
+            pageSize: 1,
+            sortField: "email",
+            sortDirection: "asc");
+
+        // Assert
+        var model = result.ShouldBeOfType<ViewResult>()
+            .Model.ShouldBeOfType<SponsorMyOrganisationUsersViewModel>();
+
+        model.Users.Count().ShouldBe(1);
+        model.Users.Single().Email.ShouldBe("b@test.com");
+    }
+
+    // Add these tests into your existing MyOrganisationsControllerTests class Covers
+    // GetSponsorRole() and GetIsAuthoriser() fallback behaviour + sorting
+
+    [Fact]
+    public async Task MyOrganisationUsers_when_user_id_is_not_a_guid_sponsorrole_sort_treats_role_as_empty()
+    {
+        // Arrange
+        var rtsId = "87765";
+        SetUser(Guid.NewGuid(), DefaultEmail);
+
+        var validUserId = Guid.NewGuid();
+
+        var sponsorOrg = new SponsorOrganisationDto
+        {
+            Id = Guid.NewGuid(),
+            IsActive = true,
+            CreatedDate = DateTime.UtcNow,
+            UpdatedDate = DateTime.UtcNow,
+            Users = new List<SponsorOrganisationUserDto>
+        {
+            // calling user membership
+            new()
+            {
+                Id = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
+                Email = DefaultEmail,
+                IsActive = true,
+                SponsorRole = "Member",
+                IsAuthoriser = false
+            },
+
+            // Valid user has a role
+            new()
+            {
+                Id = Guid.NewGuid(),
+                UserId = validUserId,
+                Email = "valid@test.com",
+                IsActive = true,
+                SponsorRole = "Admin",
+                IsAuthoriser = false
+            }
+        }
+        };
+
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail, sponsorOrganisation: sponsorOrg);
+
+        // One user has a non-GUID Id => TryUserId fails => role becomes ""
+        var usersResponse = new ServiceResponse<UsersResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new UsersResponse
+            {
+                TotalCount = 2,
+                Users = new[]
+                {
+                new User(
+                    Id: "NOT-A-GUID",
+                    IdentityProviderId: null,
+                    Title: null,
+                    GivenName: "Bad",
+                    FamilyName: "Id",
+                    Email: "bad@test.com",
+                    JobTitle: null,
+                    Organisation: null,
+                    Telephone: null,
+                    Country: null,
+                    Status: "Unknown",
+                    LastUpdated: null),
+
+                new User(
+                    Id: validUserId.ToString(),
+                    IdentityProviderId: null,
+                    Title: null,
+                    GivenName: "Good",
+                    FamilyName: "User",
+                    Email: "valid@test.com",
+                    JobTitle: null,
+                    Organisation: null,
+                    Telephone: null,
+                    Country: null,
+                    Status: "Unknown",
+                    LastUpdated: null)
+            }
+            }
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUsersByIds(It.IsAny<IEnumerable<string>>(), It.IsAny<string?>(), 1, int.MaxValue))
+            .ReturnsAsync(usersResponse);
+
+        // Act: sponsorrole asc => "" should sort before "Admin"
+        var result = await Sut.MyOrganisationUsers(
+            rtsId,
+            searchQuery: null,
+            pageNumber: 1,
+            pageSize: 20,
+            sortField: "sponsorrole",
+            sortDirection: "asc");
+
+        // Assert
+        var model = result.ShouldBeOfType<ViewResult>()
+            .Model.ShouldBeOfType<SponsorMyOrganisationUsersViewModel>();
+
+        model.Users.Select(u => u.Id).ShouldBe(new[] { "NOT-A-GUID", validUserId.ToString() });
+    }
+
+    [Fact]
+    public async Task MyOrganisationUsers_when_user_missing_from_sponsor_org_dtos_sponsorrole_sort_treats_role_as_empty()
+    {
+        // Arrange
+        var rtsId = "87765";
+        SetUser(Guid.NewGuid(), DefaultEmail);
+
+        var inOrgId = Guid.NewGuid();
+        var notInOrgId = Guid.NewGuid();
+
+        var sponsorOrg = new SponsorOrganisationDto
+        {
+            Id = Guid.NewGuid(),
+            IsActive = true,
+            CreatedDate = DateTime.UtcNow,
+            UpdatedDate = DateTime.UtcNow,
+            Users = new List<SponsorOrganisationUserDto>
+        {
+            // calling user membership
+            new()
+            {
+                Id = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
+                Email = DefaultEmail,
+                IsActive = true,
+                SponsorRole = "Member",
+                IsAuthoriser = false
+            },
+
+            // Only this user is present in DTOs with a role
+            new()
+            {
+                Id = Guid.NewGuid(),
+                UserId = inOrgId,
+                Email = "inorg@test.com",
+                IsActive = true,
+                SponsorRole = "Member",
+                IsAuthoriser = false
+            }
+        }
+        };
+
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail, sponsorOrganisation: sponsorOrg);
+
+        // Service returns a user that has no matching SponsorOrganisationUserDto => role becomes ""
+        var usersResponse = new ServiceResponse<UsersResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new UsersResponse
+            {
+                TotalCount = 2,
+                Users = new[]
+                {
+                new User(
+                    Id: inOrgId.ToString(),
+                    IdentityProviderId: null,
+                    Title: null,
+                    GivenName: "In",
+                    FamilyName: "Org",
+                    Email: "inorg@test.com",
+                    JobTitle: null,
+                    Organisation: null,
+                    Telephone: null,
+                    Country: null,
+                    Status: "Unknown",
+                    LastUpdated: null),
+
+                new User(
+                    Id: notInOrgId.ToString(),
+                    IdentityProviderId: null,
+                    Title: null,
+                    GivenName: "Not",
+                    FamilyName: "InOrg",
+                    Email: "notinorg@test.com",
+                    JobTitle: null,
+                    Organisation: null,
+                    Telephone: null,
+                    Country: null,
+                    Status: "Unknown",
+                    LastUpdated: null)
+            }
+            }
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUsersByIds(It.IsAny<IEnumerable<string>>(), It.IsAny<string?>(), 1, int.MaxValue))
+            .ReturnsAsync(usersResponse);
+
+        // Act: sponsorrole desc => "Member" should come before ""
+        var result = await Sut.MyOrganisationUsers(
+            rtsId,
+            searchQuery: null,
+            pageNumber: 1,
+            pageSize: 20,
+            sortField: "sponsorrole",
+            sortDirection: "desc");
+
+        // Assert
+        var model = result.ShouldBeOfType<ViewResult>()
+            .Model.ShouldBeOfType<SponsorMyOrganisationUsersViewModel>();
+
+        model.Users.Select(u => u.Id).ShouldBe(new[] { inOrgId.ToString(), notInOrgId.ToString() });
+    }
+
+    [Fact]
+    public async Task MyOrganisationUsers_when_user_id_is_not_a_guid_isAuthoriser_sort_treats_as_false()
+    {
+        // Arrange
+        var rtsId = "87765";
+        SetUser(Guid.NewGuid(), DefaultEmail);
+
+        var authoriserId = Guid.NewGuid();
+
+        var sponsorOrg = new SponsorOrganisationDto
+        {
+            Id = Guid.NewGuid(),
+            IsActive = true,
+            CreatedDate = DateTime.UtcNow,
+            UpdatedDate = DateTime.UtcNow,
+            Users = new List<SponsorOrganisationUserDto>
+        {
+            // calling user membership
+            new()
+            {
+                Id = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
+                Email = DefaultEmail,
+                IsActive = true,
+                SponsorRole = "Member",
+                IsAuthoriser = false
+            },
+
+            // real authoriser
+            new()
+            {
+                Id = Guid.NewGuid(),
+                UserId = authoriserId,
+                Email = "auth@test.com",
+                IsActive = true,
+                SponsorRole = "Member",
+                IsAuthoriser = true
+            }
+        }
+        };
+
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail, sponsorOrganisation: sponsorOrg);
+
+        var usersResponse = new ServiceResponse<UsersResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new UsersResponse
+            {
+                TotalCount = 2,
+                Users = new[]
+                {
+                new User(
+                    Id: "NOT-A-GUID",
+                    IdentityProviderId: null,
+                    Title: null,
+                    GivenName: "Bad",
+                    FamilyName: "Id",
+                    Email: "bad@test.com",
+                    JobTitle: null,
+                    Organisation: null,
+                    Telephone: null,
+                    Country: null,
+                    Status: "Unknown",
+                    LastUpdated: null),
+
+                new User(
+                    Id: authoriserId.ToString(),
+                    IdentityProviderId: null,
+                    Title: null,
+                    GivenName: "Auth",
+                    FamilyName: "User",
+                    Email: "auth@test.com",
+                    JobTitle: null,
+                    Organisation: null,
+                    Telephone: null,
+                    Country: null,
+                    Status: "Unknown",
+                    LastUpdated: null)
+            }
+            }
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUsersByIds(It.IsAny<IEnumerable<string>>(), It.IsAny<string?>(), 1, int.MaxValue))
+            .ReturnsAsync(usersResponse);
+
+        // Act: isAuthoriser desc => true first, then false (non-guid treated false)
+        var result = await Sut.MyOrganisationUsers(
+            rtsId,
+            searchQuery: null,
+            pageNumber: 1,
+            pageSize: 20,
+            sortField: "isAuthoriser",
+            sortDirection: "desc");
+
+        // Assert
+        result.ShouldBeOfType<ViewResult>()
+            .Model.ShouldBeOfType<SponsorMyOrganisationUsersViewModel>();
+    }
+
+    [Fact]
+    public async Task MyOrganisationUsers_when_user_missing_from_sponsor_org_dtos_isAuthoriser_sort_treats_as_false()
+    {
+        // Arrange
+        var rtsId = "87765";
+        SetUser(Guid.NewGuid(), DefaultEmail);
+
+        var authoriserId = Guid.NewGuid();
+        var unknownId = Guid.NewGuid();
+
+        var sponsorOrg = new SponsorOrganisationDto
+        {
+            Id = Guid.NewGuid(),
+            IsActive = true,
+            CreatedDate = DateTime.UtcNow,
+            UpdatedDate = DateTime.UtcNow,
+            Users = new List<SponsorOrganisationUserDto>
+        {
+            // calling user membership
+            new()
+            {
+                Id = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
+                Email = DefaultEmail,
+                IsActive = true,
+                SponsorRole = "Member",
+                IsAuthoriser = false
+            },
+
+            // only this one has authoriser flag
+            new()
+            {
+                Id = Guid.NewGuid(),
+                UserId = authoriserId,
+                Email = "auth@test.com",
+                IsActive = true,
+                SponsorRole = "Member",
+                IsAuthoriser = true
+            }
+        }
+        };
+
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail, sponsorOrganisation: sponsorOrg);
+
+        // Service returns a user not present in sponsorOrg.Users => treated as false
+        var usersResponse = new ServiceResponse<UsersResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new UsersResponse
+            {
+                TotalCount = 2,
+                Users = new[]
+                {
+                new User(
+                    Id: unknownId.ToString(),
+                    IdentityProviderId: null,
+                    Title: null,
+                    GivenName: "Unknown",
+                    FamilyName: "User",
+                    Email: "unknown@test.com",
+                    JobTitle: null,
+                    Organisation: null,
+                    Telephone: null,
+                    Country: null,
+                    Status: "Unknown",
+                    LastUpdated: null),
+
+                new User(
+                    Id: authoriserId.ToString(),
+                    IdentityProviderId: null,
+                    Title: null,
+                    GivenName: "Auth",
+                    FamilyName: "User",
+                    Email: "auth@test.com",
+                    JobTitle: null,
+                    Organisation: null,
+                    Telephone: null,
+                    Country: null,
+                    Status: "Unknown",
+                    LastUpdated: null)
+            }
+            }
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUsersByIds(It.IsAny<IEnumerable<string>>(), It.IsAny<string?>(), 1, int.MaxValue))
+            .ReturnsAsync(usersResponse);
+
+        // Act: isAuthoriser asc => false first, then true
+        var result = await Sut.MyOrganisationUsers(
+            rtsId,
+            searchQuery: null,
+            pageNumber: 1,
+            pageSize: 20,
+            sortField: "isAuthoriser",
+            sortDirection: "asc");
+
+        // Assert
+        var model = result.ShouldBeOfType<ViewResult>()
+            .Model.ShouldBeOfType<SponsorMyOrganisationUsersViewModel>();
+
+        model.Users.Select(u => u.Id).ShouldBe(new[] { unknownId.ToString(), authoriserId.ToString() });
     }
 }
