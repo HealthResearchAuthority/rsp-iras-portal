@@ -20,6 +20,81 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
 {
     private readonly DefaultHttpContext _http;
 
+    private const string DefaultEmail = "dan.hulmston@test.com";
+
+    private void SetUser(Guid userId, string? email = DefaultEmail)
+    {
+        var claims = new List<Claim>
+    {
+        new(CustomClaimTypes.UserId, userId.ToString())
+    };
+
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            claims.Add(new Claim(ClaimTypes.Email, email));
+        }
+
+        _http.User = new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuth"));
+    }
+
+    private void SetupSponsorOrgContextSuccess(
+        string rtsId,
+        string email,
+        SponsorOrganisationDto? sponsorOrganisation = null,
+        OrganisationDto? rtsOrganisation = null)
+    {
+        rtsOrganisation ??= new OrganisationDto
+        {
+            Name = "Test Org",
+            CountryName = "United Kingdom"
+        };
+
+        sponsorOrganisation ??= new SponsorOrganisationDto
+        {
+            Id = Guid.NewGuid(),
+            IsActive = true,
+            CreatedDate = DateTime.UtcNow,
+            Users = new List<SponsorOrganisationUserDto>()
+        };
+
+        // Ensure the calling user is in the org AND active, with matching email
+        sponsorOrganisation.Users = new List<SponsorOrganisationUserDto>()
+        {
+            new()
+            {
+                Id = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
+                Email = email,
+                IsActive = true,
+                SponsorRole = "Member",
+                IsAuthoriser = false
+            }
+        };
+
+        var rtsResponse = new ServiceResponse<OrganisationDto>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = rtsOrganisation
+        };
+
+        var rbResponse = new ServiceResponse<AllSponsorOrganisationsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new AllSponsorOrganisationsResponse
+            {
+                SponsorOrganisations = new[] { sponsorOrganisation }
+            }
+        };
+
+        Mocker.GetMock<IRtsService>()
+            .Setup(s => s.GetOrganisation(rtsId))
+            .ReturnsAsync(rtsResponse);
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.GetSponsorOrganisationByRtsId(rtsId))
+            .ReturnsAsync(rbResponse);
+    }
+
     public MyOrganisationsControllerTests()
     {
         _http = new DefaultHttpContext
@@ -341,42 +416,35 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
                 Times.Never);
     }
 
-    [Theory]
-    [AutoData]
-    public async Task MyOrganisationProfile_ShouldReturnView_WhenOrganisationExists(
-        ClaimsPrincipal userClaims,
-        SponsorOrganisationDto sponsorOrganisation,
-        OrganisationDto rtsOrganisation)
+    [Fact]
+    public async Task MyOrganisationProfile_ShouldReturnView_WhenContextPasses()
     {
-        // Arrange
-        var gid = Guid.NewGuid();
+        var rtsId = "87765";
+        var userId = Guid.NewGuid();
+        SetUser(userId, DefaultEmail);
 
-        sponsorOrganisation.Users = new List<SponsorOrganisationUserDto>
-        {
-            new()
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail,
+            sponsorOrganisation: new SponsorOrganisationDto
             {
                 Id = Guid.NewGuid(),
-                UserId = gid
-            }
-        };
+                IsActive = true,
+                CreatedDate = DateTime.UtcNow,
+                UpdatedDate = DateTime.UtcNow,
+                Users = new List<SponsorOrganisationUserDto>()
+            },
+            rtsOrganisation: new OrganisationDto
+            {
+                Name = "Acme Sponsor Org",
+                CountryName = "UK"
+            });
 
-        var rtsResponse = new ServiceResponse<OrganisationDto>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = rtsOrganisation
-        };
+        var result = await Sut.MyOrganisationProfile(rtsId);
 
-        Mocker.GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisation(It.IsAny<string>()))
-            .ReturnsAsync(rtsResponse);
+        var view = result.ShouldBeOfType<ViewResult>();
+        var model = view.Model.ShouldBeOfType<SponsorMyOrganisationProfileViewModel>();
 
-        _http.User = userClaims;
-
-        // Act
-        var result = await Sut.MyOrganisationProfile(gid.ToString());
-
-        // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
+        model.RtsId.ShouldBe(rtsId);
+        model.Name.ShouldBe("Acme Sponsor Org");
     }
 
     [Theory, AutoData]
@@ -405,42 +473,122 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         statusResult.StatusCode.ShouldBe(400);
     }
 
-    [Theory]
-    [AutoData]
-    public async Task MyOrganisationProjects_ShouldReturnView_WhenOrganisationExists(
-        ClaimsPrincipal userClaims,
-        SponsorOrganisationDto sponsorOrganisation,
-        OrganisationDto rtsOrganisation)
+    [Fact]
+    public async Task MyOrganisationProfile_ShouldForbid_WhenEmailClaimMissing()
     {
-        // Arrange
-        var gid = Guid.NewGuid();
+        var rtsId = "87765";
+        SetUser(Guid.NewGuid(), email: null);
 
-        sponsorOrganisation.Users = new List<SponsorOrganisationUserDto>
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail); // context has org info but user has no email claim
+
+        var result = await Sut.MyOrganisationProfile(rtsId);
+
+        result.ShouldBeOfType<ForbidResult>();
+    }
+
+    [Fact]
+    public async Task MyOrganisationProfile_ShouldForbid_WhenUserNotInOrgOrDisabled()
+    {
+        var rtsId = "87765";
+        var email = "user@test.com";
+        SetUser(Guid.NewGuid(), email);
+
+        var sponsorOrg = new SponsorOrganisationDto
         {
-            new()
+            Id = Guid.NewGuid(),
+            IsActive = false,
+            CreatedDate = DateTime.UtcNow,
+            Users = new List<SponsorOrganisationUserDto>
             {
-                Id = Guid.NewGuid(),
-                UserId = gid
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = Guid.NewGuid(),
+                    Email = email,
+                    IsActive = false // disabled membership
+                }
             }
         };
 
-        var rtsResponse = new ServiceResponse<OrganisationDto>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = rtsOrganisation
-        };
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail, sponsorOrganisation: sponsorOrg);
+
+        var result = await Sut.MyOrganisationProfile(rtsId);
+
+        result.ShouldBeOfType<ForbidResult>();
+    }
+
+    [Fact]
+    public async Task MyOrganisationProfile_ShouldReturnNotFound_WhenSponsorOrganisationMissing()
+    {
+        var rtsId = "87765";
+        SetUser(Guid.NewGuid(), DefaultEmail);
 
         Mocker.GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisation(It.IsAny<string>()))
-            .ReturnsAsync(rtsResponse);
+            .Setup(s => s.GetOrganisation(rtsId))
+            .ReturnsAsync(new ServiceResponse<OrganisationDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new OrganisationDto { Name = "Org", CountryName = "UK" }
+            });
 
-        _http.User = userClaims;
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.GetSponsorOrganisationByRtsId(rtsId))
+            .ReturnsAsync(new ServiceResponse<AllSponsorOrganisationsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new AllSponsorOrganisationsResponse
+                {
+                    SponsorOrganisations = Array.Empty<SponsorOrganisationDto>()
+                }
+            });
 
-        // Act
-        var result = await Sut.MyOrganisationProjects(gid.ToString());
+        var result = await Sut.MyOrganisationProfile(rtsId);
 
-        // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
+        result.ShouldBeOfType<NotFoundResult>();
+    }
+
+    [Fact]
+    public async Task MyOrganisationProfile_ShouldReturnServiceError_WhenSponsorOrgServiceFails()
+    {
+        var rtsId = "87765";
+        SetUser(Guid.NewGuid(), DefaultEmail);
+
+        Mocker.GetMock<IRtsService>()
+            .Setup(s => s.GetOrganisation(rtsId))
+            .ReturnsAsync(new ServiceResponse<OrganisationDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new OrganisationDto { Name = "Org", CountryName = "UK" }
+            });
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.GetSponsorOrganisationByRtsId(rtsId))
+            .ReturnsAsync(new ServiceResponse<AllSponsorOrganisationsResponse>
+            {
+                StatusCode = HttpStatusCode.BadRequest
+            });
+
+        var result = await Sut.MyOrganisationProfile(rtsId);
+
+        result.ShouldBeOfType<StatusCodeResult>().StatusCode.ShouldBe(400);
+    }
+
+    [Fact]
+    public async Task MyOrganisationProjects_ShouldReturnView_WhenContextPasses()
+    {
+        var rtsId = "87765";
+        SetUser(Guid.NewGuid(), DefaultEmail);
+
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail,
+            rtsOrganisation: new OrganisationDto { Name = "Project Org", CountryName = "UK" });
+
+        var result = await Sut.MyOrganisationProjects(rtsId);
+
+        var view = result.ShouldBeOfType<ViewResult>();
+        var model = view.Model.ShouldBeOfType<SponsorMyOrganisationProfileViewModel>();
+
+        model.RtsId.ShouldBe(rtsId);
+        model.Name.ShouldBe("Project Org");
     }
 
     [Theory, AutoData]
@@ -469,44 +617,6 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         statusResult.StatusCode.ShouldBe(400);
     }
 
-    [Theory]
-    [AutoData]
-    public async Task MyOrganisationUsers_ShouldReturnView_WhenOrganisationExists(
-        ClaimsPrincipal userClaims,
-        SponsorOrganisationDto sponsorOrganisation,
-        OrganisationDto rtsOrganisation)
-    {
-        // Arrange
-        var gid = Guid.NewGuid();
-
-        sponsorOrganisation.Users = new List<SponsorOrganisationUserDto>
-        {
-            new()
-            {
-                Id = Guid.NewGuid(),
-                UserId = gid
-            }
-        };
-
-        var rtsResponse = new ServiceResponse<OrganisationDto>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = rtsOrganisation
-        };
-
-        Mocker.GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisation(It.IsAny<string>()))
-            .ReturnsAsync(rtsResponse);
-
-        _http.User = userClaims;
-
-        // Act
-        var result = await Sut.MyOrganisationUsers(gid.ToString());
-
-        // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-    }
-
     [Theory, AutoData]
     public async Task MyOrganisationUsers_ShouldReturnServiceError_WhenRtsFails(
         ClaimsPrincipal userClaims
@@ -533,44 +643,6 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         statusResult.StatusCode.ShouldBe(400);
     }
 
-    [Theory]
-    [AutoData]
-    public async Task MyOrganisationAuditTrail_ShouldReturnView_WhenOrganisationExists(
-        ClaimsPrincipal userClaims,
-        SponsorOrganisationDto sponsorOrganisation,
-        OrganisationDto rtsOrganisation)
-    {
-        // Arrange
-        var gid = Guid.NewGuid();
-
-        sponsorOrganisation.Users = new List<SponsorOrganisationUserDto>
-        {
-            new()
-            {
-                Id = Guid.NewGuid(),
-                UserId = gid
-            }
-        };
-
-        var rtsResponse = new ServiceResponse<OrganisationDto>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = rtsOrganisation
-        };
-
-        Mocker.GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisation(It.IsAny<string>()))
-            .ReturnsAsync(rtsResponse);
-
-        _http.User = userClaims;
-
-        // Act
-        var result = await Sut.MyOrganisationAuditTrail(gid.ToString());
-
-        // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-    }
-
     [Theory, AutoData]
     public async Task MyOrganisationAuditTrail_ShouldReturnServiceError_WhenRtsFails(
         ClaimsPrincipal userClaims
@@ -595,5 +667,23 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         // Assert
         var statusResult = result.ShouldBeOfType<StatusCodeResult>();
         statusResult.StatusCode.ShouldBe(400);
+    }
+
+    [Fact]
+    public async Task MyOrganisationAuditTrail_ShouldReturnView_WhenContextPasses()
+    {
+        var rtsId = "87765";
+        SetUser(Guid.NewGuid(), DefaultEmail);
+
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail,
+            rtsOrganisation: new OrganisationDto { Name = "Audit Org", CountryName = "UK" });
+
+        var result = await Sut.MyOrganisationAuditTrail(rtsId);
+
+        var view = result.ShouldBeOfType<ViewResult>();
+        var model = view.Model.ShouldBeOfType<SponsorMyOrganisationProfileViewModel>();
+
+        model.RtsId.ShouldBe(rtsId);
+        model.Name.ShouldBe("Audit Org");
     }
 }
