@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
@@ -10,6 +11,8 @@ using Rsp.IrasPortal.Domain.AccessControl;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Features.SponsorWorkspace.MyOrganisations.Models;
+using Rsp.IrasPortal.Web.Models;
+using static Rsp.IrasPortal.Web.Extensions.PaginationViewModelExtensions;
 
 namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace.MyOrganisations.Controllers;
 
@@ -20,7 +23,8 @@ namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace.MyOrganisations.Controlle
 [Route("sponsorworkspace/[action]", Name = "sws:[action]")]
 public class MyOrganisationsController(
     ISponsorOrganisationService sponsorOrganisationService,
-    IRtsService rtsService
+    IRtsService rtsService,
+    IUserManagementService userService
 ) : Controller
 {
     [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Search)]
@@ -65,9 +69,9 @@ public class MyOrganisationsController(
     [HttpPost]
     [CmsContentAction(nameof(Index))]
     public Task<IActionResult> SearchMyOrganisations(
-    SponsorMyOrganisationsViewModel model,
-    string? sortField = "SponsorOrganisationName",
-    string? sortDirection = "asc")
+        SponsorMyOrganisationsViewModel model,
+        string? sortField = "SponsorOrganisationName",
+        string? sortDirection = "asc")
     {
         HttpContext.Session.SetString(
             SessionKeys.SponsorMyOrganisationsSearch,
@@ -89,16 +93,17 @@ public class MyOrganisationsController(
     {
         ViewBag.Active = MyOrganisationProfileOverview.Profile;
 
-        var rtsResponse = await rtsService.GetOrganisation(rtsId);
-
-        if (!rtsResponse.IsSuccessStatusCode)
+        var ctxResult = await TryGetSponsorOrgContext(rtsId);
+        if (ctxResult.HasResult)
         {
-            return this.ServiceError(rtsResponse);
+            return ctxResult.Result!;
         }
 
-        var model = new SponsorMyOrganisationProfileViewModel()
+        var ctx = ctxResult.Context!;
+
+        var model = new SponsorMyOrganisationProfileViewModel
         {
-            Name = rtsResponse.Content?.Name,
+            Name = ctx.RtsOrganisation.Name,
             RtsId = rtsId
         };
 
@@ -111,16 +116,17 @@ public class MyOrganisationsController(
     {
         ViewBag.Active = MyOrganisationProfileOverview.Projects;
 
-        var rtsResponse = await rtsService.GetOrganisation(rtsId);
-
-        if (!rtsResponse.IsSuccessStatusCode)
+        var ctxResult = await TryGetSponsorOrgContext(rtsId);
+        if (ctxResult.HasResult)
         {
-            return this.ServiceError(rtsResponse);
+            return ctxResult.Result!;
         }
 
-        var model = new SponsorMyOrganisationProfileViewModel()
+        var ctx = ctxResult.Context!;
+
+        var model = new SponsorMyOrganisationProfileViewModel
         {
-            Name = rtsResponse.Content?.Name,
+            Name = ctx.RtsOrganisation.Name,
             RtsId = rtsId
         };
 
@@ -129,24 +135,154 @@ public class MyOrganisationsController(
 
     [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Users)]
     [HttpGet]
-    public async Task<IActionResult> MyOrganisationUsers(string rtsId)
+    public async Task<IActionResult> MyOrganisationUsers(string rtsId, string? searchQuery = null,
+        int pageNumber = 1, int pageSize = 20, string? sortField = "GivenName", string? sortDirection = "asc")
     {
         ViewBag.Active = MyOrganisationProfileOverview.Users;
 
-        var rtsResponse = await rtsService.GetOrganisation(rtsId);
-
-        if (!rtsResponse.IsSuccessStatusCode)
+        var ctxResult = await TryGetSponsorOrgContext(rtsId);
+        if (ctxResult.HasResult)
         {
-            return this.ServiceError(rtsResponse);
+            return ctxResult.Result!;
         }
 
-        var model = new SponsorMyOrganisationProfileViewModel()
+        var ctx = ctxResult.Context!;
+        var sponsorOrganisationDto = ctx.SponsorOrganisation;
+
+        var model = new SponsorMyOrganisationUsersViewModel
         {
-            Name = rtsResponse.Content?.Name,
-            RtsId = rtsId
+            Name = ctx.RtsOrganisation.Name,
+            RtsId = rtsId,
+            SponsorOrganisation = new SponsorOrganisationModel
+            {
+                Id = sponsorOrganisationDto.Id,
+                RtsId = rtsId,
+                SponsorOrganisationName = ctx.RtsOrganisation.Name,
+                Countries = [ctx.RtsOrganisation.CountryName],
+                IsActive = sponsorOrganisationDto.IsActive,
+                UpdatedDate = sponsorOrganisationDto.UpdatedDate ?? sponsorOrganisationDto.CreatedDate,
+                Users = sponsorOrganisationDto.Users
+            }
         };
 
+        var totalUserCount = 0;
+
+        if (sponsorOrganisationDto.Users?.Any() == true)
+        {
+            var userIds = sponsorOrganisationDto.Users.Select(x => x.UserId.ToString());
+            var users = await userService.GetUsersByIds(userIds, searchQuery, 1, int.MaxValue);
+            model.Users = users.Content?.Users.Select(u => new UserViewModel(u)) ?? [];
+            totalUserCount = users.Content?.TotalCount ?? 0;
+        }
+
+        model.Users = SortSponsorOrganisationUsers(model.Users, model.SponsorOrganisation.Users, sortField,
+            sortDirection, pageNumber, pageSize);
+
+        model.Pagination = BuildPagination(pageNumber, pageSize, totalUserCount, "sws:myorganisationusers",
+            sortField, sortDirection,
+            new Dictionary<string, string> { { "rtsId", rtsId }, { "searchQuery", searchQuery ?? string.Empty } });
+        model.Pagination.SearchQuery = searchQuery;
+
         return View(model);
+    }
+
+    [NonAction]
+    private static IEnumerable<UserViewModel> SortSponsorOrganisationUsers(
+        IEnumerable<UserViewModel> users,
+        IEnumerable<SponsorOrganisationUserDto>? sponsorOrganisationUserDtos,
+        string? sortField,
+        string? sortDirection,
+        int pageNumber = 1,
+        int pageSize = 20)
+    {
+        var list = users as IList<UserViewModel> ?? users.ToList();
+
+        // Latest DTO per user (swap g.Last() for a deterministic "latest" if you have a timestamp/sequence)
+        var latestByUserId = sponsorOrganisationUserDtos?
+                                 .GroupBy(x => x.UserId)
+                                 .ToDictionary(g => g.Key, g => g.Last())
+                             ?? new Dictionary<Guid, SponsorOrganisationUserDto>();
+
+        var statusByUserId = latestByUserId.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.IsActive);
+        var roleByUserId = latestByUserId.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.SponsorRole);
+        var authoriserByUserId = latestByUserId.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.IsAuthoriser);
+
+        // Optional: keep your Status mapping
+        foreach (var u in list)
+        {
+            if (TryUserId(u, out var gid) && statusByUserId.TryGetValue(gid, out var active))
+            {
+                u.Status = active ? "Active" : "Disabled";
+            }
+        }
+
+        var desc = string.Equals(sortDirection, "desc", StringComparison.OrdinalIgnoreCase);
+        var field = sortField?.ToLowerInvariant() ?? string.Empty;
+
+        IOrderedEnumerable<UserViewModel> ordered;
+
+        // Primary sort
+        if (field == "status")
+        {
+            // ASC: Active first, DESC: Disabled first
+            ordered = desc
+                ? list.OrderBy(IsActive) // false (disabled) first
+                : list.OrderByDescending(IsActive); // true (active) first
+        }
+        else if (field == "sponsorrole")
+        {
+            ordered = desc
+                ? list.OrderByDescending(GetSponsorRole, StringComparer.OrdinalIgnoreCase)
+                : list.OrderBy(GetSponsorRole, StringComparer.OrdinalIgnoreCase);
+        }
+        else if (field == "isauthoriser")
+        {
+            ordered = desc
+                ? list.OrderByDescending(GetIsAuthoriser)
+                : list.OrderBy(GetIsAuthoriser);
+        }
+        else
+        {
+            Func<UserViewModel, string> key = field switch
+            {
+                "email" => x => x.Email ?? string.Empty,
+                _ => x => x.GivenName ?? string.Empty
+            };
+
+            ordered = desc
+                ? list.OrderByDescending(key, StringComparer.OrdinalIgnoreCase)
+                : list.OrderBy(key, StringComparer.OrdinalIgnoreCase);
+        }
+
+        // Pagination
+        pageNumber = Math.Max(1, pageNumber);
+        pageSize = Math.Max(1, pageSize);
+
+        var skip = (pageNumber - 1) * pageSize;
+        return ordered.Skip(skip).Take(pageSize);
+
+        // ---- helpers ----
+        static bool TryUserId(UserViewModel u, out Guid id)
+        {
+            return Guid.TryParse(u.Id?.Trim(), out id);
+        }
+
+        bool IsActive(UserViewModel u)
+        {
+            return TryUserId(u, out var g) && statusByUserId.TryGetValue(g, out var a) && a;
+        }
+
+        string GetSponsorRole(UserViewModel u)
+        {
+            return TryUserId(u, out var g) && roleByUserId.TryGetValue(g, out var role)
+                ? role ?? string.Empty
+                : string.Empty;
+        }
+
+        bool GetIsAuthoriser(UserViewModel u)
+        {
+            return TryUserId(u, out var g) && authoriserByUserId.TryGetValue(g, out var a) && a;
+        }
     }
 
     [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Audit)]
@@ -155,19 +291,78 @@ public class MyOrganisationsController(
     {
         ViewBag.Active = MyOrganisationProfileOverview.Audit;
 
-        var rtsResponse = await rtsService.GetOrganisation(rtsId);
-
-        if (!rtsResponse.IsSuccessStatusCode)
+        var ctxResult = await TryGetSponsorOrgContext(rtsId);
+        if (ctxResult.HasResult)
         {
-            return this.ServiceError(rtsResponse);
+            return ctxResult.Result!;
         }
 
-        var model = new SponsorMyOrganisationProfileViewModel()
+        var ctx = ctxResult.Context!;
+
+        var model = new SponsorMyOrganisationProfileViewModel
         {
-            Name = rtsResponse.Content?.Name,
+            Name = ctx.RtsOrganisation.Name,
             RtsId = rtsId
         };
 
         return View(model);
+    }
+
+    [NonAction]
+    private async Task<SponsorOrgContextResult> TryGetSponsorOrgContext(string rtsId)
+    {
+        var rtsResponse = await rtsService.GetOrganisation(rtsId);
+        if (!rtsResponse.IsSuccessStatusCode)
+        {
+            return new SponsorOrgContextResult(null, this.ServiceError(rtsResponse));
+        }
+
+        var rbResponse = await sponsorOrganisationService.GetSponsorOrganisationByRtsId(rtsId);
+        if (!rbResponse.IsSuccessStatusCode)
+        {
+            return new SponsorOrgContextResult(null, this.ServiceError(rbResponse));
+        }
+
+        var sponsorOrganisationDto = rbResponse.Content?.SponsorOrganisations?.FirstOrDefault();
+        if (sponsorOrganisationDto is null || rtsResponse.Content is null)
+        {
+            return new SponsorOrgContextResult(null, NotFound());
+        }
+
+        var email =
+            User.FindFirstValue(ClaimTypes.Email) ??
+            User.FindFirstValue("email");
+
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            // 403 -> /error/statuscode -> Forbidden()
+            return new SponsorOrgContextResult(null, Forbid());
+        }
+
+        var inOrgAndEnabled = sponsorOrganisationDto.Users?.Any(x =>
+            x.IsActive &&
+            string.Equals(x.Email, email, StringComparison.OrdinalIgnoreCase)
+        ) == true;
+
+        if (!inOrgAndEnabled)
+        {
+            // 403 -> /error/statuscode -> Forbidden()
+            return new SponsorOrgContextResult(null, Forbid());
+        }
+
+        var ctx = new SponsorOrgContext(rtsId, rtsResponse.Content, sponsorOrganisationDto);
+        return new SponsorOrgContextResult(ctx, null);
+    }
+
+    private sealed record SponsorOrgContext(
+        string RtsId,
+        OrganisationDto RtsOrganisation,
+        SponsorOrganisationDto SponsorOrganisation);
+
+    private sealed record SponsorOrgContextResult(
+        SponsorOrgContext? Context,
+        IActionResult? Result)
+    {
+        public bool HasResult => Result is not null;
     }
 }

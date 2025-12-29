@@ -13,6 +13,7 @@ using Rsp.IrasPortal.Domain.AccessControl;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
+using static Rsp.IrasPortal.Web.Extensions.PaginationViewModelExtensions;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
@@ -676,35 +677,6 @@ public class SponsorOrganisationsController(
 
         var skip = (pageNumber - 1) * pageSize;
         return sorted.Skip(skip).Take(pageSize);
-    }
-
-    // Pagination builder with optional extras
-    [NonAction]
-    private static PaginationViewModel BuildPagination(
-        int pageNumber,
-        int pageSize,
-        int totalCount,
-        string routeName,
-        string? sortField,
-        string? sortDirection,
-        IDictionary<string, string>? extra = null)
-    {
-        var p = new PaginationViewModel(pageNumber, pageSize, totalCount)
-        {
-            RouteName = routeName,
-            SortField = sortField,
-            SortDirection = sortDirection
-        };
-
-        if (extra is not null)
-        {
-            foreach (var kv in extra)
-            {
-                p.AdditionalParameters[kv.Key] = kv.Value;
-            }
-        }
-
-        return p;
     }
 
     // Session restore + merge
