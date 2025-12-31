@@ -49,25 +49,6 @@ public class SponsorWorkspaceController
         {
             return this.ServiceError(sponsorOrganisationsResponse);
         }
-        // Handling multiple active sponsor organisations assigned to a single user is currently out of scope.
-        else if (sponsorOrganisationsResponse.Content?.Count() != 1)
-        {
-            return Forbid();
-        }
-
-        var organisationId = sponsorOrganisationsResponse.Content.Single().RtsId;
-        var rtsResponse = await rtsService.GetOrganisation(organisationId);
-
-        if (!rtsResponse.IsSuccessStatusCode)
-        {
-            return this.ServiceError(rtsResponse);
-        }
-
-        // TODO refactor to getting OrganisationUserDto from Iras instead of organisationDto
-        var sponsorOrganisationUserId = sponsorOrganisationsResponse.Content?.Single().Users?.Single(u => u.UserId.Equals(gid)).Id;
-
-        ViewBag.SponsorOrganisationName = rtsResponse.Content?.Name;
-        ViewBag.SponsorOrganisationUserId = sponsorOrganisationUserId;
 
         return View();
     }
