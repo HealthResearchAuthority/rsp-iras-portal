@@ -934,9 +934,6 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         model.Users.Single().Email.ShouldBe("b@test.com");
     }
 
-    // Add these tests into your existing MyOrganisationsControllerTests class Covers
-    // GetSponsorRole() and GetIsAuthoriser() fallback behaviour + sorting
-
     [Fact]
     public async Task MyOrganisationUsers_when_user_id_is_not_a_guid_sponsorrole_sort_treats_role_as_empty()
     {
@@ -1346,5 +1343,232 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
             .Model.ShouldBeOfType<SponsorMyOrganisationUsersViewModel>();
 
         model.Users.Select(u => u.Id).ShouldBe(new[] { unknownId.ToString(), authoriserId.ToString() });
+    }
+
+    [Fact]
+    public async Task MyOrganisationUsersAddUser_when_query_contains_SearchQuery_and_searchQuery_is_blank_adds_model_error_and_returns_view()
+    {
+        // Arrange
+        var rtsId = "87765";
+        SetUser(Guid.NewGuid(), DefaultEmail);
+
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail,
+            rtsOrganisation: new OrganisationDto { Name = "Acme Sponsor Org", CountryName = "UK" });
+
+        _http.Request.QueryString = new QueryString("?SearchQuery="); // key present
+
+        // Act
+        var result = await Sut.MyOrganisationUsersAddUser(rtsId, searchQuery: "");
+
+        // Assert
+        var view = result.ShouldBeOfType<ViewResult>();
+        var model = view.Model.ShouldBeOfType<SponsorMyOrganisationUsersViewModel>();
+
+        model.RtsId.ShouldBe(rtsId);
+        model.Name.ShouldBe("Acme Sponsor Org");
+
+        Sut.ModelState.ContainsKey("SearchQuery").ShouldBeTrue();
+        Sut.ModelState["SearchQuery"]!.Errors.Count.ShouldBe(1);
+        Sut.ModelState["SearchQuery"]!.Errors[0].ErrorMessage.ShouldBe("Enter a user email");
+
+        // Should not call SearchUsers
+        Mocker.GetMock<IUserManagementService>()
+            .Verify(s => s.SearchUsers(
+                    It.IsAny<string?>(),
+                    null,
+                    It.IsAny<int>(),
+                    It.IsAny<int>()),
+                Times.Never);
+    }
+
+    [Fact]
+    public async Task MyOrganisationUsersAddUser_when_query_does_not_contain_SearchQuery_returns_view_without_calling_user_service()
+    {
+        // Arrange
+        var rtsId = "87765";
+        SetUser(Guid.NewGuid(), DefaultEmail);
+
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail,
+            rtsOrganisation: new OrganisationDto { Name = "Acme Sponsor Org", CountryName = "UK" });
+
+        _http.Request.QueryString = QueryString.Empty; // key absent
+
+        // Act
+        var result = await Sut.MyOrganisationUsersAddUser(rtsId, searchQuery: null);
+
+        // Assert
+        var view = result.ShouldBeOfType<ViewResult>();
+        var model = view.Model.ShouldBeOfType<SponsorMyOrganisationUsersViewModel>();
+
+        model.RtsId.ShouldBe(rtsId);
+        model.Name.ShouldBe("Acme Sponsor Org");
+
+        Mocker.GetMock<IUserManagementService>()
+            .Verify(s => s.SearchUsers(
+                    It.IsAny<string?>(),
+                    null,
+                    It.IsAny<int>(),
+                    It.IsAny<int>()),
+                Times.Never);
+    }
+
+    [Fact]
+    public async Task MyOrganisationUsersAddUser_when_search_returns_exactly_one_user_redirects_to_add_user_role()
+    {
+        // Arrange
+        var rtsId = "87765";
+        SetUser(Guid.NewGuid(), DefaultEmail);
+
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail,
+            rtsOrganisation: new OrganisationDto { Name = "Acme Sponsor Org", CountryName = "UK" });
+
+        var searchQuery = "one@test.com";
+        _http.Request.QueryString = new QueryString($"?SearchQuery={Uri.EscapeDataString(searchQuery)}");
+
+        var usersResponse = new ServiceResponse<UsersResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new UsersResponse
+            {
+                TotalCount = 1,
+                Users = new[]
+                {
+                new User(
+                    Id: Guid.NewGuid().ToString(),
+                    IdentityProviderId: null,
+                    Title: null,
+                    GivenName: "One",
+                    FamilyName: "User",
+                    Email: searchQuery,
+                    JobTitle: null,
+                    Organisation: null,
+                    Telephone: null,
+                    Country: null,
+                    Status: "Active",
+                    LastUpdated: null)
+            }
+            }
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.SearchUsers(searchQuery, null, 1, 10))
+            .ReturnsAsync(usersResponse);
+
+        // Act
+        var result = await Sut.MyOrganisationUsersAddUser(rtsId, searchQuery);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe(nameof(MyOrganisationsController.MyOrganisationUsersAddUserRole));
+        redirect.RouteValues!["rtsId"].ShouldBe(rtsId);
+
+        Mocker.GetMock<IUserManagementService>()
+            .Verify(s => s.SearchUsers(searchQuery, null, 1, 10), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(2)]
+    [InlineData(10)]
+    public async Task MyOrganisationUsersAddUser_when_search_does_not_return_exactly_one_user_redirects_to_invalid_user(int totalCount)
+    {
+        // Arrange
+        var rtsId = "87765";
+        SetUser(Guid.NewGuid(), DefaultEmail);
+
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail,
+            rtsOrganisation: new OrganisationDto { Name = "Acme Sponsor Org", CountryName = "UK" });
+
+        var searchQuery = "multi@test.com";
+        _http.Request.QueryString = new QueryString($"?SearchQuery={Uri.EscapeDataString(searchQuery)}");
+
+        var usersResponse = new ServiceResponse<UsersResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new UsersResponse
+            {
+                TotalCount = totalCount,
+                Users = Array.Empty<User>()
+            }
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.SearchUsers(searchQuery, null, 1, 10))
+            .ReturnsAsync(usersResponse);
+
+        // Act
+        var result = await Sut.MyOrganisationUsersAddUser(rtsId, searchQuery);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe(nameof(MyOrganisationsController.MyOrganisationUsersInvalidUser));
+        redirect.RouteValues!["rtsId"].ShouldBe(rtsId);
+    }
+
+    [Fact]
+    public async Task MyOrganisationUsersAddUser_when_search_call_is_not_success_redirects_to_invalid_user()
+    {
+        // Arrange
+        var rtsId = "87765";
+        SetUser(Guid.NewGuid(), DefaultEmail);
+
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail,
+            rtsOrganisation: new OrganisationDto { Name = "Acme Sponsor Org", CountryName = "UK" });
+
+        var searchQuery = "fail@test.com";
+        _http.Request.QueryString = new QueryString($"?SearchQuery={Uri.EscapeDataString(searchQuery)}");
+
+        var usersResponse = new ServiceResponse<UsersResponse>
+        {
+            StatusCode = HttpStatusCode.BadRequest,
+            Content = new UsersResponse
+            {
+                TotalCount = 1, // even if 1, should not redirect to role because not success
+                Users = Array.Empty<User>()
+            }
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.SearchUsers(searchQuery, null, 1, 10))
+            .ReturnsAsync(usersResponse);
+
+        // Act
+        var result = await Sut.MyOrganisationUsersAddUser(rtsId, searchQuery);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe(nameof(MyOrganisationsController.MyOrganisationUsersInvalidUser));
+        redirect.RouteValues!["rtsId"].ShouldBe(rtsId);
+    }
+
+    [Fact]
+    public async Task MyOrganisationUsersInvalidUser_returns_view_with_model()
+    {
+        // Arrange
+        var rtsId = "87765";
+
+        // Act
+        var result = await Sut.MyOrganisationUsersInvalidUser(rtsId);
+
+        // Assert
+        var view = result.ShouldBeOfType<ViewResult>();
+        var model = view.Model.ShouldBeOfType<SponsorMyOrganisationUsersViewModel>();
+        model.RtsId.ShouldBe(rtsId);
+    }
+
+    [Fact]
+    public async Task MyOrganisationUsersAddUserRole_returns_view_with_model_and_userId_is_not_required_for_model()
+    {
+        // Arrange
+        var rtsId = "87765";
+        var userId = Guid.NewGuid().ToString();
+
+        // Act
+        var result = await Sut.MyOrganisationUsersAddUserRole(rtsId, userId);
+
+        // Assert
+        var view = result.ShouldBeOfType<ViewResult>();
+        var model = view.Model.ShouldBeOfType<SponsorMyOrganisationUsersViewModel>();
+        model.RtsId.ShouldBe(rtsId);
     }
 }

@@ -47,7 +47,7 @@ public class MyOrganisationsController(
         var request = new SponsorOrganisationSearchRequest
         {
             SearchQuery = model.Search.SearchTerm,
-            UserId = Guid.Parse(userId!)
+            UserId = Guid.Parse(userId!),
         };
 
         var response = await sponsorOrganisationService.GetAllSponsorOrganisations(
@@ -55,7 +55,15 @@ public class MyOrganisationsController(
 
         var items = response.Content?.SponsorOrganisations ?? Enumerable.Empty<SponsorOrganisationDto>();
 
-        model.MyOrganisations = items.SortSponsorOrganisations(sortField, sortDirection).ToList();
+        var filteredOrganisations = items
+            .Where(org =>
+                org.Users == null ||
+                !org.Users.Any(u =>
+                    u.UserId == Guid.Parse(userId) &&
+                    !u.IsActive))
+            .ToList();
+
+        model.MyOrganisations = filteredOrganisations.SortSponsorOrganisations(sortField, sortDirection).ToList();
         model.Pagination = new PaginationViewModel(1, int.MaxValue, 0)
         {
             SortDirection = sortDirection,
@@ -302,6 +310,66 @@ public class MyOrganisationsController(
         var model = new SponsorMyOrganisationProfileViewModel
         {
             Name = ctx.RtsOrganisation.Name,
+            RtsId = rtsId
+        };
+
+        return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> MyOrganisationUsersAddUser(string rtsId, string? searchQuery)
+    {
+        var ctxResult = await TryGetSponsorOrgContext(rtsId);
+        if (ctxResult.HasResult)
+        {
+            return ctxResult.Result!;
+        }
+
+        var ctx = ctxResult.Context!;
+
+        var model = new SponsorMyOrganisationUsersViewModel
+        {
+            Name = ctx.RtsOrganisation.Name,
+            RtsId = rtsId
+        };
+
+        if (Request.Query.ContainsKey("SearchQuery") && string.IsNullOrWhiteSpace(searchQuery))
+        {
+            ModelState.AddModelError("SearchQuery", "Enter a user email");
+            return View(model);
+        }
+
+        if (!Request.Query.ContainsKey("SearchQuery"))
+        {
+            return View(model);
+        }
+
+        var usersResponse = await userService.SearchUsers(searchQuery);
+
+        if (usersResponse is { IsSuccessStatusCode: true, Content.TotalCount: 1 })
+        {
+            return RedirectToAction(nameof(MyOrganisationUsersAddUserRole), new { rtsId });
+        }
+
+        return RedirectToAction(nameof(MyOrganisationUsersInvalidUser), new { rtsId });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> MyOrganisationUsersInvalidUser(string rtsId)
+    {
+        var model = new SponsorMyOrganisationUsersViewModel
+        {
+            RtsId = rtsId
+        };
+
+        return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> MyOrganisationUsersAddUserRole(string rtsId, string userId)
+    {
+        var model = new SponsorMyOrganisationUsersViewModel
+        {
             RtsId = rtsId
         };
 

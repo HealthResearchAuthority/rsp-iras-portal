@@ -49,7 +49,6 @@
     {
         return ViewData.ModelState.Values.Any(v => v.Errors.Count > 0);
     }
-
 }
 
 @if (TempData[TempDataKeys.ShowNotificationBanner] is not null)
@@ -98,7 +97,12 @@
             @{
                 ViewBag.Style = "govuk-button govuk-button--primary";
             }
-            <partial name="_SubmitButton" model="@("sws:addnewuser", "Add a user", new Dictionary<string, string>())"/>
+            <form method="get" class="govuk-form-group">
+                <input type="hidden" name="rtsId" value="@Model.RtsId" />
+
+                <partial name="_SubmitButton"
+                         model="@("sws:myorganisationusersadduser", "Add a user", new Dictionary<string, string>())"/>
+            </form>
         </div>
 
     </div>
