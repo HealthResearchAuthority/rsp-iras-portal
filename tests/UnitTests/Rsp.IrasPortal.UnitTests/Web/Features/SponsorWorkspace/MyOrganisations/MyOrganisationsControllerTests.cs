@@ -678,10 +678,21 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         SetupSponsorOrgContextSuccess(rtsId, DefaultEmail,
             rtsOrganisation: new OrganisationDto { Name = "Audit Org", CountryName = "UK" });
 
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.SponsorOrganisationAuditTrail(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<SponsorOrganisationAuditTrailResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new SponsorOrganisationAuditTrailResponse
+                {
+                    Items = Array.Empty<SponsorOrganisationAuditTrailDto>()
+                }
+            });
+
         var result = await Sut.MyOrganisationAuditTrail(rtsId);
 
         var view = result.ShouldBeOfType<ViewResult>();
-        var model = view.Model.ShouldBeOfType<SponsorMyOrganisationProfileViewModel>();
+        var model = view.Model.ShouldBeOfType<SponsorMyOrganisationAuditViewModel>();
 
         model.RtsId.ShouldBe(rtsId);
         model.Name.ShouldBe("Audit Org");
