@@ -1,4 +1,5 @@
 ﻿@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Application.DTOs
 @using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
 @using Rsp.IrasPortal.Web.Areas.Admin.Models
 @model SponsorOrganisationListUsersModel
@@ -8,12 +9,13 @@
 
     var sortableHeaders = new[]
     {
-        new { Field = nameof(UserViewModel.GivenName), Label = "First name" },
-        new { Field = nameof(UserViewModel.FamilyName), Label = "Last name" },
+        new { Field = nameof(UserViewModel.GivenName), Label = "Name" },
         new { Field = nameof(UserViewModel.Email), Label = "Email address" },
         new { Field = nameof(UserViewModel.Status), Label = "Status" },
-        new { Field = nameof(UserViewModel.CurrentLogin), Label = "Last logged in" }
+        new { Field = nameof(SponsorOrganisationUserDto.SponsorRole), Label = "Role" },
+        new { Field = nameof(SponsorOrganisationUserDto.IsAuthoriser),Label = "Authoriser" }
     };
+
     var tableId = "sponsorOrganisationTable";
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
@@ -79,7 +81,6 @@
 </div>
 
 <div class="govuk-grid-row">
-
     <div class="govuk-grid-column-two-thirds">
 
         <form method="get" class="govuk-form-group">
@@ -104,13 +105,13 @@
             <div class="search-filter-panel">
                 <details class="search-filter-toggle" @(HasFilterErrors() ? "open" : null)>
                     <summary class="search-filter-panel__header"
-                             tabindex="-1"
-                             role="button"
-                             aria-controls="filter-panel"
-                             aria-expanded="@(HasFilterErrors().ToString().ToLower())">
+                    tabindex="-1"
+                    role="button"
+                    aria-controls="filter-panel"
+                    aria-expanded="@(HasFilterErrors().ToString().ToLower())">
 
                         <span class="search-filter-panel__button-inner govuk-link"
-                              tabindex="0">
+                        tabindex="0">
                             Advanced filters
                         </span>
 
@@ -120,8 +121,6 @@
                     </summary>
 
                     <div class="search-filter-panel__content" id="filter-panel" role="region" aria-labelledby="toggle-filter">
-
-
                         <!-- Apply -->
                         <div class="search-filter-panel__actions">
                             <button class="govuk-button search-filter-panel__action search-filter-panel__action--submit">Apply filters</button>
@@ -135,31 +134,29 @@
     </div>
 </div>
 <div class="govuk-grid-row">
+    @if (Model.Users != null && Model.Users.Any())
+    {
+        <div class="govuk-grid-column-full">
+            <div class="govuk-table-wrapper">
 
-    <div class="govuk-grid-column-full">
-        @if (Model.Users != null && Model.Users.Any())
-        {
-            <div class="govuk-grid-column-full">
-                <div class="govuk-table-wrapper">
-
-                    <table class="govuk-table govuk-table-users">
-                        <thead>
+                <table class="govuk-table govuk-table-users">
+                    <thead>
                         <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
                             @foreach (var header in sortableHeaders)
                             {
                                 var sortableHeaderModel = new SortableHeaderModel
+                            {
+                                FieldName = header.Field,
+                                DisplayText = header.Label,
+                                CurrentSortField = Model.Pagination?.SortField,
+                                CurrentSortDirection = Model.Pagination?.SortDirection,
+                                TableId = tableId,
+                                AdditionalParameters = new Dictionary<string, string>
                                 {
-                                    FieldName = header.Field,
-                                    DisplayText = header.Label,
-                                    CurrentSortField = Model.Pagination?.SortField,
-                                    CurrentSortDirection = Model.Pagination?.SortDirection,
-                                    TableId = tableId,
-                                    AdditionalParameters = new Dictionary<string, string>
-                                    {
-                                        { "rtsId", Model.SponsorOrganisation.RtsId },
-                                        { "searchQuery", Model.Pagination.SearchQuery }
-                                    }
-                                };
+                                    { "rtsId", Model.SponsorOrganisation.RtsId },
+                                    { "searchQuery", Model.Pagination.SearchQuery }
+                                }
+                            };
 
                                 <th scope="col" class="govuk-table__header govuk-table__header-sortable">
                                     <partial name="_SortableHeaderButton" model="@sortableHeaderModel"/>
@@ -167,67 +164,57 @@
                             }
                             <th class="govuk-table__header">Action</th>
                         </tr>
-                        </thead>
-                        <tbody>
+                    </thead>
+                    <tbody>
                         @foreach (var user in Model.Users)
                         {
+                            var sponsorOrgUser = Model.SponsorOrganisation.Users.FirstOrDefault(x => x.UserId == Guid.Parse(user.Id!));
+                            var userRole = sponsorOrgUser != null ? sponsorOrgUser.SponsorRole.ToString() : "N/A";
+                            var authoriserText = sponsorOrgUser != null && sponsorOrgUser.IsAuthoriser ? "Yes" : "No";
+                            var statusClass = sponsorOrgUser != null && sponsorOrgUser.IsActive ? "govuk-tag--green" : "govuk-tag--red";
+                            var statusText = sponsorOrgUser != null && sponsorOrgUser.IsActive ? "Active" : "Disabled";
+
                             <tr class="govuk-table__row">
-                                <td class="govuk-table__cell">@user.GivenName</td>
-                                <td class="govuk-table__cell">@user.FamilyName</td>
-                                <td class="govuk-table__cell line-break-anywhere">@user.Email</td>
-                                <td class="govuk-table__cell">
-                                    @{
-                                        var sponsorOrganisationUserDto = Model.SponsorOrganisation.Users.FirstOrDefault(x => x.UserId == Guid.Parse(user.Id));
-                                        var statusClass = sponsorOrganisationUserDto.IsActive ? "govuk-tag--green" : "govuk-tag--red";
-                                        var statusText = sponsorOrganisationUserDto.IsActive ? "Active" : "Disabled";
-                                    }
-
-                                    <strong class="govuk-tag @statusClass">@statusText</strong>
-                                </td>
-                                <td class="govuk-table__cell">
-                                    @if (user.CurrentLogin.HasValue)
-                                    {
-                                        var dateString = user.CurrentLogin.Value.ToString("dd MMM yyyy");
-                                        var timeString = user.CurrentLogin.Value.ToString("hh:mm");
-                                        var amPm = user.CurrentLogin.Value.ToString("tt").ToLower();
-
-                                        var currentLoginDate = $"{dateString} at ";
-                                        var currentLoginTime = $"{timeString}{amPm}";
-
-                                        <p class="margin-zero">@currentLoginDate</p>
-                                        <p class="margin-zero">@currentLoginTime</p>
-                                    }
-                                </td>
-                                <td class="govuk-table__cell">
-                                    <a class="govuk-link"
-                                       asp-route="soc:viewsponsororganisationuser"
-                                       asp-route-rtsId="@Model.SponsorOrganisation.RtsId"
-                                       asp-route-userId="@user.Id">
-                                        View/edit
-                                    </a>
-                                </td>
-                            </tr>
-                        }
-                        </tbody>
-                    </table>
-                    <partial name="_Pagination" model="@Model.Pagination"/>
-                </div>
+                            <td class="govuk-table__cell">@user.GivenName @user.FamilyName</td>
+                            <td class="govuk-table__cell line-break-anywhere">@user.Email</td>
+                            <td class="govuk-table__cell">
+                                <strong class="govuk-tag @statusClass">@statusText</strong>
+                            </td>
+                            <td class="govuk-table__cell">
+                                @userRole.Substring(0, 1).ToUpper() + userRole.Substring(1).ToLower()
+                            </td>
+                            <td class="govuk-table__cell">
+                                @authoriserText
+                            </td>
+                            <td class="govuk-table__cell">
+                                <a class="govuk-link"
+                                    asp-route="soc:viewsponsororganisationuser"
+                                    asp-route-rtsId="@Model.SponsorOrganisation.RtsId"
+                                    asp-route-userId="@user.Id">
+                                    View/edit
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+                <partial name="_Pagination" model="@Model.Pagination"/>
             </div>
-        }
-        else if (!string.IsNullOrEmpty(Model.Pagination?.SearchQuery))
-        {
-            <div class="govuk-grid-row">
-                <div class="govuk-grid-column-two-thirds search-filter-error-border">
-                    <h2 class="govuk-heading-l">There are no matching results</h2>
-                    <p class="govuk-body">Improve your search results by:</p>
-                    <ul class="govuk-list govuk-list--bullet">
-                        <li>removing filters</li>
-                        <li>double-checking your spelling</li>
-                        <li>using fewer keywords</li>
-                        <li>searching for something less specific</li>
-                    </ul>
-                </div>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(Model.Pagination?.SearchQuery))
+    {
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds search-filter-error-border">
+                <h2 class="govuk-heading-l">There are no matching results</h2>
+                <p class="govuk-body">Improve your search results by:</p>
+                <ul class="govuk-list govuk-list--bullet">
+                    <li>removing filters</li>
+                    <li>double-checking your spelling</li>
+                    <li>using fewer keywords</li>
+                    <li>searching for something less specific</li>
+                </ul>
             </div>
-        }
-    </div>
+        </div>
+    }
 </div>

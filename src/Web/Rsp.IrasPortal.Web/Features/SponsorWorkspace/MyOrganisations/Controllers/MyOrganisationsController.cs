@@ -111,8 +111,11 @@ public class MyOrganisationsController(
 
         var model = new SponsorMyOrganisationProfileViewModel
         {
+            RtsId = rtsId,
             Name = ctx.RtsOrganisation.Name,
-            RtsId = rtsId
+            Country = ctx.RtsOrganisation.CountryName,
+            Address = ctx.RtsOrganisation.Address,
+            LastUpdated = ctx.SponsorOrganisation.UpdatedDate ?? ctx.SponsorOrganisation.CreatedDate ?? DateTime.MinValue
         };
 
         return View(model);
@@ -307,10 +310,19 @@ public class MyOrganisationsController(
 
         var ctx = ctxResult.Context!;
 
-        var model = new SponsorMyOrganisationProfileViewModel
+        var auditResponse = await sponsorOrganisationService.SponsorOrganisationAuditTrail(
+            rtsId, 1, int.MaxValue, "DateTimeStamp", SortDirections.Descending);
+
+        if (!auditResponse.IsSuccessStatusCode)
         {
+            return this.ServiceError(auditResponse);
+        }
+
+        var model = new SponsorMyOrganisationAuditViewModel
+        {
+            RtsId = rtsId,
             Name = ctx.RtsOrganisation.Name,
-            RtsId = rtsId
+            AuditTrails = auditResponse.Content!.Items.OrderByDescending(at => at.DateTimeStamp)
         };
 
         return View(model);
