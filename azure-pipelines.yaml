@@ -4,7 +4,11 @@ pool:
   name: "rsp-manageddevopspool"
 
 trigger:
-  - main
+  batch: true
+  branches:
+    include:
+      - main
+      - dev
 
 parameters:
   - name: env

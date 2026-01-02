@@ -1,27 +1,52 @@
 ﻿@using Rsp.IrasPortal.Application.Constants
 @model Rsp.IrasPortal.Web.Features.Modifications.Models.ModificationDetailsViewModel
-@{
-    var activeTab = Context.Request.Query["documents"].ToString();
+
+@{    
+    var queryDocuments = Context.Request.Query["documents"].ToString();    
+    bool isNotOnlyApplicant = User.IsInRole(Roles.Sponsor)
+                       || User.IsInRole(Roles.StudyWideReviewer)
+                       || User.IsInRole(Roles.TeamManager)
+                       || User.IsInRole(Roles.SystemAdministrator)
+                       || User.IsInRole(Roles.OrganisationAdministrator)
+                       || User.IsInRole(Roles.WorkflowCoordinator);
+    
+    string activeTabId =
+        queryDocuments == ModificationOverview.Documents ? "documents-tab" :
+        isNotOnlyApplicant ? "sponsor-details-tab" : "modifications-changes-tab";
 }
 
 <!-- Hidden controls -->
-<authorized role-is="@Roles.Applicant">
-    <input type="radio" id="tab-modifications-changes" name="tab-toggle" class="govuk-tab-toggle" checked>
-    <input type="radio" id="tab-sponsor-details" name="tab-toggle" class="govuk-tab-toggle">
-</authorized>
-<authorized role-in="@([Roles.Sponsor, Roles.StudyWideReviewer, Roles.TeamManager, Roles.WorkflowCoordinator])">
-    <input type="radio" id="tab-sponsor-details" name="tab-toggle" class="govuk-tab-toggle" checked>
-    <input type="radio" id="tab-modifications-changes" name="tab-toggle" class="govuk-tab-toggle">
-</authorized>
-<input type="radio" id="tab-documents" name="tab-toggle" class="govuk-tab-toggle">
-<input type="radio" id="tab-history" name="tab-toggle" class="govuk-tab-toggle">
-@if (activeTab == ModificationOverview.Documents)
-{
-    <input type="radio" id="tab-documents" name="tab-toggle" class="govuk-tab-toggle" checked>
-}
+<input type="radio"
+       id="tab-sponsor-details"
+       role="tab"
+       name="tab-toggle"
+       class="govuk-tab-toggle"
+       aria-label="@ModificationOverview.SponsorDetails"
+       @(activeTabId == "sponsor-details-tab" ? "checked" : null)>
+<input type="radio"
+       id="tab-modifications-changes"
+       role="tab"
+       name="tab-toggle"
+       class="govuk-tab-toggle"
+       aria-label="@ModificationOverview.ModificationDetails"
+       @(activeTabId == "modifications-changes-tab" ? "checked" : null)>
+<input type="radio"
+       id="tab-documents"
+       role="tab"
+       name="tab-toggle"
+       class="govuk-tab-toggle"
+       aria-label="@ModificationOverview.Documents"
+       @(activeTabId == "documents-tab" ? "checked" : null)>
+<input type="radio"
+       id="tab-history"
+       role="tab"
+       name="tab-toggle"
+       class="govuk-tab-toggle"
+       aria-label="@ModificationOverview.History"
+       @(activeTabId == "history-tab" ? "checked" : null)>
 
 <!-- Keep the same GOV.UK Service Navigation look -->
-<div class="govuk-service-navigation">
+<div class="govuk-service-navigation" aria-hidden="true">
     <div class="govuk-width-container">
         <div class="govuk-service-navigation__container">
             <nav class="govuk-service-navigation__wrapper">

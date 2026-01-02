@@ -13,6 +13,7 @@ using Rsp.IrasPortal.Domain.AccessControl;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Models;
+using static Rsp.IrasPortal.Web.Extensions.PaginationViewModelExtensions;
 
 namespace Rsp.IrasPortal.Web.Controllers;
 
@@ -25,7 +26,7 @@ public class SponsorOrganisationsController(
 ) : Controller
 {
     /// <summary>
-    ///     Displays a list of sponsor organisations
+    /// Displays a list of sponsor organisations
     /// </summary>
     [HttpGet]
     [HttpPost]
@@ -58,7 +59,7 @@ public class SponsorOrganisationsController(
             request, 1, int.MaxValue, sortField, sortDirection);
 
         var items = response.Content?.SponsorOrganisations ?? Enumerable.Empty<SponsorOrganisationDto>();
-        var sorted = SortSponsorOrganisations(items, sortField, sortDirection, pageNumber, pageSize).ToList();
+        var sorted = items.SortSponsorOrganisations(sortField, sortDirection, pageNumber, pageSize).ToList();
         var total = response.Content?.TotalCount ?? 0;
 
         var viewModel = new SponsorOrganisationSearchViewModel
@@ -102,7 +103,9 @@ public class SponsorOrganisationsController(
         return Task.FromResult(result);
     }
 
-    /// <summary>Displays the empty review body to create</summary>
+    /// <summary>
+    /// Displays the empty review body to create
+    /// </summary>
     [HttpGet]
     [Route("/sponsororganisations/setup", Name = "soc:setupsponsororganisation")]
     public IActionResult SetupSponsorOrganisation()
@@ -110,7 +113,9 @@ public class SponsorOrganisationsController(
         return View("SetupSponsorOrganisation", new SponsorOrganisationSetupViewModel());
     }
 
-    /// <summary>Check sponsor organisation details</summary>
+    /// <summary>
+    /// Check sponsor organisation details
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Route("/sponsororganisations/check", Name = "soc:checksponsororganisation")]
@@ -169,7 +174,9 @@ public class SponsorOrganisationsController(
         return View("SetupSponsorOrganisation", model);
     }
 
-    /// <summary>Displays the confirmation page</summary>
+    /// <summary>
+    /// Displays the confirmation page
+    /// </summary>
     [HttpGet]
     [Route("/sponsororganisations/confirm", Name = "soc:sponsororganisation")]
     public IActionResult ConfirmSponsorOrganisation(SponsorOrganisationModel model)
@@ -177,7 +184,9 @@ public class SponsorOrganisationsController(
         return View("ConfirmSponsorOrganisation", model);
     }
 
-    /// <summary>Save sponsor organisation</summary>
+    /// <summary>
+    /// Save sponsor organisation
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Route("/sponsororganisations/save", Name = "soc:savesponsororganisation")]
@@ -199,7 +208,9 @@ public class SponsorOrganisationsController(
         return RedirectToAction("Index");
     }
 
-    /// <summary>Search RTS organisations</summary>
+    /// <summary>
+    /// Search RTS organisations
+    /// </summary>
     public async Task<IActionResult> SearchOrganisations(SponsorOrganisationSetupViewModel model, string? role,
         int? pageSize = 5, int pageIndex = 1)
     {
@@ -231,7 +242,9 @@ public class SponsorOrganisationsController(
         return Redirect(returnUrl!);
     }
 
-    /// <summary>Displays a single sponsor organisation</summary>
+    /// <summary>
+    /// Displays a single sponsor organisation
+    /// </summary>
     [HttpGet]
     [Route("/sponsororganisations/view", Name = "soc:viewsponsororganisation")]
     public async Task<IActionResult> ViewSponsorOrganisation(string rtsId)
@@ -245,7 +258,9 @@ public class SponsorOrganisationsController(
         return View(load.Model);
     }
 
-    /// <summary>Displays users for a sponsor organisation</summary>
+    /// <summary>
+    /// Displays users for a sponsor organisation
+    /// </summary>
     [HttpGet]
     [Route("/sponsororganisations/viewusers", Name = "soc:viewsponsororganisationusers")]
     public async Task<IActionResult> ViewSponsorOrganisationUsers(string rtsId, string? searchQuery = null,
@@ -464,9 +479,7 @@ public class SponsorOrganisationsController(
         return View("AuditTrail", resultModel);
     }
 
-    // ---------------------------
-    // Private helpers (de-duplication)
-    // ---------------------------
+    // --------------------------- Private helpers (de-duplication) ---------------------------
 
     // Centralised RTS + Portal fetch + mapping
     [NonAction]
@@ -505,65 +518,6 @@ public class SponsorOrganisationsController(
         return (model, dto, null);
     }
 
-    // Sorting extracted and made stable/consistent4
-    [NonAction]
-    private static IEnumerable<SponsorOrganisationDto> SortSponsorOrganisations(
-        IEnumerable<SponsorOrganisationDto> items,
-        string? sortField,
-        string? sortDirection,
-        int pageNumber = 1,
-        int pageSize = 20)
-    {
-        static string CountriesKey(SponsorOrganisationDto x)
-        {
-            return x.Countries == null || !x.Countries.Any()
-                ? string.Empty
-                : string.Join(", ", x.Countries.OrderBy(c => c, StringComparer.OrdinalIgnoreCase));
-        }
-
-        var desc = string.Equals(sortDirection, "desc", StringComparison.OrdinalIgnoreCase);
-
-        var sorted = sortField?.ToLowerInvariant() switch
-        {
-            "sponsororganisationname" => desc
-                ? items.OrderByDescending(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase)
-                    .ThenBy(x => CountriesKey(x), StringComparer.OrdinalIgnoreCase)
-                : items.OrderBy(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase)
-                    .ThenBy(x => CountriesKey(x), StringComparer.OrdinalIgnoreCase),
-
-            "countries" => desc
-                ? items.OrderByDescending(x => CountriesKey(x), StringComparer.OrdinalIgnoreCase)
-                    .ThenBy(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase)
-                : items.OrderBy(x => CountriesKey(x), StringComparer.OrdinalIgnoreCase)
-                    .ThenBy(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase),
-
-            "isactive" => desc
-                ? items.OrderByDescending(x => x.IsActive)
-                    .ThenBy(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase)
-                : items.OrderBy(x => x.IsActive)
-                    .ThenBy(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase),
-
-            _ => desc
-                ? items.OrderByDescending(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase)
-                : items.OrderBy(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase)
-        };
-
-        // Apply pagination
-        if (pageNumber < 1)
-        {
-            pageNumber = 1;
-        }
-
-        if (pageSize < 1)
-        {
-            pageSize = 20;
-        }
-
-        var skip = (pageNumber - 1) * pageSize;
-
-        return sorted.Skip(skip).Take(pageSize);
-    }
-
     [NonAction]
     private static IEnumerable<UserViewModel> SortSponsorOrganisationUsers(
         IEnumerable<UserViewModel> users,
@@ -594,11 +548,23 @@ public class SponsorOrganisationsController(
         var desc = string.Equals(sortDirection, "desc", StringComparison.OrdinalIgnoreCase);
         var field = sortField?.ToLowerInvariant() ?? string.Empty;
 
-        // Primary: status ordering
-        var ordered =
-            field == "status"
-                ? desc ? list.OrderByDescending(IsActive) : list.OrderBy(IsActive)
-                : list.OrderByDescending(IsActive); // default bubble Active first
+        IOrderedEnumerable<UserViewModel> ordered;
+
+        // -------------------------
+        // 1. SORT BY STATUS ONLY IF REQUESTED -------------------------
+        if (field == "status")
+        {
+            // ASC: Active first, then Disabled
+            // DESC: Disabled first, then Active
+            ordered = desc
+                ? list.OrderBy(IsActive)               // desc => Disabled first
+                : list.OrderByDescending(IsActive);    // asc  => Active first
+        }
+        else
+        {
+            // No default bubbling by status → simply order by selected field
+            ordered = list.OrderBy(_ => 0); // identity ordering
+        }
 
         // Secondary: selected field (text fields share the same path)
         if (field == "currentlogin")
@@ -662,7 +628,8 @@ public class SponsorOrganisationsController(
 
                 if (!string.IsNullOrWhiteSpace(sponsorOrganisationName) && !string.IsNullOrWhiteSpace(x.RtsId))
                 {
-                    // Replace all occurrences of RtsId with sponsorOrganisationName (case-insensitive, no regex)
+                    // Replace all occurrences of RtsId with sponsorOrganisationName
+                    // (case-insensitive, no regex)
                     desc = desc.Replace(x.RtsId, sponsorOrganisationName!, StringComparison.OrdinalIgnoreCase);
                 }
 
@@ -710,35 +677,6 @@ public class SponsorOrganisationsController(
 
         var skip = (pageNumber - 1) * pageSize;
         return sorted.Skip(skip).Take(pageSize);
-    }
-
-    // Pagination builder with optional extras
-    [NonAction]
-    private static PaginationViewModel BuildPagination(
-        int pageNumber,
-        int pageSize,
-        int totalCount,
-        string routeName,
-        string? sortField,
-        string? sortDirection,
-        IDictionary<string, string>? extra = null)
-    {
-        var p = new PaginationViewModel(pageNumber, pageSize, totalCount)
-        {
-            RouteName = routeName,
-            SortField = sortField,
-            SortDirection = sortDirection
-        };
-
-        if (extra is not null)
-        {
-            foreach (var kv in extra)
-            {
-                p.AdditionalParameters[kv.Key] = kv.Value;
-            }
-        }
-
-        return p;
     }
 
     // Session restore + merge

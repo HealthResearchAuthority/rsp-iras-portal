@@ -4,14 +4,13 @@ using Rsp.IrasPortal.Domain.AccessControl;
 namespace Rsp.IrasPortal.Application.AccessControl;
 
 /// <summary>
-/// Provides a mapping between workspace identifiers and the roles that are allowed
-/// to access each workspace.
+/// Provides a mapping between workspace identifiers and the roles that are allowed to access each workspace.
 /// </summary>
 public static class WorkspaceRolesMatrix
 {
     /// <summary>
-    /// Dictionary mapping workspace keys (from <see cref="Workspaces"/>) to an array
-    /// of role keys (from <see cref="Roles"/>) that are permitted in that workspace.
+    /// Dictionary mapping workspace keys (from <see cref="Workspaces"/>) to an array of role keys
+    /// (from <see cref="Roles"/>) that are permitted in that workspace.
     ///
     /// Each entry:
     /// - Key: workspace identifier string (e.g. <see cref="Workspaces.MyResearch"/>)
@@ -40,7 +39,7 @@ public static class WorkspaceRolesMatrix
         // - Sponsor users and system administrators only
         [Workspaces.Sponsor] =
         [
-            Roles.Sponsor, Roles.SystemAdministrator
+            Roles.Sponsor, Roles.SystemAdministrator, Roles.OrganisationAdministrator
         ],
 
         // Roles allowed in the "System Administration" workspace:
