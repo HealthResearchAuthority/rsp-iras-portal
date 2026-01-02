@@ -348,7 +348,8 @@ public class MyOrganisationsController(
 
         if (usersResponse is { IsSuccessStatusCode: true, Content.TotalCount: 1 })
         {
-            return RedirectToAction(nameof(MyOrganisationUsersAddUserRole), new { rtsId });
+            var user = usersResponse.Content.Users.First();
+            return RedirectToAction(nameof(MyOrganisationUsersAddUserRole), new { rtsId, userId = user.Id });
         }
 
         return RedirectToAction(nameof(MyOrganisationUsersInvalidUser), new { rtsId });
@@ -366,7 +367,33 @@ public class MyOrganisationsController(
     }
 
     [HttpGet]
-    public async Task<IActionResult> MyOrganisationUsersAddUserRole(string rtsId, string userId)
+    public async Task<IActionResult> MyOrganisationUsersAddUserRole(string rtsId, string userId, string? role)
+    {
+        var model = new SponsorMyOrganisationUsersViewModel
+        {
+            RtsId = rtsId
+            // Populate anything else you need for the page (e.g. Name) as you already do elsewhere
+        };
+
+        // If the form has been submitted (Role exists) but nothing selected
+        if (Request.Query.ContainsKey("Role") && string.IsNullOrWhiteSpace(role))
+        {
+            ModelState.AddModelError("Role", "Select a role");
+            return View(model);
+        }
+
+        // First visit to the page (no Role in querystring)
+        if (!Request.Query.ContainsKey("Role"))
+        {
+            return View(model);
+        }
+
+        // Role selected - continue (redirect to next step or whatever your flow is)
+        return RedirectToAction(nameof(MyOrganisationUsersAddUserPermission), new { rtsId, userId, role });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> MyOrganisationUsersAddUserPermission(string rtsId, string userId, string? role)
     {
         var model = new SponsorMyOrganisationUsersViewModel
         {

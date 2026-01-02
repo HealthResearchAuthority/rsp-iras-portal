@@ -1564,7 +1564,7 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         var userId = Guid.NewGuid().ToString();
 
         // Act
-        var result = await Sut.MyOrganisationUsersAddUserRole(rtsId, userId);
+        var result = await Sut.MyOrganisationUsersAddUserRole(rtsId, userId, "Sponsor");
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();

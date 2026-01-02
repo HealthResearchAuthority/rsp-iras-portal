@@ -1,6 +1,13 @@
-﻿@model (string Title, string Message)
+﻿@model (string Title, string Heading, string Message, bool IsImportant)
 
-<div class="govuk-notification-banner govuk-notification-banner--success"
+@{
+    // Only apply success when NOT important
+    var modifierClass = Model.IsImportant
+        ? "govuk-notification-banner--important"
+        : "govuk-notification-banner--success";
+}
+
+<div class="govuk-notification-banner @modifierClass"
      role="alert"
      aria-labelledby="govuk-notification-banner-title"
      aria-describedby="govuk-notification-banner-message"
@@ -13,7 +20,11 @@
     </div>
     <div class="govuk-notification-banner__content">
         <h3 class="govuk-notification-banner__heading" id="govuk-notification-banner-message">
-            @Model.Message
+            @Model.Heading
         </h3>
+		@if (!string.IsNullOrEmpty(Model.Message))
+        {
+            <p class="govuk-body">@Model.Message</p>
+        }
     </div>
 </div>

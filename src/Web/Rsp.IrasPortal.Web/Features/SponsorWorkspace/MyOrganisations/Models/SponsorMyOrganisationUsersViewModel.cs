@@ -7,6 +7,7 @@ public class SponsorMyOrganisationUsersViewModel
 {
     public string Name { get; set; }
     public string RtsId { get; set; }
+    public string Role { get; set; }
 
     public IEnumerable<UserViewModel> Users { get; set; } = [];
     public PaginationViewModel? Pagination { get; set; }

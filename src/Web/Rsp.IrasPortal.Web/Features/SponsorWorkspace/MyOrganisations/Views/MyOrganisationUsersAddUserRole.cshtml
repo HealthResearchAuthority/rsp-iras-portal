@@ -1,4 +1,5 @@
-﻿@using Rsp.IrasPortal.Application.Constants
+﻿@using Azure.Core
+@using Rsp.IrasPortal.Application.Constants
 @using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
 @model Rsp.IrasPortal.Web.Features.SponsorWorkspace.MyOrganisations.Models.SponsorMyOrganisationUsersViewModel
 
@@ -9,8 +10,6 @@
     var pageContent = pageContentData != null
         ? pageContentData
         : new Dictionary<string, MixedContentPageItem?>();
-
-
 }
 
 @section BackNavigation {
@@ -19,11 +18,83 @@
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-        <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
+        
+        <partial name="_NotificationBanner"
+                 model="@("Important", "Authorisations guidance", "There must be at least one organisation administrator at all times", true)" />
+
+        <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")"/>
+
         <div class="govuk-label">
             Sponsor organisation profile
         </div>
         <h1 class="govuk-heading-l">Add user role</h1>
+        <label class="govuk-label">
+            @* @Html.Raw(searchTitle?.Value) *@
+            Enter the email address of the user you want to add to @Model.Name
+        </label>
+		<form method="get"
+			  class="govuk-form-group">
+
+			<div class="govuk-form-group">
+				<fieldset class="govuk-fieldset" aria-describedby="role-hint">
+					<label class="govuk-label">
+						Role
+					</label>
+					<br />
+
+					<div class="govuk-radios">
+
+						<div class="govuk-radios__item">
+							<input class="govuk-radios__input"
+								   id="role-admin"
+								   name="role"
+								   type="radio"
+								   value="OrganisationAdministrator"
+								   @(Model.Role == "OrganisationAdministrator" ? "checked" : "") />
+							<label class="govuk-label govuk-radios__label" for="role-admin">
+								Organisation administrator
+							</label>
+							<div class="govuk-radios__hint">
+								An organisation administrator can view this organisation's projects,
+								manage its profile and users. This includes adding and managing other
+								organisation administrators. This user has permission to authorise all
+								modification submissions on behalf of the sponsor organisation.
+							</div>
+						</div>
+
+						<div class="govuk-radios__item">
+							<input class="govuk-radios__input"
+								   id="role-sponsor"
+								   name="role"
+								   type="radio"
+								   value="Sponsor"
+								   @(Model.Role == "Sponsor" ? "checked" : "") />
+							<label class="govuk-label govuk-radios__label" for="role-sponsor">
+								Sponsor
+							</label>
+							<div class="govuk-radios__hint">
+								A sponsor can view this organisation's profile, projects and users.
+							</div>
+						</div>
+
+					</div>
+				</fieldset>
+			</div>
+
+			<br />
+
+			<input type="hidden" name="rtsId" value="@Model.RtsId" />
+			@* <input type="hidden" name="userId" value="@Model.UserId" /> *@
+
+			@{
+				ViewBag.Style = "govuk-button govuk-button--primary";
+			}
+			<partial name="_SubmitButton"
+					 model="@("sws:myorganisationusersadduserrole", "Save and continue", new Dictionary<string, string>())" />
+
+		</form>
+
+
     </div>
 </div>
 
