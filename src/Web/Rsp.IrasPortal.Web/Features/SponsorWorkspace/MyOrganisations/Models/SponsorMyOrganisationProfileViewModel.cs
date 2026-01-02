@@ -1,14 +1,10 @@
-﻿using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Web.Areas.Admin.Models;
-
-namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace.MyOrganisations.Models;
+﻿namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace.MyOrganisations.Models;
 
 public class SponsorMyOrganisationProfileViewModel
-
 {
-    public string Name { get; set; }
-    public string RtsId { get; set; }
-
-    public IEnumerable<UserViewModel> Users { get; set; } = [];
-    public PaginationViewModel? Pagination { get; set; }
+    public string RtsId { get; set; } = null!;
+    public string Name { get; set; } = null!;
+    public string Country { get; set; } = null!;
+    public string Address { get; set; } = null!;
+    public DateTime LastUpdated { get; set; }
 }
