@@ -2,6 +2,7 @@
 @using Rsp.IrasPortal.Application.DTOs
 @using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
 @using Rsp.IrasPortal.Web.Areas.Admin.Models
+@using System.Globalization
 @model SponsorOrganisationListUsersModel
 
 @{
@@ -169,33 +170,41 @@
                         @foreach (var user in Model.Users)
                         {
                             var sponsorOrgUser = Model.SponsorOrganisation.Users.FirstOrDefault(x => x.UserId == Guid.Parse(user.Id!));
-                            var userRole = sponsorOrgUser != null ? sponsorOrgUser.SponsorRole.ToString() : "N/A";
-                            var authoriserText = sponsorOrgUser != null && sponsorOrgUser.IsAuthoriser ? "Yes" : "No";
-                            var statusClass = sponsorOrgUser != null && sponsorOrgUser.IsActive ? "govuk-tag--green" : "govuk-tag--red";
-                            var statusText = sponsorOrgUser != null && sponsorOrgUser.IsActive ? "Active" : "Disabled";
+
+                            if (sponsorOrgUser == null)
+                            {
+                                continue;
+                            }
+
+                            var userRole = !string.IsNullOrEmpty(sponsorOrgUser.SponsorRole) ?
+                                (CultureInfo.CurrentCulture.TextInfo.ToTitleCase(sponsorOrgUser.SponsorRole)) :
+                                "No role";
+                            var authoriserText =sponsorOrgUser.IsAuthoriser ? "Yes" : "No";
+                            var statusClass = sponsorOrgUser.IsActive ? "govuk-tag--green" : "govuk-tag--red";
+                            var statusText = sponsorOrgUser.IsActive ? "Active" : "Disabled";
 
                             <tr class="govuk-table__row">
-                            <td class="govuk-table__cell">@user.GivenName @user.FamilyName</td>
-                            <td class="govuk-table__cell line-break-anywhere">@user.Email</td>
-                            <td class="govuk-table__cell">
-                                <strong class="govuk-tag @statusClass">@statusText</strong>
-                            </td>
-                            <td class="govuk-table__cell">
-                                @userRole.Substring(0, 1).ToUpper() + userRole.Substring(1).ToLower()
-                            </td>
-                            <td class="govuk-table__cell">
-                                @authoriserText
-                            </td>
-                            <td class="govuk-table__cell">
-                                <a class="govuk-link"
-                                    asp-route="soc:viewsponsororganisationuser"
-                                    asp-route-rtsId="@Model.SponsorOrganisation.RtsId"
-                                    asp-route-userId="@user.Id">
-                                    View/edit
-                                </a>
-                            </td>
-                        </tr>
-                    }
+                                <td class="govuk-table__cell">@user.GivenName @user.FamilyName</td>
+                                <td class="govuk-table__cell line-break-anywhere">@user.Email</td>
+                                <td class="govuk-table__cell">
+                                    <strong class="govuk-tag @statusClass">@statusText</strong>
+                                </td>
+                                <td class="govuk-table__cell">
+                                    @userRole
+                                </td>
+                                <td class="govuk-table__cell">
+                                    @authoriserText
+                                </td>
+                                <td class="govuk-table__cell">
+                                    <a class="govuk-link"
+                                        asp-route="soc:viewsponsororganisationuser"
+                                        asp-route-rtsId="@Model.SponsorOrganisation.RtsId"
+                                        asp-route-userId="@user.Id">
+                                        View/edit
+                                    </a>
+                                </td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
                 <partial name="_Pagination" model="@Model.Pagination"/>
