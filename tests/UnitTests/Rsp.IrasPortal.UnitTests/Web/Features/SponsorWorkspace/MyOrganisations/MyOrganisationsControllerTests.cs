@@ -1,5 +1,7 @@
 ﻿using System.Security.Claims;
 using System.Text.Json;
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -19,6 +21,7 @@ namespace Rsp.IrasPortal.UnitTests.Web.Features.SponsorWorkspace.MyOrganisations
 public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsController>
 {
     private readonly DefaultHttpContext _http;
+    private readonly Mock<IApplicationsService> _applicationService;
 
     private const string DefaultEmail = "dan.hulmston@test.com";
 
@@ -97,6 +100,7 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
 
     public MyOrganisationsControllerTests()
     {
+        _applicationService = Mocker.GetMock<IApplicationsService>();
         _http = new DefaultHttpContext
         {
             Session = new InMemorySession()
@@ -573,48 +577,207 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         result.ShouldBeOfType<StatusCodeResult>().StatusCode.ShouldBe(400);
     }
 
-    [Fact]
-    public async Task MyOrganisationProjects_ShouldReturnView_WhenContextPasses()
+    [Theory, AutoData]
+    public async Task MyOrganisationProjects_ShouldReturnProjectResults(
+        PaginatedResponse<CompleteProjectRecordResponse> mockResponse
+    )
     {
+        // Arrange
         var rtsId = "87765";
         SetUser(Guid.NewGuid(), DefaultEmail);
 
         SetupSponsorOrgContextSuccess(rtsId, DefaultEmail,
             rtsOrganisation: new OrganisationDto { Name = "Project Org", CountryName = "UK" });
 
+        var searchModel = new SponsorOrganisationProjectSearchModel { IrasId = "1234" };
+        _http.Session.SetString(SessionKeys.SponsorMyOrganisationsProjectsSearch, JsonSerializer.Serialize(searchModel));
+
+        var serviceResponse = new ServiceResponse<PaginatedResponse<CompleteProjectRecordResponse>>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = mockResponse
+        };
+
+        _applicationService
+            .Setup(s => s.GetPaginatedApplications(It.IsAny<ProjectRecordSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(serviceResponse);
+
+        // Act
         var result = await Sut.MyOrganisationProjects(rtsId);
 
-        var view = result.ShouldBeOfType<ViewResult>();
-        var model = view.Model.ShouldBeOfType<SponsorMyOrganisationProfileViewModel>();
-
-        model.RtsId.ShouldBe(rtsId);
-        model.Name.ShouldBe("Project Org");
+        // Assert
+        var statusResult = result.ShouldBeOfType<ViewResult>();
+        var resultModel = statusResult.Model.ShouldBeOfType<SponsorMyOrganisationProjectsViewModel>();
+        resultModel.RtsId.ShouldBe(rtsId);
+        resultModel.Pagination.ShouldNotBeNull();
+        resultModel.ProjectRecords.ShouldNotBeNull();
+        resultModel.ProjectRecords.Count().ShouldBeGreaterThan(0);
     }
 
     [Theory, AutoData]
-    public async Task MyOrganisationProjects_ShouldReturnServiceError_WhenRtsFails(
-        ClaimsPrincipal userClaims
+    public async Task MyOrganisationProjectsFilter_ShouldRedirectWhenModelIsValid(
+        SponsorMyOrganisationProjectsViewModel mockModel
     )
     {
         // Arrange
 
-        var rtsResponse = new ServiceResponse<OrganisationDto>
-        {
-            StatusCode = HttpStatusCode.BadRequest
-        };
+        var searchModel = new SponsorOrganisationProjectSearchModel { IrasId = "12345" };
+        _http.Session.SetString(SessionKeys.SponsorMyOrganisationsProjectsSearch, JsonSerializer.Serialize(searchModel));
 
-        Mocker.GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisation(It.IsAny<string>()))
-            .ReturnsAsync(rtsResponse);
-
-        _http.User = userClaims;
+        var mockValidator = Mocker.GetMock<IValidator<SponsorOrganisationProjectSearchModel>>();
+        mockValidator
+            .Setup(v => v.ValidateAsync(It.IsAny<SponsorOrganisationProjectSearchModel>(), default))
+            .ReturnsAsync(new ValidationResult());
 
         // Act
-        var result = await Sut.MyOrganisationProjects("");
+        var result = await Sut.ApplyProjectRecordsFilters(mockModel);
 
         // Assert
-        var statusResult = result.ShouldBeOfType<StatusCodeResult>();
-        statusResult.StatusCode.ShouldBe(400);
+        var actualResult = result.ShouldBeOfType<RedirectToActionResult>();
+        actualResult.ActionName.ShouldBe("MyOrganisationProjects");
+        actualResult.RouteValues!["rtsId"].ShouldBe(mockModel.RtsId);
+
+        var storedJson = _http.Session.GetString(SessionKeys.SponsorMyOrganisationsProjectsSearch);
+        storedJson.ShouldNotBeNullOrWhiteSpace();
+    }
+
+    [Theory, AutoData]
+    public async Task MyOrganisationProjectsFilter_ShouldReturnSameViewWhenModelIsNotValid(
+        SponsorMyOrganisationProjectsViewModel mockModel
+    )
+    {
+        // Arrange
+
+        var searchModel = new SponsorOrganisationProjectSearchModel { IrasId = "12345" };
+        _http.Session.SetString(SessionKeys.SponsorMyOrganisationsProjectsSearch, JsonSerializer.Serialize(searchModel));
+
+        var mockValidator = Mocker.GetMock<IValidator<SponsorOrganisationProjectSearchModel>>();
+        mockValidator
+            .Setup(v => v.ValidateAsync(It.IsAny<SponsorOrganisationProjectSearchModel>(), default))
+            .ReturnsAsync(new ValidationResult() { Errors = new List<ValidationFailure> { new ValidationFailure("createddate", "Some Error") } });
+
+        // Act
+        var result = await Sut.ApplyProjectRecordsFilters(mockModel);
+
+        // Assert
+        var actualResult = result.ShouldBeOfType<ViewResult>();
+        actualResult.ViewName.ShouldBe("MyOrganisationProjects");
+        actualResult.Model.ShouldBeOfType<SponsorMyOrganisationProjectsViewModel>();
+    }
+
+    [Theory, AutoData]
+    public void MyOrganisationProjectsClearFilters_ShouldReturnRemoveAllFilters(
+        SponsorOrganisationProjectSearchModel mockModel
+    )
+    {
+        // Arrange
+        var rtsId = "12345";
+        _http.Session.SetString(SessionKeys.SponsorMyOrganisationsProjectsSearch, JsonSerializer.Serialize(mockModel));
+
+        // Act
+        var result = Sut.ClearProjectRecordsFilters(rtsId);
+
+        // Assert
+        var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
+        redirectResult.ActionName.ShouldBe(nameof(Sut.MyOrganisationProjects));
+        redirectResult.RouteValues!["rtsId"].ShouldBe(rtsId);
+
+        var updatedSearchJson = _http.Session.GetString(SessionKeys.SponsorMyOrganisationsProjectsSearch);
+        updatedSearchJson.ShouldNotBeNull();
+
+        var updatedSearch = JsonSerializer.Deserialize<SponsorOrganisationProjectSearchModel>(updatedSearchJson!);
+        updatedSearch.ShouldNotBeNull();
+        updatedSearch.Filters.Count.ShouldBe(0);
+        updatedSearch.IrasId.ShouldBe(mockModel.IrasId);
+    }
+
+    [Theory, AutoData]
+    public async Task MyOrganisationProjectsRemoveFromDateFilter_ShouldReturnRemoveSingleFilter(
+        SponsorOrganisationProjectSearchModel mockModel
+    )
+    {
+        // Arrange
+        var rtsId = "12345";
+        var filterName = "datecreated-from";
+        mockModel.FromDay = "1";
+        mockModel.FromMonth = "8";
+        mockModel.FromYear = "2023";
+
+        _http.Session.SetString(SessionKeys.SponsorMyOrganisationsProjectsSearch, JsonSerializer.Serialize(mockModel));
+
+        var mockValidator = Mocker.GetMock<IValidator<SponsorOrganisationProjectSearchModel>>();
+        mockValidator
+            .Setup(v => v.ValidateAsync(It.IsAny<SponsorOrganisationProjectSearchModel>(), default))
+            .ReturnsAsync(new ValidationResult());
+
+        // Act
+        var result = await Sut.RemoveProjectRecordFilter(filterName, It.IsAny<string>(), rtsId);
+
+        // Assert
+        var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
+        redirectResult.ActionName.ShouldBe(nameof(Sut.MyOrganisationProjects));
+        redirectResult.RouteValues!["rtsId"].ShouldBe(rtsId);
+
+        var updatedSearchJson = _http.Session.GetString(SessionKeys.SponsorMyOrganisationsProjectsSearch);
+        updatedSearchJson.ShouldNotBeNull();
+
+        var updatedSearch = JsonSerializer.Deserialize<SponsorOrganisationProjectSearchModel>(updatedSearchJson!);
+        updatedSearch.ShouldNotBeNull();
+        updatedSearch.Filters.Count(x => x.Key == filterName).ShouldBe(0);
+        updatedSearch.FromDate.ShouldBeNull();
+    }
+
+    [Theory, AutoData]
+    public async Task MyOrganisationProjectsRemoveToDateFilter_ShouldReturnRemoveSingleFilter(
+        SponsorOrganisationProjectSearchModel mockModel
+    )
+    {
+        // Arrange
+        var rtsId = "12345";
+        var filterName = "datecreated-to";
+        mockModel.ToDay = "1";
+        mockModel.ToMonth = "8";
+        mockModel.ToYear = "2023";
+
+        _http.Session.SetString(SessionKeys.SponsorMyOrganisationsProjectsSearch, JsonSerializer.Serialize(mockModel));
+
+        var mockValidator = Mocker.GetMock<IValidator<SponsorOrganisationProjectSearchModel>>();
+        mockValidator
+            .Setup(v => v.ValidateAsync(It.IsAny<SponsorOrganisationProjectSearchModel>(), default))
+            .ReturnsAsync(new ValidationResult());
+
+        // Act
+        var result = await Sut.RemoveProjectRecordFilter(filterName, It.IsAny<string>(), rtsId);
+
+        // Assert
+        var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
+        redirectResult.ActionName.ShouldBe(nameof(Sut.MyOrganisationProjects));
+        redirectResult.RouteValues!["rtsId"].ShouldBe(rtsId);
+
+        var updatedSearchJson = _http.Session.GetString(SessionKeys.SponsorMyOrganisationsProjectsSearch);
+        updatedSearchJson.ShouldNotBeNull();
+
+        var updatedSearch = JsonSerializer.Deserialize<SponsorOrganisationProjectSearchModel>(updatedSearchJson!);
+        updatedSearch.ShouldNotBeNull();
+        updatedSearch.Filters.Count(x => x.Key == filterName).ShouldBe(0);
+        updatedSearch.ToDate.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task MyOrganisationProjectsRemoveFilter_ShouldRedirectWhenSessionEmpty(
+    )
+    {
+        // Arrange
+        var rtsId = "12345";
+        var filterName = "status";
+
+        // Act
+        var result = await Sut.RemoveProjectRecordFilter(filterName, It.IsAny<string>(), rtsId);
+
+        // Assert
+        var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
+        redirectResult.ActionName.ShouldBe(nameof(Sut.MyOrganisationProjects));
+        redirectResult.RouteValues!["rtsId"].ShouldBe(rtsId);
     }
 
     [Theory, AutoData]

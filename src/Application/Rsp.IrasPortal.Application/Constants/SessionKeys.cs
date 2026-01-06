@@ -24,4 +24,5 @@ public static class SessionKeys
     public const string ApplicationsSearch = "session:applicationsearch";
     public const string RequireProfileCreation = "session:require_profile_creation";
     public const string SponsorMyOrganisationsSearch = "session:sponsor_myorganisations_search";
+    public const string SponsorMyOrganisationsProjectsSearch = "session:sponsor_myorganisations_projects_search";
 }
