@@ -27,6 +27,16 @@ public class DateViewModel
     /// </summary>
     public string? Year { get; set; }
 
+    //public static DateViewModel FromDate(DateTime? date)
+    //       => date is null
+    //          ? new DateViewModel()
+    //          : new DateViewModel
+    //          {
+    //              Day = date.Value.Day.ToString(CultureInfo.InvariantCulture),
+    //              Month = date.Value.Month.ToString(CultureInfo.InvariantCulture),
+    //              Year = date.Value.Year.ToString(CultureInfo.InvariantCulture)
+    //          };
+
     /// <summary>
     /// Attempts to parse the provided day, month, and year strings into a <see cref="DateTime"/> object.
     /// Returns null if parsing fails.

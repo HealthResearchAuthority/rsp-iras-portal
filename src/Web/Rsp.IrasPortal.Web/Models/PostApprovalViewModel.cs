@@ -8,4 +8,5 @@ public class PostApprovalViewModel
     public IEnumerable<PostApprovalModificationsModel> Modifications { get; set; } = [];
     public PaginationViewModel? Pagination { get; set; }
     public ProjectOverviewModel? ProjectOverviewModel { get; set; }
+    public ProjectClosuresModel? ProjectClosureModel { get; set; }
 }

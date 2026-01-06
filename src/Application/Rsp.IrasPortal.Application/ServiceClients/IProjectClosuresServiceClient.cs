@@ -32,4 +32,7 @@ public interface IProjectClosuresServiceClient
         string sortField = nameof(ProjectClosuresDto.SentToSponsorDate),
         string sortDirection = SortDirections.Descending
     );
+
+    [Post("/projectclosure/createprojectclosure")]
+    public Task<ApiResponse<ProjectClosuresResponse>> CreateProjectClosure(ProjectClosureRequest projectClosureRequest);
 }

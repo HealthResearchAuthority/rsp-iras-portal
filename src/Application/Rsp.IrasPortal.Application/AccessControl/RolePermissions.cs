@@ -24,6 +24,7 @@ public static class RolePermissions
                 MyResearch.ProjectRecord_List,
                 MyResearch.ProjectRecord_Search,
                 MyResearch.ProjectRecordHistory_Read,
+                MyResearch.ProjectRecord_Close,
 
                 MyResearch.ProjectDocuments_Upload,
                 MyResearch.ProjectDocuments_Update,

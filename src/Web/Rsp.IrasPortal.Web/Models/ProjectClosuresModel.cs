@@ -2,6 +2,7 @@
 
 public class ProjectClosuresModel
 {
+    public Guid Id { get; set; }
     public string ProjectRecordId { get; set; } = null!;
     public string ShortProjectTitle { get; set; } = null!;
     public string Status { get; set; } = null!;
@@ -10,5 +11,6 @@ public class ProjectClosuresModel
     public string? UserEmail { get; set; } = null;
     public DateTime? DateActioned { get; set; } = null;
     public DateTime? SentToSponsorDate { get; set; } = null;
-    public DateTime? ClosureDate { get; set; } = null;
+    public DateTime? ClosureDate { get; set; } = null!;
+    public DateViewModel ActualClosureDate { get; set; } = null!;
 }
