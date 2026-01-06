@@ -28,4 +28,13 @@ public interface IProjectClosuresService : IInterceptable
        string sortField = nameof(ProjectClosuresDto.SentToSponsorDate),
        string sortDirection = SortDirections.Descending
    );
+
+    /// <summary>
+    /// Create project closure record in project closure table
+    /// </summary>
+    /// <param name="projectClosureRequest"></param>
+    /// <returns></returns>
+    public Task<ServiceResponse<ProjectClosuresResponse>> CreateProjectClosure(ProjectClosureRequest projectClosureRequest);
+
+    //public Task<ServiceResponse<ProjectClosuresResponse>> GetProjectClosure(string projectRecordId);
 }

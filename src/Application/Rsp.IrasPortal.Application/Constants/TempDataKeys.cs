@@ -73,4 +73,5 @@ public struct TempDataKeys
     public const string ShowCookiesSavedHeaderBanner = "td:show_cookies_header_banner";
     public const string ActiveSponsoOrganisationFilterName = "td:active_sponsor_org_filter";
     public const string ChangeSuccess = "td:change_success";
+    public const string ShowCloseProjectBanner = "td:show_close_project_banner";
 }

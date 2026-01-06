@@ -29,7 +29,8 @@ public class ProjectOverviewController
     ICmsQuestionsetService cmsQuestionsetService,
     IRtsService rtsService,
     IValidator<ApprovalsSearchModel> validator,
-    IValidator<QuestionnaireViewModel> docValidator
+    IValidator<QuestionnaireViewModel> docValidator,
+    IProjectClosuresService projectClosuresService
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, docValidator)
 {
     private readonly IRespondentService _respondentService = respondentService;
@@ -152,6 +153,8 @@ public class ProjectOverviewController
             RouteName = "pov:postapproval",
             AdditionalParameters = new Dictionary<string, string>() { { "projectRecordId", projectRecordId } }
         };
+        //Project closure details
+        //var projectClosure = projectClosuresService.GetProjectClosuresBySponsorOrganisationUserId
 
         return View(model);
     }

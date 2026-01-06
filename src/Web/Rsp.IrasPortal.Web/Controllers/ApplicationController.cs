@@ -23,7 +23,10 @@ public class ApplicationController
     IValidator<IrasIdViewModel> irasIdValidator,
     IProjectRecordValidationService projectRecordValidationService,
     ICmsQuestionsetService cmsQuestionsetService,
-    IValidator<ApplicationSearchModel> searchValidator
+    IValidator<ApplicationSearchModel> searchValidator,
+    IProjectClosuresService projectClosuresService,
+    IProjectModificationsService projectModificationsService,
+    IValidator<ProjectClosuresModel> closureValidator
 ) : Controller
 {
     [Authorize(Policy = Permissions.MyResearch.ProjectRecord_List)]
@@ -292,5 +295,102 @@ public class ApplicationController
         }
 
         return RedirectToAction(nameof(Welcome));
+    }
+
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Close)]
+    [HttpPost]
+    public async Task<IActionResult> ConfirmProjectClosure(ProjectClosuresModel model)
+    {
+        var validationResult = await closureValidator.ValidateAsync(model);
+
+        if (!validationResult.IsValid)
+        {
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
+            return RedirectToAction(nameof(CloseProject), new { projectRecordId = model.ProjectRecordId });
+        }
+
+        // Get respondent information from the current context
+        var respondent = this.GetRespondentFromContext();
+
+        //// Compose the full name of the respondent
+        var userName = $"{respondent.GivenName} {respondent.FamilyName}";
+
+        // Create a new project modification request
+        var projectClosureRequest = new ProjectClosureRequest
+        {
+            ProjectRecordId = model.ProjectRecordId,
+            IrasId = model.IrasId,
+            ClosureDate = model.ActualClosureDate.Date,
+            DateActioned = model.DateActioned,
+            SentToSponsorDate = model.SentToSponsorDate,
+            ShortProjectTitle = model.ShortProjectTitle,
+            Status = ModificationStatus.WithSponsor,
+            CreatedBy = userName,
+            UpdatedBy = userName,
+            Id = Guid.NewGuid().ToString(),
+        };
+
+        var closeProjectResponse = await projectClosuresService.CreateProjectClosure(projectClosureRequest);
+
+        if (!closeProjectResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(closeProjectResponse);
+        }
+
+        // update the application status to Submitted
+        var updateApplicationResponse = await applicationsService.UpdateProjectRecordStatus
+        (
+            new IrasApplicationRequest
+            {
+                Id = model.ProjectRecordId,
+                Status = ProjectRecordStatus.PendingClosure,
+                UpdatedBy = userName,
+                CreatedBy = userName,
+                ShortProjectTitle = model.ShortProjectTitle,
+            }
+        );
+
+        if (!updateApplicationResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(updateApplicationResponse);
+        }
+
+        TempData[TempDataKeys.ShowCloseProjectBanner] = true;
+
+        return View("/Features/ProjectOverview/Views/ConfirmProjectClosure.cshtml");
+    }
+
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Close)]
+    [HttpGet]
+    public async Task<IActionResult> CloseProject(string projectRecordId)
+    {
+        var IrasId = TempData.Peek(TempDataKeys.IrasId) as int?;
+        var shortProjectTitle = TempData.Peek(TempDataKeys.ShortProjectTitle);
+
+        var modificationsResponse = await projectModificationsService.GetModificationsForProject(projectRecordId, new ModificationSearchRequest());
+
+        var isInTransactionState = modificationsResponse.Content?.Modifications?.Any(m =>
+                                m.Status is ModificationStatus.InDraft
+                                         or ModificationStatus.WithSponsor
+                                         or ModificationStatus.WithReviewBody) == true;
+
+        var model = new ProjectClosuresModel
+        {
+            ProjectRecordId = projectRecordId,
+            IrasId = IrasId,
+            ShortProjectTitle = shortProjectTitle.ToString()
+        };
+
+        if (isInTransactionState)
+        {
+            return View("/Features/ProjectOverview/Views/ValidateProjectClosure.cshtml");
+        }
+        else
+        {
+            return View("/Features/ProjectOverview/Views/CloseProject.cshtml", model);
+        }
     }
 }

@@ -14,6 +14,18 @@ public class ProjectClosuresService
     IProjectClosuresServiceClient projectClosuresServiceClient
 ) : IProjectClosuresService
 {
+    public async Task<ServiceResponse<ProjectClosuresResponse>> CreateProjectClosure(ProjectClosureRequest projectClosureRequest)
+    {
+        var apiResponse = await projectClosuresServiceClient.CreateProjectClosure(projectClosureRequest);
+        return apiResponse.ToServiceResponse();
+    }
+
+    //public async Task<ServiceResponse<ProjectClosuresResponse>> GetProjectClosure(string projectRecordId)
+    //{
+    //    var apiResponse = await projectClosuresServiceClient.GetProjectClosure(projectRecordId);
+    //    return apiResponse.ToServiceResponse();
+    //}
+
     /// <summary>
     /// Gets project closures records for specific sponsorOrganisationUserId with filtering, sorting and pagination
     /// </summary>
