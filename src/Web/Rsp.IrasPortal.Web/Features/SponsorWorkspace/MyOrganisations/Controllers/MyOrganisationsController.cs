@@ -255,7 +255,7 @@ public class MyOrganisationsController(
         switch (keyNormalized)
         {
             case "datecreated-from":
-                search.FromDay = null;
+                search.FromYear = null;
                 search.FromDay = null;
                 search.FromMonth = null;
 
@@ -273,7 +273,7 @@ public class MyOrganisationsController(
                 search.ToYear = null;
                 search.ToMonth = null;
 
-                search.FromDay = null;
+                search.FromYear = null;
                 search.FromDay = null;
                 search.FromMonth = null;
 

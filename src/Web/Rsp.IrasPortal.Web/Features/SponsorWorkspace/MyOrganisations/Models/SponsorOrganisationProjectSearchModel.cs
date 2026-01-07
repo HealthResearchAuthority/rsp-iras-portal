@@ -19,46 +19,51 @@ public class SponsorOrganisationProjectSearchModel
     public string? ToYear { get; set; }
     public string? Status { get; set; }
 
-    public Dictionary<string, List<string>>? Filters
-    {
-        get
-        {
-            if (IgnoreFilters)
-            {
-                IgnoreFilters = false;
-                return null;
-            }
-
-            var filters = new Dictionary<string, List<string>>();
-
-            if (FromDate.HasValue && ToDate.HasValue)
-            {
-                // Both dates entered — show combined range only
-                filters.Add("Created date",
-                    [$"{FromDate.Value:d MMM yyyy} to {ToDate.Value:d MMM yyyy}"]);
-            }
-            else
-            {
-                // Only one date entered — show individual filter
-                if (FromDate.HasValue)
-                {
-                    filters.Add("Date created - from", [FromDate.Value.ToString("d MMM yyyy")]);
-                }
-
-                if (ToDate.HasValue)
-                {
-                    filters.Add("Date created - to", [ToDate.Value.ToString("d MMM yyyy")]);
-                }
-            }
-
-            if (!string.IsNullOrWhiteSpace(Status))
-            {
-                filters.Add(ApprovalsSearch.StatusKey, [Status]);
-            }
-
-            return filters;
-        }
-    }
+    public Dictionary<string, List<string>>? Filters =>
+    IgnoreFilters ? null : BuildFilters();
 
     public bool IgnoreFilters { get; set; }
+
+    private Dictionary<string, List<string>> BuildFilters()
+    {
+        var filters = new Dictionary<string, List<string>>();
+
+        if (FromDate.HasValue && ToDate.HasValue)
+        {
+            filters.Add(
+                "Created date",
+                [$"{FromDate.Value:d MMM yyyy} to {ToDate.Value:d MMM yyyy}"]
+            );
+        }
+        else
+        {
+            if (FromDate.HasValue)
+            {
+                filters.Add(
+                    "Date created - from",
+                    [FromDate.Value.ToString("d MMM yyyy")]
+                );
+            }
+
+            if (ToDate.HasValue)
+            {
+                filters.Add(
+                    "Date created - to",
+                    [ToDate.Value.ToString("d MMM yyyy")]
+                );
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(Status))
+        {
+            filters.Add(ApprovalsSearch.StatusKey, [Status]);
+        }
+
+        return filters;
+    }
+
+    public void ClearFiltersOnce()
+    {
+        IgnoreFilters = false;
+    }
 }
