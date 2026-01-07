@@ -15,10 +15,10 @@ namespace Rsp.IrasPortal.UnitTests.Services.ProjectClosuresServiceTests
         public async Task Should_Return_Success_Response_When_Client_Returns_Success(
             Guid sponsorOrganisationUserId,
             ProjectClosuresSearchRequest searchQuery,
-            ProjectClosuresResponse closuresResponse)
+            ProjectClosuresSearchResponse closuresResponse)
         {
             // Arrange
-            var apiResponse = new ApiResponse<ProjectClosuresResponse>(
+            var apiResponse = new ApiResponse<ProjectClosuresSearchResponse>(
                 new HttpResponseMessage(HttpStatusCode.OK),
                 closuresResponse,
                 new());
@@ -41,7 +41,7 @@ namespace Rsp.IrasPortal.UnitTests.Services.ProjectClosuresServiceTests
                 searchQuery);
 
             // Assert
-            result.ShouldBeOfType<ServiceResponse<ProjectClosuresResponse>>();
+            result.ShouldBeOfType<ServiceResponse<ProjectClosuresSearchResponse>>();
             result.IsSuccessStatusCode.ShouldBeTrue();
             result.StatusCode.ShouldBe(HttpStatusCode.OK);
             result.Content.ShouldBe(closuresResponse);
