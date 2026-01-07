@@ -41,7 +41,13 @@
 
     if (changeRemoved is true)
     {
-        <partial name="_NotificationBanner" model="@("Success", $"{changeName} has been removed")" />
+        <partial name="_NotificationBanner"
+                 model="@(new NotificationBannerModel
+                        {
+                            Title = "Success",
+                            Heading = $"{changeName} has been removed"
+                        })" />
+
     }
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
