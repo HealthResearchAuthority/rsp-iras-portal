@@ -143,6 +143,11 @@ public class MyOrganisationsController(
 
         var ctxResult = await TryGetSponsorOrgContext(rtsId);
 
+        if (ctxResult.HasResult)
+        {
+            return ctxResult.Result!;
+        }
+
         var ctx = ctxResult.Context!;
 
         var model = new SponsorMyOrganisationProjectsViewModel
@@ -728,6 +733,68 @@ public class MyOrganisationsController(
 
         var ctx = new SponsorOrgContext(rtsId, rtsResponse.Content, sponsorOrganisationDto);
         return new SponsorOrgContextResult(ctx, null);
+    }
+
+    [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Users)]
+    [HttpGet("/sponsorworkspace/myorganisationusers/user", Name = "sws:MyOrganisationViewUser")]
+    public async Task<IActionResult> MyOrganisationViewUser(string userId, string rtsId)
+    {
+        // make sure the active user also belongs to the sponsor organisation they are viewing
+        var ctxResult = await TryGetSponsorOrgContext(rtsId);
+
+        if (ctxResult.HasResult)
+        {
+            return ctxResult.Result!;
+        }
+
+        var ctx = ctxResult.Context!;
+
+        // find user in sponsor organisation
+        var organisationUserResponse = await sponsorOrganisationService.GetUserInSponsorOrganisation(rtsId, Guid.Parse(userId));
+
+        if (!organisationUserResponse.IsSuccessStatusCode || organisationUserResponse.Content == null)
+        {
+            return this.ServiceError(organisationUserResponse);
+        }
+
+        // find additional user details
+        var userResponse = await userService.GetUser(userId, null);
+        if (!userResponse.IsSuccessStatusCode || userResponse.Content == null)
+        {
+            return this.ServiceError(userResponse);
+        }
+
+        var orgUser = organisationUserResponse.Content;
+        var userDetails = userResponse.Content.User;
+        var userRoles = userResponse.Content.Roles;
+
+        var allowedRolesToDisplay = new List<string>
+        {
+            Roles.Sponsor,
+            Roles.OrganisationAdministrator
+        };
+
+        var model = new SponsorMyOrganisationUserViewModel
+        {
+            UserId = userId,
+            SponsorOrganisationUserId = orgUser.Id.ToString(),
+            GivenName = userDetails.GivenName,
+            FamilyName = userDetails.FamilyName,
+            Email = userDetails.Email,
+            JobTitle = userDetails.JobTitle,
+            Organisation = userDetails.Organisation,
+            Telephone = userDetails.Telephone,
+            Title = userDetails.Title,
+            IsAuthoriser = orgUser.IsAuthoriser ? "Yes" : "No",
+            Status = orgUser.IsActive ? "Active" : "Disabled",
+            Role = userRoles != null ?
+                string.Join(",", userRoles.Where(x => allowedRolesToDisplay.Contains(x)).Select(y => y.Replace("_", " ")?.ToSentenceCase())) :
+                string.Empty,
+            RtsId = rtsId,
+            SponsorOrganisationName = ctx.RtsOrganisation.Name
+        };
+
+        return View(model);
     }
 
     private sealed record SponsorOrgContext(
