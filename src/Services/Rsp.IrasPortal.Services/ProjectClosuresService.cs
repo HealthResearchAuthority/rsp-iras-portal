@@ -20,11 +20,12 @@ public class ProjectClosuresService
         return apiResponse.ToServiceResponse();
     }
 
-    //public async Task<ServiceResponse<ProjectClosuresResponse>> GetProjectClosure(string projectRecordId)
-    //{
-    //    var apiResponse = await projectClosuresServiceClient.GetProjectClosure(projectRecordId);
-    //    return apiResponse.ToServiceResponse();
-    //}
+    public async Task<ServiceResponse<ProjectClosuresResponse>> GetProjectClosureById(string projectRecordId)
+    {
+        var apiResponse = await projectClosuresServiceClient.GetProjectClosureById(projectRecordId);
+
+        return apiResponse.ToServiceResponse();
+    }
 
     /// <summary>
     /// Gets project closures records for specific sponsorOrganisationUserId with filtering, sorting and pagination
@@ -36,7 +37,7 @@ public class ProjectClosuresService
     /// <param name="sortField">The field name by which the results should be sorted.</param>
     /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
     /// <returns>Returns a paginated list of project closures.</returns>
-    public async Task<ServiceResponse<ProjectClosuresResponse>> GetProjectClosuresBySponsorOrganisationUserId
+    public async Task<ServiceResponse<ProjectClosuresSearchResponse>> GetProjectClosuresBySponsorOrganisationUserId
     (
         Guid sponsorOrganisationUserId,
         ProjectClosuresSearchRequest searchQuery,

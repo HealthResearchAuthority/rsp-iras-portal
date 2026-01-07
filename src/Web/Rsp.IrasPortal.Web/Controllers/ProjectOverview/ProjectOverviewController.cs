@@ -30,7 +30,8 @@ public class ProjectOverviewController
     IRtsService rtsService,
     IValidator<ApprovalsSearchModel> validator,
     IValidator<QuestionnaireViewModel> docValidator,
-    IProjectClosuresService projectClosuresService
+    IProjectClosuresService projectClosuresService,
+    IUserManagementService userManagementService
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, docValidator)
 {
     private readonly IRespondentService _respondentService = respondentService;
@@ -47,7 +48,7 @@ public class ProjectOverviewController
             return result;
         }
 
-        if (projectOverview.Value is ProjectOverviewModel model && model.Status == ProjectRecordStatus.Active)
+        if (projectOverview.Value is ProjectOverviewModel model && model.Status is ProjectRecordStatus.Active or ProjectRecordStatus.PendingClosure)
         {
             return RedirectToAction(nameof(ProjectDetails), new { projectRecordId, backRoute, modificationId });
         }
@@ -153,9 +154,26 @@ public class ProjectOverviewController
             RouteName = "pov:postapproval",
             AdditionalParameters = new Dictionary<string, string>() { { "projectRecordId", projectRecordId } }
         };
-        //Project closure details
-        //var projectClosure = projectClosuresService.GetProjectClosuresBySponsorOrganisationUserId
 
+        //Project closure details
+        var projectClosureResponse = await projectClosuresService.GetProjectClosureById(projectRecordId);
+        if (projectClosureResponse.Content != null)
+        {
+            var userManagementServiceResponse =
+                        await userManagementService.GetUser(projectClosureResponse?.Content?.UserId, null);
+
+            var emailId = (userManagementServiceResponse?.Content?.User).Email;
+
+            model.ProjectClosureModel = new ProjectClosuresModel
+            {
+                Id = projectClosureResponse?.Content?.UserId,
+                DateActioned = projectClosureResponse?.Content?.DateActioned,
+                SentToSponsorDate = projectClosureResponse?.Content?.SentToSponsorDate,
+                UserEmail = emailId,
+                ClosureDate = projectClosureResponse?.Content?.ClosureDate,
+                Status = projectClosureResponse?.Content?.Status
+            };
+        }
         return View(model);
     }
 
