@@ -9,7 +9,6 @@ using Microsoft.Extensions.Primitives;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
@@ -24,11 +23,12 @@ namespace Rsp.IrasPortal.UnitTests.Web.Features.SponsorWorkspace.MyOrganisations
 public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsController>
 {
     private const string DefaultEmail = "dan.hulmston@test.com";
-    private readonly DefaultHttpContext _http;
     private readonly Mock<IApplicationsService> _applicationService;
+    private readonly DefaultHttpContext _http;
 
     public MyOrganisationsControllerTests()
     {
+        _applicationService = Mocker.GetMock<IApplicationsService>();
         _http = new DefaultHttpContext
         {
             Session = new InMemorySession()
@@ -110,18 +110,6 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         Mocker.GetMock<ISponsorOrganisationService>()
             .Setup(s => s.GetSponsorOrganisationByRtsId(rtsId))
             .ReturnsAsync(rbResponse);
-    }
-
-    public MyOrganisationsControllerTests()
-    {
-        _applicationService = Mocker.GetMock<IApplicationsService>();
-        _http = new DefaultHttpContext
-        {
-            Session = new InMemorySession()
-        };
-
-        Sut.ControllerContext = new ControllerContext { HttpContext = _http };
-        Sut.TempData = new TempDataDictionary(_http, Mock.Of<ITempDataProvider>());
     }
 
     private void SetUser(Guid userId)
@@ -592,7 +580,8 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         result.ShouldBeOfType<StatusCodeResult>().StatusCode.ShouldBe(400);
     }
 
-    [Theory, AutoData]
+    [Theory]
+    [AutoData]
     public async Task MyOrganisationProjects_ShouldReturnProjectResults(
         PaginatedResponse<CompleteProjectRecordResponse> mockResponse
     )
@@ -605,7 +594,8 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
             rtsOrganisation: new OrganisationDto { Name = "Project Org", CountryName = "UK" });
 
         var searchModel = new SponsorOrganisationProjectSearchModel { IrasId = "1234" };
-        _http.Session.SetString(SessionKeys.SponsorMyOrganisationsProjectsSearch, JsonSerializer.Serialize(searchModel));
+        _http.Session.SetString(SessionKeys.SponsorMyOrganisationsProjectsSearch,
+            JsonSerializer.Serialize(searchModel));
 
         var serviceResponse = new ServiceResponse<PaginatedResponse<CompleteProjectRecordResponse>>
         {
@@ -614,7 +604,8 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         };
 
         _applicationService
-            .Setup(s => s.GetPaginatedApplications(It.IsAny<ProjectRecordSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetPaginatedApplications(It.IsAny<ProjectRecordSearchRequest>(), 1, 20, It.IsAny<string>(),
+                It.IsAny<string>()))
             .ReturnsAsync(serviceResponse);
 
         // Act
@@ -629,7 +620,8 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         resultModel.ProjectRecords.Count().ShouldBeGreaterThan(0);
     }
 
-    [Theory, AutoData]
+    [Theory]
+    [AutoData]
     public async Task MyOrganisationProjectsFilter_ShouldRedirectWhenModelIsValid(
         SponsorMyOrganisationProjectsViewModel mockModel
     )
@@ -637,7 +629,8 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         // Arrange
 
         var searchModel = new SponsorOrganisationProjectSearchModel { IrasId = "12345" };
-        _http.Session.SetString(SessionKeys.SponsorMyOrganisationsProjectsSearch, JsonSerializer.Serialize(searchModel));
+        _http.Session.SetString(SessionKeys.SponsorMyOrganisationsProjectsSearch,
+            JsonSerializer.Serialize(searchModel));
 
         var mockValidator = Mocker.GetMock<IValidator<SponsorOrganisationProjectSearchModel>>();
         mockValidator
@@ -656,7 +649,8 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         storedJson.ShouldNotBeNullOrWhiteSpace();
     }
 
-    [Theory, AutoData]
+    [Theory]
+    [AutoData]
     public async Task MyOrganisationProjectsFilter_ShouldReturnSameViewWhenModelIsNotValid(
         SponsorMyOrganisationProjectsViewModel mockModel
     )
@@ -664,12 +658,14 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         // Arrange
 
         var searchModel = new SponsorOrganisationProjectSearchModel { IrasId = "12345" };
-        _http.Session.SetString(SessionKeys.SponsorMyOrganisationsProjectsSearch, JsonSerializer.Serialize(searchModel));
+        _http.Session.SetString(SessionKeys.SponsorMyOrganisationsProjectsSearch,
+            JsonSerializer.Serialize(searchModel));
 
         var mockValidator = Mocker.GetMock<IValidator<SponsorOrganisationProjectSearchModel>>();
         mockValidator
             .Setup(v => v.ValidateAsync(It.IsAny<SponsorOrganisationProjectSearchModel>(), default))
-            .ReturnsAsync(new ValidationResult() { Errors = new List<ValidationFailure> { new ValidationFailure("createddate", "Some Error") } });
+            .ReturnsAsync(new ValidationResult
+            { Errors = new List<ValidationFailure> { new("createddate", "Some Error") } });
 
         // Act
         var result = await Sut.ApplyProjectRecordsFilters(mockModel);
@@ -680,7 +676,8 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         actualResult.Model.ShouldBeOfType<SponsorMyOrganisationProjectsViewModel>();
     }
 
-    [Theory, AutoData]
+    [Theory]
+    [AutoData]
     public void MyOrganisationProjectsClearFilters_ShouldReturnRemoveAllFilters(
         SponsorOrganisationProjectSearchModel mockModel
     )
@@ -706,7 +703,8 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         updatedSearch.IrasId.ShouldBe(mockModel.IrasId);
     }
 
-    [Theory, AutoData]
+    [Theory]
+    [AutoData]
     public async Task MyOrganisationProjectsRemoveFromDateFilter_ShouldReturnRemoveSingleFilter(
         SponsorOrganisationProjectSearchModel mockModel
     )
@@ -741,7 +739,8 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         updatedSearch.FromDate.ShouldBeNull();
     }
 
-    [Theory, AutoData]
+    [Theory]
+    [AutoData]
     public async Task MyOrganisationProjectsRemoveToDateFilter_ShouldReturnRemoveSingleFilter(
         SponsorOrganisationProjectSearchModel mockModel
     )
@@ -793,7 +792,8 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         redirectResult.RouteValues!["rtsId"].ShouldBe(rtsId);
     }
 
-    [Theory, AutoData]
+    [Theory]
+    [AutoData]
     public async Task MyOrganisationUsers_ShouldReturnServiceError_WhenRtsFails(
         ClaimsPrincipal userClaims
     )
@@ -1683,13 +1683,14 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         var rtsId = "87765";
         var userId = SetUser(Guid.NewGuid(), DefaultEmail);
 
-        var sponsorOrganisationDto = new SponsorOrganisationDto()
+        var sponsorOrganisationDto = new SponsorOrganisationDto
         {
-            Id = Guid.NewGuid(),
+            Id = Guid.NewGuid()
         };
 
         SetupSponsorOrgContextSuccess(rtsId, DefaultEmail,
-            rtsOrganisation: new OrganisationDto { Name = "Acme Sponsor Org", CountryName = "UK" }, sponsorOrganisation: sponsorOrganisationDto);
+            rtsOrganisation: new OrganisationDto { Name = "Acme Sponsor Org", CountryName = "UK" },
+            sponsorOrganisation: sponsorOrganisationDto);
 
         var searchQuery = "one@test.com";
         _http.Request.QueryString = new QueryString($"?SearchQuery={Uri.EscapeDataString(searchQuery)}");
@@ -1899,7 +1900,7 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         {
             FromDay = fromDay,
             FromMonth = fromMonth,
-            FromYear = fromYear,
+            FromYear = fromYear
         };
 
         // Assert
@@ -1921,7 +1922,7 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         {
             ToDay = toDay,
             ToMonth = toMonth,
-            ToYear = toYear,
+            ToYear = toYear
         };
 
         // Assert
@@ -2240,7 +2241,8 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
     }
 
     [Fact]
-    public async Task MyOrganisationUsersConfirmAddUser_WhenAddUserToSponsorOrganisationFails_ReturnsServiceError_AndDoesNotUpdateRoles()
+    public async Task
+        MyOrganisationUsersConfirmAddUser_WhenAddUserToSponsorOrganisationFails_ReturnsServiceError_AndDoesNotUpdateRoles()
     {
         // Arrange
         var rtsId = "87765";
