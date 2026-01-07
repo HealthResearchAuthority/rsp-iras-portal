@@ -12,6 +12,7 @@ using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.Identity;
+using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Features.SponsorWorkspace.MyOrganisations.Controllers;
 using Rsp.IrasPortal.Web.Features.SponsorWorkspace.MyOrganisations.Models;
 using Claim = System.Security.Claims.Claim;
@@ -1742,5 +1743,83 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         var view = result.ShouldBeOfType<ViewResult>();
         var model = view.Model.ShouldBeOfType<SponsorMyOrganisationUsersViewModel>();
         model.RtsId.ShouldBe(rtsId);
+    }
+
+    [Fact]
+    public async Task SponsorOrganisationProjectSearchModelBuildsDateFilters()
+    {
+        // Arrange
+        var fromDay = "10";
+        var fromMonth = "11";
+        var fromYear = "2022";
+
+        var fromDate = DateTimeExtensions.ParseDateValidation(fromDay, fromMonth, fromYear);
+
+        var toDay = "15";
+        var toMonth = "12";
+        var toYear = "2023";
+
+        var toDate = DateTimeExtensions.ParseDateValidation(toDay, toMonth, toYear);
+
+        //var exectedFilter = "Created date",
+        //        [$"{fromDate:d MMM yyyy} to {toDate:d MMM yyyy}"]
+
+        // Act
+        var result = new SponsorOrganisationProjectSearchModel
+        {
+            FromDay = fromDay,
+            FromMonth = fromMonth,
+            FromYear = fromYear,
+            ToDay = toDay,
+            ToMonth = toMonth,
+            ToYear = toYear
+        };
+
+        // Assert
+        result.Filters.ShouldContain(x => x.Key == "Created date");
+    }
+
+    [Fact]
+    public async Task SponsorOrganisationProjectSearchModelBuildsFromDateFilters()
+    {
+        // Arrange
+        var fromDay = "10";
+        var fromMonth = "11";
+        var fromYear = "2022";
+
+        var fromDate = DateTimeExtensions.ParseDateValidation(fromDay, fromMonth, fromYear);
+
+        // Act
+        var result = new SponsorOrganisationProjectSearchModel
+        {
+            FromDay = fromDay,
+            FromMonth = fromMonth,
+            FromYear = fromYear,
+        };
+
+        // Assert
+        result.Filters.ShouldContain(x => x.Key == "Date created - from");
+    }
+
+    [Fact]
+    public async Task SponsorOrganisationProjectSearchModelBuildsToDateFilters()
+    {
+        // Arrange
+        var toDay = "10";
+        var toMonth = "11";
+        var toYear = "2022";
+
+        var toDate = DateTimeExtensions.ParseDateValidation(toDay, toMonth, toYear);
+
+        // Act
+        var result = new SponsorOrganisationProjectSearchModel
+        {
+            ToDay = toDay,
+            ToMonth = toMonth,
+            ToYear = toYear,
+        };
+
+        // Assert
+        result.Filters.ShouldContain(x => x.Key == "Date created - to");
     }
 }
