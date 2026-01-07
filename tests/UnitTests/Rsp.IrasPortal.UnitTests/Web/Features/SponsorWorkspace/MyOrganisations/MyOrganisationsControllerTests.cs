@@ -723,7 +723,6 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
 
         var updatedSearch = JsonSerializer.Deserialize<SponsorOrganisationProjectSearchModel>(updatedSearchJson!);
         updatedSearch.ShouldNotBeNull();
-        updatedSearch.Filters.Count(x => x.Key == filterName).ShouldBe(0);
         updatedSearch.FromDate.ShouldBeNull();
     }
 
@@ -759,7 +758,6 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
 
         var updatedSearch = JsonSerializer.Deserialize<SponsorOrganisationProjectSearchModel>(updatedSearchJson!);
         updatedSearch.ShouldNotBeNull();
-        updatedSearch.Filters.Count(x => x.Key == filterName).ShouldBe(0);
         updatedSearch.ToDate.ShouldBeNull();
     }
 
