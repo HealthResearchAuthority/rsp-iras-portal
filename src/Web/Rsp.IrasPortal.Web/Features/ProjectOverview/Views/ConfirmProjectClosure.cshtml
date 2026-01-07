@@ -21,27 +21,31 @@
     var headline = pageContent.GetValueOrDefault("Application.ConfirmProjectClosure.Title", null);
     var body = pageContent.GetValueOrDefault("Application.ConfirmProjectClosure.Body", null);
 }
-<div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-        <div class="govuk-panel govuk-panel--confirmation">
-            <h1 class="govuk-panel__title">
-                Closure sent to sponsor
-            </h1>
+<div class="govuk-width-container">
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <div class="govuk-panel govuk-panel--confirmation">
+                <h1 class="govuk-panel__title">
+                    Closure sent to sponsor
+                </h1>
+            </div>
+
+            <h2 class="govuk-heading-m">
+                <strong>
+                    @Html.Raw(headline?.Value)
+                </strong>
+            </h2>
+
+            <p class="govuk-body">
+                @Html.Raw(body?.Value)
+            </p>
         </div>
-
-        <h2 class="govuk-heading-m">
-            <strong>
-                @Html.Raw(headline?.Value)
-            </strong>
-        </h2>
-
-        <p class="govuk-body">
-            @Html.Raw(body?.Value)
-        </p>
     </div>
-    <div class="save-buttons">
-        <a class="govuk-button" asp-route="pov:postapproval" asp-route-projectRecordId="@projectRecordId">
-            Return to project overview
-        </a>
+    <div class="govuk-grid-row">
+        <div class="save-buttons">
+            <a class="govuk-button" asp-route="pov:postapproval" asp-route-projectRecordId="@projectRecordId">
+                Return to project overview
+            </a>
+        </div>
     </div>
 </div>

@@ -299,7 +299,7 @@ public class ApplicationController
 
     [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Close)]
     [HttpPost]
-    public async Task<IActionResult> ConfirmProjectClosure(ProjectClosuresModel model)
+    public async Task<IActionResult> ConfirmProjectClosure(ProjectClosuresModel model, DateTime? plannedProjectEndDate)
     {
         var validationResult = await closureValidator.ValidateAsync(model);
 
@@ -309,6 +309,8 @@ public class ApplicationController
             {
                 ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
             }
+            TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
+            TempData.TryAdd(TempDataKeys.PlannedProjectEndDate, plannedProjectEndDate?.ToString("dd MMMM yyyy"));
             return RedirectToAction(nameof(CloseProject), new { projectRecordId = model.ProjectRecordId });
         }
 
@@ -350,6 +352,7 @@ public class ApplicationController
                 UpdatedBy = userName,
                 CreatedBy = userName,
                 ShortProjectTitle = model.ShortProjectTitle,
+                FullProjectTitle = model.ShortProjectTitle
             }
         );
 

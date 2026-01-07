@@ -19,7 +19,7 @@ public interface IProjectClosuresService : IInterceptable
     /// <param name="sortField">The field name by which the results should be sorted.</param>
     /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
     /// <returns>Returns a paginated list of project closures.</returns>
-    public Task<ServiceResponse<ProjectClosuresResponse>> GetProjectClosuresBySponsorOrganisationUserId
+    public Task<ServiceResponse<ProjectClosuresSearchResponse>> GetProjectClosuresBySponsorOrganisationUserId
    (
        Guid sponsorOrganisationUserId,
        ProjectClosuresSearchRequest searchQuery,
@@ -36,5 +36,5 @@ public interface IProjectClosuresService : IInterceptable
     /// <returns></returns>
     public Task<ServiceResponse<ProjectClosuresResponse>> CreateProjectClosure(ProjectClosureRequest projectClosureRequest);
 
-    //public Task<ServiceResponse<ProjectClosuresResponse>> GetProjectClosure(string projectRecordId);
+    public Task<ServiceResponse<ProjectClosuresResponse>> GetProjectClosureById(string projectRecordId);
 }

@@ -42,12 +42,12 @@ public class AuthorisationsProjectClosuresControllerTests
 
     [Theory]
     [AutoData]
-    public async Task ProjectClosures_Returns_View_With_Correct_Model(ProjectClosuresResponse closuresResponse, List<User> users)
+    public async Task ProjectClosures_Returns_View_With_Correct_Model(ProjectClosuresSearchResponse closuresResponse, List<User> users)
     {
         // arrange at least 1 matching user id.
         closuresResponse.ProjectClosures.First().UserId = users[0].Id;
 
-        var serviceResponse = new ServiceResponse<ProjectClosuresResponse>
+        var serviceResponse = new ServiceResponse<ProjectClosuresSearchResponse>
         {
             StatusCode = HttpStatusCode.OK,
             Content = closuresResponse

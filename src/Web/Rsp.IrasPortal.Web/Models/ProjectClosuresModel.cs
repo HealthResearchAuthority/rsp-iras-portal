@@ -2,7 +2,7 @@
 
 public class ProjectClosuresModel
 {
-    public Guid Id { get; set; }
+    public string Id { get; set; } = null!;
     public string ProjectRecordId { get; set; } = null!;
     public string ShortProjectTitle { get; set; } = null!;
     public string Status { get; set; } = null!;

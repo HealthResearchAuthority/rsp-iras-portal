@@ -8,6 +8,7 @@ public class ProjectClosuresDto
     public string Status { get; set; } = null!;
     public int? IrasId { get; set; } = null;
     public string UserId { get; set; } = null!;
+    public string? UserEmail { get; set; } = null;
     public string CreatedBy { get; set; } = null!;
     public string UpdatedBy { get; set; } = null!;
     public DateTime? DateActioned { get; set; } = null;

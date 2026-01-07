@@ -23,7 +23,7 @@ public interface IProjectClosuresServiceClient
     /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
     /// <returns>Returns a paginated list of project closures.</returns>
     [Post("/projectclosure/getprojectclosuresbysponsororganisationuserid")]
-    public Task<ApiResponse<ProjectClosuresResponse>> GetProjectClosuresBySponsorOrganisationUserId
+    public Task<ApiResponse<ProjectClosuresSearchResponse>> GetProjectClosuresBySponsorOrganisationUserId
     (
         Guid sponsorOrganisationUserId,
         [Body] ProjectClosuresSearchRequest searchQuery,
@@ -33,6 +33,19 @@ public interface IProjectClosuresServiceClient
         string sortDirection = SortDirections.Descending
     );
 
+    /// <summary>
+    /// Create a record in the project closure table
+    /// </summary>
+    /// <param name="projectClosureRequest"></param>
+    /// <returns></returns>
     [Post("/projectclosure/createprojectclosure")]
     public Task<ApiResponse<ProjectClosuresResponse>> CreateProjectClosure(ProjectClosureRequest projectClosureRequest);
+
+    /// <summary>
+    /// Get the record from the project closure table
+    /// </summary>
+    /// <param name="projectRecordId"></param>
+    /// <returns></returns>
+    [Get("/projectclosure/getprojectclosurebyid")]
+    public Task<ApiResponse<ProjectClosuresResponse>> GetProjectClosureById(string projectRecordId);
 }
