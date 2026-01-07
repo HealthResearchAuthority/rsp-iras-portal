@@ -41,7 +41,13 @@
 
             @if (showSuccessMessage is true)
             {
-                <partial name="_NotificationBanner" model="@(successEditMessageLabel?.Value, successEditMessageBody?.Value)" />
+                <partial name="_NotificationBanner"
+                         model="@(new NotificationBannerModel
+                                {
+                                    Title = successEditMessageLabel?.Value,
+                                    Heading = successEditMessageBody?.Value
+                                })" />
+
             }
 
             <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">

@@ -21,8 +21,14 @@
 
 	@if (showSuccessMessage is true)
 	{
-		<partial name="_NotificationBanner" model="@(settingsSavedTitle?.Value, settingsSavedBody?.Value)" />
-	}
+        <partial name="_NotificationBanner"
+                 model="@(new NotificationBannerModel
+                        {
+                            Title = settingsSavedTitle?.Value,
+                            Heading = settingsSavedBody?.Value
+                        })" />
+
+    }
 
 	<div class="govuk-grid-column-two-thirds">
 		<h1 class="govuk-heading-l">@Html.Raw(title?.Value)</h1>

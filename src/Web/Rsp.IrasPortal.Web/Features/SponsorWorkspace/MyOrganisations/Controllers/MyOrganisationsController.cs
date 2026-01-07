@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -27,6 +28,8 @@ public class MyOrganisationsController(
     IUserManagementService userService
 ) : Controller
 {
+    private static readonly EmailAddressAttribute EmailValidator = new();
+
     [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Search)]
     [HttpGet]
     public async Task<IActionResult> MyOrganisations
@@ -307,7 +310,6 @@ public class MyOrganisationsController(
         {
             return ctxResult.Result!;
         }
-
         var ctx = ctxResult.Context!;
 
         var auditResponse = await sponsorOrganisationService.SponsorOrganisationAuditTrail(
@@ -336,7 +338,6 @@ public class MyOrganisationsController(
         {
             return ctxResult.Result!;
         }
-
         var ctx = ctxResult.Context!;
 
         var model = new SponsorMyOrganisationUsersViewModel
@@ -345,7 +346,7 @@ public class MyOrganisationsController(
             RtsId = rtsId
         };
 
-        if (Request.Query.ContainsKey("SearchQuery") && string.IsNullOrWhiteSpace(searchQuery))
+        if (Request.Query.ContainsKey("SearchQuery") && !EmailValidator.IsValid(searchQuery))
         {
             ModelState.AddModelError("SearchQuery", "Enter a user email");
             return View(model);
@@ -360,8 +361,19 @@ public class MyOrganisationsController(
 
         if (usersResponse is { IsSuccessStatusCode: true, Content.TotalCount: 1 })
         {
+            // CHECK IF USER ALREADY IN SPONSOR ORG
+
             var user = usersResponse.Content.Users.First();
-            return RedirectToAction(nameof(MyOrganisationUsersAddUserRole), new { rtsId, userId = user.Id });
+
+            var sponsorOrganisations = await sponsorOrganisationService.GetAllActiveSponsorOrganisationsForEnabledUser(Guid.Parse(user.Id));
+
+            if (!sponsorOrganisations.Content.Any(x => x.Id == ctx.SponsorOrganisation.Id))
+            {
+                return RedirectToAction(nameof(MyOrganisationUsersAddUserRole), new { rtsId, userId = user.Id });
+            }
+
+            TempData[TempDataKeys.ShowNotificationBanner] = true;
+            return View(model);
         }
 
         return RedirectToAction(nameof(MyOrganisationUsersInvalidUser), new { rtsId });
@@ -379,40 +391,151 @@ public class MyOrganisationsController(
     }
 
     [HttpGet]
-    public async Task<IActionResult> MyOrganisationUsersAddUserRole(string rtsId, string userId, string? role)
+    public async Task<IActionResult> MyOrganisationUsersAddUserRole(string rtsId, string userId, string? role, bool nextPage = false)
     {
+        var ctxResult = await TryGetSponsorOrgContext(rtsId);
+        if (ctxResult.HasResult)
+        {
+            return ctxResult.Result!;
+        }
+        var ctx = ctxResult.Context!;
+
         var model = new SponsorMyOrganisationUsersViewModel
         {
-            RtsId = rtsId
-            // Populate anything else you need for the page (e.g. Name) as you already do elsewhere
+            Name = ctx.RtsOrganisation.Name,
+            RtsId = rtsId,
+            UserId = userId,
+            Role = role
         };
 
         // If the form has been submitted (Role exists) but nothing selected
         if (Request.Query.ContainsKey("Role") && string.IsNullOrWhiteSpace(role))
         {
-            ModelState.AddModelError("Role", "Select a role");
+            ModelState.AddModelError("Role", "Select a user role");
             return View(model);
         }
 
         // First visit to the page (no Role in querystring)
         if (!Request.Query.ContainsKey("Role"))
         {
-            return View(model);
+            TempData[TempDataKeys.ShowNotificationBanner] = true;
         }
 
-        // Role selected - continue (redirect to next step or whatever your flow is)
-        return RedirectToAction(nameof(MyOrganisationUsersAddUserPermission), new { rtsId, userId, role });
+        if (nextPage)
+        {
+            // Role selected - continue (redirect to next step or whatever your flow is)
+            return RedirectToAction(nameof(MyOrganisationUsersAddUserPermission), new { rtsId, userId, role });
+        }
+
+        return View(model);
     }
 
     [HttpGet]
-    public async Task<IActionResult> MyOrganisationUsersAddUserPermission(string rtsId, string userId, string? role)
+    public async Task<IActionResult> MyOrganisationUsersAddUserPermission(string rtsId, string userId, string? role, bool canAuthorise, bool nextPage = false)
     {
+        var ctxResult = await TryGetSponsorOrgContext(rtsId);
+        if (ctxResult.HasResult)
+        {
+            return ctxResult.Result!;
+        }
+
+        var ctx = ctxResult.Context!;
+
+        if (role != "Sponsor")
+        {
+            canAuthorise = true;
+        }
+
         var model = new SponsorMyOrganisationUsersViewModel
         {
-            RtsId = rtsId
+            Name = ctx.RtsOrganisation.Name,
+            RtsId = rtsId,
+            UserId = userId,
+            Role = role,
+            CanAuthorise = canAuthorise
+        };
+
+        if (nextPage)
+        {
+            // Role selected - continue (redirect to next step or whatever your flow is)
+            return RedirectToAction(nameof(MyOrganisationUsersCheckAndConfirm), new { rtsId, userId, role, canAuthorise });
+        }
+
+        return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> MyOrganisationUsersCheckAndConfirm(string rtsId, string userId, string? role, bool canAuthorise)
+    {
+        var ctxResult = await TryGetSponsorOrgContext(rtsId);
+        if (ctxResult.HasResult)
+        {
+            return ctxResult.Result!;
+        }
+
+        var ctx = ctxResult.Context!;
+
+        if (role != "Sponsor")
+        {
+            canAuthorise = true;
+        }
+
+        var user = await userService.GetUser(userId, null);
+
+        var model = new SponsorMyOrganisationUsersViewModel
+        {
+            Name = ctx.RtsOrganisation.Name,
+            RtsId = rtsId,
+            UserId = userId,
+            Role = role,
+            CanAuthorise = canAuthorise,
+            Email = user?.Content?.User.Email ?? string.Empty
         };
 
         return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> MyOrganisationUsersConfirmAddUser(string rtsId, string userId, string? role, bool canAuthorise)
+    {
+        var ctxResult = await TryGetSponsorOrgContext(rtsId);
+        if (ctxResult.HasResult)
+        {
+            return ctxResult.Result!;
+        }
+
+        var ctx = ctxResult.Context!;
+        var userResponse = await userService.GetUser(userId, null);
+        var user = userResponse.Content.User;
+
+        var dto = new SponsorOrganisationUserDto
+        {
+            Id = ctx.SponsorOrganisation.Id,
+            RtsId = rtsId,
+            UserId = Guid.Parse(user.Id),
+            Email = user.Email,
+            DateAdded = DateTime.UtcNow,
+            SponsorRole = role,
+            IsAuthoriser = canAuthorise
+        };
+
+        var response = await sponsorOrganisationService.AddUserToSponsorOrganisation(dto);
+        if (!response.IsSuccessStatusCode)
+        {
+            return this.ServiceError(response);
+        }
+
+        var updateRole = await userService.UpdateRoles(user.Email, null,
+            role == "Sponsor" ? Roles.Sponsor : Roles.OrganisationAdministrator);
+
+        if (!updateRole.IsSuccessStatusCode)
+        {
+            return this.ServiceError(updateRole);
+        }
+
+        TempData[TempDataKeys.ShowNotificationBanner] = true;
+        TempData[TempDataKeys.SponsorOrganisationUserType] = "add";
+        return RedirectToAction(nameof(MyOrganisationUsers), new { rtsId });
     }
 
     [NonAction]
