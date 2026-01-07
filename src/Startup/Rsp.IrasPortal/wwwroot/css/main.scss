@@ -1050,7 +1050,6 @@ button.govuk-pagination__item--current {
     background: #ffffff;
 }
 
-
 /* Hide all panels by default */
 .tab-content {
     display: none;
@@ -1125,4 +1124,8 @@ button.govuk-pagination__item--current {
     background-color: #fd0;
     color: #0b0c0c;
     text-decoration: none;
+}
+
+.extra-bottom-margin {
+    margin-bottom: 25px;
 }

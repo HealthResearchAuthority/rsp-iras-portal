@@ -1,11 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using System.Text.Json;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.IrasPortal.Application.Extensions;
 using Rsp.IrasPortal.Application.Filters;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.AccessControl;
@@ -22,10 +25,13 @@ namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace.MyOrganisations.Controlle
 /// </summary>
 [Authorize(Policy = Workspaces.Sponsor)]
 [Route("sponsorworkspace/[action]", Name = "sws:[action]")]
+[FeatureGate(FeatureFlags.SponsorManagementWorkspace)]
 public class MyOrganisationsController(
     ISponsorOrganisationService sponsorOrganisationService,
     IRtsService rtsService,
-    IUserManagementService userService
+    IUserManagementService userService,
+    IApplicationsService applicationsService,
+    IValidator<SponsorOrganisationProjectSearchModel> validator
 ) : Controller
 {
     private static readonly EmailAddressAttribute EmailValidator = new();
@@ -126,25 +132,165 @@ public class MyOrganisationsController(
 
     [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Projects)]
     [HttpGet]
-    public async Task<IActionResult> MyOrganisationProjects(string rtsId)
+    public async Task<IActionResult> MyOrganisationProjects(
+        string rtsId,
+        int pageNumber = 1,
+        int pageSize = 20,
+        string? sortField = "createddate",
+        string? sortDirection = SortDirections.Descending)
     {
         ViewBag.Active = MyOrganisationProfileOverview.Projects;
 
         var ctxResult = await TryGetSponsorOrgContext(rtsId);
-        if (ctxResult.HasResult)
-        {
-            return ctxResult.Result!;
-        }
 
         var ctx = ctxResult.Context!;
 
-        var model = new SponsorMyOrganisationProfileViewModel
+        var model = new SponsorMyOrganisationProjectsViewModel
         {
             Name = ctx.RtsOrganisation.Name,
             RtsId = rtsId
         };
 
+        var searchQuery = new ProjectRecordSearchRequest
+        {
+            SponsorOrganisation = rtsId,
+            ActiveProjectsOnly = true,
+            AllowedStatuses = User.GetAllowedStatuses(StatusEntitiy.ProjectRecord)
+        };
+
+        var json = HttpContext.Session.GetString(SessionKeys.SponsorMyOrganisationsProjectsSearch);
+        if (!string.IsNullOrEmpty(json))
+        {
+            model.Search = JsonSerializer.Deserialize<SponsorOrganisationProjectSearchModel>(json)!;
+
+            searchQuery.IrasId = model.Search.IrasId;
+            searchQuery.FromDate = model.Search.FromDate;
+            searchQuery.ToDate = model.Search.ToDate;
+        }
+
+        var projects = await applicationsService.GetPaginatedApplications(
+            searchQuery,
+            pageNumber,
+            pageSize,
+            sortField,
+            sortDirection
+            );
+
+        model.ProjectRecords = projects?.Content?.Items ?? [];
+
+        model.Pagination = new PaginationViewModel(pageNumber, pageSize, projects?.Content?.TotalCount ?? 0)
+        {
+            RouteName = "sws:myorganisationprojects",
+            SortDirection = sortDirection,
+            SortField = sortField,
+            FormName = "my-organisation-projects",
+            AdditionalParameters = new Dictionary<string, string> { { "rtsId", rtsId } }
+        };
+
         return View(model);
+    }
+
+    [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Projects)]
+    [HttpPost]
+    [CmsContentAction(nameof(MyOrganisationProjects))]
+    public async Task<IActionResult> ApplyProjectRecordsFilters(SponsorMyOrganisationProjectsViewModel model)
+    {
+        var validationResult = await validator.ValidateAsync(model.Search);
+
+        if (!validationResult.IsValid)
+        {
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
+
+            return View(nameof(MyOrganisationProjects), model);
+        }
+
+        HttpContext.Session.SetString(SessionKeys.SponsorMyOrganisationsProjectsSearch, JsonSerializer.Serialize(model.Search));
+
+        return RedirectToAction(nameof(MyOrganisationProjects), new { rtsId = model.RtsId });
+    }
+
+    [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Projects)]
+    [HttpGet]
+    [CmsContentAction(nameof(MyOrganisationProjects))]
+    public IActionResult ClearProjectRecordsFilters(string rtsId)
+    {
+        var json = HttpContext.Session.GetString(SessionKeys.SponsorMyOrganisationsProjectsSearch);
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return RedirectToAction(nameof(MyOrganisationProjects), new { rtsId });
+        }
+
+        var search = JsonSerializer.Deserialize<SponsorOrganisationProjectSearchModel>(json);
+        if (search == null)
+        {
+            return RedirectToAction(nameof(MyOrganisationProjects), new { rtsId });
+        }
+
+        // Retain only the IRAS Project ID
+        var cleanedSearch = new SponsorOrganisationProjectSearchModel
+        {
+            IrasId = search.IrasId
+        };
+
+        HttpContext.Session.SetString(SessionKeys.SponsorMyOrganisationsProjectsSearch, JsonSerializer.Serialize(cleanedSearch));
+
+        return RedirectToAction(nameof(MyOrganisationProjects), new { rtsId });
+    }
+
+    [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Projects)]
+    [HttpGet]
+    [CmsContentAction(nameof(Index))]
+    public async Task<IActionResult> RemoveProjectRecordFilter(string key, string? value, string rtsId)
+    {
+        var json = HttpContext.Session.GetString(SessionKeys.SponsorMyOrganisationsProjectsSearch);
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return RedirectToAction(nameof(MyOrganisationProjects), new { rtsId });
+        }
+
+        var search = JsonSerializer.Deserialize<SponsorOrganisationProjectSearchModel>(json)!;
+
+        var keyNormalized = key?.ToLowerInvariant().Replace(" ", "");
+
+        switch (keyNormalized)
+        {
+            case "datecreated-from":
+                search.FromYear = null;
+                search.FromDay = null;
+                search.FromMonth = null;
+
+                break;
+
+            case "datecreated-to":
+                search.ToDay = null;
+                search.ToYear = null;
+                search.ToMonth = null;
+
+                break;
+
+            case "datecreated":
+                search.ToDay = null;
+                search.ToYear = null;
+                search.ToMonth = null;
+
+                search.FromYear = null;
+                search.FromDay = null;
+                search.FromMonth = null;
+
+                break;
+
+            case "status":
+                search.Status = null;
+
+                break;
+        }
+
+        HttpContext.Session.SetString(SessionKeys.SponsorMyOrganisationsProjectsSearch, JsonSerializer.Serialize(search));
+
+        return await ApplyProjectRecordsFilters(new SponsorMyOrganisationProjectsViewModel { RtsId = rtsId, Search = search });
     }
 
     [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Users)]
