@@ -1,16 +1,19 @@
-﻿using System.Text.Json;
+﻿using System.Net;
+using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Application.Filters;
+using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.AccessControl;
 using Rsp.IrasPortal.Domain.Identity;
 using Rsp.IrasPortal.Web.Areas.Admin.Models;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Models;
+using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Controllers;
@@ -22,6 +25,9 @@ namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Controllers
 [Route("sponsorworkspace/[action]", Name = "sws:[action]")]
 public class AuthorisationsProjectClosuresController
 (
+    IApplicationsService applicationService,
+    IRespondentService respondentService,
+    ICmsQuestionsetService cmsQuestionsetService,
     IProjectClosuresService projectClosuresService,
     IUserManagementService userManagementService,
     IValidator<ProjectClosuresSearchModel> searchValidator
@@ -59,7 +65,8 @@ public class AuthorisationsProjectClosuresController
         model.ProjectRecords = projectClosuresServiceResponse?.Content?.ProjectClosures?
             .Select(dto => new ProjectClosuresModel
             {
-                ProjectRecordId = dto.Id,
+                Id = dto.Id,
+                ProjectRecordId = dto.ProjectRecordId,
                 ShortProjectTitle = dto.ShortProjectTitle,
                 Status = dto.Status,
                 IrasId = dto.IrasId,
@@ -121,5 +128,144 @@ public class AuthorisationsProjectClosuresController
         HttpContext.Session.SetString(SessionKeys.SponsorAuthorisationsProjectClosuresSearch, JsonSerializer.Serialize(model.Search));
         return RedirectToAction(nameof(ProjectClosures),
             new { sponsorOrganisationUserId = model.SponsorOrganisationUserId });
+    }
+
+    // 1) Shared builder used by both GET and POST
+    [NonAction]
+    private async Task<IActionResult> BuildProjectClosuresCheckAndAuthorisePageAsync
+    (
+        string projectRecordId,
+        Guid sponsorOrganisationUserId
+    )
+    {
+        // Retrieve the project record by its ID
+        var projectRecordResponse = await applicationService.GetProjectRecord(projectRecordId);
+
+        // If the service call failed, return a generic service error view
+        if (!projectRecordResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(projectRecordResponse);
+        }
+
+        var projectRecord = projectRecordResponse.Content;
+
+        if (projectRecord == null)
+        {
+            // Return a 404 error view if the project record is not found
+            var serviceResponse = new ServiceResponse()
+                .WithError("Project record not found")
+                .WithStatus(HttpStatusCode.NotFound);
+
+            return this.ServiceError(serviceResponse);
+        }
+
+        // Get all respondent answers for the project and category
+        var respondentAnswersResponse =
+            await respondentService.GetRespondentAnswers(projectRecordId, QuestionCategories.ProjectRecord);
+
+        if (!respondentAnswersResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(respondentAnswersResponse);
+        }
+
+        var answers = respondentAnswersResponse.Content;
+
+        if (answers == null)
+        {
+            // Return a 404 error view if no responses are found for the project record
+            var serviceResponse = new ServiceResponse()
+                .WithError("No responses found for the project record")
+                .WithStatus(HttpStatusCode.NotFound);
+
+            return this.ServiceError(serviceResponse);
+        }
+
+        // Get questions from CMS service
+        var additionalQuestionsResponse = await cmsQuestionsetService.GetQuestionSet();
+
+        // Build the questionnaire model containing all questions for the project ovewrview.
+        var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(additionalQuestionsResponse.Content!);
+        questionnaire.UpdateWithRespondentAnswers(answers);
+
+        // Extract key answers from the respondent answers
+        var endDateAnswer = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.ProjectPlannedEndDate)?.AnswerText;
+        var titleAnswer = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.ShortProjectTitle)?.AnswerText;
+
+        // Get actual end date from project closure service
+        // TODO - change mock to actual service use
+        var actualEndDate = "2026-01-07T14:30:00";
+
+        var model = new AuthoriseProjectClosuresOutcomeViewModel
+        {
+            ProjectRecordId = projectRecordId,
+            SponsorOrganisationUserId = sponsorOrganisationUserId,
+            ActualEndDate = DateHelper.ConvertDateToString(actualEndDate),
+            PlannedEndDate = DateHelper.ConvertDateToString(endDateAnswer),
+            IrasId = projectRecord.IrasId,
+            ShortProjectTitle = titleAnswer,
+        };
+
+        return Ok(model);
+    }
+
+    // 2) GET stays tiny and calls the builder
+    [Authorize(Policy = Permissions.Sponsor.Modifications_Review)]
+    [HttpGet]
+    public async Task<IActionResult> CheckAndAuthoriseProjectClosure(string projectRecordId, Guid sponsorOrganisationUserId)
+    {
+        var result =
+            await BuildProjectClosuresCheckAndAuthorisePageAsync(projectRecordId, sponsorOrganisationUserId);
+
+        if (result is not OkObjectResult outcome)
+        {
+            return result;
+        }
+
+        return View(outcome.Value);
+    }
+
+    // 3) POST: on invalid, rebuild the page VM and return the same view with ModelState errors
+    [Authorize(Policy = Permissions.Sponsor.Modifications_Authorise)]
+    [HttpPost]
+    public async Task<IActionResult> CheckAndAuthoriseProjectClosure(AuthoriseProjectClosuresOutcomeViewModel model)
+    {
+        // 🟢 Always build the page first, so it's hydrated for both success and error paths
+        var result = await BuildProjectClosuresCheckAndAuthorisePageAsync(
+            model.ProjectRecordId,
+            model.SponsorOrganisationUserId
+        );
+
+        if (result is not OkObjectResult res)
+        {
+            return result;
+        }
+
+        if (!ModelState.IsValid)
+        {
+            var hydrated = res.Value as AuthoriseProjectClosuresOutcomeViewModel;
+            // Preserve the posted Outcome so the radios keep the selection
+            if (hydrated is not null)
+            {
+                hydrated.Outcome = model.Outcome;
+                // copy any other posted fields you want to preserve on re-render
+            }
+
+            return View(hydrated);
+        }
+
+        // TODO
+        // update project closure status with param, just use 1 service call
+        //
+        //
+        //
+
+        return RedirectToAction(nameof(ProjectClosuresConfirmation), model);
+    }
+
+    [Authorize(Policy = Permissions.Sponsor.Modifications_Review)]
+    [HttpGet]
+    public IActionResult ProjectClosuresConfirmation(AuthoriseProjectClosuresOutcomeViewModel model)
+    {
+        return View(model);
     }
 }

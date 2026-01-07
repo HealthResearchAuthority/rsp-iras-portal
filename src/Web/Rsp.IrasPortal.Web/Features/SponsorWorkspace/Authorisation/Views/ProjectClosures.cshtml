@@ -110,7 +110,7 @@
                                     <tr class="govuk-table__row">
                                         <td class="govuk-table__cell">
                                             <a class="govuk-link"
-                                               asp-route="sws:tobedone"
+                                               asp-route="@(projectRecord.Status == ProjectClosureStatus.WithSponsor ? "sws:projectclosurescheckandauthorise" : "pov:projectdetails")"
                                                asp-route-projectRecordId="@projectRecord.ProjectRecordId"                                              
                                                asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId">
                                                 <strong>@projectRecord.ShortProjectTitle</strong>
