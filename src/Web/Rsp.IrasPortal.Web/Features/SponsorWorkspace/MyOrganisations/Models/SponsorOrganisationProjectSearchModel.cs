@@ -61,9 +61,4 @@ public class SponsorOrganisationProjectSearchModel
 
         return filters;
     }
-
-    public void ClearFiltersOnce()
-    {
-        IgnoreFilters = false;
-    }
 }
