@@ -155,26 +155,38 @@ public class ProjectOverviewController
             AdditionalParameters = new Dictionary<string, string>() { { "projectRecordId", projectRecordId } }
         };
 
-        //Project closure details
+        //project closure
+        await GetProjectClosureDetails(projectRecordId, model);
+
+        return View(model);
+    }
+
+    /// <summary>
+    /// Get project closure records from database
+    /// </summary>
+    /// <param name="projectRecordId"></param>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    private async Task GetProjectClosureDetails(string projectRecordId, PostApprovalViewModel model)
+    {
         var projectClosureResponse = await projectClosuresService.GetProjectClosureById(projectRecordId);
-        if (projectClosureResponse.Content != null)
+        if (projectClosureResponse?.Content != null)
         {
             var userManagementServiceResponse =
                         await userManagementService.GetUser(projectClosureResponse?.Content?.UserId, null);
 
-            var emailId = (userManagementServiceResponse?.Content?.User).Email;
+            var emailId = (userManagementServiceResponse?.Content?.User!).Email;
 
             model.ProjectClosureModel = new ProjectClosuresModel
             {
-                Id = projectClosureResponse?.Content?.UserId,
-                DateActioned = projectClosureResponse?.Content?.DateActioned,
-                SentToSponsorDate = projectClosureResponse?.Content?.SentToSponsorDate,
+                Id = projectClosureResponse?.Content.UserId!,
+                DateActioned = projectClosureResponse?.Content.DateActioned,
+                SentToSponsorDate = projectClosureResponse?.Content.SentToSponsorDate,
                 UserEmail = emailId,
-                ClosureDate = projectClosureResponse?.Content?.ClosureDate,
-                Status = projectClosureResponse?.Content?.Status
+                ClosureDate = projectClosureResponse?.Content.ClosureDate,
+                Status = projectClosureResponse?.Content.Status!
             };
         }
-        return View(model);
     }
 
     [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Read)]
