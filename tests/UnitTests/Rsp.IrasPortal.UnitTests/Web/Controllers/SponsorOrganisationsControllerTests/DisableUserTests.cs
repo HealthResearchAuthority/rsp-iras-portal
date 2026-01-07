@@ -21,6 +21,9 @@ public class DisableUserTests : TestServiceBase<SponsorOrganisationsController>
     {
         _http = new DefaultHttpContext { Session = new InMemorySession() };
         Sut.ControllerContext = new ControllerContext { HttpContext = _http };
+        Sut.TempData = new TempDataDictionary(
+            _http,
+            Mocker.GetMock<ITempDataProvider>().Object);
     }
 
     [Theory]
@@ -73,7 +76,6 @@ public class DisableUserTests : TestServiceBase<SponsorOrganisationsController>
                 }
             });
 
-
         var sponsorResponse = new ServiceResponse<AllSponsorOrganisationsResponse>
         {
             StatusCode = HttpStatusCode.OK,
@@ -89,7 +91,7 @@ public class DisableUserTests : TestServiceBase<SponsorOrganisationsController>
         var organisationResponse = new ServiceResponse<OrganisationDto>
         {
             StatusCode = HttpStatusCode.OK,
-            Content = new OrganisationDto { Id = rtsId, Name = orgName}
+            Content = new OrganisationDto { Id = rtsId, Name = orgName }
         };
 
         Mocker.GetMock<ISponsorOrganisationService>()

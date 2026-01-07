@@ -57,7 +57,7 @@
 {
     var notificationBanner = TempData[TempDataKeys.SponsorOrganisationUserType] switch
     {
-        "add" => "User added to this organisation",
+        "add" => "User added to organisation",
         "enable" => "User enabled",
         "disable" => "User disabled",
         _ => null
@@ -182,9 +182,8 @@
                             }
 
                             var userRole = !string.IsNullOrEmpty(sponsorOrgUser.SponsorRole) ?
-                                (CultureInfo.CurrentCulture.TextInfo.ToTitleCase(sponsorOrgUser.SponsorRole)) :
-                                "No role";
-                            var authoriserText =sponsorOrgUser.IsAuthoriser ? "Yes" : "No";
+                                sponsorOrgUser.SponsorRole.Replace("_", " ").ToLower() : "";
+                            var authoriserText = sponsorOrgUser.IsAuthoriser ? "Yes" : "No";
                             var statusClass = sponsorOrgUser.IsActive ? "govuk-tag--green" : "govuk-tag--red";
                             var statusText = sponsorOrgUser.IsActive ? "Active" : "Disabled";
 
@@ -195,7 +194,7 @@
                                     <strong class="govuk-tag @statusClass">@statusText</strong>
                                 </td>
                                 <td class="govuk-table__cell">
-                                    @userRole
+                                    @(!string.IsNullOrEmpty(userRole) ? char.ToUpper(userRole[0]) + userRole.Substring(1) : "")
                                 </td>
                                 <td class="govuk-table__cell">
                                     @authoriserText
