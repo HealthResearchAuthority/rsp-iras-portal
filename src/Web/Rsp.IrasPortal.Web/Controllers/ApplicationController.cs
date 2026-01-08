@@ -299,7 +299,7 @@ public class ApplicationController
 
     [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Close)]
     [HttpPost]
-    public async Task<IActionResult> ConfirmProjectClosure(ProjectClosuresModel model, DateTime plannedProjectEndDate)
+    public async Task<IActionResult> ConfirmProjectClosure(ProjectClosuresModel model, DateTime plannedProjectEndDate, string separator = "/")
     {
         var validationResult = await closureValidator.ValidateAsync(model);
 
@@ -327,11 +327,12 @@ public class ApplicationController
             IrasId = model.IrasId,
             ClosureDate = model.ActualClosureDate.Date,
             DateActioned = model.DateActioned,
-            SentToSponsorDate = model.SentToSponsorDate,
+            SentToSponsorDate = DateTime.UtcNow,
             ShortProjectTitle = model.ShortProjectTitle,
             Status = ModificationStatus.WithSponsor,
             CreatedBy = userName,
             UpdatedBy = userName,
+            TransactionId = ProjectClosureStatus.TransactionIdPrefix + model.IrasId + separator,
             Id = Guid.NewGuid().ToString(),
         };
 

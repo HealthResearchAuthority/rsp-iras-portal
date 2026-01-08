@@ -11,7 +11,7 @@ namespace Rsp.IrasPortal.Web.Validators;
 public class DateViewModelValidator : AbstractValidator<DateViewModel>
 {
     // Default validation message if not overridden by context
-    private string modelValidationMessage = "The date should be a valid date and it must be present or past date";
+    private string modelValidationMessage = "Project closure date must be today or in the past";
 
     // Default property name if not overridden by context
     private string modelValidationPropertyName = "Date";

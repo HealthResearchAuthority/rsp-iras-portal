@@ -184,7 +184,8 @@ public class ProjectOverviewController
                 SentToSponsorDate = projectClosureResponse?.Content.SentToSponsorDate,
                 UserEmail = emailId,
                 ClosureDate = projectClosureResponse?.Content.ClosureDate,
-                Status = projectClosureResponse?.Content.Status!
+                Status = projectClosureResponse?.Content.Status!,
+                TransactionId = projectClosureResponse.Content.TransactionId
             };
         }
     }
