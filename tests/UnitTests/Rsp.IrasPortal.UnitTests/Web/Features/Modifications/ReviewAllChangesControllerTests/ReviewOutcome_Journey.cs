@@ -107,7 +107,7 @@ public class ReviewOutcome_Journey : TestServiceBase<ReviewAllChangesController>
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
         redirect.ActionName.ShouldBe("Index");
-        redirect.ControllerName.ShouldBe("ModificationsTasklist");
+        redirect.ControllerName.ShouldBe("MyTasklist");
     }
 
     [Theory, AutoData]
@@ -233,7 +233,7 @@ public class ReviewOutcome_Journey : TestServiceBase<ReviewAllChangesController>
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
         redirect.ActionName.ShouldBe("Index");
-        redirect.ControllerName.ShouldBe("ModificationsTasklist");
+        redirect.ControllerName.ShouldBe("MyTasklist");
     }
 
     [Theory, AutoData]
@@ -389,9 +389,7 @@ public class ReviewOutcome_Journey : TestServiceBase<ReviewAllChangesController>
         result.ShouldBeOfType<ViewResult>();
     }
 
-    // ----------------------------
-    // Helpers
-    // ----------------------------
+    // ---------------------------- Helpers ----------------------------
 
     private void SetupTempData(ReviewOutcomeViewModel model)
     {
