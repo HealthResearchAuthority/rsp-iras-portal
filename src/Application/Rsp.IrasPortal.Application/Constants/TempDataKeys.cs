@@ -75,6 +75,4 @@ public struct TempDataKeys
     public const string ChangeSuccess = "td:change_success";
     public const string ShowCloseProjectBanner = "td:show_close_project_banner";
     public const string SponsorOrganisationUser = "td:sponsor_organisation_user";
-
-    public const string ShowCloseProjectBanner = "td:show_close_project_banner";
 }
