@@ -33,8 +33,13 @@ public interface IProjectClosuresService : IInterceptable
     /// Create project closure record in project closure table
     /// </summary>
     /// <param name="projectClosureRequest"></param>
-    /// <returns></returns>
+    /// <returns>Returns the newly inserted project closure record</returns>
     public Task<ServiceResponse<ProjectClosuresResponse>> CreateProjectClosure(ProjectClosureRequest projectClosureRequest);
 
+    /// <summary>
+    /// Gets a project closure records from project closure table based on projectRecordId
+    /// </summary>
+    /// <param name="projectRecordId"></param>
+    /// <returns>Returns the project closure record</returns>
     public Task<ServiceResponse<ProjectClosuresResponse>> GetProjectClosureById(string projectRecordId);
 }
