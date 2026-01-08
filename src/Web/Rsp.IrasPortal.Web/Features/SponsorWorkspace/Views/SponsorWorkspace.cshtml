@@ -2,53 +2,59 @@
 @using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
 @using Rsp.IrasPortal.Domain.AccessControl;
 @using Rsp.IrasPortal.Application.Extensions;
+@using Microsoft.FeatureManagement
+@inject IFeatureManager featureManager
 
 @section Breadcrumb {
-    @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>())
+	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>())
 }
 
 @{
-    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
-    var pageContent = pageContentData != null
-        ? pageContentData
-        : new Dictionary<string, MixedContentPageItem?>();
+	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+	var pageContent = pageContentData != null
+		? pageContentData
+		: new Dictionary<string, MixedContentPageItem?>();
 
-    var headline = pageContent.GetValueOrDefault("SponsorWorkspace.Headline", null);
-    var authorisationsTitle = pageContent.GetValueOrDefault("SponsorWorkspace.AuthorisationsTitle", null);
-    var authorisationsDescription = pageContent.GetValueOrDefault("SponsorWorkspace.AuthorisationsDescription", null);
+	var headline = pageContent.GetValueOrDefault("SponsorWorkspace.Headline", null);
+	var authorisationsTitle = pageContent.GetValueOrDefault("SponsorWorkspace.AuthorisationsTitle", null);
+	var authorisationsDescription = pageContent.GetValueOrDefault("SponsorWorkspace.AuthorisationsDescription", null);
 
 	var myOrganisationsTitle = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationsTitle", null);
 	var myOrganisationsDescription = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationsDescription", null);
 
-    var sponsorOrganisationName = ViewBag.SponsorOrganisationName as string;
-    var sponsorOrganisationUserId = ViewBag.SponsorOrganisationUserId ?? Guid.Empty;
-    var filledAuthorisationsDescription = authorisationsDescription?.Value?.Replace("{sponsor organisation name}", sponsorOrganisationName);
+	var sponsorOrganisationName = ViewBag.SponsorOrganisationName as string;
+	var sponsorOrganisationUserId = ViewBag.SponsorOrganisationUserId ?? Guid.Empty;
+	var filledAuthorisationsDescription = authorisationsDescription?.Value?.Replace("{sponsor organisation name}", sponsorOrganisationName);
 }
 
 @{
 
-	var cards = new[]
+	var cards = new List<WorkspaceCardModel>
 	{
-		new
+		new WorkspaceCardModel
 		{
 			Permission = Permissions.Sponsor.Workspace_Access,
 			Title = authorisationsTitle?.Value,
 			Desc = filledAuthorisationsDescription,
             Link = "sws:modifications",
 			Dictionary = new Dictionary<string, string> { { "sponsorOrganisationUserId", sponsorOrganisationUserId.ToString() } }
-		},
-			new
+		}
+	};
+
+	if (await featureManager.IsEnabledAsync(FeatureFlags.SponsorManagementWorkspace))
+	{
+		cards.Add(new WorkspaceCardModel
 		{
 			Permission = Permissions.Sponsor.MyOrganisations_Access,
 			Title = myOrganisationsTitle?.Value,
 			Desc = myOrganisationsDescription?.Value,
 			Link = "sws:myorganisations",
 			Dictionary = new Dictionary<string, string> { { "sponsorOrganisationUserId", sponsorOrganisationUserId.ToString() } }
-		}
-	};
+		});
+	}
 
 	var authorizedChunks = cards
-		.Where(item => User.HasPermission(item.Permission))
+		.Where(item => User.HasPermission(item.Permission!))
 		.Select((card, index) => new { card, index })
 		.GroupBy(x => x.index / 3)
 		.Select(g => g.Select(x => x.card).ToList())
@@ -58,8 +64,8 @@
 
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-full">
-        <h1 class="govuk-heading-xl">@Html.Raw(headline?.Value)</h1>
+	<div class="govuk-grid-column-full">
+		<h1 class="govuk-heading-xl">@Html.Raw(headline?.Value)</h1>
 		@foreach (var row in authorizedChunks)
 		{
 			<div class="govuk-grid-row">
@@ -71,5 +77,5 @@
 				}
 			</div>
 		}
-    </div>
+	</div>
 </div>

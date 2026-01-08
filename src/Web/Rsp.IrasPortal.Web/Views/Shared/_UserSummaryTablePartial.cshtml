@@ -1,157 +1,194 @@
 ﻿@using Rsp.IrasPortal.Application.Constants
+@using System.Text.Json
 @model Rsp.IrasPortal.Web.Areas.Admin.Models.UserViewModel
 
 @{
-	var edit = !string.IsNullOrEmpty(Model.Id);
-	var editNewUserUrl = "/admin/users/editnewuser";
-	var showChangeLink = TempData[TempDataKeys.ShowEditLink] == null;
+    var edit = !string.IsNullOrEmpty(Model.Id);
+    var editNewUserUrl = "/admin/users/editnewuser";
+    var showChangeLink = TempData[TempDataKeys.ShowEditLink] == null;
+
+    SponsorOrganisationAddUserModel? sponsorOrgUser = null;
+    var storedObject = TempData.Peek(TempDataKeys.SponsorOrganisationUser);
+
+    if (storedObject is not null)
+    {
+        sponsorOrgUser = JsonSerializer.Deserialize<SponsorOrganisationAddUserModel>((storedObject as string)!);
+    }
 }
 
 <input type="hidden" asp-for="Status" name="Status" value="@(Model.Status ?? string.Empty)" />
 <table class="govuk-table">
-	<thead>
-		<tr>
-			<th></th>
-			<th></th>
-			<th></th>
-		</tr>
-	</thead>
-	<tbody>
-		<tr class="govuk-table__row">
-			<td class="govuk-table__cell">
-				<b>Title</b>
-			</td>
-			<td class="govuk-table__cell">
-				@Model.Title
-				<input type="hidden" asp-for="Title" name="Title" value="@Model.Title" />
-			</td>
-			<td class="govuk-table__cell govuk-table__cell--numeric">
-				@{
-					await RenderEditLink("title");
-				}
-			</td>
-		</tr>
+    <thead>
+        <tr>
+            <th></th>
+            <th></th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr class="govuk-table__row">
+            <td class="govuk-table__cell">
+                <b>Title</b>
+            </td>
+            <td class="govuk-table__cell">
+                @Model.Title
+                <input type="hidden" asp-for="Title" name="Title" value="@Model.Title" />
+            </td>
+            <td class="govuk-table__cell govuk-table__cell--numeric">
+                @{
+                    await RenderEditLink("title");
+                }
+            </td>
+        </tr>
 
-		<tr class="govuk-table__row">
-			<td class="govuk-table__cell">
-				<b>First name</b>
-			</td>
-			<td class="govuk-table__cell">
-				@Model.GivenName
-				<input type="hidden" asp-for="GivenName" name="GivenName" value="@Model.GivenName" />
-			</td>
-			<td class="govuk-table__cell govuk-table__cell--numeric">
-				@{
-					await RenderEditLink("given name");
-				}
-			</td>
-		</tr>
+        <tr class="govuk-table__row">
+            <td class="govuk-table__cell">
+                <b>First name</b>
+            </td>
+            <td class="govuk-table__cell">
+                @Model.GivenName
+                <input type="hidden" asp-for="GivenName" name="GivenName" value="@Model.GivenName" />
+            </td>
+            <td class="govuk-table__cell govuk-table__cell--numeric">
+                @{
+                    await RenderEditLink("given name");
+                }
+            </td>
+        </tr>
 
-		<tr class="govuk-table__row">
-			<td class="govuk-table__cell">
-				<b>Last name</b>
-			</td>
-			<td class="govuk-table__cell">
-				@Model.FamilyName
-				<input type="hidden" asp-for="FamilyName" name="FamilyName" value="@Model.FamilyName" />
-			</td>
-			<td class="govuk-table__cell govuk-table__cell--numeric">
-				@{
-					await RenderEditLink("family name");
-				}
-			</td>
-		</tr>
+        <tr class="govuk-table__row">
+            <td class="govuk-table__cell">
+                <b>Last name</b>
+            </td>
+            <td class="govuk-table__cell">
+                @Model.FamilyName
+                <input type="hidden" asp-for="FamilyName" name="FamilyName" value="@Model.FamilyName" />
+            </td>
+            <td class="govuk-table__cell govuk-table__cell--numeric">
+                @{
+                    await RenderEditLink("family name");
+                }
+            </td>
+        </tr>
 
-		<tr class="govuk-table__row">
-			<td class="govuk-table__cell">
-				<b>Email address</b>
-			</td>
-			<td class="govuk-table__cell line-break-anywhere">
-				@Model.Email
-				<input type="hidden" asp-for="Email" name="Email" value="@Model.Email" />
-			</td>
-			<td class="govuk-table__cell govuk-table__cell--numeric">
-				@if (!edit)
-				{
-					await RenderEditLink("email address");
-				}
-			</td>
-		</tr>
+        <tr class="govuk-table__row">
+            <td class="govuk-table__cell">
+                <b>Email address</b>
+            </td>
+            <td class="govuk-table__cell line-break-anywhere">
+                @Model.Email
+                <input type="hidden" asp-for="Email" name="Email" value="@Model.Email" />
+            </td>
+            <td class="govuk-table__cell govuk-table__cell--numeric">
+                @if (!edit)
+                {
+                    await RenderEditLink("email address");
+                }
+            </td>
+        </tr>
 
-		<tr class="govuk-table__row">
-			<td class="govuk-table__cell">
-				<b>Telephone</b>
-			</td>
-			<td class="govuk-table__cell">
-				@Model.Telephone
-				<input type="hidden" asp-for="Telephone" name="Telephone" value="@Model.Telephone" />
-			</td>
-			<td class="govuk-table__cell govuk-table__cell--numeric">
-				@{
-					await RenderEditLink("telephone number");
-				}
-			</td>
-		</tr>
+        <tr class="govuk-table__row">
+            <td class="govuk-table__cell">
+                <b>Telephone</b>
+            </td>
+            <td class="govuk-table__cell">
+                @Model.Telephone
+                <input type="hidden" asp-for="Telephone" name="Telephone" value="@Model.Telephone" />
+            </td>
+            <td class="govuk-table__cell govuk-table__cell--numeric">
+                @{
+                    await RenderEditLink("telephone number");
+                }
+            </td>
+        </tr>
 
-		<tr class="govuk-table__row">
-			<td class="govuk-table__cell">
-				<b>Organisation</b>
-			</td>
-			<td class="govuk-table__cell">
-				@Model.Organisation
-				<input type="hidden" asp-for="Organisation" name="Organisation" value="@Model.Organisation" />
-			</td>
-			<td class="govuk-table__cell govuk-table__cell--numeric">
-				@{
-					await RenderEditLink("organisation");
-				}
-			</td>
-		</tr>
+        <tr class="govuk-table__row">
+            <td class="govuk-table__cell">
+                <b>Organisation</b>
+            </td>
+            <td class="govuk-table__cell">
+                @Model.Organisation
+                <input type="hidden" asp-for="Organisation" name="Organisation" value="@Model.Organisation" />
+            </td>
+            <td class="govuk-table__cell govuk-table__cell--numeric">
+                @{
+                    await RenderEditLink("organisation");
+                }
+            </td>
+        </tr>
 
-		<tr class="govuk-table__row">
-			<td class="govuk-table__cell">
-				<b>Job title</b>
-			</td>
-			<td class="govuk-table__cell">
-				@Model.JobTitle
-				<input type="hidden" asp-for="JobTitle" name="JobTitle" value="@Model.JobTitle" />
-			</td>
-			<td class="govuk-table__cell govuk-table__cell--numeric">
-				@{
-					await RenderEditLink("job title");
-				}
-			</td>
-		</tr>
+        <tr class="govuk-table__row">
+            <td class="govuk-table__cell">
+                <b>Job title</b>
+            </td>
+            <td class="govuk-table__cell">
+                @Model.JobTitle
+                <input type="hidden" asp-for="JobTitle" name="JobTitle" value="@Model.JobTitle" />
+            </td>
+            <td class="govuk-table__cell govuk-table__cell--numeric">
+                @{
+                    await RenderEditLink("job title");
+                }
+            </td>
+        </tr>
 
-		<tr class="govuk-table__row">
-			<td class="govuk-table__cell">
-				<b>Role</b>
-			</td>
-			<td class="govuk-table__cell">
-				@{
-					var selectedRoles = Model.UserRoles != null
-					? string.Join(", ",
-					Model.UserRoles
-					.Where(r => r.IsSelected)
-					.OrderBy(r => r.DisplayName, StringComparer.OrdinalIgnoreCase)
-					.Select(r => r?.DisplayName))
-					: string.Empty;
-				}
+        <tr class="govuk-table__row">
+            <td class="govuk-table__cell">
+                <b>Role</b>
+            </td>
+            @if (sponsorOrgUser is not null)
+            {
+                var userRole = !string.IsNullOrEmpty(sponsorOrgUser.Role) ?
+                sponsorOrgUser.Role.Replace("_", " ").ToLower() : "";
 
-				@selectedRoles
-				@foreach (var (role, index) in Model.UserRoles!.Select((role, index) => (role, index)))
-				{
-					<input type="hidden" asp-for="UserRoles![index].Id" />
-					<input type="hidden" asp-for="UserRoles![index].Name" />
-					<input type="hidden" asp-for="UserRoles![index].IsSelected" />
-				}
-			</td>
-			<td class="govuk-table__cell govuk-table__cell--numeric">
-				@{
-					await RenderEditLink("user roles");
-				}
-			</td>
-		</tr>
+                <td class="govuk-table__cell">
+                    @(!string.IsNullOrEmpty(userRole) ? char.ToUpper(userRole[0]) + userRole.Substring(1) : "")
+                </td>
+                <td class="govuk-table__cell govuk-table__cell--numeric">
+                </td>
+            }
+            else
+            {
+                <td class="govuk-table__cell">
+                    @{
+                        var selectedRoles = Model.UserRoles != null
+                        ? string.Join(", ",
+                        Model.UserRoles
+                        .Where(r => r.IsSelected)
+                        .OrderBy(r => r.DisplayName, StringComparer.OrdinalIgnoreCase)
+                        .Select(r => r?.DisplayName))
+                        : string.Empty;
+                    }
+
+                    @selectedRoles
+                    @foreach (var (role, index) in Model.UserRoles!.Select((role, index) => (role, index)))
+                    {
+                        <input type="hidden" asp-for="UserRoles![index].Id" />
+                        <input type="hidden" asp-for="UserRoles![index].Name" />
+                        <input type="hidden" asp-for="UserRoles![index].IsSelected" />
+                    }
+                </td>
+                <td class="govuk-table__cell govuk-table__cell--numeric">
+                    @{
+                        await RenderEditLink("user roles");
+                    }
+                </td>
+            }
+        </tr>
+
+        @if (sponsorOrgUser is not null)
+        {
+            <tr class="govuk-table__row">
+                <td class="govuk-table__cell">
+                    <b>Authoriser</b>
+                </td>
+                <td class="govuk-table__cell">
+                    @(sponsorOrgUser.IsAuthoriser ? "Yes" : "No")
+                </td>
+                <td class="govuk-table__cell govuk-table__cell--numeric">
+                </td>
+            </tr>
+        }
 
 
 		@if (Model.UserRoles != null

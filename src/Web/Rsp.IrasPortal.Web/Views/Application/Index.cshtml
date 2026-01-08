@@ -14,7 +14,13 @@
 
 @if (TempData[TempDataKeys.ShowProjectDeletedBanner] is true)
 {
-    <partial name="_NotificationBanner" model="@("Success", "Your project has been deleted")" />
+    <partial name="_NotificationBanner"
+             model="@(new NotificationBannerModel
+                    {
+                        Title = "Success",
+                        Heading = "Your project has been deleted"
+                    })" />
+
 }
 
 @{

@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.Metrics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Moq;
-using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.Application.Responses;
@@ -26,6 +18,9 @@ public class EnableUserTests : TestServiceBase<SponsorOrganisationsController>
     {
         _http = new DefaultHttpContext { Session = new InMemorySession() };
         Sut.ControllerContext = new ControllerContext { HttpContext = _http };
+        Sut.TempData = new TempDataDictionary(
+            _http,
+            Mocker.GetMock<ITempDataProvider>().Object);
     }
 
     [Theory]
@@ -77,7 +72,6 @@ public class EnableUserTests : TestServiceBase<SponsorOrganisationsController>
                         DateTime.UtcNow)
                 }
             });
-
 
         var sponsorResponse = new ServiceResponse<AllSponsorOrganisationsResponse>
         {

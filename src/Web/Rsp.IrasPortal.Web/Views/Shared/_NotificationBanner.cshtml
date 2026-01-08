@@ -1,19 +1,30 @@
-﻿@model (string Title, string Message)
+﻿@model NotificationBannerModel
 
-<div class="govuk-notification-banner govuk-notification-banner--success"
+@{
+    var modifierClass = Model.IsImportant
+        ? "govuk-notification-banner--important"
+        : "govuk-notification-banner--success";
+}
+
+<div class="govuk-notification-banner @modifierClass"
      role="alert"
-     aria-labelledby="govuk-notification-banner-title"
-     aria-describedby="govuk-notification-banner-message"
      tabindex="0"
      data-module="govuk-notification-banner">
+    
     <div class="govuk-notification-banner__header">
-        <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+        <h2 class="govuk-notification-banner__title">
             @Model.Title
         </h2>
     </div>
+
     <div class="govuk-notification-banner__content">
-        <h3 class="govuk-notification-banner__heading" id="govuk-notification-banner-message">
-            @Model.Message
+        <h3 class="govuk-notification-banner__heading">
+            @Model.Heading
         </h3>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Message))
+        {
+            <p class="govuk-body">@Model.Message</p>
+        }
     </div>
 </div>
