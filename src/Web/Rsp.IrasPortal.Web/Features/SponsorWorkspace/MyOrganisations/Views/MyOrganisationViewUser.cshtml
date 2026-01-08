@@ -11,14 +11,26 @@
 	})
 }
 @{
-	ViewBag.Title = Model.GivenName + " " + Model.FamilyName +  " - User profile";
+	ViewBag.Title = Model.GivenName + " " + Model.FamilyName + " - User profile";
 
-	var isAdmin =
-		User.IsInRole(Roles.SystemAdministrator)
-		|| User.IsInRole(Roles.OrganisationAdministrator);
+	var isAdmin = Model.IsLoggedInUserAdmin;
+
+	var showSuccessMessage = TempData[TempDataKeys.ShowNotificationBanner];
 }
 <div class="govuk-grid-row">
 	<div class="govuk-grid-column-full">
+
+		@if (showSuccessMessage is true)
+		{
+			<partial name="_NotificationBanner"
+					 model="@(new NotificationBannerModel
+                        {
+                            Title = "Success",
+                            Heading = "User updated"
+                        })" />
+
+		}
+
 		<div class="govuk-caption-m">
 			User profile
 		</div>
@@ -163,8 +175,11 @@
 	{
 		@if (isAdmin)
 		{
-			<a class="govuk-link" asp-route="sws:myorganisationedituser" asp-route-userId="@Model.UserId"
-			   asp-route-rtsId="@Model.RtsId">
+			<a class="govuk-link"
+			   asp-route="sws:MyOrganisationViewUser"
+			   asp-route-userId="@Model.UserId"
+			   asp-route-rtsId="@Model.RtsId"
+			   asp-route-editMode="true">
 				Change<span class="govuk-visually-hidden">@fieldName</span>
 			</a>
 		}

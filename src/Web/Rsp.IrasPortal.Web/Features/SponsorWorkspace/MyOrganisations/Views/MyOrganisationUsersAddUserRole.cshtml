@@ -66,8 +66,8 @@
                                    id="role-admin"
                                    name="role"
                                    type="radio"
-                                   value="Organisation administrator"
-                                   @(Model.Role == "Organisation administrator" ? "checked" : "")/>
+								   value="@SponsorOrganisationUserRoles.OrganisationAdministrator"
+                                   @(Model.Role == SponsorOrganisationUserRoles.OrganisationAdministrator ? "checked" : "")/>
                             <label class="govuk-label govuk-radios__label" for="role-admin">
                                 Organisation administrator
                             </label>
@@ -82,8 +82,8 @@
                                    id="role-sponsor"
                                    name="role"
                                    type="radio"
-                                   value="Sponsor"
-                                   @(Model.Role == "Sponsor" ? "checked" : "")/>
+								   value="@SponsorOrganisationUserRoles.Sponsor"
+							@(Model.Role == SponsorOrganisationUserRoles.Sponsor ? "checked" : "") />
                             <label class="govuk-label govuk-radios__label" for="role-sponsor">
                                 Sponsor
                             </label>

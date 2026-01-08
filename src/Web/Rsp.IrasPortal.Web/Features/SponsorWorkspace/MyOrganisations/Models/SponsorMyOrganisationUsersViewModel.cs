@@ -11,6 +11,7 @@ public class SponsorMyOrganisationUsersViewModel
     public string UserId { get; set; }
     public string Email { get; set; }
     public bool CanAuthorise { get; set; }
+    public bool IsCurrentUserAdmin { get; set; } = false;
 
     public IEnumerable<UserViewModel> Users { get; set; } = [];
     public PaginationViewModel? Pagination { get; set; }

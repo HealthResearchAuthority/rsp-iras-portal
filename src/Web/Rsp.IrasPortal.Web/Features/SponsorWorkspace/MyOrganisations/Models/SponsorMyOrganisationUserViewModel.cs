@@ -16,4 +16,5 @@ public class SponsorMyOrganisationUserViewModel
     public string? Status { get; set; }
     public string RtsId { get; set; } = null!;
     public string SponsorOrganisationName { get; set; } = null!;
+    public bool IsLoggedInUserAdmin { get; set; } = false;
 }
