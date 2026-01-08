@@ -57,7 +57,13 @@
 
         @if (showSuccessMessage is true)
         {
-            <partial name="_NotificationBanner" model="@(successBannerLabel?.Value, successBannerBody?.Value)" />
+            <partial name="_NotificationBanner"
+                     model="@(new NotificationBannerModel
+                            {
+                                Title = successBannerLabel?.Value,
+                                Heading = successBannerBody?.Value
+                            })" />
+
         }
 
         <h1 class="govuk-heading-l">@Html.Raw(headline?.Value)</h1>
