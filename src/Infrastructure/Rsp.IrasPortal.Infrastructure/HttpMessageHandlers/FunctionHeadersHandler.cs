@@ -24,10 +24,7 @@ public class FunctionHeadersHandler(AppSettings appSettings) : DelegatingHandler
         var scopes = appSettings.ProjectRecordValidationScopes;
 
         // This won't work locally, only in deployed environments with managed identity
-        var credentials = new DefaultAzureCredential(new DefaultAzureCredentialOptions
-        {
-            ManagedIdentityClientId = appSettings.ValidationFunctionManagedId
-        });
+        var credentials = new DefaultAzureCredential();
 
         var tokenRequestContext = new TokenRequestContext([.. scopes]);
 

@@ -86,6 +86,4 @@ public class AppSettings
     /// Number of seconds the global page CMS content is cached (eg. footer)
     /// </summary>
     public int? GlobalContentCacheDurationSeconds { get; set; }
-
-    public string ValidationFunctionManagedId { get; set; } = null!;
 }
