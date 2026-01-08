@@ -1,5 +1,8 @@
-﻿namespace Rsp.IrasPortal.Application.DTOs.Responses;
+﻿using System.Diagnostics.CodeAnalysis;
 
+namespace Rsp.IrasPortal.Application.DTOs.Responses;
+
+[ExcludeFromCodeCoverage]
 public class ProjectClosuresResponse
 {
     public string Id { get; set; } = null!;

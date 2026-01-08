@@ -1,5 +1,8 @@
-﻿namespace Rsp.IrasPortal.Application.DTOs.Requests;
+﻿using System.Diagnostics.CodeAnalysis;
 
+namespace Rsp.IrasPortal.Application.DTOs.Requests;
+
+[ExcludeFromCodeCoverage]
 public class ProjectClosureRequest
 {
     public string Id { get; set; } = null!;
