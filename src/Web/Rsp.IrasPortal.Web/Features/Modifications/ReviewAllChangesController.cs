@@ -209,7 +209,7 @@ public class ReviewAllChangesController
         {
             TempData.Clear();
             TempData[TempDataKeys.ChangeSuccess] = true;
-            return RedirectToAction("Index", "ModificationsTasklist");
+            return RedirectToAction("Index", "MyTasklist");
         }
 
         if (model.ReviewOutcome == ModificationStatus.NotApproved)
@@ -266,7 +266,7 @@ public class ReviewAllChangesController
         {
             TempData.Clear();
             TempData[TempDataKeys.ChangeSuccess] = true;
-            return RedirectToAction("Index", "ModificationsTasklist");
+            return RedirectToAction("Index", "MyTasklist");
         }
 
         return RedirectToAction(nameof(ConfirmReviewOutcome));
