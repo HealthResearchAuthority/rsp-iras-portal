@@ -1670,10 +1670,10 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         Mocker.GetMock<ISponsorOrganisationService>()
             .Setup(s => s.GetAllSponsorOrganisations(
                 It.IsAny<SponsorOrganisationSearchRequest>(),
-                1,
-                int.MaxValue,
-                "",
-                ""))
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<string>()))
             .ReturnsAsync(sponsorResponse);
 
         // Act
@@ -1751,10 +1751,10 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         Mocker.GetMock<ISponsorOrganisationService>()
             .Setup(s => s.GetAllSponsorOrganisations(
                 It.IsAny<SponsorOrganisationSearchRequest>(),
-                1,
-                int.MaxValue,
-                "",
-                ""))
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<string>()))
             .ReturnsAsync(sponsorResponse);
 
         // Act
