@@ -81,4 +81,10 @@ public interface ISponsorOrganisationsServiceClient
     /// </summary>
     [Get("/sponsororganisations/getallactiveforenableduser/{userId}")]
     public Task<IApiResponse<IEnumerable<SponsorOrganisationDto>>> GetAllActiveSponsorOrganisationsForEnabledUser(Guid userId);
+
+    /// <summary>
+    /// Updates sponsor organisation user profile
+    /// </summary>
+    [Put("/sponsororganisations/{rtsId}/user/{userId}")]
+    public Task<IApiResponse<SponsorOrganisationUserDto>> UpdateUserInSponsorOrganisation(string rtsId, string userId, [Body] SponsorOrganisationUserDto sponsorOrganisationUserDto);
 }
