@@ -398,10 +398,10 @@ public class SponsorOrganisationsController(
         }
 
         storedModel.Role = model.Role;
-        storedModel.IsAuthoriser = model.Role == Roles.OrganisationAdministrator;
+        storedModel.IsAuthoriser = model.Role == SponsorOrganisationUserRoles.OrganisationAdministrator;
         TempData[TempDataKeys.SponsorOrganisationUser] = JsonSerializer.Serialize(storedModel);
 
-        if (model.Role == Roles.OrganisationAdministrator)
+        if (model.Role == SponsorOrganisationUserRoles.OrganisationAdministrator)
         {
             return RedirectToAction(nameof(ViewSponsorOrganisationUser), new { rtsId = storedModel.RtsId, userId = storedModel.UserId, addUser = true });
         }

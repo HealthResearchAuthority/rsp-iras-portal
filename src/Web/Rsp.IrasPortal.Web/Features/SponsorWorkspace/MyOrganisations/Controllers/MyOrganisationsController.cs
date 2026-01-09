@@ -498,7 +498,8 @@ public class MyOrganisationsController(
             RtsId = rtsId
         };
 
-        if (Request.Query.ContainsKey("SearchQuery") && !EmailValidator.IsValid(searchQuery))
+        if (Request.Query.ContainsKey("SearchQuery") &&
+            (string.IsNullOrWhiteSpace(searchQuery) || !EmailValidator.IsValid(searchQuery)))
         {
             ModelState.AddModelError("SearchQuery", "Enter a user email");
             return View(model);
