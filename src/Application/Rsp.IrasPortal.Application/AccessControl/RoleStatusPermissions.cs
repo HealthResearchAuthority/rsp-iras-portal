@@ -19,13 +19,15 @@ public static class RoleStatusPermissions
                 Roles.Applicant, new List<string>
                 {
                     ProjectRecordStatus.InDraft,
-                    ProjectRecordStatus.Active
+                    ProjectRecordStatus.Active,
+                    ProjectRecordStatus.PendingClosure
                 }
             },
             {
                 Roles.Sponsor, new List<string>
                 {
-                    ProjectRecordStatus.Active
+                    ProjectRecordStatus.Active,
+                    ProjectRecordStatus.Closed
                 }
             },
             {

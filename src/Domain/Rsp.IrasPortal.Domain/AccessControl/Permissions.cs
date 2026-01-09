@@ -44,6 +44,11 @@ public static class Permissions
         public const string ProjectRecord_Search = "myresearch.projectrecord.search";
 
         /// <summary>
+        /// allows searching project close
+        /// </summary>
+        public const string ProjectRecord_Close = "myresearch.projectrecord.close";
+
+        /// <summary>
         /// allows reading project record history
         /// </summary>
         public const string ProjectRecordHistory_Read = "myresearch.projectrecordhistory.read";

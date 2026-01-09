@@ -3,10 +3,10 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Models;
 
-public class SponsorAuthorisationsViewModel
+public class ProjectClosuresViewModel
 {
-    public SponsorAuthorisationsSearchModel Search { get; set; } = new();
-    public IEnumerable<ModificationsModel> Modifications { get; set; } = [];
+    public ProjectClosuresSearchModel Search { get; set; } = new();
+    public IEnumerable<ProjectClosuresModel> ProjectRecords { get; set; } = [];
     public PaginationViewModel? Pagination { get; set; }
     public Guid SponsorOrganisationUserId { get; set; }
 }

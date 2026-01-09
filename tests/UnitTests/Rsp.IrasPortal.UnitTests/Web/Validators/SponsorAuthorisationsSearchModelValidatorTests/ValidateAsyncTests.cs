@@ -10,13 +10,13 @@ using Rsp.IrasPortal.Web.Validators;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Validators.SponsorAuthorisationsSearchModelValidatorTests;
 
-public class ValidateAsyncTests : TestServiceBase<SponsorAuthorisationsSearchModelValidator>
+public class ValidateAsyncTests : TestServiceBase<AuthorisationsModificationsSearchModelValidator>
 {
     [Fact]
     public async Task ShouldHaveValidationErrorForTooShortSearchTerm()
     {
         // Arrange
-        var model = new SponsorAuthorisationsSearchModel
+        var model = new AuthorisationsModificationsSearchModel
         {
             SearchTerm = "1"
         };
@@ -34,7 +34,7 @@ public class ValidateAsyncTests : TestServiceBase<SponsorAuthorisationsSearchMod
     public async Task ShouldHaveValidationErrorForTooLongSearchTerm()
     {
         // Arrange
-        var model = new SponsorAuthorisationsSearchModel
+        var model = new AuthorisationsModificationsSearchModel
         {
             SearchTerm = "123456789"
         };
@@ -52,7 +52,7 @@ public class ValidateAsyncTests : TestServiceBase<SponsorAuthorisationsSearchMod
     public async Task ShouldHaveValidationErrorForInvalidCharacters()
     {
         // Arrange
-        var model = new SponsorAuthorisationsSearchModel
+        var model = new AuthorisationsModificationsSearchModel
         {
             SearchTerm = "12A"
         };
@@ -70,7 +70,7 @@ public class ValidateAsyncTests : TestServiceBase<SponsorAuthorisationsSearchMod
     public async Task ShouldNotHaveValidationErrorForEmptySearchTerm()
     {
         // Arrange
-        var model = new SponsorAuthorisationsSearchModel
+        var model = new AuthorisationsModificationsSearchModel
         {
             SearchTerm = ""
         };
@@ -86,7 +86,7 @@ public class ValidateAsyncTests : TestServiceBase<SponsorAuthorisationsSearchMod
     public async Task ShouldNotHaveValidationErrorForValidSearchTerm()
     {
         // Arrange
-        var model = new SponsorAuthorisationsSearchModel
+        var model = new AuthorisationsModificationsSearchModel
         {
             SearchTerm = "12/34"
         };

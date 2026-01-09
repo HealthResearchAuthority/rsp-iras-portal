@@ -36,7 +36,7 @@
 			Permission = Permissions.Sponsor.Workspace_Access,
 			Title = authorisationsTitle?.Value,
 			Desc = filledAuthorisationsDescription,
-			Link = "sws:authorisations",
+            Link = "sws:modifications",
 			Dictionary = new Dictionary<string, string> { { "sponsorOrganisationUserId", sponsorOrganisationUserId.ToString() } }
 		}
 	};
@@ -60,8 +60,6 @@
 		.Select(g => g.Select(x => x.card).ToList())
 		.ToList();
 }
-
-
 
 <div class="govuk-grid-row">
 	<div class="govuk-grid-column-full">

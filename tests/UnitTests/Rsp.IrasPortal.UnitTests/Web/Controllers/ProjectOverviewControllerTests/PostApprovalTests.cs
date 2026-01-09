@@ -15,8 +15,9 @@ namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectOverviewControllerTest
 
 public class PostApprovalTests : TestServiceBase<ProjectOverviewController>
 {
-    [Fact]
-    public async Task PostApproval_Returns_View_With_Pagination_And_Modifications_Mapped()
+    [Theory]
+    [AutoData]
+    public async Task PostApproval_Returns_View_With_Pagination_And_Modifications_Mapped(ProjectClosuresSearchResponse closuresResponse, UserResponse userResponse)
     {
         // Arrange
         var ctx = new DefaultHttpContext();
@@ -72,6 +73,23 @@ public class PostApprovalTests : TestServiceBase<ProjectOverviewController>
                     Items = []
                 }
             });
+        Mocker
+           .GetMock<IProjectClosuresService>()
+           .Setup(s => s.GetProjectClosuresByProjectRecordId(It.IsAny<string>()))
+           .ReturnsAsync(new ServiceResponse<ProjectClosuresSearchResponse>
+           {
+               StatusCode = HttpStatusCode.OK,
+               Content = closuresResponse
+           });
+
+        Mocker
+           .GetMock<IUserManagementService>()
+           .Setup(s => s.GetUser(It.IsAny<string>(), It.IsAny<string>(), null))
+           .ReturnsAsync(new ServiceResponse<UserResponse>
+           {
+               StatusCode = HttpStatusCode.OK,
+               Content = userResponse
+           });
 
         // Act
         var result = await Sut.PostApproval("PR1", backRoute: null);
