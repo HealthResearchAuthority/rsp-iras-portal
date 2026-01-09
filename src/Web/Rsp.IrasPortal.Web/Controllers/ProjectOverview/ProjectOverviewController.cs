@@ -48,7 +48,7 @@ public class ProjectOverviewController
             return result;
         }
 
-        if (projectOverview.Value is ProjectOverviewModel model && model.Status is ProjectRecordStatus.Active or ProjectRecordStatus.PendingClosure)
+        if (projectOverview.Value is ProjectOverviewModel model && model.Status is ProjectRecordStatus.Active or ProjectRecordStatus.PendingClosure or ProjectRecordStatus.Closed)
         {
             return RedirectToAction(nameof(ProjectDetails), new { projectRecordId, backRoute, modificationId });
         }

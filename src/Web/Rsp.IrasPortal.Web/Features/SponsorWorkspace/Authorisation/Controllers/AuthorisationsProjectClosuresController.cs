@@ -33,7 +33,7 @@ public class AuthorisationsProjectClosuresController
     IValidator<ProjectClosuresSearchModel> searchValidator
 ) : Controller
 {
-    [Authorize(Policy = Permissions.Sponsor.Modifications_Search)]
+    [Authorize(Policy = Permissions.Sponsor.ProjectClosures_Search)]
     [HttpGet]
     public async Task<IActionResult> ProjectClosures
     (
@@ -106,7 +106,7 @@ public class AuthorisationsProjectClosuresController
         return View(model);
     }
 
-    [Authorize(Policy = Permissions.Sponsor.Modifications_Search)]
+    [Authorize(Policy = Permissions.Sponsor.ProjectClosures_Search)]
     [HttpPost]
     [CmsContentAction(nameof(ProjectClosures))]
     public async Task<IActionResult> ApplyProjectClosuresFilters(ProjectClosuresViewModel model)
@@ -191,9 +191,16 @@ public class AuthorisationsProjectClosuresController
         var endDateAnswer = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.ProjectPlannedEndDate)?.AnswerText;
         var titleAnswer = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.ShortProjectTitle)?.AnswerText;
 
-        // Get actual end date from project closure service
-        // TODO - change mock to actual service use
-        var actualEndDate = "2026-01-07T14:30:00";
+        var projectClosureResponse = await projectClosuresService.GetProjectClosureById(projectRecordId);
+        if (!projectClosureResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(projectClosureResponse);
+        }
+
+        var actualEndDate =
+            projectClosureResponse.Content?.ClosureDate is DateTime dt
+                ? DateHelper.ConvertDateToString(dt)
+                : null;
 
         var model = new AuthoriseProjectClosuresOutcomeViewModel
         {
@@ -209,7 +216,7 @@ public class AuthorisationsProjectClosuresController
     }
 
     // 2) GET stays tiny and calls the builder
-    [Authorize(Policy = Permissions.Sponsor.Modifications_Review)]
+    [Authorize(Policy = Permissions.Sponsor.ProjectClosures_Review)]
     [HttpGet]
     public async Task<IActionResult> CheckAndAuthoriseProjectClosure(string projectRecordId, Guid sponsorOrganisationUserId)
     {
@@ -225,7 +232,7 @@ public class AuthorisationsProjectClosuresController
     }
 
     // 3) POST: on invalid, rebuild the page VM and return the same view with ModelState errors
-    [Authorize(Policy = Permissions.Sponsor.Modifications_Authorise)]
+    [Authorize(Policy = Permissions.Sponsor.ProjectClosures_Authorise)]
     [HttpPost]
     public async Task<IActionResult> CheckAndAuthoriseProjectClosure(AuthoriseProjectClosuresOutcomeViewModel model)
     {
@@ -253,18 +260,75 @@ public class AuthorisationsProjectClosuresController
             return View(hydrated);
         }
 
-        // TODO
-        // update project closure status with param, just use 1 service call
-        //
-        //
-        //
-
-        return RedirectToAction(nameof(ProjectClosuresConfirmation), model);
+        if (model.Outcome == nameof(ProjectClosureStatus.Authorised))
+        {
+            TempData[TempDataKeys.PreAuthProjectClosureModel] = JsonSerializer.Serialize(model);
+            return RedirectToAction(nameof(ProjectClosurePreAuthorisation));
+        }
+        else if (model.Outcome == nameof(ProjectClosureStatus.NotAuthorised))
+        {
+            await projectClosuresService.UpdateProjectClosureStatus
+            (
+                model.ProjectRecordId,
+                ProjectClosureStatus.NotAuthorised
+            );
+            return RedirectToAction(nameof(ProjectClosureConfirmation), model);
+        }
+        else
+        {
+            var serviceResponse = new ServiceResponse()
+                .WithError("Project closure status has not been selected")
+                .WithStatus(HttpStatusCode.BadRequest);
+            return this.ServiceError(serviceResponse);
+        }
     }
 
-    [Authorize(Policy = Permissions.Sponsor.Modifications_Review)]
+    [Authorize(Policy = Permissions.Sponsor.ProjectClosures_Authorise)]
     [HttpGet]
-    public IActionResult ProjectClosuresConfirmation(AuthoriseProjectClosuresOutcomeViewModel model)
+    public IActionResult ProjectClosurePreAuthorisation()
+    {
+        var json = TempData.Peek(TempDataKeys.PreAuthProjectClosureModel) as string;
+        if (!string.IsNullOrEmpty(json))
+        {
+            var model = JsonSerializer.Deserialize<AuthoriseProjectClosuresOutcomeViewModel>(json);
+            return View(model);
+        }
+        else
+        {
+            var serviceResponse = new ServiceResponse()
+                .WithError("Missing tempdata for project closure authorisation")
+                .WithStatus(HttpStatusCode.BadRequest);
+            return this.ServiceError(serviceResponse);
+        }
+    }
+
+    [Authorize(Policy = Permissions.Sponsor.ProjectClosures_Authorise)]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ProjectClosurePreAuthorisationConfirm()
+    {
+        if (TempData.TryGetValue(TempDataKeys.PreAuthProjectClosureModel, out var json) && json is string serialized)
+        {
+            var model = JsonSerializer.Deserialize<AuthoriseProjectClosuresOutcomeViewModel>(serialized);
+            await projectClosuresService.UpdateProjectClosureStatus
+            (
+                model.ProjectRecordId,
+                ProjectClosureStatus.Authorised
+            );
+            return RedirectToAction(nameof(ProjectClosureConfirmation), model);
+        }
+        else
+        {
+            var serviceResponse = new ServiceResponse()
+                .WithError("Missing tempdata for project closure authorisation")
+                .WithStatus(HttpStatusCode.BadRequest);
+            return this.ServiceError(serviceResponse);
+        }
+    }
+
+    [Authorize(Policy = Permissions.Sponsor.ProjectClosures_Review)]
+    [HttpGet]
+    public IActionResult ProjectClosureConfirmation(AuthoriseProjectClosuresOutcomeViewModel model)
     {
         return View(model);
     }

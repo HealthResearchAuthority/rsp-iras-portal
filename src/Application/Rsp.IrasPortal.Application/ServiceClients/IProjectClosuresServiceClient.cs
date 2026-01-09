@@ -48,4 +48,15 @@ public interface IProjectClosuresServiceClient
     /// <returns></returns>
     [Get("/projectclosure/getprojectclosurebyid")]
     public Task<ApiResponse<ProjectClosuresResponse>> GetProjectClosureById(string projectRecordId);
+
+    /// <summary>
+    /// Updates the project closure status to either Authorised or Not authorised.
+    /// If the status is set to Authorised, the method also closes the associated project record
+    /// by updating its status to Closed.
+    /// </summary>
+    /// <param name="projectRecordId">The unique identifier of the project record whose closure status will be updated.</param>
+    /// <param name="status">The new closure status to apply (Authorised or Not authorised).</param>
+    /// <returns>An API response indicating the result of the operation.</returns>
+    [Patch("/projectclosure/updateprojectclosurestatus")]
+    public Task<IApiResponse> UpdateProjectClosureStatus(string projectRecordId, string status);
 }
