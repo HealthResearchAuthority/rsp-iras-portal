@@ -6,7 +6,7 @@
 @using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
 @using Rsp.IrasPortal.Web.Areas.Admin.Models
 
-@model SponsorAuthorisationsViewModel
+@model AuthorisationsModificationsViewModel
 
 @section Breadcrumb {
     @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
@@ -18,6 +18,7 @@
 @{
     var errorSummaryTitle = "There is a problem";
     ViewBag.Title = "Authorisations";
+    ViewBag.Active = SponsorAuthorisations.Modifications;
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null
@@ -48,7 +49,7 @@
                         @Html.ValidationMessageFor(model => model.Search.SearchTerm, "", new { @class = "govuk-error-message" })
 
                         <div class="govuk-input__wrapper">
-                            <span id="find-project-label" class="govuk-visually-hidden">Find a project</span>
+                            <span id="find-project-label" class="govuk-visually-hidden">Find a modification</span>
                             <input asp-for="Search.SearchTerm" class="govuk-input" type="text" id="SearchTerm" aria-labelledby="find-project-label" />
                             <button class="govuk-button mb-0" style="margin-left:10px" type="submit">
                                 Search
@@ -62,6 +63,9 @@
                 </form>
             </div>
         </div>
+
+        <partial name="_AuthorisationsNavigationTabPartial" model="@Model.SponsorOrganisationUserId" />
+
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-full">
                 <div class="govuk-table-wrapper">

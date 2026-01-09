@@ -104,4 +104,11 @@ public interface IApplicationsServiceClient
 
     [Get("/applications/audittrail")]
     public Task<ApiResponse<ProjectRecordAuditTrailResponse>> GetProjectRecordAuditTrail(string projectRecordId);
+
+    /// <summary>
+    /// Updates the saved application by Id
+    /// </summary>
+    /// <returns>An asynchronous operation that updates the existing application.</returns>
+    [Put("/applications")]
+    public Task<IApiResponse> UpdateProjectRecordStatus(IrasApplicationRequest irasApplication);
 }

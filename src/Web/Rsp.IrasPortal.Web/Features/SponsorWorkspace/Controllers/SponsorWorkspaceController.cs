@@ -50,6 +50,20 @@ public class SponsorWorkspaceController
             return this.ServiceError(sponsorOrganisationsResponse);
         }
 
+        // TODO remove these lines as new multiple organisations feature is being developeded
+        var organisationId = sponsorOrganisationsResponse.Content.Single().RtsId;
+        var rtsResponse = await rtsService.GetOrganisation(organisationId);
+
+        if (!rtsResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(rtsResponse);
+        }
+        var sponsorOrganisationUserId = sponsorOrganisationsResponse.Content?.Single().Users?.Single(u => u.UserId.Equals(gid)).Id;
+
+        ViewBag.SponsorOrganisationName = rtsResponse.Content?.Name;
+        ViewBag.SponsorOrganisationUserId = sponsorOrganisationUserId;
+        // last line to be removed
+
         return View();
     }
 }

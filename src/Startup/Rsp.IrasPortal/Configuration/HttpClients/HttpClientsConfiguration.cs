@@ -85,6 +85,12 @@ public static class HttpClientsConfiguration
             .AddHttpMessageHandler<CmsPreviewHeadersHandler>()
             .AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
 
+        services
+            .AddRestClient<IProjectClosuresServiceClient>()
+            .ConfigureHttpClient(client => client.BaseAddress = appSettings.ApplicationsServiceUri)
+            .AddHttpMessageHandler<AuthHeadersHandler>()
+            .AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
+
         return services;
     }
 

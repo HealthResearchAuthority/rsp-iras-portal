@@ -100,4 +100,11 @@ public interface IApplicationsService : IInterceptable
     );
 
     public Task<ServiceResponse<ProjectRecordAuditTrailResponse>> GetProjectRecordAuditTrail(string projectRecordId);
+
+    /// <summary>
+    /// Update project record status to pending closure
+    /// </summary>
+    /// <param name="irasApplication"></param>
+    /// <returns></returns>
+    public Task<ServiceResponse> UpdateProjectRecordStatus(IrasApplicationRequest irasApplication);
 }

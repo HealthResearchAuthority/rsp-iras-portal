@@ -68,4 +68,31 @@ public class UpdateApplicationTests : TestServiceBase<ApplicationsService>
         // Verify
         _applicationsServiceClient.Verify(c => c.UpdateApplication(irasApplication), Times.Once());
     }
+
+    [Theory, AutoData]
+    public async Task UpdateProjectRecordStatus_Should_Update_Status(IrasApplicationRequest irasApplication)
+    {
+        // Arrange
+        var apiResponse = new ApiResponse<IrasApplicationResponse>
+        (
+            new HttpResponseMessage(HttpStatusCode.OK),
+            new IrasApplicationResponse(),
+            new()
+        );
+
+        _applicationsServiceClient
+            .Setup(c => c.UpdateProjectRecordStatus(irasApplication))
+            .ReturnsAsync(apiResponse);
+
+        // Act
+        var result = await Sut.UpdateProjectRecordStatus(irasApplication);
+
+        // Assert
+        result.ShouldBeOfType<ServiceResponse>();
+        result.IsSuccessStatusCode.ShouldBeTrue();
+        result.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        // Verify
+        _applicationsServiceClient.Verify(c => c.UpdateProjectRecordStatus(irasApplication), Times.Once());
+    }
 }

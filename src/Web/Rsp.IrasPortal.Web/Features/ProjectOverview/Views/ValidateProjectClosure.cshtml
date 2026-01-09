@@ -1,0 +1,20 @@
+﻿@using Rsp.IrasPortal.Application.Constants
+@{
+    ViewBag.Title = $"Validate";
+    var projectRecordId = TempData[TempDataKeys.ProjectRecordId];
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">
+            You cannot close this project with ongoing modifications-wait until submitted modifications have been
+            reviewed and delete any unsubmitted modifications to continue.
+        </h1>
+
+        <div class="save-buttons">
+            <a class="govuk-button" asp-route="pov:postapproval" asp-route-projectRecordId="@projectRecordId">
+                Return to post approval
+            </a>
+        </div>
+    </div>
+</div>

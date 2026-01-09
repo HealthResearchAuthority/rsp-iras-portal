@@ -11,7 +11,7 @@ namespace Rsp.IrasPortal.Web.Validators;
 public class DateViewModelValidator : AbstractValidator<DateViewModel>
 {
     // Default validation message if not overridden by context
-    private string modelValidationMessage = "The date should be a valid date and in future";
+    private string modelValidationMessage = "The date should be a valid date and it must be present or past date";
 
     // Default property name if not overridden by context
     private string modelValidationPropertyName = "Date";
@@ -33,14 +33,14 @@ public class DateViewModelValidator : AbstractValidator<DateViewModel>
                     AddFailures(context);
                 }
             })
-            .Custom((date, context) =>
-            {
-                // date must be in future
-                if (date!.Value <= DateTime.Now.Date)
-                {
-                    AddFailures(context);
-                }
-            });
+             .Custom((date, context) =>
+             {
+                 // date must be in present and past date
+                 if (date!.Value.Date > DateTime.Now.Date)
+                 {
+                     AddFailures(context);
+                 }
+             });
     }
 
     private void AddFailures(ValidationContext<DateViewModel> context)

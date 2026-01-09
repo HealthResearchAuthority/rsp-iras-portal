@@ -1,6 +1,6 @@
 ﻿namespace Rsp.IrasPortal.Application.DTOs.Requests;
 
-public class SponsorAuthorisationsSearchRequest
+public class ProjectClosuresSearchRequest
 {
     public string? SearchTerm { get; set; }
 }

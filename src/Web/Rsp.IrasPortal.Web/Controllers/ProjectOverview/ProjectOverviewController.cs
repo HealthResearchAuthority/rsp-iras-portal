@@ -29,7 +29,9 @@ public class ProjectOverviewController
     ICmsQuestionsetService cmsQuestionsetService,
     IRtsService rtsService,
     IValidator<ApprovalsSearchModel> validator,
-    IValidator<QuestionnaireViewModel> docValidator
+    IValidator<QuestionnaireViewModel> docValidator,
+    IProjectClosuresService projectClosuresService,
+    IUserManagementService userManagementService
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, docValidator)
 {
     private readonly IRespondentService _respondentService = respondentService;
@@ -46,7 +48,7 @@ public class ProjectOverviewController
             return result;
         }
 
-        if (projectOverview.Value is ProjectOverviewModel model && model.Status == ProjectRecordStatus.Active)
+        if (projectOverview.Value is ProjectOverviewModel model && model.Status is ProjectRecordStatus.Active or ProjectRecordStatus.PendingClosure or ProjectRecordStatus.Closed)
         {
             return RedirectToAction(nameof(ProjectDetails), new { projectRecordId, backRoute, modificationId });
         }
@@ -153,7 +155,38 @@ public class ProjectOverviewController
             AdditionalParameters = new Dictionary<string, string>() { { "projectRecordId", projectRecordId } }
         };
 
+        //project closure
+        await GetProjectClosureDetails(projectRecordId, model);
+
         return View(model);
+    }
+
+    /// <summary>
+    /// Get project closure records from database
+    /// </summary>
+    /// <param name="projectRecordId"></param>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    private async Task GetProjectClosureDetails(string projectRecordId, PostApprovalViewModel model)
+    {
+        var projectClosureResponse = await projectClosuresService.GetProjectClosureById(projectRecordId);
+        if (projectClosureResponse?.Content != null)
+        {
+            var userManagementServiceResponse =
+                        await userManagementService.GetUser(projectClosureResponse?.Content?.UserId, null);
+
+            var emailId = (userManagementServiceResponse?.Content?.User!).Email;
+
+            model.ProjectClosureModel = new ProjectClosuresModel
+            {
+                Id = projectClosureResponse?.Content.UserId!,
+                DateActioned = projectClosureResponse?.Content.DateActioned,
+                SentToSponsorDate = projectClosureResponse?.Content.SentToSponsorDate,
+                UserEmail = emailId,
+                ClosureDate = projectClosureResponse?.Content.ClosureDate,
+                Status = projectClosureResponse?.Content.Status!
+            };
+        }
     }
 
     [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Read)]
