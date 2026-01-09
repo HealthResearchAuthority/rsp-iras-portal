@@ -517,9 +517,13 @@ public class MyOrganisationsController(
 
             var user = usersResponse.Content.Users.First();
 
-            var sponsorOrganisations = await sponsorOrganisationService.GetAllActiveSponsorOrganisationsForEnabledUser(Guid.Parse(user.Id));
+            var sponsorOrganisations = await sponsorOrganisationService.GetAllSponsorOrganisations(
+                new SponsorOrganisationSearchRequest()
+                {
+                    UserId = Guid.Parse(user.Id)
+                });
 
-            if (!sponsorOrganisations.Content.Any(x => x.Id == ctx.SponsorOrganisation.Id))
+            if (!sponsorOrganisations.Content.SponsorOrganisations.Any(x => x.Id == ctx.SponsorOrganisation.Id))
             {
                 return RedirectToAction(nameof(MyOrganisationUsersAddUserRole), new { rtsId, userId = user.Id });
             }
@@ -576,7 +580,14 @@ public class MyOrganisationsController(
         if (nextPage)
         {
             // Role selected - continue (redirect to next step or whatever your flow is)
-            return RedirectToAction(nameof(MyOrganisationUsersAddUserPermission), new { rtsId, userId, role });
+            if (string.Equals(role, Roles.Sponsor, StringComparison.CurrentCultureIgnoreCase))
+            {
+                return RedirectToAction(nameof(MyOrganisationUsersAddUserPermission), new { rtsId, userId, role });
+            }
+
+            bool canAuthorise = true;
+
+            return RedirectToAction(nameof(MyOrganisationUsersCheckAndConfirm), new { rtsId, userId, role, canAuthorise });
         }
 
         return View(model);
@@ -592,11 +603,6 @@ public class MyOrganisationsController(
         }
 
         var ctx = ctxResult.Context!;
-
-        if (role != "Sponsor")
-        {
-            canAuthorise = true;
-        }
 
         var model = new SponsorMyOrganisationUsersViewModel
         {
@@ -626,11 +632,6 @@ public class MyOrganisationsController(
         }
 
         var ctx = ctxResult.Context!;
-
-        if (role != "Sponsor")
-        {
-            canAuthorise = true;
-        }
 
         var user = await userService.GetUser(userId, null);
 
@@ -704,8 +705,8 @@ public class MyOrganisationsController(
 
         var ctx = ctxResult.Context!;
 
-        // user is accessing edit screen but is not system admin or organisation admin for this organisation
-        // forbid access
+        // user is accessing edit screen but is not system admin or organisation admin for this
+        // organisation forbid access
         if (editMode && !ctx.UserIsAdmin)
         {
             return Forbid();
@@ -768,8 +769,8 @@ public class MyOrganisationsController(
 
         var ctx = ctxResult.Context!;
 
-        // user is accessing edit screen but is not system admin or organisation admin for this organisation
-        // forbid access
+        // user is accessing edit screen but is not system admin or organisation admin for this
+        // organisation forbid access
         if (!ctx.UserIsAdmin)
         {
             return Forbid();
