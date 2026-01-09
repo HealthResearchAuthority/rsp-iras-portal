@@ -1651,10 +1651,16 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
             }
         };
 
-        var sponsorResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
+        var sponsorResponse = new ServiceResponse<AllSponsorOrganisationsResponse>
         {
             StatusCode = HttpStatusCode.OK,
-            Content = new List<SponsorOrganisationDto> { sponsorOrganisation }
+            Content = new AllSponsorOrganisationsResponse
+            {
+                SponsorOrganisations = new List<SponsorOrganisationDto>
+                {
+                    sponsorOrganisation
+                }
+            }
         };
 
         Mocker.GetMock<IUserManagementService>()
@@ -1662,7 +1668,12 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
             .ReturnsAsync(usersResponse);
 
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetAllActiveSponsorOrganisationsForEnabledUser(It.IsAny<Guid>()))
+            .Setup(s => s.GetAllSponsorOrganisations(
+                It.IsAny<SponsorOrganisationSearchRequest>(),
+                1,
+                int.MaxValue,
+                "",
+                ""))
             .ReturnsAsync(sponsorResponse);
 
         // Act
@@ -1721,10 +1732,16 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
             }
         };
 
-        var sponsorResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
+        var sponsorResponse = new ServiceResponse<AllSponsorOrganisationsResponse>
         {
             StatusCode = HttpStatusCode.OK,
-            Content = new List<SponsorOrganisationDto> { sponsorOrganisationDto }
+            Content = new AllSponsorOrganisationsResponse
+            {
+                SponsorOrganisations = new List<SponsorOrganisationDto>
+                {
+                    sponsorOrganisationDto
+                }
+            }
         };
 
         Mocker.GetMock<IUserManagementService>()
@@ -1732,7 +1749,12 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
             .ReturnsAsync(usersResponse);
 
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetAllActiveSponsorOrganisationsForEnabledUser(It.IsAny<Guid>()))
+            .Setup(s => s.GetAllSponsorOrganisations(
+                It.IsAny<SponsorOrganisationSearchRequest>(),
+                1,
+                int.MaxValue,
+                "",
+                ""))
             .ReturnsAsync(sponsorResponse);
 
         // Act
@@ -1845,6 +1867,25 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
 
         // Act
         var result = await Sut.MyOrganisationUsersAddUserRole(rtsId, userId.ToString(), "Sponsor");
+
+        // Assert
+        var view = result.ShouldBeOfType<ViewResult>();
+        var model = view.Model.ShouldBeOfType<SponsorMyOrganisationUsersViewModel>();
+        model.RtsId.ShouldBe(rtsId);
+    }
+
+    [Fact]
+    public async Task MyOrganisationUsersAddUserRole_redirects_to_confirm()
+    {
+        // Arrange
+        var rtsId = "87765";
+        var userId = SetUser(Guid.NewGuid(), DefaultEmail);
+
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail,
+            rtsOrganisation: new OrganisationDto { Name = "Acme Sponsor Org", CountryName = "UK" });
+
+        // Act
+        var result = await Sut.MyOrganisationUsersAddUserRole(rtsId, userId.ToString(), "Organisation administrator");
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
@@ -2002,6 +2043,32 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
     }
 
     [Fact]
+    public async Task MyOrganisationUsersAddUserRole_when_nextPage_true_redirects_org_admin()
+    {
+        // Arrange
+        var rtsId = "87765";
+        var userId = SetUser(Guid.NewGuid(), DefaultEmail);
+        var role = "Organisation administrator";
+
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail,
+            rtsOrganisation: new OrganisationDto { Name = "Acme Sponsor Org", CountryName = "UK" });
+
+        _http.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["Role"] = role
+        });
+
+        Sut.TempData = new TempDataDictionary(_http, Mock.Of<ITempDataProvider>());
+
+        // Act
+        var result = await Sut.MyOrganisationUsersAddUserRole(rtsId, userId.ToString(), role, true);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe(nameof(Sut.MyOrganisationUsersCheckAndConfirm));
+    }
+
+    [Fact]
     public async Task MyOrganisationUsersAddUserRole_when_role_present_does_not_set_banner()
     {
         // Arrange
@@ -2064,40 +2131,6 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         model.CanAuthorise.ShouldBeTrue();
     }
 
-    [Fact]
-    public async Task MyOrganisationUsersAddUserPermission_when_canAuthorise_false_returns_view()
-    {
-        // Arrange
-        var rtsId = "87765";
-        var userId = SetUser(Guid.NewGuid(), DefaultEmail);
-
-        SetupSponsorOrgContextSuccess(
-            rtsId,
-            DefaultEmail,
-            rtsOrganisation: new OrganisationDto
-            {
-                Name = "Acme Sponsor Org",
-                CountryName = "UK"
-            });
-
-        var role = SponsorOrganisationUserRoles.OrganisationAdministrator;
-
-        // Act
-        var result = await Sut.MyOrganisationUsersAddUserPermission(
-            rtsId,
-            userId.ToString(),
-            role,
-            false);
-
-        // Assert
-        var view = result.ShouldBeOfType<ViewResult>();
-        var model = view.Model.ShouldBeOfType<SponsorMyOrganisationUsersViewModel>();
-
-        model.Role.ShouldBe(role);
-        model.CanAuthorise.ShouldBeTrue();
-    }
-
-    [Fact]
     public async Task MyOrganisationUsersAddUserPermission_when_nextPage_true_redirects_to_check_and_confirm()
     {
         // Arrange
@@ -2416,7 +2449,8 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
                 Times.Once);
     }
 
-    [AutoData, Theory]
+    [AutoData]
+    [Theory]
     public async Task MyOrganisationViewUser_Returns_View(
         SponsorOrganisationUserDto organisationUser)
     {
@@ -2470,7 +2504,7 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
             rtsOrganisation: new OrganisationDto { Name = "Acme Sponsor Org", CountryName = "UK" });
 
         // Act
-        var result = await Sut.MyOrganisationViewUser(userId.ToString(), rtsId, false);
+        var result = await Sut.MyOrganisationViewUser(userId.ToString(), rtsId);
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
@@ -2481,7 +2515,8 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         model.IsLoggedInUserAdmin.ShouldBeFalse();
     }
 
-    [AutoData, Theory]
+    [AutoData]
+    [Theory]
     public async Task MyOrganisationEditUser_Returns_EditView(
         SponsorOrganisationUserDto organisationUser)
     {
@@ -2564,7 +2599,8 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         result.ShouldBeOfType<ForbidResult>();
     }
 
-    [AutoData, Theory]
+    [AutoData]
+    [Theory]
     public async Task MyOrganisationUpdateUser_Returns_Calls_Update_Service(
         SponsorMyOrganisationUserViewModel userModel)
     {
