@@ -59,7 +59,7 @@ public class AuthorisationsProjectClosuresController
         model.ProjectRecords = projectClosuresServiceResponse?.Content?.ProjectClosures?
             .Select(dto => new ProjectClosuresModel
             {
-                ProjectRecordId = dto.Id,
+                ProjectRecordId = dto.ProjectRecordId,
                 ShortProjectTitle = dto.ShortProjectTitle,
                 Status = dto.Status,
                 IrasId = dto.IrasId,

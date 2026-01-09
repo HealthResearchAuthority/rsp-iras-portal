@@ -398,7 +398,7 @@ else
         </label>
     </div>
     <div class="govuk-grid-column-full">
-        @if (Model.ProjectClosureModel != null && Model.ProjectClosureModel.Status == ModificationStatus.WithSponsor)
+        @if (Model.ProjectClosureModels.Count() > 0)
         {
             <div class="govuk-grid-row">
                 <div class="govuk-grid-column-full">
@@ -437,23 +437,27 @@ else
                                 </tr>
                             </thead>
                             <tbody class="govuk-table__body govuk-body-s">
-                                <tr class="govuk-table__row">
-                                    <td class="govuk-table__cell">@Model.ProjectClosureModel.TransactionId</td>
-                                    <td class="govuk-table__cell">@Model.ProjectClosureModel.ClosureDate?.ToString("dd MMM yyyy")</td>
-                                    <td class="govuk-table__cell">@Model.ProjectClosureModel.UserEmail</td>
-                                    <td class="govuk-table__cell">@Model.ProjectClosureModel.SentToSponsorDate?.ToString("dd MMM yyyy")</td>
-                                    <td class="govuk-table__cell">
-                                        @{
-                                            var tagClass = @Model.ProjectClosureModel.Status switch
-                                            {
-                                                ProjectClosureStatus.WithSponsor => "govuk-tag--yellow",
-                                                _ => "govuk-tag--blue"
-                                            };
-                                        }
-                                        <strong class="govuk-tag @tagClass">
-                                            @Model.ProjectClosureModel.Status
-                                        </strong>
-                                </tr>
+                                @foreach (var projectClosure in Model.ProjectClosureModels)
+                                {
+                                    <tr class="govuk-table__row">
+                                        <td class="govuk-table__cell">@projectClosure.TransactionId</td>
+                                        <td class="govuk-table__cell">@projectClosure.ClosureDate?.ToString("dd MMM yyyy")</td>
+                                        <td class="govuk-table__cell">@projectClosure.UserEmail</td>
+                                        <td class="govuk-table__cell">@projectClosure.SentToSponsorDate?.ToString("dd MMM yyyy")</td>
+                                        <td class="govuk-table__cell">
+                                            @{
+                                                var tagClass = projectClosure.Status switch
+                                                {
+                                                    ProjectClosureStatus.WithSponsor => "govuk-tag--yellow",
+                                                    _ => "govuk-tag--blue"
+                                                };
+                                            }
+                                            <strong class="govuk-tag @tagClass">
+                                                @projectClosure.Status
+                                            </strong>
+                                        </td>
+                                    </tr>
+                                }
                             </tbody>
                         </table>
                     </div>

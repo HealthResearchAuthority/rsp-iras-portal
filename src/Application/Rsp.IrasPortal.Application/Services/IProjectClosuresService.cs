@@ -41,5 +41,5 @@ public interface IProjectClosuresService : IInterceptable
     /// </summary>
     /// <param name="projectRecordId"></param>
     /// <returns>Returns the project closure record</returns>
-    public Task<ServiceResponse<ProjectClosuresResponse>> GetProjectClosureById(string projectRecordId);
+    public Task<ServiceResponse<ProjectClosuresSearchResponse>> GetProjectClosuresByProjectRecordId(string projectRecordId);
 }

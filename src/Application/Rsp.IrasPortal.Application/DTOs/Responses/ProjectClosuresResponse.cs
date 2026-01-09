@@ -1,11 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿namespace Rsp.IrasPortal.Application.DTOs.Responses;
 
-namespace Rsp.IrasPortal.Application.DTOs.Responses;
-
-[ExcludeFromCodeCoverage]
 public class ProjectClosuresResponse
 {
-    public string Id { get; set; } = null!;
+    public Guid Id { get; set; }
 
     /// <summary>
     /// Gets or sets the identifier for the researcher associated with this projectrecord table.

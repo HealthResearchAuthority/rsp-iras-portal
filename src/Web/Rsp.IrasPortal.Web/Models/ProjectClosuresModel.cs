@@ -2,7 +2,7 @@
 
 public class ProjectClosuresModel
 {
-    public string Id { get; set; } = null!;
+    public Guid Id { get; set; }
     public string ProjectRecordId { get; set; } = null!;
     public string ShortProjectTitle { get; set; } = null!;
     public string Status { get; set; } = null!;
@@ -12,16 +12,7 @@ public class ProjectClosuresModel
     public DateTime? DateActioned { get; set; } = null;
     public DateTime? SentToSponsorDate { get; set; } = null;
     public DateTime? ClosureDate { get; set; } = null!;
-
-    /// <summary>
-    /// Gets or sets the sequential number of the project closure.
-    /// </summary>
     public int ProjectClosureNumber { get; set; }
-
-    /// <summary>
-    /// Gets or sets the unique identifier for the project closure. This is a combination of IrasId and ProjectClosureNumber
-    /// </summary>
     public string TransactionId { get; set; } = null!;
-
     public DateViewModel ActualClosureDate { get; set; } = null!;
 }

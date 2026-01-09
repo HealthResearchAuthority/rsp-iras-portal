@@ -323,6 +323,7 @@ public class ApplicationController
         // Create a new project modification request
         var projectClosureRequest = new ProjectClosureRequest
         {
+            TransactionId = ProjectClosureStatus.TransactionIdPrefix + model.IrasId + separator,
             ProjectRecordId = model.ProjectRecordId,
             IrasId = model.IrasId,
             ClosureDate = model.ActualClosureDate.Date,
@@ -332,8 +333,6 @@ public class ApplicationController
             Status = ModificationStatus.WithSponsor,
             CreatedBy = userName,
             UpdatedBy = userName,
-            TransactionId = ProjectClosureStatus.TransactionIdPrefix + model.IrasId + separator,
-            Id = Guid.NewGuid().ToString(),
         };
 
         var closeProjectResponse = await projectClosuresService.CreateProjectClosure(projectClosureRequest);
@@ -364,7 +363,7 @@ public class ApplicationController
 
         TempData[TempDataKeys.ShowCloseProjectBanner] = true;
 
-        return View("/Features/ProjectOverview/Views/ConfirmProjectClosure.cshtml");
+        return View("/Features/ProjectOverview/Views/ConfirmProjectClosure.cshtml", model);
     }
 
     /// <summary>

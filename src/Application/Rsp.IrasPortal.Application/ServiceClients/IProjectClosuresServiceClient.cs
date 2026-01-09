@@ -47,5 +47,5 @@ public interface IProjectClosuresServiceClient
     /// <param name="projectRecordId"></param>
     /// <returns></returns>
     [Get("/projectclosure/getprojectclosurebyid")]
-    public Task<ApiResponse<ProjectClosuresResponse>> GetProjectClosureById(string projectRecordId);
+    public Task<ApiResponse<ProjectClosuresSearchResponse>> GetProjectClosuresByProjectRecordId(string projectRecordId);
 }

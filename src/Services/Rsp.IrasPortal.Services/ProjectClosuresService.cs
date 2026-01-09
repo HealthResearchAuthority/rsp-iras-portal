@@ -30,9 +30,9 @@ public class ProjectClosuresService
     /// </summary>
     /// <param name="projectRecordId"></param>
     /// <returns>Returns the project closure record</returns>
-    public async Task<ServiceResponse<ProjectClosuresResponse>> GetProjectClosureById(string projectRecordId)
+    public async Task<ServiceResponse<ProjectClosuresSearchResponse>> GetProjectClosuresByProjectRecordId(string projectRecordId)
     {
-        var apiResponse = await projectClosuresServiceClient.GetProjectClosureById(projectRecordId);
+        var apiResponse = await projectClosuresServiceClient.GetProjectClosuresByProjectRecordId(projectRecordId);
 
         return apiResponse.ToServiceResponse();
     }
