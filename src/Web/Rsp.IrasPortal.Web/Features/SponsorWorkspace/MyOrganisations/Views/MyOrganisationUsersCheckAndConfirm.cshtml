@@ -13,10 +13,15 @@
 	var headline = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsersCheckAndConfirm.Title", null);
 	var body = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsersCheckAndConfirm.Body", null);
 	var description = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsersCheckAndConfirm.Description", null);
+
+    var backRoute = "";
 }
 
 @section BackNavigation {
-    <partial name="_BackNavigation" model="@("sws:myorganisationusersadduserpermission", "Back", new Dictionary<string, string> { { "RtsId", Model.RtsId }, { "UserId", Model.UserId }, { "Role", Model.Role }, { "CanAuthorise", Model.CanAuthorise.ToString() } })"/>
+        @{
+		    backRoute = string.Equals(Model.Role, Roles.Sponsor, StringComparison.CurrentCultureIgnoreCase) ? "sws:myorganisationusersadduserpermission" : "sws:myorganisationusersadduserrole";
+        }
+	<partial name="_BackNavigation" model="@(backRoute, "Back", new Dictionary<string, string> { { "RtsId", Model.RtsId }, { "UserId", Model.UserId }, { "Role", Model.Role }, { "CanAuthorise", Model.CanAuthorise.ToString() } })" />
 }
 
 <div class="govuk-grid-row">

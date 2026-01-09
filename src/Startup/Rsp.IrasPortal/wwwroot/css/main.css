@@ -1078,4 +1078,10 @@ button.govuk-pagination__item--current {
   margin-bottom: 25px;
 }
 
+.search-filter-panel__header--static {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
 /*# sourceMappingURL=main.css.map */
