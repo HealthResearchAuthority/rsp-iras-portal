@@ -143,6 +143,11 @@ public class MyOrganisationsController(
 
         var ctxResult = await TryGetSponsorOrgContext(rtsId);
 
+        if (ctxResult.HasResult)
+        {
+            return ctxResult.Result!;
+        }
+
         var ctx = ctxResult.Context!;
 
         var model = new SponsorMyOrganisationProjectsViewModel
@@ -313,6 +318,7 @@ public class MyOrganisationsController(
         {
             Name = ctx.RtsOrganisation.Name,
             RtsId = rtsId,
+            IsCurrentUserAdmin = ctx.UserIsAdmin,
             SponsorOrganisation = new SponsorOrganisationModel
             {
                 Id = sponsorOrganisationDto.Id,
@@ -511,9 +517,13 @@ public class MyOrganisationsController(
 
             var user = usersResponse.Content.Users.First();
 
-            var sponsorOrganisations = await sponsorOrganisationService.GetAllActiveSponsorOrganisationsForEnabledUser(Guid.Parse(user.Id));
+            var sponsorOrganisations = await sponsorOrganisationService.GetAllSponsorOrganisations(
+                new SponsorOrganisationSearchRequest()
+                {
+                    UserId = Guid.Parse(user.Id)
+                });
 
-            if (!sponsorOrganisations.Content.Any(x => x.Id == ctx.SponsorOrganisation.Id))
+            if (!sponsorOrganisations.Content.SponsorOrganisations.Any(x => x.Id == ctx.SponsorOrganisation.Id))
             {
                 return RedirectToAction(nameof(MyOrganisationUsersAddUserRole), new { rtsId, userId = user.Id });
             }
@@ -570,7 +580,14 @@ public class MyOrganisationsController(
         if (nextPage)
         {
             // Role selected - continue (redirect to next step or whatever your flow is)
-            return RedirectToAction(nameof(MyOrganisationUsersAddUserPermission), new { rtsId, userId, role });
+            if (string.Equals(role, Roles.Sponsor, StringComparison.CurrentCultureIgnoreCase))
+            {
+                return RedirectToAction(nameof(MyOrganisationUsersAddUserPermission), new { rtsId, userId, role });
+            }
+
+            bool canAuthorise = true;
+
+            return RedirectToAction(nameof(MyOrganisationUsersCheckAndConfirm), new { rtsId, userId, role, canAuthorise });
         }
 
         return View(model);
@@ -586,11 +603,6 @@ public class MyOrganisationsController(
         }
 
         var ctx = ctxResult.Context!;
-
-        if (role != "Sponsor")
-        {
-            canAuthorise = true;
-        }
 
         var model = new SponsorMyOrganisationUsersViewModel
         {
@@ -620,11 +632,6 @@ public class MyOrganisationsController(
         }
 
         var ctx = ctxResult.Context!;
-
-        if (role != "Sponsor")
-        {
-            canAuthorise = true;
-        }
 
         var user = await userService.GetUser(userId, null);
 
@@ -684,6 +691,121 @@ public class MyOrganisationsController(
         return RedirectToAction(nameof(MyOrganisationUsers), new { rtsId });
     }
 
+    [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Users)]
+    [HttpGet("/sponsorworkspace/myorganisationusers/user", Name = "sws:MyOrganisationViewUser")]
+    public async Task<IActionResult> MyOrganisationViewUser(string userId, string rtsId, bool editMode = false)
+    {
+        // make sure the active user also belongs to the sponsor organisation they are viewing
+        var ctxResult = await TryGetSponsorOrgContext(rtsId);
+
+        if (ctxResult.HasResult)
+        {
+            return ctxResult.Result!;
+        }
+
+        var ctx = ctxResult.Context!;
+
+        // user is accessing edit screen but is not system admin or organisation admin for this
+        // organisation forbid access
+        if (editMode && !ctx.UserIsAdmin)
+        {
+            return Forbid();
+        }
+
+        // find user in sponsor organisation
+        var organisationUserResponse = await sponsorOrganisationService.GetUserInSponsorOrganisation(rtsId, Guid.Parse(userId));
+
+        if (!organisationUserResponse.IsSuccessStatusCode || organisationUserResponse.Content == null)
+        {
+            return this.ServiceError(organisationUserResponse);
+        }
+
+        // find additional user details
+        var userResponse = await userService.GetUser(userId, null);
+        if (!userResponse.IsSuccessStatusCode || userResponse.Content == null)
+        {
+            return this.ServiceError(userResponse);
+        }
+
+        var orgUser = organisationUserResponse.Content;
+        var userDetails = userResponse.Content.User;
+
+        var model = new SponsorMyOrganisationUserViewModel
+        {
+            UserId = userId,
+            SponsorOrganisationUserId = orgUser.Id.ToString(),
+            GivenName = userDetails.GivenName,
+            FamilyName = userDetails.FamilyName,
+            Email = userDetails.Email,
+            JobTitle = userDetails.JobTitle,
+            Organisation = userDetails.Organisation,
+            Telephone = userDetails.Telephone,
+            Title = userDetails.Title,
+            IsAuthoriser = orgUser.IsAuthoriser ? "Yes" : "No",
+            Status = orgUser.IsActive ? "Active" : "Disabled",
+            Role = orgUser.SponsorRole,
+            RtsId = rtsId,
+            SponsorOrganisationName = ctx.RtsOrganisation.Name,
+            IsLoggedInUserAdmin = ctx.UserIsAdmin
+        };
+
+        var viewName = editMode ?
+            "MyOrganisationEditUser" :
+            nameof(MyOrganisationViewUser);
+
+        return View(viewName, model);
+    }
+
+    [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Users)]
+    [HttpPost("/sponsorworkspace/myorganisationusers/edituser", Name = "sws:MyOrganisationEditUser")]
+    public async Task<IActionResult> MyOrganisationEditUser(SponsorMyOrganisationUserViewModel model)
+    {
+        // verify if user has access to this sponsor organisation
+        var ctxResult = await TryGetSponsorOrgContext(model.RtsId);
+        if (ctxResult.HasResult)
+        {
+            return ctxResult.Result!;
+        }
+
+        var ctx = ctxResult.Context!;
+
+        // user is accessing edit screen but is not system admin or organisation admin for this
+        // organisation forbid access
+        if (!ctx.UserIsAdmin)
+        {
+            return Forbid();
+        }
+
+        var updateModel = new SponsorOrganisationUserDto
+        {
+            RtsId = model.RtsId!,
+            UserId = Guid.Parse(model.UserId!),
+            IsAuthoriser = model.IsAuthoriser == "Yes",
+            SponsorRole = model.Role ?? string.Empty
+        };
+
+        // update organisation user profile
+        var updateProfileResult = await sponsorOrganisationService.UpdateSponsorOrganisationUser(updateModel);
+
+        if (!updateProfileResult.IsSuccessStatusCode)
+        {
+            return this.ServiceError(updateProfileResult);
+        }
+
+        // update user roles
+        var roleToUpdate = model.Role == "Sponsor" ? Roles.Sponsor : Roles.OrganisationAdministrator;
+        var userRolesUpdateResponse = await userService.UpdateRoles(model.Email, null, roleToUpdate);
+
+        if (!userRolesUpdateResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(userRolesUpdateResponse);
+        }
+
+        // redirect to previous screen with success banner
+        TempData[TempDataKeys.ShowNotificationBanner] = true;
+        return RedirectToAction(nameof(MyOrganisationViewUser), new { userId = model.UserId, rtsId = model.RtsId });
+    }
+
     [NonAction]
     private async Task<SponsorOrgContextResult> TryGetSponsorOrgContext(string rtsId)
     {
@@ -720,20 +842,27 @@ public class MyOrganisationsController(
             string.Equals(x.Email, email, StringComparison.OrdinalIgnoreCase)
         ) == true;
 
+        var isAdmin = User.IsInRole(Roles.SystemAdministrator) || sponsorOrganisationDto.Users?.Any(x =>
+            x.IsActive &&
+            string.Equals(x.Email, email, StringComparison.OrdinalIgnoreCase) &&
+            x.SponsorRole == SponsorOrganisationUserRoles.OrganisationAdministrator
+        ) == true;
+
         if (!inOrgAndEnabled)
         {
             // 403 -> /error/statuscode -> Forbidden()
             return new SponsorOrgContextResult(null, Forbid());
         }
 
-        var ctx = new SponsorOrgContext(rtsId, rtsResponse.Content, sponsorOrganisationDto);
+        var ctx = new SponsorOrgContext(rtsId, rtsResponse.Content, sponsorOrganisationDto, isAdmin);
         return new SponsorOrgContextResult(ctx, null);
     }
 
     private sealed record SponsorOrgContext(
         string RtsId,
         OrganisationDto RtsOrganisation,
-        SponsorOrganisationDto SponsorOrganisation);
+        SponsorOrganisationDto SponsorOrganisation,
+        bool UserIsAdmin = false);
 
     private sealed record SponsorOrgContextResult(
         SponsorOrgContext? Context,

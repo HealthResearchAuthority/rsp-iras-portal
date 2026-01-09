@@ -58,7 +58,8 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         string rtsId,
         string email,
         SponsorOrganisationDto? sponsorOrganisation = null,
-        OrganisationDto? rtsOrganisation = null)
+        OrganisationDto? rtsOrganisation = null,
+        bool isUserAdmin = false)
     {
         rtsOrganisation ??= new OrganisationDto
         {
@@ -83,7 +84,7 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
                 UserId = Guid.NewGuid(),
                 Email = email,
                 IsActive = true,
-                SponsorRole = "Member",
+                SponsorRole = isUserAdmin ? SponsorOrganisationUserRoles.OrganisationAdministrator : "Member",
                 IsAuthoriser = false
             }
         };
@@ -1650,10 +1651,16 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
             }
         };
 
-        var sponsorResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
+        var sponsorResponse = new ServiceResponse<AllSponsorOrganisationsResponse>
         {
             StatusCode = HttpStatusCode.OK,
-            Content = new List<SponsorOrganisationDto> { sponsorOrganisation }
+            Content = new AllSponsorOrganisationsResponse
+            {
+                SponsorOrganisations = new List<SponsorOrganisationDto>
+                {
+                    sponsorOrganisation
+                }
+            }
         };
 
         Mocker.GetMock<IUserManagementService>()
@@ -1661,7 +1668,12 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
             .ReturnsAsync(usersResponse);
 
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetAllActiveSponsorOrganisationsForEnabledUser(It.IsAny<Guid>()))
+            .Setup(s => s.GetAllSponsorOrganisations(
+                It.IsAny<SponsorOrganisationSearchRequest>(),
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<string>()))
             .ReturnsAsync(sponsorResponse);
 
         // Act
@@ -1720,10 +1732,16 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
             }
         };
 
-        var sponsorResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
+        var sponsorResponse = new ServiceResponse<AllSponsorOrganisationsResponse>
         {
             StatusCode = HttpStatusCode.OK,
-            Content = new List<SponsorOrganisationDto> { sponsorOrganisationDto }
+            Content = new AllSponsorOrganisationsResponse
+            {
+                SponsorOrganisations = new List<SponsorOrganisationDto>
+                {
+                    sponsorOrganisationDto
+                }
+            }
         };
 
         Mocker.GetMock<IUserManagementService>()
@@ -1731,7 +1749,12 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
             .ReturnsAsync(usersResponse);
 
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetAllActiveSponsorOrganisationsForEnabledUser(It.IsAny<Guid>()))
+            .Setup(s => s.GetAllSponsorOrganisations(
+                It.IsAny<SponsorOrganisationSearchRequest>(),
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<string>()))
             .ReturnsAsync(sponsorResponse);
 
         // Act
@@ -1844,6 +1867,25 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
 
         // Act
         var result = await Sut.MyOrganisationUsersAddUserRole(rtsId, userId.ToString(), "Sponsor");
+
+        // Assert
+        var view = result.ShouldBeOfType<ViewResult>();
+        var model = view.Model.ShouldBeOfType<SponsorMyOrganisationUsersViewModel>();
+        model.RtsId.ShouldBe(rtsId);
+    }
+
+    [Fact]
+    public async Task MyOrganisationUsersAddUserRole_redirects_to_confirm()
+    {
+        // Arrange
+        var rtsId = "87765";
+        var userId = SetUser(Guid.NewGuid(), DefaultEmail);
+
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail,
+            rtsOrganisation: new OrganisationDto { Name = "Acme Sponsor Org", CountryName = "UK" });
+
+        // Act
+        var result = await Sut.MyOrganisationUsersAddUserRole(rtsId, userId.ToString(), "Organisation administrator");
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
@@ -2001,6 +2043,32 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
     }
 
     [Fact]
+    public async Task MyOrganisationUsersAddUserRole_when_nextPage_true_redirects_org_admin()
+    {
+        // Arrange
+        var rtsId = "87765";
+        var userId = SetUser(Guid.NewGuid(), DefaultEmail);
+        var role = "Organisation administrator";
+
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail,
+            rtsOrganisation: new OrganisationDto { Name = "Acme Sponsor Org", CountryName = "UK" });
+
+        _http.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["Role"] = role
+        });
+
+        Sut.TempData = new TempDataDictionary(_http, Mock.Of<ITempDataProvider>());
+
+        // Act
+        var result = await Sut.MyOrganisationUsersAddUserRole(rtsId, userId.ToString(), role, true);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe(nameof(Sut.MyOrganisationUsersCheckAndConfirm));
+    }
+
+    [Fact]
     public async Task MyOrganisationUsersAddUserRole_when_role_present_does_not_set_banner()
     {
         // Arrange
@@ -2042,7 +2110,7 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
                 CountryName = "UK"
             });
 
-        var role = "Sponsor";
+        var role = SponsorOrganisationUserRoles.Sponsor;
         var canAuthorise = true;
 
         // Act
@@ -2063,40 +2131,6 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         model.CanAuthorise.ShouldBeTrue();
     }
 
-    [Fact]
-    public async Task MyOrganisationUsersAddUserPermission_when_canAuthorise_false_returns_view()
-    {
-        // Arrange
-        var rtsId = "87765";
-        var userId = SetUser(Guid.NewGuid(), DefaultEmail);
-
-        SetupSponsorOrgContextSuccess(
-            rtsId,
-            DefaultEmail,
-            rtsOrganisation: new OrganisationDto
-            {
-                Name = "Acme Sponsor Org",
-                CountryName = "UK"
-            });
-
-        var role = "Organisation administrator";
-
-        // Act
-        var result = await Sut.MyOrganisationUsersAddUserPermission(
-            rtsId,
-            userId.ToString(),
-            role,
-            false);
-
-        // Assert
-        var view = result.ShouldBeOfType<ViewResult>();
-        var model = view.Model.ShouldBeOfType<SponsorMyOrganisationUsersViewModel>();
-
-        model.Role.ShouldBe(role);
-        model.CanAuthorise.ShouldBeTrue();
-    }
-
-    [Fact]
     public async Task MyOrganisationUsersAddUserPermission_when_nextPage_true_redirects_to_check_and_confirm()
     {
         // Arrange
@@ -2413,5 +2447,211 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
                     It.IsAny<string?>(),
                     Roles.Sponsor),
                 Times.Once);
+    }
+
+    [AutoData]
+    [Theory]
+    public async Task MyOrganisationViewUser_Returns_View(
+        SponsorOrganisationUserDto organisationUser)
+    {
+        // Arrange
+        var rtsId = "87765";
+        var userId = Guid.NewGuid();
+        var loggedInUserId = SetUser(Guid.NewGuid(), DefaultEmail);
+
+        organisationUser.RtsId = rtsId;
+        organisationUser.UserId = userId;
+        var user = new UserResponse
+        {
+            User = new User(
+                userId.ToString(),
+                "azure-ad-12345",
+                "Mr",
+                "Test",
+                "Test",
+                organisationUser.Email,
+                "Software Developer",
+                "orgName",
+                "+44 7700 900123",
+                "United Kingdom",
+                "Active",
+                DateTime.UtcNow,
+                DateTime.UtcNow.AddDays(-2),
+                DateTime.UtcNow)
+        };
+
+        var orgUserResponse = new ServiceResponse<SponsorOrganisationUserDto>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = organisationUser
+        };
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.GetUserInSponsorOrganisation(rtsId, userId))
+            .ReturnsAsync(orgUserResponse);
+
+        var userServiceResponse = new ServiceResponse<UserResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = user
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser(userId.ToString(), null, null))
+            .ReturnsAsync(userServiceResponse);
+
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail,
+            rtsOrganisation: new OrganisationDto { Name = "Acme Sponsor Org", CountryName = "UK" });
+
+        // Act
+        var result = await Sut.MyOrganisationViewUser(userId.ToString(), rtsId);
+
+        // Assert
+        var view = result.ShouldBeOfType<ViewResult>();
+        view.ViewName.ShouldBe("MyOrganisationViewUser");
+        var model = view.Model.ShouldBeOfType<SponsorMyOrganisationUserViewModel>();
+        model.RtsId.ShouldBe(rtsId);
+        model.UserId.ShouldBe(userId.ToString());
+        model.IsLoggedInUserAdmin.ShouldBeFalse();
+    }
+
+    [AutoData]
+    [Theory]
+    public async Task MyOrganisationEditUser_Returns_EditView(
+        SponsorOrganisationUserDto organisationUser)
+    {
+        // Arrange
+        var rtsId = "87765";
+        var userId = Guid.NewGuid();
+        SetUser(Guid.NewGuid(), DefaultEmail);
+
+        organisationUser.RtsId = rtsId;
+        organisationUser.UserId = userId;
+        var user = new UserResponse
+        {
+            User = new User(
+                userId.ToString(),
+                "azure-ad-12345",
+                "Mr",
+                "Test",
+                "Test",
+                organisationUser.Email,
+                "Software Developer",
+                "orgName",
+                "+44 7700 900123",
+                "United Kingdom",
+                "Active",
+                DateTime.UtcNow,
+                DateTime.UtcNow.AddDays(-2),
+                DateTime.UtcNow)
+        };
+
+        var orgUserResponse = new ServiceResponse<SponsorOrganisationUserDto>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = organisationUser
+        };
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.GetUserInSponsorOrganisation(rtsId, userId))
+            .ReturnsAsync(orgUserResponse);
+
+        var userServiceResponse = new ServiceResponse<UserResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = user
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser(userId.ToString(), null, null))
+            .ReturnsAsync(userServiceResponse);
+
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail,
+            rtsOrganisation: new OrganisationDto { Name = "Acme Sponsor Org", CountryName = "UK" }, isUserAdmin: true);
+
+        // Act
+        var result = await Sut.MyOrganisationViewUser(userId.ToString(), rtsId, true);
+
+        // Assert
+        var view = result.ShouldBeOfType<ViewResult>();
+        view.ViewName.ShouldBe("MyOrganisationEditUser");
+        var model = view.Model.ShouldBeOfType<SponsorMyOrganisationUserViewModel>();
+        model.RtsId.ShouldBe(rtsId);
+        model.UserId.ShouldBe(userId.ToString());
+        model.IsLoggedInUserAdmin.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task MyOrganisationEditUser_Returns_Forbidden_When_User_Is_Not_Admin()
+    {
+        // Arrange
+        var rtsId = "87765";
+        var userId = Guid.NewGuid();
+        SetUser(Guid.NewGuid(), DefaultEmail);
+
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail,
+            rtsOrganisation: new OrganisationDto { Name = "Acme Sponsor Org", CountryName = "UK" }, isUserAdmin: false);
+
+        // Act
+        var result = await Sut.MyOrganisationViewUser(userId.ToString(), rtsId, true);
+
+        // Assert
+        result.ShouldBeOfType<ForbidResult>();
+    }
+
+    [AutoData]
+    [Theory]
+    public async Task MyOrganisationUpdateUser_Returns_Calls_Update_Service(
+        SponsorMyOrganisationUserViewModel userModel)
+    {
+        // Arrange
+        var rtsId = "87765";
+        var userId = Guid.NewGuid();
+        SetUser(Guid.NewGuid(), DefaultEmail);
+
+        userModel.RtsId = rtsId;
+        userModel.UserId = userId.ToString();
+
+        var updateModel = new SponsorOrganisationUserDto
+        {
+            RtsId = userModel.RtsId!,
+            UserId = Guid.Parse(userModel.UserId!),
+            IsAuthoriser = userModel.IsAuthoriser == "Yes",
+            SponsorRole = userModel.Role ?? string.Empty
+        };
+
+        var orgUserResponse = new ServiceResponse<SponsorOrganisationUserDto>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = updateModel
+        };
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.UpdateSponsorOrganisationUser(It.IsAny<SponsorOrganisationUserDto>()))
+            .ReturnsAsync(orgUserResponse);
+
+        var userServiceResponse = new ServiceResponse
+        {
+            StatusCode = HttpStatusCode.OK
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.UpdateRoles(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(userServiceResponse);
+
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail,
+            rtsOrganisation: new OrganisationDto { Name = "Acme Sponsor Org", CountryName = "UK" }, isUserAdmin: true);
+
+        // Act
+        var result = await Sut.MyOrganisationEditUser(userModel);
+
+        // Assert
+        var view = result.ShouldBeOfType<RedirectToActionResult>();
+        view.ActionName.ShouldBe("MyOrganisationViewUser");
+        view.RouteValues.ShouldNotBeNull();
+        view.RouteValues.Keys.ShouldContain("rtsId");
+        view.RouteValues.Keys.ShouldContain("userId");
+        view.RouteValues[view.RouteValues.Keys.First(k => k == "rtsId")].ShouldBe(rtsId);
+        view.RouteValues[view.RouteValues.Keys.First(k => k == "userId")].ShouldBe(userId.ToString());
     }
 }

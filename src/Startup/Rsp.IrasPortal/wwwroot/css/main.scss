@@ -1129,3 +1129,9 @@ button.govuk-pagination__item--current {
 .extra-bottom-margin {
     margin-bottom: 25px;
 }
+
+.search-filter-panel__header--static {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}

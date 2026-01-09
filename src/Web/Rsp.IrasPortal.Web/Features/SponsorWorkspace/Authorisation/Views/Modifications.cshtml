@@ -26,6 +26,7 @@
         : new Dictionary<string, MixedContentPageItem?>();
 
     var headline = pageContent.GetValueOrDefault("SponsorWorkspace.Authorisations.Title", null);
+    var searchHint = pageContent.GetValueOrDefault("SponsorWorkspace.Authorisations.SearchHint", null);
 }
 
 <div class="govuk-grid-row">
@@ -40,6 +41,10 @@
                 <form asp-route="sws:applyfilters" method="post" class="govuk-form-group govuk-!-margin-bottom-0">
 
                     <div class="govuk-form-group govuk-!-margin-bottom-2" error-class-for="Search.SearchTerm">
+                    
+                        <div id="search-hint" class="govuk-hint">
+                            @Html.Raw(searchHint?.Value)
+                        </div>
 
                         @Html.ValidationMessageFor(model => model.Search.SearchTerm, "", new { @class = "govuk-error-message" })
 
