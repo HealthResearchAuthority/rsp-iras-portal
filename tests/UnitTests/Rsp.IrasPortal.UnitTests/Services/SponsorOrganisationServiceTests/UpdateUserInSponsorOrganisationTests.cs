@@ -1,6 +1,5 @@
 ﻿using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.ServiceClients;
-using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Services;
 
 namespace Rsp.IrasPortal.UnitTests.Services.SponsorOrganisationServiceTests;
@@ -20,12 +19,8 @@ public class UpdateUserInSponsorOrganisationTests : TestServiceBase<SponsorOrgan
         client.Setup(c => c.UpdateUserInSponsorOrganisation(updateUser.RtsId, updateUser.UserId.ToString(), updateUser))
             .ReturnsAsync(apiResponse);
 
-        var rtsService = Mocker.GetMock<IRtsService>();
-
-        var sut = new SponsorOrganisationService(client.Object, rtsService.Object);
-
         // Act
-        var result = await sut.UpdateSponsorOrganisationUser(updateUser);
+        var result = await Sut.UpdateSponsorOrganisationUser(updateUser);
 
         // Assert
         client.Verify(c => c.UpdateUserInSponsorOrganisation(updateUser.RtsId, updateUser.UserId.ToString(), updateUser), Times.Once);
