@@ -319,6 +319,8 @@ public class SponsorOrganisationsController(
             model.Pagination.SearchQuery = searchQuery;
         }
 
+        TempData.Remove(TempDataKeys.SponsorOrganisationUser);
+
         return View(model);
     }
 
@@ -328,13 +330,17 @@ public class SponsorOrganisationsController(
     {
         var user = await userService.GetUser(userId.ToString(), null);
 
+        var addUserModel = TryGetAddUserModelFromTempData();
+
         var dto = new SponsorOrganisationUserDto
         {
             Id = sponsorOrganisationId,
             RtsId = rtsId,
             UserId = userId,
             Email = user.Content?.User.Email,
-            DateAdded = DateTime.UtcNow
+            DateAdded = DateTime.UtcNow,
+            SponsorRole = addUserModel?.Role ?? Roles.Sponsor,
+            IsAuthoriser = addUserModel?.IsAuthoriser ?? false
         };
 
         var response = await sponsorOrganisationService.AddUserToSponsorOrganisation(dto);
@@ -352,6 +358,89 @@ public class SponsorOrganisationsController(
     }
 
     [HttpGet]
+    public IActionResult AddUserRole(string rtsId, Guid userId)
+    {
+        var storedModel = TryGetAddUserModelFromTempData();
+
+        if (storedModel is not null)
+        {
+            return View(storedModel);
+        }
+
+        var model = new SponsorOrganisationAddUserModel
+        {
+            RtsId = rtsId,
+            UserId = userId,
+            Role = null,
+            IsAuthoriser = false
+        };
+
+        TempData[TempDataKeys.SponsorOrganisationUser] = JsonSerializer.Serialize(model);
+
+        return View(model);
+    }
+
+    [HttpPost]
+    public IActionResult SaveUserRole(SponsorOrganisationAddUserModel model)
+    {
+        var storedModel = TryGetAddUserModelFromTempData();
+
+        if (storedModel is null)
+        {
+            ModelState.AddModelError(string.Empty, "An unexpected error occured");
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (model.Role is null)
+        {
+            ModelState.AddModelError(string.Empty, "You must select a role before continuing.");
+            return View(nameof(AddUserRole), storedModel);
+        }
+
+        storedModel.Role = model.Role;
+        storedModel.IsAuthoriser = model.Role == Roles.OrganisationAdministrator;
+        TempData[TempDataKeys.SponsorOrganisationUser] = JsonSerializer.Serialize(storedModel);
+
+        if (model.Role == Roles.OrganisationAdministrator)
+        {
+            return RedirectToAction(nameof(ViewSponsorOrganisationUser), new { rtsId = storedModel.RtsId, userId = storedModel.UserId, addUser = true });
+        }
+
+        return RedirectToAction(nameof(AddUserPermission));
+    }
+
+    [HttpGet]
+    public IActionResult AddUserPermission()
+    {
+        var storedModel = TryGetAddUserModelFromTempData();
+
+        if (storedModel is null)
+        {
+            ModelState.AddModelError(string.Empty, "An unexpected error occured");
+            return RedirectToAction(nameof(Index));
+        }
+
+        return View(storedModel);
+    }
+
+    [HttpPost]
+    public IActionResult SaveUserPermission(SponsorOrganisationAddUserModel model)
+    {
+        var storedModel = TryGetAddUserModelFromTempData();
+
+        if (storedModel is null)
+        {
+            ModelState.AddModelError(string.Empty, "An unexpected error occured");
+            return RedirectToAction(nameof(Index));
+        }
+
+        storedModel.IsAuthoriser = model.IsAuthoriser;
+        TempData[TempDataKeys.SponsorOrganisationUser] = JsonSerializer.Serialize(storedModel);
+
+        return RedirectToAction(nameof(ViewSponsorOrganisationUser), new { rtsId = storedModel.RtsId, userId = storedModel.UserId, addUser = true });
+    }
+
+    [HttpGet]
     [Route("/sponsororganisations/viewuser", Name = "soc:viewsponsororganisationuser")]
     [CmsContentAction(nameof(ViewSponsorOrganisationUser))]
     public async Task<IActionResult> ViewSponsorOrganisationUser(string rtsId, Guid userId, bool addUser = false)
@@ -363,7 +452,7 @@ public class SponsorOrganisationsController(
         // Auto-set type based on whether the user is being added or edited
         ViewBag.Type = addUser ? "add" : "edit";
 
-        return View("ViewSponsorOrganisationUser", model);
+        return View(model);
     }
 
     [HttpPost]
@@ -744,6 +833,8 @@ public class SponsorOrganisationsController(
         var userResponse = await userService.GetUser(userId.ToString(), null);
         var sponsorOrganisationUser = await sponsorOrganisationService.GetUserInSponsorOrganisation(rtsId, userId);
 
+        var sponsorOrganisationAddUserModel = TryGetAddUserModelFromTempData();
+
         return new SponsorOrganisationUserModel
         {
             SponsorOrganisation = sponsorOrganisation.Model,
@@ -751,6 +842,30 @@ public class SponsorOrganisationsController(
                 ? new UserViewModel(userResponse.Content)
                 : new UserViewModel(),
             SponsorOrganisationUser = sponsorOrganisationUser.Content ?? new SponsorOrganisationUserDto()
+            {
+                RtsId = rtsId,
+                UserId = userId,
+                IsAuthoriser = sponsorOrganisationAddUserModel?.IsAuthoriser ?? false,
+                SponsorRole = sponsorOrganisationAddUserModel?.Role ?? Roles.Sponsor,
+                DateAdded = DateTime.UtcNow
+            }
         };
+    }
+
+    private SponsorOrganisationAddUserModel? TryGetAddUserModelFromTempData()
+    {
+        if (!TempData.ContainsKey(TempDataKeys.SponsorOrganisationUser))
+        {
+            return null;
+        }
+
+        var storedModelObject = TempData.Peek(TempDataKeys.SponsorOrganisationUser);
+
+        if (storedModelObject is not null)
+        {
+            return JsonSerializer.Deserialize<SponsorOrganisationAddUserModel>((storedModelObject as string)!);
+        }
+
+        return null;
     }
 }

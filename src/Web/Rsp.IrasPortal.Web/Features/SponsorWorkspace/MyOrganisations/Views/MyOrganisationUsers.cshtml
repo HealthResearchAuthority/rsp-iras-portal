@@ -5,259 +5,242 @@
 @model Rsp.IrasPortal.Web.Features.SponsorWorkspace.MyOrganisations.Models.SponsorMyOrganisationUsersViewModel
 
 @section Breadcrumb {
-    @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
-    {
-        ("Sponsor workspace", Url.RouteUrl("sws:sponsorworkspace")),
-        ("My organisations", Url.RouteUrl("sws:myorganisations"))
-    })
+	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+	{
+		("Sponsor workspace", Url.RouteUrl("sws:sponsorworkspace")),
+		("My organisations", Url.RouteUrl("sws:myorganisations"))
+	})
 }
 
 @{
-    var errorSummaryTitle = "There is a problem";
-    ViewBag.Title = "Sponsor organisations profile";
+	var errorSummaryTitle = "There is a problem";
+	ViewBag.Title = "Sponsor organisation profile";
 
-    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
-    var pageContent = pageContentData != null
-        ? pageContentData
-        : new Dictionary<string, MixedContentPageItem?>();
+	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+	var pageContent = pageContentData != null
+		? pageContentData
+		: new Dictionary<string, MixedContentPageItem?>();
 
-    var headline = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsers.Title", null);
-    var addUserTitle = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsers.AddUserTitle", null);
-    var addUserHint = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsers.AddUserHint", null);
+	var headline = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsers.Title", null);
+	var addUserTitle = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsers.AddUserTitle", null);
+	var addUserHint = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsers.AddUserHint", null);
 
-    var findUserTitle = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsers.FindUserTitle", null);
-    var findUserHint = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsers.FindUserHint", null);
+	var findUserTitle = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsers.FindUserTitle", null);
+	var findUserHint = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsers.FindUserHint", null);
 
-    var sortableHeaders = new[]
-    {
-        new { Field = nameof(UserViewModel.GivenName), Label = "Name" },
-        new { Field = nameof(UserViewModel.Email), Label = "Email address" },
-        new { Field = nameof(UserViewModel.Status), Label = "Status" },
-        new { Field = nameof(SponsorOrganisationUserDto.SponsorRole), Label = "Role" },
-        new { Field = nameof(SponsorOrganisationUserDto.IsAuthoriser),Label = "Authoriser" }
-    };
-    var tableId = "myOrganisationUsersTable";
+	var sortableHeaders = new[]
+	{
+		new { Field = nameof(UserViewModel.GivenName), Label = "Name" },
+		new { Field = nameof(UserViewModel.Email), Label = "Email address" },
+		new { Field = nameof(UserViewModel.Status), Label = "Status" },
+		new { Field = nameof(SponsorOrganisationUserDto.SponsorRole), Label = "Role" },
+		new { Field = nameof(SponsorOrganisationUserDto.IsAuthoriser),Label = "Authoriser" }
+	};
+	var tableId = "myOrganisationUsersTable";
 
-    var isAdmin =
-        User.IsInRole(Roles.SystemAdministrator)
-        || User.IsInRole(Roles.OrganisationAdministrator);
+	var isAdmin = Model.IsCurrentUserAdmin;
 }
 
 @functions {
 
-    private bool HasFilterErrors()
-    {
-        return ViewData.ModelState.Values.Any(v => v.Errors.Count > 0);
-    }
+	private bool HasFilterErrors()
+	{
+		return ViewData.ModelState.Values.Any(v => v.Errors.Count > 0);
+	}
 }
 
 @if (TempData[TempDataKeys.ShowNotificationBanner] is not null)
 {
-    var notificationBanner = TempData[TempDataKeys.SponsorOrganisationUserType] switch
-    {
-        "add" => "User added to this organisation",
-        "enable" => "User enabled",
-        "disable" => "User disabled",
-        _ => null
-    };
+	var notificationBanner = TempData[TempDataKeys.SponsorOrganisationUserType] switch
+	{
+		"add" => "User added",
+		"enable" => "User enabled",
+		"disable" => "User disabled",
+		_ => null
+	};
 
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-two-thirds">
-            <partial name="_NotificationBanner" model="@("Success", notificationBanner)"/>
-        </div>
-    </div>
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-two-thirds">
+			<partial name="_NotificationBanner"
+					 model="@(new NotificationBannerModel
+                            {
+                                Title = "Success",
+                                Heading = notificationBanner
+                            })" />
+
+		</div>
+	</div>
 }
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-        <div class="govuk-caption-l">
-            @Html.Raw(headline?.Value)
-        </div>
-        <h1 class="govuk-heading-l">@Model.Name</h1>
-    </div>
+	<div class="govuk-grid-column-two-thirds">
+		<div class="govuk-caption-l">
+			@Html.Raw(headline?.Value)
+		</div>
+		<h1 class="govuk-heading-l">@Model.Name</h1>
+	</div>
 </div>
 
 
 
-<partial name="_NavigationTabPartial" model="@Model" view-data="@ViewData"/>
+<partial name="_NavigationTabPartial" model="@Model" view-data="@ViewData" />
 
-<br/>
+<br />
 
 @if (isAdmin)
 {
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-two-thirds">
-            <label class="govuk-label" for="SearchQuery">
-                <b> @Html.Raw(addUserTitle?.Value)</b>
-            </label>
-            <div class="govuk-label">
-                @Html.Raw(addUserHint?.Value)
-            </div>
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-two-thirds">
+			<label class="govuk-label" for="SearchQuery">
+				<b> @Html.Raw(addUserTitle?.Value)</b>
+			</label>
+			<div class="govuk-label">
+				@Html.Raw(addUserHint?.Value)
+			</div>
 
-            @{
-                ViewBag.Style = "govuk-button govuk-button--primary";
-            }
-            <form method="get" class="govuk-form-group">
-                <input type="hidden" name="rtsId" value="@Model.RtsId" />
+			@{
+				ViewBag.Style = "govuk-button govuk-button--primary";
+			}
+			<form method="get" class="govuk-form-group">
+				<input type="hidden" name="rtsId" value="@Model.RtsId" />
 
-                <partial name="_SubmitButton"
-                         model="@("sws:myorganisationusersadduser", "Add a user", new Dictionary<string, string>())"/>
-            </form>
-        </div>
+				<partial name="_SubmitButton"
+						 model="@("sws:myorganisationusersadduser", "Add a user", new Dictionary<string, string>())" />
+			</form>
+		</div>
 
-    </div>
+	</div>
 }
 <div class="govuk-grid-row">
 
-    <div class="govuk-grid-column-two-thirds">
+	<div class="govuk-grid-column-two-thirds">
 
-        <form method="get" class="govuk-form-group">
-            <label class="govuk-label" for="SearchQuery">
-                <b>@Html.Raw(findUserTitle?.Value)</b>
-            </label>
-            <div class="govuk-label">
-                @Html.Raw(findUserHint?.Value)
-            </div>
+		<form method="get" class="govuk-form-group">
+			<label class="govuk-label" for="SearchQuery">
+				<b>@Html.Raw(findUserTitle?.Value)</b>
+			</label>
+			<div class="govuk-label">
+				@Html.Raw(findUserHint?.Value)
+			</div>
 
-            <div class="review-body-search">
-                <input class="govuk-input" id="SearchQuery" name="SearchQuery" type="text" value="@(Model.Pagination?.SearchQuery ?? string.Empty)">
-                <input type="hidden" readonly name="RtsId" value="@Model.RtsId"/>
-                <input type="hidden" readonly name="PageSize" value="@Model.Pagination?.PageSize"/>
-                @{
-                    ViewBag.Style = "govuk-button govuk-button--secondary";
-                }
-                <partial name="_SubmitButton" model="@("sws:myorganisationusers", "Search", new Dictionary<string, string>())"/>
-            </div>
+			<div class="review-body-search">
+				<input class="govuk-input" id="SearchQuery" name="SearchQuery" type="text" value="@(Model.Pagination?.SearchQuery ?? string.Empty)">
+				<input type="hidden" readonly name="RtsId" value="@Model.RtsId" />
+				<input type="hidden" readonly name="PageSize" value="@Model.Pagination?.PageSize" />
+				@{
+					ViewBag.Style = "govuk-button govuk-button--secondary";
+				}
+				<partial name="_SubmitButton" model="@("sws:myorganisationusers", "Search", new Dictionary<string, string>())" />
+			</div>
 
             <!-- Filter Panel -->
             <div class="search-filter-panel">
-                <details class="search-filter-toggle" @(HasFilterErrors() ? "open" : null)>
-                    <summary class="search-filter-panel__header"
-                             tabindex="-1"
-                             role="button"
-                             aria-controls="filter-panel"
-                             aria-expanded="@(HasFilterErrors().ToString().ToLower())">
-
-                        <span class="search-filter-panel__button-inner govuk-link"
-                              tabindex="0">
-                            Advanced filters
-                        </span>
-
-                        <span class="search-filter-panel__count" aria-hidden="true" tabindex="-1">
-                            @(Model.Pagination?.TotalCount ?? 0) results
-                        </span>
-                    </summary>
-
-                    <div class="search-filter-panel__content" id="filter-panel" role="region" aria-labelledby="toggle-filter">
-
-
-                        <!-- Apply -->
-                        <div class="search-filter-panel__actions">
-                            <button class="govuk-button search-filter-panel__action search-filter-panel__action--submit">Apply filters</button>
-                        </div>
-                    </div>
-                </details>
+                <div class="search-filter-panel__header search-filter-panel__header--static">
+                    <span class="search-filter-panel__count">
+                        @(Model.Pagination?.TotalCount ?? 0) results
+                    </span>
+                </div>
             </div>
 
 
-        </form>
-    </div>
+		</form>
+	</div>
 </div>
 <div class="govuk-grid-row">
 
-    <div class="govuk-grid-column-full">
-        @if (Model.Users != null && Model.Users.Any())
-        {
-            <div class="govuk-grid-column-full">
-                <div class="govuk-table-wrapper">
+	<div class="govuk-grid-column-full">
+		@if (Model.Users != null && Model.Users.Any())
+		{
+			<div class="govuk-grid-column-full">
+				<div class="govuk-table-wrapper">
 
-                    <table class="govuk-table govuk-table-users">
-                        <thead>
-                        <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
-                            @foreach (var header in sortableHeaders)
-                            {
-                                var sortableHeaderModel = new SortableHeaderModel
-                                {
-                                    FieldName = header.Field,
-                                    DisplayText = header.Label,
-                                    CurrentSortField = Model.Pagination?.SortField,
-                                    CurrentSortDirection = Model.Pagination?.SortDirection,
-                                    TableId = tableId,
-                                    AdditionalParameters = new Dictionary<string, string>
-                                    {
-                                        { "rtsId", Model.RtsId },
-                                        { "searchQuery", Model.Pagination.SearchQuery }
-                                    }
-                                };
+					<table class="govuk-table govuk-table-users">
+						<thead>
+							<tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+								@foreach (var header in sortableHeaders)
+								{
+									var sortableHeaderModel = new SortableHeaderModel
+					{
+						FieldName = header.Field,
+						DisplayText = header.Label,
+						CurrentSortField = Model.Pagination?.SortField,
+						CurrentSortDirection = Model.Pagination?.SortDirection,
+						TableId = tableId,
+						AdditionalParameters = new Dictionary<string, string>
+							{
+							{ "rtsId", Model.RtsId },
+							{ "searchQuery", Model.Pagination.SearchQuery }
+							}
+					};
 
-                                <th scope="col" class="govuk-table__header govuk-table__header-sortable">
-                                    <partial name="_SortableHeaderButton" model="@sortableHeaderModel"/>
-                                </th>
-                            }
-                            <th class="govuk-table__header">Action</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        @foreach (var user in Model.Users)
-                        {
-                            <tr class="govuk-table__row">
-                                <td class="govuk-table__cell">@user.GivenName @user.FamilyName</td>
-                                <td class="govuk-table__cell line-break-anywhere">@user.Email</td>
-                                <td class="govuk-table__cell">
-                                    @{
-                                        var sponsorOrganisationUserDto = Model.SponsorOrganisation.Users.FirstOrDefault(x => x.UserId == Guid.Parse(user.Id));
-                                        var statusClass = sponsorOrganisationUserDto.IsActive ? "govuk-tag--green" : "govuk-tag--red";
-                                        var statusText = sponsorOrganisationUserDto.IsActive ? "Active" : "Disabled";
-                                    }
+									<th scope="col" class="govuk-table__header govuk-table__header-sortable">
+										<partial name="_SortableHeaderButton" model="@sortableHeaderModel" />
+									</th>
+								}
+								<th class="govuk-table__header">Action</th>
+							</tr>
+						</thead>
+						<tbody>
+							@foreach (var user in Model.Users)
+							{
+								<tr class="govuk-table__row">
+									<td class="govuk-table__cell">@user.GivenName @user.FamilyName</td>
+									<td class="govuk-table__cell line-break-anywhere">@user.Email</td>
+									<td class="govuk-table__cell">
+										@{
+											var sponsorOrganisationUserDto = Model.SponsorOrganisation.Users.FirstOrDefault(x => x.UserId == Guid.Parse(user.Id));
+											var statusClass = sponsorOrganisationUserDto.IsActive ? "govuk-tag--green" : "govuk-tag--red";
+											var statusText = sponsorOrganisationUserDto.IsActive ? "Active" : "Disabled";
+										}
 
-                                    <strong class="govuk-tag @statusClass">@statusText</strong>
-                                </td>
-                                @{
-                                    var role = sponsorOrganisationUserDto.SponsorRole;
-									
-                                    role = string.IsNullOrEmpty(role)
-                                        ? role
-                                        : char.ToUpper(role[0]) + role[1..];
-                                }
-                                <td class="govuk-table__cell">
-                                    @role
-                                </td>
-                                @{
-                                    var isAuthoriser = sponsorOrganisationUserDto.IsAuthoriser ? "Yes" : "No";
-                                }
-                                <td class="govuk-table__cell">
-                                    @isAuthoriser
-                                </td>
-                                <td class="govuk-table__cell">
-                                    <a class="govuk-link"
-                                       asp-route="sws:myorganisationuser"
-                                       asp-route-rtsId="@Model.RtsId"
-                                       asp-route-userId="@user.Id">
-                                        @(isAdmin ? "Manage" : "View")
-                                    </a>
-                                </td>
-                            </tr>
-                        }
-                        </tbody>
-                    </table>
-                    <partial name="_Pagination" model="@Model.Pagination"/>
-                </div>
-            </div>
-        }
-        else if (!string.IsNullOrEmpty(Model.Pagination?.SearchQuery))
-        {
-            <div class="govuk-grid-row">
-                <div class="govuk-grid-column-two-thirds search-filter-error-border">
-                    <h2 class="govuk-heading-l">There are no matching results</h2>
-                    <p class="govuk-body">Improve your search results by:</p>
-                    <ul class="govuk-list govuk-list--bullet">
-                        <li>removing filters</li>
-                        <li>double-checking your spelling</li>
-                        <li>using fewer keywords</li>
-                        <li>searching for something less specific</li>
-                    </ul>
-                </div>
-            </div>
-        }
-    </div>
+										<strong class="govuk-tag @statusClass">@statusText</strong>
+									</td>
+									@{
+										var role = sponsorOrganisationUserDto.SponsorRole;
+
+										role = string.IsNullOrEmpty(role)
+										? role
+										: char.ToUpper(role[0]) + role[1..];
+									}
+									<td class="govuk-table__cell">
+										@role
+									</td>
+									@{
+										var isAuthoriser = sponsorOrganisationUserDto.IsAuthoriser ? "Yes" : "No";
+									}
+									<td class="govuk-table__cell">
+										@isAuthoriser
+									</td>
+									<td class="govuk-table__cell">
+										<a class="govuk-link"
+										   asp-route="sws:MyOrganisationViewUser"
+										   asp-route-rtsId="@Model.RtsId"
+										   asp-route-userId="@user.Id">
+											@(isAdmin ? "Manage" : "View")
+										</a>
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+					<partial name="_Pagination" model="@Model.Pagination" />
+				</div>
+			</div>
+		}
+		else if (!string.IsNullOrEmpty(Model.Pagination?.SearchQuery))
+		{
+			<div class="govuk-grid-row">
+				<div class="govuk-grid-column-two-thirds search-filter-error-border">
+					<h2 class="govuk-heading-l">There are no matching results</h2>
+					<p class="govuk-body">Improve your search results by:</p>
+					<ul class="govuk-list govuk-list--bullet">
+						<li>removing filters</li>
+						<li>double-checking your spelling</li>
+						<li>using fewer keywords</li>
+						<li>searching for something less specific</li>
+					</ul>
+				</div>
+			</div>
+		}
+	</div>
 </div>

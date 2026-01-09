@@ -55,10 +55,17 @@
 
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
-			<partial name="_NotificationBanner" model="@("Success", notificationBanner)" />
+            <partial name="_NotificationBanner"
+                     model="@(new NotificationBannerModel
+                            {
+                                Title = "Success",
+                                Heading = notificationBanner
+                            })" />
         </div>
     </div>
 }
+
+<partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
 
 <div class="govuk-grid-row">
 	<div class="govuk-grid-column-two-thirds">
@@ -94,32 +101,11 @@
 
             <!-- Filter Panel -->
             <div class="search-filter-panel">
-                <details class="search-filter-toggle" @(HasFilterErrors() ? "open" : null)>
-                    <summary class="search-filter-panel__header"
-                             tabindex="-1"
-                             role="button"
-                             aria-controls="filter-panel"
-                             aria-expanded="@(HasFilterErrors().ToString().ToLower())">
-
-                        <span class="search-filter-panel__button-inner govuk-link"
-                              tabindex="0">
-                            Advanced filters
-                        </span>
-
-                        <span class="search-filter-panel__count" aria-hidden="true" tabindex="-1">
-                            @(Model.Pagination?.TotalCount ?? 0) results
-                        </span>
-                    </summary>
-
-                    <div class="search-filter-panel__content" id="filter-panel" role="region" aria-labelledby="toggle-filter">
-
-
-                        <!-- Apply -->
-                        <div class="search-filter-panel__actions">
-                            <button class="govuk-button search-filter-panel__action search-filter-panel__action--submit">Apply filters</button>
-                        </div>
-                    </div>
-                </details>
+                <div class="search-filter-panel__header search-filter-panel__header--static">
+                    <span class="search-filter-panel__count">
+                        @(Model.Pagination?.TotalCount ?? 0) results
+                    </span>
+                </div>
             </div>
         </form>
 

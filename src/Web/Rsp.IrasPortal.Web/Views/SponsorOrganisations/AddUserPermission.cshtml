@@ -1,0 +1,45 @@
+﻿@model SponsorOrganisationAddUserModel
+@{
+    ViewData["Title"] = "Add user permission - Manage sponsor organisations - System Administration";
+}
+
+
+@section BackNavigation {
+    <partial name="_BackNavigation" model="@("soc:adduserrole", "Back", new Dictionary<string, string> { { "RtsId", Model.RtsId }, { "UserId", Model.UserId.ToString() } })" />
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
+        <div class="govuk-caption-l">
+            Sponsor organisation's profile
+        </div>
+        <h1 class="govuk-heading-l">Add user permission</h1>
+        <p class="govuk-body">Fill in the permissions that you want to assign to the user.</p>
+        <form method="post">
+            <div class="govuk-form-group">
+                <fieldset class="govuk-fieldset" aria-describedby="permissions-hint">
+                    <p class="govuk-body">
+                        Permissions
+                    </p>
+                    <div id="permissions-hint" class="govuk-hint">
+                        This user has permission to authorise all modification submissions on behalf of the sponsor organisation.
+                    </div>
+                    <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                        <div class="govuk-checkboxes__item">
+                            <input class="govuk-checkboxes__input" id="authoriser" asp-for="@Model.IsAuthoriser" type="checkbox" value="@true">
+                            <label class="govuk-label govuk-checkboxes__label" for="authoriser">
+                                User can authorise submissions
+                            </label>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+            @{
+                ViewBag.Style = "govuk-button govuk-button--primary";
+            }
+            <partial name="_SubmitButton"
+                     model="@("soc:saveuserpermission", "Save and continue", new Dictionary<string, string>())" />
+        </form>
+    </div>
+</div>
