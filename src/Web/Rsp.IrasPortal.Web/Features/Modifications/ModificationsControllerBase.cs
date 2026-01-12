@@ -292,7 +292,7 @@ public abstract class ModificationsControllerBase
         if (response?.StatusCode != HttpStatusCode.OK || response.Content == null)
             return [];
 
-        // Evaluate each document�s completeness
+        // Evaluate each document's completeness
         var tasks = response.Content
             .OrderBy(a => a.FileName, StringComparer.OrdinalIgnoreCase)
             .Select(a => GetDocumentSummary(a, questionnaire));
