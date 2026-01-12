@@ -160,7 +160,7 @@ public class ProjectClosureTests : TestServiceBase<ApplicationController>
 
     [Theory]
     [AutoData]
-    public async Task ConfirmProjectClosure_WhenUpdateProjectRecordStatusFails_ReturnsServiceError(ProjectClosuresResponse closuresResponse)
+    public async Task ConfirmProjectClosure_WhenUpdateProjectRecordStatusFails_ReturnsServiceError(ProjectClosuresResponse closuresResponse, IrasApplicationResponse irasApplicationResponse)
     {
         // Arrange
         SetupValidatorResult(new ValidationResult());
@@ -174,6 +174,11 @@ public class ProjectClosureTests : TestServiceBase<ApplicationController>
                  StatusCode = HttpStatusCode.OK,
                  Content = closuresResponse
              });
+
+        // Get project record
+        Mocker.GetMock<IApplicationsService>()
+           .Setup(s => s.GetProjectRecord(It.IsAny<string>()))
+           .ReturnsAsync(new ServiceResponse<IrasApplicationResponse> { StatusCode = HttpStatusCode.OK, Content = irasApplicationResponse });
 
         // Update status fails
         Mocker.GetMock<IApplicationsService>()
@@ -193,7 +198,7 @@ public class ProjectClosureTests : TestServiceBase<ApplicationController>
 
     [Theory]
     [AutoData]
-    public async Task ConfirmProjectClosure_WhenCreateClosurePass_UpdateProjectRecordStatus(ProjectClosuresResponse closuresResponse)
+    public async Task ConfirmProjectClosure_WhenCreateClosurePass_UpdateProjectRecordStatus(ProjectClosuresResponse closuresResponse, IrasApplicationResponse irasApplicationResponse)
     {
         // Arrange
         SetupValidatorResult(new ValidationResult());
@@ -207,6 +212,11 @@ public class ProjectClosureTests : TestServiceBase<ApplicationController>
                 StatusCode = HttpStatusCode.OK,
                 Content = closuresResponse
             });
+
+        // Get project record
+        Mocker.GetMock<IApplicationsService>()
+           .Setup(s => s.GetProjectRecord(It.IsAny<string>()))
+           .ReturnsAsync(new ServiceResponse<IrasApplicationResponse> { StatusCode = HttpStatusCode.OK, Content = irasApplicationResponse });
 
         // Update status fails
         Mocker.GetMock<IApplicationsService>()
