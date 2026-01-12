@@ -218,7 +218,7 @@ public interface IProjectModificationsServiceClient
     public Task<ApiResponse<GetModificationsResponse>> GetModificationsBySponsorOrganisationUserId
     (
         Guid sponsorOrganisationUserId,
-        [Body] SponsorAuthorisationsSearchRequest searchQuery,
+        [Body] SponsorAuthorisationsModificationsSearchRequest searchQuery,
         int pageNumber = 1,
         int pageSize = 20,
         string sortField = nameof(ModificationsDto.SentToSponsorDate),

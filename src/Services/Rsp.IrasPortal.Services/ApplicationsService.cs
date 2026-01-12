@@ -113,4 +113,16 @@ public class ApplicationsService(IApplicationsServiceClient applicationsClient) 
 
         return apiResponse.ToServiceResponse();
     }
+
+    /// <summary>
+    /// Updates the project record status
+    /// </summary>
+    /// <param name="irasApplication"></param>
+    /// <returns></returns>
+    public async Task<ServiceResponse> UpdateProjectRecordStatus(IrasApplicationRequest irasApplication)
+    {
+        var apiResponse = await applicationsClient.UpdateProjectRecordStatus(irasApplication);
+
+        return apiResponse.ToServiceResponse();
+    }
 }
