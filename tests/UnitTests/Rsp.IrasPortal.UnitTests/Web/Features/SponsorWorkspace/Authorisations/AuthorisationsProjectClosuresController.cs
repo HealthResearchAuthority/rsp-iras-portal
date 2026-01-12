@@ -194,7 +194,7 @@ public class AuthorisationsProjectClosuresControllerTests
             {
                 ProjectClosures = new List<ProjectClosuresResponse>
                 {
-                    new ProjectClosuresResponse {ProjectRecordId = projectRecordId, ClosureDate = closureDate }
+                    new ProjectClosuresResponse {ProjectRecordId = projectRecordId, ClosureDate = closureDate, Status = "With sponsor" }
                 }
             }
         };
