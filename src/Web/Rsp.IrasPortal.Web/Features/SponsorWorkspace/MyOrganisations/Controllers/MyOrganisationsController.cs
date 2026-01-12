@@ -828,6 +828,19 @@ public class MyOrganisationsController(
             return new SponsorOrgContextResult(null, NotFound());
         }
 
+        if (rtsResponse.IsSuccessStatusCode)
+        {
+            sponsorOrganisationDto.UpdatedDate =
+                DateTime.TryParse(rtsResponse.Content?.LastUpdated, out var updated)
+                    ? updated
+                    : DateTime.MinValue;
+
+            sponsorOrganisationDto.CreatedDate =
+                DateTime.TryParse(rtsResponse.Content?.LastUpdated, out var created)
+                    ? created
+                    : DateTime.MinValue;
+        }
+
         var email =
             User.FindFirstValue(ClaimTypes.Email) ??
             User.FindFirstValue("email");
