@@ -37,10 +37,10 @@ public class CreateProjectClosureServiceTests : TestServiceBase<ProjectClosuresS
     }
 
     [Theory, AutoData]
-    public async Task Should_Return_Success_Response_When_GetProjectClosureRecord_Returns_Result(string projectRecordId, ProjectClosuresResponse closuresResponse)
+    public async Task Should_Return_Success_Response_When_GetProjectClosureRecord_Returns_Result(string projectRecordId, ProjectClosuresSearchResponse closuresResponse)
     {
         // Arrange
-        var apiResponse = new ApiResponse<ProjectClosuresResponse>(
+        var apiResponse = new ApiResponse<ProjectClosuresSearchResponse>(
             new HttpResponseMessage(HttpStatusCode.OK),
             closuresResponse,
             new());
@@ -48,19 +48,19 @@ public class CreateProjectClosureServiceTests : TestServiceBase<ProjectClosuresS
         var clientMock = Mocker.GetMock<IProjectClosuresServiceClient>();
 
         clientMock
-            .Setup(c => c.GetProjectClosureById(projectRecordId))
+            .Setup(c => c.GetProjectClosuresByProjectRecordId(projectRecordId))
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.GetProjectClosureById(projectRecordId);
+        var result = await Sut.GetProjectClosuresByProjectRecordId(projectRecordId);
 
         // Assert
-        result.ShouldBeOfType<ServiceResponse<ProjectClosuresResponse>>();
+        result.ShouldBeOfType<ServiceResponse<ProjectClosuresSearchResponse>>();
         result.IsSuccessStatusCode.ShouldBeTrue();
         result.StatusCode.ShouldBe(HttpStatusCode.OK);
-        result.Content.ShouldBe(closuresResponse);
+        result.Content.ProjectClosures.ShouldBe(closuresResponse.ProjectClosures);
 
         // Verify
-        clientMock.Verify(c => c.GetProjectClosureById(projectRecordId), Times.Once);
+        clientMock.Verify(c => c.GetProjectClosuresByProjectRecordId(projectRecordId), Times.Once);
     }
 }

@@ -33,7 +33,7 @@ public class AuthorisationsProjectClosuresController
     IValidator<ProjectClosuresSearchModel> searchValidator
 ) : Controller
 {
-    [Authorize(Policy = Permissions.Sponsor.ProjectClosures_Search)]
+    [Authorize(Policy = Permissions.Sponsor.Modifications_Search)]
     [HttpGet]
     public async Task<IActionResult> ProjectClosures
     (

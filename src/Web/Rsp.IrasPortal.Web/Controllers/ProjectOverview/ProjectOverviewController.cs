@@ -169,24 +169,25 @@ public class ProjectOverviewController
     /// <returns></returns>
     private async Task GetProjectClosureDetails(string projectRecordId, PostApprovalViewModel model)
     {
-        var projectClosureResponse = await projectClosuresService.GetProjectClosureById(projectRecordId);
+        var projectClosureResponse = await projectClosuresService.GetProjectClosuresByProjectRecordId(projectRecordId);
         if (projectClosureResponse?.Content != null)
         {
-            var userManagementServiceResponse =
-                        await userManagementService.GetUser(projectClosureResponse?.Content?.UserId, null);
-
-            var emailId = (userManagementServiceResponse?.Content?.User!).Email;
-
-            model.ProjectClosureModel = new ProjectClosuresModel
-            {
-                Id = projectClosureResponse?.Content.UserId!,
-                DateActioned = projectClosureResponse?.Content.DateActioned,
-                SentToSponsorDate = projectClosureResponse?.Content.SentToSponsorDate,
-                UserEmail = emailId,
-                ClosureDate = projectClosureResponse?.Content.ClosureDate,
-                Status = projectClosureResponse?.Content.Status!
-            };
+            model.ProjectClosureModels = projectClosureResponse.Content?.ProjectClosures.
+                Select(pc => new ProjectClosuresModel
+                {
+                    TransactionId = pc.TransactionId,
+                    ClosureDate = pc.ClosureDate,
+                    UserEmail = GetUserEmail(pc.UserId),
+                    SentToSponsorDate = pc.SentToSponsorDate,
+                    Status = pc.Status,
+                }).ToList() ?? [];
         }
+    }
+
+    private string? GetUserEmail(string userId)
+    {
+        var userManagementServiceResponse = userManagementService.GetUser(userId, null);
+        return userManagementServiceResponse?.Result?.Content?.User.Email;
     }
 
     [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Read)]

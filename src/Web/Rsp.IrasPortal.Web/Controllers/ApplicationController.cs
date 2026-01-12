@@ -299,7 +299,7 @@ public class ApplicationController
 
     [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Close)]
     [HttpPost]
-    public async Task<IActionResult> ConfirmProjectClosure(ProjectClosuresModel model, DateTime plannedProjectEndDate)
+    public async Task<IActionResult> ConfirmProjectClosure(ProjectClosuresModel model, DateTime plannedProjectEndDate, string separator = "/")
     {
         var validationResult = await closureValidator.ValidateAsync(model);
 
@@ -323,16 +323,16 @@ public class ApplicationController
         // Create a new project modification request
         var projectClosureRequest = new ProjectClosureRequest
         {
+            TransactionId = ProjectClosureStatus.TransactionIdPrefix + model.IrasId + separator,
             ProjectRecordId = model.ProjectRecordId,
             IrasId = model.IrasId,
             ClosureDate = model.ActualClosureDate.Date,
             DateActioned = model.DateActioned,
-            SentToSponsorDate = model.SentToSponsorDate,
+            SentToSponsorDate = DateTime.UtcNow,
             ShortProjectTitle = model.ShortProjectTitle,
             Status = ModificationStatus.WithSponsor,
             CreatedBy = userName,
             UpdatedBy = userName,
-            Id = Guid.NewGuid().ToString(),
         };
 
         var closeProjectResponse = await projectClosuresService.CreateProjectClosure(projectClosureRequest);
@@ -363,7 +363,7 @@ public class ApplicationController
 
         TempData[TempDataKeys.ShowCloseProjectBanner] = true;
 
-        return View("/Features/ProjectOverview/Views/ConfirmProjectClosure.cshtml");
+        return View("/Features/ProjectOverview/Views/ConfirmProjectClosure.cshtml", model);
     }
 
     /// <summary>

@@ -46,8 +46,8 @@ public interface IProjectClosuresServiceClient
     /// </summary>
     /// <param name="projectRecordId"></param>
     /// <returns></returns>
-    [Get("/projectclosure/getprojectclosurebyid")]
-    public Task<ApiResponse<ProjectClosuresResponse>> GetProjectClosureById(string projectRecordId);
+    [Get("/projectclosure/getprojectclosuresbyid")]
+    public Task<ApiResponse<ProjectClosuresSearchResponse>> GetProjectClosuresByProjectRecordId(string projectRecordId);
 
     /// <summary>
     /// Updates the project closure status to either Authorised or Not authorised.
@@ -59,4 +59,5 @@ public interface IProjectClosuresServiceClient
     /// <returns>An API response indicating the result of the operation.</returns>
     [Patch("/projectclosure/updateprojectclosurestatus")]
     public Task<IApiResponse> UpdateProjectClosureStatus(string projectRecordId, string status);
+    
 }

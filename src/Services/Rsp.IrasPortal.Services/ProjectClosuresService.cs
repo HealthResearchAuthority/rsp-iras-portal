@@ -14,15 +14,25 @@ public class ProjectClosuresService
     IProjectClosuresServiceClient projectClosuresServiceClient
 ) : IProjectClosuresService
 {
+    /// <summary>
+    /// Create project closure record in project closure table
+    /// </summary>
+    /// <param name="projectClosureRequest"></param>
+    /// <returns>Returns the newly inserted project closure record</returns>
     public async Task<ServiceResponse<ProjectClosuresResponse>> CreateProjectClosure(ProjectClosureRequest projectClosureRequest)
     {
         var apiResponse = await projectClosuresServiceClient.CreateProjectClosure(projectClosureRequest);
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse<ProjectClosuresResponse>> GetProjectClosureById(string projectRecordId)
+    /// <summary>
+    /// Gets a project closure records from project closure table based on projectRecordId
+    /// </summary>
+    /// <param name="projectRecordId"></param>
+    /// <returns>Returns the project closure record</returns>
+    public async Task<ServiceResponse<ProjectClosuresSearchResponse>> GetProjectClosuresByProjectRecordId(string projectRecordId)
     {
-        var apiResponse = await projectClosuresServiceClient.GetProjectClosureById(projectRecordId);
+        var apiResponse = await projectClosuresServiceClient.GetProjectClosuresByProjectRecordId(projectRecordId);
 
         return apiResponse.ToServiceResponse();
     }

@@ -62,6 +62,6 @@ public class ValidateAsyncTests : TestServiceBase<DateViewModelValidator>
         // Assert
         result
             .ShouldHaveValidationErrorFor(x => x.Date)
-            .WithErrorMessage("The date should be a valid date and it must be present or past date");
+            .WithErrorMessage("Project closure date must be today or in the past");
     }
 }

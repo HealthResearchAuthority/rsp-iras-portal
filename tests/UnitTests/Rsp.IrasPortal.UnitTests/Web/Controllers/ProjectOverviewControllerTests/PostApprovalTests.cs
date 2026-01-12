@@ -17,7 +17,7 @@ public class PostApprovalTests : TestServiceBase<ProjectOverviewController>
 {
     [Theory]
     [AutoData]
-    public async Task PostApproval_Returns_View_With_Pagination_And_Modifications_Mapped(ProjectClosuresResponse closuresResponse, UserResponse userResponse)
+    public async Task PostApproval_Returns_View_With_Pagination_And_Modifications_Mapped(ProjectClosuresSearchResponse closuresResponse, UserResponse userResponse)
     {
         // Arrange
         var ctx = new DefaultHttpContext();
@@ -75,8 +75,8 @@ public class PostApprovalTests : TestServiceBase<ProjectOverviewController>
             });
         Mocker
            .GetMock<IProjectClosuresService>()
-           .Setup(s => s.GetProjectClosureById(It.IsAny<string>()))
-           .ReturnsAsync(new ServiceResponse<ProjectClosuresResponse>
+           .Setup(s => s.GetProjectClosuresByProjectRecordId(It.IsAny<string>()))
+           .ReturnsAsync(new ServiceResponse<ProjectClosuresSearchResponse>
            {
                StatusCode = HttpStatusCode.OK,
                Content = closuresResponse
