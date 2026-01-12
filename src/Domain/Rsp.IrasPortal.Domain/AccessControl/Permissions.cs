@@ -163,6 +163,21 @@ public static class Permissions
         public const string Modifications_Authorise = "sponsor.modifications.authorise";
 
         /// <summary>
+        /// allows searching project closure records
+        /// </summary>
+        public const string ProjectClosures_Search = "sponsor.projectclosures.search";
+
+        /// <summary>
+        /// allows reviewing project closure records before the final action i.e. authorising, not authorising
+        /// </summary>
+        public const string ProjectClosures_Review = "sponsor.projectclosures.review";
+
+        /// <summary>
+        /// allows authorising/not authorising project closure records
+        /// </summary>
+        public const string ProjectClosures_Authorise = "sponsor.projectclosures.authorise";
+
+        /// <summary>
         /// allows seeing the my organisations on the menu
         /// </summary>
         public const string MyOrganisations_Access = "sponsor.myorganisations.access";
