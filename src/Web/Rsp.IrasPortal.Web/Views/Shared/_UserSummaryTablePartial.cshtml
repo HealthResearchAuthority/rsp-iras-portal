@@ -6,7 +6,7 @@
     var edit = !string.IsNullOrEmpty(Model.Id);
     var editNewUserUrl = "/admin/users/editnewuser";
     var showChangeLink = TempData[TempDataKeys.ShowEditLink] == null;
-    var showAuthorizerInfoRow = ViewData["ShowAuthorizerInfo"] is not null && (bool)ViewData["ShowAuthorizerInfo"]!;
+    var showAuthorizerInfoRow = ViewData["ShowAuthorizerInfo"] is true;
 
     SponsorOrganisationAddUserModel? sponsorOrgUser = null;
     var storedObject = TempData.Peek(TempDataKeys.SponsorOrganisationUser);
