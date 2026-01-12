@@ -1,0 +1,107 @@
+﻿@using System.Text.Json
+@using Rsp.Portal.Web.Models
+@using Rsp.Portal.Application.Constants
+@model QuestionnaireViewModel
+
+@{
+
+    var modificationId = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string;
+
+    // Collect all rules for conditional questions
+    var conditionalRules = Model.GetConditionalRules();
+    var parentQuestionAnswers = Model.GetParentQuestionAnswers();
+
+    var questionnaire = new QuestionnaireViewModel();
+
+    questionnaire = Model;
+
+    var questions = Model.Questions.Where(question => question.SectionId == Model.CurrentStage).ToList();
+
+    questionnaire.Questions = questions;
+
+    <script>
+        $(document).ready(function () {
+        const conditionalRules = @Html.Raw(JsonSerializer.Serialize(conditionalRules));
+
+        // Loop through each rule and store it individually by QuestionId
+         conditionalRules.forEach(rule => {
+            sessionStorage.setItem(rule.QuestionId, JSON.stringify(rule.Rules));
+         });
+
+         const parentAnswers = @Html.Raw(JsonSerializer.Serialize(parentQuestionAnswers));
+
+        // Loop through each rule and store it individually by QuestionId
+        parentAnswers.forEach(parent => {
+            sessionStorage.setItem('A_'+parent.QuestionId, JSON.stringify(parent.Answers));
+         });
+    });
+    </script>
+
+    <script src="~/js/questionnaire.js"></script>
+    <script src="~/js/rules.js"></script>
+}
+
+<div class="govuk-form-group">
+
+    <input hidden name="CurrentStage" value="@Model.CurrentStage" />
+
+    <div class="sections">
+
+        @foreach (var question in questions)
+        {
+            <partial name="ProjectRecordAnswer" model="(Model, question)" />
+
+            var index = question.Index;
+
+            <input type="hidden" asp-for="Questions[index].Index" />
+            <input type="hidden" asp-for="Questions[index].QuestionId" />
+            <input type="hidden" asp-for="Questions[index].Category" />
+            <input type="hidden" asp-for="Questions[index].SectionId" />
+            <input type="hidden" asp-for="Questions[index].Section" />
+            <input type="hidden" asp-for="Questions[index].Heading" />
+            <input type="hidden" asp-for="Questions[index].QuestionText" />
+            <input type="hidden" asp-for="Questions[index].ShortQuestionText" />
+            <input type="hidden" asp-for="Questions[index].QuestionType" />
+            <input type="hidden" asp-for="Questions[index].DataType" />
+            <input type="hidden" asp-for="Questions[index].IsMandatory" checked="@question.IsMandatory" />
+            <input type="hidden" asp-for="Questions[index].IsOptional" checked="@question.IsOptional" />
+
+            if (!question.IsMandatory && !question.IsOptional)
+            {
+                if (question.Rules.Count == 0)
+                {
+                    <div class="govuk-inset-text">
+                        This question is conditional:
+                    </div>
+                }
+            }
+
+            var types = (question.QuestionType.ToLower(), question.DataType.ToLower());
+
+            ViewBag.Index = index;
+
+            // this will be used in the template
+            var templateName = types switch
+            {
+                ("date", "date") => "DateTemplate",
+                ("text", "text" or "email") => "TextTemplate",
+                ("text", "text area") => "TextAreaTemplate",
+                ("look-up list", "checkbox") => "CheckboxTemplate",
+                ("look-up list", "radio button") => "RadioButtonTemplate",
+                ("boolean", "boolean") => "RadioButtonTemplate",
+                ("rts:org_lookup", "text") => modificationId == null ?
+                    "AutoSuggestTemplate" :
+                    "OrgSearchTemplate",
+                ("look-up list", "dropdown") => "DropdownTemplate",
+                _ => string.Empty
+            };
+
+            if (!string.IsNullOrWhiteSpace(templateName))
+            {
+                // plese note the @ is necessary before Html so that Template is rendered, otherwise it won't render
+                @Html.EditorFor(_ => questionnaire, templateName, ViewData)
+            }
+
+        }
+    </div>
+</div>

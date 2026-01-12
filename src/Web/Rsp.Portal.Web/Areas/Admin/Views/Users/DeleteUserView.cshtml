@@ -1,0 +1,29 @@
+﻿@using Rsp.Portal.Web.Areas.Admin.Models
+@model UserViewModel
+
+<h2 class="govuk-heading-l">Delete User</h2>
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <form method="post">
+            <input type="hidden" asp-for="Id">
+            <input type="hidden" asp-for="Email">
+
+            <div class="govuk-form-group">
+                <p>Are you sure you want to delete the user <strong>@Model.Email</strong>?</p>
+            </div>
+
+            @{
+                ViewBag.Style = "govuk-button govuk-button--warning";
+            }
+
+            <partial name="_SubmitButton" model="@("admin:deleteuserconfirmed","Delete", new Dictionary<string, string>())" />
+
+            @{
+                ViewBag.Style = "ms-3 govuk-button govuk-button--secondary";
+            }
+
+            <partial name="_SubmitButton" model="@("admin:users", "Cancel", new Dictionary<string, string>())" />
+        </form>
+    </div>
+</div>

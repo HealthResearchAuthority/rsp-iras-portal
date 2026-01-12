@@ -1,0 +1,183 @@
+﻿using System.Net;
+using System.Security.Claims;
+using FluentValidation;
+using Mapster;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs.Requests.UserManagement;
+using Rsp.Portal.Application.Filters;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.AccessControl;
+using Rsp.Portal.Web.Areas.Admin.Models;
+using Rsp.Portal.Web.Controllers;
+using Rsp.Portal.Web.Extensions;
+
+namespace Rsp.Portal.Web.Features.ProfileAndSettings.Controllers;
+
+[Route("[controller]/[action]", Name = "profilesettings:[action]")]
+[Authorize(Policy = Workspaces.Profile)]
+public class ProfileAndSettingsController(
+    IUserManagementService userService,
+    IValidator<UserViewModel> validator) : Controller
+{
+    private const string EditProfileView = nameof(EditProfileView);
+    private const string Error = nameof(Error);
+
+    [HttpGet("~/[controller]", Name = "profilesettings")]
+    public async Task<IActionResult> Index()
+    {
+        var currentUserEmail = HttpContext?.User.FindFirstValue(ClaimTypes.Email);
+        var userEntityResponse = await userService.GetUser(null, currentUserEmail);
+
+        if (!userEntityResponse.IsSuccessStatusCode)
+        {
+            if (userEntityResponse.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return RedirectToAction(nameof(EditProfile));
+            }
+
+            return this.ServiceError(userEntityResponse);
+        }
+
+        var viewModel = new UserViewModel(userEntityResponse.Content!);
+
+        return View(viewModel);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> EditProfile()
+    {
+        // case for existing user editing their information
+        var currentUserEmail = HttpContext?.User.FindFirstValue(ClaimTypes.Email);
+        var userEntityResponse = await userService.GetUser(null, currentUserEmail);
+
+        if (!userEntityResponse.IsSuccessStatusCode)
+        {
+            if (userEntityResponse.StatusCode == HttpStatusCode.NotFound)
+            {
+                // user does not exist and they need to complete their profile
+                var phone = HttpContext?.User.FindFirstValue(ClaimTypes.MobilePhone);
+                var id = HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                ViewBag.Mode = "complete";
+
+                var createViewModel = new UserViewModel()
+                {
+                    Email = currentUserEmail!,
+                    OriginalEmail = currentUserEmail,
+                    Telephone = phone,
+                    IdentityProviderId = id,
+                };
+
+                return View(EditProfileView, createViewModel);
+            }
+
+            return this.ServiceError(userEntityResponse);
+        }
+
+        ViewBag.Mode = "edit";
+        var viewModel = new UserViewModel(userEntityResponse.Content!);
+        return View(EditProfileView, viewModel);
+    }
+
+    [HttpPost]
+    [CmsContentAction(nameof(EditProfile))]
+    public IActionResult EditNewUserProfile(UserViewModel userModel)
+    {
+        return View(EditProfileView, userModel);
+    }
+
+    [HttpPost]
+    [CmsContentAction(nameof(EditProfile))]
+    public async Task<IActionResult> SaveProfile(UserViewModel userModel)
+    {
+        var mode = (userModel.Id == null) ? "complete" : "edit";
+
+        ViewBag.Mode = mode;
+
+        var context = new ValidationContext<UserViewModel>(userModel);
+        var validationResult = await validator.ValidateAsync(context);
+
+        if (!validationResult.IsValid)
+        {
+            // Copy the validation results into ModelState.
+            // ASP.NET uses the ModelState collection to populate
+            // error messages in the View.
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
+
+            return View(EditProfileView, userModel);
+        }
+
+        if (mode == "edit")
+        {
+            // save user changes
+            var updateRequest = userModel.Adapt<UpdateUserRequest>();
+            updateRequest.LastUpdated = DateTime.UtcNow;
+
+            var updateUserRequest = await userService.UpdateUser(updateRequest);
+
+            // if status is forbidden
+            // return the appropriate response otherwise
+            // return the generic error page
+            if (!updateUserRequest.IsSuccessStatusCode)
+            {
+                return this.ServiceError(updateUserRequest);
+            }
+
+            // show notification banner for success message
+            TempData[TempDataKeys.ShowNotificationBanner] = true;
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // create new user
+        var request = userModel.Adapt<CreateUserRequest>();
+        request.Status = IrasUserStatus.Active;
+
+        var createUserStatus = await userService.CreateUser(request);
+
+        // user was created succesfully so let's assign them the 'applicant' role
+        var assignRolesStatus = await userService.UpdateRoles(userModel.Email, null, Roles.Applicant);
+
+        if (!createUserStatus.IsSuccessStatusCode || !assignRolesStatus.IsSuccessStatusCode)
+        {
+            return this.ServiceError(createUserStatus);
+        }
+
+        HttpContext.Session.Remove(SessionKeys.RequireProfileCreation);
+
+        // show notification banner for success message
+        TempData[TempDataKeys.ShowNotificationBanner] = true;
+
+        // redirect to homepage
+        return RedirectToAction(nameof(ResearchAccountController.Home), "ResearchAccount");
+    }
+
+    [HttpPost]
+    [CmsContentAction(nameof(Index))]
+    public async Task<IActionResult> ConfirmProfileDetails(UserViewModel userModel)
+    {
+        ViewBag.Mode = "complete";
+        var context = new ValidationContext<UserViewModel>(userModel);
+        var validationResult = await validator.ValidateAsync(context);
+
+        if (!validationResult.IsValid)
+        {
+            // Copy the validation results into ModelState.
+            // ASP.NET uses the ModelState collection to populate
+            // error messages in the View.
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
+
+            return View(EditProfileView, userModel);
+        }
+
+        return View(nameof(Index), userModel);
+    }
+}

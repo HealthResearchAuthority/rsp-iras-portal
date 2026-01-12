@@ -1,0 +1,33 @@
+﻿@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@model TabsProperties
+
+@if (Model?.Items?.Items != null)
+{
+	<div class="govuk-tabs" data-module="govuk-tabs">
+		<h2 class="govuk-tabs__title">
+			Contents
+		</h2>
+		<ul class="govuk-tabs__list">
+			@foreach (var tab in Model.Items.Items)
+			{
+				var tabId = "item-" + Model.Items.Items.IndexOf(tab);
+				var isSelected = Model.Items.Items.IndexOf(tab) == 0 ? "govuk-tabs__list-item--selected" : string.Empty;
+
+				<li class="govuk-tabs__list-item @isSelected">
+					<a class="govuk-tabs__tab" href="#@tabId">
+						@tab?.Content?.Properties?.Title
+					</a>
+				</li>
+			}
+		</ul>
+		@foreach (var tab in Model.Items.Items)
+		{
+			var tabId = "item-" + Model.Items.Items.IndexOf(tab);
+			var isHidden = Model.Items.Items.IndexOf(tab) != 0 ? "govuk-tabs__panel--hidden" : string.Empty;
+
+			<div class="govuk-tabs__panel @isHidden" id="@tabId">
+				@Html.Raw(tab?.Content?.Properties?.Value)
+			</div>
+		}
+	</div>
+}

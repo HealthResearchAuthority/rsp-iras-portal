@@ -1,14 +1,14 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Web.Features.Modifications;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Application.DTOs.CmsQuestionset;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Web.Features.Modifications;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.SponsorReferenceControllerTests;
+namespace Rsp.Portal.UnitTests.Web.Features.Modifications.SponsorReferenceControllerTests;
 
 public class SaveSponsorReference_Tests : TestServiceBase<SponsorReferenceController>
 {
@@ -36,7 +36,7 @@ public class SaveSponsorReference_Tests : TestServiceBase<SponsorReferenceContro
         var modId = Guid.NewGuid();
         Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>())
         {
-            [Rsp.IrasPortal.Application.Constants.TempDataKeys.ProjectModification.ProjectModificationId] = modId
+            [Rsp.Portal.Application.Constants.TempDataKeys.ProjectModification.ProjectModificationId] = modId
         };
 
         Mocker.GetMock<ICmsQuestionsetService>()
@@ -53,11 +53,11 @@ public class SaveSponsorReference_Tests : TestServiceBase<SponsorReferenceContro
     public async Task Returns_View_When_Validation_Fails()
     {
         var http = new DefaultHttpContext();
-        http.Items[Rsp.IrasPortal.Application.Constants.ContextItemKeys.UserId] = "R1";
+        http.Items[Rsp.Portal.Application.Constants.ContextItemKeys.UserId] = "R1";
         Sut.ControllerContext = new() { HttpContext = http };
         Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>())
         {
-            [Rsp.IrasPortal.Application.Constants.TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid()
+            [Rsp.Portal.Application.Constants.TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid()
         };
 
         // Question set returns one question
@@ -93,15 +93,15 @@ public class SaveSponsorReference_Tests : TestServiceBase<SponsorReferenceContro
     public async Task Redirects_To_ReviewAllChanges_On_Success()
     {
         var http = new DefaultHttpContext();
-        http.Items[Rsp.IrasPortal.Application.Constants.ContextItemKeys.UserId] = "R1";
+        http.Items[Rsp.Portal.Application.Constants.ContextItemKeys.UserId] = "R1";
         Sut.ControllerContext = new() { HttpContext = http };
         var modId = Guid.NewGuid();
         Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>())
         {
-            [Rsp.IrasPortal.Application.Constants.TempDataKeys.ProjectModification.ProjectModificationId] = modId,
-            [Rsp.IrasPortal.Application.Constants.TempDataKeys.ProjectRecordId] = "PR1",
-            [Rsp.IrasPortal.Application.Constants.TempDataKeys.IrasId] = "IRAS",
-            [Rsp.IrasPortal.Application.Constants.TempDataKeys.ShortProjectTitle] = "Short"
+            [Rsp.Portal.Application.Constants.TempDataKeys.ProjectModification.ProjectModificationId] = modId,
+            [Rsp.Portal.Application.Constants.TempDataKeys.ProjectRecordId] = "PR1",
+            [Rsp.Portal.Application.Constants.TempDataKeys.IrasId] = "IRAS",
+            [Rsp.Portal.Application.Constants.TempDataKeys.ShortProjectTitle] = "Short"
         };
 
         Mocker.GetMock<ICmsQuestionsetService>()
@@ -145,12 +145,12 @@ public class SaveSponsorReference_Tests : TestServiceBase<SponsorReferenceContro
     public async Task Redirects_To_PostApproval_When_SaveForLater()
     {
         var http = new DefaultHttpContext();
-        http.Items[Rsp.IrasPortal.Application.Constants.ContextItemKeys.UserId] = "R1";
+        http.Items[Rsp.Portal.Application.Constants.ContextItemKeys.UserId] = "R1";
         Sut.ControllerContext = new() { HttpContext = http };
         Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>())
         {
-            [Rsp.IrasPortal.Application.Constants.TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
-            [Rsp.IrasPortal.Application.Constants.TempDataKeys.ProjectRecordId] = "PR1",
+            [Rsp.Portal.Application.Constants.TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
+            [Rsp.Portal.Application.Constants.TempDataKeys.ProjectRecordId] = "PR1",
         };
 
         Mocker.GetMock<ICmsQuestionsetService>()

@@ -1,0 +1,19 @@
+﻿@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@model HeadlineProperties
+
+@if (Model.HeadlineType == "h1")
+{
+	<h1 class="govuk-heading-l">@Model.Title</h1>
+}
+else if (Model.HeadlineType == "h2")
+{
+	<h2 class="govuk-heading-m">@Model.Title</h2>
+}
+else if (Model.HeadlineType == "h3")
+{
+	<h3 class="govuk-heading-m">@Model.Title</h3>
+}
+else if (Model.HeadlineType == "h4")
+{
+	<h4 class="govuk-heading-m">@Model.Title</h4>
+}

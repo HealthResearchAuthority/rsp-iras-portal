@@ -1,0 +1,172 @@
+﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Web.Features.SponsorWorkspace.MyOrganisations.Models
+@model SponsorMyOrganisationUserViewModel
+
+@{
+	ViewBag.Title = Model.GivenName + " " + Model.FamilyName + " - User profile";
+}
+
+<a asp-route="sws:MyOrganisationViewUser" asp-all-route-data="@(new Dictionary<string, string>{{"rtsId", Model.RtsId}, {"userId", Model.UserId}})" class="govuk-back-link">Back</a>
+
+<div class="govuk-grid-row">
+	<form method="post" class="govuk-form-group">
+
+		<div class="govuk-grid-column-full">
+			<h1 class="govuk-heading-l">Edit user profile record</h1>
+		</div>
+
+		<div class="govuk-grid-column-full">
+
+			<h3 class="govuk-heading-m">Profile details</h3>
+
+			<table class="govuk-table">
+				<thead>
+					<tr>
+						<th></th>
+						<th></th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell">
+							<b>Title</b>
+						</td>
+						<td class="govuk-table__cell">
+							@Model.Title
+						</td>
+						<td class="govuk-table__cell govuk-table__cell--numeric">
+						</td>
+					</tr>
+
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell">
+							<b>First name</b>
+						</td>
+						<td class="govuk-table__cell">
+							@Model.GivenName
+						</td>
+						<td class="govuk-table__cell govuk-table__cell--numeric">
+						</td>
+					</tr>
+
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell">
+							<b>Last name</b>
+						</td>
+						<td class="govuk-table__cell">
+							@Model.FamilyName
+						</td>
+						<td class="govuk-table__cell govuk-table__cell--numeric">
+						</td>
+					</tr>
+
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell">
+							<b>Email</b>
+						</td>
+						<td class="govuk-table__cell line-break-anywhere">
+							@Model.Email
+						</td>
+						<td class="govuk-table__cell govuk-table__cell--numeric">
+						</td>
+					</tr>
+
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell">
+							<b>Telephone</b>
+						</td>
+						<td class="govuk-table__cell">
+							@Model.Telephone
+						</td>
+						<td class="govuk-table__cell govuk-table__cell--numeric">
+						</td>
+					</tr>
+
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell">
+							<b>Organisation</b>
+						</td>
+						<td class="govuk-table__cell">
+							@Model.Organisation
+						</td>
+						<td class="govuk-table__cell govuk-table__cell--numeric">
+						</td>
+					</tr>
+
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell">
+							<b>Job title</b>
+						</td>
+						<td class="govuk-table__cell">
+							@Model.JobTitle
+						</td>
+						<td class="govuk-table__cell govuk-table__cell--numeric">
+						</td>
+					</tr>
+
+				</tbody>
+			</table>
+
+		</div>
+
+		<div class="govuk-grid-column-full">
+
+			<h3 class="govuk-heading-m">Further details</h3>
+
+			<div class="govuk-form-group">
+				<fieldset class="govuk-fieldset">
+					<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">
+						Role
+					</legend>
+					<div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
+						<div class="govuk-radios__item">
+							<input class="govuk-radios__input" id="role" name="Role" type="radio" value="@SponsorOrganisationUserRoles.OrganisationAdministrator" @(Model.Role == SponsorOrganisationUserRoles.OrganisationAdministrator ? "checked" : string.Empty)>
+							<label class="govuk-label govuk-radios__label" for="role">
+								@SponsorOrganisationUserRoles.OrganisationAdministrator
+							</label>
+						</div>
+						<div class="govuk-radios__item">
+							<input class="govuk-radios__input" id="role-2" name="Role" type="radio" value="@SponsorOrganisationUserRoles.Sponsor" @(Model.Role == SponsorOrganisationUserRoles.Sponsor ? "checked" : string.Empty)>
+							<label class="govuk-label govuk-radios__label" for="role-2">
+								@SponsorOrganisationUserRoles.Sponsor
+							</label>
+						</div>
+					</div>
+				</fieldset>
+			</div>
+			
+			<input asp-for="RtsId" hidden value="@Model.RtsId" />
+			<input asp-for="UserId" hidden value="@Model.UserId" />
+			<input asp-for="Email" hidden value="@Model.Email" />
+
+
+			<div class="govuk-form-group">
+				<fieldset class="govuk-fieldset">
+					<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">
+						Authoriser
+					</legend>
+					<div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
+						<div class="govuk-radios__item">
+							<input class="govuk-radios__input" id="authoriser" name="IsAuthoriser" type="radio" value="Yes" @(Model.IsAuthoriser == "Yes" ? "checked" : string.Empty)>
+							<label class="govuk-label govuk-radios__label" for="authoriser">
+								Yes
+							</label>
+						</div>
+						<div class="govuk-radios__item">
+							<input class="govuk-radios__input" id="authoriser-2" name="IsAuthoriser" type="radio" value="No" @(Model.IsAuthoriser == "No" ? "checked" : string.Empty)>
+							<label class="govuk-label govuk-radios__label" for="authoriser-2">
+								No
+							</label>
+						</div>
+					</div>
+				</fieldset>
+			</div>
+
+			<partial name="_SubmitButton"
+					 model="@("sws:MyOrganisationEditUser", "Save", new Dictionary<string, string>())" />
+
+		</div>
+
+	</form>
+</div>

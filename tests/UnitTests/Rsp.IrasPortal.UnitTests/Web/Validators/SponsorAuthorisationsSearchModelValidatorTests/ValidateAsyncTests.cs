@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FluentValidation.TestHelper;
-using Rsp.IrasPortal.Web.Features.Approvals.RecordSearch.Models;
-using Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Models;
-using Rsp.IrasPortal.Web.Validators;
+using Rsp.Portal.Web.Features.Approvals.RecordSearch.Models;
+using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models;
+using Rsp.Portal.Web.Validators;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Validators.SponsorAuthorisationsSearchModelValidatorTests;
+namespace Rsp.Portal.UnitTests.Web.Validators.SponsorAuthorisationsSearchModelValidatorTests;
 
 public class ValidateAsyncTests : TestServiceBase<AuthorisationsModificationsSearchModelValidator>
 {

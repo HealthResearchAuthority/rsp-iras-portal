@@ -1,0 +1,226 @@
+﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@using Rsp.Portal.Web.Areas.Admin.Models
+@model UserViewModel
+@{
+    ViewBag.Active = "profileAndSettings";
+    ViewBag.Title = "Profile and settings";
+
+    var edit = !string.IsNullOrEmpty(Model.Id);
+    //var editNewUserUrl = Url.RouteUrl("profilesettings:editNewUserProfile");
+    var completeUserProfileUrl = "profilesettings:saveprofile";
+    var showSuccessMessage = TempData[TempDataKeys.ShowNotificationBanner];
+
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData != null
+    ? pageContentData
+    : new Dictionary<string, MixedContentPageItem?>();
+
+    var editProfileTitle = pageContent.GetValueOrDefault("P&S.Title", null);
+    var completeProfileTitle = pageContent.GetValueOrDefault("P&S.CompleteProfileTitle", null);
+    var profileDetailsTitle = pageContent.GetValueOrDefault("P&S.ProfileDetailsTitle", null);
+    var oneLoginTitle = pageContent.GetValueOrDefault("P&S.OneLoginTitle", null);
+    var completeProfileBody = pageContent.GetValueOrDefault("P&S.CompleteProfileBody", null);
+    var editProfileBody = pageContent.GetValueOrDefault("P&S.EditProfileBody", null);
+    var bannerLabel = pageContent.GetValueOrDefault("P&S.OneLoginBanner.Label", null);
+    var bannerTitle = pageContent.GetValueOrDefault("P&S.OneLoginBanner.Title", null);
+    var bannerBody = pageContent.GetValueOrDefault("P&S.OneLoginBanner.Body", null);
+    var successEditMessageBody = pageContent.GetValueOrDefault("P&S.SuccessEditMessage.Body", null);
+    var successEditMessageLabel = pageContent.GetValueOrDefault("P&S.SuccessEditMessage.Label", null);
+
+    var pageTitle = edit ? editProfileTitle : completeProfileTitle;
+    var pageBody = edit ? editProfileBody : completeProfileBody;
+
+    var requireProfileCreation = Context.Session.GetString(SessionKeys.RequireProfileCreation) is not null;
+
+}
+
+<form method="post">
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+
+            @if (showSuccessMessage is true)
+            {
+                <partial name="_NotificationBanner"
+                         model="@(new NotificationBannerModel
+                                {
+                                    Title = successEditMessageLabel?.Value,
+                                    Heading = successEditMessageBody?.Value
+                                })" />
+
+            }
+
+            <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+                <div class="govuk-notification-banner__header">
+                    <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+                        @Html.Raw(bannerLabel?.Value)
+                    </h2>
+                </div>
+                <div class="govuk-notification-banner__content">
+                    <h2 class="govuk-notification-banner__heading">@Html.Raw(bannerTitle?.Value)</h2>
+                    @Html.Raw(bannerBody?.Value)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+            <h1 class="govuk-heading-l">@Html.Raw(pageTitle?.Value)</h1>
+
+            @Html.Raw(pageBody?.Value)
+
+            <h3 class="govuk-heading-m">@Html.Raw(oneLoginTitle?.Value)</h3>
+            <table class="govuk-table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="govuk-table__row">
+                        <td class="govuk-table__cell govuk-!-width-one-quarter"><b>Email address</b></td>
+                        <td class="govuk-table__cell line-break-anywhere">@Model.Email</td>
+                        <td class="govuk-table__cell">
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        </td>
+                    </tr>
+                    <tr class="govuk-table__row">
+                        <td class="govuk-table__cell govuk-!-width-one-quarter"><b>Telephone</b></td>
+                        <td class="govuk-table__cell">@Model.Telephone</td>
+                        <td class="govuk-table__cell">
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+            <h3 class="govuk-heading-m">@Html.Raw(profileDetailsTitle?.Value)</h3>
+            <table class="govuk-table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <input type="hidden" name="Id" readonly asp-for="Id" value="@Model.Id" />
+                    <input type="hidden" readonly asp-for="Email" name="Email" value="@Model.Email" />
+                    <input type="hidden" readonly asp-for="IdentityProviderId" name="IdentityProviderId" value="@Model.IdentityProviderId" />
+                    <input type="hidden" readonly name="Telephone" asp-for="Telephone" value="@Model.Telephone" />
+                    <input name="OriginalEmail" readonly asp-for="OriginalEmail" value="@Model.OriginalEmail" />
+                    <tr class="govuk-table__row">
+                        <td class="govuk-table__cell govuk-!-width-one-quarter"><b>Title</b></td>
+                        <td class="govuk-table__cell">
+                            @Model.Title
+                            <input type="hidden" asp-for="Title" name="Title" value="@Model.Title" />
+                        </td>
+                        <td class="govuk-table__cell govuk-table__cell--numeric">
+                            @{
+                                await RenderEditLink("title");
+                            }
+                        </td>
+                    </tr>
+
+                    <tr class="govuk-table__row">
+                        <td class="govuk-table__cell govuk-!-width-one-quarter"><b>First name</b></td>
+                        <td class="govuk-table__cell">
+                            @Model.GivenName
+                            <input type="hidden" asp-for="GivenName" name="GivenName" value="@Model.GivenName" />
+                        </td>
+                        <td class="govuk-table__cell govuk-table__cell--numeric">
+                            @{
+                                await RenderEditLink("given name");
+                            }
+                        </td>
+                    </tr>
+
+                    <tr class="govuk-table__row">
+                        <td class="govuk-table__cell govuk-!-width-one-quarter"><b>Last name</b></td>
+                        <td class="govuk-table__cell">
+                            @Model.FamilyName
+                            <input type="hidden" asp-for="FamilyName" name="FamilyName" value="@Model.FamilyName" />
+                        </td>
+                        <td class="govuk-table__cell govuk-table__cell--numeric">
+                            @{
+                                await RenderEditLink("family name");
+                            }
+                        </td>
+                    </tr>
+
+                    <tr class="govuk-table__row">
+                        <td class="govuk-table__cell govuk-!-width-one-quarter"><b>Job title</b></td>
+                        <td class="govuk-table__cell">
+                            @Model.JobTitle
+                            <input type="hidden" asp-for="JobTitle" name="JobTitle" value="@Model.JobTitle" />
+                        </td>
+                        <td class="govuk-table__cell govuk-table__cell--numeric">
+                            @{
+                                await RenderEditLink("job title");
+                            }
+                        </td>
+                    </tr>
+
+                    <tr class="govuk-table__row">
+                        <td class="govuk-table__cell govuk-!-width-one-quarter"><b>Organisation</b></td>
+                        <td class="govuk-table__cell">
+                            @Model.Organisation
+                            <input type="hidden" asp-for="Organisation" name="Organisation" value="@Model.Organisation" />
+                        </td>
+                        <td class="govuk-table__cell govuk-table__cell--numeric">
+                            @{
+                                await RenderEditLink("organisation");
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            @{
+                var parameters = new Dictionary<string, string>();
+
+                if (requireProfileCreation)
+                {
+                    parameters.Add("requireProfileCreation", bool.TrueString);
+                }
+            }
+
+            @if (ViewBag.Mode == "complete")
+            {
+                <partial name="_SubmitButton" model="@(completeUserProfileUrl, "Add user profile", parameters)" />
+
+                ViewBag.Style = "ms-3 govuk-button govuk-button--secondary";
+            }
+        </div>
+    </div>
+
+    @{
+        async Task RenderEditLink(string fieldName)
+        {
+            var parameters = new Dictionary<string, string>();
+
+            if (requireProfileCreation)
+            {
+                parameters.Add("requireProfileCreation", bool.TrueString);
+            }
+
+            if (edit)
+            {
+                <a class="govuk-link" asp-route="profilesettings:editprofile">Change<span class="govuk-visually-hidden">@fieldName</span></a>
+            }
+            else
+            {
+                var routeName = "profilesettings:editNewUserProfile";
+
+                <button class="govuk-link-button" type="submit" asp-route="@routeName" asp-all-route-data="@parameters">Change<span class="govuk-visually-hidden">@fieldName</span></button>
+            }
+        }
+    }
+</form>

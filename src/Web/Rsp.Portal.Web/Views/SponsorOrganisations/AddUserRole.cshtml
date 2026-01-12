@@ -1,0 +1,57 @@
+﻿@using Rsp.Portal.Application.Constants
+@model SponsorOrganisationAddUserModel
+
+@{
+    ViewData["Title"] = "Add user permission - Manage sponsor organisations - System Administration";
+}
+
+@section BackNavigation {
+    <partial name="_BackNavigation" model="@("soc:viewadduser", "Back", new Dictionary<string, string> { { "RtsId", Model.RtsId } })" />
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
+        <div class="govuk-caption-l">
+            Sponsor organisation's profile
+        </div>
+        <h1 class="govuk-heading-l">Add user role</h1>
+        <p class="govuk-body">Fill in the role and permissions that you want to assign to the user.</p>
+        <form method="post">
+            <div class="govuk-form-group">
+                <fieldset class="govuk-fieldset">
+                    <p class="govuk-body">
+                        Role
+                    </p>
+                    <div class="govuk-radios" data-module="govuk-radios">
+                        <div class="govuk-radios__item">
+                            <input class="govuk-radios__input" id="orgAdmin" asp-for="@Model.Role" type="radio" value="@SponsorOrganisationUserRoles.OrganisationAdministrator">
+                            <label class="govuk-label govuk-radios__label" for="orgAdmin">
+                                Organisation administrator
+                            </label>
+                            <div id="orgAdmin-item-hint" class="govuk-hint govuk-radios__hint">
+                                An organisation administrator can view this organisation's projects, manage its profile and users.
+                                This includes adding and managing other organisation administrators. This user has permission to authorise
+                                all modification submissions on behalf of the sponsor organisation.
+                            </div>
+                        </div>
+                        <div class="govuk-radios__item">
+							<input class="govuk-radios__input" id="sponsor" asp-for="@Model.Role" type="radio" value="@SponsorOrganisationUserRoles.Sponsor">
+                            <label class="govuk-label govuk-radios__label" for="sponsor">
+                                Sponsor
+                            </label>
+                            <div id="sponsor-item-hint" class="govuk-hint govuk-radios__hint">
+                                A sponsor can  view this organisation's profile, projects and users.
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+            @{
+                ViewBag.Style = "govuk-button govuk-button--primary";
+            }
+            <partial name="_SubmitButton"
+                     model="@("soc:saveuserrole", "Save and continue", new Dictionary<string, string>())" />
+        </form>
+    </div>
+</div>

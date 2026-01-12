@@ -1,0 +1,76 @@
+﻿@using Rsp.Portal.Domain.Enums
+@using Rsp.Portal.Web.Helpers
+@model Rsp.Portal.Web.Models.ModificationReviewDocumentsViewModel
+
+@{
+    (string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
+    navModel = ("pmc:modificationdocumentsadded", "Back", new());
+
+	// If we know the specific area of change, dynamically build the page title to make the UI clearer.
+	// Otherwise, leave the title empty (will fallback to default in the view if needed).
+	ViewBag.Title = "Add document details";
+}
+
+<div class="govuk-width-container">
+    @section BackNavigation {
+        <partial name="_BackNavigation" model="navModel.Value" />
+    }
+
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+			<h1 class="govuk-heading-l">
+				@ViewBag.Title
+			</h1>
+            <partial name="_ProjectModificationSummary" />
+			<p class="govuk-body">
+				Some of the documents you've added need additional details.
+			</p>
+			@if (Model.UploadedDocuments.Any())
+			{
+				<ul class="govuk-task-list">
+					@foreach (var doc in Model.UploadedDocuments)
+					{
+						<li class="govuk-task-list__item">
+							<div class="govuk-task-list__name-and-hint">
+								<a asp-action="ContinueToDetails"
+								   asp-controller="Documents"
+								   asp-route-documentId="@doc.DocumentId"
+								   class="govuk-link govuk-task-list__link">
+									@doc.FileName
+								</a>
+							</div>
+							<div class="govuk-task-list__status">
+								@if (doc.Status == DocumentDetailStatus.Complete.ToString())
+								{
+									@doc.Status
+								}
+								else
+								{
+									<strong class="govuk-tag">@doc.Status</strong>
+								}
+							</div>
+						</li>
+					}
+				</ul>
+			}
+            else
+            {
+                <p class="govuk-body">No documents uploaded.</p>
+            }
+            <div class="govuk-button-group">
+                <form asp-action="reviewdocumentdetails" method="get">
+                    <partial name="_SubmitButton" model="@("pmc:reviewdocumentdetails", "Save and continue", new Dictionary<string, string>{})" />
+                </form>
+                <form asp-action="postapproval" method="get">
+                    <input type="hidden" name="projectRecordId" value="@Model.ProjectRecordId" />
+                    @{
+                        ViewBag.Style = "govuk-button govuk-button--secondary";
+                    }
+                    <a asp-route="pmc:saveforlater" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-routeName="pov:postapproval" class="govuk-button govuk-button--secondary">
+                        Save for later
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

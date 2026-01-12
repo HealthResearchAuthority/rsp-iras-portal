@@ -1,0 +1,29 @@
+﻿namespace Rsp.Portal.Application.Constants;
+
+/// <summary>
+/// Session Keys. These keys are used to lookup items stored in HttpContext.Session
+/// </summary>
+public static class SessionKeys
+{
+    public const string ProjectRecord = "session:project_record";
+    public const string ProjectRecordSearch = "session:project_record_search";
+    public const string Questionnaire = "session:questionnaire";
+    public const string DocumentUpload = "session:document_upload";
+    public const string FirstLogin = "session:first_login";
+    public const string Alive = "session:alive";
+    public const string ApprovalsSearch = "session:approvalssearch";
+    public const string UsersSearch = "session:userssearch";
+    public const string ReviewBodiesSearch = "session:reviewbodiessearch";
+    public const string SponsorOrganisationsSearch = "session:sponsororganisationssearch";
+    public const string ModificationsTasklist = "session:modificationstasklist";
+    public const string MyTasklist = "session:mytasklist";
+    public const string BackRoute = "BackRoute";
+    public const string BackRouteSection = "BackRouteSection";
+    public const string PostApprovalsSearch = "session:postapprovalssearch";
+    public const string SponsorAuthorisationsModificationsSearch = "session:sponsor_authorisations_modifications_search";
+    public const string SponsorAuthorisationsProjectClosuresSearch = "session:sponsor_authorisations_project_closures_search";
+    public const string ApplicationsSearch = "session:applicationsearch";
+    public const string RequireProfileCreation = "session:require_profile_creation";
+    public const string SponsorMyOrganisationsSearch = "session:sponsor_myorganisations_search";
+    public const string SponsorMyOrganisationsProjectsSearch = "session:sponsor_myorganisations_projects_search";
+}

@@ -1,0 +1,67 @@
+﻿@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Rsp.Portal.Application.Constants
+@model AddUpdateReviewBodyModel
+
+@{
+    var buttonText = ViewBag.Mode == "update" ? "Save" : "Continue";
+    var heading = ViewBag.Mode == "update" ? "Edit review body details" : "Add a new review body";
+    var submitActionName = ViewBag.Mode == "update" ? "rbc:submitreviewbody" : "rbc:confirmchanges";
+    var backActionName = ViewBag.Mode == "update" ? "rbc:viewreviewbody" : "rbc:viewreviewbodies";
+
+    var filteredModelState = new ModelStateDictionary();
+    foreach (var state in ViewData.ModelState.Where(s => !s.Key.StartsWith('_')))
+    {
+        foreach (var error in state.Value!.Errors)
+        {
+            filteredModelState.AddModelError(state.Key, error.ErrorMessage);
+        }
+    }
+    var errorPrefix = ViewData.ModelState.IsValid ? "" : "Error - ";
+    var editTitle = $"{errorPrefix}Edit review body details - Manage review bodies - System Administration";
+    var createTitle = $"{errorPrefix}Add a new review body - Manage review bodies - System Administration";
+    ViewBag.Title = ViewBag.Mode == "update" ? editTitle : createTitle;
+}
+
+<form method="get">
+    @* @section is added for the back button, so that we can render something below the back button
+        and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
+        the named section *@
+    @section BackNavigation {
+        <partial name="_BackNavigation" model="@(backActionName, "Back", new Dictionary<string, string> { { "Id", Model.Id.ToString() } })" />
+    }
+</form>
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">@heading</h1>
+        <form method="post">
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="CreatedBy" />
+            <input type="hidden" asp-for="UpdatedBy" />
+            <input type="hidden" asp-for="IsActive" />
+
+            <partial name="_ValidationSummary" model="@(filteredModelState, "There is a problem")" />
+
+            <rsp-gds-input asp-for="RegulatoryBodyName"
+                           label-text=" Organisation name" />
+
+            <rsp-gds-checkbox-group asp-for="Countries"
+                                    label-text="Country"
+                                    options="UkCountryNames.Countries"
+                                    legend-class="govuk-label govuk-label--s" />
+
+            <rsp-gds-input asp-for="EmailAddress"
+                           label-text="Email address"
+                           input-type="email"
+                           autocomplete="email"
+                           width-class="govuk-!-width-three-quarters" />
+
+            <rsp-gds-character-count-textarea asp-for="Description"
+                                              label-text="Description"
+                                              word-count-error-for="_DescriptionExcessWordCount"
+                                              rows="5"
+                                              width-class="govuk-!-width-full" />
+            <partial name="_SubmitButton" model="@(submitActionName, buttonText, new Dictionary<string, string>())" />
+        </form>
+    </div>
+</div>

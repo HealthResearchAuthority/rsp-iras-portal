@@ -1,0 +1,186 @@
+﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.Extensions;
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@using Rsp.Portal.Application.Services
+@using Rsp.Portal.Domain.AccessControl
+@model string?
+@{
+    ViewBag.Title = "My account";
+    var showSuccessMessage = TempData[TempDataKeys.ShowNotificationBanner];
+
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData != null
+        ? pageContentData
+        : new Dictionary<string, MixedContentPageItem?>();
+
+    var headline = pageContent.GetValueOrDefault("HomeDashboard.Title", null);
+    var description = pageContent.GetValueOrDefault("HomeDashboard.Description", null);
+    var workspaceTitle = pageContent.GetValueOrDefault("HomeDashboard.WorkspaceTitle", null);
+    var approvalsLabel = pageContent.GetValueOrDefault("HomeDashboard.Approvals.Label", null);
+    var approvalsDescription = pageContent.GetValueOrDefault("HomeDashboard.Approvals.Description", null);
+    var cagLabel = pageContent.GetValueOrDefault("HomeDashboard.CAG.Label", null);
+    var cagDescription = pageContent.GetValueOrDefault("HomeDashboard.CAG.Description", null);
+    var catLabel = pageContent.GetValueOrDefault("HomeDashboard.CAT.Label", null);
+    var catDescription = pageContent.GetValueOrDefault("HomeDashboard.CAT.Description", null);
+    var memberManagementLabel = pageContent.GetValueOrDefault("HomeDashboard.MemberManagement.Label", null);
+    var memberManagementDescription = pageContent.GetValueOrDefault("HomeDashboard.MemberManagement.Description", null);
+    var myResearchLabel = pageContent.GetValueOrDefault("HomeDashboard.MyResearch.Label", null);
+    var myResearchDescription = pageContent.GetValueOrDefault("HomeDashboard.MyResearch.Description", null);
+    var recLabel = pageContent.GetValueOrDefault("HomeDashboard.REC.Label", null);
+    var recDescription = pageContent.GetValueOrDefault("HomeDashboard.REC.Description", null);
+    var systemAdministrationLabel = pageContent.GetValueOrDefault("HomeDashboard.SystemAdministration.Label", null);
+    var systemAdministrationDescription = pageContent.GetValueOrDefault("HomeDashboard.SystemAdministration.Description", null);
+    var technicalAssuranceLabel = pageContent.GetValueOrDefault("HomeDashboard.TechnicalAssurance.Label", null);
+    var technicalAssuranceDescription = pageContent.GetValueOrDefault("HomeDashboard.TechnicalAssurance.Description", null);
+    var technicalAssuranceReviewersLabel = pageContent.GetValueOrDefault("HomeDashboard.TechnicalAssuranceReviewers.Label", null);
+    var technicalAssuranceReviewersDescription = pageContent.GetValueOrDefault("HomeDashboard.TechnicalAssuranceReviewers.Description", null);
+    var sponsorsLabel = pageContent.GetValueOrDefault("HomeDashboard.Sponsors.Label", null);
+    var sponsorsDescription = pageContent.GetValueOrDefault("HomeDashboard.Sponsors.Description", null);
+    var successBannerLabel = pageContent.GetValueOrDefault("HomeDashboard.SuccessProfileCreationBanner.Label", null);
+    var successBannerBody = pageContent.GetValueOrDefault("HomeDashboard.SuccessProfileCreationBanner.Body", null);
+}
+
+<authorized user-is-not-authenticated="true">
+    <div class="govuk-body">
+
+        @await Component.InvokeAsync("LoginLandingPage")
+    </div>
+</authorized>
+
+@if (User.Identity?.IsAuthenticated is not true)
+{
+    return;
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+        @if (showSuccessMessage is true)
+        {
+            <partial name="_NotificationBanner"
+                     model="@(new NotificationBannerModel
+                            {
+                                Title = successBannerLabel?.Value,
+                                Heading = successBannerBody?.Value
+                            })" />
+
+        }
+
+        <h1 class="govuk-heading-l">@Html.Raw(headline?.Value)</h1>
+        <p class="govuk-body">@Html.Raw(description?.Value)</p>
+        <dl class="govuk-summary-list">
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    Last logged in:
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    @Model
+                </dd>
+            </div>
+        </dl>
+    </div>
+</div>
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h2 class="govuk-heading-m">
+            @Html.Raw(workspaceTitle?.Value)
+        </h2>
+    </div>
+</div>
+
+@{
+
+    var cards = new[]
+    {
+        new
+        {
+            Permission = Permissions.Approvals.Workspace_Access,
+            Title = approvalsLabel?.Value,
+            Desc = approvalsDescription?.Value,
+            Link = "approvalsmenu:welcome"
+        },
+        new
+        {
+            Permission = Permissions.CAGMembers.Workspace_Access,
+            Title = cagLabel?.Value,
+            Desc = cagDescription?.Value,
+            Link = ""
+        },
+        new
+        {
+            Permission = Permissions.CAT.Workspace_Access,
+            Title = catLabel?.Value,
+            Desc = catDescription?.Value,
+            Link = ""
+        },
+        new
+        {
+            Permission = Permissions.MemberManagement.Workspace_Access,
+            Title = memberManagementLabel?.Value,
+            Desc = memberManagementDescription?.Value,
+            Link = ""
+        },
+        new
+        {
+            Permission = Permissions.MyResearch.Workspace_Access,
+            Title = myResearchLabel?.Value,
+            Desc = myResearchDescription?.Value,
+            Link = "app:welcome"
+        },
+        new
+        {
+            Permission = Permissions.RECMembers.Workspace_Access,
+            Title = recLabel?.Value,
+            Desc = recDescription?.Value,
+            Link = ""
+        },
+        new
+        {
+            Permission = Permissions.Sponsor.Workspace_Access,
+            Title = sponsorsLabel?.Value,
+            Desc = sponsorsDescription?.Value,
+            Link = "sws:sponsorworkspace"
+        },
+        new
+        {
+            Permission = Permissions.SystemAdministration.Workspace_Access,
+            Title = systemAdministrationLabel?.Value,
+            Desc = systemAdministrationDescription?.Value,
+            Link = "systemadmin:view"
+        },
+        new
+        {
+            Permission = Permissions.TechnicalAssurance.Workspace_Access,
+            Title = technicalAssuranceLabel?.Value,
+            Desc = technicalAssuranceDescription?.Value,
+            Link = ""
+        },
+        new
+        {
+            Permission = Permissions.TechnicalAssuranceReviewers.Workspace_Access,
+            Title = technicalAssuranceReviewersLabel?.Value,
+            Desc = technicalAssuranceReviewersDescription?.Value,
+            Link = ""
+        }
+    };
+
+    var authorizedChunks = cards
+        .Where(item => User.HasPermission(item.Permission))
+        .Select((card, index) => new { card, index })
+        .GroupBy(x => x.index / 3)
+        .Select(g => g.Select(x => x.card).ToList())
+        .ToList();
+}
+
+@foreach (var row in authorizedChunks)
+{
+    <div class="govuk-grid-row">
+        @foreach (var item in row)
+        {
+            <div permission="@item.Permission" class="govuk-grid-column-one-third">
+                <partial name="_ActionItem" model="@(item.Title, item.Desc, item.Link, new Dictionary<string, string>())" />
+            </div>
+        }
+    </div>
+}

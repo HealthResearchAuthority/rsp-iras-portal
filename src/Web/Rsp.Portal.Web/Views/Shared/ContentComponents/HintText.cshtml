@@ -1,0 +1,9 @@
+﻿@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@model HintTextProperties
+
+@if (Model?.Value?.Markup != null)
+{
+	<div class="govuk-inset-text">
+		@Html.Raw(Model.Value.Markup)
+	</div>
+}

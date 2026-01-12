@@ -1,7 +1,0 @@
-﻿namespace Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
-
-public class TabItemProperties
-{
-    public string? Title { get; set; }
-    public string? Value { get; set; }
-}

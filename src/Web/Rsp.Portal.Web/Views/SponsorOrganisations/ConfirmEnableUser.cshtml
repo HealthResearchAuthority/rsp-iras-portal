@@ -1,0 +1,30 @@
+﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@model SponsorOrganisationUserModel;
+
+@{
+    ViewData["Title"] = "Confirm to enable user of sponsor organisation - Sponsor organisation profile - System administration";
+
+	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+	var pageContent = pageContentData != null
+		? pageContentData
+		: new Dictionary<string, MixedContentPageItem?>();
+
+	var headline = pageContent.GetValueOrDefault("SponsorOrganisations.EnableUser.Title", null);
+	var body = pageContent.GetValueOrDefault("SponsorOrganisations.EnableUser.Body", null);
+}
+<a asp-route="soc:viewsponsororganisationuser" asp-all-route-data="@(new Dictionary<string, string> { { "rtsId", Model.SponsorOrganisationUser.RtsId }, { "userId", Model.User.Id! } })" class="govuk-back-link">Back</a>
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h2 class="govuk-heading-l">@Html.Raw(headline?.Value) @Model.User.GivenName @Model.User.FamilyName</h2>
+        <p class="govuk-body">@Html.Raw(body?.Value)</p>
+        <form method="post">
+			<input type="hidden" name="UserId" asp-for="User.Id" value="@Model.User.Id" />
+			<input type="hidden" name="RtsId" asp-for="SponsorOrganisationUser.RtsId" value="@Model.SponsorOrganisationUser.RtsId" />
+            <button asp-route="soc:confirmenableuser" type="submit" class="govuk-button" data-module="govuk-button">
+                Confirm
+            </button>
+        </form>
+    </div>
+</div>

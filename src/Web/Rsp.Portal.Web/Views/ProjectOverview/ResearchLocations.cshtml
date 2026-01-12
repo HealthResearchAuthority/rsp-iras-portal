@@ -1,0 +1,46 @@
+﻿@using Rsp.Portal.Application.Constants;
+@model ProjectOverviewModel
+
+@{
+    ViewBag.Title = "Project overview";
+    ViewBag.Active = ProjectOverview.ResearchLocations;
+}
+
+@{
+    var routeName = (ViewData["BackRoute"] as string) ?? "app:Welcome";
+    var routeValues = ViewData["BackRouteValues"] as Dictionary<string, string>
+                      ?? new Dictionary<string, string>();
+	var projectTitle = !string.IsNullOrEmpty(Model.ProjectTitle) ? Model.ProjectTitle : "Project overview";
+}
+
+@section Breadcrumb {
+	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+	{
+		("My research",Url.RouteUrl("app:welcome")),
+		(projectTitle, Url.RouteUrl("pov:projectdetails", new Dictionary<string, string>{{"projectRecordId", Model?.ProjectRecordId!}}))
+	})
+}
+
+<partial name="_NavigationHeaderPartial" model="@Model" />
+
+<div class="govuk-grid-row">
+    <div class="govuk-width-container govuk-!-margin-top-4">
+        @foreach (var group in Model.SectionGroupQuestions)
+        {
+            <h2 class="govuk-heading-m">@group.SectionGroup</h2>
+            <dl class="govuk-summary-list">
+                @foreach (var question in group.Questions)
+                {
+                    string questionText = string.IsNullOrWhiteSpace(question.ShortQuestionText) ? question.QuestionText : question.ShortQuestionText;
+
+                    <div class="govuk-summary-list__row">
+                        <dt class="govuk-summary-list__key">@questionText</dt>
+                        <dd class="govuk-summary-list__value">
+                            @Html.Raw(question.GetDisplayText(includePrompt: false))
+                        </dd>
+                    </div>
+                }
+            </dl>
+        }
+    </div>
+</div>

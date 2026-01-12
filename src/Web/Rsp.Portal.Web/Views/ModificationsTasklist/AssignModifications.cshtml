@@ -1,0 +1,89 @@
+﻿@using Microsoft.AspNetCore.Http.Extensions
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Domain.Identity
+@model (List<ModificationsModel> Modifications, IEnumerable<User> Reviewers)
+
+@{
+    ViewData["Title"] = "Select a reviewer - Modifications ready to assign - Modifications - Approvals - System Administration";
+	TempData[TempDataKeys.ProjectModification.LinkBackToReferrer] = true;
+	TempData[TempDataKeys.ProjectModification.UrlReferrer] = Context.Request.GetDisplayUrl();
+}
+
+@{
+	var backParams = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+	foreach (var kvp in Context.Request.Query)
+	{
+		if (kvp.Value.Count > 1)
+		{
+			// Generate unique keys per value
+			for (var i = 0; i < kvp.Value.Count; i++)
+			{
+				backParams[$"{kvp.Key}[{i}]"] = kvp.Value[i]!;
+			}
+		}
+		else if (kvp.Value.Count == 1)
+		{
+			backParams[kvp.Key] = kvp.Value[0]!;
+		}
+	}
+}
+
+@section BackNavigation {
+	<partial name="_BackNavigation" model="@("tasklist:index", "Back", backParams)" />
+}
+
+<h1 class="govuk-heading-l">Select a reviewer</h1>
+
+<form method="post" asp-action="AssignModifications">
+    <table class="govuk-table">
+        <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">Modification ID</th>
+                <th scope="col" class="govuk-table__header">Short project title</th>
+            </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+            @foreach (var item in Model.Modifications)
+            {
+                <tr class="govuk-table__row">
+                    <td class="govuk-table__cell"><a asp-route="pmc:reviewallchanges"
+                                                     asp-route-projectRecordId="@item.ProjectRecordId"
+						   asp-route-irasId="@(item.ModificationId?.Split('/')[0])"
+                                                     asp-route-shortTitle="@item.ShortProjectTitle"
+						   asp-route-projectModificationId="@item.Id"
+                                                     class="govuk-link">
+							@item.ModificationId
+                        </a>
+                    </td>
+                    <td class="govuk-table__cell">
+                        <a asp-route="pov:projectdetails"
+                           asp-route-projectRecordId="@item.ProjectRecordId"
+                           asp-route-backRoute="tasklist:index"
+                           class="govuk-link">
+                            @item.ShortProjectTitle
+                        </a>
+                    </td>
+                </tr>
+                <input type="hidden" name="ModificationIds" value="@item.Id" />
+            }
+        </tbody>
+    </table>
+
+    <div class="govuk-form-group">
+        <label class="govuk-heading-m" for="reviewer">
+			Study-wide reviewer to assign the modifications to
+        </label>
+        <div id="reviewer-hint" class="govuk-hint">
+            Select one reviewer
+        </div>
+        <select class="govuk-select" id="reviewer" name="ReviewerId" aria-describedby="reviewer-hint">
+            @foreach (var reviewer in Model.Reviewers)
+            {
+                <option value="@reviewer.Id">@reviewer.GivenName @reviewer.FamilyName</option>
+            })
+        </select>
+    </div>
+
+    <button type="submit" class="govuk-button" data-module="govuk-button">Assign</button>
+</form>

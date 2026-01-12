@@ -1,0 +1,39 @@
+﻿@using Azure.Core
+@using Rsp.Portal.Application.Constants
+@model ProjectOverviewModel
+@{
+    ViewBag.Title = "Project overview";
+    var routeName = (ViewData["BackRoute"] as string) ?? "app:Welcome";
+    var routeValues = ViewData["BackRouteValues"] as Dictionary<string, string>
+        ?? new Dictionary<string, string>();
+
+    // get projectRecordId from query string
+    var projectRecordId = Context.Request.Query["projectRecordId"].ToString();
+
+}
+
+@section Breadcrumb {
+	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+	{
+		("My research", Url.RouteUrl("app:welcome"))
+	})
+}
+
+<partial name="_ProjectOverviewPartial" model="@Model" />
+
+<form method="post">
+    <div class="save-buttons">
+        <button class="govuk-button govuk-button--secondary"
+                asp-route="qnc:resume"
+                asp-all-route-data="@(new Dictionary<string, string>
+            {
+                { "projectRecordId", projectRecordId },
+                { "categoryId", QuestionCategories.ProjectRecord},
+                { "validate", "True" }
+            })"
+                type="submit">
+            Edit project record
+        </button>
+        <button asp-route="pov:confirmdeleteproject" asp-route-projectRecordId="@projectRecordId" class="govuk-button govuk-button--warning">Delete project</button>
+    </div>
+</form>

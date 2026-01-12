@@ -1,0 +1,123 @@
+﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@{
+	bool allowAdditionalCookies = Context.Request.Cookies[CookieConsentNames.AdditionalCookies] == "true";
+	var showSuccessMessage = TempData[TempDataKeys.ShowCookiesSavedNotificationBanner];
+
+	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+	var pageContent = pageContentData != null
+	? pageContentData
+	: new Dictionary<string, MixedContentPageItem?>();
+
+	var title = pageContent.GetValueOrDefault("CookiesPage.Title", null);
+	var body = pageContent.GetValueOrDefault("CookiesPage.Body", null);
+	var essentialBody = pageContent.GetValueOrDefault("CookiesPage.EssentialCookiesBody", null);
+	var analyticsBody = pageContent.GetValueOrDefault("CookiesPage.AnalyticsCookiesBody", null);
+	var settingsSavedTitle = pageContent.GetValueOrDefault("CookiesPage.SettingsSavedBannerTitle", null);
+	var settingsSavedBody = pageContent.GetValueOrDefault("CookiesPage.SettingsSavedBannerBody", null);
+}
+
+<div class="govuk-grid-row">
+
+	@if (showSuccessMessage is true)
+	{
+        <partial name="_NotificationBanner"
+                 model="@(new NotificationBannerModel
+                        {
+                            Title = settingsSavedTitle?.Value,
+                            Heading = settingsSavedBody?.Value
+                        })" />
+
+    }
+
+	<div class="govuk-grid-column-two-thirds">
+		<h1 class="govuk-heading-l">@Html.Raw(title?.Value)</h1>
+		@Html.Raw(body?.Value)
+		
+		<div class="govuk-rte">
+			@Html.Raw(essentialBody?.Value)
+		</div>
+		
+		<table class="govuk-table">
+			<thead class="govuk-table__head">
+				<tr class="govuk-table__row">
+					<th scope="col" class="govuk-table__header">Name</th>
+					<th scope="col" class="govuk-table__header">Purpose</th>
+					<th scope="col" class="govuk-table__header">Expires</th>
+				</tr>
+			</thead>
+			<tbody class="govuk-table__body">
+				<tr class="govuk-table__row">
+					<td class="govuk-table__cell">.AspNetCore.Cookies</td>
+					<td class="govuk-table__cell">Used to keep you signed in</td>
+					<td class="govuk-table__cell">1 hour</td>
+				</tr>
+				<tr class="govuk-table__row">
+					<td class="govuk-table__cell">.AspNetCore.Antiforgery</td>
+					<td class="govuk-table__cell">Protects against CSRF (Cross-Site Request Forgery) attacks.</td>
+					<td class="govuk-table__cell">1 hour</td>
+				</tr>
+				<tr class="govuk-table__row">
+					<td class="govuk-table__cell">cookie_consent</td>
+					<td class="govuk-table__cell">Saves your cookie consent settings</td>
+					<td class="govuk-table__cell">1 year</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<div class="govuk-rte">
+			@Html.Raw(analyticsBody?.Value)
+		</div>
+		
+		<table class="govuk-table">
+			<thead class="govuk-table__head">
+				<tr class="govuk-table__row">
+					<th scope="col" class="govuk-table__header">Name</th>
+					<th scope="col" class="govuk-table__header">Purpose</th>
+					<th scope="col" class="govuk-table__header">Expires</th>
+				</tr>
+			</thead>
+			<tbody class="govuk-table__body">
+				<tr class="govuk-table__row">
+					<td class="govuk-table__cell">_clck </td>
+					<td class="govuk-table__cell">Microsoft Clarity — identifies returning users and links user behaviour across sessions. Used for analytics.</td>
+					<td class="govuk-table__cell">1 year</td>
+				</tr>
+				<tr class="govuk-table__row">
+					<td class="govuk-table__cell">_ga </td>
+					<td class="govuk-table__cell">Google Analytics — distinguishes users for traffic analytics and visitor metrics.</td>
+					<td class="govuk-table__cell">1 year</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<form asp-controller="Cookies" asp-action="AcceptConsent" method="post">
+			<input hidden readonly name="settingsSource" value="@CookieConfirmationSource.CookieSettingsPage" />
+			<div class="govuk-form-group">
+				<fieldset class="govuk-fieldset">
+					<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">
+						Do you want to accept analytics cookies?
+					</legend>
+					<div class="govuk-radios" data-module="govuk-radios">
+						<div class="govuk-radios__item">
+							<input class="govuk-radios__input" id="cookies-analytics" name="additionalConsent" type="radio" value="yes" @(allowAdditionalCookies ? "checked" : string.Empty)>
+							<label class="govuk-label govuk-radios__label" for="cookies-analytics">
+								Yes
+							</label>
+						</div>
+						<div class="govuk-radios__item">
+							<input class="govuk-radios__input" id="cookies-analytics-2" name="additionalConsent" type="radio" value="no" @(!allowAdditionalCookies ? "checked" : string.Empty)>
+							<label class="govuk-label govuk-radios__label" for="cookies-analytics-2">
+								No
+							</label>
+						</div>
+					</div>
+				</fieldset>
+			</div>
+			<button type="submit" class="govuk-button" data-module="govuk-button">
+				Save cookie settings
+			</button>
+		</form>
+
+	</div>
+</div>

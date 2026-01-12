@@ -1,42 +1,42 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31903.59
+# Visual Studio Version 18
+VisualStudioVersion = 18.1.11304.174 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{486623D9-17F4-4AD6-ADCB-89E224FEC9D3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "6.Web", "6.Web", "{D6CDCCC0-12E3-499F-B711-7FBFFC5A57C0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsp.IrasPortal.Web", "src\Web\Rsp.IrasPortal.Web\Rsp.IrasPortal.Web.csproj", "{16232F65-3D77-4FFD-BC51-4AC0FFD9DAEE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsp.Portal.Web", "src\Web\Rsp.Portal.Web\Rsp.Portal.Web.csproj", "{16232F65-3D77-4FFD-BC51-4AC0FFD9DAEE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2.Domain", "2.Domain", "{9361B42C-F733-4032-9E77-BD8453CCB750}"
 	ProjectSection(SolutionItems) = preProject
-		src\Startup\Rsp.IrasPortal\wwwroot\favicon.ico = src\Startup\Rsp.IrasPortal\wwwroot\favicon.ico
+		src\Startup\Rsp.Portal\wwwroot\favicon.ico = src\Startup\Rsp.Portal\wwwroot\favicon.ico
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsp.IrasPortal.Domain", "src\Domain\Rsp.IrasPortal.Domain\Rsp.IrasPortal.Domain.csproj", "{34A64270-AC4E-429A-A4D2-8395018BA1FC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsp.Portal.Domain", "src\Domain\Rsp.Portal.Domain\Rsp.Portal.Domain.csproj", "{34A64270-AC4E-429A-A4D2-8395018BA1FC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3.Application", "3.Application", "{27EB43FE-9ED0-4B83-BD38-A0F14B26DFC2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsp.IrasPortal.Application", "src\Application\Rsp.IrasPortal.Application\Rsp.IrasPortal.Application.csproj", "{8B8C3F86-5D33-4B8A-BAF8-927D5B5A691C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsp.Portal.Application", "src\Application\Rsp.Portal.Application\Rsp.Portal.Application.csproj", "{8B8C3F86-5D33-4B8A-BAF8-927D5B5A691C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "5.Infrastructure", "5.Infrastructure", "{F0BDE409-1397-47E1-8443-AF20575363FB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsp.IrasPortal.Infrastructure", "src\Infrastructure\Rsp.IrasPortal.Infrastructure\Rsp.IrasPortal.Infrastructure.csproj", "{D4766920-1B14-4BF6-9C95-5F391D76EDAC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsp.Portal.Infrastructure", "src\Infrastructure\Rsp.Portal.Infrastructure\Rsp.Portal.Infrastructure.csproj", "{D4766920-1B14-4BF6-9C95-5F391D76EDAC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "4.Services", "4.Services", "{60AE7A26-3C16-41FB-ABE6-38F589C58DC5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsp.IrasPortal.Services", "src\Services\Rsp.IrasPortal.Services\Rsp.IrasPortal.Services.csproj", "{D834828F-0F86-4E05-B6A5-0F0C3BA58F82}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsp.Portal.Services", "src\Services\Rsp.Portal.Services\Rsp.Portal.Services.csproj", "{D834828F-0F86-4E05-B6A5-0F0C3BA58F82}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{076A9217-81EA-489C-8D4B-5792A8CB7801}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{0106BD4E-99B7-42C3-9287-69CF99988C59}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsp.IrasPortal.UnitTests", "tests\UnitTests\Rsp.IrasPortal.UnitTests\Rsp.IrasPortal.UnitTests.csproj", "{4D42B299-4EA3-469E-ABD4-4816E3E698AF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsp.Portal.UnitTests", "tests\UnitTests\Rsp.Portal.UnitTests\Rsp.Portal.UnitTests.csproj", "{4D42B299-4EA3-469E-ABD4-4816E3E698AF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IntegrationTests", "IntegrationTests", "{D6B72412-F379-4ACC-ADFD-31EA8C3AF213}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsp.IrasPortal.IntegrationTests", "tests\IntegrationTests\Rsp.IrasPortal.IntegrationTests\Rsp.IrasPortal.IntegrationTests.csproj", "{5B1057F8-6F7A-4ECF-AC2F-5D22ED22E84B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsp.Portal.IntegrationTests", "tests\IntegrationTests\Rsp.Portal.IntegrationTests\Rsp.Portal.IntegrationTests.csproj", "{5B1057F8-6F7A-4ECF-AC2F-5D22ED22E84B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{150BB886-A262-4641-9F72-6BFA86554D33}"
 	ProjectSection(SolutionItems) = preProject
@@ -50,7 +50,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1.Startup", "1.Startup", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".AppHost", ".AppHost", "{C1E0FBD9-1A14-4C35-9565-49ABA90FB2F8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsp.IrasPortal", "src\Startup\Rsp.IrasPortal\Rsp.IrasPortal.csproj", "{29578680-4B09-4241-945C-F853B59795C6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsp.Portal", "src\Startup\Rsp.Portal\Rsp.Portal.csproj", "{29578680-4B09-4241-945C-F853B59795C6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsp.ServiceDefaults", "..\rsp-service-defaults\src\Rsp.ServiceDefaults\Rsp.ServiceDefaults.csproj", "{1B202491-1BC7-4FE7-9B4A-A386BA002800}"
 EndProject

@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Rsp.IrasPortal.Infrastructure.HttpMessageHandlers;
+using Rsp.Portal.Infrastructure.HttpMessageHandlers;
 using Shouldly;
 
-namespace Rsp.IrasPortal.IntegrationTests.Infrastructure.AuthHeadersHandlerTests;
+namespace Rsp.Portal.IntegrationTests.Infrastructure.AuthHeadersHandlerTests;
 
 public class CmsPreviewSendAsyncTests
 {

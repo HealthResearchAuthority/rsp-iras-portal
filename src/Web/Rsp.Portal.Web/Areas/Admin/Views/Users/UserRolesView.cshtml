@@ -1,0 +1,36 @@
+﻿@using Rsp.Portal.Web.Areas.Admin.Models
+@model UserRolesViewModel
+
+@if (Model is null)
+{
+    <partial name="_NoData" />
+
+    return;
+}
+
+<h2 class="govuk-heading-l">Manage Roles for: @Model.Email</h2>
+
+<form method="post">
+    <input type="hidden" asp-for="UserId" />
+    <input type="hidden" asp-for="Email" />
+
+    <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+        @foreach (var (role, index) in Model.UserRoles.Select((role, index) => (role, index)))
+        {
+            <input type="hidden" asp-for="UserRoles[index].Id" />
+            <div class="govuk-checkboxes__item">
+                <input type="hidden" asp-for="UserRoles[index].Name" />
+                <input class="govuk-checkboxes__input" type="checkbox" asp-for="UserRoles[index].IsSelected" checked="@role.IsSelected">
+                @Html.LabelFor(m => m.UserRoles[index].IsSelected, role.Name, new { @class = "govuk-label govuk-checkboxes__label" })
+            </div>
+        }
+    </div>
+
+    <partial name="_SubmitButton" model="@("admin:updateroles","Save", new Dictionary<string, string>())" />
+
+    @{
+        ViewBag.Style = "ms-3 govuk-button govuk-button--secondary";
+    }
+
+    <partial name="_SubmitButton" model="@("admin:users", "Cancel", new Dictionary<string, string>())" />
+</form>

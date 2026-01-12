@@ -1,0 +1,15 @@
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Rsp.Portal.Web.Models;
+
+[ExcludeFromCodeCoverage]
+public class SortableHeaderModel
+{
+    public string FieldName { get; set; } = null!;
+    public string DisplayText { get; set; } = null!;
+    public string? CurrentSortField { get; set; }
+    public string? CurrentSortDirection { get; set; }
+    public string? FormAction { get; set; }
+    public string? TableId { get; set; }
+    public IDictionary<string, string> AdditionalParameters { get; set; } = new Dictionary<string, string>();
+}

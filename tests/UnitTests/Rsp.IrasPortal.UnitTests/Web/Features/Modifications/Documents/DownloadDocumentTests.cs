@@ -5,11 +5,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Azure;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Web.Features.Modifications.Documents.Controllers;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Web.Features.Modifications.Documents.Controllers;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.Documents;
+namespace Rsp.Portal.UnitTests.Web.Features.Modifications.Documents;
 
 public class DownloadDocumentTests : TestServiceBase<DocumentsController>
 {

@@ -1,0 +1,33 @@
+﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent;
+
+@section BackNavigation {
+    <partial name="_BackNavigation" model="@("app:startproject", "Back", new Dictionary<string, string>())" />
+}
+
+@{
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData != null ?
+        pageContentData :
+        new Dictionary<string, MixedContentPageItem?>();
+
+    var headline = pageContent.GetValueOrDefault("ProjectRecordExists.Title", null);
+    var body = pageContent.GetValueOrDefault("ProjectRecordExists.Body", null);
+}
+
+<h1 class="govuk-heading-l">@headline?.Value</h1>
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds govuk-content-wrapper">
+        <p class="govuk-body">
+            @Html.Raw(body?.Value)
+        </p>
+    </div>
+</div>
+
+<div class="govuk-grid-row">
+    <div class="save-buttons govuk-grid-column-two-thirds">
+        <a class="govuk-button" asp-route="app:startproject" aria-label="Back to start creating a project record">
+            Return to IRAS ID
+        </a>
+    </div>
+</div>

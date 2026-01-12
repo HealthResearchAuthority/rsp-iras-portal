@@ -1,0 +1,105 @@
+﻿@using Mapster;
+@using Rsp.Portal.Domain.AccessControl
+@using Rsp.Portal.Web.Extensions
+@using Rsp.Portal.Application.Constants
+@model dynamic
+
+@{
+    var modificationBaseModel = new BaseProjectModificationViewModel();
+
+    if (Model is BaseProjectModificationViewModel viewModel)
+    {
+        modificationBaseModel = viewModel.Adapt<BaseProjectModificationViewModel>();
+    }
+    else
+    {
+        modificationBaseModel = TempData.PopulateBaseProjectModificationProperties(modificationBaseModel);
+    }
+}
+
+<dl class="govuk-summary-list">
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">IRAS ID</dt>
+        <dd class="govuk-summary-list__value">@modificationBaseModel.IrasId</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Short project title</dt>
+        <dd class="govuk-summary-list__value">
+            <a asp-route="pov:projectdetails"
+               asp-route-projectRecordId="@modificationBaseModel.ProjectRecordId"
+               asp-route-backRoute="tasklist:index"
+               class="govuk-link">
+                @modificationBaseModel.ShortTitle
+            </a>
+        </dd>
+    </div>
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Modification ID</dt>
+        <dd class="govuk-summary-list__value">
+            <a asp-route="pmc:reviewallchanges"
+               asp-route-projectRecordId="@modificationBaseModel.ProjectRecordId"
+               asp-route-irasId="@modificationBaseModel.IrasId"
+               asp-route-projectModificationId="@modificationBaseModel.ModificationId"
+               asp-route-shortTitle="@modificationBaseModel.ShortTitle"
+               class="govuk-link">
+                @modificationBaseModel.ModificationIdentifier
+            </a>
+        </dd>
+    </div>
+
+    <authorized permission="@Permissions.MyResearch.Modifications_Review"
+                status-for="@modificationBaseModel.Status"
+                status-in="@([ ModificationStatus.WithSponsor,
+                               ModificationStatus.WithReviewBody,
+                               ModificationStatus.Approved,
+                               ModificationStatus.NotApproved,
+                               ModificationStatus.NotAuthorised])"
+                status-mode="Show">
+                @if (modificationBaseModel.Status is not null)
+                {
+                    <div class="govuk-summary-list__row">
+                        <dt class="govuk-summary-list__key">Date created</dt>
+                        <dd class="govuk-summary-list__value">@modificationBaseModel.DateCreated</dd>
+                    </div>
+                }        
+    </authorized>
+
+    <authorized permission="@Permissions.MyResearch.ModificationsHistory_BackStage_Read">
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Audit</dt>
+            <dd class="govuk-summary-list__value">
+                <a asp-route="pmc:audittrail"
+                   asp-route-modificationId="@modificationBaseModel.ModificationId"
+                   asp-route-shortTitle="@modificationBaseModel.ShortTitle"
+                   asp-route-modificationIdentifier="@modificationBaseModel.ModificationIdentifier"
+                   class="govuk-link">
+                    View modification audit history
+                </a>
+            </dd>
+        </div>
+    </authorized>
+
+    @if (ViewData[ViewDataKeys.ShowModificationStatus] is true)
+    {
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Status</dt>
+            <dd class="govuk-summary-list__value">
+                @{
+                    var tagClass = modificationBaseModel.Status switch
+                    {
+                        ModificationStatus.WithSponsor => "govuk-tag--yellow",
+                        ModificationStatus.Approved => "govuk-tag--green",
+                        ModificationStatus.WithReviewBody => "govuk-tag--green",
+                        ModificationStatus.NotApproved => "govuk-tag--red",
+                        ModificationStatus.NotAuthorised => "govuk-tag--red",
+                        _ => "govuk-tag--blue"
+                    };
+                }
+                <strong class="govuk-tag @tagClass">
+                    @modificationBaseModel.Status
+                </strong>
+            </dd>
+        </div>
+
+    }
+</dl>

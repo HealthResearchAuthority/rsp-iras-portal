@@ -1,0 +1,186 @@
+﻿@using System.Globalization
+@using System.Text.Json
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Microsoft.FeatureManagement
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent;
+@using Rsp.Portal.Web.Features.Modifications.Models
+@model ModificationDetailsViewModel
+
+@{
+
+    ViewBag.Title = "Modification details";
+}
+
+@section BackNavigation {
+
+    @* if we have a urlReferrer use that for back navigation *@
+    @{
+        // set this TempData key to true on the referrer page like PostApprovals
+        // or any other BackStage or FrontStage page so that we can link back to that page.
+        // If this Key is not set, the Back link won't be displayed
+        var linkBackToReferrer = TempData[TempDataKeys.ProjectModification.LinkBackToReferrer];
+        var urlReferrer = TempData[TempDataKeys.ProjectModification.UrlReferrer];
+
+        if (linkBackToReferrer is true && urlReferrer is not null)
+        {
+            ViewData[ViewDataKeys.UrlReferrer] = urlReferrer;
+
+            // no route for back navigation, as this page will
+            // only show back button when you are navigating from some other url
+            // given the LinkBackToReferrer is set
+            <partial name="_BackNavigation" model="@("", "Back", new Dictionary<string, string>())" />
+        }
+    }
+}
+
+@{
+    // display the notification banner if change is removed
+    var changeRemoved = TempData[TempDataKeys.ProjectModificationChange.ChangeRemoved];
+    var changeName = TempData[TempDataKeys.ProjectModificationChange.ChangeName];
+
+    if (changeRemoved is true)
+    {
+        <partial name="_NotificationBanner"
+                 model="@(new NotificationBannerModel
+                        {
+                            Title = "Success",
+                            Heading = $"{changeName} has been removed"
+                        })" />
+
+    }
+
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData != null ?
+        pageContentData :
+        new Dictionary<string, MixedContentPageItem?>();
+
+    var maxChangesWarning = pageContent.GetValueOrDefault("ModificationDetails.MaxChangesWarning", null);
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+        <h1 class="govuk-heading-l">Modification details</h1>
+
+        @{
+            ViewData[ViewDataKeys.ShowModificationStatus] = true;
+            <partial name="_ProjectModificationSummary" model="Model" view-data="ViewData" />
+        }
+
+        @* Only show the Overall ranking if we have the changes *@
+        @if (Model.ModificationChanges.Any())
+        {
+            <h2 class="govuk-heading-m">Overall modification ranking</h2>
+            <div class="govuk-summary-card">
+                <div class="govuk-summary-card__title-wrapper">
+                    <h2 class="govuk-summary-card__title">
+                        Ranking
+                    </h2>
+                </div>
+                <div class="govuk-summary-card__content">
+                    @{
+                        var ranking = new RankingOfChangeViewModel
+                        {
+                            ModificationType = Model.ModificationType,
+                            Category = Model.Category,
+                            ReviewType = Model.ReviewType
+                        };
+
+                        <partial name="RankingOfChange" model="ranking" />
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+        <h2 class="govuk-heading-m">Changes</h2>
+        <partial name="ModificationChanges" model="Model" view-data="ViewData" />
+
+        @if (Model.ModificationChanges.Count == 10)
+        {
+            <div class="govuk-warning-text govuk-!-margin-top-3">
+                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                <strong class="govuk-warning-text__text">
+                    <span class="govuk-visually-hidden">Warning</span>
+                    @Html.Raw(maxChangesWarning?.Value)
+                </strong>
+            </div>
+        }
+
+        <div class="save-buttons">
+            @if (Model.Status is ModificationStatus.InDraft && Model.ModificationChanges.Count < 10)
+            {
+                <a asp-route="pmc:areaofchange" asp-route-projectModificationId="@Model.ModificationId" class="govuk-button govuk-button--secondary">
+                    Add another change to this modification
+                </a>
+            }
+
+            @if (!Model.ModificationChanges.Any() && Model.Status is ModificationStatus.InDraft)
+            {
+                <a asp-route="pmc:saveforlater" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-routeName="pov:postapproval" class="govuk-button govuk-button--secondary">
+                    Save for later
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+<authorized role-is="@Roles.Applicant">
+    @* Only show the Overall ranking if we have the changes *@
+    @if (Model.ModificationChanges.Any() && Model.Status is ModificationStatus.InDraft)
+    {
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <h2 class="govuk-heading-m">Supporting documents</h2>
+                <p class="govuk-body">
+                    If any of the changes you're making involve an update to any project documents, make sure you add a copy of the original and updated documents.
+                </p>
+            </div>
+        </div>
+        <div class="govuk-button-group">
+            <form method="get">
+                @{
+                    ViewBag.Style = "govuk-button govuk-button--secondary";
+                }
+                <partial name="_SubmitButton" model="@("pmc:projectdocument", "Add documents", new Dictionary<string, string> { })" />
+            </form>
+        </div>
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <h2 class="govuk-heading-m">Add summary and review modification before sending to sponsor</h2>
+                <p class="govuk-body">
+                    You'll have the option to add a brief summary and edit your modification before sending it to the sponsor on the next page.
+                </p>
+
+                <div class="save-buttons">
+                    <input type="hidden" name="projectRecordId" value="@Model.ProjectRecordId" />
+                    @{
+                        var routeName = Model.ChangesReadyForSubmission ? "pmc:sponsorreference" : "pmc:unfinishedchanges";
+
+                        <a asp-route="@routeName" asp-route-projectRecordId="@Model.ProjectRecordId" class="govuk-button">
+                            Save and continue to review
+                        </a>
+
+                        <a asp-route="pmc:saveforlater" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-routeName="pov:postapproval" class="govuk-button govuk-button--secondary">
+                            Save for later
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <a status-for="Status"
+       status-is="@ModificationStatus.InDraft"
+       asp-route-projectRecordId="@Model.ProjectRecordId"
+       asp-route-irasId="@(Model.ModificationIdentifier?.Split('/')[0])"
+       asp-route-shortTitle="@Model.ShortTitle"
+       asp-route-projectModificationId="@Model.ModificationId"
+       asp-route="pmc:deletemodification"
+       class="govuk-link">
+        Delete modification
+    </a>
+</authorized>

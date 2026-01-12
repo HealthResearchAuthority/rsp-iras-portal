@@ -1,0 +1,40 @@
+﻿@using System.Globalization
+@using System.Text.Json
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Microsoft.FeatureManagement
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Web.Features.Modifications.Models
+@model BaseProjectModificationViewModel
+
+@{
+    //string projectRecordId, string irasId, string shortTitle, Guid projectModificationId
+
+    var modificationParams = new Dictionary<string, string> {
+            { "projectRecordId", Model.ProjectRecordId },
+            { "irasId", Model.IrasId  },
+            { "shortTitle", Model.ShortTitle ?? string.Empty },
+            { "projectModificationId", Model.ModificationId ?? string.Empty }
+        };
+}
+
+@*@section BackNavigation {
+        <partial name="_BackNavigation" model="@("pmc:modificationdetails", "Back", modificationParams)" />
+    }*@
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">You cannot proceed with ‘Unfinished’ changes</h1>
+        <partial name="_ProjectModificationSummary" model="Model" view-data="ViewData" />
+        <p class="govuk-body">
+            All changes must have the status 'ready for submission' before you can
+            continue. For any changes with the status 'Unfinished', either select Change
+            to enter missing information, or select Remove if that change is no longer
+            needed.
+        </p>
+        <div class="save-buttons">
+            <a class="govuk-button" asp-route="pmc:modificationdetails" asp-all-route-data="modificationParams">
+                Return to modification details
+            </a>
+        </div>
+    </div>
+</div>

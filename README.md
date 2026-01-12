@@ -72,15 +72,15 @@ dotnet build
 2. To run the tests, use the following command. Path to the test project is needed if you are running the tests from outside the test project directory.
 
 ```
- dotnet test .\tests\UnitTests\Rsp.IrasPortal.UnitTests\ --no-build
+ dotnet test .\tests\UnitTests\Rsp.Portal.UnitTests\ --no-build
 
- dotnet test .\tests\IntegrationTests\Rsp.IrasPortal.IntegrationTests\ --no-build
+ dotnet test .\tests\IntegrationTests\Rsp.Portal.IntegrationTests\ --no-build
 ```
 
 3. To run the application, use the following command:
 
 ```
-dotnet run --project .\src\AppHost\Rsp.IrasPortal\
+dotnet run --project .\src\AppHost\Rsp.Portal\
 ```
 # License
 

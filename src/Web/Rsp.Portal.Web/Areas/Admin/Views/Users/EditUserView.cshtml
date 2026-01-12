@@ -1,0 +1,103 @@
+﻿@using Microsoft.FeatureManagement
+@using Rsp.Gds.Component.Models
+@using Rsp.Portal.Application.Constants
+@model Rsp.Portal.Web.Areas.Admin.Models.UserViewModel
+@inject IFeatureManager featureManager
+
+@{
+    var buttonText = ViewBag.Mode == "edit" ? "Save" : "Continue";
+    var heading = ViewBag.Mode == "edit" ? "Edit user profile record" : "Add a new user profile record";
+    var submitActionName = ViewBag.Mode == "edit" ? "admin:submituser" : "admin:confirmusersubmission";
+
+    ViewBag.Active = "manageUsers";
+
+    string errorPrefix = ViewData.ModelState.IsValid ? "" : "Error - ";
+    string editTitle = $"{errorPrefix}Edit user profile record - Manage Users - System Administration";
+    string createTitle = $"{errorPrefix}Add a new user profile record - Manage Users - System Administration";
+    ViewBag.Title = ViewBag.Mode == "edit" ? editTitle : createTitle;
+
+    ViewBag.DefaultOptions = new List<GdsOption>();
+}
+<form method="post">
+    @if (ViewBag.Mode == "edit")
+    {
+        <a asp-route="admin:viewuser" asp-all-route-data="@(new Dictionary<string, string> { { "email", Model.Email }, { "userId", Model.Id! } })" class="govuk-back-link">Back</a>
+    }
+    else
+    {
+        <a asp-route="admin:users" class="govuk-back-link">Back</a>
+    }
+
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <h1 class="govuk-heading-l">@heading</h1>
+            <input name="Id" asp-for="Id" value="@(Model.Id ?? string.Empty)" />
+            <input name="OriginalEmail" asp-for="OriginalEmail" value="@(Model.OriginalEmail ?? string.Empty)" />
+            <input hidden readonly name="Status" asp-for="Status" value="@(Model.Status ?? string.Empty)" />
+			<input hidden readonly name="IdentityProviderId" asp-for="IdentityProviderId" value="@(Model.IdentityProviderId ?? string.Empty)" />
+
+            <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
+
+            <rsp-gds-input asp-for="Title" label-text="Title" width-class="govuk-!-width-one-quarter" />
+
+            <rsp-gds-input asp-for="GivenName" label-text="First name" width-class="govuk-!-width-one-half" />
+
+            <rsp-gds-input asp-for="FamilyName" label-text="Last name" width-class="govuk-!-width-one-half" />
+
+            @if (ViewBag.Mode == "edit")
+            {
+                <input hidden readonly name="Email" asp-for="Email" value="@(Model.Email ?? string.Empty)" />
+            }
+            else
+            {
+                <rsp-gds-input asp-for="Email" input-type="email" label-text="Email address" width-class="govuk-!-width-two-thirds" />
+            }
+
+            <rsp-gds-input asp-for="Telephone" label-text="Telephone" input-type="tel" width-class="govuk-!-width-two-thirds" />
+
+            <rsp-gds-input asp-for="Organisation" label-text="Organisation" width-class="govuk-!-width-three-quarters" />
+
+            <rsp-gds-input asp-for="JobTitle" label-text="Job title" width-class="govuk-!-width-three-quarters" />
+
+            <rsp-gds-checkbox-group asp-for="UserRoles"
+                                    label-text="Role"
+                                    item-label-property="DisplayName"
+                                    item-value-property="IsSelected"
+                                    item-hidden-properties="Id,Name"
+                                    legend-class="govuk-label govuk-label--s" />
+
+            <rsp-gds-checkbox-group asp-for="Country"
+                                    label-text="Country"
+                                    options="UkCountryNames.Countries"
+                                    label-css-class="role-checkbox"
+                                    conditional-field="true"
+                                    data-role="team manager"
+                                    legend-class="govuk-label govuk-label--s">
+            </rsp-gds-checkbox-group>
+
+            <rsp-gds-checkbox-group asp-for="ReviewBodies"
+                                    label-text="Review body"
+                                    item-label-property="RegulatoryBodyName"
+                                    item-value-property="IsSelected"
+                                    item-hidden-properties="Id,RegulatoryBodyName"
+                                    conditional-field="true"
+                                    class="conditional-field"
+                                    data-role="study-wide reviewer, workflow co-ordinator"
+                                    legend-class="govuk-label govuk-label--s">
+            </rsp-gds-checkbox-group>
+
+            <partial name="_SubmitButton" model="@(submitActionName, buttonText, new Dictionary<string, string>())" />
+            @{
+                ViewBag.Style = "ms-3 govuk-button govuk-button--secondary";
+            }
+        </div>
+    </div>
+</form>
+<!--Use javascript only when progressive enhancement feature is enabled-->
+@if (await featureManager.IsEnabledAsync(FeatureFlags.ProgressiveEnhancement))
+{
+    @section FooterResources {
+        <script src="~/lib/jquery/dist/jquery.js"></script>
+        <script src="~/js/manageUsers.js"></script>
+    }
+}

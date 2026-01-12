@@ -1,0 +1,23 @@
+﻿@using Rsp.Portal.Web.Areas.Admin.Models
+@model UserViewModel;
+
+@{
+	ViewBag.Active = "manageUsers";
+    ViewBag.Title = "Confirm - Manage Users - System Administration";
+}
+
+<a asp-route="admin:viewuser" asp-all-route-data="@(new Dictionary<string, string>{{"email", Model.Email}, {"userId", Model.Id!}})" class="govuk-back-link">Back</a>
+
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-two-thirds">
+		<h2 class="govuk-heading-l">Confirm that you want to disable @Model.GivenName @Model.FamilyName</h2>
+		<p class="govuk-body">You are about to disable this user record.</p>
+		<form method="post">
+			<input hidden name="Id" asp-for="Id" value="@(Model.Id ?? string.Empty)" />
+			<input hidden name="Email" asp-for="Email" value="@(Model.Email ?? string.Empty)" />
+			<button asp-route="admin:disableuser" type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button">
+				Disable
+			</button>
+		</form>
+	</div>
+</div>

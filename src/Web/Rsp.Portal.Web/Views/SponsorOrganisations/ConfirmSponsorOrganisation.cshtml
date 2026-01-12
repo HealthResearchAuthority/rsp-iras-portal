@@ -1,0 +1,55 @@
+﻿﻿@using System.Text.RegularExpressions
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@model SponsorOrganisationModel
+
+@{
+	ViewData["Title"] = "Check and save sponsor organisation profile - Manage sponsor organisations - System Administration";
+
+
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData["PageContent"];
+    var pageContent = pageContentData != null
+        ? pageContentData
+        : new Dictionary<string, MixedContentPageItem?>();
+
+    var headline = pageContent.GetValueOrDefault("SponsorOrganisations.Confirm.Headline", null);
+    var body = pageContent.GetValueOrDefault("SponsorOrganisations.Confirm.Body", null);
+}
+
+@section BackNavigation {
+    <partial name="_BackNavigation" model="@("soc:setupsponsororganisation", "Back", new Dictionary<string, string>())"/>
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-three-quarters">
+        <h1 class="govuk-heading-l gov-heading-nowrap">@Html.Raw(headline?.Value)</h1>
+        <p class="govuk-body">
+            @Html.Raw(body?.Value)
+        </p>
+    </div>
+</div>
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+
+        <partial name="_SponsorOrganisationSummaryTablePartial" model="(@Model, false)"/>
+
+        <div class="govuk-button-group">
+            <form method="post" class="govuk-!-margin-bottom-0">
+                <!-- Hidden model values for POST -->
+                <input type="hidden" name="Id" value="@Model.Id"/>
+                <input type="hidden" name="SponsorOrganisationName" value="@Model.SponsorOrganisationName"/>
+                <input type="hidden" name="Countries" value="@Model.Countries"/>
+                <input type="hidden" name="RtsId" value="@Model.RtsId"/>
+                <partial name="_SubmitButton" model='@("soc:savesponsororganisation", "Save profile", new Dictionary<string, string>())'/>
+            </form>
+
+            <form method="get">
+                @{
+                    // your SubmitButton partial reads ViewBag.Style for the next render
+                    ViewBag.Style = "govuk-button govuk-button--secondary";
+                }
+                <partial name="_SubmitButton" model="@("soc:setupsponsororganisation", "Cancel", new Dictionary<string, string>())"/>
+            </form>
+        </div>
+    </div>
+</div>

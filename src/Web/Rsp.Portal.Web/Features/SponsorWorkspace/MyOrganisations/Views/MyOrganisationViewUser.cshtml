@@ -1,0 +1,188 @@
+﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Web.Features.SponsorWorkspace.MyOrganisations.Models
+@model SponsorMyOrganisationUserViewModel
+
+@section Breadcrumb {
+	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+	{
+		("Sponsor workspace", Url.RouteUrl("sws:sponsorworkspace")),
+		("My organisations", Url.RouteUrl("sws:myorganisations")),
+		(Model.SponsorOrganisationName, Url.RouteUrl("sws:MyOrganisationUsers", new {rtsId = Model.RtsId}))
+	})
+}
+@{
+	ViewBag.Title = Model.GivenName + " " + Model.FamilyName + " - User profile";
+
+	var isAdmin = Model.IsLoggedInUserAdmin;
+
+	var showSuccessMessage = TempData[TempDataKeys.ShowNotificationBanner];
+}
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-full">
+
+		@if (showSuccessMessage is true)
+		{
+			<partial name="_NotificationBanner"
+					 model="@(new NotificationBannerModel
+                        {
+                            Title = "Success",
+                            Heading = "User updated"
+                        })" />
+
+		}
+
+		<div class="govuk-caption-m">
+			User profile
+		</div>
+		<h1 class="govuk-heading-l">@Model.GivenName @Model.FamilyName</h1>
+	</div>
+
+	<div class="govuk-grid-column-full">
+
+		<table class="govuk-table">
+			<thead>
+				<tr>
+					<th></th>
+					<th></th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr class="govuk-table__row">
+					<td class="govuk-table__cell">
+						<b>Title</b>
+					</td>
+					<td class="govuk-table__cell">
+						@Model.Title
+					</td>
+					<td class="govuk-table__cell govuk-table__cell--numeric">
+					</td>
+				</tr>
+
+				<tr class="govuk-table__row">
+					<td class="govuk-table__cell">
+						<b>First name</b>
+					</td>
+					<td class="govuk-table__cell">
+						@Model.GivenName
+					</td>
+					<td class="govuk-table__cell govuk-table__cell--numeric">
+					</td>
+				</tr>
+
+				<tr class="govuk-table__row">
+					<td class="govuk-table__cell">
+						<b>Last name</b>
+					</td>
+					<td class="govuk-table__cell">
+						@Model.FamilyName
+					</td>
+					<td class="govuk-table__cell govuk-table__cell--numeric">
+					</td>
+				</tr>
+
+				<tr class="govuk-table__row">
+					<td class="govuk-table__cell">
+						<b>Email</b>
+					</td>
+					<td class="govuk-table__cell line-break-anywhere">
+						@Model.Email
+					</td>
+					<td class="govuk-table__cell govuk-table__cell--numeric">
+					</td>
+				</tr>
+
+				<tr class="govuk-table__row">
+					<td class="govuk-table__cell">
+						<b>Telephone</b>
+					</td>
+					<td class="govuk-table__cell">
+						@Model.Telephone
+					</td>
+					<td class="govuk-table__cell govuk-table__cell--numeric">
+					</td>
+				</tr>
+
+				<tr class="govuk-table__row">
+					<td class="govuk-table__cell">
+						<b>Organisation</b>
+					</td>
+					<td class="govuk-table__cell">
+						@Model.Organisation
+					</td>
+					<td class="govuk-table__cell govuk-table__cell--numeric">
+					</td>
+				</tr>
+
+				<tr class="govuk-table__row">
+					<td class="govuk-table__cell">
+						<b>Job title</b>
+					</td>
+					<td class="govuk-table__cell">
+						@Model.JobTitle
+					</td>
+					<td class="govuk-table__cell govuk-table__cell--numeric">
+					</td>
+				</tr>
+
+				<tr class="govuk-table__row">
+					<td class="govuk-table__cell">
+						<b>Role</b>
+					</td>
+					<td class="govuk-table__cell">
+						@Model.Role
+					</td>
+					<td class="govuk-table__cell govuk-table__cell--numeric">
+						@{
+							await RenderEditLink("user role");
+						}
+					</td>
+				</tr>
+
+				<tr class="govuk-table__row">
+					<td class="govuk-table__cell">
+						<b>Authoriser</b>
+					</td>
+					<td class="govuk-table__cell">
+						@Model.IsAuthoriser
+					</td>
+					<td class="govuk-table__cell govuk-table__cell--numeric">
+						@{
+							await RenderEditLink("user authoriser status");
+						}
+					</td>
+				</tr>
+
+				<tr class="govuk-table__row">
+					<td class="govuk-table__cell">
+						<b>Status</b>
+					</td>
+					<td class="govuk-table__cell">
+						@Model.Status
+					</td>
+					<td class="govuk-table__cell govuk-table__cell--numeric">
+					</td>
+				</tr>
+
+			</tbody>
+		</table>
+
+	</div>
+</div>
+
+@{
+	async Task RenderEditLink(string fieldName)
+	{
+		@if (isAdmin)
+		{
+			<a class="govuk-link"
+			   asp-route="sws:MyOrganisationViewUser"
+			   asp-route-userId="@Model.UserId"
+			   asp-route-rtsId="@Model.RtsId"
+			   asp-route-editMode="true">
+				Change<span class="govuk-visually-hidden">@fieldName</span>
+			</a>
+		}
+
+	}
+}

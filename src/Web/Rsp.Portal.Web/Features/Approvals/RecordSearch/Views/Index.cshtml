@@ -1,0 +1,87 @@
+﻿@using Rsp.Gds.Component.Models
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@using Rsp.Portal.Web.Features.Approvals.RecordSearch.Models
+@model RecordSearchNavigationModel
+
+@section Breadcrumb {
+    @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>{
+    ("Approvals", Url.RouteUrl("approvalsmenu:welcome"))
+    })
+}
+@{
+    ViewBag.Title = "Choose a record type to search - Approvals";
+
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData != null
+        ? pageContentData
+        : new Dictionary<string, MixedContentPageItem?>();
+
+    var title = pageContent.GetValueOrDefault("RecordSearch.Title", null);
+
+    // Error handling specifically for RecordType
+    var recordTypeState = ViewData.ModelState[nameof(Model.RecordType)];
+    var hasRecordTypeError = recordTypeState?.Errors?.Any() == true;
+    var recordTypeErrorMessage = hasRecordTypeError
+        ? recordTypeState!.Errors.First().ErrorMessage
+        : null;
+
+    var describedByIds = "record-type-hint" + (hasRecordTypeError ? " record-type-error" : string.Empty);
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+        <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
+
+        <form asp-route="recordsearch:navigate" method="post">
+            <div class="govuk-form-group @(hasRecordTypeError ? "govuk-form-group--error" : "")">
+                <fieldset class="govuk-fieldset" aria-describedby="@describedByIds">
+                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+                        <h1 class="govuk-heading-l">@Html.Raw(title?.Value)</h1>
+                    </legend>
+
+                    <div id="record-type-hint" class="govuk-hint">
+                        Choose one
+                    </div>
+
+                    @if (hasRecordTypeError)
+                    {
+                        <p id="record-type-error" class="govuk-error-message">
+                            <span class="govuk-visually-hidden">Error:</span>
+                            @recordTypeErrorMessage
+                        </p>
+                    }
+                    <div class="govuk-radios" data-module="govuk-radios">
+                        <div class="govuk-radios__item">
+                            <input class="govuk-radios__input"
+                                   id="recordType-project"
+                                   name="RecordType"
+                                   type="radio"
+                                   value="@SearchRecordTypes.ProjectRecord"
+                                   @(Model.RecordType == SearchRecordTypes.ProjectRecord ? "checked" : "") />
+                            <label class="govuk-label govuk-radios__label" for="recordType-project">
+                                Project record
+                            </label>
+                        </div>
+
+                        <div class="govuk-radios__item">
+                            <input class="govuk-radios__input"
+                                   id="recordType-modification"
+                                   name="RecordType"
+                                   type="radio"
+                                   value="@SearchRecordTypes.ModificationRecord"
+                                   @(Model.RecordType == SearchRecordTypes.ModificationRecord ? "checked" : "") />
+                            <label class="govuk-label govuk-radios__label" for="recordType-modification">
+                                Modification record
+                            </label>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+
+            <button name="Next" type="submit" class="govuk-button" data-module="govuk-button">
+                Next
+            </button>
+        </form>
+    </div>
+</div>

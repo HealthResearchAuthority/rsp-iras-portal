@@ -4,12 +4,12 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Rsp.IrasPortal.Application.Configuration;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Infrastructure.HttpMessageHandlers;
+using Rsp.Portal.Application.Configuration;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Infrastructure.HttpMessageHandlers;
 using Shouldly;
 
-namespace Rsp.IrasPortal.IntegrationTests.Infrastructure.FunctionKeyHeadersHandlerTests;
+namespace Rsp.Portal.IntegrationTests.Infrastructure.FunctionKeyHeadersHandlerTests;
 
 public class SendAsyncTests
 {

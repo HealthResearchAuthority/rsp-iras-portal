@@ -1,0 +1,186 @@
+﻿using System.Text.Json;
+using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Rsp.Portal.Application.AccessControl;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.Extensions;
+using Rsp.Portal.Application.Filters;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.AccessControl;
+using Rsp.Portal.Web.Areas.Admin.Models;
+using Rsp.Portal.Web.Extensions;
+using Rsp.Portal.Web.Helpers;
+using Rsp.Portal.Web.Models;
+
+namespace Rsp.Portal.Web.Controllers;
+
+[Authorize(Policy = Workspaces.Approvals)]
+[Route("[controller]/[action]", Name = "approvals:[action]")]
+public class ApprovalsController
+(
+    IProjectModificationsService projectModificationsService,
+    IRtsService rtsService,
+    IValidator<ApprovalsSearchModel> validator
+) : Controller
+{
+    [Authorize(Policy = Permissions.Approvals.ModificationRecords_Search)]
+    [HttpGet]
+    public async Task<IActionResult> Index
+    (
+        int pageNumber = 1,
+        int pageSize = 20,
+        string sortField = nameof(ModificationsModel.ModificationId),
+        string sortDirection = SortDirections.Descending
+    )
+    {
+        var user = User;
+
+        var model = new ApprovalsSearchViewModel();
+
+        var json = HttpContext.Session.GetString(SessionKeys.ApprovalsSearch);
+        if (!string.IsNullOrEmpty(json))
+        {
+            var search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json)!;
+            model.Search = search;
+
+            if (search.Filters.Count == 0 && string.IsNullOrEmpty(search.IrasId))
+            {
+                model.EmptySearchPerformed = true;
+                return View(model);
+            }
+
+            ViewBag.DisplayName = await SponsorOrganisationNameHelper.GetSponsorOrganisationNameFromOrganisationId(rtsService, search.SponsorOrganisation);
+
+            var searchQuery = new ModificationSearchRequest
+            {
+                IrasId = search.IrasId,
+                ChiefInvestigatorName = search.ChiefInvestigatorName,
+                LeadNation = search.LeadNation,
+                ParticipatingNation = search.ParticipatingNation,
+                FromDate = search.FromDate,
+                ToDate = search.ToDate,
+                ModificationTypes = search.ModificationTypes,
+                ShortProjectTitle = search.ShortProjectTitle,
+                SponsorOrganisation = search.SponsorOrganisation,
+                IncludeReviewerId = false,
+                UseBackstageStatus = true,
+                AllowedStatuses = user.GetAllowedStatuses(StatusEntitiy.Modification),
+            };
+
+            var result = await projectModificationsService.GetModifications(searchQuery, pageNumber, pageSize, sortField, sortDirection);
+
+            model.Modifications = result?.Content?.Modifications?
+                .Select(dto => new ModificationsModel
+                {
+                    Id = dto.Id,
+                    ModificationId = dto.ModificationId,
+                    ShortProjectTitle = dto.ShortProjectTitle,
+                    ModificationType = dto.ModificationType,
+                    ChiefInvestigator = dto.ChiefInvestigator,
+                    LeadNation = dto.LeadNation,
+                    SponsorOrganisation = dto.SponsorOrganisation,
+                    CreatedAt = dto.CreatedAt,
+                    ProjectRecordId = dto.ProjectRecordId,
+                    Status = dto.Status,
+                    ChiefInvestigatorFirstName = dto.ChiefInvestigatorFirstName,
+                    ChiefInvestigatorLastName = dto.ChiefInvestigatorLastName,
+                })
+                .ToList() ?? [];
+
+            model.Pagination = new PaginationViewModel(pageNumber, pageSize, result?.Content?.TotalCount ?? 0)
+            {
+                SortDirection = sortDirection,
+                SortField = sortField
+            };
+        }
+
+        return View(model);
+    }
+
+    [Authorize(Policy = Permissions.Approvals.ModificationRecords_Search)]
+    [HttpPost]
+    [CmsContentAction(nameof(Index))]
+    public async Task<IActionResult> ApplyFilters(ApprovalsSearchViewModel model)
+    {
+        var validationResult = await validator.ValidateAsync(model.Search);
+
+        if (!validationResult.IsValid)
+        {
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
+
+            return View(nameof(Index), model);
+        }
+
+        HttpContext.Session.SetString(SessionKeys.ApprovalsSearch, JsonSerializer.Serialize(model.Search));
+        return RedirectToAction(nameof(Index));
+    }
+
+    [Authorize(Policy = Permissions.Approvals.ModificationRecords_Search)]
+    [HttpGet]
+    public IActionResult ClearFilters()
+    {
+        var json = HttpContext.Session.GetString(SessionKeys.ApprovalsSearch);
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        var search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json);
+        if (search == null)
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Retain only the IRAS Project ID
+        var cleanedSearch = new ApprovalsSearchModel
+        {
+            IrasId = search.IrasId
+        };
+
+        HttpContext.Session.SetString(SessionKeys.ApprovalsSearch, JsonSerializer.Serialize(cleanedSearch));
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    [Authorize(Policy = Permissions.Approvals.ModificationRecords_Search)]
+    [HttpGet]
+    public async Task<IActionResult> RemoveFilter(string key, string? value)
+    {
+        var json = HttpContext.Session.GetString(SessionKeys.ApprovalsSearch);
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        var search = JsonSerializer.Deserialize<ApprovalsSearchModel>(json)!;
+
+        this.RemoveFilters(SessionKeys.ApprovalsSearch, search, key, value);
+
+        HttpContext.Session.SetString(SessionKeys.ApprovalsSearch, JsonSerializer.Serialize(search));
+
+        return await ApplyFilters(new ApprovalsSearchViewModel { Search = search });
+    }
+
+    /// <summary>
+    ///     Retrieves a list of organisations based on the provided name, role, and optional page size.
+    /// </summary>
+    /// <param name="role">The role of the organisation. Defaults to SponsorRole if not provided.</param>
+    /// <param name="pageSize">Optional page size for pagination. Defults to 5 if not provided.</param>
+    /// <returns>A list of organisation names or an error response.</returns>
+    public async Task<IActionResult> SearchOrganisations(ApprovalsSearchViewModel model, string? role, int? pageSize = 5, int pageIndex = 1)
+    {
+        return await this.HandleOrganisationSearchAsync(
+            rtsService,
+            model,
+            SessionKeys.ApprovalsSearch,
+            role,
+            pageSize,
+            pageIndex);
+    }
+}

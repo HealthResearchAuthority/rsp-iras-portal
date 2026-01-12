@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Web.Features.CookiePolicy.Controllers;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Web.Features.CookiePolicy.Controllers;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Features.CookiePolicy;
+namespace Rsp.Portal.UnitTests.Web.Features.CookiePolicy;
 
 public class CookiePolicyControllerTests : TestServiceBase<CookiesController>
 {

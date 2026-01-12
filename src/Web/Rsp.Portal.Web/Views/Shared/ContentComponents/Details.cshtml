@@ -1,0 +1,16 @@
+﻿@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@model DetailsProperties
+
+@if (Model != null)
+{
+	<details class="govuk-details">
+		<summary class="govuk-details__summary">
+			<span class="govuk-details__summary-text">
+				@Model.Title
+			</span>
+		</summary>
+		<div class="govuk-details__text">
+			<div class="govuk-body">@Html.Raw(Model.Value?.Markup)</div>
+		</div>
+	</details>
+}

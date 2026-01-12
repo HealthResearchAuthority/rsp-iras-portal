@@ -1,0 +1,39 @@
+﻿@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@model GenericPageResponse
+
+@if (Model?.Properties?.PageContent?.Items != null)
+{
+	foreach (var property in Model.Properties.PageContent.Items)
+	{
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-full">
+				@switch (property?.Content?.Properties)
+				{
+					case BodyTextProperties body:
+						@await Html.PartialAsync("~/Views/Shared/ContentComponents/BodyText.cshtml", body)
+						break;
+
+					case AccordionProperties accordion:
+						@await Html.PartialAsync("~/Views/Shared/ContentComponents/Accordion.cshtml", accordion)
+						break;
+
+					case TabsProperties tabs:
+						@await Html.PartialAsync("~/Views/Shared/ContentComponents/Tabs.cshtml", tabs)
+						break;
+
+					case DetailsProperties details:
+						@await Html.PartialAsync("~/Views/Shared/ContentComponents/Details.cshtml", details)
+						break;
+
+					case HeadlineProperties headline:
+						@await Html.PartialAsync("~/Views/Shared/ContentComponents/Headline.cshtml", headline)
+						break;
+
+					case RichTextProperties rte:
+						@await Html.PartialAsync("~/Views/Shared/ContentComponents/RichText.cshtml", rte)
+						break;
+				}
+			</div>
+		</div>
+	}
+}

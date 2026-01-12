@@ -39,9 +39,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\..\src\Application\Rsp.IrasPortal.Application\Rsp.IrasPortal.Application.csproj" />
-		<ProjectReference Include="..\..\..\src\Infrastructure\Rsp.IrasPortal.Infrastructure\Rsp.IrasPortal.Infrastructure.csproj" />
-		<ProjectReference Include="..\..\..\src\Web\Rsp.IrasPortal.Web\Rsp.IrasPortal.Web.csproj" />
+		<ProjectReference Include="..\..\..\src\Application\Rsp.Portal.Application\Rsp.Portal.Application.csproj" />
+		<ProjectReference Include="..\..\..\src\Infrastructure\Rsp.Portal.Infrastructure\Rsp.Portal.Infrastructure.csproj" />
+		<ProjectReference Include="..\..\..\src\Web\Rsp.Portal.Web\Rsp.Portal.Web.csproj" />
 	</ItemGroup>
 
 </Project>

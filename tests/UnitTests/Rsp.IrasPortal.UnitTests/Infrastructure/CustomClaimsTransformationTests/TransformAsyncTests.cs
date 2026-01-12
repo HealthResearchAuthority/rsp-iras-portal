@@ -1,17 +1,17 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
-using Rsp.IrasPortal.Application.Configuration;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Domain.Identity;
-using Rsp.IrasPortal.Infrastructure.Claims;
-using Rsp.IrasPortal.Services.Extensions;
-using Rsp.IrasPortal.UnitTests.TestHelpers;
+using Rsp.Portal.Application.Configuration;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.Identity;
+using Rsp.Portal.Infrastructure.Claims;
+using Rsp.Portal.Services.Extensions;
+using Rsp.Portal.UnitTests.TestHelpers;
 using Claim = System.Security.Claims.Claim;
 
-namespace Rsp.IrasPortal.UnitTests.Infrastructure.CustomClaimsTransformationTests;
+namespace Rsp.Portal.UnitTests.Infrastructure.CustomClaimsTransformationTests;
 
 public class TransformAsyncTests : TestServiceBase<CustomClaimsTransformation>
 {

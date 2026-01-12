@@ -1,0 +1,42 @@
+﻿@using Microsoft.AspNetCore.Http.Features
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent;
+
+@{
+    var correlationId = Context.TraceIdentifier;
+
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData != null ?
+        pageContentData :
+        new Dictionary<string, MixedContentPageItem?>();
+
+    var pageTitle = pageContent.GetValueOrDefault("ServerError.PageTitle", null);
+    var headline = pageContent.GetValueOrDefault("ServerError.Header", null);
+    var message = pageContent.GetValueOrDefault("ServerError.Message", null);
+    var referenceCode = pageContent.GetValueOrDefault("ServerError.ReferenceCode", null);
+    var contactDetails = pageContent.GetValueOrDefault("ServerError.ContactDetails", null);
+
+    ViewBag.Title = pageTitle?.Value;
+}
+
+<div class="govuk-width-container">
+    <main class="govuk-main-wrapper govuk-main-wrapper--l" id="main-content" role="main">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <h1 class="govuk-heading-l">@headline?.Value</h1>
+                <p class="govuk-body">
+                    @Html.Raw(message?.Value)
+                </p>
+                <p class="govuk-body">
+                    @Html.Raw(referenceCode?.Value)
+                </p>
+                <p>
+                    <strong>@correlationId</strong>
+                </p>
+                <p class="govuk-body">
+                    @Html.Raw(contactDetails?.Value)
+                </p>
+            </div>
+        </div>
+    </main>
+</div>

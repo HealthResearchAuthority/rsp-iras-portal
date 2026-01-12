@@ -1,0 +1,83 @@
+﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@{
+    var model = (IList<ServiceNavigationItemModel>?)ViewData[PageContentElements.ServiceNavigation];
+    var userLoggedIn = User?.Identity?.IsAuthenticated != null && User.Identity.IsAuthenticated;
+    var userIsDisabled = User?.FindFirst(CustomClaimTypes.UserStatus)?.Value is IrasUserStatus.Disabled;
+}
+
+<section aria-label="Service information" class="govuk-service-navigation"
+         data-module="govuk-service-navigation">
+    <div class="govuk-width-container">
+        <div class="govuk-service-navigation__container">
+
+            <nav aria-label="Menu" class="govuk-service-navigation__wrapper">
+                <button type="button" class="govuk-service-navigation__toggle govuk-js-service-navigation-toggle" aria-controls="navigation" hidden>
+                    Menu
+                </button>
+                <ul class="govuk-service-navigation__list" id="navigation">
+                    <li class="govuk-service-navigation__item">
+                        <a class="govuk-service-navigation__link"
+                           asp-route="acc:home">
+                            Home
+                        </a>
+                    </li>
+
+                    @if (model != null && model.Any())
+                    {
+                        foreach (var link in model)
+                        {
+                            if (link != null)
+                            {
+                                var isActive = Context?.Request?.Path.Value?.ToLower() == link.Link?.Url?.ToLower();
+
+                                if (link.RequiresAuthorisation)
+                                {
+                                    // skip rendering the link if the user is disabled
+                                    if (userIsDisabled)
+                                    {
+                                        continue;
+                                    }
+
+                                    <authorized>
+                                        <li class="govuk-service-navigation__item @(isActive ? "govuk-service-navigation__item--active" : "")">
+                                            <a class="govuk-service-navigation__link"
+                                               href="@link.Link?.Url">
+                                                @link.Link?.Name
+                                            </a>
+                                        </li>
+                                    </authorized>
+                                }
+                                else
+                                {
+                                    <li class="govuk-service-navigation__item @(isActive ? "govuk-service-navigation__item--active" : "")">
+                                        <a class="govuk-service-navigation__link"
+                                           href="@link.Link?.Url">
+                                            @link.Link?.Name
+                                        </a>
+                                    </li>
+                                }
+                            }
+                        }
+                    }
+
+                    @if (!userLoggedIn)
+                    {
+                        <li class="govuk-service-navigation__item">
+                            <a class="govuk-service-navigation__link"
+                               asp-route="auth:signin">
+                                Sign in
+                            </a>
+                        </li>
+                    }
+
+                    <authorized>
+                        <li class="govuk-service-navigation__item">
+                            <a class="govuk-service-navigation__link" asp-route="auth:signout">Logout</a>
+                        </li>
+                    </authorized>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</section>

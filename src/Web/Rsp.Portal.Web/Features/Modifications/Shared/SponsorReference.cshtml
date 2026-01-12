@@ -1,0 +1,75 @@
+﻿@using System.Globalization
+@using System.Text.Json
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Microsoft.FeatureManagement
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Web.Features.Modifications.Models
+@using Rsp.Portal.Web.Extensions
+@model QuestionnaireViewModel
+
+@{
+    // Title used in the validation error summary
+    var errorSummaryTitle = "There is a problem";
+
+    ViewBag.Title = "Add sponsor reference, date and brief summary of changes";
+
+    //string projectRecordId, string irasId, string shortTitle, Guid projectModificationId
+
+    var modification = TempData.PopulateBaseProjectModificationProperties(new BaseProjectModificationViewModel());
+
+    var modificationParams = new Dictionary<string, string> {
+            { "projectRecordId", modification.ProjectRecordId },
+            { "irasId", modification.IrasId  },
+            { "shortTitle", modification.ShortTitle ?? string.Empty },
+            { "projectModificationId", modification.ModificationId ?? string.Empty }
+        };
+
+    var isReviewAllInProgress = TempData.Peek(TempDataKeys.ProjectModification.ReviewAllChanges) is true;
+}
+
+<div class="govuk-width-container">
+    <div class="govuk-width-container">
+        @section BackNavigation {
+
+            @{
+
+                if (isReviewAllInProgress)
+                {
+                    <partial name="_BackNavigation" model="@("pmc:reviewallchanges", "Back", modificationParams)" />
+                }
+                else
+                {
+                    <partial name="_BackNavigation" model="@("pmc:modificationdetails", "Back", modificationParams)" />
+                }
+            }
+        }
+
+        <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
+
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+
+                <h1 class="govuk-heading-l">Add sponsor reference, date and brief summary of changes</h1>
+
+                <form method="post">
+
+                    <partial name="_ProjectModificationSummary" model="modification" />
+
+                    <partial name="_Questionnaire" model="Model" />
+
+                    <div class="save-buttons">
+                        @{
+
+                            <partial name="_SubmitButton" model="@("pmc:savesponsorreference", "Save and continue to review", new Dictionary<string, string>())" />
+
+                            ViewBag.Style = "govuk-button govuk-button--secondary";
+
+							<partial name="_SubmitButton" model="@("pmc:savesponsorreference", "Save for later", new Dictionary<string, string> { { "saveForLater", bool.TrueString } })" />
+
+                        }
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

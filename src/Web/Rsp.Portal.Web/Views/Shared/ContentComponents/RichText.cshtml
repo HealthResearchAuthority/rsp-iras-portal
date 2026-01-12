@@ -1,0 +1,7 @@
+﻿@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@model RichTextProperties?
+
+@if (Model?.Value?.Markup != null)
+{
+	<div class="govuk-body govuk-rte">@Html.Raw(Model.Value.Markup)</div>
+}

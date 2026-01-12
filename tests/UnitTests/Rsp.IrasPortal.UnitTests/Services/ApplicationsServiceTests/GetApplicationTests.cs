@@ -1,10 +1,10 @@
 ﻿using System.Net;
-using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.ServiceClients;
-using Rsp.IrasPortal.Services;
+using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.ServiceClients;
+using Rsp.Portal.Services;
 
-namespace Rsp.IrasPortal.UnitTests.Services.ApplicationsServiceTests;
+namespace Rsp.Portal.UnitTests.Services.ApplicationsServiceTests;
 
 public class GetApplicationTests : TestServiceBase<ApplicationsService>
 {

@@ -1,0 +1,29 @@
+﻿@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@model IList<ComponentContent>
+
+@{
+
+    foreach (var component in Model)
+    {
+        var viewBasePath = "~/Views/Shared/ContentComponents/";
+
+        var viewName = component.Properties switch
+        {
+            AccordionProperties => "Accordion.cshtml",
+            BodyTextProperties => "BodyText.cshtml",
+            DetailsProperties => "Details.cshtml",
+            HeadlineProperties => "Headline.cshtml",
+            HintTextProperties => "HintText.cshtml",
+            InsertTextProperties => "InsertText.cshtml",
+            LineSeparatorProperties => "LineSeparator.cshtml",
+            RichTextProperties => "RichText.cshtml",
+            TabsProperties => "Tabs.cshtml",
+            _ => null
+        };
+
+        if (viewName != null)
+        {
+            <partial name="@(viewBasePath + viewName)" model="component.Properties" />
+        }
+    }
+}
