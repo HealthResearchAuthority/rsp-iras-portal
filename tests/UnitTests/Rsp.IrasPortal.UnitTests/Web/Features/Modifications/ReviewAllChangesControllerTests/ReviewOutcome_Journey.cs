@@ -114,6 +114,30 @@ public class ReviewOutcome_Journey : TestServiceBase<ReviewAllChangesController>
     }
 
     [Theory, AutoData]
+    public async Task ReviewOutcome_Post_SaveForLater_Redirects_To_ModificationsTasklist
+    (
+        Guid modificationId,
+        ReviewOutcomeViewModel stored
+    )
+    {
+        // Arrange
+        stored.ModificationDetails.ModificationId = modificationId.ToString();
+        SetupTempData(stored);
+
+        _modificationService
+            .Setup(s => s.SaveModificationReviewResponses(It.IsAny<ProjectModificationReviewRequest>()))
+            .ReturnsAsync(new ServiceResponse<object> { StatusCode = HttpStatusCode.OK });
+
+        // Act
+        var result = await Sut.ReviewOutcome(stored, saveForLater: true);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe("Index");
+        redirect.ControllerName.ShouldBe("ModificationsTasklist");
+    }
+
+    [Theory, AutoData]
     public async Task ReviewOutcome_Post_Redirects_To_ReasonNotApproved_When_NotApproved
     (
         Guid modificationId,
