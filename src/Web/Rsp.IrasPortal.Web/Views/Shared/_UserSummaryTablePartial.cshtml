@@ -2,9 +2,10 @@
 @model Rsp.IrasPortal.Web.Areas.Admin.Models.UserViewModel
 
 @{
-	var edit = !string.IsNullOrEmpty(Model.Id);
-	var editNewUserUrl = "/admin/users/editnewuser";
-	var showChangeLink = TempData[TempDataKeys.ShowEditLink] == null;
+    var edit = !string.IsNullOrEmpty(Model.Id);
+    var editNewUserUrl = "/admin/users/editnewuser";
+    var showChangeLink = TempData[TempDataKeys.ShowEditLink] == null;
+    var showAuthorizerInfoRow = ViewData["ShowAuthorizerInfo"] is not null && (bool)ViewData["ShowAuthorizerInfo"]!;
 }
 
 <input type="hidden" asp-for="Status" name="Status" value="@(Model.Status ?? string.Empty)" />
@@ -250,15 +251,17 @@
 				</tr>
 			}
 		}
-
-        <tr class="govuk-table__row">
-            <td class="govuk-table__cell">
-                <b>Authoriser</b>
-            </td>
-            <td class="govuk-table__cell">
-                @((bool)(ViewData["IsUserAuthorizer"] ?? false) ? "Yes" : "No")
-            </td>
-        </tr>
+        @if (showAuthorizerInfoRow)
+        {
+            <tr class="govuk-table__row">
+                <td class="govuk-table__cell">
+                    <b>Authoriser</b>
+                </td>
+                <td class="govuk-table__cell">
+                    @((bool)(ViewData["IsUserAuthorizer"] ?? false) ? "Yes" : "No")
+                </td>
+            </tr>
+        }
 
 	</tbody>
 </table>
