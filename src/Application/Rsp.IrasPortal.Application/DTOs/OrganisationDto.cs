@@ -1,4 +1,5 @@
 ﻿namespace Rsp.IrasPortal.Application.DTOs;
+
 public record OrganisationDto
 {
     /// <summary>
@@ -25,4 +26,9 @@ public record OrganisationDto
     /// Organisation Type
     /// </summary>
     public string Type { get; set; } = null!;
+
+    /// <summary>
+    /// Organisation Type
+    /// </summary>
+    public string LastUpdated { get; set; } = null!;
 }
