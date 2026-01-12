@@ -60,4 +60,18 @@ public class ProjectClosuresService
         var apiResponse = await projectClosuresServiceClient.GetProjectClosuresBySponsorOrganisationUserId(sponsorOrganisationUserId, searchQuery, pageNumber, pageSize, sortField, sortDirection);
         return apiResponse.ToServiceResponse();
     }
+
+    /// <summary>
+    /// Updates the status of an existing project closure by its project unique identifier.
+    /// </summary>
+    /// <param name="projectRecordId">The unique identifier of the project record to which the project closure belongs.</param>
+    /// <returns>
+    /// A task representing the asynchronous operation, containing a <see cref="ServiceResponse"/>
+    /// that reflects the success or failure of the update operation.
+    /// </returns>
+    public async Task<ServiceResponse> UpdateProjectClosureStatus(string projectRecordId, string status)
+    {
+        var apiResponse = await projectClosuresServiceClient.UpdateProjectClosureStatus(projectRecordId, status);
+        return apiResponse.ToServiceResponse();
+    }
 }

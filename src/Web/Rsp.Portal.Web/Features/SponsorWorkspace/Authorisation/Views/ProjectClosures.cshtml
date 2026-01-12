@@ -72,15 +72,21 @@
                                     {
                                                                 new { Field = nameof(ProjectClosuresModel.ShortProjectTitle), Label = "Short project title" },
                                                                 new { Field = nameof(ProjectClosuresModel.IrasId), Label = "IRAS ID" },
-                                                                new { Field = nameof(ProjectClosuresModel.SentToSponsorDate), Label = "Date received" },
-                                                                new { Field = nameof(ProjectClosuresModel.UserEmail), Label = "User email" },
+                                                                new { Field = nameof(ProjectClosuresModel.SentToSponsorDate), Label = "Date received" },                                                                
                                                                 new { Field = nameof(ProjectClosuresModel.ClosureDate), Label = "Date closed" },
                                                                 new { Field = nameof(ProjectClosuresModel.Status), Label = "Status" }
                                                                 };
                                     var tableId = "projectClosureTable";
                                 }
                                 @foreach (var header in sortableHeaders)
-                                {                                    
+                                {
+                                    // Insert User email column *before* ClosureDate
+                                    if (header.Field == nameof(ProjectClosuresModel.ClosureDate))
+                                    {
+                                        <!-- NON-sortable User email column -->
+                                        <th scope="col" class="govuk-table__header govuk-table__header-sortable">User email</th>
+                                    }
+
                                     <th scope="col" class="govuk-table__header govuk-table__header-sortable">
                                         <partial name="_SortableHeaderButton" model="@(new SortableHeaderModel
                                                                               {
@@ -110,7 +116,7 @@
                                     <tr class="govuk-table__row">
                                         <td class="govuk-table__cell">
                                             <a class="govuk-link"
-                                               asp-route="sws:tobedone"
+                                               asp-route="@(projectRecord.Status == ProjectClosureStatus.WithSponsor ? "sws:checkandauthoriseprojectclosure" : "pov:projectdetails")"
                                                asp-route-projectRecordId="@projectRecord.ProjectRecordId"                                              
                                                asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId">
                                                 <strong>@projectRecord.ShortProjectTitle</strong>
