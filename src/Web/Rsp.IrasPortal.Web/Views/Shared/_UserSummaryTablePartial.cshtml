@@ -6,6 +6,7 @@
     var edit = !string.IsNullOrEmpty(Model.Id);
     var editNewUserUrl = "/admin/users/editnewuser";
     var showChangeLink = TempData[TempDataKeys.ShowEditLink] == null;
+    var showAuthorizerInfoRow = ViewData["ShowAuthorizerInfo"] is not null && (bool)ViewData["ShowAuthorizerInfo"]!;
 
     SponsorOrganisationAddUserModel? sponsorOrgUser = null;
     var storedObject = TempData.Peek(TempDataKeys.SponsorOrganisationUser);
@@ -287,6 +288,18 @@
 				</tr>
 			}
 		}
+
+        @if (showAuthorizerInfoRow)
+        {
+            <tr class="govuk-table__row">
+                <td class="govuk-table__cell">
+                    <b>Authoriser</b>
+                </td>
+                <td class="govuk-table__cell">
+                    @((bool)(ViewData["IsUserAuthorizer"] ?? false) ? "Yes" : "No")
+                </td>
+            </tr>
+        }
 
 
 	</tbody>

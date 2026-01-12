@@ -12,6 +12,8 @@
         ViewData["Title"] = "View and edit user profile - Manage sponsor organisations - System administration";
     }
 
+    ViewData["IsUserAuthorizer"] = Model.SponsorOrganisationUser.IsAuthoriser;
+    ViewData["ShowAuthorizerInfo"] = true;
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null
