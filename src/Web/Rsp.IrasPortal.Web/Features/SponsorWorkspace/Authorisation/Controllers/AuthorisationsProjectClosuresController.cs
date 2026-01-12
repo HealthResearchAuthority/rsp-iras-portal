@@ -198,10 +198,10 @@ public class AuthorisationsProjectClosuresController
         }
 
         //TODO - ProjectRecords will have more than 1 project closure, implement logic based on buisness requirements to pick proper project closure
-        var actualEndDate =
-            projectClosureResponse.Content?.ProjectClosures?.FirstOrDefault().ClosureDate is DateTime dt
-                ? DateHelper.ConvertDateToString(dt)
-                : null;
+        var closure = projectClosureResponse.Content?.ProjectClosures?.FirstOrDefault();
+        var actualEndDate = closure?.ClosureDate != null
+            ? DateHelper.ConvertDateToString(closure.ClosureDate.Value)
+            : null;
 
         var model = new AuthoriseProjectClosuresOutcomeViewModel
         {
