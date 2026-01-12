@@ -187,17 +187,19 @@ public class AuthorisationsProjectClosuresControllerTests
             .ReturnsAsync(qsResponse);
 
         // 4) ProjectClosure (ActualEndDate)
-        var pcResponse = new ServiceResponse<ProjectClosuresResponse>
+        var pcResponse = new ServiceResponse<ProjectClosuresSearchResponse>
         {
             StatusCode = HttpStatusCode.OK,
-            Content = new ProjectClosuresResponse
+            Content = new ProjectClosuresSearchResponse
             {
-                ProjectRecordId = projectRecordId,
-                ClosureDate = closureDate
+                ProjectClosures = new List<ProjectClosuresResponse>
+                {
+                    new ProjectClosuresResponse {ProjectRecordId = projectRecordId, ClosureDate = closureDate }
+                }
             }
         };
         Mocker.GetMock<IProjectClosuresService>()
-            .Setup(p => p.GetProjectClosureById(projectRecordId))
+            .Setup(p => p.GetProjectClosuresByProjectRecordId(projectRecordId))
             .ReturnsAsync(pcResponse);
     }
 

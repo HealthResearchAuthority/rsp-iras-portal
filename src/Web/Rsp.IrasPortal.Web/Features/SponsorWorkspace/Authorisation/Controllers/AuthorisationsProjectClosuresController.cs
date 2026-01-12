@@ -191,14 +191,15 @@ public class AuthorisationsProjectClosuresController
         var endDateAnswer = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.ProjectPlannedEndDate)?.AnswerText;
         var titleAnswer = answers.FirstOrDefault(a => a.QuestionId == QuestionIds.ShortProjectTitle)?.AnswerText;
 
-        var projectClosureResponse = await projectClosuresService.GetProjectClosureById(projectRecordId);
+        var projectClosureResponse = await projectClosuresService.GetProjectClosuresByProjectRecordId(projectRecordId);
         if (!projectClosureResponse.IsSuccessStatusCode)
         {
             return this.ServiceError(projectClosureResponse);
         }
 
+        //TODO - ProjectRecords will have more than 1 project closure, implement logic based on buisness requirements to pick proper project closure
         var actualEndDate =
-            projectClosureResponse.Content?.ClosureDate is DateTime dt
+            projectClosureResponse.Content?.ProjectClosures?.FirstOrDefault().ClosureDate is DateTime dt
                 ? DateHelper.ConvertDateToString(dt)
                 : null;
 
