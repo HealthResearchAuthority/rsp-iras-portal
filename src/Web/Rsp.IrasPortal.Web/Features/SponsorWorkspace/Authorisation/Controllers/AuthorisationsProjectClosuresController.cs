@@ -197,8 +197,7 @@ public class AuthorisationsProjectClosuresController
             return this.ServiceError(projectClosureResponse);
         }
 
-        //TODO - ProjectRecords will have more than 1 project closure, implement logic based on buisness requirements to pick proper project closure
-        var closure = projectClosureResponse.Content?.ProjectClosures?.FirstOrDefault();
+        var closure = projectClosureResponse.Content?.ProjectClosures?.FirstOrDefault(pc => pc.Status.Equals(ProjectClosureStatus.WithSponsor));
         var actualEndDate = closure?.ClosureDate != null
             ? DateHelper.ConvertDateToString(closure.ClosureDate.Value)
             : null;
