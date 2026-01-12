@@ -20,12 +20,12 @@ using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Features.SponsorWorkspace.Authorisations;
 
-public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsController>
+public class AuthorisationsModificationsControllerTests : TestServiceBase<AuthorisationsModificationsController>
 {
     private readonly DefaultHttpContext _http;
     private readonly Guid _sponsorOrganisationUserId = Guid.NewGuid();
 
-    public AuthorisationsControllerTests()
+    public AuthorisationsModificationsControllerTests()
     {
         _http = new DefaultHttpContext
         {
@@ -44,7 +44,7 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
 
     [Theory]
     [AutoData]
-    public async Task Authorisations_Returns_View_With_Correct_Model(GetModificationsResponse modificationResponse)
+    public async Task Modifications_Returns_View_With_Correct_Model(GetModificationsResponse modificationResponse)
     {
         var serviceResponse = new ServiceResponse<GetModificationsResponse>
         {
@@ -54,26 +54,26 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
 
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.GetModificationsBySponsorOrganisationUserId(_sponsorOrganisationUserId,
-                It.IsAny<SponsorAuthorisationsSearchRequest>(), 1, 20, nameof(ModificationsModel.SentToSponsorDate),
+                It.IsAny<SponsorAuthorisationsModificationsSearchRequest>(), 1, 20, nameof(ModificationsModel.SentToSponsorDate),
                 SortDirections.Descending))
             .ReturnsAsync(serviceResponse);
 
-        var result = await Sut.Authorisations(_sponsorOrganisationUserId);
+        var result = await Sut.Modifications(_sponsorOrganisationUserId);
 
         var viewResult = result.ShouldBeOfType<ViewResult>();
-        var model = viewResult.Model.ShouldBeAssignableTo<SponsorAuthorisationsViewModel>();
+        var model = viewResult.Model.ShouldBeAssignableTo<AuthorisationsModificationsViewModel>();
 
         model.ShouldNotBeNull();
         model.SponsorOrganisationUserId.ShouldBe(_sponsorOrganisationUserId);
         model.Modifications.ShouldNotBeNull();
         model.Pagination.ShouldNotBeNull();
-        model.Pagination.RouteName.ShouldBe("sws:authorisations");
+        model.Pagination.RouteName.ShouldBe("sws:modifications");
         model.Pagination.AdditionalParameters.ShouldContainKey("SponsorOrganisationUserId");
     }
 
     [Theory]
     [AutoData]
-    public async Task ApplyFilters_Invalid_ModelState_Redirects_Back(SponsorAuthorisationsViewModel model)
+    public async Task ApplyFilters_Invalid_ModelState_Redirects_Back(AuthorisationsModificationsViewModel model)
     {
         // Arrange
         var validationResult = new ValidationResult(new[]
@@ -81,7 +81,7 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
             new ValidationFailure("SearchTerm", "Invalid search term")
         });
 
-        Mocker.GetMock<IValidator<SponsorAuthorisationsSearchModel>>()
+        Mocker.GetMock<IValidator<AuthorisationsModificationsSearchModel>>()
             .Setup(v => v.ValidateAsync(model.Search, It.IsAny<CancellationToken>()))
             .ReturnsAsync(validationResult);
 
@@ -91,7 +91,7 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
         // Assert
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
         redirectResult.ShouldNotBeNull();
-        redirectResult.ActionName.ShouldBe(nameof(Authorisations));
+        redirectResult.ActionName.ShouldBe(nameof(Modifications));
         redirectResult.RouteValues["sponsorOrganisationUserId"].ShouldBe(model.SponsorOrganisationUserId);
     }
 
@@ -144,7 +144,7 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
-        var model = viewResult.Model.ShouldBeOfType<AuthoriseOutcomeViewModel>();
+        var model = viewResult.Model.ShouldBeOfType<AuthoriseModificationsOutcomeViewModel>();
 
         // Ensure the model that comes back is the same (hydrated) one
         model.Outcome.ShouldBe(authoriseOutcomeViewModel.Outcome);
@@ -167,7 +167,7 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
-        redirect.ActionName.ShouldBe(nameof(AuthorisationsController.Confirmation));
+        redirect.ActionName.ShouldBe(nameof(AuthorisationsModificationsController.Confirmation));
     }
 
     [Fact]
@@ -184,7 +184,7 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
-        redirect.ActionName.ShouldBe(nameof(AuthorisationsController.Confirmation));
+        redirect.ActionName.ShouldBe(nameof(AuthorisationsModificationsController.Confirmation));
     }
 
     [Fact]
@@ -200,14 +200,14 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
-        redirect.ActionName.ShouldBe(nameof(AuthorisationsController.Confirmation));
+        redirect.ActionName.ShouldBe(nameof(AuthorisationsModificationsController.Confirmation));
     }
 
     [Fact]
     public void Confirmation_Returns_View_With_Model()
     {
         // Arrange
-        var model = new AuthoriseOutcomeViewModel
+        var model = new AuthoriseModificationsOutcomeViewModel
         {
             ModificationId = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
             ProjectRecordId = "PR-001"
@@ -222,7 +222,7 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
         view.Model.ShouldBeSameAs(model); // passes through the same instance
     }
 
-    private AuthoriseOutcomeViewModel SetupAuthoriseOutcomeViewModel()
+    private AuthoriseModificationsOutcomeViewModel SetupAuthoriseOutcomeViewModel()
     {
         // Arrange
         var http = new DefaultHttpContext();
@@ -463,11 +463,11 @@ public class AuthorisationsControllerTests : TestServiceBase<AuthorisationsContr
             ProjectRecordId = projectRecordId
         };
 
-        TypeAdapterConfig<ModificationDetailsViewModel, AuthoriseOutcomeViewModel>
+        TypeAdapterConfig<ModificationDetailsViewModel, AuthoriseModificationsOutcomeViewModel>
         .NewConfig()
         .Ignore(dest => dest.ProjectOverviewDocumentViewModel);
 
-        var authoriseOutcomeViewModel = modification.Adapt<AuthoriseOutcomeViewModel>();
+        var authoriseOutcomeViewModel = modification.Adapt<AuthoriseModificationsOutcomeViewModel>();
         authoriseOutcomeViewModel.SponsorOrganisationUserId = sponsorOrganisationUserId;
         return authoriseOutcomeViewModel;
     }
