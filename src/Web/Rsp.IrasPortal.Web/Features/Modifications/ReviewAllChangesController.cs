@@ -209,7 +209,12 @@ public class ReviewAllChangesController
         {
             TempData.Clear();
             TempData[TempDataKeys.ChangeSuccess] = true;
-            return RedirectToAction("Index", "MyTasklist");
+            if (User.IsInRole(Roles.StudyWideReviewer))
+            {
+                return RedirectToAction("Index", "MyTasklist");
+            }
+
+            return RedirectToAction("Index", "ModificationsTasklist");
         }
 
         if (model.ReviewOutcome == ModificationStatus.NotApproved)
@@ -266,7 +271,12 @@ public class ReviewAllChangesController
         {
             TempData.Clear();
             TempData[TempDataKeys.ChangeSuccess] = true;
-            return RedirectToAction("Index", "MyTasklist");
+            if (User.IsInRole(Roles.StudyWideReviewer))
+            {
+                return RedirectToAction("Index", "MyTasklist");
+            }
+
+            return RedirectToAction("Index", "ModificationsTasklist");
         }
 
         return RedirectToAction(nameof(ConfirmReviewOutcome));
