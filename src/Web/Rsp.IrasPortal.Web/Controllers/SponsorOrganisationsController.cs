@@ -393,7 +393,7 @@ public class SponsorOrganisationsController(
 
         if (model.Role is null)
         {
-            ModelState.AddModelError(string.Empty, "You must select a role before continuing.");
+            ModelState.AddModelError(string.Empty, "You must select a user role before continuing.");
             return View(nameof(AddUserRole), storedModel);
         }
 

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Security.Claims;
 using System.Text.Json;
 using FluentValidation;
@@ -826,6 +827,20 @@ public class MyOrganisationsController(
         if (sponsorOrganisationDto is null || rtsResponse.Content is null)
         {
             return new SponsorOrgContextResult(null, NotFound());
+        }
+
+        if (rtsResponse.IsSuccessStatusCode)
+        {
+            var parsedDate = DateTime.TryParse(
+                rtsResponse.Content?.LastUpdated,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out var date)
+                ? date
+                : DateTime.MinValue;
+
+            sponsorOrganisationDto.UpdatedDate = parsedDate;
+            sponsorOrganisationDto.CreatedDate = parsedDate;
         }
 
         var email =
