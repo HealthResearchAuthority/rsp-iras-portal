@@ -34,7 +34,18 @@ public interface IProjectClosuresService : IInterceptable
     /// </summary>
     /// <param name="projectClosureRequest"></param>
     /// <returns>Returns the newly inserted project closure record</returns>
-    public Task<ServiceResponse<ProjectClosuresResponse>> CreateProjectClosure(ProjectClosureRequest projectClosureRequest);
+    public Task<ServiceResponse<ProjectClosuresResponse>> CreateProjectClosure(ProjectClosureRequest projectClosureRequest);   
+
+    /// <summary>
+    /// Updates the status of an existing project closure by its project unique identifier.
+    /// </summary>
+    /// <param name="projectRecordId">The unique identifier of the project record to which the project closure belongs.</param>
+    /// <returns>
+    /// A task representing the asynchronous operation, containing a <see cref="ServiceResponse"/>
+    /// that reflects the success or failure of the update operation.
+    /// </returns>
+    public Task<ServiceResponse> UpdateProjectClosureStatus(string projectRecordId, string status);
+    
 
     /// <summary>
     /// Gets a project closure records from project closure table based on projectRecordId

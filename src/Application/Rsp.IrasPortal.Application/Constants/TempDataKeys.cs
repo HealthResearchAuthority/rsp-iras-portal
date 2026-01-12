@@ -74,5 +74,6 @@ public struct TempDataKeys
     public const string ActiveSponsoOrganisationFilterName = "td:active_sponsor_org_filter";
     public const string ChangeSuccess = "td:change_success";
     public const string ShowCloseProjectBanner = "td:show_close_project_banner";
+    public const string PreAuthProjectClosureModel = "td:pre_auth_project_closure_model";
     public const string SponsorOrganisationUser = "td:sponsor_organisation_user";
 }
