@@ -282,4 +282,11 @@ public interface IProjectModificationsServiceClient
     /// <param name="modificationId">The request object containing the updated details for the modification change.</param>
     [Get("/documents/access/{modificationId}")]
     Task<IApiResponse> CheckDocumentAccess(Guid modificationId);
+
+    /// <summary>
+    /// Updates an existing project modification change.
+    /// </summary>
+    /// <param name="documentsAuditTrailRequest">The request object containing the updated details for the modification change.</param>
+    [Post("/documents/createdocumentsaudittrail")]
+    Task<IApiResponse> CreateModificationDocumentsAuditTrail([Body] List<ModificationDocumentsAuditTrailDto> documentsAuditTrailRequest);
 }

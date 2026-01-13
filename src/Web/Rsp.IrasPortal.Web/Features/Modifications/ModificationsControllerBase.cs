@@ -292,7 +292,7 @@ public abstract class ModificationsControllerBase
         if (response?.StatusCode != HttpStatusCode.OK || response.Content == null)
             return [];
 
-        // Evaluate each document�s completeness
+        // Evaluate each document's completeness
         var tasks = response.Content
             .OrderBy(a => a.FileName, StringComparer.OrdinalIgnoreCase)
             .Select(a => GetDocumentSummary(a, questionnaire));
@@ -363,7 +363,7 @@ public abstract class ModificationsControllerBase
     /// <summary>
     /// Evaluates whether a single document�s answers are complete.
     /// </summary>
-    protected async Task<bool> EvaluateDocumentCompletion(Guid documentId, QuestionnaireViewModel questionnaire)
+    protected virtual async Task<bool> EvaluateDocumentCompletion(Guid documentId, QuestionnaireViewModel questionnaire)
     {
         // Fetch document answers
         var answersResponse = await respondentService.GetModificationDocumentAnswers(documentId);

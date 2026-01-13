@@ -274,4 +274,10 @@ public interface IProjectModificationsService : IInterceptable
     /// </summary>
     /// <param name="modificationId">The request object containing the updated details for the modification change.</param>
     public Task<ServiceResponse> CheckDocumentAccess(Guid modificationId);
+
+    /// <summary>
+    /// Saves review responses for a project modification.
+    /// </summary>
+    /// <param name="documentsAuditTrailRequest">The request object containing the review values</param>
+    public Task<ServiceResponse> CreateModificationDocumentsAuditTrail(List<ModificationDocumentsAuditTrailDto> documentsAuditTrailRequest);
 }
