@@ -618,55 +618,62 @@ public class SponsorOrganisationsController(
     {
         var list = users as IList<UserViewModel> ?? users.ToList();
 
-        // Lookup: UserId -> IsActive (safe if null)
-        var statusByUserId = sponsorOrganisationUserDtos?
-                                 .GroupBy(x => x.UserId)
-                                 .ToDictionary(g => g.Key, g => g.Last().IsActive)
-                             ?? new Dictionary<Guid, bool>();
-
-        // Update Status on the models (optional but requested)
-        foreach (var u in list)
-        {
-            if (Guid.TryParse(u.Id?.Trim(), out var gid) && statusByUserId.TryGetValue(gid, out var active))
-            {
-                u.Status = active ? "Active" : "Disabled";
-            }
-        }
+        // Build one lookup: UserId -> latest DTO for that user
+        var latestByUserId =
+            sponsorOrganisationUserDtos?
+                .GroupBy(x => x.UserId)
+                .ToDictionary(g => g.Key, g => g.Last())
+            ?? new Dictionary<Guid, SponsorOrganisationUserDto>();
 
         // Helpers
         var desc = string.Equals(sortDirection, "desc", StringComparison.OrdinalIgnoreCase);
-        var field = sortField?.ToLowerInvariant() ?? string.Empty;
+        var field = sortField?.Trim().ToLowerInvariant() ?? string.Empty;
 
         IOrderedEnumerable<UserViewModel> ordered;
 
         // -------------------------
-        // 1. SORT BY STATUS ONLY IF REQUESTED -------------------------
+        // 1. PRIMARY BUBBLING SORTS (only when requested) -------------------------
         if (field == "status")
         {
             // ASC: Active first, then Disabled
             // DESC: Disabled first, then Active
             ordered = desc
-                ? list.OrderBy(IsActive)               // desc => Disabled first
+                ? list.OrderBy(IsActive)               // desc => Disabled first (false then true)
                 : list.OrderByDescending(IsActive);    // asc  => Active first
+        }
+        else if (field == "isauthoriser")
+        {
+            // ASC: No first, then Yes
+            // DESC: Yes first, then No
+            ordered = desc
+                ? list.OrderByDescending(IsAuthoriser)
+                : list.OrderBy(IsAuthoriser);
         }
         else
         {
-            // No default bubbling by status → simply order by selected field
-            ordered = list.OrderBy(_ => 0); // identity ordering
+            // No default bubbling by status/authoriser → simply keep identity ordering
+            ordered = list.OrderBy(_ => 0);
         }
 
-        // Secondary: selected field (text fields share the same path)
+        // -------------------------
+        // 2. SECONDARY: selected field (including sponsorrole) -------------------------
         if (field == "currentlogin")
         {
             ordered = desc ? ordered.ThenByDescending(LatestLogin) : ordered.ThenBy(LatestLogin);
         }
-        else if (field != "status")
+        else if (field == "sponsorrole")
+        {
+            ordered = desc
+                ? ordered.ThenByDescending(SponsorRoleKey, StringComparer.OrdinalIgnoreCase)
+                : ordered.ThenBy(SponsorRoleKey, StringComparer.OrdinalIgnoreCase);
+        }
+        else if (field != "status" && field != "isauthoriser")
         {
             Func<UserViewModel, string> key = field switch
             {
                 "familyname" => x => x.FamilyName ?? string.Empty,
                 "email" => x => x.Email ?? string.Empty,
-                _ => x => x.GivenName ?? string.Empty // default
+                _ => x => x.GivenName ?? string.Empty
             };
 
             ordered = desc
@@ -674,7 +681,8 @@ public class SponsorOrganisationsController(
                 : ordered.ThenBy(key, StringComparer.OrdinalIgnoreCase);
         }
 
-        // Tertiary tie-break (unless already sorting by currentlogin)
+        // -------------------------
+        // 3. TERTIARY: tie-break -------------------------
         if (field != "currentlogin")
         {
             ordered = ordered.ThenByDescending(LatestLogin);
@@ -687,6 +695,7 @@ public class SponsorOrganisationsController(
         var skip = (pageNumber - 1) * pageSize;
         return ordered.Skip(skip).Take(pageSize);
 
+        // ------------------------- local helpers -------------------------
         static DateTime LatestLogin(UserViewModel x)
         {
             return ((x.CurrentLogin ?? DateTime.MinValue) > (x.LastLogin ?? DateTime.MinValue)
@@ -694,9 +703,26 @@ public class SponsorOrganisationsController(
                 : x.LastLogin) ?? DateTime.MinValue;
         }
 
-        bool IsActive(UserViewModel u)
+        bool TryGetLatestDto(UserViewModel u, out SponsorOrganisationUserDto dto)
         {
-            return Guid.TryParse(u.Id?.Trim(), out var g) && statusByUserId.TryGetValue(g, out var a) && a;
+            dto = default!;
+            return Guid.TryParse(u.Id?.Trim(), out var g) && latestByUserId.TryGetValue(g, out dto);
+        }
+
+        bool IsActive(UserViewModel u) =>
+            TryGetLatestDto(u, out var dto) && dto.IsActive;
+
+        bool IsAuthoriser(UserViewModel u) =>
+            TryGetLatestDto(u, out var dto) && dto.IsAuthoriser;
+
+        string SponsorRoleKey(UserViewModel u)
+        {
+            if (!TryGetLatestDto(u, out var dto))
+                return string.Empty;
+
+            // If SponsorRole is an enum, this will call .ToString() automatically. If it's already
+            // a string, it stays a string.
+            return dto.SponsorRole?.ToString() ?? string.Empty;
         }
     }
 
