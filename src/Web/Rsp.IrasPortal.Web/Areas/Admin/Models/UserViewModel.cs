@@ -61,6 +61,11 @@ public class UserViewModel
     public DateTime? LastLogin { get; set; } = null;
     public DateTime? CurrentLogin { get; set; } = null;
 
+    // USE FOR SORTING ON SPONSOR ORG USERS
+    public string IsAuthoriser { get; set; }
+
+    public string SponsorRole { get; set; }
+
     public UserViewModel()
     { }
 
