@@ -104,7 +104,8 @@ public interface IApplicationsService : IInterceptable
     /// <summary>
     /// Update project record status to pending closure
     /// </summary>
-    /// <param name="irasApplication"></param>
+    /// <param name="projectRecordId"></param>
+    /// <param name="status"></param>
     /// <returns></returns>
-    public Task<ServiceResponse> UpdateProjectRecordStatus(IrasApplicationRequest irasApplication);
+    public Task<ServiceResponse> UpdateProjectRecordStatus(string projectRecordId, string status);
 }

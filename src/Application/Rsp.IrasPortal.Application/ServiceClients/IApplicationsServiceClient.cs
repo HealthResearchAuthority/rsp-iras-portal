@@ -110,5 +110,5 @@ public interface IApplicationsServiceClient
     /// </summary>
     /// <returns>An asynchronous operation that updates the existing application.</returns>
     [Put("/applications/updateprojectrecordstatus")]
-    public Task<IApiResponse> UpdateProjectRecordStatus(IrasApplicationRequest irasApplication);
+    public Task<IApiResponse> UpdateProjectRecordStatus(string projectRecordId, string status);
 }

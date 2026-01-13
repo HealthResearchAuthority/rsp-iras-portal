@@ -133,7 +133,7 @@ public class ProjectClosureTests : TestServiceBase<ApplicationController>
 
         // No service calls in validation failure branch
         _projectClosuresService.Verify(s => s.CreateProjectClosure(It.IsAny<ProjectClosureRequest>()), Times.Never);
-        _applicationsService.Verify(s => s.UpdateProjectRecordStatus(It.IsAny<IrasApplicationRequest>()), Times.Never);
+        _applicationsService.Verify(s => s.UpdateProjectRecordStatus(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
     }
 
     [Fact]
@@ -182,7 +182,7 @@ public class ProjectClosureTests : TestServiceBase<ApplicationController>
 
         // Update status fails
         Mocker.GetMock<IApplicationsService>()
-            .Setup(s => s.UpdateProjectRecordStatus(It.IsAny<IrasApplicationRequest>()))
+            .Setup(s => s.UpdateProjectRecordStatus(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse
             {
                 StatusCode = HttpStatusCode.BadGateway,
@@ -193,7 +193,7 @@ public class ProjectClosureTests : TestServiceBase<ApplicationController>
         _ = await Sut.ConfirmProjectClosure(model, plannedEndDate);
         //Assert
         Mocker.GetMock<IProjectClosuresService>().Verify(s => s.CreateProjectClosure(It.IsAny<ProjectClosureRequest>()), Times.Once);
-        Mocker.GetMock<IApplicationsService>().Verify(s => s.UpdateProjectRecordStatus(It.IsAny<IrasApplicationRequest>()), Times.Once);
+        Mocker.GetMock<IApplicationsService>().Verify(s => s.UpdateProjectRecordStatus(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
     }
 
     [Theory]
@@ -220,7 +220,7 @@ public class ProjectClosureTests : TestServiceBase<ApplicationController>
 
         // Update status fails
         Mocker.GetMock<IApplicationsService>()
-            .Setup(s => s.UpdateProjectRecordStatus(It.IsAny<IrasApplicationRequest>()))
+            .Setup(s => s.UpdateProjectRecordStatus(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse
             {
                 StatusCode = HttpStatusCode.OK,
@@ -233,7 +233,7 @@ public class ProjectClosureTests : TestServiceBase<ApplicationController>
         view.ViewName.ShouldBe("/Features/ProjectOverview/Views/ConfirmProjectClosure.cshtml");
 
         Mocker.GetMock<IProjectClosuresService>().Verify(s => s.CreateProjectClosure(It.IsAny<ProjectClosureRequest>()), Times.Once);
-        Mocker.GetMock<IApplicationsService>().Verify(s => s.UpdateProjectRecordStatus(It.IsAny<IrasApplicationRequest>()), Times.Once);
+        Mocker.GetMock<IApplicationsService>().Verify(s => s.UpdateProjectRecordStatus(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
     }
 
     [Theory]
