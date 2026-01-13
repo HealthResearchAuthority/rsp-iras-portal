@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Rsp.IrasPortal.Application.Constants;
+using Rsp.Portal.Application.Constants;
 
-namespace Rsp.IrasPortal.Application.Middleware;
+namespace Rsp.Portal.Application.Middleware;
 
 public class CompleteProfileMiddleware(RequestDelegate next)
 {

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Rsp.IrasPortal.Web.ActionFilters;
+namespace Rsp.Portal.Web.ActionFilters;
 
 public sealed class AdvancedFiltersSessionFilter : IActionFilter
 {

@@ -1,6 +1,6 @@
-using Rsp.IrasPortal.Application.DTOs.Responses;
+using Rsp.Portal.Application.DTOs.Responses;
 
-namespace Rsp.IrasPortal.Application.Services;
+namespace Rsp.Portal.Application.Services;
 
 public interface IModificationRankingService
 {

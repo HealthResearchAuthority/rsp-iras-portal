@@ -1,17 +1,17 @@
 ﻿using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Web.Areas.Admin.Models;
-using Rsp.IrasPortal.Web.Controllers;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Web.Areas.Admin.Models;
+using Rsp.Portal.Web.Controllers;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ReviewBodyControllerTests;
+namespace Rsp.Portal.UnitTests.Web.Controllers.ReviewBodyControllerTests;
 
 public class IndexTests : TestServiceBase<ReviewBodyController>
 {

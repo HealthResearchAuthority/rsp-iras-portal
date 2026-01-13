@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
-namespace Rsp.IrasPortal.Web.Extensions;
+namespace Rsp.Portal.Web.Extensions;
 
 /// <summary>
 /// Extension methods for ModelStateDictionary to support conversion to dictionary and restoration from TempData.

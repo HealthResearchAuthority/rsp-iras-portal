@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
-using Rsp.IrasPortal.Web.ActionFilters;
+using Rsp.Portal.Web.ActionFilters;
 
-namespace Rsp.IrasPortal.UnitTests.Web.AdvancedFilters;
+namespace Rsp.Portal.UnitTests.Web.AdvancedFilters;
 
 public class AdvancedFiltersSessionFilterTests
 {

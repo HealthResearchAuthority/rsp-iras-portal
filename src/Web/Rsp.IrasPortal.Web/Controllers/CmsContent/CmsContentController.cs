@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.Services;
+using Rsp.Portal.Application.Services;
 
-namespace Rsp.IrasPortal.Web.Controllers.CmsContent;
+namespace Rsp.Portal.Web.Controllers.CmsContent;
 
 public class CmsContentController(ICmsContentService cms) : Controller
 {

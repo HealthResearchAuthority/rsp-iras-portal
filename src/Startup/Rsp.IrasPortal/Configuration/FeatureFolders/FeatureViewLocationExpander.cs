@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Razor;
 
-namespace Rsp.IrasPortal.Configuration.FeatureFolders;
+namespace Rsp.Portal.Configuration.FeatureFolders;
 
 /// <summary>
 /// If feature path has at least 2 segments (root + parent):

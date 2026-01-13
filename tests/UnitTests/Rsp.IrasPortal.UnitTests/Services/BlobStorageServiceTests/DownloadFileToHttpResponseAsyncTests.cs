@@ -3,10 +3,10 @@ using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Services;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Services;
 
-namespace Rsp.IrasPortal.UnitTests.Services.BlobStorageServiceTests;
+namespace Rsp.Portal.UnitTests.Services.BlobStorageServiceTests;
 
 public class DownloadFileToHttpResponseAsyncTests
 {

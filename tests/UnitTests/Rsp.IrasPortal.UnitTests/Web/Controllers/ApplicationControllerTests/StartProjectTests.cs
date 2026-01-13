@@ -3,17 +3,17 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.CmsQuestionset; // added for SectionModel
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.Services; // removed ServiceClients usage
-using Rsp.IrasPortal.Web.Controllers;
-using Rsp.IrasPortal.Web.Features.ProjectRecord.Controllers;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.CmsQuestionset; // added for SectionModel
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services; // removed ServiceClients usage
+using Rsp.Portal.Web.Controllers;
+using Rsp.Portal.Web.Features.ProjectRecord.Controllers;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApplicationControllerTests;
+namespace Rsp.Portal.UnitTests.Web.Controllers.ApplicationControllerTests;
 
 public class StartProjectTests : TestServiceBase<ApplicationController>
 {

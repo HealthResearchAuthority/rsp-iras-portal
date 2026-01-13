@@ -2,13 +2,13 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Domain.AccessControl;
-using Rsp.IrasPortal.Web.Extensions;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.AccessControl;
+using Rsp.Portal.Web.Extensions;
 
-namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace.Controllers;
+namespace Rsp.Portal.Web.Features.SponsorWorkspace.Controllers;
 
 /// <summary>
 /// Controller responsible for handling sponsor workspace related actions.

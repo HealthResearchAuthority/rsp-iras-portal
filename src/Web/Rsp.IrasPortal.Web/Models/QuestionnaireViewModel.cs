@@ -1,9 +1,9 @@
-﻿using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
-using Rsp.IrasPortal.Web.Helpers;
+﻿using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses.CmsContent;
+using Rsp.Portal.Web.Helpers;
 
-namespace Rsp.IrasPortal.Web.Models;
+namespace Rsp.Portal.Web.Models;
 
 /// <summary>
 /// ViewModel representing a questionnaire, including its questions and related state.

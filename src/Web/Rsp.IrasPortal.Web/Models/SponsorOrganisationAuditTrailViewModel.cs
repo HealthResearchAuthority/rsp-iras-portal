@@ -1,7 +1,7 @@
-﻿using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Web.Areas.Admin.Models;
+﻿using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Web.Areas.Admin.Models;
 
-namespace Rsp.IrasPortal.Web.Models;
+namespace Rsp.Portal.Web.Models;
 
 public class SponsorOrganisationAuditTrailViewModel
 {

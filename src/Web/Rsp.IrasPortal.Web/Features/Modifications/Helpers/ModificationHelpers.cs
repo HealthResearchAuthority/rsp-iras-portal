@@ -1,8 +1,8 @@
-﻿using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Web.Features.Modifications.Models;
-using Rsp.IrasPortal.Web.Models;
+﻿using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Web.Features.Modifications.Models;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.Web.Features.Modifications.Helpers;
+namespace Rsp.Portal.Web.Features.Modifications.Helpers;
 
 public static class ModificationHelpers
 {

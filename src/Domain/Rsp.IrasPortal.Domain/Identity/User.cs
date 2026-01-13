@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Domain.Identity;
+﻿namespace Rsp.Portal.Domain.Identity;
 
 public record User(string? Id,
     string? IdentityProviderId,

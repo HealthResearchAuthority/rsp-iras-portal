@@ -1,8 +1,8 @@
-﻿using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
-using Rsp.IrasPortal.Application.ServiceClients;
-using Rsp.IrasPortal.Services;
+﻿using Rsp.Portal.Application.DTOs.CmsQuestionset;
+using Rsp.Portal.Application.ServiceClients;
+using Rsp.Portal.Services;
 
-namespace Rsp.IrasPortal.UnitTests.Services.CmsQuestionsetServiceTests;
+namespace Rsp.Portal.UnitTests.Services.CmsQuestionsetServiceTests;
 
 public class GetModificationsJourneyTests : TestServiceBase<CmsQuestionsetService>
 {

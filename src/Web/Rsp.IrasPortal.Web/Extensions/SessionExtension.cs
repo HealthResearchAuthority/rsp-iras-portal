@@ -1,6 +1,6 @@
-﻿using Rsp.IrasPortal.Application.Constants;
+﻿using Rsp.Portal.Application.Constants;
 
-namespace Rsp.IrasPortal.Web.Extensions;
+namespace Rsp.Portal.Web.Extensions;
 
 /// <summary>
 /// Provides extension methods for ISession to manage session values.

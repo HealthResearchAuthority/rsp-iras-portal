@@ -3,21 +3,21 @@ using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.Enum;
-using Rsp.IrasPortal.Application.Extensions;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Domain.AccessControl;
-using Rsp.IrasPortal.Web.Areas.Admin.Models;
-using Rsp.IrasPortal.Web.Extensions;
-using Rsp.IrasPortal.Web.Features.Modifications;
-using Rsp.IrasPortal.Web.Helpers;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.Enum;
+using Rsp.Portal.Application.Extensions;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.AccessControl;
+using Rsp.Portal.Web.Areas.Admin.Models;
+using Rsp.Portal.Web.Extensions;
+using Rsp.Portal.Web.Features.Modifications;
+using Rsp.Portal.Web.Helpers;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.Web.Controllers.ProjectOverview;
+namespace Rsp.Portal.Web.Controllers.ProjectOverview;
 
 [Authorize(Policy = Workspaces.MyResearch)]
 [Route("[controller]/[action]", Name = "pov:[action]")]

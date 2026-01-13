@@ -1,9 +1,9 @@
-﻿using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.ServiceClients;
-using Rsp.IrasPortal.Services;
+﻿using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.ServiceClients;
+using Rsp.Portal.Services;
 
-namespace Rsp.IrasPortal.UnitTests.Services.ReviewBodyServiceTests;
+namespace Rsp.Portal.UnitTests.Services.ReviewBodyServiceTests;
 
 public class AddReviewBodyUserTests : TestServiceBase<ReviewBodyService>
 {

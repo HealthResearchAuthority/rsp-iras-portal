@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
-using Rsp.IrasPortal.Application.Constants;
+using Rsp.Portal.Application.Constants;
 
-namespace Rsp.IrasPortal.Infrastructure.HttpMessageHandlers;
+namespace Rsp.Portal.Infrastructure.HttpMessageHandlers;
 
 /// <summary>
 /// Delegating handler to add authorization header, before calling external api

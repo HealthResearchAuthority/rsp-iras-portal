@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Rsp.IrasPortal.Web.Areas.Admin.Models;
+namespace Rsp.Portal.Web.Areas.Admin.Models;
 
 public class RoleViewModel
 {

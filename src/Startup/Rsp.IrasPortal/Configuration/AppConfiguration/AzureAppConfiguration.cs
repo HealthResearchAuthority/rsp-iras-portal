@@ -1,8 +1,8 @@
 ﻿using Azure.Identity;
 using Microsoft.Extensions.Configuration.AzureAppConfiguration;
-using Rsp.IrasPortal.Application.Configuration;
+using Rsp.Portal.Application.Configuration;
 
-namespace Rsp.IrasPortal.Configuration.AppConfiguration;
+namespace Rsp.Portal.Configuration.AppConfiguration;
 
 public static class AzureAppConfiguration
 {

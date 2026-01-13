@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Web.Controllers;
+using Rsp.Portal.Web.Controllers;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Controllers.SystemAdminControllerTests;
+namespace Rsp.Portal.UnitTests.Web.Controllers.SystemAdminControllerTests;
 
 public class SystemAdminTests : TestServiceBase<SystemAdminController>
 

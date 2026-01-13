@@ -1,7 +1,7 @@
 ﻿@using Mapster;
-@using Rsp.IrasPortal.Domain.AccessControl
-@using Rsp.IrasPortal.Web.Extensions
-@using Rsp.IrasPortal.Application.Constants
+@using Rsp.Portal.Domain.AccessControl
+@using Rsp.Portal.Web.Extensions
+@using Rsp.Portal.Application.Constants
 @model dynamic
 
 @{
@@ -49,11 +49,11 @@
 
     <authorized permission="@Permissions.MyResearch.Modifications_Review"
                 status-for="@modificationBaseModel.Status"
-                status-in="@([ ModificationStatus.WithSponsor,
+                status-in="@(new []{ ModificationStatus.WithSponsor,
                                ModificationStatus.WithReviewBody,
                                ModificationStatus.Approved,
                                ModificationStatus.NotApproved,
-                               ModificationStatus.NotAuthorised])"
+                               ModificationStatus.NotAuthorised})"
                 status-mode="Show">
                 @if (modificationBaseModel.Status is not null)
                 {

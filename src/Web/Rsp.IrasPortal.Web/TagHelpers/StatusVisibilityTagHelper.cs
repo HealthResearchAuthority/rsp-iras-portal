@@ -1,14 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 
-namespace Rsp.IrasPortal.Web.TagHelpers;
+namespace Rsp.Portal.Web.TagHelpers;
 
-/// <summary>
-/// Tag helper that conditionally renders (or hides) content based on a record's status.
+/// <summary> Tag helper that conditionally renders (or hides) content based on a record's status.
 /// Usage examples:
 /// - <div status-for="Model.Status" status-is="Approved">...</div>
-/// - <div status-for="Model.Status" status-in="new List<string>{ "A", "B" }" status-mode="Hide">...</div>
-/// </summary>
+/// - <div status-for="Model.Status" status-in="new List<string>{ "A", "B" }" status-mode="Hide">...</div> </summary>
 [HtmlTargetElement("*", Attributes = StatusForAttribute)]
 [HtmlTargetElement("status-when", Attributes = StatusForAttribute)]
 public class StatusVisibilityTagHelper : TagHelper
@@ -32,37 +30,35 @@ public class StatusVisibilityTagHelper : TagHelper
     public override int Order => 1;
 
     /// <summary>
-    /// Model expression pointing to the status value to evaluate (e.g. Model.Status).
-    /// Required for the helper to function.
+    /// Model expression pointing to the status value to evaluate (e.g. Model.Status). Required for
+    /// the helper to function.
     /// </summary>
     [HtmlAttributeName(StatusForAttribute)]
     public ModelExpression StatusFor { get; set; } = null!;
 
     /// <summary>
-    /// Single status to compare against (e.g. status-is="Approved").
-    /// Optional. Mutually exclusive with 'status-in' and 'status-list'.
+    /// Single status to compare against (e.g. status-is="Approved"). Optional. Mutually exclusive
+    /// with 'status-in' and 'status-list'.
     /// </summary>
     [HtmlAttributeName(SingleStatusAttribute)]
     public string? SingleStatus { get; set; }
 
     /// <summary>
-    /// A collection of statuses to compare against.
-    /// Optional. Mutually exclusive with 'status-is'.
+    /// A collection of statuses to compare against. Optional. Mutually exclusive with 'status-is'.
     /// </summary>
     [HtmlAttributeName(StatusInAttribute)]
     public IEnumerable<string>? StatusList { get; set; }
 
     /// <summary>
-    /// Controls whether matching statuses should be shown (Show) or hidden (Hide).
-    /// Default is Show.
+    /// Controls whether matching statuses should be shown (Show) or hidden (Hide). Default is Show.
     /// </summary>
     [HtmlAttributeName(ModeAttribute)]
     public StatusVisibilityMode Mode { get; set; } = StatusVisibilityMode.Show;
 
     /// <summary>
-    /// Main processing entry point for the TagHelper.
-    /// Aggregates provided statuses, determines if the current model status matches,
-    /// and conditionally suppresses the output according to the selected mode.
+    /// Main processing entry point for the TagHelper. Aggregates provided statuses, determines if
+    /// the current model status matches, and conditionally suppresses the output according to the
+    /// selected mode.
     /// </summary>
     /// <param name="context">Tag helper context (unused).</param>
     /// <param name="output">Tag helper output; may be suppressed to hide content.</param>
@@ -74,8 +70,8 @@ public class StatusVisibilityTagHelper : TagHelper
         // Safely read the current status from the bound ModelExpression; the Model may be null.
         var currentStatus = StatusFor?.Model?.ToString();
 
-        // If no status is available, we cannot make a meaningful comparison.
-        // Default to keeping the element visible (do not suppress output).
+        // If no status is available, we cannot make a meaningful comparison. Default to keeping the
+        // element visible (do not suppress output).
         if (currentStatus == null)
         {
             return Task.CompletedTask;
@@ -100,8 +96,8 @@ public class StatusVisibilityTagHelper : TagHelper
             }
         }
 
-        // Determine whether the current status exists in the aggregated set.
-        // Use the HashSet's comparer for case-insensitive matching.
+        // Determine whether the current status exists in the aggregated set. Use the HashSet's
+        // comparer for case-insensitive matching.
         bool isMatch = statuses.Contains(currentStatus);
 
         // Decide whether to suppress output based on the selected mode:
@@ -121,9 +117,9 @@ public class StatusVisibilityTagHelper : TagHelper
     }
 
     /// <summary>
-    /// Validates attribute combinations:
-    /// Exactly zero or one of 'status-is', 'status-in', or 'status-list' may be provided.
-    /// If more than one is present an InvalidOperationException is thrown to avoid ambiguity.
+    /// Validates attribute combinations: Exactly zero or one of 'status-is', 'status-in', or
+    /// 'status-list' may be provided. If more than one is present an InvalidOperationException is
+    /// thrown to avoid ambiguity.
     /// </summary>
     public void Validate()
     {

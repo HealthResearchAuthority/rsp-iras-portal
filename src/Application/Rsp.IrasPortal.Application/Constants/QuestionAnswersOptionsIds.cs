@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Application.Constants;
+﻿namespace Rsp.Portal.Application.Constants;
 
 /// <summary>
 /// QuestionAnswersOptionsIds contains constant string identifiers for specific questions answers options used throughout the application.

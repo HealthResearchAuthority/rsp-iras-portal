@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Application.DTOs;
+﻿namespace Rsp.Portal.Application.DTOs;
 
 /// <summary>
 /// Represents question sections response returned by the QuestionSet API

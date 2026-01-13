@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Rsp.Logging.Domain;
 using Rsp.Logging.Extensions;
 
-namespace Rsp.IrasPortal.Infrastructure.ExceptionHandlers;
+namespace Rsp.Portal.Infrastructure.ExceptionHandlers;
 
 /// <summary>
 /// Global exception handler registered in the ASP.NET Core pipeline.

@@ -1,9 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using FluentValidation;
 using FluentValidation.Results;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.Web.Validators;
+namespace Rsp.Portal.Web.Validators;
 
 [ExcludeFromCodeCoverage]
 public class QuestionSetValidator : AbstractValidator<QuestionnaireViewModel>

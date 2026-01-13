@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Web.Extensions;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Web.Extensions;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Extensions.TempDataExtensionsTests;
+namespace Rsp.Portal.UnitTests.Web.Extensions.TempDataExtensionsTests;
 
 public class PopulateBaseProjectModificationPropertiesTests : TestServiceBase
 {

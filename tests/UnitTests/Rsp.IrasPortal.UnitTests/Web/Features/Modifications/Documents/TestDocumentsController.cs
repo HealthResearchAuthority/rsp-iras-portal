@@ -1,11 +1,11 @@
 ﻿using Azure.Storage.Blobs;
 using FluentValidation;
 using Microsoft.Extensions.Azure;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Web.Features.Modifications.Documents.Controllers;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Web.Features.Modifications.Documents.Controllers;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.Documents;
+namespace Rsp.Portal.UnitTests.Web.Features.Modifications.Documents;
 
 public class TestDocumentsController : DocumentsController
 {

@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
+﻿namespace Rsp.Portal.Application.DTOs.Requests.UserManagement;
 
 public class UpdateUserRequest : CreateUserRequest
 {

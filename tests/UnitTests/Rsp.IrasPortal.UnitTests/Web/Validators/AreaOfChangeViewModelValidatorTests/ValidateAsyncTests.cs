@@ -1,9 +1,9 @@
 ﻿using FluentValidation.TestHelper;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Rsp.IrasPortal.Web.Models;
-using Rsp.IrasPortal.Web.Validators;
+using Rsp.Portal.Web.Models;
+using Rsp.Portal.Web.Validators;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Validators.AreaOfChangeViewModelValidatorTests;
+namespace Rsp.Portal.UnitTests.Web.Validators.AreaOfChangeViewModelValidatorTests;
 
 public class ValidateAsyncTests : TestServiceBase<AreaOfChangeViewModelValidator>
 {

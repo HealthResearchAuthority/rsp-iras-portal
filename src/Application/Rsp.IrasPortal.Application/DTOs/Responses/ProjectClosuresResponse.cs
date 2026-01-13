@@ -1,6 +1,6 @@
-﻿using Rsp.IrasPortal.Application.DTOs.Requests;
+﻿using Rsp.Portal.Application.DTOs.Requests;
 
-namespace Rsp.IrasPortal.Application.DTOs.Responses;
+namespace Rsp.Portal.Application.DTOs.Responses;
 
 public class ProjectClosuresResponse : ProjectClosureBase
 {

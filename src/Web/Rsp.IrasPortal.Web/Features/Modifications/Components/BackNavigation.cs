@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.Web.Features.Modifications.Components;
+namespace Rsp.Portal.Web.Features.Modifications.Components;
 
 public class BackNavigation(ICmsQuestionsetService cmsQuestionsetService) : ViewComponent
 {

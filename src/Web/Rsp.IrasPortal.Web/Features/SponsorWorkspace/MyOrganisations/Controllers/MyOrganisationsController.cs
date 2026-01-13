@@ -6,20 +6,20 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.Extensions;
-using Rsp.IrasPortal.Application.Filters;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Domain.AccessControl;
-using Rsp.IrasPortal.Web.Areas.Admin.Models;
-using Rsp.IrasPortal.Web.Extensions;
-using Rsp.IrasPortal.Web.Features.SponsorWorkspace.MyOrganisations.Models;
-using Rsp.IrasPortal.Web.Models;
-using static Rsp.IrasPortal.Web.Extensions.PaginationViewModelExtensions;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.Extensions;
+using Rsp.Portal.Application.Filters;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.AccessControl;
+using Rsp.Portal.Web.Areas.Admin.Models;
+using Rsp.Portal.Web.Extensions;
+using Rsp.Portal.Web.Features.SponsorWorkspace.MyOrganisations.Models;
+using Rsp.Portal.Web.Models;
+using static Rsp.Portal.Web.Extensions.PaginationViewModelExtensions;
 
-namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace.MyOrganisations.Controllers;
+namespace Rsp.Portal.Web.Features.SponsorWorkspace.MyOrganisations.Controllers;
 
 /// <summary>
 /// Controller responsible for handling sponsor workspace related actions.

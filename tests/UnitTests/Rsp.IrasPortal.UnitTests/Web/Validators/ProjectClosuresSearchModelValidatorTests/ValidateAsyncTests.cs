@@ -1,8 +1,8 @@
 ﻿using FluentValidation.TestHelper;
-using Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Models;
-using Rsp.IrasPortal.Web.Validators;
+using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models;
+using Rsp.Portal.Web.Validators;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Validators.ProjectClosuresSearchModelValidatorTests;
+namespace Rsp.Portal.UnitTests.Web.Validators.ProjectClosuresSearchModelValidatorTests;
 
 public class ValidateAsyncTests : TestServiceBase<ProjectClosuresSearchModelValidator>
 {

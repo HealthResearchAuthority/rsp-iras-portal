@@ -1,6 +1,6 @@
-﻿using Rsp.IrasPortal.Domain.Identity;
+﻿using Rsp.Portal.Domain.Identity;
 
-namespace Rsp.IrasPortal.Application.DTOs;
+namespace Rsp.Portal.Application.DTOs;
 
 public class UserResponse
 {

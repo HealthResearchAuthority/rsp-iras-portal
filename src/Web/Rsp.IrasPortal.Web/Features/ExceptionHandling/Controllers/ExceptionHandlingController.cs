@@ -2,10 +2,10 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
-using Rsp.IrasPortal.Application.Constants;
+using Rsp.Portal.Application.Constants;
 using Rsp.Logging.Extensions;
 
-namespace Rsp.IrasPortal.Web.Features.ExceptionHandling.Controllers;
+namespace Rsp.Portal.Web.Features.ExceptionHandling.Controllers;
 
 [AllowAnonymous]
 [Route("error")]

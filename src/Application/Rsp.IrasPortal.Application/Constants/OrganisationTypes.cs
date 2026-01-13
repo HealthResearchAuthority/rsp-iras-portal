@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rsp.IrasPortal.Application.Constants;
+namespace Rsp.Portal.Application.Constants;
 
 public static class OrganisationTypes
 {

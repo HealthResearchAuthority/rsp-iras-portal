@@ -1,11 +1,11 @@
 ﻿using Refit;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
-using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Domain.Identity;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Requests.UserManagement;
+using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Domain.Identity;
 
-namespace Rsp.IrasPortal.Application.ServiceClients;
+namespace Rsp.Portal.Application.ServiceClients;
 
 public interface IUserManagementServiceClient
 {

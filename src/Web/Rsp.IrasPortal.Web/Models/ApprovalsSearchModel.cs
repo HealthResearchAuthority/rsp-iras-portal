@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Web.Extensions;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Web.Extensions;
 
-namespace Rsp.IrasPortal.Web.Models;
+namespace Rsp.Portal.Web.Models;
 
 [ExcludeFromCodeCoverage]
 public class ApprovalsSearchModel

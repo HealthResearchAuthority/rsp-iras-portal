@@ -3,21 +3,21 @@ using FluentValidation;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.Filters;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Domain.AccessControl;
-using Rsp.IrasPortal.Web.Areas.Admin.Models;
-using Rsp.IrasPortal.Web.Extensions;
-using Rsp.IrasPortal.Web.Features.Modifications;
-using Rsp.IrasPortal.Web.Features.Modifications.Models;
-using Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Models;
-using Rsp.IrasPortal.Web.Helpers;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.Filters;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.AccessControl;
+using Rsp.Portal.Web.Areas.Admin.Models;
+using Rsp.Portal.Web.Extensions;
+using Rsp.Portal.Web.Features.Modifications;
+using Rsp.Portal.Web.Features.Modifications.Models;
+using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models;
+using Rsp.Portal.Web.Helpers;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Controllers;
+namespace Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Controllers;
 
 /// <summary>
 ///     Controller responsible for handling sponsor workspace related actions.

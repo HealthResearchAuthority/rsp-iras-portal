@@ -5,12 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Web.Controllers;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Web.Controllers;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Controllers.SponsorOrganisationsControllerTests;
+namespace Rsp.Portal.UnitTests.Web.Controllers.SponsorOrganisationsControllerTests;
 
 public class SetupSponsorOrganisationTests : TestServiceBase<SponsorOrganisationsController>
 {

@@ -1,6 +1,6 @@
-﻿using Rsp.IrasPortal.Application.DTOs.Responses;
+﻿using Rsp.Portal.Application.DTOs.Responses;
 
-namespace Rsp.IrasPortal.Web.Models;
+namespace Rsp.Portal.Web.Models;
 
 /// <summary>
 /// Represents an overview of a project, including its title, category, and record identifier.

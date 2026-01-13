@@ -3,11 +3,11 @@ using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Web.Controllers;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Web.Controllers;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Controllers.MyTasklistControllerTests;
+namespace Rsp.Portal.UnitTests.Web.Controllers.MyTasklistControllerTests;
 
 public class RemoveFiltersTests : TestServiceBase<MyTasklistController>
 {

@@ -1,8 +1,8 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
+using Rsp.Portal.Application.DTOs.Responses.CmsContent;
 
-namespace Rsp.IrasPortal.Application.JsonConverters;
+namespace Rsp.Portal.Application.JsonConverters;
 
 public class ComponentContentConverter : JsonConverter<ComponentContent>
 {

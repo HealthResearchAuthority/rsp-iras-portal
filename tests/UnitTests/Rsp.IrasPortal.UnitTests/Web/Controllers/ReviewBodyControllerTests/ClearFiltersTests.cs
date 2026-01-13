@@ -1,11 +1,11 @@
 ﻿using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Web.Controllers;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Web.Controllers;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ReviewBodyControllerTests;
+namespace Rsp.Portal.UnitTests.Web.Controllers.ReviewBodyControllerTests;
 
 public class ClearFiltersTests : TestServiceBase<ReviewBodyController>
 {

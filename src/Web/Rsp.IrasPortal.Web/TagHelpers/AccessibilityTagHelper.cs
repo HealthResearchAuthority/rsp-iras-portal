@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 
-namespace Rsp.IrasPortal.Web.TagHelpers;
+namespace Rsp.Portal.Web.TagHelpers;
 
 /// <summary>
 /// A TagHelper that automatically generates `aria-describedby` and `id` attributes for accessibility purposes,

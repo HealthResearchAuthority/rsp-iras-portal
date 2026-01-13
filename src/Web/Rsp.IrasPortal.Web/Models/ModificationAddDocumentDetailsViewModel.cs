@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Web.Models;
+﻿namespace Rsp.Portal.Web.Models;
 
 /// <summary>
 /// ViewModel for capturing details of a document being added during a modification process.

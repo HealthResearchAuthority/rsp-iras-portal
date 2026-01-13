@@ -1,9 +1,9 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.Middleware;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.Middleware;
 
-namespace Rsp.IrasPortal.UnitTests.Middleware;
+namespace Rsp.Portal.UnitTests.Middleware;
 
 public class CompleteProfileMiddlewareTests : TestServiceBase<CompleteProfileMiddleware>
 {

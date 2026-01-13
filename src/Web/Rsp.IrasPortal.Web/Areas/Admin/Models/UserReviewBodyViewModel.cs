@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Web.Extensions;
+using Rsp.Portal.Web.Extensions;
 
-namespace Rsp.IrasPortal.Web.Areas.Admin.Models;
+namespace Rsp.Portal.Web.Areas.Admin.Models;
 
 public class UserReviewBodyViewModel 
 {

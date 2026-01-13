@@ -1,15 +1,15 @@
 ﻿using Mapster;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
-using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.ServiceClients;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Domain.Identity;
-using Rsp.IrasPortal.Services.Extensions;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Requests.UserManagement;
+using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.ServiceClients;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.Identity;
+using Rsp.Portal.Services.Extensions;
 
-namespace Rsp.IrasPortal.Services;
+namespace Rsp.Portal.Services;
 
 public class UserManagementService(IUserManagementServiceClient client) : IUserManagementService
 {

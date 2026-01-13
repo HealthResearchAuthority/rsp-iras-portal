@@ -1,8 +1,8 @@
 ﻿using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.Constants;
+using Rsp.Portal.Application.Constants;
 
-namespace Rsp.IrasPortal.Web.Controllers;
+namespace Rsp.Portal.Web.Controllers;
 
 // Route attribute sets the base route for all actions in this controller
 [Route("/", Name = "acc:[action]")]

@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 
-namespace Rsp.IrasPortal.Web.Models;
+namespace Rsp.Portal.Web.Models;
 
 /// <summary>
 /// ViewModel for representing a date using separate day, month, and year string properties.

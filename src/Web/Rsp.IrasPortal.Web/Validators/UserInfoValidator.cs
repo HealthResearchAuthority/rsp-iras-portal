@@ -1,8 +1,8 @@
 ﻿using FluentValidation;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Web.Areas.Admin.Models;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Web.Areas.Admin.Models;
 
-namespace Rsp.IrasPortal.Web.Validators;
+namespace Rsp.Portal.Web.Validators;
 
 public class UserInfoValidator : AbstractValidator<UserViewModel>
 {

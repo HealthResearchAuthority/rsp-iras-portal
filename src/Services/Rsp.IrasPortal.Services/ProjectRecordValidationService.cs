@@ -1,10 +1,10 @@
-﻿using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.ServiceClients;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Services.Extensions;
+﻿using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.ServiceClients;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Services.Extensions;
 
-namespace Rsp.IrasPortal.Services;
+namespace Rsp.Portal.Services;
 
 public class ProjectRecordValidationService(IProjectRecordValidationClient projectRecordValidationClient) : IProjectRecordValidationService
 {

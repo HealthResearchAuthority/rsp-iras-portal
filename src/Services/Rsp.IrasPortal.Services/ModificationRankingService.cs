@@ -1,11 +1,11 @@
 using Mapster;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Application.Services;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs.CmsQuestionset;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Services;
 
-namespace Rsp.IrasPortal.Services;
+namespace Rsp.Portal.Services;
 
 /// <summary>
 /// Computes and persists modification change ranking and overall modification ranking,
