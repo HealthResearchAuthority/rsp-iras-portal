@@ -345,7 +345,7 @@ public class ApplicationController
         var projectRecord = await applicationsService.GetProjectRecord(model.ProjectRecordId);
         if (!projectRecord.IsSuccessStatusCode)
         {
-            return this.ServiceError(closeProjectResponse);
+            return this.ServiceError(projectRecord);
         }
         // update the project record status in project record table
         var updateApplicationResponse = await applicationsService.UpdateProjectRecordStatus
