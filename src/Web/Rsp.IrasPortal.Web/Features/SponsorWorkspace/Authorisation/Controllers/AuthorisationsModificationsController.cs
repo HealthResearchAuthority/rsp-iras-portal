@@ -36,7 +36,7 @@ public class AuthorisationsModificationsController
     private const string SponsorDetailsSectionId = "pm-sponsor-reference";
     private readonly IRespondentService _respondentService = respondentService;
 
-    [Authorize(Policy = Permissions.Sponsor.Modifications_Search)]
+    [Authorize(Policy = Permissions.Sponsor.ProjectClosures_Search)]
     [HttpGet]
     public async Task<IActionResult> Modifications
     (

@@ -27,6 +27,15 @@ public static class RoleStatusPermissions
                 Roles.Sponsor, new List<string>
                 {
                     ProjectRecordStatus.Active,
+                    ProjectRecordStatus.PendingClosure,
+                    ProjectRecordStatus.Closed
+                }
+            },
+            {
+                Roles.OrganisationAdministrator, new List<string>
+                {
+                    ProjectRecordStatus.Active,
+                    ProjectRecordStatus.PendingClosure,
                     ProjectRecordStatus.Closed
                 }
             },
@@ -92,6 +101,16 @@ public static class RoleStatusPermissions
             },
             {
                 Roles.Sponsor, new List<string>
+                {
+                    ModificationStatus.WithSponsor,
+                    ModificationStatus.WithReviewBody,
+                    ModificationStatus.Approved,
+                    ModificationStatus.NotAuthorised,
+                    ModificationStatus.NotApproved
+                }
+            },
+            {
+                Roles.OrganisationAdministrator, new List<string>
                 {
                     ModificationStatus.WithSponsor,
                     ModificationStatus.WithReviewBody,
@@ -177,6 +196,16 @@ public static class RoleStatusPermissions
             },
             {
                 Roles.Sponsor, new List<string>
+                {
+                    DocumentStatus.WithSponsor,
+                    DocumentStatus.WithReviewBody,
+                    DocumentStatus.Approved,
+                    DocumentStatus.NotAuthorised,
+                    DocumentStatus.NotApproved
+                }
+            },
+            {
+                Roles.OrganisationAdministrator, new List<string>
                 {
                     DocumentStatus.WithSponsor,
                     DocumentStatus.WithReviewBody,
