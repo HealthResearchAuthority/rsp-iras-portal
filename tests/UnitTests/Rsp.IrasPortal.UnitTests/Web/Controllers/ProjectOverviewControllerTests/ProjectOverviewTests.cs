@@ -10,6 +10,7 @@ using Rsp.IrasPortal.Application.Enum;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Web.Controllers.ProjectOverview;
+using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectOverviewControllerTests;
@@ -53,7 +54,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
     private TempDataDictionary CreateTempData(Mock<ITempDataProvider> tempDataProvider, HttpContext httpContext)
         => new(httpContext, tempDataProvider.Object);
 
-    private void SetupProjectRecord(string projectRecordId)
+    private void SetupProjectRecord(string projectRecordId, string status = ProjectRecordStatus.InDraft)
     {
         var applicationService = Mocker.GetMock<IApplicationsService>();
         applicationService
@@ -65,7 +66,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
                 {
                     Id = projectRecordId,
                     IrasId = 1,
-                    Status = ProjectRecordStatus.InDraft
+                    Status = status
                 }
             });
 
@@ -305,7 +306,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
             new() { QuestionId = QuestionIds.ProjectPlannedEndDate, AnswerText = "01/01/2025" }
         };
 
-        SetupProjectRecord(DefaultProjectRecordId);
+        SetupProjectRecord(DefaultProjectRecordId, ProjectRecordStatus.Active);
         SetupRespondentAnswers(DefaultProjectRecordId, answers);
         SetupControllerContext(httpContext, tempData);
         SetupCMSService("ProjectDetails", "Project details");
@@ -319,6 +320,72 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         model.ProjectTitle.ShouldBe("Test Project");
         model.CategoryId.ShouldBe(QuestionCategories.ProjectRecord);
         model.ProjectRecordId.ShouldBe(DefaultProjectRecordId);
+        model.ActualProjectClosureDate.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task ProjectDetails_WhenProjectIsClosed_SetsActualProjectClosureDate_AndReturnsViewResult()
+    {
+        // Arrange
+        var httpContext = CreateHttpContextWithSession();
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempData = CreateTempData(tempDataProvider, httpContext);
+
+        tempData[TempDataKeys.ShortProjectTitle] = "Test Project";
+        tempData[TempDataKeys.CategoryId] = QuestionCategories.ProjectRecord;
+        tempData[TempDataKeys.ProjectRecordId] = DefaultProjectRecordId;
+
+        var answers = new List<RespondentAnswerDto>
+        {
+            new() { QuestionId = QuestionIds.ShortProjectTitle,     AnswerText = "Test Project" },
+            new() { QuestionId = QuestionIds.ProjectPlannedEndDate, AnswerText = "01/01/2025" }
+        };
+
+        SetupProjectRecord(DefaultProjectRecordId, ProjectRecordStatus.Closed);
+        SetupRespondentAnswers(DefaultProjectRecordId, answers);
+        SetupControllerContext(httpContext, tempData);
+        SetupCMSService("ProjectDetails", "Project details");
+
+        // Mock closures service so GetActualProjectClosureDate returns the most recent closure date
+        var expectedMostRecentActioned = new DateTime(2024, 02, 01);
+        var expectedClosureDate = new DateTime(2024, 02, 15);
+        var expectedClosureDateString = DateHelper.ConvertDateToString(expectedClosureDate);
+
+        var closuresServiceMock = Mocker.GetMock<IProjectClosuresService>();
+        closuresServiceMock
+            .Setup(s => s.GetProjectClosuresByProjectRecordId(DefaultProjectRecordId))
+            .ReturnsAsync(new ServiceResponse<ProjectClosuresSearchResponse>
+            {
+                Content = new ProjectClosuresSearchResponse
+                {
+                    ProjectClosures = new List<ProjectClosuresResponse>
+                    {
+                    new ProjectClosuresResponse { DateActioned = new DateTime(2023, 12, 01), ClosureDate = new DateTime(2023, 12, 20) },
+                    new ProjectClosuresResponse { DateActioned = new DateTime(2024, 01, 01), ClosureDate = new DateTime(2024, 01, 10) },
+                    new ProjectClosuresResponse { DateActioned = expectedMostRecentActioned,  ClosureDate = expectedClosureDate }
+                    }
+                }
+            });
+
+        // Act
+        var result = await Sut.ProjectDetails(DefaultProjectRecordId, "", "");
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var model = viewResult.Model.ShouldBeOfType<ProjectOverviewModel>();
+
+        model.ProjectTitle.ShouldBe("Test Project");
+        model.CategoryId.ShouldBe(QuestionCategories.ProjectRecord);
+        model.ProjectRecordId.ShouldBe(DefaultProjectRecordId);
+
+        // Opposite assertions vs your current test:
+        model.ActualProjectClosureDate.ShouldNotBeNull();
+        model.ActualProjectClosureDate.ShouldBe(expectedClosureDateString);
+
+        // Ensure the closures service was used once
+        closuresServiceMock.Verify(
+            s => s.GetProjectClosuresByProjectRecordId(DefaultProjectRecordId),
+            Times.Once);
     }
 
     [Fact]

@@ -20,6 +20,7 @@ public static class RoleStatusPermissions
                 {
                     ProjectRecordStatus.InDraft,
                     ProjectRecordStatus.Active,
+                    ProjectRecordStatus.Closed,
                     ProjectRecordStatus.PendingClosure
                 }
             },
