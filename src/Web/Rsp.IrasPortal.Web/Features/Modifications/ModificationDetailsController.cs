@@ -1,14 +1,14 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Domain.AccessControl;
-using Rsp.IrasPortal.Web.Extensions;
-using Rsp.IrasPortal.Web.Features.Modifications.Models;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.AccessControl;
+using Rsp.Portal.Web.Extensions;
+using Rsp.Portal.Web.Features.Modifications.Models;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.Web.Features.Modifications;
+namespace Rsp.Portal.Web.Features.Modifications;
 
 [Authorize(Policy = Workspaces.MyResearch)]
 [Route("/modifications/[action]", Name = "pmc:[action]")]

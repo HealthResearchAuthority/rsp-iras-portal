@@ -1,10 +1,10 @@
 ﻿using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Domain.Identity;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Domain.Identity;
 
-namespace Rsp.IrasPortal.Web.Areas.Admin.Models;
+namespace Rsp.Portal.Web.Areas.Admin.Models;
 
 public class UserViewModel
 {

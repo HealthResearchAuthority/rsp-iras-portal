@@ -1,6 +1,6 @@
-﻿using Rsp.IrasPortal.Web.Areas.Admin.Models;
+﻿using Rsp.Portal.Web.Areas.Admin.Models;
 
-namespace Rsp.IrasPortal.Web.Extensions;
+namespace Rsp.Portal.Web.Extensions;
 
 public static class PaginationViewModelExtensions
 {

@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Rsp.IrasPortal.Application.Constants;
+using Rsp.Portal.Application.Constants;
 
-namespace Rsp.IrasPortal.Web.Models;
+namespace Rsp.Portal.Web.Models;
 
 [ExcludeFromCodeCoverage]
 public class OrganisationSearchModel

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 
-namespace Rsp.IrasPortal.UnitTests;
+namespace Rsp.Portal.UnitTests;
 
 /// <summary>
 ///     Minimal in-memory ISession implementation for unit tests.

@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Web.Controllers;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Web.Controllers;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Controllers.OrganisationControllerTests;
+namespace Rsp.Portal.UnitTests.Web.Controllers.OrganisationControllerTests;
 
 public class OrganisationControllerTests : TestServiceBase<OrganisationController>
 {

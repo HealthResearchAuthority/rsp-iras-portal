@@ -1,6 +1,6 @@
-﻿using Rsp.IrasPortal.Application.DTOs.Requests;
+﻿using Rsp.Portal.Application.DTOs.Requests;
 
-namespace Rsp.IrasPortal.Web.Models;
+namespace Rsp.Portal.Web.Models;
 
 public class ModificationDeleteDocumentViewModel
 {

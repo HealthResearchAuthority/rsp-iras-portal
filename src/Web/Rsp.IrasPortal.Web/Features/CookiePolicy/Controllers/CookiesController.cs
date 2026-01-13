@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.Constants;
+using Rsp.Portal.Application.Constants;
 
-namespace Rsp.IrasPortal.Web.Features.CookiePolicy.Controllers;
+namespace Rsp.Portal.Web.Features.CookiePolicy.Controllers;
 
 [Route("[controller]/[action]", Name = "cookies:[action]")]
 public class CookiesController : Controller

@@ -3,11 +3,11 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Web.Controllers.ProjectOverview;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Web.Controllers.ProjectOverview;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ProjectOverviewControllerTests;
+namespace Rsp.Portal.UnitTests.Web.Controllers.ProjectOverviewControllerTests;
 
 public class ClearFiltersTests : TestServiceBase<ProjectOverviewController>
 {

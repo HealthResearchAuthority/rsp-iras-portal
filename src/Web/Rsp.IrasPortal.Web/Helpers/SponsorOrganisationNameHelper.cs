@@ -1,7 +1,7 @@
-﻿using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Web.Models;
+﻿using Rsp.Portal.Application.Services;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.Web.Helpers;
+namespace Rsp.Portal.Web.Helpers;
 
 public static class SponsorOrganisationNameHelper
 {

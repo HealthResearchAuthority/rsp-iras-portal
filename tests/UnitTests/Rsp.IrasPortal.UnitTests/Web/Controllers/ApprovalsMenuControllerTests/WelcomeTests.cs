@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Rsp.IrasPortal.Web.Controllers;
+using Rsp.Portal.Web.Controllers;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ApprovalsMenuControllerTests;
+namespace Rsp.Portal.UnitTests.Web.Controllers.ApprovalsMenuControllerTests;
 
 public class WelcomeTests : TestServiceBase<ApprovalsMenuController>
 {

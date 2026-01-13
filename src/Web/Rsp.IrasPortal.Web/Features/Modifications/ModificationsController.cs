@@ -7,18 +7,18 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Azure;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Domain.AccessControl;
-using Rsp.IrasPortal.Web.Extensions;
-using Rsp.IrasPortal.Web.Features.Modifications.Models;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs.CmsQuestionset.Modifications;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.AccessControl;
+using Rsp.Portal.Web.Extensions;
+using Rsp.Portal.Web.Features.Modifications.Models;
+using Rsp.Portal.Web.Models;
 using ValidationResult = FluentValidation.Results.ValidationResult;
 
-namespace Rsp.IrasPortal.Web.Features.Modifications;
+namespace Rsp.Portal.Web.Features.Modifications;
 
 /// <summary>
 /// Controller responsible for handling project modification related actions.

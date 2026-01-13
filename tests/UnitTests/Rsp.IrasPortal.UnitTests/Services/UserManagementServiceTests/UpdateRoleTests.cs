@@ -2,12 +2,12 @@
 using AutoFixture.Xunit2;
 using Moq;
 using Refit;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.ServiceClients;
-using Rsp.IrasPortal.Services;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.ServiceClients;
+using Rsp.Portal.Services;
 using Shouldly;
 
-namespace Rsp.IrasPortal.UnitTests.Services.UserManagementServiceTests;
+namespace Rsp.Portal.UnitTests.Services.UserManagementServiceTests;
 
 public class UpdateRoleTests : TestServiceBase<UserManagementService>
 {

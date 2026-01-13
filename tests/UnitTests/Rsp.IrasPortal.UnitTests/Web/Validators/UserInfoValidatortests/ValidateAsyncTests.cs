@@ -1,9 +1,9 @@
 ﻿using FluentValidation.TestHelper;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Web.Areas.Admin.Models;
-using Rsp.IrasPortal.Web.Validators;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Web.Areas.Admin.Models;
+using Rsp.Portal.Web.Validators;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Validators.UserInfoValidatortests;
+namespace Rsp.Portal.UnitTests.Web.Validators.UserInfoValidatortests;
 
 public class ValidateAsyncTests : TestServiceBase<UserInfoValidator>
 {

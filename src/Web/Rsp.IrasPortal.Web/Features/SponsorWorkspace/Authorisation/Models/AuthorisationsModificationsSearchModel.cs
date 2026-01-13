@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Models;
+﻿namespace Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models;
 
 public class AuthorisationsModificationsSearchModel
 {

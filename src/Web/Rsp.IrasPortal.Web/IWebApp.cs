@@ -1,3 +1,3 @@
-﻿namespace Rsp.IrasPortal.Web;
+﻿namespace Rsp.Portal.Web;
 
 public interface IWebApp;

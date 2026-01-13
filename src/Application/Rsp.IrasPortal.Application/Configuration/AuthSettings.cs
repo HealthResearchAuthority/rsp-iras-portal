@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Application.Configuration;
+﻿namespace Rsp.Portal.Application.Configuration;
 
 public class AuthSettings
 {

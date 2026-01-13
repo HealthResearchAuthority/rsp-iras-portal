@@ -1,6 +1,6 @@
-﻿using Rsp.IrasPortal.Application.DTOs.Responses;
+﻿using Rsp.Portal.Application.DTOs.Responses;
 
-namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace.MyOrganisations.Models;
+namespace Rsp.Portal.Web.Features.SponsorWorkspace.MyOrganisations.Models;
 
 public class SponsorMyOrganisationAuditViewModel
 {

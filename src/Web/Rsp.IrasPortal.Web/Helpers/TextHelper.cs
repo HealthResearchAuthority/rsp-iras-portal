@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace Rsp.IrasPortal.Web.Helpers;
+namespace Rsp.Portal.Web.Helpers;
 
 public static class TextHelper
 {

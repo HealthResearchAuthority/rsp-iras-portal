@@ -1,5 +1,5 @@
-﻿@using Rsp.IrasPortal.Application.Constants
-@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
+﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
 @{
     var model = (IList<ServiceNavigationItemModel>?)ViewData[PageContentElements.ServiceNavigation];
     var userLoggedIn = User?.Identity?.IsAuthenticated != null && User.Identity.IsAuthenticated;

@@ -1,8 +1,8 @@
 ﻿using FluentValidation.TestHelper;
-using Rsp.IrasPortal.Web.Models;
-using Rsp.IrasPortal.Web.Validators;
+using Rsp.Portal.Web.Models;
+using Rsp.Portal.Web.Validators;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Validators.ApplicationSearchModelValidatorTests;
+namespace Rsp.Portal.UnitTests.Web.Validators.ApplicationSearchModelValidatorTests;
 
 public class ValidateAsyncTests : TestServiceBase<ApplicationSearchModelValidator>
 {

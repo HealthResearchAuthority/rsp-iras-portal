@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
-using Rsp.IrasPortal.Web.Features.Approvals.RecordSearch.Models;
+using Rsp.Portal.Web.Features.Approvals.RecordSearch.Models;
 
-namespace Rsp.IrasPortal.Web.Validators;
+namespace Rsp.Portal.Web.Validators;
 
 public class RecordSearchNavigationModelValidator : AbstractValidator<RecordSearchNavigationModel>
 {

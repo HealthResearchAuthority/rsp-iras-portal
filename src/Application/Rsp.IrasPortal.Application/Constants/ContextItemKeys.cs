@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Application.Constants;
+﻿namespace Rsp.Portal.Application.Constants;
 
 /// <summary>
 /// HttpContext Items Keys. The keys are used

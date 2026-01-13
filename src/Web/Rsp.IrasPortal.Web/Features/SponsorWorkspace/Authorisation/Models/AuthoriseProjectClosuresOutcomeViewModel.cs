@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Models;
+namespace Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models;
 
 public class AuthoriseProjectClosuresOutcomeViewModel
 {

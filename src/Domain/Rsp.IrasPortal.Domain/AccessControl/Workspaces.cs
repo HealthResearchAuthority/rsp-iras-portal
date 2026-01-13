@@ -1,4 +1,4 @@
-namespace Rsp.IrasPortal.Domain.AccessControl;
+namespace Rsp.Portal.Domain.AccessControl;
 
 // Workspaces
 public static class Workspaces

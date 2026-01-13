@@ -1,6 +1,6 @@
-﻿using Rsp.IrasPortal.Application.DTOs;
+﻿using Rsp.Portal.Application.DTOs;
 
-namespace Rsp.IrasPortal.Web.Models;
+namespace Rsp.Portal.Web.Models;
 
 public class SponsorOrganisationModel
 {

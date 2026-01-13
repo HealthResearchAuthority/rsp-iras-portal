@@ -1,6 +1,6 @@
-﻿using Rsp.IrasPortal.Application.Enum;
+﻿using Rsp.Portal.Application.Enum;
 
-namespace Rsp.IrasPortal.Application.DTOs;
+namespace Rsp.Portal.Application.DTOs;
 
 public class ModificationsDto
 {

@@ -1,4 +1,4 @@
-namespace Rsp.IrasPortal.UnitTests.TestHelpers;
+namespace Rsp.Portal.UnitTests.TestHelpers;
 
 internal static class ApiResponseFactory
 {

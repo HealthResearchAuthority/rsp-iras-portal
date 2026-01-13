@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Text;
 
-namespace Rsp.IrasPortal.IntegrationTests.Infrastructure;
+namespace Rsp.Portal.IntegrationTests.Infrastructure;
 
 /// <summary>
 /// Test DelegatingHandler that will be used as an inner handler of the real message handler

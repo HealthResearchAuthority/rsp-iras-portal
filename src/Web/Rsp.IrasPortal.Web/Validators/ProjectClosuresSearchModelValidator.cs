@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
-using Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Models;
+using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models;
 
-namespace Rsp.IrasPortal.Web.Validators;
+namespace Rsp.Portal.Web.Validators;
 
 public class ProjectClosuresSearchModelValidator : AbstractValidator<ProjectClosuresSearchModel>
 {

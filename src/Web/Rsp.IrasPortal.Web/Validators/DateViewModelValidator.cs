@@ -1,8 +1,8 @@
 ﻿using FluentValidation;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.Web.Validators;
+namespace Rsp.Portal.Web.Validators;
 
 /// <summary>
 /// Validator for <see cref="DateViewModel"/> that ensures the date is valid and not in the future.

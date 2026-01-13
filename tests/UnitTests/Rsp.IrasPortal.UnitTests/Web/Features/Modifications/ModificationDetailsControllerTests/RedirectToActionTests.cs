@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Web.Features.Modifications;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Web.Features.Modifications;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.ModificationDetailsControllerTests;
+namespace Rsp.Portal.UnitTests.Web.Features.Modifications.ModificationDetailsControllerTests;
 
 public class RedirectToActionTests : TestServiceBase<ModificationDetailsController>
 {

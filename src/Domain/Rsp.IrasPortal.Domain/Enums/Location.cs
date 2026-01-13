@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Domain.Enums
+﻿namespace Rsp.Portal.Domain.Enums
 {
     public enum Location
     {

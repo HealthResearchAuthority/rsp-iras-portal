@@ -1,8 +1,8 @@
 ﻿using Refit;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.Responses;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Responses;
 
-namespace Rsp.IrasPortal.Application.ServiceClients;
+namespace Rsp.Portal.Application.ServiceClients;
 
 /// <summary>
 /// Interface to interact with RTS microservice.

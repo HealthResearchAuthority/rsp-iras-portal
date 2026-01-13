@@ -1,7 +1,7 @@
-﻿using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Web.Areas.Admin.Models;
+﻿using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Web.Areas.Admin.Models;
 
-namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace.MyOrganisations.Models;
+namespace Rsp.Portal.Web.Features.SponsorWorkspace.MyOrganisations.Models;
 
 public class SponsorMyOrganisationsViewModel
 {

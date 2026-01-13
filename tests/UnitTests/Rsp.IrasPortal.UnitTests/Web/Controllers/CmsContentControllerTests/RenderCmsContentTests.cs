@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Web.Controllers.CmsContent;
+using Rsp.Portal.Application.DTOs.Responses.CmsContent;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Web.Controllers.CmsContent;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Controllers.CmsContentControllerTests;
+namespace Rsp.Portal.UnitTests.Web.Controllers.CmsContentControllerTests;
 
 public class RenderCmsContentTests : TestServiceBase<CmsContentController>
 {

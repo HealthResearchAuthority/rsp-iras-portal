@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Serialization;
-using Rsp.IrasPortal.Application.JsonConverters;
+using Rsp.Portal.Application.JsonConverters;
 
-namespace Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
+namespace Rsp.Portal.Application.DTOs.Responses.CmsContent;
 
 [JsonConverter(typeof(ComponentContentConverter))]
 public class ComponentContent

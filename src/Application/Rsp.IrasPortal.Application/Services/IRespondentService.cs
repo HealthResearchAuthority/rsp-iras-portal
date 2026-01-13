@@ -1,8 +1,8 @@
-﻿using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.Responses;
+﻿using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.Responses;
 using Rsp.Logging.Interceptors;
 
-namespace Rsp.IrasPortal.Application.Services;
+namespace Rsp.Portal.Application.Services;
 
 /// <summary>
 /// Respondent Service Interface. Marked as IInterceptable to enable

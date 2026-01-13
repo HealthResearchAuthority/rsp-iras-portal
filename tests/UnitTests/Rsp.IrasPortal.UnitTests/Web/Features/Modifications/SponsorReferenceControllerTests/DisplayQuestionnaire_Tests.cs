@@ -1,14 +1,14 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Web.Features.Modifications;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Application.DTOs.CmsQuestionset;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Web.Features.Modifications;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.SponsorReferenceControllerTests;
+namespace Rsp.Portal.UnitTests.Web.Features.Modifications.SponsorReferenceControllerTests;
 
 public class DisplayQuestionnaire_Tests : TestServiceBase<SponsorReferenceController>
 {
@@ -39,7 +39,7 @@ public class DisplayQuestionnaire_Tests : TestServiceBase<SponsorReferenceContro
         Sut.ControllerContext = new() { HttpContext = http };
         Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>())
         {
-            [Rsp.IrasPortal.Application.Constants.TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid()
+            [Rsp.Portal.Application.Constants.TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid()
         };
 
         Mocker.GetMock<IRespondentService>()

@@ -1,6 +1,6 @@
-﻿using Rsp.IrasPortal.Web.Helpers;
+﻿using Rsp.Portal.Web.Helpers;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Helpers;
+namespace Rsp.Portal.UnitTests.Web.Helpers;
 
 public class TextHelperTests : TestServiceBase
 {

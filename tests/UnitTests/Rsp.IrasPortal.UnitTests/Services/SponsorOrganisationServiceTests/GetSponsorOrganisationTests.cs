@@ -1,13 +1,13 @@
-﻿using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.ServiceClients;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Services;
+﻿using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.ServiceClients;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Services;
 
-namespace Rsp.IrasPortal.UnitTests.Services.SponsorOrganisationServiceTests;
+namespace Rsp.Portal.UnitTests.Services.SponsorOrganisationServiceTests;
 
 public class GetSponsorOrganisationTests : TestServiceBase<SponsorOrganisationService>
 {

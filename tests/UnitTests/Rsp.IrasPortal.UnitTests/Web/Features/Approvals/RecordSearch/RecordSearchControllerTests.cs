@@ -1,11 +1,11 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Web.Features.Approvals.RecordSearch.Controllers;
-using Rsp.IrasPortal.Web.Features.Approvals.RecordSearch.Models;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Web.Features.Approvals.RecordSearch.Controllers;
+using Rsp.Portal.Web.Features.Approvals.RecordSearch.Models;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Features.Approvals.RecordSearch;
+namespace Rsp.Portal.UnitTests.Web.Features.Approvals.RecordSearch;
 
 public class RecordSearchControllerTests : TestServiceBase<RecordSearchController>
 {

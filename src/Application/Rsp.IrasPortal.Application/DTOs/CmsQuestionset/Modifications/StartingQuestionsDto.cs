@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
+﻿namespace Rsp.Portal.Application.DTOs.CmsQuestionset.Modifications;
 
 public class StartingQuestionsDto
 {

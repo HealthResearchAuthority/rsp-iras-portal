@@ -1,7 +1,7 @@
 ﻿using Refit;
-using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Requests;
 
-namespace Rsp.IrasPortal.Application.ServiceClients;
+namespace Rsp.Portal.Application.ServiceClients;
 
 /// <summary>
 /// Interface to interact with iras microservice for respondent relation operations.

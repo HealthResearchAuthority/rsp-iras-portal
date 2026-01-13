@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Rsp.IrasPortal.Web.Controllers;
+using Rsp.Portal.Web.Controllers;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Controllers.AuthControllerTests;
+namespace Rsp.Portal.UnitTests.Web.Controllers.AuthControllerTests;
 
 public class SignInTests : TestServiceBase<AuthController>
 {

@@ -1,10 +1,10 @@
 ﻿using System.Globalization;
 using System.Text.RegularExpressions;
 using FluentValidation;
-using Rsp.IrasPortal.Web.Extensions;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Web.Extensions;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.Web.Validators;
+namespace Rsp.Portal.Web.Validators;
 
 public class QuestionViewModelValidatorBase : AbstractValidator<QuestionViewModel>
 {

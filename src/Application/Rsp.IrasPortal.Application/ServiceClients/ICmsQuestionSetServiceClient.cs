@@ -1,11 +1,11 @@
 ﻿using Refit;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
-using Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.DTOs.Responses;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.CmsQuestionset;
+using Rsp.Portal.Application.DTOs.CmsQuestionset.Modifications;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
 
-namespace Rsp.IrasPortal.Application.ServiceClients;
+namespace Rsp.Portal.Application.ServiceClients;
 
 public interface ICmsQuestionSetServiceClient
 {

@@ -1,15 +1,15 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Domain.Identity;
-using Rsp.IrasPortal.Web.Controllers;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.Identity;
+using Rsp.Portal.Web.Controllers;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Controllers.SponsorOrganisationsControllerTests;
+namespace Rsp.Portal.UnitTests.Web.Controllers.SponsorOrganisationsControllerTests;
 
 public class ViewAddUserTests : TestServiceBase<SponsorOrganisationsController>
 {

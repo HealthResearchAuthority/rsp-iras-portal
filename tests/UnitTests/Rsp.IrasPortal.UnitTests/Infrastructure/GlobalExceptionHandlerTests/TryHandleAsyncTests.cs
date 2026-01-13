@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Rsp.IrasPortal.Infrastructure.ExceptionHandlers;
+using Rsp.Portal.Infrastructure.ExceptionHandlers;
 
-namespace Rsp.IrasPortal.UnitTests.Infrastructure.GlobalExceptionHandlerTests;
+namespace Rsp.Portal.UnitTests.Infrastructure.GlobalExceptionHandlerTests;
 
 public class TryHandleAsyncTests : TestServiceBase<GlobalExceptionHandler>
 {

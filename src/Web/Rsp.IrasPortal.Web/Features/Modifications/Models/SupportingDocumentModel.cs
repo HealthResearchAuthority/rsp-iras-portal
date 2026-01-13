@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Web.Features.Modifications.Models;
+﻿namespace Rsp.Portal.Web.Features.Modifications.Models;
 
 public class SupportingDocumentModel
 {

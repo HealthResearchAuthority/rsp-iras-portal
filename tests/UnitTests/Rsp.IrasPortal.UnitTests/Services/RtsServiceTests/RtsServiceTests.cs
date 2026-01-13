@@ -1,11 +1,11 @@
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.ServiceClients;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Services;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.ServiceClients;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Services;
 
-namespace Rsp.IrasPortal.UnitTests.Services.RtsServiceTests;
+namespace Rsp.Portal.UnitTests.Services.RtsServiceTests;
 
 public class RtsServiceTests : TestServiceBase<RtsService>
 {

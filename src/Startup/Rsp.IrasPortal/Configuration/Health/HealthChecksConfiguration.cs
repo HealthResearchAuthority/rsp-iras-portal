@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.HeaderPropagation;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Rsp.IrasPortal.Application.Configuration;
-using Rsp.IrasPortal.Application.Constants;
+using Rsp.Portal.Application.Configuration;
+using Rsp.Portal.Application.Constants;
 
-namespace Rsp.IrasPortal.Configuration.Health;
+namespace Rsp.Portal.Configuration.Health;
 
 /// <summary>
 /// Health Checks Configuration

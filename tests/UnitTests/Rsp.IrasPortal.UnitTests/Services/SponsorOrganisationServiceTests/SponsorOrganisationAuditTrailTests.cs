@@ -1,9 +1,9 @@
-﻿using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Application.ServiceClients;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Services;
+﻿using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.ServiceClients;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Services;
 
-namespace Rsp.IrasPortal.UnitTests.Services.SponsorOrganisationServiceTests;
+namespace Rsp.Portal.UnitTests.Services.SponsorOrganisationServiceTests;
 
 public class SponsorOrganisationAuditTrailTests : TestServiceBase<SponsorOrganisationService>
 {

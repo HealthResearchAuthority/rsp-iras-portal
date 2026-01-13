@@ -1,9 +1,9 @@
-﻿using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
-using Rsp.IrasPortal.Web.Extensions;
-using Rsp.IrasPortal.Web.Helpers;
+﻿using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Responses.CmsContent;
+using Rsp.Portal.Web.Extensions;
+using Rsp.Portal.Web.Helpers;
 
-namespace Rsp.IrasPortal.Web.Models;
+namespace Rsp.Portal.Web.Models;
 
 public class QuestionViewModel
 {

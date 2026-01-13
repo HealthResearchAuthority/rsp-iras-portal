@@ -1,9 +1,9 @@
-﻿using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Web.Areas.Admin.Models;
-using Rsp.IrasPortal.Web.Models;
+﻿using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Web.Areas.Admin.Models;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.Web.Features.Approvals.ProjectRecordSearch.Models;
+namespace Rsp.Portal.Web.Features.Approvals.ProjectRecordSearch.Models;
 
 public class ProjectRecordSearchViewModel
 {

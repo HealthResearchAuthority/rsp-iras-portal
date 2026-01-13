@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Web.Areas.Admin.Models;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Web.Areas.Admin.Models;
 
-namespace Rsp.IrasPortal.Web.Models;
+namespace Rsp.Portal.Web.Models;
 
 [ExcludeFromCodeCoverage]
 public class ReviewBodySearchViewModel

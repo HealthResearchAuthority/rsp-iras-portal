@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
-namespace Rsp.IrasPortal.Web.Extensions;
+namespace Rsp.Portal.Web.Extensions;
 
 [ExcludeFromCodeCoverage]
 public static  class DateTimeExtensions

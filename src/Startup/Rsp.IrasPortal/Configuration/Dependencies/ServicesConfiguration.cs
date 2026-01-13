@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authentication;
-using Rsp.IrasPortal.Application.Filters;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Infrastructure.Claims;
-using Rsp.IrasPortal.Infrastructure.HttpMessageHandlers;
-using Rsp.IrasPortal.Services;
+using Rsp.Portal.Application.Filters;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Infrastructure.Claims;
+using Rsp.Portal.Infrastructure.HttpMessageHandlers;
+using Rsp.Portal.Services;
 
-namespace Rsp.IrasPortal.Configuration.Dependencies;
+namespace Rsp.Portal.Configuration.Dependencies;
 
 /// <summary>
 ///  User Defined Services Configuration

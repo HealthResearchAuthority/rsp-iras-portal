@@ -1,7 +1,7 @@
-﻿using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Domain.AccessControl;
+﻿using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Domain.AccessControl;
 
-namespace Rsp.IrasPortal.Application.AccessControl;
+namespace Rsp.Portal.Application.AccessControl;
 
 /// <summary>
 /// Provides a mapping between workspace identifiers and the roles that are allowed to access each workspace.
