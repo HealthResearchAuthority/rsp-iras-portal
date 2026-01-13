@@ -11,6 +11,7 @@ using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
 using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Domain.AccessControl;
+using Rsp.IrasPortal.Domain.Enums;
 using Rsp.IrasPortal.Web.Extensions;
 using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
@@ -349,8 +350,36 @@ public class DocumentsController
         if (!isValid)
             return View("AddDocumentDetails", viewModel);
 
+        // Determine and set the document detail completion status
+        var existingStatus = (await EvaluateDocumentCompletion(viewModel.DocumentId, questionnaire)
+                ? DocumentDetailStatus.Incomplete
+                : DocumentDetailStatus.Complete);
+
         // Step 6: Save all valid answers to backend
         await SaveModificationDocumentAnswers(viewModel);
+        if (existingStatus != DocumentDetailStatus.Complete)
+        {
+            var isIncomplete = await EvaluateDocumentCompletion(viewModel.DocumentId, questionnaire);
+
+            var newStatus = isIncomplete
+                ? DocumentDetailStatus.Incomplete
+                : DocumentDetailStatus.Complete;
+            if (newStatus == DocumentDetailStatus.Complete)
+            {
+                await projectModificationsService.CreateModificationDocumentsAuditTrail(
+                [
+                    new()
+                    {
+                        Id = Guid.NewGuid(),
+                        ProjectModificationId = viewModel.ModificationId,
+                        DateTimeStamp = DateTime.UtcNow,
+                        Description = DocumentAuditEvents.DocumentDetailsCompleted,
+                        FileName = viewModel.FileName ?? string.Empty,
+                        User = HttpContext.Items[ContextItemKeys.UserId]?.ToString() ?? string.Empty
+                    }
+                ]);
+            }
+        }
 
         // Redirect to the review-all-changes route if explicitly requested
         if (reviewAllChanges)
@@ -533,6 +562,8 @@ public class DocumentsController
     [HttpPost]
     public async Task<IActionResult> UploadDocuments(ModificationUploadDocumentsViewModel model)
     {
+        var auditEntries = new List<ModificationDocumentsAuditTrailDto>();
+
         // If the posted model is null (due to exceeding max request size)
         if (model?.Files == null)
             return View("FileTooLarge");
@@ -561,7 +592,18 @@ public class DocumentsController
             return HandleNoNewFiles(response, atleastOneInvalidFile, model);
 
         // Validate new uploaded files
-        var validationResult = ValidateUploadedFiles(model.Files, response?.Content?.ToList() ?? []);
+        var validationResult = ValidateUploadedFiles(
+        model.Files,
+        response?.Content?.ToList() ?? [],
+        (Guid)projectModificationId!,
+        respondentId);
+
+        // Persist FAILED audit events
+        if (validationResult.FailedAuditEvents.Count != 0)
+        {
+            await projectModificationsService.CreateModificationDocumentsAuditTrail(validationResult.FailedAuditEvents);
+        }
+
         atleastOneInvalidFile = validationResult.HasErrors;
 
         // Check if any ModelState errors mention "100 MB"
@@ -579,6 +621,13 @@ public class DocumentsController
         {
             // Upload valid files to blob storage
             var uploadedDocuments = await UploadValidFilesAsync(validationResult.ValidFiles, irasId, projectModificationId, projectRecordId, respondentId);
+
+            // Persist SUCCESS audit events only after upload succeeds
+            if (validationResult.SuccessAuditEvents.Count != 0)
+            {
+                await projectModificationsService
+                    .CreateModificationDocumentsAuditTrail(validationResult.SuccessAuditEvents);
+            }
 
             // Append and sort the newly uploaded documents
             model.UploadedDocuments = AppendAndSortDocuments(model.UploadedDocuments, uploadedDocuments);
@@ -657,56 +706,102 @@ public class DocumentsController
         return invalid;
     }
 
-    private (List<IFormFile> ValidFiles, bool HasErrors) ValidateUploadedFiles(
-        IEnumerable<IFormFile> files,
-        List<ProjectModificationDocumentRequest> existingDocs)
+    private (
+    List<IFormFile> ValidFiles,
+    List<ModificationDocumentsAuditTrailDto> FailedAuditEvents,
+    List<ModificationDocumentsAuditTrailDto> SuccessAuditEvents,
+    bool HasErrors
+    ) ValidateUploadedFiles(
+    IEnumerable<IFormFile> files,
+    List<ProjectModificationDocumentRequest> existingDocs,
+    Guid projectModificationId,
+    string user)
     {
         var validFiles = new List<IFormFile>();
-        const long maxFileSize = 100 * 1024 * 1024; // 100 MB in bytes
+        var auditEvents = new List<ModificationDocumentsAuditTrailDto>();
+        var successAuditEvents = new List<ModificationDocumentsAuditTrailDto>();
+
+        const long maxFileSize = 100 * 1024 * 1024; // 100 MB
         long totalFileSize = 0;
         bool hasErrors = false;
 
         foreach (var file in files)
         {
             var fileName = Path.GetFileName(file.FileName);
-            var ext = Path.GetExtension(file.FileName);
+            var ext = Path.GetExtension(fileName);
 
             // 1. Extension check
             if (!FileConstants.AllowedExtensions.Contains(ext, StringComparer.OrdinalIgnoreCase))
             {
                 hasErrors = true;
+
                 ModelState.AddModelError("Files", "The selected file must be a permitted file type");
+
+                auditEvents.Add(CreateAuditTrail(
+                    projectModificationId,
+                    fileName,
+                    DocumentAuditEvents.UploadFailedUnsupported,
+                    user));
+
                 continue;
             }
 
-            // 2. Duplicate file name check
-            if (existingDocs.Any(d => d.FileName.Equals(fileName, StringComparison.OrdinalIgnoreCase)))
+            // 2. Duplicate file check
+            if (existingDocs.Any(d =>
+                d.FileName.Equals(fileName, StringComparison.OrdinalIgnoreCase)))
             {
                 hasErrors = true;
+
                 ModelState.AddModelError("Files", $"{fileName} has already been uploaded");
+
+                auditEvents.Add(CreateAuditTrail(
+                    projectModificationId,
+                    fileName,
+                    DocumentAuditEvents.UploadFailedDuplicate,
+                    user));
+
                 continue;
             }
 
-            // 3. File size check
+            // 3. Individual file size check
             if (file.Length > maxFileSize)
             {
                 hasErrors = true;
+
                 ModelState.AddModelError("Files", $"{fileName} must be smaller than 100 MB");
+
+                auditEvents.Add(CreateAuditTrail(
+                    projectModificationId,
+                    fileName,
+                    DocumentAuditEvents.UploadFailedFileSize,
+                    user));
+
                 continue;
             }
 
             totalFileSize += file.Length;
             validFiles.Add(file);
+
+            // Prepare success audit entry (persist later)
+            successAuditEvents.Add(CreateAuditTrail(
+                projectModificationId,
+                fileName,
+                DocumentAuditEvents.UploadSuccessful,
+                user));
         }
 
         // 4. Combined file size check
         if (totalFileSize > maxFileSize)
         {
             hasErrors = true;
+
             ModelState.AddModelError("Files", "The combined size of all files must be less than 100 MB");
+
+            validFiles.Clear(); // none should be uploaded
+            successAuditEvents.Clear();
         }
 
-        return (validFiles, hasErrors);
+        return (validFiles, auditEvents, successAuditEvents, hasErrors);
     }
 
     private async Task<List<ProjectModificationDocumentRequest>> UploadValidFilesAsync(
@@ -1070,10 +1165,27 @@ public class DocumentsController
             : RedirectToAction(nameof(AddDocumentDetailsList));
     }
 
-    // Example helper method to get correct blob client
+    // Helper method to get correct blob client
     private BlobServiceClient GetBlobClient(bool useCleanContainer)
     {
         var name = useCleanContainer ? "Clean" : "Staging";
         return _blobClientFactory.CreateClient(name);
+    }
+
+    private static ModificationDocumentsAuditTrailDto CreateAuditTrail(
+    Guid projectModificationId,
+    string fileName,
+    string description,
+    string user)
+    {
+        return new ModificationDocumentsAuditTrailDto
+        {
+            Id = Guid.NewGuid(),
+            ProjectModificationId = projectModificationId,
+            DateTimeStamp = DateTime.UtcNow,
+            Description = description,
+            FileName = fileName,
+            User = user
+        };
     }
 }

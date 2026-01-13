@@ -355,4 +355,11 @@ public class ProjectModificationsService
 
         return apiResponse.ToServiceResponse();
     }
+
+    public async Task<ServiceResponse> CreateModificationDocumentsAuditTrail(List<ModificationDocumentsAuditTrailDto> documentsAuditTrailRequest)
+    {
+        var apiResponse = await projectModificationsServiceClient.CreateModificationDocumentsAuditTrail(documentsAuditTrailRequest);
+
+        return apiResponse.ToServiceResponse();
+    }
 }
