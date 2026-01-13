@@ -341,20 +341,14 @@ public class ApplicationController
         {
             return this.ServiceError(closeProjectResponse);
         }
-
-        // update the application status to Submitted
-        var updateApplicationResponse = await applicationsService.UpdateProjectRecordStatus
-        (
-            new IrasApplicationRequest
-            {
-                Id = model.ProjectRecordId,
-                Status = ProjectRecordStatus.PendingClosure,
-                UpdatedBy = userName,
-                CreatedBy = userName,
-                ShortProjectTitle = model.ShortProjectTitle,
-                FullProjectTitle = model.ShortProjectTitle
-            }
-        );
+        //get project record for status update
+        var projectRecord = await applicationsService.GetProjectRecord(model.ProjectRecordId);
+        if (!projectRecord.IsSuccessStatusCode)
+        {
+            return this.ServiceError(projectRecord);
+        }
+        // update the project record status in project record table
+        var updateApplicationResponse = await applicationsService.UpdateProjectRecordStatus(projectRecord.Content.Id, ProjectRecordStatus.PendingClosure);
 
         if (!updateApplicationResponse.IsSuccessStatusCode)
         {

@@ -117,11 +117,12 @@ public class ApplicationsService(IApplicationsServiceClient applicationsClient) 
     /// <summary>
     /// Updates the project record status
     /// </summary>
-    /// <param name="irasApplication"></param>
+    /// <param name="projectRecordId"></param>
+    /// <param name="status"></param>
     /// <returns></returns>
-    public async Task<ServiceResponse> UpdateProjectRecordStatus(IrasApplicationRequest irasApplication)
+    public async Task<ServiceResponse> UpdateProjectRecordStatus(string projectRecordId, string status)
     {
-        var apiResponse = await applicationsClient.UpdateProjectRecordStatus(irasApplication);
+        var apiResponse = await applicationsClient.UpdateProjectRecordStatus(projectRecordId, status);
 
         return apiResponse.ToServiceResponse();
     }

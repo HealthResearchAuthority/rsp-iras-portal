@@ -109,6 +109,6 @@ public interface IApplicationsServiceClient
     /// Updates the saved application by Id
     /// </summary>
     /// <returns>An asynchronous operation that updates the existing application.</returns>
-    [Put("/applications")]
-    public Task<IApiResponse> UpdateProjectRecordStatus(IrasApplicationRequest irasApplication);
+    [Put("/applications/updateprojectrecordstatus")]
+    public Task<IApiResponse> UpdateProjectRecordStatus(string projectRecordId, string status);
 }
