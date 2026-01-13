@@ -1,8 +1,8 @@
 using System.Security.Claims;
-using Rsp.IrasPortal.Application.AccessControl;
-using Rsp.IrasPortal.Application.Constants;
+using Rsp.Portal.Application.AccessControl;
+using Rsp.Portal.Application.Constants;
 
-namespace Rsp.IrasPortal.Application.Extensions;
+namespace Rsp.Portal.Application.Extensions;
 
 /// <summary>
 /// Extension methods for permission-based authorization in controllers

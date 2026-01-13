@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-namespace Rsp.IrasPortal.Configuration.FeatureFolders;
+namespace Rsp.Portal.Configuration.FeatureFolders;
 
 /// <summary>
 /// Options to control the behavior of feature folders

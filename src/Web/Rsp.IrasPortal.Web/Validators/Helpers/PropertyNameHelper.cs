@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace Rsp.IrasPortal.Web.Validators.Helpers;
+namespace Rsp.Portal.Web.Validators.Helpers;
 
 public static class PropertyNameHelper
 {

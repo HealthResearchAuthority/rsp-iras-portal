@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace Rsp.IrasPortal.Application.Responses;
+namespace Rsp.Portal.Application.Responses;
 
 /// <summary>
 /// A generic service response class to facilitate composing the API response using the fluent pattern.

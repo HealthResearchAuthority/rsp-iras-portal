@@ -1,11 +1,11 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
-using Rsp.IrasPortal.Application.AccessControl;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Domain.AccessControl;
-using Rsp.IrasPortal.Infrastructure.Authorization;
+using Rsp.Portal.Application.AccessControl;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Domain.AccessControl;
+using Rsp.Portal.Infrastructure.Authorization;
 
-namespace Rsp.IrasPortal.UnitTests.Infrastructure.Authorization.PermissionRequirementHandlerTests;
+namespace Rsp.Portal.UnitTests.Infrastructure.Authorization.PermissionRequirementHandlerTests;
 
 public class PermissionRequirementHandlerTests
 {

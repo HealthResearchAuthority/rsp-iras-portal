@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Application.DTOs;
+﻿namespace Rsp.Portal.Application.DTOs;
 
 /// <summary>
 /// Represents a summary view of a document, including metadata such as file name, URI, and size.

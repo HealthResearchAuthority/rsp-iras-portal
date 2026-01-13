@@ -1,7 +1,7 @@
-﻿using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs.Responses;
+﻿using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs.Responses;
 
-namespace Rsp.IrasPortal.Application.DTOs.Requests;
+namespace Rsp.Portal.Application.DTOs.Requests;
 
 /// <summary>
 /// Represents a request to change a project modification, including details about the area of change,

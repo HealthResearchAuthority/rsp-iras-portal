@@ -3,13 +3,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
-using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Web.Features.Modifications;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.CmsQuestionset.Modifications;
+using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Web.Features.Modifications;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications;
+namespace Rsp.Portal.UnitTests.Web.Features.Modifications;
 
 public class GetSpecificChangeByIdTests : TestServiceBase<ModificationsController>
 {

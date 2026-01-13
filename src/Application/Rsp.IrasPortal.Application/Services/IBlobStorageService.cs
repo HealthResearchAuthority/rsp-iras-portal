@@ -1,10 +1,10 @@
 ﻿using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.Responses;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.Responses;
 
-namespace Rsp.IrasPortal.Application.Services;
+namespace Rsp.Portal.Application.Services;
 
 /// <summary>
 /// Defines operations for interacting with Azure Blob Storage for uploading and listing documents.

@@ -3,19 +3,19 @@ using System.Text.Json;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Application.Filters;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Domain.AccessControl;
-using Rsp.IrasPortal.Web.Areas.Admin.Models;
-using Rsp.IrasPortal.Web.Extensions;
-using Rsp.IrasPortal.Web.Models;
-using static Rsp.IrasPortal.Web.Extensions.PaginationViewModelExtensions;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Filters;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.AccessControl;
+using Rsp.Portal.Web.Areas.Admin.Models;
+using Rsp.Portal.Web.Extensions;
+using Rsp.Portal.Web.Models;
+using static Rsp.Portal.Web.Extensions.PaginationViewModelExtensions;
 
-namespace Rsp.IrasPortal.Web.Controllers;
+namespace Rsp.Portal.Web.Controllers;
 
 [Authorize(Policy = Workspaces.SystemAdministration)]
 [Route("[controller]/[action]", Name = "soc:[action]")]

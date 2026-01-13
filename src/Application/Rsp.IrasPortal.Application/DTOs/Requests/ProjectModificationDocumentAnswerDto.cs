@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Application.DTOs.Requests;
+﻿namespace Rsp.Portal.Application.DTOs.Requests;
 
 /// <summary>
 /// Represents a respondent's answer to a question

@@ -1,6 +1,6 @@
 ﻿using System.Data;
 
-namespace Rsp.IrasPortal.Application.DTOs;
+namespace Rsp.Portal.Application.DTOs;
 public record RuleDto
 {
     /// <summary>

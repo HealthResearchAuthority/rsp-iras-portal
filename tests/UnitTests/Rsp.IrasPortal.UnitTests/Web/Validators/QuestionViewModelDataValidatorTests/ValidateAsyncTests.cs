@@ -1,10 +1,10 @@
 using FluentValidation;
 using FluentValidation.TestHelper;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Web.Models;
-using Rsp.IrasPortal.Web.Validators;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Web.Models;
+using Rsp.Portal.Web.Validators;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Validators.QuestionViewModelDataValidatorTests;
+namespace Rsp.Portal.UnitTests.Web.Validators.QuestionViewModelDataValidatorTests;
 
 public class ValidateAsyncTests : TestServiceBase<QuestionViewModelDataValidator>
 {

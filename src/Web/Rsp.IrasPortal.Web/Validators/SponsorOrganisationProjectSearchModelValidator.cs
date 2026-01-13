@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
-using Rsp.IrasPortal.Web.Features.SponsorWorkspace.MyOrganisations.Models;
+using Rsp.Portal.Web.Features.SponsorWorkspace.MyOrganisations.Models;
 
-namespace Rsp.IrasPortal.Web.Validators;
+namespace Rsp.Portal.Web.Validators;
 
 public class SponsorOrganisationProjectSearchModelValidator : AbstractValidator<SponsorOrganisationProjectSearchModel>
 {

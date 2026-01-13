@@ -1,4 +1,4 @@
-namespace Rsp.IrasPortal.Domain.AccessControl;
+namespace Rsp.Portal.Domain.AccessControl;
 
 /// <summary>
 /// Defines all workspace.area.action permissions in the system

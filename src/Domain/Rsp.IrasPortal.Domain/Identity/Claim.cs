@@ -1,2 +1,2 @@
-﻿namespace Rsp.IrasPortal.Domain.Identity;
+﻿namespace Rsp.Portal.Domain.Identity;
 public record Claim(string Type, string Value);

@@ -1,10 +1,10 @@
-﻿using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Application.Responses;
+﻿using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Responses;
 using Rsp.Logging.Interceptors;
 
-namespace Rsp.IrasPortal.Application.Services;
+namespace Rsp.Portal.Application.Services;
 
 /// <summary>
 /// Applications Service Interface. Marked as IInterceptable to enable

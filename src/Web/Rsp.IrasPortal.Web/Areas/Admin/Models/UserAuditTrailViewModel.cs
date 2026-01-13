@@ -1,6 +1,6 @@
-﻿using Rsp.IrasPortal.Application.DTOs.Responses;
+﻿using Rsp.Portal.Application.DTOs.Responses;
 
-namespace Rsp.IrasPortal.Web.Areas.Admin.Models;
+namespace Rsp.Portal.Web.Areas.Admin.Models;
 
 public class UserAuditTrailViewModel
 {

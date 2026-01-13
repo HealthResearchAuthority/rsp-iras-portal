@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Application.DTOs.Responses;
+﻿namespace Rsp.Portal.Application.DTOs.Responses;
 
 /// <summary>
 /// Represents a response DTO containing information about a project modification change.

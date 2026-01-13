@@ -1,12 +1,12 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.Filters;
-using Rsp.IrasPortal.Domain.AccessControl;
-using Rsp.IrasPortal.Web.Features.Approvals.RecordSearch.Models;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.Filters;
+using Rsp.Portal.Domain.AccessControl;
+using Rsp.Portal.Web.Features.Approvals.RecordSearch.Models;
 
-namespace Rsp.IrasPortal.Web.Features.Approvals.RecordSearch.Controllers;
+namespace Rsp.Portal.Web.Features.Approvals.RecordSearch.Controllers;
 
 [Authorize(Policy = Workspaces.Approvals)]
 [Route("approvals/[controller]/[action]", Name = "recordsearch:[action]")]

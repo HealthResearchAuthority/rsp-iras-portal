@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Application.Constants;
+﻿namespace Rsp.Portal.Application.Constants;
 
 /// <summary>
 /// Session Keys. These keys are used to lookup items stored in HttpContext.Session

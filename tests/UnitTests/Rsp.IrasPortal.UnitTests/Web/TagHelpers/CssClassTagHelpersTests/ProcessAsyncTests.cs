@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using Rsp.IrasPortal.Web.TagHelpers;
+using Rsp.Portal.Web.TagHelpers;
 
-namespace Rsp.IrasPortal.UnitTests.Web.TagHelpers.CssClassTagHelpersTests;
+namespace Rsp.Portal.UnitTests.Web.TagHelpers.CssClassTagHelpersTests;
 
 public class ProcessAsyncTests : TestServiceBase
 {

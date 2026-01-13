@@ -1,9 +1,9 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.Web.Validators;
+namespace Rsp.Portal.Web.Validators;
 
 public class QuestionViewModelValidator : QuestionViewModelValidatorBase
 {

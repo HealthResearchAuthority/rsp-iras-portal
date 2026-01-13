@@ -1,8 +1,8 @@
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.ServiceClients;
-using Rsp.IrasPortal.Services;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.ServiceClients;
+using Rsp.Portal.Services;
 
-namespace Rsp.IrasPortal.UnitTests.Services.RespondentServiceTests;
+namespace Rsp.Portal.UnitTests.Services.RespondentServiceTests;
 
 public class ModificationDocumentTests : TestServiceBase<RespondentService>
 {

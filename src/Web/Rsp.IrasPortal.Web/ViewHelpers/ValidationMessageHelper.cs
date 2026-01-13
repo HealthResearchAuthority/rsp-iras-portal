@@ -1,9 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Rsp.IrasPortal.Application.DTOs;
+using Rsp.Portal.Application.DTOs;
 
-namespace Rsp.IrasPortal.Web.ViewHelpers;
+namespace Rsp.Portal.Web.ViewHelpers;
 
 /// <summary>
 /// Helper class for building validation messages for Razor Views.

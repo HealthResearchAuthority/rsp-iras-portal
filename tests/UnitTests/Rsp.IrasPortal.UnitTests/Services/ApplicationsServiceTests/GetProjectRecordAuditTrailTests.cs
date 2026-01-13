@@ -1,9 +1,9 @@
-﻿using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Application.ServiceClients;
-using Rsp.IrasPortal.Services;
-using Rsp.IrasPortal.UnitTests.TestHelpers;
+﻿using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.ServiceClients;
+using Rsp.Portal.Services;
+using Rsp.Portal.UnitTests.TestHelpers;
 
-namespace Rsp.IrasPortal.UnitTests.Services.ApplicationsServiceTests;
+namespace Rsp.Portal.UnitTests.Services.ApplicationsServiceTests;
 
 public class GetProjectRecordAuditTrailTests : TestServiceBase<ApplicationsService>
 {

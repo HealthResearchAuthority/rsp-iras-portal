@@ -4,14 +4,14 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Web.Areas.Admin.Models;
-using Rsp.IrasPortal.Web.Features.ProfileAndSettings.Controllers;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Requests.UserManagement;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Web.Areas.Admin.Models;
+using Rsp.Portal.Web.Features.ProfileAndSettings.Controllers;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Features.ProfileAndSettings;
+namespace Rsp.Portal.UnitTests.Web.Features.ProfileAndSettings;
 
 public class ProfileAndSettingsControllerTests : TestServiceBase<ProfileAndSettingsController>
 {

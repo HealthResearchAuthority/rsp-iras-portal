@@ -1,7 +1,7 @@
-using Rsp.IrasPortal.Application.Constants;
-using static Rsp.IrasPortal.Domain.AccessControl.Permissions;
+using Rsp.Portal.Application.Constants;
+using static Rsp.Portal.Domain.AccessControl.Permissions;
 
-namespace Rsp.IrasPortal.Application.AccessControl;
+namespace Rsp.Portal.Application.AccessControl;
 
 /// <summary>
 /// Maps roles to their workspace, area, and action permissions This can later be moved to

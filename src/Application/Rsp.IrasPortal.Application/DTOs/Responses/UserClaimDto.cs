@@ -1,2 +1,2 @@
-﻿namespace Rsp.IrasPortal.Application.DTOs.Responses;
+﻿namespace Rsp.Portal.Application.DTOs.Responses;
 public record UserClaimDto(string Type, string Value);

@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Domain.Entities;
+﻿namespace Rsp.Portal.Domain.Entities;
 
 public class Document
 {

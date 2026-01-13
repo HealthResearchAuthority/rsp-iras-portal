@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Web.Helpers;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Web.Helpers;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Helpers;
+namespace Rsp.Portal.UnitTests.Web.Helpers;
 
 public class SponsorOrganisationNameHelperTests
 {
