@@ -73,6 +73,13 @@ public class ProjectOverviewController
             return result;
         }
 
+        if (projectOverview.Value is ProjectOverviewModel model && model.Status is ProjectRecordStatus.Closed)
+        {
+            var projectClosureDate = await GetActualProjectClosureDate(projectRecordId);
+            model.ActualProjectClosureDate = projectClosureDate;
+            return View(model);
+        }
+
         return View(projectOverview.Value);
     }
 
@@ -188,6 +195,21 @@ public class ProjectOverviewController
     {
         var userManagementServiceResponse = userManagementService.GetUser(userId, null);
         return userManagementServiceResponse?.Result?.Content?.User.Email;
+    }
+
+    private async Task<string?> GetActualProjectClosureDate(string projectRecordId)
+    {
+        var projectClosureResponse = await projectClosuresService.GetProjectClosuresByProjectRecordId(projectRecordId);
+        var closure = projectClosureResponse.Content?.ProjectClosures?
+            .Where(pc => pc.DateActioned != null)
+            .OrderByDescending(pc => pc.DateActioned)
+            .FirstOrDefault();
+
+        var actualEndDate = closure?.ClosureDate != null
+            ? DateHelper.ConvertDateToString(closure.ClosureDate.Value)
+            : null;
+
+        return actualEndDate;
     }
 
     [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Read)]

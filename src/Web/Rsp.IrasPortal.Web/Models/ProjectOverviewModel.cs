@@ -51,4 +51,9 @@ public class ProjectOverviewModel
     /// Gets or sets the audit trails associated with the project.
     /// </summary>
     public IEnumerable<ProjectRecordAuditTrailDto> AuditTrails { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets actual project closure date of project.
+    /// </summary>
+    public string? ActualProjectClosureDate { get; set; }
 }

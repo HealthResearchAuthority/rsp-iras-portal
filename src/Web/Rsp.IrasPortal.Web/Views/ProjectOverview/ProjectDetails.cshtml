@@ -51,9 +51,7 @@
                     <dd class="govuk-summary-list__value">
                         @Model.IrasId
                     </dd>
-                </div>
-
-                addIrasIdInFirstGroup = false;
+                </div>                                
             }
 
             @foreach (var question in group.Questions)
@@ -78,7 +76,24 @@
                         </dd>
                     </div>
                 }
-            }           
+            }       
+            
+            @if (addIrasIdInFirstGroup)
+            {
+                @if (@Model.ActualProjectClosureDate != null)
+                {
+                <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">
+                        Actual project closure date
+                    </dt>
+                    <dd class="govuk-summary-list__value">
+                        @Model.ActualProjectClosureDate
+                    </dd>
+                </div> 
+                }
+
+                addIrasIdInFirstGroup = false;
+            }
         </dl>            
         }
     </div>
