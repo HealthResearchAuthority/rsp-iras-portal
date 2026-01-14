@@ -51,7 +51,7 @@ public class AddUserRoleTests : TestServiceBase<SponsorOrganisationsController>
     public void SaveUserRole_ShouldReturnModelStateError_WhenRoleIsNull(SponsorOrganisationAddUserModel model)
     {
         // Arrange
-        model.Role = null;
+        model.SponsorRole = null;
 
         SetupTempData(model);
 
@@ -68,7 +68,7 @@ public class AddUserRoleTests : TestServiceBase<SponsorOrganisationsController>
     public void SaveUserRole_ShouldRedirectToFinalPage_WhenRoleIsOrgAdmin(SponsorOrganisationAddUserModel model)
     {
         // Arrange
-        model.Role = SponsorOrganisationUserRoles.OrganisationAdministrator;
+        model.SponsorRole = SponsorOrganisationUserRoles.OrganisationAdministrator;
 
         SetupTempData(model);
 
@@ -85,7 +85,7 @@ public class AddUserRoleTests : TestServiceBase<SponsorOrganisationsController>
     public void SaveUserRole_ShouldRedirectToAuthoriserPage_WhenRoleIsSponsor(SponsorOrganisationAddUserModel model)
     {
         // Arrange
-        model.Role = Roles.Sponsor;
+        model.SponsorRole = Roles.Sponsor;
 
         SetupTempData(model);
 

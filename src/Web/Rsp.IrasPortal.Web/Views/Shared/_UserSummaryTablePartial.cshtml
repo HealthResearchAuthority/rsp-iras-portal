@@ -6,15 +6,12 @@
     var edit = !string.IsNullOrEmpty(Model.Id);
     var editNewUserUrl = "/admin/users/editnewuser";
     var showChangeLink = TempData[TempDataKeys.ShowEditLink] == null;
-    var showAuthorizerInfoRow = ViewData["ShowAuthorizerInfo"] is true;
 
-    SponsorOrganisationAddUserModel? sponsorOrgUser = null;
-    var storedObject = TempData.Peek(TempDataKeys.SponsorOrganisationUser);
+    var sponsorOrgUser =
+        TempData.Peek(TempDataKeys.SponsorOrganisationUser) is string json
+            ? JsonSerializer.Deserialize<SponsorOrganisationAddUserModel>(json)
+            : null;
 
-    if (storedObject is not null)
-    {
-        sponsorOrgUser = JsonSerializer.Deserialize<SponsorOrganisationAddUserModel>((storedObject as string)!);
-    }
 }
 
 <input type="hidden" asp-for="Status" name="Status" value="@(Model.Status ?? string.Empty)" />
@@ -139,8 +136,8 @@
             </td>
             @if (sponsorOrgUser is not null)
             {
-                var userRole = !string.IsNullOrEmpty(sponsorOrgUser.Role) ?
-                sponsorOrgUser.Role.Replace("_", " ").ToLower() : "";
+                var userRole = !string.IsNullOrEmpty(sponsorOrgUser.SponsorRole) ?
+                sponsorOrgUser.SponsorRole.Replace("_", " ").ToLower() : "";
 
                 <td class="govuk-table__cell">
                     @(!string.IsNullOrEmpty(userRole) ? char.ToUpper(userRole[0]) + userRole.Substring(1) : "")
@@ -288,20 +285,6 @@
 				</tr>
 			}
 		}
-
-        @if (showAuthorizerInfoRow)
-        {
-            <tr class="govuk-table__row">
-                <td class="govuk-table__cell">
-                    <b>Authoriser</b>
-                </td>
-                <td class="govuk-table__cell">
-                    @((bool)(ViewData["IsUserAuthorizer"] ?? false) ? "Yes" : "No")
-                </td>
-            </tr>
-        }
-
-
 	</tbody>
 </table>
 
