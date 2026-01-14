@@ -339,7 +339,7 @@ public class SponsorOrganisationsController(
             UserId = userId,
             Email = user.Content?.User.Email,
             DateAdded = DateTime.UtcNow,
-            SponsorRole = addUserModel?.Role ?? Roles.Sponsor,
+            SponsorRole = addUserModel?.SponsorRole ?? Roles.Sponsor,
             IsAuthoriser = addUserModel?.IsAuthoriser ?? false
         };
 
@@ -371,7 +371,7 @@ public class SponsorOrganisationsController(
         {
             RtsId = rtsId,
             UserId = userId,
-            Role = null,
+            SponsorRole = null,
             IsAuthoriser = false
         };
 
@@ -391,17 +391,17 @@ public class SponsorOrganisationsController(
             return RedirectToAction(nameof(Index));
         }
 
-        if (model.Role is null)
+        if (model.SponsorRole is null)
         {
             ModelState.AddModelError(string.Empty, "You must select a user role before continuing.");
             return View(nameof(AddUserRole), storedModel);
         }
 
-        storedModel.Role = model.Role;
-        storedModel.IsAuthoriser = model.Role == SponsorOrganisationUserRoles.OrganisationAdministrator;
+        storedModel.SponsorRole = model.SponsorRole;
+        storedModel.IsAuthoriser = model.SponsorRole == SponsorOrganisationUserRoles.OrganisationAdministrator;
         TempData[TempDataKeys.SponsorOrganisationUser] = JsonSerializer.Serialize(storedModel);
 
-        if (model.Role == SponsorOrganisationUserRoles.OrganisationAdministrator)
+        if (model.SponsorRole == SponsorOrganisationUserRoles.OrganisationAdministrator)
         {
             return RedirectToAction(nameof(ViewSponsorOrganisationUser), new { rtsId = storedModel.RtsId, userId = storedModel.UserId, addUser = true });
         }
@@ -448,6 +448,7 @@ public class SponsorOrganisationsController(
         var model = await BuildSponsorOrganisationUserModel(rtsId, userId);
 
         TempData[TempDataKeys.ShowEditLink] = false;
+        TempData[TempDataKeys.SponsorOrganisationUser] = JsonSerializer.Serialize(model.SponsorOrganisationUser);
 
         // Auto-set type based on whether the user is being added or edited
         ViewBag.Type = addUser ? "add" : "edit";
@@ -872,7 +873,7 @@ public class SponsorOrganisationsController(
                 RtsId = rtsId,
                 UserId = userId,
                 IsAuthoriser = sponsorOrganisationAddUserModel?.IsAuthoriser ?? false,
-                SponsorRole = sponsorOrganisationAddUserModel?.Role ?? Roles.Sponsor,
+                SponsorRole = sponsorOrganisationAddUserModel?.SponsorRole ?? Roles.Sponsor,
                 DateAdded = DateTime.UtcNow
             }
         };
