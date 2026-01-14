@@ -391,7 +391,7 @@ else
 </div>
 <div permission="@Permissions.MyResearch.ProjectRecord_Close"
      status-for="ProjectOverviewModel.Status"
-     status-in="@(new[] { ProjectRecordStatus.PendingClosure, ProjectRecordStatus.Closed })"
+     status-in="@([ProjectRecordStatus.PendingClosure, ProjectRecordStatus.Closed])"
      class="govuk-grid-row">
     <div class="govuk-grid-column-one-half">
         <label class="govuk-label" for="">
