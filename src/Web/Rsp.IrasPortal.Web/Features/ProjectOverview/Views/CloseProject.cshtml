@@ -22,7 +22,7 @@
     var hasError = ViewData.ModelState.TryGetValue(nameof(Model), out var entry) && entry!.Errors.Any();
 }
 @section BackNavigation {
-    <partial name="_BackNavigation" model="@("pov:postapproval", "Back", new Dictionary<string, string> { { "projectRecordId", Model.ProjectRecordId } })" />
+    <partial name="_BackNavigation" model="@("pov:postapproval", "Back", new Dictionary<string, string> { { "projectRecordId", Model.ProjectRecordId }, { "backRoute", "projectClosure" } })" />
 }
 
 <div class="govuk-width-container">
