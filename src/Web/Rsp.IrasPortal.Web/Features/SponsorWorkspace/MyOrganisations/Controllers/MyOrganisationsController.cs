@@ -9,7 +9,6 @@ using Microsoft.FeatureManagement.Mvc;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
-using Rsp.Portal.Application.Extensions;
 using Rsp.Portal.Application.Filters;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
@@ -160,8 +159,11 @@ public class MyOrganisationsController(
         var searchQuery = new ProjectRecordSearchRequest
         {
             SponsorOrganisation = rtsId,
-            ActiveProjectsOnly = true,
-            AllowedStatuses = User.GetAllowedStatuses(StatusEntitiy.ProjectRecord)
+            AllowedStatuses = new List<string> {
+                ProjectRecordStatus.Active,
+                ProjectRecordStatus.Closed,
+                ProjectRecordStatus.PendingClosure
+            }
         };
 
         var json = HttpContext.Session.GetString(SessionKeys.SponsorMyOrganisationsProjectsSearch);

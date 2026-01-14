@@ -232,20 +232,12 @@
 							{
 								<tr class="govuk-table__row">
 									<td class="govuk-table__cell">
-										@if (record.Status == ProjectRecordStatus.Active)
-										{
-											<a asp-route="pov:projectdetails"
-											   asp-route-projectRecordId="@record.Id"
-											   asp-route-backRoute="sws:MyOrganisationProjects"
-											   class="govuk-link">
-												<strong>@record.ShortProjectTitle</strong>
-											</a>
-										}
-										else
-										{
-											@record.ShortProjectTitle
-										}
-
+										<a asp-route="pov:projectdetails"
+										   asp-route-projectRecordId="@record.Id"
+										   asp-route-backRoute="sws:MyOrganisationProjects"
+										   class="govuk-link">
+											<strong>@record.ShortProjectTitle</strong>
+										</a>
 									</td>
 									<td class="govuk-table__cell">
 										@record.IrasId
