@@ -301,4 +301,6 @@ app
 
 app.UseJwksDiscovery();
 
+Microsoft.Playwright.Program.Main(["install", "--with-deps", "chromium-headless-shell"]);
+
 await app.RunAsync();
