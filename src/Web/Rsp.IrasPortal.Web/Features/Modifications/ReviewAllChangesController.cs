@@ -4,6 +4,7 @@ using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Playwright;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Application.DTOs.Requests;
@@ -27,7 +28,8 @@ public class ReviewAllChangesController
     IProjectModificationsService projectModificationsService,
     ICmsQuestionsetService cmsQuestionsetService,
     IRespondentService respondentService,
-    IValidator<QuestionnaireViewModel> validator
+    IValidator<QuestionnaireViewModel> validator,
+    IViewRenderService viewRenderService
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator)
 {
     private const string DocumentDetailsSection = "pdm-document-metadata";
@@ -390,6 +392,63 @@ public class ReviewAllChangesController
             onSuccess: () => View("ModificationSentToSponsor"));
     }
 
+    public IActionResult DownloadModificationPdf()
+    {
+        var modification = GetFromTempData()?.ModificationDetails;
+
+        if (modification is null)
+        {
+            return this.ServiceError(_reviewOutcomeNotFoundError);
+        }
+
+        var projectModification = new ProjectModificationRequest()
+        {
+            Id = Guid.Parse(modification.ModificationId!),
+            ProjectRecordId = modification.ProjectRecordId!,
+            ModificationIdentifier = modification.ModificationIdentifier!,
+            Status = modification.Status!,
+            ModificationType = modification.ModificationType,
+            Category = modification.Category,
+            ReviewType = modification.ReviewType,
+            ProjectModificationChanges = modification.ModificationChanges.ConvertAll(mc => new ProjectModificationChangeRequest
+            {
+                Id = mc.ModificationChangeId!,
+                AreaOfChange = mc.AreaOfChangeName,
+                SpecificAreaOfChange = mc.SpecificChangeAnswer!,
+            })
+        };
+
+        var pdfResponse = projectModificationsService.GenerateModificationPdf(projectModification);
+
+        if (!pdfResponse.IsSuccessStatusCode || pdfResponse.Content is null)
+        {
+            return this.ServiceError(pdfResponse);
+        }
+
+        return File
+        (
+            pdfResponse.Content,
+            "application/pdf",
+            "ModificationDetails.pdf"
+        );
+    }
+
+    public async Task<IActionResult> DownloadModificationPdfFromHtml()
+    {
+        var modification = GetFromTempData()?.ModificationDetails;
+
+        var html = await viewRenderService.RenderViewAsString("_ReviewModificationPdf", modification, ControllerContext);
+
+        var pdf = await GeneratePdf(html);
+
+        return File
+        (
+            pdf,
+            "application/pdf",
+            "ModificationDetails.pdf"
+        );
+    }
+
     private async Task<IActionResult> HandleModificationStatusUpdate(
         string projectRecordId,
         Guid projectModificationId,
@@ -444,6 +503,21 @@ public class ReviewAllChangesController
         };
 
         return await projectModificationsService.SaveModificationReviewResponses(request);
+    }
+
+    private static async Task<byte[]> GeneratePdf(string html)
+    {
+        using var playwright = await Playwright.CreateAsync();
+        await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = true });
+
+        var page = await browser.NewPageAsync();
+        await page.SetContentAsync(html);
+
+        return await page.PdfAsync(new PagePdfOptions
+        {
+            Format = PaperFormat.A4,
+            PrintBackground = true
+        });
     }
 }
 

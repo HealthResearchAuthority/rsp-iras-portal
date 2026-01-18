@@ -6,6 +6,7 @@ using Rsp.IrasPortal.Application.Responses;
 using Rsp.IrasPortal.Application.ServiceClients;
 using Rsp.IrasPortal.Application.Services;
 using Rsp.IrasPortal.Services.Extensions;
+using Rsp.IrasPortal.Services.PdfHandlers;
 
 namespace Rsp.IrasPortal.Services;
 
@@ -361,5 +362,14 @@ public class ProjectModificationsService
         var apiResponse = await projectModificationsServiceClient.CreateModificationDocumentsAuditTrail(documentsAuditTrailRequest);
 
         return apiResponse.ToServiceResponse();
+    }
+
+    public ServiceResponse<byte[]> GenerateModificationPdf(ProjectModificationRequest projectModification)
+    {
+        return new ServiceResponse<byte[]>()
+        {
+            StatusCode = System.Net.HttpStatusCode.OK,
+            Content = QuestPdf.GeneratePdf(projectModification)
+        };
     }
 }
