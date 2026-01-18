@@ -142,6 +142,16 @@ public static class Permissions
         /// allows withdrawing modifications
         /// </summary>
         public const string Modifications_Withdraw = "myresearch.modifications.withdraw";
+
+        /// <summary>
+        /// allows downloading modifications
+        /// </summary>
+        public const string Modifications_Download = "myresearch.modifications.download";
+
+        /// <summary>
+        /// allows limited downloading modifications depending on status
+        /// </summary>
+        public const string Modifications_Download_Limited = "myresearch.modifications.download_limited";
     }
 
     // Sponsor Workspace Permissions

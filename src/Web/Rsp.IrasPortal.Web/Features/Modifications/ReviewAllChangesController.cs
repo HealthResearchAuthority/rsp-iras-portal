@@ -1,5 +1,6 @@
 ﻿#pragma warning disable S107 // Methods should not have too many parameters
 
+using System.Net;
 using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
@@ -19,8 +20,6 @@ using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Features.Modifications.Models;
 using Rsp.Portal.Web.Helpers;
 using Rsp.Portal.Web.Models;
-using static Rsp.Portal.Application.AccessControl.RoleStatusPermissions;
-using static Rsp.Portal.Application.Constants.TempDataKeys;
 
 namespace Rsp.Portal.Web.Features.Modifications;
 
@@ -32,7 +31,8 @@ public class ReviewAllChangesController
     ICmsQuestionsetService cmsQuestionsetService,
     IRespondentService respondentService,
     IValidator<QuestionnaireViewModel> validator,
-    IFeatureManager featureManager
+    IFeatureManager featureManager,
+    IViewHelper viewHelper
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator, featureManager)
 {
     private const string DocumentDetailsSection = "pdm-document-metadata";
@@ -42,7 +42,7 @@ public class ReviewAllChangesController
 
     private readonly ServiceResponse _reviewOutcomeNotFoundError = new()
     {
-        StatusCode = System.Net.HttpStatusCode.NotFound,
+        StatusCode = HttpStatusCode.NotFound,
         Error = "Unable to retrieve modification review outcome details from session."
     };
 
@@ -500,6 +500,30 @@ public class ReviewAllChangesController
             onSuccess: () => View(model));
     }
 
+    public async Task<IActionResult> DownloadModificationPdfFromHtml()
+    {
+        var modification = GetFromTempData()?.ModificationDetails;
+
+        if (modification is null)
+        {
+            return this.ServiceError(new ServiceResponse
+            {
+                StatusCode = HttpStatusCode.NotFound,
+                Error = "Unable to retrieve modification details from session."
+            });
+        }
+
+        var html = await viewHelper.RenderViewAsString("_ReviewModificationPdf", modification, ControllerContext);
+
+        var pdf = await viewHelper.GeneratePdf(html, $"Modification ID: {modification.ModificationIdentifier}");
+
+        return File
+        (
+            pdf,
+            "application/pdf",
+            $"{modification.ModificationIdentifier} {DateTime.UtcNow}.pdf"
+        );
+    }
 
     private async Task<IActionResult> HandleModificationStatusUpdate(
         string projectRecordId,

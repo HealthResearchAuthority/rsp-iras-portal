@@ -42,6 +42,7 @@ public static class RolePermissions
                 MyResearch.Modifications_Search,
                 MyResearch.Modifications_Submit,
                 MyResearch.Modifications_Withdraw,
+                MyResearch.Modifications_Download,
 
                 MyResearch.ModificationsHistory_Read
             }
@@ -62,6 +63,7 @@ public static class RolePermissions
                 MyResearch.Modifications_List,
                 MyResearch.Modifications_Review,
                 MyResearch.ModificationsHistory_Read,
+                MyResearch.Modifications_Download,
 
                 // Sponsor Workspace
                 Sponsor.Modifications_Review,
@@ -94,6 +96,7 @@ public static class RolePermissions
                 MyResearch.ModificationsHistory_Read,
                 MyResearch.ModificationsHistory_BackStage_Read,
                 MyResearch.Modifications_Approve,
+                MyResearch.Modifications_Download_Limited,
 
                 // Approvals Workspace
                 Approvals.ProjectRecords_Search,
@@ -118,6 +121,7 @@ public static class RolePermissions
                 MyResearch.ModificationsHistory_Read,
                 MyResearch.ModificationsHistory_BackStage_Read,
                 MyResearch.Modifications_Approve,
+                MyResearch.Modifications_Download_Limited,
 
                 // Approvals Workspace
                 Approvals.ProjectRecords_Search,
@@ -143,6 +147,7 @@ public static class RolePermissions
                 MyResearch.ModificationsHistory_Read,
                 MyResearch.ModificationsHistory_BackStage_Read,
                 MyResearch.Modifications_Approve,
+                MyResearch.Modifications_Download_Limited,
 
                 // Approvals Workspace
                 Approvals.ProjectRecords_Search,
@@ -161,6 +166,8 @@ public static class RolePermissions
 
                 MyResearch.ProjectDocuments_List,
                 MyResearch.ProjectDocuments_Download,
+
+                MyResearch.Modifications_Download,
 
                 MyResearch.Modifications_List,
                 MyResearch.Modifications_Review,

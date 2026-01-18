@@ -5,6 +5,7 @@ using Rsp.Portal.Infrastructure.Claims;
 using Rsp.Portal.Infrastructure.HttpMessageHandlers;
 using Rsp.Portal.Services;
 using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Services;
+using Rsp.Portal.Web.Helpers;
 
 namespace Rsp.Portal.Configuration.Dependencies;
 
@@ -35,6 +36,7 @@ public static class ServicesConfiguration
         services.AddScoped<IModificationRankingService, ModificationRankingService>();
         services.AddScoped<IProjectClosuresService, ProjectClosuresService>();
         services.AddScoped<ISponsorUserAuthorisationService, SponsorUserAuthorisationService>();
+        services.AddScoped<IViewHelper, ViewHelper>();
 
         // add message handlers
         services.AddTransient<AuthHeadersHandler>();
