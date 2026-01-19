@@ -476,7 +476,7 @@ public class MyOrganisationsController(
             return this.ServiceError(auditResponse);
         }
 
-        var auditTrails = SortSponsorOrganisationAuditTrails(auditResponse.Content.Items, "DateTimeStamp", SortDirections.Descending, ctx.RtsOrganisation.Name, 1, int.MaxValue);
+        var auditTrails = SponsorOrganisationSortingExtensions.SortSponsorOrganisationAuditTrails(auditResponse.Content.Items, "DateTimeStamp", SortDirections.Descending, ctx.RtsOrganisation.Name, 1, int.MaxValue);
 
         var model = new SponsorMyOrganisationAuditViewModel
         {
@@ -486,56 +486,6 @@ public class MyOrganisationsController(
         };
 
         return View(model);
-    }
-
-    [NonAction]
-    private static IEnumerable<SponsorOrganisationAuditTrailDto> SortSponsorOrganisationAuditTrails(
-IEnumerable<SponsorOrganisationAuditTrailDto> items,
-string? sortField,
-string? sortDirection,
-string? sponsorOrganisationName,
-int pageNumber = 1,
-int pageSize = 20)
-    {
-        // 1) Transform descriptions: replace RtsId with sponsorOrganisationName (case-insensitive)
-        var list = items
-            .Select(x =>
-            {
-                var desc = x.Description ?? string.Empty;
-
-                if (!string.IsNullOrWhiteSpace(sponsorOrganisationName) && !string.IsNullOrWhiteSpace(x.RtsId))
-                {
-                    // Replace all occurrences of RtsId with sponsorOrganisationName
-                    // (case-insensitive, no regex)
-                    desc = desc.Replace(x.RtsId, sponsorOrganisationName!, StringComparison.OrdinalIgnoreCase);
-                }
-
-                return new SponsorOrganisationAuditTrailDto
-                {
-                    Id = x.Id,
-                    RtsId = x.RtsId,
-                    DateTimeStamp = x.DateTimeStamp,
-                    Description = desc,
-                    User = x.User
-                };
-            })
-            .ToList();
-
-        // 2) Sorting
-        var descSort = string.Equals(sortDirection, "desc", StringComparison.OrdinalIgnoreCase);
-        var field = sortField?.ToLowerInvariant();
-
-        var sorted = field switch
-        {
-            _ => list.OrderByDescending(x => x.DateTimeStamp)
-        };
-
-        // 3) Pagination safety + apply
-        if (pageNumber < 1) pageNumber = 1;
-        if (pageSize < 1) pageSize = 20;
-
-        var skip = (pageNumber - 1) * pageSize;
-        return sorted.Skip(skip).Take(pageSize);
     }
 
     [HttpGet]
