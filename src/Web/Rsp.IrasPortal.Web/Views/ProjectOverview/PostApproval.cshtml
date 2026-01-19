@@ -452,6 +452,8 @@ else
                                                 var tagClass = projectClosure.Status switch
                                                 {
                                                     ProjectClosureStatus.WithSponsor => "govuk-tag--yellow",
+                                                    ProjectClosureStatus.Authorised => "govuk-tag--green",
+                                                    ProjectClosureStatus.NotAuthorised => "govuk-tag--red",
                                                     _ => "govuk-tag--blue"
                                                 };
                                             }
