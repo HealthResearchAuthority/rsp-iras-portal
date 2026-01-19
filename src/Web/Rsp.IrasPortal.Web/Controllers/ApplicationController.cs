@@ -388,7 +388,7 @@ public class ApplicationController
 
         if (isInTransactionState)
         {
-            return View("/Features/ProjectOverview/Views/ValidateProjectClosure.cshtml");
+            return View("/Features/ProjectOverview/Views/ValidateProjectClosure.cshtml", model);
         }
         else
         {
