@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.Security.Claims;
 using System.Text.Json;
-using Azure;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
