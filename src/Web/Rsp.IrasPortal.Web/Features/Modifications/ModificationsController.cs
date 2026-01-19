@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Azure;
+using Rsp.IrasPortal.Web.Helpers;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs.CmsQuestionset.Modifications;
 using Rsp.Portal.Application.DTOs.Requests;
@@ -73,6 +74,24 @@ public class ModificationsController
 
         // Compose the full name of the respondent
         var name = $"{respondent.GivenName} {respondent.FamilyName}";
+
+        //Validation for new modification
+        var existingModification = await projectModificationsService.GetModificationsByProjectRecordId((string)projectRecordId);
+
+        if (existingModification?.Content?.Modifications != null)
+        {
+            var validation = CreateNewModificationValidation.ValidateNewModification(existingModification.Content.Modifications, ModificationStatus.InDraft);
+
+            if (!validation)
+            {
+                return this.ServiceError(new ServiceResponse
+                {
+                    Error = "Create modification error",
+                    StatusCode = HttpStatusCode.BadRequest,
+                    ReasonPhrase = "Bad Request"
+                });
+            }
+        }
 
         // Create a new project modification request
         var modificationRequest = new ProjectModificationRequest
@@ -251,7 +270,6 @@ public class ModificationsController
 
         // Deserialize the area of changes from TempData
         var areaOfChanges = JsonSerializer.Deserialize<List<AreaOfChangeDto>>(areas!)!;
-
         if (!saveForLater)
         {
             PopulateDropdownOptions(model, areaOfChanges);

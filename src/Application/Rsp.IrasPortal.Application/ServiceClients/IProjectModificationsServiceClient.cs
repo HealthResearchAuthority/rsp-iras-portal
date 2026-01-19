@@ -289,4 +289,7 @@ public interface IProjectModificationsServiceClient
     /// <param name="documentsAuditTrailRequest">The request object containing the updated details for the modification change.</param>
     [Post("/documents/createdocumentsaudittrail")]
     Task<IApiResponse> CreateModificationDocumentsAuditTrail([Body] List<ModificationDocumentsAuditTrailDto> documentsAuditTrailRequest);
+
+    [Get("/projectmodifications/GetModificationsByProjectRecordId")]
+    public Task<ApiResponse<GetModificationsResponse>> GetModificationsByProjectRecordId(string projectRecordId);
 }
