@@ -163,7 +163,7 @@
 									<span class="search-filter-summary__remove-filter-text">
 										<span class="govuk-visually-hidden">Remove filter</span>
 										@if (filterKey.Contains("date created - from", StringComparison.OrdinalIgnoreCase)
-															|| filterKey.Contains("date crated - to", StringComparison.OrdinalIgnoreCase))
+																	|| filterKey.Contains("date created - to", StringComparison.OrdinalIgnoreCase))
 										{
 											@($"{filterKey} {val}")
 										}

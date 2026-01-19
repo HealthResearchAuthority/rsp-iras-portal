@@ -1909,9 +1909,6 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
 
         var toDate = DateTimeExtensions.ParseDateValidation(toDay, toMonth, toYear);
 
-        //var exectedFilter = "Created date",
-        //        [$"{fromDate:d MMM yyyy} to {toDate:d MMM yyyy}"]
-
         // Act
         var result = new SponsorOrganisationProjectSearchModel
         {
@@ -1924,7 +1921,7 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         };
 
         // Assert
-        result.Filters.ShouldContain(x => x.Key == "Created date");
+        result.Filters.ShouldContain(x => x.Key == "Date created");
     }
 
     [Fact]
