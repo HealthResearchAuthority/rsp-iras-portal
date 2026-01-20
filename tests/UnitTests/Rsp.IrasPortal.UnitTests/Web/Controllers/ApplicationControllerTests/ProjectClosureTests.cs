@@ -71,7 +71,7 @@ public class ProjectClosureTests : TestServiceBase<ApplicationController>
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         Assert.Equal("/Features/ProjectOverview/Views/ValidateProjectClosure.cshtml", viewResult.ViewName);
-        Assert.Null(viewResult.Model);
+        Assert.NotNull(viewResult.Model);
     }
 
     [Fact]
