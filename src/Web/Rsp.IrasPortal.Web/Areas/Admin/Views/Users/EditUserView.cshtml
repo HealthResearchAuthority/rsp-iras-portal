@@ -64,7 +64,9 @@
                                     item-label-property="DisplayName"
                                     item-value-property="IsSelected"
                                     item-hidden-properties="Id,Name"
-                                    legend-class="govuk-label govuk-label--s" />
+                                    readonly-items="organisation_administrator,sponsor"
+                                    readonly-item-property="Name" />
+
 
             <rsp-gds-checkbox-group asp-for="Country"
                                     label-text="Country"

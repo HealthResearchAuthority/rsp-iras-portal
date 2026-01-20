@@ -685,7 +685,7 @@ public class MyOrganisationsController(
             return this.ServiceError(response);
         }
 
-        var updateRole = await userService.UpdateRoles(user.Email, null,
+        var updateRole = await userService.UpdateRoles(user.Email, $"{Roles.Sponsor},{Roles.OrganisationAdministrator}",
             role == "Sponsor" ? Roles.Sponsor : Roles.OrganisationAdministrator);
 
         if (!updateRole.IsSuccessStatusCode)
