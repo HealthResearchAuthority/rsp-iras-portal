@@ -25,7 +25,8 @@
         ? pageContentData
         : new Dictionary<string, MixedContentPageItem?>();
 
-    var headline = pageContent.GetValueOrDefault("SponsorWorkspace.Authorisations.Title", null);
+    var headline = pageContent.GetValueOrDefault("SponsorWorkspace.ProjectClosures.Title", null);
+    var searchHint = pageContent.GetValueOrDefault("SponsorWorkspace.ProjectClosures.SearchHint", null);
 }
 
 <div class="govuk-grid-row">
@@ -40,12 +41,16 @@
                 <form asp-route="sws:applyprojectclosuresfilters" method="post" class="govuk-form-group govuk-!-margin-bottom-0">
 
                     <div class="govuk-form-group govuk-!-margin-bottom-2" error-class-for="Search.SearchTerm">
+                        
+                        <div id="search-hint" class="govuk-hint">
+                            @Html.Raw(searchHint?.Value)
+                        </div>
 
                         @Html.ValidationMessageFor(model => model.Search.SearchTerm, "", new { @class = "govuk-error-message" })
 
                         <div class="govuk-input__wrapper">
                             <span id="find-project-label" class="govuk-visually-hidden">Find a project</span>
-                            <input asp-for="Search.SearchTerm" class="govuk-input" type="text" id="SearchTerm" aria-labelledby="find-project-label" />
+                            <input asp-for="Search.SearchTerm" class="govuk-input" type="text" id="SearchTerm" aria-labelledby="find-project-label"/>
                             <button class="govuk-button mb-0" style="margin-left:10px" type="submit">
                                 Search
                             </button>
