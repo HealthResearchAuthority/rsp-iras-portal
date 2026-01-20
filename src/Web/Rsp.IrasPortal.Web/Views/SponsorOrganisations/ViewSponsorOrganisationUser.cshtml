@@ -39,7 +39,14 @@
 
     @if (ViewBag.Type == "add")
     {
-        <partial name="_BackNavigation" model="@("soc:adduserrole", "Back", new Dictionary<string, string>{ { "RtsId", Model.SponsorOrganisation.RtsId }, { "UserId", Model.User.Id! } })"/>
+        if (Model.SponsorOrganisationUser.SponsorRole == Roles.OrganisationAdministrator)
+        {
+            <partial name="_BackNavigation" model="@("soc:adduserrole", "Back", new Dictionary<string, string>{ { "RtsId", Model.SponsorOrganisation.RtsId }, { "UserId", Model.User.Id! } })"/>
+        }
+        else
+        {
+            <partial name="_BackNavigation" model="@("soc:adduserpermission", "Back", new Dictionary<string, string>{})" />
+        }
     }
     else if (ViewBag.Type == "edit")
     {
