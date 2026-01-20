@@ -76,4 +76,5 @@ public struct TempDataKeys
     public const string ShowCloseProjectBanner = "td:show_close_project_banner";
     public const string PreAuthProjectClosureModel = "td:pre_auth_project_closure_model";
     public const string SponsorOrganisationUser = "td:sponsor_organisation_user";
+    public const string IsAuthoriser = "td:is_authoriser";
 }
