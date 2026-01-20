@@ -279,7 +279,7 @@ public class SponsorOrganisationsController(
             totalUserCount = users.Content?.TotalCount ?? 0;
         }
 
-        model.Users = SortSponsorOrganisationUsers(model.Users, model.SponsorOrganisation.Users, sortField,
+        model.Users = SponsorOrganisationSortingExtensions.SortSponsorOrganisationUsers(model.Users, model.SponsorOrganisation.Users, sortField,
             sortDirection, pageNumber, pageSize);
 
         model.Pagination = BuildPagination(pageNumber, pageSize, totalUserCount, "soc:viewsponsororganisationusers",
@@ -339,7 +339,7 @@ public class SponsorOrganisationsController(
             UserId = userId,
             Email = user.Content?.User.Email,
             DateAdded = DateTime.UtcNow,
-            SponsorRole = addUserModel?.Role ?? Roles.Sponsor,
+            SponsorRole = addUserModel?.SponsorRole ?? Roles.Sponsor,
             IsAuthoriser = addUserModel?.IsAuthoriser ?? false
         };
 
@@ -371,7 +371,7 @@ public class SponsorOrganisationsController(
         {
             RtsId = rtsId,
             UserId = userId,
-            Role = null,
+            SponsorRole = null,
             IsAuthoriser = false
         };
 
@@ -391,17 +391,17 @@ public class SponsorOrganisationsController(
             return RedirectToAction(nameof(Index));
         }
 
-        if (model.Role is null)
+        if (model.SponsorRole is null)
         {
             ModelState.AddModelError(string.Empty, "You must select a user role before continuing.");
             return View(nameof(AddUserRole), storedModel);
         }
 
-        storedModel.Role = model.Role;
-        storedModel.IsAuthoriser = model.Role == SponsorOrganisationUserRoles.OrganisationAdministrator;
+        storedModel.SponsorRole = model.SponsorRole;
+        storedModel.IsAuthoriser = model.SponsorRole == SponsorOrganisationUserRoles.OrganisationAdministrator;
         TempData[TempDataKeys.SponsorOrganisationUser] = JsonSerializer.Serialize(storedModel);
 
-        if (model.Role == SponsorOrganisationUserRoles.OrganisationAdministrator)
+        if (model.SponsorRole == SponsorOrganisationUserRoles.OrganisationAdministrator)
         {
             return RedirectToAction(nameof(ViewSponsorOrganisationUser), new { rtsId = storedModel.RtsId, userId = storedModel.UserId, addUser = true });
         }
@@ -448,6 +448,7 @@ public class SponsorOrganisationsController(
         var model = await BuildSponsorOrganisationUserModel(rtsId, userId);
 
         TempData[TempDataKeys.ShowEditLink] = false;
+        TempData[TempDataKeys.SponsorOrganisationUser] = JsonSerializer.Serialize(model.SponsorOrganisationUser);
 
         // Auto-set type based on whether the user is being added or edited
         ViewBag.Type = addUser ? "add" : "edit";
@@ -542,7 +543,7 @@ public class SponsorOrganisationsController(
         var auditTrailResponse = response?.Content;
         var items = auditTrailResponse?.Items;
 
-        var sorted = SortSponsorOrganisationAuditTrails(items, sortField, sortDirection,
+        var sorted = SponsorOrganisationSortingExtensions.SortSponsorOrganisationAuditTrails(items, sortField, sortDirection,
             load.Model.SponsorOrganisationName, pageNumber, pageSize);
 
         var paginationModel = new PaginationViewModel(pageNumber, pageSize,
@@ -605,193 +606,6 @@ public class SponsorOrganisationsController(
         };
 
         return (model, dto, null);
-    }
-
-    [NonAction]
-    private static IEnumerable<UserViewModel> SortSponsorOrganisationUsers(
-        IEnumerable<UserViewModel> users,
-        IEnumerable<SponsorOrganisationUserDto>? sponsorOrganisationUserDtos,
-        string? sortField,
-        string? sortDirection,
-        int pageNumber = 1,
-        int pageSize = 20)
-    {
-        var list = users as IList<UserViewModel> ?? users.ToList();
-
-        // Build one lookup: UserId -> latest DTO for that user
-        var latestByUserId =
-            sponsorOrganisationUserDtos?
-                .GroupBy(x => x.UserId)
-                .ToDictionary(g => g.Key, g => g.Last())
-            ?? new Dictionary<Guid, SponsorOrganisationUserDto>();
-
-        // Helpers
-        var desc = string.Equals(sortDirection, "desc", StringComparison.OrdinalIgnoreCase);
-        var field = sortField?.Trim().ToLowerInvariant() ?? string.Empty;
-
-        IOrderedEnumerable<UserViewModel> ordered;
-
-        // -------------------------
-        // 1. PRIMARY BUBBLING SORTS (only when requested) -------------------------
-        if (field == "status")
-        {
-            // ASC: Active first, then Disabled
-            // DESC: Disabled first, then Active
-            ordered = desc
-                ? list.OrderBy(IsActive)               // desc => Disabled first (false then true)
-                : list.OrderByDescending(IsActive);    // asc  => Active first
-        }
-        else if (field == "isauthoriser")
-        {
-            // ASC: No first, then Yes
-            // DESC: Yes first, then No
-            ordered = desc
-                ? list.OrderByDescending(IsAuthoriser)
-                : list.OrderBy(IsAuthoriser);
-        }
-        else
-        {
-            // No default bubbling by status/authoriser → simply keep identity ordering
-            ordered = list.OrderBy(_ => 0);
-        }
-
-        // -------------------------
-        // 2. SECONDARY: selected field (including sponsorrole) -------------------------
-        if (field == "currentlogin")
-        {
-            ordered = desc ? ordered.ThenByDescending(LatestLogin) : ordered.ThenBy(LatestLogin);
-        }
-        else if (field == "sponsorrole")
-        {
-            ordered = desc
-                ? ordered.ThenByDescending(SponsorRoleKey, StringComparer.OrdinalIgnoreCase)
-                : ordered.ThenBy(SponsorRoleKey, StringComparer.OrdinalIgnoreCase);
-        }
-        else if (field != "status" && field != "isauthoriser")
-        {
-            Func<UserViewModel, string> key = field switch
-            {
-                "familyname" => x => x.FamilyName ?? string.Empty,
-                "email" => x => x.Email ?? string.Empty,
-                _ => x => x.GivenName ?? string.Empty
-            };
-
-            ordered = desc
-                ? ordered.ThenByDescending(key, StringComparer.OrdinalIgnoreCase)
-                : ordered.ThenBy(key, StringComparer.OrdinalIgnoreCase);
-        }
-
-        // -------------------------
-        // 3. TERTIARY: tie-break -------------------------
-        if (field != "currentlogin")
-        {
-            ordered = ordered.ThenByDescending(LatestLogin);
-        }
-
-        // Pagination
-        pageNumber = Math.Max(1, pageNumber);
-        pageSize = Math.Max(1, pageSize);
-
-        var skip = (pageNumber - 1) * pageSize;
-        return ordered.Skip(skip).Take(pageSize);
-
-        // ------------------------- local helpers -------------------------
-        static DateTime LatestLogin(UserViewModel x)
-        {
-            return ((x.CurrentLogin ?? DateTime.MinValue) > (x.LastLogin ?? DateTime.MinValue)
-                ? x.CurrentLogin
-                : x.LastLogin) ?? DateTime.MinValue;
-        }
-
-        bool TryGetLatestDto(UserViewModel u, out SponsorOrganisationUserDto dto)
-        {
-            dto = default!;
-            return Guid.TryParse(u.Id?.Trim(), out var g) && latestByUserId.TryGetValue(g, out dto);
-        }
-
-        bool IsActive(UserViewModel u) =>
-            TryGetLatestDto(u, out var dto) && dto.IsActive;
-
-        bool IsAuthoriser(UserViewModel u) =>
-            TryGetLatestDto(u, out var dto) && dto.IsAuthoriser;
-
-        string SponsorRoleKey(UserViewModel u)
-        {
-            if (!TryGetLatestDto(u, out var dto))
-                return string.Empty;
-
-            // If SponsorRole is an enum, this will call .ToString() automatically. If it's already
-            // a string, it stays a string.
-            return dto.SponsorRole?.ToString() ?? string.Empty;
-        }
-    }
-
-    [NonAction]
-    private static IEnumerable<SponsorOrganisationAuditTrailDto> SortSponsorOrganisationAuditTrails(
-    IEnumerable<SponsorOrganisationAuditTrailDto> items,
-    string? sortField,
-    string? sortDirection,
-    string? sponsorOrganisationName,
-    int pageNumber = 1,
-    int pageSize = 20)
-    {
-        // 1) Transform descriptions: replace RtsId with sponsorOrganisationName (case-insensitive)
-        var list = items
-            .Select(x =>
-            {
-                var desc = x.Description ?? string.Empty;
-
-                if (!string.IsNullOrWhiteSpace(sponsorOrganisationName) && !string.IsNullOrWhiteSpace(x.RtsId))
-                {
-                    // Replace all occurrences of RtsId with sponsorOrganisationName
-                    // (case-insensitive, no regex)
-                    desc = desc.Replace(x.RtsId, sponsorOrganisationName!, StringComparison.OrdinalIgnoreCase);
-                }
-
-                return new SponsorOrganisationAuditTrailDto
-                {
-                    Id = x.Id,
-                    RtsId = x.RtsId,
-                    DateTimeStamp = x.DateTimeStamp,
-                    Description = desc,
-                    User = x.User
-                };
-            })
-            .ToList();
-
-        // 2) Sorting
-        var descSort = string.Equals(sortDirection, "desc", StringComparison.OrdinalIgnoreCase);
-        var field = sortField?.ToLowerInvariant();
-
-        var sorted = field switch
-        {
-            "description" => descSort
-                ? list.OrderByDescending(x => x.Description, StringComparer.OrdinalIgnoreCase)
-                      .ThenByDescending(x => x.DateTimeStamp)
-                : list.OrderBy(x => x.Description, StringComparer.OrdinalIgnoreCase)
-                      .ThenByDescending(x => x.DateTimeStamp),
-
-            "user" => descSort
-                ? list.OrderByDescending(x => x.User, StringComparer.OrdinalIgnoreCase)
-                      .ThenByDescending(x => x.DateTimeStamp)
-                : list.OrderBy(x => x.User, StringComparer.OrdinalIgnoreCase)
-                      .ThenByDescending(x => x.DateTimeStamp),
-
-            // Allow common aliases for the timestamp
-            "datetimestamp" => descSort
-                ? list.OrderByDescending(x => x.DateTimeStamp)
-                : list.OrderBy(x => x.DateTimeStamp),
-
-            // Default = most recent first (typical for audit trails)
-            _ => list.OrderByDescending(x => x.DateTimeStamp)
-        };
-
-        // 3) Pagination safety + apply
-        if (pageNumber < 1) pageNumber = 1;
-        if (pageSize < 1) pageSize = 20;
-
-        var skip = (pageNumber - 1) * pageSize;
-        return sorted.Skip(skip).Take(pageSize);
     }
 
     // Session restore + merge
@@ -872,7 +686,7 @@ public class SponsorOrganisationsController(
                 RtsId = rtsId,
                 UserId = userId,
                 IsAuthoriser = sponsorOrganisationAddUserModel?.IsAuthoriser ?? false,
-                SponsorRole = sponsorOrganisationAddUserModel?.Role ?? Roles.Sponsor,
+                SponsorRole = sponsorOrganisationAddUserModel?.SponsorRole ?? Roles.Sponsor,
                 DateAdded = DateTime.UtcNow
             }
         };
