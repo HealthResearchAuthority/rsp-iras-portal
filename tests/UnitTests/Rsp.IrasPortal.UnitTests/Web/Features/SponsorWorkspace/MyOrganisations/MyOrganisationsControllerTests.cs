@@ -2272,6 +2272,86 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
     }
 
     [Fact]
+    public async Task MyOrganisationUsersConfirmAddUser_OrganisationAdministrator()
+    {
+        // Arrange
+        var rtsId = "87765";
+        var userId = SetUser(Guid.NewGuid(), DefaultEmail);
+
+        SetupSponsorOrgContextSuccess(
+            rtsId,
+            DefaultEmail,
+            rtsOrganisation: new OrganisationDto
+            {
+                Name = "Acme Sponsor Org",
+                CountryName = "UK"
+            });
+
+        var sponsorResponse = new ServiceResponse<SponsorOrganisationUserDto>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new SponsorOrganisationUserDto
+            {
+                RtsId = rtsId,
+                UserId = userId,
+                Id = Guid.NewGuid()
+            }
+        };
+
+        var serviceResponse = new ServiceResponse
+        {
+            StatusCode = HttpStatusCode.OK
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(x => x.GetUser(
+                It.IsAny<string?>(),
+                It.IsAny<string?>(),
+                It.IsAny<string?>()))
+            .ReturnsAsync(new ServiceResponse<UserResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new UserResponse
+                {
+                    User = new User(
+                        userId.ToString(),
+                        "azure-ad-12345",
+                        "Mr",
+                        "Test",
+                        "Test",
+                        "test.test@example.com",
+                        "Software Developer",
+                        "orgName",
+                        "+44 7700 900123",
+                        "United Kingdom",
+                        "Active",
+                        DateTime.UtcNow,
+                        DateTime.UtcNow.AddDays(-2),
+                        DateTime.UtcNow)
+                }
+            });
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.AddUserToSponsorOrganisation(It.IsAny<SponsorOrganisationUserDto>()))
+            .ReturnsAsync(sponsorResponse);
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.UpdateRoles(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(serviceResponse);
+
+        // Act
+        var result = await Sut.MyOrganisationUsersConfirmAddUser(
+            rtsId,
+            userId.ToString(),
+            "Organisation administrator",
+            true);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe(nameof(Sut.MyOrganisationUsers));
+    }
+
+    [Fact]
     public async Task
         MyOrganisationUsersConfirmAddUser_WhenAddUserToSponsorOrganisationFails_ReturnsServiceError_AndDoesNotUpdateRoles()
     {
