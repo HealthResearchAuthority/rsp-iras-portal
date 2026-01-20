@@ -68,7 +68,7 @@ public class AddUserRoleTests : TestServiceBase<SponsorOrganisationsController>
     public void SaveUserRole_ShouldRedirectToFinalPage_WhenRoleIsOrgAdmin(SponsorOrganisationAddUserModel model)
     {
         // Arrange
-        model.SponsorRole = SponsorOrganisationUserRoles.OrganisationAdministrator;
+        model.SponsorRole = Roles.OrganisationAdministrator;
 
         SetupTempData(model);
 

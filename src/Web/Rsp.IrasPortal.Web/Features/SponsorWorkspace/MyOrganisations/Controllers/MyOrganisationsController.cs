@@ -863,7 +863,7 @@ public class MyOrganisationsController(
         var isAdmin = User.IsInRole(Roles.SystemAdministrator) || sponsorOrganisationDto.Users?.Any(x =>
             x.IsActive &&
             string.Equals(x.Email, email, StringComparison.OrdinalIgnoreCase) &&
-            x.SponsorRole == SponsorOrganisationUserRoles.OrganisationAdministrator
+            x.SponsorRole == Roles.OrganisationAdministrator
         ) == true;
 
         if (!inOrgAndEnabled)
