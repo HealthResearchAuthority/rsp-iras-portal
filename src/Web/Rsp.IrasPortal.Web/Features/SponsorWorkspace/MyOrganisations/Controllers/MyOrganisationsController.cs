@@ -9,6 +9,7 @@ using Microsoft.FeatureManagement.Mvc;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Filters;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
@@ -475,11 +476,13 @@ public class MyOrganisationsController(
             return this.ServiceError(auditResponse);
         }
 
+        var auditTrails = SponsorOrganisationSortingExtensions.SortSponsorOrganisationAuditTrails(auditResponse.Content.Items, "DateTimeStamp", SortDirections.Descending, ctx.RtsOrganisation.Name, 1, int.MaxValue);
+
         var model = new SponsorMyOrganisationAuditViewModel
         {
             RtsId = rtsId,
             Name = ctx.RtsOrganisation.Name,
-            AuditTrails = auditResponse.Content!.Items.OrderByDescending(at => at.DateTimeStamp)
+            AuditTrails = auditTrails
         };
 
         return View(model);
