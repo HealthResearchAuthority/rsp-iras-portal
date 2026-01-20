@@ -136,11 +136,23 @@
             </td>
             @if (sponsorOrgUser is not null)
             {
-                var userRole = !string.IsNullOrEmpty(sponsorOrgUser.SponsorRole) ?
-                sponsorOrgUser.SponsorRole.Replace("_", " ").ToLower() : "";
+                var userRole = !string.IsNullOrWhiteSpace(sponsorOrgUser.SponsorRole)
+                    ? char.ToUpperInvariant(sponsorOrgUser.SponsorRole.Replace("_", " ")[0]) +
+                      sponsorOrgUser.SponsorRole.Replace("_", " ").Substring(1).ToLowerInvariant()
+                    : null;
 
+                var selectedRoles = Model.UserRoles != null
+                    ? string.Join(", ",
+                        Model.UserRoles
+                            .Where(r => r.IsSelected)
+                            .Select(r => r.DisplayName)
+                            .Append(userRole)                       // add sponsor role
+                            .Where(r => !string.IsNullOrWhiteSpace(r))
+                            .Distinct(StringComparer.OrdinalIgnoreCase)
+                            .OrderBy(r => r, StringComparer.OrdinalIgnoreCase))
+                    : string.Empty;
                 <td class="govuk-table__cell">
-                    @(!string.IsNullOrEmpty(userRole) ? char.ToUpper(userRole[0]) + userRole.Substring(1) : "")
+                    @selectedRoles
                 </td>
                 <td class="govuk-table__cell govuk-table__cell--numeric">
                 </td>
