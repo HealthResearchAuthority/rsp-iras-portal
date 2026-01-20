@@ -9,7 +9,6 @@ using Microsoft.FeatureManagement.Mvc;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
-using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Filters;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
@@ -35,6 +34,9 @@ public class MyOrganisationsController(
     IValidator<SponsorOrganisationProjectSearchModel> validator
 ) : Controller
 {
+    private const string MyOrganisationConfirmDisableUser = nameof(MyOrganisationConfirmDisableUser);
+    private const string MyOrganisationConfirmEnableUser = nameof(MyOrganisationConfirmEnableUser);
+
     private static readonly EmailAddressAttribute EmailValidator = new();
 
     [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Search)]
@@ -811,6 +813,65 @@ public class MyOrganisationsController(
         // redirect to previous screen with success banner
         TempData[TempDataKeys.ShowNotificationBanner] = true;
         return RedirectToAction(nameof(MyOrganisationViewUser), new { userId = model.UserId, rtsId = model.RtsId });
+    }
+
+    /// <summary>
+    /// Displays the DeleteUserView for delete confirmation
+    /// </summary>
+    /// <param name="userId">User Id</param>
+    /// <param name="email">Email</param>
+    [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Users)]
+    [HttpGet]
+    public async Task<IActionResult> DisableUser(string userId, string email, string rtsId)
+    {
+        var response = await userService.GetUser(userId, email);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var model = new UserViewModel(response.Content!);
+            ViewBag.RtsId = rtsId;
+            return View(MyOrganisationConfirmDisableUser, model);
+        }
+
+        return this.ServiceError(response);
+    }
+
+    [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Users)]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DisableUser(UserViewModel model, Guid Id, string RtsId)
+    {
+        await sponsorOrganisationService.DisableUserInSponsorOrganisation(RtsId, Id);
+        TempData[TempDataKeys.ShowNotificationBanner] = true;
+        TempData[TempDataKeys.SponsorOrganisationUserType] = "disable";
+        return RedirectToAction("MyOrganisationViewUser", new { userId = Id, rtsId = RtsId });
+    }
+
+    [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Users)]
+    [HttpGet]
+    public async Task<IActionResult> EnableUser(string userId, string email, string rtsId)
+    {
+        var response = await userService.GetUser(userId, email);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var model = new UserViewModel(response.Content!);
+            ViewBag.RtsId = rtsId;
+            return View(MyOrganisationConfirmEnableUser, model);
+        }
+
+        return this.ServiceError(response);
+    }
+
+    [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Users)]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EnableUser(UserViewModel model, Guid Id, string RtsId)
+    {
+        await sponsorOrganisationService.EnableUserInSponsorOrganisation(RtsId, Id);
+        TempData[TempDataKeys.ShowNotificationBanner] = true;
+        TempData[TempDataKeys.SponsorOrganisationUserType] = "enable";
+        return RedirectToAction("MyOrganisationViewUser", new { userId = Id, rtsId = RtsId });
     }
 
     [NonAction]
