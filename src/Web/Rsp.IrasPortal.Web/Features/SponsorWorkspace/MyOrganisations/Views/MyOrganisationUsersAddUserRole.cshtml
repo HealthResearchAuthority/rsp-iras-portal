@@ -22,16 +22,16 @@
 }
 
 @section BackNavigation {
-    <partial name="_BackNavigation" model="@("sws:myorganisationusersadduser", "Back", new Dictionary<string, string> { { "RtsId", Model.RtsId } })"/>
+	<partial name="_BackNavigation" model="@("sws:myorganisationusersadduser", "Back", new Dictionary<string, string> { { "RtsId", Model.RtsId } })" />
 }
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
+	<div class="govuk-grid-column-two-thirds">
 
-        @if (TempData[TempDataKeys.ShowNotificationBanner] is not null)
-        {
-            <partial name="_NotificationBanner"
-                     model="@(new NotificationBannerModel
+		@if (TempData[TempDataKeys.ShowNotificationBanner] is not null)
+		{
+			<partial name="_NotificationBanner"
+					 model="@(new NotificationBannerModel
                             {
                                 Title = "Important",
                                 Heading = "Authorisations guidance",
@@ -39,76 +39,76 @@
                                 IsImportant = true
                             })" />
 
-        }
+		}
 
-        <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")"/>
+		<partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
 
-        <div class="govuk-label">
-            @Html.Raw(headline?.Value)
-        </div>
-        <h1 class="govuk-heading-l"> @Html.Raw(body?.Value)</h1>
-        <label class="govuk-label">
-            @Html.Raw(description?.Value)
-        </label>
-        <form method="get"
-              class="govuk-form-group"> 
+		<div class="govuk-label">
+			@Html.Raw(headline?.Value)
+		</div>
+		<h1 class="govuk-heading-l"> @Html.Raw(body?.Value)</h1>
+		<label class="govuk-label">
+			@Html.Raw(description?.Value)
+		</label>
+		<form method="get"
+			  class="govuk-form-group">
 
-            <div class="govuk-form-group">
-                <fieldset class="govuk-fieldset" aria-describedby="role-hint">
-                    <br/>
-                    <label class="govuk-label">
-                        @Html.Raw(roleTitle?.Value)
-                    </label>
-                    <div class="govuk-radios">
+			<div class="govuk-form-group">
+				<fieldset class="govuk-fieldset" aria-describedby="role-hint">
+					<br />
+					<label class="govuk-label">
+						@Html.Raw(roleTitle?.Value)
+					</label>
+					<div class="govuk-radios">
 
-                        <div class="govuk-radios__item">
-                            <input class="govuk-radios__input"
-                                   id="role-admin"
-                                   name="role"
-                                   type="radio"
-								   value="@SponsorOrganisationUserRoles.OrganisationAdministrator"
-                                   @(Model.Role == SponsorOrganisationUserRoles.OrganisationAdministrator ? "checked" : "")/>
-                            <label class="govuk-label govuk-radios__label" for="role-admin">
-                                Organisation administrator
-                            </label>
-                            <div class="govuk-hint govuk-radios__hint">
-                                @Html.Raw(organisationAdministratorHint?.Value)
+						<div class="govuk-radios__item">
+							<input class="govuk-radios__input"
+								   id="role-admin"
+								   name="role"
+								   type="radio"
+								   value="@Roles.OrganisationAdministrator"
+							@(Model.Role == Roles.OrganisationAdministrator ? "checked" : "") />
+							<label class="govuk-label govuk-radios__label" for="role-admin">
+								Organisation administrator
+							</label>
+							<div class="govuk-hint govuk-radios__hint">
+								@Html.Raw(organisationAdministratorHint?.Value)
 
-                            </div>
-                        </div>
+							</div>
+						</div>
 
-                        <div class="govuk-radios__item">
-                            <input class="govuk-radios__input"
-                                   id="role-sponsor"
-                                   name="role"
-                                   type="radio"
-								   value="@SponsorOrganisationUserRoles.Sponsor"
-							@(Model.Role == SponsorOrganisationUserRoles.Sponsor ? "checked" : "") />
-                            <label class="govuk-label govuk-radios__label" for="role-sponsor">
-                                Sponsor
-                            </label>
+						<div class="govuk-radios__item">
+							<input class="govuk-radios__input"
+								   id="role-sponsor"
+								   name="role"
+								   type="radio"
+								   value="@Roles.Sponsor"
+							@(Model.Role == Roles.Sponsor ? "checked" : "") />
+							<label class="govuk-label govuk-radios__label" for="role-sponsor">
+								Sponsor
+							</label>
 							<div class="govuk-hint govuk-radios__hint ">
-                                @Html.Raw(sponsorHint?.Value)
-                            </div>
-                        </div>
+								@Html.Raw(sponsorHint?.Value)
+							</div>
+						</div>
 
-                    </div>
-                </fieldset>
-            </div>
+					</div>
+				</fieldset>
+			</div>
 
-            <br/>
+			<br />
 
-            <input type="hidden" name="rtsId" value="@Model.RtsId"/>
-            <input type="hidden" name="userId" value="@Model.UserId"/>
-            <input type="hidden" name="role" value="@Model.Role"/>
-            <input type="hidden" name="nextPage" value="true"/>
+			<input type="hidden" name="rtsId" value="@Model.RtsId" />
+			<input type="hidden" name="userId" value="@Model.UserId" />
+			<input type="hidden" name="role" value="@Model.Role" />
+			<input type="hidden" name="nextPage" value="true" />
 
-            @{
-                ViewBag.Style = "govuk-button govuk-button--primary";
-            }
-            <partial name="_SubmitButton"
-                     model="@("sws:myorganisationusersadduserrole", "Save and continue", new Dictionary<string, string>())"/>
+			@{
+				ViewBag.Style = "govuk-button govuk-button--primary";
+			}
+			<partial name="_SubmitButton"
+					 model="@("sws:myorganisationusersadduserrole", "Save and continue", new Dictionary<string, string>())" />
 
-        </form>
-    </div>
+		</form>
+	</div>
 </div>

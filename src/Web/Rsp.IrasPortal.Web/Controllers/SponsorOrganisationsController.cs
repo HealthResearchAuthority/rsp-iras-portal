@@ -3,6 +3,7 @@ using System.Text.Json;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Rsp.IrasPortal.Web.Helpers;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
@@ -400,10 +401,10 @@ public class SponsorOrganisationsController(
         }
 
         storedModel.SponsorRole = model.SponsorRole;
-        storedModel.IsAuthoriser = model.SponsorRole == SponsorOrganisationUserRoles.OrganisationAdministrator;
+        storedModel.IsAuthoriser = model.SponsorRole == Roles.OrganisationAdministrator;
         TempData[TempDataKeys.SponsorOrganisationUser] = JsonSerializer.Serialize(storedModel);
 
-        if (model.SponsorRole == SponsorOrganisationUserRoles.OrganisationAdministrator)
+        if (model.SponsorRole == Roles.OrganisationAdministrator)
         {
             return RedirectToAction(nameof(ViewSponsorOrganisationUser), new { rtsId = storedModel.RtsId, userId = storedModel.UserId, addUser = true });
         }
@@ -480,7 +481,18 @@ public class SponsorOrganisationsController(
     [Route("/sponsororganisations/confirmenableuser", Name = "soc:confirmenableuser")]
     public async Task<IActionResult> ConfirmEnableUser(string rtsId, Guid userId)
     {
-        await sponsorOrganisationService.EnableUserInSponsorOrganisation(rtsId, userId);
+        var enableUserResponse = await sponsorOrganisationService.EnableUserInSponsorOrganisation(rtsId, userId);
+
+        // also add user to relevant role
+        if (enableUserResponse.IsSuccessStatusCode &&
+            enableUserResponse.Content != null)
+        {
+            var userRole = enableUserResponse.Content.SponsorRole;
+            var email = enableUserResponse.Content.Email;
+
+            await userService.UpdateRoles(email!, null, userRole);
+        }
+
         TempData[TempDataKeys.ShowNotificationBanner] = true;
         TempData[TempDataKeys.SponsorOrganisationUserType] = "enable";
         return RedirectToAction("ViewSponsorOrganisationUsers", new { rtsId });
@@ -491,6 +503,10 @@ public class SponsorOrganisationsController(
     public async Task<IActionResult> ConfirmDisableUser(string rtsId, Guid userId)
     {
         await sponsorOrganisationService.DisableUserInSponsorOrganisation(rtsId, userId);
+
+        // Check if user is in any other active sponsor organisations
+        await SponsorOrganisationUsersHelper.HandleDisableOrganisationUserRole(sponsorOrganisationService, userId, userService);
+
         TempData[TempDataKeys.ShowNotificationBanner] = true;
         TempData[TempDataKeys.SponsorOrganisationUserType] = "disable";
         return RedirectToAction("ViewSponsorOrganisationUsers", new { rtsId });

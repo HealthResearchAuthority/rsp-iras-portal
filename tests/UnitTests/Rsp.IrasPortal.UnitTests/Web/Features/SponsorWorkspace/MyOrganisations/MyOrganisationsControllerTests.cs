@@ -85,7 +85,7 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
                 UserId = Guid.NewGuid(),
                 Email = email,
                 IsActive = true,
-                SponsorRole = isUserAdmin ? SponsorOrganisationUserRoles.OrganisationAdministrator : "Member",
+                SponsorRole = isUserAdmin ? Roles.OrganisationAdministrator : "Member",
                 IsAuthoriser = false
             }
         };
@@ -2108,7 +2108,7 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
                 CountryName = "UK"
             });
 
-        var role = SponsorOrganisationUserRoles.Sponsor;
+        var role = Roles.Sponsor;
         var canAuthorise = true;
 
         // Act
