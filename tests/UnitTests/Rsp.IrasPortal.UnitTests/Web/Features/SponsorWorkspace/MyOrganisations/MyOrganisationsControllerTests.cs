@@ -15,7 +15,6 @@ using Rsp.Portal.Web.Areas.Admin.Models;
 using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Features.SponsorWorkspace.MyOrganisations.Controllers;
 using Rsp.Portal.Web.Features.SponsorWorkspace.MyOrganisations.Models;
-using Shouldly;
 using System.Security.Claims;
 using System.Text.Json;
 using Claim = System.Security.Claims.Claim;
@@ -2673,7 +2672,7 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         var view = result.ShouldBeOfType<ViewResult>();
         view.ViewName.ShouldBe("MyOrganisationConfirmDisableUser");
         view.Model.ShouldBeOfType<UserViewModel>();
-        Sut.ViewBag.RtsId.ShouldBe("rts-1");
+        ((string)Sut.ViewBag.RtsId).ShouldBe("rts-1");
     }
 
     [Fact]
@@ -2719,7 +2718,7 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         var view = result.ShouldBeOfType<ViewResult>();
         view.ViewName.ShouldBe("MyOrganisationConfirmEnableUser");
         view.Model.ShouldBeOfType<UserViewModel>();
-        Sut.ViewBag.RtsId.ShouldBe("rts-1");
+        ((string)Sut.ViewBag.RtsId).ShouldBe("rts-1");
     }
 
     [Fact]
