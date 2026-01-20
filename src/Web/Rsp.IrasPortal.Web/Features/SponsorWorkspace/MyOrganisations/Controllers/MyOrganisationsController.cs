@@ -819,6 +819,7 @@ public class MyOrganisationsController(
     /// </summary>
     /// <param name="userId">User Id</param>
     /// <param name="email">Email</param>
+    [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Users)]
     [HttpGet]
     public async Task<IActionResult> DisableUser(string userId, string email, string rtsId)
     {
@@ -834,6 +835,7 @@ public class MyOrganisationsController(
         return this.ServiceError(response);
     }
 
+    [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Users)]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DisableUser(UserViewModel model, Guid Id, string RtsId)
@@ -841,9 +843,10 @@ public class MyOrganisationsController(
         await sponsorOrganisationService.DisableUserInSponsorOrganisation(RtsId, Id);
         TempData[TempDataKeys.ShowNotificationBanner] = true;
         TempData[TempDataKeys.SponsorOrganisationUserType] = "disable";
-        return RedirectToAction("MyOrganisationViewUser", new { userId = Id, rtsId = RtsId});
+        return RedirectToAction("MyOrganisationViewUser", new { userId = Id, rtsId = RtsId });
     }
 
+    [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Users)]
     [HttpGet]
     public async Task<IActionResult> EnableUser(string userId, string email, string rtsId)
     {
@@ -859,6 +862,7 @@ public class MyOrganisationsController(
         return this.ServiceError(response);
     }
 
+    [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Users)]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EnableUser(UserViewModel model, Guid Id, string RtsId)
