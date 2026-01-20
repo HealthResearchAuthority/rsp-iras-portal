@@ -18,10 +18,10 @@
 }
 
 @section BackNavigation {
-        @{
-		    backRoute = string.Equals(Model.Role, Roles.Sponsor, StringComparison.CurrentCultureIgnoreCase) ? "sws:myorganisationusersadduserpermission" : "sws:myorganisationusersadduserrole";
-        }
-	<partial name="_BackNavigation" model="@(backRoute, "Back", new Dictionary<string, string> { { "RtsId", Model.RtsId }, { "UserId", Model.UserId }, { "Role", Model.Role }, { "CanAuthorise", Model.CanAuthorise.ToString() } })" />
+    @{
+        backRoute = string.Equals(Model.Role, Roles.Sponsor, StringComparison.CurrentCultureIgnoreCase) ? "sws:myorganisationusersadduserpermission" : "sws:myorganisationusersadduserrole";
+    }
+    <partial name="_BackNavigation" model="@(backRoute, "Back", new Dictionary<string, string> { { "RtsId", Model.RtsId }, { "UserId", Model.UserId }, { "Role", Model.Role }, { "CanAuthorise", Model.CanAuthorise.ToString() } })" />
 }
 
 <div class="govuk-grid-row">

@@ -391,13 +391,15 @@ else
 </div>
 <div permission="@Permissions.MyResearch.ProjectRecord_Close"
      status-for="ProjectOverviewModel.Status"
-     status-in="@([ProjectRecordStatus.PendingClosure, ProjectRecordStatus.Closed])"
+     status-in="@([ProjectRecordStatus.Active,ProjectRecordStatus.PendingClosure, ProjectRecordStatus.Closed])"
      class="govuk-grid-row">
+    <hr aria-hidden="true" class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
     <div class="govuk-grid-column-one-half">
         <label class="govuk-label" for="">
             <b>Project ending</b>
         </label>
     </div>
+    <br />
     <div class="govuk-grid-column-full">
         @if (Model.ProjectClosureModels.Count() > 0)
         {
@@ -410,12 +412,12 @@ else
                                     @{
                                         var sortableHeaders = new[]
                                         {
-                                        new { Field = nameof(ProjectClosuresModel.Id), Label = "Transaction ID" },
-                                        new { Field = nameof(ProjectClosuresModel.ClosureDate), Label = "Date of project closure" },
-                                        new { Field = nameof(ProjectClosuresModel.UserEmail), Label = "User email" },
-                                        new { Field = nameof(ProjectClosuresModel.SentToSponsorDate), Label = "Date submitted" },
-                                        new { Field = nameof(ProjectClosuresModel.Status), Label = "Status" },
-                                        };
+                                     new { Field = nameof(ProjectClosuresModel.Id), Label = "Transaction ID" },
+                                     new { Field = nameof(ProjectClosuresModel.ClosureDate), Label = "Date of project closure" },
+                                     new { Field = nameof(ProjectClosuresModel.UserEmail), Label = "User email" },
+                                     new { Field = nameof(ProjectClosuresModel.SentToSponsorDate), Label = "Date submitted" },
+                                     new { Field = nameof(ProjectClosuresModel.Status), Label = "Status" },
+                                     };
                                         var tableId = "postApprovalTable";
                                     }
 
@@ -450,6 +452,8 @@ else
                                                 var tagClass = projectClosure.Status switch
                                                 {
                                                     ProjectClosureStatus.WithSponsor => "govuk-tag--yellow",
+                                                    ProjectClosureStatus.Authorised => "govuk-tag--green",
+                                                    ProjectClosureStatus.NotAuthorised => "govuk-tag--red",
                                                     _ => "govuk-tag--blue"
                                                 };
                                             }
@@ -466,18 +470,15 @@ else
             </div>
         }
     </div>
+    <br />
 </div>
-
 <div permission="@Permissions.MyResearch.ProjectRecord_Close"
      status-for="ProjectOverviewModel.Status"
-     status-is="@ProjectRecordStatus.Active" class="govuk-grid-row">
-    <hr aria-hidden="true" class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
-    <div class="govuk-grid-column-one-half">
-        <label class="govuk-label" for="">
-            <b>Project ending</b>
-        </label>
-        <br />
-        <a asp-route="app:closeproject" asp-route-projectRecordId="@projectRecordId"
+     status-in="@([ProjectRecordStatus.Active])"
+     class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+        <a asp-route="app:closeproject"
+           asp-route-projectRecordId="@projectRecordId"
            class="govuk-button govuk-button--secondary">
             Close project
         </a>
