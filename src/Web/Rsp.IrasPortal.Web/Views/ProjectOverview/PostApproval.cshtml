@@ -471,8 +471,14 @@ else
         }
     </div>
     <br />
-    <div class="govuk-grid-column-one-half">
-        <a asp-route="app:closeproject" asp-route-projectRecordId="@projectRecordId"
+</div>
+<div permission="@Permissions.MyResearch.ProjectRecord_Close"
+     status-for="ProjectOverviewModel.Status"
+     status-in="@([ProjectRecordStatus.Active])"
+     class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+        <a asp-route="app:closeproject"
+           asp-route-projectRecordId="@projectRecordId"
            class="govuk-button govuk-button--secondary">
             Close project
         </a>
