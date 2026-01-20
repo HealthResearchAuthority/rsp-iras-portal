@@ -47,7 +47,8 @@
             <span class="govuk-label">
                 Current @(projectRecordQuestion!.QuestionText?
                         .GetLabelText()
-                        .Replace("new ", "") ?? "value")
+                        .Replace("new ", "")
+                        .Replace("temporary ", "") ?? "value")
             </span>
             <span class="govuk-body govuk-!-font-weight-bold">@Html.Raw(projectRecordAnswer)</span>
         </div>

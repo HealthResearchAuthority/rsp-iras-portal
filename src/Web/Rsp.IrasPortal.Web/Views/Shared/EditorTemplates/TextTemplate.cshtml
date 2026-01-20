@@ -19,6 +19,10 @@
 
     var types = (question.QuestionType.ToLower(), question.DataType.ToLower());
     var inputType = types == ("text", "email") ? "email" : "text";
+
+	var labelDescribedBy = !string.IsNullOrEmpty(hintHtml)
+		? $"{question.QuestionText.ToLowerInvariant().Replace(" ", "-")}-hint"
+		: string.Empty;
 }
 
 <rsp-gds-input asp-for="Questions[index].AnswerText"
@@ -33,4 +37,4 @@
                dataparents-attr="@parents"
                dataquestionid-attr="@questionId"
                hint-id="@($"{question.QuestionText.ToLowerInvariant().Replace(" ", "-")}-hint")"
-               label-aria-describedby="@($"{question.QuestionText.ToLowerInvariant().Replace(" ", "-")}-hint")" />
+			   label-aria-describedby="@labelDescribedBy" />

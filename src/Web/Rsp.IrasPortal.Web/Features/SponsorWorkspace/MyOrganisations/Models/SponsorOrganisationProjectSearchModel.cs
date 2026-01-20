@@ -31,7 +31,7 @@ public class SponsorOrganisationProjectSearchModel
         if (FromDate.HasValue && ToDate.HasValue)
         {
             filters.Add(
-                "Created date",
+                "Date created",
                 [$"{FromDate.Value:d MMM yyyy} to {ToDate.Value:d MMM yyyy}"]
             );
         }
