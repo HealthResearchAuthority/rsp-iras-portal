@@ -394,6 +394,7 @@ button.govuk-link {
 
 .hra-card-heading__link {
   position: relative;
+  padding-right: 24px;
 }
 .hra-card-heading__link::before {
   content: "";

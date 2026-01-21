@@ -6,6 +6,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
+using Rsp.IrasPortal.Web.Helpers;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
@@ -842,6 +843,10 @@ public class MyOrganisationsController(
     public async Task<IActionResult> DisableUser(UserViewModel model, Guid Id, string RtsId)
     {
         await sponsorOrganisationService.DisableUserInSponsorOrganisation(RtsId, Id);
+
+        // Check if user is in any other active sponsor organisations
+        await SponsorOrganisationUsersHelper.HandleDisableOrganisationUserRole(sponsorOrganisationService, Id, userService);
+
         TempData[TempDataKeys.ShowNotificationBanner] = true;
         TempData[TempDataKeys.SponsorOrganisationUserType] = "disable";
         return RedirectToAction("MyOrganisationViewUser", new { userId = Id, rtsId = RtsId });
@@ -868,7 +873,17 @@ public class MyOrganisationsController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EnableUser(UserViewModel model, Guid Id, string RtsId)
     {
-        await sponsorOrganisationService.EnableUserInSponsorOrganisation(RtsId, Id);
+        var enableUserResponse = await sponsorOrganisationService.EnableUserInSponsorOrganisation(RtsId, Id);
+
+        // also add user to relevant role
+        if (enableUserResponse.IsSuccessStatusCode &&
+            enableUserResponse.Content != null)
+        {
+            var userRole = enableUserResponse.Content.SponsorRole;
+
+            await userService.UpdateRoles(model.Email!, null, userRole);
+        }
+
         TempData[TempDataKeys.ShowNotificationBanner] = true;
         TempData[TempDataKeys.SponsorOrganisationUserType] = "enable";
         return RedirectToAction("MyOrganisationViewUser", new { userId = Id, rtsId = RtsId });
