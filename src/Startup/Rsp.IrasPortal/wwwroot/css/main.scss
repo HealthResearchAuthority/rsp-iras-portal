@@ -1032,7 +1032,6 @@ button.govuk-pagination__item--current {
 .govuk-tab-toggle {
     position: absolute;
     opacity: 0;
-    pointer-events: none;
 }
 
 /* Remove background colour from list and items */
@@ -1134,4 +1133,10 @@ button.govuk-pagination__item--current {
     display: flex;
     justify-content: flex-end;
     align-items: center;
+}
+
+.break-anywhere {
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }

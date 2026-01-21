@@ -19,20 +19,4 @@
             sessionStorage.removeItem(key);
         }
     }
-
-    function enableKeyboardActivation(selector) {
-        document.querySelectorAll(selector).forEach(el => {
-            el.addEventListener('keydown', function (event) {
-                if (event.key === 'Enter') {
-                    event.preventDefault();
-                    el.click();
-                }
-            });
-        });
-    }
-
-    // Initialise once DOM is ready
-    document.addEventListener('DOMContentLoaded', function () {
-        enableKeyboardActivation('.js-key-activatable');
-    });
 })();
