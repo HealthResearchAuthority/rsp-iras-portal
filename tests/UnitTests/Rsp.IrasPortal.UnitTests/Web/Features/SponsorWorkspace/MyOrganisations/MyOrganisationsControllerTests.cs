@@ -2752,14 +2752,36 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         ((string)Sut.ViewBag.RtsId).ShouldBe("rts-1");
     }
 
-    [Fact]
-    public async Task DisableUser_POST_calls_service_sets_tempdata_and_redirects()
+    [Theory, AutoData]
+    public async Task DisableUser_POST_calls_service_sets_tempdata_and_redirects(
+        SponsorOrganisationDto sponsorOrganisationDto,
+        UserResponse userResponse)
     {
         // Arrange
         var id = Guid.NewGuid();
         Mocker.GetMock<ISponsorOrganisationService>()
             .Setup(s => s.DisableUserInSponsorOrganisation("rts-1", id))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto> { StatusCode = HttpStatusCode.OK, Content = new() });
+
+        var serviceResponseGetAllActiveOrganisationsForUser = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new List<SponsorOrganisationDto> { sponsorOrganisationDto }
+        };
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+           .Setup(s => s.GetAllActiveSponsorOrganisationsForEnabledUser(It.IsAny<Guid>()))
+           .ReturnsAsync(serviceResponseGetAllActiveOrganisationsForUser);
+
+        var serviceResponseGetUser = new ServiceResponse<UserResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = userResponse
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+           .Setup(s => s.GetUser(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+           .ReturnsAsync(serviceResponseGetUser);
 
         var vm = new UserViewModel { Id = id.ToString(), Email = "m@x.com" };
 
