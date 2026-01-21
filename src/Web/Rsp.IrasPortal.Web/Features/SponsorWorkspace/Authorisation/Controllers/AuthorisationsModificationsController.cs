@@ -28,6 +28,7 @@ public class AuthorisationsModificationsController
 (
     IProjectModificationsService projectModificationsService,
     IRespondentService respondentService,
+    ISponsorOrganisationService sponsorOrganisationService,
     ICmsQuestionsetService cmsQuestionsetService,
     IValidator<AuthorisationsModificationsSearchModel> searchValidator
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, null!)
@@ -222,6 +223,16 @@ public class AuthorisationsModificationsController
         var response =
             await BuildCheckAndAuthorisePageAsync(projectModificationId, irasId, shortTitle, projectRecordId,
                 sponsorOrganisationUserId);
+
+        var sponsorOrganisationUser =
+            await sponsorOrganisationService.GetSponsorOrganisationUser(sponsorOrganisationUserId);
+
+        if (!sponsorOrganisationUser.IsSuccessStatusCode)
+        {
+            return this.ServiceError(sponsorOrganisationUser);
+        }
+
+        TempData[TempDataKeys.IsAuthoriser] = sponsorOrganisationUser.Content!.IsAuthoriser;
 
         return View(response);
     }
