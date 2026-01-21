@@ -324,4 +324,23 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
         redirect.RouteName.ShouldBe("pmc:DocumentsScanInProgress");
     }
+
+    [Fact]
+    public async Task SendModificationToSponsor_Validation_Return_Failure()
+    {
+        // Arrange
+        var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.CanModificationSendToSponsor] = false,
+        };
+        Sut.TempData = tempData;
+
+        // Act
+        var result = await Sut.SendModificationToSponsor("PR01", Guid.NewGuid());
+
+        // Assert
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.Equal("ModificationSendToSponsor", viewResult.ViewName);
+    }
 }
