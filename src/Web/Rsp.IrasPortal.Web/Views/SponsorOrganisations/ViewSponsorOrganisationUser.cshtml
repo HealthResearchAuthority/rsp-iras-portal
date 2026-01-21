@@ -39,7 +39,7 @@
 
     @if (ViewBag.Type == "add")
     {
-        if (Model.SponsorOrganisationUser.SponsorRole == SponsorOrganisationUserRoles.OrganisationAdministrator)
+        if (Model.SponsorOrganisationUser.SponsorRole == Roles.OrganisationAdministrator)
         {
             <partial name="_BackNavigation" model="@("soc:adduserrole", "Back", new Dictionary<string, string>{ { "RtsId", Model.SponsorOrganisation.RtsId }, { "UserId", Model.User.Id! } })"/>
         }

@@ -39,7 +39,7 @@ public class SubmitAddUserTests : TestServiceBase<SponsorOrganisationsController
                 UserId = userGuid,
                 Id = Guid.NewGuid(),
                 IsAuthoriser = true,
-                SponsorRole = SponsorOrganisationUserRoles.Sponsor
+                SponsorRole = Roles.Sponsor
             }
         };
 
@@ -115,7 +115,7 @@ public class SubmitAddUserTests : TestServiceBase<SponsorOrganisationsController
                 UserId = userGuid,
                 Id = Guid.NewGuid(),
                 IsAuthoriser = true,
-                SponsorRole = SponsorOrganisationUserRoles.OrganisationAdministrator
+                SponsorRole = Roles.OrganisationAdministrator
             }
         };
 
