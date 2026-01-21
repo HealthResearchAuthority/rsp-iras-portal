@@ -595,7 +595,16 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         SetupSponsorOrgContextSuccess(rtsId, DefaultEmail,
             rtsOrganisation: new OrganisationDto { Name = "Project Org", CountryName = "UK" });
 
-        var searchModel = new SponsorOrganisationProjectSearchModel { IrasId = "1234" };
+        var searchModel = new SponsorOrganisationProjectSearchModel
+        {
+            IrasId = "1234",
+            FromDay = "15",
+            FromMonth = "01",
+            FromYear = "2019",
+            ToDay = "01",
+            ToMonth = "01",
+            ToYear = "2029"
+        };
         _http.Session.SetString(SessionKeys.SponsorMyOrganisationsProjectsSearch,
             JsonSerializer.Serialize(searchModel));
 
