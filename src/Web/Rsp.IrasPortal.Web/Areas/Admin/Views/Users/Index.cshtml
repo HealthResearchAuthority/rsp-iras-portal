@@ -1,5 +1,6 @@
 ﻿﻿@using Rsp.Portal.Application.Constants
 @using Rsp.Gds.Component.Models
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
 @using Rsp.Portal.Web.Areas.Admin.Models
 @model UserSearchViewModel
 
@@ -21,6 +22,16 @@
 		new { Field = nameof(UserViewModel.CurrentLogin), Label = "Last logged in" }
 	};
 	var tableId = "usersTable";
+    
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData != null
+        ? pageContentData
+        : new Dictionary<string, MixedContentPageItem?>();
+
+    var headline = pageContent.GetValueOrDefault("Admin.Users.Heading", null);
+    var addNewLink = pageContent.GetValueOrDefault("Admin.Users.AddNewLink", null);
+    var searchTitle = pageContent.GetValueOrDefault("Admin.Users.SearchTitle", null);
+    var searchHint = pageContent.GetValueOrDefault("Admin.Users.SearchHintText", null);
 }
 
 @section Breadcrumb {
@@ -51,10 +62,10 @@
 
 <div class="govuk-grid-row">
 	<div class="govuk-grid-column-one-half">
-		<h1 class="govuk-heading-l">Manage users</h1>
+		<h1 class="govuk-heading-l">@Html.Raw(headline?.Value)</h1>
 	</div>
 	<div class="govuk-grid-column-one-half">
-		<a class="govuk-link govuk-body float-right" asp-route="admin:createuser">Add a new user profile record</a>
+		<a class="govuk-link govuk-body float-right" asp-route="admin:createuser">@Html.Raw(addNewLink?.Value)</a>
 	</div>
 </div>
 
@@ -63,10 +74,10 @@
 		<form method="post" asp-action="ApplyFilters" asp-controller="Users" class="govuk-form-group" asp-route-fromPagination="false">
 
 			<label class="govuk-label" for="Search.SearchQuery">
-				<b>Find a user</b>
+				<b>@Html.Raw(searchTitle?.Value)</b>
 			</label>
 			<div class="govuk-hint" id="Search.SearchQuery-hint">
-				Search for the first name, last name or email address
+				@Html.Raw(searchHint?.Value)
 			</div>
 
 			<div class="review-body-search">
