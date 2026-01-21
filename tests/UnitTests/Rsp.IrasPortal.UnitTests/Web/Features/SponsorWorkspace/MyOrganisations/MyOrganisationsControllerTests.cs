@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Primitives;
+using Rsp.IrasPortal.Web.Models;
+using Rsp.IrasPortal.Web.Validators;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
@@ -17,6 +19,7 @@ using Rsp.Portal.Web.Areas.Admin.Models;
 using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Features.SponsorWorkspace.MyOrganisations.Controllers;
 using Rsp.Portal.Web.Features.SponsorWorkspace.MyOrganisations.Models;
+using Rsp.Portal.Web.Models;
 using Claim = System.Security.Claims.Claim;
 
 namespace Rsp.Portal.UnitTests.Web.Features.SponsorWorkspace.MyOrganisations;
@@ -1553,7 +1556,11 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         SetupSponsorOrgContextSuccess(rtsId, DefaultEmail,
             rtsOrganisation: new OrganisationDto { Name = "Acme Sponsor Org", CountryName = "UK" });
 
-        _http.Request.QueryString = new QueryString("?SearchQuery="); // key present
+        Mocker.GetMock<IValidator<EmailModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<EmailModel>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult()); // valid
+
+        _http.Request.QueryString = new QueryString("?Email="); // key present
 
         // Act
         var result = await Sut.MyOrganisationUsersAddUser(rtsId, "");
@@ -1565,9 +1572,9 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         model.RtsId.ShouldBe(rtsId);
         model.Name.ShouldBe("Acme Sponsor Org");
 
-        Sut.ModelState.ContainsKey("SearchQuery").ShouldBeTrue();
-        Sut.ModelState["SearchQuery"]!.Errors.Count.ShouldBe(1);
-        Sut.ModelState["SearchQuery"]!.Errors[0].ErrorMessage.ShouldBe("Enter a user email");
+        Sut.ModelState.ContainsKey("Email").ShouldBeTrue();
+        Sut.ModelState["Email"]!.Errors.Count.ShouldBe(1);
+        Sut.ModelState["Email"]!.Errors[0].ErrorMessage.ShouldBe("Enter a user email");
 
         // Should not call SearchUsers
         Mocker.GetMock<IUserManagementService>()
@@ -1591,6 +1598,10 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
             rtsOrganisation: new OrganisationDto { Name = "Acme Sponsor Org", CountryName = "UK" });
 
         _http.Request.QueryString = QueryString.Empty; // key absent
+
+        Mocker.GetMock<IValidator<EmailModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<EmailModel>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult()); // valid
 
         // Act
         var result = await Sut.MyOrganisationUsersAddUser(rtsId, null);
@@ -1621,8 +1632,12 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         SetupSponsorOrgContextSuccess(rtsId, DefaultEmail,
             rtsOrganisation: new OrganisationDto { Name = "Acme Sponsor Org", CountryName = "UK" });
 
+        Mocker.GetMock<IValidator<EmailModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<EmailModel>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult()); // valid
+
         var searchQuery = "one@test.com";
-        _http.Request.QueryString = new QueryString($"?SearchQuery={Uri.EscapeDataString(searchQuery)}");
+        _http.Request.QueryString = new QueryString($"?Email={Uri.EscapeDataString(searchQuery)}");
 
         var usersResponse = new ServiceResponse<UsersResponse>
         {
@@ -1714,8 +1729,12 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
             rtsOrganisation: new OrganisationDto { Name = "Acme Sponsor Org", CountryName = "UK" },
             sponsorOrganisation: sponsorOrganisationDto);
 
+        Mocker.GetMock<IValidator<EmailModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<EmailModel>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult()); // valid
+
         var searchQuery = "one@test.com";
-        _http.Request.QueryString = new QueryString($"?SearchQuery={Uri.EscapeDataString(searchQuery)}");
+        _http.Request.QueryString = new QueryString($"?Email={Uri.EscapeDataString(searchQuery)}");
 
         var usersResponse = new ServiceResponse<UsersResponse>
         {
@@ -1788,8 +1807,12 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         SetupSponsorOrgContextSuccess(rtsId, DefaultEmail,
             rtsOrganisation: new OrganisationDto { Name = "Acme Sponsor Org", CountryName = "UK" });
 
+        Mocker.GetMock<IValidator<EmailModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<EmailModel>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult()); // valid
+
         var searchQuery = "multi@test.com";
-        _http.Request.QueryString = new QueryString($"?SearchQuery={Uri.EscapeDataString(searchQuery)}");
+        _http.Request.QueryString = new QueryString($"?Email={Uri.EscapeDataString(searchQuery)}");
 
         var usersResponse = new ServiceResponse<UsersResponse>
         {
@@ -1824,8 +1847,12 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         SetupSponsorOrgContextSuccess(rtsId, DefaultEmail,
             rtsOrganisation: new OrganisationDto { Name = "Acme Sponsor Org", CountryName = "UK" });
 
+        Mocker.GetMock<IValidator<EmailModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<EmailModel>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult()); // valid
+
         var searchQuery = "fail@test.com";
-        _http.Request.QueryString = new QueryString($"?SearchQuery={Uri.EscapeDataString(searchQuery)}");
+        _http.Request.QueryString = new QueryString($"?Email={Uri.EscapeDataString(searchQuery)}");
 
         var usersResponse = new ServiceResponse<UsersResponse>
         {

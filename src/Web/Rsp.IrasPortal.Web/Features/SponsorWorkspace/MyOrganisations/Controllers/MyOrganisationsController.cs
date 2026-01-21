@@ -3,10 +3,12 @@ using System.Globalization;
 using System.Security.Claims;
 using System.Text.Json;
 using FluentValidation;
+using FluentValidation.Validators;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Web.Helpers;
+using Rsp.IrasPortal.Web.Models;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
@@ -33,7 +35,8 @@ public class MyOrganisationsController(
     IRtsService rtsService,
     IUserManagementService userService,
     IApplicationsService applicationsService,
-    IValidator<SponsorOrganisationProjectSearchModel> validator
+    IValidator<SponsorOrganisationProjectSearchModel> validator,
+    IValidator<EmailModel> emailValidator
 ) : Controller
 {
     private const string MyOrganisationConfirmDisableUser = nameof(MyOrganisationConfirmDisableUser);
@@ -501,7 +504,7 @@ public class MyOrganisationsController(
     }
 
     [HttpGet]
-    public async Task<IActionResult> MyOrganisationUsersAddUser(string rtsId, string? searchQuery)
+    public async Task<IActionResult> MyOrganisationUsersAddUser(string rtsId, [FromQuery(Name = "Email")] string? email)
     {
         var ctxResult = await TryGetSponsorOrgContext(rtsId);
         if (ctxResult.HasResult)
@@ -516,19 +519,34 @@ public class MyOrganisationsController(
             RtsId = rtsId
         };
 
-        if (Request.Query.ContainsKey("SearchQuery") &&
-            (string.IsNullOrWhiteSpace(searchQuery) || !EmailValidator.IsValid(searchQuery)))
-        {
-            ModelState.AddModelError("SearchQuery", "Enter a user email");
-            return View(model);
-        }
-
-        if (!Request.Query.ContainsKey("SearchQuery"))
+        if (!Request.Query.ContainsKey(nameof(model.Email)))
         {
             return View(model);
         }
 
-        var usersResponse = await userService.SearchUsers(searchQuery);
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            ModelState.AddModelError(nameof(model.Email), "Enter a user email");
+            return View(model);
+        }
+
+        var validationResult = await emailValidator.ValidateAsync(new EmailModel()
+        {
+            EmailAddress = email
+        });
+
+        if (!validationResult.IsValid)
+        {
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(nameof(model.Email), error.ErrorMessage);
+            }
+
+            model.Email = email;
+            return View(model);
+        }
+
+        var usersResponse = await userService.SearchUsers(email);
 
         if (usersResponse is { IsSuccessStatusCode: true, Content.TotalCount: 1 })
         {
