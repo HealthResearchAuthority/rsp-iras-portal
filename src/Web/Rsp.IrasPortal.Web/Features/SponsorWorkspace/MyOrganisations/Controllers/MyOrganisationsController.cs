@@ -715,7 +715,7 @@ public class MyOrganisationsController(
             return this.ServiceError(response);
         }
 
-        var updateRole = await userService.UpdateRoles(user.Email, null,
+        var updateRole = await userService.UpdateRoles(user.Email, $"{Roles.Sponsor},{Roles.OrganisationAdministrator}",
             role == "Sponsor" ? Roles.Sponsor : Roles.OrganisationAdministrator);
 
         if (!updateRole.IsSuccessStatusCode)
@@ -829,10 +829,11 @@ public class MyOrganisationsController(
             return this.ServiceError(updateProfileResult);
         }
 
-        // update user roles
-        var roleToUpdate = model.Role == "Sponsor" ? Roles.Sponsor : Roles.OrganisationAdministrator;
-        var userRolesUpdateResponse = await userService.UpdateRoles(model.Email, null, roleToUpdate);
+        // Remove Existing roles
+        var roleToRemove = model.Role == "Sponsor" ? Roles.OrganisationAdministrator : Roles.Sponsor;
+        var roleToAdd = model.Role == "Sponsor" ? Roles.Sponsor : Roles.OrganisationAdministrator;
 
+        var userRolesUpdateResponse = await userService.UpdateRoles(model.Email, roleToRemove, roleToAdd);
         if (!userRolesUpdateResponse.IsSuccessStatusCode)
         {
             return this.ServiceError(userRolesUpdateResponse);
