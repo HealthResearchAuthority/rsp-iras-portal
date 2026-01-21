@@ -100,12 +100,43 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
     {
         SetupAuthoriseOutcomeViewModel();
 
+        var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
+        sponsorOrganisationService
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new SponsorOrganisationUserDto { Id = Guid.NewGuid() }
+            });
+
         // Act
         var result = await Sut.CheckAndAuthorise("PR1", "IRAS", "Short", _sponsorOrganisationUserId,
             _sponsorOrganisationUserId);
 
         // Assert
         result.ShouldBeOfType<ViewResult>();
+    }
+
+    [Fact]
+    public async Task CheckAndAuthorise_Returns_Error_When_SponsorOrganisationUser_Fails()
+    {
+        SetupAuthoriseOutcomeViewModel();
+
+        var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
+        sponsorOrganisationService
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
+            {
+                StatusCode = HttpStatusCode.NotFound,
+                Content = null
+            });
+
+        // Act
+        var result = await Sut.CheckAndAuthorise("PR1", "IRAS", "Short", _sponsorOrganisationUserId,
+            _sponsorOrganisationUserId);
+
+        // Assert
+        result.ShouldBeOfType<StatusCodeResult>().StatusCode.ShouldBe(404);
     }
 
     [Fact]
@@ -120,6 +151,15 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
             {
                 StatusCode = HttpStatusCode.OK,
                 Content = null
+            });
+
+        var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
+        sponsorOrganisationService
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new SponsorOrganisationUserDto { Id = Guid.NewGuid() }
             });
 
         // Act

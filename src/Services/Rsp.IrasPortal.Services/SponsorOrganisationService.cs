@@ -136,4 +136,10 @@ public class SponsorOrganisationService(ISponsorOrganisationsServiceClient clien
         var apiResponse = await client.UpdateUserInSponsorOrganisation(user.RtsId, user.UserId.ToString(), user);
         return apiResponse.ToServiceResponse();
     }
+
+    public async Task<ServiceResponse<SponsorOrganisationUserDto>> GetSponsorOrganisationUser(Guid sponsorOrgUserId)
+    {
+        var apiResponse = await client.GetSponsorOrganisationUser(sponsorOrgUserId);
+        return apiResponse.ToServiceResponse();
+    }
 }
