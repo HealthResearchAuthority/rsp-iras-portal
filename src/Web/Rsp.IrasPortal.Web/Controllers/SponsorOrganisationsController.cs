@@ -350,8 +350,10 @@ public class SponsorOrganisationsController(
             return this.ServiceError(response);
         }
 
+        var roleToAdd = dto.SponsorRole.Contains(Roles.Sponsor) ? Roles.Sponsor : Roles.OrganisationAdministrator;
+
         // Assign sponsor role on success
-        await userService.UpdateRoles(user.Content!.User.Email, null, Roles.Sponsor);
+        await userService.UpdateRoles(user.Content!.User.Email, $"{Roles.Sponsor},{Roles.OrganisationAdministrator}", roleToAdd);
 
         TempData[TempDataKeys.ShowNotificationBanner] = true;
         TempData[TempDataKeys.SponsorOrganisationUserType] = "add";
