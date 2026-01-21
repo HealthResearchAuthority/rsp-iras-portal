@@ -267,6 +267,8 @@ public class SponsorOrganisationsController(
     public async Task<IActionResult> ViewSponsorOrganisationUsers(string rtsId, string? searchQuery = null,
         int pageNumber = 1, int pageSize = 20, string? sortField = "GivenName", string? sortDirection = "asc")
     {
+        TempData.Clear();
+
         var load = await LoadSponsorOrganisationAsync(rtsId);
 
         var model = new SponsorOrganisationListUsersModel { SponsorOrganisation = load.Model };
@@ -353,7 +355,7 @@ public class SponsorOrganisationsController(
         var roleToAdd = dto.SponsorRole.Contains(Roles.Sponsor) ? Roles.Sponsor : Roles.OrganisationAdministrator;
 
         // Assign sponsor role on success
-        await userService.UpdateRoles(user.Content!.User.Email, $"{Roles.Sponsor},{Roles.OrganisationAdministrator}", roleToAdd);
+        await userService.UpdateRoles(user.Content!.User.Email, null, roleToAdd);
 
         TempData[TempDataKeys.ShowNotificationBanner] = true;
         TempData[TempDataKeys.SponsorOrganisationUserType] = "add";

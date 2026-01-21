@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Net.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Responses;
@@ -18,6 +21,7 @@ public class ViewSponsorOrganisationUsersTests : TestServiceBase<SponsorOrganisa
     {
         _http = new DefaultHttpContext { Session = new InMemorySession() };
         Sut.ControllerContext = new ControllerContext { HttpContext = _http };
+        Sut.TempData = new TempDataDictionary(_http, Mock.Of<ITempDataProvider>());
     }
 
     [Fact]

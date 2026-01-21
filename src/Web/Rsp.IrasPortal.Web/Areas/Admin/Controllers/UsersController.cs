@@ -47,8 +47,7 @@ public class UsersController(
     private const string CreateMode = "create";
 
     /// <summary>
-    /// Users home page, where it displays available users
-    /// with the options to edit/delete or manage roles
+    /// Users home page, where it displays available users with the options to edit/delete or manage roles
     /// </summary>
     [Route("/admin/users", Name = "admin:users")]
     [HttpGet]
@@ -251,9 +250,8 @@ public class UsersController(
                 validationResult.Errors.Add(new ValidationFailure("Email", "This user already exists", null));
             }
 
-            // Copy the validation results into ModelState.
-            // ASP.NET uses the ModelState collection to populate
-            // error messages in the View.
+            // Copy the validation results into ModelState. ASP.NET uses the ModelState collection
+            // to populate error messages in the View.
             foreach (var error in validationResult.Errors)
             {
                 ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
@@ -293,6 +291,8 @@ public class UsersController(
     [HttpGet]
     public async Task<IActionResult> ViewUser(string userId, string email)
     {
+        TempData.Clear();
+
         // get user by userId and email
         var response = await userManagementService.GetUser(userId, email);
 
@@ -311,9 +311,7 @@ public class UsersController(
             return View(ViewUserView, model);
         }
 
-        // if status is forbidden
-        // return the appropriate response otherwise
-        // return the generic error page
+        // if status is forbidden return the appropriate response otherwise return the generic error page
         return response.StatusCode switch
         {
             HttpStatusCode.Forbidden => Forbid(),
@@ -321,10 +319,8 @@ public class UsersController(
         };
     }
 
-    /// <summary>
-    /// Creates or Edits a user in the database
-    /// </summary>
-    /// <param name="model"><see cref="UserViewModel"> that holds user data</param>
+    /// <summary> Creates or Edits a user in the database </summary> <param name="model"><see
+    /// cref="UserViewModel"> that holds user data</param>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> SubmitUser(UserViewModel model)
@@ -340,9 +336,8 @@ public class UsersController(
         // check if modelstate is valid if in edit mode
         if (mode == EditMode && !validationResult.IsValid)
         {
-            // Copy the validation results into ModelState.
-            // ASP.NET uses the ModelState collection to populate
-            // error messages in the View.
+            // Copy the validation results into ModelState. ASP.NET uses the ModelState collection
+            // to populate error messages in the View.
             foreach (var error in validationResult.Errors)
             {
                 ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
@@ -351,13 +346,11 @@ public class UsersController(
             return View(EditUserView, model);
         }
 
-        // Creates a user if in "create" mode i.e. model.Id is null
-        // Updates the user if in "edit" mode i.e. model.Id has a value
+        // Creates a user if in "create" mode i.e. model.Id is null Updates the user if in "edit"
+        // mode i.e. model.Id has a value
         var submitUserResponse = await CreateOrUpdateUser(model, mode);
 
-        // if status is forbidden
-        // return the appropriate response otherwise
-        // return the generic error page
+        // if status is forbidden return the appropriate response otherwise return the generic error page
         if (!submitUserResponse.IsSuccessStatusCode)
         {
             return submitUserResponse.StatusCode switch
@@ -372,9 +365,8 @@ public class UsersController(
         {
             var roleResponse = await UpdateUserRoles(model);
 
-            // if status is forbidden
-            // return the appropriate response otherwise
-            // return the generic error page
+            // if status is forbidden return the appropriate response otherwise return the generic
+            // error page
             if (!roleResponse.IsSuccessStatusCode)
             {
                 return roleResponse.StatusCode switch
@@ -417,8 +409,7 @@ public class UsersController(
 
             foreach (var role in availableRoles)
             {
-                // check if the user has the role
-                // if the user has the role, set it to selected
+                // check if the user has the role if the user has the role, set it to selected
                 if (!model.UserRoles.Any(x => x.Name == role.Name))
                 {
                     // user is not in role so add it
@@ -548,9 +539,7 @@ public class UsersController(
             return RedirectToAction(nameof(Index));
         }
 
-        // if status is forbidden
-        // return the appropriate response otherwise
-        // return the generic error page
+        // if status is forbidden return the appropriate response otherwise return the generic error page
         return response.StatusCode switch
         {
             HttpStatusCode.Forbidden => Forbid(),
@@ -651,9 +640,7 @@ public class UsersController(
             return RedirectToAction(nameof(Index));
         }
 
-        // if status is forbidden
-        // return the appropriate response otherwise
-        // return the generic error page
+        // if status is forbidden return the appropriate response otherwise return the generic error page
         return response.StatusCode switch
         {
             HttpStatusCode.Forbidden => Forbid(),

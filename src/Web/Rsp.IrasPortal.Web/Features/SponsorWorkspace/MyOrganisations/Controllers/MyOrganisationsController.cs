@@ -9,6 +9,7 @@ using Microsoft.FeatureManagement.Mvc;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.Extensions;
 using Rsp.Portal.Application.Filters;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
@@ -159,14 +160,14 @@ public class MyOrganisationsController(
             RtsId = rtsId
         };
 
+        var user = User;
+
+        var allowedStatuses = user.GetAllowedStatuses(StatusEntitiy.ProjectRecord);
+
         var searchQuery = new ProjectRecordSearchRequest
         {
             SponsorOrganisation = rtsId,
-            AllowedStatuses = new List<string> {
-                ProjectRecordStatus.Active,
-                ProjectRecordStatus.Closed,
-                ProjectRecordStatus.PendingClosure
-            }
+            AllowedStatuses = allowedStatuses
         };
 
         var json = HttpContext.Session.GetString(SessionKeys.SponsorMyOrganisationsProjectsSearch);
@@ -175,8 +176,16 @@ public class MyOrganisationsController(
             model.Search = JsonSerializer.Deserialize<SponsorOrganisationProjectSearchModel>(json)!;
 
             searchQuery.IrasId = model.Search.IrasId;
-            searchQuery.FromDate = model.Search.FromDate;
-            searchQuery.ToDate = model.Search.ToDate;
+
+            if (model.Search.FromDate.HasValue)
+            {
+                searchQuery.FromDate = model.Search.FromDate.Value.StartOfDay();
+            }
+
+            if (model.Search.ToDate.HasValue)
+            {
+                searchQuery.ToDate = model.Search.ToDate.Value.EndOfDay();
+            }
         }
 
         var projects = await applicationsService.GetPaginatedApplications(
@@ -687,7 +696,7 @@ public class MyOrganisationsController(
             return this.ServiceError(response);
         }
 
-        var updateRole = await userService.UpdateRoles(user.Email, $"{Roles.Sponsor},{Roles.OrganisationAdministrator}",
+        var updateRole = await userService.UpdateRoles(user.Email, null,
             role == "Sponsor" ? Roles.Sponsor : Roles.OrganisationAdministrator);
 
         if (!updateRole.IsSuccessStatusCode)
