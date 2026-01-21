@@ -340,6 +340,13 @@ public class ReviewAllChangesController
     [Authorize(Policy = Permissions.MyResearch.Modifications_Submit)]
     public async Task<IActionResult> SendModificationToSponsor(string projectRecordId, Guid projectModificationId)
     {
+        var canModificationSendToSponsor = TempData[TempDataKeys.ProjectModification.CanModificationSendToSponsor];
+
+        if (canModificationSendToSponsor != null && canModificationSendToSponsor.Equals(false))
+        {
+            return View("/Features/Modifications/Views/ModificationSendToSponsor.cshtml");
+        }
+
         // Fetch all modification documents (up to 200)
         var searchQuery = new ProjectOverviewDocumentSearchRequest();
         searchQuery.AllowedStatuses = User.GetAllowedStatuses(StatusEntitiy.Document);

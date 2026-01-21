@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Azure;
-using Rsp.IrasPortal.Web.Helpers;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs.CmsQuestionset.Modifications;
 using Rsp.Portal.Application.DTOs.Requests;
@@ -52,6 +51,14 @@ public class ModificationsController
     [HttpGet]
     public async Task<IActionResult> CreateModification(string separator = "/")
     {
+        //Create validation
+        var validation = TempData[TempDataKeys.ProjectModification.CanCreateNewModification];
+
+        if (validation != null && validation.Equals(false))
+        {
+            return View("/Features/Modifications/Views/CreateModificationOutcome.cshtml");
+        }
+
         // Retrieve IRAS ID from TempData
         var IrasId = TempData.Peek(TempDataKeys.IrasId) as int?;
         var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId);
@@ -74,24 +81,6 @@ public class ModificationsController
 
         // Compose the full name of the respondent
         var name = $"{respondent.GivenName} {respondent.FamilyName}";
-
-        //Validation for new modification
-        var existingModification = await projectModificationsService.GetModificationsByProjectRecordId((string)projectRecordId);
-
-        if (existingModification?.Content?.Modifications != null)
-        {
-            var validation = CreateNewModificationValidation.ValidateNewModification(existingModification.Content.Modifications, ModificationStatus.InDraft);
-
-            if (!validation)
-            {
-                return this.ServiceError(new ServiceResponse
-                {
-                    Error = "Create modification error",
-                    StatusCode = HttpStatusCode.BadRequest,
-                    ReasonPhrase = "Bad Request"
-                });
-            }
-        }
 
         // Create a new project modification request
         var modificationRequest = new ProjectModificationRequest
