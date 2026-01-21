@@ -51,6 +51,14 @@ public class ModificationsController
     [HttpGet]
     public async Task<IActionResult> CreateModification(string separator = "/")
     {
+        //Restrict new modification creation if there is already in draft modification.
+        var canCreateNewModification = TempData[TempDataKeys.ProjectModification.CanCreateNewModification];
+
+        if (canCreateNewModification is false)
+        {
+            return View("CreateModificationOutcome");
+        }
+
         // Retrieve IRAS ID from TempData
         var IrasId = TempData.Peek(TempDataKeys.IrasId) as int?;
         var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId);
@@ -251,7 +259,6 @@ public class ModificationsController
 
         // Deserialize the area of changes from TempData
         var areaOfChanges = JsonSerializer.Deserialize<List<AreaOfChangeDto>>(areas!)!;
-
         if (!saveForLater)
         {
             PopulateDropdownOptions(model, areaOfChanges);
