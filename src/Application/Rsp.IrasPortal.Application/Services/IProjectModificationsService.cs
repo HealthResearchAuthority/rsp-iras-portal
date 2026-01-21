@@ -280,11 +280,4 @@ public interface IProjectModificationsService : IInterceptable
     /// </summary>
     /// <param name="documentsAuditTrailRequest">The request object containing the review values</param>
     public Task<ServiceResponse> CreateModificationDocumentsAuditTrail(List<ModificationDocumentsAuditTrailDto> documentsAuditTrailRequest);
-
-    /// <summary>
-    /// Get all modifications for the project record Id
-    /// </summary>
-    /// <param name="projectRecordId"></param>
-    /// <returns></returns>
-    public Task<ServiceResponse<GetModificationsResponse>> GetModificationsByProjectRecordId(string projectRecordId);
 }

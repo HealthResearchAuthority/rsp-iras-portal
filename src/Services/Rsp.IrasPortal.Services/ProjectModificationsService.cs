@@ -362,10 +362,4 @@ public class ProjectModificationsService
 
         return apiResponse.ToServiceResponse();
     }
-
-    public async Task<ServiceResponse<GetModificationsResponse>> GetModificationsByProjectRecordId(string projectRecordId)
-    {
-        var apiResponse = await projectModificationsServiceClient.GetModificationsByProjectRecordId(projectRecordId);
-        return apiResponse.ToServiceResponse();
-    }
 }
