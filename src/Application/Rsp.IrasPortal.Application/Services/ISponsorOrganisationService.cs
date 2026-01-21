@@ -1,9 +1,9 @@
-﻿using Rsp.Portal.Application.Constants;
+﻿using Rsp.Logging.Interceptors;
+using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Responses;
-using Rsp.Logging.Interceptors;
 
 namespace Rsp.Portal.Application.Services;
 
@@ -40,4 +40,6 @@ public interface ISponsorOrganisationService : IInterceptable
     Task<ServiceResponse<IEnumerable<SponsorOrganisationDto>>> GetAllActiveSponsorOrganisationsForEnabledUser(Guid userId);
 
     Task<ServiceResponse<SponsorOrganisationUserDto>> UpdateSponsorOrganisationUser(SponsorOrganisationUserDto user);
+
+    Task<ServiceResponse<SponsorOrganisationUserDto>> GetSponsorOrganisationUser(Guid sponsorOrgUserId);
 }
