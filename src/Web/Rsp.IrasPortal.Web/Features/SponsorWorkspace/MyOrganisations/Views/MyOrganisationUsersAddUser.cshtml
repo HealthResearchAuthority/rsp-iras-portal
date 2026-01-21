@@ -50,17 +50,10 @@
             </label>
             <br/>
             
-            <label class="govuk-label" for="SearchQuery">
-                <b>Email</b>
-            </label>
-
-            <div class="review-body-search">
-                <input class="govuk-input"
-                       id="SearchQuery"
-                       name="SearchQuery"
-                       type="text"
-                       value="@(Model.Pagination?.SearchQuery ?? string.Empty)" />
-            </div>
+            <rsp-gds-input asp-for="Email"
+                input-type="email"
+                label-text="Email"
+                width-class="govuk-input" />
 
             <input type="hidden" readonly name="RtsId" value="@Model.RtsId" />
 			<br />

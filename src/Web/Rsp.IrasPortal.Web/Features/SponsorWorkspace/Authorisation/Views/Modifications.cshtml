@@ -41,7 +41,7 @@
                 <form asp-route="sws:applyfilters" method="post" class="govuk-form-group govuk-!-margin-bottom-0">
 
                     <div class="govuk-form-group govuk-!-margin-bottom-2" error-class-for="Search.SearchTerm">
-                    
+
                         <div id="search-hint" class="govuk-hint">
                             @Html.Raw(searchHint?.Value)
                         </div>
@@ -71,50 +71,44 @@
                 <div class="govuk-table-wrapper">
                     <table class="govuk-table modifications-tasklist-table" id="authorisationsTable">
                         <thead class="govuk-table__head">
-                            <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
-                                @{
-                                    var sortableHeaders = new[]
-                                    {
-                                                                new { Field = nameof(ModificationsModel.ModificationNumber), Label = "Modification ID" },
-                                                                new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
-                                                                new { Field = nameof(ModificationsModel.SentToSponsorDate), Label = "Date received" },
-                                                                new { Field = nameof(ModificationsModel.SentToRegulatorDate), Label = "Date actioned" },
-                                                                new { Field = nameof(ModificationsModel.Status), Label = "Status" }
-                                                                };
-                                    var tableId = "authorisationsTable";
-                                }
-                                @foreach (var header in sortableHeaders)
+                        <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+                            @{
+                                var sortableHeaders = new[]
                                 {
-                                    // Insert Chief investigator column *before* Status
-                                    if (header.Field == nameof(ModificationsModel.Status))
-                                    {
-                                        <!-- NON-sortable Chief investigator column -->
-                                        <th scope="col" class="govuk-table__header">Chief investigator</th>
-                                    }
-
-                                    <th scope="col" class="govuk-table__header govuk-table__header-sortable">
-                                        <partial name="_SortableHeaderButton" model="@(new SortableHeaderModel
-                                                                              {
-                                                                                  FieldName = header.Field,
-                                                                                  DisplayText = header.Label,
-                                                                                  CurrentSortField = Model.Pagination?.SortField,
-                                                                                  CurrentSortDirection = Model.Pagination?.SortDirection,
-                                                                                  TableId = tableId,
-                                                                                  AdditionalParameters = new Dictionary<string, string>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        { "SponsorOrganisationUserId", Model.SponsorOrganisationUserId.ToString() }
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    }
+                                    new { Field = nameof(ModificationsModel.ModificationNumber), Label = "Modification ID" },
+                                    new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
+                                    new { Field = nameof(ModificationsModel.SentToSponsorDate), Label = "Date received" },
+                                    new { Field = nameof(ModificationsModel.SentToRegulatorDate), Label = "Date actioned" },
+                                    new { Field = nameof(ModificationsModel.ChiefInvestigator), Label = "Chief investigator" },
+                                    new { Field = nameof(ModificationsModel.Status), Label = "Status" }
+                                };
+                                var tableId = "authorisationsTable";
+                            }
+                            @foreach (var header in sortableHeaders)
+                            {
+                                <th scope="col" class="govuk-table__header govuk-table__header-sortable">
+                                    <partial name="_SortableHeaderButton" model="@(new SortableHeaderModel
+                                                                                 {
+                                                                                     FieldName = header.Field,
+                                                                                     DisplayText = header.Label,
+                                                                                     CurrentSortField = Model.Pagination?.SortField,
+                                                                                     CurrentSortDirection = Model.Pagination?.SortDirection,
+                                                                                     TableId = tableId,
+                                                                                     AdditionalParameters = new Dictionary<string, string>
+                                                                                     {
+                                                                                         { "SponsorOrganisationUserId", Model.SponsorOrganisationUserId.ToString() }
+                                                                                     }
                                                                               })" />
                                 </th>
-                                                                }
-                            </tr>
+                            }
+                        </tr>
                         </thead>
 
                         <form method="get" id="authorisations-selection">
                             <input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
                             <input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
 
-                        <tbody class="govuk-table__body govuk-body-s">
+                            <tbody class="govuk-table__body govuk-body-s">
                             @{
                                 foreach (var modification in Model.Modifications)
                                 {
@@ -153,7 +147,7 @@
                                     </tr>
                                 }
                             }
-                        </tbody>
+                            </tbody>
                         </form>
                     </table>
                 </div>

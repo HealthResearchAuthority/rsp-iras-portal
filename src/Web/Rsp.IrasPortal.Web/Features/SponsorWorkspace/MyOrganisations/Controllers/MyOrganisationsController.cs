@@ -3,13 +3,16 @@ using System.Globalization;
 using System.Security.Claims;
 using System.Text.Json;
 using FluentValidation;
+using FluentValidation.Validators;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Web.Helpers;
+using Rsp.IrasPortal.Web.Models;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.Extensions;
 using Rsp.Portal.Application.Filters;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
@@ -32,7 +35,8 @@ public class MyOrganisationsController(
     IRtsService rtsService,
     IUserManagementService userService,
     IApplicationsService applicationsService,
-    IValidator<SponsorOrganisationProjectSearchModel> validator
+    IValidator<SponsorOrganisationProjectSearchModel> validator,
+    IValidator<EmailModel> emailValidator
 ) : Controller
 {
     private const string MyOrganisationConfirmDisableUser = nameof(MyOrganisationConfirmDisableUser);
@@ -160,14 +164,14 @@ public class MyOrganisationsController(
             RtsId = rtsId
         };
 
+        var user = User;
+
+        var allowedStatuses = user.GetAllowedStatuses(StatusEntitiy.ProjectRecord);
+
         var searchQuery = new ProjectRecordSearchRequest
         {
             SponsorOrganisation = rtsId,
-            AllowedStatuses = new List<string> {
-                ProjectRecordStatus.Active,
-                ProjectRecordStatus.Closed,
-                ProjectRecordStatus.PendingClosure
-            }
+            AllowedStatuses = allowedStatuses
         };
 
         var json = HttpContext.Session.GetString(SessionKeys.SponsorMyOrganisationsProjectsSearch);
@@ -176,8 +180,16 @@ public class MyOrganisationsController(
             model.Search = JsonSerializer.Deserialize<SponsorOrganisationProjectSearchModel>(json)!;
 
             searchQuery.IrasId = model.Search.IrasId;
-            searchQuery.FromDate = model.Search.FromDate;
-            searchQuery.ToDate = model.Search.ToDate;
+
+            if (model.Search.FromDate.HasValue)
+            {
+                searchQuery.FromDate = model.Search.FromDate.Value.StartOfDay();
+            }
+
+            if (model.Search.ToDate.HasValue)
+            {
+                searchQuery.ToDate = model.Search.ToDate.Value.EndOfDay();
+            }
         }
 
         var projects = await applicationsService.GetPaginatedApplications(
@@ -492,7 +504,7 @@ public class MyOrganisationsController(
     }
 
     [HttpGet]
-    public async Task<IActionResult> MyOrganisationUsersAddUser(string rtsId, string? searchQuery)
+    public async Task<IActionResult> MyOrganisationUsersAddUser(string rtsId, [FromQuery(Name = "Email")] string? email)
     {
         var ctxResult = await TryGetSponsorOrgContext(rtsId);
         if (ctxResult.HasResult)
@@ -507,19 +519,34 @@ public class MyOrganisationsController(
             RtsId = rtsId
         };
 
-        if (Request.Query.ContainsKey("SearchQuery") &&
-            (string.IsNullOrWhiteSpace(searchQuery) || !EmailValidator.IsValid(searchQuery)))
-        {
-            ModelState.AddModelError("SearchQuery", "Enter a user email");
-            return View(model);
-        }
-
-        if (!Request.Query.ContainsKey("SearchQuery"))
+        if (!Request.Query.ContainsKey(nameof(model.Email)))
         {
             return View(model);
         }
 
-        var usersResponse = await userService.SearchUsers(searchQuery);
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            ModelState.AddModelError(nameof(model.Email), "Enter a user email");
+            return View(model);
+        }
+
+        var validationResult = await emailValidator.ValidateAsync(new EmailModel()
+        {
+            EmailAddress = email
+        });
+
+        if (!validationResult.IsValid)
+        {
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(nameof(model.Email), error.ErrorMessage);
+            }
+
+            model.Email = email;
+            return View(model);
+        }
+
+        var usersResponse = await userService.SearchUsers(email);
 
         if (usersResponse is { IsSuccessStatusCode: true, Content.TotalCount: 1 })
         {
@@ -802,10 +829,11 @@ public class MyOrganisationsController(
             return this.ServiceError(updateProfileResult);
         }
 
-        // update user roles
-        var roleToUpdate = model.Role == "Sponsor" ? Roles.Sponsor : Roles.OrganisationAdministrator;
-        var userRolesUpdateResponse = await userService.UpdateRoles(model.Email, null, roleToUpdate);
+        // Remove Existing roles
+        var roleToRemove = model.Role == "Sponsor" ? Roles.OrganisationAdministrator : Roles.Sponsor;
+        var roleToAdd = model.Role == "Sponsor" ? Roles.Sponsor : Roles.OrganisationAdministrator;
 
+        var userRolesUpdateResponse = await userService.UpdateRoles(model.Email, roleToRemove, roleToAdd);
         if (!userRolesUpdateResponse.IsSuccessStatusCode)
         {
             return this.ServiceError(userRolesUpdateResponse);

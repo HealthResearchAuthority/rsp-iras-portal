@@ -196,11 +196,14 @@
 										<strong class="govuk-tag @statusClass">@statusText</strong>
 									</td>
 									@{
-										var role = sponsorOrganisationUserDto.SponsorRole;
+                                        var role = sponsorOrganisationUserDto.SponsorRole;
 
-										role = string.IsNullOrEmpty(role)
-										? role
-										: char.ToUpper(role[0]) + role[1..];
+                                        role = string.IsNullOrWhiteSpace(role)
+                                            ? role
+                                            : char.ToUpper(role[0]) +
+                                              role[1..]
+                                                  .Replace("_", " ")
+                                                  .ToLowerInvariant();
 									}
 									<td class="govuk-table__cell">
 										@role

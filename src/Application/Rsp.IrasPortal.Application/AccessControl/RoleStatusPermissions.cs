@@ -43,19 +43,25 @@ public static class RoleStatusPermissions
             {
                 Roles.WorkflowCoordinator, new List<string>
                 {
-                    ProjectRecordStatus.Active
+                    ProjectRecordStatus.Active,
+                    ProjectRecordStatus.PendingClosure,
+                    ProjectRecordStatus.Closed
                 }
             },
             {
                 Roles.TeamManager, new List<string>
                 {
-                    ProjectRecordStatus.Active
+                    ProjectRecordStatus.Active,
+                    ProjectRecordStatus.PendingClosure,
+                    ProjectRecordStatus.Closed
                 }
             },
             {
                 Roles.StudyWideReviewer, new List<string>
                 {
-                    ProjectRecordStatus.Active
+                    ProjectRecordStatus.Active,
+                    ProjectRecordStatus.PendingClosure,
+                    ProjectRecordStatus.Closed
                 }
             }
         };
