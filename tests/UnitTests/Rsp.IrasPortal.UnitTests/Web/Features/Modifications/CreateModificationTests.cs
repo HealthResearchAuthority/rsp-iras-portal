@@ -175,6 +175,6 @@ public class CreateModification : TestServiceBase<ModificationsController>
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
-        Assert.Equal("/Features/Modifications/Views/CreateModificationOutcome.cshtml", viewResult.ViewName);
+        Assert.Equal("CreateModificationOutcome", viewResult.ViewName);
     }
 }

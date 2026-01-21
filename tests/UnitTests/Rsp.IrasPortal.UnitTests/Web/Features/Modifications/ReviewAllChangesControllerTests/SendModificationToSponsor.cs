@@ -341,6 +341,6 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
         // Assert
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
-        Assert.Equal("/Features/Modifications/Views/ModificationSendToSponsor.cshtml", viewResult.ViewName);
+        Assert.Equal("ModificationSendToSponsor", viewResult.ViewName);
     }
 }
