@@ -51,12 +51,12 @@ public class ModificationsController
     [HttpGet]
     public async Task<IActionResult> CreateModification(string separator = "/")
     {
-        //Create validation
-        var validation = TempData[TempDataKeys.ProjectModification.CanCreateNewModification];
+        //Restrict new modification creation if there is already in draft modification.
+        var canCreateNewModification = TempData[TempDataKeys.ProjectModification.CanCreateNewModification];
 
-        if (validation != null && validation.Equals(false))
+        if (canCreateNewModification != null && canCreateNewModification.Equals(false))
         {
-            return View("/Features/Modifications/Views/CreateModificationOutcome.cshtml");
+            return View("CreateModificationOutcome");
         }
 
         // Retrieve IRAS ID from TempData

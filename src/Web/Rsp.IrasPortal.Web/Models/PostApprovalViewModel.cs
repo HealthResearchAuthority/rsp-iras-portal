@@ -15,7 +15,7 @@ public class PostApprovalViewModel
     public bool CanCreateNewModification() =>
         !Modifications.Any(m => m.Status == ModificationStatus.InDraft);
 
-    //Validate modification while sending to sponsor.Only one in flight modofocation should exist.
+    //Validate modification while sending to sponsor. Only one in flight modification should exist.
     public bool CanModificationSendToSponsor() =>
         !Modifications.Any(m =>
             m.Status == ModificationStatus.WithSponsor ||

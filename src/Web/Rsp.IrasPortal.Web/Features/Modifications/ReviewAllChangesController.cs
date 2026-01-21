@@ -340,11 +340,12 @@ public class ReviewAllChangesController
     [Authorize(Policy = Permissions.MyResearch.Modifications_Submit)]
     public async Task<IActionResult> SendModificationToSponsor(string projectRecordId, Guid projectModificationId)
     {
+        // Restrict modification to send to sponsor if the modification is already in with sponsor or with review body
         var canModificationSendToSponsor = TempData[TempDataKeys.ProjectModification.CanModificationSendToSponsor];
 
         if (canModificationSendToSponsor != null && canModificationSendToSponsor.Equals(false))
         {
-            return View("/Features/Modifications/Views/ModificationSendToSponsor.cshtml");
+            return View("ModificationSendToSponsor");
         }
 
         // Fetch all modification documents (up to 200)
