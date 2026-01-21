@@ -13,6 +13,7 @@ using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.Identity;
+using Rsp.Portal.Web.Areas.Admin.Models;
 using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Features.SponsorWorkspace.MyOrganisations.Controllers;
 using Rsp.Portal.Web.Features.SponsorWorkspace.MyOrganisations.Models;
@@ -84,7 +85,7 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
                 UserId = Guid.NewGuid(),
                 Email = email,
                 IsActive = true,
-                SponsorRole = isUserAdmin ? SponsorOrganisationUserRoles.OrganisationAdministrator : "Member",
+                SponsorRole = isUserAdmin ? Roles.OrganisationAdministrator : "Member",
                 IsAuthoriser = false
             }
         };
@@ -2107,7 +2108,7 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
                 CountryName = "UK"
             });
 
-        var role = SponsorOrganisationUserRoles.Sponsor;
+        var role = Roles.Sponsor;
         var canAuthorise = true;
 
         // Act
@@ -2265,6 +2266,86 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
             userId.ToString(),
             "Sponsor",
             false);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe(nameof(Sut.MyOrganisationUsers));
+    }
+
+    [Fact]
+    public async Task MyOrganisationUsersConfirmAddUser_OrganisationAdministrator()
+    {
+        // Arrange
+        var rtsId = "87765";
+        var userId = SetUser(Guid.NewGuid(), DefaultEmail);
+
+        SetupSponsorOrgContextSuccess(
+            rtsId,
+            DefaultEmail,
+            rtsOrganisation: new OrganisationDto
+            {
+                Name = "Acme Sponsor Org",
+                CountryName = "UK"
+            });
+
+        var sponsorResponse = new ServiceResponse<SponsorOrganisationUserDto>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new SponsorOrganisationUserDto
+            {
+                RtsId = rtsId,
+                UserId = userId,
+                Id = Guid.NewGuid()
+            }
+        };
+
+        var serviceResponse = new ServiceResponse
+        {
+            StatusCode = HttpStatusCode.OK
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(x => x.GetUser(
+                It.IsAny<string?>(),
+                It.IsAny<string?>(),
+                It.IsAny<string?>()))
+            .ReturnsAsync(new ServiceResponse<UserResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new UserResponse
+                {
+                    User = new User(
+                        userId.ToString(),
+                        "azure-ad-12345",
+                        "Mr",
+                        "Test",
+                        "Test",
+                        "test.test@example.com",
+                        "Software Developer",
+                        "orgName",
+                        "+44 7700 900123",
+                        "United Kingdom",
+                        "Active",
+                        DateTime.UtcNow,
+                        DateTime.UtcNow.AddDays(-2),
+                        DateTime.UtcNow)
+                }
+            });
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.AddUserToSponsorOrganisation(It.IsAny<SponsorOrganisationUserDto>()))
+            .ReturnsAsync(sponsorResponse);
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.UpdateRoles(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(serviceResponse);
+
+        // Act
+        var result = await Sut.MyOrganisationUsersConfirmAddUser(
+            rtsId,
+            userId.ToString(),
+            "Organisation administrator",
+            true);
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
@@ -2650,5 +2731,97 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         view.RouteValues.Keys.ShouldContain("userId");
         view.RouteValues[view.RouteValues.Keys.First(k => k == "rtsId")].ShouldBe(rtsId);
         view.RouteValues[view.RouteValues.Keys.First(k => k == "userId")].ShouldBe(userId.ToString());
+    }
+
+    [Fact]
+    public async Task DisableUser_GET_returns_confirm_view_with_model_and_RtsId()
+    {
+        // Arrange
+        var user = new UserResponse();
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser("u1", "m@x.com", null))
+            .ReturnsAsync(new ServiceResponse<UserResponse> { StatusCode = HttpStatusCode.OK, Content = user });
+
+        // Act
+        var result = await Sut.DisableUser("u1", "m@x.com", "rts-1");
+
+        // Assert
+        var view = result.ShouldBeOfType<ViewResult>();
+        view.ViewName.ShouldBe("MyOrganisationConfirmDisableUser");
+        view.Model.ShouldBeOfType<UserViewModel>();
+        ((string)Sut.ViewBag.RtsId).ShouldBe("rts-1");
+    }
+
+    [Fact]
+    public async Task DisableUser_POST_calls_service_sets_tempdata_and_redirects()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.DisableUserInSponsorOrganisation("rts-1", id))
+            .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto> { StatusCode = HttpStatusCode.OK, Content = new() });
+
+        var vm = new UserViewModel { Id = id.ToString(), Email = "m@x.com" };
+
+        // Act
+        var result = await Sut.DisableUser(vm, id, "rts-1");
+
+        // Assert
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Verify(s => s.DisableUserInSponsorOrganisation("rts-1", id), Times.Once);
+
+        Sut.TempData[TempDataKeys.ShowNotificationBanner].ShouldBe(true);
+        Sut.TempData[TempDataKeys.SponsorOrganisationUserType].ShouldBe("disable");
+
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe("MyOrganisationViewUser");
+        redirect.RouteValues!["userId"].ShouldBe(id);
+        redirect.RouteValues!["rtsId"].ShouldBe("rts-1");
+    }
+
+    [Fact]
+    public async Task EnableUser_GET_returns_confirm_view_with_model_and_RtsId()
+    {
+        // Arrange
+        var user = new UserResponse();
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser("u1", "m@x.com", null))
+            .ReturnsAsync(new ServiceResponse<UserResponse> { StatusCode = HttpStatusCode.OK, Content = user });
+
+        // Act
+        var result = await Sut.EnableUser("u1", "m@x.com", "rts-1");
+
+        // Assert
+        var view = result.ShouldBeOfType<ViewResult>();
+        view.ViewName.ShouldBe("MyOrganisationConfirmEnableUser");
+        view.Model.ShouldBeOfType<UserViewModel>();
+        ((string)Sut.ViewBag.RtsId).ShouldBe("rts-1");
+    }
+
+    [Fact]
+    public async Task EnableUser_POST_calls_service_sets_tempdata_and_redirects()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.EnableUserInSponsorOrganisation("rts-1", id))
+            .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto> { StatusCode = HttpStatusCode.OK, Content = new() });
+
+        var vm = new UserViewModel { Id = id.ToString(), Email = "m@x.com" };
+
+        // Act
+        var result = await Sut.EnableUser(vm, id, "rts-1");
+
+        // Assertd
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Verify(s => s.EnableUserInSponsorOrganisation("rts-1", id), Times.Once);
+
+        Sut.TempData[TempDataKeys.ShowNotificationBanner].ShouldBe(true);
+        Sut.TempData[TempDataKeys.SponsorOrganisationUserType].ShouldBe("enable");
+
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe("MyOrganisationViewUser");
+        redirect.RouteValues!["userId"].ShouldBe(id);
+        redirect.RouteValues!["rtsId"].ShouldBe("rts-1");
     }
 }

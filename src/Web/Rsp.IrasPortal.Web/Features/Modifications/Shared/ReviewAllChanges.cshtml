@@ -10,8 +10,14 @@
 @model ModificationDetailsViewModel
 
 @{
-
-    ViewBag.Title = "Review all changes";
+    @if (Model.Status is ModificationStatus.InDraft)
+    {
+        ViewBag.Title = "Review all changes";
+    }
+    else
+    {
+        ViewBag.Title = "Modification";
+    }    
 
     TempData[TempDataKeys.ProjectModification.ReviewAllChanges] = true;
     ViewData[ViewDataKeys.ShowRemoveLink] = false;

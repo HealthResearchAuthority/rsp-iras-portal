@@ -121,21 +121,21 @@
 					</legend>
 					<div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
 						<div class="govuk-radios__item">
-							<input class="govuk-radios__input" id="role" name="Role" type="radio" value="@SponsorOrganisationUserRoles.OrganisationAdministrator" @(Model.Role == SponsorOrganisationUserRoles.OrganisationAdministrator ? "checked" : string.Empty)>
+							<input class="govuk-radios__input" id="role" name="Role" type="radio" value="@Roles.OrganisationAdministrator" @(Model.Role == Roles.OrganisationAdministrator ? "checked" : string.Empty)>
 							<label class="govuk-label govuk-radios__label" for="role">
-								@SponsorOrganisationUserRoles.OrganisationAdministrator
+								Organisation administrator
 							</label>
 						</div>
 						<div class="govuk-radios__item">
-							<input class="govuk-radios__input" id="role-2" name="Role" type="radio" value="@SponsorOrganisationUserRoles.Sponsor" @(Model.Role == SponsorOrganisationUserRoles.Sponsor ? "checked" : string.Empty)>
+							<input class="govuk-radios__input" id="role-2" name="Role" type="radio" value="@Roles.Sponsor" @(Model.Role == Roles.Sponsor ? "checked" : string.Empty)>
 							<label class="govuk-label govuk-radios__label" for="role-2">
-								@SponsorOrganisationUserRoles.Sponsor
+								Sponsor
 							</label>
 						</div>
 					</div>
 				</fieldset>
 			</div>
-			
+
 			<input asp-for="RtsId" hidden value="@Model.RtsId" />
 			<input asp-for="UserId" hidden value="@Model.UserId" />
 			<input asp-for="Email" hidden value="@Model.Email" />
