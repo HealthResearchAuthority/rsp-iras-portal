@@ -25,7 +25,7 @@
                     </p>
                     <div class="govuk-radios" data-module="govuk-radios">
                         <div class="govuk-radios__item">
-                            <input class="govuk-radios__input" id="orgAdmin" asp-for="@Model.SponsorRole" type="radio" value="@SponsorOrganisationUserRoles.OrganisationAdministrator">
+							<input class="govuk-radios__input" id="orgAdmin" asp-for="@Model.SponsorRole" type="radio" value="@Roles.OrganisationAdministrator">
                             <label class="govuk-label govuk-radios__label" for="orgAdmin">
                                 Organisation administrator
                             </label>
@@ -36,7 +36,7 @@
                             </div>
                         </div>
                         <div class="govuk-radios__item">
-							<input class="govuk-radios__input" id="sponsor" asp-for="@Model.SponsorRole" type="radio" value="@SponsorOrganisationUserRoles.Sponsor">
+							<input class="govuk-radios__input" id="sponsor" asp-for="@Model.SponsorRole" type="radio" value="@Roles.Sponsor">
                             <label class="govuk-label govuk-radios__label" for="sponsor">
                                 Sponsor
                             </label>

@@ -37,7 +37,85 @@ public class SubmitAddUserTests : TestServiceBase<SponsorOrganisationsController
             {
                 RtsId = rtsId,
                 UserId = userGuid,
-                Id = Guid.NewGuid()
+                Id = Guid.NewGuid(),
+                IsAuthoriser = true,
+                SponsorRole = Roles.Sponsor
+            }
+        };
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.AddUserToSponsorOrganisation(It.IsAny<SponsorOrganisationUserDto>()))
+            .ReturnsAsync(sponsorResponse);
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(x => x.GetUser(
+                It.IsAny<string?>(),
+                It.IsAny<string?>(),
+                It.IsAny<string?>()))
+            .ReturnsAsync(new ServiceResponse<UserResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new UserResponse
+                {
+                    User = new User(
+                        userId,
+                        "azure-ad-12345",
+                        "Mr",
+                        "Test",
+                        "Test",
+                        "test.test@example.com",
+                        "Software Developer",
+                        orgName,
+                        "+44 7700 900123",
+                        "United Kingdom",
+                        "Active",
+                        DateTime.UtcNow,
+                        DateTime.UtcNow.AddDays(-2),
+                        DateTime.UtcNow)
+                }
+            });
+
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ShowEditLink] = false
+        };
+
+        // Act
+        var result = await Sut.SubmitAddUser(rtsId, userGuid, Guid.NewGuid());
+
+        // Assert
+        result.ShouldBeOfType<RedirectToActionResult>();
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Verify(s => s.AddUserToSponsorOrganisation(It.IsAny<SponsorOrganisationUserDto>()), Times.Once);
+
+        Mocker.GetMock<IUserManagementService>()
+            .Verify(x => x.GetUser(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<string>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task SubmitAddUser_ShouldReturnView_WithMappedModel_WhenBothServicesSucceed_OrganisationAdministrator()
+    {
+        // Arrange
+        const string rtsId = "87765";
+        const string orgName = "Acme Research Ltd";
+
+        var userGuid = Guid.NewGuid();
+        var userId = userGuid.ToString();
+
+        var sponsorResponse = new ServiceResponse<SponsorOrganisationUserDto>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new SponsorOrganisationUserDto
+            {
+                RtsId = rtsId,
+                UserId = userGuid,
+                Id = Guid.NewGuid(),
+                IsAuthoriser = true,
+                SponsorRole = Roles.OrganisationAdministrator
             }
         };
 

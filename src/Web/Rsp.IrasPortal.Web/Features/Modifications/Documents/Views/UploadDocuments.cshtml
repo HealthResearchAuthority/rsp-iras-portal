@@ -96,7 +96,7 @@
 						@foreach (var doc in Model.UploadedDocuments)
 						{
 							<tr class="govuk-table__row">
-								<td class="govuk-table__cell" style="width: 60%;">
+                                <td class="govuk-table__cell break-anywhere" style="width: 60%;">
 									@if (doc.IsMalwareScanSuccessful == true)
 									{
 										<a asp-route="pmc:downloaddocument"

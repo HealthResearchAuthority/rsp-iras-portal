@@ -30,7 +30,8 @@
       <PackageReference Include="Mapster" Version="7.4.0" />
       <PackageReference Include="Microsoft.Extensions.Azure" Version="1.11.0" />
       <PackageReference Include="Microsoft.FeatureManagement.AspNetCore" Version="4.0.0" />
-      <PackageReference Include="Rsp.Gds.Component" Version="1.0.27" />
+      <PackageReference Include="Rsp.Gds.Component" Version="1.0.28
+                        " />
     </ItemGroup>
 
     <ItemGroup>
