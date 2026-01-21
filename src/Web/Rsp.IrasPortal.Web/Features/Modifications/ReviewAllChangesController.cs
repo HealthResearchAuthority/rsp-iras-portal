@@ -343,7 +343,7 @@ public class ReviewAllChangesController
         // Restrict modification to send to sponsor if the modification is already in with sponsor or with review body
         var canModificationSendToSponsor = TempData[TempDataKeys.ProjectModification.CanModificationSendToSponsor];
 
-        if (canModificationSendToSponsor != null && canModificationSendToSponsor.Equals(false))
+        if (canModificationSendToSponsor is false)
         {
             return View("ModificationSendToSponsor");
         }

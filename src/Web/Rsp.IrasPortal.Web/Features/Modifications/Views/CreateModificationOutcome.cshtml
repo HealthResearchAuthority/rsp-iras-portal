@@ -12,12 +12,13 @@
         ? pageContentData
         : new Dictionary<string, MixedContentPageItem?>();
 
+    var warningMessageTitle = pageContent.GetValueOrDefault("Modifications.CreateModification.Title", null);
     var warningMessage = pageContent.GetValueOrDefault("Modifications.CreateModification.Body", null);
 }
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-        <h1 class="govuk-heading-l"> You can't create a new modification</h1>
+        <h1 class="govuk-heading-l"> @Html.Raw(warningMessageTitle?.Value)</h1>
         <dl class="govuk-summary-list">
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key">IRAS ID</dt>

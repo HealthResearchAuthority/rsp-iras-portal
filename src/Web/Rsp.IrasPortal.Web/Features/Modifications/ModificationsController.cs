@@ -54,7 +54,7 @@ public class ModificationsController
         //Restrict new modification creation if there is already in draft modification.
         var canCreateNewModification = TempData[TempDataKeys.ProjectModification.CanCreateNewModification];
 
-        if (canCreateNewModification != null && canCreateNewModification.Equals(false))
+        if (canCreateNewModification is false)
         {
             return View("CreateModificationOutcome");
         }
