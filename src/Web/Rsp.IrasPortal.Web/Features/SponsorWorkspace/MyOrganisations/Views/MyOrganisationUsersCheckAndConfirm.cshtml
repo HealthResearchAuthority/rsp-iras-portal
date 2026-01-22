@@ -63,9 +63,19 @@
                     <td class="govuk-table__cell">
                         <b>Role</b>
                     </td>
-                    <td class="govuk-table__cell">
-                        @Model.Role
-                    </td>
+                        @{
+                            var role = Model.Role;
+
+                            role = string.IsNullOrWhiteSpace(role)
+                                ? role
+                                : char.ToUpper(role[0]) +
+                                  role[1..]
+                                      .Replace("_", " ")
+                                      .ToLowerInvariant();
+                        }
+                        <td class="govuk-table__cell">
+                            @role
+                        </td>
                     <td class="govuk-table__cell govuk-table__cell--numeric">
                         @{
                             await RenderEditLink("sws:myorganisationusersadduserrole");

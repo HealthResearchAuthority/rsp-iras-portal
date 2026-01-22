@@ -832,9 +832,16 @@ public class MyOrganisationsController(
             return this.ServiceError(updateProfileResult);
         }
 
-        // Remove Existing roles
-        var roleToRemove = model.Role == "Sponsor" ? Roles.OrganisationAdministrator : Roles.Sponsor;
-        var roleToAdd = model.Role == "Sponsor" ? Roles.Sponsor : Roles.OrganisationAdministrator;
+        // Update roles
+        var roleToAdd = model.Role.Equals(
+            Roles.OrganisationAdministrator,
+            StringComparison.OrdinalIgnoreCase)
+            ? Roles.OrganisationAdministrator
+            : Roles.Sponsor;
+
+        var roleToRemove = roleToAdd == Roles.OrganisationAdministrator
+            ? Roles.Sponsor
+            : Roles.OrganisationAdministrator;
 
         var userRolesUpdateResponse = await userService.UpdateRoles(model.Email, roleToRemove, roleToAdd);
         if (!userRolesUpdateResponse.IsSuccessStatusCode)
