@@ -1,5 +1,13 @@
-﻿@{
-    ViewBag.Title = "Review outcome submitted";
+﻿@using Rsp.Portal.Application.Constants
+@{
+	ViewBag.Title = "Review outcome submitted";
+
+	var route = "tasklist:index";
+
+	if (User.IsInRole(Roles.StudyWideReviewer))
+	{
+		route = "mytasklist:index";
+	}
 }
 
 <div class="govuk-grid-row">
@@ -15,7 +23,7 @@
             Any next steps has been sent to the applicant.
         </p>
 
-        <a class="govuk-link" asp-route="mytasklist:index">
+        <a class="govuk-link" asp-route="@route">
             Back to Task list
         </a>
     </div>
