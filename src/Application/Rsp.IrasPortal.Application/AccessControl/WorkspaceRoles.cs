@@ -21,7 +21,7 @@ public static class WorkspaceRolesMatrix
         // All Roles allowed in the "Profile" workspace:
         [Workspaces.Profile] =
         [
-            Roles.Applicant, Roles.Sponsor, Roles.WorkflowCoordinator, Roles.TeamManager, Roles.SystemAdministrator,Roles.StudyWideReviewer
+            Roles.Applicant, Roles.Sponsor, Roles.WorkflowCoordinator, Roles.TeamManager, Roles.SystemAdministrator,Roles.StudyWideReviewer,Roles.OrganisationAdministrator
         ],
 
         // Roles allowed in the "My Research" workspace:
@@ -32,7 +32,7 @@ public static class WorkspaceRolesMatrix
         // - System administrators (full access)
         [Workspaces.MyResearch] =
         [
-            Roles.Applicant, Roles.Sponsor, Roles.WorkflowCoordinator, Roles.TeamManager, Roles.SystemAdministrator,Roles.StudyWideReviewer
+            Roles.Applicant, Roles.Sponsor, Roles.WorkflowCoordinator, Roles.TeamManager, Roles.SystemAdministrator,Roles.StudyWideReviewer,Roles.OrganisationAdministrator
         ],
 
         // Roles allowed in the "Sponsor" workspace:
