@@ -132,8 +132,8 @@
                                         <td class="govuk-table__cell">@projectRecord.UserEmail</td>
                                         <td class="govuk-table__cell">
                                             @(projectRecord.Status == ProjectClosureStatus.Authorised
-                                                                                ? projectRecord.ClosureDate?.ToString("dd MMM yyyy")
-                                                                                : string.Empty)
+                                                                                ? projectRecord.ClosureDate?.ToString("dd MMM yyyy") ?? string.Empty
+                                                                                : string.Empty)                                        
                                         </td>
                                         <td class="govuk-table__cell">
                                             @{
