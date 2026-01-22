@@ -3,7 +3,6 @@ using System.Globalization;
 using System.Security.Claims;
 using System.Text.Json;
 using FluentValidation;
-using FluentValidation.Validators;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
@@ -12,7 +11,6 @@ using Rsp.IrasPortal.Web.Models;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
-using Rsp.Portal.Application.Extensions;
 using Rsp.Portal.Application.Filters;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
@@ -166,7 +164,12 @@ public class MyOrganisationsController(
 
         var user = User;
 
-        var allowedStatuses = user.GetAllowedStatuses(StatusEntitiy.ProjectRecord);
+        var allowedStatuses = new List<string>
+        {
+            ProjectRecordStatus.PendingClosure,
+            ProjectRecordStatus.Active,
+            ProjectRecordStatus.Closed
+        };
 
         var searchQuery = new ProjectRecordSearchRequest
         {

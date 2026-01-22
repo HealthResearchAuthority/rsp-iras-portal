@@ -9,22 +9,24 @@
 <div class="govuk-notification-banner @modifierClass"
      role="alert"
      tabindex="0"
+	 aria-labelledby="notif-title"
+	 aria-describedby="notif-message"
      data-module="govuk-notification-banner">
     
     <div class="govuk-notification-banner__header">
-        <h2 class="govuk-notification-banner__title">
+		<h2 id="notif-title" class="govuk-notification-banner__title">
             @Model.Title
         </h2>
     </div>
 
     <div class="govuk-notification-banner__content">
-        <h3 class="govuk-notification-banner__heading">
+		<h3 id="notif-message" class="govuk-notification-banner__heading">
             @Model.Heading
         </h3>
 
         @if (!string.IsNullOrWhiteSpace(Model.Message))
         {
-            <p class="govuk-body">@Model.Message</p>
+			<p id="notif-message-1" class="govuk-body">@Model.Message</p>
         }
     </div>
 </div>
