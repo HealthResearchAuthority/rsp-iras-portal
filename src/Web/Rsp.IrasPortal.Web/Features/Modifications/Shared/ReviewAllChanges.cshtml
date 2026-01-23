@@ -3,15 +3,21 @@
 @using Microsoft.AspNetCore.Mvc.ModelBinding
 @using Microsoft.AspNetCore.Http.Extensions
 @using Microsoft.FeatureManagement
-@using Rsp.IrasPortal.Application.Constants
-@using Rsp.IrasPortal.Application.DTOs
-@using Rsp.IrasPortal.Domain.AccessControl
-@using Rsp.IrasPortal.Web.Features.Modifications.Models
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs
+@using Rsp.Portal.Domain.AccessControl
+@using Rsp.Portal.Web.Features.Modifications.Models
 @model ModificationDetailsViewModel
 
 @{
-
-    ViewBag.Title = "Review all changes";
+    @if (Model.Status is ModificationStatus.InDraft)
+    {
+        ViewBag.Title = "Review all changes";
+    }
+    else
+    {
+        ViewBag.Title = "Modification";
+    }    
 
     TempData[TempDataKeys.ProjectModification.ReviewAllChanges] = true;
     ViewData[ViewDataKeys.ShowRemoveLink] = false;

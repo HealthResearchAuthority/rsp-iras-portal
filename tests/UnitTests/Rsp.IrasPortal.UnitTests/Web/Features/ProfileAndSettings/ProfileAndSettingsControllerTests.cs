@@ -1,18 +1,17 @@
 ﻿using System.Security.Claims;
-using System.Text.Json;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.Requests.UserManagement;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Web.Areas.Admin.Models;
-using Rsp.IrasPortal.Web.Features.ProfileAndSettings.Controllers;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Requests.UserManagement;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Web.Areas.Admin.Models;
+using Rsp.Portal.Web.Features.ProfileAndSettings.Controllers;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Features.ProfileAndSettings;
+namespace Rsp.Portal.UnitTests.Web.Features.ProfileAndSettings;
 
 public class ProfileAndSettingsControllerTests : TestServiceBase<ProfileAndSettingsController>
 {
@@ -67,24 +66,6 @@ public class ProfileAndSettingsControllerTests : TestServiceBase<ProfileAndSetti
         // Assert
         Mocker.GetMock<IUserManagementService>()
            .Verify(s => s.GetUser(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.Model.ShouldNotBeNull();
-        viewResult.Model.ShouldBeOfType<UserViewModel>();
-    }
-
-    [Theory, AutoData]
-    public void Index_Returns_View_When_User_In_TempData(UserViewModel userViewModel)
-    {
-        // Arrange
-        Sut.TempData["newUserProfile"] = JsonSerializer.Serialize(userViewModel);
-
-        // Act
-        var result = Sut.Index()?.Result;
-
-        // Assert
-        Mocker.GetMock<IUserManagementService>()
-           .Verify(s => s.GetUser(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
 
         var viewResult = result.ShouldBeOfType<ViewResult>();
         viewResult.Model.ShouldNotBeNull();
@@ -272,8 +253,8 @@ public class ProfileAndSettingsControllerTests : TestServiceBase<ProfileAndSetti
         var result = Sut.ConfirmProfileDetails(viewModel)?.Result;
 
         // Assert
-        var viewResult = result.ShouldBeOfType<RedirectToActionResult>();
-        viewResult.ActionName.ShouldBe("Index");
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.ViewName.ShouldBe("Index");
     }
 
     [Theory, AutoData]

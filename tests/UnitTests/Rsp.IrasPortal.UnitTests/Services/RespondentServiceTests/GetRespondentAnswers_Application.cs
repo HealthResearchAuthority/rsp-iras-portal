@@ -1,9 +1,9 @@
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.ServiceClients;
-using Rsp.IrasPortal.Services;
-using Rsp.IrasPortal.UnitTests.TestHelpers;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.ServiceClients;
+using Rsp.Portal.Services;
+using Rsp.Portal.UnitTests.TestHelpers;
 
-namespace Rsp.IrasPortal.UnitTests.Services.RespondentServiceTests;
+namespace Rsp.Portal.UnitTests.Services.RespondentServiceTests;
 
 public class GetRespondentAnswers_Application : TestServiceBase<RespondentService>
 {

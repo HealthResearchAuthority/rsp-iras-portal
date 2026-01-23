@@ -1,0 +1,60 @@
+﻿@using Rsp.Portal.Application.Constants
+
+@{
+    var isAdmin =
+        User.IsInRole(Roles.SystemAdministrator)
+        || User.IsInRole(Roles.OrganisationAdministrator);
+
+        var active = ViewBag.Active as string;
+    }
+
+
+<!-- Keep the same GOV.UK Service Navigation look -->
+<div class="govuk-service-navigation">
+	<div class="govuk-width-container">
+		<div class="govuk-service-navigation__container white-bg">
+			<nav class="govuk-service-navigation__wrapper">
+				<ul class="govuk-service-navigation__list">
+
+					<li class="govuk-service-navigation__item small-margin @(active == MyOrganisationProfileOverview.Profile ? "govuk-service-navigation__item--active" : "")">
+						<a class="govuk-service-navigation__link"
+						   asp-route="sws:myorganisationprofile"
+						   asp-route-rtsId="@Model.RtsId">
+							@MyOrganisationProfileOverview.Profile
+						</a>
+					</li>
+
+					<li class="govuk-service-navigation__item small-margin @(active == MyOrganisationProfileOverview.Projects ? "govuk-service-navigation__item--active" : "")">
+						<a class="govuk-service-navigation__link"
+						   asp-route="sws:myorganisationprojects"
+						   asp-route-rtsId="@Model.RtsId">
+							@MyOrganisationProfileOverview.Projects
+						</a>
+					</li>
+
+					<li class="govuk-service-navigation__item small-margin @(active == MyOrganisationProfileOverview.Users ? "govuk-service-navigation__item--active" : "")">
+						<a class="govuk-service-navigation__link"
+						   asp-route="sws:myorganisationusers"
+						   asp-route-rtsId="@Model.RtsId">
+							@MyOrganisationProfileOverview.Users
+						</a>
+					</li>
+
+					@if (isAdmin)
+					{
+						<li class="govuk-service-navigation__item small-margin @(active == MyOrganisationProfileOverview.Audit ? "govuk-service-navigation__item--active" : "")">
+							<a class="govuk-service-navigation__link"
+							   asp-route="sws:myorganisationaudittrail"
+							   asp-route-rtsId="@Model.RtsId">
+								@MyOrganisationProfileOverview.Audit
+							</a>
+						</li>
+					}
+
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+
+

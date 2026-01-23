@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using Rsp.IrasPortal.Web.TagHelpers;
+using Rsp.Portal.Web.TagHelpers;
 
-namespace Rsp.IrasPortal.UnitTests.Web.TagHelpers.StatusVisibilityTagHelperTests;
+namespace Rsp.Portal.UnitTests.Web.TagHelpers.StatusVisibilityTagHelperTests;
 
 public class StatusVisibilityTagHelperTests
 {

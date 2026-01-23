@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Application.Constants;
+﻿namespace Rsp.Portal.Application.Constants;
 
 /// <summary>
 /// TempData Keys. These keys are used
@@ -27,6 +27,8 @@ public struct TempDataKeys
         public const string OverallRanking = "td:modification_overall_ranking";
         public const string ProjectModificationsDetails = "td:project_modifications_details";
         public const string ProjectModificationStatus = "td:project_modification_status";
+        public const string CanModificationSendToSponsor = "td:can_modification_send_to_sponsor";
+        public const string CanCreateNewModification = "td:can_create_new_modifications";
     }
 
     public struct ProjectModificationChange
@@ -73,4 +75,8 @@ public struct TempDataKeys
     public const string ShowCookiesSavedHeaderBanner = "td:show_cookies_header_banner";
     public const string ActiveSponsoOrganisationFilterName = "td:active_sponsor_org_filter";
     public const string ChangeSuccess = "td:change_success";
+    public const string ShowCloseProjectBanner = "td:show_close_project_banner";
+    public const string PreAuthProjectClosureModel = "td:pre_auth_project_closure_model";
+    public const string SponsorOrganisationUser = "td:sponsor_organisation_user";
+    public const string IsAuthoriser = "td:is_authoriser";
 }

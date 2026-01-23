@@ -1,12 +1,12 @@
 ﻿@model ApplicationsViewModel
 
 @using Microsoft.FeatureManagement
-@using Rsp.IrasPortal.Application.Constants
-@using Rsp.IrasPortal.Application.DTOs.Responses;
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses;
 @using System.Linq
-@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
-@using Rsp.IrasPortal.Domain.AccessControl
-@using Rsp.IrasPortal.Web.Areas.Admin.Models
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@using Rsp.Portal.Domain.AccessControl
+@using Rsp.Portal.Web.Areas.Admin.Models
 
 @section Breadcrumb {
     @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>())
@@ -14,7 +14,13 @@
 
 @if (TempData[TempDataKeys.ShowProjectDeletedBanner] is true)
 {
-    <partial name="_NotificationBanner" model="@("Success", "Your project has been deleted")" />
+    <partial name="_NotificationBanner"
+             model="@(new NotificationBannerModel
+                    {
+                        Title = "Success",
+                        Heading = "Your project has been deleted"
+                    })" />
+
 }
 
 @{

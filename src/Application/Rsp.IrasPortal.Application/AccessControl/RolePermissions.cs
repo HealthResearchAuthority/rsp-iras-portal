@@ -1,11 +1,11 @@
-using Rsp.IrasPortal.Application.Constants;
-using static Rsp.IrasPortal.Domain.AccessControl.Permissions;
+using Rsp.Portal.Application.Constants;
+using static Rsp.Portal.Domain.AccessControl.Permissions;
 
-namespace Rsp.IrasPortal.Application.AccessControl;
+namespace Rsp.Portal.Application.AccessControl;
 
 /// <summary>
-/// Maps roles to their workspace, area, and action permissions
-/// This can later be moved to RoleClaims table in the database
+/// Maps roles to their workspace, area, and action permissions This can later be moved to
+/// RoleClaims table in the database
 /// </summary>
 public static class RolePermissions
 {
@@ -24,6 +24,7 @@ public static class RolePermissions
                 MyResearch.ProjectRecord_List,
                 MyResearch.ProjectRecord_Search,
                 MyResearch.ProjectRecordHistory_Read,
+                MyResearch.ProjectRecord_Close,
 
                 MyResearch.ProjectDocuments_Upload,
                 MyResearch.ProjectDocuments_Update,
@@ -64,7 +65,15 @@ public static class RolePermissions
                 // Sponsor Workspace
                 Sponsor.Modifications_Review,
                 Sponsor.Modifications_Search,
-                Sponsor.Modifications_Authorise
+                Sponsor.Modifications_Authorise,
+                Sponsor.ProjectClosures_Review,
+                Sponsor.ProjectClosures_Search,
+                Sponsor.ProjectClosures_Authorise,
+                Sponsor.MyOrganisations_Access,
+                Sponsor.MyOrganisations_Search,
+                Sponsor.MyOrganisations_Profile,
+                Sponsor.MyOrganisations_Projects,
+                Sponsor.MyOrganisations_Users,
             }
         },
         {
@@ -138,7 +147,39 @@ public static class RolePermissions
                 Approvals.ProjectRecords_Search,
                 Approvals.ModificationRecords_Search
             }
-        }
+        },
+                {
+            // sponsor role has access to Sponsor Workspace and My Research Workspace (read-only)
+            Roles.OrganisationAdministrator, new List<string>
+            {
+                Sponsor.Workspace_Access,
+
+                // My Research Workspace (read-only)
+                MyResearch.ProjectRecord_Read,
+                MyResearch.ProjectRecordHistory_Read,
+
+                MyResearch.ProjectDocuments_List,
+                MyResearch.ProjectDocuments_Download,
+
+                MyResearch.Modifications_List,
+                MyResearch.Modifications_Review,
+                MyResearch.ModificationsHistory_Read,
+
+                // Sponsor Workspace
+                Sponsor.Modifications_Review,
+                Sponsor.Modifications_Search,
+                Sponsor.Modifications_Authorise,
+                Sponsor.ProjectClosures_Review,
+                Sponsor.ProjectClosures_Search,
+                Sponsor.ProjectClosures_Authorise,
+                Sponsor.MyOrganisations_Access,
+                Sponsor.MyOrganisations_Search,
+                Sponsor.MyOrganisations_Profile,
+                Sponsor.MyOrganisations_Projects,
+                Sponsor.MyOrganisations_Users,
+                Sponsor.MyOrganisations_Audit
+            }
+        },
     };
 
     /// <summary>

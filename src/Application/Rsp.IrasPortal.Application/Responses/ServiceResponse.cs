@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using Microsoft.AspNetCore.WebUtilities;
 
-namespace Rsp.IrasPortal.Application.Responses;
+namespace Rsp.Portal.Application.Responses;
 
 /// <summary>
 /// Service response class to facilitate composing the API response, that doesn't require content, using the fluent pattern.

@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Web.Features.Modifications;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Web.Features.Modifications;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.ModificationDetailsControllerTests;
+namespace Rsp.Portal.UnitTests.Web.Features.Modifications.ModificationDetailsControllerTests;
 
 public class RemoveChange_Action : TestServiceBase<ModificationDetailsController>
 {

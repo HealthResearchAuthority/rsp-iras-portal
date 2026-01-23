@@ -2,13 +2,13 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Domain.AccessControl;
-using Rsp.IrasPortal.Web.Extensions;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.AccessControl;
+using Rsp.Portal.Web.Extensions;
 
-namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace.Controllers;
+namespace Rsp.Portal.Web.Features.SponsorWorkspace.Controllers;
 
 /// <summary>
 /// Controller responsible for handling sponsor workspace related actions.
@@ -49,12 +49,8 @@ public class SponsorWorkspaceController
         {
             return this.ServiceError(sponsorOrganisationsResponse);
         }
-        // Handling multiple active sponsor organisations assigned to a single user is currently out of scope.
-        else if (sponsorOrganisationsResponse.Content?.Count() != 1)
-        {
-            return Forbid();
-        }
 
+        // TODO remove these lines as new multiple organisations feature is being developeded
         var organisationId = sponsorOrganisationsResponse.Content.Single().RtsId;
         var rtsResponse = await rtsService.GetOrganisation(organisationId);
 
@@ -62,12 +58,11 @@ public class SponsorWorkspaceController
         {
             return this.ServiceError(rtsResponse);
         }
-
-        // TODO refactor to getting OrganisationUserDto from Iras instead of organisationDto
         var sponsorOrganisationUserId = sponsorOrganisationsResponse.Content?.Single().Users?.Single(u => u.UserId.Equals(gid)).Id;
 
         ViewBag.SponsorOrganisationName = rtsResponse.Content?.Name;
         ViewBag.SponsorOrganisationUserId = sponsorOrganisationUserId;
+        // last line to be removed
 
         return View();
     }

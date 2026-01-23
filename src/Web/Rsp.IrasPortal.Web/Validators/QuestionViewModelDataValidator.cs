@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace Rsp.IrasPortal.Web.Validators;
+namespace Rsp.Portal.Web.Validators;
 
 public class QuestionViewModelDataValidator : QuestionViewModelValidatorBase
 {

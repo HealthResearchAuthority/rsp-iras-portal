@@ -1,17 +1,16 @@
-﻿using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Domain.AccessControl;
+﻿using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Domain.AccessControl;
 
-namespace Rsp.IrasPortal.Application.AccessControl;
+namespace Rsp.Portal.Application.AccessControl;
 
 /// <summary>
-/// Provides a mapping between workspace identifiers and the roles that are allowed
-/// to access each workspace.
+/// Provides a mapping between workspace identifiers and the roles that are allowed to access each workspace.
 /// </summary>
 public static class WorkspaceRolesMatrix
 {
     /// <summary>
-    /// Dictionary mapping workspace keys (from <see cref="Workspaces"/>) to an array
-    /// of role keys (from <see cref="Roles"/>) that are permitted in that workspace.
+    /// Dictionary mapping workspace keys (from <see cref="Workspaces"/>) to an array of role keys
+    /// (from <see cref="Roles"/>) that are permitted in that workspace.
     ///
     /// Each entry:
     /// - Key: workspace identifier string (e.g. <see cref="Workspaces.MyResearch"/>)
@@ -19,6 +18,12 @@ public static class WorkspaceRolesMatrix
     /// </summary>
     private static readonly Dictionary<string, string[]> _workspaceRoles = new()
     {
+        // All Roles allowed in the "Profile" workspace:
+        [Workspaces.Profile] =
+        [
+            Roles.Applicant, Roles.Sponsor, Roles.WorkflowCoordinator, Roles.TeamManager, Roles.SystemAdministrator,Roles.StudyWideReviewer,Roles.OrganisationAdministrator
+        ],
+
         // Roles allowed in the "My Research" workspace:
         // - Applicants (owners of applications)
         // - Sponsors (sponsor users)
@@ -27,14 +32,14 @@ public static class WorkspaceRolesMatrix
         // - System administrators (full access)
         [Workspaces.MyResearch] =
         [
-            Roles.Applicant, Roles.Sponsor, Roles.WorkflowCoordinator, Roles.TeamManager, Roles.SystemAdministrator,Roles.StudyWideReviewer
+            Roles.Applicant, Roles.Sponsor, Roles.WorkflowCoordinator, Roles.TeamManager, Roles.SystemAdministrator,Roles.StudyWideReviewer,Roles.OrganisationAdministrator
         ],
 
         // Roles allowed in the "Sponsor" workspace:
         // - Sponsor users and system administrators only
         [Workspaces.Sponsor] =
         [
-            Roles.Sponsor, Roles.SystemAdministrator
+            Roles.Sponsor, Roles.SystemAdministrator, Roles.OrganisationAdministrator
         ],
 
         // Roles allowed in the "System Administration" workspace:

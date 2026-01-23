@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc.ViewComponents;
-using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Web.ViewComponents;
+using Rsp.Portal.Application.DTOs.Responses.CmsContent;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Web.ViewComponents;
 
-namespace Rsp.IrasPortal.UnitTests.Web.ViewComponents.LoginLandingViewComponentTests;
+namespace Rsp.Portal.UnitTests.Web.ViewComponents.LoginLandingViewComponentTests;
 
 public class RenderLoginLandingContentTests : TestServiceBase<LoginLandingPageViewComponent>
 {

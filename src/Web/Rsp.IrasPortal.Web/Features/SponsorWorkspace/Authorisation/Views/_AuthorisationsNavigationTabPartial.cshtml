@@ -1,0 +1,31 @@
+﻿@using Rsp.Portal.Application.Constants;
+@model Guid
+
+@{
+    var active = ViewBag.Active as string;    
+}
+
+<div class="govuk-service-navigation govuk-!-margin-top-2 govuk-!-margin-bottom-2">
+    <div class="govuk-width-container">
+        <div class="govuk-service-navigation__container">
+            <nav class="govuk-service-navigation__wrapper">
+                <ul class="govuk-service-navigation__list">
+                    <li class="govuk-service-navigation__item small-margin @(active == SponsorAuthorisations.Modifications ? "govuk-service-navigation__item--active" : "")">
+                        <a class="govuk-service-navigation__link"
+                           asp-route="sws:modifications"
+                           asp-route-sponsorOrganisationUserId="@Model">
+                            @SponsorAuthorisations.Modifications
+                        </a>
+                    </li>
+                    <li class="govuk-service-navigation__item small-margin @(active == SponsorAuthorisations.ProjectClosures ? "govuk-service-navigation__item--active" : "")">
+                        <a class="govuk-service-navigation__link"
+                           asp-route="sws:projectclosures"
+                           asp-route-sponsorOrganisationUserId="@Model">
+                            @SponsorAuthorisations.ProjectClosures
+                        </a>
+                    </li>                   
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>

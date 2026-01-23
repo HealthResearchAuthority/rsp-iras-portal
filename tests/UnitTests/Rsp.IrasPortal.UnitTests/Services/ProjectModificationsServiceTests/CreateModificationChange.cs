@@ -1,11 +1,11 @@
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Application.ServiceClients;
-using Rsp.IrasPortal.Services;
-using Rsp.IrasPortal.UnitTests.TestHelpers;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.ServiceClients;
+using Rsp.Portal.Services;
+using Rsp.Portal.UnitTests.TestHelpers;
 
-namespace Rsp.IrasPortal.UnitTests.Services.ProjectModificationsServiceTests;
+namespace Rsp.Portal.UnitTests.Services.ProjectModificationsServiceTests;
 
 public class CreateModificationChange : TestServiceBase<ProjectModificationsService>
 {

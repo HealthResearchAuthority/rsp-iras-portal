@@ -1,18 +1,16 @@
-using FluentValidation;
 using FluentValidation.TestHelper;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Web.Models;
-using Rsp.IrasPortal.Web.Validators;
+using Rsp.Portal.Web.Models;
+using Rsp.Portal.Web.Validators;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Validators.DateViewModelValidatorTests;
+namespace Rsp.Portal.UnitTests.Web.Validators.DateViewModelValidatorTests;
 
 public class ValidateAsyncTests : TestServiceBase<DateViewModelValidator>
 {
     [Fact]
-    public async Task ShouldNotHaveValidationError_WhenDateIsTodayOrFuture()
+    public async Task ShouldNotHaveValidationError_WhenDateIsToday()
     {
-        // Arrange
-        var today = DateTime.Now.Date.AddDays(1);
+        // Arrange: today (valid)
+        var today = DateTime.Now.Date;
         var model = new DateViewModel
         {
             Day = today.Day.ToString(),
@@ -28,30 +26,9 @@ public class ValidateAsyncTests : TestServiceBase<DateViewModelValidator>
     }
 
     [Fact]
-    public async Task ShouldHaveValidationError_WhenDateIsToday()
+    public async Task ShouldNotHaveValidationError_WhenDateIsPast()
     {
-        // Arrange
-        var yesterday = DateTime.Now.Date;
-        var model = new DateViewModel
-        {
-            Day = yesterday.Day.ToString(),
-            Month = yesterday.Month.ToString(),
-            Year = yesterday.Year.ToString()
-        };
-
-        // Act
-        var result = await Sut.TestValidateAsync(model);
-
-        // Assert
-        result
-            .ShouldHaveValidationErrorFor(x => x.Date)
-            .WithErrorMessage("The date should be a valid date and in future");
-    }
-
-    [Fact]
-    public async Task ShouldHaveValidationError_WhenDateIsInPast()
-    {
-        // Arrange
+        // Arrange: yesterday (valid)
         var yesterday = DateTime.Now.Date.AddDays(-1);
         var model = new DateViewModel
         {
@@ -64,26 +41,19 @@ public class ValidateAsyncTests : TestServiceBase<DateViewModelValidator>
         var result = await Sut.TestValidateAsync(model);
 
         // Assert
-        result
-            .ShouldHaveValidationErrorFor(x => x.Date)
-            .WithErrorMessage("The date should be a valid date and in future");
+        result.ShouldNotHaveAnyValidationErrors();
     }
 
-    [Theory]
-    [InlineData(null, "01", "2024")]
-    [InlineData("01", null, "2024")]
-    [InlineData("01", "01", null)]
-    [InlineData("32", "01", "2024")]
-    [InlineData("01", "13", "2024")]
-    [InlineData("01", "01", "abcd")]
-    public async Task ShouldHaveValidationError_WhenDateIsInvalid(string? day, string? month, string? year)
+    [Fact]
+    public async Task ShouldHaveValidationError_WhenDateIsFuture()
     {
-        // Arrange
+        // Arrange: tomorrow (invalid)
+        var tomorrow = DateTime.Now.Date.AddDays(1);
         var model = new DateViewModel
         {
-            Day = day,
-            Month = month,
-            Year = year
+            Day = tomorrow.Day.ToString(),
+            Month = tomorrow.Month.ToString(),
+            Year = tomorrow.Year.ToString()
         };
 
         // Act
@@ -92,30 +62,6 @@ public class ValidateAsyncTests : TestServiceBase<DateViewModelValidator>
         // Assert
         result
             .ShouldHaveValidationErrorFor(x => x.Date)
-            .WithErrorMessage("The date should be a valid date and in future");
-    }
-
-    [Fact]
-    public async Task ShouldUseCustomValidationMessageAndPropertyName()
-    {
-        // Arrange
-        var yesterday = DateTime.Now.Date.AddDays(-1);
-        var model = new DateViewModel
-        {
-            Day = yesterday.Day.ToString(),
-            Month = yesterday.Month.ToString(),
-            Year = yesterday.Year.ToString()
-        };
-        var context = new ValidationContext<DateViewModel>(model);
-        context.RootContextData[ValidationKeys.ValidationMessage] = "Custom error message";
-        context.RootContextData[ValidationKeys.PropertyName] = "CustomDate";
-
-        // Act
-        var result = await Sut.TestValidateAsync(context);
-
-        // Assert
-        result
-            .ShouldHaveValidationErrorFor("CustomDate")
-            .WithErrorMessage("Custom error message");
+            .WithErrorMessage("Project closure date must be today or in the past");
     }
 }

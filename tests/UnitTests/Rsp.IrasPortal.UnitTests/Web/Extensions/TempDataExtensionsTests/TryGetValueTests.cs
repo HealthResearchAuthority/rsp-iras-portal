@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.UnitTests.Web.Extensions.TempDataExtensionsTests;
+﻿namespace Rsp.Portal.UnitTests.Web.Extensions.TempDataExtensionsTests;
 
 using System.Text.Json;
 using AutoFixture;
@@ -6,8 +6,8 @@ using AutoFixture.Xunit2;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Moq;
-using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Web.Extensions;
+using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Web.Extensions;
 using Shouldly;
 using Xunit;
 

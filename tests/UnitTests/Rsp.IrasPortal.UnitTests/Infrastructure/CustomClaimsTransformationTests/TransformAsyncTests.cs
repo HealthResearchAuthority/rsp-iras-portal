@@ -1,17 +1,17 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
-using Rsp.IrasPortal.Application.Configuration;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Domain.Identity;
-using Rsp.IrasPortal.Infrastructure.Claims;
-using Rsp.IrasPortal.Services.Extensions;
-using Rsp.IrasPortal.UnitTests.TestHelpers;
+using Rsp.Portal.Application.Configuration;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.Identity;
+using Rsp.Portal.Infrastructure.Claims;
+using Rsp.Portal.Services.Extensions;
+using Rsp.Portal.UnitTests.TestHelpers;
 using Claim = System.Security.Claims.Claim;
 
-namespace Rsp.IrasPortal.UnitTests.Infrastructure.CustomClaimsTransformationTests;
+namespace Rsp.Portal.UnitTests.Infrastructure.CustomClaimsTransformationTests;
 
 public class TransformAsyncTests : TestServiceBase<CustomClaimsTransformation>
 {
@@ -92,7 +92,8 @@ public class TransformAsyncTests : TestServiceBase<CustomClaimsTransformation>
 
         // Assert
         result.Claims.ShouldContain(c => c.Type == ClaimTypes.Role && c.Value == "iras_portal_user");
-        result.Claims.Count(c => c.Type == ClaimTypes.Role).ShouldBe(1); // Only the default role
+        result.Claims.ShouldContain(c => c.Type == ClaimTypes.Role && c.Value == "applicant");
+        result.Claims.Count(c => c.Type == ClaimTypes.Role).ShouldBe(2); // Only the default role
     }
 
     [Theory, AutoData]
@@ -338,5 +339,217 @@ public class TransformAsyncTests : TestServiceBase<CustomClaimsTransformation>
 
         userStatusClaim.ShouldNotBeNull();
         userStatusClaim.Value.ShouldBe(IrasUserStatus.Disabled);
+    }
+
+    [Theory, AutoData]
+    public async Task TransformAsync_Should_UpdateUserEmailAndPhoneNumber_When_FirstLogin_And_UserFoundByIdentityProvider(
+        string email,
+        string identityProviderId,
+        User user)
+    {
+        // Arrange
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Email, email),
+            new(ClaimTypes.NameIdentifier, identityProviderId),
+            new(ClaimTypes.MobilePhone, "0123456789")
+        };
+
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(claims));
+
+        var httpContext = new DefaultHttpContext()
+        {
+            Session = new FakeSession(),
+        };
+
+        // Set up the session to simulate first login
+        httpContext.Session.SetString(SessionKeys.FirstLogin, bool.TrueString);
+
+        _httpContextAccessor
+            .Setup(x => x.HttpContext)
+            .Returns(httpContext);
+
+        // Mock UserManagementService to return a success response with user found by identityProviderId
+        var userResponse = new UserResponse
+        {
+            Roles = new List<string>(),
+            User = user
+        };
+
+        var apiResponse = new ApiResponse<UserResponse>
+        (
+            new HttpResponseMessage(HttpStatusCode.OK),
+            userResponse,
+            new RefitSettings()
+        );
+
+        var serviceResponse = apiResponse.ToServiceResponse();
+
+        _userManagementService
+            .Setup(x => x.GetUser(null, null, identityProviderId))
+            .ReturnsAsync(serviceResponse);
+
+        // Act
+        var result = await Sut.TransformAsync(principal);
+
+        // Assert
+        _userManagementService.Verify(x => x.UpdateUserEmailAndPhoneNumber(It.Is<User>(u => u.Email == user.Email), email, "0123456789"), Times.Once);
+        _userManagementService.Verify(x => x.UpdateLastLogin(email), Times.Once);
+    }
+
+    [Theory, AutoData]
+    public async Task TransformAsync_Should_UpdateUserIdentityProviderId_When_FirstLogin_And_NotFoundByIdentityProvider_But_FoundByEmail(
+        string email,
+        string identityProviderId,
+        User user)
+    {
+        // Arrange
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Email, email),
+            new(ClaimTypes.NameIdentifier, identityProviderId),
+        };
+
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(claims));
+
+        var httpContext = new DefaultHttpContext()
+        {
+            Session = new FakeSession(),
+        };
+
+        // Set up the session to simulate first login
+        httpContext.Session.SetString(SessionKeys.FirstLogin, bool.TrueString);
+
+        _httpContextAccessor
+            .Setup(x => x.HttpContext)
+            .Returns(httpContext);
+
+        // First call by identityProviderId returns NotFound
+        var notFoundApiResponse = new ApiResponse<UserResponse>(new HttpResponseMessage(HttpStatusCode.NotFound), null, new RefitSettings());
+        var notFoundServiceResponse = notFoundApiResponse.ToServiceResponse();
+
+        _userManagementService
+            .Setup(x => x.GetUser(null, null, identityProviderId))
+            .ReturnsAsync(notFoundServiceResponse);
+
+        // Second call by email returns success
+        var userResponseByEmail = new UserResponse
+        {
+            Roles = new List<string>(),
+            User = user
+        };
+
+        var apiResponseByEmail = new ApiResponse<UserResponse>
+        (
+            new HttpResponseMessage(HttpStatusCode.OK),
+            userResponseByEmail,
+            new RefitSettings()
+        );
+
+        var serviceResponseByEmail = apiResponseByEmail.ToServiceResponse();
+
+        _userManagementService
+            .Setup(x => x.GetUser(null, email, null))
+            .ReturnsAsync(serviceResponseByEmail);
+
+        // Act
+        var result = await Sut.TransformAsync(principal);
+
+        // Assert
+        _userManagementService.Verify(x => x.UpdateUserIdentityProviderId(It.Is<User>(u => u.Email == user.Email), identityProviderId), Times.Once);
+        _userManagementService.Verify(x => x.UpdateLastLogin(email), Times.Once);
+    }
+
+    [Theory, AutoData]
+    public async Task TransformAsync_Should_Add_ApplicantRole_And_RequestProfileCompletion_When_FirstLogin_And_User_NotFoundByAny(
+        string email,
+        string identityProviderId)
+    {
+        // Arrange
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Email, email),
+            new(ClaimTypes.NameIdentifier, identityProviderId),
+            new(ClaimTypes.MobilePhone, "0123456789")
+        };
+
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(claims));
+
+        var httpContext = new DefaultHttpContext()
+        {
+            Session = new FakeSession(),
+        };
+
+        // Set up the session to simulate first login
+        httpContext.Session.SetString(SessionKeys.FirstLogin, bool.TrueString);
+
+        _httpContextAccessor
+            .Setup(x => x.HttpContext)
+            .Returns(httpContext);
+
+        // Both calls return NotFound
+        var notFoundApiResponse = new ApiResponse<UserResponse>(new HttpResponseMessage(HttpStatusCode.NotFound), null, new RefitSettings());
+        var notFoundServiceResponse = notFoundApiResponse.ToServiceResponse();
+
+        _userManagementService
+            .Setup(x => x.GetUser(null, null, identityProviderId))
+            .ReturnsAsync(notFoundServiceResponse);
+
+        _userManagementService
+            .Setup(x => x.GetUser(null, email, null))
+            .ReturnsAsync(notFoundServiceResponse);
+
+        // Act
+        var result = await Sut.TransformAsync(principal);
+
+        // Assert
+        result.Claims.ShouldContain(c => c.Type == ClaimTypes.Role && c.Value == Roles.Applicant);
+
+        var context = httpContext;
+        context.Items.ShouldContainKey(ContextItemKeys.RequireProfileCompletion);
+        context.Items[ContextItemKeys.Email].ShouldBe(email);
+        context.Items["telephoneNumber"].ShouldBe("0123456789");
+        context.Items["identityProviderId"].ShouldBe(identityProviderId);
+
+        // FirstLogin session should be removed
+        context.Session.GetString(SessionKeys.FirstLogin).ShouldBeNull();
+    }
+
+    [Theory, AutoData]
+    public async Task TransformAsync_Should_Add_ApplicantRole_When_RequestQuery_RequiresProfileCreation(
+        string email)
+    {
+        // Arrange
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Email, email),
+        };
+
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(claims));
+
+        var httpContext = new DefaultHttpContext()
+        {
+            Session = new FakeSession(),
+        };
+
+        httpContext.Request.QueryString = new QueryString("?requireProfileCreation=1");
+
+        _httpContextAccessor
+            .Setup(x => x.HttpContext)
+            .Returns(httpContext);
+
+        // Ensure userManagementService returns NotFound so we reach the query branch
+        var notFoundApiResponse = new ApiResponse<UserResponse>(new HttpResponseMessage(HttpStatusCode.NotFound), null, new RefitSettings());
+        var notFoundServiceResponse = notFoundApiResponse.ToServiceResponse();
+
+        _userManagementService
+            .Setup(x => x.GetUser(It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>()))
+            .ReturnsAsync(notFoundServiceResponse);
+
+        // Act
+        var result = await Sut.TransformAsync(principal);
+
+        // Assert
+        result.Claims.ShouldContain(c => c.Type == ClaimTypes.Role && c.Value == Roles.Applicant);
     }
 }

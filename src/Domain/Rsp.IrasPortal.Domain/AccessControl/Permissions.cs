@@ -1,4 +1,4 @@
-namespace Rsp.IrasPortal.Domain.AccessControl;
+namespace Rsp.Portal.Domain.AccessControl;
 
 /// <summary>
 /// Defines all workspace.area.action permissions in the system
@@ -42,6 +42,11 @@ public static class Permissions
         /// allows searching project records
         /// </summary>
         public const string ProjectRecord_Search = "myresearch.projectrecord.search";
+
+        /// <summary>
+        /// allows searching project close
+        /// </summary>
+        public const string ProjectRecord_Close = "myresearch.projectrecord.close";
 
         /// <summary>
         /// allows reading project record history
@@ -109,8 +114,7 @@ public static class Permissions
         public const string Modifications_Search = "myresearch.modifications.search";
 
         /// <summary>
-        /// allows reviewing modifications before the final action
-        /// i.e. sending to sponsor, approving
+        /// allows reviewing modifications before the final action i.e. sending to sponsor, approving
         /// </summary>
         public const string Modifications_Review = "myresearch.modifications.review";
 
@@ -149,8 +153,7 @@ public static class Permissions
         public const string Modifications_Search = "sponsor.modifications.search";
 
         /// <summary>
-        /// allows reviewing modifications before the final action
-        /// i.e. authorising, not authorising
+        /// allows reviewing modifications before the final action i.e. authorising, not authorising
         /// </summary>
         public const string Modifications_Review = "sponsor.modifications.review";
 
@@ -158,6 +161,51 @@ public static class Permissions
         /// allows authorising/not authorising modifications
         /// </summary>
         public const string Modifications_Authorise = "sponsor.modifications.authorise";
+
+        /// <summary>
+        /// allows searching project closure records
+        /// </summary>
+        public const string ProjectClosures_Search = "sponsor.projectclosures.search";
+
+        /// <summary>
+        /// allows reviewing project closure records before the final action i.e. authorising, not authorising
+        /// </summary>
+        public const string ProjectClosures_Review = "sponsor.projectclosures.review";
+
+        /// <summary>
+        /// allows authorising/not authorising project closure records
+        /// </summary>
+        public const string ProjectClosures_Authorise = "sponsor.projectclosures.authorise";
+
+        /// <summary>
+        /// allows seeing the my organisations on the menu
+        /// </summary>
+        public const string MyOrganisations_Access = "sponsor.myorganisations.access";
+
+        /// <summary>
+        /// allows seeing the my organisations on the menu
+        /// </summary>
+        public const string MyOrganisations_Search = "sponsor.myorganisations.search";
+
+        /// <summary>
+        /// allows seeing the my organisations on the menu
+        /// </summary>
+        public const string MyOrganisations_Profile = "sponsor.myorganisations.profile";
+
+        /// <summary>
+        /// allows seeing the my organisations on the menu
+        /// </summary>
+        public const string MyOrganisations_Projects = "sponsor.myorganisations.projects";
+
+        /// <summary>
+        /// allows seeing the my organisations on the menu
+        /// </summary>
+        public const string MyOrganisations_Users = "sponsor.myorganisations.users";
+
+        /// <summary>
+        /// allows seeing the my organisations on the menu
+        /// </summary>
+        public const string MyOrganisations_Audit = "sponsor.myorganisations.audit";
     }
 
     // System Administration Workspace Permissions

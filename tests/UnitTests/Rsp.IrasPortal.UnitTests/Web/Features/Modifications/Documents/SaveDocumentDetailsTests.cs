@@ -1,19 +1,21 @@
-﻿using FluentValidation;
+﻿using Azure.Storage.Blobs;
+using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Web.Features.Modifications.Documents.Controllers;
-using Rsp.IrasPortal.Web.Models;
+using Microsoft.Extensions.Azure;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.CmsQuestionset;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Web.Features.Modifications.Documents.Controllers;
+using Rsp.Portal.Web.Models;
 using ValidationFailure = FluentValidation.Results.ValidationFailure;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.Documents;
+namespace Rsp.Portal.UnitTests.Web.Features.Modifications.Documents;
 
 public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
 {
@@ -586,5 +588,76 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
             s => s.SaveModificationDocumentAnswers(
                 It.Is<List<ProjectModificationDocumentAnswerDto>>(a => a.Count == 1 && a.First().QuestionId == "Q1")),
             Times.Never);
+    }
+
+    [Fact]
+    public async Task SaveDocumentDetails_WhenStatusTransitionsToComplete_CreatesAuditTrail()
+    {
+        // Arrange
+        var modificationId = Guid.NewGuid();
+        var documentId = Guid.NewGuid();
+
+        var viewModel = new ModificationAddDocumentDetailsViewModel
+        {
+            DocumentId = documentId,
+            ModificationId = modificationId,
+            FileName = "test.pdf",
+            Questions = []
+        };
+
+        var questionSetService = Mocker.GetMock<ICmsQuestionsetService>();
+        questionSetService
+            .Setup(s => s.GetModificationQuestionSet("pdm-document-metadata", It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse { }
+            });
+
+        var projectModificationsService = Mocker.GetMock<IProjectModificationsService>();
+        var validatorService = Mocker.GetMock<IValidator<QuestionnaireViewModel>>();
+        validatorService
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult());
+
+        var controller = new TestDocumentsController(
+            projectModificationsService.Object,
+            questionSetService.Object,
+            Mocker.GetMock<IRespondentService>().Object,
+            validatorService.Object,
+            Mocker.GetMock<IBlobStorageService>().Object,
+            Mocker.GetMock<IAzureClientFactory<BlobServiceClient>>().Object);
+
+        controller.SetEvaluateDocumentCompletionResults(
+            true,   // existing status = Incomplete
+            false   // new status = Complete
+        );
+
+        controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext()
+        };
+        controller.HttpContext.Items[ContextItemKeys.UserId] = "respondent-1";
+
+        controller.TempData = new TempDataDictionary(
+            controller.HttpContext,
+            Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.ProjectModificationId] = modificationId
+        };
+
+        // Act
+        await controller.SaveDocumentDetails(viewModel);
+
+        // Assert
+        projectModificationsService.Verify(s =>
+            s.CreateModificationDocumentsAuditTrail(
+                It.Is<List<ModificationDocumentsAuditTrailDto>>(l =>
+                    l.Count == 1 &&
+                    l[0].Description == DocumentAuditEvents.DocumentDetailsCompleted &&
+                    l[0].ProjectModificationId == modificationId &&
+                    l[0].FileName == "test.pdf" &&
+                    l[0].User == "respondent-1")),
+            Times.Once);
     }
 }

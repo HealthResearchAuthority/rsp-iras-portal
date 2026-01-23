@@ -1,16 +1,18 @@
-﻿using System.Text.Json;
+﻿using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Web.Features.Modifications;
-using Rsp.IrasPortal.Web.Features.Modifications.Models;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Web.Features.Modifications;
+using Rsp.Portal.Web.Features.Modifications.Models;
+using static System.Net.WebRequestMethods;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.ReviewAllChangesControllerTests;
+namespace Rsp.Portal.UnitTests.Web.Features.Modifications.ReviewAllChangesControllerTests;
 
 public class ReviewOutcome_Journey : TestServiceBase<ReviewAllChangesController>
 {
@@ -88,6 +90,31 @@ public class ReviewOutcome_Journey : TestServiceBase<ReviewAllChangesController>
 
     [Theory, AutoData]
     public async Task ReviewOutcome_Post_SaveForLater_Redirects_To_MyTasklist
+    (
+        Guid modificationId,
+        ReviewOutcomeViewModel stored
+    )
+    {
+        // Arrange
+        stored.ModificationDetails.ModificationId = modificationId.ToString();
+        SetupTempData(stored);
+        SetUserRoles(Roles.StudyWideReviewer);
+
+        _modificationService
+            .Setup(s => s.SaveModificationReviewResponses(It.IsAny<ProjectModificationReviewRequest>()))
+            .ReturnsAsync(new ServiceResponse<object> { StatusCode = HttpStatusCode.OK });
+
+        // Act
+        var result = await Sut.ReviewOutcome(stored, saveForLater: true);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe("Index");
+        redirect.ControllerName.ShouldBe("MyTasklist");
+    }
+
+    [Theory, AutoData]
+    public async Task ReviewOutcome_Post_SaveForLater_Redirects_To_ModificationsTasklist
     (
         Guid modificationId,
         ReviewOutcomeViewModel stored
@@ -222,6 +249,32 @@ public class ReviewOutcome_Journey : TestServiceBase<ReviewAllChangesController>
         // Arrange
         stored.ModificationDetails.ModificationId = modificationId.ToString();
         SetupTempData(stored);
+        SetUserRoles(Roles.StudyWideReviewer);
+
+        _modificationService
+            .Setup(s => s.SaveModificationReviewResponses(It.IsAny<ProjectModificationReviewRequest>()))
+            .ReturnsAsync(new ServiceResponse<object> { StatusCode = HttpStatusCode.OK });
+
+        // Act
+        var result = await Sut.ReasonNotApproved(stored, saveForLater: true);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe("Index");
+        redirect.ControllerName.ShouldBe("MyTasklist");
+    }
+
+    [Theory, AutoData]
+    public async Task ReasonNotApproved_Post_SaveForLater_Redirects_To_ModTasklist
+    (
+        Guid modificationId,
+        ReviewOutcomeViewModel stored
+    )
+    {
+        // Arrange
+        stored.ModificationDetails.ModificationId = modificationId.ToString();
+        SetupTempData(stored);
+        SetUserRoles(Roles.TeamManager);
 
         _modificationService
             .Setup(s => s.SaveModificationReviewResponses(It.IsAny<ProjectModificationReviewRequest>()))
@@ -389,9 +442,7 @@ public class ReviewOutcome_Journey : TestServiceBase<ReviewAllChangesController>
         result.ShouldBeOfType<ViewResult>();
     }
 
-    // ----------------------------
-    // Helpers
-    // ----------------------------
+    // ---------------------------- Helpers ----------------------------
 
     private void SetupTempData(ReviewOutcomeViewModel model)
     {
@@ -401,5 +452,15 @@ public class ReviewOutcome_Journey : TestServiceBase<ReviewAllChangesController>
         {
             [TempDataKeys.ProjectModification.ProjectModificationsDetails] = JsonSerializer.Serialize(model)
         };
+    }
+
+    private void SetUserRoles(params string[] roles)
+    {
+        var claims = roles
+            .Select(r => new Claim(ClaimTypes.Role, r))
+            .ToList();
+
+        var identity = new ClaimsIdentity(claims, authenticationType: "TestAuth");
+        Sut.HttpContext.User = new ClaimsPrincipal(identity);
     }
 }

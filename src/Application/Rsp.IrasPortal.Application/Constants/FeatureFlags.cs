@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Application.Constants;
+﻿namespace Rsp.Portal.Application.Constants;
 
 /// <summary>
 /// Defines constants for feature names.
@@ -19,6 +19,9 @@ public static class FeatureFlags
 
     // Show projects added to new service
     public const string MyResearchPage = "UX.MyResearchPage";
+
+    // Show sponsor management area in the sponsor workspace
+    public const string SponsorManagementWorkspace = "UX.SponsorManagementWorkspace";
 
     // Use Azure Front Door for web application routing
     public const string UseFrontDoor = "WebApp.UseFrontDoor";

@@ -1,10 +1,11 @@
-﻿using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.ServiceClients;
-using Rsp.IrasPortal.Services;
+﻿using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.ServiceClients;
+using Rsp.Portal.Services;
+using Rsp.Portal.UnitTests.TestHelpers;
 
-namespace Rsp.IrasPortal.UnitTests.Services.ApplicationsServiceTests;
+namespace Rsp.Portal.UnitTests.Services.ApplicationsServiceTests;
 
 public class UpdateApplicationTests : TestServiceBase<ApplicationsService>
 {
@@ -46,6 +47,7 @@ public class UpdateApplicationTests : TestServiceBase<ApplicationsService>
     public async Task UpdateApplication_Should_Return_Failure_Response_When_Client_Returns_Failure(IrasApplicationRequest irasApplication)
     {
         // Arrange
+
         var apiResponse = new ApiResponse<IrasApplicationResponse>
         (
             new HttpResponseMessage(HttpStatusCode.BadRequest),
@@ -67,5 +69,28 @@ public class UpdateApplicationTests : TestServiceBase<ApplicationsService>
 
         // Verify
         _applicationsServiceClient.Verify(c => c.UpdateApplication(irasApplication), Times.Once());
+    }
+
+    [Fact]
+    public async Task UpdateProjectRecordStatus_Should_Update_Status()
+    {
+        // Arrange
+        var apiResponse = ApiResponseFactory.Success();
+        var projectRecordId = "PR01";
+        var status = "With sponsor";
+
+        _applicationsServiceClient
+            .Setup(c => c.UpdateProjectRecordStatus(projectRecordId, status)).ReturnsAsync(apiResponse);
+
+        // Act
+        var result = await Sut.UpdateProjectRecordStatus(projectRecordId, status);
+
+        // Assert
+        result.ShouldBeOfType<ServiceResponse>();
+        result.IsSuccessStatusCode.ShouldBeTrue();
+        result.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        // Verify
+        _applicationsServiceClient.Verify(c => c.UpdateProjectRecordStatus(It.IsAny<string>(), It.IsAny<string>()), Times.Once());
     }
 }

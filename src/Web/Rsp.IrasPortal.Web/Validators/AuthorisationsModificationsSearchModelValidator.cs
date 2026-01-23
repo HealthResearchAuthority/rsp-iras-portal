@@ -1,11 +1,11 @@
 ﻿using FluentValidation;
-using Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Models;
+using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models;
 
-namespace Rsp.IrasPortal.Web.Validators;
+namespace Rsp.Portal.Web.Validators;
 
-public class SponsorAuthorisationsSearchModelValidator : AbstractValidator<SponsorAuthorisationsSearchModel>
+public class AuthorisationsModificationsSearchModelValidator : AbstractValidator<AuthorisationsModificationsSearchModel>
 {
-    public SponsorAuthorisationsSearchModelValidator()
+    public AuthorisationsModificationsSearchModelValidator()
     {
         RuleFor(x => x.SearchTerm)
         .Cascade(CascadeMode.Stop)

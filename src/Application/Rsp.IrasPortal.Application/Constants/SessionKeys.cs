@@ -1,8 +1,7 @@
-﻿namespace Rsp.IrasPortal.Application.Constants;
+﻿namespace Rsp.Portal.Application.Constants;
 
 /// <summary>
-/// Session Keys. These keys are used
-/// to lookup items stored in HttpContext.Session
+/// Session Keys. These keys are used to lookup items stored in HttpContext.Session
 /// </summary>
 public static class SessionKeys
 {
@@ -21,6 +20,10 @@ public static class SessionKeys
     public const string BackRoute = "BackRoute";
     public const string BackRouteSection = "BackRouteSection";
     public const string PostApprovalsSearch = "session:postapprovalssearch";
-    public const string SponsorAuthorisationsSearch = "session:sponsor_authorisations_search";
+    public const string SponsorAuthorisationsModificationsSearch = "session:sponsor_authorisations_modifications_search";
+    public const string SponsorAuthorisationsProjectClosuresSearch = "session:sponsor_authorisations_project_closures_search";
     public const string ApplicationsSearch = "session:applicationsearch";
+    public const string RequireProfileCreation = "session:require_profile_creation";
+    public const string SponsorMyOrganisationsSearch = "session:sponsor_myorganisations_search";
+    public const string SponsorMyOrganisationsProjectsSearch = "session:sponsor_myorganisations_projects_search";
 }

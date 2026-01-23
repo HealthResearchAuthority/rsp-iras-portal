@@ -1,7 +1,7 @@
-﻿using Rsp.IrasPortal.Application.Configuration;
-using Rsp.IrasPortal.Application.Constants;
+﻿using Rsp.Portal.Application.Configuration;
+using Rsp.Portal.Application.Constants;
 
-namespace Rsp.IrasPortal.Infrastructure.HttpMessageHandlers;
+namespace Rsp.Portal.Infrastructure.HttpMessageHandlers;
 
 /// <summary>
 /// Delegating handler to add functions key header, before calling the function endpoint

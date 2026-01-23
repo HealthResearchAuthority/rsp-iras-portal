@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
-using Rsp.IrasPortal.Application.Services;
+using Rsp.Portal.Application.DTOs.Responses.CmsContent;
+using Rsp.Portal.Application.Services;
 
-namespace Rsp.IrasPortal.Web.ViewComponents;
+namespace Rsp.Portal.Web.ViewComponents;
 
 public class LoginLandingPageViewComponent(ICmsContentService cms) : ViewComponent
 {

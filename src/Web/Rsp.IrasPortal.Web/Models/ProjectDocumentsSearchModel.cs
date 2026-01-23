@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Rsp.IrasPortal.Web.Extensions;
+using Rsp.Portal.Web.Extensions;
 
-namespace Rsp.IrasPortal.Web.Models;
+namespace Rsp.Portal.Web.Models;
 
 [ExcludeFromCodeCoverage]
 public class ProjectDocumentsSearchModel

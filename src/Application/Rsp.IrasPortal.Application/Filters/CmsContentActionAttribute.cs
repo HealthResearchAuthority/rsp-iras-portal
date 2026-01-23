@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Application.Filters;
+﻿namespace Rsp.Portal.Application.Filters;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
 public class CmsContentActionAttribute : Attribute

@@ -1,9 +1,9 @@
 ﻿using Mapster;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.CmsQuestionset;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.Web.Helpers;
+namespace Rsp.Portal.Web.Helpers;
 
 public static class QuestionsetHelpers
 {

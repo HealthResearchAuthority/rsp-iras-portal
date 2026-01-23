@@ -1,6 +1,6 @@
-﻿using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
+﻿using Rsp.Portal.Application.DTOs.Responses.CmsContent;
 
-namespace Rsp.IrasPortal.Application.DTOs;
+namespace Rsp.Portal.Application.DTOs;
 
 /// <summary>
 /// Represents questions response returned by the QuestionSet API

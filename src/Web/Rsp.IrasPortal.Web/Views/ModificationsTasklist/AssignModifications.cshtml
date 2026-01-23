@@ -1,6 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Http.Extensions
-@using Rsp.IrasPortal.Application.Constants
-@using Rsp.IrasPortal.Domain.Identity
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Domain.Identity
 @model (List<ModificationsModel> Modifications, IEnumerable<User> Reviewers)
 
 @{
@@ -72,7 +72,7 @@
 
     <div class="govuk-form-group">
         <label class="govuk-heading-m" for="reviewer">
-            Select a study-wide reviewer to manage the modifications
+			Study-wide reviewer to assign the modifications to
         </label>
         <div id="reviewer-hint" class="govuk-hint">
             Select one reviewer
@@ -85,5 +85,5 @@
         </select>
     </div>
 
-    <button type="submit" class="govuk-button" data-module="govuk-button">Complete assignment</button>
+    <button type="submit" class="govuk-button" data-module="govuk-button">Assign</button>
 </form>

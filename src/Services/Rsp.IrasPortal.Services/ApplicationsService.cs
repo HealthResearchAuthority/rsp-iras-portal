@@ -1,12 +1,12 @@
-﻿using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.ServiceClients;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Services.Extensions;
+﻿using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.ServiceClients;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Services.Extensions;
 
-namespace Rsp.IrasPortal.Services;
+namespace Rsp.Portal.Services;
 
 public class ApplicationsService(IApplicationsServiceClient applicationsClient) : IApplicationsService
 {
@@ -110,6 +110,19 @@ public class ApplicationsService(IApplicationsServiceClient applicationsClient) 
     public async Task<ServiceResponse<ProjectRecordAuditTrailResponse>> GetProjectRecordAuditTrail(string projectRecordId)
     {
         var apiResponse = await applicationsClient.GetProjectRecordAuditTrail(projectRecordId);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    /// <summary>
+    /// Updates the project record status
+    /// </summary>
+    /// <param name="projectRecordId"></param>
+    /// <param name="status"></param>
+    /// <returns></returns>
+    public async Task<ServiceResponse> UpdateProjectRecordStatus(string projectRecordId, string status)
+    {
+        var apiResponse = await applicationsClient.UpdateProjectRecordStatus(projectRecordId, status);
 
         return apiResponse.ToServiceResponse();
     }

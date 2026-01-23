@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Application.DTOs.CmsQuestionset;
+﻿namespace Rsp.Portal.Application.DTOs.CmsQuestionset;
 
 public class TabComponentItemModel
 {

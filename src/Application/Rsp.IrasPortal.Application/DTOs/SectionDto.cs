@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Application.DTOs;
+﻿namespace Rsp.Portal.Application.DTOs;
 
 public record SectionDto
 {

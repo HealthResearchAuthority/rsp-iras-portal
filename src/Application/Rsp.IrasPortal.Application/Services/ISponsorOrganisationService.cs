@@ -1,11 +1,11 @@
-﻿using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.Logging.Interceptors;
+﻿using Rsp.Logging.Interceptors;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Responses;
 
-namespace Rsp.IrasPortal.Application.Services;
+namespace Rsp.Portal.Application.Services;
 
 /// <summary>
 ///     ISponsorOrganisationService interface. Marked as IInterceptable to enable
@@ -38,4 +38,8 @@ public interface ISponsorOrganisationService : IInterceptable
     Task<ServiceResponse<SponsorOrganisationAuditTrailResponse>> SponsorOrganisationAuditTrail(string rtsId, int pageNumber, int pageSize, string sortField, string sortDirection);
 
     Task<ServiceResponse<IEnumerable<SponsorOrganisationDto>>> GetAllActiveSponsorOrganisationsForEnabledUser(Guid userId);
+
+    Task<ServiceResponse<SponsorOrganisationUserDto>> UpdateSponsorOrganisationUser(SponsorOrganisationUserDto user);
+
+    Task<ServiceResponse<SponsorOrganisationUserDto>> GetSponsorOrganisationUser(Guid sponsorOrgUserId);
 }

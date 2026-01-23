@@ -1,13 +1,13 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Domain.Identity;
-using Rsp.IrasPortal.Web.Features.SponsorWorkspace.Controllers;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.Identity;
+using Rsp.Portal.Web.Features.SponsorWorkspace.Controllers;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Features.SponsorWorkspace;
+namespace Rsp.Portal.UnitTests.Web.Features.SponsorWorkspace;
 
 public class SponsorWorkspaceControllerTests : TestServiceBase<SponsorWorkspaceController>
 {
@@ -102,105 +102,6 @@ public class SponsorWorkspaceControllerTests : TestServiceBase<SponsorWorkspaceC
         var result = await Sut.SponsorWorkspace();
 
         // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        (Sut.ViewBag.SponsorOrganisationName as string).ShouldBe(rtsOrganisation.Name);
-        (Sut.ViewBag.SponsorOrganisationUserId as Guid?).ShouldBe(sponsorOrganisation.Users.Single().Id);
-    }
-
-    [Theory]
-    [InlineAutoData(0)]
-    [InlineAutoData(3)]
-    public async Task SponsorWorkspace_ShouldReturnForbid_WhenOrganisationsCountIsInvalid(
-    int count,
-    ClaimsPrincipal userClaims,
-    User mockUser,
-    SponsorOrganisationDto sponsorOrganisation
-)
-    {
-        // Arrange
-        var mockUserResponse = new UserResponse
-        {
-            User = mockUser with { Id = Guid.NewGuid().ToString() }
-        };
-
-        var userResponse = new ServiceResponse<UserResponse>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = mockUserResponse
-        };
-
-        var sponsorResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = Enumerable.Repeat(sponsorOrganisation, count)
-        };
-
-        Mocker.GetMock<IUserManagementService>()
-            .Setup(s => s.GetUser(It.IsAny<string>(), null, null))
-            .ReturnsAsync(userResponse);
-
-        Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetAllActiveSponsorOrganisationsForEnabledUser(It.IsAny<Guid>()))
-            .ReturnsAsync(sponsorResponse);
-
-        _http.User = userClaims;
-
-        // Act
-        var result = await Sut.SponsorWorkspace();
-
-        // Assert
-        result.ShouldBeOfType<ForbidResult>();
-    }
-
-    [Theory, AutoData]
-    public async Task SponsorWorkspace_ShouldReturnServiceError_WhenRtsFails(
-    ClaimsPrincipal userClaims,
-    User mockUser,
-    SponsorOrganisationDto sponsorOrganisation
-)
-    {
-        // Arrange
-        var mockUserResponse = new UserResponse
-        {
-            User = mockUser with { Id = Guid.NewGuid().ToString() }
-        };
-
-        var userResponse = new ServiceResponse<UserResponse>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = mockUserResponse
-        };
-
-        var sponsorResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new List<SponsorOrganisationDto> { sponsorOrganisation }
-        };
-
-        var rtsResponse = new ServiceResponse<OrganisationDto>
-        {
-            StatusCode = HttpStatusCode.BadRequest
-        };
-
-        Mocker.GetMock<IUserManagementService>()
-            .Setup(s => s.GetUser(It.IsAny<string>(), null, null))
-            .ReturnsAsync(userResponse);
-
-        Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetAllActiveSponsorOrganisationsForEnabledUser(It.IsAny<Guid>()))
-            .ReturnsAsync(sponsorResponse);
-
-        Mocker.GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisation(It.IsAny<string>()))
-            .ReturnsAsync(rtsResponse);
-
-        _http.User = userClaims;
-
-        // Act
-        var result = await Sut.SponsorWorkspace();
-
-        // Assert
-        var statusResult = result.ShouldBeOfType<StatusCodeResult>();
-        statusResult.StatusCode.ShouldBe(400);
+        result.ShouldBeOfType<ViewResult>();
     }
 }

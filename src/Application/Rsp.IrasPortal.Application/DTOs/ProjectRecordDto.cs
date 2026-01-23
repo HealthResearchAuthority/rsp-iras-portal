@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Application.DTOs;
+﻿namespace Rsp.Portal.Application.DTOs;
 
 /// <summary>
 /// Data transfer object representing a project record within the IRAS Portal application.

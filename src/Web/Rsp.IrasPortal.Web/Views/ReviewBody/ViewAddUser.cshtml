@@ -1,5 +1,5 @@
-﻿@using Rsp.IrasPortal.Application.Constants
-@using Rsp.IrasPortal.Web.Areas.Admin.Models
+﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Web.Areas.Admin.Models
 @model ReviewBodyListUsersModel
 
 @{
@@ -96,7 +96,7 @@
 		<div class="govuk-grid-column-two-thirds">
 			<h1 class="govuk-heading-l">No results found</h1>
 			<p class="govuk-body">
-				Check your spelling or enter another search term and try again. If no results are found, go to Manage users where you can check if a user profile exists and create one if needed.
+				Check your spelling or enter another search term and try again. If no results are found, go to manage users where you can check if a user profile exists and create one if needed.
 			</p>
 			<p class="govuk-body">
 				<a class="govuk-link" asp-route="rbc:viewreviewbodyusers" asp-all-route-data="@(new Dictionary<string, string> { { "ReviewBodyId", Model.ReviewBody.Id.ToString() } })">Back to Users for @Model.ReviewBody.RegulatoryBodyName</a>

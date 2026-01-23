@@ -4,12 +4,12 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using Rsp.IrasPortal.Application.AccessControl;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Domain.AccessControl;
-using Rsp.IrasPortal.Web.TagHelpers;
+using Rsp.Portal.Application.AccessControl;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Domain.AccessControl;
+using Rsp.Portal.Web.TagHelpers;
 
-namespace Rsp.IrasPortal.UnitTests.Web.TagHelpers.PermissionsTagHelperTests;
+namespace Rsp.Portal.UnitTests.Web.TagHelpers.PermissionsTagHelperTests;
 
 public class PermissionsTagHelperTests
 {
@@ -1092,7 +1092,7 @@ public class PermissionsTagHelperTests
         if (roles.Length > 0)
         {
             var perms = RolePermissions.GetPermissionsForRoles(roles);
-            claims.AddRange(perms.Select(p => new Claim("permissions", p)));
+            claims.AddRange(perms.Select(p => new Claim(CustomClaimTypes.Permissions, p)));
 
             // Add allowed status claims for each entity type
             var allowedStatuses = RoleStatusPermissions.GetAllowedStatusesForRoles(roles);

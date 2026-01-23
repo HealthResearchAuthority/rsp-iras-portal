@@ -2,20 +2,20 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.AccessControl;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.Extensions;
-using Rsp.IrasPortal.Application.Filters;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Domain.AccessControl;
-using Rsp.IrasPortal.Web.Areas.Admin.Models;
-using Rsp.IrasPortal.Web.Extensions;
-using Rsp.IrasPortal.Web.Helpers;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Application.AccessControl;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.Extensions;
+using Rsp.Portal.Application.Filters;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.AccessControl;
+using Rsp.Portal.Web.Areas.Admin.Models;
+using Rsp.Portal.Web.Extensions;
+using Rsp.Portal.Web.Helpers;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.Web.Controllers;
+namespace Rsp.Portal.Web.Controllers;
 
 [Authorize(Policy = Workspaces.Approvals)]
 [Route("[controller]/[action]", Name = "approvals:[action]")]
@@ -84,7 +84,9 @@ public class ApprovalsController
                     SponsorOrganisation = dto.SponsorOrganisation,
                     CreatedAt = dto.CreatedAt,
                     ProjectRecordId = dto.ProjectRecordId,
-                    Status = dto.Status
+                    Status = dto.Status,
+                    ChiefInvestigatorFirstName = dto.ChiefInvestigatorFirstName,
+                    ChiefInvestigatorLastName = dto.ChiefInvestigatorLastName,
                 })
                 .ToList() ?? [];
 

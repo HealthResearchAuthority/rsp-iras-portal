@@ -7,18 +7,18 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Azure;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Domain.AccessControl;
-using Rsp.IrasPortal.Web.Extensions;
-using Rsp.IrasPortal.Web.Features.Modifications.Models;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs.CmsQuestionset.Modifications;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.AccessControl;
+using Rsp.Portal.Web.Extensions;
+using Rsp.Portal.Web.Features.Modifications.Models;
+using Rsp.Portal.Web.Models;
 using ValidationResult = FluentValidation.Results.ValidationResult;
 
-namespace Rsp.IrasPortal.Web.Features.Modifications;
+namespace Rsp.Portal.Web.Features.Modifications;
 
 /// <summary>
 /// Controller responsible for handling project modification related actions.
@@ -51,6 +51,14 @@ public class ModificationsController
     [HttpGet]
     public async Task<IActionResult> CreateModification(string separator = "/")
     {
+        //Restrict new modification creation if there is already in draft modification.
+        var canCreateNewModification = TempData[TempDataKeys.ProjectModification.CanCreateNewModification];
+
+        if (canCreateNewModification is false)
+        {
+            return View("CreateModificationOutcome");
+        }
+
         // Retrieve IRAS ID from TempData
         var IrasId = TempData.Peek(TempDataKeys.IrasId) as int?;
         var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId);
@@ -251,7 +259,6 @@ public class ModificationsController
 
         // Deserialize the area of changes from TempData
         var areaOfChanges = JsonSerializer.Deserialize<List<AreaOfChangeDto>>(areas!)!;
-
         if (!saveForLater)
         {
             PopulateDropdownOptions(model, areaOfChanges);
@@ -563,11 +570,14 @@ public class ModificationsController
             return this.ServiceError(auditResponse);
         }
 
+        var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId);
+
         var viewModel = new AuditTrailModel
         {
             AuditTrail = auditResponse.Content!,
             ModificationIdentifier = modificationIdentifier,
             ShortTitle = shortTitle,
+            ProjectRecordId = projectRecordId?.ToString()
         };
 
         return View(viewModel);

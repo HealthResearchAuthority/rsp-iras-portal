@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Web.Models;
+﻿namespace Rsp.Portal.Web.Models;
 
 /// <summary>
 /// Base view model for project modification-related pages.

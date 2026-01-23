@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rsp.IrasPortal.Application.DTOs.Responses;
+namespace Rsp.Portal.Application.DTOs.Responses;
 
 public class ProjectRecordAuditTrailResponse
 {

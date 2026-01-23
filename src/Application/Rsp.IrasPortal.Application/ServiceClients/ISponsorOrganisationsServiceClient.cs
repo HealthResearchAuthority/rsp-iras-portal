@@ -1,10 +1,10 @@
 ﻿using Refit;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
 
-namespace Rsp.IrasPortal.Application.ServiceClients;
+namespace Rsp.Portal.Application.ServiceClients;
 
 /// <summary>
 ///     Interface to interact with Applications microservice
@@ -81,4 +81,16 @@ public interface ISponsorOrganisationsServiceClient
     /// </summary>
     [Get("/sponsororganisations/getallactiveforenableduser/{userId}")]
     public Task<IApiResponse<IEnumerable<SponsorOrganisationDto>>> GetAllActiveSponsorOrganisationsForEnabledUser(Guid userId);
+
+    /// <summary>
+    /// Updates sponsor organisation user profile
+    /// </summary>
+    [Put("/sponsororganisations/{rtsId}/user/{userId}")]
+    public Task<IApiResponse<SponsorOrganisationUserDto>> UpdateUserInSponsorOrganisation(string rtsId, string userId, [Body] SponsorOrganisationUserDto sponsorOrganisationUserDto);
+
+    /// <summary>
+    /// Gets sponsor organisation user by sponsor organisation user Id
+    /// </summary>
+    [Get("/sponsororganisations/user/{sponsorOrgUserId}")]
+    public Task<IApiResponse<SponsorOrganisationUserDto>> GetSponsorOrganisationUser(Guid sponsorOrgUserId);
 }

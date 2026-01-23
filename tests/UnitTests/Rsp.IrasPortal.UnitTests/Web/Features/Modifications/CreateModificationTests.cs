@@ -1,14 +1,14 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Web.Features.Modifications;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Web.Features.Modifications;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications;
+namespace Rsp.Portal.UnitTests.Web.Features.Modifications;
 
 public class CreateModification : TestServiceBase<ModificationsController>
 {
@@ -142,5 +142,39 @@ public class CreateModification : TestServiceBase<ModificationsController>
         result.ShouldBeOfType<RedirectToActionResult>();
         Sut.TempData[TempDataKeys.ProjectModification.ProjectModificationId].ShouldBe(modificationId);
         Sut.TempData[TempDataKeys.ProjectModification.ProjectModificationIdentifier].ShouldBe(modificationIdentifier);
+    }
+
+    [Theory, AutoData]
+    public async Task CreateModification_Validation_Error(
+        string separator,
+        int irasId
+    )
+    {
+        // Arrange
+        var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.CanCreateNewModification] = false,
+        };
+
+        // Simulate IrasId as int in TempData
+        tempData[TempDataKeys.IrasId] = irasId;
+        Sut.TempData = tempData;
+
+        // Mock GetRespondentFromContext extension
+        var respondent = new { GivenName = "John", FamilyName = "Doe" };
+
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext()
+        };
+
+        Sut.HttpContext.Items["Respondent"] = respondent;
+
+        // Act
+        var result = await Sut.CreateModification(separator);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.Equal("CreateModificationOutcome", viewResult.ViewName);
     }
 }

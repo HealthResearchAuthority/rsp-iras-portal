@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
-using Rsp.IrasPortal.Application.AccessControl;
-using Rsp.IrasPortal.Application.Constants;
+using Rsp.Portal.Application.AccessControl;
+using Rsp.Portal.Application.Constants;
 
-namespace Rsp.IrasPortal.Infrastructure.Authorization;
+namespace Rsp.Portal.Infrastructure.Authorization;
 
 /// <summary>
 /// Handler that checks if a user has the required permission based on their roles
@@ -30,6 +30,12 @@ public class WorkspaceRequirementHandler : AuthorizationHandler<WorkspaceRequire
         if (context.User.IsInRole(Roles.SystemAdministrator))
         {
             context.Succeed(requirement);
+            return Task.CompletedTask;
+        }
+
+        if (context.User.FindFirst(CustomClaimTypes.UserStatus)?.Value is IrasUserStatus.Disabled)
+        {
+            // Disabled users cannot access any workspace.
             return Task.CompletedTask;
         }
 

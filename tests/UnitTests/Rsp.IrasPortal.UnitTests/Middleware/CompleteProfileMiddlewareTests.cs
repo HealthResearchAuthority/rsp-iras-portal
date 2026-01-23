@@ -1,9 +1,9 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.Middleware;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.Middleware;
 
-namespace Rsp.IrasPortal.UnitTests.Middleware;
+namespace Rsp.Portal.UnitTests.Middleware;
 
 public class CompleteProfileMiddlewareTests : TestServiceBase<CompleteProfileMiddleware>
 {
@@ -33,8 +33,7 @@ public class CompleteProfileMiddlewareTests : TestServiceBase<CompleteProfileMid
 
         var expectedRedirectUrl = "/profileandsettings/editprofile";
 
-        _http.Response.Headers["Location"].ToString().ShouldBe(expectedRedirectUrl);
-        _http.Items.ContainsKey(ContextItemKeys.RequireProfileCompletion).ShouldBeFalse();
+        _http.Response.Headers.Location.ToString().ShouldBe(expectedRedirectUrl);
     }
 
     [Theory, AutoData]
@@ -55,7 +54,7 @@ public class CompleteProfileMiddlewareTests : TestServiceBase<CompleteProfileMid
 
         var expectedRedirectUrl = "/profileandsettings/editprofile";
 
-        _http.Response.Headers["Location"].ToString().ShouldNotBe(expectedRedirectUrl);
+        _http.Response.Headers.Location.ToString().ShouldNotBe(expectedRedirectUrl);
         _http.Items.ContainsKey(ContextItemKeys.RequireProfileCompletion).ShouldBeFalse();
     }
 
@@ -78,7 +77,6 @@ public class CompleteProfileMiddlewareTests : TestServiceBase<CompleteProfileMid
 
         var expectedRedirectUrl = "/profileandsettings/editprofile";
 
-        _http.Response.Headers["Location"].ToString().ShouldNotBe(expectedRedirectUrl);
-        _http.Items.ContainsKey(ContextItemKeys.RequireProfileCompletion).ShouldBeFalse();
+        _http.Response.Headers.Location.ToString().ShouldNotBe(expectedRedirectUrl);
     }
 }

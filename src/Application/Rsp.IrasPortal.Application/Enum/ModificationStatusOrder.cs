@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Application.Enum;
+﻿namespace Rsp.Portal.Application.Enum;
 
 public enum ModificationStatusOrder
 {

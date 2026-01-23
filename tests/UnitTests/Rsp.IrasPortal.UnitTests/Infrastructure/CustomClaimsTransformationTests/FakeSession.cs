@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 
-namespace Rsp.IrasPortal.UnitTests.Infrastructure.CustomClaimsTransformationTests;
+namespace Rsp.Portal.UnitTests.Infrastructure.CustomClaimsTransformationTests;
 
 public class FakeSession : ISession
 {

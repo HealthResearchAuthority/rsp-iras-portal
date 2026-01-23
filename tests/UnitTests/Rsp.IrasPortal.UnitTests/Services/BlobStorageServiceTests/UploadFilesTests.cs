@@ -2,9 +2,9 @@
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Http;
-using Rsp.IrasPortal.Services;
+using Rsp.Portal.Services;
 
-namespace Rsp.IrasPortal.UnitTests.Services.BlobStorageServiceTests;
+namespace Rsp.Portal.UnitTests.Services.BlobStorageServiceTests;
 
 public class UploadFilesTests
 {

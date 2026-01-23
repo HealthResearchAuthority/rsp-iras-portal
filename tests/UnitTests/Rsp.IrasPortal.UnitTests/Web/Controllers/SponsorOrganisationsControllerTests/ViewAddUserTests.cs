@@ -1,14 +1,15 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Domain.Identity;
-using Rsp.IrasPortal.Web.Controllers;
-using Rsp.IrasPortal.Web.Models;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.Identity;
+using Rsp.Portal.Web.Controllers;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Controllers.SponsorOrganisationsControllerTests;
+namespace Rsp.Portal.UnitTests.Web.Controllers.SponsorOrganisationsControllerTests;
 
 public class ViewAddUserTests : TestServiceBase<SponsorOrganisationsController>
 {
@@ -18,6 +19,9 @@ public class ViewAddUserTests : TestServiceBase<SponsorOrganisationsController>
     {
         _http = new DefaultHttpContext { Session = new InMemorySession() };
         Sut.ControllerContext = new ControllerContext { HttpContext = _http };
+        Sut.TempData = new TempDataDictionary(
+            _http,
+            Mocker.GetMock<ITempDataProvider>().Object);
     }
 
     [Fact]
@@ -94,7 +98,6 @@ public class ViewAddUserTests : TestServiceBase<SponsorOrganisationsController>
                 }
             });
 
-
         // Act
         var result = await Sut.ViewAddUser(rtsId, "test");
 
@@ -167,8 +170,6 @@ public class ViewAddUserTests : TestServiceBase<SponsorOrganisationsController>
             .Setup(s => s.GetOrganisation(rtsId))
             .ReturnsAsync(organisationResponse);
 
-
-
         // Act
         var result = await Sut.ViewAddUser(rtsId, null);
 
@@ -183,11 +184,9 @@ public class ViewAddUserTests : TestServiceBase<SponsorOrganisationsController>
         model.SponsorOrganisation.UpdatedDate.ShouldBe(
             sponsorResponse.Content.SponsorOrganisations.First().CreatedDate);
 
-
         Mocker.GetMock<ISponsorOrganisationService>()
             .Verify(s => s.GetSponsorOrganisationByRtsId(rtsId), Times.Once);
         Mocker.GetMock<IRtsService>()
             .Verify(s => s.GetOrganisation(rtsId), Times.Once);
-
     }
 }

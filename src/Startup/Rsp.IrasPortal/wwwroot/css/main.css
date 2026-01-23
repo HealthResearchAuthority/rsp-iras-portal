@@ -394,6 +394,7 @@ button.govuk-link {
 
 .hra-card-heading__link {
   position: relative;
+  padding-right: 24px;
 }
 .hra-card-heading__link::before {
   content: "";
@@ -980,7 +981,6 @@ button.govuk-pagination__item--current {
 .govuk-tab-toggle {
   position: absolute;
   opacity: 0;
-  pointer-events: none;
 }
 
 /* Remove background colour from list and items */
@@ -989,6 +989,13 @@ button.govuk-pagination__item--current {
 .govuk-service-navigation__list,
 .govuk-service-navigation__item {
   background: var(--background-govuk-body-background-colour, #f4f8fb);
+}
+
+.govuk-service-navigation__container.white-bg,
+.govuk-service-navigation__container.white-bg .govuk-service-navigation__wrapper,
+.govuk-service-navigation__container.white-bg .govuk-service-navigation__list,
+.govuk-service-navigation__container.white-bg .govuk-service-navigation__item {
+  background: #ffffff;
 }
 
 /* Hide all panels by default */
@@ -1001,6 +1008,9 @@ button.govuk-pagination__item--current {
 #tab-sponsor-details:checked ~ #sponsor-details,
 #tab-modifications-changes:checked ~ #modifications-changes,
 #tab-documents:checked ~ #documents,
+#tab-profile:checked ~ #profile,
+#tab-projects:checked ~ #projects,
+#tab-users:checked ~ #users,
 #tab-history:checked ~ #history {
   display: block;
 }
@@ -1009,6 +1019,9 @@ button.govuk-pagination__item--current {
 #tab-sponsor-details:checked ~ .govuk-service-navigation .govuk-service-navigation__item--sponsor-details > label,
 #tab-modifications-changes:checked ~ .govuk-service-navigation .govuk-service-navigation__item--modifications-changes > label,
 #tab-documents:checked ~ .govuk-service-navigation .govuk-service-navigation__item--documents > label,
+#tab-profile:checked ~ .govuk-service-navigation .govuk-service-navigation__item--profile > label,
+#tab-projects:checked ~ .govuk-service-navigation .govuk-service-navigation__item--projects > label,
+#tab-users:checked ~ .govuk-service-navigation .govuk-service-navigation__item--users > label,
 #tab-history:checked ~ .govuk-service-navigation .govuk-service-navigation__item--history > label {
   border-bottom: 4px solid #1d70b8;
   color: #0b0c0c;
@@ -1036,7 +1049,6 @@ button.govuk-pagination__item--current {
   font-weight: normal;
 }
 
-
 .govuk-content-wrapper a {
   color: #1d70b8;
   text-decoration: underline;
@@ -1060,4 +1072,20 @@ button.govuk-pagination__item--current {
   background-color: #fd0;
   color: #0b0c0c;
   text-decoration: none;
+}
+
+.extra-bottom-margin {
+  margin-bottom: 25px;
+}
+
+.search-filter-panel__header--static {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.break-anywhere {
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }

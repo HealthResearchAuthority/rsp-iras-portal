@@ -3,42 +3,43 @@ using FluentValidation;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.Filters;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Domain.AccessControl;
-using Rsp.IrasPortal.Web.Areas.Admin.Models;
-using Rsp.IrasPortal.Web.Extensions;
-using Rsp.IrasPortal.Web.Features.Modifications;
-using Rsp.IrasPortal.Web.Features.Modifications.Models;
-using Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Models;
-using Rsp.IrasPortal.Web.Helpers;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.Filters;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.AccessControl;
+using Rsp.Portal.Web.Areas.Admin.Models;
+using Rsp.Portal.Web.Extensions;
+using Rsp.Portal.Web.Features.Modifications;
+using Rsp.Portal.Web.Features.Modifications.Models;
+using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models;
+using Rsp.Portal.Web.Helpers;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Controllers;
+namespace Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Controllers;
 
 /// <summary>
 ///     Controller responsible for handling sponsor workspace related actions.
 /// </summary>
 [Authorize(Policy = Workspaces.Sponsor)]
 [Route("sponsorworkspace/[action]", Name = "sws:[action]")]
-public class AuthorisationsController
+public class AuthorisationsModificationsController
 (
     IProjectModificationsService projectModificationsService,
     IRespondentService respondentService,
+    ISponsorOrganisationService sponsorOrganisationService,
     ICmsQuestionsetService cmsQuestionsetService,
-    IValidator<SponsorAuthorisationsSearchModel> searchValidator
+    IValidator<AuthorisationsModificationsSearchModel> searchValidator
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, null!)
 {
     private const string DocumentDetailsSection = "pdm-document-metadata";
     private const string SponsorDetailsSectionId = "pm-sponsor-reference";
     private readonly IRespondentService _respondentService = respondentService;
 
-    [Authorize(Policy = Permissions.Sponsor.Modifications_Search)]
+    [Authorize(Policy = Permissions.Sponsor.ProjectClosures_Search)]
     [HttpGet]
-    public async Task<IActionResult> Authorisations
+    public async Task<IActionResult> Modifications
     (
         Guid sponsorOrganisationUserId,
         int pageNumber = 1,
@@ -47,16 +48,16 @@ public class AuthorisationsController
         string sortDirection = SortDirections.Descending
     )
     {
-        var model = new SponsorAuthorisationsViewModel();
+        var model = new AuthorisationsModificationsViewModel();
 
         // getting search query
-        var json = HttpContext.Session.GetString(SessionKeys.SponsorAuthorisationsSearch);
+        var json = HttpContext.Session.GetString(SessionKeys.SponsorAuthorisationsModificationsSearch);
         if (!string.IsNullOrEmpty(json))
         {
-            model.Search = JsonSerializer.Deserialize<SponsorAuthorisationsSearchModel>(json)!;
+            model.Search = JsonSerializer.Deserialize<AuthorisationsModificationsSearchModel>(json)!;
         }
 
-        var searchQuery = new SponsorAuthorisationsSearchRequest
+        var searchQuery = new SponsorAuthorisationsModificationsSearchRequest
         {
             SearchTerm = model.Search.SearchTerm
         };
@@ -87,14 +88,14 @@ public class AuthorisationsController
         model.Pagination = new PaginationViewModel(pageNumber, pageSize,
             projectModificationsServiceResponse?.Content?.TotalCount ?? 0)
         {
-            RouteName = "sws:authorisations",
+            RouteName = "sws:modifications",
             SortDirection = sortDirection,
             SortField = sortField,
             FormName = "authorisations-selection",
             AdditionalParameters = new Dictionary<string, string>
-                {
-                    { "SponsorOrganisationUserId", sponsorOrganisationUserId.ToString() }
-                }
+            {
+                { "SponsorOrganisationUserId", sponsorOrganisationUserId.ToString() }
+            }
         };
 
         model.SponsorOrganisationUserId = sponsorOrganisationUserId;
@@ -104,8 +105,8 @@ public class AuthorisationsController
 
     [Authorize(Policy = Permissions.Sponsor.Modifications_Search)]
     [HttpPost]
-    [CmsContentAction(nameof(Authorisations))]
-    public async Task<IActionResult> ApplyFilters(SponsorAuthorisationsViewModel model)
+    [CmsContentAction(nameof(Modifications))]
+    public async Task<IActionResult> ApplyFilters(AuthorisationsModificationsViewModel model)
     {
         var validationResult = await searchValidator.ValidateAsync(model.Search);
 
@@ -117,17 +118,17 @@ public class AuthorisationsController
             }
 
             TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
-            return RedirectToAction(nameof(Authorisations),
+            return RedirectToAction(nameof(Modifications),
                 new { sponsorOrganisationUserId = model.SponsorOrganisationUserId });
         }
 
-        HttpContext.Session.SetString(SessionKeys.SponsorAuthorisationsSearch, JsonSerializer.Serialize(model.Search));
-        return RedirectToAction(nameof(Authorisations),
+        HttpContext.Session.SetString(SessionKeys.SponsorAuthorisationsModificationsSearch, JsonSerializer.Serialize(model.Search));
+        return RedirectToAction(nameof(Modifications),
             new { sponsorOrganisationUserId = model.SponsorOrganisationUserId });
     }
 
     // 1) Shared builder used by both GET and POST
-    private async Task<AuthoriseOutcomeViewModel?> BuildCheckAndAuthorisePageAsync
+    private async Task<AuthoriseModificationsOutcomeViewModel?> BuildCheckAndAuthorisePageAsync
     (
         Guid projectModificationId,
         string irasId,
@@ -176,10 +177,10 @@ public class AuthorisationsController
         }
 
         var config = new TypeAdapterConfig();
-        config.ForType<ModificationDetailsViewModel, AuthoriseOutcomeViewModel>()
+        config.ForType<ModificationDetailsViewModel, AuthoriseModificationsOutcomeViewModel>()
               .Ignore(dest => dest.ProjectOverviewDocumentViewModel);
 
-        var authoriseOutcomeViewModel = modification.Adapt<AuthoriseOutcomeViewModel>(config);
+        var authoriseOutcomeViewModel = modification.Adapt<AuthoriseModificationsOutcomeViewModel>(config);
 
         var modificationDocumentsResponseResult = await this.GetModificationDocuments(projectModificationId,
             DocumentDetailsSection, pageNumber, pageSize, sortField, sortDirection);
@@ -223,13 +224,23 @@ public class AuthorisationsController
             await BuildCheckAndAuthorisePageAsync(projectModificationId, irasId, shortTitle, projectRecordId,
                 sponsorOrganisationUserId);
 
+        var sponsorOrganisationUser =
+            await sponsorOrganisationService.GetSponsorOrganisationUser(sponsorOrganisationUserId);
+
+        if (!sponsorOrganisationUser.IsSuccessStatusCode)
+        {
+            return this.ServiceError(sponsorOrganisationUser);
+        }
+
+        TempData[TempDataKeys.IsAuthoriser] = sponsorOrganisationUser.Content!.IsAuthoriser;
+
         return View(response);
     }
 
     // 3) POST: on invalid, rebuild the page VM and return the same view with ModelState errors
     [Authorize(Policy = Permissions.Sponsor.Modifications_Authorise)]
     [HttpPost]
-    public async Task<IActionResult> CheckAndAuthorise(AuthoriseOutcomeViewModel model)
+    public async Task<IActionResult> CheckAndAuthorise(AuthoriseModificationsOutcomeViewModel model)
     {
         // 🟢 Always build the page first, so it's hydrated for both success and error paths
         var hydrated = await BuildCheckAndAuthorisePageAsync(
@@ -299,7 +310,7 @@ public class AuthorisationsController
 
     [Authorize(Policy = Permissions.Sponsor.Modifications_Review)]
     [HttpGet]
-    public IActionResult Confirmation(AuthoriseOutcomeViewModel model)
+    public IActionResult Confirmation(AuthoriseModificationsOutcomeViewModel model)
     {
         return View(model);
     }

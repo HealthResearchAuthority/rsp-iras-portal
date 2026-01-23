@@ -2,9 +2,9 @@
 @using System.Text.Json
 @using Microsoft.AspNetCore.Mvc.ModelBinding
 @using Microsoft.FeatureManagement
-@using Rsp.IrasPortal.Application.Constants
-@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
-@using Rsp.IrasPortal.Web.Features.Modifications.Models
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent;
+@using Rsp.Portal.Web.Features.Modifications.Models
 @model ModificationDetailsViewModel
 
 @{
@@ -41,7 +41,13 @@
 
     if (changeRemoved is true)
     {
-        <partial name="_NotificationBanner" model="@("Success", $"{changeName} has been successfully removed")" />
+        <partial name="_NotificationBanner"
+                 model="@(new NotificationBannerModel
+                        {
+                            Title = "Success",
+                            Heading = $"{changeName} has been removed"
+                        })" />
+
     }
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];

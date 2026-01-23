@@ -1,10 +1,10 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Web.Extensions;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Web.Extensions;
 
-namespace Rsp.IrasPortal.Web.Attributes;
+namespace Rsp.Portal.Web.Attributes;
 
 /// <summary>
 /// An action filter attribute that merges ModelState from TempData into the current ModelState

@@ -6,11 +6,11 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
-using Rsp.IrasPortal.Application.Configuration;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Infrastructure.Authorization;
+using Rsp.Portal.Application.Configuration;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Infrastructure.Authorization;
 
-namespace Rsp.IrasPortal.Configuration.Auth;
+namespace Rsp.Portal.Configuration.Auth;
 
 /// <summary>
 /// Authentication and Authorization configuration
@@ -226,7 +226,6 @@ public static class AuthConfiguration
         var policy = new AuthorizationPolicyBuilder()
            .RequireAuthenticatedUser()
            .RequireClaim(ClaimTypes.Email)
-           .RequireClaim(CustomClaimTypes.UserStatus, IrasUserStatus.Active) // if user is disabled, this claim will have disabled value
            .Build();
 
         services

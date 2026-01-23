@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Razor;
 
-namespace Rsp.IrasPortal.Configuration.FeatureFolders;
+namespace Rsp.Portal.Configuration.FeatureFolders;
 
 public static class FeatureFoldersConfiguration
 {

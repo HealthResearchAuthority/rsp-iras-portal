@@ -3,10 +3,10 @@
 @using Microsoft.AspNetCore.Http.Extensions
 @using Microsoft.AspNetCore.Mvc.ModelBinding
 @using Rsp.Gds.Component.Models
-@using Rsp.IrasPortal.Application.Constants
-@using Rsp.IrasPortal.Application.DTOs.Responses
-@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
-@using Rsp.IrasPortal.Web.Extensions
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@using Rsp.Portal.Web.Extensions
 @model ApprovalsSearchViewModel
 @inject IHttpContextAccessor httpContextAccessor
 
@@ -232,7 +232,7 @@
         <div class="govuk-form-group govuk-!-margin-bottom-2">
             <fieldset class="govuk-fieldset">
                 <rsp-gds-input asp-for="Search.ShortProjectTitle"
-                               label-text="Enter the name of the short project title"
+													   label-text="Enter the short project title"
                                width-class="govuk-!-width-three-quarters"
 											label-html-class="font-weight-none" />
             </fieldset>
@@ -477,7 +477,7 @@ else if (showNoResultsMessage)
                                 new { Field = nameof(ModificationsModel.ModificationId), Label = "Modification ID" },
                                 new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
                                 new { Field = nameof(ModificationsModel.ModificationType), Label = "Modification type" },
-                                new { Field = nameof(ModificationsModel.ChiefInvestigator), Label = "Chief Investigator" },
+                                new { Field = nameof(ModificationsModel.ChiefInvestigator), Label = "Chief investigator" },
                                 new { Field = nameof(ModificationsModel.LeadNation), Label = "Lead Nation" },
                                 new { Field = nameof(ModificationsModel.Status), Label = "Status" }
                             };
@@ -523,7 +523,7 @@ else if (showNoResultsMessage)
                                         </a>
                                     </td>
                                     <td class="govuk-table__cell">@modification.ModificationType</td>
-                                    <td class="govuk-table__cell">@modification.ChiefInvestigator</td>
+										<td class="govuk-table__cell">@modification.ChiefInvestigatorFirstName @modification.ChiefInvestigatorLastName</td>
                                     <td class="govuk-table__cell">@modification.LeadNation</td>
 										<td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">@modification.Status</strong></td>
                                 </tr>

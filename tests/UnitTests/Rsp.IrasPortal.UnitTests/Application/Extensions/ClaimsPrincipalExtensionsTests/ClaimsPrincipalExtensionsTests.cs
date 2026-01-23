@@ -1,10 +1,10 @@
 using System.Security.Claims;
-using Rsp.IrasPortal.Application.AccessControl;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.Extensions;
-using Rsp.IrasPortal.Domain.AccessControl;
+using Rsp.Portal.Application.AccessControl;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.Extensions;
+using Rsp.Portal.Domain.AccessControl;
 
-namespace Rsp.IrasPortal.UnitTests.Application.Extensions.ClaimsPrincipalExtensionsTests;
+namespace Rsp.Portal.UnitTests.Application.Extensions.ClaimsPrincipalExtensionsTests;
 
 public class ClaimsPrincipalExtensionsTests
 {
@@ -467,9 +467,9 @@ public class ClaimsPrincipalExtensionsTests
         // will work with role-based tests
         if (roles.Length > 0)
         {
-            var perms = RolePermissions.GetPermissionsForRoles([.. roles]);
+            var perms = RolePermissions.GetPermissionsForRoles(roles);
 
-            claims.AddRange(perms.Select(p => new Claim("permissions", p)));
+            claims.AddRange(perms.Select(p => new Claim(CustomClaimTypes.Permissions, p)));
 
             // Add allowed status claims for each entity type
             var allowedStatuses = RoleStatusPermissions.GetAllowedStatusesForRoles(roles);

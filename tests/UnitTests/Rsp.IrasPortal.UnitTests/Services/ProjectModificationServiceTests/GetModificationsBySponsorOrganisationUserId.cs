@@ -1,24 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.ServiceClients;
-using Rsp.IrasPortal.Services;
+﻿using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.ServiceClients;
+using Rsp.Portal.Services;
 
-namespace Rsp.IrasPortal.UnitTests.Services.ProjectModificationServiceTests;
+namespace Rsp.Portal.UnitTests.Services.ProjectModificationServiceTests;
 
 public class GetModificationsBySponsorOrganisationUserIdTests : TestServiceBase<ProjectModificationsService>
 {
     [Theory, AutoData]
     public async Task Should_Return_Success_Response_When_Client_Returns_Success(
         Guid sponsorOrganisationUserId,
-        SponsorAuthorisationsSearchRequest searchQuery,
+        SponsorAuthorisationsModificationsSearchRequest searchQuery,
         GetModificationsResponse modificationsResponse)
     {
         // Arrange

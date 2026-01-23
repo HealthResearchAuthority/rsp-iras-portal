@@ -6,14 +6,13 @@ using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement;
 using Microsoft.IdentityModel.Tokens;
 using NetDevPack.Security.Jwt.Core.Interfaces;
-using Rsp.IrasPortal.Application.AccessControl;
-using Rsp.IrasPortal.Application.Configuration;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.Extensions;
-using Rsp.IrasPortal.Application.Services;
+using Rsp.Portal.Application.AccessControl;
+using Rsp.Portal.Application.Configuration;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.Extensions;
+using Rsp.Portal.Application.Services;
 
-namespace Rsp.IrasPortal.Infrastructure.Claims;
+namespace Rsp.Portal.Infrastructure.Claims;
 
 public class CustomClaimsTransformation
 (
@@ -56,26 +55,6 @@ public class CustomClaimsTransformation
 
         var userResponse = await userManagementService.GetUser(null, null, identityProviderId);
 
-        // returning the default principal for the disabled user without adding
-        // any additional claims, so that user will not be able to access the application
-        if
-        (
-            userResponse.IsSuccessStatusCode &&
-            userResponse.Content is UserResponse response
-        )
-        {
-            // add user status claim, so that we can use both active or disabled status
-            // where needed
-            claimsIdentity.AddClaim(new Claim(CustomClaimTypes.UserStatus, response.User.Status));
-
-            // return the claims principal without adding any additional claims
-            // i.e. roles or permissions
-            if (response.User.Status == IrasUserStatus.Disabled)
-            {
-                return principal;
-            }
-        }
-
         // now we can call the usermanagement api
         var context = httpContextAccessor.HttpContext!;
 
@@ -93,10 +72,9 @@ public class CustomClaimsTransformation
                 // user cannot be found by provider ID so let's try find them by their email
                 var getUserResponseEmail = await userManagementService.GetUser(null, email);
 
-                if (getUserResponseEmail.IsSuccessStatusCode && getUserResponseEmail.Content != null)
+                if (getUserResponseEmail.IsSuccessStatusCode && getUserResponseEmail.Content is not null)
                 {
                     // user found so let's update their providerID
-
                     userResponse = getUserResponseEmail;
 
                     if (!string.IsNullOrEmpty(identityProviderId))
@@ -106,6 +84,10 @@ public class CustomClaimsTransformation
                 }
                 else
                 {
+                    // as user is signing in for the first time, it requires profile completion.
+                    // the profile and settings page now requires workspace access
+                    claimsIdentity.AddClaim(new Claim(ClaimTypes.Role, Roles.Applicant));
+
                     context.Items.Add(ContextItemKeys.RequireProfileCompletion, true);
                     context.Items.Add(ContextItemKeys.Email, email);
                     context.Items.Add("telephoneNumber", mobilePhone);
@@ -118,12 +100,24 @@ public class CustomClaimsTransformation
             }
 
             await userManagementService.UpdateLastLogin(email);
+
             context.Session.Remove(SessionKeys.FirstLogin);
         }
 
         if (userResponse.IsSuccessStatusCode && userResponse.Content != null)
         {
             var user = userResponse.Content;
+
+            // add user status claim, so that we can use both active or disabled status
+            // where needed
+            claimsIdentity.AddClaim(new Claim(CustomClaimTypes.UserStatus, user.User.Status));
+
+            // return the claims principal without adding any additional claims
+            // i.e. roles or permissions
+            if (user.User.Status == IrasUserStatus.Disabled)
+            {
+                return principal;
+            }
 
             var userId = user.User.Id;
             var firstName = principal.FindFirst(ClaimTypes.GivenName)?.Value;
@@ -152,8 +146,7 @@ public class CustomClaimsTransformation
 
             // add permissions as claims
             var permissionsClaims = rolePermissions
-                .Select(permission => new Claim("permissions", permission))
-                .ToList();
+                .ConvertAll(permission => new Claim(CustomClaimTypes.Permissions, permission));
 
             claimsIdentity.AddClaims(permissionsClaims);
 
@@ -175,6 +168,15 @@ public class CustomClaimsTransformation
             }
 
             // as the claims are now updated, we need to generate a new token
+            await UpdateAccessToken(principal);
+
+            return principal;
+        }
+
+        if (context.Request.Query["requireProfileCreation"].Count == 1)
+        {
+            claimsIdentity.AddClaim(new Claim(ClaimTypes.Role, Roles.Applicant));
+
             await UpdateAccessToken(principal);
         }
 

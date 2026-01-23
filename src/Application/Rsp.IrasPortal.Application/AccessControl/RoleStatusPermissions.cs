@@ -1,7 +1,7 @@
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Domain.AccessControl;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Domain.AccessControl;
 
-namespace Rsp.IrasPortal.Application.AccessControl;
+namespace Rsp.Portal.Application.AccessControl;
 
 /// <summary>
 /// Maps roles to their allowed record statuses for different entity types
@@ -19,31 +19,49 @@ public static class RoleStatusPermissions
                 Roles.Applicant, new List<string>
                 {
                     ProjectRecordStatus.InDraft,
-                    ProjectRecordStatus.Active
+                    ProjectRecordStatus.Active,
+                    ProjectRecordStatus.Closed,
+                    ProjectRecordStatus.PendingClosure
                 }
             },
             {
                 Roles.Sponsor, new List<string>
                 {
-                    ProjectRecordStatus.Active
+                    ProjectRecordStatus.Active,
+                    ProjectRecordStatus.PendingClosure,
+                    ProjectRecordStatus.Closed
+                }
+            },
+            {
+                Roles.OrganisationAdministrator, new List<string>
+                {
+                    ProjectRecordStatus.Active,
+                    ProjectRecordStatus.PendingClosure,
+                    ProjectRecordStatus.Closed
                 }
             },
             {
                 Roles.WorkflowCoordinator, new List<string>
                 {
-                    ProjectRecordStatus.Active
+                    ProjectRecordStatus.Active,
+                    ProjectRecordStatus.PendingClosure,
+                    ProjectRecordStatus.Closed
                 }
             },
             {
                 Roles.TeamManager, new List<string>
                 {
-                    ProjectRecordStatus.Active
+                    ProjectRecordStatus.Active,
+                    ProjectRecordStatus.PendingClosure,
+                    ProjectRecordStatus.Closed
                 }
             },
             {
                 Roles.StudyWideReviewer, new List<string>
                 {
-                    ProjectRecordStatus.Active
+                    ProjectRecordStatus.Active,
+                    ProjectRecordStatus.PendingClosure,
+                    ProjectRecordStatus.Closed
                 }
             }
         };
@@ -90,6 +108,16 @@ public static class RoleStatusPermissions
             },
             {
                 Roles.Sponsor, new List<string>
+                {
+                    ModificationStatus.WithSponsor,
+                    ModificationStatus.WithReviewBody,
+                    ModificationStatus.Approved,
+                    ModificationStatus.NotAuthorised,
+                    ModificationStatus.NotApproved
+                }
+            },
+            {
+                Roles.OrganisationAdministrator, new List<string>
                 {
                     ModificationStatus.WithSponsor,
                     ModificationStatus.WithReviewBody,
@@ -175,6 +203,16 @@ public static class RoleStatusPermissions
             },
             {
                 Roles.Sponsor, new List<string>
+                {
+                    DocumentStatus.WithSponsor,
+                    DocumentStatus.WithReviewBody,
+                    DocumentStatus.Approved,
+                    DocumentStatus.NotAuthorised,
+                    DocumentStatus.NotApproved
+                }
+            },
+            {
+                Roles.OrganisationAdministrator, new List<string>
                 {
                     DocumentStatus.WithSponsor,
                     DocumentStatus.WithReviewBody,

@@ -1,10 +1,10 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Web.Controllers;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Web.Controllers;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Controllers.ReviewBodyControllerTests;
+namespace Rsp.Portal.UnitTests.Web.Controllers.ReviewBodyControllerTests;
 
 public class ConfirmChangesTests : TestServiceBase<ReviewBodyController>
 

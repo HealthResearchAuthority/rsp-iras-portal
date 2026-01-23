@@ -1,5 +1,5 @@
-﻿@using Rsp.IrasPortal.Application.Constants
-@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
+﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
 @{
 	bool allowAdditionalCookies = Context.Request.Cookies[CookieConsentNames.AdditionalCookies] == "true";
 	var showSuccessMessage = TempData[TempDataKeys.ShowCookiesSavedNotificationBanner];
@@ -21,8 +21,14 @@
 
 	@if (showSuccessMessage is true)
 	{
-		<partial name="_NotificationBanner" model="@(settingsSavedTitle?.Value, settingsSavedBody?.Value)" />
-	}
+        <partial name="_NotificationBanner"
+                 model="@(new NotificationBannerModel
+                        {
+                            Title = settingsSavedTitle?.Value,
+                            Heading = settingsSavedBody?.Value
+                        })" />
+
+    }
 
 	<div class="govuk-grid-column-two-thirds">
 		<h1 class="govuk-heading-l">@Html.Raw(title?.Value)</h1>

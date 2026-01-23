@@ -1,8 +1,8 @@
 using System.Security.Claims;
-using Rsp.IrasPortal.Application.AccessControl;
-using Rsp.IrasPortal.Application.Constants;
+using Rsp.Portal.Application.AccessControl;
+using Rsp.Portal.Application.Constants;
 
-namespace Rsp.IrasPortal.Application.Extensions;
+namespace Rsp.Portal.Application.Extensions;
 
 /// <summary>
 /// Extension methods for permission-based authorization in controllers
@@ -25,7 +25,7 @@ public static class ClaimsPrincipalExtensions
 
         // Extract permissions for the user
         var permissions = user.Claims
-            .Where(c => c.Type == "permissions")
+            .Where(c => c.Type == CustomClaimTypes.Permissions)
             .Select(c => c.Value)
             .ToList();
 

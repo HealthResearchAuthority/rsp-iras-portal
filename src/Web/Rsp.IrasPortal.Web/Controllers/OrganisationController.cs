@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Web.Extensions;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Web.Extensions;
 
-namespace Rsp.IrasPortal.Web.Controllers;
+namespace Rsp.Portal.Web.Controllers;
 
 /// <summary>
 /// Controller for managing organisation-related operations.
