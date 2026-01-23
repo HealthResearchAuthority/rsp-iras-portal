@@ -268,7 +268,7 @@ public class SponsorOrganisationsController(
     public async Task<IActionResult> ViewSponsorOrganisationUsers(string rtsId, string? searchQuery = null,
         int pageNumber = 1, int pageSize = 20, string? sortField = "GivenName", string? sortDirection = "asc")
     {
-        TempData.Clear();
+        TempData.Remove(TempDataKeys.SponsorOrganisationUser);
 
         var load = await LoadSponsorOrganisationAsync(rtsId);
 
