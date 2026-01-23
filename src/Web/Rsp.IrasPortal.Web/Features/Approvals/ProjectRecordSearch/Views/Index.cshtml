@@ -72,6 +72,17 @@
 	var searchHint = pageContent.GetValueOrDefault("ProjectRecordSearch.SearchHint", null);
 	var noResultsTitle = pageContent.GetValueOrDefault("ProjectRecordSearch.NoResultsTitle", null);
 	var noResultsBody = pageContent.GetValueOrDefault("ProjectRecordSearch.NoResultsBody", null);
+    
+    var filterCITitle = pageContent.GetValueOrDefault("Approvals.Search.AdvancedFilter.CITitle", null);
+    var filterCIHint = pageContent.GetValueOrDefault("Approvals.Search.AdvancedFilter.CIHint", null);
+    var filterLeadNationTitle = pageContent.GetValueOrDefault("Approvals.Search.AdvancedFilter.LeadNation.Title", null);
+    var filterLeadNationHint = pageContent.GetValueOrDefault("Approvals.Search.AdvancedFilter.LeadNation.Hint", null);
+    var filterParticipatingNationTitle = pageContent.GetValueOrDefault("Approvals.Search.AdvancedFilter.ParticipatingNation.Title", null);
+    var filterParticipatingNationHint = pageContent.GetValueOrDefault("Approvals.Search.AdvancedFilter.ParticipatingNation.Hint", null);
+    var filterProjectTitleTitle = pageContent.GetValueOrDefault("Approvals.Search.AdvancedFilter.ProjectTitle.Title", null);
+    var filterProjectTitleHint = pageContent.GetValueOrDefault("Approvals.Search.AdvancedFilter.ProjectTitle.Hint", null);
+    var filterSponsorOrgTitle = pageContent.GetValueOrDefault("Approvals.Search.AdvancedFilter.SponsorOrg.Title", null);
+    var filterSponsorOrgHint = pageContent.GetValueOrDefault("Approvals.Search.AdvancedFilter.SponsorOrg.Hint", null);
 
 	var activeSponsorOrgFilter = TempData[TempDataKeys.ActiveSponsoOrganisationFilterName] as string;
 }
@@ -119,13 +130,13 @@
 						<details class="search-filter-section" @(CanOpenPanelForField("ChiefInvestigatorName") ? "open"
 								 : null)>
 							<summary class="search-filter-section__summary">
-								<h2 class="search-filter-section__summary-heading">Chief Investigator name</h2>
+								<h2 class="search-filter-section__summary-heading">@Html.Raw(filterCITitle?.Value)</h2>
 							</summary>
 							<div class="search-filter-section__content">
 								<div class="govuk-form-group govuk-!-margin-bottom-2">
 									<fieldset class="govuk-fieldset">
 										<rsp-gds-input asp-for="Search.ChiefInvestigatorName"
-													   label-text="Enter the name of the Chief Investigator"
+													   label-text="@Html.Raw(filterCIHint?.Value)"
 													   width-class="govuk-!-width-three-quarters"
 													   label-html-class="font-weight-none" />
 									</fieldset>
@@ -136,14 +147,14 @@
 						<!-- Lead nation -->
 						<details class="search-filter-section" @(CanOpenPanelForField("LeadNation") ? "open" : null)>
 							<summary class="search-filter-section__summary">
-								<h2 class="search-filter-section__summary-heading">Lead nation</h2>
+								<h2 class="search-filter-section__summary-heading">@Html.Raw(filterLeadNationTitle?.Value)</h2>
 							</summary>
 							<div class="search-filter-section__content">
 								<div class="govuk-form-group govuk-!-margin-bottom-2">
 									<fieldset class="govuk-fieldset">
 										<rsp-gds-checkbox-group asp-for="Search.LeadNation"
 																options="UkCountryNames.Countries" conditional-field="false"
-																label-text="Select all that apply"
+																label-text="@Html.Raw(filterLeadNationHint?.Value)"
 																legend-class="govuk-label govuk-label--s font-weight-none"
 																hint-id="lead-nation-hint"
 																hint-html="@($"{Model.Search.LeadNation?.Count ?? 0} selected")"
@@ -157,14 +168,14 @@
 						<details class="search-filter-section" @(CanOpenPanelForField("ParticipatingNation") ? "open" :
 								 null)>
 							<summary class="search-filter-section__summary">
-								<h2 class="search-filter-section__summary-heading">Participating nation</h2>
+								<h2 class="search-filter-section__summary-heading">@Html.Raw(filterParticipatingNationTitle?.Value)</h2>
 							</summary>
 							<div class="search-filter-section__content">
 								<div class="govuk-form-group govuk-!-margin-bottom-2">
 									<fieldset class="govuk-fieldset">
 										<rsp-gds-checkbox-group asp-for="Search.ParticipatingNation"
 																options="UkCountryNames.Countries" conditional-field="false"
-																label-text="Select all that apply"
+																label-text="@Html.Raw(filterParticipatingNationHint?.Value)"
 																legend-class="govuk-label govuk-label--s font-weight-none"
 																hint-id="participating-nation-hint"
 																hint-html="@($"{Model.Search.ParticipatingNation?.Count ?? 0} selected")"
@@ -178,13 +189,13 @@
 						<details class="search-filter-section" @(CanOpenPanelForField("ShortProjectTitle") ? "open" :
 								 null)>
 							<summary class="search-filter-section__summary">
-								<h2 class="search-filter-section__summary-heading">Short project title</h2>
+								<h2 class="search-filter-section__summary-heading">@Html.Raw(filterProjectTitleTitle?.Value)</h2>
 							</summary>
 							<div class="search-filter-section__content">
 								<div class="govuk-form-group govuk-!-margin-bottom-2">
 									<fieldset class="govuk-fieldset">
 										<rsp-gds-input asp-for="Search.ShortProjectTitle"
-													   label-text="Enter the short project title"
+													   label-text="@Html.Raw(filterProjectTitleHint?.Value)"
 													   width-class="govuk-!-width-three-quarters"
 													   label-html-class="font-weight-none" />
 									</fieldset>
@@ -195,7 +206,7 @@
 						<!-- Sponsor organisation -->
 						<details class="search-filter-section" @(CanOpenSponsorOrgSection() ? "open" : null)>
 							<summary class="search-filter-section__summary">
-								<h2 class="search-filter-section__summary-heading">Sponsor organisation</h2>
+								<h2 class="search-filter-section__summary-heading">@Html.Raw(filterSponsorOrgTitle?.Value)</h2>
 							</summary>
 							<div class="search-filter-section__content">
 								<div class="govuk-form-group govuk-!-margin-bottom-2">
@@ -203,7 +214,7 @@
 										<rsp-gds-autocomplete asp-for="Search.SponsorOrganisation"
 															  label-html-class="js-hidden font-weight-none"
 															  field-id="SponsorOrganisation_Text"
-															  label-text="Type the name of the organisation or scroll through the list"
+															  label-text="@Html.Raw(filterSponsorOrgHint?.Value)"
 															  api-url="/organisation/getsponsororganisationsnames"
 															  auto-complete-enabled-id="auto_search"
 															  use-organisation-id=@true

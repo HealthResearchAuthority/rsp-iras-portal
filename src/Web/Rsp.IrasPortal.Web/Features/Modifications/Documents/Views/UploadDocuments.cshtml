@@ -1,4 +1,5 @@
 ﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
 @using Rsp.Portal.Web.Helpers
 @model Rsp.Portal.Web.Models.ModificationUploadDocumentsViewModel
 
@@ -17,6 +18,14 @@
 		{ "projectModificationId", Model.ModificationId ?? string.Empty },
 		{ "projectModificationIdentifier", Model.ModificationIdentifier ?? string.Empty }
 	};
+
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData != null
+        ? pageContentData
+        : new Dictionary<string, MixedContentPageItem?>();
+
+    var title = pageContent.GetValueOrDefault("Modifications.Documents.ProjectDocument.Title", null);
+    var body = pageContent.GetValueOrDefault("Modifications.Documents.ProjectDocument.Body", null);
 }
 
 <govuk-header />
@@ -28,23 +37,13 @@
 
         <form asp-action="UploadDocuments" method="post" enctype="multipart/form-data">
 			<h1 class="govuk-heading-l">
-				@ViewBag.Title
+                @Html.Raw(title?.Value)
 			</h1>
             <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
             <partial name="_ProjectModificationSummary" />
 
             <p class="govuk-body">
-                Upload your documents here. You’ll add document details in the next step. <br />
-				Larger files will take longer to upload.
-				<br />
-				<br />
-				Documents must be less than 100MB and one of these file types: mp4, mov, avi, mkv, wmv, mpeg, mpg, webm,
-				png, gif, bmp, svg, jpg, jpeg,
-				doc, docx, dot, dotx, pdf, rtf, odt, ofd, xps,
-				xls, xlsx, csv,
-				ppt, pptx,
-				txt, xml, html, htm,
-				vcf, eml, msg
+                @Html.Raw(body?.Value)
             </p>
 
 			<input type="hidden" asp-for="@Model.ProjectRecordId" />
