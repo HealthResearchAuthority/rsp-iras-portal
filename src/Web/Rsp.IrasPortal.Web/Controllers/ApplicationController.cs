@@ -402,6 +402,8 @@ public class ApplicationController
         }
         else
         {
+            var plannedProjectEndDate = HttpContext.Session.GetString(TempDataKeys.PlannedProjectEndDate);
+            TempData.TryAdd(TempDataKeys.PlannedProjectEndDate, plannedProjectEndDate);
             return View("/Features/ProjectOverview/Views/CloseProject.cshtml", model);
         }
     }
