@@ -41,9 +41,9 @@
         var answer = questionnaire.ProjectRecordAnswers[projectRecordQuestionId];
 
         // format the answer based on the question data type
-        projectRecordAnswer = answer.GetDisplayText(projectRecordQuestion.DataType);        
+        projectRecordAnswer = answer.GetDisplayText(projectRecordQuestion.DataType);
 
-        <div class="govuk-!-margin-bottom-3 flex-gap-2 @(conditional ? "conditional" : "")" data-parents="@ " data-questionid="@questionId">
+        <div class="govuk-!-margin-bottom-3 flex-gap-2 @(conditional ? "conditional" : "")" data-parents="@parents" data-questionid="@questionId">
             <span class="govuk-label">
                 Current @(projectRecordQuestion!.QuestionText?
                         .GetLabelText()
