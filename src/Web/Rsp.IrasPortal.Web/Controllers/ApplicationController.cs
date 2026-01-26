@@ -94,14 +94,14 @@ public class ApplicationController
     public IActionResult StartProject() => View(nameof(StartProject));
 
     /// <summary>
-    /// Handles the POST request to start a new project.
-    /// Validates the IRAS ID, checks for duplicates, creates a new application, and redirects to the questionnaire.
+    /// Handles the POST request to start a new project. Validates the IRAS ID, checks for
+    /// duplicates, creates a new application, and redirects to the questionnaire.
     /// </summary>
     /// <param name="model">The IRAS ID view model containing the IRAS ID input by the user.</param>
     /// <returns>
-    /// If validation fails or a duplicate IRAS ID is found, returns the StartProject view with errors.
-    /// If the application is created successfully, redirects to the Questionnaire Resume action.
-    /// Otherwise, returns a service error view.
+    /// If validation fails or a duplicate IRAS ID is found, returns the StartProject view with
+    /// errors. If the application is created successfully, redirects to the Questionnaire Resume
+    /// action. Otherwise, returns a service error view.
     /// </returns>
     [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Create)]
     [HttpPost]
@@ -162,8 +162,7 @@ public class ApplicationController
         // if we have sections then grab the first section
         var sections = questionSetResponse.Content?.Sections ?? [];
 
-        // section shouldn't be null here, this is a defensive
-        // check
+        // section shouldn't be null here, this is a defensive check
         if (sections is { Count: 0 })
         {
             return this.ServiceError(new ServiceResponse
@@ -311,7 +310,11 @@ public class ApplicationController
             }
             TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
             TempData.TryAdd(TempDataKeys.PlannedProjectEndDate, plannedProjectEndDate.ToString("dd MMMM yyyy"));
-            return RedirectToAction(nameof(CloseProject), new { projectRecordId = model.ProjectRecordId });
+            TempData.TryAdd(TempDataKeys.ProjectClosureDateDay, model.ActualClosureDateDay);
+            TempData.TryAdd(TempDataKeys.ProjectClosureDateMonth, model.ActualClosureDateMonth);
+            TempData.TryAdd(TempDataKeys.ProjectClosureDateYear, model.ActualClosureDateYear);
+
+            return RedirectToAction(nameof(CloseProject), new { projectRecordId = model.ProjectRecordId, });
         }
 
         // Get respondent information from the current context
@@ -326,7 +329,7 @@ public class ApplicationController
             TransactionId = ProjectClosureStatus.TransactionIdPrefix + model.IrasId + separator,
             ProjectRecordId = model.ProjectRecordId,
             IrasId = model.IrasId,
-            ClosureDate = model.ActualClosureDate.Date,
+            ClosureDate = model.ActualClosureDate,
             DateActioned = model.DateActioned,
             SentToSponsorDate = DateTime.UtcNow,
             ShortProjectTitle = model.ShortProjectTitle,
@@ -371,6 +374,9 @@ public class ApplicationController
     {
         var IrasId = TempData.Peek(TempDataKeys.IrasId) as int?;
         var shortProjectTitle = TempData.Peek(TempDataKeys.ShortProjectTitle);
+        var projectClosureDateDay = TempData.Peek(TempDataKeys.ProjectClosureDateDay);
+        var projectClosureDateMonth = TempData.Peek(TempDataKeys.ProjectClosureDateMonth);
+        var projectClosureDateYear = TempData.Peek(TempDataKeys.ProjectClosureDateYear);
 
         var modificationsResponse = await projectModificationsService.GetModificationsForProject(projectRecordId, new ModificationSearchRequest());
 
@@ -383,8 +389,13 @@ public class ApplicationController
         {
             ProjectRecordId = projectRecordId,
             IrasId = IrasId,
-            ShortProjectTitle = shortProjectTitle.ToString()
+            ShortProjectTitle = shortProjectTitle?.ToString(),
+            ActualClosureDateDay = projectClosureDateDay?.ToString(),
+            ActualClosureDateMonth = projectClosureDateMonth?.ToString(),
+            ActualClosureDateYear = projectClosureDateYear?.ToString(),
         };
+
+        // FOR MONDAY THIS ISN'T POSTING BACK SPEAK TO ATUL
 
         if (isInTransactionState)
         {

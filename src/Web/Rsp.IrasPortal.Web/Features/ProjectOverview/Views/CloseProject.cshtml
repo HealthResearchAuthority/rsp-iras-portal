@@ -56,21 +56,22 @@
         </div>
         <br />
         <div class="govuk-grid-row">
-            <div class="govuk-grid-column-two-thirds" error-class-for="ActualClosureDate.Date">
                 <p> Actual project closure date  </p>
-                @Html.ValidationMessage("ActualClosureDate.Date", new { @class = "govuk-error-message" })
                 <fieldset class="govuk-fieldset">
                     <rsp-gds-date-input asp-for="ActualClosureDate"
-                                        day-name="ActualClosureDate.Day"
-                                        day-value="@Model.ActualClosureDate?.Day"
-                                        month-name="ActualClosureDate.Month"
-                                        month-value="@Model.ActualClosureDate?.Month"
-                                        year-name="ActualClosureDate.Year"
-                                        year-value="@Model.ActualClosureDate?.Year"
-                                        hint-html="For example, 28 February 2023" error-key="ActualClosureDate_Date" id="ActualClosureDate_Date"
+                                        day-name="ActualClosureDateDay"
+                                        day-value="@Model.ActualClosureDateDay"
+                                        month-name="ActualClosureDateMonth"
+                                        month-value="@Model.ActualClosureDateMonth"
+                                        year-name="ActualClosureDateYear"
+                                        year-value="@Model.ActualClosureDateYear"
+                                        hint-html="For example, 28 February 2023"
+                                        error-key="ActualClosureDate"
+                                        id="ActualClosureDate"
                                         label-html-class="font-weight-none" />
+
                 </fieldset>
-            </div>
+            
         </div>
         <br />
         <div class="govuk-grid-row">

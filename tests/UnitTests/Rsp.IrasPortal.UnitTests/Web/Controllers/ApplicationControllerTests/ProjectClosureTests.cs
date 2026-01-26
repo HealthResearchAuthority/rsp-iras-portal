@@ -289,6 +289,8 @@ public class ProjectClosureTests : TestServiceBase<ApplicationController>
         ShortProjectTitle = "Test",
         Status = "With sponsor",
         SentToSponsorDate = DateTime.UtcNow,
-        ActualClosureDate = new DateViewModel() { Day = "01", Month = "01", Year = "2026" }
+        ActualClosureDateDay = "01",
+        ActualClosureDateMonth = "01",
+        ActualClosureDateYear = "2026"
     };
 }
