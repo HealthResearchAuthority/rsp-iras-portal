@@ -395,8 +395,6 @@ public class ApplicationController
             ActualClosureDateYear = projectClosureDateYear?.ToString(),
         };
 
-        // FOR MONDAY THIS ISN'T POSTING BACK SPEAK TO ATUL
-
         if (isInTransactionState)
         {
             return View("/Features/ProjectOverview/Views/ValidateProjectClosure.cshtml", model);
