@@ -81,4 +81,6 @@ public struct TempDataKeys
     public const string ProjectClosureDateDay = "td:project_closure_date_day";
     public const string ProjectClosureDateMonth = "td:project_closure_date_month";
     public const string ProjectClosureDateYear = "td:project_closure_date_year";
+    public const string ProjectRecordStatus = "td:project_record_status";
+    public const string ProjectClosureEndDate = "td:project_closure_end_date";
 }

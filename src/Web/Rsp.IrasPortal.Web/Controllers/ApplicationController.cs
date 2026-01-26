@@ -300,6 +300,13 @@ public class ApplicationController
     [HttpPost]
     public async Task<IActionResult> ConfirmProjectClosure(ProjectClosuresModel model, DateTime plannedProjectEndDate, string separator = "/")
     {
+        var status = TempData[TempDataKeys.ProjectRecordStatus];
+
+        if (status is ProjectRecordStatus.PendingClosure)
+        {
+            return View("/Features/ProjectOverview/Views/ConfirmProjectClosure.cshtml", model);
+        }
+
         var validationResult = await closureValidator.ValidateAsync(model);
 
         if (!validationResult.IsValid)
@@ -372,11 +379,9 @@ public class ApplicationController
     [HttpGet]
     public async Task<IActionResult> CloseProject(string projectRecordId)
     {
-        var IrasId = TempData.Peek(TempDataKeys.IrasId) as int?;
-        var shortProjectTitle = TempData.Peek(TempDataKeys.ShortProjectTitle);
-        var projectClosureDateDay = TempData.Peek(TempDataKeys.ProjectClosureDateDay);
-        var projectClosureDateMonth = TempData.Peek(TempDataKeys.ProjectClosureDateMonth);
-        var projectClosureDateYear = TempData.Peek(TempDataKeys.ProjectClosureDateYear);
+        var IrasId = TempData[TempDataKeys.IrasId];
+
+        var shortProjectTitle = TempData[TempDataKeys.ShortProjectTitle];
 
         var modificationsResponse = await projectModificationsService.GetModificationsForProject(projectRecordId, new ModificationSearchRequest());
 
@@ -388,11 +393,8 @@ public class ApplicationController
         var model = new ProjectClosuresModel
         {
             ProjectRecordId = projectRecordId,
-            IrasId = IrasId,
-            ShortProjectTitle = shortProjectTitle?.ToString(),
-            ActualClosureDateDay = projectClosureDateDay?.ToString(),
-            ActualClosureDateMonth = projectClosureDateMonth?.ToString(),
-            ActualClosureDateYear = projectClosureDateYear?.ToString(),
+            IrasId = (int)IrasId,
+            ShortProjectTitle = shortProjectTitle.ToString()
         };
 
         if (isInTransactionState)
@@ -401,6 +403,8 @@ public class ApplicationController
         }
         else
         {
+            var plannedProjectEndDate = HttpContext.Session.GetString(TempDataKeys.PlannedProjectEndDate);
+            TempData.TryAdd(TempDataKeys.PlannedProjectEndDate, plannedProjectEndDate);
             return View("/Features/ProjectOverview/Views/CloseProject.cshtml", model);
         }
     }
