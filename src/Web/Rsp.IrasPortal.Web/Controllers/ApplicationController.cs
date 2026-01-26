@@ -315,7 +315,6 @@ public class ApplicationController
             }
             TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
 
-
             return RedirectToAction(nameof(CloseProject), new { projectRecordId = model.ProjectRecordId, });
         }
 

@@ -1,11 +1,12 @@
 ﻿@using Rsp.Portal.Web.Features.Modifications.Models
 @using Rsp.Portal.Application.Constants
 @using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@model Rsp.Portal.Web.Models.ProjectClosuresModel
 @*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
-    ViewBag.Title = $"Closure sent to sponsor";
+    ViewBag.Title = $"Close project Confirmation - Make changes to research - Plan and manage healthcare research";
 
     var projectRecordId = TempData[TempDataKeys.ProjectRecordId];
 
@@ -20,7 +21,12 @@
 
     var headline = pageContent.GetValueOrDefault("Application.ConfirmProjectClosure.Title", null);
     var body = pageContent.GetValueOrDefault("Application.ConfirmProjectClosure.Body", null);
+
+    TempData[TempDataKeys.ProjectRecordStatus] = ProjectRecordStatus.PendingClosure;
+    TempData[TempDataKeys.IrasId] = Model.IrasId;
+    TempData[TempDataKeys.ShortProjectTitle] = Model.ShortProjectTitle;
 }
+
 <div class="govuk-width-container">
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
