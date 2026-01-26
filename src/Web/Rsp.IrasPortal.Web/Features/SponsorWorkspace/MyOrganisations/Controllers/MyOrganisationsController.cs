@@ -718,12 +718,21 @@ public class MyOrganisationsController(
             return this.ServiceError(response);
         }
 
-        var updateRole = await userService.UpdateRoles(user.Email, $"{Roles.Sponsor},{Roles.OrganisationAdministrator}",
-            role == "Sponsor" ? Roles.Sponsor : Roles.OrganisationAdministrator);
+        // Update roles
+        var roleToAdd = role.Equals(
+            Roles.OrganisationAdministrator,
+            StringComparison.OrdinalIgnoreCase)
+            ? Roles.OrganisationAdministrator
+            : Roles.Sponsor;
 
-        if (!updateRole.IsSuccessStatusCode)
+        var roleToRemove = roleToAdd == Roles.OrganisationAdministrator
+            ? Roles.Sponsor
+            : Roles.OrganisationAdministrator;
+
+        var userRolesUpdateResponse = await userService.UpdateRoles(user.Email, roleToRemove, roleToAdd);
+        if (!userRolesUpdateResponse.IsSuccessStatusCode)
         {
-            return this.ServiceError(updateRole);
+            return this.ServiceError(userRolesUpdateResponse);
         }
 
         TempData[TempDataKeys.ShowNotificationBanner] = true;
