@@ -1141,3 +1141,22 @@ button.govuk-pagination__item--current {
     overflow-wrap: anywhere;
     word-break: break-word;
 }
+
+/* GOV.UK tablet breakpoint is 641px */
+.project-status--mobile {
+    display: block;
+}
+
+.project-status--desktop {
+    display: none;
+}
+
+@media (min-width: 40.0625em) {
+    .project-status--mobile {
+        display: none;
+    }
+
+    .project-status--desktop {
+        display: block;
+    }
+}

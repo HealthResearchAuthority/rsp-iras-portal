@@ -1,4 +1,4 @@
-﻿@charset "UTF-8";
+@charset "UTF-8";
 @import url("govuk-frontend.min.css");
 .govuk-form-group.questions {
   border: solid 1px lightgrey;
@@ -1089,3 +1089,23 @@ button.govuk-pagination__item--current {
   overflow-wrap: anywhere;
   word-break: break-word;
 }
+
+/* GOV.UK tablet breakpoint is 641px */
+.project-status--mobile {
+  display: block;
+}
+
+.project-status--desktop {
+  display: none;
+}
+
+@media (min-width: 40.0625em) {
+  .project-status--mobile {
+    display: none;
+  }
+  .project-status--desktop {
+    display: block;
+  }
+}
+
+/*# sourceMappingURL=main.css.map */
