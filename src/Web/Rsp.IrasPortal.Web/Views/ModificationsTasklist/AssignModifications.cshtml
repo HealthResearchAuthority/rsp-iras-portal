@@ -1,5 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Http.Extensions
 @using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
 @using Rsp.Portal.Domain.Identity
 @model (List<ModificationsModel> Modifications, IEnumerable<User> Reviewers)
 
@@ -7,6 +8,15 @@
     ViewData["Title"] = "Select a reviewer - Modifications ready to assign - Modifications - Approvals - System Administration";
 	TempData[TempDataKeys.ProjectModification.LinkBackToReferrer] = true;
 	TempData[TempDataKeys.ProjectModification.UrlReferrer] = Context.Request.GetDisplayUrl();
+
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData != null
+        ? pageContentData
+        : new Dictionary<string, MixedContentPageItem?>();
+
+    var headline = pageContent.GetValueOrDefault("ModificationsTaskList.Assignmodifications.Heading", null);
+    var title = pageContent.GetValueOrDefault("ModificationsTaskList.Assignmodifications.Title", null);
+    var titleHint = pageContent.GetValueOrDefault("ModificationsTaskList.Assignmodifications.HintText", null);
 }
 
 @{
@@ -33,7 +43,7 @@
 	<partial name="_BackNavigation" model="@("tasklist:index", "Back", backParams)" />
 }
 
-<h1 class="govuk-heading-l">Select a reviewer</h1>
+<h1 class="govuk-heading-l">@Html.Raw(headline?.Value)</h1>
 
 <form method="post" asp-action="AssignModifications">
     <table class="govuk-table">
@@ -72,10 +82,10 @@
 
     <div class="govuk-form-group">
         <label class="govuk-heading-m" for="reviewer">
-			Study-wide reviewer to assign the modifications to
+            @Html.Raw(title?.Value)
         </label>
         <div id="reviewer-hint" class="govuk-hint">
-            Select one reviewer
+            @Html.Raw(titleHint?.Value)
         </div>
         <select class="govuk-select" id="reviewer" name="ReviewerId" aria-describedby="reviewer-hint">
             @foreach (var reviewer in Model.Reviewers)
