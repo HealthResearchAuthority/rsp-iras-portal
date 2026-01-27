@@ -300,6 +300,11 @@ public class ApplicationController
     [HttpPost]
     public async Task<IActionResult> ConfirmProjectClosure(ProjectClosuresModel model, DateTime plannedProjectEndDate, string separator = "/")
     {
+        TempData.TryAdd(TempDataKeys.PlannedProjectEndDate, plannedProjectEndDate.ToString("dd MMMM yyyy"));
+        TempData.TryAdd(TempDataKeys.ProjectClosureDateDay, model.ActualClosureDateDay);
+        TempData.TryAdd(TempDataKeys.ProjectClosureDateMonth, model.ActualClosureDateMonth);
+        TempData.TryAdd(TempDataKeys.ProjectClosureDateYear, model.ActualClosureDateYear);
+
         var validationResult = await closureValidator.ValidateAsync(model);
 
         if (!validationResult.IsValid)
@@ -309,10 +314,7 @@ public class ApplicationController
                 ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
             }
             TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
-            TempData.TryAdd(TempDataKeys.PlannedProjectEndDate, plannedProjectEndDate.ToString("dd MMMM yyyy"));
-            TempData.TryAdd(TempDataKeys.ProjectClosureDateDay, model.ActualClosureDateDay);
-            TempData.TryAdd(TempDataKeys.ProjectClosureDateMonth, model.ActualClosureDateMonth);
-            TempData.TryAdd(TempDataKeys.ProjectClosureDateYear, model.ActualClosureDateYear);
+
 
             return RedirectToAction(nameof(CloseProject), new { projectRecordId = model.ProjectRecordId, });
         }

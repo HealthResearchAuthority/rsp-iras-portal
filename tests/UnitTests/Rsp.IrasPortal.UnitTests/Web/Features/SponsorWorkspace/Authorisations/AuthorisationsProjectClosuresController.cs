@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using AutoFixture;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
@@ -226,6 +227,15 @@ public class AuthorisationsProjectClosuresControllerTests
             shortTitleAnswer
         );
 
+        var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
+        sponsorOrganisationService
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new SponsorOrganisationUserDto { Id = Guid.NewGuid() }
+            });
+
         // Act
         var result = await Sut.CheckAndAuthoriseProjectClosure(projectRecordId, _sponsorOrganisationUserId);
 
@@ -243,6 +253,38 @@ public class AuthorisationsProjectClosuresControllerTests
 
         model.ActualEndDate.ShouldBe(DateHelper.ConvertDateToString(expectedActual)); // builder robi podwójny Convert
         model.PlannedEndDate.ShouldBe(expectedPlanned);
+    }
+
+    [Fact]
+    public async Task CheckAndAuthoriseProjectClosure_Returns_ServiceError_When_SponsorOrganisationUser_Fails()
+    {
+        // Arrange
+        var projectRecordId = Guid.NewGuid().ToString();
+        var irasId = 123456;
+        var closureDate = new DateTime(2025, 01, 10);
+        var plannedEndDateAnswer = "2025-02-20";
+        var shortTitleAnswer = "abc";
+
+        ArrangeBuilderSuccess(
+            projectRecordId,
+            irasId,
+            closureDate,
+            plannedEndDateAnswer,
+            shortTitleAnswer
+        );
+
+        var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
+        sponsorOrganisationService
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>()
+                .WithError("Service fail")
+                .WithStatus(HttpStatusCode.InternalServerError));
+
+        // Act
+        var result = await Sut.CheckAndAuthoriseProjectClosure(projectRecordId, _sponsorOrganisationUserId);
+        // Assert:
+        var objectResult = result.ShouldBeOfType<StatusCodeResult>();
+        objectResult.StatusCode.ShouldBe((int)HttpStatusCode.InternalServerError);
     }
 
     [Theory]
@@ -505,5 +547,152 @@ public class AuthorisationsProjectClosuresControllerTests
         var view = result.ShouldBeOfType<ViewResult>();
         var vm = view.Model.ShouldBeAssignableTo<AuthoriseProjectClosuresOutcomeViewModel>();
         vm.ShouldBe(model);
+    }
+
+    [Theory]
+    [ThreeItemsAutoData]
+    public async Task ProjectClosures_Sorts_By_UserEmail_And_Paginates_Locally_Success(
+    ProjectClosuresSearchResponse closuresResponse,
+    List<User> users)
+    {
+        users = users.Take(3).ToList();
+
+        var usersFixed = new List<User>
+        {
+            users[0] with { Email = "bbb@example.com" },
+            users[1] with { Email = "aaa@example.com" },
+            users[2] with { Email = "ccc@example.com" }
+        };
+
+        var closuresList = closuresResponse.ProjectClosures.Take(3).ToList();
+        closuresList[0].UserId = usersFixed[0].Id;
+        closuresList[1].UserId = usersFixed[1].Id;
+        closuresList[2].UserId = usersFixed[2].Id;
+
+        closuresResponse.TotalCount = 3;
+
+        var serviceResponse = new ServiceResponse<ProjectClosuresSearchResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = closuresResponse
+        };
+
+        // SortField == UserEmail
+        Mocker.GetMock<IProjectClosuresService>()
+            .Setup(s => s.GetProjectClosuresBySponsorOrganisationUserIdWithoutPaging(
+                _sponsorOrganisationUserId,
+                It.IsAny<ProjectClosuresSearchRequest>()))
+            .ReturnsAsync(serviceResponse);
+
+        var usersResponse = new ServiceResponse<UsersResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new UsersResponse { Users = usersFixed }
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUsersByIds(
+                It.IsAny<IEnumerable<string>>(),
+                null,
+                1,
+                It.IsAny<int>()))
+            .ReturnsAsync(usersResponse);
+
+        // --- Act ---
+        var result = await Sut.ProjectClosures(
+            sponsorOrganisationUserId: _sponsorOrganisationUserId,
+            pageNumber: 1,
+            pageSize: 2,
+            sortField: nameof(ProjectClosuresModel.UserEmail),
+            sortDirection: SortDirections.Ascending);
+
+        // --- Assert ---
+        var view = result.ShouldBeOfType<ViewResult>();
+        var model = view.Model.ShouldBeAssignableTo<ProjectClosuresViewModel>();
+
+        var list = model.ProjectRecords.ToList();
+
+        list.Count.ShouldBe(2);
+        list[0].UserEmail.ShouldBe("aaa@example.com");
+        list[1].UserEmail.ShouldBe("bbb@example.com");
+
+        model.Pagination.SortField.ShouldBe(nameof(ProjectClosuresModel.UserEmail));
+        model.Pagination.SortDirection.ShouldBe(SortDirections.Ascending);
+
+        Mocker.GetMock<IProjectClosuresService>()
+                .Verify(s => s.GetProjectClosuresBySponsorOrganisationUserIdWithoutPaging(
+                    _sponsorOrganisationUserId, It.IsAny<ProjectClosuresSearchRequest>()),
+                    Times.Once);
+
+        Mocker.GetMock<IProjectClosuresService>()
+            .Verify(s => s.GetProjectClosuresBySponsorOrganisationUserId(
+                It.IsAny<Guid>(),
+                It.IsAny<ProjectClosuresSearchRequest>(),
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<string>()),
+                Times.Never);
+    }
+
+    [Theory]
+    [AutoData]
+    public async Task ProjectClosures_Sort_By_UserEmail_Returns_BadRequest_When_PageNumber_Is_Zero(
+        ProjectClosuresSearchResponse closuresResponse,
+        List<User> users)
+    {
+        // Arrange
+        var serviceResponse = new ServiceResponse<ProjectClosuresSearchResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = closuresResponse
+        };
+
+        Mocker.GetMock<IProjectClosuresService>()
+            .Setup(s => s.GetProjectClosuresBySponsorOrganisationUserIdWithoutPaging(
+                _sponsorOrganisationUserId, It.IsAny<ProjectClosuresSearchRequest>()))
+            .ReturnsAsync(serviceResponse);
+
+        var usersResponse = new ServiceResponse<UsersResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new UsersResponse { Users = users }
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUsersByIds(
+                It.IsAny<IEnumerable<string>>(),
+                null,
+                1,
+                It.IsAny<int>()))
+            .ReturnsAsync(usersResponse);
+
+        // Act: pageNumber=0, sortField=UserEmail
+        var result = await Sut.ProjectClosures(
+            sponsorOrganisationUserId: _sponsorOrganisationUserId,
+            pageNumber: 0,
+            pageSize: 20,
+            sortField: nameof(ProjectClosuresModel.UserEmail),
+            sortDirection: SortDirections.Descending);
+
+        // Assert
+        var objectResult = result.ShouldBeOfType<StatusCodeResult>();
+        objectResult.StatusCode.ShouldBe((int)HttpStatusCode.BadRequest);
+    }
+}
+
+/// <summary>
+/// Forces auto data to generate 3 mock items
+/// </summary>
+public class ThreeItemsAutoDataAttribute : AutoDataAttribute
+{
+    public ThreeItemsAutoDataAttribute()
+        : base(() =>
+        {
+            var f = new Fixture();
+            f.RepeatCount = 3;
+            return f;
+        })
+    {
     }
 }

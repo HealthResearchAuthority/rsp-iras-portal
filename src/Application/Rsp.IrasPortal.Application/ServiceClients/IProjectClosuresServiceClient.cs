@@ -59,5 +59,17 @@ public interface IProjectClosuresServiceClient
     /// <returns>An API response indicating the result of the operation.</returns>
     [Patch("/projectclosure/updateprojectclosurestatus")]
     public Task<IApiResponse> UpdateProjectClosureStatus(string projectRecordId, string status);
-    
+
+    /// <summary>
+    /// Gets project closures records for specific sponsorOrganisationUserId with filtering, but without pagination
+    /// </summary>
+    /// <param name="sponsorOrganisationUserId">The unique identifier of the sponsor organisation user for which project closures are requested.</param>
+    /// <param name="searchQuery">Object containing filtering criteria for project closures.</param>
+    /// <returns>Returns a collection of project closures.</returns>
+    [Post("/projectclosure/getprojectclosuresbysponsororganisationuseridwithoutpaging")]
+    public Task<ApiResponse<ProjectClosuresSearchResponse>> GetProjectClosuresBySponsorOrganisationUserIdWithoutPaging
+    (
+        Guid sponsorOrganisationUserId,
+        [Body] ProjectClosuresSearchRequest searchQuery
+    );
 }
