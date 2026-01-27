@@ -24,20 +24,9 @@ public class ProjectClosuresModelValidator : AbstractValidator<ProjectClosuresMo
                 if (dayEmpty || monthEmpty || yearEmpty)
                 {
                     var missing = new List<string>();
-                    if (dayEmpty)
-                    {
-                        missing.Add("day");
-                    }
-
-                    if (monthEmpty)
-                    {
-                        missing.Add("month");
-                    }
-
-                    if (yearEmpty)
-                    {
-                        missing.Add("year");
-                    }
+                    if (dayEmpty) missing.Add("day");
+                    if (monthEmpty) missing.Add("month");
+                    if (yearEmpty) missing.Add("year");
 
                     var partsText = missing.Count switch
                     {
@@ -54,7 +43,7 @@ public class ProjectClosuresModelValidator : AbstractValidator<ProjectClosuresMo
                 if (!int.TryParse(model.ActualClosureDateDay, out var day) ||
                     !int.TryParse(model.ActualClosureDateMonth, out var month) ||
                     !int.TryParse(model.ActualClosureDateYear, out var year) ||
-                    year < 1 || year > 9999 ||
+                    year < 1900 || year > 2100 ||
                     month < 1 || month > 12 ||
                     day < 1 || day > DateTime.DaysInMonth(year, month))
                 {
