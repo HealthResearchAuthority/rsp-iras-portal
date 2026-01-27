@@ -31,6 +31,7 @@ public class AuthorisationsProjectClosuresController
     ICmsQuestionsetService cmsQuestionsetService,
     IProjectClosuresService projectClosuresService,
     IUserManagementService userManagementService,
+    ISponsorOrganisationService sponsorOrganisationService,
     IValidator<ProjectClosuresSearchModel> searchValidator
 ) : Controller
 {
@@ -269,6 +270,16 @@ public class AuthorisationsProjectClosuresController
         {
             return result;
         }
+
+        var sponsorOrganisationUser =
+            await sponsorOrganisationService.GetSponsorOrganisationUser(sponsorOrganisationUserId);
+
+        if (!sponsorOrganisationUser.IsSuccessStatusCode)
+        {
+            return this.ServiceError(sponsorOrganisationUser);
+        }
+
+        TempData[TempDataKeys.IsAuthoriser] = sponsorOrganisationUser.Content!.IsAuthoriser;
 
         return View(outcome.Value);
     }

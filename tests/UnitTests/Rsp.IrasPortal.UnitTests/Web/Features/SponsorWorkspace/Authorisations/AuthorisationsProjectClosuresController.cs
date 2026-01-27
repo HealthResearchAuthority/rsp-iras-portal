@@ -227,6 +227,15 @@ public class AuthorisationsProjectClosuresControllerTests
             shortTitleAnswer
         );
 
+        var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
+        sponsorOrganisationService
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new SponsorOrganisationUserDto { Id = Guid.NewGuid() }
+            });
+
         // Act
         var result = await Sut.CheckAndAuthoriseProjectClosure(projectRecordId, _sponsorOrganisationUserId);
 
@@ -244,6 +253,38 @@ public class AuthorisationsProjectClosuresControllerTests
 
         model.ActualEndDate.ShouldBe(DateHelper.ConvertDateToString(expectedActual)); // builder robi podwójny Convert
         model.PlannedEndDate.ShouldBe(expectedPlanned);
+    }
+
+    [Fact]
+    public async Task CheckAndAuthoriseProjectClosure_Returns_ServiceError_When_SponsorOrganisationUser_Fails()
+    {
+        // Arrange
+        var projectRecordId = Guid.NewGuid().ToString();
+        var irasId = 123456;
+        var closureDate = new DateTime(2025, 01, 10);
+        var plannedEndDateAnswer = "2025-02-20";
+        var shortTitleAnswer = "abc";
+
+        ArrangeBuilderSuccess(
+            projectRecordId,
+            irasId,
+            closureDate,
+            plannedEndDateAnswer,
+            shortTitleAnswer
+        );
+
+        var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
+        sponsorOrganisationService
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>()
+                .WithError("Service fail")
+                .WithStatus(HttpStatusCode.InternalServerError));
+
+        // Act
+        var result = await Sut.CheckAndAuthoriseProjectClosure(projectRecordId, _sponsorOrganisationUserId);
+        // Assert:
+        var objectResult = result.ShouldBeOfType<StatusCodeResult>();
+        objectResult.StatusCode.ShouldBe((int)HttpStatusCode.InternalServerError);
     }
 
     [Theory]
