@@ -184,16 +184,16 @@
 {
 	<div class="govuk-grid-row">
 		<div class="govuk-grid-column-two-thirds">
-			<h2 class="govuk-heading-m">Disable this user record</h2>
+			<h2 class="govuk-heading-m">Disable user from this sponsor organisation</h2>
 			<div class="govuk-hint">
-				Disabling a user record will lock their account and can be reversed
+                Disabling this user will stop them from working under this sponsor organisation and can be reversed.
 			</div>
 			<form method="get">
 				<input name="userId" value="@Model.UserId" hidden />
 				<input name="rtsId" value="@Model.RtsId" hidden />
 				<input name="email" value="@Model.Email" hidden />
 				<button asp-route="sws:DisableUser" type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
-					Disable user record
+					Disable user
 				</button>
 			</form>
 		</div>
@@ -203,16 +203,16 @@ else if (Model.Status.Equals(IrasUserStatus.Disabled, StringComparison.Invariant
 {
 	<div class="govuk-grid-row">
 		<div class="govuk-grid-column-two-thirds">
-			<h2 class="govuk-heading-m">Enable this user record</h2>
+			<h2 class="govuk-heading-m">Enable user for this sponsor organisation</h2>
 			<div class="govuk-hint">
-				Enabling a user record will unlock their account
+                Enabling this user will allow them to work under this sponsor organisation and can be reversed.
 			</div>
 			<form method="get">
 				<input name="userId" value="@Model.UserId" hidden />
 				<input name="rtsId" value="@Model.RtsId" hidden />
 				<input name="email" value="@Model.Email" hidden />
 				<button asp-route="sws:EnableUser" type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
-					Enable user record
+					Enable user
 				</button>
 			</form>
 		</div>
