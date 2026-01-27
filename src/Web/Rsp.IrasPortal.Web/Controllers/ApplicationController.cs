@@ -361,7 +361,7 @@ public class ApplicationController
 
         TempData[TempDataKeys.ShowCloseProjectBanner] = true;
 
-        return View("/Features/ProjectOverview/Views/ConfirmProjectClosure.cshtml", model);
+        return RedirectToAction(nameof(ProjectClosure));
     }
 
     /// <summary>
@@ -402,9 +402,18 @@ public class ApplicationController
         }
         else
         {
-            var plannedProjectEndDate = HttpContext.Session.GetString(TempDataKeys.PlannedProjectEndDate);
-            TempData.TryAdd(TempDataKeys.PlannedProjectEndDate, plannedProjectEndDate);
             return View("/Features/ProjectOverview/Views/CloseProject.cshtml", model);
         }
+    }
+
+    /// <summary>
+    /// Project Closure
+    /// </summary>
+    /// <returns></returns>
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Close)]
+    [HttpGet]
+    public IActionResult ProjectClosure()
+    {
+        return View("/Features/ProjectOverview/Views/ConfirmProjectClosure.cshtml");
     }
 }

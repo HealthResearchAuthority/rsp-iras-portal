@@ -6,14 +6,11 @@
 @inject IHttpContextAccessor httpContextAccessor
 
 @{
-    ViewBag.Title = "Close project - Make changes to research - Plan and manage healthcare research";
+    ViewBag.Title = "Close project - Make changes to research";
     // Title used in the validation error summary
     var errorSummaryTitle = "There is a problem";
 
-    //var plannedProjectEndDate = TempData[TempDataKeys.PlannedProjectEndDate];
     var plannedProjectEndDate = TempData.Peek(TempDataKeys.PlannedProjectEndDate) as string;
-    if (plannedProjectEndDate is not null)
-        httpContextAccessor?.HttpContext?.Session.SetString(TempDataKeys.PlannedProjectEndDate, plannedProjectEndDate);
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null
@@ -62,6 +59,7 @@
         </div>
         <br />
         <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
                 <p> Actual project closure date  </p>
                 <fieldset class="govuk-fieldset">
                     <rsp-gds-date-input asp-for="ActualClosureDate"
@@ -75,11 +73,9 @@
                                         error-key="ActualClosureDate"
                                         id="ActualClosureDate"
                                         label-html-class="font-weight-none" />
-
                 </fieldset>
-            
+            </div>
         </div>
-        <br />
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
                 <p>
@@ -87,6 +83,7 @@
                 </p>
             </div>
         </div>
+
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
                 <p>
