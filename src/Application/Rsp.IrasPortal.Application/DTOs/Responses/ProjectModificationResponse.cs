@@ -31,6 +31,16 @@ public record ProjectModificationResponse
     public string Status { get; set; } = null!;
 
     /// <summary>
+    /// The reason for rejecting approval.
+    /// </summary>
+    public string? ReasonNotApproved { get; set; } = null!;
+
+    /// <summary>
+    /// The reviewer comments.
+    /// </summary>
+    public string? ReviewerComments { get; set; } = null!;
+
+    /// <summary>
     /// The user ID of the person who created the modification.
     /// </summary>
     public string CreatedBy { get; set; } = null!;
