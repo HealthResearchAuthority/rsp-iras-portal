@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Filters;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
@@ -59,9 +60,18 @@ public class AuthorisationsProjectClosuresController
             SearchTerm = model.Search.SearchTerm
         };
 
-        var projectClosuresServiceResponse =
-            await projectClosuresService.GetProjectClosuresBySponsorOrganisationUserId(sponsorOrganisationUserId,
-                searchQuery, pageNumber, pageSize, sortField, sortDirection);
+        ServiceResponse<ProjectClosuresSearchResponse> projectClosuresServiceResponse;
+        // for sorting by User Email - paging and sorting takes place in Portal
+        if (sortField == nameof(ProjectClosuresModel.UserEmail))
+        {
+            projectClosuresServiceResponse = await projectClosuresService.GetProjectClosuresBySponsorOrganisationUserIdWithoutPaging(
+                sponsorOrganisationUserId, searchQuery);
+        }
+        else
+        {
+            projectClosuresServiceResponse = await projectClosuresService.GetProjectClosuresBySponsorOrganisationUserId(
+                sponsorOrganisationUserId, searchQuery, pageNumber, pageSize, sortField, sortDirection);
+        }
 
         model.ProjectRecords = projectClosuresServiceResponse?.Content?.ProjectClosures?
             .Select(dto => new ProjectClosuresModel
@@ -89,8 +99,40 @@ public class AuthorisationsProjectClosuresController
             pr.UserEmail = emailByUserId.TryGetValue(pr.UserId, out var email) ? email : null;
         }
 
+        if (sortField == nameof(ProjectClosuresModel.UserEmail))
+        {
+            IOrderedEnumerable<ProjectClosuresModel> ordered;
+
+            if (pageNumber <= 0 || pageSize <= 0)
+            {
+                var serviceResponse = new ServiceResponse()
+                .WithError("pageIndex and pageSize must be greater than 0")
+                .WithStatus(HttpStatusCode.BadRequest);
+
+                return this.ServiceError(serviceResponse);
+            }
+
+            if (string.Equals(sortDirection, SortDirections.Descending, StringComparison.OrdinalIgnoreCase))
+            {
+                ordered = model.ProjectRecords
+                    .OrderByDescending(x => x.UserEmail, StringComparer.OrdinalIgnoreCase)
+                    .ThenByDescending(x => x.SentToSponsorDate ?? DateTime.MinValue);
+            }
+            else
+            {
+                ordered = model.ProjectRecords
+                    .OrderBy(x => x.UserEmail, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(x => x.SentToSponsorDate ?? DateTime.MinValue);
+            }
+
+            model.ProjectRecords = ordered
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+        }
+
         model.Pagination = new PaginationViewModel(pageNumber, pageSize,
-            projectClosuresServiceResponse?.Content?.TotalCount ?? 0)
+        projectClosuresServiceResponse?.Content?.TotalCount ?? 0)
         {
             RouteName = "sws:projectclosures",
             SortDirection = sortDirection,
