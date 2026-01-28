@@ -14,7 +14,7 @@
 
 @{
 	var errorSummaryTitle = "There is a problem";
-	ViewBag.Title = "Sponsor organisation profile";
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 
 	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
 	var pageContent = pageContentData != null
