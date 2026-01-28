@@ -315,7 +315,6 @@ public class ApplicationController
             }
             TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
 
-
             return RedirectToAction(nameof(CloseProject), new { projectRecordId = model.ProjectRecordId, });
         }
 
@@ -362,7 +361,7 @@ public class ApplicationController
 
         TempData[TempDataKeys.ShowCloseProjectBanner] = true;
 
-        return View("/Features/ProjectOverview/Views/ConfirmProjectClosure.cshtml", model);
+        return RedirectToAction(nameof(ProjectClosure));
     }
 
     /// <summary>
@@ -405,5 +404,16 @@ public class ApplicationController
         {
             return View("/Features/ProjectOverview/Views/CloseProject.cshtml", model);
         }
+    }
+
+    /// <summary>
+    /// Project Closure
+    /// </summary>
+    /// <returns></returns>
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Close)]
+    [HttpGet]
+    public IActionResult ProjectClosure()
+    {
+        return View("/Features/ProjectOverview/Views/ConfirmProjectClosure.cshtml");
     }
 }

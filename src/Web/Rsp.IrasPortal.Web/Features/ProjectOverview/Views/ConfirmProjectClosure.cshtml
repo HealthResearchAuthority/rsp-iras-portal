@@ -5,22 +5,17 @@
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
-    ViewBag.Title = $"Closure sent to sponsor";
-
-    var projectRecordId = TempData[TempDataKeys.ProjectRecordId];
-
-    // this is the last stage of the modification so clear
-    // all TempData values
-    TempData.Clear();
-
+    ViewBag.Title = $"Close project Confirmation - Make changes to research";
+    var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null
         ? pageContentData
         : new Dictionary<string, MixedContentPageItem?>();
 
-    var headline = pageContent.GetValueOrDefault("Application.ConfirmProjectClosure.Title", null);
-    var body = pageContent.GetValueOrDefault("Application.ConfirmProjectClosure.Body", null);
+    var headline = pageContent.GetValueOrDefault("Application.ProjectClosure.Title", null);
+    var body = pageContent.GetValueOrDefault("Application.ProjectClosure.BodyContent", null);
 }
+
 <div class="govuk-width-container">
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">

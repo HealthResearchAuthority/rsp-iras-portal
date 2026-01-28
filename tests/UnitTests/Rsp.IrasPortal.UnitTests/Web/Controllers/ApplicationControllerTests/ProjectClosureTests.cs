@@ -229,8 +229,8 @@ public class ProjectClosureTests : TestServiceBase<ApplicationController>
         // Act
         var result = await Sut.ConfirmProjectClosure(model, plannedEndDate);
         // Assert
-        var view = Assert.IsType<ViewResult>(result);
-        view.ViewName.ShouldBe("/Features/ProjectOverview/Views/ConfirmProjectClosure.cshtml");
+        var actionResult = Assert.IsType<RedirectToActionResult>(result);
+        actionResult.ActionName.ShouldBe("ProjectClosure");
 
         Mocker.GetMock<IProjectClosuresService>().Verify(s => s.CreateProjectClosure(It.IsAny<ProjectClosureRequest>()), Times.Once);
         Mocker.GetMock<IApplicationsService>().Verify(s => s.UpdateProjectRecordStatus(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
@@ -293,4 +293,19 @@ public class ProjectClosureTests : TestServiceBase<ApplicationController>
         ActualClosureDateMonth = "01",
         ActualClosureDateYear = "2026"
     };
+
+    [Fact]
+    public void ProjectClosure_Returns_ViewResult_With_Expected_ViewPath()
+    {
+        // Arrange
+        SetupValidatorResult(new ValidationResult());
+
+        // Act
+        var result = Sut.ProjectClosure();
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.Equal("/Features/ProjectOverview/Views/ConfirmProjectClosure.cshtml", viewResult.ViewName);
+        Assert.Null(viewResult.Model);
+    }
 }
