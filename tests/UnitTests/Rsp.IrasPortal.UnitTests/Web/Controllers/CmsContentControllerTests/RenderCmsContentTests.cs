@@ -71,6 +71,9 @@ public class RenderCmsContentTests : TestServiceBase<CmsContentController>
     [Theory, AutoData]
     public async Task Return_View_When_Content_Is_Found(GenericPageResponse pageContent)
     {
+        var metaTitle = "test title";
+
+        pageContent.Properties.MetaTitle = metaTitle;
         // Arrange
         var serviceResponse = new ServiceResponse<GenericPageResponse>
         {
@@ -89,16 +92,22 @@ public class RenderCmsContentTests : TestServiceBase<CmsContentController>
         var result = await Sut.Index();
 
         // Assert
-        result.ShouldBeOfType<ViewResult>();
+        var viewResult = result.ShouldBeOfType<ViewResult>();
 
         // Verify
         Mocker.GetMock<ICmsContentService>()
             .Verify(s => s.GetPageContentByUrl(It.IsAny<string>(), false), Times.Once);
+
+        viewResult.ViewData["Title"].ShouldBe(metaTitle);
     }
 
     [Theory, AutoData]
     public async Task Return_Preview_Content_When_Flagged(GenericPageResponse pageContent)
     {
+        var pageTitle = "page title";
+        pageContent.Properties.MetaTitle = null;
+        pageContent.Name = pageTitle;
+
         // Arrange
         var serviceResponse = new ServiceResponse<GenericPageResponse>
         {
@@ -118,10 +127,12 @@ public class RenderCmsContentTests : TestServiceBase<CmsContentController>
         var result = await Sut.Index();
 
         // Assert
-        result.ShouldBeOfType<ViewResult>();
+        var viewResult = result.ShouldBeOfType<ViewResult>();
 
         // Verify
         Mocker.GetMock<ICmsContentService>()
             .Verify(s => s.GetPageContentByUrl(It.IsAny<string>(), true), Times.Once);
+
+        viewResult.ViewData["Title"].ShouldBe(pageTitle);
     }
 }
