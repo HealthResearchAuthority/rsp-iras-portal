@@ -11,13 +11,15 @@
     var routeValues = ViewData["BackRouteValues"] as Dictionary<string, string>
                       ?? new Dictionary<string, string>();
     var modificationId = Context.Request.Query["modificationId"].ToString();
+    var projectTitle = !string.IsNullOrEmpty(Model.ProjectTitle) ? Model.ProjectTitle : "Project overview";
 }
 
 @section Breadcrumb {
-    @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
-    {
-        ("My research", Url.RouteUrl("app:welcome"))
-    })
+	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+	{
+		("My research",Url.RouteUrl("app:welcome")),
+		(projectTitle, Url.RouteUrl("pov:projectdetails", new Dictionary<string, string>{{"projectRecordId", Model?.ProjectRecordId!}}))
+	})
 }
 
 @if (TempData[TempDataKeys.ShowNotificationBanner] is not null)
