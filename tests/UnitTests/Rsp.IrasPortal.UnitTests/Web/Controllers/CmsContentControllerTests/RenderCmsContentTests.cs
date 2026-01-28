@@ -72,8 +72,10 @@ public class RenderCmsContentTests : TestServiceBase<CmsContentController>
     public async Task Return_View_When_Content_Is_Found(GenericPageResponse pageContent)
     {
         var metaTitle = "test title";
+        var pageTitle = "page title";
 
         pageContent.Properties.MetaTitle = metaTitle;
+        pageContent.Name = pageTitle;
         // Arrange
         var serviceResponse = new ServiceResponse<GenericPageResponse>
         {
@@ -99,6 +101,75 @@ public class RenderCmsContentTests : TestServiceBase<CmsContentController>
             .Verify(s => s.GetPageContentByUrl(It.IsAny<string>(), false), Times.Once);
 
         viewResult.ViewData["Title"].ShouldBe(metaTitle);
+    }
+
+    [Theory, AutoData]
+    public async Task MetaTitle_RevertsToPageTitle_When_Empty(GenericPageResponse pageContent)
+    {
+        var pageTitle = "page title";
+
+        pageContent.Properties = null;
+        pageContent.Name = pageTitle;
+        // Arrange
+        var serviceResponse = new ServiceResponse<GenericPageResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = pageContent
+        };
+
+        Mocker.GetMock<ICmsContentService>()
+            .Setup(s => s.GetPageContentByUrl(It.IsAny<string>(), false))
+            .ReturnsAsync(serviceResponse);
+
+        var nonExistingUrl = "/page-does-exist/";
+        _http.Request.Path = PathString.FromUriComponent(nonExistingUrl);
+
+        // Act
+        var result = await Sut.Index();
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+
+        // Verify
+        Mocker.GetMock<ICmsContentService>()
+            .Verify(s => s.GetPageContentByUrl(It.IsAny<string>(), false), Times.Once);
+
+        viewResult.ViewData["Title"].ShouldBe(pageTitle);
+    }
+
+    [Theory, AutoData]
+    public async Task MetaTitle_RevertsToPageTitle_When_EmptyString(GenericPageResponse pageContent)
+    {
+        var pageTitle = "page title";
+        var metaTitle = "";
+
+        pageContent.Properties.MetaTitle = metaTitle;
+        pageContent.Name = pageTitle;
+        // Arrange
+        var serviceResponse = new ServiceResponse<GenericPageResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = pageContent
+        };
+
+        Mocker.GetMock<ICmsContentService>()
+            .Setup(s => s.GetPageContentByUrl(It.IsAny<string>(), false))
+            .ReturnsAsync(serviceResponse);
+
+        var nonExistingUrl = "/page-does-exist/";
+        _http.Request.Path = PathString.FromUriComponent(nonExistingUrl);
+
+        // Act
+        var result = await Sut.Index();
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+
+        // Verify
+        Mocker.GetMock<ICmsContentService>()
+            .Verify(s => s.GetPageContentByUrl(It.IsAny<string>(), false), Times.Once);
+
+        viewResult.ViewData["Title"].ShouldBe(pageTitle);
     }
 
     [Theory, AutoData]
