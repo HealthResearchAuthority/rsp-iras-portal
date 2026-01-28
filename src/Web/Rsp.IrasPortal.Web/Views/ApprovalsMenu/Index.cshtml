@@ -6,6 +6,7 @@
 }
 
 @{
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null
         ? pageContentData
