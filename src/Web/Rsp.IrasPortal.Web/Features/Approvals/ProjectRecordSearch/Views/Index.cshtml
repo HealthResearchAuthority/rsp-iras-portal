@@ -47,8 +47,6 @@
 }
 
 @{
-	ViewBag.Title = "Search - Approvals";
-
 	// this url will be used to redirect, when search button is clicked
 	var requestUrl = httpContextAccessor.HttpContext?.Request.GetEncodedUrl();
 
@@ -85,6 +83,8 @@
     var filterSponsorOrgHint = pageContent.GetValueOrDefault("Approvals.Search.AdvancedFilter.SponsorOrg.Hint", null);
 
 	var activeSponsorOrgFilter = TempData[TempDataKeys.ActiveSponsoOrganisationFilterName] as string;
+
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 }
 
 @* Filters START*@

@@ -46,7 +46,7 @@
 }
 
 @{
-    ViewBag.Title = "Search - Approvals";
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 
     // this url will be used to redirect, when search button is clicked
     var requestUrl = httpContextAccessor.HttpContext?.Request.GetEncodedUrl();

@@ -27,7 +27,9 @@ public class CmsContentController(ICmsContentService cms) : Controller
             return NotFound();
         }
 
-        ViewBag.Title = cmsPage.Content?.Name;
+        ViewBag.Title = !string.IsNullOrEmpty(cmsPage.Content?.Properties?.MetaTitle) ?
+            cmsPage.Content?.Properties.MetaTitle :
+            cmsPage.Content?.Name;
 
         return View("Index", cmsPage.Content);
     }

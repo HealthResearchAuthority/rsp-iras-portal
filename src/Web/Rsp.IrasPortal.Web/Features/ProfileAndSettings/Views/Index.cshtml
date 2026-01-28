@@ -4,7 +4,7 @@
 @model UserViewModel
 @{
     ViewBag.Active = "profileAndSettings";
-    ViewBag.Title = "Profile and settings";
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 
     var edit = !string.IsNullOrEmpty(Model.Id);
     //var editNewUserUrl = Url.RouteUrl("profilesettings:editNewUserProfile");
