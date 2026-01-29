@@ -25,7 +25,7 @@
 
 @{
     var errorSummaryTitle = "There is a problem";
-    ViewBag.Title = "My research";
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null

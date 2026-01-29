@@ -31,7 +31,7 @@
 
 @{
 	var errorSummaryTitle = "There is a problem";
-	ViewBag.Title = "Sponsor organisations profile";
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 
 	var showNoResultsMessage = !Model.ProjectRecords.Any() && Model.Search is { IrasId: not null } or { Filters.Count: > 0 };
 

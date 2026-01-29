@@ -300,11 +300,6 @@ public class ApplicationController
     [HttpPost]
     public async Task<IActionResult> ConfirmProjectClosure(ProjectClosuresModel model, DateTime plannedProjectEndDate, string separator = "/")
     {
-        TempData.TryAdd(TempDataKeys.PlannedProjectEndDate, plannedProjectEndDate.ToString("dd MMMM yyyy"));
-        TempData.TryAdd(TempDataKeys.ProjectClosureDateDay, model.ActualClosureDateDay);
-        TempData.TryAdd(TempDataKeys.ProjectClosureDateMonth, model.ActualClosureDateMonth);
-        TempData.TryAdd(TempDataKeys.ProjectClosureDateYear, model.ActualClosureDateYear);
-
         var validationResult = await closureValidator.ValidateAsync(model);
 
         if (!validationResult.IsValid)
@@ -314,8 +309,15 @@ public class ApplicationController
                 ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
             }
             TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
+            TempData.TryAdd(TempDataKeys.PlannedProjectEndDate, plannedProjectEndDate.ToString("dd MMMM yyyy"));
 
-            return RedirectToAction(nameof(CloseProject), new { projectRecordId = model.ProjectRecordId, });
+            return RedirectToAction(nameof(CloseProject), new
+            {
+                projectRecordId = model.ProjectRecordId,
+                actualClosureDateDay = model.ActualClosureDateDay,
+                actualClosureDateMonth = model.ActualClosureDateMonth,
+                actualClosureDateYear = model.ActualClosureDateYear
+            });
         }
 
         // Get respondent information from the current context
@@ -371,29 +373,32 @@ public class ApplicationController
     /// <returns></returns>
     [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Close)]
     [HttpGet]
-    public async Task<IActionResult> CloseProject(string projectRecordId)
+    public async Task<IActionResult> CloseProject(
+        string projectRecordId,
+        string? actualClosureDateDay,
+        string? actualClosureDateMonth,
+        string? actualClosureDateYear)
     {
         var IrasId = TempData.Peek(TempDataKeys.IrasId) as int?;
         var shortProjectTitle = TempData.Peek(TempDataKeys.ShortProjectTitle);
-        var projectClosureDateDay = TempData.Peek(TempDataKeys.ProjectClosureDateDay);
-        var projectClosureDateMonth = TempData.Peek(TempDataKeys.ProjectClosureDateMonth);
-        var projectClosureDateYear = TempData.Peek(TempDataKeys.ProjectClosureDateYear);
 
         var modificationsResponse = await projectModificationsService.GetModificationsForProject(projectRecordId, new ModificationSearchRequest());
 
         var isInTransactionState = modificationsResponse.Content?.Modifications?.Any(m =>
-                                m.Status is ModificationStatus.InDraft
-                                         or ModificationStatus.WithSponsor
-                                         or ModificationStatus.WithReviewBody) == true;
+            m.Status is ModificationStatus.InDraft
+                or ModificationStatus.WithSponsor
+                or ModificationStatus.WithReviewBody) == true;
 
         var model = new ProjectClosuresModel
         {
             ProjectRecordId = projectRecordId,
             IrasId = IrasId,
             ShortProjectTitle = shortProjectTitle?.ToString(),
-            ActualClosureDateDay = projectClosureDateDay?.ToString(),
-            ActualClosureDateMonth = projectClosureDateMonth?.ToString(),
-            ActualClosureDateYear = projectClosureDateYear?.ToString(),
+
+            // date fields now come from the controller parameters (querystring binding)
+            ActualClosureDateDay = actualClosureDateDay,
+            ActualClosureDateMonth = actualClosureDateMonth,
+            ActualClosureDateYear = actualClosureDateYear,
         };
 
         if (isInTransactionState)

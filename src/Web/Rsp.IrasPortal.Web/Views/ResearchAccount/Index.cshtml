@@ -5,7 +5,7 @@
 @using Rsp.Portal.Domain.AccessControl
 @model string?
 @{
-    ViewBag.Title = "My account";
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
     var showSuccessMessage = TempData[TempDataKeys.ShowNotificationBanner];
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];

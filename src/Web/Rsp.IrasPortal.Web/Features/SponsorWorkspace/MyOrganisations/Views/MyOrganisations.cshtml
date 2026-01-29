@@ -12,7 +12,7 @@
 
 @{
 	var errorSummaryTitle = "There is a problem";
-	ViewBag.Title = "My organisations";
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 
 	var sortableHeaders = new[]
 	{

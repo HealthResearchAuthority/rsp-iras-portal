@@ -17,7 +17,7 @@
 
 @{
     var errorSummaryTitle = "There is a problem";
-    ViewBag.Title = "Authorisations";
+    ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
     ViewBag.Active = SponsorAuthorisations.Modifications;
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
