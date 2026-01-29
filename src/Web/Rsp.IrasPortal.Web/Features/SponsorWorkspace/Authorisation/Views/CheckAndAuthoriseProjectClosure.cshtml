@@ -6,7 +6,7 @@
 @model Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models.AuthoriseProjectClosuresOutcomeViewModel
 
 @{
-    ViewBag.Title = "Check and authorise project closure";
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
     ViewBag.SponsorOrganisationUserId = Model.SponsorOrganisationUserId;
 
     var isAuthoriser = TempData[TempDataKeys.IsAuthoriser] as bool? ?? false;

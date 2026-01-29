@@ -6,7 +6,7 @@
 @inject IHttpContextAccessor httpContextAccessor
 
 @{
-    ViewBag.Title = "Close project - Make changes to research";
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
     // Title used in the validation error summary
     var errorSummaryTitle = "There is a problem";
 

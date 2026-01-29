@@ -78,7 +78,4 @@ public struct TempDataKeys
     public const string PreAuthProjectClosureModel = "td:pre_auth_project_closure_model";
     public const string SponsorOrganisationUser = "td:sponsor_organisation_user";
     public const string IsAuthoriser = "td:is_authoriser";
-    public const string ProjectClosureDateDay = "td:project_closure_date_day";
-    public const string ProjectClosureDateMonth = "td:project_closure_date_month";
-    public const string ProjectClosureDateYear = "td:project_closure_date_year";
 }

@@ -66,7 +66,7 @@ public class ProjectClosureTests : TestServiceBase<ApplicationController>
             });
 
         // Act
-        var result = await Sut.CloseProject(projectRecordId);
+        var result = await Sut.CloseProject(projectRecordId, "", "", "");
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -99,7 +99,7 @@ public class ProjectClosureTests : TestServiceBase<ApplicationController>
            });
 
         // Act
-        var result = await Sut.CloseProject(projectRecordId);
+        var result = await Sut.CloseProject(projectRecordId, "", "", "");
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);

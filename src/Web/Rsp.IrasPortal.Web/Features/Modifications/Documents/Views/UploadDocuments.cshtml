@@ -8,7 +8,7 @@
 
 	// If we know the specific area of change, dynamically build the page title to make the UI clearer.
 	// Otherwise, leave the title empty (will fallback to default in the view if needed).
-	ViewBag.Title = "Add supporting documents";
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 
 	var modificationParams = new Dictionary<string, string>
 	{

@@ -2,6 +2,7 @@
 
 public class MixedContentPageResponse
 {
+    public string? MetaTitle { get; set; }
     public IDictionary<string, MixedContentPageItem?> ContentItems { get; set; } = new Dictionary<string, MixedContentPageItem?>();
 }
 
