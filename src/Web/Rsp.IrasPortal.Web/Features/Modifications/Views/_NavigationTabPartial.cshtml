@@ -12,8 +12,9 @@
     // get actual query parameters
     var baseRouteParams = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
     foreach (var kv in ViewContext.RouteData.Values)
+    {
         baseRouteParams[kv.Key] = kv.Value?.ToString() ?? string.Empty;
-
+    }
     foreach (var kv in Context.Request.Query)
     {
         baseRouteParams[kv.Key] = kv.Value.ToString();
