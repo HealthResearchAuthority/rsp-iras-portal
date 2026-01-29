@@ -1,125 +1,149 @@
 ﻿@using Rsp.Portal.Application.Constants
 @model Rsp.Portal.Web.Features.Modifications.Models.ModificationDetailsViewModel
 
+
 @{
-	var queryDocuments = Context.Request.Query["documents"].ToString();
-	bool isNotOnlyApplicant = User.IsInRole(Roles.Sponsor)
-								|| User.IsInRole(Roles.StudyWideReviewer)
-								|| User.IsInRole(Roles.TeamManager)
-								|| User.IsInRole(Roles.SystemAdministrator)
-								|| User.IsInRole(Roles.OrganisationAdministrator)
-								|| User.IsInRole(Roles.WorkflowCoordinator);
+    var isBackStageUser =
+        User.IsInRole(Roles.SystemAdministrator)
+        || User.IsInRole(Roles.StudyWideReviewer)
+        || User.IsInRole(Roles.WorkflowCoordinator)
+        || User.IsInRole(Roles.TeamManager);
 
-	string activeTabId =
-		queryDocuments == ModificationOverview.Documents ? "documents-tab" :
-		isNotOnlyApplicant ? "sponsor-details-tab" : "modifications-changes-tab";
+    // get actual query parameters
+    var baseRouteParams = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    foreach (var kv in ViewContext.RouteData.Values)
+        baseRouteParams[kv.Key] = kv.Value?.ToString() ?? string.Empty;
 
+    foreach (var kv in Context.Request.Query)
+    {
+        baseRouteParams[kv.Key] = kv.Value.ToString();
+    }
+
+    // get activeTabId from query param if provided
+    var requestedTab = Context.Request.Query["activeTabId"].ToString();
+
+    if (requestedTab == ModificationOverview.Comments && !isBackStageUser)
+    {
+        Context.Response.Redirect("error/forbidden");
+        return;
+    }
+
+    // default tab when query string not provided
+    var queryDocuments = Context.Request.Query["documents"].ToString();
+    bool isNotOnlyApplicant = User.IsInRole(Roles.Sponsor)
+                                || User.IsInRole(Roles.StudyWideReviewer)
+                                || User.IsInRole(Roles.TeamManager)
+                                || User.IsInRole(Roles.SystemAdministrator)
+                                || User.IsInRole(Roles.OrganisationAdministrator)
+                                || User.IsInRole(Roles.WorkflowCoordinator);
+
+    string defaultTab =
+        queryDocuments == ModificationOverview.Documents ? ModificationOverview.Documents :
+        isNotOnlyApplicant ? ModificationOverview.SponsorDetails : ModificationOverview.ModificationDetails;
+
+    // set active tab id
+    var allowedTabs = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ModificationOverview.SponsorDetails,
+        ModificationOverview.ModificationDetails,
+        ModificationOverview.Documents,
+        ModificationOverview.History,
+        ModificationOverview.Comments
+    };
+
+    var activeTabId = (allowedTabs.Contains(requestedTab) ? requestedTab : defaultTab);
+    baseRouteParams.Remove("activeTabId");
 }
 
-<!-- Hidden controls -->
-<input type="radio"
-	   id="tab-sponsor-details"
-	   role="tab"
-	   name="tab-toggle"
-	   class="govuk-tab-toggle"
-	   aria-label="@ModificationOverview.SponsorDetails"
-@(activeTabId == "sponsor-details-tab" ? "checked" : null)>
-<input type="radio"
-	   id="tab-modifications-changes"
-	   role="tab"
-	   name="tab-toggle"
-	   class="govuk-tab-toggle"
-	   aria-label="@ModificationOverview.ModificationDetails"
-@(activeTabId == "modifications-changes-tab" ? "checked" : null)>
-<input type="radio"
-	   id="tab-documents"
-	   role="tab"
-	   name="tab-toggle"
-	   class="govuk-tab-toggle"
-	   aria-label="@ModificationOverview.Documents"
-@(activeTabId == "documents-tab" ? "checked" : null)>
-<input type="radio"
-	   id="tab-history"
-	   role="tab"
-	   name="tab-toggle"
-	   class="govuk-tab-toggle"
-	   aria-label="@ModificationOverview.History"
-@(activeTabId == "history-tab" ? "checked" : null)>
-<input type="radio"
-       id="tab-comments"
-       role="tab"
-       name="tab-toggle"
-       class="govuk-tab-toggle"
-       aria-label="@ModificationOverview.Comments"
-@(activeTabId == "comments-tab" ? "checked" : null)>
-
 <!-- Keep the same GOV.UK Service Navigation look -->
-<div class="govuk-service-navigation" aria-hidden="true">
-	<div class="govuk-width-container">
-		<div class="govuk-service-navigation__container">
-			<nav class="govuk-service-navigation__wrapper">
-				<ul class="govuk-service-navigation__list">
+<div class="govuk-service-navigation govuk-!-margin-bottom-4">
+    <div class="govuk-width-container">
+        <div class="govuk-service-navigation__container white-bg">
+            <nav class="govuk-service-navigation__wrapper">
+                <ul class="govuk-service-navigation__list">
 
-					<li class="govuk-service-navigation__item small-margin govuk-service-navigation__item--sponsor-details">
-						<label for="tab-sponsor-details" class="govuk-service-navigation__link govuk-service-navigation__link-label">
-							@ModificationOverview.SponsorDetails
-						</label>
-					</li>
-
-					<li class="govuk-service-navigation__item small-margin govuk-service-navigation__item--modifications-changes">
-						<label for="tab-modifications-changes" class="govuk-service-navigation__link govuk-service-navigation__link-label">
-							@ModificationOverview.ModificationDetails
-						</label>
-					</li>
-
-					<li class="govuk-service-navigation__item small-margin govuk-service-navigation__item--documents">
-						<label for="tab-documents" class="govuk-service-navigation__link govuk-service-navigation__link-label">
-							@ModificationOverview.Documents
-						</label>
-					</li>
-
-					<li class="govuk-service-navigation__item small-margin govuk-service-navigation__item--history">
-						<label for="tab-history" class="govuk-service-navigation__link govuk-service-navigation__link-label">
-							@ModificationOverview.History
-						</label>
-					</li>
-
-                    <li class="govuk-service-navigation__item small-margin govuk-service-navigation__item--comments">
-                        <label for="tab-comments" class="govuk-service-navigation__link govuk-service-navigation__link-label">
-                            @ModificationOverview.Comments
-                        </label>
+                    <li class="govuk-service-navigation__item small-margin @(activeTabId == ModificationOverview.SponsorDetails ? "govuk-service-navigation__item--active" : "")">
+                        <a class="govuk-service-navigation__link"
+                           asp-route=""
+                           asp-all-route-data="baseRouteParams"
+                           asp-route-activeTabId="@ModificationOverview.SponsorDetails"
+                           data-tab="@ModificationOverview.SponsorDetails">
+                            @ModificationOverview.SponsorDetails
+                        </a>
                     </li>
-				</ul>
-			</nav>
-		</div>
-	</div>
+
+                    <li class="govuk-service-navigation__item small-margin @(activeTabId == ModificationOverview.ModificationDetails ? "govuk-service-navigation__item--active" : "")">
+                        <a class="govuk-service-navigation__link"
+                           asp-route=""
+                           asp-all-route-data="baseRouteParams"
+                           asp-route-activeTabId="@ModificationOverview.ModificationDetails"
+                           data-tab="@ModificationOverview.ModificationDetails">
+                            @ModificationOverview.ModificationDetails
+                        </a>
+                    </li>
+
+                    <li class="govuk-service-navigation__item small-margin @(activeTabId == ModificationOverview.Documents ? "govuk-service-navigation__item--active" : "")">
+                        <a class="govuk-service-navigation__link"
+                           asp-route=""
+                           asp-all-route-data="baseRouteParams"
+                           asp-route-activeTabId="@ModificationOverview.Documents"
+                           data-tab="@ModificationOverview.Documents">
+                            @ModificationOverview.Documents
+                        </a>
+                    </li>
+
+                    <li class="govuk-service-navigation__item small-margin @(activeTabId == ModificationOverview.History ? "govuk-service-navigation__item--active" : "")">
+                        <a class="govuk-service-navigation__link"
+                           asp-route=""
+                           asp-all-route-data="baseRouteParams"
+                           asp-route-activeTabId="@ModificationOverview.History"
+                           data-tab="@ModificationOverview.History">
+                            @ModificationOverview.History
+                        </a>
+                    </li>
+
+                    @if (isBackStageUser)
+                    {
+                        <li class="govuk-service-navigation__item small-margin @(activeTabId == ModificationOverview.Comments ? "govuk-service-navigation__item--active" : "")">
+                            <a class="govuk-service-navigation__link"
+                               asp-route=""
+                               asp-all-route-data="baseRouteParams"
+                               asp-route-activeTabId="@ModificationOverview.Comments"
+                               data-tab="@ModificationOverview.Comments">
+                                @ModificationOverview.Comments
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    </div>
 </div>
 
-<!-- Panels (toggle visibility via CSS) -->
-<div id="sponsor-details" class="tab-content">
-	<partial name="SponsorDetails" model="Model" viewData="ViewData" />
+<!-- Panels (toggle visibility) -->
+<div id="tab-content-root">
+    @switch (activeTabId)
+    {
+        case ModificationOverview.SponsorDetails:
+            <partial name="SponsorDetails" model="Model" viewData="ViewData" />
+            break;
+        case ModificationOverview.ModificationDetails:
+            <partial name="ModificationChanges" model="Model" viewData="ViewData" />
+            break;
+        case ModificationOverview.Documents:
+            <partial name="SupportingDocuments" model="Model" viewData="ViewData" />
+            break;
+        case ModificationOverview.History:
+            <partial name="_ProjectModificationAuditTrail" model="Model.AuditTrailModel" viewData="ViewData" />
+            break;
+        case ModificationOverview.Comments:
+            if (isBackStageUser)
+            {
+                <partial name="ReviewerComments" model="Model" viewData="ViewData" />
+            }
+            break;
+    }
 </div>
 
-<div id="modifications-changes" class="tab-content">
-	<partial name="ModificationChanges" model="Model" viewData="ViewData" />
-</div>
-
-<div id="documents" class="tab-content">
-	<partial name="SupportingDocuments" model="Model" viewData="ViewData" />
-</div>
-
-<div id="history" class="tab-content">
-	<partial name="_ProjectModificationAuditTrail" model="Model.AuditTrailModel" viewData="ViewData" />
-</div>
-
-<div id="comments" class="tab-content">
-    <partial name="ReviewerComments" model="Model" viewData="ViewData" />
-</div>
-
-
-@* @if (Model?.ReviewerComments != "")
-{
-    <authorized permission="@Permissions.MyResearch.ModificationsHistory_BackStage_Read">
-        <partial name="ReviewerComments" model="Model" view-data="ViewData" />
-    </authorized>
-} *@
+<!-- Load tab panels without reloading page for JS Enabled users -->
+<script src="~/js/navigationTabPartial.js" asp-append-version="true" defer></script>
