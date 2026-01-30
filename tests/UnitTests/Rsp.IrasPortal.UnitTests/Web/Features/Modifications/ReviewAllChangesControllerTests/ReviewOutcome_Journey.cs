@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System.Reflection;
+using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -48,6 +49,7 @@ public class ReviewOutcome_Journey : TestServiceBase<ReviewAllChangesController>
     {
         // Arrange
         tempDataModel.ModificationDetails.ModificationId = modificationId.ToString();
+        tempDataModel.ReviewOutcome = null;
         SetupTempData(tempDataModel);
 
         _modificationService
@@ -211,6 +213,7 @@ public class ReviewOutcome_Journey : TestServiceBase<ReviewAllChangesController>
     {
         // Arrange
         model.ModificationDetails.ModificationId = modificationId.ToString();
+        model.ReviewOutcome = null;
         SetupTempData(model);
 
         // Act
@@ -336,6 +339,7 @@ public class ReviewOutcome_Journey : TestServiceBase<ReviewAllChangesController>
     {
         // Arrange
         model.ModificationDetails.ModificationId = modificationId.ToString();
+        model.ReviewOutcome = null;
         SetupTempData(model);
 
         // Act
