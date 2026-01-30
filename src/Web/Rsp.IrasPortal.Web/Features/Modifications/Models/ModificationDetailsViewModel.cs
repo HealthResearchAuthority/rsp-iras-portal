@@ -5,8 +5,6 @@ namespace Rsp.Portal.Web.Features.Modifications.Models;
 public class ModificationDetailsViewModel : BaseProjectModificationViewModel
 {
     public new string Status { get; set; } = null!;
-    public new string ReasonNotApproved { get; set; } = null!;
-    public new string ReviewerComments { get; set; } = null!;
     public string? ModificationType { get; set; }
     public string? Category { get; set; }
     public string? ReviewType { get; set; }
