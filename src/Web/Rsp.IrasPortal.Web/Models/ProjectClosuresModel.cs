@@ -21,4 +21,6 @@ public class ProjectClosuresModel
     public string? ActualClosureDateDay { get; set; }
     public string? ActualClosureDateMonth { get; set; }
     public string? ActualClosureDateYear { get; set; }
+
+    public string? ProjectClosureToken { get; set; }
 }
