@@ -23,7 +23,7 @@
     // get activeTabId from query param if provided
     var requestedTab = Context.Request.Query["activeTabId"].ToString();
 
-    if (requestedTab == ModificationOverview.Comments && !isBackStageUser)
+    if (requestedTab == ModificationOverview.Comments && (!isBackStageUser || string.IsNullOrWhiteSpace(Model?.ReviewerComments)))
     {
         Context.Response.Redirect("error/forbidden");
         return;
@@ -103,7 +103,7 @@
                         </a>
                     </li>
 
-                    @if (isBackStageUser)
+                    @if (isBackStageUser && !string.IsNullOrWhiteSpace(Model?.ReviewerComments))
                     {
                         <li class="govuk-service-navigation__item small-margin @(activeTabId == ModificationOverview.Comments ? "govuk-service-navigation__item--active" : "")">
                             <a class="govuk-service-navigation__link"
@@ -138,7 +138,7 @@
             <partial name="_ProjectModificationAuditTrail" model="Model.AuditTrailModel" viewData="ViewData" />
             break;
         case ModificationOverview.Comments:
-            if (isBackStageUser)
+            if (isBackStageUser && !string.IsNullOrWhiteSpace(Model?.ReviewerComments))
             {
                 <partial name="ReviewerComments" model="Model" viewData="ViewData" />
             }
