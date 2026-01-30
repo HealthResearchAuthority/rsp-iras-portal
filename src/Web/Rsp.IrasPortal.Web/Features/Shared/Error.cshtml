@@ -16,7 +16,7 @@
     var referenceCode = pageContent.GetValueOrDefault("ServerError.ReferenceCode", null);
     var contactDetails = pageContent.GetValueOrDefault("ServerError.ContactDetails", null);
 
-    ViewBag.Title = pageTitle?.Value;
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 }
 
 <div class="govuk-width-container">

@@ -1,8 +1,7 @@
 ﻿namespace Rsp.Portal.Application.Constants;
 
 /// <summary>
-/// TempData Keys. These keys are used
-/// to lookup items stored in TempData dictionary.
+/// TempData Keys. These keys are used to lookup items stored in TempData dictionary.
 /// </summary>
 public struct TempDataKeys
 {

@@ -66,6 +66,7 @@ public class SiteContentFilter(ICmsContentService contentService,
                 if (pageContent.IsSuccessStatusCode && pageContent.Content != null)
                 {
                     controller.ViewData[PageContentElements.PageContent] = pageContent.Content.ContentItems;
+                    controller.ViewData[PageContentElements.MetaTitle] = pageContent.Content.MetaTitle;
                 }
             }
 

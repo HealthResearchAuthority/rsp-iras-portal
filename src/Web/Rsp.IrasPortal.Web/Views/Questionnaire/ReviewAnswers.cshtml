@@ -3,6 +3,7 @@
 @using Microsoft.FeatureManagement
 @using Rsp.Portal.Application.Constants
 @using System.Globalization
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
 @model QuestionnaireViewModel
 @inject IFeatureManager featureManager
 @{
@@ -37,6 +38,14 @@
     {
         navModel = (backRoute, "Back", new Dictionary<string, string> { { "projectRecordId", projectRecordId } });
     }
+
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData != null
+        ? pageContentData
+        : new Dictionary<string, MixedContentPageItem?>();
+
+    var title = pageContent.GetValueOrDefault("ProjectRecord.ConfirmProjectDetails.Title", null);
+    var body = pageContent.GetValueOrDefault("ProjectRecord.ConfirmProjectDetails.Body", null);
 }
 
 @if (await featureManager.IsEnabledAsync(FeatureFlags.ProgressiveEnhancement))
@@ -88,7 +97,7 @@
 
 @{
     var prefix = ViewData.ModelState.IsValid ? "" : "Error - ";
-    ViewBag.Title = $"{prefix}Review your answers - Make changes to research";
+    ViewBag.Title = $"{prefix}Review your answers";
     var organisationDisplayName = ViewBag.DisplayName as string ?? string.Empty;
 }
 
@@ -155,8 +164,8 @@
             </dl>
         }
 
-        <h2 class="govuk-heading-m govuk-!-margin-top-5">Confirm project details</h2>
-        <p class="govuk-body">Review your answers and complete any missing information before confirming project details.</p>
+        <h2 class="govuk-heading-m govuk-!-margin-top-5">@Html.Raw(title?.Value)</h2>
+        <p class="govuk-body">@Html.Raw(body?.Value)</p>
 
         <form method="post">
             <div class="save-buttons">

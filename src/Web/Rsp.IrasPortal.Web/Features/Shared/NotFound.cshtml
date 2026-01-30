@@ -15,7 +15,7 @@
     var referenceCode = pageContent.GetValueOrDefault("PageNotFound.ReferenceCode", null);
     var contactDetails = pageContent.GetValueOrDefault("PageNotFound.ContactDetails", null);
 
-    ViewBag.Title = pageTitle?.Value;
+    ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 }
 
 <div class="govuk-width-container">

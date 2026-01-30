@@ -20,7 +20,7 @@
     Model.CurrentStage = currentStage!;
 
     var prefix = ViewData.ModelState.IsValid ? "" : "Error - ";
-    ViewBag.Title = $"{prefix}{Model.Questions.FirstOrDefault()?.Section} - Make changes to research";
+    ViewBag.Title = $"{prefix}{Model.Questions.FirstOrDefault()?.Section}";
 }
 
 @if (await featureManager.IsEnabledAsync(FeatureFlags.ProgressiveEnhancement))

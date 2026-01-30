@@ -6,8 +6,10 @@
 @model Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models.AuthoriseProjectClosuresOutcomeViewModel
 
 @{
-    ViewBag.Title = "Check and authorise project closure";
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
     ViewBag.SponsorOrganisationUserId = Model.SponsorOrganisationUserId;
+
+    var isAuthoriser = TempData[TempDataKeys.IsAuthoriser] as bool? ?? false;
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData ?? new Dictionary<string, MixedContentPageItem?>();
@@ -65,41 +67,43 @@
     </div>
 </div>
 
-
-<authorized permission="@Permissions.Sponsor.ProjectClosures_Authorise">
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-two-thirds">
-            <h2 class="govuk-heading-m">@Html.Raw(outcomeTitle?.Value)</h2>
-            @Html.Raw(outcome?.Value)
-        </div>
-    </div>
-
-    <form method="post">
-        <!-- round-trip context -->
-        <input type="hidden" name="ProjectRecordId" value="@Model.ProjectRecordId" />              
-        <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />        
-        <input type="hidden" name="IrasId" value="@Model.IrasId" />
-        <input type="hidden" name="ShortProjectTitle" value="@Model.ShortProjectTitle" />
-
-        <div class="govuk-form-group @(hasError ? "govuk-form-group--error" : "")">
-
-            @if (hasError)
-            {
-                <p class="govuk-error-message">
-                    @ViewData.ModelState[nameof(Model.Outcome)]?.Errors?.FirstOrDefault()?.ErrorMessage
-                </p>
-            }
-
-            <rsp-gds-radio-group asp-for="Outcome"
-                                 label-text=" "
-                                 label-css-class="govuk-label govuk-label--s font-weight-none"
-                                 options="outcomeOptions"
-                                 div-inline-class="govuk-radios"
-                                 hint-html="">
-            </rsp-gds-radio-group>
+@if (isAuthoriser)
+{   
+    <authorized permission="@Permissions.Sponsor.ProjectClosures_Authorise">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <h2 class="govuk-heading-m">@Html.Raw(outcomeTitle?.Value)</h2>
+                @Html.Raw(outcome?.Value)
+            </div>
         </div>
 
-        <partial name="_SubmitButton"
-                 model="@("sws:checkandauthoriseprojectclosure", "Confirm selection", new Dictionary<string, string>())" />
-    </form>
-</authorized>
+        <form method="post">
+            <!-- round-trip context -->
+            <input type="hidden" name="ProjectRecordId" value="@Model.ProjectRecordId" />              
+            <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />        
+            <input type="hidden" name="IrasId" value="@Model.IrasId" />
+            <input type="hidden" name="ShortProjectTitle" value="@Model.ShortProjectTitle" />
+
+            <div class="govuk-form-group @(hasError ? "govuk-form-group--error" : "")">
+
+                @if (hasError)
+                {
+                    <p class="govuk-error-message">
+                        @ViewData.ModelState[nameof(Model.Outcome)]?.Errors?.FirstOrDefault()?.ErrorMessage
+                    </p>
+                }
+
+                <rsp-gds-radio-group asp-for="Outcome"
+                                     label-text=" "
+                                     label-css-class="govuk-label govuk-label--s font-weight-none"
+                                     options="outcomeOptions"
+                                     div-inline-class="govuk-radios"
+                                     hint-html="">
+                </rsp-gds-radio-group>
+            </div>
+
+            <partial name="_SubmitButton"
+                     model="@("sws:checkandauthoriseprojectclosure", "Confirm selection", new Dictionary<string, string>())" />
+        </form>
+    </authorized>
+}

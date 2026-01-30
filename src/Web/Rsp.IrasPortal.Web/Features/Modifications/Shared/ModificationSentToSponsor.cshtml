@@ -1,12 +1,21 @@
 ﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
 
 @{
-    ViewBag.Title = $"Modification set to sponsor";
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 
     var projectRecordId = TempData[TempDataKeys.ProjectRecordId];
     var projectModificationId = TempData[TempDataKeys.ProjectModification.ProjectModificationId];
 	var overallReviewType = TempData[TempDataKeys.ProjectModification.OverallReviewType];
 
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData != null
+        ? pageContentData
+        : new Dictionary<string, MixedContentPageItem?>();
+
+    var title = pageContent.GetValueOrDefault("Modifications.Sendmodificationtosponsor.Title", null);
+    var bodyHeading = pageContent.GetValueOrDefault("Modifications.Sendmodificationtosponsor.BodyHeading", null);
+    var bodyContent = pageContent.GetValueOrDefault("Modifications.Sendmodificationtosponsor.BodyContent", null);
     // this is the last stage of the modification so clear
     // all TempData values
     TempData.Clear();
@@ -16,13 +25,13 @@
     <div class="govuk-grid-column-two-thirds">
         <div class="govuk-panel govuk-panel--confirmation">
             <h1 class="govuk-panel__title">
-                Modification sent to sponsor
+                @Html.Raw(title?.Value)
             </h1>
         </div>
 
-        <h2 class="govuk-heading-m">What happens next</h2>
+        <h2 class="govuk-heading-m">@Html.Raw(bodyHeading?.Value)</h2>
         <p class="govuk-body">
-            You've sent your modification to the sponsor. They'll either accept the changes and submit it, or contact you for more information.
+            @Html.Raw(bodyContent?.Value)
         </p>
         <div class="save-buttons">
             <a class="govuk-button" asp-route="pov:postapproval" asp-route-projectRecordId="@projectRecordId">

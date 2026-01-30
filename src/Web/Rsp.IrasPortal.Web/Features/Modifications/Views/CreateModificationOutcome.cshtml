@@ -1,7 +1,7 @@
 ﻿@using Rsp.Portal.Application.Constants
 @using Rsp.Portal.Application.DTOs.Responses.CmsContent
 @{
-    ViewBag.Title = $"Validate";
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 
     var projectRecordId = TempData[TempDataKeys.ProjectRecordId];
     var IrasId = TempData.Peek(TempDataKeys.IrasId) as int?;

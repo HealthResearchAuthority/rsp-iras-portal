@@ -10,13 +10,13 @@
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
         <h2 class="govuk-heading-l">Confirm that you want to enable @Model.GivenName @Model.FamilyName</h2>
-        <p class="govuk-body">You are about to enable this user record.</p>
+		<p class="govuk-body">You are about to enable the user to work under this sponsor organisation.</p>
         <form method="post">
             <input hidden name="Id" value="@(Model.Id ?? string.Empty)" />
             <input hidden name="Email" asp-for="Email" value="@(Model.Email ?? string.Empty)" />
             <input hidden name="RtsId" value="@(ViewBag.RtsId ?? string.Empty)" />
             <button asp-route="sws:EnableUser" type="submit" class="govuk-button" data-module="govuk-button">
-                Enable
+				Confirm
             </button>
         </form>
     </div>

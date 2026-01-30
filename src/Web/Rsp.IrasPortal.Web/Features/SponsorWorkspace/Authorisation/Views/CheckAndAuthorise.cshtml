@@ -6,7 +6,7 @@
 @model Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models.AuthoriseModificationsOutcomeViewModel
 
 @{
-    ViewBag.Title = "Review all changes";
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 
     TempData[TempDataKeys.ProjectModification.ReviewAllChanges] = true;
     ViewData[ViewDataKeys.ShowRemoveLink] = false;

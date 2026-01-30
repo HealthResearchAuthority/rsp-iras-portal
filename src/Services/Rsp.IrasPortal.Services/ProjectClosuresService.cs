@@ -62,6 +62,22 @@ public class ProjectClosuresService
     }
 
     /// <summary>
+    /// Gets project closures records for specific sponsorOrganisationUserId with filtering, but without pagination
+    /// </summary>
+    /// <param name="sponsorOrganisationUserId">The unique identifier of the sponsor organisation user for which project closures are requested.</param>
+    /// <param name="searchQuery">Object containing filtering criteria for project closures.</param>
+    /// <returns>Returns a collection of project closures.</returns>
+    public async Task<ServiceResponse<ProjectClosuresSearchResponse>> GetProjectClosuresBySponsorOrganisationUserIdWithoutPaging
+    (
+        Guid sponsorOrganisationUserId,
+        ProjectClosuresSearchRequest searchQuery
+    )
+    {
+        var apiResponse = await projectClosuresServiceClient.GetProjectClosuresBySponsorOrganisationUserIdWithoutPaging(sponsorOrganisationUserId, searchQuery);
+        return apiResponse.ToServiceResponse();
+    }
+
+    /// <summary>
     /// Updates the status of an existing project closure by its project unique identifier.
     /// </summary>
     /// <param name="projectRecordId">The unique identifier of the project record to which the project closure belongs.</param>

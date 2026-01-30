@@ -5,11 +5,12 @@
 @using Rsp.Portal.Application.Constants
 @using Rsp.Portal.Application.DTOs.Responses.CmsContent;
 @using Rsp.Portal.Web.Features.Modifications.Models
+@using Rsp.Portal.Web.Models
 @model ModificationDetailsViewModel
 
 @{
 
-    ViewBag.Title = "Modification details";
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 }
 
 @section BackNavigation {

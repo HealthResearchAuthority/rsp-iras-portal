@@ -1,4 +1,5 @@
 ﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
 @using Rsp.Portal.Web.Helpers
 @model Rsp.Portal.Web.Models.ModificationReviewDocumentsViewModel
 
@@ -8,7 +9,16 @@
 
 	// If we know the specific area of change, dynamically build the page title to make the UI clearer.
 	// Otherwise, leave the title empty (will fallback to default in the view if needed).
-	ViewBag.Title = "Documents added";
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
+
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData != null
+        ? pageContentData
+        : new Dictionary<string, MixedContentPageItem?>();
+
+    var title = pageContent.GetValueOrDefault("Modifications.Documents.ModificationDocumentsAdded.Title", null);
+    var bodyHeading = pageContent.GetValueOrDefault("Modifications.Documents.ModificationDocumentsAdded.BodyTitle", null);
+    var bodyContent = pageContent.GetValueOrDefault("Modifications.Documents.ModificationDocumentsAdded.BodyContent", null);
 }
 
 <div class="govuk-width-container">
@@ -19,7 +29,7 @@
 	<div class="govuk-grid-row">
 		<div class="govuk-grid-column-two-thirds">
 			<h1 class="govuk-heading-l">
-				@ViewBag.Title
+                @Html.Raw(title?.Value)
 			</h1>
 			<partial name="_ProjectModificationSummary" />
 
@@ -86,9 +96,9 @@
 
 			<hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible" />
 
-			<h2 class="govuk-heading-m">Continue to add document details</h2>
+            <h2 class="govuk-heading-m">@Html.Raw(bodyHeading?.Value)</h2>
 			<p class="govuk-body">
-				When you've finished adding supporting documents, continue to the next step where you'll add details to describe each document.
+                @Html.Raw(bodyContent?.Value)
 			</p>
 
 			<div class="govuk-button-group">
