@@ -13,7 +13,7 @@
     and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
     the named section *@
 @section BackNavigation {
-	<partial name="_BackNavigation" model="@("rbc:viewreviewbody", "Back to review body profile", new Dictionary<string, string> { { "Id", Model.ReviewBody.Id.ToString() } })" />
+	<partial name="_BackNavigation" model="@("rbc:viewreviewbody", "Back", new Dictionary<string, string> { { "Id", Model.ReviewBody.Id.ToString() } })" />
 }
 
 <div class="govuk-grid-row">
