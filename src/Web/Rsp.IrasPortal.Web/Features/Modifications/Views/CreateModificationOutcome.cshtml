@@ -1,9 +1,9 @@
 ﻿@using Rsp.Portal.Application.Constants
 @using Rsp.Portal.Application.DTOs.Responses.CmsContent
 @{
-	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
+    ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 
-    var projectRecordId = TempData[TempDataKeys.ProjectRecordId];
+    var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
     var IrasId = TempData.Peek(TempDataKeys.IrasId) as int?;
     var shortProjectTitle = TempData.Peek(TempDataKeys.ShortProjectTitle);
 
@@ -12,8 +12,8 @@
         ? pageContentData
         : new Dictionary<string, MixedContentPageItem?>();
 
-    var warningMessageTitle = pageContent.GetValueOrDefault("Modifications.CreateModification.Title", null);
-    var warningMessage = pageContent.GetValueOrDefault("Modifications.CreateModification.Body", null);
+    var warningMessageTitle = pageContent.GetValueOrDefault("Modifications.CreateModificationOutcome.Title", null);
+    var warningMessageBody = pageContent.GetValueOrDefault("Modifications.CreateModificationOutcome.Body", null);
 }
 
 <div class="govuk-grid-row">
@@ -31,7 +31,7 @@
         </dl>
         <p class="govuk-body">
 
-            @Html.Raw(warningMessage?.Value)
+            @Html.Raw(warningMessageBody?.Value)
         </p>
 
         <div class="save-buttons">
