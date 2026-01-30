@@ -149,7 +149,7 @@ public class ReviewAllChangesController
     {
         var model = GetFromTempData();
 
-        if (model is null || model?.ReviewOutcome != null)
+        if (model is null || model.ReviewOutcome != null)
         {
             return this.ServiceError(_reviewOutcomeNotFoundError);
         }
@@ -231,7 +231,7 @@ public class ReviewAllChangesController
     {
         var model = GetFromTempData();
 
-        if (model is null || model?.ReviewOutcome != null)
+        if (model is null || model.ReviewOutcome != null)
         {
             return this.ServiceError(_reviewOutcomeNotFoundError);
         }
