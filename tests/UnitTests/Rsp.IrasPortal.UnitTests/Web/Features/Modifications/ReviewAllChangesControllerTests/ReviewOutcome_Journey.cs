@@ -48,6 +48,7 @@ public class ReviewOutcome_Journey : TestServiceBase<ReviewAllChangesController>
     {
         // Arrange
         tempDataModel.ModificationDetails.ModificationId = modificationId.ToString();
+        tempDataModel.ReviewOutcome = null;
         SetupTempData(tempDataModel);
 
         _modificationService
@@ -211,6 +212,7 @@ public class ReviewOutcome_Journey : TestServiceBase<ReviewAllChangesController>
     {
         // Arrange
         model.ModificationDetails.ModificationId = modificationId.ToString();
+        model.ReviewOutcome = null;
         SetupTempData(model);
 
         // Act
@@ -336,6 +338,7 @@ public class ReviewOutcome_Journey : TestServiceBase<ReviewAllChangesController>
     {
         // Arrange
         model.ModificationDetails.ModificationId = modificationId.ToString();
+        model.ReviewOutcome = null;
         SetupTempData(model);
 
         // Act

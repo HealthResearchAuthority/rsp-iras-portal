@@ -149,7 +149,7 @@ public class ReviewAllChangesController
     {
         var model = GetFromTempData();
 
-        if (model is null)
+        if (model is null || model.ReviewOutcome != null)
         {
             return this.ServiceError(_reviewOutcomeNotFoundError);
         }
@@ -231,7 +231,7 @@ public class ReviewAllChangesController
     {
         var model = GetFromTempData();
 
-        if (model is null)
+        if (model is null || model.ReviewOutcome != null)
         {
             return this.ServiceError(_reviewOutcomeNotFoundError);
         }
@@ -332,8 +332,6 @@ public class ReviewAllChangesController
     [HttpGet]
     public IActionResult ReviewOutcomeSubmitted()
     {
-        TempData.Clear();
-
         return View();
     }
 
@@ -450,6 +448,8 @@ public class ReviewAllChangesController
             Comment = model.Comment,
             ReasonNotApproved = model.ReasonNotApproved
         };
+
+        SaveToTempData(model);
 
         return await projectModificationsService.SaveModificationReviewResponses(request);
     }
