@@ -27,7 +27,7 @@
         ModificationStatus.NotAuthorised;
 
 
-    var isCommentVisible = isBackStageUser && !string.IsNullOrWhiteSpace(Model?.ReviewerComments);
+    var isCommentVisible = isBackStageUser && !string.IsNullOrWhiteSpace(Model?.ReviewerComments) && isOutcomeValid;
 
     // get activeTabId from query param if provided
     var requestedTab = Context.Request.Query["activeTabId"].ToString();
@@ -113,7 +113,7 @@
                         </a>
                     </li>
 
-                    @if (isCommentVisible && isOutcomeValid)
+                    @if (isCommentVisible)
                     {
                         <li class="govuk-service-navigation__item small-margin @(activeTabId == ModificationOverview.Comments ? "govuk-service-navigation__item--active" : "")">
                             <a class="govuk-service-navigation__link"
@@ -148,7 +148,7 @@
             <partial name="_ProjectModificationAuditTrail" model="Model.AuditTrailModel" viewData="ViewData" />
             break;
         case ModificationOverview.Comments:
-            if (isCommentVisible && isOutcomeValid)
+            if (isCommentVisible)
             {
                 <partial name="ReviewerComments" model="Model" viewData="ViewData" />
             }
