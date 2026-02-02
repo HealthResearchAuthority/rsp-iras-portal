@@ -20,10 +20,19 @@
         baseRouteParams[kv.Key] = kv.Value.ToString();
     }
 
+
+    var isOutcomeValid = Model.Status is
+        ModificationStatus.Approved or
+        ModificationStatus.NotApproved or
+        ModificationStatus.NotAuthorised;
+
+
+    var isCommentVisible = isBackStageUser && !string.IsNullOrWhiteSpace(Model?.ReviewerComments) && isOutcomeValid;
+
     // get activeTabId from query param if provided
     var requestedTab = Context.Request.Query["activeTabId"].ToString();
 
-    if (requestedTab == ModificationOverview.Comments && (!isBackStageUser || string.IsNullOrWhiteSpace(Model?.ReviewerComments)))
+    if (requestedTab == ModificationOverview.Comments && !isCommentVisible)
     {
         Context.Response.Redirect("error/forbidden");
         return;
@@ -54,6 +63,7 @@
 
     var activeTabId = (allowedTabs.Contains(requestedTab) ? requestedTab : defaultTab);
     baseRouteParams.Remove("activeTabId");
+
 }
 
 <!-- Keep the same GOV.UK Service Navigation look -->
@@ -103,7 +113,7 @@
                         </a>
                     </li>
 
-                    @if (isBackStageUser && !string.IsNullOrWhiteSpace(Model?.ReviewerComments))
+                    @if (isCommentVisible)
                     {
                         <li class="govuk-service-navigation__item small-margin @(activeTabId == ModificationOverview.Comments ? "govuk-service-navigation__item--active" : "")">
                             <a class="govuk-service-navigation__link"
@@ -138,7 +148,7 @@
             <partial name="_ProjectModificationAuditTrail" model="Model.AuditTrailModel" viewData="ViewData" />
             break;
         case ModificationOverview.Comments:
-            if (isBackStageUser && !string.IsNullOrWhiteSpace(Model?.ReviewerComments))
+            if (isCommentVisible)
             {
                 <partial name="ReviewerComments" model="Model" viewData="ViewData" />
             }
