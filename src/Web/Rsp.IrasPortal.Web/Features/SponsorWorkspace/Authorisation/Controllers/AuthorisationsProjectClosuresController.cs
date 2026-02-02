@@ -309,6 +309,15 @@ public class AuthorisationsProjectClosuresController
 
         if (!ModelState.IsValid)
         {
+            var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId);
+
+            if (!sponsorOrganisationUser.IsSuccessStatusCode)
+            {
+                return this.ServiceError(sponsorOrganisationUser);
+            }
+
+            TempData[TempDataKeys.IsAuthoriser] = sponsorOrganisationUser.Content!.IsAuthoriser;
+
             var hydrated = res.Value as AuthoriseProjectClosuresOutcomeViewModel;
             // Preserve the posted Outcome so the radios keep the selection
             if (hydrated is not null)
