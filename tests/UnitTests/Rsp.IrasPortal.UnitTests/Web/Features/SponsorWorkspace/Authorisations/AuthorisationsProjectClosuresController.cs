@@ -6,6 +6,7 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Services;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.CmsQuestionset;
@@ -19,6 +20,7 @@ using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models;
 using Rsp.Portal.Web.Helpers;
 using Rsp.Portal.Web.Models;
 using Claim = System.Security.Claims.Claim;
+using Rsp.Portal.UnitTests.Web.Helpers;
 
 namespace Rsp.Portal.UnitTests.Web.Features.SponsorWorkspace.Authorisations;
 
@@ -51,62 +53,17 @@ public class AuthorisationsProjectClosuresControllerTests
 
     [Theory]
     [AutoData]
-    public async Task ProjectClosures_Returns_View_With_Correct_Model(ProjectClosuresSearchResponse closuresResponse, List<User> users)
+    public async Task ProjectClosures_Returns_View_With_Correct_Model(
+        ProjectClosuresSearchResponse closuresResponse,
+        List<User> users)
     {
         // Arrange
-        var currentUserEmail = "test@test.co.uk";
-
-        var userEntityResponse = new ServiceResponse<UserResponse>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new UserResponse
-            {
-                User = new User(
-                    Id: _sponsorOrganisationUserId.ToString(),
-                    IdentityProviderId: null,
-                    Title: null,
-                    GivenName: "Dan",
-                    FamilyName: "Hulmston",
-                    Email: currentUserEmail,
-                    JobTitle: null,
-                    Organisation: null,
-                    Telephone: null,
-                    Country: null,
-                    Status: "Active",
-                    LastUpdated: DateTime.UtcNow,
-                    LastLogin: null,
-                    CurrentLogin: null
-                )
-            }
-        };
-
-        Mocker.GetMock<IUserManagementService>()
-            .Setup(s => s.GetUser(null, currentUserEmail, null))
-            .ReturnsAsync(userEntityResponse);
-
-        var sponsorOrgResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new List<SponsorOrganisationDto>
-            {
-                new()
-                {
-                    Id = _sponsorOrganisationUserId,
-                    Users = new List<SponsorOrganisationUserDto>
-                    {
-                        new()
-                        {
-                            Id = _sponsorOrganisationUserId,
-                            UserId = _sponsorOrganisationUserId
-                        }
-                    }
-                }
-            }
-        };
-
-        Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetAllActiveSponsorOrganisationsForEnabledUser(_sponsorOrganisationUserId))
-            .ReturnsAsync(sponsorOrgResponse);
+        Mocker.GetMock<ISponsorUserAuthorisationService>()
+            .Setup(s => s.AuthoriseAsync(
+                Sut,
+                _sponsorOrganisationUserId,
+                It.IsAny<ClaimsPrincipal>()))
+            .ReturnsAsync(Authorised(_sponsorOrganisationUserId));
 
         // arrange at least 1 matching user id.
         closuresResponse.ProjectClosures.First().UserId = users[0].Id;
@@ -166,198 +123,25 @@ public class AuthorisationsProjectClosuresControllerTests
 
     [Theory]
     [AutoData]
-    public async Task ProjectClosures_When_User_Service_Fails_Returns_ServiceError(
+    public async Task ProjectClosures_When_Not_Authorised_Returns_Failure_Result(
         ProjectClosuresSearchResponse closuresResponse,
         List<User> users)
     {
         // Arrange
-        var currentUserEmail = "test@test.co.uk";
+        var failure = new ForbidResult(); // could be ServiceError(...) result too
 
-        var userEntityResponse = new ServiceResponse<UserResponse>
-        {
-            StatusCode = HttpStatusCode.InternalServerError,
-        };
-
-        Mocker.GetMock<IUserManagementService>()
-            .Setup(s => s.GetUser(null, currentUserEmail, null))
-            .ReturnsAsync(userEntityResponse);
+        Mocker.GetMock<ISponsorUserAuthorisationService>()
+            .Setup(s => s.AuthoriseAsync(
+                Sut,
+                _sponsorOrganisationUserId,
+                It.IsAny<ClaimsPrincipal>()))
+            .ReturnsAsync(NotAuthorised(failure));
 
         // Act
         var result = await Sut.ProjectClosures(_sponsorOrganisationUserId);
 
         // Assert
-        result.ShouldNotBeNull();
-    }
-
-    [Theory]
-    [AutoData]
-    public async Task ProjectClosures_When_Current_UserId_Is_Not_Guid_Returns_ServiceError_BadRequest(
-        ProjectClosuresSearchResponse closuresResponse,
-        List<User> users)
-    {
-        // Arrange
-        var currentUserEmail = "test@test.co.uk";
-
-        var userEntityResponse = new ServiceResponse<UserResponse>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new UserResponse
-            {
-                User = new User(
-                    Id: "not-a-guid",
-                    IdentityProviderId: null,
-                    Title: null,
-                    GivenName: "Dan",
-                    FamilyName: "Hulmston",
-                    Email: currentUserEmail,
-                    JobTitle: null,
-                    Organisation: null,
-                    Telephone: null,
-                    Country: null,
-                    Status: "Active",
-                    LastUpdated: DateTime.UtcNow,
-                    LastLogin: null,
-                    CurrentLogin: null
-                )
-            }
-        };
-
-        Mocker.GetMock<IUserManagementService>()
-            .Setup(s => s.GetUser(null, currentUserEmail, null))
-            .ReturnsAsync(userEntityResponse);
-
-        // Act
-        var result = await Sut.ProjectClosures(_sponsorOrganisationUserId);
-
-        // Assert
-        result.ShouldNotBeNull();
-    }
-
-    [Theory]
-    [AutoData]
-    public async Task ProjectClosures_When_SponsorOrganisations_Service_Fails_Returns_ServiceError(
-    ProjectClosuresSearchResponse closuresResponse,
-    List<User> users)
-    {
-        // Arrange
-        var currentUserEmail = "test@test.co.uk";
-
-        var userEntityResponse = new ServiceResponse<UserResponse>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new UserResponse
-            {
-                User = new User(
-                    Id: _sponsorOrganisationUserId.ToString(),
-                    IdentityProviderId: null,
-                    Title: null,
-                    GivenName: "Dan",
-                    FamilyName: "Hulmston",
-                    Email: currentUserEmail,
-                    JobTitle: null,
-                    Organisation: null,
-                    Telephone: null,
-                    Country: null,
-                    Status: "Active",
-                    LastUpdated: DateTime.UtcNow,
-                    LastLogin: null,
-                    CurrentLogin: null
-                )
-            }
-        };
-
-        Mocker.GetMock<IUserManagementService>()
-            .Setup(s => s.GetUser(null, currentUserEmail, null))
-            .ReturnsAsync(userEntityResponse);
-
-        var sponsorOrgResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
-        {
-            StatusCode = HttpStatusCode.Forbidden,
-        };
-
-        Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetAllActiveSponsorOrganisationsForEnabledUser(_sponsorOrganisationUserId))
-            .ReturnsAsync(sponsorOrgResponse);
-
-        // Act
-        var result = await Sut.ProjectClosures(_sponsorOrganisationUserId);
-
-        // Assert
-        result.ShouldNotBeNull();
-    }
-
-    [Theory]
-    [AutoData]
-    public async Task ProjectClosures_When_SponsorOrganisationUserId_Does_Not_Match_Returns_Forbid(
-    ProjectClosuresSearchResponse closuresResponse,
-    List<User> users)
-    {
-        // Arrange
-        var currentUserEmail = "test@test.co.uk";
-        var currentUserId = _sponsorOrganisationUserId;
-
-        // This is the sponsorOrganisationUserId we pass into the action. It does NOT match the
-        // membership record Id returned by the sponsor org service.
-        var requestedSponsorOrganisationUserId = Guid.NewGuid();
-
-        var userEntityResponse = new ServiceResponse<UserResponse>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new UserResponse
-            {
-                User = new User(
-                    Id: currentUserId.ToString(),
-                    IdentityProviderId: null,
-                    Title: null,
-                    GivenName: "Dan",
-                    FamilyName: "Hulmston",
-                    Email: currentUserEmail,
-                    JobTitle: null,
-                    Organisation: null,
-                    Telephone: null,
-                    Country: null,
-                    Status: "Active",
-                    LastUpdated: DateTime.UtcNow,
-                    LastLogin: null,
-                    CurrentLogin: null
-                )
-            }
-        };
-
-        Mocker.GetMock<IUserManagementService>()
-            .Setup(s => s.GetUser(null, currentUserEmail, null))
-            .ReturnsAsync(userEntityResponse);
-
-        var sponsorOrgResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new List<SponsorOrganisationDto>
-        {
-            new()
-            {
-                Id = Guid.NewGuid(),
-                Users = new List<SponsorOrganisationUserDto>
-                {
-                    // Note: UserId matches current user, but Id is different from requested sponsor
-                    //       org user id.
-                    new()
-                    {
-                        Id = Guid.NewGuid(),
-                        UserId = currentUserId
-                    }
-                }
-            }
-        }
-        };
-
-        Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetAllActiveSponsorOrganisationsForEnabledUser(currentUserId))
-            .ReturnsAsync(sponsorOrgResponse);
-
-        // Act
-        var result = await Sut.ProjectClosures(requestedSponsorOrganisationUserId);
-
-        // Assert
+        result.ShouldBeSameAs(failure);
         result.ShouldBeOfType<ForbidResult>();
     }
 
@@ -804,78 +588,35 @@ public class AuthorisationsProjectClosuresControllerTests
     [Theory]
     [ThreeItemsAutoData]
     public async Task ProjectClosures_Sorts_By_UserEmail_And_Paginates_Locally_Success(
-    ProjectClosuresSearchResponse closuresResponse,
-    List<User> users)
+        ProjectClosuresSearchResponse closuresResponse,
+        List<User> users)
     {
         // Arrange
-        var currentUserEmail = "test@test.co.uk";
+        Mocker.GetMock<ISponsorUserAuthorisationService>()
+            .Setup(s => s.AuthoriseAsync(
+                Sut,
+                _sponsorOrganisationUserId,
+                It.IsAny<ClaimsPrincipal>()))
+            .ReturnsAsync(SponsorUserAuthorisationResult.Ok(_sponsorOrganisationUserId));
 
-        var userEntityResponse = new ServiceResponse<UserResponse>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new UserResponse
-            {
-                User = new User(
-                    Id: _sponsorOrganisationUserId.ToString(),
-                    IdentityProviderId: null,
-                    Title: null,
-                    GivenName: "Dan",
-                    FamilyName: "Hulmston",
-                    Email: currentUserEmail,
-                    JobTitle: null,
-                    Organisation: null,
-                    Telephone: null,
-                    Country: null,
-                    Status: "Active",
-                    LastUpdated: DateTime.UtcNow,
-                    LastLogin: null,
-                    CurrentLogin: null
-                )
-            }
-        };
-
-        Mocker.GetMock<IUserManagementService>()
-            .Setup(s => s.GetUser(null, currentUserEmail, null))
-            .ReturnsAsync(userEntityResponse);
-
-        var sponsorOrgResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new List<SponsorOrganisationDto>
-            {
-                new()
-                {
-                    Id = _sponsorOrganisationUserId,
-                    Users = new List<SponsorOrganisationUserDto>
-                    {
-                        new()
-                        {
-                            Id = _sponsorOrganisationUserId,
-                            UserId = _sponsorOrganisationUserId
-                        }
-                    }
-                }
-            }
-        };
-
-        Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetAllActiveSponsorOrganisationsForEnabledUser(_sponsorOrganisationUserId))
-            .ReturnsAsync(sponsorOrgResponse);
-
+        // Force exactly 3 users
         users = users.Take(3).ToList();
 
         var usersFixed = new List<User>
-        {
-            users[0] with { Email = "bbb@example.com" },
-            users[1] with { Email = "aaa@example.com" },
-            users[2] with { Email = "ccc@example.com" }
-        };
+    {
+        users[0] with { Email = "bbb@example.com" },
+        users[1] with { Email = "aaa@example.com" },
+        users[2] with { Email = "ccc@example.com" }
+    };
 
+        // Force exactly 3 closures and wire up UserIds to the users we return
         var closuresList = closuresResponse.ProjectClosures.Take(3).ToList();
         closuresList[0].UserId = usersFixed[0].Id;
         closuresList[1].UserId = usersFixed[1].Id;
         closuresList[2].UserId = usersFixed[2].Id;
 
+        // Make sure the response uses the list we're manipulating
+        closuresResponse.ProjectClosures = closuresList;
         closuresResponse.TotalCount = 3;
 
         var serviceResponse = new ServiceResponse<ProjectClosuresSearchResponse>
@@ -884,7 +625,7 @@ public class AuthorisationsProjectClosuresControllerTests
             Content = closuresResponse
         };
 
-        // SortField == UserEmail
+        // SortField == UserEmail => controller should call WithoutPaging
         Mocker.GetMock<IProjectClosuresService>()
             .Setup(s => s.GetProjectClosuresBySponsorOrganisationUserIdWithoutPaging(
                 _sponsorOrganisationUserId,
@@ -905,7 +646,7 @@ public class AuthorisationsProjectClosuresControllerTests
                 It.IsAny<int>()))
             .ReturnsAsync(usersResponse);
 
-        // --- Act ---
+        // Act
         var result = await Sut.ProjectClosures(
             sponsorOrganisationUserId: _sponsorOrganisationUserId,
             pageNumber: 1,
@@ -913,7 +654,7 @@ public class AuthorisationsProjectClosuresControllerTests
             sortField: nameof(ProjectClosuresModel.UserEmail),
             sortDirection: SortDirections.Ascending);
 
-        // --- Assert ---
+        // Assert
         var view = result.ShouldBeOfType<ViewResult>();
         var model = view.Model.ShouldBeAssignableTo<ProjectClosuresViewModel>();
 
@@ -927,18 +668,19 @@ public class AuthorisationsProjectClosuresControllerTests
         model.Pagination.SortDirection.ShouldBe(SortDirections.Ascending);
 
         Mocker.GetMock<IProjectClosuresService>()
-                .Verify(s => s.GetProjectClosuresBySponsorOrganisationUserIdWithoutPaging(
-                    _sponsorOrganisationUserId, It.IsAny<ProjectClosuresSearchRequest>()),
-                    Times.Once);
+            .Verify(s => s.GetProjectClosuresBySponsorOrganisationUserIdWithoutPaging(
+                    _sponsorOrganisationUserId,
+                    It.IsAny<ProjectClosuresSearchRequest>()),
+                Times.Once);
 
         Mocker.GetMock<IProjectClosuresService>()
             .Verify(s => s.GetProjectClosuresBySponsorOrganisationUserId(
-                It.IsAny<Guid>(),
-                It.IsAny<ProjectClosuresSearchRequest>(),
-                It.IsAny<int>(),
-                It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<string>()),
+                    It.IsAny<Guid>(),
+                    It.IsAny<ProjectClosuresSearchRequest>(),
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>()),
                 Times.Never);
     }
 
@@ -948,85 +690,13 @@ public class AuthorisationsProjectClosuresControllerTests
         ProjectClosuresSearchResponse closuresResponse,
         List<User> users)
     {
-        // Arrange Arrange
-        var currentUserEmail = "test@test.co.uk";
-
-        var userEntityResponse = new ServiceResponse<UserResponse>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new UserResponse
-            {
-                User = new User(
-                    Id: _sponsorOrganisationUserId.ToString(),
-                    IdentityProviderId: null,
-                    Title: null,
-                    GivenName: "Dan",
-                    FamilyName: "Hulmston",
-                    Email: currentUserEmail,
-                    JobTitle: null,
-                    Organisation: null,
-                    Telephone: null,
-                    Country: null,
-                    Status: "Active",
-                    LastUpdated: DateTime.UtcNow,
-                    LastLogin: null,
-                    CurrentLogin: null
-                )
-            }
-        };
-
-        Mocker.GetMock<IUserManagementService>()
-            .Setup(s => s.GetUser(null, currentUserEmail, null))
-            .ReturnsAsync(userEntityResponse);
-
-        var sponsorOrgResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new List<SponsorOrganisationDto>
-            {
-                new()
-                {
-                    Id = _sponsorOrganisationUserId,
-                    Users = new List<SponsorOrganisationUserDto>
-                    {
-                        new()
-                        {
-                            Id = _sponsorOrganisationUserId,
-                            UserId = _sponsorOrganisationUserId
-                        }
-                    }
-                }
-            }
-        };
-
-        Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetAllActiveSponsorOrganisationsForEnabledUser(_sponsorOrganisationUserId))
-            .ReturnsAsync(sponsorOrgResponse);
-
-        var serviceResponse = new ServiceResponse<ProjectClosuresSearchResponse>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = closuresResponse
-        };
-
-        Mocker.GetMock<IProjectClosuresService>()
-            .Setup(s => s.GetProjectClosuresBySponsorOrganisationUserIdWithoutPaging(
-                _sponsorOrganisationUserId, It.IsAny<ProjectClosuresSearchRequest>()))
-            .ReturnsAsync(serviceResponse);
-
-        var usersResponse = new ServiceResponse<UsersResponse>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new UsersResponse { Users = users }
-        };
-
-        Mocker.GetMock<IUserManagementService>()
-            .Setup(s => s.GetUsersByIds(
-                It.IsAny<IEnumerable<string>>(),
-                null,
-                1,
-                It.IsAny<int>()))
-            .ReturnsAsync(usersResponse);
+        // Arrange Mock auth to avoid the test failing if auth runs before param validation
+        Mocker.GetMock<ISponsorUserAuthorisationService>()
+            .Setup(s => s.AuthoriseAsync(
+                Sut,
+                _sponsorOrganisationUserId,
+                It.IsAny<ClaimsPrincipal>()))
+            .ReturnsAsync(SponsorUserAuthorisationResult.Ok(_sponsorOrganisationUserId));
 
         // Act: pageNumber=0, sortField=UserEmail
         var result = await Sut.ProjectClosures(
@@ -1037,9 +707,15 @@ public class AuthorisationsProjectClosuresControllerTests
             sortDirection: SortDirections.Descending);
 
         // Assert
-        var objectResult = result.ShouldBeOfType<StatusCodeResult>();
-        objectResult.StatusCode.ShouldBe((int)HttpStatusCode.BadRequest);
+        var status = result.ShouldBeOfType<StatusCodeResult>();
+        status.StatusCode.ShouldBe((int)HttpStatusCode.BadRequest);
     }
+
+    public SponsorUserAuthorisationResult Authorised(Guid gid)
+        => SponsorUserAuthorisationResult.Ok(gid);
+
+    public SponsorUserAuthorisationResult NotAuthorised(IActionResult failure)
+        => SponsorUserAuthorisationResult.Fail(failure);
 }
 
 /// <summary>

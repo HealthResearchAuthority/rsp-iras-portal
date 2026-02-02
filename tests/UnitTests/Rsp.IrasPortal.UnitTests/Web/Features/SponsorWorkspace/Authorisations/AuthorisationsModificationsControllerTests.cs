@@ -5,6 +5,7 @@ using Mapster;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Services;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.CmsQuestionset;
@@ -53,61 +54,13 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
     public async Task Modifications_Returns_View_With_Correct_Model(GetModificationsResponse modificationResponse)
     {
         // Arrange
-        var currentUserEmail = "test@test.co.uk";
+        Mocker.GetMock<ISponsorUserAuthorisationService>()
+            .Setup(s => s.AuthoriseAsync(
+                Sut,
+                _sponsorOrganisationUserId,
+                It.IsAny<ClaimsPrincipal>()))
+            .ReturnsAsync(Authorised(_sponsorOrganisationUserId));
 
-        var userEntityResponse = new ServiceResponse<UserResponse>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new UserResponse
-            {
-                User = new User(
-                    _sponsorOrganisationUserId.ToString(),
-                    null,
-                    null,
-                    "Dan",
-                    "Hulmston",
-                    currentUserEmail,
-                    null,
-                    null,
-                    null,
-                    null,
-                    "Active",
-                    DateTime.UtcNow,
-                    null,
-                    null
-                )
-            }
-        };
-
-        Mocker.GetMock<IUserManagementService>()
-            .Setup(s => s.GetUser(null, currentUserEmail, null))
-            .ReturnsAsync(userEntityResponse);
-
-        var sponsorOrgResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new List<SponsorOrganisationDto>
-            {
-                new()
-                {
-                    Id = _sponsorOrganisationUserId,
-                    Users = new List<SponsorOrganisationUserDto>
-                    {
-                        new()
-                        {
-                            Id = _sponsorOrganisationUserId,
-                            UserId = _sponsorOrganisationUserId
-                        }
-                    }
-                }
-            }
-        };
-
-        Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetAllActiveSponsorOrganisationsForEnabledUser(_sponsorOrganisationUserId))
-            .ReturnsAsync(sponsorOrgResponse);
-
-        // existing service call
         var modificationsServiceResponse = new ServiceResponse<GetModificationsResponse>
         {
             StatusCode = HttpStatusCode.OK,
@@ -141,194 +94,79 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
 
     [Theory]
     [AutoData]
-    public async Task Modifications_When_User_Service_Fails_Returns_ServiceError(
-        GetModificationsResponse modificationResponse)
+    public async Task Modifications_When_Not_Authorised_Returns_Failure_Result(GetModificationsResponse modificationResponse)
     {
         // Arrange
-        var currentUserEmail = "test@test.co.uk";
+        var failure = new StatusCodeResult((int)HttpStatusCode.Forbidden); // or a ViewResult / ObjectResult based on your ServiceError
+        Mocker.GetMock<ISponsorUserAuthorisationService>()
+            .Setup(s => s.AuthoriseAsync(
+                Sut,
+                _sponsorOrganisationUserId,
+                It.IsAny<ClaimsPrincipal>()))
+            .ReturnsAsync(NotAuthorised(failure));
 
-        var userEntityResponse = new ServiceResponse<UserResponse>
+        // Act
+        var result = await Sut.Modifications(_sponsorOrganisationUserId);
+
+        // Assert
+        result.ShouldBeSameAs(failure);
+    }
+
+    [Theory]
+    [AutoData]
+    public async Task Modifications_When_Authorisation_Returns_Forbid_Returns_Forbid(GetModificationsResponse modificationResponse)
+    {
+        // Arrange
+        var forbid = new ForbidResult();
+
+        Mocker.GetMock<ISponsorUserAuthorisationService>()
+            .Setup(s => s.AuthoriseAsync(
+                Sut,
+                _sponsorOrganisationUserId,
+                It.IsAny<ClaimsPrincipal>()))
+            .ReturnsAsync(NotAuthorised(forbid));
+
+        // Act
+        var result = await Sut.Modifications(_sponsorOrganisationUserId);
+
+        // Assert
+        result.ShouldBeSameAs(forbid);
+        result.ShouldBeOfType<ForbidResult>();
+    }
+
+    [Theory]
+    [AutoData]
+    public async Task Modifications_When_Modifications_Service_Fails_Returns_ServiceError(GetModificationsResponse modificationResponse)
+    {
+        // Arrange
+        Mocker.GetMock<ISponsorUserAuthorisationService>()
+            .Setup(s => s.AuthoriseAsync(
+                Sut,
+                _sponsorOrganisationUserId,
+                It.IsAny<ClaimsPrincipal>()))
+            .ReturnsAsync(Authorised(_sponsorOrganisationUserId));
+
+        var modificationsServiceResponse = new ServiceResponse<GetModificationsResponse>
         {
             StatusCode = HttpStatusCode.InternalServerError
         };
 
-        Mocker.GetMock<IUserManagementService>()
-            .Setup(s => s.GetUser(null, currentUserEmail, null))
-            .ReturnsAsync(userEntityResponse);
-
-        // If your controller reads email from HttpContext.User, make sure your test base sets that
-        // up. Otherwise (if it uses something else) keep consistent with your existing test setup.
-
-        // Act
-        var result = await Sut.Modifications(_sponsorOrganisationUserId);
-
-        // Assert
-        result.ShouldNotBeNull();
-        result.ShouldBeAssignableTo<IActionResult>();
-    }
-
-    [Theory]
-    [AutoData]
-    public async Task Modifications_When_Current_UserId_Is_Not_Guid_Returns_ServiceError_BadRequest(
-        GetModificationsResponse modificationResponse)
-    {
-        // Arrange
-        var currentUserEmail = "test@test.co.uk";
-
-        var userEntityResponse = new ServiceResponse<UserResponse>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new UserResponse
-            {
-                User = new User(
-                    "not-a-guid",
-                    null,
-                    null,
-                    "Dan",
-                    "Hulmston",
-                    currentUserEmail,
-                    null,
-                    null,
-                    null,
-                    null,
-                    "Active",
-                    DateTime.UtcNow,
-                    null,
-                    null
-                )
-            }
-        };
-
-        Mocker.GetMock<IUserManagementService>()
-            .Setup(s => s.GetUser(null, currentUserEmail, null))
-            .ReturnsAsync(userEntityResponse);
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationsBySponsorOrganisationUserId(
+                _sponsorOrganisationUserId,
+                It.IsAny<SponsorAuthorisationsModificationsSearchRequest>(),
+                1,
+                20,
+                nameof(ModificationsModel.SentToSponsorDate),
+                SortDirections.Descending))
+            .ReturnsAsync(modificationsServiceResponse);
 
         // Act
         var result = await Sut.Modifications(_sponsorOrganisationUserId);
 
         // Assert
         result.ShouldNotBeNull();
-    }
-
-    [Theory]
-    [AutoData]
-    public async Task Modifications_When_SponsorOrganisations_Service_Fails_Returns_ServiceError(
-        GetModificationsResponse modificationResponse)
-    {
-        // Arrange
-        var currentUserEmail = "test@test.co.uk";
-
-        var userEntityResponse = new ServiceResponse<UserResponse>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new UserResponse
-            {
-                User = new User(
-                    _sponsorOrganisationUserId.ToString(),
-                    null,
-                    null,
-                    "Dan",
-                    "Hulmston",
-                    currentUserEmail,
-                    null,
-                    null,
-                    null,
-                    null,
-                    "Active",
-                    DateTime.UtcNow,
-                    null,
-                    null
-                )
-            }
-        };
-
-        Mocker.GetMock<IUserManagementService>()
-            .Setup(s => s.GetUser(null, currentUserEmail, null))
-            .ReturnsAsync(userEntityResponse);
-
-        var sponsorOrgResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
-        {
-            StatusCode = HttpStatusCode.Forbidden
-        };
-
-        Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetAllActiveSponsorOrganisationsForEnabledUser(_sponsorOrganisationUserId))
-            .ReturnsAsync(sponsorOrgResponse);
-
-        // Act
-        var result = await Sut.Modifications(_sponsorOrganisationUserId);
-
-        // Assert
-        result.ShouldNotBeNull();
-    }
-
-    [Theory]
-    [AutoData]
-    public async Task Modifications_When_SponsorOrganisationUserId_Does_Not_Match_Returns_Forbid(
-        GetModificationsResponse modificationResponse)
-    {
-        // Arrange
-        var currentUserEmail = "test@test.co.uk";
-        var currentUserId = _sponsorOrganisationUserId;
-        var differentSponsorOrganisationUserId = Guid.NewGuid();
-
-        var userEntityResponse = new ServiceResponse<UserResponse>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new UserResponse
-            {
-                User = new User(
-                    currentUserId.ToString(),
-                    null,
-                    null,
-                    "Dan",
-                    "Hulmston",
-                    currentUserEmail,
-                    null,
-                    null,
-                    null,
-                    null,
-                    "Active",
-                    DateTime.UtcNow,
-                    null,
-                    null
-                )
-            }
-        };
-
-        Mocker.GetMock<IUserManagementService>()
-            .Setup(s => s.GetUser(null, currentUserEmail, null))
-            .ReturnsAsync(userEntityResponse);
-
-        var sponsorOrgResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new List<SponsorOrganisationDto>
-            {
-                new()
-                {
-                    Id = Guid.NewGuid(),
-                    Users = new List<SponsorOrganisationUserDto>
-                    {
-                        new()
-                        {
-                            Id = differentSponsorOrganisationUserId,
-                            UserId = currentUserId
-                        }
-                    }
-                }
-            }
-        };
-
-        Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetAllActiveSponsorOrganisationsForEnabledUser(currentUserId))
-            .ReturnsAsync(sponsorOrgResponse);
-
-        // Act
-        var result = await Sut.Modifications(currentUserId);
-
-        // Assert
-        result.ShouldBeOfType<ForbidResult>();
+        // tighten this based on what ServiceError returns in your project
     }
 
     [Theory]
@@ -842,4 +680,10 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
         // Assert
         result.ShouldBeOfType<ViewResult>();
     }
+
+    public SponsorUserAuthorisationResult Authorised(Guid gid)
+        => SponsorUserAuthorisationResult.Ok(gid);
+
+    public SponsorUserAuthorisationResult NotAuthorised(IActionResult failure)
+        => SponsorUserAuthorisationResult.Fail(failure);
 }

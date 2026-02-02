@@ -17,6 +17,7 @@ using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Features.Modifications;
 using Rsp.Portal.Web.Features.Modifications.Models;
 using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models;
+using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Services;
 using Rsp.Portal.Web.Helpers;
 using Rsp.Portal.Web.Models;
 
@@ -33,7 +34,7 @@ public class AuthorisationsModificationsController
     IRespondentService respondentService,
     ISponsorOrganisationService sponsorOrganisationService,
     ICmsQuestionsetService cmsQuestionsetService,
-    IUserManagementService userService,
+    ISponsorUserAuthorisationService sponsorUserAuthorisationService,
     IValidator<AuthorisationsModificationsSearchModel> searchValidator
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, null!)
 {
@@ -52,37 +53,8 @@ public class AuthorisationsModificationsController
         string sortDirection = SortDirections.Descending
     )
     {
-        var currentUserEmail = HttpContext?.User.FindFirstValue(ClaimTypes.Email);
-        var userEntityResponse = await userService.GetUser(null, currentUserEmail);
-
-        if (!userEntityResponse.IsSuccessStatusCode)
-        {
-            return this.ServiceError(userEntityResponse);
-        }
-        if (!Guid.TryParse(userEntityResponse.Content!.User.Id?.Trim(), out var gid))
-        {
-            var errorResponse = new ServiceResponse<UserResponse>()
-                .WithError(
-                    errorMessage: "Invalid or missing user identifier for the current user.",
-                    reasonPhrase: "InvalidUserId",
-                    statusCode: HttpStatusCode.BadRequest
-                );
-            return this.ServiceError(errorResponse);
-        }
-
-        var sponsorOrganisationsResponse = await sponsorOrganisationService.GetAllActiveSponsorOrganisationsForEnabledUser(gid);
-
-        if (!sponsorOrganisationsResponse.IsSuccessStatusCode)
-        {
-            return this.ServiceError(sponsorOrganisationsResponse);
-        }
-
-        // This works for single sponsor organisations
-        if (sponsorOrganisationUserId != sponsorOrganisationsResponse.Content?.Single().Users
-                ?.Single(u => u.UserId.Equals(gid)).Id)
-        {
-            return Forbid();
-        }
+        var auth = await sponsorUserAuthorisationService.AuthoriseAsync(this, sponsorOrganisationUserId, User);
+        if (!auth.IsAuthorised) return auth.FailureResult!;
 
         var model = new AuthorisationsModificationsViewModel();
 
