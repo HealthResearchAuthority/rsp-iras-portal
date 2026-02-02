@@ -337,6 +337,20 @@ public class AuthorisationsProjectClosuresControllerTests
             shortTitleAnswer
         );
 
+        var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
+
+        sponsorOrganisationService
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new SponsorOrganisationUserDto
+                {
+                    Id = Guid.NewGuid(),
+                    IsAuthoriser = true
+                }
+            });
+
         Sut.ModelState.AddModelError("Outcome", "Outcome is required");
 
         // Act
@@ -351,6 +365,13 @@ public class AuthorisationsProjectClosuresControllerTests
         hydrated.Outcome.ShouldBe(posted.Outcome);
         hydrated.IrasId.ShouldBe(irasId);
         hydrated.ShortProjectTitle.ShouldBe(shortTitleAnswer);
+
+        sponsorOrganisationService.Verify(
+                s => s.GetSponsorOrganisationUser(posted.SponsorOrganisationUserId),
+                Times.Once
+            );
+
+        Sut.TempData[TempDataKeys.IsAuthoriser].ShouldBe(true);
     }
 
     [Theory]
