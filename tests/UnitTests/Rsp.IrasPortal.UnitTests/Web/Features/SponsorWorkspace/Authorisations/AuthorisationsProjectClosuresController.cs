@@ -376,6 +376,57 @@ public class AuthorisationsProjectClosuresControllerTests
 
     [Theory]
     [AutoData]
+    public async Task CheckAndAuthoriseProjectClosure_Post_Invalid_ModelState_When_SponsorService_Fails_Returns_ServiceError(
+    AuthoriseProjectClosuresOutcomeViewModel posted)
+    {
+        // Arrange
+        var irasId = 999999;
+        var closureDate = new DateTime(2025, 03, 15);
+        var plannedEndDateAnswer = "2025-03-31";
+        var shortTitleAnswer = "abc";
+
+        posted.ProjectRecordId ??= Guid.NewGuid().ToString();
+        posted.SponsorOrganisationUserId = posted.SponsorOrganisationUserId != Guid.Empty
+            ? posted.SponsorOrganisationUserId
+            : _sponsorOrganisationUserId;
+
+        // Builder success (so we reach the invalid-ModelState branch)
+        ArrangeBuilderSuccess(
+            posted.ProjectRecordId,
+            irasId,
+            closureDate,
+            plannedEndDateAnswer,
+            shortTitleAnswer
+        );
+
+        // ModelState invalid
+        Sut.ModelState.AddModelError("Outcome", "Outcome is required");
+
+        // MOCK FAILURE
+        var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
+
+        sponsorOrganisationService
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>()
+            {
+                StatusCode = HttpStatusCode.InternalServerError,
+            });
+
+        // Act
+        var result = await Sut.CheckAndAuthoriseProjectClosure(posted);
+
+        // Assert
+        var serviceError = result.ShouldBeOfType<StatusCodeResult>();
+        serviceError.StatusCode.ShouldBe((int)HttpStatusCode.InternalServerError);
+
+        sponsorOrganisationService.Verify(
+            s => s.GetSponsorOrganisationUser(posted.SponsorOrganisationUserId),
+            Times.Once
+        );
+    }
+
+    [Theory]
+    [AutoData]
     public async Task CheckAndAuthoriseProjectClosure_Post_Authorised_Redirects_To_PreAuthorisation_And_Sets_TempData(
         AuthoriseProjectClosuresOutcomeViewModel posted)
     {
