@@ -38,7 +38,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
         _http.User = new ClaimsPrincipal(new ClaimsIdentity(new[]
         {
             new Claim(ClaimTypes.Email, currentUserEmail)
-        }, authenticationType: "TestAuth"));
+        }, "TestAuth"));
 
         Sut.ControllerContext = new ControllerContext
         {
@@ -61,20 +61,20 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
             Content = new UserResponse
             {
                 User = new User(
-                    Id: _sponsorOrganisationUserId.ToString(),
-                    IdentityProviderId: null,
-                    Title: null,
-                    GivenName: "Dan",
-                    FamilyName: "Hulmston",
-                    Email: currentUserEmail,
-                    JobTitle: null,
-                    Organisation: null,
-                    Telephone: null,
-                    Country: null,
-                    Status: "Active",
-                    LastUpdated: DateTime.UtcNow,
-                    LastLogin: null,
-                    CurrentLogin: null
+                    _sponsorOrganisationUserId.ToString(),
+                    null,
+                    null,
+                    "Dan",
+                    "Hulmston",
+                    currentUserEmail,
+                    null,
+                    null,
+                    null,
+                    null,
+                    "Active",
+                    DateTime.UtcNow,
+                    null,
+                    null
                 )
             }
         };
@@ -137,6 +137,198 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
         model.Pagination.ShouldNotBeNull();
         model.Pagination.RouteName.ShouldBe("sws:modifications");
         model.Pagination.AdditionalParameters.ShouldContainKey("SponsorOrganisationUserId");
+    }
+
+    [Theory]
+    [AutoData]
+    public async Task Modifications_When_User_Service_Fails_Returns_ServiceError(
+        GetModificationsResponse modificationResponse)
+    {
+        // Arrange
+        var currentUserEmail = "test@test.co.uk";
+
+        var userEntityResponse = new ServiceResponse<UserResponse>
+        {
+            StatusCode = HttpStatusCode.InternalServerError
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser(null, currentUserEmail, null))
+            .ReturnsAsync(userEntityResponse);
+
+        // If your controller reads email from HttpContext.User, make sure your test base sets that
+        // up. Otherwise (if it uses something else) keep consistent with your existing test setup.
+
+        // Act
+        var result = await Sut.Modifications(_sponsorOrganisationUserId);
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.ShouldBeAssignableTo<IActionResult>();
+    }
+
+    [Theory]
+    [AutoData]
+    public async Task Modifications_When_Current_UserId_Is_Not_Guid_Returns_ServiceError_BadRequest(
+        GetModificationsResponse modificationResponse)
+    {
+        // Arrange
+        var currentUserEmail = "test@test.co.uk";
+
+        var userEntityResponse = new ServiceResponse<UserResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new UserResponse
+            {
+                User = new User(
+                    "not-a-guid",
+                    null,
+                    null,
+                    "Dan",
+                    "Hulmston",
+                    currentUserEmail,
+                    null,
+                    null,
+                    null,
+                    null,
+                    "Active",
+                    DateTime.UtcNow,
+                    null,
+                    null
+                )
+            }
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser(null, currentUserEmail, null))
+            .ReturnsAsync(userEntityResponse);
+
+        // Act
+        var result = await Sut.Modifications(_sponsorOrganisationUserId);
+
+        // Assert
+        result.ShouldNotBeNull();
+    }
+
+    [Theory]
+    [AutoData]
+    public async Task Modifications_When_SponsorOrganisations_Service_Fails_Returns_ServiceError(
+        GetModificationsResponse modificationResponse)
+    {
+        // Arrange
+        var currentUserEmail = "test@test.co.uk";
+
+        var userEntityResponse = new ServiceResponse<UserResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new UserResponse
+            {
+                User = new User(
+                    _sponsorOrganisationUserId.ToString(),
+                    null,
+                    null,
+                    "Dan",
+                    "Hulmston",
+                    currentUserEmail,
+                    null,
+                    null,
+                    null,
+                    null,
+                    "Active",
+                    DateTime.UtcNow,
+                    null,
+                    null
+                )
+            }
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser(null, currentUserEmail, null))
+            .ReturnsAsync(userEntityResponse);
+
+        var sponsorOrgResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
+        {
+            StatusCode = HttpStatusCode.Forbidden
+        };
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.GetAllActiveSponsorOrganisationsForEnabledUser(_sponsorOrganisationUserId))
+            .ReturnsAsync(sponsorOrgResponse);
+
+        // Act
+        var result = await Sut.Modifications(_sponsorOrganisationUserId);
+
+        // Assert
+        result.ShouldNotBeNull();
+    }
+
+    [Theory]
+    [AutoData]
+    public async Task Modifications_When_SponsorOrganisationUserId_Does_Not_Match_Returns_Forbid(
+        GetModificationsResponse modificationResponse)
+    {
+        // Arrange
+        var currentUserEmail = "test@test.co.uk";
+        var currentUserId = _sponsorOrganisationUserId;
+        var differentSponsorOrganisationUserId = Guid.NewGuid();
+
+        var userEntityResponse = new ServiceResponse<UserResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new UserResponse
+            {
+                User = new User(
+                    currentUserId.ToString(),
+                    null,
+                    null,
+                    "Dan",
+                    "Hulmston",
+                    currentUserEmail,
+                    null,
+                    null,
+                    null,
+                    null,
+                    "Active",
+                    DateTime.UtcNow,
+                    null,
+                    null
+                )
+            }
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser(null, currentUserEmail, null))
+            .ReturnsAsync(userEntityResponse);
+
+        var sponsorOrgResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new List<SponsorOrganisationDto>
+            {
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    Users = new List<SponsorOrganisationUserDto>
+                    {
+                        new()
+                        {
+                            Id = differentSponsorOrganisationUserId,
+                            UserId = currentUserId
+                        }
+                    }
+                }
+            }
+        };
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.GetAllActiveSponsorOrganisationsForEnabledUser(currentUserId))
+            .ReturnsAsync(sponsorOrgResponse);
+
+        // Act
+        var result = await Sut.Modifications(currentUserId);
+
+        // Assert
+        result.ShouldBeOfType<ForbidResult>();
     }
 
     [Theory]
@@ -523,7 +715,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
                 {
                     Sections =
                     [
-                        new()
+                        new SectionModel
                         {
                             Id = "S2", CategoryId = "SCAT",
                             Questions =
@@ -575,7 +767,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
                 {
                     Sections =
                     [
-                        new()
+                        new SectionModel
                         {
                             Id = "IQA0600", CategoryId = "SCAT", Questions =
                             [
@@ -585,7 +777,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
                                     AnswerDataType = "Text",
                                     Answers = new List<AnswerModel>
                                     {
-                                        new AnswerModel { Id = "TypeB", OptionName = "actual text" }
+                                        new() { Id = "TypeB", OptionName = "actual text" }
                                     }
                                 }
                             ]

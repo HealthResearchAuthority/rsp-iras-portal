@@ -166,6 +166,203 @@ public class AuthorisationsProjectClosuresControllerTests
 
     [Theory]
     [AutoData]
+    public async Task ProjectClosures_When_User_Service_Fails_Returns_ServiceError(
+        ProjectClosuresSearchResponse closuresResponse,
+        List<User> users)
+    {
+        // Arrange
+        var currentUserEmail = "test@test.co.uk";
+
+        var userEntityResponse = new ServiceResponse<UserResponse>
+        {
+            StatusCode = HttpStatusCode.InternalServerError,
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser(null, currentUserEmail, null))
+            .ReturnsAsync(userEntityResponse);
+
+        // Act
+        var result = await Sut.ProjectClosures(_sponsorOrganisationUserId);
+
+        // Assert
+        result.ShouldNotBeNull();
+    }
+
+    [Theory]
+    [AutoData]
+    public async Task ProjectClosures_When_Current_UserId_Is_Not_Guid_Returns_ServiceError_BadRequest(
+        ProjectClosuresSearchResponse closuresResponse,
+        List<User> users)
+    {
+        // Arrange
+        var currentUserEmail = "test@test.co.uk";
+
+        var userEntityResponse = new ServiceResponse<UserResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new UserResponse
+            {
+                User = new User(
+                    Id: "not-a-guid",
+                    IdentityProviderId: null,
+                    Title: null,
+                    GivenName: "Dan",
+                    FamilyName: "Hulmston",
+                    Email: currentUserEmail,
+                    JobTitle: null,
+                    Organisation: null,
+                    Telephone: null,
+                    Country: null,
+                    Status: "Active",
+                    LastUpdated: DateTime.UtcNow,
+                    LastLogin: null,
+                    CurrentLogin: null
+                )
+            }
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser(null, currentUserEmail, null))
+            .ReturnsAsync(userEntityResponse);
+
+        // Act
+        var result = await Sut.ProjectClosures(_sponsorOrganisationUserId);
+
+        // Assert
+        result.ShouldNotBeNull();
+    }
+
+    [Theory]
+    [AutoData]
+    public async Task ProjectClosures_When_SponsorOrganisations_Service_Fails_Returns_ServiceError(
+    ProjectClosuresSearchResponse closuresResponse,
+    List<User> users)
+    {
+        // Arrange
+        var currentUserEmail = "test@test.co.uk";
+
+        var userEntityResponse = new ServiceResponse<UserResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new UserResponse
+            {
+                User = new User(
+                    Id: _sponsorOrganisationUserId.ToString(),
+                    IdentityProviderId: null,
+                    Title: null,
+                    GivenName: "Dan",
+                    FamilyName: "Hulmston",
+                    Email: currentUserEmail,
+                    JobTitle: null,
+                    Organisation: null,
+                    Telephone: null,
+                    Country: null,
+                    Status: "Active",
+                    LastUpdated: DateTime.UtcNow,
+                    LastLogin: null,
+                    CurrentLogin: null
+                )
+            }
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser(null, currentUserEmail, null))
+            .ReturnsAsync(userEntityResponse);
+
+        var sponsorOrgResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
+        {
+            StatusCode = HttpStatusCode.Forbidden,
+        };
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.GetAllActiveSponsorOrganisationsForEnabledUser(_sponsorOrganisationUserId))
+            .ReturnsAsync(sponsorOrgResponse);
+
+        // Act
+        var result = await Sut.ProjectClosures(_sponsorOrganisationUserId);
+
+        // Assert
+        result.ShouldNotBeNull();
+    }
+
+    [Theory]
+    [AutoData]
+    public async Task ProjectClosures_When_SponsorOrganisationUserId_Does_Not_Match_Returns_Forbid(
+    ProjectClosuresSearchResponse closuresResponse,
+    List<User> users)
+    {
+        // Arrange
+        var currentUserEmail = "test@test.co.uk";
+        var currentUserId = _sponsorOrganisationUserId;
+
+        // This is the sponsorOrganisationUserId we pass into the action. It does NOT match the
+        // membership record Id returned by the sponsor org service.
+        var requestedSponsorOrganisationUserId = Guid.NewGuid();
+
+        var userEntityResponse = new ServiceResponse<UserResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new UserResponse
+            {
+                User = new User(
+                    Id: currentUserId.ToString(),
+                    IdentityProviderId: null,
+                    Title: null,
+                    GivenName: "Dan",
+                    FamilyName: "Hulmston",
+                    Email: currentUserEmail,
+                    JobTitle: null,
+                    Organisation: null,
+                    Telephone: null,
+                    Country: null,
+                    Status: "Active",
+                    LastUpdated: DateTime.UtcNow,
+                    LastLogin: null,
+                    CurrentLogin: null
+                )
+            }
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser(null, currentUserEmail, null))
+            .ReturnsAsync(userEntityResponse);
+
+        var sponsorOrgResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new List<SponsorOrganisationDto>
+        {
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Users = new List<SponsorOrganisationUserDto>
+                {
+                    // Note: UserId matches current user, but Id is different from requested sponsor
+                    //       org user id.
+                    new()
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = currentUserId
+                    }
+                }
+            }
+        }
+        };
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.GetAllActiveSponsorOrganisationsForEnabledUser(currentUserId))
+            .ReturnsAsync(sponsorOrgResponse);
+
+        // Act
+        var result = await Sut.ProjectClosures(requestedSponsorOrganisationUserId);
+
+        // Assert
+        result.ShouldBeOfType<ForbidResult>();
+    }
+
+    [Theory]
+    [AutoData]
     public async Task ApplyProjectClosuresFilters_Invalid_ModelState_Redirects_Back(ProjectClosuresViewModel model)
     {
         // Arrange
