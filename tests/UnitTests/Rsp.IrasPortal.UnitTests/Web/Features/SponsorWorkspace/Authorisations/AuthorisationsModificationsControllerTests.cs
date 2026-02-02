@@ -13,10 +13,12 @@ using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.Identity;
 using Rsp.Portal.Web.Features.Modifications.Models;
 using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Controllers;
 using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models;
 using Rsp.Portal.Web.Models;
+using Claim = System.Security.Claims.Claim;
 
 namespace Rsp.Portal.UnitTests.Web.Features.SponsorWorkspace.Authorisations;
 
@@ -27,12 +29,16 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
 
     public AuthorisationsModificationsControllerTests()
     {
+        var currentUserEmail = "test@test.co.uk";
         _http = new DefaultHttpContext
         {
             Session = new InMemorySession()
         };
 
-        _http.User = new ClaimsPrincipal(new ClaimsIdentity());
+        _http.User = new ClaimsPrincipal(new ClaimsIdentity(new[]
+        {
+            new Claim(ClaimTypes.Email, currentUserEmail)
+        }, authenticationType: "TestAuth"));
 
         Sut.ControllerContext = new ControllerContext
         {
@@ -46,20 +52,82 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
     [AutoData]
     public async Task Modifications_Returns_View_With_Correct_Model(GetModificationsResponse modificationResponse)
     {
-        var serviceResponse = new ServiceResponse<GetModificationsResponse>
+        // Arrange
+        var currentUserEmail = "test@test.co.uk";
+
+        var userEntityResponse = new ServiceResponse<UserResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new UserResponse
+            {
+                User = new User(
+                    Id: _sponsorOrganisationUserId.ToString(),
+                    IdentityProviderId: null,
+                    Title: null,
+                    GivenName: "Dan",
+                    FamilyName: "Hulmston",
+                    Email: currentUserEmail,
+                    JobTitle: null,
+                    Organisation: null,
+                    Telephone: null,
+                    Country: null,
+                    Status: "Active",
+                    LastUpdated: DateTime.UtcNow,
+                    LastLogin: null,
+                    CurrentLogin: null
+                )
+            }
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser(null, currentUserEmail, null))
+            .ReturnsAsync(userEntityResponse);
+
+        var sponsorOrgResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new List<SponsorOrganisationDto>
+            {
+                new()
+                {
+                    Id = _sponsorOrganisationUserId,
+                    Users = new List<SponsorOrganisationUserDto>
+                    {
+                        new()
+                        {
+                            Id = _sponsorOrganisationUserId,
+                            UserId = _sponsorOrganisationUserId
+                        }
+                    }
+                }
+            }
+        };
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.GetAllActiveSponsorOrganisationsForEnabledUser(_sponsorOrganisationUserId))
+            .ReturnsAsync(sponsorOrgResponse);
+
+        // existing service call
+        var modificationsServiceResponse = new ServiceResponse<GetModificationsResponse>
         {
             StatusCode = HttpStatusCode.OK,
             Content = modificationResponse
         };
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModificationsBySponsorOrganisationUserId(_sponsorOrganisationUserId,
-                It.IsAny<SponsorAuthorisationsModificationsSearchRequest>(), 1, 20, nameof(ModificationsModel.SentToSponsorDate),
+            .Setup(s => s.GetModificationsBySponsorOrganisationUserId(
+                _sponsorOrganisationUserId,
+                It.IsAny<SponsorAuthorisationsModificationsSearchRequest>(),
+                1,
+                20,
+                nameof(ModificationsModel.SentToSponsorDate),
                 SortDirections.Descending))
-            .ReturnsAsync(serviceResponse);
+            .ReturnsAsync(modificationsServiceResponse);
 
+        // Act
         var result = await Sut.Modifications(_sponsorOrganisationUserId);
 
+        // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
         var model = viewResult.Model.ShouldBeAssignableTo<AuthorisationsModificationsViewModel>();
 
@@ -146,7 +214,9 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
 
         var projectModificationsService = Mocker.GetMock<IProjectModificationsService>();
         projectModificationsService
-            .Setup(s => s.GetDocumentsForModification(It.IsAny<Guid>(), It.IsAny<ProjectOverviewDocumentSearchRequest>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetDocumentsForModification(It.IsAny<Guid>(),
+                It.IsAny<ProjectOverviewDocumentSearchRequest>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(),
+                It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<ProjectOverviewDocumentResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -335,7 +405,8 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
                 }
             });
 
-        // 4. For UpdateModificationChanges flow we need journey questions and answers per change call; set validator minimal
+        // 4. For UpdateModificationChanges flow we need journey questions and answers per change call;
+        // set validator minimal
         Mocker.GetMock<ICmsQuestionsetService>()
             .Setup(s => s.GetModificationsJourney(It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
@@ -362,17 +433,17 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
             });
 
         Mocker
-           .GetMock<IProjectModificationsService>()
-           .Setup(s => s.GetModificationAuditTrail(It.IsAny<Guid>()))
-           .ReturnsAsync(new ServiceResponse<ProjectModificationAuditTrailResponse>
-           {
-               StatusCode = HttpStatusCode.OK,
-               Content = new ProjectModificationAuditTrailResponse
-               {
-                   Items = [],
-                   TotalCount = 0
-               }
-           });
+            .GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationAuditTrail(It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationAuditTrailResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectModificationAuditTrailResponse
+                {
+                    Items = [],
+                    TotalCount = 0
+                }
+            });
 
         Mocker
             .GetMock<IRespondentService>()
@@ -448,7 +519,24 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
             .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new CmsQuestionSetResponse { Sections = [new() { Id = "S2", CategoryId = "SCAT", Questions = [new QuestionModel { Id = "SQ1", QuestionId = "SQ1", Name = "SQ1", CategoryId = "SCAT", AnswerDataType = "Text" }] }] }
+                Content = new CmsQuestionSetResponse
+                {
+                    Sections =
+                    [
+                        new()
+                        {
+                            Id = "S2", CategoryId = "SCAT",
+                            Questions =
+                            [
+                                new QuestionModel
+                                {
+                                    Id = "SQ1", QuestionId = "SQ1", Name = "SQ1", CategoryId = "SCAT",
+                                    AnswerDataType = "Text"
+                                }
+                            ]
+                        }
+                    ]
+                }
             });
 
         var documents = new List<ProjectOverviewDocumentDto>
@@ -471,7 +559,9 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
 
         var projectModificationsService = Mocker.GetMock<IProjectModificationsService>();
         projectModificationsService
-            .Setup(s => s.GetDocumentsForModification(It.IsAny<Guid>(), It.IsAny<ProjectOverviewDocumentSearchRequest>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetDocumentsForModification(It.IsAny<Guid>(),
+                It.IsAny<ProjectOverviewDocumentSearchRequest>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(),
+                It.IsAny<string>()))
             .ReturnsAsync(serviceResponse);
 
         // sponsor details question set and answers
@@ -483,18 +573,32 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
                 StatusCode = HttpStatusCode.OK,
                 Content = new CmsQuestionSetResponse
                 {
-                    Sections = [new() { Id = "IQA0600", CategoryId = "SCAT", Questions = [new QuestionModel { Id = "IQA0600", QuestionId = "IQA0600", Name = "IQA0600", CategoryId = "SCAT", AnswerDataType = "Text",
-                    Answers = new List<AnswerModel>
+                    Sections =
+                    [
+                        new()
                         {
-                            new AnswerModel { Id = "TypeB", OptionName = "actual text" }
-                        } }] }]
+                            Id = "IQA0600", CategoryId = "SCAT", Questions =
+                            [
+                                new QuestionModel
+                                {
+                                    Id = "IQA0600", QuestionId = "IQA0600", Name = "IQA0600", CategoryId = "SCAT",
+                                    AnswerDataType = "Text",
+                                    Answers = new List<AnswerModel>
+                                    {
+                                        new AnswerModel { Id = "TypeB", OptionName = "actual text" }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
                 }
             });
 
         Mocker
             .GetMock<IRespondentService>()
             .Setup(s => s.GetModificationAnswers(It.IsAny<Guid>(), It.IsAny<string>()))
-            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = [] });
+            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>>
+            { StatusCode = HttpStatusCode.OK, Content = [] });
 
         // This is your domain object you're enriching
         var modification = new ModificationDetailsViewModel
@@ -504,8 +608,8 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
         };
 
         TypeAdapterConfig<ModificationDetailsViewModel, AuthoriseModificationsOutcomeViewModel>
-        .NewConfig()
-        .Ignore(dest => dest.ProjectOverviewDocumentViewModel);
+            .NewConfig()
+            .Ignore(dest => dest.ProjectOverviewDocumentViewModel);
 
         var authoriseOutcomeViewModel = modification.Adapt<AuthoriseModificationsOutcomeViewModel>();
         authoriseOutcomeViewModel.SponsorOrganisationUserId = sponsorOrganisationUserId;

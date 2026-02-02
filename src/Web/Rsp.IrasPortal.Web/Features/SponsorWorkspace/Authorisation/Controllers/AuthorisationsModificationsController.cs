@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿using System.Net;
+using System.Security.Claims;
+using System.Text.Json;
 using FluentValidation;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
@@ -7,6 +9,7 @@ using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.Filters;
+using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
 using Rsp.Portal.Web.Areas.Admin.Models;
@@ -20,7 +23,7 @@ using Rsp.Portal.Web.Models;
 namespace Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Controllers;
 
 /// <summary>
-///     Controller responsible for handling sponsor workspace related actions.
+/// Controller responsible for handling sponsor workspace related actions.
 /// </summary>
 [Authorize(Policy = Workspaces.Sponsor)]
 [Route("sponsorworkspace/[action]", Name = "sws:[action]")]
@@ -30,6 +33,7 @@ public class AuthorisationsModificationsController
     IRespondentService respondentService,
     ISponsorOrganisationService sponsorOrganisationService,
     ICmsQuestionsetService cmsQuestionsetService,
+    IUserManagementService userService,
     IValidator<AuthorisationsModificationsSearchModel> searchValidator
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, null!)
 {
@@ -48,6 +52,38 @@ public class AuthorisationsModificationsController
         string sortDirection = SortDirections.Descending
     )
     {
+        var currentUserEmail = HttpContext?.User.FindFirstValue(ClaimTypes.Email);
+        var userEntityResponse = await userService.GetUser(null, currentUserEmail);
+
+        if (!userEntityResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(userEntityResponse);
+        }
+        if (!Guid.TryParse(userEntityResponse.Content!.User.Id?.Trim(), out var gid))
+        {
+            var errorResponse = new ServiceResponse<UserResponse>()
+                .WithError(
+                    errorMessage: "Invalid or missing user identifier for the current user.",
+                    reasonPhrase: "InvalidUserId",
+                    statusCode: HttpStatusCode.BadRequest
+                );
+            return this.ServiceError(errorResponse);
+        }
+
+        var sponsorOrganisationsResponse = await sponsorOrganisationService.GetAllActiveSponsorOrganisationsForEnabledUser(gid);
+
+        if (!sponsorOrganisationsResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(sponsorOrganisationsResponse);
+        }
+
+        // This works for single sponsor organisations
+        if (sponsorOrganisationUserId != sponsorOrganisationsResponse.Content?.Single().Users
+                ?.Single(u => u.UserId.Equals(gid)).Id)
+        {
+            return Forbid();
+        }
+
         var model = new AuthorisationsModificationsViewModel();
 
         // getting search query

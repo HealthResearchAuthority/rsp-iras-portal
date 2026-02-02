@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Security.Claims;
+using System.Text.Json;
 using AutoFixture;
 using FluentValidation;
 using FluentValidation.Results;
@@ -17,6 +18,7 @@ using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Controllers;
 using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models;
 using Rsp.Portal.Web.Helpers;
 using Rsp.Portal.Web.Models;
+using Claim = System.Security.Claims.Claim;
 
 namespace Rsp.Portal.UnitTests.Web.Features.SponsorWorkspace.Authorisations;
 
@@ -28,13 +30,16 @@ public class AuthorisationsProjectClosuresControllerTests
 
     public AuthorisationsProjectClosuresControllerTests()
     {
+        var currentUserEmail = "test@test.co.uk";
         _http = new DefaultHttpContext
         {
             Session = new InMemorySession()
         };
 
-        _http.User = new System.Security.Claims.ClaimsPrincipal(
-            new System.Security.Claims.ClaimsIdentity());
+        _http.User = new ClaimsPrincipal(new ClaimsIdentity(new[]
+        {
+            new Claim(ClaimTypes.Email, currentUserEmail)
+        }, authenticationType: "TestAuth"));
 
         Sut.ControllerContext = new ControllerContext
         {
@@ -48,6 +53,61 @@ public class AuthorisationsProjectClosuresControllerTests
     [AutoData]
     public async Task ProjectClosures_Returns_View_With_Correct_Model(ProjectClosuresSearchResponse closuresResponse, List<User> users)
     {
+        // Arrange
+        var currentUserEmail = "test@test.co.uk";
+
+        var userEntityResponse = new ServiceResponse<UserResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new UserResponse
+            {
+                User = new User(
+                    Id: _sponsorOrganisationUserId.ToString(),
+                    IdentityProviderId: null,
+                    Title: null,
+                    GivenName: "Dan",
+                    FamilyName: "Hulmston",
+                    Email: currentUserEmail,
+                    JobTitle: null,
+                    Organisation: null,
+                    Telephone: null,
+                    Country: null,
+                    Status: "Active",
+                    LastUpdated: DateTime.UtcNow,
+                    LastLogin: null,
+                    CurrentLogin: null
+                )
+            }
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser(null, currentUserEmail, null))
+            .ReturnsAsync(userEntityResponse);
+
+        var sponsorOrgResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new List<SponsorOrganisationDto>
+            {
+                new()
+                {
+                    Id = _sponsorOrganisationUserId,
+                    Users = new List<SponsorOrganisationUserDto>
+                    {
+                        new()
+                        {
+                            Id = _sponsorOrganisationUserId,
+                            UserId = _sponsorOrganisationUserId
+                        }
+                    }
+                }
+            }
+        };
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.GetAllActiveSponsorOrganisationsForEnabledUser(_sponsorOrganisationUserId))
+            .ReturnsAsync(sponsorOrgResponse);
+
         // arrange at least 1 matching user id.
         closuresResponse.ProjectClosures.First().UserId = users[0].Id;
 
@@ -205,8 +265,7 @@ public class AuthorisationsProjectClosuresControllerTests
     }
 
     // ============================
-    // GET: CheckAndAuthoriseProjectClosure
-    // ============================
+    // GET: CheckAndAuthoriseProjectClosure ============================
 
     [Theory]
     [AutoData]
@@ -310,8 +369,7 @@ public class AuthorisationsProjectClosuresControllerTests
     }
 
     // ============================
-    // POST: CheckAndAuthoriseProjectClosure
-    // ============================
+    // POST: CheckAndAuthoriseProjectClosure ============================
 
     [Theory]
     [AutoData]
@@ -459,8 +517,7 @@ public class AuthorisationsProjectClosuresControllerTests
     }
 
     // ============================
-    // GET: ProjectClosurePreAuthorisation
-    // ============================
+    // GET: ProjectClosurePreAuthorisation ============================
 
     [Theory]
     [AutoData]
@@ -494,8 +551,7 @@ public class AuthorisationsProjectClosuresControllerTests
     }
 
     // ============================
-    // POST: ProjectClosurePreAuthorisationConfirm
-    // ============================
+    // POST: ProjectClosurePreAuthorisationConfirm ============================
 
     [Theory]
     [AutoData]
@@ -533,8 +589,7 @@ public class AuthorisationsProjectClosuresControllerTests
     }
 
     // ============================
-    // GET: ProjectClosureConfirmation
-    // ============================
+    // GET: ProjectClosureConfirmation ============================
 
     [Theory]
     [AutoData]
@@ -555,6 +610,61 @@ public class AuthorisationsProjectClosuresControllerTests
     ProjectClosuresSearchResponse closuresResponse,
     List<User> users)
     {
+        // Arrange
+        var currentUserEmail = "test@test.co.uk";
+
+        var userEntityResponse = new ServiceResponse<UserResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new UserResponse
+            {
+                User = new User(
+                    Id: _sponsorOrganisationUserId.ToString(),
+                    IdentityProviderId: null,
+                    Title: null,
+                    GivenName: "Dan",
+                    FamilyName: "Hulmston",
+                    Email: currentUserEmail,
+                    JobTitle: null,
+                    Organisation: null,
+                    Telephone: null,
+                    Country: null,
+                    Status: "Active",
+                    LastUpdated: DateTime.UtcNow,
+                    LastLogin: null,
+                    CurrentLogin: null
+                )
+            }
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser(null, currentUserEmail, null))
+            .ReturnsAsync(userEntityResponse);
+
+        var sponsorOrgResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new List<SponsorOrganisationDto>
+            {
+                new()
+                {
+                    Id = _sponsorOrganisationUserId,
+                    Users = new List<SponsorOrganisationUserDto>
+                    {
+                        new()
+                        {
+                            Id = _sponsorOrganisationUserId,
+                            UserId = _sponsorOrganisationUserId
+                        }
+                    }
+                }
+            }
+        };
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.GetAllActiveSponsorOrganisationsForEnabledUser(_sponsorOrganisationUserId))
+            .ReturnsAsync(sponsorOrgResponse);
+
         users = users.Take(3).ToList();
 
         var usersFixed = new List<User>
@@ -641,7 +751,61 @@ public class AuthorisationsProjectClosuresControllerTests
         ProjectClosuresSearchResponse closuresResponse,
         List<User> users)
     {
-        // Arrange
+        // Arrange Arrange
+        var currentUserEmail = "test@test.co.uk";
+
+        var userEntityResponse = new ServiceResponse<UserResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new UserResponse
+            {
+                User = new User(
+                    Id: _sponsorOrganisationUserId.ToString(),
+                    IdentityProviderId: null,
+                    Title: null,
+                    GivenName: "Dan",
+                    FamilyName: "Hulmston",
+                    Email: currentUserEmail,
+                    JobTitle: null,
+                    Organisation: null,
+                    Telephone: null,
+                    Country: null,
+                    Status: "Active",
+                    LastUpdated: DateTime.UtcNow,
+                    LastLogin: null,
+                    CurrentLogin: null
+                )
+            }
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser(null, currentUserEmail, null))
+            .ReturnsAsync(userEntityResponse);
+
+        var sponsorOrgResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new List<SponsorOrganisationDto>
+            {
+                new()
+                {
+                    Id = _sponsorOrganisationUserId,
+                    Users = new List<SponsorOrganisationUserDto>
+                    {
+                        new()
+                        {
+                            Id = _sponsorOrganisationUserId,
+                            UserId = _sponsorOrganisationUserId
+                        }
+                    }
+                }
+            }
+        };
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.GetAllActiveSponsorOrganisationsForEnabledUser(_sponsorOrganisationUserId))
+            .ReturnsAsync(sponsorOrgResponse);
+
         var serviceResponse = new ServiceResponse<ProjectClosuresSearchResponse>
         {
             StatusCode = HttpStatusCode.OK,
