@@ -9,7 +9,7 @@
 
 	// If we know the specific area of change, dynamically build the page title to make the UI clearer.
 	// Otherwise, leave the title empty (will fallback to default in the view if needed).
-	ViewBag.Title = "Documents added";
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null

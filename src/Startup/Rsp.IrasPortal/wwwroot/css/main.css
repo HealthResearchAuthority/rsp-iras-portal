@@ -1,4 +1,4 @@
-﻿@charset "UTF-8";
+@charset "UTF-8";
 @import url("govuk-frontend.min.css");
 .govuk-form-group.questions {
   border: solid 1px lightgrey;
@@ -978,11 +978,6 @@ button.govuk-pagination__item--current {
   }
 }
 
-.govuk-tab-toggle {
-  position: absolute;
-  opacity: 0;
-}
-
 /* Remove background colour from list and items */
 .govuk-service-navigation__container,
 .govuk-service-navigation__wrapper,
@@ -998,42 +993,62 @@ button.govuk-pagination__item--current {
   background: #ffffff;
 }
 
-/* Hide all panels by default */
-.tab-content {
-  display: none;
-  margin-top: 1.5rem;
+.govuk-service-navigation__item {
+  position: relative;
 }
 
-/* Show the panel corresponding to the checked input */
-#tab-sponsor-details:checked ~ #sponsor-details,
-#tab-modifications-changes:checked ~ #modifications-changes,
-#tab-documents:checked ~ #documents,
-#tab-profile:checked ~ #profile,
-#tab-projects:checked ~ #projects,
-#tab-users:checked ~ #users,
-#tab-history:checked ~ #history {
+.govuk-service-navigation__item::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: transparent;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.govuk-service-navigation__item::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 5px;
+  background: transparent;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.govuk-service-navigation__item:focus-within::before {
+  background: #ffdd00;
+}
+
+.govuk-service-navigation__item:focus-within::after {
+  background: #0b0c0c;
+}
+
+.govuk-service-navigation__item--active::after {
+  background: #1d70b8;
+}
+
+.govuk-service-navigation__item--active {
+  padding-bottom: 0 !important;
+  border-bottom: none !important;
+}
+
+.govuk-service-navigation__link {
+  position: relative;
+  z-index: 2;
   display: block;
-}
-
-/* Highlight the active tab (underline and text colour) */
-#tab-sponsor-details:checked ~ .govuk-service-navigation .govuk-service-navigation__item--sponsor-details > label,
-#tab-modifications-changes:checked ~ .govuk-service-navigation .govuk-service-navigation__item--modifications-changes > label,
-#tab-documents:checked ~ .govuk-service-navigation .govuk-service-navigation__item--documents > label,
-#tab-profile:checked ~ .govuk-service-navigation .govuk-service-navigation__item--profile > label,
-#tab-projects:checked ~ .govuk-service-navigation .govuk-service-navigation__item--projects > label,
-#tab-users:checked ~ .govuk-service-navigation .govuk-service-navigation__item--users > label,
-#tab-history:checked ~ .govuk-service-navigation .govuk-service-navigation__item--history > label {
-  border-bottom: 4px solid #1d70b8;
-  color: #0b0c0c;
-}
-
-/* Label behaves like a link */
-.govuk-service-navigation__link-label {
-  cursor: pointer;
-  display: inline-block;
-  padding-bottom: 4px;
   text-decoration: none;
+  background: transparent;
+  box-shadow: none;
   color: #1d70b8;
+}
+
+.govuk-service-navigation__link:focus,
+.govuk-service-navigation__link:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .govuk-error-message {
@@ -1089,3 +1104,23 @@ button.govuk-pagination__item--current {
   overflow-wrap: anywhere;
   word-break: break-word;
 }
+
+/* GOV.UK tablet breakpoint is 641px */
+.project-status--mobile {
+  display: block;
+}
+
+.project-status--desktop {
+  display: none;
+}
+
+@media (min-width: 40.0625em) {
+  .project-status--mobile {
+    display: none;
+  }
+  .project-status--desktop {
+    display: block;
+  }
+}
+
+/*# sourceMappingURL=main.css.map */

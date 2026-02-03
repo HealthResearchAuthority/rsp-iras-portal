@@ -17,7 +17,7 @@
 
 @{
     var errorSummaryTitle = "There is a problem";
-    ViewBag.Title = "Authorisations";
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
     ViewBag.Active = SponsorAuthorisations.ProjectClosures;
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
@@ -77,7 +77,8 @@
                                     {
                                                                 new { Field = nameof(ProjectClosuresModel.ShortProjectTitle), Label = "Short project title" },
                                                                 new { Field = nameof(ProjectClosuresModel.IrasId), Label = "IRAS ID" },
-                                                                new { Field = nameof(ProjectClosuresModel.SentToSponsorDate), Label = "Date received" },                                                                
+                                                                new { Field = nameof(ProjectClosuresModel.SentToSponsorDate), Label = "Date received" },
+                                                                new { Field = nameof(ProjectClosuresModel.UserEmail), Label = "User email" },
                                                                 new { Field = nameof(ProjectClosuresModel.ClosureDate), Label = "Date closed" },
                                                                 new { Field = nameof(ProjectClosuresModel.Status), Label = "Status" }
                                                                 };
@@ -85,13 +86,6 @@
                                 }
                                 @foreach (var header in sortableHeaders)
                                 {
-                                    // Insert User email column *before* ClosureDate
-                                    if (header.Field == nameof(ProjectClosuresModel.ClosureDate))
-                                    {
-                                        <!-- NON-sortable User email column -->
-                                        <th scope="col" class="govuk-table__header govuk-table__header-sortable">User email</th>
-                                    }
-
                                     <th scope="col" class="govuk-table__header govuk-table__header-sortable">
                                         <partial name="_SortableHeaderButton" model="@(new SortableHeaderModel
                                                                               {

@@ -51,6 +51,10 @@ public class BaseProjectModificationViewModel
     /// </summary>
     public string Status { get; set; } = null!;
 
+    public string? ReasonNotApproved { get; set; }
+
+    public string? ReviewerComments { get; set; }
+
     /// <summary>
     /// Gets or sets the created date of the Modification
     /// </summary>

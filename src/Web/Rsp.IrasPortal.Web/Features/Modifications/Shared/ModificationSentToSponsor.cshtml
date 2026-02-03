@@ -2,7 +2,7 @@
 @using Rsp.Portal.Application.DTOs.Responses.CmsContent
 
 @{
-    ViewBag.Title = $"Modification set to sponsor";
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 
     var projectRecordId = TempData[TempDataKeys.ProjectRecordId];
     var projectModificationId = TempData[TempDataKeys.ProjectModification.ProjectModificationId];

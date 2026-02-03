@@ -6,7 +6,7 @@
 @model SponsorOrganisationListUsersModel
 
 @{
-    ViewBag.Title = "Users for sponsor organisation - Manage sponsor organisations - System Administration";
+    ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 
     var sortableHeaders = new[]
     {

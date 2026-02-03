@@ -154,6 +154,15 @@ public class ReviewAllChangesController
             return this.ServiceError(_reviewOutcomeNotFoundError);
         }
 
+        if (model.ReviewOutcome == ModificationStatus.NotApproved)
+        {
+            return RedirectToAction(nameof(ReasonNotApproved));
+        }
+        if (model.ReviewOutcome == ModificationStatus.Approved)
+        {
+            return RedirectToAction(nameof(ReviewOutcomeSubmitted));
+        }
+
         var reviewResponses = await projectModificationsService.GetModificationReviewResponses
         (
             model.ModificationDetails.ProjectRecordId,
@@ -332,8 +341,6 @@ public class ReviewAllChangesController
     [HttpGet]
     public IActionResult ReviewOutcomeSubmitted()
     {
-        TempData.Clear();
-
         return View();
     }
 
@@ -450,6 +457,8 @@ public class ReviewAllChangesController
             Comment = model.Comment,
             ReasonNotApproved = model.ReasonNotApproved
         };
+
+        SaveToTempData(model);
 
         return await projectModificationsService.SaveModificationReviewResponses(request);
     }

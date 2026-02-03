@@ -1,10 +1,13 @@
 ﻿using System.Net;
+using System.Security.Claims;
 using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Filters;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
@@ -13,13 +16,14 @@ using Rsp.Portal.Domain.Identity;
 using Rsp.Portal.Web.Areas.Admin.Models;
 using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models;
+using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Services;
 using Rsp.Portal.Web.Helpers;
 using Rsp.Portal.Web.Models;
 
 namespace Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Controllers;
 
 /// <summary>
-///     Controller responsible for handling sponsor workspace related actions.
+/// Controller responsible for handling sponsor workspace related actions.
 /// </summary>
 [Authorize(Policy = Workspaces.Sponsor)]
 [Route("sponsorworkspace/[action]", Name = "sws:[action]")]
@@ -30,6 +34,8 @@ public class AuthorisationsProjectClosuresController
     ICmsQuestionsetService cmsQuestionsetService,
     IProjectClosuresService projectClosuresService,
     IUserManagementService userManagementService,
+    ISponsorOrganisationService sponsorOrganisationService,
+    ISponsorUserAuthorisationService sponsorUserAuthorisationService,
     IValidator<ProjectClosuresSearchModel> searchValidator
 ) : Controller
 {
@@ -44,6 +50,9 @@ public class AuthorisationsProjectClosuresController
         string sortDirection = SortDirections.Descending
     )
     {
+        var auth = await sponsorUserAuthorisationService.AuthoriseAsync(this, sponsorOrganisationUserId, User);
+        if (!auth.IsAuthorised) return auth.FailureResult!;
+
         var model = new ProjectClosuresViewModel();
 
         // getting search query
@@ -58,9 +67,18 @@ public class AuthorisationsProjectClosuresController
             SearchTerm = model.Search.SearchTerm
         };
 
-        var projectClosuresServiceResponse =
-            await projectClosuresService.GetProjectClosuresBySponsorOrganisationUserId(sponsorOrganisationUserId,
-                searchQuery, pageNumber, pageSize, sortField, sortDirection);
+        ServiceResponse<ProjectClosuresSearchResponse> projectClosuresServiceResponse;
+        // for sorting by User Email - paging and sorting takes place in Portal
+        if (sortField == nameof(ProjectClosuresModel.UserEmail))
+        {
+            projectClosuresServiceResponse = await projectClosuresService.GetProjectClosuresBySponsorOrganisationUserIdWithoutPaging(
+                sponsorOrganisationUserId, searchQuery);
+        }
+        else
+        {
+            projectClosuresServiceResponse = await projectClosuresService.GetProjectClosuresBySponsorOrganisationUserId(
+                sponsorOrganisationUserId, searchQuery, pageNumber, pageSize, sortField, sortDirection);
+        }
 
         model.ProjectRecords = projectClosuresServiceResponse?.Content?.ProjectClosures?
             .Select(dto => new ProjectClosuresModel
@@ -88,8 +106,40 @@ public class AuthorisationsProjectClosuresController
             pr.UserEmail = emailByUserId.TryGetValue(pr.UserId, out var email) ? email : null;
         }
 
+        if (sortField == nameof(ProjectClosuresModel.UserEmail))
+        {
+            IOrderedEnumerable<ProjectClosuresModel> ordered;
+
+            if (pageNumber <= 0 || pageSize <= 0)
+            {
+                var serviceResponse = new ServiceResponse()
+                .WithError("pageIndex and pageSize must be greater than 0")
+                .WithStatus(HttpStatusCode.BadRequest);
+
+                return this.ServiceError(serviceResponse);
+            }
+
+            if (string.Equals(sortDirection, SortDirections.Descending, StringComparison.OrdinalIgnoreCase))
+            {
+                ordered = model.ProjectRecords
+                    .OrderByDescending(x => x.UserEmail, StringComparer.OrdinalIgnoreCase)
+                    .ThenByDescending(x => x.SentToSponsorDate ?? DateTime.MinValue);
+            }
+            else
+            {
+                ordered = model.ProjectRecords
+                    .OrderBy(x => x.UserEmail, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(x => x.SentToSponsorDate ?? DateTime.MinValue);
+            }
+
+            model.ProjectRecords = ordered
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+        }
+
         model.Pagination = new PaginationViewModel(pageNumber, pageSize,
-            projectClosuresServiceResponse?.Content?.TotalCount ?? 0)
+        projectClosuresServiceResponse?.Content?.TotalCount ?? 0)
         {
             RouteName = "sws:projectclosures",
             SortDirection = sortDirection,
@@ -228,6 +278,16 @@ public class AuthorisationsProjectClosuresController
             return result;
         }
 
+        var sponsorOrganisationUser =
+            await sponsorOrganisationService.GetSponsorOrganisationUser(sponsorOrganisationUserId);
+
+        if (!sponsorOrganisationUser.IsSuccessStatusCode)
+        {
+            return this.ServiceError(sponsorOrganisationUser);
+        }
+
+        TempData[TempDataKeys.IsAuthoriser] = sponsorOrganisationUser.Content!.IsAuthoriser;
+
         return View(outcome.Value);
     }
 
@@ -249,6 +309,15 @@ public class AuthorisationsProjectClosuresController
 
         if (!ModelState.IsValid)
         {
+            var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId);
+
+            if (!sponsorOrganisationUser.IsSuccessStatusCode)
+            {
+                return this.ServiceError(sponsorOrganisationUser);
+            }
+
+            TempData[TempDataKeys.IsAuthoriser] = sponsorOrganisationUser.Content!.IsAuthoriser;
+
             var hydrated = res.Value as AuthoriseProjectClosuresOutcomeViewModel;
             // Preserve the posted Outcome so the radios keep the selection
             if (hydrated is not null)

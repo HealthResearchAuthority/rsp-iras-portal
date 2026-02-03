@@ -3,7 +3,7 @@
 @model SponsorOrganisationListUsersModel
 
 @{
-	ViewBag.Title = "Add a new user profile to sponsor organisation - Manage sponsor organisations - System Administration";
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null

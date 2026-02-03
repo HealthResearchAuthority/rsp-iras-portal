@@ -1,4 +1,6 @@
-﻿namespace Rsp.Portal.Web.Models;
+﻿using Rsp.Portal.Web.Extensions;
+
+namespace Rsp.Portal.Web.Models;
 
 public class ProjectClosuresModel
 {
@@ -14,5 +16,9 @@ public class ProjectClosuresModel
     public DateTime? ClosureDate { get; set; } = null!;
     public int ProjectClosureNumber { get; set; }
     public string TransactionId { get; set; } = null!;
-    public DateViewModel ActualClosureDate { get; set; } = null!;
+    public DateTime? ActualClosureDate => DateTimeExtensions.ParseDateValidation(ActualClosureDateDay, ActualClosureDateMonth, ActualClosureDateYear);
+
+    public string? ActualClosureDateDay { get; set; }
+    public string? ActualClosureDateMonth { get; set; }
+    public string? ActualClosureDateYear { get; set; }
 }

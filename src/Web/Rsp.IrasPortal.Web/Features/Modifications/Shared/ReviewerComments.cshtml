@@ -1,0 +1,21 @@
+﻿@using System.Globalization
+@using System.Text.Json
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Microsoft.AspNetCore.Http.Extensions
+@using Microsoft.FeatureManagement
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Web.Features.Modifications.Models
+@model ModificationDetailsViewModel
+
+<div class="govuk-summary-card">
+    <div class="govuk-summary-card__title-wrapper">
+        <h2 class="govuk-summary-card__title">
+            Comment
+        </h2>
+    </div>
+
+    <div class="govuk-summary-card__content">
+        @((Model?.ReviewerComments ?? "").Trim())
+    </div>
+
+</div>
