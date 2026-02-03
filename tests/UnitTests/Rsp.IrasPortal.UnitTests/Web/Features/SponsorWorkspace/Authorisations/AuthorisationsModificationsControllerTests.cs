@@ -5,6 +5,7 @@ using Mapster;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Services;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.CmsQuestionset;
@@ -13,10 +14,12 @@ using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.Identity;
 using Rsp.Portal.Web.Features.Modifications.Models;
 using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Controllers;
 using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models;
 using Rsp.Portal.Web.Models;
+using Claim = System.Security.Claims.Claim;
 
 namespace Rsp.Portal.UnitTests.Web.Features.SponsorWorkspace.Authorisations;
 
@@ -27,12 +30,16 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
 
     public AuthorisationsModificationsControllerTests()
     {
+        var currentUserEmail = "test@test.co.uk";
         _http = new DefaultHttpContext
         {
             Session = new InMemorySession()
         };
 
-        _http.User = new ClaimsPrincipal(new ClaimsIdentity());
+        _http.User = new ClaimsPrincipal(new ClaimsIdentity(new[]
+        {
+            new Claim(ClaimTypes.Email, currentUserEmail)
+        }, "TestAuth"));
 
         Sut.ControllerContext = new ControllerContext
         {
@@ -46,20 +53,34 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
     [AutoData]
     public async Task Modifications_Returns_View_With_Correct_Model(GetModificationsResponse modificationResponse)
     {
-        var serviceResponse = new ServiceResponse<GetModificationsResponse>
+        // Arrange
+        Mocker.GetMock<ISponsorUserAuthorisationService>()
+            .Setup(s => s.AuthoriseAsync(
+                Sut,
+                _sponsorOrganisationUserId,
+                It.IsAny<ClaimsPrincipal>()))
+            .ReturnsAsync(Authorised(_sponsorOrganisationUserId));
+
+        var modificationsServiceResponse = new ServiceResponse<GetModificationsResponse>
         {
             StatusCode = HttpStatusCode.OK,
             Content = modificationResponse
         };
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModificationsBySponsorOrganisationUserId(_sponsorOrganisationUserId,
-                It.IsAny<SponsorAuthorisationsModificationsSearchRequest>(), 1, 20, nameof(ModificationsModel.SentToSponsorDate),
+            .Setup(s => s.GetModificationsBySponsorOrganisationUserId(
+                _sponsorOrganisationUserId,
+                It.IsAny<SponsorAuthorisationsModificationsSearchRequest>(),
+                1,
+                20,
+                nameof(ModificationsModel.SentToSponsorDate),
                 SortDirections.Descending))
-            .ReturnsAsync(serviceResponse);
+            .ReturnsAsync(modificationsServiceResponse);
 
+        // Act
         var result = await Sut.Modifications(_sponsorOrganisationUserId);
 
+        // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
         var model = viewResult.Model.ShouldBeAssignableTo<AuthorisationsModificationsViewModel>();
 
@@ -69,6 +90,83 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
         model.Pagination.ShouldNotBeNull();
         model.Pagination.RouteName.ShouldBe("sws:modifications");
         model.Pagination.AdditionalParameters.ShouldContainKey("SponsorOrganisationUserId");
+    }
+
+    [Theory]
+    [AutoData]
+    public async Task Modifications_When_Not_Authorised_Returns_Failure_Result(GetModificationsResponse modificationResponse)
+    {
+        // Arrange
+        var failure = new StatusCodeResult((int)HttpStatusCode.Forbidden); // or a ViewResult / ObjectResult based on your ServiceError
+        Mocker.GetMock<ISponsorUserAuthorisationService>()
+            .Setup(s => s.AuthoriseAsync(
+                Sut,
+                _sponsorOrganisationUserId,
+                It.IsAny<ClaimsPrincipal>()))
+            .ReturnsAsync(NotAuthorised(failure));
+
+        // Act
+        var result = await Sut.Modifications(_sponsorOrganisationUserId);
+
+        // Assert
+        result.ShouldBeSameAs(failure);
+    }
+
+    [Theory]
+    [AutoData]
+    public async Task Modifications_When_Authorisation_Returns_Forbid_Returns_Forbid(GetModificationsResponse modificationResponse)
+    {
+        // Arrange
+        var forbid = new ForbidResult();
+
+        Mocker.GetMock<ISponsorUserAuthorisationService>()
+            .Setup(s => s.AuthoriseAsync(
+                Sut,
+                _sponsorOrganisationUserId,
+                It.IsAny<ClaimsPrincipal>()))
+            .ReturnsAsync(NotAuthorised(forbid));
+
+        // Act
+        var result = await Sut.Modifications(_sponsorOrganisationUserId);
+
+        // Assert
+        result.ShouldBeSameAs(forbid);
+        result.ShouldBeOfType<ForbidResult>();
+    }
+
+    [Theory]
+    [AutoData]
+    public async Task Modifications_When_Modifications_Service_Fails_Returns_ServiceError(GetModificationsResponse modificationResponse)
+    {
+        // Arrange
+        Mocker.GetMock<ISponsorUserAuthorisationService>()
+            .Setup(s => s.AuthoriseAsync(
+                Sut,
+                _sponsorOrganisationUserId,
+                It.IsAny<ClaimsPrincipal>()))
+            .ReturnsAsync(Authorised(_sponsorOrganisationUserId));
+
+        var modificationsServiceResponse = new ServiceResponse<GetModificationsResponse>
+        {
+            StatusCode = HttpStatusCode.InternalServerError
+        };
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationsBySponsorOrganisationUserId(
+                _sponsorOrganisationUserId,
+                It.IsAny<SponsorAuthorisationsModificationsSearchRequest>(),
+                1,
+                20,
+                nameof(ModificationsModel.SentToSponsorDate),
+                SortDirections.Descending))
+            .ReturnsAsync(modificationsServiceResponse);
+
+        // Act
+        var result = await Sut.Modifications(_sponsorOrganisationUserId);
+
+        // Assert
+        result.ShouldNotBeNull();
+        // tighten this based on what ServiceError returns in your project
     }
 
     [Theory]
@@ -146,7 +244,9 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
 
         var projectModificationsService = Mocker.GetMock<IProjectModificationsService>();
         projectModificationsService
-            .Setup(s => s.GetDocumentsForModification(It.IsAny<Guid>(), It.IsAny<ProjectOverviewDocumentSearchRequest>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetDocumentsForModification(It.IsAny<Guid>(),
+                It.IsAny<ProjectOverviewDocumentSearchRequest>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(),
+                It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<ProjectOverviewDocumentResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -335,7 +435,8 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
                 }
             });
 
-        // 4. For UpdateModificationChanges flow we need journey questions and answers per change call; set validator minimal
+        // 4. For UpdateModificationChanges flow we need journey questions and answers per change call;
+        // set validator minimal
         Mocker.GetMock<ICmsQuestionsetService>()
             .Setup(s => s.GetModificationsJourney(It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
@@ -362,17 +463,17 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
             });
 
         Mocker
-           .GetMock<IProjectModificationsService>()
-           .Setup(s => s.GetModificationAuditTrail(It.IsAny<Guid>()))
-           .ReturnsAsync(new ServiceResponse<ProjectModificationAuditTrailResponse>
-           {
-               StatusCode = HttpStatusCode.OK,
-               Content = new ProjectModificationAuditTrailResponse
-               {
-                   Items = [],
-                   TotalCount = 0
-               }
-           });
+            .GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationAuditTrail(It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationAuditTrailResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectModificationAuditTrailResponse
+                {
+                    Items = [],
+                    TotalCount = 0
+                }
+            });
 
         Mocker
             .GetMock<IRespondentService>()
@@ -448,7 +549,24 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
             .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new CmsQuestionSetResponse { Sections = [new() { Id = "S2", CategoryId = "SCAT", Questions = [new QuestionModel { Id = "SQ1", QuestionId = "SQ1", Name = "SQ1", CategoryId = "SCAT", AnswerDataType = "Text" }] }] }
+                Content = new CmsQuestionSetResponse
+                {
+                    Sections =
+                    [
+                        new SectionModel
+                        {
+                            Id = "S2", CategoryId = "SCAT",
+                            Questions =
+                            [
+                                new QuestionModel
+                                {
+                                    Id = "SQ1", QuestionId = "SQ1", Name = "SQ1", CategoryId = "SCAT",
+                                    AnswerDataType = "Text"
+                                }
+                            ]
+                        }
+                    ]
+                }
             });
 
         var documents = new List<ProjectOverviewDocumentDto>
@@ -471,7 +589,9 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
 
         var projectModificationsService = Mocker.GetMock<IProjectModificationsService>();
         projectModificationsService
-            .Setup(s => s.GetDocumentsForModification(It.IsAny<Guid>(), It.IsAny<ProjectOverviewDocumentSearchRequest>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(s => s.GetDocumentsForModification(It.IsAny<Guid>(),
+                It.IsAny<ProjectOverviewDocumentSearchRequest>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(),
+                It.IsAny<string>()))
             .ReturnsAsync(serviceResponse);
 
         // sponsor details question set and answers
@@ -483,18 +603,32 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
                 StatusCode = HttpStatusCode.OK,
                 Content = new CmsQuestionSetResponse
                 {
-                    Sections = [new() { Id = "IQA0600", CategoryId = "SCAT", Questions = [new QuestionModel { Id = "IQA0600", QuestionId = "IQA0600", Name = "IQA0600", CategoryId = "SCAT", AnswerDataType = "Text",
-                    Answers = new List<AnswerModel>
+                    Sections =
+                    [
+                        new SectionModel
                         {
-                            new AnswerModel { Id = "TypeB", OptionName = "actual text" }
-                        } }] }]
+                            Id = "IQA0600", CategoryId = "SCAT", Questions =
+                            [
+                                new QuestionModel
+                                {
+                                    Id = "IQA0600", QuestionId = "IQA0600", Name = "IQA0600", CategoryId = "SCAT",
+                                    AnswerDataType = "Text",
+                                    Answers = new List<AnswerModel>
+                                    {
+                                        new() { Id = "TypeB", OptionName = "actual text" }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
                 }
             });
 
         Mocker
             .GetMock<IRespondentService>()
             .Setup(s => s.GetModificationAnswers(It.IsAny<Guid>(), It.IsAny<string>()))
-            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = [] });
+            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>>
+            { StatusCode = HttpStatusCode.OK, Content = [] });
 
         // This is your domain object you're enriching
         var modification = new ModificationDetailsViewModel
@@ -504,8 +638,8 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
         };
 
         TypeAdapterConfig<ModificationDetailsViewModel, AuthoriseModificationsOutcomeViewModel>
-        .NewConfig()
-        .Ignore(dest => dest.ProjectOverviewDocumentViewModel);
+            .NewConfig()
+            .Ignore(dest => dest.ProjectOverviewDocumentViewModel);
 
         var authoriseOutcomeViewModel = modification.Adapt<AuthoriseModificationsOutcomeViewModel>();
         authoriseOutcomeViewModel.SponsorOrganisationUserId = sponsorOrganisationUserId;
@@ -546,4 +680,10 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
         // Assert
         result.ShouldBeOfType<ViewResult>();
     }
+
+    public SponsorUserAuthorisationResult Authorised(Guid gid)
+        => SponsorUserAuthorisationResult.Ok(gid);
+
+    public SponsorUserAuthorisationResult NotAuthorised(IActionResult failure)
+        => SponsorUserAuthorisationResult.Fail(failure);
 }
