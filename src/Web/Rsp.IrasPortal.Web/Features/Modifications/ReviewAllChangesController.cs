@@ -149,9 +149,18 @@ public class ReviewAllChangesController
     {
         var model = GetFromTempData();
 
-        if (model is null || model.ReviewOutcome != null)
+        if (model is null)
         {
             return this.ServiceError(_reviewOutcomeNotFoundError);
+        }
+
+        if (model.ReviewOutcome == ModificationStatus.NotApproved)
+        {
+            return RedirectToAction(nameof(ReasonNotApproved));
+        }
+        if (model.ReviewOutcome == ModificationStatus.Approved)
+        {
+            return RedirectToAction(nameof(ReviewOutcomeSubmitted));
         }
 
         var reviewResponses = await projectModificationsService.GetModificationReviewResponses
@@ -231,7 +240,7 @@ public class ReviewAllChangesController
     {
         var model = GetFromTempData();
 
-        if (model is null || model.ReviewOutcome != null)
+        if (model is null)
         {
             return this.ServiceError(_reviewOutcomeNotFoundError);
         }
