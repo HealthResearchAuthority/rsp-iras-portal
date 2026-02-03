@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿using System.Net;
+using System.Security.Claims;
+using System.Text.Json;
 using FluentValidation;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
@@ -7,6 +9,7 @@ using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.Filters;
+using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
 using Rsp.Portal.Web.Areas.Admin.Models;
@@ -14,13 +17,14 @@ using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Features.Modifications;
 using Rsp.Portal.Web.Features.Modifications.Models;
 using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models;
+using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Services;
 using Rsp.Portal.Web.Helpers;
 using Rsp.Portal.Web.Models;
 
 namespace Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Controllers;
 
 /// <summary>
-///     Controller responsible for handling sponsor workspace related actions.
+/// Controller responsible for handling sponsor workspace related actions.
 /// </summary>
 [Authorize(Policy = Workspaces.Sponsor)]
 [Route("sponsorworkspace/[action]", Name = "sws:[action]")]
@@ -30,6 +34,7 @@ public class AuthorisationsModificationsController
     IRespondentService respondentService,
     ISponsorOrganisationService sponsorOrganisationService,
     ICmsQuestionsetService cmsQuestionsetService,
+    ISponsorUserAuthorisationService sponsorUserAuthorisationService,
     IValidator<AuthorisationsModificationsSearchModel> searchValidator
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, null!)
 {
@@ -48,6 +53,9 @@ public class AuthorisationsModificationsController
         string sortDirection = SortDirections.Descending
     )
     {
+        var auth = await sponsorUserAuthorisationService.AuthoriseAsync(this, sponsorOrganisationUserId, User);
+        if (!auth.IsAuthorised) return auth.FailureResult!;
+
         var model = new AuthorisationsModificationsViewModel();
 
         // getting search query
