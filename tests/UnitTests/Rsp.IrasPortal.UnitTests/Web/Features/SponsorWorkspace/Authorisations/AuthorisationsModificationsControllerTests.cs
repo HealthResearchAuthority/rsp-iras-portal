@@ -5,7 +5,6 @@ using Mapster;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Services;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.CmsQuestionset;
@@ -14,10 +13,10 @@ using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
-using Rsp.Portal.Domain.Identity;
 using Rsp.Portal.Web.Features.Modifications.Models;
 using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Controllers;
 using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models;
+using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Services;
 using Rsp.Portal.Web.Models;
 using Claim = System.Security.Claims.Claim;
 
@@ -216,6 +215,38 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
     }
 
     [Fact]
+    public async Task CheckAndAuthorise_InvalidModelState_WhenSponsorServiceFails_Should_Return_ServiceError()
+    {
+        // Arrange
+        var viewModel = SetupAuthoriseOutcomeViewModel();
+
+        Sut.ModelState.AddModelError("Outcome", "Outcome is required");
+
+        var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
+
+        sponsorOrganisationService
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
+            {
+                StatusCode = HttpStatusCode.InternalServerError,
+            });
+
+        // Act
+        var result = await Sut.CheckAndAuthorise(viewModel);
+
+        // Assert:
+        var objectResult = result.ShouldBeOfType<StatusCodeResult>();
+        objectResult.StatusCode.ShouldBe((int)HttpStatusCode.InternalServerError);
+
+        sponsorOrganisationService.Verify(
+            s => s.GetSponsorOrganisationUser(viewModel.SponsorOrganisationUserId),
+            Times.Once
+        );
+
+        Sut.TempData.ContainsKey(TempDataKeys.IsAuthoriser).ShouldBeFalse();
+    }
+
+    [Fact]
     public async Task CheckAndAuthorise_Returns_Error_When_SponsorOrganisationUser_Fails()
     {
         SetupAuthoriseOutcomeViewModel();
@@ -279,6 +310,15 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
         // Simulate model validation error
         Sut.ModelState.AddModelError("Outcome", "Outcome selection is required");
 
+        var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
+        sponsorOrganisationService
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new SponsorOrganisationUserDto { Id = Guid.NewGuid(), IsAuthoriser = true }
+            });
+
         // Act
         var result = await Sut.CheckAndAuthorise(authoriseOutcomeViewModel);
 
@@ -291,6 +331,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
 
         // Optionally verify ModelState was indeed invalid
         Sut.ModelState.IsValid.ShouldBeFalse();
+        Sut.TempData[TempDataKeys.IsAuthoriser].ShouldBe(true);
     }
 
     [Fact]
