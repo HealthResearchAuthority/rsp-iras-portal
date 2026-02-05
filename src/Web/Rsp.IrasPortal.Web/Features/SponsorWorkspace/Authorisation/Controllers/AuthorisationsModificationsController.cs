@@ -1,6 +1,4 @@
-﻿using System.Net;
-using System.Security.Claims;
-using System.Text.Json;
+﻿using System.Text.Json;
 using FluentValidation;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
@@ -9,7 +7,6 @@ using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.Filters;
-using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
 using Rsp.Portal.Web.Areas.Admin.Models;
@@ -261,6 +258,15 @@ public class AuthorisationsModificationsController
 
         if (!ModelState.IsValid)
         {
+            var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId);
+
+            if (!sponsorOrganisationUser.IsSuccessStatusCode)
+            {
+                return this.ServiceError(sponsorOrganisationUser);
+            }
+
+            TempData[TempDataKeys.IsAuthoriser] = sponsorOrganisationUser.Content!.IsAuthoriser;
+
             // Preserve the posted Outcome so the radios keep the selection
             if (hydrated is not null)
             {
