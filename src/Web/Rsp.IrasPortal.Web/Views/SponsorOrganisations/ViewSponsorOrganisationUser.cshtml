@@ -1,17 +1,19 @@
-﻿@using Rsp.IrasPortal.Application.Constants
-@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
+﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
 @model SponsorOrganisationUserModel
 
 @{
     @if (ViewBag.Type == "add")
     {
-		ViewData["Title"] = "Check and add user profile to sponsor organisations - Manage sponsor organisations - System administration";
+        ViewData["Title"] = "Check and add user profile to sponsor organisations - Manage sponsor organisations - System administration";
     }
     else if (ViewBag.Type == "edit")
     {
-		ViewData["Title"] = "View and edit user profile - Manage sponsor organisations - System administration";
+        ViewData["Title"] = "View and edit user profile - Manage sponsor organisations - System administration";
     }
 
+    ViewData["IsUserAuthorizer"] = Model.SponsorOrganisationUser.IsAuthoriser;
+    ViewData["ShowAuthorizerInfo"] = true;
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null
@@ -37,7 +39,14 @@
 
     @if (ViewBag.Type == "add")
     {
-        <partial name="_BackNavigation" model="@("soc:viewadduser", "Back", backRouteValues)"/>
+        if (Model.SponsorOrganisationUser.SponsorRole == Roles.OrganisationAdministrator)
+        {
+            <partial name="_BackNavigation" model="@("soc:adduserrole", "Back", new Dictionary<string, string>{ { "RtsId", Model.SponsorOrganisation.RtsId }, { "UserId", Model.User.Id! } })"/>
+        }
+        else
+        {
+            <partial name="_BackNavigation" model="@("soc:adduserpermission", "Back", new Dictionary<string, string>{})" />
+        }
     }
     else if (ViewBag.Type == "edit")
     {

@@ -1,22 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.Metrics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Moq;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Domain.Identity;
-using Rsp.IrasPortal.Web.Controllers;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.Identity;
+using Rsp.Portal.Web.Controllers;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Controllers.SponsorOrganisationsControllerTests;
+namespace Rsp.Portal.UnitTests.Web.Controllers.SponsorOrganisationsControllerTests;
 
 public class EnableUserTests : TestServiceBase<SponsorOrganisationsController>
 {
@@ -26,6 +18,9 @@ public class EnableUserTests : TestServiceBase<SponsorOrganisationsController>
     {
         _http = new DefaultHttpContext { Session = new InMemorySession() };
         Sut.ControllerContext = new ControllerContext { HttpContext = _http };
+        Sut.TempData = new TempDataDictionary(
+            _http,
+            Mocker.GetMock<ITempDataProvider>().Object);
     }
 
     [Theory]
@@ -77,7 +72,6 @@ public class EnableUserTests : TestServiceBase<SponsorOrganisationsController>
                         DateTime.UtcNow)
                 }
             });
-
 
         var sponsorResponse = new ServiceResponse<AllSponsorOrganisationsResponse>
         {

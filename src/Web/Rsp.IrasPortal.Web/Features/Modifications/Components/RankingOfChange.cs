@@ -1,12 +1,12 @@
 ﻿using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Web.Features.Modifications.Helpers;
-using Rsp.IrasPortal.Web.Features.Modifications.Models;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Web.Features.Modifications.Helpers;
+using Rsp.Portal.Web.Features.Modifications.Models;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.Web.Features.Modifications.Components;
+namespace Rsp.Portal.Web.Features.Modifications.Components;
 
 public class RankingOfChange
 (

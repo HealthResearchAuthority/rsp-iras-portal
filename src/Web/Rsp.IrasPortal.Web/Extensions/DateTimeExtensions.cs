@@ -1,10 +1,10 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
-namespace Rsp.IrasPortal.Web.Extensions;
+namespace Rsp.Portal.Web.Extensions;
 
 [ExcludeFromCodeCoverage]
-public static  class DateTimeExtensions
+public static class DateTimeExtensions
 {
     public static DateTime? ParseDateValidation(string? day, string? month, string? year)
     {
@@ -28,5 +28,15 @@ public static  class DateTimeExtensions
             out var result)
             ? result
             : null;
+    }
+
+    public static DateTime StartOfDay(this DateTime date)
+    {
+        return date.Date;
+    }
+
+    public static DateTime EndOfDay(this DateTime date)
+    {
+        return date.Date.AddDays(1).AddTicks(-1);
     }
 }

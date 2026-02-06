@@ -1,6 +1,6 @@
-﻿@using Rsp.IrasPortal.Application.Constants
-@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
-@using Rsp.IrasPortal.Web.Features.SponsorWorkspace.MyOrganisations.Models
+﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@using Rsp.Portal.Web.Features.SponsorWorkspace.MyOrganisations.Models
 @model SponsorMyOrganisationAuditViewModel
 
 @section Breadcrumb {
@@ -13,7 +13,7 @@
 
 @{
     var errorSummaryTitle = "There is a problem";
-    ViewBag.Title = "Sponsor organisation profile";
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null

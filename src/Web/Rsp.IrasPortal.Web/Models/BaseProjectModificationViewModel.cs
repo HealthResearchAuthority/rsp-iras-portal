@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Web.Models;
+﻿namespace Rsp.Portal.Web.Models;
 
 /// <summary>
 /// Base view model for project modification-related pages.
@@ -50,6 +50,10 @@ public class BaseProjectModificationViewModel
     /// Gets or sets the Status of the Modification
     /// </summary>
     public string Status { get; set; } = null!;
+
+    public string? ReasonNotApproved { get; set; }
+
+    public string? ReviewerComments { get; set; }
 
     /// <summary>
     /// Gets or sets the created date of the Modification

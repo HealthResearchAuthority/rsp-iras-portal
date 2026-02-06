@@ -6,13 +6,13 @@ using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement;
 using Microsoft.IdentityModel.Tokens;
 using NetDevPack.Security.Jwt.Core.Interfaces;
-using Rsp.IrasPortal.Application.AccessControl;
-using Rsp.IrasPortal.Application.Configuration;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.Extensions;
-using Rsp.IrasPortal.Application.Services;
+using Rsp.Portal.Application.AccessControl;
+using Rsp.Portal.Application.Configuration;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.Extensions;
+using Rsp.Portal.Application.Services;
 
-namespace Rsp.IrasPortal.Infrastructure.Claims;
+namespace Rsp.Portal.Infrastructure.Claims;
 
 public class CustomClaimsTransformation
 (

@@ -1,11 +1,11 @@
 ﻿using System.Text.Json;
 using Refit;
-using Rsp.IrasPortal.Application.Configuration;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.ServiceClients;
-using Rsp.IrasPortal.Infrastructure.HttpMessageHandlers;
+using Rsp.Portal.Application.Configuration;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.ServiceClients;
+using Rsp.Portal.Infrastructure.HttpMessageHandlers;
 
-namespace Rsp.IrasPortal.Configuration.HttpClients;
+namespace Rsp.Portal.Configuration.HttpClients;
 
 public static class HttpClientsConfiguration
 {
@@ -89,6 +89,12 @@ public static class HttpClientsConfiguration
             .AddRestClient<ICmsContentServiceClient>()
             .ConfigureHttpClient(client => client.BaseAddress = appSettings.CmsUri)
             .AddHttpMessageHandler<CmsPreviewHeadersHandler>()
+            .AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
+
+        services
+            .AddRestClient<IProjectClosuresServiceClient>()
+            .ConfigureHttpClient(client => client.BaseAddress = appSettings.ApplicationsServiceUri)
+            .AddHttpMessageHandler<AuthHeadersHandler>()
             .AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
 
         return services;

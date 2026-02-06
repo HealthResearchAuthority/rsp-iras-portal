@@ -2,10 +2,10 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Web.Features.ExceptionHandling.Controllers;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Web.Features.ExceptionHandling.Controllers;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Features.ExceptionHandling;
+namespace Rsp.Portal.UnitTests.Web.Features.ExceptionHandling;
 
 public class HandleStatusCodeTests : TestServiceBase<ExceptionHandlingController>
 {

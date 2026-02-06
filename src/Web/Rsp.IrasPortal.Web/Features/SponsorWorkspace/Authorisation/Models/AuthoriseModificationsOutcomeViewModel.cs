@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Rsp.IrasPortal.Web.Features.Modifications.Models;
+using Rsp.Portal.Web.Features.Modifications.Models;
 
-namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Models;
+namespace Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models;
 
-public class AuthoriseOutcomeViewModel : ModificationDetailsViewModel
+public class AuthoriseModificationsOutcomeViewModel : ModificationDetailsViewModel
 {
     [Required(ErrorMessage = "Select an outcome")]
     public string? Outcome { get; set; } // "Authorised" | "NotAuthorised"

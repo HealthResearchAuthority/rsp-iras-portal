@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Web.Models;
+﻿namespace Rsp.Portal.Web.Models;
 
 /// <summary>
 /// ViewModel representing a modification to a project record.

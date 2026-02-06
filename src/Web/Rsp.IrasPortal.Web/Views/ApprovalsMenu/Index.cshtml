@@ -1,11 +1,12 @@
-﻿@using Rsp.IrasPortal.Application.Constants
-@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
+﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent;
 
 @section Breadcrumb {
     @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>())
 }
 
 @{
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null
         ? pageContentData
@@ -32,7 +33,7 @@
         <h1 class="govuk-heading-xl">@Html.Raw(headline?.Value)</h1>
         <partial name="_ActionItem" model="@((searchTitle?.Value, searchDescription?.Value, "recordsearch", new Dictionary<string, string>()))" />
 
-        <partial role-in="@([Roles.TeamManager, Roles.WorkflowCoordinator])"
+        <partial role-in="@(new []{Roles.TeamManager, Roles.WorkflowCoordinator})"
                  name="_ActionItem"
                  model="@((tasklistTitle?.Value, tasklistDescription?.Value, "tasklist:index", new Dictionary<string, string>()))" />
 

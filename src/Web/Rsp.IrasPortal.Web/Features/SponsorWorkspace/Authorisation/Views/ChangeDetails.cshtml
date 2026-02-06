@@ -1,11 +1,11 @@
 ﻿@using Rsp.Gds.Component.Models
-@using Rsp.IrasPortal.Application.Constants
-@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
-@using Rsp.IrasPortal.Web.Features.Modifications.Models
-@model Rsp.IrasPortal.Web.Features.SponsorWorkspace.Authorisation.Models.AuthoriseOutcomeViewModel
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@using Rsp.Portal.Web.Features.Modifications.Models
+@model Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models.AuthoriseModificationsOutcomeViewModel
 
 @{
-    ViewBag.Title = "Check and authorise";
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 
     TempData[TempDataKeys.ProjectModification.ReviewAllChanges] = true;       
     ViewData[ViewDataKeys.ShowModificationChangeStatus] = false;
@@ -32,7 +32,7 @@
     @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
     {
         ("Sponsor workspace", Url.RouteUrl("sws:sponsorworkspace")),
-        ("Authorisations", Url.RouteUrl("sws:authorisations", new { sponsorOrganisationUserId = Model.SponsorOrganisationUserId })),
+        ("Authorisations", Url.RouteUrl("sws:modifications", new { sponsorOrganisationUserId = Model.SponsorOrganisationUserId })),
         ("Check and authorise", Url.RouteUrl("sws:checkandauthorise", checkAndAuthoriseNavParams))
     })
 }

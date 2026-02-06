@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Application.DTOs.Responses;
+﻿namespace Rsp.Portal.Application.DTOs.Responses;
 
 /// <summary>
 /// Represents the response data for a project modification, including identifiers, status, and audit information.
@@ -29,6 +29,16 @@ public record ProjectModificationResponse
     /// The current status of the project modification.
     /// </summary>
     public string Status { get; set; } = null!;
+
+    /// <summary>
+    /// The reason for rejecting approval.
+    /// </summary>
+    public string? ReasonNotApproved { get; set; } = null!;
+
+    /// <summary>
+    /// The reviewer comments.
+    /// </summary>
+    public string? ReviewerComments { get; set; } = null!;
 
     /// <summary>
     /// The user ID of the person who created the modification.

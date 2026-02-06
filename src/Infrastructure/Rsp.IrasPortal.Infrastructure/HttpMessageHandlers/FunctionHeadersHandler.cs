@@ -2,9 +2,9 @@
 using Azure.Core;
 using Azure.Identity;
 using Microsoft.Net.Http.Headers;
-using Rsp.IrasPortal.Application.Configuration;
+using Rsp.Portal.Application.Configuration;
 
-namespace Rsp.IrasPortal.Infrastructure.HttpMessageHandlers;
+namespace Rsp.Portal.Infrastructure.HttpMessageHandlers;
 
 /// <summary>
 /// Delegating handler to add functions key header, before calling the function endpoint
@@ -26,7 +26,7 @@ public class FunctionHeadersHandler(AppSettings appSettings) : DelegatingHandler
         // This won't work locally, only in deployed environments with managed identity
         var credentials = new DefaultAzureCredential();
 
-        var tokenRequestContext = new TokenRequestContext([.. scopes]);
+        var tokenRequestContext = new TokenRequestContext([scopes]);
 
         var accessToken = await credentials.GetTokenAsync(tokenRequestContext, cancellationToken);
 

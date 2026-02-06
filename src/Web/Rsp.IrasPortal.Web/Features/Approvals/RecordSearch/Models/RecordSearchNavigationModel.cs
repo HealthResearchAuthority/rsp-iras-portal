@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Web.Features.Approvals.RecordSearch.Models;
+﻿namespace Rsp.Portal.Web.Features.Approvals.RecordSearch.Models;
 
 public class RecordSearchNavigationModel
 {

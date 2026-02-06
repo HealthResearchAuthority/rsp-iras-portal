@@ -1,7 +1,7 @@
-﻿@using Rsp.IrasPortal.Application.Constants
-@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
-@using Rsp.IrasPortal.Domain.AccessControl;
-@using Rsp.IrasPortal.Application.Extensions;
+﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent;
+@using Rsp.Portal.Domain.AccessControl;
+@using Rsp.Portal.Application.Extensions;
 @using Microsoft.FeatureManagement
 @inject IFeatureManager featureManager
 
@@ -36,7 +36,7 @@
 			Permission = Permissions.Sponsor.Workspace_Access,
 			Title = authorisationsTitle?.Value,
 			Desc = filledAuthorisationsDescription,
-			Link = "sws:authorisations",
+            Link = "sws:modifications",
 			Dictionary = new Dictionary<string, string> { { "sponsorOrganisationUserId", sponsorOrganisationUserId.ToString() } }
 		}
 	};
@@ -61,14 +61,12 @@
 		.ToList();
 }
 
-
-
 <div class="govuk-grid-row">
 	<div class="govuk-grid-column-full">
 		<h1 class="govuk-heading-xl">@Html.Raw(headline?.Value)</h1>
 		@foreach (var row in authorizedChunks)
 		{
-			<div class="govuk-grid-row">
+			<div>
 				@foreach (var item in row)
 				{
 					<div permission="@item.Permission">

@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Web.Models;
+﻿namespace Rsp.Portal.Web.Models;
 
 /// <summary>
 /// Represents the basic project details including IrasId, short and full project title.

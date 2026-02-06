@@ -1,7 +1,7 @@
-﻿using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
-using Rsp.IrasPortal.Application.Responses;
+﻿using Rsp.Portal.Application.DTOs.Responses.CmsContent;
+using Rsp.Portal.Application.Responses;
 
-namespace Rsp.IrasPortal.Application.Services;
+namespace Rsp.Portal.Application.Services;
 
 public interface ICmsContentService
 {

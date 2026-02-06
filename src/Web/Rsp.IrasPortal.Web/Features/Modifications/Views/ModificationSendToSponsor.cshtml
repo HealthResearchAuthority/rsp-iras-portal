@@ -1,0 +1,41 @@
+﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@{
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
+
+    var projectRecordId = TempData[TempDataKeys.ProjectRecordId];
+    var IrasId = TempData[TempDataKeys.IrasId];
+    var shortProjectTitle = TempData.Peek(TempDataKeys.ShortProjectTitle);
+
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData != null
+        ? pageContentData
+        : new Dictionary<string, MixedContentPageItem?>();
+
+    var warningMessageTitle = pageContent.GetValueOrDefault("Modifications.Sendmodificationtosponsor.WarningTitle", null);
+    var warningMessage = pageContent.GetValueOrDefault("Modifications.Sendmodificationtosponsor.Warning", null);
+}
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l"> @Html.Raw(warningMessageTitle?.Value)</h1>
+        <dl class="govuk-summary-list">
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">IRAS ID</dt>
+                <dd class="govuk-summary-list__value">@IrasId?.ToString()</dd>
+            </div>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Short project title</dt>
+                <dd class="govuk-summary-list__value">@shortProjectTitle</dd>
+            </div>
+        </dl>
+        <p class="govuk-body">
+            @Html.Raw(warningMessage?.Value)
+        </p>
+
+        <div class="save-buttons">
+            <a class="govuk-button" asp-route="pov:postapproval" asp-route-projectRecordId="@projectRecordId">
+                Return to project overview
+            </a>
+        </div>
+    </div>
+</div>

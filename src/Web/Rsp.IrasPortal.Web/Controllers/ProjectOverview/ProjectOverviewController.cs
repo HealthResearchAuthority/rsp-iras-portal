@@ -3,21 +3,21 @@ using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.Enum;
-using Rsp.IrasPortal.Application.Extensions;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Domain.AccessControl;
-using Rsp.IrasPortal.Web.Areas.Admin.Models;
-using Rsp.IrasPortal.Web.Extensions;
-using Rsp.IrasPortal.Web.Features.Modifications;
-using Rsp.IrasPortal.Web.Helpers;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.Enum;
+using Rsp.Portal.Application.Extensions;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.AccessControl;
+using Rsp.Portal.Web.Areas.Admin.Models;
+using Rsp.Portal.Web.Extensions;
+using Rsp.Portal.Web.Features.Modifications;
+using Rsp.Portal.Web.Helpers;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.Web.Controllers.ProjectOverview;
+namespace Rsp.Portal.Web.Controllers.ProjectOverview;
 
 [Authorize(Policy = Workspaces.MyResearch)]
 [Route("[controller]/[action]", Name = "pov:[action]")]
@@ -29,7 +29,9 @@ public class ProjectOverviewController
     ICmsQuestionsetService cmsQuestionsetService,
     IRtsService rtsService,
     IValidator<ApprovalsSearchModel> validator,
-    IValidator<QuestionnaireViewModel> docValidator
+    IValidator<QuestionnaireViewModel> docValidator,
+    IProjectClosuresService projectClosuresService,
+    IUserManagementService userManagementService
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, docValidator)
 {
     private readonly IRespondentService _respondentService = respondentService;
@@ -46,7 +48,7 @@ public class ProjectOverviewController
             return result;
         }
 
-        if (projectOverview.Value is ProjectOverviewModel model && model.Status == ProjectRecordStatus.Active)
+        if (projectOverview.Value is ProjectOverviewModel model && model.Status is ProjectRecordStatus.Active or ProjectRecordStatus.PendingClosure or ProjectRecordStatus.Closed)
         {
             return RedirectToAction(nameof(ProjectDetails), new { projectRecordId, backRoute, modificationId });
         }
@@ -69,6 +71,13 @@ public class ProjectOverviewController
         if (result is not OkObjectResult projectOverview)
         {
             return result;
+        }
+
+        if (projectOverview.Value is ProjectOverviewModel model && model.Status is ProjectRecordStatus.Closed)
+        {
+            var projectClosureDate = await GetActualProjectClosureDate(projectRecordId);
+            model.ActualProjectClosureDate = projectClosureDate;
+            return View(model);
         }
 
         return View(projectOverview.Value);
@@ -153,7 +162,59 @@ public class ProjectOverviewController
             AdditionalParameters = new Dictionary<string, string>() { { "projectRecordId", projectRecordId } }
         };
 
+        //project closure
+        await GetProjectClosureDetails(projectRecordId, model);
+
+        //The validation result for creating a new modification is stored in TempData.
+        //PostApprovalViewModel Model is used to evaluate the validation outcome.
+        TempData[TempDataKeys.ProjectModification.CanCreateNewModification] = model.CanCreateNewModification();
+        TempData[TempDataKeys.ProjectModification.CanModificationSendToSponsor] = model.CanModificationSendToSponsor();
+
         return View(model);
+    }
+
+    /// <summary>
+    /// Get project closure records from database
+    /// </summary>
+    /// <param name="projectRecordId"></param>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    private async Task GetProjectClosureDetails(string projectRecordId, PostApprovalViewModel model)
+    {
+        var projectClosureResponse = await projectClosuresService.GetProjectClosuresByProjectRecordId(projectRecordId);
+        if (projectClosureResponse?.Content != null)
+        {
+            model.ProjectClosureModels = projectClosureResponse.Content?.ProjectClosures.
+                Select(pc => new ProjectClosuresModel
+                {
+                    TransactionId = pc.TransactionId,
+                    ClosureDate = pc.ClosureDate,
+                    UserEmail = GetUserEmail(pc.UserId),
+                    SentToSponsorDate = pc.SentToSponsorDate,
+                    Status = pc.Status,
+                }).ToList() ?? [];
+        }
+    }
+
+    private string? GetUserEmail(string userId)
+    {
+        var userManagementServiceResponse = userManagementService.GetUser(userId, null);
+        return userManagementServiceResponse?.Result?.Content?.User.Email;
+    }
+
+    private async Task<string?> GetActualProjectClosureDate(string projectRecordId)
+    {
+        var projectClosureResponse = await projectClosuresService.GetProjectClosuresByProjectRecordId(projectRecordId);
+        var closure = projectClosureResponse.Content?.ProjectClosures?
+            .Where(pc => pc.DateActioned != null)
+            .OrderByDescending(pc => pc.DateActioned)
+            .FirstOrDefault();
+
+        var actualEndDate = closure?.ClosureDate != null
+            ? DateHelper.ConvertDateToString(closure.ClosureDate.Value)
+            : null;
+
+        return actualEndDate;
     }
 
     [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Read)]

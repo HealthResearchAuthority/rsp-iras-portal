@@ -1,6 +1,7 @@
-﻿@using Rsp.IrasPortal.Application.Constants
-@using Rsp.IrasPortal.Application.DTOs
-@using Rsp.IrasPortal.Web.Features.Modifications.Models
+﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs
+@using Rsp.Portal.Domain.AccessControl
+@using Rsp.Portal.Web.Features.Modifications.Models
 @model ModificationDetailsViewModel
 
 <div class="govuk-grid-row">
@@ -56,6 +57,7 @@
             <partial name="SupportingDocuments" model="Model" view-data="ViewData" />
 
             <partial name="SponsorDetails" model="Model" view-data="ViewData" />
-        }
+        }  
+       
     </div>
 </div>

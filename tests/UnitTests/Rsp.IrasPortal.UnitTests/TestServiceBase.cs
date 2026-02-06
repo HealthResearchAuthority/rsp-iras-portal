@@ -1,8 +1,8 @@
 ﻿using Mapster;
 using Moq.AutoMock;
-using Rsp.IrasPortal.Web.Mapping;
+using Rsp.Portal.Web.Mapping;
 
-namespace Rsp.IrasPortal.UnitTests;
+namespace Rsp.Portal.UnitTests;
 
 public class TestServiceBase
 {

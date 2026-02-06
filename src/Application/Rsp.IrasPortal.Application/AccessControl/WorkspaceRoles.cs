@@ -1,7 +1,7 @@
-﻿using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Domain.AccessControl;
+﻿using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Domain.AccessControl;
 
-namespace Rsp.IrasPortal.Application.AccessControl;
+namespace Rsp.Portal.Application.AccessControl;
 
 /// <summary>
 /// Provides a mapping between workspace identifiers and the roles that are allowed to access each workspace.
@@ -21,7 +21,7 @@ public static class WorkspaceRolesMatrix
         // All Roles allowed in the "Profile" workspace:
         [Workspaces.Profile] =
         [
-            Roles.Applicant, Roles.Sponsor, Roles.WorkflowCoordinator, Roles.TeamManager, Roles.SystemAdministrator,Roles.StudyWideReviewer
+            Roles.Applicant, Roles.Sponsor, Roles.WorkflowCoordinator, Roles.TeamManager, Roles.SystemAdministrator,Roles.StudyWideReviewer,Roles.OrganisationAdministrator
         ],
 
         // Roles allowed in the "My Research" workspace:
@@ -32,7 +32,7 @@ public static class WorkspaceRolesMatrix
         // - System administrators (full access)
         [Workspaces.MyResearch] =
         [
-            Roles.Applicant, Roles.Sponsor, Roles.WorkflowCoordinator, Roles.TeamManager, Roles.SystemAdministrator,Roles.StudyWideReviewer
+            Roles.Applicant, Roles.Sponsor, Roles.WorkflowCoordinator, Roles.TeamManager, Roles.SystemAdministrator,Roles.StudyWideReviewer,Roles.OrganisationAdministrator
         ],
 
         // Roles allowed in the "Sponsor" workspace:

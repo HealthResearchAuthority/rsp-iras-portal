@@ -1,11 +1,11 @@
-﻿@using Rsp.IrasPortal.Application.Constants
-@using Rsp.IrasPortal.Application.Extensions;
-@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
-@using Rsp.IrasPortal.Application.Services
-@using Rsp.IrasPortal.Domain.AccessControl
+﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.Extensions;
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@using Rsp.Portal.Application.Services
+@using Rsp.Portal.Domain.AccessControl
 @model string?
 @{
-    ViewBag.Title = "My account";
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
     var showSuccessMessage = TempData[TempDataKeys.ShowNotificationBanner];
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];

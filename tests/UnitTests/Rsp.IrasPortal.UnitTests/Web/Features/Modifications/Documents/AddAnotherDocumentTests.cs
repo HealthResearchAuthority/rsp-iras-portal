@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Web.Features.Modifications.Documents.Controllers;
+using Rsp.Portal.Web.Features.Modifications.Documents.Controllers;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.Documents;
+namespace Rsp.Portal.UnitTests.Web.Features.Modifications.Documents;
 
 public class AddAnotherDocumentTests : TestServiceBase<DocumentsController>
 {

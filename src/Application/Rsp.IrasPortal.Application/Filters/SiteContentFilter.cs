@@ -3,12 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.Services;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs.Responses.CmsContent;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
 
-namespace Rsp.IrasPortal.Application.Filters;
+namespace Rsp.Portal.Application.Filters;
 
 public class SiteContentFilter(ICmsContentService contentService,
     LinkGenerator linkGenerator) : IAsyncActionFilter
@@ -66,6 +66,7 @@ public class SiteContentFilter(ICmsContentService contentService,
                 if (pageContent.IsSuccessStatusCode && pageContent.Content != null)
                 {
                     controller.ViewData[PageContentElements.PageContent] = pageContent.Content.ContentItems;
+                    controller.ViewData[PageContentElements.MetaTitle] = pageContent.Content.MetaTitle;
                 }
             }
 

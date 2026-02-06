@@ -1,23 +1,23 @@
 using System.Net;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.CmsQuestionset.Modifications;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Application.Extensions;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Domain.AccessControl;
-using Rsp.IrasPortal.Domain.Enums;
-using Rsp.IrasPortal.Web.Extensions;
-using Rsp.IrasPortal.Web.Features.Modifications.Helpers;
-using Rsp.IrasPortal.Web.Features.Modifications.Models;
-using Rsp.IrasPortal.Web.Helpers;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.CmsQuestionset.Modifications;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Extensions;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.AccessControl;
+using Rsp.Portal.Domain.Enums;
+using Rsp.Portal.Web.Extensions;
+using Rsp.Portal.Web.Features.Modifications.Helpers;
+using Rsp.Portal.Web.Features.Modifications.Models;
+using Rsp.Portal.Web.Helpers;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.Web.Features.Modifications;
+namespace Rsp.Portal.Web.Features.Modifications;
 
 /// <summary>
 /// Base controller for Modifications controllers, providing shared logic for
@@ -74,7 +74,9 @@ public abstract class ModificationsControllerBase
             ModificationType = modification.ModificationType ?? Ranking.NotAvailable,
             Category = modification.Category ?? Ranking.NotAvailable,
             ReviewType = modification.ReviewType ?? Ranking.NotAvailable,
-            DateCreated = DateHelper.ConvertDateToString(modification.CreatedDate)
+            DateCreated = DateHelper.ConvertDateToString(modification.CreatedDate),
+            ReasonNotApproved = modification?.ReasonNotApproved ?? Ranking.NotAvailable,
+            ReviewerComments = modification?.ReviewerComments
         });
     }
 
@@ -292,7 +294,7 @@ public abstract class ModificationsControllerBase
         if (response?.StatusCode != HttpStatusCode.OK || response.Content == null)
             return [];
 
-        // Evaluate each document�s completeness
+        // Evaluate each document's completeness
         var tasks = response.Content
             .OrderBy(a => a.FileName, StringComparer.OrdinalIgnoreCase)
             .Select(a => GetDocumentSummary(a, questionnaire));
@@ -363,7 +365,7 @@ public abstract class ModificationsControllerBase
     /// <summary>
     /// Evaluates whether a single document�s answers are complete.
     /// </summary>
-    protected async Task<bool> EvaluateDocumentCompletion(Guid documentId, QuestionnaireViewModel questionnaire)
+    protected virtual async Task<bool> EvaluateDocumentCompletion(Guid documentId, QuestionnaireViewModel questionnaire)
     {
         // Fetch document answers
         var answersResponse = await respondentService.GetModificationDocumentAnswers(documentId);

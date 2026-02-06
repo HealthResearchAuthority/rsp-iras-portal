@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Application.Configuration;
+﻿namespace Rsp.Portal.Application.Configuration;
 
 /// <summary>
 /// Represents application settings.
@@ -40,7 +40,7 @@ public class AppSettings
     /// <summary>
     /// Gets or sets the scope of the Project Record Validation Function Http endpoint.
     /// </summary>
-    public List<string> ProjectRecordValidationScopes { get; set; } = null!;
+    public string ProjectRecordValidationScopes { get; set; } = null!;
 
     /// <summary>
     /// Authentication settings for the application

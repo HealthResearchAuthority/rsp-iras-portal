@@ -1,10 +1,10 @@
 ﻿using Refit;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
 
-namespace Rsp.IrasPortal.Application.ServiceClients;
+namespace Rsp.Portal.Application.ServiceClients;
 
 /// <summary>
 /// Interface to interact with the Iras microservice.
@@ -218,7 +218,7 @@ public interface IProjectModificationsServiceClient
     public Task<ApiResponse<GetModificationsResponse>> GetModificationsBySponsorOrganisationUserId
     (
         Guid sponsorOrganisationUserId,
-        [Body] SponsorAuthorisationsSearchRequest searchQuery,
+        [Body] SponsorAuthorisationsModificationsSearchRequest searchQuery,
         int pageNumber = 1,
         int pageSize = 20,
         string sortField = nameof(ModificationsDto.SentToSponsorDate),
@@ -282,4 +282,11 @@ public interface IProjectModificationsServiceClient
     /// <param name="modificationId">The request object containing the updated details for the modification change.</param>
     [Get("/documents/access/{modificationId}")]
     Task<IApiResponse> CheckDocumentAccess(Guid modificationId);
+
+    /// <summary>
+    /// Updates an existing project modification change.
+    /// </summary>
+    /// <param name="documentsAuditTrailRequest">The request object containing the updated details for the modification change.</param>
+    [Post("/documents/createdocumentsaudittrail")]
+    Task<IApiResponse> CreateModificationDocumentsAuditTrail([Body] List<ModificationDocumentsAuditTrailDto> documentsAuditTrailRequest);
 }

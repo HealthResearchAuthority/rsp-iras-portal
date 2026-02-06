@@ -1,6 +1,6 @@
-﻿@using Rsp.IrasPortal.Application.DTOs.Requests
-@using Rsp.IrasPortal.Web.Features.Modifications.Models
-@using Rsp.IrasPortal.Web.Extensions
+﻿@using Rsp.Portal.Application.DTOs.Requests
+@using Rsp.Portal.Web.Features.Modifications.Models
+@using Rsp.Portal.Web.Extensions
 @model (QuestionnaireViewModel Questionnaire, QuestionViewModel CurrentQuestion)
 
 @{
@@ -47,7 +47,8 @@
             <span class="govuk-label">
                 Current @(projectRecordQuestion!.QuestionText?
                         .GetLabelText()
-                        .Replace("new ", "") ?? "value")
+                        .Replace("new ", "")
+                        .Replace("temporary ", "") ?? "value")
             </span>
             <span class="govuk-body govuk-!-font-weight-bold">@Html.Raw(projectRecordAnswer)</span>
         </div>

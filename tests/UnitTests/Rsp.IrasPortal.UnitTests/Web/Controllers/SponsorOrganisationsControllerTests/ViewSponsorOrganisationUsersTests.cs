@@ -1,14 +1,17 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Net.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Domain.Identity;
-using Rsp.IrasPortal.Web.Controllers;
-using Rsp.IrasPortal.Web.Models;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.Identity;
+using Rsp.Portal.Web.Controllers;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Controllers.SponsorOrganisationsControllerTests;
+namespace Rsp.Portal.UnitTests.Web.Controllers.SponsorOrganisationsControllerTests;
 
 public class ViewSponsorOrganisationUsersTests : TestServiceBase<SponsorOrganisationsController>
 {
@@ -18,6 +21,7 @@ public class ViewSponsorOrganisationUsersTests : TestServiceBase<SponsorOrganisa
     {
         _http = new DefaultHttpContext { Session = new InMemorySession() };
         Sut.ControllerContext = new ControllerContext { HttpContext = _http };
+        Sut.TempData = new TempDataDictionary(_http, Mock.Of<ITempDataProvider>());
     }
 
     [Fact]
@@ -104,7 +108,7 @@ public class ViewSponsorOrganisationUsersTests : TestServiceBase<SponsorOrganisa
             });
 
         // Act
-        var result = await Sut.ViewSponsorOrganisationUsers(rtsId, null, 1, 20, "GivenName","asc");
+        var result = await Sut.ViewSponsorOrganisationUsers(rtsId, null, 1, 20, "GivenName", "asc");
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -126,7 +130,6 @@ public class ViewSponsorOrganisationUsersTests : TestServiceBase<SponsorOrganisa
         Mocker.GetMock<IRtsService>()
             .Verify(s => s.GetOrganisation(rtsId), Times.Once);
     }
-
 
     [Fact]
     public async Task ViewSponsorOrganisationUsers_ShouldReturnView_WithMappedModel_WhenBothServicesSucceed_Asc_FamilyName()
@@ -213,7 +216,6 @@ public class ViewSponsorOrganisationUsersTests : TestServiceBase<SponsorOrganisa
 
         // Act
         var result = await Sut.ViewSponsorOrganisationUsers(rtsId, null, 1, 20, "FamilyName");
-
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -322,6 +324,221 @@ public class ViewSponsorOrganisationUsersTests : TestServiceBase<SponsorOrganisa
         // Act
         var result = await Sut.ViewSponsorOrganisationUsers(rtsId, null, 1, 20, "Email");
 
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var model = viewResult.Model.ShouldBeAssignableTo<SponsorOrganisationListUsersModel>();
+
+        model.SponsorOrganisation.RtsId.ShouldBe(rtsId);
+        model.SponsorOrganisation.SponsorOrganisationName.ShouldBe(orgName);
+        model.SponsorOrganisation.Countries.ShouldContain(country);
+        model.SponsorOrganisation.IsActive.ShouldBeTrue();
+        model.SponsorOrganisation.UpdatedDate.ShouldBe(
+            sponsorResponse.Content.SponsorOrganisations.First().CreatedDate);
+
+        model.Users.ShouldNotBeNull();
+        model.Users.ShouldHaveSingleItem();
+        model.Users.First().Id.ShouldBe(userId);
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Verify(s => s.GetSponsorOrganisationByRtsId(rtsId), Times.Once);
+        Mocker.GetMock<IRtsService>()
+            .Verify(s => s.GetOrganisation(rtsId), Times.Once);
+    }
+
+    [Fact]
+    public async Task ViewSponsorOrganisationUsers_ShouldReturnView_WithMappedModel_WhenBothServicesSucceed_Asc_Role()
+    {
+        // Arrange
+        const string rtsId = "87765";
+        const string orgName = "Acme Research Ltd";
+        const string country = "England";
+
+        var userGuid = Guid.NewGuid();
+        var userId = userGuid.ToString();
+
+        var sponsorResponse = new ServiceResponse<AllSponsorOrganisationsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new AllSponsorOrganisationsResponse
+            {
+                SponsorOrganisations = new List<SponsorOrganisationDto>
+                {
+                    new()
+                    {
+                        IsActive = true,
+                        CreatedDate = new DateTime(2024, 5, 1),
+                        Users = new List<SponsorOrganisationUserDto>
+                        {
+                            new()
+                            {
+                                RtsId = "123",
+                                UserId = userGuid,
+                                Id = Guid.NewGuid()
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        var organisationResponse = new ServiceResponse<OrganisationDto>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new OrganisationDto { Id = rtsId, Name = orgName, CountryName = country }
+        };
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.GetSponsorOrganisationByRtsId(rtsId))
+            .ReturnsAsync(sponsorResponse);
+
+        Mocker.GetMock<IRtsService>()
+            .Setup(s => s.GetOrganisation(rtsId))
+            .ReturnsAsync(organisationResponse);
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(x => x.GetUsersByIds(
+                It.IsAny<IEnumerable<string>>(),
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<int>()))
+            .ReturnsAsync(new ServiceResponse<UsersResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new UsersResponse
+                {
+                    TotalCount = 1,
+                    Users = new List<User>
+                    {
+                        new(
+                            userId,
+                            "azure-ad-12345",
+                            "Mr",
+                            "Test",
+                            "Test",
+                            "test.test@example.com",
+                            "Software Developer",
+                            "Rsp Systems Ltd",
+                            "+44 7700 900123",
+                            "United Kingdom",
+                            "Active",
+
+                            DateTime.UtcNow,
+                            DateTime.UtcNow.AddDays(-2),
+                            DateTime.UtcNow)
+                    }
+                }
+            });
+
+        // Act
+        var result = await Sut.ViewSponsorOrganisationUsers(rtsId, null, 1, 20, "sponsorrole");
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var model = viewResult.Model.ShouldBeAssignableTo<SponsorOrganisationListUsersModel>();
+
+        model.SponsorOrganisation.RtsId.ShouldBe(rtsId);
+        model.SponsorOrganisation.SponsorOrganisationName.ShouldBe(orgName);
+        model.SponsorOrganisation.Countries.ShouldContain(country);
+        model.SponsorOrganisation.IsActive.ShouldBeTrue();
+        model.SponsorOrganisation.UpdatedDate.ShouldBe(
+            sponsorResponse.Content.SponsorOrganisations.First().CreatedDate);
+
+        model.Users.ShouldNotBeNull();
+        model.Users.ShouldHaveSingleItem();
+        model.Users.First().Id.ShouldBe(userId);
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Verify(s => s.GetSponsorOrganisationByRtsId(rtsId), Times.Once);
+        Mocker.GetMock<IRtsService>()
+            .Verify(s => s.GetOrganisation(rtsId), Times.Once);
+    }
+
+    [Fact]
+    public async Task ViewSponsorOrganisationUsers_ShouldReturnView_WithMappedModel_WhenBothServicesSucceed_Asc_IsAuthoriser()
+    {
+        // Arrange
+        const string rtsId = "87765";
+        const string orgName = "Acme Research Ltd";
+        const string country = "England";
+
+        var userGuid = Guid.NewGuid();
+        var userId = userGuid.ToString();
+
+        var sponsorResponse = new ServiceResponse<AllSponsorOrganisationsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new AllSponsorOrganisationsResponse
+            {
+                SponsorOrganisations = new List<SponsorOrganisationDto>
+                {
+                    new()
+                    {
+                        IsActive = true,
+                        CreatedDate = new DateTime(2024, 5, 1),
+                        Users = new List<SponsorOrganisationUserDto>
+                        {
+                            new()
+                            {
+                                RtsId = "123",
+                                UserId = userGuid,
+                                Id = Guid.NewGuid()
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        var organisationResponse = new ServiceResponse<OrganisationDto>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new OrganisationDto { Id = rtsId, Name = orgName, CountryName = country }
+        };
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.GetSponsorOrganisationByRtsId(rtsId))
+            .ReturnsAsync(sponsorResponse);
+
+        Mocker.GetMock<IRtsService>()
+            .Setup(s => s.GetOrganisation(rtsId))
+            .ReturnsAsync(organisationResponse);
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(x => x.GetUsersByIds(
+                It.IsAny<IEnumerable<string>>(),
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<int>()))
+            .ReturnsAsync(new ServiceResponse<UsersResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new UsersResponse
+                {
+                    TotalCount = 1,
+                    Users = new List<User>
+                    {
+                        new(
+                            userId,
+                            "azure-ad-12345",
+                            "Mr",
+                            "Test",
+                            "Test",
+                            "test.test@example.com",
+                            "Software Developer",
+                            "Rsp Systems Ltd",
+                            "+44 7700 900123",
+                            "United Kingdom",
+                            "Active",
+
+                            DateTime.UtcNow,
+                            DateTime.UtcNow.AddDays(-2),
+                            DateTime.UtcNow)
+                    }
+                }
+            });
+
+        // Act
+        var result = await Sut.ViewSponsorOrganisationUsers(rtsId, null, 1, 20, "isauthoriser");
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -431,7 +648,6 @@ public class ViewSponsorOrganisationUsersTests : TestServiceBase<SponsorOrganisa
         // Act
         var result = await Sut.ViewSponsorOrganisationUsers(rtsId, null, 1, 20, "CurrentLogin");
 
-
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
         var model = viewResult.Model.ShouldBeAssignableTo<SponsorOrganisationListUsersModel>();
@@ -538,7 +754,6 @@ public class ViewSponsorOrganisationUsersTests : TestServiceBase<SponsorOrganisa
 
         // Act
         var result = await Sut.ViewSponsorOrganisationUsers(rtsId, null, 1, 20, "Status");
-
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -668,7 +883,6 @@ public class ViewSponsorOrganisationUsersTests : TestServiceBase<SponsorOrganisa
             .Verify(s => s.GetOrganisation(rtsId), Times.Once);
     }
 
-
     [Fact]
     public async Task ViewSponsorOrganisationUsers_ShouldReturnView_WithMappedModel_WhenBothServicesSucceed_Desc_FamilyName()
     {
@@ -754,7 +968,6 @@ public class ViewSponsorOrganisationUsersTests : TestServiceBase<SponsorOrganisa
 
         // Act
         var result = await Sut.ViewSponsorOrganisationUsers(rtsId, null, 1, 20, "FamilyName", "desc");
-
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -862,7 +1075,6 @@ public class ViewSponsorOrganisationUsersTests : TestServiceBase<SponsorOrganisa
 
         // Act
         var result = await Sut.ViewSponsorOrganisationUsers(rtsId, null, 1, 20, "Email", "desc");
-
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -972,7 +1184,6 @@ public class ViewSponsorOrganisationUsersTests : TestServiceBase<SponsorOrganisa
         // Act
         var result = await Sut.ViewSponsorOrganisationUsers(rtsId, null, 1, 20, "CurrentLogin", "desc");
 
-
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
         var model = viewResult.Model.ShouldBeAssignableTo<SponsorOrganisationListUsersModel>();
@@ -1080,6 +1291,221 @@ public class ViewSponsorOrganisationUsersTests : TestServiceBase<SponsorOrganisa
         // Act
         var result = await Sut.ViewSponsorOrganisationUsers(rtsId, null, 1, 20, "Status", "desc");
 
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var model = viewResult.Model.ShouldBeAssignableTo<SponsorOrganisationListUsersModel>();
+
+        model.SponsorOrganisation.RtsId.ShouldBe(rtsId);
+        model.SponsorOrganisation.SponsorOrganisationName.ShouldBe(orgName);
+        model.SponsorOrganisation.Countries.ShouldContain(country);
+        model.SponsorOrganisation.IsActive.ShouldBeTrue();
+        model.SponsorOrganisation.UpdatedDate.ShouldBe(
+            sponsorResponse.Content.SponsorOrganisations.First().CreatedDate);
+
+        model.Users.ShouldNotBeNull();
+        model.Users.ShouldHaveSingleItem();
+        model.Users.First().Id.ShouldBe(userId);
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Verify(s => s.GetSponsorOrganisationByRtsId(rtsId), Times.Once);
+        Mocker.GetMock<IRtsService>()
+            .Verify(s => s.GetOrganisation(rtsId), Times.Once);
+    }
+
+    [Fact]
+    public async Task ViewSponsorOrganisationUsers_ShouldReturnView_WithMappedModel_WhenBothServicesSucceed_Desc_Role()
+    {
+        // Arrange
+        const string rtsId = "87765";
+        const string orgName = "Acme Research Ltd";
+        const string country = "England";
+
+        var userGuid = Guid.NewGuid();
+        var userId = userGuid.ToString();
+
+        var sponsorResponse = new ServiceResponse<AllSponsorOrganisationsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new AllSponsorOrganisationsResponse
+            {
+                SponsorOrganisations = new List<SponsorOrganisationDto>
+                {
+                    new()
+                    {
+                        IsActive = true,
+                        CreatedDate = new DateTime(2024, 5, 1),
+                        Users = new List<SponsorOrganisationUserDto>
+                        {
+                            new()
+                            {
+                                RtsId = "123",
+                                UserId = userGuid,
+                                Id = Guid.NewGuid()
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        var organisationResponse = new ServiceResponse<OrganisationDto>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new OrganisationDto { Id = rtsId, Name = orgName, CountryName = country }
+        };
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.GetSponsorOrganisationByRtsId(rtsId))
+            .ReturnsAsync(sponsorResponse);
+
+        Mocker.GetMock<IRtsService>()
+            .Setup(s => s.GetOrganisation(rtsId))
+            .ReturnsAsync(organisationResponse);
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(x => x.GetUsersByIds(
+                It.IsAny<IEnumerable<string>>(),
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<int>()))
+            .ReturnsAsync(new ServiceResponse<UsersResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new UsersResponse
+                {
+                    TotalCount = 1,
+                    Users = new List<User>
+                    {
+                        new(
+                            userId,
+                            "azure-ad-12345",
+                            "Mr",
+                            "Test",
+                            "Test",
+                            "test.test@example.com",
+                            "Software Developer",
+                            "Rsp Systems Ltd",
+                            "+44 7700 900123",
+                            "United Kingdom",
+                            "Active",
+
+                            DateTime.UtcNow,
+                            DateTime.UtcNow.AddDays(-2),
+                            DateTime.UtcNow)
+                    }
+                }
+            });
+
+        // Act
+        var result = await Sut.ViewSponsorOrganisationUsers(rtsId, null, 1, 20, "sponsorrole", "desc");
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var model = viewResult.Model.ShouldBeAssignableTo<SponsorOrganisationListUsersModel>();
+
+        model.SponsorOrganisation.RtsId.ShouldBe(rtsId);
+        model.SponsorOrganisation.SponsorOrganisationName.ShouldBe(orgName);
+        model.SponsorOrganisation.Countries.ShouldContain(country);
+        model.SponsorOrganisation.IsActive.ShouldBeTrue();
+        model.SponsorOrganisation.UpdatedDate.ShouldBe(
+            sponsorResponse.Content.SponsorOrganisations.First().CreatedDate);
+
+        model.Users.ShouldNotBeNull();
+        model.Users.ShouldHaveSingleItem();
+        model.Users.First().Id.ShouldBe(userId);
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Verify(s => s.GetSponsorOrganisationByRtsId(rtsId), Times.Once);
+        Mocker.GetMock<IRtsService>()
+            .Verify(s => s.GetOrganisation(rtsId), Times.Once);
+    }
+
+    [Fact]
+    public async Task ViewSponsorOrganisationUsers_ShouldReturnView_WithMappedModel_WhenBothServicesSucceed_Desc_IsAuthoriser()
+    {
+        // Arrange
+        const string rtsId = "87765";
+        const string orgName = "Acme Research Ltd";
+        const string country = "England";
+
+        var userGuid = Guid.NewGuid();
+        var userId = userGuid.ToString();
+
+        var sponsorResponse = new ServiceResponse<AllSponsorOrganisationsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new AllSponsorOrganisationsResponse
+            {
+                SponsorOrganisations = new List<SponsorOrganisationDto>
+                {
+                    new()
+                    {
+                        IsActive = true,
+                        CreatedDate = new DateTime(2024, 5, 1),
+                        Users = new List<SponsorOrganisationUserDto>
+                        {
+                            new()
+                            {
+                                RtsId = "123",
+                                UserId = userGuid,
+                                Id = Guid.NewGuid()
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        var organisationResponse = new ServiceResponse<OrganisationDto>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new OrganisationDto { Id = rtsId, Name = orgName, CountryName = country }
+        };
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.GetSponsorOrganisationByRtsId(rtsId))
+            .ReturnsAsync(sponsorResponse);
+
+        Mocker.GetMock<IRtsService>()
+            .Setup(s => s.GetOrganisation(rtsId))
+            .ReturnsAsync(organisationResponse);
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(x => x.GetUsersByIds(
+                It.IsAny<IEnumerable<string>>(),
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<int>()))
+            .ReturnsAsync(new ServiceResponse<UsersResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new UsersResponse
+                {
+                    TotalCount = 1,
+                    Users = new List<User>
+                    {
+                        new(
+                            userId,
+                            "azure-ad-12345",
+                            "Mr",
+                            "Test",
+                            "Test",
+                            "test.test@example.com",
+                            "Software Developer",
+                            "Rsp Systems Ltd",
+                            "+44 7700 900123",
+                            "United Kingdom",
+                            "Active",
+
+                            DateTime.UtcNow,
+                            DateTime.UtcNow.AddDays(-2),
+                            DateTime.UtcNow)
+                    }
+                }
+            });
+
+        // Act
+        var result = await Sut.ViewSponsorOrganisationUsers(rtsId, null, 1, 20, "isauthoriser", "desc");
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();

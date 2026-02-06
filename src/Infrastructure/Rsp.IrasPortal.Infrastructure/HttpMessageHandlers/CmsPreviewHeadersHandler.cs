@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.WebUtilities;
 
-namespace Rsp.IrasPortal.Infrastructure.HttpMessageHandlers;
+namespace Rsp.Portal.Infrastructure.HttpMessageHandlers;
 
 /// <summary>
 /// Delegating handler to add a Preview header when making calls to the CMS

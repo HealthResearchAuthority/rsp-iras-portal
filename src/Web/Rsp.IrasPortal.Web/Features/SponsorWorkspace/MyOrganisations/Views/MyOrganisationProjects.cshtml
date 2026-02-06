@@ -1,6 +1,6 @@
-﻿@using Rsp.IrasPortal.Application.Constants
-@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
-@using Rsp.IrasPortal.Web.Features.SponsorWorkspace.MyOrganisations.Models
+﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@using Rsp.Portal.Web.Features.SponsorWorkspace.MyOrganisations.Models
 @model SponsorMyOrganisationProjectsViewModel
 
 @section Breadcrumb {
@@ -31,7 +31,7 @@
 
 @{
 	var errorSummaryTitle = "There is a problem";
-	ViewBag.Title = "Sponsor organisations profile";
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 
 	var showNoResultsMessage = !Model.ProjectRecords.Any() && Model.Search is { IrasId: not null } or { Filters.Count: > 0 };
 
@@ -163,7 +163,7 @@
 									<span class="search-filter-summary__remove-filter-text">
 										<span class="govuk-visually-hidden">Remove filter</span>
 										@if (filterKey.Contains("date created - from", StringComparison.OrdinalIgnoreCase)
-															|| filterKey.Contains("date crated - to", StringComparison.OrdinalIgnoreCase))
+																	|| filterKey.Contains("date created - to", StringComparison.OrdinalIgnoreCase))
 										{
 											@($"{filterKey} {val}")
 										}
@@ -232,20 +232,12 @@
 							{
 								<tr class="govuk-table__row">
 									<td class="govuk-table__cell">
-										@if (record.Status == ProjectRecordStatus.Active)
-										{
-											<a asp-route="pov:projectdetails"
-											   asp-route-projectRecordId="@record.Id"
-											   asp-route-backRoute="sws:MyOrganisationProjects"
-											   class="govuk-link">
-												<strong>@record.ShortProjectTitle</strong>
-											</a>
-										}
-										else
-										{
-											@record.ShortProjectTitle
-										}
-
+										<a asp-route="pov:projectdetails"
+										   asp-route-projectRecordId="@record.Id"
+										   asp-route-backRoute="sws:MyOrganisationProjects"
+										   class="govuk-link">
+											<strong>@record.ShortProjectTitle</strong>
+										</a>
 									</td>
 									<td class="govuk-table__cell">
 										@record.IrasId

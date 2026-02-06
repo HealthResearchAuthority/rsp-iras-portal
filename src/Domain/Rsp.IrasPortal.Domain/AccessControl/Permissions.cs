@@ -1,4 +1,4 @@
-namespace Rsp.IrasPortal.Domain.AccessControl;
+namespace Rsp.Portal.Domain.AccessControl;
 
 /// <summary>
 /// Defines all workspace.area.action permissions in the system
@@ -42,6 +42,11 @@ public static class Permissions
         /// allows searching project records
         /// </summary>
         public const string ProjectRecord_Search = "myresearch.projectrecord.search";
+
+        /// <summary>
+        /// allows searching project close
+        /// </summary>
+        public const string ProjectRecord_Close = "myresearch.projectrecord.close";
 
         /// <summary>
         /// allows reading project record history
@@ -156,6 +161,21 @@ public static class Permissions
         /// allows authorising/not authorising modifications
         /// </summary>
         public const string Modifications_Authorise = "sponsor.modifications.authorise";
+
+        /// <summary>
+        /// allows searching project closure records
+        /// </summary>
+        public const string ProjectClosures_Search = "sponsor.projectclosures.search";
+
+        /// <summary>
+        /// allows reviewing project closure records before the final action i.e. authorising, not authorising
+        /// </summary>
+        public const string ProjectClosures_Review = "sponsor.projectclosures.review";
+
+        /// <summary>
+        /// allows authorising/not authorising project closure records
+        /// </summary>
+        public const string ProjectClosures_Authorise = "sponsor.projectclosures.authorise";
 
         /// <summary>
         /// allows seeing the my organisations on the menu

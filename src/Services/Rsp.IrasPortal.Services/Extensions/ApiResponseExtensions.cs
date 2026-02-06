@@ -1,7 +1,7 @@
 ﻿using Refit;
-using Rsp.IrasPortal.Application.Responses;
+using Rsp.Portal.Application.Responses;
 
-namespace Rsp.IrasPortal.Services.Extensions;
+namespace Rsp.Portal.Services.Extensions;
 
 public static class ApiResponseExtensions
 {

@@ -3,10 +3,10 @@
 @using Microsoft.AspNetCore.Http.Extensions
 @using Microsoft.AspNetCore.Mvc.ModelBinding
 @using Rsp.Gds.Component.Models
-@using Rsp.IrasPortal.Application.Constants
-@using Rsp.IrasPortal.Application.DTOs.Responses
-@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
-@using Rsp.IrasPortal.Web.Extensions
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@using Rsp.Portal.Web.Extensions
 @model ApprovalsSearchViewModel
 @inject IHttpContextAccessor httpContextAccessor
 
@@ -46,7 +46,7 @@
 }
 
 @{
-    ViewBag.Title = "Search - Approvals";
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 
     // this url will be used to redirect, when search button is clicked
     var requestUrl = httpContextAccessor.HttpContext?.Request.GetEncodedUrl();
@@ -71,6 +71,24 @@
     var searchHint = pageContent.GetValueOrDefault("Approvals.Search.SearchHint", null);
     var noResultsTitle = pageContent.GetValueOrDefault("Approvals.Search.NoResultsTitle", null);
     var noResultsBody = pageContent.GetValueOrDefault("Approvals.Search.NoResultsBody", null);
+    
+    var filterCITitle = pageContent.GetValueOrDefault("Approvals.Search.AdvancedFilter.CITitle", null);
+    var filterCIHint = pageContent.GetValueOrDefault("Approvals.Search.AdvancedFilter.CIHint", null);
+    var filterDateSubmittedTitle = pageContent.GetValueOrDefault("Approvals.Search.AdvancedFilter.DateSubmitted.Title", null);
+    var filterDateSubmittedFromTitle = pageContent.GetValueOrDefault("Approvals.Search.AdvancedFilter.DateSubmitted.From.Title", null);
+    var filterDateSubmittedFromHint = pageContent.GetValueOrDefault("Approvals.Search.AdvancedFilter.DateSubmitted.From.Hint", null);
+    var filterDateSubmittedToTitle = pageContent.GetValueOrDefault("Approvals.Search.AdvancedFilter.DateSubmitted.To.Title", null);
+    var filterDateSubmittedToHint = pageContent.GetValueOrDefault("Approvals.Search.AdvancedFilter.DateSubmitted.To.Hint", null);
+    var filterLeadNationTitle = pageContent.GetValueOrDefault("Approvals.Search.AdvancedFilter.LeadNation.Title", null);
+    var filterLeadNationHint = pageContent.GetValueOrDefault("Approvals.Search.AdvancedFilter.LeadNation.Hint", null);
+    var filterModificationTypeTitle = pageContent.GetValueOrDefault("Approvals.Search.AdvancedFilter.ModificationType.Title", null);
+    var filterModificationTypeHint = pageContent.GetValueOrDefault("Approvals.Search.AdvancedFilter.ModificationType.Hint", null);
+    var filterParticipatingNationTitle = pageContent.GetValueOrDefault("Approvals.Search.AdvancedFilter.ParticipatingNation.Title", null);
+    var filterParticipatingNationHint = pageContent.GetValueOrDefault("Approvals.Search.AdvancedFilter.ParticipatingNation.Hint", null);
+    var filterProjectTitleTitle = pageContent.GetValueOrDefault("Approvals.Search.AdvancedFilter.ProjectTitle.Title", null);
+    var filterProjectTitleHint = pageContent.GetValueOrDefault("Approvals.Search.AdvancedFilter.ProjectTitle.Hint", null);
+    var filterSponsorOrgTitle = pageContent.GetValueOrDefault("Approvals.Search.AdvancedFilter.SponsorOrg.Title", null);
+    var filterSponsorOrgHint = pageContent.GetValueOrDefault("Approvals.Search.AdvancedFilter.SponsorOrg.Hint", null);
 
     TempData[TempDataKeys.ProjectModification.LinkBackToReferrer] = true;
     TempData[TempDataKeys.ProjectModification.UrlReferrer] = Context.Request.GetDisplayUrl();
@@ -118,13 +136,13 @@
 						<details class="search-filter-section" @(CanOpenPanelForField("ChiefInvestigatorName") ? "open"
                                            : null)>
     <summary class="search-filter-section__summary">
-        <h2 class="search-filter-section__summary-heading">Chief Investigator name</h2>
+        <h2 class="search-filter-section__summary-heading">@Html.Raw(filterCITitle?.Value)</h2>
     </summary>
     <div class="search-filter-section__content">
         <div class="govuk-form-group govuk-!-margin-bottom-2">
             <fieldset class="govuk-fieldset">
                 <rsp-gds-input asp-for="Search.ChiefInvestigatorName"
-                               label-text="Enter the name of the Chief Investigator"
+                               label-text="@Html.Raw(filterCIHint?.Value)"
                                width-class="govuk-!-width-three-quarters"
 											label-html-class="font-weight-none" />
             </fieldset>
@@ -136,7 +154,7 @@
 						<details class="search-filter-section" @(CanOpenPanelForAnyField("FromDate", "ToDate") ? "open"
                                            : null)>
     <summary class="search-filter-section__summary">
-        <h2 class="search-filter-section__summary-heading">Date submitted</h2>
+        <h2 class="search-filter-section__summary-heading">@Html.Raw(filterDateSubmittedTitle?.Value)</h2>
     </summary>
     <div class="search-filter-section__content">
         <div class="govuk-form-group govuk-!-margin-bottom-2">
@@ -145,16 +163,16 @@
                                     day-value="@Model.Search.FromDay" month-name="Search.FromMonth"
                                     month-value="@Model.Search.FromMonth" year-name="Search.FromYear"
                                     year-value="@Model.Search.FromYear"
-                                    label-text="Enter the date you want to search from"
-                                    hint-html="For example, 28 February 2023" error-key="FromDate" id="FromDate"
+                                    label-text="@Html.Raw(filterDateSubmittedFromTitle?.Value)"
+                                    hint-html="@Html.Raw(filterDateSubmittedFromHint?.Value)" error-key="FromDate" id="FromDate"
 											label-html-class="font-weight-none" />
 
                 <rsp-gds-date-input asp-for="Search.ToDate" day-name="Search.ToDay"
                                     day-value="@Model.Search.ToDay" month-name="Search.ToMonth"
                                     month-value="@Model.Search.ToMonth" year-name="Search.ToYear"
                                     year-value="@Model.Search.ToYear"
-                                    label-text="Enter the date you want to search to"
-                                    hint-html="For example, 12 October 2024" error-key="ToDate" id="ToDate"
+                                    label-text="@Html.Raw(filterDateSubmittedToTitle?.Value)"
+                                    hint-html="@Html.Raw(filterDateSubmittedToHint?.Value)" error-key="ToDate" id="ToDate"
 											label-html-class="font-weight-none" />
             </fieldset>
         </div>
@@ -164,14 +182,14 @@
 <!-- Lead nation -->
 <details class="search-filter-section" @(CanOpenPanelForField("LeadNation") ? "open" : null)>
     <summary class="search-filter-section__summary">
-        <h2 class="search-filter-section__summary-heading">Lead nation</h2>
+        <h2 class="search-filter-section__summary-heading">@Html.Raw(filterLeadNationTitle?.Value)</h2>
     </summary>
     <div class="search-filter-section__content">
         <div class="govuk-form-group govuk-!-margin-bottom-2">
             <fieldset class="govuk-fieldset">
                 <rsp-gds-checkbox-group asp-for="Search.LeadNation"
                                         options="UkCountryNames.Countries" conditional-field="false"
-                                        label-text="Select all that apply"
+                                        label-text="@Html.Raw(filterLeadNationHint?.Value)"
                                         legend-class="govuk-label govuk-label--s font-weight-none"
                                         hint-id="lead-nation-hint"
                                         hint-html="@($"{Model.Search.LeadNation?.Count ?? 0} selected")"
@@ -185,14 +203,14 @@
 						<details class="search-filter-section" @(CanOpenPanelForField("ModificationTypes") ? "open" :
 																		 null)>
     <summary class="search-filter-section__summary">
-        <h2 class="search-filter-section__summary-heading">Modification type</h2>
+        <h2 class="search-filter-section__summary-heading">@Html.Raw(filterModificationTypeTitle?.Value)</h2>
     </summary>
     <div class="search-filter-section__content">
         <div class="govuk-form-group govuk-!-margin-bottom-2">
             <fieldset class="govuk-fieldset">
                 <rsp-gds-checkbox-group asp-for="Search.ModificationTypes"
                                         options="Ranking.ModificationTypes.AllOptions" conditional-field="true"
-                                        label-text="Select all that apply"
+                                        label-text="@Html.Raw(filterModificationTypeHint?.Value)"
                                         legend-class="govuk-label govuk-label--s font-weight-none"
                                         hint-id="modification-hint"
 											hint-html="@($"{Model.Search.ModificationTypes?.Count ?? 0} selected")" />
@@ -205,14 +223,14 @@
 						<details class="search-filter-section" @(CanOpenPanelForField("ParticipatingNation") ? "open" :
 																		 null)>
     <summary class="search-filter-section__summary">
-        <h2 class="search-filter-section__summary-heading">Participating nation</h2>
+        <h2 class="search-filter-section__summary-heading">@Html.Raw(filterParticipatingNationTitle?.Value)</h2>
     </summary>
     <div class="search-filter-section__content">
         <div class="govuk-form-group govuk-!-margin-bottom-2">
             <fieldset class="govuk-fieldset">
                 <rsp-gds-checkbox-group asp-for="Search.ParticipatingNation"
                                         options="UkCountryNames.Countries" conditional-field="false"
-                                        label-text="Select all that apply"
+                                        label-text="@Html.Raw(filterParticipatingNationHint?.Value)"
                                         legend-class="govuk-label govuk-label--s font-weight-none"
                                         hint-id="participating-nation-hint"
                                         hint-html="@($"{Model.Search.ParticipatingNation?.Count ?? 0} selected")"
@@ -226,13 +244,13 @@
 						<details class="search-filter-section" @(CanOpenPanelForField("ShortProjectTitle") ? "open" :
 																		 null)>
     <summary class="search-filter-section__summary">
-        <h2 class="search-filter-section__summary-heading">Short project title</h2>
+        <h2 class="search-filter-section__summary-heading">@Html.Raw(filterProjectTitleTitle?.Value)</h2>
     </summary>
     <div class="search-filter-section__content">
         <div class="govuk-form-group govuk-!-margin-bottom-2">
             <fieldset class="govuk-fieldset">
                 <rsp-gds-input asp-for="Search.ShortProjectTitle"
-													   label-text="Enter the short project title"
+													   label-text="@Html.Raw(filterProjectTitleHint?.Value)"
                                width-class="govuk-!-width-three-quarters"
 											label-html-class="font-weight-none" />
             </fieldset>
@@ -243,7 +261,7 @@
 <!-- Sponsor organisation -->
 <details class="search-filter-section" @(CanOpenSponsorOrgSection() ? "open" : null)>
     <summary class="search-filter-section__summary">
-        <h2 class="search-filter-section__summary-heading">Sponsor organisation</h2>
+        <h2 class="search-filter-section__summary-heading">@Html.Raw(filterSponsorOrgTitle?.Value)</h2>
     </summary>
     <div class="search-filter-section__content">
         <div class="govuk-form-group govuk-!-margin-bottom-2">
@@ -251,7 +269,7 @@
                 <rsp-gds-autocomplete asp-for="Search.SponsorOrganisation"
                                       label-html-class="js-hidden font-weight-none"
                                       field-id="SponsorOrganisation_Text"
-                                      label-text="Type the name of the organisation or scroll through the list"
+                                      label-text="@Html.Raw(filterSponsorOrgHint?.Value)"
                                       api-url="/organisation/getsponsororganisationsnames"
                                       auto-complete-enabled-id="auto_search"
                                       use-organisation-id=@true
@@ -477,6 +495,7 @@ else if (showNoResultsMessage)
                                 new { Field = nameof(ModificationsModel.ModificationId), Label = "Modification ID" },
                                 new { Field = nameof(ModificationsModel.ShortProjectTitle), Label = "Short project title" },
                                 new { Field = nameof(ModificationsModel.ModificationType), Label = "Modification type" },
+                                new { Field = nameof(ModificationsModel.ChiefInvestigator), Label = "Chief investigator" },
                                 new { Field = nameof(ModificationsModel.LeadNation), Label = "Lead Nation" },
                                 new { Field = nameof(ModificationsModel.Status), Label = "Status" }
                             };
@@ -485,13 +504,6 @@ else if (showNoResultsMessage)
                         <tr class="govuk-table__row govuk-body-s">
                             @foreach (var header in sortableHeaders)
                             {
-								// Insert Chief investigator column *before* LeadNation
-                                if (header.Field == nameof(ModificationsModel.LeadNation))
-                                {
-                                  <!-- NON-sortable Chief investigator column -->
-								    <th scope="col" class="govuk-table__header govuk-table__header-sortable">Chief investigator</th>
-                                }
-
                                 var sortableHeaderModel = new SortableHeaderModel
                                 {
                                     FieldName = header.Field,

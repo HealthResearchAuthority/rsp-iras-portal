@@ -1,6 +1,6 @@
-﻿using Rsp.IrasPortal.Services.Extensions;
+﻿using Rsp.Portal.Services.Extensions;
 
-namespace Rsp.IrasPortal.UnitTests.Services.ApiResponseExtensionsTest;
+namespace Rsp.Portal.UnitTests.Services.ApiResponseExtensionsTest;
 
 public class ToServiceResponse : TestServiceBase
 {

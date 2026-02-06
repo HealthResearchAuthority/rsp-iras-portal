@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
+﻿namespace Rsp.Portal.Application.DTOs.Responses.CmsContent;
 
 public class AccordionItem
 {

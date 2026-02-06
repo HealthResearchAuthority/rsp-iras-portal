@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Domain.AccessControl;
+using Rsp.Portal.Domain.AccessControl;
 
-namespace Rsp.IrasPortal.Web.Controllers;
+namespace Rsp.Portal.Web.Controllers;
 
 [Authorize(Policy = Workspaces.SystemAdministration)]
 [Route("[controller]/[action]", Name = "systemadmin:[action]")]

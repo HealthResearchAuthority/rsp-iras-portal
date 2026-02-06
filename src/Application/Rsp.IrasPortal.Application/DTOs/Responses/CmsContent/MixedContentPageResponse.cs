@@ -1,7 +1,8 @@
-﻿namespace Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
+﻿namespace Rsp.Portal.Application.DTOs.Responses.CmsContent;
 
 public class MixedContentPageResponse
 {
+    public string? MetaTitle { get; set; }
     public IDictionary<string, MixedContentPageItem?> ContentItems { get; set; } = new Dictionary<string, MixedContentPageItem?>();
 }
 

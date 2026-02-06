@@ -1,7 +1,7 @@
-﻿@using Rsp.IrasPortal.Application.Constants
-@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
+﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent;
 @{
-    ViewBag.Title = "Your account has been disabled";
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 }
 
 @{
@@ -16,7 +16,7 @@
 
 <h1 class="govuk-heading-l">@headline?.Value</h1>
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
+    <div class="govuk-grid-column-two-thirds govuk-rte">
 
         <p class="govuk-body">
             @Html.Raw(body?.Value)

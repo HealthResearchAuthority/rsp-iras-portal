@@ -2,7 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 
-namespace Rsp.IrasPortal.Infrastructure.Authorization;
+namespace Rsp.Portal.Infrastructure.Authorization;
 
 /// <summary>
 /// Provides authorization policies for workspace-related operations.

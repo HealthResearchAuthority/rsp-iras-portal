@@ -2,14 +2,15 @@
 @using System.Text.Json
 @using Microsoft.AspNetCore.Mvc.ModelBinding
 @using Microsoft.FeatureManagement
-@using Rsp.IrasPortal.Application.Constants
-@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
-@using Rsp.IrasPortal.Web.Features.Modifications.Models
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent;
+@using Rsp.Portal.Web.Features.Modifications.Models
+@using Rsp.Portal.Web.Models
 @model ModificationDetailsViewModel
 
 @{
 
-    ViewBag.Title = "Modification details";
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 }
 
 @section BackNavigation {

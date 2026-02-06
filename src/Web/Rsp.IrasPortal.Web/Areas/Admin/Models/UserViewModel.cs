@@ -1,10 +1,10 @@
 ﻿using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Domain.Identity;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Domain.Identity;
 
-namespace Rsp.IrasPortal.Web.Areas.Admin.Models;
+namespace Rsp.Portal.Web.Areas.Admin.Models;
 
 public class UserViewModel
 {
@@ -60,6 +60,11 @@ public class UserViewModel
 
     public DateTime? LastLogin { get; set; } = null;
     public DateTime? CurrentLogin { get; set; } = null;
+
+    // USE FOR SORTING ON SPONSOR ORG USERS
+    public string IsAuthoriser { get; set; }
+
+    public string SponsorRole { get; set; }
 
     public UserViewModel()
     { }

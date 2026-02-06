@@ -3,17 +3,17 @@ using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.Filters;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Domain.AccessControl;
-using Rsp.IrasPortal.Web.Areas.Admin.Models;
-using Rsp.IrasPortal.Web.Extensions;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.Filters;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.AccessControl;
+using Rsp.Portal.Web.Areas.Admin.Models;
+using Rsp.Portal.Web.Extensions;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.Web.Controllers;
+namespace Rsp.Portal.Web.Controllers;
 
 [Route("[controller]/[action]", Name = "app:[action]")]
 [Authorize(Policy = Workspaces.MyResearch)]
@@ -23,7 +23,10 @@ public class ApplicationController
     IValidator<IrasIdViewModel> irasIdValidator,
     IProjectRecordValidationService projectRecordValidationService,
     ICmsQuestionsetService cmsQuestionsetService,
-    IValidator<ApplicationSearchModel> searchValidator
+    IValidator<ApplicationSearchModel> searchValidator,
+    IProjectClosuresService projectClosuresService,
+    IProjectModificationsService projectModificationsService,
+    IValidator<ProjectClosuresModel> closureValidator
 ) : Controller
 {
     [Authorize(Policy = Permissions.MyResearch.ProjectRecord_List)]
@@ -91,14 +94,14 @@ public class ApplicationController
     public IActionResult StartProject() => View(nameof(StartProject));
 
     /// <summary>
-    /// Handles the POST request to start a new project.
-    /// Validates the IRAS ID, checks for duplicates, creates a new application, and redirects to the questionnaire.
+    /// Handles the POST request to start a new project. Validates the IRAS ID, checks for
+    /// duplicates, creates a new application, and redirects to the questionnaire.
     /// </summary>
     /// <param name="model">The IRAS ID view model containing the IRAS ID input by the user.</param>
     /// <returns>
-    /// If validation fails or a duplicate IRAS ID is found, returns the StartProject view with errors.
-    /// If the application is created successfully, redirects to the Questionnaire Resume action.
-    /// Otherwise, returns a service error view.
+    /// If validation fails or a duplicate IRAS ID is found, returns the StartProject view with
+    /// errors. If the application is created successfully, redirects to the Questionnaire Resume
+    /// action. Otherwise, returns a service error view.
     /// </returns>
     [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Create)]
     [HttpPost]
@@ -159,8 +162,7 @@ public class ApplicationController
         // if we have sections then grab the first section
         var sections = questionSetResponse.Content?.Sections ?? [];
 
-        // section shouldn't be null here, this is a defensive
-        // check
+        // section shouldn't be null here, this is a defensive check
         if (sections is { Count: 0 })
         {
             return this.ServiceError(new ServiceResponse
@@ -292,5 +294,131 @@ public class ApplicationController
         }
 
         return RedirectToAction(nameof(Welcome));
+    }
+
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Close)]
+    [HttpPost]
+    public async Task<IActionResult> ConfirmProjectClosure(ProjectClosuresModel model, DateTime plannedProjectEndDate, string separator = "/")
+    {
+        var validationResult = await closureValidator.ValidateAsync(model);
+
+        if (!validationResult.IsValid)
+        {
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
+            TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
+            TempData.TryAdd(TempDataKeys.PlannedProjectEndDate, plannedProjectEndDate.ToString("dd MMMM yyyy"));
+
+            return RedirectToAction(nameof(CloseProject), new
+            {
+                projectRecordId = model.ProjectRecordId,
+                actualClosureDateDay = model.ActualClosureDateDay,
+                actualClosureDateMonth = model.ActualClosureDateMonth,
+                actualClosureDateYear = model.ActualClosureDateYear
+            });
+        }
+
+        // Get respondent information from the current context
+        var respondent = this.GetRespondentFromContext();
+
+        //// Compose the full name of the respondent
+        var userName = $"{respondent.GivenName} {respondent.FamilyName}";
+
+        // Create a new project modification request
+        var projectClosureRequest = new ProjectClosureRequest
+        {
+            TransactionId = ProjectClosureStatus.TransactionIdPrefix + model.IrasId + separator,
+            ProjectRecordId = model.ProjectRecordId,
+            IrasId = model.IrasId,
+            ClosureDate = model.ActualClosureDate,
+            DateActioned = model.DateActioned,
+            SentToSponsorDate = DateTime.UtcNow,
+            ShortProjectTitle = model.ShortProjectTitle,
+            Status = ModificationStatus.WithSponsor,
+            CreatedBy = userName,
+            UpdatedBy = userName,
+        };
+
+        var closeProjectResponse = await projectClosuresService.CreateProjectClosure(projectClosureRequest);
+
+        if (!closeProjectResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(closeProjectResponse);
+        }
+        //get project record for status update
+        var projectRecord = await applicationsService.GetProjectRecord(model.ProjectRecordId);
+        if (!projectRecord.IsSuccessStatusCode)
+        {
+            return this.ServiceError(projectRecord);
+        }
+        // update the project record status in project record table
+        var updateApplicationResponse = await applicationsService.UpdateProjectRecordStatus(projectRecord.Content.Id, ProjectRecordStatus.PendingClosure);
+
+        if (!updateApplicationResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(updateApplicationResponse);
+        }
+
+        TempData[TempDataKeys.ShowCloseProjectBanner] = true;
+
+        return RedirectToAction(nameof(ProjectClosure));
+    }
+
+    /// <summary>
+    /// Close project
+    /// </summary>
+    /// <param name="projectRecordId"></param>
+    /// <returns></returns>
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Close)]
+    [HttpGet]
+    public async Task<IActionResult> CloseProject(
+        string projectRecordId,
+        string? actualClosureDateDay,
+        string? actualClosureDateMonth,
+        string? actualClosureDateYear)
+    {
+        var IrasId = TempData.Peek(TempDataKeys.IrasId) as int?;
+        var shortProjectTitle = TempData.Peek(TempDataKeys.ShortProjectTitle);
+
+        var modificationsResponse = await projectModificationsService.GetModificationsForProject(projectRecordId, new ModificationSearchRequest());
+
+        var isInTransactionState = modificationsResponse.Content?.Modifications?.Any(m =>
+            m.Status is ModificationStatus.InDraft
+                or ModificationStatus.WithSponsor
+                or ModificationStatus.WithReviewBody) == true;
+
+        var model = new ProjectClosuresModel
+        {
+            ProjectRecordId = projectRecordId,
+            IrasId = IrasId,
+            ShortProjectTitle = shortProjectTitle?.ToString(),
+
+            // date fields now come from the controller parameters (querystring binding)
+            ActualClosureDateDay = actualClosureDateDay,
+            ActualClosureDateMonth = actualClosureDateMonth,
+            ActualClosureDateYear = actualClosureDateYear,
+        };
+
+        if (isInTransactionState)
+        {
+            return View("/Features/ProjectOverview/Views/ValidateProjectClosure.cshtml", model);
+        }
+        else
+        {
+            return View("/Features/ProjectOverview/Views/CloseProject.cshtml", model);
+        }
+    }
+
+    /// <summary>
+    /// Project Closure
+    /// </summary>
+    /// <returns></returns>
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Close)]
+    [HttpGet]
+    public IActionResult ProjectClosure()
+    {
+        return View("/Features/ProjectOverview/Views/ConfirmProjectClosure.cshtml");
     }
 }

@@ -1,11 +1,11 @@
-﻿using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.Logging.Interceptors;
+﻿using Rsp.Logging.Interceptors;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Responses;
 
-namespace Rsp.IrasPortal.Application.Services;
+namespace Rsp.Portal.Application.Services;
 
 /// <summary>
 /// Service interface for managing project modifications.
@@ -228,7 +228,7 @@ public interface IProjectModificationsService : IInterceptable
     public Task<ServiceResponse<GetModificationsResponse>> GetModificationsBySponsorOrganisationUserId
    (
        Guid sponsorOrganisationUserId,
-       SponsorAuthorisationsSearchRequest searchQuery,
+       SponsorAuthorisationsModificationsSearchRequest searchQuery,
        int pageNumber = 1,
        int pageSize = 20,
        string sortField = nameof(ModificationsDto.SentToSponsorDate),
@@ -274,4 +274,10 @@ public interface IProjectModificationsService : IInterceptable
     /// </summary>
     /// <param name="modificationId">The request object containing the updated details for the modification change.</param>
     public Task<ServiceResponse> CheckDocumentAccess(Guid modificationId);
+
+    /// <summary>
+    /// Saves review responses for a project modification.
+    /// </summary>
+    /// <param name="documentsAuditTrailRequest">The request object containing the review values</param>
+    public Task<ServiceResponse> CreateModificationDocumentsAuditTrail(List<ModificationDocumentsAuditTrailDto> documentsAuditTrailRequest);
 }

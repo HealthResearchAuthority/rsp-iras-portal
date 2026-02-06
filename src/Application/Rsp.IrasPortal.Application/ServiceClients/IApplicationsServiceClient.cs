@@ -1,9 +1,9 @@
 ﻿using Refit;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.DTOs.Requests;
-using Rsp.IrasPortal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
 
-namespace Rsp.IrasPortal.Application.ServiceClients;
+namespace Rsp.Portal.Application.ServiceClients;
 
 /// <summary>
 /// Interface to interact with Applications microservice
@@ -104,4 +104,11 @@ public interface IApplicationsServiceClient
 
     [Get("/applications/audittrail")]
     public Task<ApiResponse<ProjectRecordAuditTrailResponse>> GetProjectRecordAuditTrail(string projectRecordId);
+
+    /// <summary>
+    /// Updates the saved application by Id
+    /// </summary>
+    /// <returns>An asynchronous operation that updates the existing application.</returns>
+    [Put("/applications/updateprojectrecordstatus")]
+    public Task<IApiResponse> UpdateProjectRecordStatus(string projectRecordId, string status);
 }

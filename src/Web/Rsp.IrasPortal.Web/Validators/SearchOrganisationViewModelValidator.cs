@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
-using Rsp.IrasPortal.Web.Models;
+using Rsp.Portal.Web.Models;
 
-namespace Rsp.IrasPortal.Web.Validators;
+namespace Rsp.Portal.Web.Validators;
 
 public class SearchOrganisationViewModelValidator : AbstractValidator<SearchOrganisationViewModel>
 {

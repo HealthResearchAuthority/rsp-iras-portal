@@ -2,8 +2,9 @@
 @using System.Text.Json
 @using Microsoft.AspNetCore.Mvc.ModelBinding
 @using Microsoft.FeatureManagement
-@using Rsp.IrasPortal.Application.Constants
-@using Rsp.IrasPortal.Web.Features.Modifications.Models
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@using Rsp.Portal.Web.Features.Modifications.Models
 @model BaseProjectModificationViewModel
 
 @{
@@ -15,6 +16,14 @@
             { "shortTitle", Model.ShortTitle ?? string.Empty },
             { "projectModificationId", Model.ModificationId ?? string.Empty }
         };
+
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData != null
+        ? pageContentData
+        : new Dictionary<string, MixedContentPageItem?>();
+
+    var title = pageContent.GetValueOrDefault("Modifications.UnfinishedChanges.Title", null);
+    var body = pageContent.GetValueOrDefault("Modifications.UnfinishedChanges.Body", null);
 }
 
 @*@section BackNavigation {
@@ -23,13 +32,10 @@
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-        <h1 class="govuk-heading-l">You cannot proceed with ‘Unfinished’ changes</h1>
+        <h1 class="govuk-heading-l">@Html.Raw(title?.Value)</h1>
         <partial name="_ProjectModificationSummary" model="Model" view-data="ViewData" />
         <p class="govuk-body">
-            All changes must have the status 'ready for submission' before you can
-            continue. For any changes with the status 'Unfinished', either select Change
-            to enter missing information, or select Remove if that change is no longer
-            needed.
+            @Html.Raw(body?.Value)
         </p>
         <div class="save-buttons">
             <a class="govuk-button" asp-route="pmc:modificationdetails" asp-all-route-data="modificationParams">

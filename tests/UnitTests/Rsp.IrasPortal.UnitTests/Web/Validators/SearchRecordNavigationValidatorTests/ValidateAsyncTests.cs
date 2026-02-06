@@ -1,8 +1,8 @@
 ﻿using FluentValidation.TestHelper;
-using Rsp.IrasPortal.Web.Features.Approvals.RecordSearch.Models;
-using Rsp.IrasPortal.Web.Validators;
+using Rsp.Portal.Web.Features.Approvals.RecordSearch.Models;
+using Rsp.Portal.Web.Validators;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Validators.SearchRecordNavigationValidatorTests;
+namespace Rsp.Portal.UnitTests.Web.Validators.SearchRecordNavigationValidatorTests;
 
 public class ValidateAsyncTests : TestServiceBase<RecordSearchNavigationModelValidator>
 {

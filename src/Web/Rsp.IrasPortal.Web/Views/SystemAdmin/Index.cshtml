@@ -1,13 +1,13 @@
-﻿@using Rsp.IrasPortal.Application.Constants
-@using Rsp.IrasPortal.Application.DTOs.Responses;
-@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
+﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses;
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
 
 @section Breadcrumb {
 	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>())
 }
 
 @{
-    ViewBag.Title = "System administration";
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle]; ;
 
 	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null

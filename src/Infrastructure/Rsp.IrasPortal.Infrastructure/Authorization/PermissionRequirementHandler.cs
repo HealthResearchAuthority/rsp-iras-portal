@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Application.Extensions;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.Extensions;
 
-namespace Rsp.IrasPortal.Infrastructure.Authorization;
+namespace Rsp.Portal.Infrastructure.Authorization;
 
 /// <summary>
 /// Handler that checks if a user has the required permission based on their roles

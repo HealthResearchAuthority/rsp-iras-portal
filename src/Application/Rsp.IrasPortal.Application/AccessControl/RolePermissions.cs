@@ -1,7 +1,7 @@
-using Rsp.IrasPortal.Application.Constants;
-using static Rsp.IrasPortal.Domain.AccessControl.Permissions;
+using Rsp.Portal.Application.Constants;
+using static Rsp.Portal.Domain.AccessControl.Permissions;
 
-namespace Rsp.IrasPortal.Application.AccessControl;
+namespace Rsp.Portal.Application.AccessControl;
 
 /// <summary>
 /// Maps roles to their workspace, area, and action permissions This can later be moved to
@@ -24,6 +24,7 @@ public static class RolePermissions
                 MyResearch.ProjectRecord_List,
                 MyResearch.ProjectRecord_Search,
                 MyResearch.ProjectRecordHistory_Read,
+                MyResearch.ProjectRecord_Close,
 
                 MyResearch.ProjectDocuments_Upload,
                 MyResearch.ProjectDocuments_Update,
@@ -65,6 +66,9 @@ public static class RolePermissions
                 Sponsor.Modifications_Review,
                 Sponsor.Modifications_Search,
                 Sponsor.Modifications_Authorise,
+                Sponsor.ProjectClosures_Review,
+                Sponsor.ProjectClosures_Search,
+                Sponsor.ProjectClosures_Authorise,
                 Sponsor.MyOrganisations_Access,
                 Sponsor.MyOrganisations_Search,
                 Sponsor.MyOrganisations_Profile,
@@ -165,6 +169,9 @@ public static class RolePermissions
                 Sponsor.Modifications_Review,
                 Sponsor.Modifications_Search,
                 Sponsor.Modifications_Authorise,
+                Sponsor.ProjectClosures_Review,
+                Sponsor.ProjectClosures_Search,
+                Sponsor.ProjectClosures_Authorise,
                 Sponsor.MyOrganisations_Access,
                 Sponsor.MyOrganisations_Search,
                 Sponsor.MyOrganisations_Profile,

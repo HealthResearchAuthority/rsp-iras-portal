@@ -1,7 +1,7 @@
-﻿using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Web.Extensions;
+﻿using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Web.Extensions;
 
-namespace Rsp.IrasPortal.Web.Features.SponsorWorkspace.MyOrganisations.Models;
+namespace Rsp.Portal.Web.Features.SponsorWorkspace.MyOrganisations.Models;
 
 public class SponsorOrganisationProjectSearchModel
 {
@@ -31,7 +31,7 @@ public class SponsorOrganisationProjectSearchModel
         if (FromDate.HasValue && ToDate.HasValue)
         {
             filters.Add(
-                "Created date",
+                "Date created",
                 [$"{FromDate.Value:d MMM yyyy} to {ToDate.Value:d MMM yyyy}"]
             );
         }

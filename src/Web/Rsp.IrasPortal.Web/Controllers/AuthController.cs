@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement;
-using Rsp.IrasPortal.Application.Configuration;
-using Rsp.IrasPortal.Application.Constants;
+using Rsp.Portal.Application.Configuration;
+using Rsp.Portal.Application.Constants;
 
-namespace Rsp.IrasPortal.Web.Controllers;
+namespace Rsp.Portal.Web.Controllers;
 
 // This controller handles authentication actions for the application.
 // It uses attribute routing to map URLs like /Auth/SignIn and /Auth/Signout.

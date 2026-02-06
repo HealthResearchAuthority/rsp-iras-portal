@@ -1,6 +1,6 @@
-﻿using Rsp.IrasPortal.Application.Constants;
+﻿using Rsp.Portal.Application.Constants;
 
-namespace Rsp.IrasPortal.Application.DTOs.Requests;
+namespace Rsp.Portal.Application.DTOs.Requests;
 
 /// <summary>
 /// Represents an application request to create

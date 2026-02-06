@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Web.Areas.Admin.Models;
+﻿namespace Rsp.Portal.Web.Areas.Admin.Models;
 
 /// <summary>
 /// Pagination view model.

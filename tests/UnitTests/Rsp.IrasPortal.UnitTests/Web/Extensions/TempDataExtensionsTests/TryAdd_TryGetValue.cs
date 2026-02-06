@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Rsp.IrasPortal.Web.Extensions;
+using Rsp.Portal.Web.Extensions;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Extensions.TempDataExtensionsTests;
+namespace Rsp.Portal.UnitTests.Web.Extensions.TempDataExtensionsTests;
 
 public class TryAdd_TryGetValue : TestServiceBase
 {

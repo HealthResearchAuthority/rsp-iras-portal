@@ -1,13 +1,13 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Application.DTOs;
-using Rsp.IrasPortal.Application.Responses;
-using Rsp.IrasPortal.Application.Services;
-using Rsp.IrasPortal.Domain.Identity;
-using Rsp.IrasPortal.Web.Features.SponsorWorkspace.Controllers;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.Identity;
+using Rsp.Portal.Web.Features.SponsorWorkspace.Controllers;
 
-namespace Rsp.IrasPortal.UnitTests.Web.Features.SponsorWorkspace;
+namespace Rsp.Portal.UnitTests.Web.Features.SponsorWorkspace;
 
 public class SponsorWorkspaceControllerTests : TestServiceBase<SponsorWorkspaceController>
 {

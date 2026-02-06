@@ -1,6 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Http.Features
-@using Rsp.IrasPortal.Application.Constants
-@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent;
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent;
 
 @{
     var correlationId = Context.TraceIdentifier;
@@ -16,13 +16,13 @@
     var referenceCode = pageContent.GetValueOrDefault("ServerError.ReferenceCode", null);
     var contactDetails = pageContent.GetValueOrDefault("ServerError.ContactDetails", null);
 
-    ViewBag.Title = pageTitle?.Value;
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 }
 
 <div class="govuk-width-container">
     <main class="govuk-main-wrapper govuk-main-wrapper--l" id="main-content" role="main">
         <div class="govuk-grid-row">
-            <div class="govuk-grid-column-two-thirds">
+            <div class="govuk-grid-column-two-thirds govuk-rte">
                 <h1 class="govuk-heading-l">@headline?.Value</h1>
                 <p class="govuk-body">
                     @Html.Raw(message?.Value)
@@ -30,11 +30,9 @@
                 <p class="govuk-body">
                     @Html.Raw(referenceCode?.Value)
                 </p>
-
                 <p>
                     <strong>@correlationId</strong>
                 </p>
-
                 <p class="govuk-body">
                     @Html.Raw(contactDetails?.Value)
                 </p>

@@ -1,6 +1,6 @@
-﻿using Rsp.IrasPortal.Application.DTOs.Responses;
+﻿using Rsp.Portal.Application.DTOs.Responses;
 
-namespace Rsp.IrasPortal.Web.Models;
+namespace Rsp.Portal.Web.Models;
 
 /// <summary>
 /// Represents an overview of a project, including its title, category, and record identifier.
@@ -51,4 +51,9 @@ public class ProjectOverviewModel
     /// Gets or sets the audit trails associated with the project.
     /// </summary>
     public IEnumerable<ProjectRecordAuditTrailDto> AuditTrails { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets actual project closure date of project.
+    /// </summary>
+    public string? ActualProjectClosureDate { get; set; }
 }

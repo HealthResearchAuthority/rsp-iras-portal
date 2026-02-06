@@ -1,4 +1,4 @@
-﻿namespace Rsp.IrasPortal.Application.Constants;
+﻿namespace Rsp.Portal.Application.Constants;
 
 public static class PageContentElements
 {
@@ -7,4 +7,5 @@ public static class PageContentElements
     public static readonly string PhaseBanner = "PhaseBanner";
     public static readonly string PageContent = "PageContent";
     public static readonly string CookieBannerContent = "CookieBannerContent";
+    public static readonly string MetaTitle = "MetaTitle";
 }

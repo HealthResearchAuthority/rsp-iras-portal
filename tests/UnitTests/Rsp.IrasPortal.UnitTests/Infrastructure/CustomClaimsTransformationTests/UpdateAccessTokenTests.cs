@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using NetDevPack.Security.Jwt.Core.Interfaces;
-using Rsp.IrasPortal.Application.Configuration;
-using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Infrastructure.Claims;
+using Rsp.Portal.Application.Configuration;
+using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Infrastructure.Claims;
 
-namespace Rsp.IrasPortal.UnitTests.Infrastructure.CustomClaimsTransformationTests;
+namespace Rsp.Portal.UnitTests.Infrastructure.CustomClaimsTransformationTests;
 
 public class UpdateAccessTokenTests : TestServiceBase<CustomClaimsTransformation>
 {

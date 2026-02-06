@@ -3,10 +3,10 @@
 @using Microsoft.AspNetCore.Mvc.ModelBinding
 @using Microsoft.FeatureManagement
 @using Rsp.Gds.Component.Models
-@using Rsp.IrasPortal.Application.Constants
-@using Rsp.IrasPortal.Application.DTOs.Responses
-@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
-@using Rsp.IrasPortal.Web.Extensions
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@using Rsp.Portal.Web.Extensions
 @model MyTasklistViewModel
 @inject IFeatureManager featureManager
 
@@ -237,7 +237,10 @@
 	{
 		<hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
 		<div class="govuk-grid-row">
-			<div class="govuk-grid-column-two-thirds">
+			<div role="status"
+				 aria-live="polite"
+				 aria-atomic="true"
+				 class="govuk-grid-column-two-thirds">
 				<h2 class="govuk-heading-l">@Html.Raw(noModsTitle?.Value)</h2>
 				@Html.Raw(noModsBody?.Value)
 			</div>
@@ -246,7 +249,10 @@
 	else
 	{
 		<div class="govuk-grid-row">
-			<div class="govuk-grid-column-two-thirds search-filter-error-border">
+			<div role="status"
+				 aria-live="polite"
+				 aria-atomic="true"
+				 class="govuk-grid-column-two-thirds search-filter-error-border">
 				<h2 class="govuk-heading-l">@Html.Raw(noResultsTitle?.Value)</h2>
 				@Html.Raw(noResultsBody?.Value)
 			</div>

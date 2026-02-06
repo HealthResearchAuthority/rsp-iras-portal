@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-namespace Rsp.IrasPortal.Configuration.FeatureFolders;
+namespace Rsp.Portal.Configuration.FeatureFolders;
 
 public class FeatureControllerModelConvention : IControllerModelConvention
 {

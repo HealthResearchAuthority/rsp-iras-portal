@@ -1,6 +1,6 @@
-﻿@using Rsp.IrasPortal.Application.Constants
-@using Rsp.IrasPortal.Application.DTOs.Responses.CmsContent
-@model Rsp.IrasPortal.Web.Features.SponsorWorkspace.MyOrganisations.Models.SponsorMyOrganisationProfileViewModel
+﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@model Rsp.Portal.Web.Features.SponsorWorkspace.MyOrganisations.Models.SponsorMyOrganisationProfileViewModel
 
 @section Breadcrumb {
     @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
@@ -12,7 +12,7 @@
 
 @{
     var errorSummaryTitle = "There is a problem";
-    ViewBag.Title = "Sponsor organisation profile";
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null
