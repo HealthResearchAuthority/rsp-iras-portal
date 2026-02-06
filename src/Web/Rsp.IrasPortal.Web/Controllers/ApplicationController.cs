@@ -3,7 +3,6 @@ using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Web.Attributes;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.Filters;
@@ -298,17 +297,9 @@ public class ApplicationController
     }
 
     [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Close)]
-    [ServiceFilter(typeof(ProjectClosureActionFilter))]
     [HttpPost]
     public async Task<IActionResult> ConfirmProjectClosure(ProjectClosuresModel model, DateTime plannedProjectEndDate, string separator = "/")
     {
-        //Prevent double submission of project closure if applicant trying to submit project closure using browser back button
-        if (IsSendToSponsorSet())
-        {
-            return RedirectToActionCloseProject(model);
-        }
-
-        // Date validation for project closure
         var validationResult = await closureValidator.ValidateAsync(model);
 
         if (!validationResult.IsValid)
@@ -319,7 +310,14 @@ public class ApplicationController
             }
             TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
             TempData.TryAdd(TempDataKeys.PlannedProjectEndDate, plannedProjectEndDate.ToString("dd MMMM yyyy"));
-            return RedirectToActionCloseProject(model);
+
+            return RedirectToAction(nameof(CloseProject), new
+            {
+                projectRecordId = model.ProjectRecordId,
+                actualClosureDateDay = model.ActualClosureDateDay,
+                actualClosureDateMonth = model.ActualClosureDateMonth,
+                actualClosureDateYear = model.ActualClosureDateYear
+            });
         }
 
         // Get respondent information from the current context
@@ -328,17 +326,27 @@ public class ApplicationController
         //// Compose the full name of the respondent
         var userName = $"{respondent.GivenName} {respondent.FamilyName}";
 
-        // Create a new project closure request
-        var projectClosureRequest = BuildProjectClosureRequest(model, userName, separator);
+        // Create a new project modification request
+        var projectClosureRequest = new ProjectClosureRequest
+        {
+            TransactionId = ProjectClosureStatus.TransactionIdPrefix + model.IrasId + separator,
+            ProjectRecordId = model.ProjectRecordId,
+            IrasId = model.IrasId,
+            ClosureDate = model.ActualClosureDate,
+            DateActioned = model.DateActioned,
+            SentToSponsorDate = DateTime.UtcNow,
+            ShortProjectTitle = model.ShortProjectTitle,
+            Status = ModificationStatus.WithSponsor,
+            CreatedBy = userName,
+            UpdatedBy = userName,
+        };
 
-        // Persist project closure and handle errors
         var closeProjectResponse = await projectClosuresService.CreateProjectClosure(projectClosureRequest);
 
         if (!closeProjectResponse.IsSuccessStatusCode)
         {
             return this.ServiceError(closeProjectResponse);
         }
-
         //get project record for status update
         var projectRecord = await applicationsService.GetProjectRecord(model.ProjectRecordId);
         if (!projectRecord.IsSuccessStatusCode)
@@ -352,9 +360,6 @@ public class ApplicationController
         {
             return this.ServiceError(updateApplicationResponse);
         }
-
-        //Using below tempdata to restrict project closure if applicant trying to submit project closure using browser back button
-        TempData[TempDataKeys.IsSendToSponsor] = true;
 
         TempData[TempDataKeys.ShowCloseProjectBanner] = true;
 
@@ -389,6 +394,7 @@ public class ApplicationController
             ProjectRecordId = projectRecordId,
             IrasId = IrasId,
             ShortProjectTitle = shortProjectTitle?.ToString(),
+
             // date fields now come from the controller parameters (querystring binding)
             ActualClosureDateDay = actualClosureDateDay,
             ActualClosureDateMonth = actualClosureDateMonth,
@@ -414,38 +420,5 @@ public class ApplicationController
     public IActionResult ProjectClosure()
     {
         return View("/Features/ProjectOverview/Views/ConfirmProjectClosure.cshtml");
-    }
-
-    private IActionResult RedirectToActionCloseProject(ProjectClosuresModel model)
-    {
-        return RedirectToAction(nameof(CloseProject), new
-        {
-            projectRecordId = model.ProjectRecordId,
-            actualClosureDateDay = model.ActualClosureDateDay,
-            actualClosureDateMonth = model.ActualClosureDateMonth,
-            actualClosureDateYear = model.ActualClosureDateYear
-        });
-    }
-
-    private bool IsSendToSponsorSet()
-    {
-        return TempData.Peek(TempDataKeys.IsSendToSponsor) as bool? ?? false;
-    }
-
-    private ProjectClosureRequest BuildProjectClosureRequest(ProjectClosuresModel model, string userName, string separator)
-    {
-        return new ProjectClosureRequest
-        {
-            TransactionId = ProjectClosureStatus.TransactionIdPrefix + model.IrasId + separator,
-            ProjectRecordId = model.ProjectRecordId,
-            IrasId = model.IrasId,
-            ClosureDate = model.ActualClosureDate,
-            DateActioned = model.DateActioned,
-            SentToSponsorDate = DateTime.UtcNow,
-            ShortProjectTitle = model.ShortProjectTitle,
-            Status = ModificationStatus.WithSponsor,
-            CreatedBy = userName,
-            UpdatedBy = userName,
-        };
     }
 }
