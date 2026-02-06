@@ -340,7 +340,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
 
         // Assert
         // Assert
-        var viewResult = Assert.IsType<ViewResult>(result);
-        Assert.Equal("ModificationSendToSponsor", viewResult.ViewName);
+        var redirectResult = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal("ModificationSendToSponsor", redirectResult.ActionName);
     }
 }

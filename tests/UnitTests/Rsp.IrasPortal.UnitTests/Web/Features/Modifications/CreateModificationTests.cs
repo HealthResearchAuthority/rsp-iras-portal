@@ -174,7 +174,7 @@ public class CreateModification : TestServiceBase<ModificationsController>
         var result = await Sut.CreateModification(separator);
 
         // Assert
-        var viewResult = Assert.IsType<ViewResult>(result);
-        Assert.Equal("CreateModificationOutcome", viewResult.ViewName);
+        var redirectResult = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal("CreateModificationOutcome", redirectResult.ActionName);
     }
 }
