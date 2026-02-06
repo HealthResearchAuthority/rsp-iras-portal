@@ -1,10 +1,10 @@
 ﻿@using Rsp.Portal.Application.Constants
 @using Rsp.Portal.Application.DTOs.Responses.CmsContent
 @{
-	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
+    ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 
-    var projectRecordId = TempData[TempDataKeys.ProjectRecordId];
-    var IrasId = TempData[TempDataKeys.IrasId];
+    var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId);
+    var IrasId = TempData.Peek(TempDataKeys.IrasId);
     var shortProjectTitle = TempData.Peek(TempDataKeys.ShortProjectTitle);
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
@@ -12,8 +12,8 @@
         ? pageContentData
         : new Dictionary<string, MixedContentPageItem?>();
 
-    var warningMessageTitle = pageContent.GetValueOrDefault("Modifications.Sendmodificationtosponsor.WarningTitle", null);
-    var warningMessage = pageContent.GetValueOrDefault("Modifications.Sendmodificationtosponsor.Warning", null);
+    var warningMessageTitle = pageContent.GetValueOrDefault("Modifications.ModificationSendToSponsor.WarningTitle", null);
+    var warningMessageBody = pageContent.GetValueOrDefault("Modifications.ModificationSendToSponsor.WarningBody", null);
 }
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
@@ -29,7 +29,7 @@
             </div>
         </dl>
         <p class="govuk-body">
-            @Html.Raw(warningMessage?.Value)
+            @Html.Raw(warningMessageBody?.Value)
         </p>
 
         <div class="save-buttons">
