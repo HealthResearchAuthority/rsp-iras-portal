@@ -2,19 +2,22 @@
 @using Rsp.Portal.Application.DTOs.Responses.CmsContent
 @model ProjectClosuresModel
 @{
-	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
+    ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null
         ? pageContentData
         : new Dictionary<string, MixedContentPageItem?>();
 
+    var title = pageContent.GetValueOrDefault("Application.CloseProject.Title", null);
     var warningMessage = pageContent.GetValueOrDefault("Application.CloseProject.WarningMessage", null);
+    var PendingCloosureWarning = pageContent.GetValueOrDefault("Application.CloseProject.PendingCloosureWarning", null);
+    var ClosureWarning = pageContent.GetValueOrDefault("Application.CloseProject.ClosureWarning", null);
 }
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-        <h1 class="govuk-heading-l">You can't close this project</h1>
+        <h1 class="govuk-heading-l">@Html.Raw(title?.Value)</h1>
         <dl class="govuk-summary-list">
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key">IRAS ID</dt>

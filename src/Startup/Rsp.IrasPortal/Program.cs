@@ -7,6 +7,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.FeatureManagement;
+using Rsp.IrasPortal.Web.Attributes;
+using Rsp.Logging.ActionFilters;
+using Rsp.Logging.Extensions;
+using Rsp.Logging.Interceptors;
+using Rsp.Logging.Middlewares.CorrelationId;
+using Rsp.Logging.Middlewares.RequestTracing;
 using Rsp.Portal.Application.Configuration;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.Middleware;
@@ -21,11 +27,6 @@ using Rsp.Portal.Web;
 using Rsp.Portal.Web.ActionFilters;
 using Rsp.Portal.Web.Attributes;
 using Rsp.Portal.Web.Mapping;
-using Rsp.Logging.ActionFilters;
-using Rsp.Logging.Extensions;
-using Rsp.Logging.Interceptors;
-using Rsp.Logging.Middlewares.CorrelationId;
-using Rsp.Logging.Middlewares.RequestTracing;
 using Rsp.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -174,6 +175,7 @@ services
     .UseJwtValidation();
 
 services.AddValidatorsFromAssemblyContaining<IWebApp>();
+services.AddScoped<ProjectClosureActionFilter>();
 
 var config = TypeAdapterConfig.GlobalSettings;
 
