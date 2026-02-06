@@ -14,13 +14,14 @@ using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Features.Modifications;
 using Rsp.Portal.Web.Features.Modifications.Models;
 using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models;
+using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Services;
 using Rsp.Portal.Web.Helpers;
 using Rsp.Portal.Web.Models;
 
 namespace Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Controllers;
 
 /// <summary>
-///     Controller responsible for handling sponsor workspace related actions.
+/// Controller responsible for handling sponsor workspace related actions.
 /// </summary>
 [Authorize(Policy = Workspaces.Sponsor)]
 [Route("sponsorworkspace/[action]", Name = "sws:[action]")]
@@ -30,6 +31,7 @@ public class AuthorisationsModificationsController
     IRespondentService respondentService,
     ISponsorOrganisationService sponsorOrganisationService,
     ICmsQuestionsetService cmsQuestionsetService,
+    ISponsorUserAuthorisationService sponsorUserAuthorisationService,
     IValidator<AuthorisationsModificationsSearchModel> searchValidator
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, null!)
 {
@@ -48,6 +50,9 @@ public class AuthorisationsModificationsController
         string sortDirection = SortDirections.Descending
     )
     {
+        var auth = await sponsorUserAuthorisationService.AuthoriseAsync(this, sponsorOrganisationUserId, User);
+        if (!auth.IsAuthorised) return auth.FailureResult!;
+
         var model = new AuthorisationsModificationsViewModel();
 
         // getting search query
@@ -253,6 +258,15 @@ public class AuthorisationsModificationsController
 
         if (!ModelState.IsValid)
         {
+            var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId);
+
+            if (!sponsorOrganisationUser.IsSuccessStatusCode)
+            {
+                return this.ServiceError(sponsorOrganisationUser);
+            }
+
+            TempData[TempDataKeys.IsAuthoriser] = sponsorOrganisationUser.Content!.IsAuthoriser;
+
             // Preserve the posted Outcome so the radios keep the selection
             if (hydrated is not null)
             {

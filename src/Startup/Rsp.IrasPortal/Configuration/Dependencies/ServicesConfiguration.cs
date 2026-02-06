@@ -4,11 +4,12 @@ using Rsp.Portal.Application.Services;
 using Rsp.Portal.Infrastructure.Claims;
 using Rsp.Portal.Infrastructure.HttpMessageHandlers;
 using Rsp.Portal.Services;
+using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Services;
 
 namespace Rsp.Portal.Configuration.Dependencies;
 
 /// <summary>
-///  User Defined Services Configuration
+/// User Defined Services Configuration
 /// </summary>
 public static class ServicesConfiguration
 {
@@ -33,6 +34,7 @@ public static class ServicesConfiguration
         services.AddScoped<IProjectRecordValidationService, ProjectRecordValidationService>();
         services.AddScoped<IModificationRankingService, ModificationRankingService>();
         services.AddScoped<IProjectClosuresService, ProjectClosuresService>();
+        services.AddScoped<ISponsorUserAuthorisationService, SponsorUserAuthorisationService>();
 
         // add message handlers
         services.AddTransient<AuthHeadersHandler>();

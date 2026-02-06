@@ -1,9 +1,11 @@
 ﻿using System.Net;
+using System.Security.Claims;
 using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Filters;
@@ -14,13 +16,14 @@ using Rsp.Portal.Domain.Identity;
 using Rsp.Portal.Web.Areas.Admin.Models;
 using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models;
+using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Services;
 using Rsp.Portal.Web.Helpers;
 using Rsp.Portal.Web.Models;
 
 namespace Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Controllers;
 
 /// <summary>
-///     Controller responsible for handling sponsor workspace related actions.
+/// Controller responsible for handling sponsor workspace related actions.
 /// </summary>
 [Authorize(Policy = Workspaces.Sponsor)]
 [Route("sponsorworkspace/[action]", Name = "sws:[action]")]
@@ -32,6 +35,7 @@ public class AuthorisationsProjectClosuresController
     IProjectClosuresService projectClosuresService,
     IUserManagementService userManagementService,
     ISponsorOrganisationService sponsorOrganisationService,
+    ISponsorUserAuthorisationService sponsorUserAuthorisationService,
     IValidator<ProjectClosuresSearchModel> searchValidator
 ) : Controller
 {
@@ -46,6 +50,9 @@ public class AuthorisationsProjectClosuresController
         string sortDirection = SortDirections.Descending
     )
     {
+        var auth = await sponsorUserAuthorisationService.AuthoriseAsync(this, sponsorOrganisationUserId, User);
+        if (!auth.IsAuthorised) return auth.FailureResult!;
+
         var model = new ProjectClosuresViewModel();
 
         // getting search query
@@ -302,6 +309,15 @@ public class AuthorisationsProjectClosuresController
 
         if (!ModelState.IsValid)
         {
+            var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId);
+
+            if (!sponsorOrganisationUser.IsSuccessStatusCode)
+            {
+                return this.ServiceError(sponsorOrganisationUser);
+            }
+
+            TempData[TempDataKeys.IsAuthoriser] = sponsorOrganisationUser.Content!.IsAuthoriser;
+
             var hydrated = res.Value as AuthoriseProjectClosuresOutcomeViewModel;
             // Preserve the posted Outcome so the radios keep the selection
             if (hydrated is not null)

@@ -10,6 +10,7 @@ using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Web.Features.Modifications;
 using Rsp.Portal.Web.Features.Modifications.Models;
+using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Controllers;
 using static System.Net.WebRequestMethods;
 
 namespace Rsp.Portal.UnitTests.Web.Features.Modifications.ReviewAllChangesControllerTests;
@@ -39,6 +40,40 @@ public class ReviewOutcome_Journey : TestServiceBase<ReviewAllChangesController>
     }
 
     [Theory, AutoData]
+    public async Task ReviewOutcome_Get_Redirects_To_ReasonNotApproved_When_NotApproved
+    (
+        ReviewOutcomeViewModel tempDataModel
+    )
+    {
+        // Arrange
+        tempDataModel.ReviewOutcome = ModificationStatus.NotApproved;
+        SetupTempData(tempDataModel);
+
+        // Act
+        var result = await Sut.ReviewOutcome();
+
+        // Assert
+        result.ShouldBeOfType<RedirectToActionResult>();
+    }
+
+    [Theory, AutoData]
+    public async Task ReviewOutcome_Get_Redirects_When_Approved
+    (
+        ReviewOutcomeViewModel tempDataModel
+    )
+    {
+        // Arrange
+        tempDataModel.ReviewOutcome = ModificationStatus.Approved;
+        SetupTempData(tempDataModel);
+
+        // Act
+        var result = await Sut.ReviewOutcome();
+
+        // Assert
+        result.ShouldBeOfType<RedirectToActionResult>();
+    }
+
+    [Theory, AutoData]
     public async Task ReviewOutcome_Get_ReturnsView_WithModel_When_TempData_Exists
     (
         Guid modificationId,
@@ -48,6 +83,7 @@ public class ReviewOutcome_Journey : TestServiceBase<ReviewAllChangesController>
     {
         // Arrange
         tempDataModel.ModificationDetails.ModificationId = modificationId.ToString();
+        tempDataModel.ReviewOutcome = null;
         SetupTempData(tempDataModel);
 
         _modificationService
@@ -211,6 +247,7 @@ public class ReviewOutcome_Journey : TestServiceBase<ReviewAllChangesController>
     {
         // Arrange
         model.ModificationDetails.ModificationId = modificationId.ToString();
+        model.ReviewOutcome = null;
         SetupTempData(model);
 
         // Act
@@ -336,6 +373,7 @@ public class ReviewOutcome_Journey : TestServiceBase<ReviewAllChangesController>
     {
         // Arrange
         model.ModificationDetails.ModificationId = modificationId.ToString();
+        model.ReviewOutcome = null;
         SetupTempData(model);
 
         // Act
