@@ -56,7 +56,7 @@ public class ModificationsController
 
         if (canCreateNewModification is false)
         {
-            return View("CreateModificationOutcome");
+            return RedirectToAction(nameof(CreateModificationOutcome));
         }
 
         // Retrieve IRAS ID from TempData
@@ -110,6 +110,17 @@ public class ModificationsController
         TempData[TempDataKeys.CategoryId] = QuestionCategories.ProjectModification;
 
         return RedirectToAction(nameof(AreaOfChange));
+    }
+
+    /// <summary>
+    /// CreateModificationOutcome
+    /// </summary>
+    /// <returns></returns>
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Submit)]
+    [HttpGet]
+    public IActionResult CreateModificationOutcome()
+    {
+        return View("CreateModificationOutcome");
     }
 
     /// <summary>
