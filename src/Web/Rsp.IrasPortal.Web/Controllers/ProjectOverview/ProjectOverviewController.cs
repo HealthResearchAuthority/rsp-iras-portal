@@ -181,11 +181,6 @@ public class ProjectOverviewController
     /// <returns></returns>
     private async Task GetProjectClosureDetails(string projectRecordId, PostApprovalViewModel model)
     {
-        //Using below tempdata to restrict project closure if applicant trying to submit project closure using browser back button
-        if (model.ProjectOverviewModel?.Status == ProjectRecordStatus.Active)
-        {
-            TempData[TempDataKeys.IsSendToSponsor] = false;
-        }
         var projectClosureResponse = await projectClosuresService.GetProjectClosuresByProjectRecordId(projectRecordId);
         if (projectClosureResponse?.Content != null)
         {
