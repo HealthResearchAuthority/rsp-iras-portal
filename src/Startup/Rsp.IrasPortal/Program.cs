@@ -174,6 +174,7 @@ services
     .UseJwtValidation();
 
 services.AddValidatorsFromAssemblyContaining<IWebApp>();
+services.AddScoped<ProjectClosureActionFilter>();
 
 var config = TypeAdapterConfig.GlobalSettings;
 
