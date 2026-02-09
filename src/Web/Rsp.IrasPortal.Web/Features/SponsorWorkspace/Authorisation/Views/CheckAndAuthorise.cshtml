@@ -1,12 +1,14 @@
-﻿@using Rsp.Gds.Component.Models
+﻿@using Microsoft.FeatureManagement
+@using Rsp.Gds.Component.Models
 @using Rsp.Portal.Application.Constants
 @using Rsp.Portal.Application.DTOs.Responses.CmsContent
 @using Rsp.Portal.Domain.AccessControl
 @using Rsp.Portal.Web.Features.Modifications.Models
 @model Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models.AuthoriseModificationsOutcomeViewModel
+@inject Microsoft.FeatureManagement.IFeatureManager FeatureManager
 
 @{
-	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
+    ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 
     TempData[TempDataKeys.ProjectModification.ReviewAllChanges] = true;
     ViewData[ViewDataKeys.ShowRemoveLink] = false;
@@ -33,12 +35,27 @@
 
     // Radio options for the TagHelper
     var outcomeOptions = new List<GdsOption>
-{
+    {
         new() { Value = "Authorised", Label = "Authorised" },
-        new() { Value = "NotAuthorised", Label = "Not authorised" },
-        new() { Value = "ReviseAndAuthorise", Label = "Revise and authorise" },
-        new() { Value = "RequestRevisions", Label = "Request revisions" }
+        new() { Value = "NotAuthorised", Label = "Not authorised" }
     };
+
+    if (await FeatureManager.IsEnabledAsync(FeatureFlags.RevisionAndAuthorisation))
+    {
+        outcome = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.Outcome_Additional", null);
+
+        outcomeOptions.Add(new GdsOption
+        {
+            Value = "ReviseAndAuthorise",
+            Label = "Revise and authorise"
+        });
+
+        outcomeOptions.Add(new GdsOption
+        {
+            Value = "RequestRevisions",
+            Label = "Request revisions"
+        });
+    }
 }
 
 @section Breadcrumb {
