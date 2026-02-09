@@ -352,7 +352,7 @@ public class ReviewAllChangesController
 
         if (canModificationSendToSponsor is false)
         {
-            return View("ModificationSendToSponsor");
+            return RedirectToAction(nameof(ModificationSendToSponsor));
         }
 
         // Fetch all modification documents (up to 200)
@@ -403,6 +403,17 @@ public class ReviewAllChangesController
             projectModificationId,
             ModificationStatus.WithSponsor,
             onSuccess: () => View("ModificationSentToSponsor"));
+    }
+
+    /// <summary>
+    /// ModificationSendToSponsor
+    /// </summary>
+    /// <returns></returns>
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Submit)]
+    [HttpGet]
+    public IActionResult ModificationSendToSponsor()
+    {
+        return View("ModificationSendToSponsor");
     }
 
     private async Task<IActionResult> HandleModificationStatusUpdate(

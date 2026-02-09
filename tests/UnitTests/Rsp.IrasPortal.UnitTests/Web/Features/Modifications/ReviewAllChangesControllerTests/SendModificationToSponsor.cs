@@ -339,8 +339,20 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
         var result = await Sut.SendModificationToSponsor("PR01", Guid.NewGuid());
 
         // Assert
+        var actionResult = Assert.IsType<RedirectToActionResult>(result);
+        actionResult.ActionName.ShouldBe("ModificationSendToSponsor");
+    }
+
+    [Fact]
+    public void ModificationSendToSponsor_Returns_ViewResult_With_Expected_ViewPath()
+    {
+        // Arrange
+        // Act
+        var result = Sut.ModificationSendToSponsor();
+
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         Assert.Equal("ModificationSendToSponsor", viewResult.ViewName);
+        Assert.Null(viewResult.Model);
     }
 }

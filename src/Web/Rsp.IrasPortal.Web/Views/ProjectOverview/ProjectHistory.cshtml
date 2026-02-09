@@ -44,7 +44,7 @@
                         <th class="govuk-table__header govuk-table__header-sortable govuk-table--name">Date</th>
                         <th class="govuk-table__header govuk-table__header-sortable govuk-table--name">Event description</th>
                         <th class="govuk-table__header govuk-table__header-sortable govuk-table--name">Modification ID</th>
-                        <th class="govuk-table__header govuk-table__header-sortable govuk-table--email line-break-anywhere">User email</th>
+                        <th class="govuk-table__header govuk-table__header-sortable govuk-table--email line-break-anywhere">Actioned by</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -53,7 +53,11 @@
                         <tr class="govuk-table__row">
                             <td class="govuk-table__cell">@record.DateTimeStamp.ToString("dd MMMM yyyy")</td>
                             <td class="govuk-table__cell">@record.Description</td>
-                            <td class="govuk-table__cell line-break-anywhere">Not applicable</td>
+                            <td class="govuk-table__cell line-break-anywhere">
+                                @(string.IsNullOrWhiteSpace(record.ModificationIdentifier)
+                                    ? "Not applicable"
+                                    : record.ModificationIdentifier)
+                            </td>
                             <td class="govuk-table__cell line-break-anywhere">@record.User</td>
                         </tr>
                     }
