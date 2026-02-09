@@ -55,6 +55,8 @@ public class BaseProjectModificationViewModel
 
     public string? ReviewerComments { get; set; }
 
+    public string? RevisionDescription { get; set; }
+
     /// <summary>
     /// Gets or sets the created date of the Modification
     /// </summary>

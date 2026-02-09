@@ -13,7 +13,10 @@ public struct ModificationStatus
 
     // BACKSTAGE VALUES
     public const string Received = "Received";
+
     public const string ReviewInProgress = "Review in progress";
+    public const string RequestRevisions = "Request revisions";
+    public const string ReviseAndAuthorise = "Revise and authorise";
 
     public static readonly List<string> Types = [
         InDraft,

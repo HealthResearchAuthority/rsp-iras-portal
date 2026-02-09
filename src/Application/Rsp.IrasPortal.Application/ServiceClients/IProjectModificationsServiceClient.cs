@@ -173,7 +173,7 @@ public interface IProjectModificationsServiceClient
     /// <param name="modificationId">The unique identifier of the project modification.</param>
     /// <returns>An asynchronous operation that returns the requested project modification change.</returns>
     [Patch("/projectmodifications/status")]
-    public Task<IApiResponse> UpdateModificationStatus(string projectRecordId, Guid modificationId, string status);
+    public Task<IApiResponse> UpdateModificationStatus(string projectRecordId, Guid modificationId, string status, string? revisionDescription = null);
 
     /// <summary>
     /// Deletes one or more modification documents associated with a project modification change.

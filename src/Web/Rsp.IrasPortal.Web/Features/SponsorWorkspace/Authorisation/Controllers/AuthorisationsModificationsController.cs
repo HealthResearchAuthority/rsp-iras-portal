@@ -32,7 +32,8 @@ public class AuthorisationsModificationsController
     ISponsorOrganisationService sponsorOrganisationService,
     ICmsQuestionsetService cmsQuestionsetService,
     ISponsorUserAuthorisationService sponsorUserAuthorisationService,
-    IValidator<AuthorisationsModificationsSearchModel> searchValidator
+    IValidator<AuthorisationsModificationsSearchModel> searchValidator,
+    IValidator<AuthoriseModificationsOutcomeViewModel> outcomeValidator
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, null!)
 {
     private const string DocumentDetailsSection = "pdm-document-metadata";
@@ -239,6 +240,15 @@ public class AuthorisationsModificationsController
 
         TempData[TempDataKeys.IsAuthoriser] = sponsorOrganisationUser.Content!.IsAuthoriser;
 
+        var reviewResponse = await projectModificationsService.GetModificationReviewResponses(projectRecordId, projectModificationId);
+
+        if (!reviewResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(reviewResponse);
+        }
+
+        ViewBag.RevisionSent = !string.IsNullOrWhiteSpace(reviewResponse.Content!.RevisionDescription);
+
         return View(response);
     }
 
@@ -266,6 +276,15 @@ public class AuthorisationsModificationsController
             }
 
             TempData[TempDataKeys.IsAuthoriser] = sponsorOrganisationUser.Content!.IsAuthoriser;
+
+            var reviewResponse = await projectModificationsService.GetModificationReviewResponses(model.ProjectRecordId, model.ProjectModificationId);
+
+            if (!reviewResponse.IsSuccessStatusCode)
+            {
+                return this.ServiceError(reviewResponse);
+            }
+
+            ViewBag.RevisionSent = !string.IsNullOrWhiteSpace(reviewResponse.Content!.RevisionDescription);
 
             // Preserve the posted Outcome so the radios keep the selection
             if (hydrated is not null)
@@ -308,6 +327,9 @@ public class AuthorisationsModificationsController
 
                 break;
 
+            case "RequestRevisions":
+                return RedirectToAction(nameof(RequestRevisions), model);
+
             default:
                 await projectModificationsService.UpdateModificationStatus
                 (
@@ -318,6 +340,88 @@ public class AuthorisationsModificationsController
 
                 break;
         }
+
+        return RedirectToAction(nameof(Confirmation), model);
+    }
+
+    [Authorize(Policy = Permissions.Sponsor.Modifications_Authorise)]
+    [HttpGet]
+    public async Task<IActionResult> RequestRevisions(AuthoriseModificationsOutcomeViewModel model)
+    {
+        var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId);
+
+        if (!sponsorOrganisationUser.IsSuccessStatusCode)
+        {
+            return this.ServiceError(sponsorOrganisationUser);
+        }
+
+        var reviewResponse = await projectModificationsService.GetModificationReviewResponses(model.ProjectRecordId, model.ProjectModificationId);
+
+        if (!reviewResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(reviewResponse);
+        }
+
+        var revisionDescription = reviewResponse.Content!.RevisionDescription;
+
+        if (sponsorOrganisationUser.Content!.IsAuthoriser && string.IsNullOrWhiteSpace(revisionDescription))
+        {
+            return View(model);
+        }
+        else
+        {
+            return Forbid();
+        }
+    }
+
+    [Authorize(Policy = Permissions.Sponsor.Modifications_Authorise)]
+    [HttpPost]
+    [CmsContentAction(nameof(RequestRevisions))]
+    public async Task<IActionResult> SendRequestRevisions(AuthoriseModificationsOutcomeViewModel model)
+    {
+        var context = new ValidationContext<AuthoriseModificationsOutcomeViewModel>(model);
+        var validationResult = await outcomeValidator.ValidateAsync(context);
+
+        foreach (var error in validationResult.Errors)
+        {
+            ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+        }
+
+        if (!ModelState.IsValid)
+        {
+            var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId);
+
+            if (!sponsorOrganisationUser.IsSuccessStatusCode)
+            {
+                return this.ServiceError(sponsorOrganisationUser);
+            }
+
+            var reviewResponse = await projectModificationsService.GetModificationReviewResponses(model.ProjectRecordId, model.ProjectModificationId);
+
+            if (!reviewResponse.IsSuccessStatusCode)
+            {
+                return this.ServiceError(reviewResponse);
+            }
+
+            var revisionDescription = reviewResponse.Content!.RevisionDescription;
+
+            if (sponsorOrganisationUser.Content!.IsAuthoriser && string.IsNullOrWhiteSpace(revisionDescription))
+            {
+                return View(nameof(RequestRevisions), model);
+            }
+            else
+            {
+                return Forbid();
+            }
+        }
+
+        await projectModificationsService.UpdateModificationStatus
+                (
+                    model.ProjectRecordId,
+                    Guid.Parse(model.ModificationId),
+                    ModificationStatus.RequestRevisions,
+                    model.RevisionDescription
+                );
 
         return RedirectToAction(nameof(Confirmation), model);
     }

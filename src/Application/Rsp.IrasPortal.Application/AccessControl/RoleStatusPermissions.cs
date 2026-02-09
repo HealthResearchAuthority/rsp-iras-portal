@@ -99,7 +99,9 @@ public static class RoleStatusPermissions
                 Roles.Applicant, new List<string>
                 {
                     ModificationStatus.InDraft,
+                    ModificationStatus.RequestRevisions,
                     ModificationStatus.WithSponsor,
+                    ModificationStatus.ReviseAndAuthorise,
                     ModificationStatus.WithReviewBody,
                     ModificationStatus.Approved,
                     ModificationStatus.NotAuthorised,
@@ -110,6 +112,7 @@ public static class RoleStatusPermissions
                 Roles.Sponsor, new List<string>
                 {
                     ModificationStatus.WithSponsor,
+                    ModificationStatus.ReviseAndAuthorise,
                     ModificationStatus.WithReviewBody,
                     ModificationStatus.Approved,
                     ModificationStatus.NotAuthorised,
@@ -120,6 +123,7 @@ public static class RoleStatusPermissions
                 Roles.OrganisationAdministrator, new List<string>
                 {
                     ModificationStatus.WithSponsor,
+                    ModificationStatus.ReviseAndAuthorise,
                     ModificationStatus.WithReviewBody,
                     ModificationStatus.Approved,
                     ModificationStatus.NotAuthorised,
@@ -195,6 +199,8 @@ public static class RoleStatusPermissions
                     DocumentStatus.Incomplete,
                     DocumentStatus.Complete,
                     DocumentStatus.WithSponsor,
+                    DocumentStatus.ReviseAndAuthorise,
+                    DocumentStatus.RequestRevisions,
                     DocumentStatus.WithReviewBody,
                     DocumentStatus.Approved,
                     DocumentStatus.NotAuthorised,
@@ -205,6 +211,7 @@ public static class RoleStatusPermissions
                 Roles.Sponsor, new List<string>
                 {
                     DocumentStatus.WithSponsor,
+                    DocumentStatus.ReviseAndAuthorise,
                     DocumentStatus.WithReviewBody,
                     DocumentStatus.Approved,
                     DocumentStatus.NotAuthorised,
@@ -215,6 +222,7 @@ public static class RoleStatusPermissions
                 Roles.OrganisationAdministrator, new List<string>
                 {
                     DocumentStatus.WithSponsor,
+                    DocumentStatus.ReviseAndAuthorise,
                     DocumentStatus.WithReviewBody,
                     DocumentStatus.Approved,
                     DocumentStatus.NotAuthorised,

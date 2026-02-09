@@ -3,6 +3,7 @@
 @using Microsoft.AspNetCore.Mvc.ModelBinding
 @using Microsoft.FeatureManagement
 @using Rsp.Gds.Component.Models
+@using Rsp.IrasPortal.Web.Helpers
 @using Rsp.Portal.Application.Constants
 @using Rsp.Portal.Application.DTOs.Responses
 @using Rsp.Portal.Application.DTOs.Responses.CmsContent
@@ -327,7 +328,7 @@ else
 									</td>
 									<td class="govuk-table__cell">@modification.SentToRegulatorDate?.ToString("dd MMM yyyy")</td>
 									<td class="govuk-table__cell">@modification.DaysSinceSubmission @daysText</td>
-									<td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">@modification.Status</strong></td>
+									<td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">@ModificationStatusHelper.ToUiStatus(modification.Status)</strong></td>
 								</tr>
 								}
 							}
