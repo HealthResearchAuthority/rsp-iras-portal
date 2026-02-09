@@ -26,4 +26,10 @@ public struct ModificationStatus
         NotApproved,
         NotAuthorised
     ];
+
+    public static readonly List<string> FinalStatuses = [
+    Approved,
+        NotApproved,
+        NotAuthorised
+];
 }
