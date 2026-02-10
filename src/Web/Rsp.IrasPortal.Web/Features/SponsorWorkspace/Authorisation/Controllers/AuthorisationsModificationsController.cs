@@ -457,6 +457,17 @@ public class AuthorisationsModificationsController
         return RedirectToAction(nameof(Confirmation), model);
     }
 
+    /// <summary>
+    /// Warning message controller
+    /// </summary>
+    /// <returns></returns>
+    [Authorize(Policy = Permissions.Sponsor.Modifications_Review)]
+    [HttpGet]
+    public IActionResult CanSubmitToReviewBody(AuthoriseModificationsOutcomeViewModel model)
+    {
+        return View("CanSubmitToReviewBody", model);
+    }
+
     [Authorize(Policy = Permissions.Sponsor.Modifications_Review)]
     [HttpGet]
     public IActionResult Confirmation(AuthoriseModificationsOutcomeViewModel model)
