@@ -1,5 +1,7 @@
 ﻿@using Rsp.Portal.Application.Constants;
 @using Rsp.Portal.Application.DTOs
+@using Rsp.Portal.Web.Models
+@using System.Text.Json
 @model ProjectOverviewDocumentViewModel
 
 @{
@@ -12,14 +14,28 @@
 	var routeValues = ViewData["BackRouteValues"] as Dictionary<string, string>
 							?? new Dictionary<string, string>();
 	var projectTitle = !string.IsNullOrEmpty(Model?.ProjectOverviewModel?.ProjectTitle) ? Model.ProjectOverviewModel.ProjectTitle : "Project overview";
+
+    var tdBackRouteValues = TempData.Peek(TempDataKeys.ProjectOverviewReferrer.BackRouteValues);
+
+    var backRouteValues = JsonSerializer.Deserialize<Dictionary<string, string>>
+        (tdBackRouteValues != null ? tdBackRouteValues.ToString()! : "{}") ?? new Dictionary<string, string>();
 }
 
-@section Breadcrumb {
-	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
-	{
-		("My research",Url.RouteUrl("app:welcome")),
-		(projectTitle, Url.RouteUrl("pov:projectdetails", new Dictionary<string, string>{{"projectRecordId", Model?.ProjectOverviewModel?.ProjectRecordId!}}))
-	})
+@if (routeName is null || routeName.ToLower() == "app:welcome")
+{
+    @section Breadcrumb {
+	    @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+	    {
+		    ("My research",Url.RouteUrl("app:welcome")),
+		    (projectTitle, Url.RouteUrl("pov:projectdetails", new Dictionary<string, string>{{"projectRecordId", Model?.ProjectOverviewModel?.ProjectRecordId!}}))
+	    })
+    }
+}
+else
+{
+    @section BackNavigation {
+        <partial name="_BackNavigation" model="@(routeName, "Back", backRouteValues)" />
+    }
 }
 
 @functions {
