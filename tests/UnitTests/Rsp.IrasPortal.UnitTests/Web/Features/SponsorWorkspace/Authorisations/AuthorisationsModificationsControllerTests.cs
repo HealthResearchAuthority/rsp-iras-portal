@@ -1187,6 +1187,34 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
     }
 
     [Fact]
+    public async Task When_No_Modification_Returns_Dont_Return_View()
+    {
+        // Arrange
+        var authoriseOutcomeViewModel = SetupAuthoriseOutcomeViewModel();
+
+        Mocker
+       .GetMock<IProjectModificationsService>()
+       .Setup(s => s.GetModificationsForProject(It.IsAny<string>(), It.IsAny<ModificationSearchRequest>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
+       .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+       {
+           StatusCode = HttpStatusCode.OK,
+           Content = null
+       });
+
+        authoriseOutcomeViewModel.Outcome = "Authorised";
+        authoriseOutcomeViewModel.ReviewType = "Review required";
+
+        // Act
+        var result = await Sut.CheckAndAuthorise(authoriseOutcomeViewModel);
+
+        // Assert
+        var viewResult = Assert.IsType<RedirectToActionResult>(result);
+        result.ShouldBeOfType<RedirectToActionResult>();
+        viewResult.ActionName.ShouldBe(nameof(AuthorisationsModificationsController.Confirmation));
+        Assert.Equal("Confirmation", viewResult.ActionName);
+    }
+
+    [Fact]
     public void Confirmation_Returns_CanSubmitToReviewBody()
     {
         // Arrange
