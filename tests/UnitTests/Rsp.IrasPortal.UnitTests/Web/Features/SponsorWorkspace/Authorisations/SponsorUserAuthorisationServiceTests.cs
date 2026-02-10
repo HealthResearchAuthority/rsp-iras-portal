@@ -279,6 +279,53 @@ public class SponsorUserAuthorisationServiceTests
         GetFailureResult(result).ShouldBeNull();
     }
 
+    [Fact]
+    public async Task AuthoriseAsync_When_NoSponsorOrgActive_Returns_Forbid()
+    {
+        // Arrange
+        var controller = NewController();
+        var sponsorOrganisationUserId = Guid.NewGuid();
+        var principal = BuildPrincipal("test@test.co.uk");
+
+        var gid = Guid.NewGuid();
+
+        _userService
+            .Setup(x => x.GetUser(null, "test@test.co.uk", null))
+            .ReturnsAsync(OkUserResponse(gid, "test@test.co.uk"));
+
+        // Sponsor org returned but does NOT contain matching user membership
+        var sponsorOrgsResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new List<SponsorOrganisationDto>
+            {
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    Users = new List<SponsorOrganisationUserDto>
+                    {
+                        new()
+                        {
+                            UserId = Guid.NewGuid(), // different user
+                            Id = Guid.NewGuid() // membership id for someone else
+                        }
+                    },
+                    IsActive = false
+                }
+            }
+        };
+
+        _sponsorOrganisationService
+            .Setup(x => x.GetAllActiveSponsorOrganisationsForEnabledUser(gid))
+            .ReturnsAsync(sponsorOrgsResponse);
+
+        // Act
+        var result = await Sut.AuthoriseAsync(controller, sponsorOrganisationUserId, principal);
+
+        // Assert
+        AssertFailedWithActionResult(result, typeof(ForbidResult));
+    }
+
     // ---------------- Helpers ----------------
 
     private static ClaimsPrincipal BuildPrincipal(string? email)
