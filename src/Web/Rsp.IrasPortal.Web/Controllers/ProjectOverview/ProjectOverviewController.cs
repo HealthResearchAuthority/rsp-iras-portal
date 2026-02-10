@@ -3,6 +3,7 @@ using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
@@ -59,9 +60,22 @@ public class ProjectOverviewController
     public async Task<IActionResult> ProjectDetails(string projectRecordId, string? backRoute, string? modificationId)
     {
         // IF NAVIGATED FROM SHORT PROJECT TITLE LINKS
-        if (backRoute != null)
+        if (backRoute != null && backRoute != TempData.Peek(TempDataKeys.ProjectOverviewReferrer.Referrer)?.ToString())
         {
             TempData[TempDataKeys.ProjectModification.ProjectModificationId] = projectRecordId;
+
+            if (!string.Equals(backRoute, "app:welcome", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData[TempDataKeys.ProjectOverviewReferrer.Referrer] = backRoute;
+
+                if (HttpContext.Request.Headers.TryGetValue("Referer", out var referer))
+                {
+                    var uri = new Uri(referer.ToString());
+                    var queryParams = QueryHelpers.ParseQuery(uri.Query).ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToString());
+
+                    TempData[TempDataKeys.ProjectOverviewReferrer.BackRouteValues] = JsonSerializer.Serialize(queryParams);
+                }
+            }
         }
 
         UpdateModificationRelatedTempData();

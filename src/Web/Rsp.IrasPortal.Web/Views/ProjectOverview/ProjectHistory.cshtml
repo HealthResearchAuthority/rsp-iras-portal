@@ -1,5 +1,7 @@
 ﻿@using Rsp.Portal.Application.Constants
 @using Rsp.Portal.Application.DTOs.Responses
+@using Rsp.Portal.Web.Models
+@using System.Text.Json
 @model ProjectOverviewModel
 @{
     ViewBag.Title = "Project history";
@@ -12,14 +14,28 @@
                       ?? new Dictionary<string, string>();
     var modificationId = Context.Request.Query["modificationId"].ToString();
     var projectTitle = !string.IsNullOrEmpty(Model.ProjectTitle) ? Model.ProjectTitle : "Project overview";
+
+    var tdBackRouteValues = TempData.Peek(TempDataKeys.ProjectOverviewReferrer.BackRouteValues);
+
+    var backRouteValues = JsonSerializer.Deserialize<Dictionary<string, string>>
+        (tdBackRouteValues != null ? tdBackRouteValues.ToString()! : "{}") ?? new Dictionary<string, string>();
 }
 
-@section Breadcrumb {
-	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
-	{
-		("My research",Url.RouteUrl("app:welcome")),
-		(projectTitle, Url.RouteUrl("pov:projectdetails", new Dictionary<string, string>{{"projectRecordId", Model?.ProjectRecordId!}}))
-	})
+@if (routeName is null || routeName.ToLower() == "app:welcome")
+{
+    @section Breadcrumb {
+	    @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+	    {
+		    ("My research",Url.RouteUrl("app:welcome")),
+		    (projectTitle, Url.RouteUrl("pov:projectdetails", new Dictionary<string, string>{{"projectRecordId", Model?.ProjectRecordId!}}))
+	    })
+    }
+}
+else
+{
+    @section BackNavigation {
+        <partial name="_BackNavigation" model="@(routeName, "Back", backRouteValues)" />
+    }
 }
 
 @if (TempData[TempDataKeys.ShowNotificationBanner] is not null)

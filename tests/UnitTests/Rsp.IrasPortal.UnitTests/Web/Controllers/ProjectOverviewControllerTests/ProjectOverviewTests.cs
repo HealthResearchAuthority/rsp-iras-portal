@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -321,6 +322,42 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         model.CategoryId.ShouldBe(QuestionCategories.ProjectRecord);
         model.ProjectRecordId.ShouldBe(DefaultProjectRecordId);
         model.ActualProjectClosureDate.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task ProjectDetails_RendersBackLink_WhenReferred()
+    {
+        // Arrange
+        var httpContext = CreateHttpContextWithSession();
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempData = CreateTempData(tempDataProvider, httpContext);
+
+        const string backRoute = "backroute";
+        httpContext.Request.Headers.Referer = $"http://fakeurl/ProjectOverview/{DefaultProjectRecordId}?queryParam=test";
+
+        var answers = new List<RespondentAnswerDto>
+        {
+            new() { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "Test Project" },
+            new() { QuestionId = QuestionIds.ProjectPlannedEndDate, AnswerText = "01/01/2025" }
+        };
+
+        SetupProjectRecord(DefaultProjectRecordId, ProjectRecordStatus.Active);
+        SetupRespondentAnswers(DefaultProjectRecordId, answers);
+        SetupControllerContext(httpContext, tempData);
+        SetupCMSService("ProjectDetails", "Project details");
+
+        // Act
+        var result = await Sut.ProjectDetails(DefaultProjectRecordId, backRoute, "");
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.TempData.ContainsKey(TempDataKeys.ProjectOverviewReferrer.Referrer).ShouldBeTrue();
+        viewResult.TempData[TempDataKeys.ProjectOverviewReferrer.Referrer].ShouldBe(backRoute);
+        viewResult.TempData.ContainsKey(TempDataKeys.ProjectOverviewReferrer.BackRouteValues).ShouldBeTrue();
+        var backRouteValues = JsonSerializer.Deserialize<Dictionary<string, string>>(viewResult.TempData[TempDataKeys.ProjectOverviewReferrer.BackRouteValues]!.ToString()!);
+        backRouteValues.ShouldNotBeNull();
+        backRouteValues.ShouldContainKey("queryParam");
+        backRouteValues["queryParam"].ShouldBe("test");
     }
 
     [Fact]

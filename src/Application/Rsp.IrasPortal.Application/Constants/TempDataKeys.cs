@@ -39,6 +39,12 @@ public struct TempDataKeys
         public const string RankingOfChange = "td:modification_ranking_of_change";
     }
 
+    public struct ProjectOverviewReferrer
+    {
+        public const string Referrer = "td:project_overview_referrer";
+        public const string BackRouteValues = "td:project_overview_referrer_back_route_values";
+    }
+
     public const string ProjectRecordId = "td:project_record_id";
     public const string ProjectRecord = "td:project_record";
     public const string ProjectRecordResponses = "td:project_record_responses";
