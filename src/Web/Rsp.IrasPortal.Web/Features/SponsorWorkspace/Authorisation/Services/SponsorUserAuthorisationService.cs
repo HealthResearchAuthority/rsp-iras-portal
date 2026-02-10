@@ -64,13 +64,19 @@ public sealed class SponsorUserAuthorisationService : ISponsorUserAuthorisationS
         if (!sponsorOrganisationsResponse.IsSuccessStatusCode)
             return SponsorUserAuthorisationResult.Fail(controller.ServiceError(sponsorOrganisationsResponse));
 
-        var membershipId = sponsorOrganisationsResponse.Content?
-            .SingleOrDefault()?
+        var hasActiveSponsorOrganisation =
+            sponsorOrganisationsResponse.Content?.Any() == true;
+
+        if (!hasActiveSponsorOrganisation)
+            return SponsorUserAuthorisationResult.Fail(controller.Forbid());
+
+        var userId = sponsorOrganisationsResponse.Content?
+            .FirstOrDefault()?
             .Users?
-            .SingleOrDefault(u => u.UserId == gid)?
+            .FirstOrDefault(u => u.UserId == gid)?
             .Id;
 
-        if (membershipId is null || sponsorOrganisationUserId != membershipId.Value)
+        if (sponsorOrganisationUserId != userId)
             return SponsorUserAuthorisationResult.Fail(controller.Forbid());
 
         return SponsorUserAuthorisationResult.Ok(gid);
