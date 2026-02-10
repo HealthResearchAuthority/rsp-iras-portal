@@ -25,4 +25,7 @@ public static class FeatureFlags
 
     // Use Azure Front Door for web application routing
     public const string UseFrontDoor = "WebApp.UseFrontDoor";
+
+    // Allows revision request or revise and authorise modifications
+    public const string RevisionAndAuthorisation = "Modifications.RevisionAndAuthorisation";
 }
