@@ -11,7 +11,7 @@ public class PostApprovalViewModel
     public ProjectOverviewModel? ProjectOverviewModel { get; set; }
     public IEnumerable<ProjectClosuresModel> ProjectClosureModels { get; set; } = [];
 
-    //Validate any modifications are in in trsaction status if any restrict create new modification
+    //Validate any modifications are in in trsaction status if any restrict create new modification.
     public bool CanCreateNewModification() =>
                 !Modifications.Any(m => ModificationStatus.InTransactionStatus.Contains(m.Status));
 }
