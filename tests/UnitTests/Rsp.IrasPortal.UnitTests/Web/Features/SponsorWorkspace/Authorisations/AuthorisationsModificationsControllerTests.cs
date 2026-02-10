@@ -451,7 +451,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
-        redirect.ActionName.ShouldBe(nameof(AuthorisationsModificationsController.Confirmation));
+        redirect.ActionName.ShouldBe(nameof(AuthorisationsModificationsController.CanSubmitToReviewBody));
     }
 
     [Fact]
