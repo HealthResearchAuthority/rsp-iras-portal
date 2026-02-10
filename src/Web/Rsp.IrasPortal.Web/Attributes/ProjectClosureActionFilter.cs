@@ -74,5 +74,6 @@ public class ProjectClosureActionFilter : IAsyncActionFilter
             //}
             await next();
         }
+        await next();
     }
 }
