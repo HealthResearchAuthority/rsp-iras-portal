@@ -37,7 +37,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
         };
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>()))
+            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string?>()))
             .ReturnsAsync(response);
 
         Mocker.GetMock<IRespondentService>()
@@ -68,7 +68,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
 
         // Verify
         Mocker.GetMock<IProjectModificationsService>()
-            .Verify(s => s.UpdateModificationStatus(projectRecordId, projectModificationId, ModificationStatus.WithSponsor), Times.Once);
+            .Verify(s => s.UpdateModificationStatus(projectRecordId, projectModificationId, ModificationStatus.WithSponsor, null), Times.Once);
     }
 
     [Theory, AutoData]
@@ -89,7 +89,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
         };
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>()))
+            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string?>()))
             .ReturnsAsync(response);
 
         Mocker.GetMock<IRespondentService>()

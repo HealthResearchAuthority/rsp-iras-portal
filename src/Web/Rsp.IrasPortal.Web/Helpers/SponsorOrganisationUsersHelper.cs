@@ -1,7 +1,7 @@
 ﻿using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.Services;
 
-namespace Rsp.IrasPortal.Web.Helpers;
+namespace Rsp.Portal.Web.Helpers;
 
 public static class SponsorOrganisationUsersHelper
 {

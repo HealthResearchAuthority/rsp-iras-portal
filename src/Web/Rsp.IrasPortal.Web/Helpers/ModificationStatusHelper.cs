@@ -1,6 +1,6 @@
 ﻿using Rsp.Portal.Application.Constants;
 
-namespace Rsp.IrasPortal.Web.Helpers;
+namespace Rsp.Portal.Web.Helpers;
 
 public static class ModificationStatusHelper
 {

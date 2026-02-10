@@ -3,6 +3,8 @@ using FluentValidation;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement;
+using Microsoft.FeatureManagement.Mvc;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
@@ -33,7 +35,8 @@ public class AuthorisationsModificationsController
     ICmsQuestionsetService cmsQuestionsetService,
     ISponsorUserAuthorisationService sponsorUserAuthorisationService,
     IValidator<AuthorisationsModificationsSearchModel> searchValidator,
-    IValidator<AuthoriseModificationsOutcomeViewModel> outcomeValidator
+    IValidator<AuthoriseModificationsOutcomeViewModel> outcomeValidator,
+    IFeatureManager featureManager
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, null!)
 {
     private const string DocumentDetailsSection = "pdm-document-metadata";
@@ -240,14 +243,17 @@ public class AuthorisationsModificationsController
 
         TempData[TempDataKeys.IsAuthoriser] = sponsorOrganisationUser.Content!.IsAuthoriser;
 
-        var reviewResponse = await projectModificationsService.GetModificationReviewResponses(projectRecordId, projectModificationId);
-
-        if (!reviewResponse.IsSuccessStatusCode)
+        if (await featureManager.IsEnabledAsync(FeatureFlags.RevisionAndAuthorisation))
         {
-            return this.ServiceError(reviewResponse);
-        }
+            var reviewResponse = await projectModificationsService.GetModificationReviewResponses(projectRecordId, projectModificationId);
 
-        ViewBag.RevisionSent = !string.IsNullOrWhiteSpace(reviewResponse.Content!.RevisionDescription);
+            if (!reviewResponse.IsSuccessStatusCode)
+            {
+                return this.ServiceError(reviewResponse);
+            }
+
+            ViewBag.RevisionSent = !string.IsNullOrWhiteSpace(reviewResponse.Content!.RevisionDescription);
+        }
 
         return View(response);
     }
@@ -277,14 +283,17 @@ public class AuthorisationsModificationsController
 
             TempData[TempDataKeys.IsAuthoriser] = sponsorOrganisationUser.Content!.IsAuthoriser;
 
-            var reviewResponse = await projectModificationsService.GetModificationReviewResponses(model.ProjectRecordId, model.ProjectModificationId);
-
-            if (!reviewResponse.IsSuccessStatusCode)
+            if (await featureManager.IsEnabledAsync(FeatureFlags.RevisionAndAuthorisation))
             {
-                return this.ServiceError(reviewResponse);
-            }
+                var reviewResponse = await projectModificationsService.GetModificationReviewResponses(model.ProjectRecordId, model.ProjectModificationId);
 
-            ViewBag.RevisionSent = !string.IsNullOrWhiteSpace(reviewResponse.Content!.RevisionDescription);
+                if (!reviewResponse.IsSuccessStatusCode)
+                {
+                    return this.ServiceError(reviewResponse);
+                }
+
+                ViewBag.RevisionSent = !string.IsNullOrWhiteSpace(reviewResponse.Content!.RevisionDescription);
+            }
 
             // Preserve the posted Outcome so the radios keep the selection
             if (hydrated is not null)
@@ -345,6 +354,7 @@ public class AuthorisationsModificationsController
     }
 
     [Authorize(Policy = Permissions.Sponsor.Modifications_Authorise)]
+    [FeatureGate(FeatureFlags.RevisionAndAuthorisation)]
     [HttpGet]
     public async Task<IActionResult> RequestRevisions(AuthoriseModificationsOutcomeViewModel model)
     {
@@ -375,6 +385,7 @@ public class AuthorisationsModificationsController
     }
 
     [Authorize(Policy = Permissions.Sponsor.Modifications_Authorise)]
+    [FeatureGate(FeatureFlags.RevisionAndAuthorisation)]
     [HttpPost]
     [CmsContentAction(nameof(RequestRevisions))]
     public async Task<IActionResult> SendRequestRevisions(AuthoriseModificationsOutcomeViewModel model)
