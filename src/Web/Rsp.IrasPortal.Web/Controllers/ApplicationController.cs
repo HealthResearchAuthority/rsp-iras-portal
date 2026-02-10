@@ -3,6 +3,7 @@ using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Rsp.IrasPortal.Web.Attributes;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.Filters;
@@ -297,6 +298,7 @@ public class ApplicationController
     }
 
     [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Close)]
+    [ServiceFilter(typeof(ProjectClosureActionFilter))]
     [HttpPost]
     public async Task<IActionResult> ConfirmProjectClosure(ProjectClosuresModel model, DateTime plannedProjectEndDate, string separator = "/")
     {
@@ -360,6 +362,8 @@ public class ApplicationController
         {
             return this.ServiceError(updateApplicationResponse);
         }
+        //Using below tempdata to restrict project closure if applicant trying to submit project closure using browser back button
+        TempData[TempDataKeys.IsSendToSponsor] = true;
 
         TempData[TempDataKeys.ShowCloseProjectBanner] = true;
 
