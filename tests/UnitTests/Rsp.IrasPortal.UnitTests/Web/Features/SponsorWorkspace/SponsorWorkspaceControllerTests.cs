@@ -104,4 +104,69 @@ public class SponsorWorkspaceControllerTests : TestServiceBase<SponsorWorkspaceC
         // Assert
         result.ShouldBeOfType<ViewResult>();
     }
+
+    [Theory, AutoData]
+    public async Task SponsorWorkspaceMenu_ShouldReturnServiceError_WhenOrgNotExist(
+        ClaimsPrincipal userClaims,
+        User mockUser,
+        SponsorOrganisationDto sponsorOrganisation,
+        OrganisationDto rtsOrganisation)
+    {
+        // Arrange
+        var gid = Guid.NewGuid();
+
+        // Dodaj użytkownika do sponsorOrganisation.Users
+        sponsorOrganisation.Users = new List<SponsorOrganisationUserDto>
+        {
+            new SponsorOrganisationUserDto
+            {
+                Id = Guid.NewGuid(),
+                UserId = gid
+            }
+        };
+
+        var mockUserResponse = new UserResponse
+        {
+            User = mockUser with { Id = gid.ToString() }
+        };
+
+        var userResponse = new ServiceResponse<UserResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = mockUserResponse
+        };
+
+        var sponsorResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
+        {
+            StatusCode = HttpStatusCode.InternalServerError,
+            Content = new List<SponsorOrganisationDto> { sponsorOrganisation }
+        };
+
+        var rtsResponse = new ServiceResponse<OrganisationDto>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = rtsOrganisation
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser(It.IsAny<string>(), null, null))
+            .ReturnsAsync(userResponse);
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.GetAllActiveSponsorOrganisationsForEnabledUser(gid))
+            .ReturnsAsync(sponsorResponse);
+
+        Mocker.GetMock<IRtsService>()
+            .Setup(s => s.GetOrganisation(It.IsAny<string>()))
+            .ReturnsAsync(rtsResponse);
+
+        _http.User = userClaims;
+
+        // Act
+        var result = await Sut.SponsorWorkspace();
+
+        // Assert
+        var statusCodeResult = result.ShouldBeOfType<StatusCodeResult>();
+        statusCodeResult.StatusCode.ShouldBe(500);
+    }
 }
