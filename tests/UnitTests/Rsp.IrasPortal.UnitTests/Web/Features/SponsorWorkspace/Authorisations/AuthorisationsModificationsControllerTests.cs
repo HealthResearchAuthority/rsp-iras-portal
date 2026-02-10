@@ -1187,7 +1187,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
     }
 
     [Fact]
-    public async Task When_No_Modification_Returns_Dont_Return_View()
+    public async Task When_No_Modification_Returns_Return_ConfirmationView()
     {
         // Arrange
         var authoriseOutcomeViewModel = SetupAuthoriseOutcomeViewModel();
