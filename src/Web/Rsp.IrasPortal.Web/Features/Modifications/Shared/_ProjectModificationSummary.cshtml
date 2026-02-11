@@ -2,6 +2,7 @@
 @using Rsp.Portal.Domain.AccessControl
 @using Rsp.Portal.Web.Extensions
 @using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Web.Helpers
 @using Rsp.Portal.Web.Models
 @model dynamic
 
@@ -89,6 +90,7 @@
                     var tagClass = modificationBaseModel.Status switch
                     {
                         ModificationStatus.WithSponsor => "govuk-tag--yellow",
+                        ModificationStatus.ReviseAndAuthorise => "govuk-tag--yellow",
                         ModificationStatus.Approved => "govuk-tag--green",
                         ModificationStatus.WithReviewBody => "govuk-tag--green",
                         ModificationStatus.NotApproved => "govuk-tag--red",
@@ -97,7 +99,7 @@
                     };
                 }
                 <strong class="govuk-tag @tagClass">
-                    @modificationBaseModel.Status
+                    @ModificationStatusHelper.ToUiStatus(modificationBaseModel.Status)
                 </strong>
             </dd>
         </div>

@@ -178,7 +178,7 @@ public interface IProjectModificationsService : IInterceptable
     /// A task representing the asynchronous operation, containing a <see cref="ServiceResponse"/>
     /// that reflects the success or failure of the update operation.
     /// </returns>
-    Task<ServiceResponse> UpdateModificationStatus(string projectRecordId, Guid modificationId, string status);
+    Task<ServiceResponse> UpdateModificationStatus(string projectRecordId, Guid modificationId, string status, string? revisionDescription = null);
 
     /// <summary>
     /// Updates an existing project modification.

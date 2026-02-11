@@ -6,7 +6,6 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
-using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
@@ -17,6 +16,7 @@ using Rsp.Portal.Domain.AccessControl;
 using Rsp.Portal.Web.Areas.Admin.Models;
 using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Features.SponsorWorkspace.MyOrganisations.Models;
+using Rsp.Portal.Web.Helpers;
 using Rsp.Portal.Web.Models;
 using static Rsp.Portal.Web.Extensions.PaginationViewModelExtensions;
 

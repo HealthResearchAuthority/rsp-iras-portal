@@ -20,6 +20,9 @@
     var notAuthorisedHeader = pageContent.GetValueOrDefault("SponsorWorkspace.Confirmation.NotAuthorisedHeader", null);
     var notAuthorisedMessage = pageContent.GetValueOrDefault("SponsorWorkspace.Confirmation.NotAuthorisedMessage", null);
 
+    var revisionRequestHeader = pageContent.GetValueOrDefault("SponsorWorkspace.Confirmation.RevisionRequestHeader", null);
+    var revisionRequestMessage = pageContent.GetValueOrDefault("SponsorWorkspace.Confirmation.RevisionRequestMessage", null);
+
     switch (Model.Outcome)
     {
         case "Authorised":
@@ -45,6 +48,13 @@
 
             break;
         }
+
+        case "RequestRevisions":
+            {
+                heading = revisionRequestHeader?.Value;
+                messageText = revisionRequestMessage?.Value;
+                break;
+            }
 
         case "NotAuthorised":
         default:

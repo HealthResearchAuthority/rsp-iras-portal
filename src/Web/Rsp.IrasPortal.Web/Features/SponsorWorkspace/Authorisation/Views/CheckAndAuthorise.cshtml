@@ -31,7 +31,7 @@
     var outcome = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.Outcome", null);
 
     // Detect field error for summary styling
-    var hasError = ViewData.ModelState.TryGetValue(nameof(Model.Outcome), out var entry) && entry!.Errors.Any();
+    var hasError = ViewData.ModelState.TryGetValue(nameof(Model.Outcome), out var entry) && entry!.Errors.Any();       
 
     // Radio options for the TagHelper
     var outcomeOptions = new List<GdsOption>
@@ -50,11 +50,14 @@
             Label = "Revise and authorise"
         });
 
-        outcomeOptions.Add(new GdsOption
+        if (ViewBag.RevisionSent == false)
         {
-            Value = "RequestRevisions",
-            Label = "Request revisions"
-        });
+            outcomeOptions.Add(new GdsOption
+            {
+                Value = "RequestRevisions",
+                Label = "Request revisions"
+            });
+        }
     }
 }
 
@@ -139,6 +142,7 @@
             <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
             <input type="hidden" name="ProjectModificationId" value="@Model.ProjectModificationId" />
             <input type="hidden" name="ReviewType" value="@Model.ReviewType" />
+            <input type="hidden" name="ModificationIdentifier" value="@Model.ModificationIdentifier" />
 
             <div class="govuk-form-group @(hasError ? "govuk-form-group--error" : "")">
 
