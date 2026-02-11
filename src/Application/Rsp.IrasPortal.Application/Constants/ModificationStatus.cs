@@ -26,4 +26,11 @@ public struct ModificationStatus
         NotApproved,
         NotAuthorised
     ];
+
+    public static readonly List<string> InTransactionStatus = [
+        InDraft,
+        WithSponsor,
+        RequestRevisions,
+        ReviseAndAuthorise
+   ];
 }

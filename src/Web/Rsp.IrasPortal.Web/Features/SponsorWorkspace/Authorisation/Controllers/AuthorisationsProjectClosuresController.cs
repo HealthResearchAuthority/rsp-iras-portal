@@ -1,11 +1,9 @@
 ﻿using System.Net;
-using System.Security.Claims;
 using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.Portal.Application.Constants;
-using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Filters;
@@ -39,7 +37,7 @@ public class AuthorisationsProjectClosuresController
     IValidator<ProjectClosuresSearchModel> searchValidator
 ) : Controller
 {
-    [Authorize(Policy = Permissions.Sponsor.Modifications_Search)]
+    [Authorize(Policy = Permissions.Sponsor.ProjectClosures_Search)]
     [HttpGet]
     public async Task<IActionResult> ProjectClosures
     (

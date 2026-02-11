@@ -168,7 +168,6 @@ public class ProjectOverviewController
         //The validation result for creating a new modification is stored in TempData.
         //PostApprovalViewModel Model is used to evaluate the validation outcome.
         TempData[TempDataKeys.ProjectModification.CanCreateNewModification] = model.CanCreateNewModification();
-        TempData[TempDataKeys.ProjectModification.CanModificationSendToSponsor] = model.CanModificationSendToSponsor();
 
         return View(model);
     }

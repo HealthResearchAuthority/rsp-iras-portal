@@ -425,6 +425,14 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
     {
         // Arrange
         var authoriseOutcomeViewModel = SetupAuthoriseOutcomeViewModel();
+        Mocker
+           .GetMock<IProjectModificationsService>()
+           .Setup(s => s.GetModificationsForProject(It.IsAny<string>(), It.IsAny<ModificationSearchRequest>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
+           .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+           {
+               StatusCode = HttpStatusCode.OK,
+               Content = null
+           });
 
         authoriseOutcomeViewModel.Outcome = "Authorised";
         authoriseOutcomeViewModel.ReviewType = "No review required";
@@ -442,6 +450,14 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
     {
         // Arrange
         var authoriseOutcomeViewModel = SetupAuthoriseOutcomeViewModel();
+        Mocker
+           .GetMock<IProjectModificationsService>()
+           .Setup(s => s.GetModificationsForProject(It.IsAny<string>(), It.IsAny<ModificationSearchRequest>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
+           .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+           {
+               StatusCode = HttpStatusCode.OK,
+               Content = null
+           });
 
         authoriseOutcomeViewModel.Outcome = "Authorised";
         authoriseOutcomeViewModel.ReviewType = "Review required";
@@ -1129,6 +1145,78 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
 
         // Assert
         result.ShouldBeOfType<ViewResult>();
+    }
+
+    [Fact]
+    public async Task Returns_View_CanSubmitToReviewBody()
+    {
+        // Arrange
+        var authoriseOutcomeViewModel = SetupAuthoriseOutcomeViewModel();
+        Mocker
+           .GetMock<IProjectModificationsService>()
+           .Setup(s => s.GetModificationsForProject(It.IsAny<string>(), It.IsAny<ModificationSearchRequest>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
+           .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+           {
+               StatusCode = HttpStatusCode.OK,
+               Content = new() { TotalCount = 1, Modifications = [new ModificationsDto { Id = Guid.NewGuid().ToString(), ModificationId = "MOD1", ModificationType = "Type", ReviewType = "Review", Category = "A", Status = ModificationStatus.WithReviewBody }] }
+           });
+
+        authoriseOutcomeViewModel.Outcome = "Authorised";
+        authoriseOutcomeViewModel.ReviewType = "Review required";
+
+        // Act
+        var result = await Sut.CheckAndAuthorise(authoriseOutcomeViewModel);
+
+        // Assert
+        var viewResult = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal("CanSubmitToReviewBody", viewResult.ActionName);
+        result.ShouldBeOfType<RedirectToActionResult>();
+    }
+
+    [Fact]
+    public async Task When_No_Modification_Returns_Return_ConfirmationView()
+    {
+        // Arrange
+        var authoriseOutcomeViewModel = SetupAuthoriseOutcomeViewModel();
+
+        Mocker
+       .GetMock<IProjectModificationsService>()
+       .Setup(s => s.GetModificationsForProject(It.IsAny<string>(), It.IsAny<ModificationSearchRequest>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
+       .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+       {
+           StatusCode = HttpStatusCode.OK,
+           Content = null
+       });
+
+        authoriseOutcomeViewModel.Outcome = "Authorised";
+        authoriseOutcomeViewModel.ReviewType = "Review required";
+
+        // Act
+        var result = await Sut.CheckAndAuthorise(authoriseOutcomeViewModel);
+
+        // Assert
+        var viewResult = Assert.IsType<RedirectToActionResult>(result);
+        result.ShouldBeOfType<RedirectToActionResult>();
+        viewResult.ActionName.ShouldBe(nameof(AuthorisationsModificationsController.Confirmation));
+        Assert.Equal("Confirmation", viewResult.ActionName);
+    }
+
+    [Fact]
+    public void Confirmation_Returns_CanSubmitToReviewBody()
+    {
+        // Arrange
+        var model = new AuthoriseModificationsOutcomeViewModel
+        {
+            ModificationId = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+            ProjectRecordId = "PR-001"
+        };
+
+        // Act
+        var result = Sut.CanSubmitToReviewBody(model);
+
+        // Assert
+        var view = result.ShouldBeOfType<ViewResult>();
+        view.Model.ShouldBeSameAs(model);
     }
 
     public SponsorUserAuthorisationResult Authorised(Guid gid)
