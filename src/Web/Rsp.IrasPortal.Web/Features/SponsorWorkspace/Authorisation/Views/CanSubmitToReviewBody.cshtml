@@ -31,10 +31,14 @@
             @Html.Raw(warningMessageBody?.Value)
         </p>
 
-        <div class="save-buttons">
-            <a class="govuk-button" asp-route="pov:postapproval" asp-route-projectRecordId="@Model.ProjectRecordId">
-                Return to project overview
-            </a>
-        </div>
+        <form asp-route="sws:modifications" method="get">
+            <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
+
+            <partial name="_SubmitButton"
+                     model="@("sws:modifications", "Return to authorisations", new Dictionary<string, string>
+             {
+                 ["SponsorOrganisationUserId"] = Model.SponsorOrganisationUserId.ToString()
+             })" />
+        </form>
     </div>
 </div>
