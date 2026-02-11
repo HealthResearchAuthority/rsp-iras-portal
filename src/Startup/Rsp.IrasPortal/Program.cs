@@ -8,6 +8,7 @@ using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.FeatureManagement;
 using Rsp.IrasPortal.Application.FeatureFilters;
+using Rsp.IrasPortal.Web.Attributes;
 using Rsp.Logging.ActionFilters;
 using Rsp.Logging.Extensions;
 using Rsp.Logging.Interceptors;
