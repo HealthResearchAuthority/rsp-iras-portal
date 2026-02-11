@@ -11,7 +11,7 @@ public class PostApprovalViewModel
     public ProjectOverviewModel? ProjectOverviewModel { get; set; }
     public IEnumerable<ProjectClosuresModel> ProjectClosureModels { get; set; } = [];
 
-    //Validate new modification. Only one active in draft modification.
+    //Validate any modifications are in in trsaction status if any restrict create new modification
     public bool CanCreateNewModification() =>
-                !Modifications.Any(m => ModificationStatus.InTransactionState.Contains(m.Status));
+                !Modifications.Any(m => ModificationStatus.InTransactionStatus.Contains(m.Status));
 }
