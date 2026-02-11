@@ -4,7 +4,7 @@
 @inject IHttpContextAccessor httpContextAccessor
 @{
     ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
-
+    //var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null
         ? pageContentData
@@ -14,11 +14,11 @@
     var projectRecordId = Context.Request.Query["id"].ToString();
 
     var title = pageContent.GetValueOrDefault("Application.CloseProject.WarningTitle", null);
-    var warningMessage = pageContent.GetValueOrDefault("Application.CloseProject.WarningMessage", null);
-    var pendingClosureTitle = pageContent.GetValueOrDefault("Application.CloseProject.BodyContent", null);
-    var pendingClosureBody = pageContent.GetValueOrDefault("Application.CloseProject.BodyContent", null);
-    var closedStatusTitle = pageContent.GetValueOrDefault("Application.CloseProject.BodyContent", null);
-    var closedStatusBody = pageContent.GetValueOrDefault("Application.CloseProject.BodyContent", null);
+    var body = pageContent.GetValueOrDefault("Application.CloseProject.WarningBody", null);
+    var pendingClosureTitle = pageContent.GetValueOrDefault("Application.CloseProject.PendingClosureTitle", null);
+    var pendingClosureBody = pageContent.GetValueOrDefault("Application.CloseProject.PendingClosureBody", null);
+    var closedStatusTitle = pageContent.GetValueOrDefault("Application.CloseProject.ClosedStatusTitle", null);
+    var closedStatusBody = pageContent.GetValueOrDefault("Application.CloseProject.ClosedStatusBody", null);
 }
 
 <div class="govuk-grid-row">
@@ -27,15 +27,18 @@
         @switch (status)
         {
             case ProjectRecordStatus.Active:
-                <h1 class="govuk-heading-l">@Html.Raw(title)</h1>
+                <h1 class="govuk-heading-l">@Html.Raw(title?.Value)</h1>
                 break;
 
             case ProjectRecordStatus.PendingClosure:
-                <h1 class="govuk-heading-l">@Html.Raw(pendingClosureTitle)</h1>
+                <h1 class="govuk-heading-l">@Html.Raw(pendingClosureTitle?.Value)</h1>
                 break;
 
             case ProjectRecordStatus.Closed:
-                <h1 class="govuk-heading-l">@Html.Raw(closedStatusTitle)</h1>
+                <h1 class="govuk-heading-l">@Html.Raw(closedStatusTitle?.Value)</h1>
+                break;
+            default:
+                <h1 class="govuk-heading-l">@Html.Raw(title?.Value)</h1>
                 break;
         }
 
@@ -53,15 +56,18 @@
             @switch (status)
             {
                 case ProjectRecordStatus.Active:
-                    @Html.Raw(warningMessage?.Value)
+                    @Html.Raw(body?.Value)
                     break;
 
                 case ProjectRecordStatus.PendingClosure:
-                    @Html.Raw(pendingClosureBody)
+                    @Html.Raw(pendingClosureBody?.Value)
                     break;
 
                 case ProjectRecordStatus.Closed:
-                    @Html.Raw(closedStatusBody)
+                    @Html.Raw(closedStatusBody?.Value)
+                    break;
+                default:
+                    @Html.Raw(body?.Value)
                     break;
             }
         </p>
