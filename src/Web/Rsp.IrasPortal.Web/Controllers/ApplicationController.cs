@@ -405,7 +405,7 @@ public class ApplicationController
             ActualClosureDateYear = actualClosureDateYear,
         };
 
-        if (isInTransactionState)
+        if (isInTransactionState || TempData[TempDataKeys.IsSendToSponsor] is true)
         {
             return View("/Features/ProjectOverview/Views/ValidateProjectClosure.cshtml", model);
         }
