@@ -425,7 +425,14 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
     {
         // Arrange
         var authoriseOutcomeViewModel = SetupAuthoriseOutcomeViewModel();
-
+        Mocker
+      .GetMock<IProjectModificationsService>()
+      .Setup(s => s.GetModificationsForProject(It.IsAny<string>(), It.IsAny<ModificationSearchRequest>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
+      .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+      {
+          StatusCode = HttpStatusCode.OK,
+          Content = null
+      });
         authoriseOutcomeViewModel.Outcome = "Authorised";
         authoriseOutcomeViewModel.ReviewType = "No review required";
 
@@ -442,7 +449,14 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
     {
         // Arrange
         var authoriseOutcomeViewModel = SetupAuthoriseOutcomeViewModel();
-
+        Mocker
+      .GetMock<IProjectModificationsService>()
+      .Setup(s => s.GetModificationsForProject(It.IsAny<string>(), It.IsAny<ModificationSearchRequest>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
+      .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+      {
+          StatusCode = HttpStatusCode.OK,
+          Content = null
+      });
         authoriseOutcomeViewModel.Outcome = "Authorised";
         authoriseOutcomeViewModel.ReviewType = "Review required";
 
