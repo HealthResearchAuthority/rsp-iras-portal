@@ -962,6 +962,15 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
                 }
             });
 
+        Mocker
+        .GetMock<IProjectModificationsService>()
+        .Setup(s => s.GetModificationsForProject(It.IsAny<string>(), It.IsAny<ModificationSearchRequest>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
+        .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new() { TotalCount = 1, Modifications = [new ModificationsDto { Id = Guid.NewGuid().ToString(), ModificationId = "MOD1", ModificationType = "Type", ReviewType = "Review", Category = "A", Status = ModificationStatus.WithReviewBody }] }
+        });
+
         // Build a fake CMS question set response that your helper accepts
         var cmsResponse = new CmsQuestionSetResponse
         {
@@ -1143,6 +1152,24 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
 
         // Assert
         result.ShouldBeOfType<ViewResult>();
+    }
+
+    [Fact]
+    public async Task Returns_View_CanSubmitToReviewBody()
+    {
+        // Arrange
+        var authoriseOutcomeViewModel = SetupAuthoriseOutcomeViewModel();
+
+        authoriseOutcomeViewModel.Outcome = "Authorised";
+        authoriseOutcomeViewModel.ReviewType = "Review required";
+
+        // Act
+        var result = await Sut.CheckAndAuthorise(authoriseOutcomeViewModel);
+
+        // Assert
+        var viewResult = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal("CanSubmitToReviewBody", viewResult.ActionName);
+        result.ShouldBeOfType<RedirectToActionResult>();
     }
 
     [Fact]
