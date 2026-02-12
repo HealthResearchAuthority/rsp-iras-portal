@@ -8,6 +8,8 @@
 
 <a asp-route="sws:MyOrganisationViewUser" asp-all-route-data="@(new Dictionary<string, string>{{"rtsId", Model.RtsId}, {"userId", Model.UserId}})" class="govuk-back-link">Back</a>
 
+<partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
+
 <div class="govuk-grid-row">
 	<form method="post" class="govuk-form-group">
 
@@ -170,3 +172,25 @@
 
 	</form>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const roleAdmin = document.getElementById("role");
+        const roleSponsor = document.getElementById("role-2");
+        const authoriserYes = document.getElementById("authoriser");
+
+        function updateAuthoriserState() {
+            if (roleAdmin.checked) {
+                // Force YES radio
+                authoriserYes.checked = true;
+            }
+        }
+
+        roleAdmin.addEventListener("change", updateAuthoriserState);
+        roleSponsor.addEventListener("change", updateAuthoriserState);
+
+        // Run once on load
+        updateAuthoriserState();
+    });
+</script>
+

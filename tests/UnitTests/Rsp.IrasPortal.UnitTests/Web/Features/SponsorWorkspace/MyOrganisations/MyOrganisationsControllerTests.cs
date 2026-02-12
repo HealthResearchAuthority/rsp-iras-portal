@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Primitives;
 using Rsp.IrasPortal.Web.Models;
-using Rsp.IrasPortal.Web.Validators;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
@@ -19,7 +18,6 @@ using Rsp.Portal.Web.Areas.Admin.Models;
 using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Features.SponsorWorkspace.MyOrganisations.Controllers;
 using Rsp.Portal.Web.Features.SponsorWorkspace.MyOrganisations.Models;
-using Rsp.Portal.Web.Models;
 using Claim = System.Security.Claims.Claim;
 
 namespace Rsp.Portal.UnitTests.Web.Features.SponsorWorkspace.MyOrganisations;
@@ -2711,6 +2709,66 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
 
         // Assert
         result.ShouldBeOfType<ForbidResult>();
+    }
+
+    [AutoData]
+    [Theory]
+    public async Task MyOrganisationEditUser_Redirect_To_View_With_Error_When_User_Is_Admin_And_Not_Authoriser(SponsorMyOrganisationUserViewModel userModel)
+    {
+        // Arrange
+        var rtsId = "87765";
+        var userId = Guid.NewGuid();
+        SetUser(Guid.NewGuid(), DefaultEmail);
+
+        userModel.RtsId = rtsId;
+        userModel.UserId = userId.ToString();
+        userModel.Role = Roles.OrganisationAdministrator;
+        userModel.IsAuthoriser = "No";
+
+        var updateModel = new SponsorOrganisationUserDto
+        {
+            RtsId = userModel.RtsId!,
+            UserId = Guid.Parse(userModel.UserId!),
+            IsAuthoriser = userModel.IsAuthoriser == "Yes",
+            SponsorRole = userModel.Role ?? string.Empty
+        };
+
+        var orgUserResponse = new ServiceResponse<SponsorOrganisationUserDto>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = updateModel
+        };
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.UpdateSponsorOrganisationUser(It.IsAny<SponsorOrganisationUserDto>()))
+            .ReturnsAsync(orgUserResponse);
+
+        var userServiceResponse = new ServiceResponse
+        {
+            StatusCode = HttpStatusCode.OK
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.UpdateRoles(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(userServiceResponse);
+
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail,
+            rtsOrganisation: new OrganisationDto { Name = "Acme Sponsor Org", CountryName = "UK" }, isUserAdmin: true);
+
+        // Act
+        var result = await Sut.MyOrganisationEditUser(userModel);
+
+        // Assert
+        var view = result.ShouldBeOfType<RedirectToActionResult>();
+        view.ActionName.ShouldBe("MyOrganisationViewUser");
+        view.RouteValues.ShouldNotBeNull();
+        view.RouteValues.Keys.ShouldContain("rtsId");
+        view.RouteValues.Keys.ShouldContain("userId");
+
+        Sut.TempData.ContainsKey("AuthorizerValidationError").ShouldBeTrue();
+        Sut.TempData["AuthorizerValidationError"].ShouldBe(
+            "Select 'Yes' for the Authoriser if the user has the Organisation Administrator role."
+        );
     }
 
     [AutoData]
