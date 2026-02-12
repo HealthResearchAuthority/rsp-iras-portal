@@ -321,7 +321,12 @@ public class ApplicationController
                 actualClosureDateYear = model.ActualClosureDateYear
             });
         }
-
+        var pr = HttpContext.Request.Query["projectRecordId"].ToString();
+        if (TempData[TempDataKeys.IsSendToSponsor] is true && model.ProjectRecordId != pr)
+        {
+        }
+        else
+        { }
         // Get respondent information from the current context
         var respondent = this.GetRespondentFromContext();
 
@@ -405,7 +410,7 @@ public class ApplicationController
             ActualClosureDateYear = actualClosureDateYear,
         };
 
-        if (isInTransactionState || TempData[TempDataKeys.IsSendToSponsor] is true)
+        if (isInTransactionState)
         {
             return View("/Features/ProjectOverview/Views/ValidateProjectClosure.cshtml", model);
         }

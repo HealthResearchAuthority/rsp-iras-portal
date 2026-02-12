@@ -4,7 +4,7 @@
 @inject IHttpContextAccessor httpContextAccessor
 @{
     ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
-    //var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
+
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null
         ? pageContentData
