@@ -379,6 +379,6 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
         var result = await Sut.UploadDocuments(model);
 
         var view = result.ShouldBeOfType<ViewResult>();
-        Sut.ModelState["Files"].Errors.Any(e => e.ErrorMessage.Contains("Please upload at least one document")).ShouldBeTrue();
+        Sut.ModelState["Files"].Errors.Any(e => e.ErrorMessage.Contains("Upload at least one document")).ShouldBeTrue();
     }
 }
