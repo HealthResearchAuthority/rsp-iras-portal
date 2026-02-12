@@ -10,14 +10,16 @@ namespace Rsp.IrasPortal.Web.Attributes;
 public class ProjectClosureActionFilter : IAsyncActionFilter
 {
     private readonly IApplicationsService _applicationsService;
+    private readonly IProjectModificationsService _projectModificationsService;
 
     /// <summary>
     /// Constructor to initialse service
     /// </summary>
     /// <param name="applicationsService"></param>
-    public ProjectClosureActionFilter(IApplicationsService applicationsService)
+    public ProjectClosureActionFilter(IApplicationsService applicationsService, IProjectModificationsService projectModificationsService)
     {
         _applicationsService = applicationsService;
+        _projectModificationsService = projectModificationsService;
     }
 
     /// <summary>
@@ -39,13 +41,38 @@ public class ProjectClosureActionFilter : IAsyncActionFilter
                 // Redirect to a closeproject
                 context.Result = new RedirectToActionResult
                 (
-                    actionName: "closeproject",
+                    actionName: "validateprojectclosure",
                     controllerName: "application",
                     routeValues: new { id = projectRecordId, status = projectRecord?.Content?.Status }
                 );
                 return;
             }
+            //if (projectRecord?.Content?.Status is ProjectRecordStatus.Active)
+            //{
+            //    var modificationsResponse = await _projectModificationsService.GetModificationsForProject(projectRecordId, new ModificationSearchRequest());
+
+            //    var isInTransactionState = modificationsResponse.Content?.Modifications?.Any(m =>
+            //        m.Status is ModificationStatus.InDraft
+            //            or ModificationStatus.WithSponsor
+            //            or ModificationStatus.WithReviewBody) == true;
+            //    if (isInTransactionState)
+            //    {
+            //        // Redirect to a closeproject
+            //        context.Result = new RedirectToActionResult
+            //        (
+            //            actionName: "validateprojectclosure",
+            //            controllerName: "application",
+            //             routeValues: new { id = projectRecordId, status = projectRecord?.Content?.Status }
+            //        );
+            //        return;
+            //    }
+            //    else
+            //    {
+            //        context.Result = new BadRequestResult();
+            //        return;
+            //    }
+            //}
+            await next();
         }
-        await next();
     }
 }
