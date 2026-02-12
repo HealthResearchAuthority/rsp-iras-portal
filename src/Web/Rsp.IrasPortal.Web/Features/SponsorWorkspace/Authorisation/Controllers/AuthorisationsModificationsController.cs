@@ -345,6 +345,9 @@ public class AuthorisationsModificationsController
             case "RequestRevisions":
                 return RedirectToAction(nameof(RequestRevisions), model);
 
+            case "NotAuthorised":
+                return RedirectToAction(nameof(ModificationNotAuthorised), model);
+
             default:
                 await projectModificationsService.UpdateModificationStatus
                 (
@@ -478,5 +481,28 @@ public class AuthorisationsModificationsController
                 sponsorOrganisationUserId, modificationChangeId);
 
         return View(response);
+    }
+
+    [Authorize(Policy = Permissions.Sponsor.Modifications_Authorise)]
+    //[FeatureGate(FeatureFlags.NotAuthorisedReason)]
+    [HttpGet]
+    public IActionResult ModificationNotAuthorised(AuthoriseModificationsOutcomeViewModel model)
+    {
+        return View("ModificationNotAuthorised", model);
+    }
+
+    [Authorize(Policy = Permissions.Sponsor.Modifications_Authorise)]
+    [HttpPost]
+    public async Task<IActionResult> SaveModificationNotAuthorisedReason(AuthoriseModificationsOutcomeViewModel model)
+    {
+        var context = new ValidationContext<AuthoriseModificationsOutcomeViewModel>(model);
+        var validationResult = await outcomeValidator.ValidateAsync(context);
+
+        foreach (var error in validationResult.Errors)
+        {
+            ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+        }
+
+        return View("ModificationNotAuthorised", model);
     }
 }

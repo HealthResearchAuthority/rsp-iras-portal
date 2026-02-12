@@ -1,0 +1,65 @@
+﻿@using Rsp.Gds.Component.Models
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@using Rsp.Portal.Domain.AccessControl
+@using Rsp.Portal.Web.Features.Modifications.Models
+@model Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models.AuthoriseModificationsOutcomeViewModel
+
+@{
+    ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData ?? new Dictionary<string, MixedContentPageItem?>();
+
+    var title = pageContent.GetValueOrDefault("SponsorWorkspace.ModificationNotAuthorised.Title", null);
+    var body = pageContent.GetValueOrDefault("SponsorWorkspace.ModificationNotAuthorised.Description", null);
+}
+
+@section BackNavigation {
+    <partial name="_BackNavigation" model="@("sws:CheckAndAuthorise", "Back", new Dictionary<string, string>
+                                            { { "sponsorOrganisationUserId", Model.SponsorOrganisationUserId.ToString() },
+                                            { "projectRecordId", Model.ProjectRecordId.ToString() },
+                                            { "projectModificationId", Model.ProjectModificationId.ToString() },
+                                            { "irasId", Model.IrasId.ToString() },
+                                            { "shortTitle", Model.ShortTitle.ToString() },
+                                            })" />
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">
+            @Html.Raw(title?.Value)
+        </h1>
+
+        <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
+
+        <partial name="~/Features/Modifications/Shared/_ProjectModificationSummary.cshtml"
+                 model="Model"
+                 view-data="ViewData" />
+    </div>
+</div>
+<form asp-route="sws:savemodificationnotauthorisedreason" method="post">
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            @Html.Raw(body?.Value)
+            <rsp-gds-character-count-textarea asp-for="ReasonNotApproved"
+                                              label-text=""
+                                              word-count-error-for="ExcessCharacterCount"
+                                              rows="5"
+                                              width-class="govuk-!-width-full" />
+            <p class='govuk-hint'>You can enter up to 500 characters</p>
+
+            <input type="hidden" name="ProjectRecordId" value="@Model.ProjectRecordId" />
+            <input type="hidden" name="IrasId" value="@Model.IrasId" />
+            <input type="hidden" name="ShortTitle" value="@Model.ShortTitle" />
+            <input type="hidden" name="ModificationId" value="@Model.ModificationId" />
+            <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
+            <input type="hidden" name="ProjectModificationId" value="@Model.ProjectModificationId" />
+            <input type="hidden" name="ModificationIdentifier" value="@Model.ModificationIdentifier" />
+            <input type="hidden" name="Outcome" value="@Model.Outcome" />
+
+            <button type="submit" class="govuk-button" data-module="govuk-button">
+                Save and continue
+            </button>
+        </div>
+    </div>
+</form>
