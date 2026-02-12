@@ -56,7 +56,7 @@ public class ValidateAsyncTests : TestServiceBase<AddUpdateReviewBodyModelValida
         var model = new AddUpdateReviewBodyModel { EmailAddress = email };
         var result = await Sut.TestValidateAsync(model);
         result.ShouldHaveValidationErrorFor(x => x.EmailAddress)
-            .WithErrorMessage("Enter an email address in the correct format");
+            .WithErrorMessage("Enter an email address in the correct format, like example@test.com");
     }
 
     [Theory]
@@ -137,7 +137,7 @@ public class ValidateAsyncTests : TestServiceBase<AddUpdateReviewBodyModelValida
         var model = new AddUpdateReviewBodyModel { Countries = null };
         var result = await Sut.TestValidateAsync(model);
         result.ShouldHaveValidationErrorFor(x => x.Countries)
-            .WithErrorMessage("Enter a country");
+            .WithErrorMessage("Select at least one country");
     }
 
     [Fact]

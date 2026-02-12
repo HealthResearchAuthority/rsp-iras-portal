@@ -132,7 +132,7 @@ public class SponsorOrganisationsController(
             if (organisationName.Length < 3)
             {
                 ModelState.AddModelError("SponsorOrganisation",
-                    "Please provide 3 or more characters to search sponsor organisation.");
+                    "Enter at least 3 characters to search");
                 return View("SetupSponsorOrganisation", model);
             }
 
@@ -224,7 +224,7 @@ public class SponsorOrganisationsController(
             model.SponsorOrgSearch.SearchText.Length < 3)
         {
             ModelState.AddModelError("sponsor_org_search",
-                "Please provide 3 or more characters to search sponsor organisation.");
+                "Enter at least 3 characters to search");
             TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
             return Redirect(returnUrl!);
         }
