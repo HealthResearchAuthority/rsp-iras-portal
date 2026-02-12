@@ -846,7 +846,11 @@ public class MyOrganisationsController(
             IsLoggedInUserAdmin = ctx.UserIsAdmin
         };
 
-        var viewName = editMode ? "MyOrganisationEditUser" : nameof(MyOrganisationViewUser);
+        if (TempData["AuthorizerValidationError"] is string key) ModelState.AddModelError("IsAuthoriser", key);
+
+        var viewName = editMode ?
+            "MyOrganisationEditUser" :
+            nameof(MyOrganisationViewUser);
 
         return View(viewName, model);
     }
@@ -870,6 +874,16 @@ public class MyOrganisationsController(
         {
             return Forbid();
         }
+
+        //  RSP-6809 requires Error message when both are true: Role = Organisation Administrator && Authorizer = No
+        if (model.Role == Roles.OrganisationAdministrator && model.IsAuthoriser != "Yes")
+        {
+            TempData["AuthorizerValidationError"] = "Select 'Yes' for the Authoriser if the user has the Organisation Administrator role.";
+            return RedirectToAction(nameof(MyOrganisationViewUser), new { userId = model.UserId, rtsId = model.RtsId, editMode = true });
+        }
+
+        // RSP-6809 requires strict binding Authorizer = Yes if user is Organisation Administrator
+        if (model.Role == Roles.OrganisationAdministrator) model.IsAuthoriser = "Yes";
 
         var updateModel = new SponsorOrganisationUserDto
         {
