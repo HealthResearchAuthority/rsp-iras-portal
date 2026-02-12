@@ -864,7 +864,7 @@ public class DocumentsController
         if (response.Content?.Any() == true)
             return RedirectToAction(nameof(ModificationDocumentsAdded));
 
-        ModelState.AddModelError("Files", "Please upload at least one document");
+        ModelState.AddModelError("Files", "Upload at least one document");
         return View(model);
     }
 

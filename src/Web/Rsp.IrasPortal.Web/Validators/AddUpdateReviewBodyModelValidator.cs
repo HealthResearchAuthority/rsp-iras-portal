@@ -6,7 +6,7 @@ namespace Rsp.Portal.Web.Validators;
 public class AddUpdateReviewBodyModelValidator : AbstractValidator<AddUpdateReviewBodyModel>
 {
     private const int MaxWordCount = 250;
-    private const string EmailFormatErrorMessage = "Enter an email address in the correct format";
+    private const string EmailFormatErrorMessage = "Enter an email address in the correct format, like example@test.com";
     private const string EmailMaxCharactersErrorMessage = "Email address must be 254 characters or less";
     private const string EmailMandatoryErrorMessage = "Enter an email address";
 
@@ -23,7 +23,7 @@ public class AddUpdateReviewBodyModelValidator : AbstractValidator<AddUpdateRevi
             // This error message is matching the businesss requirements but is not correct as per
             // the GDS style guide. The correct error messages are shown under the 'Error messages'
             // section on this page: https://design-system.service.gov.uk/components/checkboxes/
-            .WithMessage("Enter a country");
+            .WithMessage("Select at least one country");
 
         RuleFor(x => x.EmailAddress)
             .NotEmpty()
