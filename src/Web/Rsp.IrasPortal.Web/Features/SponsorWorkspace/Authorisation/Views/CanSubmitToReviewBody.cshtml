@@ -32,7 +32,7 @@
         </p>
 
         <form asp-route="sws:modifications" method="get">
-            <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
+            <input type="hidden" name="SponsorOrganisationUserId" value="@Model.ShortTitle" />
 
             <partial name="_SubmitButton"
                      model="@("sws:modifications", "Return to authorisations", new Dictionary<string, string>
