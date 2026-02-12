@@ -39,6 +39,7 @@
 	var tableId = "myOrganisationUsersTable";
 
 	var isAdmin = Model.IsCurrentUserAdmin;
+    var isSponsorEnabled = Model.SponsorOrganisation.IsActive;
 }
 
 @functions {
@@ -87,7 +88,7 @@
 
 <br />
 
-@if (isAdmin)
+@if (isAdmin && isSponsorEnabled)
 {
 	<div class="govuk-grid-row">
 		<div class="govuk-grid-column-two-thirds">
