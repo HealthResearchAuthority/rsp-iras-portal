@@ -130,7 +130,8 @@ public class MyOrganisationsController(
             Name = ctx.RtsOrganisation.Name,
             Country = ctx.RtsOrganisation.CountryName,
             Address = ctx.RtsOrganisation.Address,
-            LastUpdated = ctx.SponsorOrganisation.UpdatedDate ?? ctx.SponsorOrganisation.CreatedDate ?? DateTime.MinValue
+            LastUpdated = ctx.SponsorOrganisation.UpdatedDate ??
+                          ctx.SponsorOrganisation.CreatedDate ?? DateTime.MinValue
         };
 
         return View(model);
@@ -201,7 +202,7 @@ public class MyOrganisationsController(
             pageSize,
             sortField,
             sortDirection
-            );
+        );
 
         model.ProjectRecords = projects?.Content?.Items ?? [];
 
@@ -234,7 +235,8 @@ public class MyOrganisationsController(
             return View(nameof(MyOrganisationProjects), model);
         }
 
-        HttpContext.Session.SetString(SessionKeys.SponsorMyOrganisationsProjectsSearch, JsonSerializer.Serialize(model.Search));
+        HttpContext.Session.SetString(SessionKeys.SponsorMyOrganisationsProjectsSearch,
+            JsonSerializer.Serialize(model.Search));
 
         return RedirectToAction(nameof(MyOrganisationProjects), new { rtsId = model.RtsId });
     }
@@ -262,7 +264,8 @@ public class MyOrganisationsController(
             IrasId = search.IrasId
         };
 
-        HttpContext.Session.SetString(SessionKeys.SponsorMyOrganisationsProjectsSearch, JsonSerializer.Serialize(cleanedSearch));
+        HttpContext.Session.SetString(SessionKeys.SponsorMyOrganisationsProjectsSearch,
+            JsonSerializer.Serialize(cleanedSearch));
 
         return RedirectToAction(nameof(MyOrganisationProjects), new { rtsId });
     }
@@ -315,9 +318,11 @@ public class MyOrganisationsController(
                 break;
         }
 
-        HttpContext.Session.SetString(SessionKeys.SponsorMyOrganisationsProjectsSearch, JsonSerializer.Serialize(search));
+        HttpContext.Session.SetString(SessionKeys.SponsorMyOrganisationsProjectsSearch,
+            JsonSerializer.Serialize(search));
 
-        return await ApplyProjectRecordsFilters(new SponsorMyOrganisationProjectsViewModel { RtsId = rtsId, Search = search });
+        return await ApplyProjectRecordsFilters(new SponsorMyOrganisationProjectsViewModel
+            { RtsId = rtsId, Search = search });
     }
 
     [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Users)]
@@ -484,6 +489,7 @@ public class MyOrganisationsController(
         {
             return ctxResult.Result!;
         }
+
         var ctx = ctxResult.Context!;
 
         var auditResponse = await sponsorOrganisationService.SponsorOrganisationAuditTrail(
@@ -494,7 +500,9 @@ public class MyOrganisationsController(
             return this.ServiceError(auditResponse);
         }
 
-        var auditTrails = SponsorOrganisationSortingExtensions.SortSponsorOrganisationAuditTrails(auditResponse.Content.Items, "DateTimeStamp", SortDirections.Descending, ctx.RtsOrganisation.Name, 1, int.MaxValue);
+        var auditTrails = SponsorOrganisationSortingExtensions.SortSponsorOrganisationAuditTrails(
+            auditResponse.Content.Items, "DateTimeStamp", SortDirections.Descending, ctx.RtsOrganisation.Name, 1,
+            int.MaxValue);
 
         var model = new SponsorMyOrganisationAuditViewModel
         {
@@ -514,65 +522,72 @@ public class MyOrganisationsController(
         {
             return ctxResult.Result!;
         }
+
         var ctx = ctxResult.Context!;
 
-        var model = new SponsorMyOrganisationUsersViewModel
+        if (ctx.SponsorOrganisation.IsActive)
         {
-            Name = ctx.RtsOrganisation.Name,
-            RtsId = rtsId
-        };
-
-        if (!Request.Query.ContainsKey(nameof(model.Email)))
-        {
-            return View(model);
-        }
-
-        if (string.IsNullOrWhiteSpace(email))
-        {
-            ModelState.AddModelError(nameof(model.Email), "Enter a user email");
-            return View(model);
-        }
-
-        var validationResult = await emailValidator.ValidateAsync(new EmailModel()
-        {
-            EmailAddress = email
-        });
-
-        if (!validationResult.IsValid)
-        {
-            foreach (var error in validationResult.Errors)
+            var model = new SponsorMyOrganisationUsersViewModel
             {
-                ModelState.AddModelError(nameof(model.Email), error.ErrorMessage);
+                Name = ctx.RtsOrganisation.Name,
+                RtsId = rtsId
+            };
+
+            if (!Request.Query.ContainsKey(nameof(model.Email)))
+            {
+                return View(model);
             }
 
-            model.Email = email;
-            return View(model);
-        }
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                ModelState.AddModelError(nameof(model.Email), "Enter a user email");
+                return View(model);
+            }
 
-        var usersResponse = await userService.SearchUsers(email);
+            var validationResult = await emailValidator.ValidateAsync(new EmailModel()
+            {
+                EmailAddress = email
+            });
 
-        if (usersResponse is { IsSuccessStatusCode: true, Content.TotalCount: 1 })
-        {
-            // CHECK IF USER ALREADY IN SPONSOR ORG
-
-            var user = usersResponse.Content.Users.First();
-
-            var sponsorOrganisations = await sponsorOrganisationService.GetAllSponsorOrganisations(
-                new SponsorOrganisationSearchRequest()
+            if (!validationResult.IsValid)
+            {
+                foreach (var error in validationResult.Errors)
                 {
-                    UserId = Guid.Parse(user.Id)
-                });
+                    ModelState.AddModelError(nameof(model.Email), error.ErrorMessage);
+                }
 
-            if (!sponsorOrganisations.Content.SponsorOrganisations.Any(x => x.Id == ctx.SponsorOrganisation.Id))
-            {
-                return RedirectToAction(nameof(MyOrganisationUsersAddUserRole), new { rtsId, userId = user.Id });
+                model.Email = email;
+                return View(model);
             }
 
-            TempData[TempDataKeys.ShowNotificationBanner] = true;
-            return View(model);
+            var usersResponse = await userService.SearchUsers(email);
+
+            if (usersResponse is { IsSuccessStatusCode: true, Content.TotalCount: 1 })
+            {
+                // CHECK IF USER ALREADY IN SPONSOR ORG
+
+                var user = usersResponse.Content.Users.First();
+
+                var sponsorOrganisations = await sponsorOrganisationService.GetAllSponsorOrganisations(
+                    new SponsorOrganisationSearchRequest()
+                    {
+                        UserId = Guid.Parse(user.Id)
+                    });
+
+                if (!sponsorOrganisations.Content.SponsorOrganisations.Any(x => x.Id == ctx.SponsorOrganisation.Id))
+                {
+                    return RedirectToAction(nameof(MyOrganisationUsersAddUserRole), new { rtsId, userId = user.Id });
+                }
+
+                TempData[TempDataKeys.ShowNotificationBanner] = true;
+                return View(model);
+            }
+
+            return RedirectToAction(nameof(MyOrganisationUsersInvalidUser), new { rtsId });
         }
 
-        return RedirectToAction(nameof(MyOrganisationUsersInvalidUser), new { rtsId });
+        return RedirectToAction(nameof(MyOrganisationInvalidSponsorOrganisation),
+            new { rtsId });
     }
 
     [HttpGet]
@@ -587,54 +602,101 @@ public class MyOrganisationsController(
     }
 
     [HttpGet]
-    public async Task<IActionResult> MyOrganisationUsersAddUserRole(string rtsId, string userId, string? role, bool nextPage = false)
+    public async Task<IActionResult> MyOrganisationUsersAddUserRole(string rtsId, string userId, string? role,
+        bool nextPage = false)
     {
         var ctxResult = await TryGetSponsorOrgContext(rtsId);
         if (ctxResult.HasResult)
         {
             return ctxResult.Result!;
         }
+
         var ctx = ctxResult.Context!;
 
-        var model = new SponsorMyOrganisationUsersViewModel
+        if (ctx.SponsorOrganisation.IsActive)
         {
-            Name = ctx.RtsOrganisation.Name,
-            RtsId = rtsId,
-            UserId = userId,
-            Role = role
-        };
+            var model = new SponsorMyOrganisationUsersViewModel
+            {
+                Name = ctx.RtsOrganisation.Name,
+                RtsId = rtsId,
+                UserId = userId,
+                Role = role
+            };
 
-        // If the form has been submitted (Role exists) but nothing selected
-        if (Request.Query.ContainsKey("Role") && string.IsNullOrWhiteSpace(role))
-        {
-            ModelState.AddModelError("Role", "Select a user role");
+            // If the form has been submitted (Role exists) but nothing selected
+            if (Request.Query.ContainsKey("Role") && string.IsNullOrWhiteSpace(role))
+            {
+                ModelState.AddModelError("Role", "Select a user role");
+                return View(model);
+            }
+
+            // First visit to the page (no Role in querystring)
+            if (!Request.Query.ContainsKey("Role"))
+            {
+                TempData[TempDataKeys.ShowNotificationBanner] = true;
+            }
+
+            if (nextPage)
+            {
+                // Role selected - continue (redirect to next step or whatever your flow is)
+                if (string.Equals(role, Roles.Sponsor, StringComparison.CurrentCultureIgnoreCase))
+                {
+                    return RedirectToAction(nameof(MyOrganisationUsersAddUserPermission), new { rtsId, userId, role });
+                }
+
+                bool canAuthorise = true;
+
+                return RedirectToAction(nameof(MyOrganisationUsersCheckAndConfirm),
+                    new { rtsId, userId, role, canAuthorise });
+            }
+
             return View(model);
         }
 
-        // First visit to the page (no Role in querystring)
-        if (!Request.Query.ContainsKey("Role"))
+        return RedirectToAction(nameof(MyOrganisationInvalidSponsorOrganisation),
+            new { rtsId });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> MyOrganisationUsersAddUserPermission(string rtsId, string userId, string? role,
+        bool canAuthorise, bool nextPage = false)
+    {
+        var ctxResult = await TryGetSponsorOrgContext(rtsId);
+        if (ctxResult.HasResult)
         {
-            TempData[TempDataKeys.ShowNotificationBanner] = true;
+            return ctxResult.Result!;
         }
 
-        if (nextPage)
+        var ctx = ctxResult.Context!;
+
+        if (ctx.SponsorOrganisation.IsActive)
         {
-            // Role selected - continue (redirect to next step or whatever your flow is)
-            if (string.Equals(role, Roles.Sponsor, StringComparison.CurrentCultureIgnoreCase))
+            var model = new SponsorMyOrganisationUsersViewModel
             {
-                return RedirectToAction(nameof(MyOrganisationUsersAddUserPermission), new { rtsId, userId, role });
+                Name = ctx.RtsOrganisation.Name,
+                RtsId = rtsId,
+                UserId = userId,
+                Role = role,
+                CanAuthorise = canAuthorise
+            };
+
+            if (nextPage)
+            {
+                // Role selected - continue (redirect to next step or whatever your flow is)
+                return RedirectToAction(nameof(MyOrganisationUsersCheckAndConfirm),
+                    new { rtsId, userId, role, canAuthorise });
             }
 
-            bool canAuthorise = true;
-
-            return RedirectToAction(nameof(MyOrganisationUsersCheckAndConfirm), new { rtsId, userId, role, canAuthorise });
+            return View(model);
         }
 
-        return View(model);
+        return RedirectToAction(nameof(MyOrganisationInvalidSponsorOrganisation),
+            new { rtsId });
     }
 
     [HttpGet]
-    public async Task<IActionResult> MyOrganisationUsersAddUserPermission(string rtsId, string userId, string? role, bool canAuthorise, bool nextPage = false)
+    public async Task<IActionResult> MyOrganisationUsersCheckAndConfirm(string rtsId, string userId, string? role,
+        bool canAuthorise)
     {
         var ctxResult = await TryGetSponsorOrgContext(rtsId);
         if (ctxResult.HasResult)
@@ -644,26 +706,30 @@ public class MyOrganisationsController(
 
         var ctx = ctxResult.Context!;
 
-        var model = new SponsorMyOrganisationUsersViewModel
+        if (ctx.SponsorOrganisation.IsActive)
         {
-            Name = ctx.RtsOrganisation.Name,
-            RtsId = rtsId,
-            UserId = userId,
-            Role = role,
-            CanAuthorise = canAuthorise
-        };
+            var user = await userService.GetUser(userId, null);
 
-        if (nextPage)
-        {
-            // Role selected - continue (redirect to next step or whatever your flow is)
-            return RedirectToAction(nameof(MyOrganisationUsersCheckAndConfirm), new { rtsId, userId, role, canAuthorise });
+            var model = new SponsorMyOrganisationUsersViewModel
+            {
+                Name = ctx.RtsOrganisation.Name,
+                RtsId = rtsId,
+                UserId = userId,
+                Role = role,
+                CanAuthorise = canAuthorise,
+                Email = user?.Content?.User.Email ?? string.Empty
+            };
+
+            return View(model);
         }
 
-        return View(model);
+        return RedirectToAction(nameof(MyOrganisationInvalidSponsorOrganisation),
+            new { rtsId });
     }
 
     [HttpGet]
-    public async Task<IActionResult> MyOrganisationUsersCheckAndConfirm(string rtsId, string userId, string? role, bool canAuthorise)
+    public async Task<IActionResult> MyOrganisationUsersConfirmAddUser(string rtsId, string userId, string? role,
+        bool canAuthorise)
     {
         var ctxResult = await TryGetSponsorOrgContext(rtsId);
         if (ctxResult.HasResult)
@@ -673,71 +739,52 @@ public class MyOrganisationsController(
 
         var ctx = ctxResult.Context!;
 
-        var user = await userService.GetUser(userId, null);
-
-        var model = new SponsorMyOrganisationUsersViewModel
+        if (ctx.SponsorOrganisation.IsActive)
         {
-            Name = ctx.RtsOrganisation.Name,
-            RtsId = rtsId,
-            UserId = userId,
-            Role = role,
-            CanAuthorise = canAuthorise,
-            Email = user?.Content?.User.Email ?? string.Empty
-        };
+            var userResponse = await userService.GetUser(userId, null);
+            var user = userResponse.Content.User;
 
-        return View(model);
-    }
+            var dto = new SponsorOrganisationUserDto
+            {
+                Id = ctx.SponsorOrganisation.Id,
+                RtsId = rtsId,
+                UserId = Guid.Parse(user.Id),
+                Email = user.Email,
+                DateAdded = DateTime.UtcNow,
+                SponsorRole = role,
+                IsAuthoriser = canAuthorise
+            };
 
-    [HttpGet]
-    public async Task<IActionResult> MyOrganisationUsersConfirmAddUser(string rtsId, string userId, string? role, bool canAuthorise)
-    {
-        var ctxResult = await TryGetSponsorOrgContext(rtsId);
-        if (ctxResult.HasResult)
-        {
-            return ctxResult.Result!;
+            var response = await sponsorOrganisationService.AddUserToSponsorOrganisation(dto);
+            if (!response.IsSuccessStatusCode)
+            {
+                return this.ServiceError(response);
+            }
+
+            // Update roles
+            var roleToAdd = role.Equals(
+                Roles.OrganisationAdministrator,
+                StringComparison.OrdinalIgnoreCase)
+                ? Roles.OrganisationAdministrator
+                : Roles.Sponsor;
+
+            var roleToRemove = roleToAdd == Roles.OrganisationAdministrator
+                ? Roles.Sponsor
+                : Roles.OrganisationAdministrator;
+
+            var userRolesUpdateResponse = await userService.UpdateRoles(user.Email, roleToRemove, roleToAdd);
+            if (!userRolesUpdateResponse.IsSuccessStatusCode)
+            {
+                return this.ServiceError(userRolesUpdateResponse);
+            }
+
+            TempData[TempDataKeys.ShowNotificationBanner] = true;
+            TempData[TempDataKeys.SponsorOrganisationUserType] = "add";
+            return RedirectToAction(nameof(MyOrganisationUsers), new { rtsId });
         }
 
-        var ctx = ctxResult.Context!;
-        var userResponse = await userService.GetUser(userId, null);
-        var user = userResponse.Content.User;
-
-        var dto = new SponsorOrganisationUserDto
-        {
-            Id = ctx.SponsorOrganisation.Id,
-            RtsId = rtsId,
-            UserId = Guid.Parse(user.Id),
-            Email = user.Email,
-            DateAdded = DateTime.UtcNow,
-            SponsorRole = role,
-            IsAuthoriser = canAuthorise
-        };
-
-        var response = await sponsorOrganisationService.AddUserToSponsorOrganisation(dto);
-        if (!response.IsSuccessStatusCode)
-        {
-            return this.ServiceError(response);
-        }
-
-        // Update roles
-        var roleToAdd = role.Equals(
-            Roles.OrganisationAdministrator,
-            StringComparison.OrdinalIgnoreCase)
-            ? Roles.OrganisationAdministrator
-            : Roles.Sponsor;
-
-        var roleToRemove = roleToAdd == Roles.OrganisationAdministrator
-            ? Roles.Sponsor
-            : Roles.OrganisationAdministrator;
-
-        var userRolesUpdateResponse = await userService.UpdateRoles(user.Email, roleToRemove, roleToAdd);
-        if (!userRolesUpdateResponse.IsSuccessStatusCode)
-        {
-            return this.ServiceError(userRolesUpdateResponse);
-        }
-
-        TempData[TempDataKeys.ShowNotificationBanner] = true;
-        TempData[TempDataKeys.SponsorOrganisationUserType] = "add";
-        return RedirectToAction(nameof(MyOrganisationUsers), new { rtsId });
+        return RedirectToAction(nameof(MyOrganisationInvalidSponsorOrganisation),
+            new { rtsId });
     }
 
     [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Users)]
@@ -762,7 +809,8 @@ public class MyOrganisationsController(
         }
 
         // find user in sponsor organisation
-        var organisationUserResponse = await sponsorOrganisationService.GetUserInSponsorOrganisation(rtsId, Guid.Parse(userId));
+        var organisationUserResponse =
+            await sponsorOrganisationService.GetUserInSponsorOrganisation(rtsId, Guid.Parse(userId));
 
         if (!organisationUserResponse.IsSuccessStatusCode || organisationUserResponse.Content == null)
         {
@@ -904,7 +952,8 @@ public class MyOrganisationsController(
         await sponsorOrganisationService.DisableUserInSponsorOrganisation(RtsId, Id);
 
         // Check if user is in any other active sponsor organisations
-        await SponsorOrganisationUsersHelper.HandleDisableOrganisationUserRole(sponsorOrganisationService, Id, userService);
+        await SponsorOrganisationUsersHelper.HandleDisableOrganisationUserRole(sponsorOrganisationService, Id,
+            userService);
 
         TempData[TempDataKeys.ShowNotificationBanner] = true;
         TempData[TempDataKeys.SponsorOrganisationUserType] = "disable";
@@ -946,6 +995,30 @@ public class MyOrganisationsController(
         TempData[TempDataKeys.ShowNotificationBanner] = true;
         TempData[TempDataKeys.SponsorOrganisationUserType] = "enable";
         return RedirectToAction("MyOrganisationViewUser", new { userId = Id, rtsId = RtsId });
+    }
+
+    /// <summary>
+    /// Displays a single sponsor organisation
+    /// </summary>
+    [HttpGet]
+    [Route("/sponsorworkspace/myorganisationinvalidsponsororganisation",
+        Name = "sws:myorganisationinvalidsponsororganisation")]
+    public async Task<IActionResult> MyOrganisationInvalidSponsorOrganisation(string rtsId)
+    {
+        var ctxResult = await TryGetSponsorOrgContext(rtsId);
+        if (ctxResult.HasResult)
+        {
+            return ctxResult.Result!;
+        }
+
+        var ctx = ctxResult.Context!;
+
+        var sponsorMyOrganisationUsersViewModel = new SponsorMyOrganisationUsersViewModel()
+        {
+            RtsId = ctx.RtsId
+        };
+
+        return View(sponsorMyOrganisationUsersViewModel);
     }
 
     [NonAction]
