@@ -24,7 +24,7 @@
             </div>
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key">Short project title</dt>
-                <dd class="govuk-summary-list__value">@Model.SponsorOrganisationUserId</dd>
+                <dd class="govuk-summary-list__value">@Model.ShortTitle</dd>
             </div>
         </dl>
         <p class="govuk-body">
@@ -32,7 +32,7 @@
         </p>
 
         <form asp-route="sws:modifications" method="get">
-            <input type="hidden" name="SponsorOrganisationUserId" value="@Model.ShortTitle" />
+            <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
 
             <partial name="_SubmitButton"
                      model="@("sws:modifications", "Return to authorisations", new Dictionary<string, string>
