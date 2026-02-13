@@ -91,6 +91,11 @@ public record ProjectModificationRequest
     public DateTime? SentToRegulatorDate { get; set; }
 
     /// <summary>
+    /// Gets or sets the name of the reviewer assigned to this modification, if any.
+    /// </summary>
+    public string? ReasonNotApproved { get; set; }
+
+    /// <summary>
     /// Gets or sets the list of changes associated with this project modification.
     /// </summary>
     public List<ProjectModificationChangeRequest> ProjectModificationChanges { get; set; } = [];
