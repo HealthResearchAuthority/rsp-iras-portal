@@ -484,25 +484,74 @@ public class AuthorisationsModificationsController
     }
 
     [Authorize(Policy = Permissions.Sponsor.Modifications_Authorise)]
-    //[FeatureGate(FeatureFlags.NotAuthorisedReason)]
+    [FeatureGate(FeatureFlags.NotAuthorisedReason)]
     [HttpGet]
-    public IActionResult ModificationNotAuthorised(AuthoriseModificationsOutcomeViewModel model)
+    public async Task<IActionResult> ModificationNotAuthorised(AuthoriseModificationsOutcomeViewModel model)
     {
-        return View("ModificationNotAuthorised", model);
+        var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId);
+
+        if (!sponsorOrganisationUser.IsSuccessStatusCode)
+        {
+            return this.ServiceError(sponsorOrganisationUser);
+        }
+        if (sponsorOrganisationUser.Content!.IsAuthoriser)
+        {
+            return View("ModificationNotAuthorised", model);
+        }
+        return View("CheckAndAuthorise");
     }
 
     [Authorize(Policy = Permissions.Sponsor.Modifications_Authorise)]
+    [FeatureGate(FeatureFlags.NotAuthorisedReason)]
     [HttpPost]
     public async Task<IActionResult> SaveModificationNotAuthorisedReason(AuthoriseModificationsOutcomeViewModel model)
     {
         var context = new ValidationContext<AuthoriseModificationsOutcomeViewModel>(model);
         var validationResult = await outcomeValidator.ValidateAsync(context);
 
-        foreach (var error in validationResult.Errors)
+        if (!validationResult.IsValid)
         {
-            ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
+            return RedirectToAction(nameof(ModificationNotAuthorised), model);
         }
 
-        return View("ModificationNotAuthorised", model);
+        var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId);
+
+        if (!sponsorOrganisationUser.IsSuccessStatusCode)
+        {
+            return this.ServiceError(sponsorOrganisationUser);
+        }
+        if (sponsorOrganisationUser.Content!.IsAuthoriser)
+        {
+            var modification = await projectModificationsService.GetModification(model.ProjectRecordId, model.ProjectModificationId);
+            if (!modification.IsSuccessStatusCode)
+            {
+                return this.ServiceError(modification);
+            }
+            // update the project record status in project record table
+            await projectModificationsService.UpdateModificationStatus
+               (
+                   model.ProjectRecordId,
+                   Guid.Parse(model.ModificationId),
+                   ModificationStatus.NotAuthorised,
+                   model.ReasonNotApproved
+               );
+
+            //if (!updateApplicationResponse.IsSuccessStatusCode)
+            //{
+            //    return this.ServiceError(updateApplicationResponse);
+            //}
+            //return RedirectToRoute("pmc:modificationdetails", new { model.ProjectRecordId, model.IrasId, model.ShortTitle, model.ProjectModificationId });
+            //var response =
+            // await BuildCheckAndAuthorisePageAsync(model.ProjectModificationId, model.IrasId, model.ShortTitle, model.ProjectRecordId,
+            //     model.SponsorOrganisationUserId);
+
+            //return View(response);
+        }
+
+        return RedirectToAction(nameof(CheckAndAuthorise), model);
     }
 }

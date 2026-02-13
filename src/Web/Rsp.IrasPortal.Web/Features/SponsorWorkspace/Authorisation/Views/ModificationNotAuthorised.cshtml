@@ -57,6 +57,13 @@
             <input type="hidden" name="ModificationIdentifier" value="@Model.ModificationIdentifier" />
             <input type="hidden" name="Outcome" value="@Model.Outcome" />
 
+            @*<partial name="_SubmitButton"
+                model="@("pmc:modificationdetails", "Save and continue", new Dictionary<string, string>
+                                       {{ "projectRecordId", Model.ProjectRecordId.ToString() },
+                                       { "irasId", Model.IrasId.ToString() },
+                                       { "shortTitle", Model.ShortTitle.ToString() },
+                                       { "projectModificationId", Model.ProjectModificationId.ToString() },
+                                       })" />*@
             <button type="submit" class="govuk-button" data-module="govuk-button">
                 Save and continue
             </button>
