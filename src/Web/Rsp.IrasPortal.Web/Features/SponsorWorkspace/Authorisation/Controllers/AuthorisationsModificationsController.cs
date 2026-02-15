@@ -347,16 +347,6 @@ public class AuthorisationsModificationsController
 
             case "NotAuthorised":
                 return RedirectToAction(nameof(ModificationNotAuthorised), model);
-
-            default:
-                await projectModificationsService.UpdateModificationStatus
-                (
-                    model.ProjectRecordId,
-                    Guid.Parse(model.ModificationId),
-                    ModificationStatus.NotAuthorised
-                );
-
-                break;
         }
 
         return RedirectToAction(nameof(Confirmation), model);
@@ -488,70 +478,82 @@ public class AuthorisationsModificationsController
     [HttpGet]
     public async Task<IActionResult> ModificationNotAuthorised(AuthoriseModificationsOutcomeViewModel model)
     {
-        var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId);
-
-        if (!sponsorOrganisationUser.IsSuccessStatusCode)
-        {
-            return this.ServiceError(sponsorOrganisationUser);
-        }
-        if (sponsorOrganisationUser.Content!.IsAuthoriser)
-        {
-            return View("ModificationNotAuthorised", model);
-        }
-        return View("CheckAndAuthorise");
+        return await ValidateRequest(model);
     }
 
     [Authorize(Policy = Permissions.Sponsor.Modifications_Authorise)]
     [FeatureGate(FeatureFlags.NotAuthorisedReason)]
+    [CmsContentAction(nameof(ModificationNotAuthorised))]
     [HttpPost]
-    public async Task<IActionResult> SaveModificationNotAuthorisedReason(AuthoriseModificationsOutcomeViewModel model)
+    public async Task<IActionResult> SaveModificationReasonNotApproved(AuthoriseModificationsOutcomeViewModel model)
     {
         var context = new ValidationContext<AuthoriseModificationsOutcomeViewModel>(model);
         var validationResult = await outcomeValidator.ValidateAsync(context);
 
-        if (!validationResult.IsValid)
+        foreach (var error in validationResult.Errors)
         {
-            foreach (var error in validationResult.Errors)
-            {
-                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
-            }
-            return RedirectToAction(nameof(ModificationNotAuthorised), model);
+            ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
         }
 
+        if (!ModelState.IsValid)
+        {
+            return await ValidateRequest(model);
+        }
+
+        await projectModificationsService.UpdateModificationStatus
+               (
+                   model.ProjectRecordId,
+                   Guid.Parse(model.ModificationId),
+                   ModificationStatus.NotAuthorised,
+                   model.RevisionDescription,
+                   model.ReasonNotApproved
+               );
+        return RedirectToAction(nameof(ConfirmationModificationNotAuthorised), model);
+    }
+
+    /// <summary>
+    /// Confirmation view for modification not authorised
+    /// </summary>
+    /// <returns></returns>
+    [Authorize(Policy = Permissions.Sponsor.Modifications_Authorise)]
+    [FeatureGate(FeatureFlags.NotAuthorisedReason)]
+    [CmsContentAction(nameof(ConfirmationModificationNotAuthorised))]
+    [HttpGet]
+    public IActionResult ConfirmationModificationNotAuthorised(AuthoriseModificationsOutcomeViewModel model)
+    {
+        return View("ConfirmModificationNotAuthorised", model);
+    }
+
+    /// <summary>
+    /// Validate browser back request
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    private async Task<IActionResult> ValidateRequest(AuthoriseModificationsOutcomeViewModel model)
+    {
         var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId);
 
         if (!sponsorOrganisationUser.IsSuccessStatusCode)
         {
             return this.ServiceError(sponsorOrganisationUser);
         }
-        if (sponsorOrganisationUser.Content!.IsAuthoriser)
+
+        var response = await projectModificationsService.GetModificationReviewResponses(model.ProjectRecordId, model.ProjectModificationId);
+
+        if (!response.IsSuccessStatusCode)
         {
-            var modification = await projectModificationsService.GetModification(model.ProjectRecordId, model.ProjectModificationId);
-            if (!modification.IsSuccessStatusCode)
-            {
-                return this.ServiceError(modification);
-            }
-            // update the project record status in project record table
-            await projectModificationsService.UpdateModificationStatus
-               (
-                   model.ProjectRecordId,
-                   Guid.Parse(model.ModificationId),
-                   ModificationStatus.NotAuthorised,
-                   model.ReasonNotApproved
-               );
-
-            //if (!updateApplicationResponse.IsSuccessStatusCode)
-            //{
-            //    return this.ServiceError(updateApplicationResponse);
-            //}
-            //return RedirectToRoute("pmc:modificationdetails", new { model.ProjectRecordId, model.IrasId, model.ShortTitle, model.ProjectModificationId });
-            //var response =
-            // await BuildCheckAndAuthorisePageAsync(model.ProjectModificationId, model.IrasId, model.ShortTitle, model.ProjectRecordId,
-            //     model.SponsorOrganisationUserId);
-
-            //return View(response);
+            return this.ServiceError(response);
         }
 
-        return RedirectToAction(nameof(CheckAndAuthorise), model);
+        var reasonNotApproved = response.Content!.ReasonNotApproved;
+
+        if (sponsorOrganisationUser.Content!.IsAuthoriser && string.IsNullOrWhiteSpace(reasonNotApproved))
+        {
+            return View("ModificationNotAuthorised", model);
+        }
+        else
+        {
+            return Forbid();
+        }
     }
 }

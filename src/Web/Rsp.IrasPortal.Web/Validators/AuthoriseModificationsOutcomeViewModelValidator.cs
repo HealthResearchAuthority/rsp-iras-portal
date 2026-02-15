@@ -58,7 +58,7 @@ public class AuthoriseModificationsOutcomeViewModelValidator : AbstractValidator
                 if (characterCount > ReasonMaxCharactersCount)
                 {
                     var excessChars = characterCount - ReasonMaxCharactersCount;
-                    context.AddFailure("ExcessCharacterCount", $"You have exceeded the characters limits by {excessChars}");
+                    context.AddFailure("_DescriptionExcessCharacterCount", $"You have exceeded the characters limits by {excessChars}");
                 }
             });
     }
