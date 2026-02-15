@@ -424,7 +424,7 @@ public class ReviewOutcome_Journey : TestServiceBase<ReviewAllChangesController>
             .ReturnsAsync(new ServiceResponse<object> { StatusCode = HttpStatusCode.OK });
 
         _modificationService
-            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string?>()))
+            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>()))
             .ReturnsAsync(new ServiceResponse<object> { StatusCode = HttpStatusCode.BadRequest });
 
         // Act
@@ -452,7 +452,7 @@ public class ReviewOutcome_Journey : TestServiceBase<ReviewAllChangesController>
             .ReturnsAsync(new ServiceResponse<object> { StatusCode = HttpStatusCode.OK });
 
         _modificationService
-            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string?>()))
+            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>()))
             .ReturnsAsync(new ServiceResponse<object> { StatusCode = HttpStatusCode.OK });
 
         // Act
