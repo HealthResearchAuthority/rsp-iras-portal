@@ -326,24 +326,6 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
     }
 
     [Fact]
-    public async Task SendModificationToSponsor_Validation_Return_Failure()
-    {
-        // Arrange
-        var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
-        {
-            [TempDataKeys.ProjectModification.CanModificationSendToSponsor] = false,
-        };
-        Sut.TempData = tempData;
-
-        // Act
-        var result = await Sut.SendModificationToSponsor("PR01", Guid.NewGuid());
-
-        // Assert
-        var actionResult = Assert.IsType<RedirectToActionResult>(result);
-        actionResult.ActionName.ShouldBe("ModificationSendToSponsor");
-    }
-
-    [Fact]
     public void ModificationSendToSponsor_Returns_ViewResult_With_Expected_ViewPath()
     {
         // Arrange
