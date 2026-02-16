@@ -19,7 +19,6 @@
     {
         modificationBaseModel = TempData.PopulateBaseProjectModificationProperties(modificationBaseModel);
     }
-    var showReasonFlagEnabled = await FeatureManager.IsEnabledAsync(FeatureFlags.NotAuthorisedReason);
 }
 
 <dl class="govuk-summary-list">
@@ -117,10 +116,11 @@
                 </div>
             </authorized>
         }
-        @if (@modificationBaseModel?.Status == ModificationStatus.NotAuthorised && showReasonFlagEnabled)
-        {
 
-            <authorized permission="@Permissions.Sponsor.Modifications_Review">
+        <feature name="@FeatureFlags.NotAuthorisedReason">
+            <authorized role-in="[Roles.Applicant, Roles.Sponsor]"
+                        status-for="@modificationBaseModel.Status"
+                        status-is="@ModificationStatus.NotAuthorised">
                 <div class="govuk-summary-list__row">
                     <dt class="govuk-summary-list__key">Reason for not authorised</dt>
                     <dd class="govuk-summary-list__value">
@@ -128,6 +128,6 @@
                     </dd>
                 </div>
             </authorized>
-        }
+        </feature>
     }
 </dl>
