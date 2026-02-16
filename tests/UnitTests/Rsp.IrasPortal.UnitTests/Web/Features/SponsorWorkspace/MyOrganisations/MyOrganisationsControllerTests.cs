@@ -1965,6 +1965,23 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
     }
 
     [Fact]
+    public async Task MyOrganisationUsersAddUserRole_redirects_to_systemdisableduser()
+    {
+        // Arrange
+        var rtsId = "87765";
+        var userId = SetUser(Guid.NewGuid(), DefaultEmail);
+
+        SetupSponsorOrgContextSuccess(rtsId, DefaultEmail, null,
+            rtsOrganisation: new OrganisationDto { Name = "Acme Sponsor Org", CountryName = "UK" }, false, false);
+
+        // Act
+        var result = await Sut.MyOrganisationUsersAddUserRole(rtsId, userId.ToString(), "Organisation administrator");
+
+        // Assert
+        result.ShouldBeOfType<RedirectToActionResult>();
+    }
+
+    [Fact]
     public async Task SponsorOrganisationProjectSearchModelBuildsDateFilters()
     {
         // Arrange
@@ -2199,6 +2216,7 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         model.CanAuthorise.ShouldBeTrue();
     }
 
+    [Fact]
     public async Task MyOrganisationUsersAddUserPermission_when_nextPage_true_redirects_to_check_and_confirm()
     {
         // Arrange
@@ -2233,6 +2251,38 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         redirect.RouteValues!["userId"].ShouldBe(userId.ToString());
         redirect.RouteValues!["role"].ShouldBe(role);
         redirect.RouteValues!["canAuthorise"].ShouldBe(canAuthorise);
+    }
+
+    [Fact]
+    public async Task MyOrganisationUsersAddUserPermission_when_nextPage_true_redirects_systemdisableduser()
+    {
+        // Arrange
+        var rtsId = "87765";
+        var userId = SetUser(Guid.NewGuid(), DefaultEmail);
+
+        SetupSponsorOrgContextSuccess(
+            rtsId,
+            DefaultEmail, null,
+            rtsOrganisation: new OrganisationDto
+            {
+                Name = "Acme Sponsor Org",
+                CountryName = "UK"
+            }, false, false);
+
+        var role = "Sponsor";
+        var canAuthorise = false;
+
+        // Act
+        var result = await Sut.MyOrganisationUsersAddUserPermission(
+            rtsId,
+            userId.ToString(),
+            role,
+            canAuthorise,
+            true);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe(nameof(Sut.MyOrganisationUsers));
     }
 
     [Fact]
@@ -2749,7 +2799,8 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
 
     [AutoData]
     [Theory]
-    public async Task MyOrganisationEditUser_Redirect_To_View_With_Error_When_User_Is_Admin_And_Not_Authoriser(SponsorMyOrganisationUserViewModel userModel)
+    public async Task MyOrganisationEditUser_Redirect_To_View_With_Error_When_User_Is_Admin_And_Not_Authoriser(
+        SponsorMyOrganisationUserViewModel userModel)
     {
         // Arrange
         var rtsId = "87765";
@@ -2891,7 +2942,8 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         var id = Guid.NewGuid();
         Mocker.GetMock<ISponsorOrganisationService>()
             .Setup(s => s.DisableUserInSponsorOrganisation("rts-1", id))
-            .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto> { StatusCode = HttpStatusCode.OK, Content = new() });
+            .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
+            { StatusCode = HttpStatusCode.OK, Content = new() });
 
         var serviceResponseGetAllActiveOrganisationsForUser = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
         {
@@ -2900,8 +2952,8 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         };
 
         Mocker.GetMock<ISponsorOrganisationService>()
-           .Setup(s => s.GetAllActiveSponsorOrganisationsForEnabledUser(It.IsAny<Guid>()))
-           .ReturnsAsync(serviceResponseGetAllActiveOrganisationsForUser);
+            .Setup(s => s.GetAllActiveSponsorOrganisationsForEnabledUser(It.IsAny<Guid>()))
+            .ReturnsAsync(serviceResponseGetAllActiveOrganisationsForUser);
 
         var serviceResponseGetUser = new ServiceResponse<UserResponse>
         {
@@ -2910,8 +2962,8 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         };
 
         Mocker.GetMock<IUserManagementService>()
-           .Setup(s => s.GetUser(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-           .ReturnsAsync(serviceResponseGetUser);
+            .Setup(s => s.GetUser(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(serviceResponseGetUser);
 
         var vm = new UserViewModel { Id = id.ToString(), Email = "m@x.com" };
 
@@ -2957,7 +3009,8 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         var id = Guid.NewGuid();
         Mocker.GetMock<ISponsorOrganisationService>()
             .Setup(s => s.EnableUserInSponsorOrganisation("rts-1", id))
-            .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto> { StatusCode = HttpStatusCode.OK, Content = new() });
+            .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
+            { StatusCode = HttpStatusCode.OK, Content = new() });
 
         var vm = new UserViewModel { Id = id.ToString(), Email = "m@x.com" };
 
@@ -2978,7 +3031,8 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
     }
 
     [Fact]
-    public async Task MyOrganisationUsersAddUser_when_sponsor_org_not_active_redirects_to_invalid_sponsor_org_and_does_not_call_user_search()
+    public async Task
+        MyOrganisationUsersAddUser_when_sponsor_org_not_active_redirects_to_invalid_sponsor_org_and_does_not_call_user_search()
     {
         // Arrange
         var rtsId = "87765";
@@ -3041,7 +3095,8 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
     }
 
     [Fact]
-    public async Task MyOrganisationUsersAddUserPermission_when_sponsor_org_not_active_redirects_to_invalid_sponsor_org()
+    public async Task
+        MyOrganisationUsersAddUserPermission_when_sponsor_org_not_active_redirects_to_invalid_sponsor_org()
     {
         // Arrange
         var rtsId = "87765";
@@ -3074,7 +3129,8 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
     }
 
     [Fact]
-    public async Task MyOrganisationUsersCheckAndConfirm_when_sponsor_org_not_active_redirects_to_invalid_sponsor_org_and_does_not_call_get_user()
+    public async Task
+        MyOrganisationUsersCheckAndConfirm_when_sponsor_org_not_active_redirects_to_invalid_sponsor_org_and_does_not_call_get_user()
     {
         // Arrange
         var rtsId = "87765";
@@ -3110,7 +3166,8 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
     }
 
     [Fact]
-    public async Task MyOrganisationUsersConfirmAddUser_when_sponsor_org_not_active_redirects_to_invalid_sponsor_org_and_does_not_add_user_or_update_roles()
+    public async Task
+        MyOrganisationUsersConfirmAddUser_when_sponsor_org_not_active_redirects_to_invalid_sponsor_org_and_does_not_add_user_or_update_roles()
     {
         // Arrange
         var rtsId = "87765";
@@ -3305,15 +3362,15 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
             CreatedDate = DateTime.UtcNow,
             UpdatedDate = DateTime.UtcNow,
             Users = new List<SponsorOrganisationUserDto>
-        {
-            new()
             {
-                Id = Guid.NewGuid(),
-                UserId = Guid.NewGuid(),
-                Email = email,
-                IsActive = false // disabled membership -> forbidden
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = Guid.NewGuid(),
+                    Email = email,
+                    IsActive = false // disabled membership -> forbidden
+                }
             }
-        }
         };
 
         SetupSponsorOrgContextSuccess(rtsId, DefaultEmail, sponsorOrg);

@@ -665,8 +665,7 @@ public class MyOrganisationsController(
                 return View(model);
             }
 
-            TempData[TempDataKeys.ValidationSummaryError] = "You cannot add a system-disabled user to a sponsor organisation.";
-            return RedirectToAction(nameof(MyOrganisationUsers), new { rtsId });
+            return RedirectSystemDisabledUser(rtsId);
         }
 
         return RedirectToAction(nameof(MyOrganisationInvalidSponsorOrganisation),
@@ -710,8 +709,7 @@ public class MyOrganisationsController(
                 return View(model);
             }
 
-            TempData[TempDataKeys.ValidationSummaryError] = "You cannot add a system-disabled user to a sponsor organisation.";
-            return RedirectToAction(nameof(MyOrganisationUsers), new { rtsId });
+            return RedirectSystemDisabledUser(rtsId);
         }
 
         return RedirectToAction(nameof(MyOrganisationInvalidSponsorOrganisation),
@@ -748,8 +746,7 @@ public class MyOrganisationsController(
 
                 return View(model);
             }
-            TempData[TempDataKeys.ValidationSummaryError] = "You cannot add a system-disabled user to a sponsor organisation.";
-            return RedirectToAction(nameof(MyOrganisationUsers), new { rtsId });
+            return RedirectSystemDisabledUser(rtsId);
         }
 
         return RedirectToAction(nameof(MyOrganisationInvalidSponsorOrganisation),
@@ -813,8 +810,7 @@ public class MyOrganisationsController(
                 return RedirectToAction(nameof(MyOrganisationUsers), new { rtsId });
             }
 
-            TempData[TempDataKeys.ValidationSummaryError] = "You cannot add a system-disabled user to a sponsor organisation.";
-            return RedirectToAction(nameof(MyOrganisationUsers), new { rtsId });
+            return RedirectSystemDisabledUser(rtsId);
         }
 
         return RedirectToAction(nameof(MyOrganisationInvalidSponsorOrganisation),
@@ -1133,5 +1129,11 @@ public class MyOrganisationsController(
         IActionResult? Result)
     {
         public bool HasResult => Result is not null;
+    }
+
+    private IActionResult RedirectSystemDisabledUser(string rtsId)
+    {
+        TempData[TempDataKeys.ValidationSummaryError] = "You cannot add a system-disabled user to a sponsor organisation.";
+        return RedirectToAction(nameof(MyOrganisationUsers), new { rtsId });
     }
 }
