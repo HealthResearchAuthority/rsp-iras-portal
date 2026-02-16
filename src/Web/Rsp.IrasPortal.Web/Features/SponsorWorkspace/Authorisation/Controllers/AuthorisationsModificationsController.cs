@@ -346,7 +346,23 @@ public class AuthorisationsModificationsController
                 return RedirectToAction(nameof(RequestRevisions), model);
 
             case "NotAuthorised":
-                return RedirectToAction(nameof(ModificationNotAuthorised), model);
+                if (await featureManager.IsEnabledAsync(FeatureFlags.NotAuthorisedReason))
+                {
+                    return RedirectToAction(nameof(ModificationNotAuthorised), model);
+                }
+                else
+                {
+                    await projectModificationsService.UpdateModificationStatus
+                  (
+                      model.ProjectRecordId,
+                      Guid.Parse(model.ModificationId),
+                      ModificationStatus.NotAuthorised,
+                      model.RevisionDescription,
+                      model.ReasonNotApproved
+                  );
+                }
+
+                break;
         }
 
         return RedirectToAction(nameof(Confirmation), model);

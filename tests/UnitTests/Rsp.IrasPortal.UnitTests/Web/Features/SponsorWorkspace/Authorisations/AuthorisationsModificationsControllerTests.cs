@@ -1523,6 +1523,33 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
         redirect.ActionName.ShouldBe(nameof(AuthorisationsModificationsController.ConfirmationModificationNotAuthorised));
     }
 
+    [Fact]
+    public async Task CheckAndAuthorise_Notauthorised_If_Feature_Flagg_Is_Off()
+    {
+        // Arrange
+        var vm = SetupAuthoriseOutcomeViewModel();
+
+        var authoriseOutcomeViewModel = SetupAuthoriseOutcomeViewModel();
+        authoriseOutcomeViewModel.Outcome = "NotAuthorised";
+        Mocker.GetMock<IFeatureManager>()
+           .Setup(f => f.IsEnabledAsync(FeatureFlags.RevisionAndAuthorisation))
+           .ReturnsAsync(false);
+        var projectModService = Mocker.GetMock<IProjectModificationsService>();
+        // Act
+        var result = await Sut.CheckAndAuthorise(authoriseOutcomeViewModel);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe(nameof(AuthorisationsModificationsController.Confirmation));
+        projectModService.Verify(s =>
+           s.UpdateModificationStatus(
+               vm.ProjectRecordId,
+               Guid.Parse(vm.ModificationId),
+               ModificationStatus.NotAuthorised,
+               vm.RevisionDescription, vm.ReasonNotApproved),
+           Times.Once);
+    }
+
     public SponsorUserAuthorisationResult Authorised(Guid gid)
         => SponsorUserAuthorisationResult.Ok(gid);
 

@@ -4,6 +4,8 @@
 @using Rsp.Portal.Application.Constants
 @using Rsp.Portal.Web.Helpers
 @using Rsp.Portal.Web.Models
+@using Microsoft.FeatureManagement
+@inject IFeatureManagerSnapshot FeatureManager
 @model dynamic
 
 @{
@@ -17,6 +19,7 @@
     {
         modificationBaseModel = TempData.PopulateBaseProjectModificationProperties(modificationBaseModel);
     }
+    var showReasonFlagEnabled = await FeatureManager.IsEnabledAsync(FeatureFlags.NotAuthorisedReason);
 }
 
 <dl class="govuk-summary-list">
@@ -114,8 +117,9 @@
                 </div>
             </authorized>
         }
-        @if (@modificationBaseModel?.Status == ModificationStatus.NotAuthorised)
+        @if (@modificationBaseModel?.Status == ModificationStatus.NotAuthorised && showReasonFlagEnabled)
         {
+
             <authorized permission="@Permissions.Sponsor.Modifications_Review">
                 <div class="govuk-summary-list__row">
                     <dt class="govuk-summary-list__key">Reason for not authorised</dt>
