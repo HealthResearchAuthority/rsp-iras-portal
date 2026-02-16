@@ -118,7 +118,7 @@
         }
 
         <feature name="@FeatureFlags.NotAuthorisedReason">
-            <authorized role-in="[Roles.Applicant, Roles.Sponsor]"
+            <authorized role-in="@(new []{Roles.Applicant, Roles.Sponsor})"
                         status-for="@modificationBaseModel.Status"
                         status-is="@ModificationStatus.NotAuthorised">
                 <div class="govuk-summary-list__row">
