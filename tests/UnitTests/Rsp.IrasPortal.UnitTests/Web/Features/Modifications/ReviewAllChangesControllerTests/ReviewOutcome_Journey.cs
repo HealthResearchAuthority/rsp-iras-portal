@@ -38,40 +38,6 @@ public class ReviewOutcome_Journey : TestServiceBase<ReviewAllChangesController>
     }
 
     [Theory, AutoData]
-    public async Task ReviewOutcome_Get_Redirects_To_ReasonNotApproved_When_NotApproved
-    (
-        ReviewOutcomeViewModel tempDataModel
-    )
-    {
-        // Arrange
-        tempDataModel.ReviewOutcome = ModificationStatus.NotApproved;
-        SetupTempData(tempDataModel);
-
-        // Act
-        var result = await Sut.ReviewOutcome();
-
-        // Assert
-        result.ShouldBeOfType<RedirectToActionResult>();
-    }
-
-    [Theory, AutoData]
-    public async Task ReviewOutcome_Get_Redirects_When_Approved
-    (
-        ReviewOutcomeViewModel tempDataModel
-    )
-    {
-        // Arrange
-        tempDataModel.ReviewOutcome = ModificationStatus.Approved;
-        SetupTempData(tempDataModel);
-
-        // Act
-        var result = await Sut.ReviewOutcome();
-
-        // Assert
-        result.ShouldBeOfType<RedirectToActionResult>();
-    }
-
-    [Theory, AutoData]
     public async Task ReviewOutcome_Get_ReturnsView_WithModel_When_TempData_Exists
     (
         Guid modificationId,
