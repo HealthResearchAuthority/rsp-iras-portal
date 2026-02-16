@@ -46,4 +46,7 @@ public static class FeatureFlags
 
     // Show back button in project overview page
     public const string BackButton = "ProjectOverview.BackButton";
+
+    //All to enter reason for not authorising the modification
+    public const string NotAuthorisedReason = "Modifications.NotAuthorisedReason";
 }
