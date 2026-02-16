@@ -39,7 +39,7 @@
                 ViewBag.Style = "govuk-button govuk-button--primary";
             }
             <partial name="_SubmitButton"
-					 model="@("soc:saveuserpermission", "Save and continue", new Dictionary<string, string> { { "RtsId", Model.RtsId } })" />
+					 model="@("soc:saveuserpermission", "Save and continue", new Dictionary<string, string> { { "RtsId", Model.RtsId } ,{"UserId", Model.UserId.ToString()}})" />
         </form>
     </div>
 </div>

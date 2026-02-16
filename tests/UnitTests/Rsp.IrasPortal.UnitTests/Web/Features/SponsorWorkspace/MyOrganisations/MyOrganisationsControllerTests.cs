@@ -14,6 +14,7 @@ using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.Identity;
+using Rsp.Portal.Services.Extensions;
 using Rsp.Portal.Web.Areas.Admin.Models;
 using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Features.SponsorWorkspace.MyOrganisations.Controllers;
@@ -61,7 +62,7 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         string email,
         SponsorOrganisationDto? sponsorOrganisation = null,
         OrganisationDto? rtsOrganisation = null,
-        bool isUserAdmin = false)
+        bool isUserAdmin = false, bool userActive = true)
     {
         rtsOrganisation ??= new OrganisationDto
         {
@@ -113,6 +114,41 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         Mocker.GetMock<ISponsorOrganisationService>()
             .Setup(s => s.GetSponsorOrganisationByRtsId(rtsId))
             .ReturnsAsync(rbResponse);
+
+        var user = new User(
+            Guid.NewGuid().ToString(),
+            "azure-ad-12345",
+            "Mr",
+            "Test",
+            "Test",
+            "test.test@example.com",
+            "Software Developer",
+            "orgName", // IMPORTANT: match org if your action filters by org
+            "+44 7700 900123",
+            "United Kingdom",
+            "Active",
+            DateTime.UtcNow,
+            DateTime.UtcNow.AddDays(-2),
+            DateTime.UtcNow);
+
+        var userResponse = new UserResponse
+        {
+            Roles = ["admin", "reviewer"],
+            User = user with { Status = userActive ? IrasUserStatus.Active : IrasUserStatus.Disabled }
+        };
+
+        var apiResponse = new ApiResponse<UserResponse>
+        (
+            new HttpResponseMessage(HttpStatusCode.OK),
+            userResponse,
+            new RefitSettings()
+        );
+
+        var serviceResponse = apiResponse.ToServiceResponse();
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(x => x.GetUser(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(serviceResponse);
     }
 
     private void SetUser(Guid userId)
