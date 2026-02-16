@@ -1225,7 +1225,9 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
         // Arrange
         var authoriseOutcomeViewModel = SetupAuthoriseOutcomeViewModel();
         authoriseOutcomeViewModel.Outcome = "NotAuthorised";
-
+        Mocker.GetMock<IFeatureManager>()
+         .Setup(f => f.IsEnabledAsync(FeatureFlags.NotAuthorisedReason))
+         .ReturnsAsync(true);
         // Act
         var result = await Sut.CheckAndAuthorise(authoriseOutcomeViewModel);
 
@@ -1532,7 +1534,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
         var authoriseOutcomeViewModel = SetupAuthoriseOutcomeViewModel();
         authoriseOutcomeViewModel.Outcome = "NotAuthorised";
         Mocker.GetMock<IFeatureManager>()
-           .Setup(f => f.IsEnabledAsync(FeatureFlags.RevisionAndAuthorisation))
+           .Setup(f => f.IsEnabledAsync(FeatureFlags.NotAuthorisedReason))
            .ReturnsAsync(false);
         var projectModService = Mocker.GetMock<IProjectModificationsService>();
         // Act
