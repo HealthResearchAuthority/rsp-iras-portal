@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Text.Json;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
@@ -9,6 +10,7 @@ using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.Filters;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
+using Rsp.Portal.Domain.Identity;
 using Rsp.Portal.Web.Areas.Admin.Models;
 using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Helpers;
@@ -350,33 +352,40 @@ public class SponsorOrganisationsController(
         {
             var user = await userService.GetUser(userId.ToString(), null);
 
-            var addUserModel = TryGetAddUserModelFromTempData();
-
-            var dto = new SponsorOrganisationUserDto
+            if (string.Equals(user.Content.User.Status, "active", StringComparison.OrdinalIgnoreCase))
             {
-                Id = sponsorOrganisationId,
-                RtsId = rtsId,
-                UserId = userId,
-                Email = user.Content?.User.Email,
-                DateAdded = DateTime.UtcNow,
-                SponsorRole = addUserModel?.SponsorRole ?? Roles.Sponsor,
-                IsAuthoriser = addUserModel?.IsAuthoriser ?? false
-            };
+                var addUserModel = TryGetAddUserModelFromTempData();
 
-            var response = await sponsorOrganisationService.AddUserToSponsorOrganisation(dto);
-            if (!response.IsSuccessStatusCode)
-            {
-                return this.ServiceError(response);
+                var dto = new SponsorOrganisationUserDto
+                {
+                    Id = sponsorOrganisationId,
+                    RtsId = rtsId,
+                    UserId = userId,
+                    Email = user.Content?.User.Email,
+                    DateAdded = DateTime.UtcNow,
+                    SponsorRole = addUserModel?.SponsorRole ?? Roles.Sponsor,
+                    IsAuthoriser = addUserModel?.IsAuthoriser ?? false
+                };
+
+                var response = await sponsorOrganisationService.AddUserToSponsorOrganisation(dto);
+                if (!response.IsSuccessStatusCode)
+                {
+                    return this.ServiceError(response);
+                }
+
+                var roleToAdd = dto.SponsorRole.Contains(Roles.Sponsor)
+                    ? Roles.Sponsor
+                    : Roles.OrganisationAdministrator;
+
+                // Assign sponsor role on success
+                await userService.UpdateRoles(user.Content!.User.Email, null, roleToAdd);
+
+                TempData[TempDataKeys.ShowNotificationBanner] = true;
+                TempData[TempDataKeys.SponsorOrganisationUserType] = "add";
+                return RedirectToAction("ViewSponsorOrganisationUsers", new { rtsId });
             }
 
-            var roleToAdd = dto.SponsorRole.Contains(Roles.Sponsor) ? Roles.Sponsor : Roles.OrganisationAdministrator;
-
-            // Assign sponsor role on success
-            await userService.UpdateRoles(user.Content!.User.Email, null, roleToAdd);
-
-            TempData[TempDataKeys.ShowNotificationBanner] = true;
-            TempData[TempDataKeys.SponsorOrganisationUserType] = "add";
-            return RedirectToAction("ViewSponsorOrganisationUsers", new { rtsId });
+            TempData[TempDataKeys.ValidationSummaryError] = "You cannot add a system-disabled user to a sponsor organisation.";
         }
 
         return RedirectToAction(nameof(ViewSponsorOrganisationUsers), new { rtsId });
@@ -389,24 +398,32 @@ public class SponsorOrganisationsController(
 
         if (load.Model.IsActive)
         {
-            var storedModel = TryGetAddUserModelFromTempData();
+            var user = await userService.GetUser(userId.ToString(), null);
 
-            if (storedModel is not null)
+            if (string.Equals(user.Content.User.Status, "active", StringComparison.OrdinalIgnoreCase))
             {
-                return View(storedModel);
+                var storedModel = TryGetAddUserModelFromTempData();
+
+                if (storedModel is not null)
+                {
+                    return View(storedModel);
+                }
+
+                var model = new SponsorOrganisationAddUserModel
+                {
+                    RtsId = rtsId,
+                    UserId = userId,
+                    SponsorRole = null,
+                    IsAuthoriser = false
+                };
+
+                TempData[TempDataKeys.SponsorOrganisationUser] = JsonSerializer.Serialize(model);
+
+                return View(model);
             }
 
-            var model = new SponsorOrganisationAddUserModel
-            {
-                RtsId = rtsId,
-                UserId = userId,
-                SponsorRole = null,
-                IsAuthoriser = false
-            };
-
-            TempData[TempDataKeys.SponsorOrganisationUser] = JsonSerializer.Serialize(model);
-
-            return View(model);
+            TempData[TempDataKeys.ValidationSummaryError] = "You cannot add a system-disabled user to a sponsor organisation.";
+            return RedirectToAction(nameof(ViewSponsorOrganisationUsers), new { rtsId });
         }
 
         return RedirectToAction(nameof(InvalidSponsorOrganisation), new { rtsId });
@@ -419,31 +436,39 @@ public class SponsorOrganisationsController(
 
         if (load.Model.IsActive)
         {
-            var storedModel = TryGetAddUserModelFromTempData();
+            var user = await userService.GetUser(model.UserId.ToString(), null);
 
-            if (storedModel is null)
+            if (string.Equals(user.Content.User.Status, "active", StringComparison.OrdinalIgnoreCase))
             {
-                ModelState.AddModelError(string.Empty, "An unexpected error occured");
-                return RedirectToAction(nameof(Index));
+                var storedModel = TryGetAddUserModelFromTempData();
+
+                if (storedModel is null)
+                {
+                    ModelState.AddModelError(string.Empty, "An unexpected error occured");
+                    return RedirectToAction(nameof(Index));
+                }
+
+                if (model.SponsorRole is null)
+                {
+                    ModelState.AddModelError(string.Empty, "You must select a user role before continuing.");
+                    return View(nameof(AddUserRole), storedModel);
+                }
+
+                storedModel.SponsorRole = model.SponsorRole;
+                storedModel.IsAuthoriser = model.SponsorRole == Roles.OrganisationAdministrator;
+                TempData[TempDataKeys.SponsorOrganisationUser] = JsonSerializer.Serialize(storedModel);
+
+                if (model.SponsorRole == Roles.OrganisationAdministrator)
+                {
+                    return RedirectToAction(nameof(ViewSponsorOrganisationUser),
+                        new { rtsId = storedModel.RtsId, userId = storedModel.UserId, addUser = true });
+                }
+
+                return RedirectToAction(nameof(AddUserPermission));
             }
 
-            if (model.SponsorRole is null)
-            {
-                ModelState.AddModelError(string.Empty, "You must select a user role before continuing.");
-                return View(nameof(AddUserRole), storedModel);
-            }
-
-            storedModel.SponsorRole = model.SponsorRole;
-            storedModel.IsAuthoriser = model.SponsorRole == Roles.OrganisationAdministrator;
-            TempData[TempDataKeys.SponsorOrganisationUser] = JsonSerializer.Serialize(storedModel);
-
-            if (model.SponsorRole == Roles.OrganisationAdministrator)
-            {
-                return RedirectToAction(nameof(ViewSponsorOrganisationUser),
-                    new { rtsId = storedModel.RtsId, userId = storedModel.UserId, addUser = true });
-            }
-
-            return RedirectToAction(nameof(AddUserPermission));
+            TempData[TempDataKeys.ValidationSummaryError] = "You cannot add a system-disabled user to a sponsor organisation.";
+            return RedirectToAction(nameof(ViewSponsorOrganisationUsers), new { model.RtsId });
         }
 
         return RedirectToAction(nameof(InvalidSponsorOrganisation), new { model.RtsId });
@@ -470,19 +495,27 @@ public class SponsorOrganisationsController(
 
         if (load.Model.IsActive)
         {
-            var storedModel = TryGetAddUserModelFromTempData();
+            var user = await userService.GetUser(model.UserId.ToString(), null);
 
-            if (storedModel is null)
+            if (string.Equals(user.Content.User.Status, "active", StringComparison.OrdinalIgnoreCase))
             {
-                ModelState.AddModelError(string.Empty, "An unexpected error occured");
-                return RedirectToAction(nameof(Index));
+                var storedModel = TryGetAddUserModelFromTempData();
+
+                if (storedModel is null)
+                {
+                    ModelState.AddModelError(string.Empty, "An unexpected error occured");
+                    return RedirectToAction(nameof(Index));
+                }
+
+                storedModel.IsAuthoriser = model.IsAuthoriser;
+                TempData[TempDataKeys.SponsorOrganisationUser] = JsonSerializer.Serialize(storedModel);
+
+                return RedirectToAction(nameof(ViewSponsorOrganisationUser),
+                    new { rtsId = storedModel.RtsId, userId = storedModel.UserId, addUser = true });
             }
 
-            storedModel.IsAuthoriser = model.IsAuthoriser;
-            TempData[TempDataKeys.SponsorOrganisationUser] = JsonSerializer.Serialize(storedModel);
-
-            return RedirectToAction(nameof(ViewSponsorOrganisationUser),
-                new { rtsId = storedModel.RtsId, userId = storedModel.UserId, addUser = true });
+            TempData[TempDataKeys.ValidationSummaryError] = "You cannot add a system-disabled user to a sponsor organisation.";
+            return RedirectToAction(nameof(ViewSponsorOrganisationUsers), new { model.RtsId });
         }
 
         return RedirectToAction(nameof(InvalidSponsorOrganisation), new { model.RtsId });

@@ -9,6 +9,7 @@ using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.Identity;
+using Rsp.Portal.Services.Extensions;
 using Rsp.Portal.Web.Controllers;
 using Rsp.Portal.Web.Models;
 
@@ -96,7 +97,18 @@ public class AddUserRoleTests : TestServiceBase<SponsorOrganisationsController>
         viewResult.ActionName.ShouldBe("AddUserPermission");
     }
 
-    private void SetupTempData(SponsorOrganisationAddUserModel model)
+    [Theory, AutoData]
+    public async Task SaveUserPermission_ShouldRedirectToUsersPage_WhenUserInactive(SponsorOrganisationAddUserModel model)
+    {
+        SetupTempData(model, false);
+
+        var result = await Sut.SaveUserRole(model);
+
+        var viewResult = result.ShouldBeOfType<RedirectToActionResult>();
+        viewResult.ActionName.ShouldBe("ViewSponsorOrganisationUsers");
+    }
+
+    private void SetupTempData(SponsorOrganisationAddUserModel model, bool userActive = true)
     {
         // Arrange
         const string rtsId = "87765";
@@ -170,6 +182,41 @@ public class AddUserRoleTests : TestServiceBase<SponsorOrganisationsController>
                     }
                 }
             });
+
+        var user = new User(
+            Guid.NewGuid().ToString(),
+            "azure-ad-12345",
+            "Mr",
+            "Test",
+            "Test",
+            "test.test@example.com",
+            "Software Developer",
+            orgName, // IMPORTANT: match org if your action filters by org
+            "+44 7700 900123",
+            "United Kingdom",
+            "Active",
+            DateTime.UtcNow,
+            DateTime.UtcNow.AddDays(-2),
+            DateTime.UtcNow);
+
+        var userResponse = new UserResponse
+        {
+            Roles = ["admin", "reviewer"],
+            User = user with { Status = userActive ? IrasUserStatus.Active : IrasUserStatus.Disabled }
+        };
+
+        var apiResponse = new ApiResponse<UserResponse>
+        (
+            new HttpResponseMessage(HttpStatusCode.OK),
+            userResponse,
+            new RefitSettings()
+        );
+
+        var serviceResponse = apiResponse.ToServiceResponse();
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(x => x.GetUser(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(serviceResponse);
 
         var ctx = new DefaultHttpContext();
         Sut.ControllerContext = new() { HttpContext = ctx };
