@@ -59,18 +59,20 @@
 
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
+        
             <partial name="_NotificationBanner"
                      model="@(new NotificationBannerModel
                             {
                                 Title = "Success",
                                 Heading = notificationBanner
-                            })" />
+                            })"/>
         </div>
     </div>
 }
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
+        <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
         <h1 class="govuk-heading-l">@Html.Raw(headline?.Value) @Model.SponsorOrganisation.SponsorOrganisationName</h1>
         <p class="govuk-body">@Html.Raw(body?.Value)</p>
     </div>

@@ -9,8 +9,8 @@ using Rsp.Logging.Interceptors;
 namespace Rsp.Portal.Application.Services;
 
 /// <summary>
-/// IUserManagementService interface. Marked as IInterceptable to enable
-/// the start/end logging for all methods.
+/// IUserManagementService interface. Marked as IInterceptable to enable the start/end logging for
+/// all methods.
 /// </summary>
 public interface IUserManagementService : IInterceptable
 {
