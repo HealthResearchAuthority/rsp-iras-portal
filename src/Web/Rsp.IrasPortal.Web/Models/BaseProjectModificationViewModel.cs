@@ -61,4 +61,9 @@ public class BaseProjectModificationViewModel
     /// Gets or sets the created date of the Modification
     /// </summary>
     public string DateCreated { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets sponsor organisation user id - for authorising sponsor making changes to modification during Revise and authorise
+    /// </summary>
+    public string? SponsorOrganisationUserId { get; set; }
 }

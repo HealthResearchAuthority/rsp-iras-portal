@@ -4,6 +4,7 @@
 @using Microsoft.FeatureManagement
 @using Rsp.Portal.Application.Constants
 @using Rsp.Portal.Application.DTOs.Responses.CmsContent;
+@using Rsp.Portal.Domain.AccessControl
 @using Rsp.Portal.Web.Features.Modifications.Models
 @using Rsp.Portal.Web.Models
 @model ModificationDetailsViewModel
@@ -11,6 +12,22 @@
 @{
 
 	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
+
+    var isAuthoriser = TempData[TempDataKeys.IsAuthoriser] as bool? ?? false;
+    var isRevisionBySponsor = false;
+    
+    var headline = new { Value = "<p>Description of revisions made</p>" };
+    var description = new { Value = "<p>Enter a brief summary describing the revisions you have made to the modification and your reasons for making them</p>" };
+
+    <authorized permission="@Permissions.Sponsor.Modifications_Authorise"
+                status-for="Status"
+                status-is="@ModificationStatus.ReviseAndAuthorise">
+        @{
+            isRevisionBySponsor = isAuthoriser;
+            ViewBag.Title = "Revise and authorise";
+            ViewBag.IsRevisionBySponsor = true;
+        }         
+    </authorized>
 }
 
 @section BackNavigation {
@@ -23,7 +40,7 @@
         var linkBackToReferrer = TempData[TempDataKeys.ProjectModification.LinkBackToReferrer];
         var urlReferrer = TempData[TempDataKeys.ProjectModification.UrlReferrer];
 
-        if (linkBackToReferrer is true && urlReferrer is not null)
+        if (linkBackToReferrer is true && urlReferrer is not null && !isRevisionBySponsor)
         {
             ViewData[ViewDataKeys.UrlReferrer] = urlReferrer;
 
@@ -62,7 +79,15 @@
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
 
-        <h1 class="govuk-heading-l">Modification details</h1>
+        @if (isRevisionBySponsor)
+        {
+            <h1 class="govuk-heading-l">Revise and authorise</h1>
+            <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
+        }
+        else
+        {
+            <h1 class="govuk-heading-l">Modification details</h1>
+        }
 
         @{
             ViewData[ViewDataKeys.ShowModificationStatus] = true;
@@ -112,7 +137,7 @@
         }
 
         <div class="save-buttons">
-            @if (Model.Status is ModificationStatus.InDraft && Model.ModificationChanges.Count < 10)
+            @if ((Model.Status is ModificationStatus.InDraft || isRevisionBySponsor) && Model.ModificationChanges.Count < 10)
             {
                 <a asp-route="pmc:areaofchange" asp-route-projectModificationId="@Model.ModificationId" class="govuk-button govuk-button--secondary">
                     Add another change to this modification
@@ -184,4 +209,76 @@
        class="govuk-link">
         Delete modification
     </a>
+</authorized>
+
+<authorized permission="@Permissions.Sponsor.Modifications_Authorise"
+                status-for="Status"
+                status-is="@ModificationStatus.ReviseAndAuthorise">
+    @if (isAuthoriser && Model.ModificationChanges.Any())
+    {
+        <hr aria-hidden="true" class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+        @if (Model?.ProjectOverviewDocumentViewModel?.Documents is null || !Model.ProjectOverviewDocumentViewModel.Documents.Any())
+        {
+            <div class="govuk-grid-row">
+                <div class="govuk-grid-column-two-thirds">
+                    <h2 class="govuk-heading-m">Supporting documents</h2>
+                    <p class="govuk-body">
+                        If any of the changes you're making involve an update to any project documents, make sure you add a copy of the original and updated documents.
+                    </p>
+                </div>
+            </div>
+            <div class="govuk-button-group">
+                <form method="get">
+                    @{
+                        ViewBag.Style = "govuk-button govuk-button--secondary";
+                    }
+                    <partial name="_SubmitButton" model="@("pmc:projectdocument", "Add documents", new Dictionary<string, string> { })" />
+                </form>
+            </div>
+        }
+        else
+        {
+            <partial name="SupportingDocuments" model="Model" view-data="ViewData" />
+        }
+        <hr aria-hidden="true" class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+        <partial name="SponsorDetails" model="Model" view-data="ViewData" />
+
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <h1 class="govuk-heading-m">
+                    @Html.Raw(headline?.Value)
+                </h1>                
+            </div>
+        </div>
+
+        <form asp-route="sws:authoriserevision" method="post">
+            <div class="govuk-grid-row">
+                <div class="govuk-grid-column-two-thirds">
+                    @Html.Raw(description?.Value)
+                    <rsp-gds-character-count-textarea asp-for="RevisionDescription"
+                                                      label-text=""
+                                                      word-count-error-for="_DescriptionExcessCharacterCount"
+                                                      rows="5"                                              
+                                                      width-class="govuk-!-width-full" />
+                    <p class='govuk-hint'>You can enter up to 500 characters</p>
+
+                    <input type="hidden" name="ProjectRecordId" value="@Model.ProjectRecordId" />                    
+                    <input type="hidden" name="ModificationId" value="@Model.ModificationId" />
+                    @* <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" /> *@      
+                    
+                    <div class="save-buttons">
+                        <button type="submit" class="govuk-button" data-module="govuk-button">
+                            Authorise
+                        </button>                    
+                    
+                        <button type="submit"
+                                asp-route-isSaveForLater="true"
+                                class="govuk-button govuk-button--secondary">
+                            Save for later
+                        </button>
+                     </div>
+                </div>
+            </div>
+        </form>
+    }       
 </authorized>

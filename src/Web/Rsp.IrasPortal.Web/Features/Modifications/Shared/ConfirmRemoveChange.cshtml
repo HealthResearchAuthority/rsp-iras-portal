@@ -15,8 +15,13 @@
             { "projectRecordId", Model.ProjectRecordId },
             { "irasId", Model.IrasId  },
             { "shortTitle", Model.ShortTitle ?? string.Empty },
-            { "projectModificationId", Model.ModificationId ?? string.Empty }
+            { "projectModificationId", Model.ModificationId ?? string.Empty }            
         };
+
+    if (Model.SponsorOrganisationUserId != null)
+    {
+        modificationParams.Add("sponsorOrganisationUserId", Model.SponsorOrganisationUserId);
+    }
 
     var navModel = ("pmc:modificationdetails", "Back", modificationParams);
 }

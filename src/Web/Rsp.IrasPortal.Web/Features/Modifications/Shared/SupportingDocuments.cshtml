@@ -1,6 +1,7 @@
 ﻿@using Rsp.Portal.Application.Constants
 @using Rsp.Portal.Application.DTOs
 @using Rsp.Portal.Web.Features.Modifications.Models
+@using Rsp.Portal.Web.Helpers
 @model ModificationDetailsViewModel
 
 <div class="govuk-grid-row">
@@ -106,6 +107,7 @@
                                                     DocumentStatus.Incomplete => "govuk-tag--blue",
                                                     DocumentStatus.Complete => "govuk-tag--blue",
                                                     ModificationStatus.WithSponsor => "govuk-tag--yellow",
+                                                    ModificationStatus.ReviseAndAuthorise => "govuk-tag--yellow",
                                                     ModificationStatus.Approved => "govuk-tag--green",
                                                     ModificationStatus.WithReviewBody => "govuk-tag--green",
                                                     ModificationStatus.NotApproved => "govuk-tag--red",
@@ -114,7 +116,7 @@
                                                 };
                                             }
                                             <strong class="govuk-tag @(tagClass)">
-                                                @modification.Status
+                                                @ModificationStatusHelper.ToUiStatus(modification.Status)
                                             </strong>
                                         </td>
                                         @if (Model.Status is ModificationStatus.InDraft)

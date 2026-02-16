@@ -1,11 +1,13 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Rsp.IrasPortal.Web.Attributes;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
 using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Features.Modifications.Models;
+using Rsp.Portal.Web.Helpers;
 using Rsp.Portal.Web.Models;
 
 namespace Rsp.Portal.Web.Features.Modifications;
@@ -18,9 +20,13 @@ public class ModificationDetailsController
     IRespondentService respondentService,
     ICmsQuestionsetService cmsQuestionsetService,
     IModificationRankingService modificationRankingService,
+    ISponsorOrganisationService sponsorOrganisationService,
+    ISponsorUserAuthorisationService sponsorUserAuthorisationService,
     IValidator<QuestionnaireViewModel> validator
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator)
 {
+    private const string SponsorDetailsSectionId = "pm-sponsor-reference";
+
     /// <summary>
     /// Displays the modification details page for a given project modification.
     /// </summary>
@@ -32,9 +38,9 @@ public class ModificationDetailsController
     /// An <see cref="IActionResult"/> that renders the details view when successful; otherwise,
     /// an error result produced by <c>this.ServiceError(...)</c> when a service call fails.
     /// </returns>
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Read)]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Read)]
     [HttpGet]
-    public async Task<IActionResult> ModificationDetails(string projectRecordId, string irasId, string shortTitle, Guid projectModificationId)
+    public async Task<IActionResult> ModificationDetails(string projectRecordId, string irasId, string shortTitle, Guid projectModificationId, Guid? sponsorOrganisationUserId = null)
     {
         // all changes are being reviewing here so remove the change specific keys from tempdata
         TempData.Remove(TempDataKeys.ProjectModification.AreaOfChangeId);
@@ -46,11 +52,34 @@ public class ModificationDetailsController
         TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationChangeMarker);
 
         TempData[TempDataKeys.IrasId] = irasId;
+        TempData[TempDataKeys.ProjectRecordId] = projectRecordId;
+        TempData[TempDataKeys.ShortProjectTitle] = shortTitle;
 
         var (result, modification) = await PrepareModificationAsync(projectModificationId, irasId, shortTitle, projectRecordId);
         if (result is not null)
         {
             return result;
+        }
+
+        // If its sponsor revision - validate if sponsor is authoriser
+        if (modification?.Status is ModificationStatus.ReviseAndAuthorise && sponsorOrganisationUserId != null)
+        {
+            modification.SponsorOrganisationUserId = sponsorOrganisationUserId.Value.ToString();
+
+            var sponsorDetailsQuestionsResponse = await cmsQuestionsetService.GetModificationQuestionSet(SponsorDetailsSectionId);
+
+            // get the responent answers for the sponsor details
+            var sponsorDetailsResponse = await respondentService.GetModificationAnswers(projectModificationId, projectRecordId);
+
+            var sponsorDetailsAnswers = sponsorDetailsResponse.Content!;
+
+            // convert the questions response to QuestionnaireViewModel
+            var sponsorDetailsQuestionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(sponsorDetailsQuestionsResponse.Content!);
+
+            // Apply answers questions using shared helper
+            sponsorDetailsQuestionnaire.UpdateWithRespondentAnswers(sponsorDetailsAnswers);
+
+            modification.SponsorDetails = sponsorDetailsQuestionnaire.Questions;
         }
 
         // validate and update the status and answers for the change
@@ -102,7 +131,7 @@ public class ModificationDetailsController
         return View("DocumentDetailsIncomplete", viewModel);
     }
 
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Delete)]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Delete)]
     [HttpGet]
     public IActionResult ConfirmRemoveChange(string modificationChangeId, string modificationChangeName)
     {
@@ -114,7 +143,7 @@ public class ModificationDetailsController
         return View(viewModel);
     }
 
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Delete)]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Delete)]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> RemoveChange(Guid modificationChangeId, string modificationChangeName)
@@ -139,7 +168,8 @@ public class ModificationDetailsController
             projectRecordId = viewModel.ProjectRecordId,
             irasId = viewModel.IrasId,
             shortTitle = viewModel.ShortTitle,
-            projectModificationId = viewModel.ModificationId
+            projectModificationId = viewModel.ModificationId,
+            sponsorOrganisationUserId = viewModel.SponsorOrganisationUserId
         });
     }
 }

@@ -16,7 +16,6 @@ using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Features.Modifications;
 using Rsp.Portal.Web.Features.Modifications.Models;
 using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models;
-using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Services;
 using Rsp.Portal.Web.Helpers;
 using Rsp.Portal.Web.Models;
 
@@ -55,7 +54,20 @@ public class AuthorisationsModificationsController
     )
     {
         var auth = await sponsorUserAuthorisationService.AuthoriseAsync(this, sponsorOrganisationUserId, User);
-        if (!auth.IsAuthorised) return auth.FailureResult!;
+        if (!auth.IsAuthorised)
+        {
+            return auth.FailureResult!;
+        }
+
+        var sponsorOrganisationUser =
+            await sponsorOrganisationService.GetSponsorOrganisationUser(sponsorOrganisationUserId);
+
+        if (!sponsorOrganisationUser.IsSuccessStatusCode)
+        {
+            return this.ServiceError(sponsorOrganisationUser);
+        }
+
+        TempData[TempDataKeys.IsAuthoriser] = sponsorOrganisationUser.Content!.IsAuthoriser;
 
         var model = new AuthorisationsModificationsViewModel();
 
@@ -233,6 +245,12 @@ public class AuthorisationsModificationsController
             await BuildCheckAndAuthorisePageAsync(projectModificationId, irasId, shortTitle, projectRecordId,
                 sponsorOrganisationUserId);
 
+        var auth = await sponsorUserAuthorisationService.AuthoriseAsync(this, sponsorOrganisationUserId, User);
+        if (!auth.IsAuthorised)
+        {
+            return auth.FailureResult!;
+        }
+
         var sponsorOrganisationUser =
             await sponsorOrganisationService.GetSponsorOrganisationUser(sponsorOrganisationUserId);
 
@@ -345,6 +363,22 @@ public class AuthorisationsModificationsController
             case "RequestRevisions":
                 return RedirectToAction(nameof(RequestRevisions), model);
 
+            case "ReviseAndAuthorise":
+                await projectModificationsService.UpdateModificationStatus
+                        (
+                            model.ProjectRecordId,
+                            Guid.Parse(model.ModificationId),
+                            ModificationStatus.ReviseAndAuthorise
+                        );
+                return RedirectToRoute("pmc:ModificationDetails", new
+                {
+                    projectRecordId = model.ProjectRecordId,
+                    irasId = model.IrasId,
+                    shortTitle = model.ShortTitle,
+                    projectModificationId = Guid.Parse(model.ModificationId),
+                    sponsorOrganisationUserId = model.SponsorOrganisationUserId
+                });
+
             default:
                 await projectModificationsService.UpdateModificationStatus
                 (
@@ -375,7 +409,14 @@ public class AuthorisationsModificationsController
     [HttpGet]
     public async Task<IActionResult> RequestRevisions(AuthoriseModificationsOutcomeViewModel model)
     {
-        var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId);
+        var auth = await sponsorUserAuthorisationService.AuthoriseAsync(this, model.SponsorOrganisationUserId, User);
+        if (!auth.IsAuthorised)
+        {
+            return auth.FailureResult!;
+        }
+
+        var sponsorOrganisationUser =
+            await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId);
 
         if (!sponsorOrganisationUser.IsSuccessStatusCode)
         {

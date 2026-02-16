@@ -5,6 +5,7 @@
 @using System.Linq
 @using Rsp.Portal.Application.DTOs.Responses.CmsContent
 @using Rsp.Portal.Web.Areas.Admin.Models
+@using Rsp.Portal.Web.Helpers
 
 @model AuthorisationsModificationsViewModel
 
@@ -19,6 +20,8 @@
     var errorSummaryTitle = "There is a problem";
     ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
     ViewBag.Active = SponsorAuthorisations.Modifications;
+
+    var isAuthoriser = TempData[TempDataKeys.IsAuthoriser] as bool? ?? false;
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null
@@ -109,21 +112,36 @@
                             <input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
 
                             <tbody class="govuk-table__body govuk-body-s">
-                            @{
-                                foreach (var modification in Model.Modifications)
-                                {
-                                    <tr class="govuk-table__row">
-                                        <td class="govuk-table__cell">
-                                            <a class="govuk-link"
-                                               asp-route="sws:checkandauthorise"
-                                               asp-route-projectRecordId="@modification.ProjectRecordId"
-                                               asp-route-irasId="@(modification.ModificationId?.Split('/')[0])"
-                                               asp-route-shortTitle="@modification.ShortProjectTitle"
-                                               asp-route-projectModificationId="@modification.Id"
-                                               asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId">
-                                                <strong>@modification.ModificationId</strong>
-                                            </a>
-                                        </td>
+                                @{
+                                    foreach (var modification in Model.Modifications)
+                                    {
+                                        <tr class="govuk-table__row">
+                                            <td class="govuk-table__cell">
+                                                @if (modification.Status == ModificationStatus.ReviseAndAuthorise && isAuthoriser)
+                                                {
+                                                <a class="govuk-link"
+                                                   asp-route="pmc:ModificationDetails"
+                                                   asp-route-projectRecordId="@modification.ProjectRecordId"
+                                                   asp-route-irasId="@(modification.ModificationId?.Split('/')[0])"
+                                                   asp-route-shortTitle="@modification.ShortProjectTitle"
+                                                   asp-route-projectModificationId="@modification.Id"
+                                                   asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId">
+                                                    <strong>@modification.ModificationId</strong>
+                                                </a>
+                                                }
+                                                else
+                                                {
+                                                <a class="govuk-link"
+                                                   asp-route="sws:checkandauthorise"
+                                                   asp-route-projectRecordId="@modification.ProjectRecordId"
+                                                   asp-route-irasId="@(modification.ModificationId?.Split('/')[0])"
+                                                   asp-route-shortTitle="@modification.ShortProjectTitle"
+                                                   asp-route-projectModificationId="@modification.Id"
+                                                   asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId">
+                                                    <strong>@modification.ModificationId</strong>
+                                                </a>
+                                                }                                               
+                                            </td>
                                         <td class="govuk-table__cell">@modification.ShortProjectTitle</td>
                                         <td class="govuk-table__cell">@(modification.SentToSponsorDate?.ToString("dd MMM yyyy") ?? string.Empty)</td>
                                         <td class="govuk-table__cell">@(modification.SentToRegulatorDate?.ToString("dd MMM yyyy") ?? string.Empty)</td>
@@ -133,6 +151,7 @@
                                                 var tagClass = modification.Status switch
                                                 {
                                                     ModificationStatus.WithSponsor => "govuk-tag--yellow",
+                                                    ModificationStatus.ReviseAndAuthorise => "govuk-tag--yellow",
                                                     ModificationStatus.Approved => "govuk-tag--green",
                                                     ModificationStatus.WithReviewBody => "govuk-tag--green",
                                                     ModificationStatus.NotApproved => "govuk-tag--red",
@@ -141,7 +160,7 @@
                                                 };
                                             }
                                             <strong class="govuk-tag @tagClass">
-                                                @modification.Status
+                                                @ModificationStatusHelper.ToUiStatus(modification.Status)
                                             </strong>
                                         </td>
                                     </tr>

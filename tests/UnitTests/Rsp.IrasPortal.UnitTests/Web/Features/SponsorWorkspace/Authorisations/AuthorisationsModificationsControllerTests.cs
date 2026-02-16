@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.FeatureManagement;
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.CmsQuestionset;
@@ -17,7 +18,6 @@ using Rsp.Portal.Application.Services;
 using Rsp.Portal.Web.Features.Modifications.Models;
 using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Controllers;
 using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models;
-using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Services;
 using Rsp.Portal.Web.Models;
 using Claim = System.Security.Claims.Claim;
 

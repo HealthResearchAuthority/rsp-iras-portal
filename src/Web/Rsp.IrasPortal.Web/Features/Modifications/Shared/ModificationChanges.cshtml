@@ -10,7 +10,9 @@
 
     var isSponsorCheckAndAuthorise = ViewData[ViewDataKeys.IsSponsorCheckAndAuthorise] as bool?;
 
-    var sponsorOrganisationUserId = ViewBag.SponsorOrganisationUserId;
+    var sponsorOrganisationUserId = ViewBag.SponsorOrganisationUserId;  
+    
+    var isRevisionBySponsor = (bool?)ViewData["isRevisionBySponsor"] ?? false;
 }
 
 @foreach (var (change, changeIndex) in Model.ModificationChanges.Select((change, changeIndex) => (change, changeIndex)))
@@ -20,7 +22,7 @@
             <h2 class="govuk-summary-card__title">
                 Change @(changeIndex + 1) - @change.AreaOfChangeName<br />
 
-                @if ((showStatus == null || showStatus.Equals(true)) && Model.Status is ModificationStatus.InDraft)
+                @if ((showStatus == null || showStatus.Equals(true)) && (Model.Status is ModificationStatus.InDraft || isRevisionBySponsor))
                 {
                     <strong class="govuk-!-margin-top-2 text-nowrap govuk-tag @(change.ChangeStatus == ModificationStatus.Unfinished ? "govuk-tag--red" : "govuk-tag--green") non-max-width-govuk-tag">
                         @change.ChangeStatus
@@ -28,7 +30,7 @@
                 }
             </h2>
             <ul class="govuk-summary-card__actions">
-                @if ((showChangeLink == null || showChangeLink.Equals(true)) && Model.Status is ModificationStatus.InDraft)
+                @if ((showChangeLink == null || showChangeLink.Equals(true)) && (Model.Status is ModificationStatus.InDraft || isRevisionBySponsor))
                 {
                     <li class="govuk-summary-card__action">
 
@@ -45,7 +47,7 @@
                     </li>
                 }
 
-                @if ((showRemoveLink == null || showRemoveLink.Equals(true)) && Model.Status is ModificationStatus.InDraft)
+                @if ((showRemoveLink == null || showRemoveLink.Equals(true)) && (Model.Status is ModificationStatus.InDraft || isRevisionBySponsor))
                 {
                     <li class="govuk-summary-card__action">
                         <a class="govuk-link"
@@ -57,7 +59,7 @@
                     </li>
                 }
 
-                @if (isSponsorCheckAndAuthorise is true && sponsorOrganisationUserId is not null && Model.Status is ModificationStatus.WithSponsor)
+                @if (isSponsorCheckAndAuthorise is true && sponsorOrganisationUserId is not null && (Model.Status is ModificationStatus.WithSponsor or ModificationStatus.ReviseAndAuthorise))
                 {
                     <li class="govuk-summary-card__action">                        
                         @{
