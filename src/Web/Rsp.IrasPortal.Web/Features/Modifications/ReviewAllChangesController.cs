@@ -154,15 +154,6 @@ public class ReviewAllChangesController
             return this.ServiceError(_reviewOutcomeNotFoundError);
         }
 
-        if (model.ReviewOutcome == ModificationStatus.NotApproved)
-        {
-            return RedirectToAction(nameof(ReasonNotApproved));
-        }
-        if (model.ReviewOutcome == ModificationStatus.Approved)
-        {
-            return RedirectToAction(nameof(ReviewOutcomeSubmitted));
-        }
-
         var reviewResponses = await projectModificationsService.GetModificationReviewResponses
         (
             model.ModificationDetails.ProjectRecordId,
