@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Web.Attributes;
 using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
+using Rsp.Portal.Web.Areas.Admin.Models;
 using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Features.Modifications.Models;
 using Rsp.Portal.Web.Helpers;
@@ -26,6 +28,7 @@ public class ModificationDetailsController
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator)
 {
     private const string SponsorDetailsSectionId = "pm-sponsor-reference";
+    private const string DocumentDetailsSection = "pdm-document-metadata";
 
     /// <summary>
     /// Displays the modification details page for a given project modification.
@@ -40,7 +43,18 @@ public class ModificationDetailsController
     /// </returns>
     [ModificationAuthorise(Permissions.MyResearch.Modifications_Read)]
     [HttpGet]
-    public async Task<IActionResult> ModificationDetails(string projectRecordId, string irasId, string shortTitle, Guid projectModificationId, Guid? sponsorOrganisationUserId = null)
+    public async Task<IActionResult> ModificationDetails
+    (
+        string projectRecordId,
+        string irasId,
+        string shortTitle,
+        Guid projectModificationId,
+        Guid? sponsorOrganisationUserId = null,
+        int pageNumber = 1,
+        int pageSize = 20,
+        string sortField = nameof(ProjectOverviewDocumentDto.DocumentType),
+        string sortDirection = SortDirections.Ascending
+    )
     {
         // all changes are being reviewing here so remove the change specific keys from tempdata
         TempData.Remove(TempDataKeys.ProjectModification.AreaOfChangeId);
@@ -64,6 +78,7 @@ public class ModificationDetailsController
         // If its sponsor revision - validate if sponsor is authoriser
         if (modification?.Status is ModificationStatus.ReviseAndAuthorise && sponsorOrganisationUserId != null)
         {
+            // Add sponsor details
             modification.SponsorOrganisationUserId = sponsorOrganisationUserId.Value.ToString();
 
             var sponsorDetailsQuestionsResponse = await cmsQuestionsetService.GetModificationQuestionSet(SponsorDetailsSectionId);
@@ -80,6 +95,30 @@ public class ModificationDetailsController
             sponsorDetailsQuestionnaire.UpdateWithRespondentAnswers(sponsorDetailsAnswers);
 
             modification.SponsorDetails = sponsorDetailsQuestionnaire.Questions;
+
+            // Add modification documents
+            var modificationDocumentsResponseResult = await this.GetModificationDocuments(projectModificationId,
+            DocumentDetailsSection, pageNumber, pageSize, sortField, sortDirection);
+
+            modification.ProjectOverviewDocumentViewModel.Documents = modificationDocumentsResponseResult.Item1?.Content?.Documents ?? [];
+
+            await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, modification.ProjectOverviewDocumentViewModel.Documents);
+
+            modification.ProjectOverviewDocumentViewModel.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationDocumentsResponseResult.Item1?.Content?.TotalCount ?? 0)
+            {
+                SortDirection = sortDirection,
+                SortField = sortField,
+                FormName = "projectdocuments-selection",
+                RouteName = "pmc:modificationdetails",
+                AdditionalParameters = new Dictionary<string, string>()
+                {
+                    { "projectRecordId", projectRecordId },
+                    { "irasId", irasId },
+                    { "shortTitle", shortTitle },
+                    { "projectModificationId", projectModificationId.ToString() },
+                    { "sponsorOrganisationUserId", sponsorOrganisationUserId.Value.ToString() }
+                }
+            };
         }
 
         // validate and update the status and answers for the change

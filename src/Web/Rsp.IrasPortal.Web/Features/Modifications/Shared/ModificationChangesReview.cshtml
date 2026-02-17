@@ -10,19 +10,31 @@
 
 @model QuestionnaireViewModel
 @{
-    var prefix = ViewData.ModelState.IsValid ? "" : "Error - ";
-
-    ViewBag.Title = $"{prefix}Review changes";
+    var prefix = ViewData.ModelState.IsValid ? "" : "Error - ";    
 
     var errorSummaryTitle = "There is a problem";
 
     var modification = TempData.PopulateBaseProjectModificationProperties(new BaseProjectModificationViewModel());
+
+    ViewBag.Title = modification.Status is ModificationStatus.ReviseAndAuthorise ? $"{prefix}Revise and authorise" : $"{prefix}Review changes";
 
     var projectRecordId = modification.ProjectRecordId;
 
     var specificArea = modification.SpecificAreaOfChange;
 
     var showApplicabilityQuestions = TempData[TempDataKeys.ProjectModification.ShowApplicabilityQuestions] is true;
+
+    var saveForLaterParams = new Dictionary<string, string>
+    {
+        ["projectRecordId"] = projectRecordId,
+        ["routeName"] = "pov:postapproval"
+    };
+
+    if (modification.Status is ModificationStatus.ReviseAndAuthorise)
+    {
+        saveForLaterParams["routeName"] = "sws:modifications";
+        saveForLaterParams["SponsorOrganisationUserId"] = modification.SponsorOrganisationUserId;
+    }
 
     // Group questions by their Section and order them by Sequence
     var groupedSections = Model.Questions
@@ -79,7 +91,14 @@
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-        <h1 class="govuk-heading-l">Review changes</h1>
+        @if (modification.Status is ModificationStatus.ReviseAndAuthorise)
+        {
+            <h1 class="govuk-heading-l">Revise and authorise</h1>
+        }
+        else
+        {
+            <h1 class="govuk-heading-l">Review changes</h1>
+        }
 
         <partial name="_ProjectModificationSummary" />
 
@@ -153,7 +172,7 @@
                     ViewBag.Style = "govuk-button govuk-button--secondary";
                 }
 
-                <partial name="_SubmitButton" model="@("pmc:saveforlater", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = projectRecordId, ["routeName"] = "pov:postapproval" })" />
+                <partial name="_SubmitButton" model="@("pmc:saveforlater", "Save for later", saveForLaterParams)" />
             </div>
         </form>
     </div>

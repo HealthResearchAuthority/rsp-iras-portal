@@ -2,6 +2,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Rsp.IrasPortal.Web.Attributes;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
@@ -26,7 +27,7 @@ public class ParticipatingOrganisationsController
     /// Returns the view for selecting a participating organisation.
     /// Populates metadata from TempData.
     /// </summary>
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Update)]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Update)]
     [HttpGet("/modifications/participatingorganisations", Name = "pmc:[action]")]
     public async Task<IActionResult> ParticipatingOrganisation(int pageNumber = 1, int pageSize = 10, List<string>? selectedOrganisationIds = null)
     {
@@ -95,15 +96,22 @@ public class ParticipatingOrganisationsController
         return RedirectToAction(nameof(ParticipatingOrganisation));
     }
 
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Update)]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Update)]
     [HttpPost]
     public IActionResult SaveSelection(bool saveForLater)
     {
         var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty;
+        var status = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationStatus) as string ?? string.Empty;
+        var sponsorOrganisationUserId = TempData.Peek(TempDataKeys.RevisionSponsorOrganisationUserId);
+
         if (saveForLater)
         {
             TempData[TempDataKeys.ShowNotificationBanner] = true;
             TempData[TempDataKeys.ProjectModification.ProjectModificationChangeMarker] = Guid.NewGuid();
+            if (status is ModificationStatus.ReviseAndAuthorise)
+            {
+                return RedirectToRoute("sws:modifications", new { sponsorOrganisationUserId });
+            }
 
             return RedirectToRoute("pov:postapproval", new { projectRecordId });
         }

@@ -3,6 +3,8 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
+using Rsp.IrasPortal.Web.Attributes;
+using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
@@ -28,7 +30,7 @@ public class SponsorReferenceController
     private const string SectionId = "pm-sponsor-reference";
     private const string CategoryId = "Sponsor reference";
 
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Update)]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Update)]
     [HttpGet]
     public async Task<IActionResult> SponsorReference(string projectRecordId)
     {
@@ -57,7 +59,7 @@ public class SponsorReferenceController
         return View(nameof(SponsorReference), viewModel);
     }
 
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Update)]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Update)]
     [HttpPost]
     public async Task<IActionResult> SaveSponsorReference(QuestionnaireViewModel model, bool saveForLater = false)
     {
@@ -108,6 +110,8 @@ public class SponsorReferenceController
         var projectRecordId = TempData.Peek(ProjectRecordId) as string;
         var irasId = TempData.Peek(IrasId) as string;
         var shortTitle = TempData.Peek(ShortProjectTitle) as string;
+        var status = TempData.Peek(ProjectModification.ProjectModificationStatus) as string;
+        var sponsorOrganisationUserId = TempData.Peek(TempDataKeys.RevisionSponsorOrganisationUserId);
 
         await SaveModificationAnswers(projectModificationId, projectRecordId!, model.Questions);
 
@@ -117,7 +121,24 @@ public class SponsorReferenceController
             TempData[ShowNotificationBanner] = true;
             TempData[ProjectModification.ProjectModificationChangeMarker] = Guid.NewGuid();
 
+            if (status is ModificationStatus.ReviseAndAuthorise)
+            {
+                return RedirectToRoute("sws:modifications", new { sponsorOrganisationUserId });
+            }
+
             return RedirectToRoute(PostApprovalRoute, new { projectRecordId });
+        }
+
+        if (status is ModificationStatus.ReviseAndAuthorise)
+        {
+            return RedirectToRoute("pmc:ModificationDetails", new
+            {
+                projectRecordId,
+                irasId,
+                shortTitle,
+                projectModificationId,
+                sponsorOrganisationUserId
+            });
         }
 
         return RedirectToRoute("pmc:reviewallchanges", new

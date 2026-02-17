@@ -4,6 +4,11 @@
 @using Rsp.Portal.Web.Helpers
 @model ModificationDetailsViewModel
 
+
+@{
+    bool isRevisionBySponsor = ViewBag.IsRevisionBySponsor as bool? ?? false;
+}
+
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
         <h2 class="govuk-heading-m">Supporting documents</h2>
@@ -40,17 +45,17 @@
                                                                                 CurrentSortDirection = Model.ProjectOverviewDocumentViewModel.Pagination?.SortDirection,
                                                                                 AdditionalParameters = new Dictionary<string, string>
                                                                                 {
-                                                                                { "projectRecordId", Model.ProjectRecordId },
-                                                                                { "irasId", Model.IrasId },
-                                                                                { "shortTitle", Model.ShortTitle! },
-                                                                                { "projectModificationId", Model.ModificationId },
-                                                                                { "documents", ModificationOverview.Documents }
+                                                                                    { "projectRecordId", Model.ProjectRecordId },
+                                                                                    { "irasId", Model.IrasId },
+                                                                                    { "shortTitle", Model.ShortTitle! },
+                                                                                    { "projectModificationId", Model.ModificationId },
+                                                                                    { "documents", ModificationOverview.Documents }
                                                                                 }
                                                                                 })
                                         </th>
                                     }
                                     <th scope="col" class="govuk-table__header">Status</th>
-                                    @if (Model.Status is ModificationStatus.InDraft)
+                                    @if (Model.Status is ModificationStatus.InDraft || (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise))
                                     {
                                         <th scope="col" class="govuk-table__header">Action</th>
                                     }
@@ -119,14 +124,14 @@
                                                 @ModificationStatusHelper.ToUiStatus(modification.Status)
                                             </strong>
                                         </td>
-                                        @if (Model.Status is ModificationStatus.InDraft)
+                                        @if (Model.Status is ModificationStatus.InDraft || (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise))
                                         {
                                             <td class="govuk-table__cell">
                                                 @if (!isFailed)
                                                 {
                                                     <a asp-route="pmc:continuetodetails"
                                                        asp-route-documentId="@modification.Id"
-                                                       asp-route-reviewAllChanges="true"
+                                                       asp-route-reviewAllChanges="false"
                                                        class="govuk-link">
                                                         Change details
                                                     </a>
@@ -152,6 +157,18 @@
         }
         <partial name="_SubmitButton" model="@("pmc:projectdocument", "Add documents", new Dictionary<string, string> { })" />
     </form>
+</div>
+
+<div status-for="Status" status-is="@ModificationStatus.ReviseAndAuthorise" class="govuk-button-group">
+    @if (isRevisionBySponsor)
+    {
+        <form method="get">
+            @{
+                ViewBag.Style = "govuk-button govuk-button--secondary";
+            }
+            <partial name="_SubmitButton" model="@("pmc:projectdocument", "Add documents", new Dictionary<string, string> { })" />
+        </form>
+    }   
 </div>
 
 <p class="govuk-body">

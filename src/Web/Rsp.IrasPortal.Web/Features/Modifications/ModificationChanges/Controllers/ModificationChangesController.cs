@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
+using Rsp.IrasPortal.Web.Attributes;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
@@ -34,7 +35,7 @@ public class ModificationChangesController
     private readonly IValidator<QuestionnaireViewModel> _validator = validator;
     private const string PostApprovalRoute = "pov:postapproval";
 
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Update)]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Update)]
     [RequestFormLimits(ValueCountLimit = int.MaxValue)]
     [HttpPost]
     public async Task<IActionResult> SaveResponses(QuestionnaireViewModel model, bool saveForLater = false)
@@ -91,11 +92,19 @@ public class ModificationChangesController
         // ------------------Save Modification Answers-------------------------
         await SaveModificationChangeAnswers(projectModificationChangeId, projectRecordId!, model.Questions);
 
+        // get data from session for Revise and authorise
+        var modificationModel = TempData.PopulateBaseProjectModificationProperties(new BaseProjectModificationViewModel());
+
         // if save for later
         if (saveForLater)
         {
             TempData[ShowNotificationBanner] = true;
             TempData[ProjectModification.ProjectModificationChangeMarker] = Guid.NewGuid();
+
+            if (modificationModel.Status is ModificationStatus.ReviseAndAuthorise)
+            {
+                return RedirectToRoute("sws:modifications", new { modificationModel.SponsorOrganisationUserId });
+            }
 
             return RedirectToRoute(PostApprovalRoute, new { projectRecordId });
         }
@@ -118,6 +127,18 @@ public class ModificationChangesController
                 navigation.NextSection = null;
 
                 TempData[ProjectModificationChange.Navigation] = JsonSerializer.Serialize(navigation);
+
+                if (modificationModel.Status is ModificationStatus.ReviseAndAuthorise)
+                {
+                    return RedirectToRoute("pmc:ModificationDetails", new
+                    {
+                        projectRecordId,
+                        modificationModel.IrasId,
+                        modificationModel.ShortTitle,
+                        projectModificationId = modificationModel.ModificationId,
+                        modificationModel.SponsorOrganisationUserId
+                    });
+                }
 
                 return RedirectToAction(nameof(ReviewChanges), new
                 {
@@ -143,6 +164,18 @@ public class ModificationChangesController
             navigation.NextSection.IsLastSectionBeforeReview ||
             navigation.NextSection.StaticViewName.Equals(nameof(ReviewChanges), StringComparison.OrdinalIgnoreCase))
         {
+            if (modificationModel.Status is ModificationStatus.ReviseAndAuthorise)
+            {
+                return RedirectToRoute("pmc:ModificationDetails", new
+                {
+                    projectRecordId,
+                    modificationModel.IrasId,
+                    modificationModel.ShortTitle,
+                    projectModificationId = modificationModel.ModificationId,
+                    modificationModel.SponsorOrganisationUserId
+                });
+            }
+
             return RedirectToAction(nameof(ReviewChanges), new
             {
                 projectRecordId,
@@ -160,7 +193,7 @@ public class ModificationChangesController
         });
     }
 
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Update)]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Update)]
     public async Task<IActionResult> DisplayQuestionnaire(string projectRecordId, string categoryId, string sectionId, bool reviewAnswers, string viewName)
     {
         // check if we are in the modification journey, so only get the modfication questions

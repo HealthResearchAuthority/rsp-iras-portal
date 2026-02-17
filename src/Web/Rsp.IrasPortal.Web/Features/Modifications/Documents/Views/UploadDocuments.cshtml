@@ -4,13 +4,13 @@
 @model Rsp.Portal.Web.Models.ModificationUploadDocumentsViewModel
 
 @{
-	var errorSummaryTitle = "There is a problem";
+    var errorSummaryTitle = "There is a problem";
 
-	// If we know the specific area of change, dynamically build the page title to make the UI clearer.
-	// Otherwise, leave the title empty (will fallback to default in the view if needed).
-	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
+    // If we know the specific area of change, dynamically build the page title to make the UI clearer.
+    // Otherwise, leave the title empty (will fallback to default in the view if needed).
+    ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 
-	var modificationParams = new Dictionary<string, string>
+    var modificationParams = new Dictionary<string, string>
 	{
 		{ "projectRecordId", Model.ProjectRecordId },
 		{ "irasId", Model.IrasId },
@@ -18,6 +18,11 @@
 		{ "projectModificationId", Model.ModificationId ?? string.Empty },
 		{ "projectModificationIdentifier", Model.ModificationIdentifier ?? string.Empty }
 	};
+
+    if (Model.Status is ModificationStatus.ReviseAndAuthorise)
+    {
+        modificationParams["sponsorOrganisationUserId"] = Model.SponsorOrganisationUserId;
+    }
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null
@@ -51,6 +56,8 @@
 			<input type="hidden" asp-for="@Model.IrasId" />
 			<input type="hidden" asp-for="@Model.ModificationId" />
 			<input type="hidden" asp-for="@Model.ModificationIdentifier" />
+            <input type="hidden" asp-for="@Model.Status" />
+            <input type="hidden" asp-for="@Model.SponsorOrganisationUserId" />
 			@{
 				var hasFileErrors = ViewData.ModelState.TryGetValue(nameof(Model.Files), out var entry)
 				&& entry.Errors.Any();
@@ -136,9 +143,18 @@
                 @{
                     ViewBag.Style = "govuk-button govuk-button--secondary";
                 }
-                <a asp-route="pmc:saveforlater" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-routeName="pov:postapproval" class="govuk-button govuk-button--secondary">
-                    Save for later
-                </a>
+                @if (Model.Status is ModificationStatus.ReviseAndAuthorise)
+                {
+                    <a asp-route="pmc:saveforlater" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId" asp-route-routeName="sws:modifications" class="govuk-button govuk-button--secondary">
+                        Save for later
+                    </a>
+                }
+                else
+                {
+                    <a asp-route="pmc:saveforlater" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-routeName="pov:postapproval" class="govuk-button govuk-button--secondary">
+                        Save for later
+                    </a>
+                }                
             </div>
         </form>
     </div>

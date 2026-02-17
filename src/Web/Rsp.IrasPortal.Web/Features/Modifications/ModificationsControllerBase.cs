@@ -243,6 +243,7 @@ public abstract class ModificationsControllerBase
         TempData[TempDataKeys.ProjectModification.ProjectModificationId] = modification.ModificationId;
         TempData[TempDataKeys.ProjectModification.OverallReviewType] = modification.ReviewType;
         TempData[TempDataKeys.IrasId] = irasId;
+        TempData[TempDataKeys.ProjectModification.DateCreated] = modification.DateCreated;
 
         var (changesResult, initialQuestions, modificationChanges) = await GetModificationChanges(modification);
         if (changesResult is not null)
