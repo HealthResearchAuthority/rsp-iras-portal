@@ -79,8 +79,6 @@ public class ModificationsController
         // Get respondent information from the current context
         var respondent = this.GetRespondentFromContext();
 
-        // Compose the full name of the respondent
-
         // Create a new project modification request
         var modificationRequest = new ProjectModificationRequest
         {
