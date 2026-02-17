@@ -27,7 +27,8 @@ public class UsersController(
     IUserManagementService userManagementService,
     IValidator<UserViewModel> validator,
     IValidator<UserSearchModel> searchValidator,
-    IReviewBodyService reviewBodyService) : Controller
+    IReviewBodyService reviewBodyService,
+    ISponsorOrganisationService sponsorOrganisationService) : Controller
 {
     private const string Error = nameof(Error);
     private const string EditUserView = nameof(EditUserView);
@@ -473,6 +474,22 @@ public class UsersController(
 
             if (updateDisabledUser.IsSuccessStatusCode)
             {
+                // GET ALL SPONSOR ORGS
+                var userId = Guid.Parse(model.Id);
+                var sponsorOrganisations = await sponsorOrganisationService.GetAllActiveSponsorOrganisationsForEnabledUser(userId);
+
+                if (sponsorOrganisations.IsSuccessStatusCode)
+                {
+                    if (sponsorOrganisations.Content.Any())
+                    {
+                        foreach (var sponsorOrganisation in sponsorOrganisations.Content)
+                        {
+                            await sponsorOrganisationService.DisableUserInSponsorOrganisation(sponsorOrganisation.RtsId,
+                                userId);
+                        }
+                    }
+                }
+
                 return View(DisableUserSuccessMessage, updateModel);
             }
         }

@@ -4,6 +4,8 @@
 @using Rsp.Portal.Application.Constants
 @using Rsp.Portal.Web.Helpers
 @using Rsp.Portal.Web.Models
+@using Microsoft.FeatureManagement
+@inject IFeatureManagerSnapshot FeatureManager
 @model dynamic
 
 @{
@@ -58,13 +60,13 @@
                                ModificationStatus.NotApproved,
                                ModificationStatus.NotAuthorised})"
                 status-mode="Show">
-                @if (modificationBaseModel.Status is not null)
-                {
-                    <div class="govuk-summary-list__row">
-                        <dt class="govuk-summary-list__key">Date created</dt>
-                        <dd class="govuk-summary-list__value">@modificationBaseModel.DateCreated</dd>
-                    </div>
-                }        
+        @if (modificationBaseModel.Status is not null)
+        {
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Date created</dt>
+                <dd class="govuk-summary-list__value">@modificationBaseModel.DateCreated</dd>
+            </div>
+        }
     </authorized>
 
     <authorized permission="@Permissions.MyResearch.ModificationsHistory_BackStage_Read">
@@ -115,7 +117,18 @@
                 </div>
             </authorized>
         }
-        
 
+        <feature name="@FeatureFlags.NotAuthorisedReason">
+            <authorized role-in="@(new []{Roles.Applicant, Roles.Sponsor})"
+                        status-for="@modificationBaseModel.Status"
+                        status-is="@ModificationStatus.NotAuthorised">
+                <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">Reason for not authorised</dt>
+                    <dd class="govuk-summary-list__value">
+                        @modificationBaseModel.ReasonNotApproved
+                    </dd>
+                </div>
+            </authorized>
+        </feature>
     }
 </dl>

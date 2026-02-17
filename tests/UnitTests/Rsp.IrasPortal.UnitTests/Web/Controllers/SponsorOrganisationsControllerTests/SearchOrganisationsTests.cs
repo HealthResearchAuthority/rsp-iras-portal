@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.Portal.Application.Constants;
@@ -59,7 +58,7 @@ public class SearchOrganisationsTests : TestServiceBase<SponsorOrganisationsCont
         Sut.TempData[TempDataKeys.ModelState].ShouldNotBeNull();
         Sut.ModelState.IsValid.ShouldBeFalse();
         Sut.ModelState["sponsor_org_search"]!.Errors.ShouldContain(e =>
-            e.ErrorMessage == "Please provide 3 or more characters to search sponsor organisation.");
+            e.ErrorMessage == "Enter at least 3 characters to search");
     }
 
     [Fact]
@@ -68,7 +67,6 @@ public class SearchOrganisationsTests : TestServiceBase<SponsorOrganisationsCont
         // Arrange
         var pageIndex = 1;
         int? pageSize = null;
-
 
         var model = new SponsorOrganisationSetupViewModel
         {
@@ -114,8 +112,6 @@ public class SearchOrganisationsTests : TestServiceBase<SponsorOrganisationsCont
         // Assert
         var redirect = result.ShouldBeOfType<RedirectResult>();
         redirect.Url.ShouldBe("/sponsororganisations/setup");
-
-    
     }
 
     [Fact]

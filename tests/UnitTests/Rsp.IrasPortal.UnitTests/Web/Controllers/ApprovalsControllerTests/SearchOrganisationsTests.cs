@@ -61,7 +61,7 @@ public class SearchOrganisationsTests : TestServiceBase<ApprovalsController>
         Sut.TempData[TempDataKeys.ModelState].ShouldNotBeNull();
         Sut.ModelState.IsValid.ShouldBeFalse();
         Sut.ModelState["sponsor_org_search"]!.Errors.ShouldContain(e =>
-            e.ErrorMessage == "Please provide 3 or more characters to search sponsor organisation.");
+            e.ErrorMessage == "Enter at least 3 characters to search");
     }
 
     [Fact]

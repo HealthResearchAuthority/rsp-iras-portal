@@ -378,14 +378,23 @@ public class AuthorisationsModificationsController
                     projectModificationId = Guid.Parse(model.ModificationId),
                     sponsorOrganisationUserId = model.SponsorOrganisationUserId
                 });
-
-            default:
-                await projectModificationsService.UpdateModificationStatus
-                (
-                    model.ProjectRecordId,
-                    Guid.Parse(model.ModificationId),
-                    ModificationStatus.NotAuthorised
-                );
+                            
+            case "NotAuthorised":
+                if (await featureManager.IsEnabledAsync(FeatureFlags.NotAuthorisedReason))
+                {
+                    return RedirectToAction(nameof(ModificationNotAuthorised), model);
+                }
+                else
+                {
+                    await projectModificationsService.UpdateModificationStatus
+                  (
+                      model.ProjectRecordId,
+                      Guid.Parse(model.ModificationId),
+                      ModificationStatus.NotAuthorised,
+                      model.RevisionDescription,
+                      model.ReasonNotApproved
+                  );
+                }
 
                 break;
         }
@@ -519,5 +528,89 @@ public class AuthorisationsModificationsController
                 sponsorOrganisationUserId, modificationChangeId);
 
         return View(response);
+    }
+
+    [Authorize(Policy = Permissions.Sponsor.Modifications_Authorise)]
+    [FeatureGate(FeatureFlags.NotAuthorisedReason)]
+    [HttpGet]
+    public async Task<IActionResult> ModificationNotAuthorised(AuthoriseModificationsOutcomeViewModel model)
+    {
+        return await ValidateRequest(model);
+    }
+
+    [Authorize(Policy = Permissions.Sponsor.Modifications_Authorise)]
+    [FeatureGate(FeatureFlags.NotAuthorisedReason)]
+    [CmsContentAction(nameof(ModificationNotAuthorised))]
+    [HttpPost]
+    public async Task<IActionResult> SaveModificationReasonNotApproved(AuthoriseModificationsOutcomeViewModel model)
+    {
+        var context = new ValidationContext<AuthoriseModificationsOutcomeViewModel>(model);
+        var validationResult = await outcomeValidator.ValidateAsync(context);
+
+        foreach (var error in validationResult.Errors)
+        {
+            ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return await ValidateRequest(model);
+        }
+
+        await projectModificationsService.UpdateModificationStatus
+               (
+                   model.ProjectRecordId,
+                   Guid.Parse(model.ModificationId),
+                   ModificationStatus.NotAuthorised,
+                   model.RevisionDescription,
+                   model.ReasonNotApproved
+               );
+        return RedirectToAction(nameof(ConfirmationModificationNotAuthorised), model);
+    }
+
+    /// <summary>
+    /// Confirmation view for modification not authorised
+    /// </summary>
+    /// <returns></returns>
+    [Authorize(Policy = Permissions.Sponsor.Modifications_Authorise)]
+    [FeatureGate(FeatureFlags.NotAuthorisedReason)]
+    [CmsContentAction(nameof(ConfirmationModificationNotAuthorised))]
+    [HttpGet]
+    public IActionResult ConfirmationModificationNotAuthorised(AuthoriseModificationsOutcomeViewModel model)
+    {
+        return View("ConfirmModificationNotAuthorised", model);
+    }
+
+    /// <summary>
+    /// Validate browser back request
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    private async Task<IActionResult> ValidateRequest(AuthoriseModificationsOutcomeViewModel model)
+    {
+        var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId);
+
+        if (!sponsorOrganisationUser.IsSuccessStatusCode)
+        {
+            return this.ServiceError(sponsorOrganisationUser);
+        }
+
+        var response = await projectModificationsService.GetModificationReviewResponses(model.ProjectRecordId, model.ProjectModificationId);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return this.ServiceError(response);
+        }
+
+        var reasonNotApproved = response.Content!.ReasonNotApproved;
+
+        if (sponsorOrganisationUser.Content!.IsAuthoriser && string.IsNullOrWhiteSpace(reasonNotApproved))
+        {
+            return View("ModificationNotAuthorised", model);
+        }
+        else
+        {
+            return Forbid();
+        }
     }
 }

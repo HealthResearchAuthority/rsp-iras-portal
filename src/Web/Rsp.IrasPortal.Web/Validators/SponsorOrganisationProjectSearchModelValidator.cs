@@ -7,7 +7,7 @@ public class SponsorOrganisationProjectSearchModelValidator : AbstractValidator<
 {
     private const string DateFromtErrorMessage = "'Search from' date must be in the correct format";
     private const string DateToErrorMessage = "'Search to' date must be in the correct format";
-    private const string DateRangeErrorMessage = "The date you’ve selected is before the search above";
+    private const string DateRangeErrorMessage = "'Search from' date must be the same as or before 'Search to' date";
 
     public SponsorOrganisationProjectSearchModelValidator()
     {

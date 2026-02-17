@@ -544,7 +544,7 @@ public class QuestionnaireController
         if (string.IsNullOrEmpty(model.SponsorOrgSearch.SearchText) || model.SponsorOrgSearch.SearchText.Length < 3)
         {
             // add model validation error if search text is empty
-            ModelState.AddModelError("sponsor_org_search", "Please provide 3 or more characters to search sponsor organisation.");
+            ModelState.AddModelError("sponsor_org_search", "Enter at least 3 characters to search");
 
             // save the model state in temp data, to use it on redirects to show validation errors
             // the modelstate will be merged using the action filter ModelStateMergeAttribute
