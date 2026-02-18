@@ -33,7 +33,15 @@ public class ReviewAllDocumentDetailsTests : TestServiceBase<DocumentsController
                 StatusCode = HttpStatusCode.OK,
                 Content = new List<ProjectModificationDocumentRequest>
                 {
-                    new ProjectModificationDocumentRequest { Id = docId, FileName = "doc1.pdf", DocumentStoragePath = "path" }
+                    new ProjectModificationDocumentRequest
+                    {
+                        Id = docId,
+                        FileName = "doc1.pdf",
+                        DocumentStoragePath = "path",
+                        ProjectModificationId = Guid.NewGuid(),
+                        ReplacedByDocumentId = Guid.NewGuid(),
+                        LinkedDocumentId = Guid.NewGuid()
+                    }
                 }
             });
 
@@ -89,8 +97,8 @@ public class ReviewAllDocumentDetailsTests : TestServiceBase<DocumentsController
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
-            [TempDataKeys.ProjectRecordId] = "record-123"
+            [TempDataKeys.ProjectModification.ProjectModificationId] = It.IsAny<Guid>(),
+            [TempDataKeys.ProjectRecordId] = It.IsAny<string>()
         };
 
         Sut.ControllerContext = new ControllerContext

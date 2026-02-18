@@ -223,7 +223,8 @@ public class SupersedeDocumentTests : TestServiceBase<DocumentsController>
             MetaDataDocumentTypeId = "type-1",
             ModificationId = Guid.NewGuid(),
             ReplacesDocumentId = Guid.NewGuid(),
-            LinkedDocumentId = Guid.NewGuid()
+            LinkedDocumentId = Guid.NewGuid(),
+            DocumentType = SupersedeDocumentsType.Tracked
         };
 
         Mocker.GetMock<IRespondentService>()
@@ -237,6 +238,29 @@ public class SupersedeDocumentTests : TestServiceBase<DocumentsController>
         Mocker.GetMock<IRespondentService>()
             .Setup(s => s.SaveModificationDocuments(It.IsAny<List<ProjectModificationDocumentRequest>>()))
             .ReturnsAsync(new ServiceResponse<bool> { StatusCode = HttpStatusCode.OK, Content = true });
+
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationDocumentAnswers(It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentAnswerDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new List<ProjectModificationDocumentAnswerDto>()
+                {
+                    new()
+                    {
+                        ModificationDocumentId = documentId,
+                        QuestionId = QuestionIds.DocumentName,
+                        AnswerText = "Answer 1",
+                        SelectedOption = "Option 1",
+                        OptionType = "SingleSelect",
+                        Answers = new List<string> { "Option 1", "Option 2" },
+                        CategoryId = "category-1",
+                        SectionId = "section-1",
+                        VersionId = "version-1",
+                        Id = Guid.NewGuid()
+                    }
+                }
+            });
 
         // Act
         var result = await Sut.SaveSupersedeDocumentDetails(
@@ -284,5 +308,72 @@ public class SupersedeDocumentTests : TestServiceBase<DocumentsController>
 
         // Assert
         Assert.IsType<RedirectToRouteResult>(result);
+    }
+
+    [Fact]
+    public async Task SaveSupersedeDocumentDetails_WithFileUpload_RedirectsToSupersedeDocumentType()
+    {
+        // Arrange
+        EnableSupersedeFeature();
+        SetupCommonContext();
+
+        var documentId = Guid.NewGuid();
+
+        var viewModel = new ModificationAddDocumentDetailsViewModel
+        {
+            DocumentId = documentId,
+            ProjectRecordId = "record-123",
+            MetaDataDocumentTypeId = "type-1",
+            ModificationId = Guid.NewGuid(),
+            ReplacesDocumentId = Guid.NewGuid(),
+            LinkedDocumentId = Guid.NewGuid(),
+            DocumentType = SupersedeDocumentsType.Tracked,
+            File = new FormFile(new MemoryStream(), 0, 100, "file", "test.xyz")
+        };
+
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationDocumentDetails(It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationDocumentRequest>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectModificationDocumentRequest { Id = documentId }
+            });
+
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.SaveModificationDocuments(It.IsAny<List<ProjectModificationDocumentRequest>>()))
+            .ReturnsAsync(new ServiceResponse<bool> { StatusCode = HttpStatusCode.OK, Content = true });
+
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationDocumentAnswers(It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentAnswerDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new List<ProjectModificationDocumentAnswerDto>()
+                {
+                    new()
+                    {
+                        ModificationDocumentId = documentId,
+                        QuestionId = QuestionIds.DocumentName,
+                        AnswerText = "Answer 1",
+                        SelectedOption = "Option 1",
+                        OptionType = "SingleSelect",
+                        Answers = new List<string> { "Option 1", "Option 2" },
+                        CategoryId = "category-1",
+                        SectionId = "section-1",
+                        VersionId = "version-1",
+                        Id = Guid.NewGuid()
+                    }
+                }
+            });
+
+        // Act
+        var result = await Sut.SaveSupersedeDocumentDetails(
+            viewModel,
+            continueToDocumentType: true,
+            linkDocument: true);
+
+        // Assert
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal(nameof(DocumentsController.AddDocumentDetailsList), redirect.ActionName);
     }
 }

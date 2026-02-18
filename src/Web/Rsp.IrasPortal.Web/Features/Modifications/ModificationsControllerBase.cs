@@ -648,28 +648,10 @@ public abstract class ModificationsControllerBase
             return true;
         }
 
-        if (!hasLinked || !hasType)
-        {
-            return true;
-        }
-
-        // Case 1: No supersede metadata at all → valid
-        if (!hasReplaces && !hasLinked && !hasType)
-            return true;
-
-        // Case 2: DocumentType exists but not linked → valid (metadata started but not linked yet)
-        if (hasType && !hasLinked)
-            return true;
-
-        // Case 3: DocumentType + LinkedDocument both set → invalid
         if (hasType && hasLinked)
             return false;
 
-        // Case 4: All three are set → invalid
-        if (hasReplaces && hasLinked && hasType)
-            return false;
-
-        // Everything else is valid
+        // All other combinations are valid
         return true;
     }
 }
