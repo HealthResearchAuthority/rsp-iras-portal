@@ -15,10 +15,7 @@
 
     var isAuthoriser = TempData[TempDataKeys.IsAuthoriser] as bool? ?? false;
     var isRevisionBySponsor = false;
-    
-    var headline = new { Value = "<p>Description of revisions made</p>" };
-    var description = new { Value = "<p>Enter a brief summary describing the revisions you have made to the modification and your reasons for making them</p>" };
-
+   
     <authorized permission="@Permissions.Sponsor.Modifications_Authorise"
                 status-for="Status"
                 status-is="@ModificationStatus.ReviseAndAuthorise">
@@ -74,6 +71,8 @@
         new Dictionary<string, MixedContentPageItem?>();
 
     var maxChangesWarning = pageContent.GetValueOrDefault("ModificationDetails.MaxChangesWarning", null);
+    var headline = pageContent.GetValueOrDefault("ModificationDetails.RevisionDescriptionHeadline", null);
+    var description = pageContent.GetValueOrDefault("ModificationDetails.RevisionDescriptionBody", null);
 }
 
 <div class="govuk-grid-row">
@@ -97,7 +96,7 @@
         @* Only show the Overall ranking if we have the changes *@
         @if (Model.ModificationChanges.Any())
         {
-            <h2 class="govuk-heading-m">Overall modification ranking</h2>
+            <h2 class="govuk-heading-m">Summary details</h2>
             <div class="govuk-summary-card">
                 <div class="govuk-summary-card__title-wrapper">
                     <h2 class="govuk-summary-card__title">
@@ -264,7 +263,9 @@
 
                     <input type="hidden" name="ProjectRecordId" value="@Model.ProjectRecordId" />                    
                     <input type="hidden" name="ModificationId" value="@Model.ModificationId" />
-                    <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />      
+                    <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" /> 
+                    <input type="hidden" name="ShortTitle" value="@Model.ShortTitle" />
+                    <input type="hidden" name="IrasId" value="@Model.IrasId" />      
                     
                     <div class="save-buttons">
                         <button type="submit" class="govuk-button" data-module="govuk-button">
@@ -272,7 +273,8 @@
                         </button>                    
                     
                         <button type="submit"
-                                asp-route-isSaveForLater="true"
+                                name="isSaveForLater"
+                                value="true"
                                 class="govuk-button govuk-button--secondary">
                             Save for later
                         </button>

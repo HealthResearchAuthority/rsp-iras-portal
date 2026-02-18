@@ -18,7 +18,18 @@
 }
 
 @section BackNavigation {
-    <partial name="_BackNavigation" model="@("sws:modifications", "Back", new Dictionary<string, string> { { "sponsorOrganisationUserId", Model.SponsorOrganisationUserId.ToString() } })" />
+    <partial name="_BackNavigation" model="@(
+                  (
+                     "sws:checkandauthorise",
+                     "Back",
+                     new Dictionary<string, string> {
+                        { "projectRecordId", Model.ProjectRecordId },
+                        { "irasId", Model.IrasId.ToString() },
+                        { "shortTitle", Model.ShortTitle },
+                        { "projectModificationId", Model.ProjectModificationId.ToString() },
+                        { "sponsorOrganisationUserId", Model.SponsorOrganisationUserId.ToString() }
+                     }
+                 ))" />
 }
 
 <div class="govuk-grid-row">

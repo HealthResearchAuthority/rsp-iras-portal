@@ -368,7 +368,8 @@ public class AuthorisationsModificationsController
                         (
                             model.ProjectRecordId,
                             Guid.Parse(model.ModificationId),
-                            ModificationStatus.ReviseAndAuthorise
+                            ModificationStatus.ReviseAndAuthorise,
+                            string.Empty
                         );
                 return RedirectToRoute("pmc:ModificationDetails", new
                 {
@@ -378,7 +379,7 @@ public class AuthorisationsModificationsController
                     projectModificationId = Guid.Parse(model.ModificationId),
                     sponsorOrganisationUserId = model.SponsorOrganisationUserId
                 });
-                            
+
             case "NotAuthorised":
                 if (await featureManager.IsEnabledAsync(FeatureFlags.NotAuthorisedReason))
                 {
@@ -501,6 +502,96 @@ public class AuthorisationsModificationsController
                     model.RevisionDescription
                 );
 
+        return RedirectToAction(nameof(Confirmation), model);
+    }
+
+    [Authorize(Policy = Permissions.Sponsor.Modifications_Authorise)]
+    [FeatureGate(FeatureFlags.RevisionAndAuthorisation)]
+    [HttpPost]
+    public async Task<IActionResult> AuthoriseRevision(AuthoriseModificationsOutcomeViewModel model, bool isSaveForLater)
+    {
+        bool skipValidation = isSaveForLater && string.IsNullOrWhiteSpace(model.RevisionDescription);
+        model.Outcome = "ReviseAndAuthorise";
+        ModelState.Remove(nameof(model.Outcome));
+
+        if (!skipValidation)
+        {
+            var context = new ValidationContext<AuthoriseModificationsOutcomeViewModel>(model);
+            var validationResult = await outcomeValidator.ValidateAsync(context);
+            if (!validationResult.IsValid)
+            {
+                foreach (var error in validationResult.Errors)
+                {
+                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                }
+
+                TempData.Remove(TempDataKeys.ModelState);
+                TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
+
+                return RedirectToRoute("pmc:ModificationDetails", new
+                {
+                    projectRecordId = model.ProjectRecordId,
+                    irasId = model.IrasId,
+                    shortTitle = model.ShortTitle,
+                    projectModificationId = Guid.Parse(model.ModificationId),
+                    sponsorOrganisationUserId = model.SponsorOrganisationUserId
+                });
+            }
+        }
+
+        if (isSaveForLater)
+        {
+            await projectModificationsService.UpdateModificationStatus
+                (
+                    model.ProjectRecordId,
+                    Guid.Parse(model.ModificationId),
+                    ModificationStatus.ReviseAndAuthorise,
+                    model.RevisionDescription
+                );
+            return RedirectToAction(nameof(Modifications), new { sponsorOrganisationUserId = model.SponsorOrganisationUserId });
+        }
+
+        var reviewType = string.IsNullOrWhiteSpace(model.ReviewType)
+                    ? "No review required"
+                    : model.ReviewType;
+        //call modification service and check if any modifications are in reviewbody status
+        var modificationsResponse = await projectModificationsService.GetModificationsForProject(model.ProjectRecordId, new ModificationSearchRequest());
+        if (modificationsResponse.Content?.Modifications?
+                .Any(m => m.Status == ModificationStatus.WithReviewBody) == true)
+        {
+            await projectModificationsService.UpdateModificationStatus
+                (
+                    model.ProjectRecordId,
+                    Guid.Parse(model.ModificationId),
+                    ModificationStatus.ReviseAndAuthorise,
+                    model.RevisionDescription
+                );
+            return RedirectToAction(nameof(CanSubmitToReviewBody), model);
+        }
+        switch (reviewType)
+        {
+            case "Review required":
+                await projectModificationsService.UpdateModificationStatus
+                (
+                    model.ProjectRecordId,
+                    Guid.Parse(model.ModificationId),
+                    ModificationStatus.WithReviewBody,
+                    model.RevisionDescription
+                );
+                break;
+
+            default:
+                await projectModificationsService.UpdateModificationStatus
+                (
+                    model.ProjectRecordId,
+                    Guid.Parse(model.ModificationId),
+                    ModificationStatus.Approved,
+                    model.RevisionDescription
+                );
+                break;
+        }
+
+        model.Outcome = "Authorised";
         return RedirectToAction(nameof(Confirmation), model);
     }
 

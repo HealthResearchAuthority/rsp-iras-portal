@@ -15,8 +15,8 @@ public struct ModificationStatus
     public const string Received = "Received";
 
     public const string ReviewInProgress = "Review in progress";
-    public const string RequestRevisions = "Request revisions";
-    public const string ReviseAndAuthorise = "Revise and authorise";
+    public const string RequestRevisions = "Request revision";
+    public const string ReviseAndAuthorise = "Sponsor revises modification";
 
     public static readonly List<string> Types = [
         InDraft,
