@@ -8,8 +8,8 @@ using Rsp.Portal.Application.Responses;
 namespace Rsp.Portal.Application.Services;
 
 /// <summary>
-/// Service interface for managing project modifications.
-/// Marked as IInterceptable to enable start/end logging for all methods.
+/// Service interface for managing project modifications. Marked as IInterceptable to enable
+/// start/end logging for all methods.
 /// </summary>
 public interface IProjectModificationsService : IInterceptable
 {
@@ -32,17 +32,19 @@ public interface IProjectModificationsService : IInterceptable
     /// </summary>
     /// <param name="projectRecordId">The unique identifier of the project record.</param>
     /// <param name="status">The status to filter modifications by.</param>
-    /// <returns>A service response containing a collection of project modifications with the specified status.</returns>
+    /// <returns>
+    /// A service response containing a collection of project modifications with the specified status.
+    /// </returns>
     Task<ServiceResponse<IEnumerable<ProjectModificationResponse>>> GetModificationsByStatus(string projectRecordId, string status);
 
-    /// <summary>
-    /// Gets all modifications with filtering, sorting and pagination
-    /// <param name="searchQuery">Object containing filtering criteria for modifications.</param>
-    /// <param name="pageNumber">The number of the page to retrieve (used for pagination - 1-based).</param>
-    /// <param name="pageSize">The number of items per page (used for pagination).</param>
-    /// <param name="sortField">The field name by which the results should be sorted.</param>
-    /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
-    /// <returns>Returns a paginated list of modifications matching the search criteria.</returns>
+    /// <summary> Gets all modifications with filtering, sorting and pagination <param
+    /// name="searchQuery">Object containing filtering criteria for modifications.</param> <param
+    /// name="pageNumber">The number of the page to retrieve (used for pagination -
+    /// 1-based).</param> <param name="pageSize">The number of items per page (used for
+    /// pagination).</param> <param name="sortField">The field name by which the results should be
+    /// sorted.</param> <param name="sortDirection">The direction of sorting: "asc" for ascending or
+    /// "desc" for descending.</param> <returns>Returns a paginated list of modifications matching
+    /// the search criteria.</returns>
     public Task<ServiceResponse<GetModificationsResponse>> GetModifications
    (
        ModificationSearchRequest searchQuery,
@@ -55,12 +57,16 @@ public interface IProjectModificationsService : IInterceptable
     /// <summary>
     /// Gets modifications for specific ProjectRecordId with filtering, sorting and pagination
     /// </summary>
-    /// <param name="projectRecordId">The unique identifier of the project record for which modifications are requested.</param>
+    /// <param name="projectRecordId">
+    /// The unique identifier of the project record for which modifications are requested.
+    /// </param>
     /// <param name="searchQuery">Object containing filtering criteria for modifications.</param>
     /// <param name="pageNumber">The number of the page to retrieve (used for pagination - 1-based).</param>
     /// <param name="pageSize">The number of items per page (used for pagination).</param>
     /// <param name="sortField">The field name by which the results should be sorted.</param>
-    /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
+    /// <param name="sortDirection">
+    /// The direction of sorting: "asc" for ascending or "desc" for descending.
+    /// </param>
     /// <returns>Returns a paginated list of modifications related to the specified project record.</returns>
     public Task<ServiceResponse<GetModificationsResponse>> GetModificationsForProject
    (
@@ -82,45 +88,60 @@ public interface IProjectModificationsService : IInterceptable
     /// <summary>
     /// Creates a new project modification.
     /// </summary>
-    /// <param name="projectModificationRequest">The request object containing details for the new modification.</param>
+    /// <param name="projectModificationRequest">
+    /// The request object containing details for the new modification.
+    /// </param>
     /// <returns>An asynchronous operation that returns the newly created project modification.</returns>
     Task<ServiceResponse<ProjectModificationResponse>> CreateModification(ProjectModificationRequest projectModificationRequest);
 
     /// <summary>
     /// Creates a new change for an existing project modification.
     /// </summary>
-    /// <param name="projectModificationChangeRequest">The request object containing details for the modification change.</param>
+    /// <param name="projectModificationChangeRequest">
+    /// The request object containing details for the modification change.
+    /// </param>
     /// <returns>An asynchronous operation that returns the updated project modification change.</returns>
     Task<ServiceResponse<ProjectModificationChangeResponse>> CreateModificationChange(ProjectModificationChangeRequest projectModificationChangeRequest);
 
     /// <summary>
     /// Gets a change for an existing project modification.
     /// </summary>
-    /// <param name="modificationChangeId">The unique identifier of the project modification change to retrieve.</param>
+    /// <param name="modificationChangeId">
+    /// The unique identifier of the project modification change to retrieve.
+    /// </param>
     /// <returns>
-    /// A <see cref="Task"/> representing the asynchronous operation, containing a <see cref="ServiceResponse{ProjectModificationChangeResponse}"/>
-    /// with the details of the requested project modification change if found; otherwise, an error response.
+    /// A <see cref="Task"/> representing the asynchronous operation, containing a <see
+    /// cref="ServiceResponse{ProjectModificationChangeResponse}"/> with the details of the
+    /// requested project modification change if found; otherwise, an error response.
     /// </returns>
     Task<ServiceResponse<ProjectModificationChangeResponse>> GetModificationChange(Guid modificationChangeId);
 
     /// <summary>
     /// Gets a change for an existing project modification.
     /// </summary>
-    /// <param name="projectModificationChangeRequest">The request object containing details for the modification change.</param>
+    /// <param name="projectModificationChangeRequest">
+    /// The request object containing details for the modification change.
+    /// </param>
     /// <returns>
-    /// A <see cref="Task"/> representing the asynchronous operation, containing a <see cref="ServiceResponse{ProjectModificationChangeResponse}"/>
-    /// with the details of the requested project modification change if found; otherwise, an error response.
+    /// A <see cref="Task"/> representing the asynchronous operation, containing a <see
+    /// cref="ServiceResponse{ProjectModificationChangeResponse}"/> with the details of the
+    /// requested project modification change if found; otherwise, an error response.
     /// </returns>
     Task<ServiceResponse> UpdateModificationChange(ProjectModificationChangeRequest projectModificationChangeRequest);
 
     /// <summary>
     /// Retrieves all changes associated with a specific project modification.
     /// </summary>
-    /// <param name="projectRecordId">The unique identifier of the project record for which to retrieve changes.</param>
-    /// <param name="projectModificationId">The unique identifier of the project modification for which to retrieve changes.</param>
+    /// <param name="projectRecordId">
+    /// The unique identifier of the project record for which to retrieve changes.
+    /// </param>
+    /// <param name="projectModificationId">
+    /// The unique identifier of the project modification for which to retrieve changes.
+    /// </param>
     /// <returns>
-    /// An asynchronous operation that returns a service response containing a collection of
-    /// <see cref="ProjectModificationChangeResponse"/> objects representing the changes for the specified project modification.
+    /// An asynchronous operation that returns a service response containing a collection of <see
+    /// cref="ProjectModificationChangeResponse"/> objects representing the changes for the
+    /// specified project modification.
     /// </returns>
     Task<ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>> GetModificationChanges(string projectRecordId, Guid projectModificationId);
 
@@ -142,12 +163,16 @@ public interface IProjectModificationsService : IInterceptable
     /// <summary>
     /// Gets modifications for specific ProjectRecordId with filtering, sorting and pagination
     /// </summary>
-    /// <param name="projectRecordId">The unique identifier of the project record for which modifications are requested.</param>
+    /// <param name="projectRecordId">
+    /// The unique identifier of the project record for which modifications are requested.
+    /// </param>
     /// <param name="searchQuery">Object containing filtering criteria for modifications.</param>
     /// <param name="pageNumber">The number of the page to retrieve (used for pagination - 1-based).</param>
     /// <param name="pageSize">The number of items per page (used for pagination).</param>
     /// <param name="sortField">The field name by which the results should be sorted.</param>
-    /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
+    /// <param name="sortDirection">
+    /// The direction of sorting: "asc" for ascending or "desc" for descending.
+    /// </param>
     /// <returns>Returns a paginated list of modifications related to the specified project record.</returns>
     public Task<ServiceResponse<ProjectOverviewDocumentResponse>> GetDocumentsForProjectOverview
    (
@@ -162,17 +187,22 @@ public interface IProjectModificationsService : IInterceptable
     /// <summary>
     /// Removes a change from an existing project modification.
     /// </summary>
-    /// <param name="modificationChangeId">The unique identifier of the project modification change to remove.</param>
+    /// <param name="modificationChangeId">
+    /// The unique identifier of the project modification change to remove.
+    /// </param>
     /// <returns>
-    /// A <see cref="Task"/> representing the asynchronous operation, containing a <see cref="ServiceResponse{ProjectModificationChangeResponse}"/>
-    /// with the details of the requested project modification change if found; otherwise, an error response.
+    /// A <see cref="Task"/> representing the asynchronous operation, containing a <see
+    /// cref="ServiceResponse{ProjectModificationChangeResponse}"/> with the details of the
+    /// requested project modification change if found; otherwise, an error response.
     /// </returns>
     Task<ServiceResponse> RemoveModificationChange(Guid modificationChangeId);
 
     /// <summary>
     /// Updates the status of an existing project modification by its unique identifier.
     /// </summary>
-    /// <param name="projectRecordId">The unique identifier of the project record to which the modification belongs.</param>
+    /// <param name="projectRecordId">
+    /// The unique identifier of the project record to which the modification belongs.
+    /// </param>
     /// <param name="modificationId">The unique identifier of the project modification to update.</param>
     /// <returns>
     /// A task representing the asynchronous operation, containing a <see cref="ServiceResponse"/>
@@ -183,7 +213,9 @@ public interface IProjectModificationsService : IInterceptable
     /// <summary>
     /// Updates an existing project modification.
     /// </summary>
-    /// <param name="projectModificationRequest">The request containing the details of the project modification to update.</param>
+    /// <param name="projectModificationRequest">
+    /// The request containing the details of the project modification to update.
+    /// </param>
     /// <returns>
     /// A task representing the asynchronous operation, containing a <see cref="ServiceResponse"/>
     /// that reflects the success or failure of the update operation.
@@ -218,12 +250,16 @@ public interface IProjectModificationsService : IInterceptable
     /// <summary>
     /// Gets modifications for specific sponsorOrganisationUserId with filtering, sorting and pagination
     /// </summary>
-    /// <param name="sponsorOrganisationUserId">The unique identifier of the sponsor organisation user for which modifications are requested.</param>
+    /// <param name="sponsorOrganisationUserId">
+    /// The unique identifier of the sponsor organisation user for which modifications are requested.
+    /// </param>
     /// <param name="searchQuery">Object containing filtering criteria for modifications.</param>
     /// <param name="pageNumber">The number of the page to retrieve (used for pagination - 1-based).</param>
     /// <param name="pageSize">The number of items per page (used for pagination).</param>
     /// <param name="sortField">The field name by which the results should be sorted.</param>
-    /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
+    /// <param name="sortDirection">
+    /// The direction of sorting: "asc" for ascending or "desc" for descending.
+    /// </param>
     /// <returns>Returns a paginated list of modifications related to the specified project record.</returns>
     public Task<ServiceResponse<GetModificationsResponse>> GetModificationsBySponsorOrganisationUserId
    (
@@ -232,7 +268,8 @@ public interface IProjectModificationsService : IInterceptable
        int pageNumber = 1,
        int pageSize = 20,
        string sortField = nameof(ModificationsDto.SentToSponsorDate),
-       string sortDirection = SortDirections.Descending
+       string sortDirection = SortDirections.Descending,
+       string rtsId = ""
    );
 
     /// <summary>
@@ -252,12 +289,16 @@ public interface IProjectModificationsService : IInterceptable
     /// <summary>
     /// Gets modifications for specific modificationId with filtering, sorting and pagination
     /// </summary>
-    /// <param name="modificationId">The unique identifier of the project record for which modifications are requested.</param>
+    /// <param name="modificationId">
+    /// The unique identifier of the project record for which modifications are requested.
+    /// </param>
     /// <param name="searchQuery">Object containing filtering criteria for modifications.</param>
     /// <param name="pageNumber">The number of the page to retrieve (used for pagination - 1-based).</param>
     /// <param name="pageSize">The number of items per page (used for pagination).</param>
     /// <param name="sortField">The field name by which the results should be sorted.</param>
-    /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
+    /// <param name="sortDirection">
+    /// The direction of sorting: "asc" for ascending or "desc" for descending.
+    /// </param>
     /// <returns>Returns a paginated list of modifications related to the specified project record.</returns>
     public Task<ServiceResponse<ProjectOverviewDocumentResponse>> GetDocumentsForModification
    (
@@ -272,7 +313,9 @@ public interface IProjectModificationsService : IInterceptable
     /// <summary>
     /// Updates an existing project modification change.
     /// </summary>
-    /// <param name="modificationId">The request object containing the updated details for the modification change.</param>
+    /// <param name="modificationId">
+    /// The request object containing the updated details for the modification change.
+    /// </param>
     public Task<ServiceResponse> CheckDocumentAccess(Guid modificationId);
 
     /// <summary>

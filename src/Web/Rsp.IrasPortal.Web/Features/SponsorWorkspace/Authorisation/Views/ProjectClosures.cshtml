@@ -9,10 +9,21 @@
 @model ProjectClosuresViewModel
 
 @section Breadcrumb {
-    @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+    @if (Model.SponsorOrgansationCount > 1)
     {
-        ("Sponsor workspace", Url.RouteUrl("sws:sponsorworkspace"))
-    })
+        @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+        {
+            ("Sponsor workspace", Url.RouteUrl("sws:sponsorworkspace")),
+            ("Authorisations", Url.RouteUrl("sws:sponsorselector", new { SponsorOrganisationUserId = Model.SponsorOrganisationUserId.ToString() }))
+        })
+    }
+    else
+    {
+        @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+        {
+            ("Sponsor workspace", Url.RouteUrl("sws:sponsorworkspace")),
+        })
+    }
 }
 
 @{
@@ -33,7 +44,12 @@
     <div class="govuk-grid-column-full">
 
         <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
-        <h2 class="govuk-heading-l" id="title">@Html.Raw(headline?.Value)</h2>
+        <h2 class="govuk-heading-l" id="title">
+            @Html.Raw(headline?.Value)
+            @(Model.SponsorOrgansationCount > 1 
+                ? $" for {Model.SponsorOrganisationName}" 
+                : string.Empty)
+        </h2>
 
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
@@ -58,13 +74,14 @@
                     </div>
 
                     <input hidden asp-for="SponsorOrganisationUserId" />
+                    <input hidden asp-for="RtsId" />
                     <input hidden readonly name="PageSize" value="@Model.Pagination?.PageSize" />
                     <input hidden readonly name="PageNumber" value="@Model.Pagination?.PageNumber" />
                 </form>
             </div>
         </div>
 
-        <partial name="_AuthorisationsNavigationTabPartial" model="@Model.SponsorOrganisationUserId" />
+        <partial name="_AuthorisationsNavigationTabPartial" model="@(Model.SponsorOrganisationUserId, Model.RtsId)" />
 
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-full">
@@ -117,7 +134,8 @@
                                             <a class="govuk-link"
                                                asp-route="@(projectRecord.Status == ProjectClosureStatus.WithSponsor ? "sws:checkandauthoriseprojectclosure" : "pov:projectdetails")"
                                                asp-route-projectRecordId="@projectRecord.ProjectRecordId"                                              
-                                               asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId">
+                                               asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId"
+                                               asp-route-rtsId="@Model.RtsId">
                                                 <strong>@projectRecord.ShortProjectTitle</strong>
                                             </a>
                                         </td>

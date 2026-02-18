@@ -9,4 +9,7 @@ public class ProjectClosuresViewModel
     public IEnumerable<ProjectClosuresModel> ProjectRecords { get; set; } = [];
     public PaginationViewModel? Pagination { get; set; }
     public Guid SponsorOrganisationUserId { get; set; }
+    public string RtsId { get; set; }
+    public string SponsorOrganisationName { get; set; }
+    public int SponsorOrgansationCount { get; set; }
 }
