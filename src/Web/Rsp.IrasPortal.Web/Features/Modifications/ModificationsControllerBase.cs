@@ -625,6 +625,7 @@ public abstract class ModificationsControllerBase
                     IsMandatory = q.IsMandatory,
                     IsOptional = q.IsOptional,
                     ShowOriginalAnswer = q.ShowOriginalAnswer,
+                    SelectedOption = q.SelectedOption,
                     Rules = q.Rules
                 })
         };

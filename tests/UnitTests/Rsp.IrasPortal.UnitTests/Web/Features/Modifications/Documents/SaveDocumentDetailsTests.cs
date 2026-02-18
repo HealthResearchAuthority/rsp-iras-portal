@@ -24,6 +24,11 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
     public async Task SaveDocumentDetails_WhenValidationFails_ReturnsAddDocumentDetailsView()
     {
         // Arrange
+        var featureManager = new Mock<IFeatureManager>();
+        featureManager
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.SupersedingDocuments))
+            .ReturnsAsync(true);
+
         var viewModel = new ModificationAddDocumentDetailsViewModel
         {
             DocumentId = Guid.NewGuid(),
@@ -238,9 +243,21 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
         // Arrange
         var viewModel = new ModificationAddDocumentDetailsViewModel
         {
-            DocumentId = Guid.NewGuid(),
-            Questions = []
+            DocumentId = It.IsAny<Guid>(),
+            Questions = new List<QuestionViewModel>
+            {
+                new() {
+                    Index = 0,
+                    QuestionId = QuestionIds.PreviousVersionOfDocument,
+                    SelectedOption = QuestionIds.PreviousVersionOfDocumentYesOption,
+                    AnswerText = "some text"
+                }
+            }
         };
+
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.SupersedingDocuments))
+            .ReturnsAsync(true);
 
         Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
             .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), default))
@@ -251,7 +268,63 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
             .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new CmsQuestionSetResponse { }
+                Content = new CmsQuestionSetResponse
+                {
+                    ActiveFrom = DateTime.UtcNow,
+                    ActiveTo = DateTime.UtcNow.AddYears(1),
+                    Id = "pdm-document-metadata",
+                    Version = "1.0",
+                    Sections = new List<SectionModel>()
+                    {
+                        new SectionModel
+                        {
+                            Id = "Q1",
+                            Questions = new List<QuestionModel>()
+                            {
+                                new QuestionModel
+                                {
+                                    Id = QuestionIds.PreviousVersionOfDocument,
+                                    Version = "1.0",
+                                    CategoryId = "cat1",
+                                    SectionSequence = 1,
+                                    Sequence = 1,
+                                    ShortName = "Short Q1",
+                                    AnswerDataType = "Dropdown",
+                                    Conformance = "Mandatory",
+                                    ShowOriginalAnswer = false,
+                                    QuestionId = QuestionIds.PreviousVersionOfDocument,
+                                    Name = "Test Question",
+                                    QuestionFormat = "dropdown",
+                                    Answers =
+                                    [
+                                        new() { Id = QuestionIds.PreviousVersionOfDocument, OptionName = QuestionIds.PreviousVersionOfDocumentYesOption },
+                                        new() { Id = "opt2", OptionName = "Option 2" }
+                                    ],
+                                    ValidationRules =
+                                    [
+                                        new RuleModel { Mode = "And", QuestionId = QuestionIds.PreviousVersionOfDocument, Conditions = [new ConditionModel {OptionType= "M" } ]}
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+        var document = new ProjectModificationDocumentRequest
+        {
+            Id = It.IsAny<Guid>(),
+            FileName = "doc.pdf",
+            FileSize = 123,
+            DocumentStoragePath = "path"
+        };
+
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationDocumentDetails(It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationDocumentRequest>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = document
             });
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
@@ -268,7 +341,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
 
         // Assert
         var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal(nameof(DocumentsController.AddDocumentDetailsList), redirect.ActionName);
+        Assert.Equal(nameof(DocumentsController.SupersedeDocumentToReplace), redirect.ActionName);
     }
 
     [Fact]

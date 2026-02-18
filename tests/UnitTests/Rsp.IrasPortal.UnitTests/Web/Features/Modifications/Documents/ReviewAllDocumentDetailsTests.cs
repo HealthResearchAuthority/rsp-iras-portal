@@ -3,6 +3,7 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.FeatureManagement;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs.CmsQuestionset;
 using Rsp.Portal.Application.DTOs.Requests;
@@ -21,6 +22,10 @@ public class ReviewAllDocumentDetailsTests : TestServiceBase<DocumentsController
         // Arrange
         var docId = Guid.NewGuid();
 
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.SupersedingDocuments))
+            .ReturnsAsync(true);
+
         Mocker.GetMock<IRespondentService>()
             .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
@@ -32,12 +37,16 @@ public class ReviewAllDocumentDetailsTests : TestServiceBase<DocumentsController
                 }
             });
 
-        Mocker.GetMock<IRespondentService>()
+        Mocker
+            .GetMock<IRespondentService>()
             .Setup(s => s.GetModificationDocumentAnswers(docId))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentAnswerDto>>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new List<ProjectModificationDocumentAnswerDto>()
+                Content = new List<ProjectModificationDocumentAnswerDto>
+                {
+                    new ProjectModificationDocumentAnswerDto { QuestionId = QuestionIds.PreviousVersionOfDocument, AnswerText = QuestionIds.PreviousVersionOfDocumentYesOption, OptionType = "dropdown", SelectedOption = QuestionIds.PreviousVersionOfDocumentYesOption }
+                }
             });
 
         Mocker.GetMock<ICmsQuestionsetService>()
@@ -94,9 +103,7 @@ public class ReviewAllDocumentDetailsTests : TestServiceBase<DocumentsController
         var result = await Sut.ReviewAllDocumentDetails();
 
         // Assert
-        var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal("SponsorReference", redirect.ActionName);
-        Assert.Equal("SponsorReference", redirect.ControllerName);
+        var redirect = Assert.IsType<ViewResult>(result);
     }
 
     [Fact]
