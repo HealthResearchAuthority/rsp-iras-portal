@@ -162,9 +162,12 @@ public class ReviewAllChangesController
 
         if (reviewResponses.IsSuccessStatusCode && reviewResponses.Content is not null)
         {
+            var rfiReasons = reviewResponses.Content.RequestForInformationReasons;
+
             model.ReviewOutcome = reviewResponses.Content.ReviewOutcome;
             model.Comment = reviewResponses.Content.Comment;
             model.ReasonNotApproved = reviewResponses.Content.ReasonNotApproved;
+            model.RequestForInformationReasons = rfiReasons.Count != 0 ? rfiReasons : [string.Empty];
             SaveToTempData(model);
         }
 
@@ -191,9 +194,14 @@ public class ReviewAllChangesController
         storedModel.ReviewOutcome = model.ReviewOutcome;
         storedModel.Comment = model.Comment;
 
-        if (model.ReviewOutcome == ModificationStatus.Approved)
+        if (model.ReviewOutcome != ModificationStatus.NotApproved)
         {
             storedModel.ReasonNotApproved = null;
+        }
+
+        if (model.ReviewOutcome != ModificationStatus.RequestForInformation)
+        {
+            storedModel.RequestForInformationReasons = [string.Empty];
         }
 
         SaveToTempData(storedModel);
@@ -220,6 +228,10 @@ public class ReviewAllChangesController
         if (model.ReviewOutcome == ModificationStatus.NotApproved)
         {
             return RedirectToAction(nameof(ReasonNotApproved));
+        }
+        else if (model.ReviewOutcome == ModificationStatus.RequestForInformation)
+        {
+            return RedirectToAction(nameof(RequestForFurtherInformation));
         }
 
         return RedirectToAction(nameof(ConfirmReviewOutcome));
@@ -258,28 +270,78 @@ public class ReviewAllChangesController
 
         storedModel.ReasonNotApproved = model.ReasonNotApproved;
 
+        return await SaveAndRedirect(storedModel, saveForLater);
+    }
+
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Approve)]
+    [HttpGet]
+    public IActionResult RequestForFurtherInformation()
+    {
+        var model = GetFromTempData();
+
+        if (model is null)
+        {
+            return this.ServiceError(_reviewOutcomeNotFoundError);
+        }
+
+        return View(model);
+    }
+
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Approve)]
+    [HttpPost]
+    public async Task<IActionResult> RequestForFurtherInformation(ReviewOutcomeViewModel model, bool saveForLater = false)
+    {
+        var storedModel = GetFromTempData() ?? new ReviewOutcomeViewModel();
+
+        if (!saveForLater && model.RequestForInformationReasons.All(string.IsNullOrEmpty))
+        {
+            ModelState.AddModelError
+            (
+                nameof(model.RequestForInformationReasons) + "[0]",
+                "You have not provided a reason. Enter the reason for requesting further information from the applicant before you continue."
+            );
+
+            return View(storedModel);
+        }
+
+        if (model.RequestForInformationReasons.Any(r => r.Length > 300))
+        {
+            return View(storedModel);
+        }
+
+        storedModel.RequestForInformationReasons = [.. model.RequestForInformationReasons.Where(r => !string.IsNullOrEmpty(r))];
+
+        return await SaveAndRedirect(storedModel, saveForLater);
+    }
+
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Approve)]
+    [HttpPost]
+    public IActionResult AddRfiReason(ReviewOutcomeViewModel model)
+    {
+        var storedModel = GetFromTempData() ?? new ReviewOutcomeViewModel();
+
+        model.RequestForInformationReasons.Add(string.Empty);
+
+        storedModel.RequestForInformationReasons = model.RequestForInformationReasons;
+
         SaveToTempData(storedModel);
 
-        var saveResponsesResponse = await SaveResponses(storedModel);
+        return RedirectToAction(nameof(RequestForFurtherInformation));
+    }
 
-        if (!saveResponsesResponse.IsSuccessStatusCode)
-        {
-            return this.ServiceError(saveResponsesResponse);
-        }
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Approve)]
+    [HttpPost]
+    public IActionResult RemoveRfiReason(ReviewOutcomeViewModel model, int index)
+    {
+        var storedModel = GetFromTempData() ?? new ReviewOutcomeViewModel();
 
-        if (saveForLater)
-        {
-            TempData.Clear();
-            TempData[TempDataKeys.ChangeSuccess] = true;
-            if (User.IsInRole(Roles.StudyWideReviewer))
-            {
-                return RedirectToAction("Index", "MyTasklist");
-            }
+        model.RequestForInformationReasons.RemoveAt(index);
 
-            return RedirectToAction("Index", "ModificationsTasklist");
-        }
+        storedModel.RequestForInformationReasons = model.RequestForInformationReasons;
 
-        return RedirectToAction(nameof(ConfirmReviewOutcome));
+        SaveToTempData(storedModel);
+
+        return RedirectToAction(nameof(RequestForFurtherInformation));
     }
 
     [Authorize(Policy = Permissions.MyResearch.Modifications_Approve)]
@@ -449,12 +511,39 @@ public class ReviewAllChangesController
             ProjectModificationId = Guid.Parse(model.ModificationDetails.ModificationId!),
             Outcome = model.ReviewOutcome!,
             Comment = model.Comment,
-            ReasonNotApproved = model.ReasonNotApproved
+            ReasonNotApproved = model.ReasonNotApproved,
+            RequestForInformationReasons = [.. model.RequestForInformationReasons.Where(r => !string.IsNullOrEmpty(r))]
         };
 
         SaveToTempData(model);
 
         return await projectModificationsService.SaveModificationReviewResponses(request);
+    }
+
+    private async Task<IActionResult> SaveAndRedirect(ReviewOutcomeViewModel model, bool saveForLater)
+    {
+        SaveToTempData(model);
+
+        var saveResponsesResponse = await SaveResponses(model);
+
+        if (!saveResponsesResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(saveResponsesResponse);
+        }
+
+        if (saveForLater)
+        {
+            TempData.Clear();
+            TempData[TempDataKeys.ChangeSuccess] = true;
+            if (User.IsInRole(Roles.StudyWideReviewer))
+            {
+                return RedirectToAction("Index", "MyTasklist");
+            }
+
+            return RedirectToAction("Index", "ModificationsTasklist");
+        }
+
+        return RedirectToAction(nameof(ConfirmReviewOutcome));
     }
 }
 

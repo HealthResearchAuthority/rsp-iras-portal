@@ -314,6 +314,176 @@ public class ReviewOutcome_Journey : TestServiceBase<ReviewAllChangesController>
     }
 
     [Fact]
+    public void RequestForFurtherInformation_Get_ReturnsError_When_NoTempData()
+    {
+        // Arrange
+        var http = new DefaultHttpContext();
+        Sut.ControllerContext = new() { HttpContext = http };
+        Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>());
+
+        // Act
+        var result = Sut.RequestForFurtherInformation();
+
+        // Assert
+        result.ShouldBeOfType<StatusCodeResult>().StatusCode.ShouldBe(404);
+    }
+
+    [Theory, AutoData]
+    public void RequestForFurtherInformation_Get_ReturnsView_When_TempData_Exists
+    (
+        Guid modificationId,
+        ReviewOutcomeViewModel model
+    )
+    {
+        // Arrange
+        model.ModificationDetails.ModificationId = modificationId.ToString();
+        model.ReviewOutcome = null;
+        SetupTempData(model);
+
+        // Act
+        var result = Sut.RequestForFurtherInformation();
+
+        // Assert
+        result.ShouldBeOfType<ViewResult>().Model.ShouldBeOfType<ReviewOutcomeViewModel>();
+    }
+
+    [Fact]
+    public async Task RequestForFurtherInformation_Post_ReturnsView_When_ValidationFails()
+    {
+        // Arrange
+        SetupTempData(new ReviewOutcomeViewModel());
+
+        var model = new ReviewOutcomeViewModel
+        {
+            RequestForInformationReasons = [string.Empty] // validation fail
+        };
+
+        // Act
+        var result = await Sut.RequestForFurtherInformation(model, saveForLater: false);
+
+        // Assert
+        var view = result.ShouldBeOfType<ViewResult>();
+        Sut.ModelState.ContainsKey(nameof(model.RequestForInformationReasons) + "[0]").ShouldBeTrue();
+    }
+
+    [Theory, AutoData]
+    public async Task RequestForFurtherInformation_Post_SaveForLater_Redirects_To_MyTasklist
+    (
+        Guid modificationId,
+        ReviewOutcomeViewModel stored
+    )
+    {
+        // Arrange
+        stored.ModificationDetails.ModificationId = modificationId.ToString();
+        SetupTempData(stored);
+        SetUserRoles(Roles.StudyWideReviewer);
+
+        _modificationService
+            .Setup(s => s.SaveModificationReviewResponses(It.IsAny<ProjectModificationReviewRequest>()))
+            .ReturnsAsync(new ServiceResponse<object> { StatusCode = HttpStatusCode.OK });
+
+        // Act
+        var result = await Sut.RequestForFurtherInformation(stored, saveForLater: true);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe("Index");
+        redirect.ControllerName.ShouldBe("MyTasklist");
+    }
+
+    [Theory, AutoData]
+    public async Task RequestForFurtherInformation_Post_SaveForLater_Redirects_To_ModTasklist
+    (
+        Guid modificationId,
+        ReviewOutcomeViewModel stored
+    )
+    {
+        // Arrange
+        stored.ModificationDetails.ModificationId = modificationId.ToString();
+        SetupTempData(stored);
+        SetUserRoles(Roles.TeamManager);
+
+        _modificationService
+            .Setup(s => s.SaveModificationReviewResponses(It.IsAny<ProjectModificationReviewRequest>()))
+            .ReturnsAsync(new ServiceResponse<object> { StatusCode = HttpStatusCode.OK });
+
+        // Act
+        var result = await Sut.RequestForFurtherInformation(stored, saveForLater: true);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe("Index");
+        redirect.ControllerName.ShouldBe("ModificationsTasklist");
+    }
+
+    [Theory, AutoData]
+    public async Task RequestForFurtherInformation_Post_Redirects_To_ConfirmReviewOutcome_When_Valid
+    (
+        Guid modificationId,
+        ReviewOutcomeViewModel stored
+    )
+    {
+        // Arrange
+        stored.ModificationDetails.ModificationId = modificationId.ToString();
+        SetupTempData(stored);
+
+        _modificationService
+            .Setup(s => s.SaveModificationReviewResponses(It.IsAny<ProjectModificationReviewRequest>()))
+            .ReturnsAsync(new ServiceResponse<object> { StatusCode = HttpStatusCode.OK });
+
+        // Act
+        var result = await Sut.RequestForFurtherInformation(stored);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe(nameof(Sut.ConfirmReviewOutcome));
+    }
+
+    [Theory, AutoData]
+    public void AddRfiReason_Modifies_The_Model_And_Redirects_To_RequestForFurtherInformation
+    (
+        ReviewOutcomeViewModel stored
+    )
+    {
+        // Arrange
+        stored.RequestForInformationReasons = ["Reason 1"];
+        SetupTempData(stored);
+
+        // Act
+        var result = Sut.AddRfiReason(stored);
+
+        // Assert
+        result.ShouldBeOfType<RedirectToActionResult>();
+
+        var tdObject = Sut.TempData[TempDataKeys.ProjectModification.ProjectModificationsDetails];
+        var newModel = JsonSerializer.Deserialize<ReviewOutcomeViewModel>(tdObject!.ToString()!)!;
+
+        newModel.RequestForInformationReasons.Count.ShouldBe(2);
+    }
+
+    [Theory, AutoData]
+    public void RemoveRfiReason_Modifies_The_Model_And_Redirects_To_RequestForFurtherInformation
+    (
+        ReviewOutcomeViewModel stored
+    )
+    {
+        // Arrange
+        stored.RequestForInformationReasons = ["Reason 1", "Reason 2"];
+        SetupTempData(stored);
+
+        // Act
+        var result = Sut.RemoveRfiReason(stored, 1);
+
+        // Assert
+        result.ShouldBeOfType<RedirectToActionResult>();
+
+        var tdObject = Sut.TempData[TempDataKeys.ProjectModification.ProjectModificationsDetails];
+        var newModel = JsonSerializer.Deserialize<ReviewOutcomeViewModel>(tdObject!.ToString()!)!;
+
+        newModel.RequestForInformationReasons.Count.ShouldBe(1);
+    }
+
+    [Fact]
     public void ConfirmReviewOutcome_Get_ReturnsError_When_NoTempData()
     {
         // Arrange
