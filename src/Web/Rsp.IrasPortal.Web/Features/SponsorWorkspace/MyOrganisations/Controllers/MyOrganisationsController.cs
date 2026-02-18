@@ -485,12 +485,14 @@ public class MyOrganisationsController(
 
     [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Audit)]
     [HttpGet]
-    public async Task<IActionResult> MyOrganisationAuditTrail(
+    public async Task<IActionResult> MyOrganisationAuditTrail
+    (
         string rtsId,
         int pageNumber = 1,
         int pageSize = 20,
         string sortField = "DateTimeStamp",
-        string sortDirection = "desc")
+        string sortDirection = "desc"
+    )
     {
         ViewBag.Active = MyOrganisationProfileOverview.Audit;
 
@@ -502,9 +504,14 @@ public class MyOrganisationsController(
 
         var ctx = ctxResult.Context!;
 
-        var auditResponse = await sponsorOrganisationService.SponsorOrganisationAuditTrail(
-            rtsId, pageNumber, pageSize, sortField,
-                sortDirection);
+        var auditResponse = await sponsorOrganisationService.SponsorOrganisationAuditTrail
+        (
+            rtsId,
+            pageNumber,
+            pageSize,
+            sortField,
+            sortDirection
+        );
 
         if (!auditResponse.IsSuccessStatusCode &&
             auditResponse.Content == null)
@@ -512,12 +519,22 @@ public class MyOrganisationsController(
             return this.ServiceError(auditResponse);
         }
 
-        var auditTrails = SponsorOrganisationSortingExtensions.SortSponsorOrganisationAuditTrails(
-            auditResponse.Content.Items, sortField, sortDirection, ctx.RtsOrganisation.Name, pageNumber,
-            pageSize);
+        var auditTrails = SponsorOrganisationSortingExtensions.SortSponsorOrganisationAuditTrails
+        (
+            auditResponse.Content.Items,
+            sortField,
+            sortDirection,
+            ctx.RtsOrganisation.Name,
+            pageNumber,
+            pageSize
+        );
 
-        var paginationModel = new PaginationViewModel(pageNumber, pageSize,
-           auditResponse.Content != null ? auditResponse.Content.TotalCount : -1)
+        var paginationModel = new PaginationViewModel
+        (
+            pageNumber,
+            pageSize,
+            auditResponse.Content != null ? auditResponse.Content.TotalCount : -1
+        )
         {
             RouteName = "sws:MyOrganisationAuditTrail",
             AdditionalParameters =
