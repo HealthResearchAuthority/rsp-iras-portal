@@ -56,37 +56,20 @@ public class AuthorisationsModificationsController
         string sortDirection = SortDirections.Descending
     )
     {
-        var auth = await sponsorUserAuthorisationService.AuthoriseAsync(this, sponsorOrganisationUserId, User);
+        var auth = await sponsorUserAuthorisationService.AuthoriseWithOrganisationContextAsync(
+            this, sponsorOrganisationUserId, User, rtsId);
+
         if (!auth.IsAuthorised) return auth.FailureResult!;
 
-        var model = new AuthorisationsModificationsViewModel();
-
-        var response =
-            await sponsorOrganisationService.GetAllActiveSponsorOrganisationsForEnabledUser(auth.CurrentUserId.Value);
-
-        if (response.IsSuccessStatusCode)
+        var model = new AuthorisationsModificationsViewModel()
         {
-            var sponsorOrganisations = response.Content
-                .Where(o => o.IsActive && o.Users != null &&
-                            o.Users.Any(u =>
-                                u.UserId == auth.CurrentUserId.Value &&
-                                u.IsAuthoriser));
+            SponsorOrgansationCount = auth.SponsorOrganisationCount,
+            SponsorOrganisationName = auth.SponsorOrganisationName,
+            SponsorOrganisationUserId = sponsorOrganisationUserId,
+            RtsId = rtsId
+        };
 
-            model.SponsorOrgansationCount = sponsorOrganisations.Count();
 
-            if (!sponsorOrganisations.Any(x => x.RtsId == rtsId))
-            {
-                return Forbid();
-            }
-        }
-
-        var rtsResponse = await rtsService.GetOrganisation(rtsId);
-
-        if (rtsResponse.IsSuccessStatusCode)
-        {
-            model.SponsorOrganisationName = rtsResponse.Content.Name;
-            model.RtsId = rtsId;
-        }
 
         // getting search query
         var json = HttpContext.Session.GetString(SessionKeys.SponsorAuthorisationsModificationsSearch);

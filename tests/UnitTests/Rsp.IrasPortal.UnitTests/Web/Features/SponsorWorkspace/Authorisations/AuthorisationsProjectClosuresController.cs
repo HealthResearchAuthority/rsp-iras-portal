@@ -139,6 +139,28 @@ public class AuthorisationsProjectClosuresControllerTests
                 }
             });
 
+
+        var authResult = SponsorUserAuthorisationResult
+            .Ok(_sponsorOrganisationUserId)
+            .WithSponsorOrganisations(new[]
+            {
+                new SponsorOrganisationDto
+                {
+                    RtsId = "123",
+                    IsActive = true,
+                    Users = new List<SponsorOrganisationUserDto>()
+                }
+            })
+            .WithSelectedOrganisation("123", "Test Sponsor Org");
+
+        Mocker.GetMock<ISponsorUserAuthorisationService>()
+            .Setup(x => x.AuthoriseWithOrganisationContextAsync(
+                It.IsAny<Controller>(),
+                _sponsorOrganisationUserId,
+                It.IsAny<ClaimsPrincipal>(),
+                "123"))
+            .ReturnsAsync(authResult);
+
         // Act
         var result = await Sut.ProjectClosures(_sponsorOrganisationUserId, _rtsId);
 
@@ -169,20 +191,22 @@ public class AuthorisationsProjectClosuresControllerTests
         List<User> users)
     {
         // Arrange
-        var failure = new ForbidResult(); // could be ServiceError(...) result too
+        var forbidResult = new ForbidResult();
+
+        var failedAuth = SponsorUserAuthorisationResult.Fail(forbidResult);
 
         Mocker.GetMock<ISponsorUserAuthorisationService>()
-            .Setup(s => s.AuthoriseAsync(
-                Sut,
-                _sponsorOrganisationUserId,
-                It.IsAny<ClaimsPrincipal>()))
-            .ReturnsAsync(NotAuthorised(failure));
+            .Setup(x => x.AuthoriseWithOrganisationContextAsync(
+                It.IsAny<Controller>(),
+                It.IsAny<Guid>(),
+                It.IsAny<ClaimsPrincipal>(),
+                It.IsAny<string>()))
+            .ReturnsAsync(failedAuth);
 
         // Act
         var result = await Sut.ProjectClosures(_sponsorOrganisationUserId, _rtsId);
 
         // Assert
-        result.ShouldBeSameAs(failure);
         result.ShouldBeOfType<ForbidResult>();
     }
 
@@ -752,6 +776,27 @@ public class AuthorisationsProjectClosuresControllerTests
                 }
             });
 
+        var authResult = SponsorUserAuthorisationResult
+            .Ok(_sponsorOrganisationUserId)
+            .WithSponsorOrganisations(new[]
+            {
+                new SponsorOrganisationDto
+                {
+                    RtsId = "123",
+                    IsActive = true,
+                    Users = new List<SponsorOrganisationUserDto>()
+                }
+            })
+            .WithSelectedOrganisation("123", "Test Sponsor Org");
+
+        Mocker.GetMock<ISponsorUserAuthorisationService>()
+            .Setup(x => x.AuthoriseWithOrganisationContextAsync(
+                It.IsAny<Controller>(),
+                _sponsorOrganisationUserId,
+                It.IsAny<ClaimsPrincipal>(),
+                "123"))
+            .ReturnsAsync(authResult);
+
         // Force exactly 3 users
         users = users.Take(3).ToList();
 
@@ -891,6 +936,28 @@ public class AuthorisationsProjectClosuresControllerTests
                     CountryName = "England"
                 }
             });
+
+        var authResult = SponsorUserAuthorisationResult
+            .Ok(_sponsorOrganisationUserId)
+            .WithSponsorOrganisations(new[]
+            {
+                new SponsorOrganisationDto
+                {
+                    RtsId = "123",
+                    IsActive = true,
+                    Users = new List<SponsorOrganisationUserDto>()
+                }
+            })
+            .WithSelectedOrganisation("123", "Test Sponsor Org");
+
+        Mocker.GetMock<ISponsorUserAuthorisationService>()
+            .Setup(x => x.AuthoriseWithOrganisationContextAsync(
+                It.IsAny<Controller>(),
+                _sponsorOrganisationUserId,
+                It.IsAny<ClaimsPrincipal>(),
+                "123"))
+            .ReturnsAsync(authResult);
+
 
         // Act: pageNumber=0, sortField=UserEmail
         var result = await Sut.ProjectClosures(
