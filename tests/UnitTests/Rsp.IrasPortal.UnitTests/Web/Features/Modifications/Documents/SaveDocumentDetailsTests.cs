@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Azure;
+using Microsoft.FeatureManagement;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.CmsQuestionset;
@@ -626,7 +627,8 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
             Mocker.GetMock<IRespondentService>().Object,
             validatorService.Object,
             Mocker.GetMock<IBlobStorageService>().Object,
-            Mocker.GetMock<IAzureClientFactory<BlobServiceClient>>().Object);
+            Mocker.GetMock<IAzureClientFactory<BlobServiceClient>>().Object,
+            Mocker.GetMock<IFeatureManager>().Object);
 
         controller.SetEvaluateDocumentCompletionResults(
             true,   // existing status = Incomplete

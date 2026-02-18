@@ -1,6 +1,7 @@
 using System.Net;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.CmsQuestionset.Modifications;
@@ -29,7 +30,8 @@ public abstract class ModificationsControllerBase
     IRespondentService respondentService,
     IProjectModificationsService projectModificationsService,
     ICmsQuestionsetService cmsQuestionsetService,
-    IValidator<QuestionnaireViewModel> validator
+    IValidator<QuestionnaireViewModel> validator,
+    IFeatureManager featureManager
 ) : Controller
 {
     private const string SectionId = "pm-sponsor-reference";
@@ -354,7 +356,8 @@ public abstract class ModificationsControllerBase
     {
         var status = a.Status;
 
-        if (!a.Status.Equals(DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase) &&
+        if (!string.IsNullOrEmpty(a.Status) &&
+            !a.Status.Equals(DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase) &&
             a.Status.Equals(DocumentStatus.Uploaded, StringComparison.OrdinalIgnoreCase))
         {
             status = (await EvaluateDocumentCompletion(a.Id, questionnaire)
@@ -365,10 +368,15 @@ public abstract class ModificationsControllerBase
         return new DocumentSummaryItemDto
         {
             DocumentId = a.Id,
-            FileName = $"Add details for {a.FileName}",
+            FileName = a.LinkedDocumentId != null &&
+               string.Equals(a.DocumentType, "Tracked", StringComparison.OrdinalIgnoreCase)
+                ? a.FileName
+                : $"Add details for {a.FileName}",
             FileSize = a.FileSize ?? 0,
             BlobUri = a.DocumentStoragePath ?? string.Empty,
-            Status = status
+            Status = status ?? string.Empty,
+            LinkedDocumentId = a.LinkedDocumentId,
+            DocumentType = a.DocumentType
         };
     }
 
@@ -391,6 +399,30 @@ public abstract class ModificationsControllerBase
 
         // Validate questionnaire
         var isValid = await this.ValidateQuestionnaire(validator, clonedQuestionnaire, true);
+
+        var supersedeDocumentsEnabled = await featureManager.IsEnabledAsync(FeatureFlags.SupersedingDocuments);
+
+        if (supersedeDocumentsEnabled)
+        {
+            // Find the "Previous Version of Document" question for superseding logic after saving answers
+            var supersedeDocument = clonedQuestionnaire.Questions
+            .FirstOrDefault(q =>
+                q.QuestionId.Equals(
+                    QuestionIds.PreviousVersionOfDocument,
+                    StringComparison.OrdinalIgnoreCase))
+                    ?.SelectedOption
+                    ?.Equals(
+                        QuestionIds.PreviousVersionOfDocumentYesOption,
+                        StringComparison.OrdinalIgnoreCase)
+                    == true;
+
+            // 3. Superseding documents require additional validation
+            if (isValid && supersedeDocument)
+            {
+                return await HasValidSupersedeMetadata(documentId);
+            }
+        }
+
         return !answers.Any() || !isValid;
     }
 
@@ -561,7 +593,7 @@ public abstract class ModificationsControllerBase
         }
 
         // Fetch documents
-        var documents = await projectModificationsService.GetDocumentsForModification(
+        var documentsForModification = await projectModificationsService.GetDocumentsForModification(
             projectModificationId,
             searchQuery,
             pageNumber,
@@ -570,7 +602,7 @@ public abstract class ModificationsControllerBase
             sortDirection
         );
 
-        return (documents, questionnaire);
+        return (documentsForModification, questionnaire);
     }
 
     /// <summary>
@@ -596,4 +628,47 @@ public abstract class ModificationsControllerBase
                     Rules = q.Rules
                 })
         };
+
+    private async Task<bool> HasValidSupersedeMetadata(Guid documentId)
+    {
+        var response = await respondentService.GetModificationDocumentDetails(documentId);
+
+        if (response?.StatusCode != HttpStatusCode.OK || response.Content == null)
+            return false;
+
+        var document = response.Content;
+
+        var hasReplaces = document.ReplacesDocumentId.HasValue;
+        var hasLinked = document.LinkedDocumentId.HasValue && document.LinkedDocumentId != Guid.Empty;
+        var hasType = !string.IsNullOrWhiteSpace(document.DocumentType);
+
+        if (!hasReplaces && hasType && string.Equals(document.DocumentType, "Clean", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (!hasLinked || !hasType)
+        {
+            return true;
+        }
+
+        // Case 1: No supersede metadata at all → valid
+        if (!hasReplaces && !hasLinked && !hasType)
+            return true;
+
+        // Case 2: DocumentType exists but not linked → valid (metadata started but not linked yet)
+        if (hasType && !hasLinked)
+            return true;
+
+        // Case 3: DocumentType + LinkedDocument both set → invalid
+        if (hasType && hasLinked)
+            return false;
+
+        // Case 4: All three are set → invalid
+        if (hasReplaces && hasLinked && hasType)
+            return false;
+
+        // Everything else is valid
+        return true;
+    }
 }

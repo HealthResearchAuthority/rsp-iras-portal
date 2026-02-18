@@ -1,9 +1,11 @@
 ﻿using System.Net;
 using Azure.Storage.Blobs;
 using FluentValidation;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Azure;
+using Microsoft.FeatureManagement;
+using Microsoft.FeatureManagement.Mvc;
+using Rsp.Gds.Component.Models;
 using Rsp.IrasPortal.Web.Attributes;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
@@ -16,6 +18,7 @@ using Rsp.Portal.Domain.Enums;
 using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Helpers;
 using Rsp.Portal.Web.Models;
+using AuthorizeAttribute = Microsoft.AspNetCore.Authorization.AuthorizeAttribute;
 
 namespace Rsp.Portal.Web.Features.Modifications.Documents.Controllers;
 
@@ -31,8 +34,9 @@ public class DocumentsController
         ICmsQuestionsetService cmsQuestionsetService,
         IValidator<QuestionnaireViewModel> validator,
         IBlobStorageService blobStorageService,
-        IAzureClientFactory<BlobServiceClient> blobClientFactory
-    ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator)
+        IAzureClientFactory<BlobServiceClient> blobClientFactory,
+        IFeatureManager featureManager
+    ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator, featureManager)
 {
     private const string StagingContainerName = "staging";
     private const string CleanContainerName = "clean";
@@ -199,7 +203,10 @@ public class DocumentsController
             DocumentStoragePath = documentDetailsResponse.Content.DocumentStoragePath,
             ReviewAnswers = reviewAnswers,
             ReviewAllChanges = reviewAllChanges,
-            IsMalwareScanSuccessful = documentDetailsResponse.Content.IsMalwareScanSuccessful
+            IsMalwareScanSuccessful = documentDetailsResponse.Content.IsMalwareScanSuccessful,
+            DocumentType = documentDetailsResponse.Content.DocumentType,
+            LinkedDocumentId = documentDetailsResponse.Content.LinkedDocumentId,
+            ReplacesDocumentId = documentDetailsResponse.Content.ReplacesDocumentId
         };
 
         // Fetch the CMS question set that defines what metadata must be collected for this document.
@@ -272,9 +279,38 @@ public class DocumentsController
         var allDocumentDetails = await GetAllDocumentsWithResponses();
 
         bool hasFailures = false;
-        foreach (var documentDetail in allDocumentDetails)
+        for (int docIndex = 0; docIndex < allDocumentDetails.Count; docIndex++)
         {
+            ModificationAddDocumentDetailsViewModel? documentDetail = allDocumentDetails[docIndex];
             var isValid = await this.ValidateQuestionnaire(validator, documentDetail, true);
+            if (documentDetail.ShowSupersedeDocumentSection)
+            {
+                if (documentDetail.ReplacesDocumentId is null
+                    || string.IsNullOrEmpty(documentDetail.DocumentType)
+                    || string.IsNullOrEmpty(documentDetail.LinkedDocumentFileName))
+                {
+                    isValid = false;
+                    if (documentDetail.ReplacesDocumentId is null)
+                    {
+                        ModelState.AddModelError(
+                            $"Questions[{docIndex}].DocumentInService",
+                            "Enter document in service");
+                    }
+                    if (string.IsNullOrEmpty(documentDetail.DocumentType))
+                    {
+                        ModelState.AddModelError(
+                            $"Questions[{docIndex}].CleanOrTracked",
+                            "Enter clean or tracked");
+                    }
+                    if (string.IsNullOrEmpty(documentDetail.LinkedDocumentFileName))
+                    {
+                        ModelState.AddModelError(
+                            $"Questions[{docIndex}].LinkedDocumentFileName",
+                            "Enter linked document");
+                    }
+                }
+            }
+
             if (!isValid)
             {
                 hasFailures = true;
@@ -321,94 +357,6 @@ public class DocumentsController
         return RedirectToAction(nameof(UploadDocuments));
     }
 
-    /// <summary>
-    /// Saves the answers provided for a specific document’s questions.
-    /// Updates the model with user responses and validates the questionnaire.
-    /// </summary>
-    /// <param name="viewModel">The document details and responses submitted by the user.</param>
-    /// <returns>
-    /// - If validation fails: redisplays the AddDocumentDetails view with validation errors.
-    /// - If validation succeeds: saves answers and redirects to review or list page based on ReviewAnswers flag.
-    /// </returns>
-    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Update)]
-    [HttpPost]
-    public async Task<IActionResult> SaveDocumentDetails(ModificationAddDocumentDetailsViewModel viewModel, bool saveForLater = false, bool reviewAllChanges = false)
-    {
-        // Step 1: Retrieve and rebuild the questionnaire structure from CMS
-        var questionnaire = await BuildUpdatedQuestionnaire(viewModel);
-
-        // Replace the original question list with updated answers from the user
-        viewModel.Questions = questionnaire.Questions;
-
-        // Find the "Document Name" question for later duplicate name validation
-        var documentNameQuestion = questionnaire.Questions
-            .Select((q, index) => new { Question = q, Index = index })
-            .FirstOrDefault(x => x.Question.QuestionId.Equals(QuestionIds.DocumentName, StringComparison.OrdinalIgnoreCase));
-
-        // Step 2: Validate all basic questionnaire rules (e.g., required fields)
-        var isValid = await this.ValidateQuestionnaire(validator, viewModel);
-
-        // Step 3: Validate missing date fields — only if user is not saving for later
-        if (!saveForLater)
-        {
-            var dateValidationPassed = ValidateRequiredDates(viewModel);
-            isValid = isValid && dateValidationPassed;
-        }
-
-        // Step 4: Validate that document name doesn’t already exist
-        var duplicateValidationPassed = await ValidateDuplicateDocumentNames(viewModel, documentNameQuestion);
-        isValid = isValid && duplicateValidationPassed;
-
-        // Pass validation result to the view so that GOV.UK error summaries can display correctly
-        ViewData[ViewDataKeys.IsQuestionnaireValid] = isValid;
-
-        // Step 5: If validation fails, redisplay form with errors
-        if (!isValid)
-            return View("AddDocumentDetails", viewModel);
-
-        // Determine and set the document detail completion status
-        var existingStatus = (await EvaluateDocumentCompletion(viewModel.DocumentId, questionnaire)
-                ? DocumentDetailStatus.Incomplete
-                : DocumentDetailStatus.Complete);
-
-        // Step 6: Save all valid answers to backend
-        await SaveModificationDocumentAnswers(viewModel);
-        if (existingStatus != DocumentDetailStatus.Complete)
-        {
-            var isIncomplete = await EvaluateDocumentCompletion(viewModel.DocumentId, questionnaire);
-
-            var newStatus = isIncomplete
-                ? DocumentDetailStatus.Incomplete
-                : DocumentDetailStatus.Complete;
-            if (newStatus == DocumentDetailStatus.Complete)
-            {
-                await projectModificationsService.CreateModificationDocumentsAuditTrail(
-                [
-                    new()
-                    {
-                        Id = Guid.NewGuid(),
-                        ProjectModificationId = viewModel.ModificationId,
-                        DateTimeStamp = DateTime.UtcNow,
-                        Description = DocumentAuditEvents.DocumentDetailsCompleted,
-                        FileName = viewModel.FileName ?? string.Empty,
-                        User = HttpContext.Items[ContextItemKeys.UserId]?.ToString() ?? string.Empty
-                    }
-                ]);
-            }
-        }
-
-        // Redirect to the review-all-changes route if explicitly requested
-        if (reviewAllChanges)
-        {
-            return RedirectToReviewAllChanges();
-        }
-
-        // Step 7: Redirect user depending on their action
-        return saveForLater
-            ? RedirectToSaveForLater()    // “Save and come back later”
-            : RedirectAfterSubmit(viewModel); // Continue flow or review answers
-    }
-
     [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Delete)]
     [HttpGet]
     public async Task<IActionResult> ConfirmDeleteDocument(Guid id, string backRoute)
@@ -422,6 +370,9 @@ public class DocumentsController
         request.FileName = documentDetailsResponse?.Content?.FileName;
         request.FileSize = documentDetailsResponse?.Content?.FileSize ?? 0;
         request.DocumentStoragePath = documentDetailsResponse?.Content?.DocumentStoragePath;
+        request.ReplacesDocumentId = documentDetailsResponse?.Content?.ReplacesDocumentId;
+        request.ReplacedByDocumentId = documentDetailsResponse?.Content?.ReplacedByDocumentId;
+        request.LinkedDocumentId = documentDetailsResponse?.Content?.LinkedDocumentId;
 
         var viewModel = new ModificationDeleteDocumentViewModel
         {
@@ -456,7 +407,10 @@ public class DocumentsController
                     UserId = request.UserId,
                     FileName = doc.FileName,
                     DocumentStoragePath = doc.DocumentStoragePath,
-                    FileSize = doc.FileSize
+                    FileSize = doc.FileSize,
+                    ReplacesDocumentId = doc.ReplacesDocumentId,
+                    ReplacedByDocumentId = doc.ReplacedByDocumentId,
+                    LinkedDocumentId = doc.LinkedDocumentId
                 })
                 .OrderBy(dto => dto.FileName, StringComparer.OrdinalIgnoreCase)],
                 BackRoute = backRoute
@@ -492,12 +446,110 @@ public class DocumentsController
                 DocumentStoragePath = d.DocumentStoragePath,
                 FileSize = d.FileSize,
                 Status = d.Status,
-                IsMalwareScanSuccessful = d.IsMalwareScanSuccessful
-            })
-            .ToList();
+                IsMalwareScanSuccessful = d.IsMalwareScanSuccessful,
+                ReplacedByDocumentId = d.ReplacedByDocumentId,
+                ReplacesDocumentId = d.ReplacesDocumentId,
+                LinkedDocumentId = d.LinkedDocumentId
+            }).ToList();
+
+        var updateDocumentRequest = new List<ProjectModificationDocumentRequest>();
+        var deleteDocumentAnswersRequest = new List<ProjectModificationDocumentRequest>();
+        foreach (var updateDocument in deleteDocumentRequest)
+        {
+            if (updateDocument.ReplacesDocumentId.HasValue && updateDocument.ReplacesDocumentId != Guid.Empty)
+            {
+                var updateDocumentResponse =
+                await respondentService.GetModificationDocumentDetails((Guid)updateDocument.ReplacesDocumentId);
+
+                updateDocumentRequest.Add(new ProjectModificationDocumentRequest
+                {
+                    Id = updateDocumentResponse.Content?.Id ?? Guid.Empty,
+                    ProjectModificationId = request.ProjectModificationId,
+                    ProjectRecordId = request.ProjectRecordId,
+                    UserId = request.UserId,
+                    FileName = updateDocumentResponse.Content?.FileName ?? string.Empty,
+                    DocumentStoragePath = updateDocumentResponse.Content?.DocumentStoragePath,
+                    FileSize = updateDocumentResponse.Content?.FileSize ?? 0,
+                    Status = updateDocumentResponse.Content?.Status,
+                    IsMalwareScanSuccessful = updateDocumentResponse.Content?.IsMalwareScanSuccessful,
+                    DocumentType = updateDocumentResponse.Content?.DocumentType,
+                    ReplacedByDocumentId = null, // Clear the ReplacedByDocumentId to unlink it from the deleted document
+                    ReplacesDocumentId = updateDocumentResponse.Content?.ReplacesDocumentId,
+                    LinkedDocumentId = updateDocumentResponse.Content?.LinkedDocumentId
+                });
+            }
+
+            if (updateDocument.ReplacedByDocumentId.HasValue && updateDocument.ReplacedByDocumentId != Guid.Empty)
+            {
+                var updateDocumentResponse =
+                await respondentService.GetModificationDocumentDetails((Guid)updateDocument.ReplacedByDocumentId);
+                updateDocumentRequest.Add(new ProjectModificationDocumentRequest
+                {
+                    Id = updateDocumentResponse.Content?.Id ?? Guid.Empty,
+                    ProjectModificationId = request.ProjectModificationId,
+                    ProjectRecordId = request.ProjectRecordId,
+                    UserId = request.UserId,
+                    FileName = updateDocumentResponse.Content?.FileName ?? string.Empty,
+                    DocumentStoragePath = updateDocumentResponse.Content?.DocumentStoragePath,
+                    FileSize = updateDocumentResponse.Content?.FileSize ?? 0,
+                    Status = updateDocumentResponse.Content?.Status,
+                    IsMalwareScanSuccessful = updateDocumentResponse.Content?.IsMalwareScanSuccessful,
+                    DocumentType = updateDocumentResponse.Content?.DocumentType,
+                    ReplacesDocumentId = null, // Clear the ReplacesDocumentId to unlink it from the deleted document
+                    ReplacedByDocumentId = updateDocumentResponse.Content?.ReplacedByDocumentId,
+                    LinkedDocumentId = updateDocumentResponse.Content?.LinkedDocumentId
+                });
+            }
+
+            if (updateDocument.LinkedDocumentId.HasValue && updateDocument.LinkedDocumentId != Guid.Empty)
+            {
+                var updateDocumentResponse =
+                await respondentService.GetModificationDocumentDetails((Guid)updateDocument.LinkedDocumentId);
+                var documentType =
+                string.Equals(updateDocumentResponse.Content?.DocumentType,
+                    SupersedeDocumentsType.Clean,
+                    StringComparison.OrdinalIgnoreCase)
+                    ? updateDocumentResponse.Content?.DocumentType
+                    : null;
+
+                var linkedDocument = new ProjectModificationDocumentRequest
+                {
+                    Id = updateDocumentResponse.Content?.Id ?? Guid.Empty,
+                    ProjectModificationId = request.ProjectModificationId,
+                    ProjectRecordId = request.ProjectRecordId,
+                    UserId = request.UserId,
+                    FileName = updateDocumentResponse.Content?.FileName ?? string.Empty,
+                    DocumentStoragePath = updateDocumentResponse.Content?.DocumentStoragePath,
+                    FileSize = updateDocumentResponse.Content?.FileSize ?? 0,
+                    Status = updateDocumentResponse.Content?.Status,
+                    IsMalwareScanSuccessful = updateDocumentResponse.Content?.IsMalwareScanSuccessful,
+                    DocumentType = documentType,
+                    ReplacesDocumentId = updateDocumentResponse.Content?.ReplacesDocumentId,
+                    ReplacedByDocumentId = updateDocumentResponse.Content?.ReplacedByDocumentId,
+                    LinkedDocumentId = null // Clear the LinkedDocumentId to unlink it from the deleted document
+                };
+                updateDocumentRequest.Add(linkedDocument);
+
+                if (linkedDocument.DocumentType != SupersedeDocumentsType.Clean)
+                {
+                    deleteDocumentAnswersRequest.Add(linkedDocument);
+                }
+            }
+        }
 
         // Call the service to delete the documents
         var deleteResponse = await projectModificationsService.DeleteDocumentModification(deleteDocumentRequest);
+
+        // Delete linked document answers
+        if (deleteDocumentAnswersRequest.Count > 0)
+        {
+            await projectModificationsService.DeleteDocumentAnswersModification(deleteDocumentAnswersRequest);
+        }
+
+        if (!multipleDelete && updateDocumentRequest.Count > 0)
+        {
+            await respondentService.SaveModificationDocuments(updateDocumentRequest);
+        }
 
         // Delete from the appropriate blob container based on document status
         foreach (var doc in deleteDocumentRequest)
@@ -578,79 +630,27 @@ public class DocumentsController
     [HttpPost]
     public async Task<IActionResult> UploadDocuments(ModificationUploadDocumentsViewModel model)
     {
-        var auditEntries = new List<ModificationDocumentsAuditTrailDto>();
-
         // If the posted model is null (due to exceeding max request size)
         if (model?.Files == null)
             return View("FileTooLarge");
 
-        // Retrieve contextual identifiers from TempData and HttpContext
-        var projectModificationId = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId);
+        model.ModificationId = TempData.PeekGuid(TempDataKeys.ProjectModification.ProjectModificationId);
         var respondentId = (HttpContext.Items[ContextItemKeys.UserId] as string)!;
-        var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty;
-        var irasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty;
+        model.ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty;
+        model.IrasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty;
 
-        // Fetch existing documents for this modification
-        var response = await respondentService.GetModificationChangesDocuments(
-            projectModificationId == null ? Guid.Empty : (Guid)projectModificationId!,
-            projectRecordId);
+        var processedModel = await ProcessDocumentUploadsAsync(
+            model,
+            respondentId);
 
-        // Map and validate existing documents
-        var atleastOneInvalidFile = false;
-        if (response?.StatusCode == HttpStatusCode.OK && response.Content != null)
-        {
-            model.UploadedDocuments = MapDocuments(response.Content);
-            atleastOneInvalidFile = ValidateExistingDocuments(model);
-        }
+        if (processedModel.HasServiceError)
+            return this.ServiceError(processedModel.Response!);
 
-        // If no files were selected but some invalid exist
-        if (model.Files == null || model.Files.Count == 0)
-            return HandleNoNewFiles(response, atleastOneInvalidFile, model);
+        if (processedModel.ShouldRedirectToDocumentsAdded)
+            return RedirectToAction(nameof(ModificationDocumentsAdded)); // or your new action
 
-        // Validate new uploaded files
-        var validationResult = ValidateUploadedFiles(
-        model.Files,
-        response?.Content?.ToList() ?? [],
-        (Guid)projectModificationId!,
-        respondentId);
-
-        // Persist FAILED audit events
-        if (validationResult.FailedAuditEvents.Count != 0)
-        {
-            await projectModificationsService.CreateModificationDocumentsAuditTrail(validationResult.FailedAuditEvents);
-        }
-
-        atleastOneInvalidFile = validationResult.HasErrors;
-
-        // Check if any ModelState errors mention "100 MB"
-        var hasFileSizeError = ModelState.Values
-            .SelectMany(v => v.Errors)
-            .Any(e => e.ErrorMessage.Contains("100 MB", StringComparison.OrdinalIgnoreCase));
-
-        // Only return the view if at least one validation error is related to "100 MB"
-        if (atleastOneInvalidFile && hasFileSizeError)
-        {
-            return View(model);
-        }
-
-        if (validationResult.ValidFiles.Count > 0)
-        {
-            // Upload valid files to blob storage
-            var uploadedDocuments = await UploadValidFilesAsync(validationResult.ValidFiles, irasId, projectModificationId, projectRecordId, respondentId);
-
-            // Persist SUCCESS audit events only after upload succeeds
-            if (validationResult.SuccessAuditEvents.Count != 0)
-            {
-                await projectModificationsService
-                    .CreateModificationDocumentsAuditTrail(validationResult.SuccessAuditEvents);
-            }
-
-            // Append and sort the newly uploaded documents
-            model.UploadedDocuments = AppendAndSortDocuments(model.UploadedDocuments, uploadedDocuments);
-        }
-
-        // Stay on the same view to show all documents
-        return View(model);
+        // Only return view (as required)
+        return View(processedModel);
     }
 
     [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Download)]
@@ -679,6 +679,389 @@ public class DocumentsController
             saveAsFileName);
 
         return File(response.FileBytes, "application/zip", response.FileName);
+    }
+
+    /// <summary>
+    /// Saves the answers provided for a specific document’s questions.
+    /// Updates the model with user responses and validates the questionnaire.
+    /// </summary>
+    /// <param name="viewModel">The document details and responses submitted by the user.</param>
+    /// <returns>
+    /// - If validation fails: redisplays the AddDocumentDetails view with validation errors.
+    /// - If validation succeeds: saves answers and redirects to review or list page based on ReviewAnswers flag.
+    /// </returns>
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Update)]
+    [HttpPost]
+    public async Task<IActionResult> SaveDocumentDetails(
+    ModificationAddDocumentDetailsViewModel viewModel,
+    bool saveForLater = false,
+    bool reviewAllChanges = false)
+    {
+        var supersedeEnabled = await featureManager.IsEnabledAsync(FeatureFlags.SupersedingDocuments);
+
+        var questionnaire = await BuildAndBindQuestionnaire(viewModel);
+
+        var isValid = await ValidateDocumentDetails(viewModel, questionnaire, saveForLater);
+        ViewData[ViewDataKeys.IsQuestionnaireValid] = isValid;
+
+        if (!isValid)
+            return View("AddDocumentDetails", viewModel);
+
+        var existingStatus = await GetExistingStatus(viewModel.DocumentId, questionnaire);
+
+        SupersedeContext supersedeContext = null;
+
+        if (supersedeEnabled)
+        {
+            supersedeContext = await HandleSupersedePreSave(viewModel, questionnaire);
+        }
+
+        await SaveModificationDocumentAnswers(viewModel);
+
+        await HandleCompletionAudit(existingStatus, viewModel, questionnaire);
+
+        if (supersedeEnabled)
+        {
+            await HandleDocumentTypeChange(viewModel, supersedeContext);
+            await HandleSupersedeAnswerChange(viewModel, supersedeContext, reviewAllChanges);
+
+            var redirect = HandleSupersedeRedirect(viewModel, questionnaire);
+            if (redirect != null)
+                return redirect;
+        }
+
+        if (reviewAllChanges)
+            return RedirectToReviewAllChanges();
+
+        return saveForLater
+            ? RedirectToSaveForLater()
+            : RedirectAfterSubmit(viewModel);
+    }
+
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Update)]
+    [HttpGet]
+    [FeatureGate(FeatureFlags.SupersedingDocuments)]
+    public async Task<IActionResult> SupersedeDocumentToReplace(
+    string documentTypeId,
+    string projectRecordId,
+    Guid currentDocumentId,
+    bool reviewAnswers = false,
+    bool reviewAllChanges = false)
+    {
+        var viewModel = await BuildSupersedeBaseViewModel(
+            currentDocumentId,
+            documentTypeId,
+            reviewAnswers,
+            reviewAllChanges);
+
+        var eligibleDocuments = await GetEligibleDocumentsToReplace(
+            projectRecordId,
+            documentTypeId,
+            currentDocumentId);
+
+        viewModel.DocumentToReplaceList = ToGdsOptions(eligibleDocuments);
+
+        return View(nameof(SupersedeDocumentToReplace), viewModel);
+    }
+
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Update)]
+    [HttpGet]
+    [FeatureGate(FeatureFlags.SupersedingDocuments)]
+    public async Task<IActionResult> SupersedeDocumentType(
+        string documentTypeId,
+        string projectRecordId,
+        Guid currentDocumentId,
+        bool reviewAnswers = false,
+        bool reviewAllChanges = false)
+    {
+        var viewModel = await BuildSupersedeBaseViewModel(
+            currentDocumentId,
+            documentTypeId,
+            reviewAnswers,
+            reviewAllChanges);
+
+        return View(nameof(SupersedeDocumentType), viewModel);
+    }
+
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Update)]
+    [HttpGet]
+    [FeatureGate(FeatureFlags.SupersedingDocuments)]
+    public async Task<IActionResult> SupersedeLinkDocument(
+        string documentTypeId,
+        string projectRecordId,
+        Guid currentDocumentId,
+        bool reviewAnswers = false,
+        bool reviewAllChanges = false,
+        bool linkDocument = false)
+    {
+        var viewModel = await BuildSupersedeBaseViewModel(
+            currentDocumentId,
+            documentTypeId,
+            reviewAllChanges,
+            reviewAnswers);
+
+        var eligibleDocuments = await GetEligibleDocumentsToLink(currentDocumentId);
+
+        viewModel.DocumentToReplaceList = ToGdsOptions(eligibleDocuments);
+
+        return View(nameof(SupersedeLinkDocument), viewModel);
+    }
+
+    /// <summary>
+    /// Saves the answers provided for a specific document’s questions.
+    /// Updates the model with user responses and validates the questionnaire.
+    /// </summary>
+    /// <param name="viewModel">The document details and responses submitted by the user.</param>
+    /// <returns>
+    /// - If validation fails: redisplays the AddDocumentDetails view with validation errors.
+    /// - If validation succeeds: saves answers and redirects to review or list page based on ReviewAnswers flag.
+    /// </returns>
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Update)]
+    [HttpPost]
+    [FeatureGate(FeatureFlags.SupersedingDocuments)]
+    public async Task<IActionResult> SaveSupersedeDocumentDetails(
+    ModificationAddDocumentDetailsViewModel viewModel,
+    bool saveForLater = false,
+    bool continueToDocumentType = false,
+    bool continueToLinkDocument = false,
+    bool linkDocument = false,
+    bool reviewAnswers = false)
+    {
+        var userId = HttpContext.Items[ContextItemKeys.UserId]?.ToString() ?? string.Empty;
+
+        // Fetch current document details
+        var replacedByDocumentResponse =
+            await respondentService.GetModificationDocumentDetails(viewModel.DocumentId);
+
+        var projectModificationDocumentRequest = new List<ProjectModificationDocumentRequest>();
+
+        // Handle file upload (if present)
+        var newLinkedDocumentId = await UploadLinkedDocumentIfRequired(viewModel, userId);
+
+        var hasFileUpload = newLinkedDocumentId.HasValue;
+
+        // Build primary document DTO (same logic as original)
+        var replacedByDocumentDto = new ProjectModificationDocumentRequest
+        {
+            Id = viewModel.DocumentId,
+            ProjectModificationId = viewModel.ModificationId,
+            ProjectRecordId = viewModel.ProjectRecordId,
+            UserId = userId,
+            FileName = viewModel.FileName,
+            DocumentStoragePath = viewModel.DocumentStoragePath,
+            FileSize = viewModel.FileSize,
+            Status = replacedByDocumentResponse.Content?.Status,
+            IsMalwareScanSuccessful = viewModel.IsMalwareScanSuccessful,
+            ReplacesDocumentId = viewModel.ReplacesDocumentId,
+            DocumentType = viewModel.DocumentType,
+            ReplacedByDocumentId = viewModel.ReplacedByDocumentId,
+            LinkedDocumentId = hasFileUpload
+                ? newLinkedDocumentId
+                : viewModel.LinkedDocumentId
+        };
+
+        projectModificationDocumentRequest.Add(replacedByDocumentDto);
+
+        // Update the document being replaced (if exists)
+        await AppendReplacesDocumentIfExists(
+            replacedByDocumentDto,
+            projectModificationDocumentRequest,
+            userId);
+
+        // Update linked document (if exists)
+        await AppendLinkedDocumentIfExists(
+            replacedByDocumentDto,
+            replacedByDocumentResponse,
+            projectModificationDocumentRequest,
+            userId);
+
+        await respondentService.SaveModificationDocuments(projectModificationDocumentRequest);
+
+        // Sync metadata answers if linking document
+        if (linkDocument &&
+            replacedByDocumentDto.LinkedDocumentId is Guid linkedId &&
+            linkedId != Guid.Empty)
+        {
+            await SyncLinkedDocumentAnswers(
+                replacedByDocumentDto.Id,
+                linkedId,
+                replacedByDocumentDto.DocumentType ?? string.Empty);
+        }
+
+        // Navigation logic (UNCHANGED)
+        if (continueToDocumentType && replacedByDocumentDto.LinkedDocumentId == null)
+        {
+            return reviewAnswers
+                ? RedirectAfterSubmit(viewModel)
+                : RedirectToAction(nameof(SupersedeDocumentType), new
+                {
+                    documentTypeId = viewModel.MetaDataDocumentTypeId,
+                    projectRecordId = viewModel.ProjectRecordId,
+                    currentDocumentId = viewModel.DocumentId
+                });
+        }
+
+        if (continueToLinkDocument && replacedByDocumentDto.LinkedDocumentId == null)
+        {
+            return reviewAnswers
+                ? RedirectAfterSubmit(viewModel)
+                : RedirectToAction(nameof(SupersedeLinkDocument), new
+                {
+                    documentTypeId = viewModel.MetaDataDocumentTypeId,
+                    projectRecordId = viewModel.ProjectRecordId,
+                    currentDocumentId = viewModel.DocumentId
+                });
+        }
+
+        return saveForLater
+            ? RedirectToSaveForLater()
+            : RedirectAfterSubmit(viewModel);
+    }
+
+    private async Task SaveLinkedDocumentAnswers(
+        IEnumerable<ProjectModificationDocumentAnswerDto> currentAnswers,
+        IEnumerable<ProjectModificationDocumentAnswerDto> existingLinkedAnswers,
+        string documentType,
+        Guid linkedId)
+    {
+        // Create lookup for fast matching
+        var linkedAnswersLookup = existingLinkedAnswers
+            .ToDictionary(a => a.QuestionId, StringComparer.OrdinalIgnoreCase);
+
+        var mergedAnswers = new List<ProjectModificationDocumentAnswerDto>();
+
+        foreach (var current in currentAnswers)
+        {
+            bool applyToLinked = false;
+            var transformedAnswerText = string.Empty;
+
+            transformedAnswerText =
+            string.Equals(current.QuestionId,
+                QuestionIds.DocumentName,
+                StringComparison.OrdinalIgnoreCase)
+                ? $"{current.AnswerText ?? string.Empty} (TC)"
+                : current.AnswerText;
+
+            // Apply transformation rules
+            if (string.Equals(documentType, SupersedeDocumentsType.Clean, StringComparison.OrdinalIgnoreCase))
+            {
+                applyToLinked = true;
+            }
+            else if (string.Equals(documentType, SupersedeDocumentsType.Tracked, StringComparison.OrdinalIgnoreCase))
+            {
+                if (string.Equals(current.QuestionId, QuestionIds.DocumentName, StringComparison.OrdinalIgnoreCase))
+                {
+                    var currentDto = new ProjectModificationDocumentAnswerDto
+                    {
+                        AnswerText = transformedAnswerText,
+                        Answers = [],
+                        CategoryId = current.CategoryId,
+                        Id = current.Id,
+                        ModificationDocumentId = current.ModificationDocumentId,
+                        OptionType = current.OptionType,
+                        QuestionId = current.QuestionId,
+                        SelectedOption = current.SelectedOption,
+                        SectionId = current.SectionId,
+                        VersionId = current.VersionId
+                    };
+                    mergedAnswers.Add(currentDto);
+                }
+            }
+
+            if (linkedAnswersLookup.TryGetValue(current.QuestionId, out var existing))
+            {
+                // UPDATE existing answer
+                existing.AnswerText = applyToLinked ? transformedAnswerText : current.AnswerText;
+                existing.SelectedOption = current.SelectedOption;
+                existing.VersionId = current.VersionId ?? string.Empty;
+                existing.CategoryId = current.CategoryId;
+                existing.SectionId = current.SectionId;
+                existing.OptionType = current.OptionType;
+                existing.Answers = current.Answers ?? [];
+
+                mergedAnswers.Add(existing);
+            }
+            else
+            {
+                // INSERT new answer
+                mergedAnswers.Add(new ProjectModificationDocumentAnswerDto
+                {
+                    Id = Guid.NewGuid(),
+                    ModificationDocumentId = linkedId,
+                    QuestionId = current.QuestionId,
+                    VersionId = current.VersionId ?? string.Empty,
+                    AnswerText = applyToLinked ? transformedAnswerText : current.AnswerText,
+                    CategoryId = current.CategoryId,
+                    SectionId = current.SectionId,
+                    SelectedOption = current.SelectedOption,
+                    OptionType = current.OptionType,
+                    Answers = current.Answers ?? []
+                });
+            }
+        }
+
+        if (mergedAnswers.Count > 0)
+        {
+            await respondentService.SaveModificationDocumentAnswers(mergedAnswers);
+        }
+    }
+
+    private (string ProjectRecordId,
+         string ShortTitle,
+         string IrasId,
+         string ModificationIdentifier,
+         Guid ModificationId) GetProjectContext()
+    {
+        return (
+            TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty,
+            TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
+            TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty,
+            TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string ?? string.Empty,
+            TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId) is Guid id
+                ? id
+                : Guid.NewGuid()
+        );
+    }
+
+    private ModificationAddDocumentDetailsViewModel BuildBaseViewModel(
+        ProjectModificationDocumentRequest document,
+        bool reviewAnswers,
+        bool reviewAllChanges,
+        string? selectedDocumentTypeId = null)
+    {
+        var context = GetProjectContext();
+
+        return new ModificationAddDocumentDetailsViewModel
+        {
+            ProjectRecordId = context.ProjectRecordId,
+            ShortTitle = context.ShortTitle,
+            IrasId = context.IrasId,
+            ModificationIdentifier = context.ModificationIdentifier,
+            ModificationId = context.ModificationId,
+            DocumentId = document.Id,
+            FileName = document.FileName,
+            FileSize = document.FileSize ?? 0,
+            DocumentStoragePath = document.DocumentStoragePath,
+            ReviewAnswers = reviewAnswers,
+            ReviewAllChanges = reviewAllChanges,
+            IsMalwareScanSuccessful = document.IsMalwareScanSuccessful,
+            Status = document.Status,
+            ReplacedByDocumentId = document.ReplacedByDocumentId,
+            ReplacesDocumentId = document.ReplacesDocumentId,
+            DocumentType = document.DocumentType,
+            LinkedDocumentId = document.LinkedDocumentId,
+            MetaDataDocumentTypeId = selectedDocumentTypeId
+        };
+    }
+
+    private static List<GdsOption> ToGdsOptions(
+    IEnumerable<ProjectModificationDocumentRequest> documents)
+    {
+        return documents.Select(d => new GdsOption
+        {
+            Value = d.Id.ToString(),
+            Label = d.FileName
+        }).ToList();
     }
 
     private static string BuildZipFileName(string? modificationIdentifier)
@@ -951,13 +1334,51 @@ public class DocumentsController
         var viewModels = new List<ModificationAddDocumentDetailsViewModel>();
         var questionIndex = 0;
 
-        foreach (var doc in response!.Content.OrderBy(d => d.FileName, StringComparer.OrdinalIgnoreCase))
+        foreach (var doc in response!.Content
+            .Where(d => !(d.DocumentType == SupersedeDocumentsType.Tracked
+                  && d.LinkedDocumentId.HasValue
+                  && d.LinkedDocumentId.Value != Guid.Empty))
+            .OrderBy(d => d.FileName, StringComparer.OrdinalIgnoreCase))
         {
             // Fetch existing answers for this document
             var answersResponse = await respondentService.GetModificationDocumentAnswers(doc.Id);
             var answers = answersResponse?.StatusCode == HttpStatusCode.OK
-                ? answersResponse.Content ?? new List<ProjectModificationDocumentAnswerDto>()
-                : new List<ProjectModificationDocumentAnswerDto>();
+                ? answersResponse.Content ?? [] : [];
+
+            var previousVersionOfDocumentAnswer = answers
+                .FirstOrDefault(q =>
+                    string.Equals(
+                        q.QuestionId,
+                        QuestionIds.PreviousVersionOfDocument,
+                        StringComparison.OrdinalIgnoreCase))
+                ?.SelectedOption;
+
+            var documentTypeId = answers
+                    .FirstOrDefault(x => x.QuestionId.Equals(QuestionIds.SelectedDocumentType, StringComparison.OrdinalIgnoreCase))?.SelectedOption;
+
+            var documentToReplaceFileName = string.Empty;
+            var linkedDocumentFileName = string.Empty;
+            var linkedDocumentStoragePath = string.Empty;
+            var documentToReplaceStoragePath = string.Empty;
+            if (doc.ReplacesDocumentId != null)
+            {
+                var replacesDocumentAnswersResponse = await respondentService.GetModificationDocumentDetails(doc.ReplacesDocumentId.Value);
+                var replacesDocumentAnswers = replacesDocumentAnswersResponse?.StatusCode == HttpStatusCode.OK
+                    ? replacesDocumentAnswersResponse.Content ?? new ProjectModificationDocumentRequest()
+                    : new ProjectModificationDocumentRequest();
+                documentToReplaceFileName = replacesDocumentAnswers.FileName ?? string.Empty;
+                documentToReplaceStoragePath = replacesDocumentAnswers.DocumentStoragePath ?? string.Empty;
+            }
+
+            if (doc.LinkedDocumentId != null)
+            {
+                var linkedDocumentAnswersResponse = await respondentService.GetModificationDocumentDetails(doc.LinkedDocumentId.Value);
+                var linkedDocumentAnswers = linkedDocumentAnswersResponse?.StatusCode == HttpStatusCode.OK
+                    ? linkedDocumentAnswersResponse.Content ?? new ProjectModificationDocumentRequest()
+                    : new ProjectModificationDocumentRequest();
+                linkedDocumentFileName = linkedDocumentAnswers.FileName ?? string.Empty;
+                linkedDocumentStoragePath = linkedDocumentAnswers.DocumentStoragePath ?? string.Empty;
+            }
 
             // Map document and questions into a view model
             var vm = new ModificationAddDocumentDetailsViewModel
@@ -965,9 +1386,21 @@ public class DocumentsController
                 DocumentId = doc.Id,
                 FileName = doc.FileName,
                 DocumentStoragePath = doc.DocumentStoragePath,
+                ProjectRecordId = doc.ProjectRecordId,
                 Status = doc.Status,
                 IsMalwareScanSuccessful = doc.IsMalwareScanSuccessful,
                 ReviewAnswers = true,
+                ReplacesDocumentId = doc.ReplacesDocumentId,
+                ReplacedByDocumentId = doc.ReplacedByDocumentId,
+                LinkedDocumentId = doc.LinkedDocumentId,
+                DocumentType = doc.DocumentType,
+                DocumentToReplaceFileName = documentToReplaceFileName,
+                DocumentToReplaceStoragePath = documentToReplaceStoragePath,
+                LinkedDocumentFileName = linkedDocumentFileName,
+                LinkedDocumentStoragePath = linkedDocumentStoragePath,
+                ShowSupersedeDocumentSection = string.Equals(previousVersionOfDocumentAnswer, QuestionIds.PreviousVersionOfDocumentYesOption, StringComparison.OrdinalIgnoreCase),
+                MetaDataDocumentTypeId = documentTypeId,
+
                 Questions = cmsQuestions.Questions.Select(cmsQ =>
                 {
                     var matchingAnswer = answers.FirstOrDefault(a => a.QuestionId == cmsQ.QuestionId);
@@ -1210,5 +1643,675 @@ public class DocumentsController
             FileName = fileName,
             User = user
         };
+    }
+
+    private async Task<ModificationUploadDocumentsViewModel> ProcessDocumentUploadsAsync(
+    ModificationUploadDocumentsViewModel model,
+    string respondentId,
+    bool linkDocument = false)
+    {
+        var auditEntries = new List<ModificationDocumentsAuditTrailDto>();
+
+        // Fetch existing documents
+        var response = await respondentService.GetModificationChangesDocuments(
+            model.ModificationId == null ? Guid.Empty : Guid.Parse(model.ModificationId),
+            model.ProjectRecordId);
+        model.Response = response!;
+
+        // Map and validate existing documents
+        var atleastOneInvalidFile = false;
+
+        if (response?.StatusCode == HttpStatusCode.OK && response.Content != null)
+        {
+            model.UploadedDocuments = MapDocuments(response.Content);
+            atleastOneInvalidFile = ValidateExistingDocuments(model);
+        }
+
+        // If no new files selected, just return model (preserves existing behaviour)
+        if (model.Files == null || model.Files.Count == 0)
+        {
+            if (atleastOneInvalidFile)
+            {
+                model.ShouldReturnView = true;
+                return model;
+            }
+
+            if (response?.StatusCode != HttpStatusCode.OK)
+            {
+                model.HasServiceError = true;
+                return model;
+            }
+
+            if (response.Content?.Any() == true)
+            {
+                model.ShouldRedirectToDocumentsAdded = true;
+                return model;
+            }
+
+            ModelState.AddModelError("Files", "Please upload at least one document");
+            model.ShouldReturnView = true;
+            return model;
+        }
+
+        // Validate uploaded files
+        var validationResult = ValidateUploadedFiles(
+            model.Files,
+            response?.Content?.ToList() ?? [],
+            model.ModificationId == null ? Guid.Empty : Guid.Parse(model.ModificationId),
+            respondentId);
+
+        // Persist FAILED audit events
+        if (validationResult.FailedAuditEvents.Count > 0)
+        {
+            await projectModificationsService
+                .CreateModificationDocumentsAuditTrail(validationResult.FailedAuditEvents);
+        }
+
+        atleastOneInvalidFile = validationResult.HasErrors;
+
+        // Check for 100MB specific error (UI rule preserved)
+        var hasFileSizeError = ModelState.Values
+            .SelectMany(v => v.Errors)
+            .Any(e => e.ErrorMessage.Contains("100 MB", StringComparison.OrdinalIgnoreCase));
+
+        // If validation failed due to file size, return immediately (no upload)
+        if (atleastOneInvalidFile && hasFileSizeError)
+        {
+            return model;
+        }
+
+        // Upload valid files
+        if (validationResult.ValidFiles.Count > 0)
+        {
+            var uploadedDocuments = await UploadValidFilesAsync(
+                validationResult.ValidFiles,
+                model.IrasId,
+                model.ModificationId == null ? Guid.Empty : Guid.Parse(model.ModificationId),
+                model.ProjectRecordId,
+                respondentId);
+
+            // Persist SUCCESS audit events AFTER successful upload
+            if (validationResult.SuccessAuditEvents.Count > 0)
+            {
+                await projectModificationsService
+                    .CreateModificationDocumentsAuditTrail(validationResult.SuccessAuditEvents);
+            }
+
+            // Append and sort documents
+            if (linkDocument)
+            {
+                model.UploadedDocuments = [];
+            }
+
+            model.UploadedDocuments = AppendAndSortDocuments(
+                model.UploadedDocuments,
+                uploadedDocuments);
+        }
+
+        return model;
+    }
+
+    private async Task<QuestionnaireViewModel> BuildAndBindQuestionnaire(ModificationAddDocumentDetailsViewModel viewModel)
+    {
+        var questionnaire = await BuildUpdatedQuestionnaire(viewModel);
+        viewModel.Questions = questionnaire.Questions;
+        return questionnaire;
+    }
+
+    private async Task<bool> ValidateDocumentDetails(
+    ModificationAddDocumentDetailsViewModel viewModel,
+    QuestionnaireViewModel questionnaire,
+    bool saveForLater)
+    {
+        var isValid = await this.ValidateQuestionnaire(validator, viewModel);
+
+        if (!saveForLater)
+            isValid &= ValidateRequiredDates(viewModel);
+
+        var documentNameQuestion = questionnaire.Questions
+            .Select((q, i) => new { Question = q, Index = i })
+            .FirstOrDefault(x => x.Question.QuestionId.Equals(
+                QuestionIds.DocumentName,
+                StringComparison.OrdinalIgnoreCase));
+
+        isValid &= await ValidateDuplicateDocumentNames(viewModel, documentNameQuestion);
+
+        return isValid;
+    }
+
+    private async Task<DocumentDetailStatus> GetExistingStatus(Guid documentId, QuestionnaireViewModel questionnaire)
+    {
+        var isIncomplete = await EvaluateDocumentCompletion(documentId, questionnaire);
+        return isIncomplete
+            ? DocumentDetailStatus.Incomplete
+            : DocumentDetailStatus.Complete;
+    }
+
+    private async Task<SupersedeContext> HandleSupersedePreSave(
+    ModificationAddDocumentDetailsViewModel viewModel,
+    QuestionnaireViewModel questionnaire)
+    {
+        var answersResponse = await respondentService
+            .GetModificationDocumentAnswers(viewModel.DocumentId);
+
+        var currentAnswers = answersResponse?.StatusCode == HttpStatusCode.OK
+            ? answersResponse.Content ?? []
+            : [];
+
+        var previousAnswer = currentAnswers
+            .FirstOrDefault(a => a.QuestionId.Equals(
+                QuestionIds.PreviousVersionOfDocument,
+                StringComparison.OrdinalIgnoreCase))?.SelectedOption;
+
+        var latestAnswer = questionnaire.Questions
+            .FirstOrDefault(q => q.QuestionId.Equals(
+                QuestionIds.PreviousVersionOfDocument,
+                StringComparison.OrdinalIgnoreCase))?.SelectedOption;
+
+        var oldDocumentType = currentAnswers
+            .FirstOrDefault(a => a.QuestionId.Equals(
+                QuestionIds.SelectedDocumentType,
+                StringComparison.OrdinalIgnoreCase))?.SelectedOption;
+
+        var newDocumentType = questionnaire.Questions
+            .FirstOrDefault(q => q.QuestionId.Equals(
+                QuestionIds.SelectedDocumentType,
+                StringComparison.OrdinalIgnoreCase))?.SelectedOption;
+
+        if (viewModel.LinkedDocumentId != null)
+        {
+            var linkedAnswersResponse = await respondentService
+                .GetModificationDocumentAnswers(viewModel.LinkedDocumentId.Value);
+
+            var existingLinkedAnswers = linkedAnswersResponse?.StatusCode == HttpStatusCode.OK
+                ? linkedAnswersResponse.Content ?? []
+                : [];
+
+            await SaveLinkedDocumentAnswers(
+                currentAnswers,
+                existingLinkedAnswers,
+                viewModel.DocumentType ?? string.Empty,
+                viewModel.LinkedDocumentId.Value);
+        }
+
+        return new SupersedeContext(previousAnswer, latestAnswer, oldDocumentType, newDocumentType);
+    }
+
+    private sealed record SupersedeContext(
+    string PreviousAnswer,
+    string LatestAnswer,
+    string OldDocumentType,
+    string NewDocumentType);
+
+    private async Task HandleCompletionAudit(
+    DocumentDetailStatus existingStatus,
+    ModificationAddDocumentDetailsViewModel viewModel,
+    QuestionnaireViewModel questionnaire)
+    {
+        if (existingStatus == DocumentDetailStatus.Complete)
+            return;
+
+        var isIncomplete = await EvaluateDocumentCompletion(viewModel.DocumentId, questionnaire);
+        var newStatus = isIncomplete
+            ? DocumentDetailStatus.Incomplete
+            : DocumentDetailStatus.Complete;
+
+        if (newStatus != DocumentDetailStatus.Complete)
+            return;
+
+        await projectModificationsService.CreateModificationDocumentsAuditTrail(
+        [
+            new()
+        {
+            Id = Guid.NewGuid(),
+            ProjectModificationId = viewModel.ModificationId,
+            DateTimeStamp = DateTime.UtcNow,
+            Description = DocumentAuditEvents.DocumentDetailsCompleted,
+            FileName = viewModel.FileName ?? string.Empty,
+            User = HttpContext.Items[ContextItemKeys.UserId]?.ToString() ?? string.Empty
+        }
+        ]);
+    }
+
+    private IActionResult HandleSupersedeRedirect(
+    ModificationAddDocumentDetailsViewModel viewModel,
+    QuestionnaireViewModel questionnaire)
+    {
+        var previousVersionQuestion = questionnaire.Questions
+            .FirstOrDefault(q => q.QuestionId.Equals(
+                QuestionIds.PreviousVersionOfDocument,
+                StringComparison.OrdinalIgnoreCase));
+
+        var supersede = string.Equals(
+            previousVersionQuestion?.SelectedOption,
+            QuestionIds.PreviousVersionOfDocumentYesOption,
+            StringComparison.OrdinalIgnoreCase);
+
+        if (!supersede)
+            return null;
+
+        var documentTypeId = questionnaire.Questions
+            .FirstOrDefault(q => q.QuestionId.Equals(
+                QuestionIds.SelectedDocumentType,
+                StringComparison.OrdinalIgnoreCase))?.SelectedOption;
+
+        return viewModel.ReviewAnswers
+            ? RedirectAfterSubmit(viewModel)
+            : RedirectToAction(nameof(SupersedeDocumentToReplace), new
+            {
+                documentTypeId,
+                projectRecordId = viewModel.ProjectRecordId,
+                currentDocumentId = viewModel.DocumentId
+            });
+    }
+
+    private async Task HandleDocumentTypeChange(
+    ModificationAddDocumentDetailsViewModel viewModel,
+    SupersedeContext context)
+    {
+        if (context == null)
+            return;
+
+        var hasDocumentTypeChanged =
+            !string.IsNullOrWhiteSpace(context.NewDocumentType) &&
+            !string.Equals(
+                context.OldDocumentType,
+                context.NewDocumentType,
+                StringComparison.OrdinalIgnoreCase);
+
+        if (!hasDocumentTypeChanged)
+            return;
+
+        var requests = new List<ProjectModificationDocumentRequest>();
+        var userId = HttpContext.Items[ContextItemKeys.UserId]?.ToString() ?? string.Empty;
+
+        // Fetch current document details once
+        var currentDocumentResponse =
+            await respondentService.GetModificationDocumentDetails(viewModel.DocumentId);
+
+        if (currentDocumentResponse?.Content == null)
+            return;
+
+        // Update current document (clear superseding relationship)
+        requests.Add(BuildProjectModificationDocumentRequest(
+            currentDocumentResponse.Content,
+            viewModel,
+            userId,
+            replacesDocumentId: null,
+            replacedByDocumentId: null));
+
+        // If it was replacing another document, clear that relationship too
+        if (viewModel.ReplacesDocumentId != null && viewModel.ReplacesDocumentId != Guid.Empty)
+        {
+            var replacedDocResponse =
+                await respondentService.GetModificationDocumentDetails(viewModel.ReplacesDocumentId.Value);
+
+            if (replacedDocResponse?.StatusCode == HttpStatusCode.OK &&
+                replacedDocResponse.Content != null)
+            {
+                requests.Add(BuildProjectModificationDocumentRequest(
+                    replacedDocResponse.Content,
+                    viewModel,
+                    userId,
+                    replacesDocumentId: null,
+                    replacedByDocumentId: null));
+            }
+        }
+
+        if (requests.Count > 0)
+            await respondentService.SaveModificationDocuments(requests);
+    }
+
+    private async Task HandleSupersedeAnswerChange(
+    ModificationAddDocumentDetailsViewModel viewModel,
+    SupersedeContext context,
+    bool reviewAllChanges)
+    {
+        if (context == null ||
+            string.IsNullOrEmpty(context.PreviousAnswer) ||
+            string.IsNullOrEmpty(context.LatestAnswer))
+            return;
+
+        var changedFromYesToNo =
+            string.Equals(context.PreviousAnswer,
+                QuestionIds.PreviousVersionOfDocumentYesOption,
+                StringComparison.OrdinalIgnoreCase)
+            &&
+            string.Equals(context.LatestAnswer,
+                QuestionIds.PreviousVersionOfDocumentNoOption,
+                StringComparison.OrdinalIgnoreCase);
+
+        if (!changedFromYesToNo)
+            return;
+
+        var userId = HttpContext.Items[ContextItemKeys.UserId]?.ToString() ?? string.Empty;
+        var requests = new List<ProjectModificationDocumentRequest>();
+
+        // Get fresh document details
+        var currentDocumentResponse =
+            await respondentService.GetModificationDocumentDetails(viewModel.DocumentId);
+
+        if (currentDocumentResponse?.Content == null)
+            return;
+
+        // Rebuild base view model (preserves original behaviour)
+        viewModel = BuildBaseViewModel(
+            currentDocumentResponse.Content,
+            viewModel.ReviewAnswers,
+            reviewAllChanges,
+            null);
+
+        var replacesDocumentId = viewModel.ReplacesDocumentId;
+
+        // 1. Clear linked document relationship
+        if (viewModel.LinkedDocumentId != null)
+        {
+            var linkedDocResponse =
+                await respondentService.GetModificationDocumentDetails(viewModel.LinkedDocumentId.Value);
+
+            if (linkedDocResponse?.StatusCode == HttpStatusCode.OK &&
+                linkedDocResponse.Content != null)
+            {
+                var linkedDto = new ProjectModificationDocumentRequest
+                {
+                    Id = linkedDocResponse.Content.Id,
+                    ProjectModificationId = viewModel.ModificationId,
+                    ProjectRecordId = viewModel.ProjectRecordId,
+                    UserId = userId,
+                    FileName = linkedDocResponse.Content.FileName,
+                    DocumentStoragePath = linkedDocResponse.Content.DocumentStoragePath,
+                    FileSize = linkedDocResponse.Content.FileSize,
+                    Status = linkedDocResponse.Content.Status,
+                    IsMalwareScanSuccessful = linkedDocResponse.Content.IsMalwareScanSuccessful,
+                    ReplacesDocumentId = linkedDocResponse.Content.ReplacesDocumentId,
+                    DocumentType = null,
+                    LinkedDocumentId = null
+                };
+
+                requests.Add(linkedDto);
+
+                // Delete linked document answers (existing behaviour)
+                await projectModificationsService.DeleteDocumentAnswersModification([linkedDto]);
+            }
+        }
+
+        // 2. Clear replaced document relationship
+        if (replacesDocumentId != null && replacesDocumentId != Guid.Empty)
+        {
+            var replacedDocResponse =
+                await respondentService.GetModificationDocumentDetails(replacesDocumentId.Value);
+
+            if (replacedDocResponse?.StatusCode == HttpStatusCode.OK &&
+                replacedDocResponse.Content != null)
+            {
+                requests.Add(BuildProjectModificationDocumentRequest(
+                    replacedDocResponse.Content,
+                    viewModel,
+                    userId,
+                    replacesDocumentId: null,
+                    replacedByDocumentId: null));
+            }
+        }
+
+        // 3. Reset current document supersede fields
+        viewModel.DocumentType = null;
+        viewModel.LinkedDocumentId = null;
+        viewModel.ReplacedByDocumentId = null;
+        viewModel.ReplacesDocumentId = null;
+
+        requests.Add(new ProjectModificationDocumentRequest
+        {
+            Id = viewModel.DocumentId,
+            ProjectModificationId = viewModel.ModificationId,
+            ProjectRecordId = viewModel.ProjectRecordId,
+            UserId = userId,
+            FileName = viewModel.FileName,
+            DocumentStoragePath = viewModel.DocumentStoragePath,
+            FileSize = viewModel.FileSize,
+            Status = viewModel.Status,
+            IsMalwareScanSuccessful = viewModel.IsMalwareScanSuccessful,
+            ReplacesDocumentId = null,
+            DocumentType = null,
+            ReplacedByDocumentId = null,
+            LinkedDocumentId = null
+        });
+
+        if (requests.Count > 0)
+            await respondentService.SaveModificationDocuments(requests);
+    }
+
+    private ProjectModificationDocumentRequest BuildProjectModificationDocumentRequest(
+    ProjectModificationDocumentRequest source,
+    ModificationAddDocumentDetailsViewModel viewModel,
+    string userId,
+    Guid? replacesDocumentId,
+    Guid? replacedByDocumentId)
+    {
+        return new ProjectModificationDocumentRequest
+        {
+            Id = source.Id,
+            ProjectModificationId = viewModel.ModificationId,
+            ProjectRecordId = viewModel.ProjectRecordId,
+            UserId = userId,
+            FileName = source.FileName,
+            DocumentStoragePath = source.DocumentStoragePath,
+            FileSize = source.FileSize,
+            Status = source.Status,
+            IsMalwareScanSuccessful = source.IsMalwareScanSuccessful,
+            ReplacesDocumentId = replacesDocumentId,
+            DocumentType = source.DocumentType,
+            ReplacedByDocumentId = replacedByDocumentId,
+            LinkedDocumentId = source.LinkedDocumentId
+        };
+    }
+
+    private async Task<Guid?> UploadLinkedDocumentIfRequired(
+    ModificationAddDocumentDetailsViewModel viewModel,
+    string userId)
+    {
+        if (viewModel.File == null)
+            return null;
+
+        var uploadViewModel = new ModificationUploadDocumentsViewModel
+        {
+            Files = [viewModel.File],
+            ProjectRecordId = viewModel.ProjectRecordId,
+            ModificationId = viewModel.ModificationId.ToString()
+        };
+
+        uploadViewModel.ModificationId =
+            TempData.PeekGuid(TempDataKeys.ProjectModification.ProjectModificationId);
+
+        uploadViewModel.ProjectRecordId =
+            TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty;
+
+        uploadViewModel.IrasId =
+            TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty;
+
+        var updatedUploadModel = await ProcessDocumentUploadsAsync(
+            uploadViewModel,
+            userId);
+
+        return updatedUploadModel.UploadedDocuments?.FirstOrDefault()?.DocumentId;
+    }
+
+    private async Task AppendReplacesDocumentIfExists(
+    ProjectModificationDocumentRequest replacedByDocumentDto,
+    List<ProjectModificationDocumentRequest> requests,
+    string userId)
+    {
+        if (replacedByDocumentDto.ReplacesDocumentId == null ||
+            replacedByDocumentDto.ReplacesDocumentId == Guid.Empty)
+            return;
+
+        var replacesDocumentResponse =
+            await respondentService.GetModificationDocumentDetails(
+                replacedByDocumentDto.ReplacesDocumentId.Value);
+
+        if (replacesDocumentResponse?.StatusCode != HttpStatusCode.OK ||
+            replacesDocumentResponse.Content == null)
+            return;
+
+        var replacesDocument = replacesDocumentResponse.Content;
+
+        requests.Add(new ProjectModificationDocumentRequest
+        {
+            Id = replacesDocument.Id,
+            ProjectModificationId = replacesDocument.ProjectModificationId,
+            ProjectRecordId = replacesDocument.ProjectRecordId,
+            UserId = userId,
+            FileName = replacesDocument.FileName,
+            DocumentStoragePath = replacesDocument.DocumentStoragePath,
+            FileSize = replacesDocument.FileSize,
+            Status = replacesDocument.Status,
+            IsMalwareScanSuccessful = replacesDocument.IsMalwareScanSuccessful,
+            ReplacesDocumentId = replacesDocument.ReplacesDocumentId,
+            DocumentType = replacesDocument.DocumentType,
+            ReplacedByDocumentId = replacedByDocumentDto.Id,
+            LinkedDocumentId = replacesDocument.LinkedDocumentId
+        });
+    }
+
+    private async Task AppendLinkedDocumentIfExists(
+        ProjectModificationDocumentRequest replacedByDocumentDto,
+        ServiceResponse<ProjectModificationDocumentRequest> replacedByDocumentResponse,
+        List<ProjectModificationDocumentRequest> requests,
+        string userId)
+    {
+        if (replacedByDocumentDto.LinkedDocumentId == null ||
+            replacedByDocumentDto.LinkedDocumentId == Guid.Empty ||
+            replacedByDocumentResponse?.Content == null)
+            return;
+
+        var linkedDocumentResponse =
+            await respondentService.GetModificationDocumentDetails(
+                replacedByDocumentDto.LinkedDocumentId.Value);
+
+        if (linkedDocumentResponse?.StatusCode != HttpStatusCode.OK ||
+            linkedDocumentResponse.Content == null)
+            return;
+
+        var linkedDocument = linkedDocumentResponse.Content;
+
+        var linkedDocumentDto = new ProjectModificationDocumentRequest
+        {
+            Id = linkedDocument.Id,
+            ProjectModificationId = linkedDocument.ProjectModificationId,
+            ProjectRecordId = linkedDocument.ProjectRecordId,
+            UserId = userId,
+            FileName = linkedDocument.FileName,
+            DocumentStoragePath = linkedDocument.DocumentStoragePath,
+            FileSize = linkedDocument.FileSize,
+            Status = linkedDocument.Status,
+            IsMalwareScanSuccessful = linkedDocument.IsMalwareScanSuccessful,
+            ReplacesDocumentId = linkedDocument.ReplacesDocumentId,
+            DocumentType = linkedDocument.DocumentType,
+            ReplacedByDocumentId = linkedDocument.ReplacedByDocumentId,
+            LinkedDocumentId = replacedByDocumentDto.Id
+        };
+
+        // Preserve original Clean/Tracked swap logic EXACTLY
+        if (!string.IsNullOrWhiteSpace(replacedByDocumentDto.DocumentType))
+        {
+            if (string.Equals(replacedByDocumentDto.DocumentType, SupersedeDocumentsType.Clean, StringComparison.OrdinalIgnoreCase))
+            {
+                linkedDocumentDto.DocumentType = SupersedeDocumentsType.Tracked;
+            }
+            else if (string.Equals(replacedByDocumentDto.DocumentType, SupersedeDocumentsType.Tracked, StringComparison.OrdinalIgnoreCase))
+            {
+                linkedDocumentDto.DocumentType = SupersedeDocumentsType.Clean;
+                linkedDocumentDto.LinkedDocumentId = replacedByDocumentDto.Id;
+                linkedDocumentDto.ReplacesDocumentId = replacedByDocumentDto.ReplacesDocumentId;
+                linkedDocumentDto.ReplacedByDocumentId = replacedByDocumentDto.ReplacedByDocumentId;
+
+                replacedByDocumentDto.LinkedDocumentId = linkedDocumentDto.Id;
+                replacedByDocumentDto.ReplacesDocumentId = null;
+                replacedByDocumentDto.ReplacedByDocumentId = null;
+            }
+        }
+
+        requests.Add(linkedDocumentDto);
+    }
+
+    private async Task SyncLinkedDocumentAnswers(
+    Guid currentDocumentId,
+    Guid linkedDocumentId,
+    string documentType)
+    {
+        var currentAnswersResponse =
+            await respondentService.GetModificationDocumentAnswers(currentDocumentId);
+
+        var currentAnswers =
+            currentAnswersResponse?.StatusCode == HttpStatusCode.OK
+                ? currentAnswersResponse.Content ?? []
+                : [];
+
+        var linkedAnswersResponse =
+            await respondentService.GetModificationDocumentAnswers(linkedDocumentId);
+
+        var existingLinkedAnswers =
+            linkedAnswersResponse?.StatusCode == HttpStatusCode.OK
+                ? linkedAnswersResponse.Content ?? []
+                : [];
+
+        await SaveLinkedDocumentAnswers(
+            currentAnswers,
+            existingLinkedAnswers,
+            documentType,
+            linkedDocumentId);
+    }
+
+    private async Task<ModificationAddDocumentDetailsViewModel> BuildSupersedeBaseViewModel(
+    Guid currentDocumentId,
+    string documentTypeId,
+    bool reviewAnswers,
+    bool reviewAllChanges)
+    {
+        var documentResponse =
+            await respondentService.GetModificationDocumentDetails(currentDocumentId);
+
+        return BuildBaseViewModel(
+            documentResponse.Content,
+            reviewAnswers,
+            reviewAllChanges,
+            documentTypeId);
+    }
+
+    private async Task<List<ProjectModificationDocumentRequest>> GetEligibleDocumentsToReplace(
+        string projectRecordId,
+        string documentTypeId,
+        Guid currentDocumentId)
+    {
+        var documentsResponse =
+            await respondentService.GetModificationDocumentsByType(
+                projectRecordId,
+                documentTypeId);
+
+        return (documentsResponse?.Content ?? [])
+            .Where(d =>
+                d.Status == DocumentStatus.Approved &&
+                d.Id != currentDocumentId &&
+                d.DocumentType != SupersedeDocumentsType.Tracked &&
+                d.LinkedDocumentId == null)
+            .ToList();
+    }
+
+    private async Task<List<ProjectModificationDocumentRequest>> GetEligibleDocumentsToLink(
+        Guid currentDocumentId)
+    {
+        var documentChangeRequest = BuildDocumentRequest();
+
+        var documentsResponse = await respondentService.GetModificationChangesDocuments(
+            documentChangeRequest.ProjectModificationId,
+            documentChangeRequest.ProjectRecordId);
+
+        return (documentsResponse?.Content ?? [])
+            .Where(d =>
+                d.ReplacesDocumentId == null &&
+                d.ReplacedByDocumentId == null &&
+                d.LinkedDocumentId == null &&
+                d.Id != currentDocumentId &&
+                d.DocumentType != SupersedeDocumentsType.Tracked)
+            .ToList();
     }
 }

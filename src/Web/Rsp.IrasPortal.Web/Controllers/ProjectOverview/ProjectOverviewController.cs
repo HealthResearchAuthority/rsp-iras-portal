@@ -3,6 +3,7 @@ using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement;
 using Microsoft.AspNetCore.WebUtilities;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
@@ -32,8 +33,9 @@ public class ProjectOverviewController
     IValidator<ApprovalsSearchModel> validator,
     IValidator<QuestionnaireViewModel> docValidator,
     IProjectClosuresService projectClosuresService,
-    IUserManagementService userManagementService
-) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, docValidator)
+    IUserManagementService userManagementService,
+    IFeatureManager featureManager
+) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, docValidator, featureManager)
 {
     private readonly IRespondentService _respondentService = respondentService;
     private const string DocumentDetailsSection = "pdm-document-metadata";

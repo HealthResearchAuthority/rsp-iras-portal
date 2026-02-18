@@ -56,4 +56,9 @@ public class ProjectOverviewDocumentDto
     /// Gets or sets the unique identifier for this modification.
     /// </summary>
     public Guid ProjectModificationId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the identifier of the document type, if specified.
+    /// </summary>
+    public string? SupersedeDocumentType { get; set; }
 }
