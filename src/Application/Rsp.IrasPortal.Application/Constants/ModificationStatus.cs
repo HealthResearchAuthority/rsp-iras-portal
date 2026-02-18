@@ -10,6 +10,7 @@ public struct ModificationStatus
     public const string Approved = "Approved";
     public const string NotApproved = "Not approved";
     public const string NotAuthorised = "Not authorised";
+    public const string RequestForInformation = "Request for further information";
 
     // BACKSTAGE VALUES
     public const string Received = "Received";

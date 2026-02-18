@@ -4,11 +4,7 @@
     ViewBag.Title = "Reason modification not approved";
 }
 
-<partial name="_BackNavigation"
-         model="@(
-        "pmc:reviewoutcome",
-        "Back",
-        new Dictionary<string, string>())" />
+<partial name="_BackNavigation" model="@("pmc:reviewoutcome", "Back", new Dictionary<string, string>())" />
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">  

@@ -58,6 +58,11 @@ public class BaseProjectModificationViewModel
     public string? RevisionDescription { get; set; }
 
     /// <summary>
+    /// Gets or sets the list of reasons for requesting additional information from the applicant.
+    /// </summary>
+    public List<string> RequestForInformationReasons { get; set; } = [];
+
+    /// <summary>
     /// Gets or sets the created date of the Modification
     /// </summary>
     public string DateCreated { get; set; } = null!;
