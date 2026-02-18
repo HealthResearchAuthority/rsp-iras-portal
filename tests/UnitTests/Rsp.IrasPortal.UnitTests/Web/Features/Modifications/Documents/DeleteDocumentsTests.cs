@@ -53,6 +53,22 @@ public class DeleteDocumentsTests : TestServiceBase<DocumentsController>
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.DeleteDocumentModification(It.IsAny<List<ProjectModificationDocumentRequest>>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+        var docId = Guid.NewGuid();
+        var document = new ProjectModificationDocumentRequest
+        {
+            Id = docId,
+            FileName = "doc.pdf",
+            FileSize = 123,
+            DocumentStoragePath = "path"
+        };
+
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationDocumentDetails(It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationDocumentRequest>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = document
+            });
 
         var blobClientMock = new Mock<BlobClient>();
         blobClientMock
@@ -122,6 +138,22 @@ public class DeleteDocumentsTests : TestServiceBase<DocumentsController>
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.DeleteDocumentModification(It.IsAny<List<ProjectModificationDocumentRequest>>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+        var docId = Guid.NewGuid();
+        var document = new ProjectModificationDocumentRequest
+        {
+            Id = docId,
+            FileName = "doc.pdf",
+            FileSize = 123,
+            DocumentStoragePath = "path"
+        };
+
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationDocumentDetails(It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationDocumentRequest>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = document
+            });
 
         var blobClientMock = new Mock<BlobClient>();
         blobClientMock
@@ -173,6 +205,22 @@ public class DeleteDocumentsTests : TestServiceBase<DocumentsController>
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.DeleteDocumentModification(It.IsAny<List<ProjectModificationDocumentRequest>>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+        var docId = Guid.NewGuid();
+        var document = new ProjectModificationDocumentRequest
+        {
+            Id = docId,
+            FileName = "doc.pdf",
+            FileSize = 123,
+            DocumentStoragePath = "path"
+        };
+
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationDocumentDetails(It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationDocumentRequest>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = document
+            });
 
         var blobClientMock = new Mock<BlobClient>();
         blobClientMock
