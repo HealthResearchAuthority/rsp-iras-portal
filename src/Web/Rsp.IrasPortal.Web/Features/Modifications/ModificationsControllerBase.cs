@@ -625,7 +625,6 @@ public abstract class ModificationsControllerBase
                     IsMandatory = q.IsMandatory,
                     IsOptional = q.IsOptional,
                     ShowOriginalAnswer = q.ShowOriginalAnswer,
-                    SelectedOption = q.SelectedOption,
                     Rules = q.Rules
                 })
         };
@@ -649,7 +648,9 @@ public abstract class ModificationsControllerBase
         }
 
         if (hasType && hasLinked)
+        {
             return false;
+        }
 
         // All other combinations are valid
         return true;

@@ -692,10 +692,12 @@ public class DocumentsController
     /// </returns>
     [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Update)]
     [HttpPost]
-    public async Task<IActionResult> SaveDocumentDetails(
-    ModificationAddDocumentDetailsViewModel viewModel,
-    bool saveForLater = false,
-    bool reviewAllChanges = false)
+    public async Task<IActionResult> SaveDocumentDetails
+    (
+        ModificationAddDocumentDetailsViewModel viewModel,
+        bool saveForLater = false,
+        bool reviewAllChanges = false
+    )
     {
         var supersedeEnabled = await featureManager.IsEnabledAsync(FeatureFlags.SupersedingDocuments);
 
@@ -705,7 +707,9 @@ public class DocumentsController
         ViewData[ViewDataKeys.IsQuestionnaireValid] = isValid;
 
         if (!isValid)
+        {
             return View("AddDocumentDetails", viewModel);
+        }
 
         var existingStatus = await GetExistingStatus(viewModel.DocumentId, questionnaire);
 
@@ -727,11 +731,15 @@ public class DocumentsController
 
             var redirect = HandleSupersedeRedirect(viewModel, questionnaire);
             if (redirect != null)
+            {
                 return redirect;
+            }
         }
 
         if (reviewAllChanges)
+        {
             return RedirectToReviewAllChanges();
+        }
 
         return saveForLater
             ? RedirectToSaveForLater()
@@ -741,12 +749,14 @@ public class DocumentsController
     [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Update)]
     [HttpGet]
     [FeatureGate(FeatureFlags.SupersedingDocuments)]
-    public async Task<IActionResult> SupersedeDocumentToReplace(
-    string documentTypeId,
-    string projectRecordId,
-    Guid currentDocumentId,
-    bool reviewAnswers = false,
-    bool reviewAllChanges = false)
+    public async Task<IActionResult> SupersedeDocumentToReplace
+    (
+        string documentTypeId,
+        string projectRecordId,
+        Guid currentDocumentId,
+        bool reviewAnswers = false,
+        bool reviewAllChanges = false
+    )
     {
         var viewModel = await BuildSupersedeBaseViewModel(
             currentDocumentId,
@@ -767,12 +777,14 @@ public class DocumentsController
     [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Update)]
     [HttpGet]
     [FeatureGate(FeatureFlags.SupersedingDocuments)]
-    public async Task<IActionResult> SupersedeDocumentType(
+    public async Task<IActionResult> SupersedeDocumentType
+    (
         string documentTypeId,
         string projectRecordId,
         Guid currentDocumentId,
         bool reviewAnswers = false,
-        bool reviewAllChanges = false)
+        bool reviewAllChanges = false
+    )
     {
         var viewModel = await BuildSupersedeBaseViewModel(
             currentDocumentId,
@@ -786,19 +798,23 @@ public class DocumentsController
     [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Update)]
     [HttpGet]
     [FeatureGate(FeatureFlags.SupersedingDocuments)]
-    public async Task<IActionResult> SupersedeLinkDocument(
+    public async Task<IActionResult> SupersedeLinkDocument
+    (
         string documentTypeId,
         string projectRecordId,
         Guid currentDocumentId,
         bool reviewAnswers = false,
         bool reviewAllChanges = false,
-        bool linkDocument = false)
+        bool linkDocument = false
+    )
     {
-        var viewModel = await BuildSupersedeBaseViewModel(
+        var viewModel = await BuildSupersedeBaseViewModel
+        (
             currentDocumentId,
             documentTypeId,
             reviewAllChanges,
-            reviewAnswers);
+            reviewAnswers
+        );
 
         var eligibleDocuments = await GetEligibleDocumentsToLink(currentDocumentId);
 
@@ -819,13 +835,15 @@ public class DocumentsController
     [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Update)]
     [HttpPost]
     [FeatureGate(FeatureFlags.SupersedingDocuments)]
-    public async Task<IActionResult> SaveSupersedeDocumentDetails(
-    ModificationAddDocumentDetailsViewModel viewModel,
-    bool saveForLater = false,
-    bool continueToDocumentType = false,
-    bool continueToLinkDocument = false,
-    bool linkDocument = false,
-    bool reviewAnswers = false)
+    public async Task<IActionResult> SaveSupersedeDocumentDetails
+    (
+        ModificationAddDocumentDetailsViewModel viewModel,
+        bool saveForLater = false,
+        bool continueToDocumentType = false,
+        bool continueToLinkDocument = false,
+        bool linkDocument = false,
+        bool reviewAnswers = false
+    )
     {
         var userId = HttpContext.Items[ContextItemKeys.UserId]?.ToString() ?? string.Empty;
 
@@ -863,17 +881,21 @@ public class DocumentsController
         projectModificationDocumentRequest.Add(replacedByDocumentDto);
 
         // Update the document being replaced (if exists)
-        await AppendReplacesDocumentIfExists(
-            replacedByDocumentDto,
-            projectModificationDocumentRequest,
-            userId);
+        await AppendReplacesDocumentIfExists
+            (
+                replacedByDocumentDto,
+                projectModificationDocumentRequest,
+                userId
+            );
 
         // Update linked document (if exists)
-        await AppendLinkedDocumentIfExists(
+        await AppendLinkedDocumentIfExists
+            (
             replacedByDocumentDto,
             replacedByDocumentResponse,
             projectModificationDocumentRequest,
-            userId);
+            userId
+            );
 
         await respondentService.SaveModificationDocuments(projectModificationDocumentRequest);
 
@@ -918,11 +940,13 @@ public class DocumentsController
             : RedirectAfterSubmit(viewModel);
     }
 
-    private async Task SaveLinkedDocumentAnswers(
+    private async Task SaveLinkedDocumentAnswers
+    (
         IEnumerable<ProjectModificationDocumentAnswerDto> currentAnswers,
         IEnumerable<ProjectModificationDocumentAnswerDto> existingLinkedAnswers,
         string documentType,
-        Guid linkedId)
+        Guid linkedId
+    )
     {
         // Create lookup for fast matching
         var linkedAnswersLookup = existingLinkedAnswers
@@ -1023,11 +1047,13 @@ public class DocumentsController
         );
     }
 
-    private ModificationAddDocumentDetailsViewModel BuildBaseViewModel(
+    private ModificationAddDocumentDetailsViewModel BuildBaseViewModel
+    (
         ProjectModificationDocumentRequest document,
         bool reviewAnswers,
         bool reviewAllChanges,
-        string? selectedDocumentTypeId = null)
+        string? selectedDocumentTypeId = null
+    )
     {
         var context = GetProjectContext();
 
@@ -1054,8 +1080,7 @@ public class DocumentsController
         };
     }
 
-    private static List<GdsOption> ToGdsOptions(
-    IEnumerable<ProjectModificationDocumentRequest> documents)
+    private static List<GdsOption> ToGdsOptions(IEnumerable<ProjectModificationDocumentRequest> documents)
     {
         return documents.Select(d => new GdsOption
         {
@@ -1110,11 +1135,13 @@ public class DocumentsController
     List<ModificationDocumentsAuditTrailDto> FailedAuditEvents,
     List<ModificationDocumentsAuditTrailDto> SuccessAuditEvents,
     bool HasErrors
-    ) ValidateUploadedFiles(
-    IEnumerable<IFormFile> files,
-    List<ProjectModificationDocumentRequest> existingDocs,
-    Guid projectModificationId,
-    string user)
+    ) ValidateUploadedFiles
+        (
+        IEnumerable<IFormFile> files,
+        List<ProjectModificationDocumentRequest> existingDocs,
+        Guid projectModificationId,
+        string user
+        )
     {
         var validFiles = new List<IFormFile>();
         var auditEvents = new List<ModificationDocumentsAuditTrailDto>();
@@ -1203,12 +1230,14 @@ public class DocumentsController
         return (validFiles, auditEvents, successAuditEvents, hasErrors);
     }
 
-    private async Task<List<ProjectModificationDocumentRequest>> UploadValidFilesAsync(
+    private async Task<List<ProjectModificationDocumentRequest>> UploadValidFilesAsync
+    (
         List<IFormFile> validFiles,
         string irasId,
         object? projectModificationId,
         string projectRecordId,
-        string respondentId)
+        string respondentId
+    )
     {
         var blobClient = GetBlobClient(false);
 
@@ -1231,9 +1260,11 @@ public class DocumentsController
         return uploadedDocuments;
     }
 
-    private static List<DocumentSummaryItemDto> AppendAndSortDocuments(
+    private static List<DocumentSummaryItemDto> AppendAndSortDocuments
+    (
         List<DocumentSummaryItemDto>? existing,
-        List<ProjectModificationDocumentRequest> uploaded)
+        List<ProjectModificationDocumentRequest> uploaded
+    )
     {
         // Append newly uploaded documents to existing ones, ensuring consistent alphabetical order
         return [.. (existing ?? [])
@@ -1249,19 +1280,27 @@ public class DocumentsController
             .OrderBy(dto => dto.FileName, StringComparer.OrdinalIgnoreCase)];
     }
 
-    private IActionResult HandleNoNewFiles(
+    private IActionResult HandleNoNewFiles
+    (
         ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>? response,
         bool atleastOneInvalidFile,
-        ModificationUploadDocumentsViewModel model)
+        ModificationUploadDocumentsViewModel model
+    )
     {
         if (atleastOneInvalidFile)
+        {
             return View(model);
+        }
 
         if (response?.StatusCode != HttpStatusCode.OK)
+        {
             return this.ServiceError(response!);
+        }
 
         if (response.Content?.Any() == true)
+        {
             return RedirectToAction(nameof(ModificationDocumentsAdded));
+        }
 
         ModelState.AddModelError("Files", "Upload at least one document");
         return View(model);
@@ -1527,9 +1566,11 @@ public class DocumentsController
     /// Checks whether the document name entered already exists among uploaded documents.
     /// Adds ModelState error if a duplicate is found.
     /// </summary>
-    private async Task<bool> ValidateDuplicateDocumentNames(
-            ModificationAddDocumentDetailsViewModel viewModel,
-            dynamic? documentNameQuestion)
+    private async Task<bool> ValidateDuplicateDocumentNames
+    (
+        ModificationAddDocumentDetailsViewModel viewModel,
+        dynamic? documentNameQuestion
+    )
     {
         var request = BuildDocumentRequest();
 
@@ -1540,7 +1581,9 @@ public class DocumentsController
 
         // Skip validation if service call fails or no documents exist
         if (documentsResponse?.StatusCode != HttpStatusCode.OK || documentsResponse.Content == null)
+        {
             return true;
+        }
 
         var isValid = true;
 
@@ -1628,11 +1671,13 @@ public class DocumentsController
         return _blobClientFactory.CreateClient(name);
     }
 
-    private static ModificationDocumentsAuditTrailDto CreateAuditTrail(
-    Guid projectModificationId,
-    string fileName,
-    string description,
-    string user)
+    private static ModificationDocumentsAuditTrailDto CreateAuditTrail
+    (
+        Guid projectModificationId,
+        string fileName,
+        string description,
+        string user
+    )
     {
         return new ModificationDocumentsAuditTrailDto
         {
@@ -1645,10 +1690,12 @@ public class DocumentsController
         };
     }
 
-    private async Task<ModificationUploadDocumentsViewModel> ProcessDocumentUploadsAsync(
-    ModificationUploadDocumentsViewModel model,
-    string respondentId,
-    bool linkDocument = false)
+    private async Task<ModificationUploadDocumentsViewModel> ProcessDocumentUploadsAsync
+    (
+        ModificationUploadDocumentsViewModel model,
+        string respondentId,
+        bool linkDocument = false
+    )
     {
         var auditEntries = new List<ModificationDocumentsAuditTrailDto>();
 
@@ -1758,10 +1805,12 @@ public class DocumentsController
         return questionnaire;
     }
 
-    private async Task<bool> ValidateDocumentDetails(
+    private async Task<bool> ValidateDocumentDetails
+        (
     ModificationAddDocumentDetailsViewModel viewModel,
     QuestionnaireViewModel questionnaire,
-    bool saveForLater)
+    bool saveForLater
+        )
     {
         var isValid = await this.ValidateQuestionnaire(validator, viewModel);
 
@@ -1787,9 +1836,11 @@ public class DocumentsController
             : DocumentDetailStatus.Complete;
     }
 
-    private async Task<SupersedeContext> HandleSupersedePreSave(
-    ModificationAddDocumentDetailsViewModel viewModel,
-    QuestionnaireViewModel questionnaire)
+    private async Task<SupersedeContext> HandleSupersedePreSave
+    (
+        ModificationAddDocumentDetailsViewModel viewModel,
+        QuestionnaireViewModel questionnaire
+    )
     {
         var answersResponse = await respondentService
             .GetModificationDocumentAnswers(viewModel.DocumentId);
@@ -1843,13 +1894,17 @@ public class DocumentsController
     string OldDocumentType,
     string NewDocumentType);
 
-    private async Task HandleCompletionAudit(
-    DocumentDetailStatus existingStatus,
-    ModificationAddDocumentDetailsViewModel viewModel,
-    QuestionnaireViewModel questionnaire)
+    private async Task HandleCompletionAudit
+    (
+        DocumentDetailStatus existingStatus,
+        ModificationAddDocumentDetailsViewModel viewModel,
+        QuestionnaireViewModel questionnaire
+    )
     {
         if (existingStatus == DocumentDetailStatus.Complete)
+        {
             return;
+        }
 
         var isIncomplete = await EvaluateDocumentCompletion(viewModel.DocumentId, questionnaire);
         var newStatus = isIncomplete
@@ -1857,7 +1912,9 @@ public class DocumentsController
             : DocumentDetailStatus.Complete;
 
         if (newStatus != DocumentDetailStatus.Complete)
+        {
             return;
+        }
 
         await projectModificationsService.CreateModificationDocumentsAuditTrail(
         [
@@ -1873,9 +1930,7 @@ public class DocumentsController
         ]);
     }
 
-    private IActionResult HandleSupersedeRedirect(
-    ModificationAddDocumentDetailsViewModel viewModel,
-    QuestionnaireViewModel questionnaire)
+    private IActionResult HandleSupersedeRedirect(ModificationAddDocumentDetailsViewModel viewModel, QuestionnaireViewModel questionnaire)
     {
         var previousVersionQuestion = questionnaire.Questions
             .FirstOrDefault(q => q.QuestionId.Equals(
@@ -1888,7 +1943,9 @@ public class DocumentsController
             StringComparison.OrdinalIgnoreCase);
 
         if (!supersede)
+        {
             return null;
+        }
 
         var documentTypeId = questionnaire.Questions
             .FirstOrDefault(q => q.QuestionId.Equals(
@@ -1905,12 +1962,12 @@ public class DocumentsController
             });
     }
 
-    private async Task HandleDocumentTypeChange(
-    ModificationAddDocumentDetailsViewModel viewModel,
-    SupersedeContext context)
+    private async Task HandleDocumentTypeChange(ModificationAddDocumentDetailsViewModel viewModel, SupersedeContext context)
     {
         if (context == null)
+        {
             return;
+        }
 
         var hasDocumentTypeChanged =
             !string.IsNullOrWhiteSpace(context.NewDocumentType) &&
@@ -1920,7 +1977,9 @@ public class DocumentsController
                 StringComparison.OrdinalIgnoreCase);
 
         if (!hasDocumentTypeChanged)
+        {
             return;
+        }
 
         var requests = new List<ProjectModificationDocumentRequest>();
         var userId = HttpContext.Items[ContextItemKeys.UserId]?.ToString() ?? string.Empty;
@@ -1930,7 +1989,9 @@ public class DocumentsController
             await respondentService.GetModificationDocumentDetails(viewModel.DocumentId);
 
         if (currentDocumentResponse?.Content == null)
+        {
             return;
+        }
 
         // Update current document (clear superseding relationship)
         requests.Add(BuildProjectModificationDocumentRequest(
@@ -1959,13 +2020,17 @@ public class DocumentsController
         }
 
         if (requests.Count > 0)
+        {
             await respondentService.SaveModificationDocuments(requests);
+        }
     }
 
-    private async Task HandleSupersedeAnswerChange(
-    ModificationAddDocumentDetailsViewModel viewModel,
-    SupersedeContext context,
-    bool reviewAllChanges)
+    private async Task HandleSupersedeAnswerChange
+    (
+        ModificationAddDocumentDetailsViewModel viewModel,
+        SupersedeContext context,
+        bool reviewAllChanges
+    )
     {
         if (context == null ||
             string.IsNullOrEmpty(context.PreviousAnswer) ||
@@ -1982,7 +2047,9 @@ public class DocumentsController
                 StringComparison.OrdinalIgnoreCase);
 
         if (!changedFromYesToNo)
+        {
             return;
+        }
 
         var userId = HttpContext.Items[ContextItemKeys.UserId]?.ToString() ?? string.Empty;
         var requests = new List<ProjectModificationDocumentRequest>();
@@ -1992,7 +2059,9 @@ public class DocumentsController
             await respondentService.GetModificationDocumentDetails(viewModel.DocumentId);
 
         if (currentDocumentResponse?.Content == null)
+        {
             return;
+        }
 
         // Rebuild base view model (preserves original behaviour)
         viewModel = BuildBaseViewModel(
@@ -2077,15 +2146,19 @@ public class DocumentsController
         });
 
         if (requests.Count > 0)
+        {
             await respondentService.SaveModificationDocuments(requests);
+        }
     }
 
-    private ProjectModificationDocumentRequest BuildProjectModificationDocumentRequest(
-    ProjectModificationDocumentRequest source,
-    ModificationAddDocumentDetailsViewModel viewModel,
-    string userId,
-    Guid? replacesDocumentId,
-    Guid? replacedByDocumentId)
+    private ProjectModificationDocumentRequest BuildProjectModificationDocumentRequest
+    (
+        ProjectModificationDocumentRequest source,
+        ModificationAddDocumentDetailsViewModel viewModel,
+        string userId,
+        Guid? replacesDocumentId,
+        Guid? replacedByDocumentId
+    )
     {
         return new ProjectModificationDocumentRequest
         {
@@ -2105,9 +2178,7 @@ public class DocumentsController
         };
     }
 
-    private async Task<Guid?> UploadLinkedDocumentIfRequired(
-    ModificationAddDocumentDetailsViewModel viewModel,
-    string userId)
+    private async Task<Guid?> UploadLinkedDocumentIfRequired(ModificationAddDocumentDetailsViewModel viewModel, string userId)
     {
         if (viewModel.File == null)
             return null;
@@ -2135,14 +2206,18 @@ public class DocumentsController
         return updatedUploadModel.UploadedDocuments?.FirstOrDefault()?.DocumentId;
     }
 
-    private async Task AppendReplacesDocumentIfExists(
-    ProjectModificationDocumentRequest replacedByDocumentDto,
-    List<ProjectModificationDocumentRequest> requests,
-    string userId)
+    private async Task AppendReplacesDocumentIfExists
+    (
+        ProjectModificationDocumentRequest replacedByDocumentDto,
+        List<ProjectModificationDocumentRequest> requests,
+        string userId
+    )
     {
         if (replacedByDocumentDto.ReplacesDocumentId == null ||
             replacedByDocumentDto.ReplacesDocumentId == Guid.Empty)
+        {
             return;
+        }
 
         var replacesDocumentResponse =
             await respondentService.GetModificationDocumentDetails(
@@ -2150,7 +2225,9 @@ public class DocumentsController
 
         if (replacesDocumentResponse?.StatusCode != HttpStatusCode.OK ||
             replacesDocumentResponse.Content == null)
+        {
             return;
+        }
 
         var replacesDocument = replacesDocumentResponse.Content;
 
@@ -2172,16 +2249,20 @@ public class DocumentsController
         });
     }
 
-    private async Task AppendLinkedDocumentIfExists(
+    private async Task AppendLinkedDocumentIfExists
+    (
         ProjectModificationDocumentRequest replacedByDocumentDto,
         ServiceResponse<ProjectModificationDocumentRequest> replacedByDocumentResponse,
         List<ProjectModificationDocumentRequest> requests,
-        string userId)
+        string userId
+    )
     {
         if (replacedByDocumentDto.LinkedDocumentId == null ||
             replacedByDocumentDto.LinkedDocumentId == Guid.Empty ||
             replacedByDocumentResponse?.Content == null)
+        {
             return;
+        }
 
         var linkedDocumentResponse =
             await respondentService.GetModificationDocumentDetails(
@@ -2189,7 +2270,9 @@ public class DocumentsController
 
         if (linkedDocumentResponse?.StatusCode != HttpStatusCode.OK ||
             linkedDocumentResponse.Content == null)
+        {
             return;
+        }
 
         var linkedDocument = linkedDocumentResponse.Content;
 
@@ -2233,10 +2316,12 @@ public class DocumentsController
         requests.Add(linkedDocumentDto);
     }
 
-    private async Task SyncLinkedDocumentAnswers(
-    Guid currentDocumentId,
-    Guid linkedDocumentId,
-    string documentType)
+    private async Task SyncLinkedDocumentAnswers
+    (
+        Guid currentDocumentId,
+        Guid linkedDocumentId,
+        string documentType
+    )
     {
         var currentAnswersResponse =
             await respondentService.GetModificationDocumentAnswers(currentDocumentId);
@@ -2261,11 +2346,13 @@ public class DocumentsController
             linkedDocumentId);
     }
 
-    private async Task<ModificationAddDocumentDetailsViewModel> BuildSupersedeBaseViewModel(
-    Guid currentDocumentId,
-    string documentTypeId,
-    bool reviewAnswers,
-    bool reviewAllChanges)
+    private async Task<ModificationAddDocumentDetailsViewModel> BuildSupersedeBaseViewModel
+    (
+        Guid currentDocumentId,
+        string documentTypeId,
+        bool reviewAnswers,
+        bool reviewAllChanges
+    )
     {
         var documentResponse =
             await respondentService.GetModificationDocumentDetails(currentDocumentId);
@@ -2277,27 +2364,27 @@ public class DocumentsController
             documentTypeId);
     }
 
-    private async Task<List<ProjectModificationDocumentRequest>> GetEligibleDocumentsToReplace(
+    private async Task<List<ProjectModificationDocumentRequest>> GetEligibleDocumentsToReplace
+    (
         string projectRecordId,
         string documentTypeId,
-        Guid currentDocumentId)
+        Guid currentDocumentId
+    )
     {
         var documentsResponse =
             await respondentService.GetModificationDocumentsByType(
                 projectRecordId,
                 documentTypeId);
 
-        return (documentsResponse?.Content ?? [])
+        return [.. (documentsResponse?.Content ?? [])
             .Where(d =>
                 d.Status == DocumentStatus.Approved &&
                 d.Id != currentDocumentId &&
                 d.DocumentType != SupersedeDocumentsType.Tracked &&
-                d.LinkedDocumentId == null)
-            .ToList();
+                d.LinkedDocumentId == null)];
     }
 
-    private async Task<List<ProjectModificationDocumentRequest>> GetEligibleDocumentsToLink(
-        Guid currentDocumentId)
+    private async Task<List<ProjectModificationDocumentRequest>> GetEligibleDocumentsToLink(Guid currentDocumentId)
     {
         var documentChangeRequest = BuildDocumentRequest();
 
@@ -2305,13 +2392,12 @@ public class DocumentsController
             documentChangeRequest.ProjectModificationId,
             documentChangeRequest.ProjectRecordId);
 
-        return (documentsResponse?.Content ?? [])
+        return [.. (documentsResponse?.Content ?? [])
             .Where(d =>
                 d.ReplacesDocumentId == null &&
                 d.ReplacedByDocumentId == null &&
                 d.LinkedDocumentId == null &&
                 d.Id != currentDocumentId &&
-                d.DocumentType != SupersedeDocumentsType.Tracked)
-            .ToList();
+                d.DocumentType != SupersedeDocumentsType.Tracked)];
     }
 }
