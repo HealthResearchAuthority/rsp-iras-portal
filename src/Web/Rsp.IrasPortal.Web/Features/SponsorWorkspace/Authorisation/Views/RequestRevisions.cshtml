@@ -6,9 +6,10 @@
 @model Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models.AuthoriseModificationsOutcomeViewModel
 
 @{
-	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];    
+    ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];    
 
-    ViewBag.SponsorOrganisationUserId = Model.SponsorOrganisationUserId;    
+    ViewBag.SponsorOrganisationUserId = Model.SponsorOrganisationUserId;
+    ViewBag.RtsId = Model.RtsId;
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData ?? new Dictionary<string, MixedContentPageItem?>();
@@ -52,12 +53,31 @@
         <div class="govuk-grid-column-two-thirds">            
 
             @Html.Raw(description?.Value)
-            <rsp-gds-character-count-textarea asp-for="RevisionDescription"
-                                              label-text=""
-                                              word-count-error-for="_DescriptionExcessCharacterCount"
-                                              rows="5"                                              
-                                              width-class="govuk-!-width-full" />
-            <p class='govuk-hint'>You can enter up to 1000 characters</p>
+
+            <div class="govuk-form-group govuk-character-count"
+                 data-module="govuk-character-count"
+                 data-maxlength="1000"
+                 error-class-for="RevisionDescription">
+
+                @Html.ValidationMessageFor(model => model.RevisionDescription, "", new { @class = "govuk-error-message" })
+                <textarea asp-for="RevisionDescription"
+                          name="RevisionDescription"
+                          class="govuk-textarea govuk-js-character-count"
+                          rows="5"
+                          aria-describedby="with-hint-info with-hint-hint">
+                    </textarea>
+                <noscript>
+                    <div id="RevisionDescription-info"
+                         class="govuk-hint govuk-character-count__message">
+                        <p class='govuk-hint'>You can enter up to 1000 characters</p>
+                    </div>
+                </noscript>
+
+                <div id="RevisionDescription-info"
+                     aria-hidden="true"
+                     class="govuk-hint govuk-character-count__message">
+                </div>
+            </div>          
 
             <input type="hidden" name="ProjectRecordId" value="@Model.ProjectRecordId" />
             <input type="hidden" name="IrasId" value="@Model.IrasId" />

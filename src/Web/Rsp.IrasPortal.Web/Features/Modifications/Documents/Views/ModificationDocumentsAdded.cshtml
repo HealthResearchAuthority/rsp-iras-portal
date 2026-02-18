@@ -108,12 +108,13 @@
 				<form asp-action="PostApproval" method="get">
 					<input type="hidden" name="projectRecordId" value="@Model.ProjectRecordId" />
                     <input type="hidden" name="sponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
+                    <input type="hidden" name="rtsId" value="@Model.RtsId" />
 					@{
 						ViewBag.Style = "govuk-button govuk-button--secondary";
 					}
                     @if (Model.Status is ModificationStatus.ReviseAndAuthorise)
                     {
-                        <a asp-route="pmc:saveforlater" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId" asp-route-routeName="sws:modifications" class="govuk-button govuk-button--secondary">
+                        <a asp-route="pmc:saveforlater" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId" asp-route-rtsId="@Model.RtsId" asp-route-routeName="sws:modifications" class="govuk-button govuk-button--secondary">
                             Save for later
                         </a>
                     }

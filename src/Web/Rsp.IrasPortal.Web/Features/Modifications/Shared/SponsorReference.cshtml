@@ -11,7 +11,7 @@
     // Title used in the validation error summary
     var errorSummaryTitle = "There is a problem";
 
-	ViewBag.Title = "Add additional details";
+    ViewBag.Title = "Add additional details";
 
     //string projectRecordId, string irasId, string shortTitle, Guid projectModificationId
 
@@ -23,6 +23,12 @@
             { "shortTitle", modification.ShortTitle ?? string.Empty },
             { "projectModificationId", modification.ModificationId ?? string.Empty }
         };
+
+    if (modification.Status is ModificationStatus.ReviseAndAuthorise)
+    {
+        modificationParams["sponsorOrganisationUserId"] = modification.SponsorOrganisationUserId;
+        modificationParams["rtsId"] = modification.RtsId;
+    }
 
     var isReviewAllInProgress = TempData.Peek(TempDataKeys.ProjectModification.ReviewAllChanges) is true;
 }

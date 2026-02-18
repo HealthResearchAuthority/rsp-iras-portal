@@ -20,6 +20,7 @@
         navModelParams["shortTitle"] = Model.ShortTitle;
         navModelParams["projectModificationId"] = Model.ModificationId;
         navModelParams["sponsorOrganisationUserId"] = Model.SponsorOrganisationUserId;
+        navModelParams["rtsId"] = Model.RtsId;
     }
 
     var navModel = (navModelRoute, "Back", navModelParams);
@@ -58,6 +59,7 @@
                 <input type="hidden" asp-for="ProjectRecordId" />
                 <input type="hidden" asp-for="Status" />
                 <input type="hidden" asp-for="SponsorOrganisationUserId" />
+                <input type="hidden" asp-for="RtsId" />
 
                 <partial name="_ProjectModificationSummary" model="Model" />
 

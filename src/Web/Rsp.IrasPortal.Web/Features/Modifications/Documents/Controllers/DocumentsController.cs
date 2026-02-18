@@ -297,7 +297,8 @@ public class DocumentsController
                 modificationModel.IrasId,
                 modificationModel.ShortTitle,
                 projectModificationId = modificationModel.ModificationId,
-                modificationModel.SponsorOrganisationUserId
+                modificationModel.SponsorOrganisationUserId,
+                modificationModel.RtsId
             });
         }
 
@@ -1157,9 +1158,10 @@ public class DocumentsController
         var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
         var status = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId) as string;
         var sponsorOrganisationUserId = TempData.Peek(TempDataKeys.RevisionSponsorOrganisationUserId);
+        var rtsId = TempData.Peek(TempDataKeys.RevisionRtsId) as string;
         if (status is ModificationStatus.ReviseAndAuthorise)
         {
-            return RedirectToRoute("sws:modifications", new { sponsorOrganisationUserId });
+            return RedirectToRoute("sws:modifications", new { sponsorOrganisationUserId, rtsId });
         }
         return RedirectToRoute(PostApprovalRoute, new { projectRecordId });
     }

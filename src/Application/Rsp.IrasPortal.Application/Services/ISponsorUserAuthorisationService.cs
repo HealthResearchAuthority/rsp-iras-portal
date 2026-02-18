@@ -11,4 +11,10 @@ public interface ISponsorUserAuthorisationService : IInterceptable
         Controller controller,
         Guid sponsorOrganisationUserId,
         ClaimsPrincipal user);
+
+    Task<SponsorUserAuthorisationResult> AuthoriseWithOrganisationContextAsync(
+        Controller controller,
+        Guid sponsorOrganisationUserId,
+        ClaimsPrincipal user,
+        string rtsId);
 }

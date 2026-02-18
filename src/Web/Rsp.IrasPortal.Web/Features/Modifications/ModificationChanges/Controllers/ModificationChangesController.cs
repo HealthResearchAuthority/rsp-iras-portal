@@ -103,7 +103,7 @@ public class ModificationChangesController
 
             if (modificationModel.Status is ModificationStatus.ReviseAndAuthorise)
             {
-                return RedirectToRoute("sws:modifications", new { modificationModel.SponsorOrganisationUserId });
+                return RedirectToRoute("sws:modifications", new { modificationModel.SponsorOrganisationUserId, modificationModel.RtsId });
             }
 
             return RedirectToRoute(PostApprovalRoute, new { projectRecordId });
@@ -136,7 +136,8 @@ public class ModificationChangesController
                         modificationModel.IrasId,
                         modificationModel.ShortTitle,
                         projectModificationId = modificationModel.ModificationId,
-                        modificationModel.SponsorOrganisationUserId
+                        modificationModel.SponsorOrganisationUserId,
+                        modificationModel.RtsId
                     });
                 }
 
@@ -172,7 +173,8 @@ public class ModificationChangesController
                     modificationModel.IrasId,
                     modificationModel.ShortTitle,
                     projectModificationId = modificationModel.ModificationId,
-                    modificationModel.SponsorOrganisationUserId
+                    modificationModel.SponsorOrganisationUserId,
+                    modificationModel.RtsId
                 });
             }
 

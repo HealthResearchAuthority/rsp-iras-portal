@@ -302,6 +302,7 @@ public class ModificationChangesBaseController
         var irasId = TempData.Peek(IrasId);
         var shortTitle = TempData.Peek(ShortProjectTitle) as string;
         var sponsorOrganisationUserIdStr = TempData.Peek(RevisionSponsorOrganisationUserId)?.ToString();
+        var rtsId = TempData.Peek(RevisionRtsId) as string;
 
         var routeValues = new RouteValueDictionary
         {
@@ -314,13 +315,14 @@ public class ModificationChangesBaseController
         if (!string.IsNullOrWhiteSpace(sponsorOrganisationUserIdStr))
         {
             routeValues["sponsorOrganisationUserId"] = sponsorOrganisationUserIdStr;
+            routeValues["rtsId"] = rtsId;
         }
 
         return RedirectToRoute("pmc:modificationdetails", routeValues);
     }
 
     [HttpGet, HttpPost]
-    public async Task<IActionResult> SaveForLater(string projectRecordId, string routeName, string? sponsorOrganisationUserId = null)
+    public async Task<IActionResult> SaveForLater(string projectRecordId, string routeName, string? sponsorOrganisationUserId = null, string? rtsId = null)
     {
         var (projectModificationId, projectModificationChangeId) = CheckModification();
 
@@ -338,6 +340,11 @@ public class ModificationChangesBaseController
         if (!string.IsNullOrWhiteSpace(sponsorOrganisationUserId))
         {
             routeValues["SponsorOrganisationUserId"] = sponsorOrganisationUserId;
+        }
+
+        if (!string.IsNullOrWhiteSpace(rtsId))
+        {
+            routeValues["rtsId"] = rtsId;
         }
 
         return RedirectToRoute(routeName, routeValues);

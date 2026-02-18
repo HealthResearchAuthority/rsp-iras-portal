@@ -21,6 +21,7 @@
     if (Model.SponsorOrganisationUserId != null)
     {
         modificationParams.Add("sponsorOrganisationUserId", Model.SponsorOrganisationUserId);
+        modificationParams.Add("rtsId", Model.RtsId);
     }
 
     var navModel = ("pmc:modificationdetails", "Back", modificationParams);

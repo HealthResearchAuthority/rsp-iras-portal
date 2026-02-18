@@ -50,6 +50,7 @@ public class ModificationDetailsController
         string shortTitle,
         Guid projectModificationId,
         Guid? sponsorOrganisationUserId = null,
+        string? rtsId = null,
         int pageNumber = 1,
         int pageSize = 20,
         string sortField = nameof(ProjectOverviewDocumentDto.DocumentType),
@@ -76,10 +77,11 @@ public class ModificationDetailsController
         }
 
         // If its sponsor revision - validate if sponsor is authoriser
-        if (modification?.Status is ModificationStatus.ReviseAndAuthorise && sponsorOrganisationUserId != null)
+        if (modification?.Status is ModificationStatus.ReviseAndAuthorise && sponsorOrganisationUserId != null && rtsId != null)
         {
             // Add sponsor details
             modification.SponsorOrganisationUserId = sponsorOrganisationUserId.Value.ToString();
+            modification.RtsId = rtsId;
 
             var sponsorDetailsQuestionsResponse = await cmsQuestionsetService.GetModificationQuestionSet(SponsorDetailsSectionId);
 
@@ -98,7 +100,7 @@ public class ModificationDetailsController
 
             // Add modification documents
             var modificationDocumentsResponseResult = await this.GetModificationDocuments(projectModificationId,
-            DocumentDetailsSection, pageNumber, pageSize, sortField, sortDirection);
+            DocumentDetailsSection, pageNumber, pageSize, sortField, sortDirection, isSponsorRevisingModification: true);
 
             modification.ProjectOverviewDocumentViewModel.Documents = modificationDocumentsResponseResult.Item1?.Content?.Documents ?? [];
 
@@ -116,7 +118,8 @@ public class ModificationDetailsController
                     { "irasId", irasId },
                     { "shortTitle", shortTitle },
                     { "projectModificationId", projectModificationId.ToString() },
-                    { "sponsorOrganisationUserId", sponsorOrganisationUserId.Value.ToString() }
+                    { "sponsorOrganisationUserId", sponsorOrganisationUserId.Value.ToString() },
+                    { "rtsId", rtsId }
                 }
             };
         }
@@ -208,7 +211,8 @@ public class ModificationDetailsController
             irasId = viewModel.IrasId,
             shortTitle = viewModel.ShortTitle,
             projectModificationId = viewModel.ModificationId,
-            sponsorOrganisationUserId = viewModel.SponsorOrganisationUserId
+            sponsorOrganisationUserId = viewModel.SponsorOrganisationUserId,
+            rtsId = viewModel.RtsId
         });
     }
 }

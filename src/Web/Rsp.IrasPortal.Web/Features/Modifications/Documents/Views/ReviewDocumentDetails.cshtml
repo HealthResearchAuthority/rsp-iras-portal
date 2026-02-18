@@ -15,6 +15,7 @@
 	var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty;
     var status = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationStatus) as string ?? string.Empty;
     var sponsorOrganisationUserId = TempData.Peek(TempDataKeys.RevisionSponsorOrganisationUserId);
+    var rtsId = TempData.Peek(TempDataKeys.RevisionRtsId) as string ?? string.Empty;
 
 	// Title used in the validation error summary
 	var errorSummaryTitle = "There is a problem";
@@ -154,12 +155,13 @@
 
 				<input type="hidden" name="projectRecordId" value="@projectRecordId" />
                 <input type="hidden" name="sponsorOrganisationUserId" value="@sponsorOrganisationUserId" />
+                <input type="hidden" name="rtsId" value="@rtsId" />
                 @{
                     ViewBag.Style = "govuk-button govuk-button--secondary";
                 }
                 @if (status is ModificationStatus.ReviseAndAuthorise)
                 {
-                    <a asp-route="pmc:saveforlater" asp-route-projectRecordId="@projectRecordId" asp-route-sponsorOrganisationUserId="@sponsorOrganisationUserId" asp-route-routeName="sws:modifications" class="govuk-button govuk-button--secondary">
+                    <a asp-route="pmc:saveforlater" asp-route-projectRecordId="@projectRecordId" asp-route-sponsorOrganisationUserId="@sponsorOrganisationUserId" asp-route-rtsId="@rtsId" asp-route-routeName="sws:modifications" class="govuk-button govuk-button--secondary">
                         Save for later
                     </a>
                 }

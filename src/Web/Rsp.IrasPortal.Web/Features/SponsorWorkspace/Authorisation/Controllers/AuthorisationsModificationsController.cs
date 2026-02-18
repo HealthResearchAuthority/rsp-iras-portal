@@ -80,8 +80,6 @@ public class AuthorisationsModificationsController
             RtsId = rtsId
         };
 
-
-
         // getting search query
         var json = HttpContext.Session.GetString(SessionKeys.SponsorAuthorisationsModificationsSearch);
         if (!string.IsNullOrEmpty(json))
@@ -240,13 +238,15 @@ public class AuthorisationsModificationsController
             SortDirection = sortDirection,
             SortField = sortField,
             FormName = "projectdocuments-selection",
-            RouteName = "pmc:reviewallchanges",
+            RouteName = "sws:CheckAndAuthorise",
             AdditionalParameters = new Dictionary<string, string>()
             {
                 { "projectRecordId", projectRecordId },
                 { "irasId", irasId },
                 { "shortTitle", shortTitle },
-                { "projectModificationId", projectModificationId.ToString() }
+                { "projectModificationId", projectModificationId.ToString() },
+                { "sponsorOrganisationUserId", sponsorOrganisationUserId.ToString() },
+                { "rtsId", rtsId },
             }
         };
 
@@ -561,7 +561,8 @@ public class AuthorisationsModificationsController
                     irasId = model.IrasId,
                     shortTitle = model.ShortTitle,
                     projectModificationId = Guid.Parse(model.ModificationId),
-                    sponsorOrganisationUserId = model.SponsorOrganisationUserId
+                    sponsorOrganisationUserId = model.SponsorOrganisationUserId,
+                    rtsId = model.RtsId
                 });
             }
         }
@@ -575,7 +576,7 @@ public class AuthorisationsModificationsController
                     ModificationStatus.ReviseAndAuthorise,
                     model.RevisionDescription
                 );
-            return RedirectToAction(nameof(Modifications), new { sponsorOrganisationUserId = model.SponsorOrganisationUserId });
+            return RedirectToAction(nameof(Modifications), new { sponsorOrganisationUserId = model.SponsorOrganisationUserId, rtsId = model.RtsId });
         }
 
         var reviewType = string.IsNullOrWhiteSpace(model.ReviewType)

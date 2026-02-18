@@ -508,7 +508,8 @@ public abstract class ModificationsControllerBase
         int pageNumber,
         int pageSize,
         string? sortField,
-        string? sortDirection)
+        string? sortDirection,
+        bool isSponsorRevisingModification = false)
     {
         var searchQuery = new ProjectOverviewDocumentSearchRequest();
 
@@ -528,6 +529,28 @@ public abstract class ModificationsControllerBase
 
         // Allowed statuses based on user
         searchQuery.AllowedStatuses = User.GetAllowedStatuses(StatusEntitiy.Document);
+
+        if (isSponsorRevisingModification)
+        {
+            // Upewnij się, że lista nie jest null
+            searchQuery.AllowedStatuses ??= new List<string>();
+
+            var toAdd = new[]
+            {
+                    DocumentStatus.Uploaded,
+                    DocumentStatus.Failed,
+                    DocumentStatus.Incomplete,
+                    DocumentStatus.Complete
+            };
+
+            foreach (var status in toAdd)
+            {
+                if (!searchQuery.AllowedStatuses.Contains(status, StringComparer.OrdinalIgnoreCase))
+                {
+                    searchQuery.AllowedStatuses.Add(status);
+                }
+            }
+        }
 
         // Fetch documents
         var documents = await projectModificationsService.GetDocumentsForModification(

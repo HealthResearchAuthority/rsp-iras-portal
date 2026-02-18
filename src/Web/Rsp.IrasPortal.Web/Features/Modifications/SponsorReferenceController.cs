@@ -112,6 +112,7 @@ public class SponsorReferenceController
         var shortTitle = TempData.Peek(ShortProjectTitle) as string;
         var status = TempData.Peek(ProjectModification.ProjectModificationStatus) as string;
         var sponsorOrganisationUserId = TempData.Peek(TempDataKeys.RevisionSponsorOrganisationUserId);
+        var rtsId = TempData.Peek(TempDataKeys.RevisionRtsId) as string;
 
         await SaveModificationAnswers(projectModificationId, projectRecordId!, model.Questions);
 
@@ -123,7 +124,7 @@ public class SponsorReferenceController
 
             if (status is ModificationStatus.ReviseAndAuthorise)
             {
-                return RedirectToRoute("sws:modifications", new { sponsorOrganisationUserId });
+                return RedirectToRoute("sws:modifications", new { sponsorOrganisationUserId, rtsId });
             }
 
             return RedirectToRoute(PostApprovalRoute, new { projectRecordId });
@@ -137,7 +138,8 @@ public class SponsorReferenceController
                 irasId,
                 shortTitle,
                 projectModificationId,
-                sponsorOrganisationUserId
+                sponsorOrganisationUserId,
+                rtsId
             });
         }
 

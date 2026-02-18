@@ -9,21 +9,6 @@ using Rsp.Portal.Web.Extensions;
 
 namespace Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Services;
 
-public interface ISponsorUserAuthorisationService
-{
-    Task<SponsorUserAuthorisationResult> AuthoriseAsync(
-        Controller controller,
-        Guid sponsorOrganisationUserId,
-        ClaimsPrincipal user);
-
-
-    Task<SponsorUserAuthorisationResult> AuthoriseWithOrganisationContextAsync(
-        Controller controller,
-        Guid sponsorOrganisationUserId,
-        ClaimsPrincipal user,
-        string rtsId);
-}
-
 public sealed class SponsorUserAuthorisationService : ISponsorUserAuthorisationService
 {
     private readonly IRtsService _rtsService;
@@ -37,7 +22,6 @@ public sealed class SponsorUserAuthorisationService : ISponsorUserAuthorisationS
         _userService = userService;
         _sponsorOrganisationService = sponsorOrganisationService;
     }
-
 
     public SponsorUserAuthorisationService(
         IUserManagementService userService,
@@ -110,7 +94,6 @@ public sealed class SponsorUserAuthorisationService : ISponsorUserAuthorisationS
 
         return SponsorUserAuthorisationResult.Ok(gid);
     }
-
 
     public async Task<SponsorUserAuthorisationResult> AuthoriseWithOrganisationContextAsync(
         Controller controller,

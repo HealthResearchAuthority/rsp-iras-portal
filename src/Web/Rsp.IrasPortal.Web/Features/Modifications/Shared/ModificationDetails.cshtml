@@ -254,18 +254,37 @@
             <div class="govuk-grid-row">
                 <div class="govuk-grid-column-two-thirds">
                     @Html.Raw(description?.Value)
-                    <rsp-gds-character-count-textarea asp-for="RevisionDescription"
-                                                      label-text=""
-                                                      word-count-error-for="_DescriptionExcessCharacterCount"
-                                                      rows="5"                                              
-                                                      width-class="govuk-!-width-full" />
-                    <p class='govuk-hint'>You can enter up to 500 characters</p>
+                    <div class="govuk-form-group govuk-character-count"
+                         data-module="govuk-character-count"
+                         data-maxlength="500"
+                         error-class-for="RevisionDescription">
+
+                        @Html.ValidationMessageFor(model => model.RevisionDescription, "", new { @class = "govuk-error-message" })
+                        <textarea asp-for="RevisionDescription"
+                                  name="RevisionDescription"
+                                  class="govuk-textarea govuk-js-character-count"
+                                  rows="5"
+                                  aria-describedby="with-hint-info with-hint-hint">
+                            </textarea>
+                        <noscript>
+                            <div id="RevisionDescription-info"
+                                 class="govuk-hint govuk-character-count__message">
+                                <p class='govuk-hint'>You can enter up to 500 characters</p>
+                            </div>
+                        </noscript>
+
+                        <div id="RevisionDescription-info"
+                             aria-hidden="true"
+                             class="govuk-hint govuk-character-count__message">
+                        </div>
+                    </div>   
 
                     <input type="hidden" name="ProjectRecordId" value="@Model.ProjectRecordId" />                    
                     <input type="hidden" name="ModificationId" value="@Model.ModificationId" />
                     <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" /> 
                     <input type="hidden" name="ShortTitle" value="@Model.ShortTitle" />
-                    <input type="hidden" name="IrasId" value="@Model.IrasId" />      
+                    <input type="hidden" name="IrasId" value="@Model.IrasId" />   
+                    <input type="hidden" name="RtsId" value="@Model.RtsId" />
                     
                     <div class="save-buttons">
                         <button type="submit" class="govuk-button" data-module="govuk-button">

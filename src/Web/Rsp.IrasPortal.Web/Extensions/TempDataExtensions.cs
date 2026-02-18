@@ -83,6 +83,7 @@ public static class TempDataExtensions
         model.DateCreated = tempData.Peek(TempDataKeys.ProjectModification.DateCreated)?.ToString() ?? string.Empty;
         model.Status = tempData.Peek(TempDataKeys.ProjectModification.ProjectModificationStatus) as string ?? string.Empty;
         model.SponsorOrganisationUserId = tempData.PeekGuid(TempDataKeys.RevisionSponsorOrganisationUserId);
+        model.RtsId = tempData.Peek(TempDataKeys.RevisionRtsId) as string ?? string.Empty;
         model.ReasonNotApproved = tempData.Peek(TempDataKeys.ProjectModification.ReasonNotApproved) as string ?? string.Empty;
 
         return model;

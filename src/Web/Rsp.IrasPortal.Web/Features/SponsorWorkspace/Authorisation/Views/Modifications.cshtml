@@ -117,7 +117,8 @@
                                                                                      TableId = tableId,
                                                                                      AdditionalParameters = new Dictionary<string, string>
                                                                                      {
-                                                                                         { "SponsorOrganisationUserId", Model.SponsorOrganisationUserId.ToString() }
+                                                                                         { "SponsorOrganisationUserId", Model.SponsorOrganisationUserId.ToString() },
+                                                                                         { "RtsId", Model.RtsId }
                                                                                      }
                                                                               })" />
                                 </th>
@@ -143,7 +144,8 @@
                                                    asp-route-irasId="@(modification.ModificationId?.Split('/')[0])"
                                                    asp-route-shortTitle="@modification.ShortProjectTitle"
                                                    asp-route-projectModificationId="@modification.Id"
-                                                   asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId">
+                                                   asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId"
+                                                   asp-route-rtsId="@Model.RtsId">
                                                     <strong>@modification.ModificationId</strong>
                                                 </a>
                                                 }

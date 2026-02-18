@@ -22,6 +22,7 @@
     if (Model.Status is ModificationStatus.ReviseAndAuthorise)
     {
         modificationParams["sponsorOrganisationUserId"] = Model.SponsorOrganisationUserId;
+        modificationParams["rtsId"] = Model.RtsId;
     }
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
@@ -58,6 +59,7 @@
 			<input type="hidden" asp-for="@Model.ModificationIdentifier" />
             <input type="hidden" asp-for="@Model.Status" />
             <input type="hidden" asp-for="@Model.SponsorOrganisationUserId" />
+            <input type="hidden" asp-for="@Model.RtsId" />
 			@{
 				var hasFileErrors = ViewData.ModelState.TryGetValue(nameof(Model.Files), out var entry)
 				&& entry.Errors.Any();
@@ -145,7 +147,7 @@
                 }
                 @if (Model.Status is ModificationStatus.ReviseAndAuthorise)
                 {
-                    <a asp-route="pmc:saveforlater" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId" asp-route-routeName="sws:modifications" class="govuk-button govuk-button--secondary">
+                    <a asp-route="pmc:saveforlater" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId" asp-route-rtsId="@Model.RtsId" asp-route-routeName="sws:modifications" class="govuk-button govuk-button--secondary">
                         Save for later
                     </a>
                 }

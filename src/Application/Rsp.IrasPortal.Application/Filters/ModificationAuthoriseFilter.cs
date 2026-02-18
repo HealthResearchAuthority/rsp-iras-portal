@@ -84,6 +84,7 @@ public class ModificationAuthoriseFilter : IAsyncAuthorizationFilter, IAsyncActi
             string projectRecordId = string.Empty;
             Guid projectModificationIdGuid;
             Guid sponsorOrganisationUserIdGuid;
+            string rtsId = string.Empty;
 
             if (actionName == "ModificationDetails")
             {
@@ -99,12 +100,15 @@ public class ModificationAuthoriseFilter : IAsyncAuthorizationFilter, IAsyncActi
                 projectRecordId = projectRecordIdObj?.ToString() ?? string.Empty;
                 context.ActionArguments.TryGetValue("sponsorOrganisationUserId", out var sponsorOrganisationUserIdObj);
                 Guid.TryParse(sponsorOrganisationUserIdObj?.ToString(), out sponsorOrganisationUserIdGuid);
+                context.ActionArguments.TryGetValue("rtsId", out var rtsIdObj);
+                rtsId = rtsIdObj?.ToString() ?? string.Empty;
             }
             else
             {
                 projectModificationIdGuid = PeekGuid(tempData, TempDataKeys.ProjectModification.ProjectModificationId);
                 sponsorOrganisationUserIdGuid = PeekGuid(tempData, TempDataKeys.RevisionSponsorOrganisationUserId);
                 projectRecordId = tempData.Peek(TempDataKeys.ProjectRecordId)?.ToString() ?? string.Empty;
+                rtsId = tempData.Peek(TempDataKeys.RevisionRtsId)?.ToString() ?? string.Empty;
 
                 if (projectModificationIdGuid == Guid.Empty || projectRecordId == string.Empty)
                 {
@@ -129,14 +133,14 @@ public class ModificationAuthoriseFilter : IAsyncAuthorizationFilter, IAsyncActi
                 return;
             }
 
-            if (sponsorOrganisationUserIdGuid == Guid.Empty)
+            if (sponsorOrganisationUserIdGuid == Guid.Empty || rtsId == string.Empty)
             {
-                context.Result = new BadRequestObjectResult("Missing or invalid sponsorOrganisationUserId parameter.");
+                context.Result = new BadRequestObjectResult("Missing or invalid parameter.");
                 return;
             }
 
-            // 4. Check if current user is the one for provided sponsorOrganisationUserId
-            var auth = await _sponsorUserAuthorisationService.AuthoriseAsync(controller, sponsorOrganisationUserIdGuid, context.HttpContext.User);
+            // 4. Check if current user is the one for provided sponsorOrganisationUserId & rtsId
+            var auth = await _sponsorUserAuthorisationService.AuthoriseWithOrganisationContextAsync(controller, sponsorOrganisationUserIdGuid, context.HttpContext.User, rtsId);
             if (!auth.IsAuthorised)
             {
                 context.Result = auth.FailureResult!;
@@ -157,6 +161,7 @@ public class ModificationAuthoriseFilter : IAsyncAuthorizationFilter, IAsyncActi
             if (sponsorOrganisationUser.Content!.IsAuthoriser)
             {
                 tempData[TempDataKeys.RevisionSponsorOrganisationUserId] = sponsorOrganisationUserIdGuid;
+                tempData[TempDataKeys.RevisionRtsId] = rtsId;
             }
             else
             {

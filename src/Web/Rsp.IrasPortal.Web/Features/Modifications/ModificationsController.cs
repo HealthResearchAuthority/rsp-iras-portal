@@ -295,7 +295,7 @@ public class ModificationsController
         {
             if (model.Status is ModificationStatus.ReviseAndAuthorise)
             {
-                return RedirectToRoute("sws:modifications", new { model.SponsorOrganisationUserId });
+                return RedirectToRoute("sws:modifications", new { model.SponsorOrganisationUserId, model.RtsId });
             }
             return RedirectToRoute("pov:postapproval", new { model.ProjectRecordId });
         }

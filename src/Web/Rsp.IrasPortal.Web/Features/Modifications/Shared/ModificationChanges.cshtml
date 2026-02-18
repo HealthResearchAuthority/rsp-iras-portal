@@ -6,12 +6,13 @@
     var showStatus = ViewData[ViewDataKeys.ShowModificationChangeStatus];
     var showChangeLink = ViewData[ViewDataKeys.ShowChangeLink];
     var showRemoveLink = ViewData[ViewDataKeys.ShowRemoveLink];
-	var showModificationDetails = ViewData[ViewDataKeys.ShowModificationDetails] as bool?;
+    var showModificationDetails = ViewData[ViewDataKeys.ShowModificationDetails] as bool?;
 
     var isSponsorCheckAndAuthorise = ViewData[ViewDataKeys.IsSponsorCheckAndAuthorise] as bool?;
 
-    var sponsorOrganisationUserId = ViewBag.SponsorOrganisationUserId;  
-    
+    var sponsorOrganisationUserId = ViewBag.SponsorOrganisationUserId;
+    var rtsId = ViewBag.RtsId;
+
     var isRevisionBySponsor = (bool?)ViewData["isRevisionBySponsor"] ?? false;
 }
 
@@ -59,7 +60,7 @@
                     </li>
                 }
 
-                @if (isSponsorCheckAndAuthorise is true && sponsorOrganisationUserId is not null && (Model.Status is ModificationStatus.WithSponsor or ModificationStatus.ReviseAndAuthorise))
+                @if (isSponsorCheckAndAuthorise is true && sponsorOrganisationUserId is not null && rtsId is not null && (Model.Status is ModificationStatus.WithSponsor or ModificationStatus.ReviseAndAuthorise))
                 {
                     <li class="govuk-summary-card__action">                        
                         @{
@@ -69,7 +70,8 @@
                                 { "shortTitle", Model.ShortTitle ?? "" },
                                 { "projectModificationId", Model.ModificationId ?? "" },
                                 { "sponsorOrganisationUserId", sponsorOrganisationUserId.ToString() },
-                                { "modificationChangeId", change.ModificationChangeId.ToString() },                                
+                                { "modificationChangeId", change.ModificationChangeId.ToString() },
+                                { "rtsId", rtsId}
                                 };
 
                             <a class="govuk-link" asp-route="sws:changedetails" asp-all-route-data="viewDetailsParams">View details</a>
