@@ -1,10 +1,7 @@
-﻿using System.Net;
-using System.Security.Claims;
-using AutoFixture.Xunit2;
+﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Moq;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Responses;
@@ -12,7 +9,6 @@ using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.Identity;
 using Rsp.Portal.Web.Controllers;
-using Rsp.Portal.Web.Features.SponsorWorkspace.MyOrganisations.Models;
 using Rsp.Portal.Web.Models;
 using Claim = System.Security.Claims.Claim;
 
@@ -136,21 +132,6 @@ namespace Rsp.Portal.UnitTests.Web.Controllers.SponsorOrganisationsControllerTes
             Sut.ModelState.ContainsKey("IsAuthoriser").ShouldBeTrue();
             var error = Sut.ModelState["IsAuthoriser"]!.Errors.Single();
             error.ErrorMessage.ShouldBe(errorMessage);
-        }
-
-        [Theory]
-        [AutoData]
-        public async Task SubmitEditSponsorOrganisationUser_Post_NotSystemAdmin_ReturnsForbid(
-            SponsorOrganisationUserModel model)
-        {
-            // Arrange
-            _http.User = new ClaimsPrincipal(new ClaimsIdentity()); // IsInRole == false
-
-            // Act
-            var result = await Sut.SubmitEditSponsorOrganisationUser(model);
-
-            // Assert
-            result.ShouldBeOfType<ForbidResult>();
         }
 
         [Theory]

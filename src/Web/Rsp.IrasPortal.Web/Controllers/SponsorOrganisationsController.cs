@@ -553,12 +553,6 @@ public class SponsorOrganisationsController(
     [Route("/sponsororganisations/edituser/submit", Name = "soc:submiteditsponsororganisationuser")]
     public async Task<IActionResult> SubmitEditSponsorOrganisationUser(SponsorOrganisationUserModel model)
     {
-        // user is accessing edit screen but is not system admin
-        if (!User.IsInRole(Roles.SystemAdministrator))
-        {
-            return Forbid();
-        }
-
         // RSP-6809 requires Error message when both are true: Role = Organisation Administrator &&
         // Authorizer = No
         if (model.SponsorOrganisationUser.SponsorRole == Roles.OrganisationAdministrator
