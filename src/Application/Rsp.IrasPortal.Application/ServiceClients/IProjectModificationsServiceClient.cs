@@ -33,7 +33,9 @@ public interface IProjectModificationsServiceClient
     /// </summary>
     /// <param name="projectRecordId">The unique identifier of the project record.</param>
     /// <param name="status">The status of the project modification.</param>
-    /// <returns>An asynchronous operation that returns all saved project modifications with the specified status.</returns>
+    /// <returns>
+    /// An asynchronous operation that returns all saved project modifications with the specified status.
+    /// </returns>
     [Get("/projectmodifications/{projectRecordId}/{status}")]
     public Task<ApiResponse<IEnumerable<ProjectModificationResponse>>> GetModificationsByStatus(string projectRecordId, string status);
 
@@ -58,12 +60,16 @@ public interface IProjectModificationsServiceClient
     /// <summary>
     /// Gets modifications for specific ProjectRecordId with filtering, sorting and pagination
     /// </summary>
-    /// <param name="projectRecordId">The unique identifier of the project record for which modifications are requested.</param>
+    /// <param name="projectRecordId">
+    /// The unique identifier of the project record for which modifications are requested.
+    /// </param>
     /// <param name="searchQuery">Object containing filtering criteria for modifications.</param>
     /// <param name="pageNumber">The number of the page to retrieve (used for pagination - 1-based).</param>
     /// <param name="pageSize">The number of items per page (used for pagination).</param>
     /// <param name="sortField">The field name by which the results should be sorted.</param>
-    /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
+    /// <param name="sortDirection">
+    /// The direction of sorting: "asc" for ascending or "desc" for descending.
+    /// </param>
     /// <returns>Returns a paginated list of modifications related to the specified project record.</returns>
     [Post("/projectmodifications/getmodificationsforproject")]
     public Task<ApiResponse<GetModificationsResponse>> GetModificationsForProject
@@ -87,7 +93,9 @@ public interface IProjectModificationsServiceClient
     /// <summary>
     /// Creates a new project modification.
     /// </summary>
-    /// <param name="projectModificationRequest">The request object containing details for the new project modification.</param>
+    /// <param name="projectModificationRequest">
+    /// The request object containing details for the new project modification.
+    /// </param>
     /// <returns>An asynchronous operation that returns the newly created project modification.</returns>
     [Post("/projectmodifications")]
     public Task<ApiResponse<ProjectModificationResponse>> CreateModification(ProjectModificationRequest projectModificationRequest);
@@ -95,8 +103,12 @@ public interface IProjectModificationsServiceClient
     /// <summary>
     /// Creates a new project modification change.
     /// </summary>
-    /// <param name="projectModificationChangeRequest">The request object containing details for the project modification change.</param>
-    /// <returns>An asynchronous operation that returns the newly created project modification change.</returns>
+    /// <param name="projectModificationChangeRequest">
+    /// The request object containing details for the project modification change.
+    /// </param>
+    /// <returns>
+    /// An asynchronous operation that returns the newly created project modification change.
+    /// </returns>
     [Post("/projectmodifications/change")]
     public Task<ApiResponse<ProjectModificationChangeResponse>> CreateModificationChange(ProjectModificationChangeRequest projectModificationChangeRequest);
 
@@ -123,7 +135,8 @@ public interface IProjectModificationsServiceClient
     /// A list of <see cref="ProjectModificationDocumentRequest"/> representing the documents to be created.
     /// </param>
     /// <returns>
-    /// A task representing the asynchronous operation. The task result contains the API response indicating success or failure.
+    /// A task representing the asynchronous operation. The task result contains the API response
+    /// indicating success or failure.
     /// </returns>
     [Post("/projectmodifications/createdocument")]
     public Task<IApiResponse> CreateModificationDocument(List<ProjectModificationDocumentRequest> projectModificationChangeRequest);
@@ -140,12 +153,16 @@ public interface IProjectModificationsServiceClient
     /// <summary>
     /// Gets modifications for specific ProjectRecordId with filtering, sorting and pagination
     /// </summary>
-    /// <param name="projectRecordId">The unique identifier of the project record for which modifications are requested.</param>
+    /// <param name="projectRecordId">
+    /// The unique identifier of the project record for which modifications are requested.
+    /// </param>
     /// <param name="searchQuery">Object containing filtering criteria for modifications.</param>
     /// <param name="pageNumber">The number of the page to retrieve (used for pagination - 1-based).</param>
     /// <param name="pageSize">The number of items per page (used for pagination).</param>
     /// <param name="sortField">The field name by which the results should be sorted.</param>
-    /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
+    /// <param name="sortDirection">
+    /// The direction of sorting: "asc" for ascending or "desc" for descending.
+    /// </param>
     /// <returns>Returns a paginated list of modifications related to the specified project record.</returns>
     [Post("/projectmodifications/getdocumentsforprojectoverview")]
     public Task<ApiResponse<ProjectOverviewDocumentResponse>> GetDocumentsForProjectOverview
@@ -182,7 +199,8 @@ public interface IProjectModificationsServiceClient
     /// A list of <see cref="ProjectModificationDocumentRequest"/> representing the documents to be created.
     /// </param>
     /// <returns>
-    /// A task representing the asynchronous operation. The task result contains the API response indicating success or failure.
+    /// A task representing the asynchronous operation. The task result contains the API response
+    /// indicating success or failure.
     /// </returns>
     [Post("/projectmodifications/deletedocuments")]
     public Task<IApiResponse> DeleteDocuments(List<ProjectModificationDocumentRequest> projectModificationChangeRequest);
@@ -207,12 +225,16 @@ public interface IProjectModificationsServiceClient
     /// <summary>
     /// Gets modifications for specific SponsorOrganisationUserId with filtering, sorting and pagination
     /// </summary>
-    /// <param name="sponsorOrganisationUserId">The unique identifier of the sponsor organisation user for which modifications are requested.</param>
+    /// <param name="sponsorOrganisationUserId">
+    /// The unique identifier of the sponsor organisation user for which modifications are requested.
+    /// </param>
     /// <param name="searchQuery">Object containing filtering criteria for modifications.</param>
     /// <param name="pageNumber">The number of the page to retrieve (used for pagination - 1-based).</param>
     /// <param name="pageSize">The number of items per page (used for pagination).</param>
     /// <param name="sortField">The field name by which the results should be sorted.</param>
-    /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
+    /// <param name="sortDirection">
+    /// The direction of sorting: "asc" for ascending or "desc" for descending.
+    /// </param>
     /// <returns>Returns a paginated list of modifications related to the specified project record.</returns>
     [Post("/projectmodifications/getmodificationsbysponsororganisationuserid")]
     public Task<ApiResponse<GetModificationsResponse>> GetModificationsBySponsorOrganisationUserId
@@ -222,7 +244,8 @@ public interface IProjectModificationsServiceClient
         int pageNumber = 1,
         int pageSize = 20,
         string sortField = nameof(ModificationsDto.SentToSponsorDate),
-        string sortDirection = SortDirections.Descending
+        string sortDirection = SortDirections.Descending,
+        string rtsId = ""
     );
 
     /// <summary>
@@ -244,12 +267,16 @@ public interface IProjectModificationsServiceClient
     /// <summary>
     /// Gets modifications for specific ProjectRecordId with filtering, sorting and pagination
     /// </summary>
-    /// <param name="modificationId">The unique identifier of the modification for which documents are requested.</param>
+    /// <param name="modificationId">
+    /// The unique identifier of the modification for which documents are requested.
+    /// </param>
     /// <param name="searchQuery">Object containing filtering criteria for modifications.</param>
     /// <param name="pageNumber">The number of the page to retrieve (used for pagination - 1-based).</param>
     /// <param name="pageSize">The number of items per page (used for pagination).</param>
     /// <param name="sortField">The field name by which the results should be sorted.</param>
-    /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
+    /// <param name="sortDirection">
+    /// The direction of sorting: "asc" for ascending or "desc" for descending.
+    /// </param>
     /// <returns>Returns a paginated list of modifications related to the specified project record.</returns>
     [Post("/projectmodifications/getdocumentsformodification")]
     public Task<ApiResponse<ProjectOverviewDocumentResponse>> GetDocumentsForModification
@@ -265,28 +292,36 @@ public interface IProjectModificationsServiceClient
     /// <summary>
     /// Updates an existing project modification.
     /// </summary>
-    /// <param name="projectModificationRequest">The request object containing the updated details for the project modification.</param>
+    /// <param name="projectModificationRequest">
+    /// The request object containing the updated details for the project modification.
+    /// </param>
     [Patch("/projectmodifications")]
     Task<IApiResponse> UpdateModification(ProjectModificationRequest projectModificationRequest);
 
     /// <summary>
     /// Updates an existing project modification change.
     /// </summary>
-    /// <param name="projectModificationChangeRequest">The request object containing the updated details for the modification change.</param>
+    /// <param name="projectModificationChangeRequest">
+    /// The request object containing the updated details for the modification change.
+    /// </param>
     [Patch("/projectmodifications/change")]
     Task<IApiResponse> UpdateModificationChange(ProjectModificationChangeRequest projectModificationChangeRequest);
 
     /// <summary>
     /// Updates an existing project modification change.
     /// </summary>
-    /// <param name="modificationId">The request object containing the updated details for the modification change.</param>
+    /// <param name="modificationId">
+    /// The request object containing the updated details for the modification change.
+    /// </param>
     [Get("/documents/access/{modificationId}")]
     Task<IApiResponse> CheckDocumentAccess(Guid modificationId);
 
     /// <summary>
     /// Updates an existing project modification change.
     /// </summary>
-    /// <param name="documentsAuditTrailRequest">The request object containing the updated details for the modification change.</param>
+    /// <param name="documentsAuditTrailRequest">
+    /// The request object containing the updated details for the modification change.
+    /// </param>
     [Post("/documents/createdocumentsaudittrail")]
     Task<IApiResponse> CreateModificationDocumentsAuditTrail([Body] List<ModificationDocumentsAuditTrailDto> documentsAuditTrailRequest);
 }

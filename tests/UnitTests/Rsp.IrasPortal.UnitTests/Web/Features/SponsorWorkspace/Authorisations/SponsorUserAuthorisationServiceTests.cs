@@ -307,16 +307,17 @@ public class SponsorUserAuthorisationServiceTests
                         new()
                         {
                             UserId = Guid.NewGuid(), // different user
-                            Id = Guid.NewGuid() // membership id for someone else
+                            Id = Guid.NewGuid() // membership id for someone else,`
                         }
                     },
-                    IsActive = false
+                    IsActive = false,
+                    RtsId = "123"
                 }
             }
         };
 
         _sponsorOrganisationService
-            .Setup(x => x.GetAllActiveSponsorOrganisationsForEnabledUser(gid))
+            .Setup(x => x.GetAllActiveSponsorOrganisationsForEnabledUser(It.IsAny<Guid>()))
             .ReturnsAsync(sponsorOrgsResponse);
 
         // Act

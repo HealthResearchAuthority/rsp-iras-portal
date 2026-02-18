@@ -34,6 +34,7 @@ public class AuthorisationsProjectClosuresController
     IUserManagementService userManagementService,
     ISponsorOrganisationService sponsorOrganisationService,
     ISponsorUserAuthorisationService sponsorUserAuthorisationService,
+    IRtsService rtsService,
     IValidator<ProjectClosuresSearchModel> searchValidator
 ) : Controller
 {
@@ -42,6 +43,7 @@ public class AuthorisationsProjectClosuresController
     public async Task<IActionResult> ProjectClosures
     (
         Guid sponsorOrganisationUserId,
+        string rtsId,
         int pageNumber = 1,
         int pageSize = 20,
         string sortField = nameof(ProjectClosuresModel.SentToSponsorDate),
@@ -52,6 +54,33 @@ public class AuthorisationsProjectClosuresController
         if (!auth.IsAuthorised) return auth.FailureResult!;
 
         var model = new ProjectClosuresViewModel();
+
+        var response =
+            await sponsorOrganisationService.GetAllActiveSponsorOrganisationsForEnabledUser(auth.CurrentUserId.Value);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var sponsorOrganisations = response.Content
+                .Where(o => o.IsActive && o.Users != null &&
+                            o.Users.Any(u =>
+                                u.UserId == auth.CurrentUserId.Value &&
+                                u.IsAuthoriser));
+
+            model.SponsorOrgansationCount = sponsorOrganisations.Count();
+
+            if (!sponsorOrganisations.Any(x => x.RtsId == rtsId))
+            {
+                return Forbid();
+            }
+        }
+
+        var rtsResponse = await rtsService.GetOrganisation(rtsId);
+
+        if (rtsResponse.IsSuccessStatusCode)
+        {
+            model.SponsorOrganisationName = rtsResponse.Content.Name;
+            model.RtsId = rtsId;
+        }
 
         // getting search query
         var json = HttpContext.Session.GetString(SessionKeys.SponsorAuthorisationsProjectClosuresSearch);
@@ -70,12 +99,12 @@ public class AuthorisationsProjectClosuresController
         if (sortField == nameof(ProjectClosuresModel.UserEmail))
         {
             projectClosuresServiceResponse = await projectClosuresService.GetProjectClosuresBySponsorOrganisationUserIdWithoutPaging(
-                sponsorOrganisationUserId, searchQuery);
+                sponsorOrganisationUserId, searchQuery, rtsId);
         }
         else
         {
             projectClosuresServiceResponse = await projectClosuresService.GetProjectClosuresBySponsorOrganisationUserId(
-                sponsorOrganisationUserId, searchQuery, pageNumber, pageSize, sortField, sortDirection);
+                sponsorOrganisationUserId, searchQuery, rtsId, pageNumber, pageSize, sortField, sortDirection);
         }
 
         model.ProjectRecords = projectClosuresServiceResponse?.Content?.ProjectClosures?
@@ -145,11 +174,13 @@ public class AuthorisationsProjectClosuresController
             FormName = "projectclosures-selection",
             AdditionalParameters = new Dictionary<string, string>
             {
-                { "SponsorOrganisationUserId", sponsorOrganisationUserId.ToString() }
+                { "SponsorOrganisationUserId", sponsorOrganisationUserId.ToString() },
+                { "RtsId", rtsId }
             }
         };
 
         model.SponsorOrganisationUserId = sponsorOrganisationUserId;
+        model.RtsId = rtsId;
 
         return View(model);
     }
@@ -170,12 +201,20 @@ public class AuthorisationsProjectClosuresController
 
             TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
             return RedirectToAction(nameof(ProjectClosures),
-                new { sponsorOrganisationUserId = model.SponsorOrganisationUserId });
+                new
+                {
+                    sponsorOrganisationUserId = model.SponsorOrganisationUserId,
+                    rtsId = model.RtsId
+                });
         }
 
         HttpContext.Session.SetString(SessionKeys.SponsorAuthorisationsProjectClosuresSearch, JsonSerializer.Serialize(model.Search));
         return RedirectToAction(nameof(ProjectClosures),
-            new { sponsorOrganisationUserId = model.SponsorOrganisationUserId });
+            new
+            {
+                sponsorOrganisationUserId = model.SponsorOrganisationUserId,
+                rtsId = model.RtsId
+            });
     }
 
     // 1) Shared builder used by both GET and POST
@@ -183,7 +222,8 @@ public class AuthorisationsProjectClosuresController
     private async Task<IActionResult> BuildProjectClosuresCheckAndAuthorisePageAsync
     (
         string projectRecordId,
-        Guid sponsorOrganisationUserId
+        Guid sponsorOrganisationUserId,
+        string rtsId
     )
     {
         // Retrieve the project record by its ID
@@ -258,6 +298,7 @@ public class AuthorisationsProjectClosuresController
             PlannedEndDate = DateHelper.ConvertDateToString(endDateAnswer),
             IrasId = projectRecord.IrasId,
             ShortProjectTitle = titleAnswer,
+            RtsId = rtsId
         };
 
         return Ok(model);
@@ -266,10 +307,10 @@ public class AuthorisationsProjectClosuresController
     // 2) GET stays tiny and calls the builder
     [Authorize(Policy = Permissions.Sponsor.ProjectClosures_Review)]
     [HttpGet]
-    public async Task<IActionResult> CheckAndAuthoriseProjectClosure(string projectRecordId, Guid sponsorOrganisationUserId)
+    public async Task<IActionResult> CheckAndAuthoriseProjectClosure(string projectRecordId, Guid sponsorOrganisationUserId, string rtsId)
     {
         var result =
-            await BuildProjectClosuresCheckAndAuthorisePageAsync(projectRecordId, sponsorOrganisationUserId);
+            await BuildProjectClosuresCheckAndAuthorisePageAsync(projectRecordId, sponsorOrganisationUserId, rtsId);
 
         if (result is not OkObjectResult outcome)
         {
@@ -297,7 +338,8 @@ public class AuthorisationsProjectClosuresController
         // 🟢 Always build the page first, so it's hydrated for both success and error paths
         var result = await BuildProjectClosuresCheckAndAuthorisePageAsync(
             model.ProjectRecordId,
-            model.SponsorOrganisationUserId
+            model.SponsorOrganisationUserId,
+            model.RtsId
         );
 
         if (result is not OkObjectResult res)

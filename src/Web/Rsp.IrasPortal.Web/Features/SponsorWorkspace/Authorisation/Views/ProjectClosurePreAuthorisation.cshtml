@@ -18,7 +18,9 @@
                                              "Back",
                                              new Dictionary<string, string> {
                                                 { "sponsorOrganisationUserId", Model.SponsorOrganisationUserId.ToString() },
-                                                { "projectRecordId", Model.ProjectRecordId }
+                                                { "projectRecordId", Model.ProjectRecordId },
+                                                { "rtsId", Model.RtsId },
+
                                              })" />
 }
 
@@ -53,6 +55,7 @@
                     <input type="hidden" name="ProjectRecordId" value="@Model.ProjectRecordId" />
                     <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
                     <input type="hidden" name="Outcome" value="@Model.Outcome" />
+                    <input type="hidden" name="RtsId" value="@Model.RtsId" />
                     <button asp-route="sws:projectclosurepreauthorisationconfirm" type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button">
                         Authorise closure
                     </button>
@@ -68,7 +71,8 @@
                          model="@("sws:checkandauthoriseprojectclosure", "Go back to check and authorise", new Dictionary<string, string>
                          {
                              ["ProjectRecordId"] = Model.ProjectRecordId,
-                             ["SponsorOrganisationUserId"] = Model.SponsorOrganisationUserId.ToString()
+                             ["SponsorOrganisationUserId"] = Model.SponsorOrganisationUserId.ToString(),
+                             ["RtsId"] = Model.RtsId
                          })" />
             </form>
         </div>

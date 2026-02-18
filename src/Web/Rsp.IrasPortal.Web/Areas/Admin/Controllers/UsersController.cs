@@ -9,6 +9,7 @@ using Microsoft.FeatureManagement.Mvc;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests.UserManagement;
+using Rsp.Portal.Application.Filters;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
@@ -692,47 +693,28 @@ public class UsersController(
     [Route("/admin/applyfilters", Name = "admin:applyfilters")]
     [HttpPost]
     [HttpGet]
+    [CmsContentAction(nameof(Index))]
     public async Task<IActionResult> ApplyFilters(
         UserSearchViewModel model,
         string? sortField = nameof(UserViewModel.GivenName),
         string? sortDirection = SortDirections.Ascending,
         [FromQuery] bool fromPagination = false)
     {
-        if (HttpContext.Request.Method == HttpMethods.Get)
-        {
-            //Always attempt to restore from session if nothing is currently set
-            var savedSearch = HttpContext.Session.GetString(SessionKeys.UsersSearch);
-            if (!string.IsNullOrWhiteSpace(savedSearch))
-            {
-                model.Search = JsonSerializer.Deserialize<UserSearchModel>(savedSearch);
-            }
-        }
-        else
-        {
-            var validationResult = await searchValidator.ValidateAsync(model.Search);
+        var validationResult = await searchValidator.ValidateAsync(model.Search);
 
-            if (!validationResult.IsValid)
+        if (!validationResult.IsValid)
+        {
+            foreach (var error in validationResult.Errors)
             {
-                foreach (var error in validationResult.Errors)
-                {
-                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
-                }
-
-                return View(nameof(Index), model); // Return with validation errors
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
             }
 
-            // Save applied filters to session
-            HttpContext.Session.SetString(SessionKeys.UsersSearch, JsonSerializer.Serialize(model.Search));
+            return View(nameof(Index), model);
         }
 
-        // Call Index with matching parameter set
-        return await Index(
-            1, // pageNumber
-            20, // pageSize
-            sortField,
-            sortDirection,
-            model,
-            fromPagination);
+        // Save applied filters to session
+        HttpContext.Session.SetString(SessionKeys.UsersSearch, JsonSerializer.Serialize(model.Search));
+        return RedirectToAction(nameof(Index));
     }
 
     [HttpGet]

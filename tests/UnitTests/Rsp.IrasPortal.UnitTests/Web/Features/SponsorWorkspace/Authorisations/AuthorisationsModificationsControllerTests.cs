@@ -14,6 +14,8 @@ using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.Identity;
+using Rsp.Portal.Services;
 using Rsp.Portal.Web.Features.Modifications.Models;
 using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Controllers;
 using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models;
@@ -74,11 +76,56 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
                 1,
                 20,
                 nameof(ModificationsModel.SentToSponsorDate),
-                SortDirections.Descending))
+                SortDirections.Descending, "123"))
             .ReturnsAsync(modificationsServiceResponse);
 
+     
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(x => x.GetUser(null, "test@test.co.uk", null))
+            .ReturnsAsync(OkUserResponse(_sponsorOrganisationUserId, "test@test.co.uk"));
+
+        var sponsorOrgsResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new List<SponsorOrganisationDto>
+            {
+                new()
+                {
+                    Id = _sponsorOrganisationUserId,
+                    RtsId = "123",
+                    Users = new List<SponsorOrganisationUserDto>
+                    {
+                        new()
+                        {
+                            UserId = _sponsorOrganisationUserId,
+                            Id = _sponsorOrganisationUserId,
+                            IsAuthoriser = true,
+                            IsActive = true
+                        }
+                    }
+                }
+            }
+        };
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(x => x.GetAllActiveSponsorOrganisationsForEnabledUser(_sponsorOrganisationUserId))
+            .ReturnsAsync(sponsorOrgsResponse);
+
+        Mocker.GetMock<IRtsService>().Setup(x =>
+            x.GetOrganisation(It.IsAny<string>())).ReturnsAsync(
+            new ServiceResponse<OrganisationDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new OrganisationDto
+                {
+                    Name = "Org 1",
+                    Id = "1",
+                    CountryName = "England"
+                }
+            });
+
         // Act
-        var result = await Sut.Modifications(_sponsorOrganisationUserId);
+        var result = await Sut.Modifications(_sponsorOrganisationUserId, "123");
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -90,6 +137,85 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
         model.Pagination.ShouldNotBeNull();
         model.Pagination.RouteName.ShouldBe("sws:modifications");
         model.Pagination.AdditionalParameters.ShouldContainKey("SponsorOrganisationUserId");
+    }
+
+    [Theory]
+    [AutoData]
+    public async Task Modifications_Returns_View_With_Forbid(GetModificationsResponse modificationResponse)
+    {
+        // Arrange
+        Mocker.GetMock<ISponsorUserAuthorisationService>()
+            .Setup(s => s.AuthoriseAsync(
+                Sut,
+                _sponsorOrganisationUserId,
+                It.IsAny<ClaimsPrincipal>()))
+            .ReturnsAsync(Authorised(_sponsorOrganisationUserId));
+
+        var modificationsServiceResponse = new ServiceResponse<GetModificationsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = modificationResponse
+        };
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationsBySponsorOrganisationUserId(
+                _sponsorOrganisationUserId,
+                It.IsAny<SponsorAuthorisationsModificationsSearchRequest>(),
+                1,
+                20,
+                nameof(ModificationsModel.SentToSponsorDate),
+                SortDirections.Descending, ""))
+            .ReturnsAsync(modificationsServiceResponse);
+
+
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(x => x.GetUser(null, "test@test.co.uk", null))
+            .ReturnsAsync(OkUserResponse(_sponsorOrganisationUserId, "test@test.co.uk"));
+
+        var sponsorOrgsResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new List<SponsorOrganisationDto>
+            {
+                new()
+                {
+                    Id = _sponsorOrganisationUserId,
+                    Users = new List<SponsorOrganisationUserDto>
+                    {
+                        new()
+                        {
+                            UserId = _sponsorOrganisationUserId,
+                            Id = _sponsorOrganisationUserId,
+                            IsAuthoriser = true,
+                            IsActive = true
+                        }
+                    }
+                }
+            }
+        };
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(x => x.GetAllActiveSponsorOrganisationsForEnabledUser(_sponsorOrganisationUserId))
+            .ReturnsAsync(sponsorOrgsResponse);
+
+        Mocker.GetMock<IRtsService>().Setup(x =>
+            x.GetOrganisation(It.IsAny<string>())).ReturnsAsync(
+            new ServiceResponse<OrganisationDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new OrganisationDto
+                {
+                    Name = "Org 1",
+                    Id = "1",
+                    CountryName = "England"
+                }
+            });
+
+        // Act
+        var result = await Sut.Modifications(_sponsorOrganisationUserId, "123");
+
+        // Assert
+        result.ShouldBeOfType<ForbidResult>();
     }
 
     [Theory]
@@ -106,7 +232,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
             .ReturnsAsync(NotAuthorised(failure));
 
         // Act
-        var result = await Sut.Modifications(_sponsorOrganisationUserId);
+        var result = await Sut.Modifications(_sponsorOrganisationUserId, "123");
 
         // Assert
         result.ShouldBeSameAs(failure);
@@ -127,7 +253,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
             .ReturnsAsync(NotAuthorised(forbid));
 
         // Act
-        var result = await Sut.Modifications(_sponsorOrganisationUserId);
+        var result = await Sut.Modifications(_sponsorOrganisationUserId, "123");
 
         // Assert
         result.ShouldBeSameAs(forbid);
@@ -158,11 +284,64 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
                 1,
                 20,
                 nameof(ModificationsModel.SentToSponsorDate),
-                SortDirections.Descending))
+                SortDirections.Descending, "123"))
             .ReturnsAsync(modificationsServiceResponse);
 
+        Mocker.GetMock<IProjectModificationsService>()
+    .Setup(s => s.GetModificationsBySponsorOrganisationUserId(
+        _sponsorOrganisationUserId,
+        It.IsAny<SponsorAuthorisationsModificationsSearchRequest>(),
+        1,
+        20,
+        nameof(ModificationsModel.SentToSponsorDate),
+        SortDirections.Descending, "123"))
+    .ReturnsAsync(modificationsServiceResponse);
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(x => x.GetUser(null, "test@test.co.uk", null))
+            .ReturnsAsync(OkUserResponse(_sponsorOrganisationUserId, "test@test.co.uk"));
+
+        var sponsorOrgsResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new List<SponsorOrganisationDto>
+            {
+                new()
+                {
+                    Id = _sponsorOrganisationUserId,
+                    RtsId = "123",
+                    Users = new List<SponsorOrganisationUserDto>
+                    {
+                        new()
+                        {
+                            UserId = _sponsorOrganisationUserId,
+                            Id = _sponsorOrganisationUserId,
+                            IsAuthoriser = true,
+                            IsActive = true
+                        }
+                    }
+                }
+            }
+        };
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(x => x.GetAllActiveSponsorOrganisationsForEnabledUser(_sponsorOrganisationUserId))
+            .ReturnsAsync(sponsorOrgsResponse);
+
+        Mocker.GetMock<IRtsService>().Setup(x =>
+            x.GetOrganisation(It.IsAny<string>())).ReturnsAsync(
+            new ServiceResponse<OrganisationDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new OrganisationDto
+                {
+                    Name = "Org 1",
+                    Id = "1",
+                    CountryName = "England"
+                }
+            });
+
         // Act
-        var result = await Sut.Modifications(_sponsorOrganisationUserId);
+        var result = await Sut.Modifications(_sponsorOrganisationUserId, "123");
 
         // Assert
         result.ShouldNotBeNull();
@@ -223,7 +402,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
             });
 
         var result = await Sut.CheckAndAuthorise("PR1", "IRAS", "Short",
-            _sponsorOrganisationUserId, _sponsorOrganisationUserId);
+            _sponsorOrganisationUserId, _sponsorOrganisationUserId, "123");
 
         result.ShouldBeOfType<ViewResult>();
         var view = result.ShouldBeOfType<ViewResult>();
@@ -256,7 +435,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
             });
 
         var result = await Sut.CheckAndAuthorise("PR1", "IRAS", "Short",
-            _sponsorOrganisationUserId, _sponsorOrganisationUserId);
+            _sponsorOrganisationUserId, _sponsorOrganisationUserId, "123");
 
         result.ShouldBeOfType<StatusCodeResult>()
               .StatusCode.ShouldBe(400);
@@ -316,7 +495,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
 
         // Act
         var result = await Sut.CheckAndAuthorise("PR1", "IRAS", "Short", _sponsorOrganisationUserId,
-            _sponsorOrganisationUserId);
+            _sponsorOrganisationUserId, "123");
 
         // Assert
         result.ShouldBeOfType<StatusCodeResult>().StatusCode.ShouldBe(404);
@@ -348,7 +527,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
             });
 
         var result = await Sut.CheckAndAuthorise("PR1", "IRAS", "Short",
-            _sponsorOrganisationUserId, _sponsorOrganisationUserId);
+            _sponsorOrganisationUserId, _sponsorOrganisationUserId, "123");
 
         result.ShouldBeOfType<ViewResult>();
     }
@@ -1141,8 +1320,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
 
         // Act
         var result = await Sut.ChangeDetails("PR1", "IRAS", "Short", _sponsorOrganisationUserId,
-            _sponsorOrganisationUserId, modificationChangeId);
-
+            _sponsorOrganisationUserId, modificationChangeId, "123");
         // Assert
         result.ShouldBeOfType<ViewResult>();
     }
@@ -1557,4 +1735,31 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
 
     public SponsorUserAuthorisationResult NotAuthorised(IActionResult failure)
         => SponsorUserAuthorisationResult.Fail(failure);
+
+    private static ServiceResponse<UserResponse> OkUserResponse(Guid gid, string email)
+    {
+        return new ServiceResponse<UserResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new UserResponse
+            {
+                User = new User(
+                    gid.ToString(),
+                    null,
+                    null,
+                    "Dan",
+                    "Hulmston",
+                    email,
+                    null,
+                    null,
+                    null,
+                    null,
+                    "Active",
+                    DateTime.UtcNow,
+                    null,
+                    null
+                )
+            }
+        };
+    }
 }

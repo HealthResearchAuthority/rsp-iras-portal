@@ -12,6 +12,7 @@ namespace Rsp.Portal.UnitTests.Services.ProjectClosuresServiceTests
         [Theory, AutoData]
         public async Task Should_Return_Success_Response_When_Client_Returns_Success(
             Guid sponsorOrganisationUserId,
+            string rtsId,
             ProjectClosuresSearchRequest searchQuery,
             ProjectClosuresSearchResponse closuresResponse)
         {
@@ -26,13 +27,15 @@ namespace Rsp.Portal.UnitTests.Services.ProjectClosuresServiceTests
             clientMock
                 .Setup(c => c.GetProjectClosuresBySponsorOrganisationUserIdWithoutPaging(
                     sponsorOrganisationUserId,
+                    rtsId,
                     searchQuery))
                 .ReturnsAsync(apiResponse);
 
             // Act
             var result = await Sut.GetProjectClosuresBySponsorOrganisationUserIdWithoutPaging(
                 sponsorOrganisationUserId,
-                searchQuery);
+                searchQuery,
+                rtsId);
 
             // Assert
             result.ShouldBeOfType<ServiceResponse<ProjectClosuresSearchResponse>>();
@@ -42,8 +45,7 @@ namespace Rsp.Portal.UnitTests.Services.ProjectClosuresServiceTests
 
             // Verify
             clientMock.Verify(c => c.GetProjectClosuresBySponsorOrganisationUserIdWithoutPaging(
-                sponsorOrganisationUserId,
-                searchQuery), Times.Once);
+                sponsorOrganisationUserId, rtsId, searchQuery), Times.Once);
         }
     }
 }
