@@ -27,6 +27,7 @@ public interface IProjectClosuresServiceClient
     (
         Guid sponsorOrganisationUserId,
         [Body] ProjectClosuresSearchRequest searchQuery,
+        string rtsId,
         int pageNumber = 1,
         int pageSize = 20,
         string sortField = nameof(ProjectClosuresDto.SentToSponsorDate),
@@ -70,6 +71,7 @@ public interface IProjectClosuresServiceClient
     public Task<ApiResponse<ProjectClosuresSearchResponse>> GetProjectClosuresBySponsorOrganisationUserIdWithoutPaging
     (
         Guid sponsorOrganisationUserId,
+        string rtsId,
         [Body] ProjectClosuresSearchRequest searchQuery
     );
 }

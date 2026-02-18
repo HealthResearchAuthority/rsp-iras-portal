@@ -80,17 +80,14 @@ public class ModificationsController
         // Get respondent information from the current context
         var respondent = this.GetRespondentFromContext();
 
-        // Compose the full name of the respondent
-        var name = $"{respondent.GivenName} {respondent.FamilyName}";
-
         // Create a new project modification request
         var modificationRequest = new ProjectModificationRequest
         {
             ProjectRecordId = (string)projectRecordId,
             ModificationIdentifier = IrasId + separator,
             Status = ModificationStatus.InDraft,
-            CreatedBy = name,
-            UpdatedBy = name
+            CreatedBy = respondent.Id,
+            UpdatedBy = respondent.Id
         };
 
         // Call the service to create the modification

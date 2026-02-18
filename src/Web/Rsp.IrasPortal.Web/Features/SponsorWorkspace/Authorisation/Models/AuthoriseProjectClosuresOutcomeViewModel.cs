@@ -15,4 +15,5 @@ public class AuthoriseProjectClosuresOutcomeViewModel
     public string PlannedEndDate { get; set; }
     public int? IrasId { get; set; }
     public string? ShortProjectTitle { get; set; }
+    public string RtsId { get; set; }
 }

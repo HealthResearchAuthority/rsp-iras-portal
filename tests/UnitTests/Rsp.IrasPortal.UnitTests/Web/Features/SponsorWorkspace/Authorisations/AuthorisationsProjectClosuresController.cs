@@ -28,6 +28,7 @@ public class AuthorisationsProjectClosuresControllerTests
 {
     private readonly DefaultHttpContext _http;
     private readonly Guid _sponsorOrganisationUserId = Guid.NewGuid();
+    private readonly string _rtsId = "123";
 
     public AuthorisationsProjectClosuresControllerTests()
     {
@@ -77,6 +78,7 @@ public class AuthorisationsProjectClosuresControllerTests
             .Setup(s => s.GetProjectClosuresBySponsorOrganisationUserId(
                 _sponsorOrganisationUserId,
                 It.IsAny<ProjectClosuresSearchRequest>(),
+                "123",
                 1,
                 20,
                 nameof(ProjectClosuresModel.SentToSponsorDate),
@@ -97,8 +99,69 @@ public class AuthorisationsProjectClosuresControllerTests
                 It.IsAny<int>()))
             .ReturnsAsync(usersResponse);
 
+        var sponsorOrgsResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new List<SponsorOrganisationDto>
+            {
+                new()
+                {
+                    Id = _sponsorOrganisationUserId,
+                    RtsId = "123",
+                    Users = new List<SponsorOrganisationUserDto>
+                    {
+                        new()
+                        {
+                            UserId = _sponsorOrganisationUserId,
+                            Id = _sponsorOrganisationUserId,
+                            IsAuthoriser = true,
+                            IsActive = true
+                        }
+                    }
+                }
+            }
+        };
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(x => x.GetAllActiveSponsorOrganisationsForEnabledUser(_sponsorOrganisationUserId))
+            .ReturnsAsync(sponsorOrgsResponse);
+
+        Mocker.GetMock<IRtsService>().Setup(x =>
+            x.GetOrganisation(It.IsAny<string>())).ReturnsAsync(
+            new ServiceResponse<OrganisationDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new OrganisationDto
+                {
+                    Name = "Org 1",
+                    Id = "1",
+                    CountryName = "England"
+                }
+            });
+
+
+        var authResult = SponsorUserAuthorisationResult
+            .Ok(_sponsorOrganisationUserId)
+            .WithSponsorOrganisations(new[]
+            {
+                new SponsorOrganisationDto
+                {
+                    RtsId = "123",
+                    IsActive = true,
+                    Users = new List<SponsorOrganisationUserDto>()
+                }
+            })
+            .WithSelectedOrganisation("123", "Test Sponsor Org");
+
+        Mocker.GetMock<ISponsorUserAuthorisationService>()
+            .Setup(x => x.AuthoriseWithOrganisationContextAsync(
+                It.IsAny<Controller>(),
+                _sponsorOrganisationUserId,
+                It.IsAny<ClaimsPrincipal>(),
+                "123"))
+            .ReturnsAsync(authResult);
+
         // Act
-        var result = await Sut.ProjectClosures(_sponsorOrganisationUserId);
+        var result = await Sut.ProjectClosures(_sponsorOrganisationUserId, _rtsId);
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
@@ -127,20 +190,22 @@ public class AuthorisationsProjectClosuresControllerTests
         List<User> users)
     {
         // Arrange
-        var failure = new ForbidResult(); // could be ServiceError(...) result too
+        var forbidResult = new ForbidResult();
+
+        var failedAuth = SponsorUserAuthorisationResult.Fail(forbidResult);
 
         Mocker.GetMock<ISponsorUserAuthorisationService>()
-            .Setup(s => s.AuthoriseAsync(
-                Sut,
-                _sponsorOrganisationUserId,
-                It.IsAny<ClaimsPrincipal>()))
-            .ReturnsAsync(NotAuthorised(failure));
+            .Setup(x => x.AuthoriseWithOrganisationContextAsync(
+                It.IsAny<Controller>(),
+                It.IsAny<Guid>(),
+                It.IsAny<ClaimsPrincipal>(),
+                It.IsAny<string>()))
+            .ReturnsAsync(failedAuth);
 
         // Act
-        var result = await Sut.ProjectClosures(_sponsorOrganisationUserId);
+        var result = await Sut.ProjectClosures(_sponsorOrganisationUserId, _rtsId);
 
         // Assert
-        result.ShouldBeSameAs(failure);
         result.ShouldBeOfType<ForbidResult>();
     }
 
@@ -250,7 +315,7 @@ public class AuthorisationsProjectClosuresControllerTests
     [Theory]
     [AutoData]
     public async Task CheckAndAuthoriseProjectClosure_Returns_View_With_Hydrated_Model(
-        string projectRecordId)
+        string projectRecordId, string rtsId)
     {
         // Arrange
         var irasId = 123456;
@@ -276,7 +341,7 @@ public class AuthorisationsProjectClosuresControllerTests
             });
 
         // Act
-        var result = await Sut.CheckAndAuthoriseProjectClosure(projectRecordId, _sponsorOrganisationUserId);
+        var result = await Sut.CheckAndAuthoriseProjectClosure(projectRecordId, _sponsorOrganisationUserId, rtsId);
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
@@ -303,6 +368,7 @@ public class AuthorisationsProjectClosuresControllerTests
         var closureDate = new DateTime(2025, 01, 10);
         var plannedEndDateAnswer = "2025-02-20";
         var shortTitleAnswer = "abc";
+        var rtsId = "123";
 
         ArrangeBuilderSuccess(
             projectRecordId,
@@ -320,7 +386,7 @@ public class AuthorisationsProjectClosuresControllerTests
                 .WithStatus(HttpStatusCode.InternalServerError));
 
         // Act
-        var result = await Sut.CheckAndAuthoriseProjectClosure(projectRecordId, _sponsorOrganisationUserId);
+        var result = await Sut.CheckAndAuthoriseProjectClosure(projectRecordId, _sponsorOrganisationUserId, rtsId);
         // Assert:
         var objectResult = result.ShouldBeOfType<StatusCodeResult>();
         objectResult.StatusCode.ShouldBe((int)HttpStatusCode.InternalServerError);
@@ -329,7 +395,7 @@ public class AuthorisationsProjectClosuresControllerTests
     [Theory]
     [AutoData]
     public async Task CheckAndAuthoriseProjectClosure_Returns_ServiceError_When_ProjectRecord_Fails(
-        string projectRecordId)
+        string projectRecordId, string rtsId)
     {
         // Arrange
         var failed = new ServiceResponse<IrasApplicationResponse>()
@@ -341,7 +407,7 @@ public class AuthorisationsProjectClosuresControllerTests
             .ReturnsAsync(failed);
 
         // Act
-        var result = await Sut.CheckAndAuthoriseProjectClosure(projectRecordId, _sponsorOrganisationUserId);
+        var result = await Sut.CheckAndAuthoriseProjectClosure(projectRecordId, _sponsorOrganisationUserId, rtsId);
 
         // Assert:
         var objectResult = result.ShouldBeOfType<StatusCodeResult>();
@@ -670,6 +736,66 @@ public class AuthorisationsProjectClosuresControllerTests
                 It.IsAny<ClaimsPrincipal>()))
             .ReturnsAsync(SponsorUserAuthorisationResult.Ok(_sponsorOrganisationUserId));
 
+        var sponsorOrgsResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new List<SponsorOrganisationDto>
+            {
+                new()
+                {
+                    Id = _sponsorOrganisationUserId,
+                    RtsId = "123",
+                    Users = new List<SponsorOrganisationUserDto>
+                    {
+                        new()
+                        {
+                            UserId = _sponsorOrganisationUserId,
+                            Id = _sponsorOrganisationUserId,
+                            IsAuthoriser = true,
+                            IsActive = true
+                        }
+                    }
+                }
+            }
+        };
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(x => x.GetAllActiveSponsorOrganisationsForEnabledUser(_sponsorOrganisationUserId))
+            .ReturnsAsync(sponsorOrgsResponse);
+
+        Mocker.GetMock<IRtsService>().Setup(x =>
+            x.GetOrganisation(It.IsAny<string>())).ReturnsAsync(
+            new ServiceResponse<OrganisationDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new OrganisationDto
+                {
+                    Name = "Org 1",
+                    Id = "1",
+                    CountryName = "England"
+                }
+            });
+
+        var authResult = SponsorUserAuthorisationResult
+            .Ok(_sponsorOrganisationUserId)
+            .WithSponsorOrganisations(new[]
+            {
+                new SponsorOrganisationDto
+                {
+                    RtsId = "123",
+                    IsActive = true,
+                    Users = new List<SponsorOrganisationUserDto>()
+                }
+            })
+            .WithSelectedOrganisation("123", "Test Sponsor Org");
+
+        Mocker.GetMock<ISponsorUserAuthorisationService>()
+            .Setup(x => x.AuthoriseWithOrganisationContextAsync(
+                It.IsAny<Controller>(),
+                _sponsorOrganisationUserId,
+                It.IsAny<ClaimsPrincipal>(),
+                "123"))
+            .ReturnsAsync(authResult);
+
         // Force exactly 3 users
         users = users.Take(3).ToList();
 
@@ -700,7 +826,7 @@ public class AuthorisationsProjectClosuresControllerTests
         Mocker.GetMock<IProjectClosuresService>()
             .Setup(s => s.GetProjectClosuresBySponsorOrganisationUserIdWithoutPaging(
                 _sponsorOrganisationUserId,
-                It.IsAny<ProjectClosuresSearchRequest>()))
+                It.IsAny<ProjectClosuresSearchRequest>(), It.IsAny<string>()))
             .ReturnsAsync(serviceResponse);
 
         var usersResponse = new ServiceResponse<UsersResponse>
@@ -723,7 +849,8 @@ public class AuthorisationsProjectClosuresControllerTests
             pageNumber: 1,
             pageSize: 2,
             sortField: nameof(ProjectClosuresModel.UserEmail),
-            sortDirection: SortDirections.Ascending);
+            sortDirection: SortDirections.Ascending,
+            rtsId: "123");
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
@@ -741,13 +868,14 @@ public class AuthorisationsProjectClosuresControllerTests
         Mocker.GetMock<IProjectClosuresService>()
             .Verify(s => s.GetProjectClosuresBySponsorOrganisationUserIdWithoutPaging(
                     _sponsorOrganisationUserId,
-                    It.IsAny<ProjectClosuresSearchRequest>()),
+                    It.IsAny<ProjectClosuresSearchRequest>(), It.IsAny<string>()),
                 Times.Once);
 
         Mocker.GetMock<IProjectClosuresService>()
             .Verify(s => s.GetProjectClosuresBySponsorOrganisationUserId(
                     It.IsAny<Guid>(),
                     It.IsAny<ProjectClosuresSearchRequest>(),
+                    It.IsAny<string>(),
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),
@@ -769,13 +897,75 @@ public class AuthorisationsProjectClosuresControllerTests
                 It.IsAny<ClaimsPrincipal>()))
             .ReturnsAsync(SponsorUserAuthorisationResult.Ok(_sponsorOrganisationUserId));
 
+        var sponsorOrgsResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new List<SponsorOrganisationDto>
+            {
+                new()
+                {
+                    Id = _sponsorOrganisationUserId,
+                    RtsId = "123",
+                    Users = new List<SponsorOrganisationUserDto>
+                    {
+                        new()
+                        {
+                            UserId = _sponsorOrganisationUserId,
+                            Id = _sponsorOrganisationUserId,
+                            IsAuthoriser = true,
+                            IsActive = true
+                        }
+                    }
+                }
+            }
+        };
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(x => x.GetAllActiveSponsorOrganisationsForEnabledUser(_sponsorOrganisationUserId))
+            .ReturnsAsync(sponsorOrgsResponse);
+
+        Mocker.GetMock<IRtsService>().Setup(x =>
+            x.GetOrganisation(It.IsAny<string>())).ReturnsAsync(
+            new ServiceResponse<OrganisationDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new OrganisationDto
+                {
+                    Name = "Org 1",
+                    Id = "1",
+                    CountryName = "England"
+                }
+            });
+
+        var authResult = SponsorUserAuthorisationResult
+            .Ok(_sponsorOrganisationUserId)
+            .WithSponsorOrganisations(new[]
+            {
+                new SponsorOrganisationDto
+                {
+                    RtsId = "123",
+                    IsActive = true,
+                    Users = new List<SponsorOrganisationUserDto>()
+                }
+            })
+            .WithSelectedOrganisation("123", "Test Sponsor Org");
+
+        Mocker.GetMock<ISponsorUserAuthorisationService>()
+            .Setup(x => x.AuthoriseWithOrganisationContextAsync(
+                It.IsAny<Controller>(),
+                _sponsorOrganisationUserId,
+                It.IsAny<ClaimsPrincipal>(),
+                "123"))
+            .ReturnsAsync(authResult);
+
+
         // Act: pageNumber=0, sortField=UserEmail
         var result = await Sut.ProjectClosures(
             sponsorOrganisationUserId: _sponsorOrganisationUserId,
             pageNumber: 0,
             pageSize: 20,
             sortField: nameof(ProjectClosuresModel.UserEmail),
-            sortDirection: SortDirections.Descending);
+            sortDirection: SortDirections.Descending,
+            rtsId: "123");
 
         // Assert
         var status = result.ShouldBeOfType<StatusCodeResult>();

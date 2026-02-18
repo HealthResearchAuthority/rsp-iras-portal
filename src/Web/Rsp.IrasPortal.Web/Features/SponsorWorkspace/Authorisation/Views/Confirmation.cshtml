@@ -83,11 +83,13 @@
 
         <form asp-route="sws:modifications" method="get">
             <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
+            <input type="hidden" name="RtsId" value="@Model.RtsId" />
 
             <partial name="_SubmitButton"
                      model="@("sws:modifications", "Return to authorisations", new Dictionary<string, string>
                      {
-                         ["SponsorOrganisationUserId"] = Model.SponsorOrganisationUserId.ToString()
+                         ["SponsorOrganisationUserId"] = Model.SponsorOrganisationUserId.ToString(),
+                         ["RtsId"] = Model.RtsId
                      })" />
         </form>
     </div>

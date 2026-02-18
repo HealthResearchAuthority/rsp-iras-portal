@@ -66,7 +66,7 @@
     @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
     {
         ("Sponsor workspace", Url.RouteUrl("sws:sponsorworkspace")),
-        ("Authorisations", Url.RouteUrl("sws:modifications", new { sponsorOrganisationUserId = Model.SponsorOrganisationUserId }))
+        ("Authorisations", Url.RouteUrl("sws:modifications", new { sponsorOrganisationUserId = Model.SponsorOrganisationUserId, rtsId = Model.RtsId })),
     })
 }
 
@@ -144,6 +144,7 @@
             <input type="hidden" name="ProjectModificationId" value="@Model.ProjectModificationId" />
             <input type="hidden" name="ReviewType" value="@Model.ReviewType" />
             <input type="hidden" name="ModificationIdentifier" value="@Model.ModificationIdentifier" />
+            <input type="hidden" name="RtsId" value="@Model.RtsId" />
 
             <div class="govuk-form-group @(hasError ? "govuk-form-group--error" : "")">
 
