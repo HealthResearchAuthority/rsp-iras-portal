@@ -1,9 +1,11 @@
-﻿using FluentValidation;
+﻿using System.Net;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Web.Attributes;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
 using Rsp.Portal.Web.Areas.Admin.Models;
@@ -76,8 +78,17 @@ public class ModificationDetailsController
             return result;
         }
 
+        if (modification is null)
+        {
+            return this.ServiceError(new ServiceResponse
+            {
+                StatusCode = HttpStatusCode.BadRequest,
+                Error = $"There is no modification for modification id {projectModificationId}",
+            });
+        }
+
         // If its sponsor revision - validate if sponsor is authoriser
-        if (modification?.Status is ModificationStatus.ReviseAndAuthorise && sponsorOrganisationUserId != null && rtsId != null)
+        if (modification.Status is ModificationStatus.ReviseAndAuthorise && sponsorOrganisationUserId != null && rtsId != null)
         {
             // Add sponsor details
             modification.SponsorOrganisationUserId = sponsorOrganisationUserId.Value.ToString();
