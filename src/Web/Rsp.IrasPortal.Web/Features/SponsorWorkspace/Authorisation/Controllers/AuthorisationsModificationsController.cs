@@ -404,7 +404,8 @@ public class AuthorisationsModificationsController
                     irasId = model.IrasId,
                     shortTitle = model.ShortTitle,
                     projectModificationId = Guid.Parse(model.ModificationId),
-                    sponsorOrganisationUserId = model.SponsorOrganisationUserId
+                    sponsorOrganisationUserId = model.SponsorOrganisationUserId,
+                    rtsId = model.RtsId,
                 });
 
             case "NotAuthorised":
