@@ -3,9 +3,15 @@
 
 @{
     ViewBag.Title = Model.User.GivenName + " " + Model.User.FamilyName + " - User profile";
+
+    var routeData = new Dictionary<string, string>
+     {
+         { "rtsId", Model.SponsorOrganisationUser.RtsId },
+         { "userId", Model.User.Id }
+     };
 }
 
-<a asp-route="soc:viewsponsororganisationuser" asp-all-route-data="@(new Dictionary<string, string> { { "rtsId", Model.SponsorOrganisationUser.RtsId }, { "userId", Model.User.Id } })" class="govuk-back-link">Back</a>
+<a asp-route="soc:viewsponsororganisationuser" asp-all-route-data="@routeData" class="govuk-back-link">Back</a>
 
 <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
 
