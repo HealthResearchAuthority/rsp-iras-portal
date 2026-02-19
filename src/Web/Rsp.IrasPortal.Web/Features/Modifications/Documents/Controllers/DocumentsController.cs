@@ -887,90 +887,94 @@ public class DocumentsController
 
         if (hasReplacesDocumentChanged)
         {
-            var oldReplacedByDocumentResponse =
-            await respondentService.GetModificationDocumentDetails((Guid)(replacedByDocumentResponse.Content?.ReplacesDocumentId.Value));
-
-            if (oldReplacedByDocumentResponse.Content?.ReplacedByDocumentId != null &&
-                oldReplacedByDocumentResponse.Content.ReplacedByDocumentId != Guid.Empty)
+            var oldReplacesDocumentId = replacedByDocumentResponse.Content?.ReplacesDocumentId;
+            if (oldReplacesDocumentId.HasValue)
             {
-                projectModificationDocumentRequest.Add(new ProjectModificationDocumentRequest
-                {
-                    Id = oldReplacedByDocumentResponse.Content.Id,
-                    ProjectModificationId = oldReplacedByDocumentResponse.Content.ProjectModificationId,
-                    ProjectRecordId = oldReplacedByDocumentResponse.Content.ProjectRecordId,
-                    UserId = oldReplacedByDocumentResponse.Content.UserId,
-                    FileName = oldReplacedByDocumentResponse.Content.FileName,
-                    DocumentStoragePath = oldReplacedByDocumentResponse.Content.DocumentStoragePath,
-                    FileSize = oldReplacedByDocumentResponse.Content.FileSize,
-                    Status = oldReplacedByDocumentResponse.Content.Status,
-                    IsMalwareScanSuccessful = oldReplacedByDocumentResponse.Content.IsMalwareScanSuccessful,
-                    DocumentType = oldReplacedByDocumentResponse.Content.DocumentType,
-                    ReplacesDocumentId = oldReplacedByDocumentResponse.Content.ReplacesDocumentId,
-                    ReplacedByDocumentId = null, // Clear the ReplacedByDocumentId to unlink it from the current document
-                    LinkedDocumentId = oldReplacedByDocumentResponse.Content.LinkedDocumentId
-                });
-            }
-        }
+                var oldReplacedByDocumentResponse =
+            await respondentService.GetModificationDocumentDetails(oldReplacesDocumentId.Value);
 
-        // Update the document being replaced (if exists)
-        await AppendReplacesDocumentIfExists
-            (
+                if (oldReplacedByDocumentResponse.Content?.ReplacedByDocumentId != null &&
+                    oldReplacedByDocumentResponse.Content.ReplacedByDocumentId != Guid.Empty)
+                {
+                    projectModificationDocumentRequest.Add(new ProjectModificationDocumentRequest
+                    {
+                        Id = oldReplacedByDocumentResponse.Content.Id,
+                        ProjectModificationId = oldReplacedByDocumentResponse.Content.ProjectModificationId,
+                        ProjectRecordId = oldReplacedByDocumentResponse.Content.ProjectRecordId,
+                        UserId = oldReplacedByDocumentResponse.Content.UserId,
+                        FileName = oldReplacedByDocumentResponse.Content.FileName,
+                        DocumentStoragePath = oldReplacedByDocumentResponse.Content.DocumentStoragePath,
+                        FileSize = oldReplacedByDocumentResponse.Content.FileSize,
+                        Status = oldReplacedByDocumentResponse.Content.Status,
+                        IsMalwareScanSuccessful = oldReplacedByDocumentResponse.Content.IsMalwareScanSuccessful,
+                        DocumentType = oldReplacedByDocumentResponse.Content.DocumentType,
+                        ReplacesDocumentId = oldReplacedByDocumentResponse.Content.ReplacesDocumentId,
+                        ReplacedByDocumentId = null, // Clear the ReplacedByDocumentId to unlink it from the current document
+                        LinkedDocumentId = oldReplacedByDocumentResponse.Content.LinkedDocumentId
+                    });
+                }
+            }
+
+            // Update the document being replaced (if exists)
+            await AppendReplacesDocumentIfExists
+                (
+                    replacedByDocumentDto,
+                    projectModificationDocumentRequest,
+                    userId
+                );
+
+            // Update linked document (if exists)
+            await AppendLinkedDocumentIfExists
+                (
                 replacedByDocumentDto,
+                replacedByDocumentResponse,
                 projectModificationDocumentRequest,
                 userId
-            );
+                );
 
-        // Update linked document (if exists)
-        await AppendLinkedDocumentIfExists
-            (
-            replacedByDocumentDto,
-            replacedByDocumentResponse,
-            projectModificationDocumentRequest,
-            userId
-            );
+            await respondentService.SaveModificationDocuments(projectModificationDocumentRequest);
 
-        await respondentService.SaveModificationDocuments(projectModificationDocumentRequest);
+            // Sync metadata answers if linking document
+            if (linkDocument &&
+                replacedByDocumentDto.LinkedDocumentId is Guid linkedId &&
+                linkedId != Guid.Empty)
+            {
+                await SyncLinkedDocumentAnswers(
+                    replacedByDocumentDto.Id,
+                    linkedId,
+                    replacedByDocumentDto.DocumentType ?? string.Empty);
+            }
 
-        // Sync metadata answers if linking document
-        if (linkDocument &&
-            replacedByDocumentDto.LinkedDocumentId is Guid linkedId &&
-            linkedId != Guid.Empty)
-        {
-            await SyncLinkedDocumentAnswers(
-                replacedByDocumentDto.Id,
-                linkedId,
-                replacedByDocumentDto.DocumentType ?? string.Empty);
+            // Navigation logic (UNCHANGED)
+            if (continueToDocumentType && replacedByDocumentDto.LinkedDocumentId == null)
+            {
+                return reviewAnswers
+                    ? RedirectAfterSubmit(viewModel)
+                    : RedirectToAction(nameof(SupersedeDocumentType), new
+                    {
+                        documentTypeId = viewModel.MetaDataDocumentTypeId,
+                        projectRecordId = viewModel.ProjectRecordId,
+                        currentDocumentId = viewModel.DocumentId
+                    });
+            }
+
+            if (continueToLinkDocument && replacedByDocumentDto.LinkedDocumentId == null)
+            {
+                return reviewAnswers
+                    ? RedirectAfterSubmit(viewModel)
+                    : RedirectToAction(nameof(SupersedeLinkDocument), new
+                    {
+                        documentTypeId = viewModel.MetaDataDocumentTypeId,
+                        projectRecordId = viewModel.ProjectRecordId,
+                        currentDocumentId = viewModel.DocumentId
+                    });
+            }
+
+            return saveForLater
+                ? RedirectToSaveForLater()
+                : RedirectAfterSubmit(viewModel);
         }
 
-        // Navigation logic (UNCHANGED)
-        if (continueToDocumentType && replacedByDocumentDto.LinkedDocumentId == null)
-        {
-            return reviewAnswers
-                ? RedirectAfterSubmit(viewModel)
-                : RedirectToAction(nameof(SupersedeDocumentType), new
-                {
-                    documentTypeId = viewModel.MetaDataDocumentTypeId,
-                    projectRecordId = viewModel.ProjectRecordId,
-                    currentDocumentId = viewModel.DocumentId
-                });
-        }
-
-        if (continueToLinkDocument && replacedByDocumentDto.LinkedDocumentId == null)
-        {
-            return reviewAnswers
-                ? RedirectAfterSubmit(viewModel)
-                : RedirectToAction(nameof(SupersedeLinkDocument), new
-                {
-                    documentTypeId = viewModel.MetaDataDocumentTypeId,
-                    projectRecordId = viewModel.ProjectRecordId,
-                    currentDocumentId = viewModel.DocumentId
-                });
-        }
-
-        return saveForLater
-            ? RedirectToSaveForLater()
-            : RedirectAfterSubmit(viewModel);
-    }
 
     private async Task SaveLinkedDocumentAnswers
     (
