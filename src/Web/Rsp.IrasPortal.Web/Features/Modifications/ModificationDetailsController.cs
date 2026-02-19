@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
@@ -18,7 +19,8 @@ public class ModificationDetailsController
     IRespondentService respondentService,
     ICmsQuestionsetService cmsQuestionsetService,
     IModificationRankingService modificationRankingService,
-    IValidator<QuestionnaireViewModel> validator
+    IValidator<QuestionnaireViewModel> validator,
+    IFeatureManager featureManager
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator)
 {
     /// <summary>
@@ -52,7 +54,11 @@ public class ModificationDetailsController
         {
             return result;
         }
-
+        //Allow applicant to enter the request revisions description when sponser sent for the request revisions
+        if (await featureManager.IsEnabledAsync(FeatureFlags.RequestRevisions) && modification?.Status is ModificationStatus.RequestRevisions)
+        {
+            return RedirectToAction(nameof(RequestForRevision), modification);
+        }
         // validate and update the status and answers for the change
         modification.ModificationChanges = await UpdateModificationChanges(projectRecordId, modification.ModificationChanges);
 
@@ -64,6 +70,13 @@ public class ModificationDetailsController
 
         // Render the details view
         return View(modification);
+    }
+
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Review)]
+    [HttpGet]
+    public IActionResult RequestForRevision(ModificationDetailsViewModel model)
+    {
+        return View("RequestForRevision", model);
     }
 
     [Authorize(Policy = Permissions.MyResearch.Modifications_Read)]

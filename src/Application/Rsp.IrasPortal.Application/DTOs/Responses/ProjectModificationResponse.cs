@@ -97,4 +97,14 @@ public record ProjectModificationResponse
     public DateTime? SentToSponsorDate { get; set; }
 
     public DateTime? SentToRegulatorDate { get; set; }
+
+    /// <summary>
+    /// This contains the request revision description by the sponsor
+    /// </summary>
+    public string? RevisionDescription { get; set; }
+
+    /// <summary>
+    /// The response of the revision made by applicant stored here
+    /// </summary>
+    public string? ApplicantRevisionResponse { get; set; }
 }

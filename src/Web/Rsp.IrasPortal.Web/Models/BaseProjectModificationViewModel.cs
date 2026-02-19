@@ -61,4 +61,9 @@ public class BaseProjectModificationViewModel
     /// Gets or sets the created date of the Modification
     /// </summary>
     public string DateCreated { get; set; } = null!;
+
+    /// <summary>
+    /// The response of the applicant stored here
+    /// </summary>
+    public string? ApplicantRevisionResponse { get; set; }
 }

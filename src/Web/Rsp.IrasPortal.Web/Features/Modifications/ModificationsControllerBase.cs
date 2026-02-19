@@ -76,7 +76,9 @@ public abstract class ModificationsControllerBase
             ReviewType = modification.ReviewType ?? Ranking.NotAvailable,
             DateCreated = DateHelper.ConvertDateToString(modification.CreatedDate),
             ReasonNotApproved = modification?.ReasonNotApproved ?? string.Empty,
-            ReviewerComments = modification?.ReviewerComments
+            ReviewerComments = modification?.ReviewerComments,
+            RevisionDescription = modification?.RevisionDescription ?? string.Empty,
+            ApplicantRevisionResponse = modification?.ApplicantRevisionResponse ?? string.Empty
         });
     }
 
