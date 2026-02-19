@@ -88,4 +88,5 @@ public struct TempDataKeys
     public const string RevisionSponsorOrganisationUserId = "td:revision_sponsor_organisation_user_id";
     public const string RevisionRtsId = "td:revision_rts_id";
     public const string ValidationSummaryError = "td:validation_summary_error";
+    public const string RevisionDescription = "td:revision_description";
 }

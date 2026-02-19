@@ -94,6 +94,12 @@ public class ModificationDetailsController
             modification.SponsorOrganisationUserId = sponsorOrganisationUserId.Value.ToString();
             modification.RtsId = rtsId;
 
+            var revisionDescription = TempData[TempDataKeys.RevisionDescription];
+            if (!string.IsNullOrEmpty(revisionDescription?.ToString()))
+            {
+                modification.RevisionDescription = revisionDescription.ToString();
+            }
+
             var sponsorDetailsQuestionsResponse = await cmsQuestionsetService.GetModificationQuestionSet(SponsorDetailsSectionId);
 
             // get the responent answers for the sponsor details

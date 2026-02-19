@@ -555,6 +555,7 @@ public class AuthorisationsModificationsController
 
                 TempData.Remove(TempDataKeys.ModelState);
                 TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
+                TempData[TempDataKeys.RevisionDescription] = model.RevisionDescription;
 
                 return RedirectToRoute("pmc:ModificationDetails", new
                 {
