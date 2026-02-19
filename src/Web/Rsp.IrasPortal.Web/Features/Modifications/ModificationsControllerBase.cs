@@ -87,6 +87,9 @@ public abstract class ModificationsControllerBase
             RevisionDescription = modification?.RevisionDescription ?? string.Empty,
             ApplicantRevisionResponse = modification?.ApplicantRevisionResponse ?? string.Empty
             ReviewerComments = modification?.ReviewerComments,
+            RevisionDescription = modification?.RevisionDescription ?? string.Empty,
+            ApplicantRevisionResponse = modification?.ApplicantRevisionResponse ?? string.Empty
+            ReviewerComments = modification?.ReviewerComments,
             RequestForInformationReasons = modificationReviewResponse.Content?.RequestForInformationReasons ?? []
         });
     }
