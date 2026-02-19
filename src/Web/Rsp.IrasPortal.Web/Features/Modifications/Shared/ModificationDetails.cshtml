@@ -15,7 +15,7 @@
 
     var isAuthoriser = TempData[TempDataKeys.IsAuthoriser] as bool? ?? false;
     var isRevisionBySponsor = false;
-   
+
     <authorized permission="@Permissions.Sponsor.Modifications_Authorise"
                 status-for="Status"
                 status-is="@ModificationStatus.ReviseAndAuthorise">
@@ -23,7 +23,7 @@
             isRevisionBySponsor = isAuthoriser;
             ViewBag.Title = "Revise and authorise";
             ViewBag.IsRevisionBySponsor = true;
-        }         
+        }
     </authorized>
 }
 
@@ -246,7 +246,7 @@
             <div class="govuk-grid-column-two-thirds">
                 <h1 class="govuk-heading-m">
                     @Html.Raw(headline?.Value)
-                </h1>                
+                </h1>
             </div>
         </div>
 
@@ -277,20 +277,20 @@
                              aria-hidden="true"
                              class="govuk-hint govuk-character-count__message">
                         </div>
-                    </div>   
+                    </div>
 
-                    <input type="hidden" name="ProjectRecordId" value="@Model.ProjectRecordId" />                    
+                    <input type="hidden" name="ProjectRecordId" value="@Model.ProjectRecordId" />
                     <input type="hidden" name="ModificationId" value="@Model.ModificationId" />
-                    <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" /> 
+                    <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
                     <input type="hidden" name="ShortTitle" value="@Model.ShortTitle" />
-                    <input type="hidden" name="IrasId" value="@Model.IrasId" />   
+                    <input type="hidden" name="IrasId" value="@Model.IrasId" />
                     <input type="hidden" name="RtsId" value="@Model.RtsId" />
-                    
+
                     <div class="save-buttons">
                         <button type="submit" class="govuk-button" data-module="govuk-button">
                             Authorise
-                        </button>                    
-                    
+                        </button>
+
                         <button type="submit"
                                 name="isSaveForLater"
                                 value="true"
@@ -301,5 +301,5 @@
                 </div>
             </div>
         </form>
-    }       
+    }
 </authorized>
