@@ -1,0 +1,82 @@
+﻿@using Rsp.Portal.Web.Features.Modifications.Models
+@model ReviewOutcomeViewModel
+@{
+    ViewBag.Title = "Request for further information";
+}
+
+<partial name="_BackNavigation" 
+model="@("pmc:reviewoutcome", "Back", new Dictionary<string, string>())" />
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
+    </div>
+</div>
+
+<partial name="_ReviewModification" model="@Model.ModificationDetails" />
+
+<form method="post" asp-action="RequestForFurtherInformation">
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <h2 class="govuk-heading-m">Request for further information from the applicant</h2>
+            <p class="govuk-hint">Enter the reason for the request and details of what information you need the applicant to provide. If you have more than one reason, select 'Add another reason’.</p>
+
+            <div class="govuk-form-group govuk-character-count" data-module="govuk-character-count" data-maxlength="300">
+                <label class="govuk-label" for="RequestForInformationReasons_0_">
+                    Reason 1
+                </label>
+                <textarea asp-for="RequestForInformationReasons[0]"
+                    class="govuk-textarea govuk-js-character-count"
+                    rows="5"
+                    aria-describedby="RequestForInformationReasons_0_-info">
+                </textarea>
+                <div id="RequestForInformationReasons_0_-info" class="govuk-hint govuk-character-count__message"></div>
+            </div>
+
+            @for (var i = 1; i < Model.RequestForInformationReasons.Count; i++)
+            {
+                <div class="govuk-form-group govuk-character-count" data-module="govuk-character-count" data-maxlength="300">
+                    <div class="govuk-grid-row">
+                        <div class="govuk-grid-column-two-thirds">
+                            <label class="govuk-label" for="RequestForInformationReasons_@(i)_">
+                                Reason @(i + 1)
+                            </label>
+                        </div>
+                        <div class="govuk-grid-column-one-third text-align-end">
+                            <button 
+                                type="submit"
+                                asp-action="RemoveRfiReason" 
+                                asp-route-index="@i"
+                                class="govuk-link-button">
+                                    Remove
+                                <span class="govuk-visually-hidden"> reason @(i + 1)</span> 
+                            </button>
+                        </div>
+                    </div>
+                    <textarea asp-for="RequestForInformationReasons[i]"
+                        class="govuk-textarea govuk-js-character-count"
+                        rows="5"
+                        aria-describedby="RequestForInformationReasons_@(i)_-info">
+                    </textarea>
+                    <div id="RequestForInformationReasons_@(i)_-info" class="govuk-hint govuk-character-count__message"></div>
+                </div>
+            }
+
+            @if (Model.RequestForInformationReasons.Count < 20)
+            {
+                <button type="submit" asp-action="AddRfiReason" class="govuk-button govuk-button--secondary">
+                    Add another reason
+                </button>
+            }
+
+            <div class="save-buttons">
+                <button type="submit" class="govuk-button" data-module="govuk-button">
+                    Save and continue
+                </button>
+                <button asp-route-saveForLater="true" type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+                    Save for later
+                </button>
+            </div>
+        </div>
+    </div>
+</form>

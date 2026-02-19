@@ -1,0 +1,27 @@
+﻿@using Rsp.Portal.Web.Features.Modifications.Models
+@model ModificationDetailsViewModel
+
+@foreach (var reason in Model.RequestForInformationReasons)
+{
+    <div class="govuk-summary-card">
+        <div class="govuk-summary-card__title-wrapper">
+            <h2 class="govuk-summary-card__title">
+                Request for further information
+            </h2>
+        </div>
+        <div class="govuk-summary-card__content">
+            <div class="govuk-summary-card__content">
+                <dl class="govuk-summary-list">
+                    <div class="govuk-summary-list__row">
+                        <dt class="govuk-summary-list__key">
+                            Reason @(Model.RequestForInformationReasons.IndexOf(reason) + 1)
+                        </dt>
+                        <dd class="govuk-summary-list__value">
+                            @reason
+                        </dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
+    </div>
+}

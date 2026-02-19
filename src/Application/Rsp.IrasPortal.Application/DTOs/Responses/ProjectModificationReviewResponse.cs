@@ -7,4 +7,5 @@ public record ProjectModificationReviewResponse
     public string? Comment { get; set; }
     public string? ReasonNotApproved { get; set; }
     public string? RevisionDescription { get; set; }
+    public List<string> RequestForInformationReasons { get; set; } = [];
 }

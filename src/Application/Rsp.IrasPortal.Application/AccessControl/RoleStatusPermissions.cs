@@ -105,7 +105,8 @@ public static class RoleStatusPermissions
                     ModificationStatus.WithReviewBody,
                     ModificationStatus.Approved,
                     ModificationStatus.NotAuthorised,
-                    ModificationStatus.NotApproved
+                    ModificationStatus.NotApproved,
+                    ModificationStatus.RequestForInformation
                 }
             },
             {
@@ -116,7 +117,8 @@ public static class RoleStatusPermissions
                     ModificationStatus.WithReviewBody,
                     ModificationStatus.Approved,
                     ModificationStatus.NotAuthorised,
-                    ModificationStatus.NotApproved
+                    ModificationStatus.NotApproved,
+                    ModificationStatus.RequestForInformation
                 }
             },
             {
@@ -127,7 +129,8 @@ public static class RoleStatusPermissions
                     ModificationStatus.WithReviewBody,
                     ModificationStatus.Approved,
                     ModificationStatus.NotAuthorised,
-                    ModificationStatus.NotApproved
+                    ModificationStatus.NotApproved,
+                    ModificationStatus.RequestForInformation
                 }
             },
             {
@@ -137,7 +140,8 @@ public static class RoleStatusPermissions
                     ModificationStatus.Approved,
                     ModificationStatus.NotApproved,
                     ModificationStatus.Received,
-                    ModificationStatus.ReviewInProgress
+                    ModificationStatus.ReviewInProgress,
+                    ModificationStatus.RequestForInformation
                 }
             },
             {
@@ -147,7 +151,8 @@ public static class RoleStatusPermissions
                     ModificationStatus.Approved,
                     ModificationStatus.NotApproved,
                     ModificationStatus.Received,
-                    ModificationStatus.ReviewInProgress
+                    ModificationStatus.ReviewInProgress,
+                    ModificationStatus.RequestForInformation
                 }
             },
             {
@@ -157,7 +162,8 @@ public static class RoleStatusPermissions
                     ModificationStatus.Approved,
                     ModificationStatus.NotApproved,
                     ModificationStatus.ReviewInProgress,
-                    ModificationStatus.Received
+                    ModificationStatus.Received,
+                    ModificationStatus.RequestForInformation
                 }
             }
         };

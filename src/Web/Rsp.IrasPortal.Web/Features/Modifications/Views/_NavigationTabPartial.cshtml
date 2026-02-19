@@ -58,7 +58,8 @@
         ModificationOverview.ModificationDetails,
         ModificationOverview.Documents,
         ModificationOverview.History,
-        ModificationOverview.Comments
+        ModificationOverview.Comments,
+        ModificationOverview.RequestForFurtherInformation
     };
 
     var activeTabId = (allowedTabs.Contains(requestedTab) ? requestedTab : defaultTab);
@@ -125,6 +126,16 @@
                             </a>
                         </li>
                     }
+
+                    <li status-for="@Model!.Status" status-is="@ModificationStatus.RequestForInformation" class="govuk-service-navigation__item small-margin @(activeTabId == ModificationOverview.RequestForFurtherInformation ? "govuk-service-navigation__item--active" : "")">
+                        <a class="govuk-service-navigation__link"
+                           asp-route=""
+                           asp-all-route-data="baseRouteParams"
+                           asp-route-activeTabId="@ModificationOverview.RequestForFurtherInformation"
+                           data-tab="@ModificationOverview.RequestForFurtherInformation">
+                            @ModificationOverview.RequestForFurtherInformation
+                        </a>
+                    </li>
                 </ul>
             </nav>
         </div>
@@ -152,6 +163,9 @@
             {
                 <partial name="ReviewerComments" model="Model" viewData="ViewData" />
             }
+            break;
+        case ModificationOverview.RequestForFurtherInformation:
+            <partial name="RequestForInformation" model="Model" viewData="ViewData" />
             break;
     }
 </div>
