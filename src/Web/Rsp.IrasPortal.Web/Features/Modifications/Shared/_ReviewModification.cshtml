@@ -7,20 +7,27 @@
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
 
-        @if (Model.Status != ModificationStatus.InDraft)
-        {
-            <h1 class="govuk-heading-l">Modification</h1>
+        @{
+            var heading = Model.Status switch
+            {
+                ModificationStatus.InDraft => "Review all changes",
+                ModificationStatus.RequestRevisions => "Make revisions",
+                _ => "Modification"
+            };
         }
-        else
-        {
-            <h1 class="govuk-heading-l">Review all changes</h1>
-        }
+        <h1 class="govuk-heading-l">@heading</h1>
 
         @{
             <partial name="_ProjectModificationSummary" model="Model" viewData="ViewData" />
         }
 
-        <h2 class="govuk-heading-m">Overall modification ranking</h2>
+        @{
+            var subHeading = Model.Status == ModificationStatus.RequestRevisions
+                ? "Summary details"
+                : "Overall modification ranking";
+        }
+        <h2 class="govuk-heading-m">@subHeading</h2>
+
         <div class="govuk-summary-card">
             <div class="govuk-summary-card__title-wrapper">
                 <h2 class="govuk-summary-card__title">
@@ -45,7 +52,7 @@
 </div>
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-        @if (Model.Status != ModificationStatus.InDraft)
+        @if (Model.Status != ModificationStatus.InDraft && Model.Status != ModificationStatus.RequestRevisions)
         {
             <partial name="_NavigationTabPartial" model="Model" view-data="ViewData" />
         }
@@ -57,7 +64,6 @@
             <partial name="SupportingDocuments" model="Model" view-data="ViewData" />
 
             <partial name="SponsorDetails" model="Model" view-data="ViewData" />
-        }  
-       
+        }
     </div>
 </div>

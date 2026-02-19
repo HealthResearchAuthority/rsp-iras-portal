@@ -10,7 +10,7 @@
 
 @{
 
-	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
+    ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 }
 
 @section BackNavigation {
@@ -112,7 +112,7 @@
         }
 
         <div class="save-buttons">
-            @if (Model.Status is ModificationStatus.InDraft && Model.ModificationChanges.Count < 10)
+            @if (Model.Status is ModificationStatus.InDraft || Model.Status is ModificationStatus.RequestRevisions && Model.ModificationChanges.Count < 10)
             {
                 <a asp-route="pmc:areaofchange" asp-route-projectModificationId="@Model.ModificationId" class="govuk-button govuk-button--secondary">
                     Add another change to this modification
