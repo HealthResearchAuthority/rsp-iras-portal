@@ -30,7 +30,8 @@ public class ReviewAllChangesController
     IProjectModificationsService projectModificationsService,
     ICmsQuestionsetService cmsQuestionsetService,
     IRespondentService respondentService,
-    IValidator<QuestionnaireViewModel> validator
+    IValidator<QuestionnaireViewModel> validator,
+    IFeatureManager featureManager
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator)
 {
     private const string DocumentDetailsSection = "pdm-document-metadata";
@@ -497,7 +498,6 @@ public class ReviewAllChangesController
             ModificationStatus.Withdrawn,
             onSuccess: () => View(model));
     }
-
 
     private async Task<IActionResult> HandleModificationStatusUpdate(
         string projectRecordId,

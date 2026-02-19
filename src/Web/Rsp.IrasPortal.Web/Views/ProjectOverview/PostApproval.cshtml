@@ -331,7 +331,7 @@ else
                         <tbody class="govuk-table__body govuk-body-s">
                             @{
                                 foreach (var modification in Model.Modifications)
-                                {                                    
+                                {
                                     var modificationParams = new Dictionary<string, string> {
                                         { "projectRecordId", Model.ProjectOverviewModel.ProjectRecordId },
                                         { "irasId", Model.ProjectOverviewModel.IrasId?.ToString()  },
@@ -341,7 +341,7 @@ else
 
                                     var modificationReviewRoute = "pmc:modificationdetails";
 
-                                    if (modification.Status != ModificationStatus.InDraft)
+                                    if (modification.Status != ModificationStatus.InDraft && modification.Status != ModificationStatus.RequestRevisions)
                                     {
                                         modificationReviewRoute = "pmc:reviewallchanges";
                                     }
@@ -360,7 +360,8 @@ else
                                         <td class="govuk-table__cell">@modification.ReviewType</td>
                                         <td class="govuk-table__cell">@modification.Category</td>
                                         @{
-                                            <td class="govuk-table__cell">@modification.SentToRegulatorDate?.ToString("dd MMM yyyy")</td>                                            
+                                            <td class="govuk-table__cell">@modification.SentToRegulatorDate?.ToString("dd MMM yyyy")</td>
+
                                         }
                                         
                                         @{

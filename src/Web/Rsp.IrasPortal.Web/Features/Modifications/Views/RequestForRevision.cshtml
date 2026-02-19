@@ -1,0 +1,56 @@
+﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@using Rsp.Portal.Web.Features.Modifications.Models
+@model Rsp.Portal.Web.Features.Modifications.Models.ModificationDetailsViewModel
+@{
+    ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData ?? new Dictionary<string, MixedContentPageItem?>();
+    var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty;
+    var title = pageContent.GetValueOrDefault("Modifications.RequestForRevision.Title", null);
+    var requestRevisionHeadline = pageContent.GetValueOrDefault("Modifications.RequestForRevision.RequestRevisionHeadline", null);
+    var nextStepsTitle = pageContent.GetValueOrDefault("Modifications.RequestForRevision.NextStepsTitle", null);
+    var nextStepsDescription = pageContent.GetValueOrDefault("Modifications.RequestForRevision.NextStepsDescription", null);
+
+    var backNavigation = ("pov:postapproval", "Back", new Dictionary<string, string>{
+            { "projectRecordId", projectRecordId }});
+
+}
+@section BackNavigation {
+    <partial name="_BackNavigation" model="backNavigation" />
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">
+            @Html.Raw(title?.Value)
+        </h1>
+        <partial name="~/Features/Modifications/Shared/_ProjectModificationSummary.cshtml"
+                 model="Model"
+                 view-data="ViewData" />
+    </div>
+</div>
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <strong> @Html.Raw(requestRevisionHeadline?.Value)</strong>
+        <p class="govuk-body">@Model.RevisionDescription</p>
+    </div>
+</div>
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <div class="govuk-heading-m">
+            <strong> @Html.Raw(nextStepsTitle?.Value)</strong>
+        </div>
+        <div class="govuk-body">
+            @Html.Raw(nextStepsDescription?.Value)
+        </div>
+        <a asp-route="pmc:reviewallchanges"
+           asp-route-projectRecordId="@Model.ProjectRecordId"
+           asp-route-irasId="@Model.IrasId"
+           asp-route-projectModificationId="@Model.ModificationId"
+           asp-route-shortTitle="@Model.ShortTitle"
+           class="govuk-button">
+            Continue
+        </a>
+    </div>
+</div>

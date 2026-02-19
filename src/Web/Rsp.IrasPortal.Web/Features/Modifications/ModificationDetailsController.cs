@@ -154,6 +154,13 @@ public class ModificationDetailsController
         return View(modification);
     }
 
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Review)]
+    [HttpGet]
+    public IActionResult RequestForRevision(ModificationDetailsViewModel model)
+    {
+        return View("RequestForRevision", model);
+    }
+
     [Authorize(Policy = Permissions.MyResearch.Modifications_Read)]
     [HttpGet]
     public IActionResult UnfinishedChanges()
