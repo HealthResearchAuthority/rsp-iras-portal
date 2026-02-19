@@ -179,6 +179,18 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
                 }
             });
 
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationReviewResponses("PR1", It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationReviewResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectModificationReviewResponse
+                {
+                    ModificationId = modId,
+                    RequestForInformationReasons = []
+                }
+            });
+
         // changes
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.GetModificationChanges("PR1", modId))
@@ -490,6 +502,18 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
         Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
             .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), default))
             .ReturnsAsync(new ValidationResult());
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationReviewResponses("PR1", It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationReviewResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectModificationReviewResponse
+                {
+                    ModificationId = modId,
+                    RequestForInformationReasons = []
+                }
+            });
 
         // Act
         var result = await Sut.ModificationDetails("PR1", "IRAS", "Short", modId, sponsorUserId, rtsId);
