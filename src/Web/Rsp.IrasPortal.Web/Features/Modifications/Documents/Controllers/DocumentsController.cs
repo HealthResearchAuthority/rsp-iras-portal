@@ -914,67 +914,66 @@ public class DocumentsController
                     });
                 }
             }
-
-            // Update the document being replaced (if exists)
-            await AppendReplacesDocumentIfExists
-                (
-                    replacedByDocumentDto,
-                    projectModificationDocumentRequest,
-                    userId
-                );
-
-            // Update linked document (if exists)
-            await AppendLinkedDocumentIfExists
-                (
+        }
+        // Update the document being replaced (if exists)
+        await AppendReplacesDocumentIfExists
+            (
                 replacedByDocumentDto,
-                replacedByDocumentResponse,
                 projectModificationDocumentRequest,
                 userId
-                );
+            );
 
-            await respondentService.SaveModificationDocuments(projectModificationDocumentRequest);
+        // Update linked document (if exists)
+        await AppendLinkedDocumentIfExists
+            (
+            replacedByDocumentDto,
+            replacedByDocumentResponse,
+            projectModificationDocumentRequest,
+            userId
+            );
 
-            // Sync metadata answers if linking document
-            if (linkDocument &&
-                replacedByDocumentDto.LinkedDocumentId is Guid linkedId &&
-                linkedId != Guid.Empty)
-            {
-                await SyncLinkedDocumentAnswers(
-                    replacedByDocumentDto.Id,
-                    linkedId,
-                    replacedByDocumentDto.DocumentType ?? string.Empty);
-            }
+        await respondentService.SaveModificationDocuments(projectModificationDocumentRequest);
 
-            // Navigation logic (UNCHANGED)
-            if (continueToDocumentType && replacedByDocumentDto.LinkedDocumentId == null)
-            {
-                return reviewAnswers
-                    ? RedirectAfterSubmit(viewModel)
-                    : RedirectToAction(nameof(SupersedeDocumentType), new
-                    {
-                        documentTypeId = viewModel.MetaDataDocumentTypeId,
-                        projectRecordId = viewModel.ProjectRecordId,
-                        currentDocumentId = viewModel.DocumentId
-                    });
-            }
-
-            if (continueToLinkDocument && replacedByDocumentDto.LinkedDocumentId == null)
-            {
-                return reviewAnswers
-                    ? RedirectAfterSubmit(viewModel)
-                    : RedirectToAction(nameof(SupersedeLinkDocument), new
-                    {
-                        documentTypeId = viewModel.MetaDataDocumentTypeId,
-                        projectRecordId = viewModel.ProjectRecordId,
-                        currentDocumentId = viewModel.DocumentId
-                    });
-            }
-
-            return saveForLater
-                ? RedirectToSaveForLater()
-                : RedirectAfterSubmit(viewModel);
+        // Sync metadata answers if linking document
+        if (linkDocument &&
+            replacedByDocumentDto.LinkedDocumentId is Guid linkedId &&
+            linkedId != Guid.Empty)
+        {
+            await SyncLinkedDocumentAnswers(
+                replacedByDocumentDto.Id,
+                linkedId,
+                replacedByDocumentDto.DocumentType ?? string.Empty);
         }
 
+        // Navigation logic (UNCHANGED)
+        if (continueToDocumentType && replacedByDocumentDto.LinkedDocumentId == null)
+        {
+            return reviewAnswers
+                ? RedirectAfterSubmit(viewModel)
+                : RedirectToAction(nameof(SupersedeDocumentType), new
+                {
+                    documentTypeId = viewModel.MetaDataDocumentTypeId,
+                    projectRecordId = viewModel.ProjectRecordId,
+                    currentDocumentId = viewModel.DocumentId
+                });
+        }
+
+        if (continueToLinkDocument && replacedByDocumentDto.LinkedDocumentId == null)
+        {
+            return reviewAnswers
+                ? RedirectAfterSubmit(viewModel)
+                : RedirectToAction(nameof(SupersedeLinkDocument), new
+                {
+                    documentTypeId = viewModel.MetaDataDocumentTypeId,
+                    projectRecordId = viewModel.ProjectRecordId,
+                    currentDocumentId = viewModel.DocumentId
+                });
+        }
+
+        return saveForLater
+            ? RedirectToSaveForLater()
+            : RedirectAfterSubmit(viewModel);
+    }
 
     private async Task SaveLinkedDocumentAnswers
     (
@@ -1351,6 +1350,18 @@ public class DocumentsController
     {
         var request = new List<ProjectModificationDocumentAnswerDto>();
 
+        request = GetModificationDocumentAnswerDtos(viewModel);
+
+        // Save responses only if there is at least one answer
+        if (request.Count > 0)
+        {
+            await respondentService.SaveModificationDocumentAnswers(request);
+        }
+    }
+
+    private List<ProjectModificationDocumentAnswerDto> GetModificationDocumentAnswerDtos(ModificationAddDocumentDetailsViewModel viewModel)
+    {
+        var answerDtos = new List<ProjectModificationDocumentAnswerDto>();
         foreach (var question in viewModel.Questions)
         {
             // Determine if question expects a single or multiple responses
@@ -1361,8 +1372,7 @@ public class DocumentsController
                 _ => null
             };
 
-            // Map question responses into DTO
-            request.Add(new ProjectModificationDocumentAnswerDto
+            var answerDto = new ProjectModificationDocumentAnswerDto
             {
                 Id = question.Id,
                 ModificationDocumentId = viewModel.DocumentId,
@@ -1377,14 +1387,11 @@ public class DocumentsController
                                 .Where(a => a.IsSelected)
                                 .Select(ans => ans.AnswerId)
                                 .ToList()
-            });
+            };
+            answerDtos.Add(answerDto);
         }
 
-        // Save responses only if there is at least one answer
-        if (request.Count > 0)
-        {
-            await respondentService.SaveModificationDocumentAnswers(request);
-        }
+        return answerDtos;
     }
 
     /// <summary>
@@ -1914,8 +1921,10 @@ public class DocumentsController
                 ? linkedAnswersResponse.Content ?? []
                 : [];
 
+            var newDocumentAnswers = GetModificationDocumentAnswerDtos(viewModel);
+
             await SaveLinkedDocumentAnswers(
-                currentAnswers,
+                newDocumentAnswers,
                 existingLinkedAnswers,
                 viewModel.DocumentType ?? string.Empty,
                 viewModel.LinkedDocumentId.Value);
