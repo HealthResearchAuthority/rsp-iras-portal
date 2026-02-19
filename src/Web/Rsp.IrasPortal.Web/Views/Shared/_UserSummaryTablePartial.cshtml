@@ -12,8 +12,6 @@
             ? JsonSerializer.Deserialize<SponsorOrganisationAddUserModel>(json)
             : null;
 
-    var editRoleAndAuthorizer = ViewData["EditRoleAndAuthorizer"] is true;
-
 }
 
 <input type="hidden" asp-for="Status" name="Status" value="@(Model.Status ?? string.Empty)" />
@@ -315,12 +313,15 @@
                 </button>
             }
         }
-        else if (editRoleAndAuthorizer && (fieldName is "user role" or "authoriser"))
+        else if (fieldName is "user role" or "authoriser")
         {
-            <a class="govuk-link" asp-route="soc:editsponsororganisationuser" asp-route-userId="@sponsorOrgUser.UserId"
-               asp-route-rtsId="@sponsorOrgUser.RtsId">
-                Change<span class="govuk-visually-hidden">@fieldName</span>
-            </a>
+            <authorized role-is="@Roles.SystemAdministrator">
+                <a class="govuk-link" asp-route="soc:editsponsororganisationuser" asp-route-userId="@sponsorOrgUser.UserId"
+                   asp-route-rtsId="@sponsorOrgUser.RtsId">
+                    Change<span class="govuk-visually-hidden">@fieldName</span>
+                </a>
+            </authorized>
+            
         }
     }
 }

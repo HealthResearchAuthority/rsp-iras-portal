@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using FluentValidation;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +23,8 @@ namespace Rsp.Portal.Web.Controllers;
 public class SponsorOrganisationsController(
     ISponsorOrganisationService sponsorOrganisationService,
     IRtsService rtsService,
-    IUserManagementService userService
+    IUserManagementService userService,
+    IValidator<SponsorOrganisationUserModel> sponsorUserValidator
 ) : Controller
 {
     /// <summary>
@@ -529,23 +531,24 @@ public class SponsorOrganisationsController(
         TempData[TempDataKeys.ShowEditLink] = false;
         TempData[TempDataKeys.SponsorOrganisationUser] = JsonSerializer.Serialize(model.SponsorOrganisationUser);
 
-        bool isAdmin = User.IsInRole(Roles.SystemAdministrator);
-
         // Auto-set type based on whether the user is being added or edited
         ViewBag.Type = addUser ? "add" : "edit";
-        ViewBag.IsUserAdmin = isAdmin;
 
         return View(model);
     }
 
     [HttpGet]
     [Route("/sponsororganisations/edituser", Name = "soc:editsponsororganisationuser")]
-    public async Task<IActionResult> EditSponsorOrganisationUser(string rtsId, Guid userId)
+    public async Task<IActionResult> EditSponsorOrganisationUser(SponsorOrganisationUserModel? model, string? rtsId = null, Guid? userId = null)
     {
-        if (TempData["AuthorizerValidationError"] is string key) ModelState.AddModelError("IsAuthoriser", key);
+        if (model?.SponsorOrganisationUser is not null)
+        {
+            return View(model);
+        }
 
-        var model = await BuildSponsorOrganisationUserModel(rtsId, userId);
-        return View(model);
+        var builtModel = await BuildSponsorOrganisationUserModel(rtsId, (Guid)userId);
+
+        return View(builtModel);
     }
 
     [HttpPost]
@@ -553,15 +556,23 @@ public class SponsorOrganisationsController(
     [Route("/sponsororganisations/edituser/submit", Name = "soc:submiteditsponsororganisationuser")]
     public async Task<IActionResult> SubmitEditSponsorOrganisationUser(SponsorOrganisationUserModel model)
     {
+        var builtModel = await BuildSponsorOrganisationUserModel(model.SponsorOrganisationUser.RtsId, model.SponsorOrganisationUser.UserId);
+
         // RSP-6809 requires Error message when both are true: Role = Organisation Administrator &&
         // Authorizer = No
-        if (model.SponsorOrganisationUser.SponsorRole == Roles.OrganisationAdministrator
-            && !model.SponsorOrganisationUser.IsAuthoriser)
+
+        var validationResult = await sponsorUserValidator.ValidateAsync(model);
+        if (!validationResult.IsValid)
         {
-            TempData["AuthorizerValidationError"] =
-                "Select 'Yes' for the Authoriser if the user has the Organisation Administrator role.";
-            return RedirectToAction(nameof(EditSponsorOrganisationUser),
-                new { userId = model.SponsorOrganisationUser.UserId, rtsId = model.SponsorOrganisationUser.RtsId });
+            model.User = builtModel.User;
+            model.SponsorOrganisation = builtModel.SponsorOrganisation;
+
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
+
+            return View(nameof(EditSponsorOrganisationUser), model);
         }
 
         // RSP-6809 requires strict binding Authorizer = Yes if user is Organisation Administrator
@@ -584,7 +595,7 @@ public class SponsorOrganisationsController(
         }
 
         // Update roles
-        var (roleToRemove, roleToAdd) = MapSponsorRoles(model.SponsorOrganisationUser.SponsorRole);
+        var (roleToRemove, roleToAdd) = SponsorOrganisationUsersHelper.MapSponsorRoles(model.SponsorOrganisationUser.SponsorRole);
         var userRolesUpdateResponse = await userService.UpdateRoles(model.SponsorOrganisationUser.Email!, roleToRemove, roleToAdd);
         if (!userRolesUpdateResponse.IsSuccessStatusCode)
         {
@@ -592,6 +603,7 @@ public class SponsorOrganisationsController(
         }
 
         TempData[TempDataKeys.ShowNotificationBanner] = true;
+
         return RedirectToAction(nameof(ViewSponsorOrganisationUser), new { userId = model.SponsorOrganisationUser.UserId, rtsId = model.SponsorOrganisationUser.RtsId });
     }
 
@@ -877,19 +889,5 @@ public class SponsorOrganisationsController(
         }
 
         return null;
-    }
-
-    [NonAction]
-    private static (string? RoleToRemove, string RoleToAdd) MapSponsorRoles(string? selectedRole)
-    {
-        var roleToAdd = string.Equals(selectedRole, Roles.OrganisationAdministrator, StringComparison.OrdinalIgnoreCase)
-            ? Roles.OrganisationAdministrator
-            : Roles.Sponsor;
-
-        var roleToRemove = roleToAdd == Roles.OrganisationAdministrator
-            ? Roles.Sponsor
-            : Roles.OrganisationAdministrator;
-
-        return (roleToRemove, roleToAdd);
     }
 }

@@ -89,7 +89,7 @@
             <input type="hidden" name="UserId" value="@Model.User.Id"/>
             <input type="hidden" name="RtsId" value="@Model.SponsorOrganisation.RtsId"/>
             <input type="hidden" name="SponsorOrganisationId" value="@Model.SponsorOrganisation.Id"/>
-            <partial name="_UserSummaryTablePartial" model="Model.User" view-data='@new ViewDataDictionary(ViewData) { { "EditRoleAndAuthorizer", ViewBag.IsUserAdmin } }' />
+            <partial name="_UserSummaryTablePartial" model="Model.User" />
 
             @if (ViewBag.Type == "add")
             {

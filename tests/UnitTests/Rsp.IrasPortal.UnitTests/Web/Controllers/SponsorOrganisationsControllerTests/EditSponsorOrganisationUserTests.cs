@@ -1,4 +1,6 @@
 ﻿using System.Security.Claims;
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -101,7 +103,7 @@ namespace Rsp.Portal.UnitTests.Web.Controllers.SponsorOrganisationsControllerTes
             StubBuildModelPipeline(rtsId, userGuid, sponsorOrganisationUserDto);
 
             // Act
-            var result = await Sut.EditSponsorOrganisationUser(rtsId, userGuid);
+            var result = await Sut.EditSponsorOrganisationUser(null, rtsId, userGuid);
 
             // Assert
             var view = result.ShouldBeOfType<ViewResult>();
@@ -111,8 +113,7 @@ namespace Rsp.Portal.UnitTests.Web.Controllers.SponsorOrganisationsControllerTes
 
         [Theory]
         [AutoData]
-        public async Task EditSponsorOrganisationUser_Get_WithTempDataError_AddsModelStateError_AndReturnsView(
-            SponsorOrganisationUserDto sponsorOrganisationUserDto)
+        public async Task EditSponsorOrganisationUser_Get_WithTempDataError_ReturnsView_AndDoesNotAddModelStateError(SponsorOrganisationUserDto sponsorOrganisationUserDto)
         {
             // Arrange
             const string rtsId = "87765";
@@ -124,61 +125,43 @@ namespace Rsp.Portal.UnitTests.Web.Controllers.SponsorOrganisationsControllerTes
             Sut.TempData["AuthorizerValidationError"] = errorMessage;
 
             // Act
-            var result = await Sut.EditSponsorOrganisationUser(rtsId, userGuid);
+            var result = await Sut.EditSponsorOrganisationUser(null, rtsId, userGuid);
 
             // Assert
             var view = result.ShouldBeOfType<ViewResult>();
             view.Model.ShouldNotBeNull();
-            Sut.ModelState.ContainsKey("IsAuthoriser").ShouldBeTrue();
-            var error = Sut.ModelState["IsAuthoriser"]!.Errors.Single();
-            error.ErrorMessage.ShouldBe(errorMessage);
+
+            Sut.ModelState.IsValid.ShouldBeTrue();
+            Sut.ModelState.ContainsKey("IsAuthoriser").ShouldBeFalse();
         }
 
         [Theory]
         [AutoData]
-        public async Task SubmitEditSponsorOrganisationUser_Post_Rsp6809_OrgAdminAndNotAuthoriser_SetsTempDataAndRedirectsToEdit(
-                    SponsorOrganisationUserModel model)
+        public async Task SubmitEditSponsorOrganisationUser_Post_Rsp6809_OrgAdminAndNotAuthoriser_ForcesAuthoriserTrue_UpdatesProfileAndRoles_SetsBanner_AndRedirectsToView(
+            SponsorOrganisationUserModel model)
         {
             // Arrange
             _http.User = new ClaimsPrincipal(new ClaimsIdentity(
-                new[] { new System.Security.Claims.Claim(ClaimTypes.Role, Roles.SystemAdministrator) }, "TestAuth"));
+                new[] { new Claim(ClaimTypes.Role, Roles.SystemAdministrator) }, "TestAuth"));
+            Sut.ControllerContext = new ControllerContext { HttpContext = _http };
 
+            var tempDataProvider = new Mock<ITempDataProvider>();
+            Sut.TempData = new TempDataDictionary(_http, tempDataProvider.Object);
+      
             model.SponsorOrganisationUser ??= new SponsorOrganisationUserDto();
             model.SponsorOrganisationUser.RtsId = "87765";
             model.SponsorOrganisationUser.UserId = Guid.NewGuid();
             model.SponsorOrganisationUser.Email = "test.test@example.com";
             model.SponsorOrganisationUser.SponsorRole = Roles.OrganisationAdministrator;
             model.SponsorOrganisationUser.IsAuthoriser = false;
+           
+            StubBuildModelPipeline(model.SponsorOrganisationUser.RtsId, model.SponsorOrganisationUser.UserId, model.SponsorOrganisationUser);
+            
+            var validatorMock = Mocker.GetMock<IValidator<SponsorOrganisationUserModel>>();
 
-            // Act
-            var result = await Sut.SubmitEditSponsorOrganisationUser(model);
-
-            // Assert
-            var redirect = result.ShouldBeOfType<RedirectToActionResult>();
-            redirect.ActionName.ShouldBe(nameof(SponsorOrganisationsController.EditSponsorOrganisationUser));
-            redirect.RouteValues!["rtsId"].ShouldBe(model.SponsorOrganisationUser.RtsId);
-            redirect.RouteValues!["userId"].ShouldBe(model.SponsorOrganisationUser.UserId);
-
-            Sut.TempData.ContainsKey("AuthorizerValidationError").ShouldBeTrue();
-            Sut.TempData["AuthorizerValidationError"].ShouldBe(
-                "Select 'Yes' for the Authoriser if the user has the Organisation Administrator role.");
-        }
-
-        [Theory]
-        [AutoData]
-        public async Task SubmitEditSponsorOrganisationUser_Post_Success_UpdatesProfileAndRoles_SetsBanner_AndRedirectsToView(
-                    SponsorOrganisationUserModel model)
-        {
-            // Arrange
-            _http.User = new ClaimsPrincipal(new ClaimsIdentity(
-                new[] { new Claim(ClaimTypes.Role, Roles.SystemAdministrator) }, "TestAuth"));
-
-            model.SponsorOrganisationUser ??= new SponsorOrganisationUserDto();
-            model.SponsorOrganisationUser.RtsId = "87765";
-            model.SponsorOrganisationUser.UserId = Guid.NewGuid();
-            model.SponsorOrganisationUser.Email = "test.test@example.com";
-            model.SponsorOrganisationUser.SponsorRole = Roles.Sponsor;
-            model.SponsorOrganisationUser.IsAuthoriser = false;
+            validatorMock
+                .Setup(v => v.ValidateAsync(It.IsAny<SponsorOrganisationUserModel>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ValidationResult());
 
             SponsorOrganisationUserDto? passedUpdateDto = null;
             Mocker.GetMock<ISponsorOrganisationService>()
@@ -204,7 +187,6 @@ namespace Rsp.Portal.UnitTests.Web.Controllers.SponsorOrganisationsControllerTes
             var result = await Sut.SubmitEditSponsorOrganisationUser(model);
 
             // Assert
-
             var redirect = result.ShouldBeOfType<RedirectToActionResult>();
             redirect.ActionName.ShouldBe(nameof(SponsorOrganisationsController.ViewSponsorOrganisationUser));
             redirect.RouteValues!["rtsId"].ShouldBe(model.SponsorOrganisationUser.RtsId);
@@ -213,11 +195,13 @@ namespace Rsp.Portal.UnitTests.Web.Controllers.SponsorOrganisationsControllerTes
             Sut.TempData.ContainsKey(TempDataKeys.ShowNotificationBanner).ShouldBeTrue();
             ((bool)Sut.TempData[TempDataKeys.ShowNotificationBanner]!).ShouldBeTrue();
 
+            Sut.TempData.ContainsKey("AuthorizerValidationError").ShouldBeFalse();
+
             passedUpdateDto.ShouldNotBeNull();
             passedUpdateDto!.RtsId.ShouldBe(model.SponsorOrganisationUser.RtsId);
             passedUpdateDto.UserId.ShouldBe(model.SponsorOrganisationUser.UserId);
             passedUpdateDto.SponsorRole.ShouldBe(model.SponsorOrganisationUser.SponsorRole);
-            passedUpdateDto.IsAuthoriser.ShouldBe(model.SponsorOrganisationUser.IsAuthoriser);
+            passedUpdateDto.IsAuthoriser.ShouldBeTrue();
 
             Mocker.GetMock<IUserManagementService>()
                 .Verify(u => u.UpdateRoles(
@@ -226,5 +210,7 @@ namespace Rsp.Portal.UnitTests.Web.Controllers.SponsorOrganisationsControllerTes
                         It.IsAny<string>()),
                     Times.Once);
         }
+
+       
     }
 }

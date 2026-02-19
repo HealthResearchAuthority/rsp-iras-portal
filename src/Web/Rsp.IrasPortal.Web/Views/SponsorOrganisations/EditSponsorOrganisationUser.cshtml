@@ -166,20 +166,19 @@
     </form>
 </div>
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const roleAdmin = document.getElementById("role");
-        const roleSponsor = document.getElementById("role-2");
-        const authoriserYes = document.getElementById("authoriser");
+    $(document).ready(function () {
+        const roleAdmin = $("#role");
+        const roleSponsor = $("#role-2");
+        const authoriserYes = $("#authoriser");
 
         function updateAuthoriserState() {
-            if (roleAdmin.checked) {
-                // Force YES radio
-                authoriserYes.checked = true;
+            if (roleAdmin.is(":checked")) {
+                authoriserYes.prop("checked", true);
             }
         }
 
-        roleAdmin.addEventListener("change", updateAuthoriserState);
-        roleSponsor.addEventListener("change", updateAuthoriserState);
+        roleAdmin.on("change", updateAuthoriserState);
+        roleSponsor.on("change", updateAuthoriserState);
 
         // Run once on load
         updateAuthoriserState();
