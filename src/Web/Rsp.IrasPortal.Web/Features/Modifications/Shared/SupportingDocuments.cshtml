@@ -124,7 +124,21 @@
                                                 @ModificationStatusHelper.ToUiStatus(modification.Status)
                                             </strong>
                                         </td>
-                                        @if (Model.Status is ModificationStatus.InDraft || (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise))
+                                        @if (Model.Status is ModificationStatus.InDraft)
+                                        {
+                                            <td class="govuk-table__cell">
+                                                @if (!isFailed)
+                                                {
+                                                    <a asp-route="pmc:continuetodetails"
+                                                       asp-route-documentId="@modification.Id"
+                                                       asp-route-reviewAllChanges="true"
+                                                       class="govuk-link">
+                                                        Change details
+                                                    </a>
+                                                }
+                                            </td>
+                                        }
+                                        @if (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise)
                                         {
                                             <td class="govuk-table__cell">
                                                 @if (!isFailed)
