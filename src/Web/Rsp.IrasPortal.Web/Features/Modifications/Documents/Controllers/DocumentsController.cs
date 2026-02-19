@@ -464,9 +464,9 @@ public class DocumentsController
                 updateDocumentRequest.Add(new ProjectModificationDocumentRequest
                 {
                     Id = updateDocumentResponse.Content?.Id ?? Guid.Empty,
-                    ProjectModificationId = request.ProjectModificationId,
-                    ProjectRecordId = request.ProjectRecordId,
-                    UserId = request.UserId,
+                    ProjectModificationId = updateDocumentResponse.Content?.ProjectModificationId ?? default,
+                    ProjectRecordId = updateDocumentResponse.Content?.ProjectRecordId,
+                    UserId = updateDocumentResponse.Content?.UserId,
                     FileName = updateDocumentResponse.Content?.FileName ?? string.Empty,
                     DocumentStoragePath = updateDocumentResponse.Content?.DocumentStoragePath,
                     FileSize = updateDocumentResponse.Content?.FileSize ?? 0,
@@ -486,9 +486,9 @@ public class DocumentsController
                 updateDocumentRequest.Add(new ProjectModificationDocumentRequest
                 {
                     Id = updateDocumentResponse.Content?.Id ?? Guid.Empty,
-                    ProjectModificationId = request.ProjectModificationId,
-                    ProjectRecordId = request.ProjectRecordId,
-                    UserId = request.UserId,
+                    ProjectModificationId = updateDocumentResponse.Content?.ProjectModificationId ?? default,
+                    ProjectRecordId = updateDocumentResponse.Content?.ProjectRecordId,
+                    UserId = updateDocumentResponse.Content?.UserId,
                     FileName = updateDocumentResponse.Content?.FileName ?? string.Empty,
                     DocumentStoragePath = updateDocumentResponse.Content?.DocumentStoragePath,
                     FileSize = updateDocumentResponse.Content?.FileSize ?? 0,
@@ -515,9 +515,9 @@ public class DocumentsController
                 var linkedDocument = new ProjectModificationDocumentRequest
                 {
                     Id = updateDocumentResponse.Content?.Id ?? Guid.Empty,
-                    ProjectModificationId = request.ProjectModificationId,
-                    ProjectRecordId = request.ProjectRecordId,
-                    UserId = request.UserId,
+                    ProjectModificationId = updateDocumentResponse.Content?.ProjectModificationId ?? default,
+                    ProjectRecordId = updateDocumentResponse.Content?.ProjectRecordId,
+                    UserId = updateDocumentResponse.Content?.UserId,
                     FileName = updateDocumentResponse.Content?.FileName ?? string.Empty,
                     DocumentStoragePath = updateDocumentResponse.Content?.DocumentStoragePath,
                     FileSize = updateDocumentResponse.Content?.FileSize ?? 0,
@@ -854,7 +854,7 @@ public class DocumentsController
         var projectModificationDocumentRequest = new List<ProjectModificationDocumentRequest>();
 
         // Handle file upload (if present)
-        var newLinkedDocumentId = await UploadLinkedDocumentIfRequired(viewModel, userId);
+        var newLinkedDocumentId = await UploadLinkedDocumentIfRequired(viewModel, userId, linkDocument);
 
         var hasFileUpload = newLinkedDocumentId.HasValue;
 
@@ -862,9 +862,9 @@ public class DocumentsController
         var replacedByDocumentDto = new ProjectModificationDocumentRequest
         {
             Id = viewModel.DocumentId,
-            ProjectModificationId = viewModel.ModificationId,
-            ProjectRecordId = viewModel.ProjectRecordId,
-            UserId = userId,
+            ProjectModificationId = replacedByDocumentResponse.Content?.ProjectModificationId ?? default,
+            ProjectRecordId = replacedByDocumentResponse.Content?.ProjectRecordId,
+            UserId = replacedByDocumentResponse.Content?.UserId,
             FileName = viewModel.FileName,
             DocumentStoragePath = viewModel.DocumentStoragePath,
             FileSize = viewModel.FileSize,
@@ -2163,8 +2163,8 @@ public class DocumentsController
         return new ProjectModificationDocumentRequest
         {
             Id = source.Id,
-            ProjectModificationId = viewModel.ModificationId,
-            ProjectRecordId = viewModel.ProjectRecordId,
+            ProjectModificationId = source.ProjectModificationId,
+            ProjectRecordId = source.ProjectRecordId,
             UserId = userId,
             FileName = source.FileName,
             DocumentStoragePath = source.DocumentStoragePath,
@@ -2178,7 +2178,7 @@ public class DocumentsController
         };
     }
 
-    private async Task<Guid?> UploadLinkedDocumentIfRequired(ModificationAddDocumentDetailsViewModel viewModel, string userId)
+    private async Task<Guid?> UploadLinkedDocumentIfRequired(ModificationAddDocumentDetailsViewModel viewModel, string userId, bool linkDocument = false)
     {
         if (viewModel.File == null)
             return null;
@@ -2201,7 +2201,8 @@ public class DocumentsController
 
         var updatedUploadModel = await ProcessDocumentUploadsAsync(
             uploadViewModel,
-            userId);
+            userId,
+            linkDocument);
 
         return updatedUploadModel.UploadedDocuments?.FirstOrDefault()?.DocumentId;
     }
