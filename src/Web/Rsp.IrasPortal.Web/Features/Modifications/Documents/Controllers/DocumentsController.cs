@@ -858,6 +858,11 @@ public class DocumentsController
 
         var hasFileUpload = newLinkedDocumentId.HasValue;
 
+        var hasReplacesDocumentChanged =
+            replacedByDocumentResponse.Content?.ReplacesDocumentId.HasValue == true &&
+            replacedByDocumentResponse.Content?.ReplacesDocumentId.Value != Guid.Empty &&
+            replacedByDocumentResponse.Content?.ReplacesDocumentId != viewModel.ReplacesDocumentId;
+
         // Build primary document DTO (same logic as original)
         var replacedByDocumentDto = new ProjectModificationDocumentRequest
         {
@@ -879,6 +884,33 @@ public class DocumentsController
         };
 
         projectModificationDocumentRequest.Add(replacedByDocumentDto);
+
+        if (hasReplacesDocumentChanged)
+        {
+            var oldReplacedByDocumentResponse =
+            await respondentService.GetModificationDocumentDetails((Guid)(replacedByDocumentResponse.Content?.ReplacesDocumentId.Value));
+
+            if (oldReplacedByDocumentResponse.Content?.ReplacedByDocumentId != null &&
+                oldReplacedByDocumentResponse.Content.ReplacedByDocumentId != Guid.Empty)
+            {
+                projectModificationDocumentRequest.Add(new ProjectModificationDocumentRequest
+                {
+                    Id = oldReplacedByDocumentResponse.Content.Id,
+                    ProjectModificationId = oldReplacedByDocumentResponse.Content.ProjectModificationId,
+                    ProjectRecordId = oldReplacedByDocumentResponse.Content.ProjectRecordId,
+                    UserId = oldReplacedByDocumentResponse.Content.UserId,
+                    FileName = oldReplacedByDocumentResponse.Content.FileName,
+                    DocumentStoragePath = oldReplacedByDocumentResponse.Content.DocumentStoragePath,
+                    FileSize = oldReplacedByDocumentResponse.Content.FileSize,
+                    Status = oldReplacedByDocumentResponse.Content.Status,
+                    IsMalwareScanSuccessful = oldReplacedByDocumentResponse.Content.IsMalwareScanSuccessful,
+                    DocumentType = oldReplacedByDocumentResponse.Content.DocumentType,
+                    ReplacesDocumentId = oldReplacedByDocumentResponse.Content.ReplacesDocumentId,
+                    ReplacedByDocumentId = null, // Clear the ReplacedByDocumentId to unlink it from the current document
+                    LinkedDocumentId = oldReplacedByDocumentResponse.Content.LinkedDocumentId
+                });
+            }
+        }
 
         // Update the document being replaced (if exists)
         await AppendReplacesDocumentIfExists
@@ -2382,7 +2414,8 @@ public class DocumentsController
                 d.Status == DocumentStatus.Approved &&
                 d.Id != currentDocumentId &&
                 d.DocumentType != SupersedeDocumentsType.Tracked &&
-                d.LinkedDocumentId == null)];
+                d.LinkedDocumentId == null &&
+                (d.ReplacedByDocumentId == null || d.ReplacedByDocumentId == currentDocumentId))];
     }
 
     private async Task<List<ProjectModificationDocumentRequest>> GetEligibleDocumentsToLink(Guid currentDocumentId)
