@@ -14,23 +14,20 @@ public class AuthoriseModificationsOutcomeViewModelValidator : AbstractValidator
     private readonly string ReviseAndAuthoriseMaxCharactersErrorMessage = $"The description must be between 1 and {ReviseAndAuthoriseCharactersCount} characters";
 
     private readonly string ModificationsNotAuthorisedErrorMessage = "Enter a reason for not authorising the modification";
-    private readonly string ModificationsNotAuthorisedCharactersErrorMessage = $"The reason must be {ReasonMaxCharactersCount} characters or less";
+    private readonly string ModificationsNotAuthorisedCharactersErrorMessage = $"The reason must be between 1 and {ReasonMaxCharactersCount} characters";
 
     public AuthoriseModificationsOutcomeViewModelValidator()
     {
-
         RuleFor(x => x.RevisionDescription)
                    .Cascade(CascadeMode.Stop)
                    .Must(s => !string.IsNullOrWhiteSpace(s))
                        .WithMessage(RevisionDescriptionMandatoryErrorMessage)
                    .When(x => x.Outcome == "RequestRevisions" || x.Outcome == "ReviseAndAuthorise");
 
-
         RuleFor(x => x.RevisionDescription)
                     .MaximumLength(MaxCharactersCount)
                         .WithMessage(RevisionDescriptionMaxCharactersErrorMessage)
                     .When(x => x.Outcome == "RequestRevisions");
-
 
         RuleFor(x => x.RevisionDescription)
                     .MaximumLength(ReviseAndAuthoriseCharactersCount)

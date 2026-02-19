@@ -271,7 +271,7 @@ public class AuthorisationsModificationsController
             await BuildCheckAndAuthorisePageAsync(projectModificationId, irasId, shortTitle, projectRecordId,
                 sponsorOrganisationUserId, rtsId);
 
-        var auth = await sponsorUserAuthorisationService.AuthoriseAsync(this, sponsorOrganisationUserId, User);
+        var auth = await sponsorUserAuthorisationService.AuthoriseWithOrganisationContextAsync(this, sponsorOrganisationUserId, User, rtsId);
         if (!auth.IsAuthorised)
         {
             return auth.FailureResult!;
@@ -446,7 +446,7 @@ public class AuthorisationsModificationsController
     [HttpGet]
     public async Task<IActionResult> RequestRevisions(AuthoriseModificationsOutcomeViewModel model)
     {
-        var auth = await sponsorUserAuthorisationService.AuthoriseAsync(this, model.SponsorOrganisationUserId, User);
+        var auth = await sponsorUserAuthorisationService.AuthoriseWithOrganisationContextAsync(this, model.SponsorOrganisationUserId, User, model.RtsId);
         if (!auth.IsAuthorised)
         {
             return auth.FailureResult!;

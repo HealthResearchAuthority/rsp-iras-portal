@@ -103,6 +103,7 @@ public class ParticipatingOrganisationsController
         var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty;
         var status = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationStatus) as string ?? string.Empty;
         var sponsorOrganisationUserId = TempData.Peek(TempDataKeys.RevisionSponsorOrganisationUserId);
+        var rtsId = TempData.Peek(TempDataKeys.RevisionRtsId) as string ?? string.Empty;
 
         if (saveForLater)
         {
@@ -110,7 +111,7 @@ public class ParticipatingOrganisationsController
             TempData[TempDataKeys.ProjectModification.ProjectModificationChangeMarker] = Guid.NewGuid();
             if (status is ModificationStatus.ReviseAndAuthorise)
             {
-                return RedirectToRoute("sws:modifications", new { sponsorOrganisationUserId });
+                return RedirectToRoute("sws:modifications", new { sponsorOrganisationUserId, rtsId });
             }
 
             return RedirectToRoute("pov:postapproval", new { projectRecordId });

@@ -218,6 +218,50 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
     }
 
     [Fact]
+    public async Task ConfirmModificationJourney_SaveForLater_With_ReviseAndAuthorise_Redirects_To_SwsModifications_With_Sponsor_Params()
+    {
+        // Arrange
+        var modificationId = Guid.NewGuid();
+        var sponsorUserId = Guid.NewGuid().ToString();
+        var rtsId = "RTS-001";
+
+        var model = new AreaOfChangeViewModel
+        {
+            ProjectRecordId = "PR1",
+            AreaOfChangeId = "A1",
+            SpecificChangeId = "S1",
+            Status = ModificationStatus.ReviseAndAuthorise,
+            SponsorOrganisationUserId = sponsorUserId,
+            RtsId = rtsId
+        };
+
+        SetupTempData(model, BuildAreas(), modificationId);
+
+        _modsService
+            .Setup(s => s.CreateModificationChange(It.IsAny<ProjectModificationChangeRequest>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationChangeResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectModificationChangeResponse
+                {
+                    ProjectModificationId = modificationId,
+                    Id = Guid.NewGuid()
+                }
+            });
+
+        // Act
+        var result = await Sut.ConfirmModificationJourney(model, saveForLater: true);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirect.RouteName.ShouldBe("sws:modifications");
+
+        redirect.RouteValues.ShouldNotBeNull();
+        redirect.RouteValues!["SponsorOrganisationUserId"].ShouldBe(sponsorUserId);
+        redirect.RouteValues!["RtsId"].ShouldBe(rtsId);
+    }
+
+    [Fact]
     public async Task ConfirmModificationJourney_Should_Save_ModificationChange_And_Redirect_To_First_Section()
     {
         // Arrange

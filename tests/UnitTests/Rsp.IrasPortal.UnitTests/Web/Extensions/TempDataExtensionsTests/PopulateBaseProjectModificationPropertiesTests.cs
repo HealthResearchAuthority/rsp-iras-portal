@@ -11,13 +11,18 @@ public class PopulateBaseProjectModificationPropertiesTests : TestServiceBase
     [Fact]
     public void Should_Populate_BaseProjectModificationViewModel_From_TempData()
     {
+        var mockGuid = Guid.NewGuid();
+
         // Arrange
         var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
             [TempDataKeys.ShortProjectTitle] = "ShortTitleTest",
             [TempDataKeys.IrasId] = "IRAS123",
             [TempDataKeys.ProjectModification.ProjectModificationIdentifier] = "MOD-456",
-            [TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = "PageTitleTest"
+            [TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = "PageTitleTest",
+            [TempDataKeys.ProjectModification.DateCreated] = "10.02.10",
+            [TempDataKeys.RevisionSponsorOrganisationUserId] = mockGuid,
+            [TempDataKeys.RevisionRtsId] = "123"
         };
         var model = new BaseProjectModificationViewModel();
 
@@ -29,6 +34,9 @@ public class PopulateBaseProjectModificationPropertiesTests : TestServiceBase
         model.IrasId.ShouldBe("IRAS123");
         model.ModificationIdentifier.ShouldBe("MOD-456");
         model.SpecificAreaOfChange.ShouldBe("PageTitleTest");
+        model.DateCreated.ShouldBe("10.02.10");
+        model.SponsorOrganisationUserId.ShouldBe(mockGuid.ToString());
+        model.RtsId.ShouldBe("123");
     }
 
     [Fact]
@@ -46,5 +54,7 @@ public class PopulateBaseProjectModificationPropertiesTests : TestServiceBase
         model.IrasId.ShouldBe("");
         model.ModificationIdentifier.ShouldBe("");
         model.SpecificAreaOfChange.ShouldBe("");
+        model.RtsId.ShouldBe("");
+        model.DateCreated.ShouldBe("");
     }
 }
