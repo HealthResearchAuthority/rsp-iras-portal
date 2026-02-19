@@ -162,7 +162,7 @@
                                 sponsorOrgUser.SponsorRole.Replace("_", " ").ToLower() : "";
                             var authoriserText = sponsorOrgUser.IsAuthoriser ? "Yes" : "No";
                             var statusClass = sponsorOrgUser.IsActive ? "govuk-tag--green" : "govuk-tag--red";
-                            var statusText = sponsorOrgUser.IsActive ? "Active" : "Disabled";
+                            var statusText = sponsorOrgUser.IsActive ? "Active" : "Inactive";
 
                             <tr class="govuk-table__row">
                                 <td class="govuk-table__cell">@user.GivenName @user.FamilyName</td>
