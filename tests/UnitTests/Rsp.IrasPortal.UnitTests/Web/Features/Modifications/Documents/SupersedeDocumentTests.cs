@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using FluentValidation;
+using FluentValidation.Results;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.FeatureManagement;
 using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs.CmsQuestionset;
 using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
@@ -239,6 +242,14 @@ public class SupersedeDocumentTests : TestServiceBase<DocumentsController>
             .Setup(s => s.SaveModificationDocuments(It.IsAny<List<ProjectModificationDocumentRequest>>()))
             .ReturnsAsync(new ServiceResponse<bool> { StatusCode = HttpStatusCode.OK, Content = true });
 
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet("pdm-document-metadata", It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse { }
+            });
+
         Mocker.GetMock<IRespondentService>()
             .Setup(s => s.GetModificationDocumentAnswers(It.IsAny<Guid>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentAnswerDto>>
@@ -261,6 +272,11 @@ public class SupersedeDocumentTests : TestServiceBase<DocumentsController>
                     }
                 }
             });
+
+        // Validator fails so we stay on the same view
+        Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult());
 
         // Act
         var result = await Sut.SaveSupersedeDocumentDetails(
@@ -300,6 +316,19 @@ public class SupersedeDocumentTests : TestServiceBase<DocumentsController>
         Mocker.GetMock<IRespondentService>()
             .Setup(s => s.SaveModificationDocuments(It.IsAny<List<ProjectModificationDocumentRequest>>()))
             .ReturnsAsync(new ServiceResponse<bool> { StatusCode = HttpStatusCode.OK, Content = true });
+
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet("pdm-document-metadata", It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse { }
+            });
+
+        // Validator fails so we stay on the same view
+        Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult());
 
         // Act
         var result = await Sut.SaveSupersedeDocumentDetails(
@@ -365,6 +394,19 @@ public class SupersedeDocumentTests : TestServiceBase<DocumentsController>
                     }
                 }
             });
+
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet("pdm-document-metadata", It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse { }
+            });
+
+        // Validator fails so we stay on the same view
+        Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult());
 
         // Act
         var result = await Sut.SaveSupersedeDocumentDetails(
