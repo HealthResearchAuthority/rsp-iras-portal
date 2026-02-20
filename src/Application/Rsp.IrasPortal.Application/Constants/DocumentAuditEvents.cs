@@ -7,4 +7,5 @@ public static class DocumentAuditEvents
     public const string UploadFailedFileSize = "Document upload failed due to exceeding maximum file size";
     public const string UploadFailedDuplicate = "Document upload failed due to duplicate documents";
     public const string DocumentDetailsCompleted = "Document details completed";
+    public const string DocumentSuperseded = "Document superseded";
 }

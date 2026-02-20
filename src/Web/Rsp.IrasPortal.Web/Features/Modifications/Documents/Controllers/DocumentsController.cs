@@ -847,6 +847,10 @@ public class DocumentsController
     {
         var userId = HttpContext.Items[ContextItemKeys.UserId]?.ToString() ?? string.Empty;
 
+        var questionnaire = await BuildAndBindQuestionnaire(viewModel);
+
+        var existingStatus = await GetExistingStatus(viewModel.DocumentId, questionnaire);
+
         // Fetch current document details
         var replacedByDocumentResponse =
             await respondentService.GetModificationDocumentDetails(viewModel.DocumentId);
@@ -944,6 +948,8 @@ public class DocumentsController
                 linkedId,
                 replacedByDocumentDto.DocumentType ?? string.Empty);
         }
+
+        await HandleCompletionAudit(existingStatus, viewModel, questionnaire);
 
         // Navigation logic (UNCHANGED)
         if (continueToDocumentType && replacedByDocumentDto.LinkedDocumentId == null)
@@ -1961,18 +1967,35 @@ public class DocumentsController
             return;
         }
 
-        await projectModificationsService.CreateModificationDocumentsAuditTrail(
-        [
-            new()
+        var auditTrailRequest = new List<ModificationDocumentsAuditTrailDto>
         {
-            Id = Guid.NewGuid(),
-            ProjectModificationId = viewModel.ModificationId,
-            DateTimeStamp = DateTime.UtcNow,
-            Description = DocumentAuditEvents.DocumentDetailsCompleted,
-            FileName = viewModel.FileName ?? string.Empty,
-            User = HttpContext.Items[ContextItemKeys.UserId]?.ToString() ?? string.Empty
+            new()
+            {
+                Id = Guid.NewGuid(),
+                ProjectModificationId = viewModel.ModificationId,
+                DateTimeStamp = DateTime.UtcNow,
+                Description = DocumentAuditEvents.DocumentDetailsCompleted,
+                FileName = viewModel.FileName ?? string.Empty,
+                User = HttpContext.Items[ContextItemKeys.UserId]?.ToString() ?? string.Empty
+            }
+        };
+
+        if (viewModel.ReplacesDocumentId != null && viewModel.ReplacesDocumentId != Guid.Empty)
+        {
+            var answersResponse = await respondentService.GetModificationDocumentDetails((Guid)viewModel.ReplacesDocumentId);
+
+            auditTrailRequest.Add(new ModificationDocumentsAuditTrailDto
+            {
+                Id = Guid.NewGuid(),
+                ProjectModificationId = viewModel.ModificationId,
+                DateTimeStamp = DateTime.UtcNow,
+                Description = DocumentAuditEvents.DocumentSuperseded,
+                FileName = answersResponse.Content?.FileName ?? string.Empty,
+                User = HttpContext.Items[ContextItemKeys.UserId]?.ToString() ?? string.Empty
+            });
         }
-        ]);
+
+        await projectModificationsService.CreateModificationDocumentsAuditTrail(auditTrailRequest);
     }
 
     private IActionResult HandleSupersedeRedirect(ModificationAddDocumentDetailsViewModel viewModel, QuestionnaireViewModel questionnaire)
