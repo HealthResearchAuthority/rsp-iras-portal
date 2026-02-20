@@ -105,7 +105,7 @@
             "Audience": {
               "Users": [],
               "Groups": [],
-              "DefaultRolloutPercentage": 100,
+              "DefaultRolloutPercentage": 0,
               "Exclusion": {
                 "Users": [],
                 "Groups": []

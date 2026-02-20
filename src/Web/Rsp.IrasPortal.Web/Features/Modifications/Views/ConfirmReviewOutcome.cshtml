@@ -4,16 +4,16 @@
 @{
     ViewBag.Title = "Confirm review outcome";
 
-    var backRoute = Model.ReviewOutcome == ModificationStatus.Approved
-        ? "pmc:reviewoutcome"
-        : "pmc:reasonnotapproved";
+    var backRoute = Model.ReviewOutcome switch
+    {
+        ModificationStatus.Approved => "pmc:reviewoutcome",
+        ModificationStatus.NotApproved => "pmc:reasonnotapproved",
+        ModificationStatus.RequestForInformation => "pmc:requestforfurtherinformation",
+        _ => "app:welcome"
+    };
 }
 
-<partial name="_BackNavigation"
-         model="@(
-         backRoute,
-                                                                       "Back",
-                                                                       new Dictionary<string, string>())" />
+<partial name="_BackNavigation" model="@(backRoute, "Back", new Dictionary<string, string>())" />
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
@@ -29,9 +29,9 @@
             <dt class="govuk-summary-list__key">Short project title</dt>
             <dd class="govuk-summary-list__value">
                 <a asp-route="pov:projectdetails"
-                   asp-route-projectRecordId="@Model.ModificationDetails.ProjectRecordId"
-                   asp-route-backRoute="tasklist:index"
-                   class="govuk-link">
+                asp-route-projectRecordId="@Model.ModificationDetails.ProjectRecordId"
+                asp-route-backRoute="tasklist:index"
+                class="govuk-link">
                     @Model.ModificationDetails.ShortTitle
                 </a>
             </dd>
@@ -40,11 +40,11 @@
             <dt class="govuk-summary-list__key">Modification ID</dt>
             <dd class="govuk-summary-list__value">
                 <a asp-route="pmc:reviewallchanges"
-                   asp-route-projectRecordId="@Model.ModificationDetails.ProjectRecordId"
-                   asp-route-irasId="@Model.ModificationDetails.IrasId"
-                   asp-route-projectModificationId="@Model.ModificationDetails.ModificationId"
-                   asp-route-shortTitle="@Model.ModificationDetails.ShortTitle"
-                   class="govuk-link">
+                asp-route-projectRecordId="@Model.ModificationDetails.ProjectRecordId"
+                asp-route-irasId="@Model.ModificationDetails.IrasId"
+                asp-route-projectModificationId="@Model.ModificationDetails.ModificationId"
+                asp-route-shortTitle="@Model.ModificationDetails.ShortTitle"
+                class="govuk-link">
                     @Model.ModificationDetails.ModificationIdentifier
                 </a>
             </dd>
@@ -66,12 +66,29 @@
                 <dd class="govuk-summary-list__value">@Model.ReasonNotApproved</dd>
                 <dd class="govuk-summary-list__actions">
                     <a class="govuk-link"
-                       asp-route="pmc:reasonnotapproved">
+                    asp-route="pmc:reasonnotapproved">
                         Change
                         <span class="govuk-visually-hidden"> reason modification not approved</span>
                     </a>
                 </dd>
             </div>
+        }
+        @if (Model.ReviewOutcome == ModificationStatus.RequestForInformation)
+        {
+            @for(var i = 0; i < Model.RequestForInformationReasons.Count; i++)
+            {
+                <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">Reason @(i+1)</dt>
+                    <dd class="govuk-summary-list__value">@Model.RequestForInformationReasons[i]</dd>
+                    <dd class="govuk-summary-list__actions">
+                        <a class="govuk-link"
+                           asp-route="pmc:requestforfurtherinformation">
+                            Change
+                            <span class="govuk-visually-hidden"> reason @i for request for further information</span>
+                        </a>
+                    </dd>
+                </div>
+            }
         }
     </dl>
 

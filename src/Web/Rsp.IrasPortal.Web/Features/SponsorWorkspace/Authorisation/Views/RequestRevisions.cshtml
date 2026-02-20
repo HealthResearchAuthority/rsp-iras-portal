@@ -18,7 +18,7 @@
 }
 
 @section BackNavigation {
-    <partial name="_BackNavigation" model="@("sws:modifications", "Back", new Dictionary<string, string> { { "sponsorOrganisationUserId", Model.SponsorOrganisationUserId.ToString() } })" />
+	<partial name="_BackNavigation" model="@("sws:modifications", "Back", new Dictionary<string, string> { { "sponsorOrganisationUserId", Model.SponsorOrganisationUserId.ToString() }, { "rtsId", Model.RtsId } })" />
 }
 
 <div class="govuk-grid-row">
@@ -54,7 +54,8 @@
             <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
             <input type="hidden" name="ProjectModificationId" value="@Model.ProjectModificationId" />
             <input type="hidden" name="ModificationIdentifier" value="@Model.ModificationIdentifier" />
-            <input type="hidden" name="Outcome" value="@Model.Outcome" />            
+            <input type="hidden" name="Outcome" value="@Model.Outcome" />    
+            <input type="hidden" name="RtsId" value="@Model.RtsId" />
             
             <button type="submit" class="govuk-button" data-module="govuk-button">
                 Send request

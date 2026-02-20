@@ -6,4 +6,5 @@ public class ReviewOutcomeViewModel
     public string? ReviewOutcome { get; set; }
     public string? Comment { get; set; }
     public string? ReasonNotApproved { get; set; }
+    public List<string> RequestForInformationReasons { get; set; } = [string.Empty];
 }

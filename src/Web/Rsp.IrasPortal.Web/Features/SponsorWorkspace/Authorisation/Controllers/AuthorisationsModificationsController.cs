@@ -36,7 +36,8 @@ public class AuthorisationsModificationsController
     ISponsorUserAuthorisationService sponsorUserAuthorisationService,
     IValidator<AuthorisationsModificationsSearchModel> searchValidator,
     IValidator<AuthoriseModificationsOutcomeViewModel> outcomeValidator,
-    IFeatureManager featureManager
+    IFeatureManager featureManager,
+    IRtsService rtsService
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, null!)
 {
     private const string DocumentDetailsSection = "pdm-document-metadata";
@@ -48,16 +49,27 @@ public class AuthorisationsModificationsController
     public async Task<IActionResult> Modifications
     (
         Guid sponsorOrganisationUserId,
+        string rtsId,
         int pageNumber = 1,
         int pageSize = 20,
         string sortField = nameof(ModificationsModel.SentToSponsorDate),
         string sortDirection = SortDirections.Descending
     )
     {
-        var auth = await sponsorUserAuthorisationService.AuthoriseAsync(this, sponsorOrganisationUserId, User);
+        var auth = await sponsorUserAuthorisationService.AuthoriseWithOrganisationContextAsync(
+            this, sponsorOrganisationUserId, User, rtsId);
+
         if (!auth.IsAuthorised) return auth.FailureResult!;
 
-        var model = new AuthorisationsModificationsViewModel();
+        var model = new AuthorisationsModificationsViewModel()
+        {
+            SponsorOrgansationCount = auth.SponsorOrganisationCount,
+            SponsorOrganisationName = auth.SponsorOrganisationName,
+            SponsorOrganisationUserId = sponsorOrganisationUserId,
+            RtsId = rtsId
+        };
+
+
 
         // getting search query
         var json = HttpContext.Session.GetString(SessionKeys.SponsorAuthorisationsModificationsSearch);
@@ -74,7 +86,7 @@ public class AuthorisationsModificationsController
         // getting modifications by sponsor organisation name
         var projectModificationsServiceResponse =
             await projectModificationsService.GetModificationsBySponsorOrganisationUserId(sponsorOrganisationUserId,
-                searchQuery, pageNumber, pageSize, sortField, sortDirection);
+                searchQuery, pageNumber, pageSize, sortField, sortDirection, rtsId);
 
         model.Modifications = projectModificationsServiceResponse?.Content?.Modifications?
             .Select(dto => new ModificationsModel
@@ -103,11 +115,13 @@ public class AuthorisationsModificationsController
             FormName = "authorisations-selection",
             AdditionalParameters = new Dictionary<string, string>
             {
-                { "SponsorOrganisationUserId", sponsorOrganisationUserId.ToString() }
+                { "SponsorOrganisationUserId", sponsorOrganisationUserId.ToString() },
+                { "RtsId", rtsId }
             }
         };
 
         model.SponsorOrganisationUserId = sponsorOrganisationUserId;
+        model.RtsId = rtsId;
 
         return View(model);
     }
@@ -127,13 +141,24 @@ public class AuthorisationsModificationsController
             }
 
             TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
-            return RedirectToAction(nameof(Modifications),
-                new { sponsorOrganisationUserId = model.SponsorOrganisationUserId });
+            return RedirectToAction(
+                nameof(Modifications),
+                new
+                {
+                    sponsorOrganisationUserId = model.SponsorOrganisationUserId,
+                    rtsId = model.RtsId
+                });
         }
 
         HttpContext.Session.SetString(SessionKeys.SponsorAuthorisationsModificationsSearch, JsonSerializer.Serialize(model.Search));
-        return RedirectToAction(nameof(Modifications),
-            new { sponsorOrganisationUserId = model.SponsorOrganisationUserId });
+
+        return RedirectToAction(
+            nameof(Modifications),
+            new
+            {
+                sponsorOrganisationUserId = model.SponsorOrganisationUserId,
+                rtsId = model.RtsId
+            });
     }
 
     // 1) Shared builder used by both GET and POST
@@ -144,8 +169,9 @@ public class AuthorisationsModificationsController
         string shortTitle,
         string projectRecordId,
         Guid sponsorOrganisationUserId,
+        string rtsId,
         Guid? modificationChangeId = null,
-        int pageNumber = 1,
+    int pageNumber = 1,
         int pageSize = 20,
         string sortField = nameof(ProjectOverviewDocumentDto.DocumentType),
         string sortDirection = SortDirections.Ascending
@@ -219,6 +245,7 @@ public class AuthorisationsModificationsController
         authoriseOutcomeViewModel.IrasId = irasId;
         authoriseOutcomeViewModel.ShortTitle = shortTitle;
         authoriseOutcomeViewModel.ProjectRecordId = projectRecordId;
+        authoriseOutcomeViewModel.RtsId = rtsId;
 
         return authoriseOutcomeViewModel;
     }
@@ -227,11 +254,11 @@ public class AuthorisationsModificationsController
     [Authorize(Policy = Permissions.Sponsor.Modifications_Review)]
     [HttpGet]
     public async Task<IActionResult> CheckAndAuthorise(string projectRecordId, string irasId, string shortTitle,
-        Guid projectModificationId, Guid sponsorOrganisationUserId)
+        Guid projectModificationId, Guid sponsorOrganisationUserId, string rtsId)
     {
         var response =
             await BuildCheckAndAuthorisePageAsync(projectModificationId, irasId, shortTitle, projectRecordId,
-                sponsorOrganisationUserId);
+                sponsorOrganisationUserId, rtsId);
 
         var sponsorOrganisationUser =
             await sponsorOrganisationService.GetSponsorOrganisationUser(sponsorOrganisationUserId);
@@ -269,7 +296,8 @@ public class AuthorisationsModificationsController
             model.IrasId,
             model.ShortTitle,
             model.ProjectRecordId,
-            model.SponsorOrganisationUserId
+            model.SponsorOrganisationUserId,
+            model.RtsId
         );
 
         if (!ModelState.IsValid)
@@ -479,12 +507,14 @@ public class AuthorisationsModificationsController
         string shortTitle,
         Guid projectModificationId,
         Guid sponsorOrganisationUserId,
-        Guid modificationChangeId
+        Guid modificationChangeId,
+        string rtsId
+
     )
     {
         var response =
             await BuildCheckAndAuthorisePageAsync(projectModificationId, irasId, shortTitle, projectRecordId,
-                sponsorOrganisationUserId, modificationChangeId);
+                sponsorOrganisationUserId, rtsId, modificationChangeId);
 
         return View(response);
     }

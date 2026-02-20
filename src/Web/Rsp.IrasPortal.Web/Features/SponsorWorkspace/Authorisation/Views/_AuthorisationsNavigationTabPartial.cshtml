@@ -1,5 +1,5 @@
 ﻿@using Rsp.Portal.Application.Constants;
-@model Guid
+@model (Guid SponsorOrganisationUserId, string RtsId)
 
 @{
     var active = ViewBag.Active as string;    
@@ -13,14 +13,16 @@
                     <li class="govuk-service-navigation__item small-margin @(active == SponsorAuthorisations.Modifications ? "govuk-service-navigation__item--active" : "")">
                         <a class="govuk-service-navigation__link"
                            asp-route="sws:modifications"
-                           asp-route-sponsorOrganisationUserId="@Model">
+                           asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId"
+						   asp-route-rtsId="@Model.RtsId">
                             @SponsorAuthorisations.Modifications
                         </a>
                     </li>
                     <li class="govuk-service-navigation__item small-margin @(active == SponsorAuthorisations.ProjectClosures ? "govuk-service-navigation__item--active" : "")">
                         <a class="govuk-service-navigation__link"
                            asp-route="sws:projectclosures"
-                           asp-route-sponsorOrganisationUserId="@Model">
+                           asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId"
+                           asp-route-rtsId="@Model.RtsId">
                             @SponsorAuthorisations.ProjectClosures
                         </a>
                     </li>                   

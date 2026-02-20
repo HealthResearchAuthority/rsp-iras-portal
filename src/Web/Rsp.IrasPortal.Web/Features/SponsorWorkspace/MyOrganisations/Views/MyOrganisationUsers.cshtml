@@ -192,7 +192,7 @@
 										@{
 											var sponsorOrganisationUserDto = Model.SponsorOrganisation.Users.FirstOrDefault(x => x.UserId == Guid.Parse(user.Id));
 											var statusClass = sponsorOrganisationUserDto.IsActive ? "govuk-tag--green" : "govuk-tag--red";
-											var statusText = sponsorOrganisationUserDto.IsActive ? "Active" : "Disabled";
+											var statusText = sponsorOrganisationUserDto.IsActive ? "Active" : "Inactive";
 										}
 
 										<strong class="govuk-tag @statusClass">@statusText</strong>

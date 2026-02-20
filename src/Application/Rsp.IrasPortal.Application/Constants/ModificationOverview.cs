@@ -7,4 +7,5 @@ public static class ModificationOverview
     public const string Documents = "Documents";
     public const string History = "History";
     public const string Comments = "Comments";
+    public const string RequestForFurtherInformation = "Request for further information";
 }

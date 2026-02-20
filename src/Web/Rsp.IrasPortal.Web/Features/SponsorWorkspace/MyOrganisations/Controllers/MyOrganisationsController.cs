@@ -13,7 +13,6 @@ using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.Filters;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
-using Rsp.Portal.Domain.Identity;
 using Rsp.Portal.Web.Areas.Admin.Models;
 using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Features.SponsorWorkspace.MyOrganisations.Models;
@@ -486,7 +485,14 @@ public class MyOrganisationsController(
 
     [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Audit)]
     [HttpGet]
-    public async Task<IActionResult> MyOrganisationAuditTrail(string rtsId)
+    public async Task<IActionResult> MyOrganisationAuditTrail
+    (
+        string rtsId,
+        int pageNumber = 1,
+        int pageSize = 20,
+        string sortField = "DateTimeStamp",
+        string sortDirection = "desc"
+    )
     {
         ViewBag.Active = MyOrganisationProfileOverview.Audit;
 
@@ -498,23 +504,53 @@ public class MyOrganisationsController(
 
         var ctx = ctxResult.Context!;
 
-        var auditResponse = await sponsorOrganisationService.SponsorOrganisationAuditTrail(
-            rtsId, 1, int.MaxValue, "DateTimeStamp", SortDirections.Descending);
+        var auditResponse = await sponsorOrganisationService.SponsorOrganisationAuditTrail
+        (
+            rtsId,
+            pageNumber,
+            pageSize,
+            sortField,
+            sortDirection
+        );
 
-        if (!auditResponse.IsSuccessStatusCode)
+        if (!auditResponse.IsSuccessStatusCode &&
+            auditResponse.Content == null)
         {
             return this.ServiceError(auditResponse);
         }
 
-        var auditTrails = SponsorOrganisationSortingExtensions.SortSponsorOrganisationAuditTrails(
-            auditResponse.Content.Items, "DateTimeStamp", SortDirections.Descending, ctx.RtsOrganisation.Name, 1,
-            int.MaxValue);
+        var auditTrails = SponsorOrganisationSortingExtensions.SortSponsorOrganisationAuditTrails
+        (
+            auditResponse.Content.Items,
+            sortField,
+            sortDirection,
+            ctx.RtsOrganisation.Name,
+            pageNumber,
+            pageSize
+        );
+
+        var paginationModel = new PaginationViewModel
+        (
+            pageNumber,
+            pageSize,
+            auditResponse.Content != null ? auditResponse.Content.TotalCount : -1
+        )
+        {
+            RouteName = "sws:MyOrganisationAuditTrail",
+            AdditionalParameters =
+            {
+                { "rtsId", rtsId }
+            },
+            SortField = sortField,
+            SortDirection = sortDirection
+        };
 
         var model = new SponsorMyOrganisationAuditViewModel
         {
             RtsId = rtsId,
             Name = ctx.RtsOrganisation.Name,
-            AuditTrails = auditTrails
+            AuditTrails = auditTrails,
+            Pagination = paginationModel
         };
 
         return View(model);

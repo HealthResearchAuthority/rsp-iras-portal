@@ -12,4 +12,5 @@ public class AuthoriseModificationsOutcomeViewModel : ModificationDetailsViewMod
     public Guid ProjectModificationId { get; set; }
 
     public Guid SponsorOrganisationUserId { get; set; }
+    public string RtsId { get; set; }
 }

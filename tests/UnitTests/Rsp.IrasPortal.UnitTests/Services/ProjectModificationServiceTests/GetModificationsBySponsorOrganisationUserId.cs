@@ -31,7 +31,7 @@ public class GetModificationsBySponsorOrganisationUserIdTests : TestServiceBase<
                 1,
                 20,
                 nameof(ModificationsDto.SentToSponsorDate),
-                SortDirections.Descending))
+                SortDirections.Descending, ""))
             .ReturnsAsync(apiResponse);
 
         // Act
@@ -50,6 +50,7 @@ public class GetModificationsBySponsorOrganisationUserIdTests : TestServiceBase<
             1,
             20,
             nameof(ModificationsDto.SentToSponsorDate),
-            SortDirections.Descending), Times.Once());
+            SortDirections.Descending,
+            ""), Times.Once());
     }
 }
