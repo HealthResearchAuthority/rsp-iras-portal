@@ -1,16 +1,29 @@
 ﻿@using Rsp.Gds.Component.Models
 @using Rsp.Portal.Application.Constants
 @model Rsp.Portal.Web.Models.AreaOfChangeViewModel
-@{    
+@{
     ViewBag.Title = "Create modification - Area of change";
 
     // Title used in the validation error summary
     var errorSummaryTitle = "There is a problem";
 
-    var navModel = ("pov:postapproval", "Back", new Dictionary<string, string>
-{
-        { "projectRecordId", Model.ProjectRecordId }
-    });
+    var navModelRoute = "pov:postapproval";
+    var navModelParams = new Dictionary<string, string>
+    {
+        ["projectRecordId"] = Model.ProjectRecordId        
+    };
+
+    if (Model.Status is ModificationStatus.ReviseAndAuthorise)
+    {
+        navModelRoute = "pmc:modificationdetails";
+        navModelParams["irasId"] = Model.IrasId;
+        navModelParams["shortTitle"] = Model.ShortTitle;
+        navModelParams["projectModificationId"] = Model.ModificationId;
+        navModelParams["sponsorOrganisationUserId"] = Model.SponsorOrganisationUserId;
+        navModelParams["rtsId"] = Model.RtsId;
+    }
+
+    var navModel = (navModelRoute, "Back", navModelParams);
 
     var area = TempData.Peek(TempDataKeys.ProjectModification.AreaOfChangeId);
     var specificArea = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeId);
@@ -44,6 +57,9 @@
             <form method="post">
 
                 <input type="hidden" asp-for="ProjectRecordId" />
+                <input type="hidden" asp-for="Status" />
+                <input type="hidden" asp-for="SponsorOrganisationUserId" />
+                <input type="hidden" asp-for="RtsId" />
 
                 <partial name="_ProjectModificationSummary" model="Model" />
 

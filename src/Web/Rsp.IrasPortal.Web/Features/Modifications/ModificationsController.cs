@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Azure;
+using Rsp.IrasPortal.Web.Attributes;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs.CmsQuestionset.Modifications;
 using Rsp.Portal.Application.DTOs.Requests;
@@ -124,7 +125,7 @@ public class ModificationsController
     /// Displays the Area of Change selection screen.
     /// Retrieves area of change data and stores it in session for later reuse.
     /// </summary>
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Create)]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Create)]
     [HttpGet]
     public async Task<IActionResult> AreaOfChange(Guid? projectModificationId)
     {
@@ -259,7 +260,7 @@ public class ModificationsController
     /// Processes user’s selection of Area and Specific Change and redirects based on journey type.
     /// Saves the modification change to backend and handles validation.
     /// </summary>
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Create)]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Create)]
     [HttpPost]
     public async Task<IActionResult> ConfirmModificationJourney(AreaOfChangeViewModel model, bool saveForLater = false)
     {
@@ -292,6 +293,10 @@ public class ModificationsController
 
         if (saveForLater)
         {
+            if (model.Status is ModificationStatus.ReviseAndAuthorise)
+            {
+                return RedirectToRoute("sws:modifications", new { model.SponsorOrganisationUserId, model.RtsId });
+            }
             return RedirectToRoute("pov:postapproval", new { model.ProjectRecordId });
         }
 

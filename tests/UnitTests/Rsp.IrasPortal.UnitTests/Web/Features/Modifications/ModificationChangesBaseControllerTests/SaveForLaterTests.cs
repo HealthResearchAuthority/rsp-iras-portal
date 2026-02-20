@@ -48,4 +48,34 @@ public class SaveForLaterTests
         redirectResult.RouteValues.ShouldNotBeNull();
         redirectResult.RouteValues!["projectRecordId"].ShouldBe(projectRecordId);
     }
+
+    [Fact]
+    public async Task SaveForLater_WhenOptionalParamsProvided_IncludesBothInRouteValues()
+    {
+        // Arrange
+        var projectRecordId = "PRJ-999";
+        var routeName = "pmc:modificationdetails";
+
+        var controller = CreateControllerWithTempData(out var tempData);
+
+        var sponsorId = "SP-123";
+        var rtsId = "RTS-987";
+
+        // Act
+        var result = await controller.SaveForLater(
+            projectRecordId,
+            routeName,
+            sponsorOrganisationUserId: sponsorId,
+            rtsId: rtsId
+        );
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirect.RouteName.ShouldBe(routeName);
+
+        var rv = redirect.RouteValues!;
+        rv["projectRecordId"].ShouldBe(projectRecordId);
+        rv["SponsorOrganisationUserId"].ShouldBe(sponsorId);
+        rv["rtsId"].ShouldBe(rtsId);
+    }
 }

@@ -43,23 +43,60 @@ public class SearchOrganisationTests : TestServiceBase<ParticipatingOrganisation
     }
 
     [Fact]
-    public void SaveSelection_WithSaveForLaterTrue_RedirectsToPostApproval()
+    public void SaveSelection_WithSaveForLaterTrue_And_ReviseAndAuthorise_RedirectsToSwsModifications()
     {
         // Arrange
-        const string projectRecordId = "PRJ-123";
-        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        var http = new DefaultHttpContext();
+        var sponsorId = Guid.NewGuid();
+        Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectRecordId] = projectRecordId
+            [TempDataKeys.ProjectRecordId] = "PRJ-123",
+            [TempDataKeys.ProjectModification.ProjectModificationStatus] = ModificationStatus.ReviseAndAuthorise,
+            [TempDataKeys.RevisionSponsorOrganisationUserId] = sponsorId
         };
 
         // Act
         var result = Sut.SaveSelection(saveForLater: true);
 
         // Assert
+        // TempData flags
+        Sut.TempData[TempDataKeys.ShowNotificationBanner].ShouldBe(true);
+        Sut.TempData[TempDataKeys.ProjectModification.ProjectModificationChangeMarker].ShouldNotBeNull();
+        Sut.TempData[TempDataKeys.ProjectModification.ProjectModificationChangeMarker].ShouldBeOfType<Guid>();
+
+        // Route
+        var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirect.RouteName.ShouldBe("sws:modifications");
+        redirect.RouteValues.ShouldNotBeNull();
+        redirect.RouteValues!["sponsorOrganisationUserId"].ShouldBe(sponsorId);
+    }
+
+    [Fact]
+    public void SaveSelection_WithSaveForLaterTrue_RedirectsToPostApproval_AndSetsTempDataFlags()
+    {
+        // Arrange
+        const string projectRecordId = "PRJ-123";
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectRecordId] = projectRecordId
+            // No status in TempData -> not ReviseAndAuthorise
+        };
+
+        // Act
+        var result = Sut.SaveSelection(saveForLater: true);
+
+        // Assert
+        Sut.TempData[TempDataKeys.ShowNotificationBanner].ShouldBe(true);
+        Sut.TempData[TempDataKeys.ProjectModification.ProjectModificationChangeMarker].ShouldNotBeNull();
+        Sut.TempData[TempDataKeys.ProjectModification.ProjectModificationChangeMarker].ShouldBeOfType<Guid>();
+
         var redirectResult = result.ShouldBeOfType<RedirectToRouteResult>();
         redirectResult.RouteName.ShouldBe("pov:postapproval");
         redirectResult.RouteValues.ShouldNotBeNull();
-        redirectResult.RouteValues["projectRecordId"].ShouldBe(projectRecordId);
+        redirectResult.RouteValues!["projectRecordId"].ShouldBe(projectRecordId);
+
+        // Ensure sponsor key not present on post-approval path
+        redirectResult.RouteValues.ContainsKey("sponsorOrganisationUserId").ShouldBeFalse();
     }
 
     [Fact]

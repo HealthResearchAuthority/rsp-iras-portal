@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Rsp.Portal.Application.DTOs;
 
-namespace Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models;
+namespace Rsp.IrasPortal.Application.DTOs;
 
 public sealed class SponsorUserAuthorisationResult
 {
