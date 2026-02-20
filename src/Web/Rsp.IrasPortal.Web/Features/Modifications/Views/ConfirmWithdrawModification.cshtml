@@ -1,0 +1,39 @@
+﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@model Rsp.Portal.Web.Features.Modifications.Models.ReviewOutcomeViewModel
+@{
+	ViewBag.Title = "Withdraw confirmation";
+
+	var projectRecordId = TempData[TempDataKeys.ProjectRecordId];
+
+	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+	var pageContent = pageContentData != null
+		? pageContentData
+		: new Dictionary<string, MixedContentPageItem?>();
+
+	var title = pageContent.GetValueOrDefault("Modifications.ConfirmWithdrawModification.Title", null);
+	var bodyHeading = pageContent.GetValueOrDefault("Modifications.ConfirmWithdrawModification.BodyHeading", null);
+	var bodyContent = pageContent.GetValueOrDefault("Modifications.ConfirmWithdrawModification.BodyContent", null);
+	// this is the last stage of the modification so clear
+	// all TempData values
+	TempData.Clear();
+}
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-two-thirds">
+		<div class="govuk-panel govuk-panel--confirmation">
+			<h1 class="govuk-panel__title">
+				@Html.Raw(title?.Value)
+			</h1>
+		</div>
+
+		<h2 class="govuk-heading-m">@Html.Raw(bodyHeading?.Value)</h2>
+		<p class="govuk-body">
+			@Html.Raw(bodyContent?.Value)
+		</p>
+		<div class="save-buttons">
+			<a class="govuk-button" asp-route="pov:postapproval" asp-route-projectRecordId="@projectRecordId">
+				Return to project overview
+			</a>
+		</div>
+	</div>
+</div>

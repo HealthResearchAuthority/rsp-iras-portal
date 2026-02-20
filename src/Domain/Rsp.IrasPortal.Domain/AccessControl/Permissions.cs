@@ -137,6 +137,11 @@ public static class Permissions
         /// allows reading modifications backstage history
         /// </summary>
         public const string ModificationsHistory_BackStage_Read = "myresearch.modificationshistory_backstage.read";
+
+        /// <summary>
+        /// allows approving modifications
+        /// </summary>
+        public const string Modifications_Withdraw = "myresearch.modifications.withdraw";
     }
 
     // Sponsor Workspace Permissions

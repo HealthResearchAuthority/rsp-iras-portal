@@ -79,24 +79,7 @@
                 }
             ]
         },
-        "Modifications.Withdraw": {
-            "EnabledFor": [
-                {
-                    "Name": "Microsoft.Targeting",
-                    "Parameters": {
-                        "Audience": {
-                            "Users": [],
-                            "Groups": [],
-                            "DefaultRolloutPercentage": 100,
-                            "Exclusion": {
-                                "Users": [],
-                                "Groups": []
-                            }
-                        }
-                    }
-                }
-            ]
-        },
+        "Modifications.Withdraw":true,
         "Modifications.RequestForInformation": {
             "EnabledFor": [
                 {
