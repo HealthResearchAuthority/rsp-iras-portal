@@ -51,6 +51,18 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
                 }
             });
 
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationReviewResponses("PR1", It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationReviewResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectModificationReviewResponse
+                {
+                    ModificationId = modId,
+                    RequestForInformationReasons = []
+                }
+            });
+
         // 2. GetModificationChanges -> one change
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.GetModificationChanges(It.IsAny<string>(), It.IsAny<Guid>()))

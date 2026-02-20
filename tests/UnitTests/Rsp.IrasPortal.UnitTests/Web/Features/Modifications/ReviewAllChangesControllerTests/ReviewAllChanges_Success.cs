@@ -54,6 +54,18 @@ public class ReviewAllChanges_Success : TestServiceBase<ReviewAllChangesControll
                 }
             });
 
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationReviewResponses("PR1", It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationReviewResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectModificationReviewResponse
+                {
+                    ModificationId = modId,
+                    RequestForInformationReasons = []
+                }
+            });
+
         // changes
         Mocker
             .GetMock<IProjectModificationsService>()
@@ -234,6 +246,18 @@ public class ReviewAllChanges_Success : TestServiceBase<ReviewAllChangesControll
                     ModificationType = "Substantial",
                     Category = "Category A",
                     ReviewType = "Full Review"
+                }
+            });
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationReviewResponses("PR1", It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationReviewResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectModificationReviewResponse
+                {
+                    ModificationId = modId,
+                    RequestForInformationReasons = []
                 }
             });
 
@@ -420,6 +444,18 @@ public class ReviewAllChanges_Success : TestServiceBase<ReviewAllChangesControll
                 }
             });
 
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationReviewResponses("PR1", It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationReviewResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectModificationReviewResponse
+                {
+                    ModificationId = modId,
+                    RequestForInformationReasons = []
+                }
+            });
+
         // changes
         Mocker
             .GetMock<IProjectModificationsService>()
@@ -599,6 +635,18 @@ public class ReviewAllChanges_Success : TestServiceBase<ReviewAllChangesControll
                 }
             });
 
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationReviewResponses("PR1", It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationReviewResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectModificationReviewResponse
+                {
+                    ModificationId = modId,
+                    RequestForInformationReasons = []
+                }
+            });
+
         // changes
         Mocker
             .GetMock<IProjectModificationsService>()
@@ -775,6 +823,18 @@ public class ReviewAllChanges_Success : TestServiceBase<ReviewAllChangesControll
                     ModificationType = "Substantial",
                     Category = "Category A",
                     ReviewType = "Full Review"
+                }
+            });
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationReviewResponses("PR1", It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationReviewResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectModificationReviewResponse
+                {
+                    ModificationId = modId,
+                    RequestForInformationReasons = []
                 }
             });
 

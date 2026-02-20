@@ -60,6 +60,13 @@ public abstract class ModificationsControllerBase
         // Select the first (and only) modification result
         var modification = modificationResponse.Content;
 
+        var modificationReviewResponse = await projectModificationsService.GetModificationReviewResponses(projectRecordId, projectModificationId);
+
+        if (!modificationReviewResponse.IsSuccessStatusCode)
+        {
+            return (this.ServiceError(modificationReviewResponse), null);
+        }
+
         TempData[TempDataKeys.ProjectModification.ProjectModificationStatus] = modification.Status;
 
         // Build the base view model with project metadata
@@ -76,7 +83,8 @@ public abstract class ModificationsControllerBase
             ReviewType = modification.ReviewType ?? Ranking.NotAvailable,
             DateCreated = DateHelper.ConvertDateToString(modification.CreatedDate),
             ReasonNotApproved = modification?.ReasonNotApproved ?? string.Empty,
-            ReviewerComments = modification?.ReviewerComments
+            ReviewerComments = modification?.ReviewerComments,
+            RequestForInformationReasons = modificationReviewResponse.Content?.RequestForInformationReasons ?? []
         });
     }
 
