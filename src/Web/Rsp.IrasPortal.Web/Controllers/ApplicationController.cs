@@ -430,4 +430,15 @@ public class ApplicationController
     {
         return View("/Features/ProjectOverview/Views/ConfirmProjectClosure.cshtml");
     }
+
+    /// <summary>
+    /// Project Closure
+    /// </summary>
+    /// <returns></returns>
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Close)]
+    [HttpGet]
+    public IActionResult ValidateProjectClosure(ProjectClosuresModel model)
+    {
+        return View("/Features/ProjectOverview/Views/ValidateProjectClosure.cshtml", model);
+    }
 }

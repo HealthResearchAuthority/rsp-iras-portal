@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.Services;
+using Rsp.Portal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Attributes;
 
@@ -43,7 +44,14 @@ public class ProjectClosureActionFilter : IAsyncActionFilter
                 (
                     actionName: "validateprojectclosure",
                     controllerName: "application",
-                    routeValues: new { id = projectRecordId, status = projectRecord?.Content?.Status }
+                    //routeValues: new { id = projectRecordId, status = projectRecord?.Content?.Status }
+                    routeValues: new ProjectClosuresModel
+                    {
+                        Status = projectRecord?.Content?.Status,
+                        ProjectRecordId = projectRecord?.Content?.Id,
+                        ShortProjectTitle = projectRecord?.Content?.ShortProjectTitle,
+                        IrasId = projectRecord?.Content?.IrasId
+                    }
                 );
                 return;
             }
