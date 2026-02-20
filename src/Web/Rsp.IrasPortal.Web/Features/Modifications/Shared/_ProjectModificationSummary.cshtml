@@ -19,6 +19,16 @@
     {
         modificationBaseModel = TempData.PopulateBaseProjectModificationProperties(modificationBaseModel);
     }
+
+    var showBackStageUserLinks = false;
+    <authorized role-in="@(new []{ Roles.SystemAdministrator,
+                                   Roles.StudyWideReviewer,
+                                   Roles.TeamManager,
+                                   Roles.WorkflowCoordinator})">
+        @{
+            showBackStageUserLinks = true;
+        }
+    </authorized>
 }
 
 <dl class="govuk-summary-list">
@@ -29,35 +39,51 @@
     <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key">Short project title</dt>
         <dd class="govuk-summary-list__value">
-            <a asp-route="pov:projectdetails"
-               asp-route-projectRecordId="@modificationBaseModel.ProjectRecordId"
-               asp-route-backRoute="pmc:reviewallchanges"
-               class="govuk-link">
+            @if (showBackStageUserLinks)
+            {
+                <a asp-route="pov:projectdetails"
+                   asp-route-projectRecordId="@modificationBaseModel.ProjectRecordId"
+                   asp-route-backRoute="pmc:reviewallchanges"
+                   class="govuk-link">
+                    @modificationBaseModel.ShortTitle
+                </a>
+            }
+            else
+            {
                 @modificationBaseModel.ShortTitle
-            </a>
+            }
         </dd>
     </div>
     <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key">Modification ID</dt>
         <dd class="govuk-summary-list__value">
-            <a asp-route="pmc:reviewallchanges"
-               asp-route-projectRecordId="@modificationBaseModel.ProjectRecordId"
-               asp-route-irasId="@modificationBaseModel.IrasId"
-               asp-route-projectModificationId="@modificationBaseModel.ModificationId"
-               asp-route-shortTitle="@modificationBaseModel.ShortTitle"
-               class="govuk-link">
+            @if (showBackStageUserLinks)
+            {
+                <a asp-route="pmc:reviewallchanges"
+                    asp-route-projectRecordId="@modificationBaseModel.ProjectRecordId"
+                   asp-route-irasId="@modificationBaseModel.IrasId"
+                   asp-route-projectModificationId="@modificationBaseModel.ModificationId"
+                   asp-route-shortTitle="@modificationBaseModel.ShortTitle"
+                   class="govuk-link">
+                    @modificationBaseModel.ModificationIdentifier
+                </a>
+            }
+            else
+            {
                 @modificationBaseModel.ModificationIdentifier
-            </a>
+            }
         </dd>
     </div>
 
     <authorized permission="@Permissions.MyResearch.Modifications_Review"
                 status-for="@modificationBaseModel.Status"
                 status-in="@(new []{ ModificationStatus.WithSponsor,
+                               ModificationStatus.ReviseAndAuthorise,
                                ModificationStatus.WithReviewBody,
                                ModificationStatus.Approved,
                                ModificationStatus.NotApproved,
-                               ModificationStatus.NotAuthorised})"
+                               ModificationStatus.NotAuthorised,
+                               ModificationStatus.Withdrawn })"
                 status-mode="Show">
         @if (modificationBaseModel.Status is not null)
         {
@@ -97,6 +123,7 @@
                         ModificationStatus.WithReviewBody => "govuk-tag--green",
                         ModificationStatus.NotApproved => "govuk-tag--red",
                         ModificationStatus.NotAuthorised => "govuk-tag--red",
+                        ModificationStatus.Withdrawn => "govuk-tag--red",
                         _ => "govuk-tag--blue"
                     };
                 }

@@ -6,7 +6,7 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Services;
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.CmsQuestionset;
@@ -20,7 +20,6 @@ using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models;
 using Rsp.Portal.Web.Helpers;
 using Rsp.Portal.Web.Models;
 using Claim = System.Security.Claims.Claim;
-using Rsp.Portal.UnitTests.Web.Helpers;
 
 namespace Rsp.Portal.UnitTests.Web.Features.SponsorWorkspace.Authorisations;
 

@@ -11,13 +11,14 @@ public struct ModificationStatus
     public const string NotApproved = "Not approved";
     public const string NotAuthorised = "Not authorised";
     public const string RequestForInformation = "Request for further information";
+    public const string Withdrawn = "Withdrawn";
 
     // BACKSTAGE VALUES
     public const string Received = "Received";
 
     public const string ReviewInProgress = "Review in progress";
-    public const string RequestRevisions = "Request revisions";
-    public const string ReviseAndAuthorise = "Revise and authorise";
+    public const string RequestRevisions = "Request revision";
+    public const string ReviseAndAuthorise = "Sponsor revises modification";
 
     public static readonly List<string> Types = [
         InDraft,

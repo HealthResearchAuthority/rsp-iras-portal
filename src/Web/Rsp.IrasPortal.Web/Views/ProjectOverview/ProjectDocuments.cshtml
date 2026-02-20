@@ -1,5 +1,6 @@
 ﻿@using Rsp.Portal.Application.Constants;
 @using Rsp.Portal.Application.DTOs
+@using Rsp.Portal.Web.Helpers
 @using Rsp.Portal.Web.Models
 @using System.Text.Json
 @model ProjectOverviewDocumentViewModel
@@ -204,15 +205,17 @@ else
 												DocumentStatus.Incomplete => "govuk-tag--blue",
 												DocumentStatus.Complete => "govuk-tag--blue",
 												ModificationStatus.WithSponsor => "govuk-tag--yellow",
+                                                ModificationStatus.ReviseAndAuthorise => "govuk-tag--yellow",
 												ModificationStatus.Approved => "govuk-tag--green",
 												ModificationStatus.WithReviewBody => "govuk-tag--green",
 												ModificationStatus.NotApproved => "govuk-tag--red",
 												ModificationStatus.NotAuthorised => "govuk-tag--red",
+                                                ModificationStatus.Withdrawn => "govuk-tag--red",
 												_ => "govuk-tag--blue"
 											};
 										}
 									<strong class="govuk-tag @(tagClass)">
-											@modification.Status
+											@ModificationStatusHelper.ToUiStatus(modification.Status)
 									</strong>
 								</td>
 								<td class="govuk-table__cell">

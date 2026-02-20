@@ -544,8 +544,19 @@ else if (showNoResultsMessage)
                                     </td>
                                     <td class="govuk-table__cell">@modification.ModificationType</td>
 										<td class="govuk-table__cell">@modification.ChiefInvestigatorFirstName @modification.ChiefInvestigatorLastName</td>
-                                    <td class="govuk-table__cell">@modification.LeadNation</td>
-										<td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">@ModificationStatusHelper.ToUiStatus(modification.Status)</strong></td>
+                                        <td class="govuk-table__cell">@modification.LeadNation</td>
+                                    @{
+											var tagClass = modification.Status switch
+                                        {
+                                            ModificationStatus.Withdrawn => "govuk-tag--red",
+                                            _ => "govuk-tag--blue"
+                                        };
+                                    }
+                                    <td class="govuk-table__cell">
+                                    <strong class="govuk-tag @tagClass">
+                                        @ModificationStatusHelper.ToUiStatus(modification.Status)
+                                    </strong>
+                                    </td>
                                 </tr>
                             }
                         }

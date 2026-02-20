@@ -106,7 +106,8 @@ public static class RoleStatusPermissions
                     ModificationStatus.Approved,
                     ModificationStatus.NotAuthorised,
                     ModificationStatus.NotApproved,
-                    ModificationStatus.RequestForInformation
+                    ModificationStatus.RequestForInformation,
+                    ModificationStatus.Withdrawn
                 }
             },
             {
@@ -118,7 +119,8 @@ public static class RoleStatusPermissions
                     ModificationStatus.Approved,
                     ModificationStatus.NotAuthorised,
                     ModificationStatus.NotApproved,
-                    ModificationStatus.RequestForInformation
+                    ModificationStatus.RequestForInformation,
+                    ModificationStatus.Withdrawn
                 }
             },
             {
@@ -130,7 +132,8 @@ public static class RoleStatusPermissions
                     ModificationStatus.Approved,
                     ModificationStatus.NotAuthorised,
                     ModificationStatus.NotApproved,
-                    ModificationStatus.RequestForInformation
+                    ModificationStatus.RequestForInformation,
+                    ModificationStatus.Withdrawn
                 }
             },
             {
@@ -141,7 +144,8 @@ public static class RoleStatusPermissions
                     ModificationStatus.NotApproved,
                     ModificationStatus.Received,
                     ModificationStatus.ReviewInProgress,
-                    ModificationStatus.RequestForInformation
+                    ModificationStatus.RequestForInformation,
+                    ModificationStatus.Withdrawn
                 }
             },
             {
@@ -152,7 +156,8 @@ public static class RoleStatusPermissions
                     ModificationStatus.NotApproved,
                     ModificationStatus.Received,
                     ModificationStatus.ReviewInProgress,
-                    ModificationStatus.RequestForInformation
+                    ModificationStatus.RequestForInformation,
+                    ModificationStatus.Withdrawn
                 }
             },
             {
@@ -163,7 +168,8 @@ public static class RoleStatusPermissions
                     ModificationStatus.NotApproved,
                     ModificationStatus.ReviewInProgress,
                     ModificationStatus.Received,
-                    ModificationStatus.RequestForInformation
+                    ModificationStatus.RequestForInformation,
+                    ModificationStatus.Withdrawn
                 }
             }
         };
@@ -210,7 +216,8 @@ public static class RoleStatusPermissions
                     DocumentStatus.WithReviewBody,
                     DocumentStatus.Approved,
                     DocumentStatus.NotAuthorised,
-                    DocumentStatus.NotApproved
+                    DocumentStatus.NotApproved,
+                    DocumentStatus.Withdrawn
                 }
             },
             {
@@ -221,7 +228,8 @@ public static class RoleStatusPermissions
                     DocumentStatus.WithReviewBody,
                     DocumentStatus.Approved,
                     DocumentStatus.NotAuthorised,
-                    DocumentStatus.NotApproved
+                    DocumentStatus.NotApproved,
+                    DocumentStatus.Withdrawn
                 }
             },
             {
@@ -232,7 +240,8 @@ public static class RoleStatusPermissions
                     DocumentStatus.WithReviewBody,
                     DocumentStatus.Approved,
                     DocumentStatus.NotAuthorised,
-                    DocumentStatus.NotApproved
+                    DocumentStatus.NotApproved,
+                    DocumentStatus.Withdrawn
                 }
             },
             {
@@ -242,7 +251,8 @@ public static class RoleStatusPermissions
                     DocumentStatus.Approved,
                     DocumentStatus.NotApproved,
                     DocumentStatus.ReviewInProgress,
-                    DocumentStatus.Received
+                    DocumentStatus.Received,
+                    DocumentStatus.Withdrawn
                 }
             },
             {
@@ -252,7 +262,8 @@ public static class RoleStatusPermissions
                     DocumentStatus.Approved,
                     DocumentStatus.NotApproved,
                     DocumentStatus.ReviewInProgress,
-                    DocumentStatus.Received
+                    DocumentStatus.Received,
+                    DocumentStatus.Withdrawn
                 }
             },
             {
@@ -262,7 +273,8 @@ public static class RoleStatusPermissions
                     DocumentStatus.Approved,
                     DocumentStatus.NotApproved,
                     DocumentStatus.ReviewInProgress,
-                    DocumentStatus.Received
+                    DocumentStatus.Received,
+                    DocumentStatus.Withdrawn
                 }
             }
         };

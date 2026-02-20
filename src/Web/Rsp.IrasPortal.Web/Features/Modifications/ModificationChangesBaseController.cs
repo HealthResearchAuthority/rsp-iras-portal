@@ -301,12 +301,28 @@ public class ModificationChangesBaseController
 
         var irasId = TempData.Peek(IrasId);
         var shortTitle = TempData.Peek(ShortProjectTitle) as string;
+        var sponsorOrganisationUserIdStr = TempData.Peek(RevisionSponsorOrganisationUserId)?.ToString();
+        var rtsId = TempData.Peek(RevisionRtsId) as string;
 
-        return RedirectToRoute("pmc:modificationdetails", new { projectRecordId, irasId, shortTitle, projectModificationId });
+        var routeValues = new RouteValueDictionary
+        {
+            ["projectRecordId"] = projectRecordId,
+            ["irasId"] = irasId,
+            ["shortTitle"] = shortTitle,
+            ["projectModificationId"] = projectModificationId,
+        };
+
+        if (!string.IsNullOrWhiteSpace(sponsorOrganisationUserIdStr))
+        {
+            routeValues["sponsorOrganisationUserId"] = sponsorOrganisationUserIdStr;
+            routeValues["rtsId"] = rtsId;
+        }
+
+        return RedirectToRoute("pmc:modificationdetails", routeValues);
     }
 
     [HttpGet, HttpPost]
-    public async Task<IActionResult> SaveForLater(string projectRecordId, string routeName)
+    public async Task<IActionResult> SaveForLater(string projectRecordId, string routeName, string? sponsorOrganisationUserId = null, string? rtsId = null)
     {
         var (projectModificationId, projectModificationChangeId) = CheckModification();
 
@@ -316,6 +332,21 @@ public class ModificationChangesBaseController
         TempData[ShowNotificationBanner] = true;
         TempData[ProjectModification.ProjectModificationChangeMarker] = Guid.NewGuid();
 
-        return RedirectToRoute(routeName, new { projectRecordId });
+        var routeValues = new RouteValueDictionary
+        {
+            ["projectRecordId"] = projectRecordId
+        };
+
+        if (!string.IsNullOrWhiteSpace(sponsorOrganisationUserId))
+        {
+            routeValues["SponsorOrganisationUserId"] = sponsorOrganisationUserId;
+        }
+
+        if (!string.IsNullOrWhiteSpace(rtsId))
+        {
+            routeValues["rtsId"] = rtsId;
+        }
+
+        return RedirectToRoute(routeName, routeValues);
     }
 }

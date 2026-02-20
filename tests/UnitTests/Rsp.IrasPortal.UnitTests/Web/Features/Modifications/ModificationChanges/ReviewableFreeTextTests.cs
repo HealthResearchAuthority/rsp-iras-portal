@@ -417,6 +417,144 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
     }
 
     [Fact]
+    public async Task SaveResponses_SaveForLater_Redirects_To_SwsModifications_When_ReviseAndAuthorise()
+    {
+        // Arrange
+        var (ctx, modChangeId) = SetupHttpContext();
+
+        // TempData required by PopulateBaseProjectModificationProperties
+        var sponsorId = Guid.NewGuid();
+        var rtsId = "RTS-1";
+
+        Sut.TempData[TempDataKeys.ProjectModification.ProjectModificationStatus] = ModificationStatus.ReviseAndAuthorise;
+        Sut.TempData[TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid();
+        Sut.TempData[TempDataKeys.RevisionSponsorOrganisationUserId] = sponsorId;
+        Sut.TempData[TempDataKeys.RevisionRtsId] = rtsId;
+        Sut.TempData[TempDataKeys.IrasId] = "IRAS-123";
+        Sut.TempData[TempDataKeys.ShortProjectTitle] = "Short title";
+        Sut.TempData[TempDataKeys.ProjectRecordId] = "PR1";
+
+        SetupStage("SEC1", "CAT1", currentStaticView: "ReviewableFreeText", nextSectionId: "SEC2", nextStatic: "AffectingOrganisations", currentIsMandatory: true);
+
+        _cmsService
+             .Setup(s => s.GetModificationsJourney(It.IsAny<string>()))
+             .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+             {
+                 StatusCode = HttpStatusCode.OK,
+                 Content = BuildQuestionSet(
+                     "SEC1",
+                     "CAT1",
+                     "ReviewableFreeText",
+                     new QuestionModel
+                     {
+                         Id = "QCMS1",
+                         QuestionId = "Q1",
+                         ShowOriginalAnswer = true,
+                         AnswerDataType = "Text",
+                         QuestionFormat = "text",
+                         CategoryId = "CAT1",
+                         Sequence = 1,
+                         SectionSequence = 1
+                     })
+             });
+
+        _validator
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
+
+        _respondentService
+            .Setup(s => s.SaveModificationChangeAnswers(It.IsAny<ProjectModificationChangeAnswersRequest>()))
+            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+
+        var model = new QuestionnaireViewModel
+        {
+            CurrentStage = "SEC1",
+            Questions = []
+        };
+
+        // Act
+        var result = await Sut.SaveResponses(model, saveForLater: true);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirect.RouteName.ShouldBe("sws:modifications");
+
+        redirect.RouteValues!["sponsorOrganisationUserId"].ShouldBe(sponsorId.ToString());
+        redirect.RouteValues!["rtsId"].ShouldBe(rtsId);
+    }
+
+    [Fact]
+    public async Task SaveResponses_Redirects_To_ModificationDetails_When_ReviseAndAuthorise_In_ReviewPath()
+    {
+        // Arrange
+        var (ctx, modChangeId) = SetupHttpContext();
+
+        var modId = Guid.NewGuid();
+        var sponsorId = Guid.NewGuid();
+        var rtsId = "RTS-1";
+
+        Sut.TempData[TempDataKeys.ProjectModification.ProjectModificationStatus] = ModificationStatus.ReviseAndAuthorise;
+        Sut.TempData[TempDataKeys.ProjectModification.ProjectModificationId] = modId;
+        Sut.TempData[TempDataKeys.RevisionSponsorOrganisationUserId] = sponsorId;
+        Sut.TempData[TempDataKeys.RevisionRtsId] = rtsId;
+        Sut.TempData[TempDataKeys.ProjectRecordId] = "PR1";
+        Sut.TempData[TempDataKeys.IrasId] = "IRAS-123";
+        Sut.TempData[TempDataKeys.ShortProjectTitle] = "Short title";
+
+        SetupStage("SEC1", "CAT1", currentStaticView: "ReviewableFreeText", nextSectionId: "SEC2", nextStatic: "AffectingOrganisations", currentIsMandatory: true);
+
+        _cmsService
+            .Setup(s => s.GetModificationsJourney(It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = BuildQuestionSet(
+                    "SEC1",
+                    "CAT1",
+                    "ReviewableFreeText",
+                    new QuestionModel
+                    {
+                        Id = "QCMS1",
+                        QuestionId = "Q1",
+                        ShowOriginalAnswer = true,
+                        AnswerDataType = "Text",
+                        QuestionFormat = "text",
+                        CategoryId = "CAT1",
+                        Sequence = 1,
+                        SectionSequence = 1
+                    })
+            });
+
+        _validator
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
+
+        _respondentService
+            .Setup(s => s.SaveModificationChangeAnswers(It.IsAny<ProjectModificationChangeAnswersRequest>()))
+            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+
+        var model = new QuestionnaireViewModel
+        {
+            CurrentStage = "SEC1",
+            Questions = new() // brak odpowiedzi => RedirectToRoute ModificationDetails
+        };
+
+        // Act
+        var result = await Sut.SaveResponses(model);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirect.RouteName.ShouldBe("pmc:ModificationDetails");
+
+        redirect.RouteValues!["projectRecordId"].ShouldBe("PR1");
+        redirect.RouteValues!["irasId"].ShouldBe("IRAS-123");
+        redirect.RouteValues!["shortTitle"].ShouldBe("Short title");
+        redirect.RouteValues!["projectModificationId"].ShouldBe(modId.ToString());
+        redirect.RouteValues!["sponsorOrganisationUserId"].ShouldBe(sponsorId.ToString());
+        redirect.RouteValues!["rtsId"].ShouldBe(rtsId);
+    }
+
+    [Fact]
     public async Task DisplayQuestionnaire_Populates_OriginalAnswers_When_ShowOriginalAnswer_True()
     {
         // Arrange
