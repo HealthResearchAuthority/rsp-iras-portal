@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using System.Text.Json;
+using FluentValidation;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +10,6 @@ using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.Filters;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
-using Rsp.Portal.Domain.Identity;
 using Rsp.Portal.Web.Areas.Admin.Models;
 using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Helpers;
@@ -24,7 +23,8 @@ namespace Rsp.Portal.Web.Controllers;
 public class SponsorOrganisationsController(
     ISponsorOrganisationService sponsorOrganisationService,
     IRtsService rtsService,
-    IUserManagementService userService
+    IUserManagementService userService,
+    IValidator<SponsorOrganisationUserModel> sponsorUserValidator
 ) : Controller
 {
     /// <summary>
@@ -535,6 +535,76 @@ public class SponsorOrganisationsController(
         ViewBag.Type = addUser ? "add" : "edit";
 
         return View(model);
+    }
+
+    [HttpGet]
+    [Route("/sponsororganisations/edituser", Name = "soc:editsponsororganisationuser")]
+    public async Task<IActionResult> EditSponsorOrganisationUser(SponsorOrganisationUserModel? model, string? rtsId = null, Guid? userId = null)
+    {
+        if (model?.SponsorOrganisationUser is not null)
+        {
+            return View(model);
+        }
+
+        var builtModel = await BuildSponsorOrganisationUserModel(rtsId, (Guid)userId);
+
+        return View(builtModel);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Route("/sponsororganisations/edituser/submit", Name = "soc:submiteditsponsororganisationuser")]
+    public async Task<IActionResult> SubmitEditSponsorOrganisationUser(SponsorOrganisationUserModel model)
+    {
+        var builtModel = await BuildSponsorOrganisationUserModel(model.SponsorOrganisationUser.RtsId, model.SponsorOrganisationUser.UserId);
+
+        // RSP-6809 requires Error message when both are true: Role = Organisation Administrator &&
+        // Authorizer = No
+
+        var validationResult = await sponsorUserValidator.ValidateAsync(model);
+        if (!validationResult.IsValid)
+        {
+            model.User = builtModel.User;
+            model.SponsorOrganisation = builtModel.SponsorOrganisation;
+
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
+
+            return View(nameof(EditSponsorOrganisationUser), model);
+        }
+
+        // RSP-6809 requires strict binding Authorizer = Yes if user is Organisation Administrator
+        if (model.SponsorOrganisationUser.SponsorRole == Roles.OrganisationAdministrator) model.SponsorOrganisationUser.IsAuthoriser = true;
+
+        var updateModel = new SponsorOrganisationUserDto
+        {
+            RtsId = model.SponsorOrganisationUser.RtsId!,
+            UserId = model.SponsorOrganisationUser.UserId!,
+            IsAuthoriser = model.SponsorOrganisationUser.IsAuthoriser,
+            SponsorRole = model.SponsorOrganisationUser.SponsorRole ?? string.Empty
+        };
+
+        // update organisation user profile
+        var updateProfileResult = await sponsorOrganisationService.UpdateSponsorOrganisationUser(updateModel);
+
+        if (!updateProfileResult.IsSuccessStatusCode)
+        {
+            return this.ServiceError(updateProfileResult);
+        }
+
+        // Update roles
+        var (roleToRemove, roleToAdd) = SponsorOrganisationUsersHelper.MapSponsorRoles(model.SponsorOrganisationUser.SponsorRole);
+        var userRolesUpdateResponse = await userService.UpdateRoles(model.SponsorOrganisationUser.Email!, roleToRemove, roleToAdd);
+        if (!userRolesUpdateResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(userRolesUpdateResponse);
+        }
+
+        TempData[TempDataKeys.ShowNotificationBanner] = true;
+
+        return RedirectToAction(nameof(ViewSponsorOrganisationUser), new { userId = model.SponsorOrganisationUser.UserId, rtsId = model.SponsorOrganisationUser.RtsId });
     }
 
     [HttpPost]

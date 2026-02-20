@@ -27,6 +27,8 @@
     var disableUserFlowBody = pageContent.GetValueOrDefault("SponsorOrganisations.ViewUser.DisableUserBody", null);
     var enableUserFlowHeadline = pageContent.GetValueOrDefault("SponsorOrganisations.ViewUser.EnableUserTitle", null);
     var enableUserFlowBody = pageContent.GetValueOrDefault("SponsorOrganisations.ViewUser.EnableUserBody", null);
+
+    var showSuccessMessage = TempData[TempDataKeys.ShowNotificationBanner];
 }
 
 @section BackNavigation {
@@ -55,6 +57,18 @@
 }
 
 <div class="govuk-grid-row">
+
+    @if (showSuccessMessage is true)
+    {
+        <partial name="_NotificationBanner"
+                 model="@(new NotificationBannerModel
+                 {
+                     Title = "Success",
+                     Heading = "User updated"
+                 })" />
+
+        }
+
     <div class="govuk-grid-column-two-thirds">
         @if (ViewBag.Type == "add")
         {
@@ -75,7 +89,7 @@
             <input type="hidden" name="UserId" value="@Model.User.Id"/>
             <input type="hidden" name="RtsId" value="@Model.SponsorOrganisation.RtsId"/>
             <input type="hidden" name="SponsorOrganisationId" value="@Model.SponsorOrganisation.Id"/>
-            <partial name="_UserSummaryTablePartial" model="Model.User"/>
+            <partial name="_UserSummaryTablePartial" model="Model.User" />
 
             @if (ViewBag.Type == "add")
             {
