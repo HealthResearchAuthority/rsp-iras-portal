@@ -3,6 +3,7 @@ using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
@@ -147,16 +148,16 @@ namespace Rsp.Portal.UnitTests.Web.Controllers.SponsorOrganisationsControllerTes
 
             var tempDataProvider = new Mock<ITempDataProvider>();
             Sut.TempData = new TempDataDictionary(_http, tempDataProvider.Object);
-      
+
             model.SponsorOrganisationUser ??= new SponsorOrganisationUserDto();
             model.SponsorOrganisationUser.RtsId = "87765";
             model.SponsorOrganisationUser.UserId = Guid.NewGuid();
             model.SponsorOrganisationUser.Email = "test.test@example.com";
             model.SponsorOrganisationUser.SponsorRole = Roles.OrganisationAdministrator;
             model.SponsorOrganisationUser.IsAuthoriser = false;
-           
+
             StubBuildModelPipeline(model.SponsorOrganisationUser.RtsId, model.SponsorOrganisationUser.UserId, model.SponsorOrganisationUser);
-            
+
             var validatorMock = Mocker.GetMock<IValidator<SponsorOrganisationUserModel>>();
 
             validatorMock
@@ -211,6 +212,158 @@ namespace Rsp.Portal.UnitTests.Web.Controllers.SponsorOrganisationsControllerTes
                     Times.Once);
         }
 
-       
+        [Fact]
+        public async Task Should_Return_EditView_WithModelStateErrors_And_BuiltModelParts_When_ValidationFails()
+        {
+            // Arrange
+            _http.User = new ClaimsPrincipal(new ClaimsIdentity(
+                new[] { new Claim(ClaimTypes.Role, Roles.SystemAdministrator) }, "TestAuth"));
+            Sut.ControllerContext = new ControllerContext { HttpContext = _http };
+            var tempDataProvider = new Mock<ITempDataProvider>();
+            Sut.TempData = new TempDataDictionary(_http, tempDataProvider.Object);
+
+            var model = new SponsorOrganisationUserModel
+            {
+                SponsorOrganisationUser = new SponsorOrganisationUserDto
+                {
+                    RtsId = "87765",
+                    UserId = Guid.NewGuid(),
+                    Email = "test@example.com",
+                    SponsorRole = Roles.Sponsor,
+                    IsAuthoriser = false
+                }
+            };
+
+            StubBuildModelPipeline(model.SponsorOrganisationUser.RtsId, model.SponsorOrganisationUser.UserId, model.SponsorOrganisationUser);
+
+            var errorMessage = "Select 'Yes' for the Authoriser if the user has the Organisation Administrator role.";
+            Mocker.GetMock<IValidator<SponsorOrganisationUserModel>>()
+                .Setup(v => v.ValidateAsync(It.IsAny<SponsorOrganisationUserModel>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ValidationResult(new[]
+                {
+                new ValidationFailure("SponsorOrganisationUser.IsAuthoriser", errorMessage)
+                }));
+
+            // Act
+            var result = await Sut.SubmitEditSponsorOrganisationUser(model);
+
+            // Assert
+            var view = result.ShouldBeOfType<ViewResult>();
+            view.ViewName.ShouldBe(nameof(SponsorOrganisationsController.EditSponsorOrganisationUser));
+            view.Model.ShouldBeOfType<SponsorOrganisationUserModel>();
+
+            Sut.ModelState.ContainsKey("SponsorOrganisationUser.IsAuthoriser").ShouldBeTrue();
+            var entry = Sut.ModelState["SponsorOrganisationUser.IsAuthoriser"];
+            entry!.Errors.Single().ErrorMessage.ShouldBe(errorMessage);
+
+            var returned = (SponsorOrganisationUserModel)view.Model!;
+            returned.User.ShouldNotBeNull();
+            returned.SponsorOrganisation.ShouldNotBeNull();
+        }
+
+        [Fact]
+        public async Task Should_Return_ServiceError_When_UpdateProfile_Fails()
+        {
+            // Arrange
+            _http.User = new ClaimsPrincipal(new ClaimsIdentity(
+                new[] { new Claim(ClaimTypes.Role, Roles.SystemAdministrator) }, "TestAuth"));
+            Sut.ControllerContext = new ControllerContext { HttpContext = _http };
+            var tempDataProvider = new Mock<ITempDataProvider>();
+            Sut.TempData = new TempDataDictionary(_http, tempDataProvider.Object);
+
+            // Arrange
+            var model = new SponsorOrganisationUserModel
+            {
+                SponsorOrganisationUser = new SponsorOrganisationUserDto
+                {
+                    RtsId = "87765",
+                    UserId = Guid.NewGuid(),
+                    Email = "test@example.com",
+                    SponsorRole = Roles.Sponsor,
+                    IsAuthoriser = false
+                }
+            };
+
+            StubBuildModelPipeline(model.SponsorOrganisationUser.RtsId, model.SponsorOrganisationUser.UserId, model.SponsorOrganisationUser);
+
+            Mocker.GetMock<IValidator<SponsorOrganisationUserModel>>()
+                .Setup(v => v.ValidateAsync(It.IsAny<SponsorOrganisationUserModel>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ValidationResult());
+
+            Mocker.GetMock<ISponsorOrganisationService>()
+                .Setup(s => s.UpdateSponsorOrganisationUser(It.IsAny<SponsorOrganisationUserDto>()))
+                .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
+                {
+                    StatusCode = HttpStatusCode.InternalServerError,
+                    Content = null
+                });
+
+            // Act
+            var result = await Sut.SubmitEditSponsorOrganisationUser(model);
+
+            // Assert
+            var statusResult = result as IStatusCodeActionResult;
+            statusResult.ShouldNotBeNull();
+            statusResult!.StatusCode.ShouldBe((int)HttpStatusCode.InternalServerError);
+
+            Mocker.GetMock<IUserManagementService>()
+                .Verify(u => u.UpdateRoles(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        private async Task Should_Return_ServiceError_When_UpdateRoles_Fails()
+        {
+            // Arrange
+            _http.User = new ClaimsPrincipal(new ClaimsIdentity(
+                new[] { new Claim(ClaimTypes.Role, Roles.SystemAdministrator) }, "TestAuth"));
+            Sut.ControllerContext = new ControllerContext { HttpContext = _http };
+            var tempDataProvider = new Mock<ITempDataProvider>();
+            Sut.TempData = new TempDataDictionary(_http, tempDataProvider.Object);
+
+            // Arrange
+            var model = new SponsorOrganisationUserModel
+            {
+                SponsorOrganisationUser = new SponsorOrganisationUserDto
+                {
+                    RtsId = "87765",
+                    UserId = Guid.NewGuid(),
+                    Email = "test@example.com",
+                    SponsorRole = Roles.Sponsor,
+                    IsAuthoriser = false
+                }
+            };
+
+            StubBuildModelPipeline(model.SponsorOrganisationUser.RtsId, model.SponsorOrganisationUser.UserId, model.SponsorOrganisationUser);
+
+            Mocker.GetMock<IValidator<SponsorOrganisationUserModel>>()
+                .Setup(v => v.ValidateAsync(It.IsAny<SponsorOrganisationUserModel>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ValidationResult());
+
+            Mocker.GetMock<ISponsorOrganisationService>()
+                .Setup(s => s.UpdateSponsorOrganisationUser(It.IsAny<SponsorOrganisationUserDto>()))
+                .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new SponsorOrganisationUserDto()
+                });
+
+            Mocker.GetMock<IUserManagementService>()
+                .Setup(u => u.UpdateRoles(
+                    It.Is<string>(e => e == model.SponsorOrganisationUser.Email),
+                    It.IsAny<string?>(),
+                    It.IsAny<string>()))
+                .ReturnsAsync(new ServiceResponse
+                {
+                    StatusCode = HttpStatusCode.BadRequest
+                });
+
+            // Act
+            var result = await Sut.SubmitEditSponsorOrganisationUser(model);
+
+            // Assert
+            var statusResult = result as IStatusCodeActionResult;
+            statusResult.ShouldNotBeNull();
+            statusResult!.StatusCode.ShouldBe((int)HttpStatusCode.BadRequest);
+        }
     }
 }
