@@ -85,5 +85,8 @@ public struct TempDataKeys
     public const string PreAuthProjectClosureModel = "td:pre_auth_project_closure_model";
     public const string SponsorOrganisationUser = "td:sponsor_organisation_user";
     public const string IsAuthoriser = "td:is_authoriser";
+    public const string RevisionSponsorOrganisationUserId = "td:revision_sponsor_organisation_user_id";
+    public const string RevisionRtsId = "td:revision_rts_id";
     public const string ValidationSummaryError = "td:validation_summary_error";
+    public const string RevisionDescription = "td:revision_description";
 }

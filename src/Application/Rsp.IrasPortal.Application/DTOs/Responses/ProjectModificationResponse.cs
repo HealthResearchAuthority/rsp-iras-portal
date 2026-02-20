@@ -41,6 +41,11 @@ public record ProjectModificationResponse
     public string? ReviewerComments { get; set; } = null!;
 
     /// <summary>
+    /// The revision description.
+    /// </summary>
+    public string? RevisionDescription { get; set; } = null;
+
+    /// <summary>
     /// The user ID of the person who created the modification.
     /// </summary>
     public string CreatedBy { get; set; } = null!;

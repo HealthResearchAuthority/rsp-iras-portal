@@ -4,6 +4,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Azure;
+using Rsp.IrasPortal.Web.Attributes;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
@@ -49,7 +50,7 @@ public class DocumentsController
     /// This action prepares the view model for uploading project documents
     /// by reading relevant metadata from TempData (such as the project modification context).
     /// </summary>
-    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Upload)]
+    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Upload)]
     [HttpGet]
     public async Task<IActionResult> ProjectDocument()
     {
@@ -85,7 +86,7 @@ public class DocumentsController
     /// - A populated list of uploaded documents if retrieval is successful.
     /// - An empty list with an error message if no documents are found or the service call fails.
     /// </returns>
-    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Upload)]
+    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Upload)]
     [HttpGet]
     public async Task<IActionResult> ModificationDocumentsAdded()
     {
@@ -139,7 +140,7 @@ public class DocumentsController
     /// <returns>
     /// A view showing the list of uploaded documents, each annotated with its current detail status.
     /// </returns>
-    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Upload)]
+    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Upload)]
     [HttpGet]
     public async Task<IActionResult> AddDocumentDetailsList()
     {
@@ -167,7 +168,7 @@ public class DocumentsController
     /// A view that allows the user to provide or review details for the selected document.
     /// Redirects back to <see cref="AddDocumentDetailsList"/> if document details cannot be retrieved.
     /// </returns>
-    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Upload)]
+    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Upload)]
     [HttpGet]
     public async Task<IActionResult> ContinueToDetails(Guid documentId, bool reviewAnswers = false, bool reviewAllChanges = false)
     {
@@ -244,7 +245,7 @@ public class DocumentsController
     /// <returns>
     /// A view showing the list of documents along with the applicant's answers for review.
     /// </returns>
-    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Review)]
+    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Review)]
     [HttpGet]
     public async Task<IActionResult> ReviewDocumentDetails()
     {
@@ -263,7 +264,7 @@ public class DocumentsController
     /// - If validation fails: redisplays the review page with errors.
     /// - If validation passes: redirects to the PostApproval action in ProjectOverview controller.
     /// </returns>
-    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Review)]
+    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Review)]
     [HttpPost]
     public async Task<IActionResult> ReviewAllDocumentDetails()
     {
@@ -286,6 +287,21 @@ public class DocumentsController
             return View("ReviewDocumentDetails", allDocumentDetails);
         }
 
+        // get data from session for Revise and authorise
+        var modificationModel = TempData.PopulateBaseProjectModificationProperties(new BaseProjectModificationViewModel());
+        if (modificationModel.Status is ModificationStatus.ReviseAndAuthorise)
+        {
+            return RedirectToRoute("pmc:ModificationDetails", new
+            {
+                modificationModel.ProjectRecordId,
+                modificationModel.IrasId,
+                modificationModel.ShortTitle,
+                projectModificationId = modificationModel.ModificationId,
+                modificationModel.SponsorOrganisationUserId,
+                modificationModel.RtsId
+            });
+        }
+
         // If validation passes, proceed to the sponsor-reference step.
         return RedirectToAction(
             nameof(SponsorReferenceController.SponsorReference),
@@ -298,7 +314,7 @@ public class DocumentsController
     /// Redirects the user to the document upload page.
     /// </summary>
     /// <returns>A redirection to the UploadDocuments action.</returns>
-    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Upload)]
+    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Upload)]
     [HttpPost]
     public IActionResult AddAnotherDocument()
     {
@@ -314,7 +330,7 @@ public class DocumentsController
     /// - If validation fails: redisplays the AddDocumentDetails view with validation errors.
     /// - If validation succeeds: saves answers and redirects to review or list page based on ReviewAnswers flag.
     /// </returns>
-    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Update)]
+    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Update)]
     [HttpPost]
     public async Task<IActionResult> SaveDocumentDetails(ModificationAddDocumentDetailsViewModel viewModel, bool saveForLater = false, bool reviewAllChanges = false)
     {
@@ -393,7 +409,7 @@ public class DocumentsController
             : RedirectAfterSubmit(viewModel); // Continue flow or review answers
     }
 
-    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Delete)]
+    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Delete)]
     [HttpGet]
     public async Task<IActionResult> ConfirmDeleteDocument(Guid id, string backRoute)
     {
@@ -416,7 +432,7 @@ public class DocumentsController
         return View("DeleteDocuments", viewModel);
     }
 
-    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Delete)]
+    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Delete)]
     [HttpGet]
     public async Task<IActionResult> ConfirmDeleteDocuments(string? backRoute)
     {
@@ -451,7 +467,7 @@ public class DocumentsController
         return RedirectToAction(nameof(ProjectDocument));
     }
 
-    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Delete)]
+    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Delete)]
     [HttpPost("deletedocument")]
     public async Task<IActionResult> DeleteDocuments(ModificationDeleteDocumentViewModel model)
     {
@@ -527,7 +543,7 @@ public class DocumentsController
         }
     }
 
-    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Download)]
+    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Download)]
     [HttpGet]
     public async Task<IActionResult> DownloadDocument(string path, string fileName)
     {
@@ -558,7 +574,7 @@ public class DocumentsController
     /// - If documents already exist: redirects to the review page.
     /// - If no files uploaded or service errors occur: returns the current view with validation errors.
     /// </returns>
-    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Upload)]
+    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Upload)]
     [HttpPost]
     public async Task<IActionResult> UploadDocuments(ModificationUploadDocumentsViewModel model)
     {
@@ -637,7 +653,7 @@ public class DocumentsController
         return View(model);
     }
 
-    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Download)]
+    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Download)]
     public async Task<IActionResult> DownloadDocumentsAsZip(string folderName)
     {
         var irasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty;
@@ -1140,6 +1156,13 @@ public class DocumentsController
     {
         TempData[TempDataKeys.ShowNotificationBanner] = true;
         var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
+        var status = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId) as string;
+        var sponsorOrganisationUserId = TempData.Peek(TempDataKeys.RevisionSponsorOrganisationUserId);
+        var rtsId = TempData.Peek(TempDataKeys.RevisionRtsId) as string;
+        if (status is ModificationStatus.ReviseAndAuthorise)
+        {
+            return RedirectToRoute("sws:modifications", new { sponsorOrganisationUserId, rtsId });
+        }
         return RedirectToRoute(PostApprovalRoute, new { projectRecordId });
     }
 

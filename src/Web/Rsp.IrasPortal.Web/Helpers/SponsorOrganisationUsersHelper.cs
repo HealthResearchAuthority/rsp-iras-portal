@@ -61,4 +61,17 @@ public static class SponsorOrganisationUsersHelper
         }
         return new List<string>();
     }
+
+    public static (string? RoleToRemove, string RoleToAdd) MapSponsorRoles(string? selectedRole)
+    {
+        var roleToAdd = string.Equals(selectedRole, Roles.OrganisationAdministrator, StringComparison.OrdinalIgnoreCase)
+            ? Roles.OrganisationAdministrator
+            : Roles.Sponsor;
+
+        var roleToRemove = roleToAdd == Roles.OrganisationAdministrator
+            ? Roles.Sponsor
+            : Roles.OrganisationAdministrator;
+
+        return (roleToRemove, roleToAdd);
+    }
 }

@@ -143,6 +143,9 @@
                     @(!string.IsNullOrEmpty(userRole) ? char.ToUpper(userRole[0]) + userRole.Substring(1) : "")
                 </td>
                 <td class="govuk-table__cell govuk-table__cell--numeric">
+                    @{
+                        await RenderEditLink("user role");
+                    }
                 </td>
             }
             else
@@ -184,6 +187,9 @@
                     @(sponsorOrgUser.IsAuthoriser ? "Yes" : "No")
                 </td>
                 <td class="govuk-table__cell govuk-table__cell--numeric">
+                    @{
+                        await RenderEditLink("authoriser");
+                    }
                 </td>
             </tr>
         }
@@ -304,8 +310,18 @@
 			{
 				<button class="govuk-link-button" type="submit" formaction="@editNewUserUrl">
 					Change<span class="govuk-visually-hidden">@fieldName</span>
-				</button>
-			}
-		}
-	}
+                </button>
+            }
+        }
+        else if (fieldName is "user role" or "authoriser")
+        {
+            <authorized role-is="@Roles.SystemAdministrator">
+                <a class="govuk-link" asp-route="soc:editsponsororganisationuser" asp-route-userId="@sponsorOrgUser.UserId"
+                   asp-route-rtsId="@sponsorOrgUser.RtsId">
+                    Change<span class="govuk-visually-hidden">@fieldName</span>
+                </a>
+            </authorized>
+            
+        }
+    }
 }

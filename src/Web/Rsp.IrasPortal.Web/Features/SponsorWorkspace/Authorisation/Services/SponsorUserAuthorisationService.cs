@@ -1,28 +1,13 @@
 ﻿using System.Net;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Web.Extensions;
-using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models;
 
 namespace Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Services;
-
-public interface ISponsorUserAuthorisationService
-{
-    Task<SponsorUserAuthorisationResult> AuthoriseAsync(
-        Controller controller,
-        Guid sponsorOrganisationUserId,
-        ClaimsPrincipal user);
-
-
-    Task<SponsorUserAuthorisationResult> AuthoriseWithOrganisationContextAsync(
-        Controller controller,
-        Guid sponsorOrganisationUserId,
-        ClaimsPrincipal user,
-        string rtsId);
-}
 
 public sealed class SponsorUserAuthorisationService : ISponsorUserAuthorisationService
 {
@@ -37,7 +22,6 @@ public sealed class SponsorUserAuthorisationService : ISponsorUserAuthorisationS
         _userService = userService;
         _sponsorOrganisationService = sponsorOrganisationService;
     }
-
 
     public SponsorUserAuthorisationService(
         IUserManagementService userService,
@@ -110,7 +94,6 @@ public sealed class SponsorUserAuthorisationService : ISponsorUserAuthorisationS
 
         return SponsorUserAuthorisationResult.Ok(gid);
     }
-
 
     public async Task<SponsorUserAuthorisationResult> AuthoriseWithOrganisationContextAsync(
         Controller controller,
