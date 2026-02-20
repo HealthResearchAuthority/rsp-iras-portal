@@ -15,7 +15,7 @@ public static class HttpClientsConfiguration
     /// </summary>
     /// <param name="services">Specifies the contract for a collection of service descriptors</param>
     /// <param name="appSettings">Application settings from appsettings.json</param>
-    public static IServiceCollection AddHttpClients(this IServiceCollection services, AppSettings appSettings)
+    public static IServiceCollection AddHttpClients(this IServiceCollection services, AppSettings appSettings, IWebHostEnvironment environment)
     {
         services
             .AddRestClient<IApplicationsServiceClient>()
@@ -53,11 +53,17 @@ public static class HttpClientsConfiguration
             .AddHttpMessageHandler<AuthHeadersHandler>()
             .AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
 
-        services
+        var httpClientBuilder = services
             .AddRestClient<IProjectRecordValidationClient>()
             .ConfigureHttpClient(client => client.BaseAddress = appSettings.ProjectRecordValidationUri)
-            .AddHttpMessageHandler<FunctionKeyHeadersHandler>()
             .AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
+
+        if (!environment.IsDevelopment())
+        {
+            // In non-development environments, add the FunctionHeadersHandler to include
+            // authorization headers using tokens via Managed Identity
+            httpClientBuilder.AddHttpMessageHandler<FunctionHeadersHandler>();
+        }
 
         var jsonOptions = new JsonSerializerOptions
         {
