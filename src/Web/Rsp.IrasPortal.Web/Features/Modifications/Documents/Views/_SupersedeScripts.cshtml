@@ -1,0 +1,25 @@
+﻿@using Microsoft.FeatureManagement
+@using Rsp.Portal.Application.Constants
+@using System.Text.Json
+@model ModificationAddDocumentDetailsViewModel
+@inject IFeatureManager featureManager
+
+@if (await featureManager.IsEnabledAsync(FeatureFlags.ProgressiveEnhancement))
+{
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+
+    var conditionalRules = Model.GetConditionalRules();
+
+    <script>
+        $(document).ready(function () {
+            sessionStorage.clear();
+            const conditionalRules = @Html.Raw(JsonSerializer.Serialize(conditionalRules));
+            conditionalRules.forEach(rule => {
+                sessionStorage.setItem(rule.QuestionId, JSON.stringify(rule.Rules));
+            });
+        });
+    </script>
+
+    <script src="~/js/questionnaire.js"></script>
+    <script src="~/js/rules.js"></script>
+}

@@ -32,14 +32,21 @@
 					@foreach (var doc in Model.UploadedDocuments)
 					{
 						<li class="govuk-task-list__item">
-							<div class="govuk-task-list__name-and-hint">
-								<a asp-action="ContinueToDetails"
-								   asp-controller="Documents"
-								   asp-route-documentId="@doc.DocumentId"
-								   class="govuk-link govuk-task-list__link">
-									@doc.FileName
-								</a>
-							</div>
+                            @if (doc.DocumentType == "Tracked" && doc.LinkedDocumentId != null)
+                            {
+                                <span class="govuk-task-list__link">
+                                    @doc.FileName
+                                </span>
+                            }
+                            else
+                            {
+                                <a asp-action="ContinueToDetails"
+                                   asp-controller="Documents"
+                                   asp-route-documentId="@doc.DocumentId"
+                                   class="govuk-link govuk-task-list__link">
+                                    @doc.FileName
+                                </a>
+                            }
 							<div class="govuk-task-list__status">
 								@if (doc.Status == DocumentDetailStatus.Complete.ToString())
 								{

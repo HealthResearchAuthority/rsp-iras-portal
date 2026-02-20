@@ -1,0 +1,167 @@
+﻿@using System.Text.Json
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Microsoft.FeatureManagement
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs
+@using Rsp.Portal.Web.TagHelpers
+@using System.Globalization
+@model ModificationAddDocumentDetailsViewModel
+@inject IFeatureManager featureManager
+
+@{
+    (string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
+    ViewBag.Title = $"Select document to replace";
+    var errorSummaryTitle = "There is a problem";
+}
+
+<partial name="_SupersedeScripts" model="Model" />
+
+@if (Model.ReviewAnswers)
+{
+    navModel = ("pmc:reviewdocumentdetails", "Back", new());
+}
+else if (Model.ReviewAllChanges)
+{
+
+    var modificationParams = new Dictionary<string, string>
+    {
+    { "projectRecordId", Model.ProjectRecordId },
+    { "irasId", Model.IrasId },
+    { "shortTitle", Model.ShortTitle ?? string.Empty },
+    { "projectModificationId", Model.ModificationId.ToString() },
+    { "projectModificationIdentifier", Model.ModificationIdentifier ?? string.Empty }
+    };
+    navModel = ("pmc:reviewallchanges", "Back", modificationParams);
+}
+else
+{
+    // back to the add document details view as that's where the jouney started from
+    navModel = ("pmc:continuetodetails", "Back", new Dictionary<string, string> { { "documentId", Model.DocumentId.ToString() } });
+}
+
+@if (navModel != null)
+{
+    @* @section is added for the back button, so that we can render something below the back button
+        and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
+        the named section *@
+    @section BackNavigation {
+        <partial name="_BackNavigation" model="navModel.Value" />
+    }
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <form method="post">
+            <h1 class="govuk-heading-l">
+                Select document to replace
+            </h1>
+
+            <table class="govuk-table">
+                <thead class="govuk-visually-hidden">
+                    <tr>
+                        <th>Document name</th>
+                        <th>Size</th>
+                        <th class="govuk-!-text-align-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="govuk-table__row">
+                        <td class="govuk-table__cell" style="width: 60%;">
+                            @if (Model.IsMalwareScanSuccessful == true)
+                            {
+                                <a asp-route="pmc:downloaddocument"
+                                   asp-route-fileName="@Model.FileName"
+                                   asp-route-path="@Model.DocumentStoragePath"
+                                   class="govuk-link">
+                                    <strong>@Model.FileName</strong>
+                                </a>
+                            }
+                            else
+                            {
+                                @Model.FileName
+                            }
+                        </td>
+                        <td class="govuk-table__cell" style="width: 20%;">
+                            <span class="govuk-body">@Model.DisplaySize</span>
+                        </td>
+                        <td class="govuk-table__cell govuk-!-text-align-right" style="width: 20%;">
+                            <a asp-route="pmc:confirmdeletedocument"
+                               asp-route-id="@Model.DocumentId"
+                               asp-route-backRoute="todetailspage"
+                               class="govuk-link govuk-link--destructive">
+                                Delete
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <govuk-fieldset class="sections">
+                <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
+
+                <input type="hidden" asp-for="@Model.ShortTitle" />
+                <input type="hidden" asp-for="@Model.IrasId" />
+                <input type="hidden" asp-for="@Model.ModificationId" />
+                <input type="hidden" asp-for="@Model.ModificationIdentifier" />
+                <input type="hidden" asp-for="@Model.DocumentId" />
+                <input type="hidden" asp-for="@Model.FileName" />
+                <input type="hidden" asp-for="@Model.FileSize" />
+                <input type="hidden" asp-for="@Model.DocumentStoragePath" />
+                <input type="hidden" asp-for="@Model.ReviewAnswers" />
+                <input type="hidden" asp-for="@Model.ProjectRecordId" />
+                <input type="hidden" asp-for="@Model.Status" />
+                <input type="hidden" asp-for="@Model.DocumentType" />
+                <input type="hidden" asp-for="@Model.MetaDataDocumentTypeId" />
+
+                <input type="hidden" asp-for="@Model.LinkedDocumentId" />
+                <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">
+                    Select one option
+                </legend>
+
+                <div class="govuk-radios" data-module="govuk-radios">
+
+                    @if (Model.DocumentToReplaceList?.Any() == true)
+                    {
+                        <rsp-gds-radio-group asp-for="ReplacesDocumentId"
+                                             label-css-class="govuk-label govuk-label--s font-weight-none"
+                                             label-text=""
+                                             options="Model.DocumentToReplaceList" />
+
+                        <div class="govuk-radios__divider">or</div>
+                    }
+
+                    <div class="govuk-radios__item">
+                        <input class="govuk-radios__input"
+                               asp-for="ReplacesDocumentId"
+                               type="radio"
+                               value="@Guid.Empty"
+                               id="documentNotInCurrentService" />
+
+                        <label class="govuk-label govuk-radios__label"
+                               for="documentNotInCurrentService">
+                            Document is not in current service
+                        </label>
+                    </div>
+
+                </div>
+            </govuk-fieldset>
+            <div class="save-buttons">
+                @if (Model.ReviewAllChanges)
+                {
+                    <partial name="_SubmitButton" model="@("pmc:savesupersededocumentdetails", "Save changes", new Dictionary<string, string> { { "reviewAllChanges", bool.TrueString } })" />
+                }
+                else if (!Model.ReviewAnswers)
+                {
+                    <partial name="_SubmitButton" model="@("pmc:savesupersededocumentdetails", "Save and continue", new Dictionary<string, string> { { "saveAndContinue", bool.TrueString }, { "continueToDocumentType", bool.TrueString } })" />
+
+                    ViewBag.Style = "govuk-button govuk-button--secondary";
+                    <partial name="_SubmitButton" model="@("pmc:savesupersededocumentdetails", "Save for later", new Dictionary<string, string> { { "saveForLater", bool.TrueString } })" />
+                }
+                else
+                {
+                    <partial name="_SubmitButton" model="@("pmc:savesupersededocumentdetails", "Save changes", new Dictionary<string, string>())" />
+                }
+            </div>
+        </form>
+    </div>
+</div>

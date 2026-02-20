@@ -1,6 +1,7 @@
 ﻿using Azure.Storage.Blobs;
 using FluentValidation;
 using Microsoft.Extensions.Azure;
+using Microsoft.FeatureManagement;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Web.Features.Modifications.Documents.Controllers;
 using Rsp.Portal.Web.Models;
@@ -17,8 +18,9 @@ public class TestDocumentsController : DocumentsController
         IRespondentService respondentService,
         IValidator<QuestionnaireViewModel> validator,
         IBlobStorageService blobStorageService,
-        IAzureClientFactory<BlobServiceClient> blobServiceClientFactory)
-        : base(projectModificationsService, respondentService, cmsQuestionsetService, validator, blobStorageService, blobServiceClientFactory)
+        IAzureClientFactory<BlobServiceClient> blobServiceClientFactory,
+        IFeatureManager featureManager)
+        : base(projectModificationsService, respondentService, cmsQuestionsetService, validator, blobStorageService, blobServiceClientFactory, featureManager)
     {
     }
 

@@ -3,6 +3,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Web.Attributes;
+using Microsoft.FeatureManagement;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.Responses;
@@ -26,8 +27,9 @@ public class ModificationDetailsController
     IModificationRankingService modificationRankingService,
     ISponsorOrganisationService sponsorOrganisationService,
     ISponsorUserAuthorisationService sponsorUserAuthorisationService,
-    IValidator<QuestionnaireViewModel> validator
-) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator)
+    IValidator<QuestionnaireViewModel> validator,
+    IFeatureManager featureManager
+) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator, featureManager)
 {
     private const string SponsorDetailsSectionId = "pm-sponsor-reference";
     private const string DocumentDetailsSection = "pdm-document-metadata";

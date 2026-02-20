@@ -36,6 +36,17 @@ public class DocumentSummaryItemDto
     public bool? IsMalwareScanSuccessful { get; set; }
 
     /// <summary>
+    /// This field will indicate whether the document is CLEAN or TRACKED
+    /// </summary>
+    public string? DocumentType { get; set; }
+
+    /// <summary>
+    /// For a CLEAN document: reference to the corresponding TRACKED version (if it exists).
+    /// For a TRACKED document: reference to the corresponding CLEAN version(if it exists).
+    /// </summary>
+    public Guid? LinkedDocumentId { get; set; }
+
+    /// <summary>
     /// Gets the display size in KB, MB or GB, rounded to 2 decimal places.
     /// </summary>
     public string DisplaySize

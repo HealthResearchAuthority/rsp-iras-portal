@@ -22,8 +22,9 @@ public class AuthorisationsSponsorSelectorController(
     ISponsorOrganisationService sponsorOrganisationService,
     ICmsQuestionsetService cmsQuestionsetService,
     IRtsService rtsService,
-    ISponsorUserAuthorisationService sponsorUserAuthorisationService
-) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, null!)
+    ISponsorUserAuthorisationService sponsorUserAuthorisationService,
+    IFeatureManager featureManager
+) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, null!, featureManager)
 {
     [Authorize(Policy = Permissions.Sponsor.Modifications_Search)]
     [HttpGet]

@@ -5,6 +5,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
+using Microsoft.FeatureManagement;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
@@ -30,8 +31,9 @@ public class ReviewAllChangesController
     IProjectModificationsService projectModificationsService,
     ICmsQuestionsetService cmsQuestionsetService,
     IRespondentService respondentService,
-    IValidator<QuestionnaireViewModel> validator
-) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator)
+    IValidator<QuestionnaireViewModel> validator,
+    IFeatureManager featureManager
+) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator, featureManager)
 {
     private const string DocumentDetailsSection = "pdm-document-metadata";
     private const string SponsorDetailsSectionId = "pm-sponsor-reference";
