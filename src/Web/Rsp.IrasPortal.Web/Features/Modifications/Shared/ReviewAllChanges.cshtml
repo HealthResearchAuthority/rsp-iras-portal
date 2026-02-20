@@ -145,3 +145,21 @@ else
         </div>
     </div>
 </authorized>
+
+<feature name="@FeatureFlags.WithdrawModification">
+	<authorized permission="@Permissions.MyResearch.Modifications_Withdraw"
+                status-for="Status"
+                status-is="@ModificationStatus.WithReviewBody">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <div class="govuk-heading-m">
+                    Withdraw this modification
+                </div>
+                <a asp-route="pmc:withdrawmodification"
+                   class="govuk-button govuk-button--secondary">
+                    Withdraw modification
+                </a>
+            </div>
+        </div>
+    </authorized>
+</feature>

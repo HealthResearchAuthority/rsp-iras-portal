@@ -82,7 +82,8 @@
                                ModificationStatus.WithReviewBody,
                                ModificationStatus.Approved,
                                ModificationStatus.NotApproved,
-                               ModificationStatus.NotAuthorised})"
+                               ModificationStatus.NotAuthorised,
+                               ModificationStatus.Withdrawn })"
                 status-mode="Show">
         @if (modificationBaseModel.Status is not null)
         {
@@ -122,6 +123,7 @@
                         ModificationStatus.WithReviewBody => "govuk-tag--green",
                         ModificationStatus.NotApproved => "govuk-tag--red",
                         ModificationStatus.NotAuthorised => "govuk-tag--red",
+                        ModificationStatus.Withdrawn => "govuk-tag--red",
                         _ => "govuk-tag--blue"
                     };
                 }

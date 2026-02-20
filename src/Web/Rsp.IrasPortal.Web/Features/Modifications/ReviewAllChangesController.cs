@@ -4,6 +4,7 @@ using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement.Mvc;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
@@ -17,6 +18,8 @@ using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Features.Modifications.Models;
 using Rsp.Portal.Web.Helpers;
 using Rsp.Portal.Web.Models;
+using static Rsp.Portal.Application.AccessControl.RoleStatusPermissions;
+using static Rsp.Portal.Application.Constants.TempDataKeys;
 
 namespace Rsp.Portal.Web.Features.Modifications;
 
@@ -460,6 +463,41 @@ public class ReviewAllChangesController
     {
         return View("ModificationSendToSponsor");
     }
+
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Withdraw)]
+    [FeatureGate(FeatureFlags.WithdrawModification)]
+    [HttpGet]
+    public IActionResult WithdrawModification()
+    {
+        var model = GetFromTempData();
+
+        if (model is null)
+        {
+            return this.ServiceError(_reviewOutcomeNotFoundError);
+        }
+
+        return View(model);
+    }
+
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Withdraw)]
+    [FeatureGate(FeatureFlags.WithdrawModification)]
+    [HttpPost]
+    public async Task<IActionResult> ConfirmWithdrawModification(string projectRecordId, Guid projectModificationId)
+    {
+        var model = GetFromTempData();
+
+        if (model is null)
+        {
+            return this.ServiceError(_reviewOutcomeNotFoundError);
+        }
+
+        return await HandleModificationStatusUpdate(
+            projectRecordId,
+            projectModificationId,
+            ModificationStatus.Withdrawn,
+            onSuccess: () => View(model));
+    }
+
 
     private async Task<IActionResult> HandleModificationStatusUpdate(
         string projectRecordId,

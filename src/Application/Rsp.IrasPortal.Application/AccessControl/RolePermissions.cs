@@ -41,6 +41,7 @@ public static class RolePermissions
                 MyResearch.Modifications_List,
                 MyResearch.Modifications_Search,
                 MyResearch.Modifications_Submit,
+                MyResearch.Modifications_Withdraw,
 
                 MyResearch.ModificationsHistory_Read
             }

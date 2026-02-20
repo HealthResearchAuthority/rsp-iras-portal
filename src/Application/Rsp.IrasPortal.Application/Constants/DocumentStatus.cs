@@ -11,6 +11,7 @@ public struct DocumentStatus
     public const string Approved = "Approved";
     public const string NotAuthorised = "Not authorised";
     public const string NotApproved = "Not approved";
+    public const string Withdrawn = "Withdrawn";
 
     // BACKSTAGE VALUES
     public const string Received = "Received";
