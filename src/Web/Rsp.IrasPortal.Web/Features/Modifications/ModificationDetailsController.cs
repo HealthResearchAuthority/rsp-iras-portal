@@ -2,7 +2,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Web.Attributes;
+using Microsoft.FeatureManagement;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.Responses;
@@ -24,9 +24,8 @@ public class ModificationDetailsController
     IRespondentService respondentService,
     ICmsQuestionsetService cmsQuestionsetService,
     IModificationRankingService modificationRankingService,
-    ISponsorOrganisationService sponsorOrganisationService,
-    ISponsorUserAuthorisationService sponsorUserAuthorisationService,
-    IValidator<QuestionnaireViewModel> validator
+    IValidator<QuestionnaireViewModel> validator,
+    IFeatureManager featureManager
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator)
 {
     private const string SponsorDetailsSectionId = "pm-sponsor-reference";
@@ -77,70 +76,11 @@ public class ModificationDetailsController
         {
             return result;
         }
-
-        if (modification is null)
+        //Allow applicant to enter the request revisions description when sponser sent for the request revisions
+        if (await featureManager.IsEnabledAsync(FeatureFlags.RequestRevisions) && modification?.Status is ModificationStatus.RequestRevisions)
         {
-            return this.ServiceError(new ServiceResponse
-            {
-                StatusCode = HttpStatusCode.BadRequest,
-                Error = $"There is no modification for modification id {projectModificationId}",
-            });
+            return RedirectToAction(nameof(RequestForRevision), modification);
         }
-
-        // If its sponsor revision - validate if sponsor is authoriser
-        if (modification.Status is ModificationStatus.ReviseAndAuthorise && sponsorOrganisationUserId != null && rtsId != null)
-        {
-            // Add sponsor details
-            modification.SponsorOrganisationUserId = sponsorOrganisationUserId.Value.ToString();
-            modification.RtsId = rtsId;
-
-            var revisionDescription = TempData[TempDataKeys.RevisionDescription];
-            if (!string.IsNullOrEmpty(revisionDescription?.ToString()))
-            {
-                modification.RevisionDescription = revisionDescription.ToString();
-            }
-
-            var sponsorDetailsQuestionsResponse = await cmsQuestionsetService.GetModificationQuestionSet(SponsorDetailsSectionId);
-
-            // get the responent answers for the sponsor details
-            var sponsorDetailsResponse = await respondentService.GetModificationAnswers(projectModificationId, projectRecordId);
-
-            var sponsorDetailsAnswers = sponsorDetailsResponse.Content!;
-
-            // convert the questions response to QuestionnaireViewModel
-            var sponsorDetailsQuestionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(sponsorDetailsQuestionsResponse.Content!);
-
-            // Apply answers questions using shared helper
-            sponsorDetailsQuestionnaire.UpdateWithRespondentAnswers(sponsorDetailsAnswers);
-
-            modification.SponsorDetails = sponsorDetailsQuestionnaire.Questions;
-
-            // Add modification documents
-            var modificationDocumentsResponseResult = await this.GetModificationDocuments(projectModificationId,
-            DocumentDetailsSection, pageNumber, pageSize, sortField, sortDirection, isSponsorRevisingModification: true);
-
-            modification.ProjectOverviewDocumentViewModel.Documents = modificationDocumentsResponseResult.Item1?.Content?.Documents ?? [];
-
-            await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, modification.ProjectOverviewDocumentViewModel.Documents);
-
-            modification.ProjectOverviewDocumentViewModel.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationDocumentsResponseResult.Item1?.Content?.TotalCount ?? 0)
-            {
-                SortDirection = sortDirection,
-                SortField = sortField,
-                FormName = "projectdocuments-selection",
-                RouteName = "pmc:modificationdetails",
-                AdditionalParameters = new Dictionary<string, string>()
-                {
-                    { "projectRecordId", projectRecordId },
-                    { "irasId", irasId },
-                    { "shortTitle", shortTitle },
-                    { "projectModificationId", projectModificationId.ToString() },
-                    { "sponsorOrganisationUserId", sponsorOrganisationUserId.Value.ToString() },
-                    { "rtsId", rtsId }
-                }
-            };
-        }
-
         // validate and update the status and answers for the change
         modification.ModificationChanges = await UpdateModificationChanges(projectRecordId, modification.ModificationChanges);
 

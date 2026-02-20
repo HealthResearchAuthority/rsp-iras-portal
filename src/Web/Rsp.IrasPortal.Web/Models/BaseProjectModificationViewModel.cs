@@ -68,12 +68,7 @@ public class BaseProjectModificationViewModel
     public string DateCreated { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets sponsor organisation user id - for authorising sponsor making changes to modification during Revise and authorise
+    /// The response of the applicant stored here
     /// </summary>
-    public string? SponsorOrganisationUserId { get; set; }
-
-    /// <summary>
-    /// Gets or sets rtsId - for authorising sponsor making changes to modification during Revise and authorise
-    /// </summary>
-    public string? RtsId { get; set; }
+    public string? ApplicantRevisionResponse { get; set; }
 }

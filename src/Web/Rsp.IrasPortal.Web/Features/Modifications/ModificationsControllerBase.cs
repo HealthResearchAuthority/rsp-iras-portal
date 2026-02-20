@@ -84,7 +84,12 @@ public abstract class ModificationsControllerBase
             DateCreated = DateHelper.ConvertDateToString(modification.CreatedDate),
             ReasonNotApproved = modification?.ReasonNotApproved ?? string.Empty,
             ReviewerComments = modification?.ReviewerComments,
-            RevisionDescription = modification?.RevisionDescription,
+            RevisionDescription = modification?.RevisionDescription ?? string.Empty,
+            ApplicantRevisionResponse = modification?.ApplicantRevisionResponse ?? string.Empty
+            ReviewerComments = modification?.ReviewerComments,
+            RevisionDescription = modification?.RevisionDescription ?? string.Empty,
+            ApplicantRevisionResponse = modification?.ApplicantRevisionResponse ?? string.Empty
+            ReviewerComments = modification?.ReviewerComments,
             RequestForInformationReasons = modificationReviewResponse.Content?.RequestForInformationReasons ?? []
         });
     }
