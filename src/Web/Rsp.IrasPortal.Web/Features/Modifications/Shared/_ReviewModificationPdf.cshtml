@@ -1,0 +1,83 @@
+﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Web.Features.Modifications.Models
+@model ModificationDetailsViewModel
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">Modification</h1>
+
+        <dl class="govuk-summary-list">
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">IRAS ID</dt>
+                <dd class="govuk-summary-list__value">@Model.IrasId</dd>
+            </div>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Short project title</dt>
+                <dd class="govuk-summary-list__value">@Model.ShortTitle</dd>
+            </div>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Modification ID</dt>
+                <dd class="govuk-summary-list__value">@Model.ModificationIdentifier
+                </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Date created</dt>
+                <dd class="govuk-summary-list__value">@Model.DateCreated</dd>
+            </div>
+
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Status</dt>
+                <dd class="govuk-summary-list__value">
+                    @{
+                        var tagClass = Model.Status switch
+                        {
+                            ModificationStatus.WithSponsor => "govuk-tag--yellow",
+                            ModificationStatus.Approved => "govuk-tag--green",
+                            ModificationStatus.WithReviewBody => "govuk-tag--green",
+                            ModificationStatus.NotApproved => "govuk-tag--red",
+                            ModificationStatus.NotAuthorised => "govuk-tag--red",
+                            _ => "govuk-tag--blue"
+                        };
+                    }
+                    <strong class="govuk-tag @tagClass">
+                        @Model.Status
+                    </strong>
+                </dd>
+            </div>
+        </dl>
+        
+        <h2 class="govuk-heading-m">Overall modification ranking</h2>
+        <div class="govuk-summary-card">
+            <div class="govuk-summary-card__title-wrapper">
+                <h2 class="govuk-summary-card__title">
+                    Ranking
+                </h2>
+            </div>
+            <div class="govuk-summary-card__content">
+                <div class="govuk-summary-card__content">
+                    @{
+                        var ranking = new RankingOfChangeViewModel
+                        {
+                            ModificationType = Model.ModificationType,
+                            Category = Model.Category,
+                            ReviewType = Model.ReviewType
+                        };
+                        <partial name="RankingOfChange" model="ranking" />
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+        <h2 class="govuk-heading-m">Sponsor details</h2>
+        <partial name="SponsorDetails" model="Model" viewData="ViewData" />
+        <h2 class="govuk-heading-m">Modfication changes</h2>
+        <partial name="ModificationChanges" model="Model" viewData="ViewData" />
+        <partial name="SupportingDocuments" model="Model" viewData="ViewData" />
+        <h2 class="govuk-heading-m">Audit history</h2>
+        <partial name="_ProjectModificationAuditTrail" model="Model.AuditTrailModel" viewData="ViewData" />
+    </div>
+</div>

@@ -323,4 +323,6 @@ public interface IProjectModificationsService : IInterceptable
     /// </summary>
     /// <param name="documentsAuditTrailRequest">The request object containing the review values</param>
     public Task<ServiceResponse> CreateModificationDocumentsAuditTrail(List<ModificationDocumentsAuditTrailDto> documentsAuditTrailRequest);
+
+    public ServiceResponse<byte[]> GenerateModificationPdf(ProjectModificationRequest projectModification);
 }
