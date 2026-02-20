@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FluentValidation.TestHelper;
-using Rsp.Portal.Web.Features.Approvals.RecordSearch.Models;
+﻿using FluentValidation.TestHelper;
 using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models;
 using Rsp.Portal.Web.Validators;
 
@@ -45,7 +39,7 @@ public class ValidateAsyncTests : TestServiceBase<AuthorisationsModificationsSea
         // Assert
         result
             .ShouldHaveValidationErrorFor(x => x.SearchTerm)
-            .WithErrorMessage("Modification ID must be no more than 8 characters");
+            .WithErrorMessage("Modification ID must be 8 characters or less");
     }
 
     [Fact]
@@ -63,7 +57,7 @@ public class ValidateAsyncTests : TestServiceBase<AuthorisationsModificationsSea
         // Assert
         result
             .ShouldHaveValidationErrorFor(x => x.SearchTerm)
-            .WithErrorMessage("Modification ID must only contain numbers and '/'");
+            .WithErrorMessage("Modification ID must only include numbers and a slash, like 123456/1");
     }
 
     [Fact]

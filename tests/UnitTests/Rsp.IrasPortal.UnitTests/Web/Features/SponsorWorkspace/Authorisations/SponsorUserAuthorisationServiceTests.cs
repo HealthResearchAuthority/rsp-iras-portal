@@ -14,9 +14,10 @@ public class SponsorUserAuthorisationServiceTests
 {
     private readonly Mock<ISponsorOrganisationService> _sponsorOrganisationService = new();
     private readonly Mock<IUserManagementService> _userService = new();
+    private readonly Mock<IRtsService> _rtsService = new();
 
     private SponsorUserAuthorisationService Sut =>
-        new(_userService.Object, _sponsorOrganisationService.Object);
+        new(_userService.Object, _sponsorOrganisationService.Object, _rtsService.Object);
 
     [Fact]
     public async Task AuthoriseAsync_When_Email_Missing_Returns_ServiceError_And_DoesNot_Call_Dependencies()
@@ -279,6 +280,306 @@ public class SponsorUserAuthorisationServiceTests
         GetFailureResult(result).ShouldBeNull();
     }
 
+    [Fact]
+    public async Task AuthoriseAsync_When_NoSponsorOrgActive_Returns_Forbid()
+    {
+        // Arrange
+        var controller = NewController();
+        var sponsorOrganisationUserId = Guid.NewGuid();
+        var principal = BuildPrincipal("test@test.co.uk");
+
+        var gid = Guid.NewGuid();
+
+        _userService
+            .Setup(x => x.GetUser(null, "test@test.co.uk", null))
+            .ReturnsAsync(OkUserResponse(gid, "test@test.co.uk"));
+
+        // Sponsor org returned but does NOT contain matching user membership
+        var sponsorOrgsResponse = new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new List<SponsorOrganisationDto>
+            {
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    Users = new List<SponsorOrganisationUserDto>
+                    {
+                        new()
+                        {
+                            UserId = Guid.NewGuid(), // different user
+                            Id = Guid.NewGuid() // membership id for someone else,`
+                        }
+                    },
+                    IsActive = false,
+                    RtsId = "123"
+                }
+            }
+        };
+
+        _sponsorOrganisationService
+            .Setup(x => x.GetAllActiveSponsorOrganisationsForEnabledUser(It.IsAny<Guid>()))
+            .ReturnsAsync(sponsorOrgsResponse);
+
+        // Act
+        var result = await Sut.AuthoriseAsync(controller, sponsorOrganisationUserId, principal);
+
+        // Assert
+        AssertFailedWithActionResult(result, typeof(ForbidResult));
+    }
+
+    [Fact]
+    public async Task AuthoriseWithOrganisationContextAsync_When_AuthoriseAsync_Fails_Returns_That_Failure_And_DoesNot_Call_Dependencies()
+    {
+        // Arrange
+        var controller = NewController();
+        var principal = BuildPrincipal(null); // missing email => AuthoriseAsync should fail
+        var sponsorOrganisationUserId = Guid.NewGuid();
+
+        // Act
+        var result = await Sut.AuthoriseWithOrganisationContextAsync(
+            controller, sponsorOrganisationUserId, principal, rtsId: "123");
+
+        // Assert
+        result.ShouldNotBeNull();
+        GetIsSuccess(result).ShouldBeFalse();
+
+        _sponsorOrganisationService.Verify(
+            x => x.GetAllActiveSponsorOrganisationsForEnabledUser(It.IsAny<Guid>()),
+            Times.Never);
+
+        _rtsService.Verify(
+            x => x.GetOrganisation(It.IsAny<string>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task AuthoriseWithOrganisationContextAsync_When_SponsorOrganisationService_Fails_Returns_ServiceError()
+    {
+        // Arrange
+        var controller = NewController();
+        var principal = BuildPrincipal("test@test.co.uk");
+        var sponsorOrganisationUserId = Guid.NewGuid();
+        var gid = Guid.NewGuid();
+
+        _userService
+            .Setup(x => x.GetUser(null, "test@test.co.uk", null))
+            .ReturnsAsync(OkUserResponse(gid, "test@test.co.uk"));
+
+        _sponsorOrganisationService
+            .Setup(x => x.GetAllActiveSponsorOrganisationsForEnabledUser(gid))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
+            {
+                StatusCode = HttpStatusCode.BadGateway,
+                Content = null
+            });
+
+        // Act
+        var result = await Sut.AuthoriseWithOrganisationContextAsync(
+            controller, sponsorOrganisationUserId, principal, rtsId: "123");
+
+        // Assert
+        AssertFailedWithActionResult(result, typeof(IActionResult));
+
+        _rtsService.Verify(
+            x => x.GetOrganisation(It.IsAny<string>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task AuthoriseWithOrganisationContextAsync_When_No_ActiveAuthoriser_Orgs_Returns_Forbid()
+    {
+        // Arrange
+        var controller = NewController();
+        var principal = BuildPrincipal("test@test.co.uk");
+        var sponsorOrganisationUserId = Guid.NewGuid();
+        var gid = Guid.NewGuid();
+
+        _userService
+            .Setup(x => x.GetUser(null, "test@test.co.uk", null))
+            .ReturnsAsync(OkUserResponse(gid, "test@test.co.uk"));
+
+        // Only inactive OR not-authoriser memberships => filtered out => not allowed
+        _sponsorOrganisationService
+            .Setup(x => x.GetAllActiveSponsorOrganisationsForEnabledUser(gid))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new List<SponsorOrganisationDto>
+                {
+                new()
+                {
+                    RtsId = "123",
+                    IsActive = false,
+                    Users = new List<SponsorOrganisationUserDto>
+                    {
+                        new() { UserId = gid, IsAuthoriser = true }
+                    }
+                },
+                new()
+                {
+                    RtsId = "456",
+                    IsActive = true,
+                    Users = new List<SponsorOrganisationUserDto>
+                    {
+                        new() { UserId = gid, IsAuthoriser = false }
+                    }
+                }
+                }
+            });
+
+        // Act
+        var result = await Sut.AuthoriseWithOrganisationContextAsync(
+            controller, sponsorOrganisationUserId, principal, rtsId: "123");
+
+        // Assert
+        AssertFailedWithActionResult(result, typeof(ForbidResult));
+
+        _rtsService.Verify(
+            x => x.GetOrganisation(It.IsAny<string>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task AuthoriseWithOrganisationContextAsync_When_RtsId_Not_Allowed_Returns_Forbid_And_Sets_Filtered_SponsorOrgs_On_Result()
+    {
+        // Arrange
+        var controller = NewController();
+        var principal = BuildPrincipal("test@test.co.uk");
+        var sponsorOrganisationUserId = Guid.NewGuid();
+        var gid = Guid.NewGuid();
+
+        _userService
+            .Setup(x => x.GetUser(null, "test@test.co.uk", null))
+            .ReturnsAsync(OkUserResponse(gid, "test@test.co.uk"));
+
+        var allowedOrg = new SponsorOrganisationDto
+        {
+            RtsId = "ALLOWED",
+            IsActive = true,
+            Users = new List<SponsorOrganisationUserDto>
+        {
+            new() { UserId = gid, IsAuthoriser = true }
+        }
+        };
+
+        _sponsorOrganisationService
+            .Setup(x => x.GetAllActiveSponsorOrganisationsForEnabledUser(gid))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new[] { allowedOrg }
+            });
+
+        // Act
+        var result = await Sut.AuthoriseWithOrganisationContextAsync(
+            controller, sponsorOrganisationUserId, principal, rtsId: "NOT_ALLOWED");
+
+        // Assert
+        AssertFailedWithActionResult(result, typeof(ForbidResult));
+    }
+
+    [Fact]
+    public async Task AuthoriseWithOrganisationContextAsync_When_RtsService_Fails_Returns_ServiceError()
+    {
+        // Arrange
+        var controller = NewController();
+        var principal = BuildPrincipal("test@test.co.uk");
+        var sponsorOrganisationUserId = Guid.NewGuid();
+        var gid = Guid.NewGuid();
+
+        _userService
+            .Setup(x => x.GetUser(null, "test@test.co.uk", null))
+            .ReturnsAsync(OkUserResponse(gid, "test@test.co.uk"));
+
+        _sponsorOrganisationService
+            .Setup(x => x.GetAllActiveSponsorOrganisationsForEnabledUser(gid))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new[]
+                {
+                new SponsorOrganisationDto
+                {
+                    RtsId = "123",
+                    IsActive = true,
+                    Users = new List<SponsorOrganisationUserDto>
+                    {
+                        new() { UserId = gid, IsAuthoriser = true }
+                    }
+                }
+                }
+            });
+
+        _rtsService
+            .Setup(x => x.GetOrganisation("123"))
+            .ReturnsAsync(new ServiceResponse<OrganisationDto>
+            {
+                StatusCode = HttpStatusCode.NotFound,
+                Content = null
+            });
+
+        // Act
+        var result = await Sut.AuthoriseWithOrganisationContextAsync(
+            controller, sponsorOrganisationUserId, principal, rtsId: "123");
+
+        // Assert
+        AssertFailedWithActionResult(result, typeof(IActionResult));
+    }
+
+    [Fact]
+    public async Task AuthoriseWithOrganisationContextAsync_When_Authorised_And_RtsService_Succeeds_Returns_Success_And_Sets_SelectedOrganisation()
+    {
+        // Arrange
+        var controller = NewController();
+        var principal = BuildPrincipal("test@test.co.uk");
+        var gid = Guid.NewGuid();
+
+        _userService
+            .Setup(x => x.GetUser(null, "test@test.co.uk", null))
+            .ReturnsAsync(OkUserResponse(gid, "test@test.co.uk"));
+
+        _sponsorOrganisationService
+            .Setup(x => x.GetAllActiveSponsorOrganisationsForEnabledUser(gid))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<SponsorOrganisationDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new[]
+                {
+                new SponsorOrganisationDto
+                {
+                    Id = gid,
+                    RtsId = "123",
+                    IsActive = true,
+                    Users = new List<SponsorOrganisationUserDto>
+                    {
+                        new() { Id = gid,UserId = gid,IsAuthoriser = true ,IsActive = true}
+                    }
+                }
+                }
+            });
+
+        _rtsService
+            .Setup(x => x.GetOrganisation("123"))
+            .ReturnsAsync(new ServiceResponse<OrganisationDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new OrganisationDto { Name = "My Org Name" }
+            });
+
+        // Act
+        var result = await Sut.AuthoriseWithOrganisationContextAsync(
+            controller, gid, principal, rtsId: "123");
+
+        // Assert
+        result.ShouldNotBeNull();
+        GetIsSuccess(result).ShouldBeTrue();
+        GetUserId(result).ShouldBe(gid);
+        GetFailureResult(result).ShouldBeNull();
+    }
+
+
+
     // ---------------- Helpers ----------------
 
     private static ClaimsPrincipal BuildPrincipal(string? email)
@@ -381,6 +682,54 @@ public class SponsorUserAuthorisationServiceTests
 
         return (Guid?)prop.GetValue(result);
     }
+
+    private static List<SponsorOrganisationDto>? GetSponsorOrganisations(object result)
+    {
+        // Expected: SponsorOrganisations / Organisations / AllowedOrganisations
+        var prop = result.GetType().GetProperty("SponsorOrganisations")
+                   ?? result.GetType().GetProperty("Organisations")
+                   ?? result.GetType().GetProperty("AllowedOrganisations");
+
+        return (List<SponsorOrganisationDto>?)prop?.GetValue(result);
+    }
+
+    private static (string RtsId, string? Name)? GetSelectedOrganisation(object result)
+    {
+        // Expected: SelectedOrganisationRtsId + SelectedOrganisationName
+        // or SelectedOrganisation (complex) etc.
+        var rtsIdProp = result.GetType().GetProperty("SelectedOrganisationRtsId")
+                        ?? result.GetType().GetProperty("SelectedRtsId")
+                        ?? result.GetType().GetProperty("RtsId");
+
+        var nameProp = result.GetType().GetProperty("SelectedOrganisationName")
+                       ?? result.GetType().GetProperty("SelectedName")
+                       ?? result.GetType().GetProperty("OrganisationName");
+
+        if (rtsIdProp != null)
+        {
+            var rtsId = (string?)rtsIdProp.GetValue(result);
+            if (!string.IsNullOrWhiteSpace(rtsId))
+            {
+                var name = (string?)nameProp?.GetValue(result);
+                return (rtsId!, name);
+            }
+        }
+
+        // Alternative: result.SelectedOrganisation with props RtsId/Name
+        var selectedProp = result.GetType().GetProperty("SelectedOrganisation");
+        if (selectedProp?.GetValue(result) is { } selected)
+        {
+            var selRtsId = (string?)selected.GetType().GetProperty("RtsId")?.GetValue(selected);
+            var selName = (string?)selected.GetType().GetProperty("Name")?.GetValue(selected);
+            if (!string.IsNullOrWhiteSpace(selRtsId))
+            {
+                return (selRtsId!, selName);
+            }
+        }
+
+        return null;
+    }
+
 
     private static IActionResult? GetFailureResult(object result)
     {

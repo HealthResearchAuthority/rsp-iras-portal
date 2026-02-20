@@ -6,7 +6,6 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
-using Rsp.IrasPortal.Web.Helpers;
 using Rsp.IrasPortal.Web.Models;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
@@ -17,6 +16,7 @@ using Rsp.Portal.Domain.AccessControl;
 using Rsp.Portal.Web.Areas.Admin.Models;
 using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Features.SponsorWorkspace.MyOrganisations.Models;
+using Rsp.Portal.Web.Helpers;
 using Rsp.Portal.Web.Models;
 using static Rsp.Portal.Web.Extensions.PaginationViewModelExtensions;
 
@@ -130,7 +130,8 @@ public class MyOrganisationsController(
             Name = ctx.RtsOrganisation.Name,
             Country = ctx.RtsOrganisation.CountryName,
             Address = ctx.RtsOrganisation.Address,
-            LastUpdated = ctx.SponsorOrganisation.UpdatedDate ?? ctx.SponsorOrganisation.CreatedDate ?? DateTime.MinValue
+            LastUpdated = ctx.SponsorOrganisation.UpdatedDate ??
+                          ctx.SponsorOrganisation.CreatedDate ?? DateTime.MinValue
         };
 
         return View(model);
@@ -161,8 +162,6 @@ public class MyOrganisationsController(
             Name = ctx.RtsOrganisation.Name,
             RtsId = rtsId
         };
-
-        var user = User;
 
         var allowedStatuses = new List<string>
         {
@@ -201,7 +200,7 @@ public class MyOrganisationsController(
             pageSize,
             sortField,
             sortDirection
-            );
+        );
 
         model.ProjectRecords = projects?.Content?.Items ?? [];
 
@@ -234,7 +233,8 @@ public class MyOrganisationsController(
             return View(nameof(MyOrganisationProjects), model);
         }
 
-        HttpContext.Session.SetString(SessionKeys.SponsorMyOrganisationsProjectsSearch, JsonSerializer.Serialize(model.Search));
+        HttpContext.Session.SetString(SessionKeys.SponsorMyOrganisationsProjectsSearch,
+            JsonSerializer.Serialize(model.Search));
 
         return RedirectToAction(nameof(MyOrganisationProjects), new { rtsId = model.RtsId });
     }
@@ -262,7 +262,8 @@ public class MyOrganisationsController(
             IrasId = search.IrasId
         };
 
-        HttpContext.Session.SetString(SessionKeys.SponsorMyOrganisationsProjectsSearch, JsonSerializer.Serialize(cleanedSearch));
+        HttpContext.Session.SetString(SessionKeys.SponsorMyOrganisationsProjectsSearch,
+            JsonSerializer.Serialize(cleanedSearch));
 
         return RedirectToAction(nameof(MyOrganisationProjects), new { rtsId });
     }
@@ -315,9 +316,11 @@ public class MyOrganisationsController(
                 break;
         }
 
-        HttpContext.Session.SetString(SessionKeys.SponsorMyOrganisationsProjectsSearch, JsonSerializer.Serialize(search));
+        HttpContext.Session.SetString(SessionKeys.SponsorMyOrganisationsProjectsSearch,
+            JsonSerializer.Serialize(search));
 
-        return await ApplyProjectRecordsFilters(new SponsorMyOrganisationProjectsViewModel { RtsId = rtsId, Search = search });
+        return await ApplyProjectRecordsFilters(new SponsorMyOrganisationProjectsViewModel
+        { RtsId = rtsId, Search = search });
     }
 
     [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Users)]
@@ -326,6 +329,13 @@ public class MyOrganisationsController(
         int pageNumber = 1, int pageSize = 20, string? sortField = "GivenName", string? sortDirection = "asc")
     {
         ViewBag.Active = MyOrganisationProfileOverview.Users;
+
+        // Read without consuming (in case Layout/View touches TempData too)
+        if (TempData[TempDataKeys.ValidationSummaryError] is string error &&
+            !string.IsNullOrWhiteSpace(error))
+        {
+            ModelState.AddModelError(string.Empty, error);
+        }
 
         var ctxResult = await TryGetSponsorOrgContext(rtsId);
         if (ctxResult.HasResult)
@@ -475,7 +485,14 @@ public class MyOrganisationsController(
 
     [Authorize(Policy = Permissions.Sponsor.MyOrganisations_Audit)]
     [HttpGet]
-    public async Task<IActionResult> MyOrganisationAuditTrail(string rtsId)
+    public async Task<IActionResult> MyOrganisationAuditTrail
+    (
+        string rtsId,
+        int pageNumber = 1,
+        int pageSize = 20,
+        string sortField = "DateTimeStamp",
+        string sortDirection = "desc"
+    )
     {
         ViewBag.Active = MyOrganisationProfileOverview.Audit;
 
@@ -484,23 +501,56 @@ public class MyOrganisationsController(
         {
             return ctxResult.Result!;
         }
+
         var ctx = ctxResult.Context!;
 
-        var auditResponse = await sponsorOrganisationService.SponsorOrganisationAuditTrail(
-            rtsId, 1, int.MaxValue, "DateTimeStamp", SortDirections.Descending);
+        var auditResponse = await sponsorOrganisationService.SponsorOrganisationAuditTrail
+        (
+            rtsId,
+            pageNumber,
+            pageSize,
+            sortField,
+            sortDirection
+        );
 
-        if (!auditResponse.IsSuccessStatusCode)
+        if (!auditResponse.IsSuccessStatusCode &&
+            auditResponse.Content == null)
         {
             return this.ServiceError(auditResponse);
         }
 
-        var auditTrails = SponsorOrganisationSortingExtensions.SortSponsorOrganisationAuditTrails(auditResponse.Content.Items, "DateTimeStamp", SortDirections.Descending, ctx.RtsOrganisation.Name, 1, int.MaxValue);
+        var auditTrails = SponsorOrganisationSortingExtensions.SortSponsorOrganisationAuditTrails
+        (
+            auditResponse.Content.Items,
+            sortField,
+            sortDirection,
+            ctx.RtsOrganisation.Name,
+            pageNumber,
+            pageSize
+        );
+
+        var paginationModel = new PaginationViewModel
+        (
+            pageNumber,
+            pageSize,
+            auditResponse.Content != null ? auditResponse.Content.TotalCount : -1
+        )
+        {
+            RouteName = "sws:MyOrganisationAuditTrail",
+            AdditionalParameters =
+            {
+                { "rtsId", rtsId }
+            },
+            SortField = sortField,
+            SortDirection = sortDirection
+        };
 
         var model = new SponsorMyOrganisationAuditViewModel
         {
             RtsId = rtsId,
             Name = ctx.RtsOrganisation.Name,
-            AuditTrails = auditTrails
+            AuditTrails = auditTrails,
+            Pagination = paginationModel
         };
 
         return View(model);
@@ -514,65 +564,71 @@ public class MyOrganisationsController(
         {
             return ctxResult.Result!;
         }
+
         var ctx = ctxResult.Context!;
 
-        var model = new SponsorMyOrganisationUsersViewModel
+        if (ctx.SponsorOrganisation.IsActive)
         {
-            Name = ctx.RtsOrganisation.Name,
-            RtsId = rtsId
-        };
-
-        if (!Request.Query.ContainsKey(nameof(model.Email)))
-        {
-            return View(model);
-        }
-
-        if (string.IsNullOrWhiteSpace(email))
-        {
-            ModelState.AddModelError(nameof(model.Email), "Enter a user email");
-            return View(model);
-        }
-
-        var validationResult = await emailValidator.ValidateAsync(new EmailModel()
-        {
-            EmailAddress = email
-        });
-
-        if (!validationResult.IsValid)
-        {
-            foreach (var error in validationResult.Errors)
+            var model = new SponsorMyOrganisationUsersViewModel
             {
-                ModelState.AddModelError(nameof(model.Email), error.ErrorMessage);
+                Name = ctx.RtsOrganisation.Name,
+                RtsId = rtsId
+            };
+
+            if (!Request.Query.ContainsKey(nameof(model.Email)))
+            {
+                return View(model);
             }
 
-            model.Email = email;
-            return View(model);
-        }
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                ModelState.AddModelError(nameof(model.Email), "Enter a user email");
+                return View(model);
+            }
 
-        var usersResponse = await userService.SearchUsers(email);
+            var validationResult = await emailValidator.ValidateAsync(new EmailModel()
+            {
+                EmailAddress = email
+            });
 
-        if (usersResponse is { IsSuccessStatusCode: true, Content.TotalCount: 1 })
-        {
-            // CHECK IF USER ALREADY IN SPONSOR ORG
-
-            var user = usersResponse.Content.Users.First();
-
-            var sponsorOrganisations = await sponsorOrganisationService.GetAllSponsorOrganisations(
-                new SponsorOrganisationSearchRequest()
+            if (!validationResult.IsValid)
+            {
+                foreach (var error in validationResult.Errors)
                 {
-                    UserId = Guid.Parse(user.Id)
-                });
+                    ModelState.AddModelError(nameof(model.Email), error.ErrorMessage);
+                }
 
-            if (!sponsorOrganisations.Content.SponsorOrganisations.Any(x => x.Id == ctx.SponsorOrganisation.Id))
-            {
-                return RedirectToAction(nameof(MyOrganisationUsersAddUserRole), new { rtsId, userId = user.Id });
+                model.Email = email;
+                return View(model);
             }
 
-            TempData[TempDataKeys.ShowNotificationBanner] = true;
-            return View(model);
+            var usersResponse = await userService.SearchUsers(email);
+
+            if (usersResponse is { IsSuccessStatusCode: true, Content.TotalCount: 1 })
+            {
+                // CHECK IF USER ALREADY IN SPONSOR ORG
+                var user = usersResponse.Content.Users.First();
+
+                var sponsorOrganisations = await sponsorOrganisationService.GetAllSponsorOrganisations(
+                    new SponsorOrganisationSearchRequest()
+                    {
+                        UserId = Guid.Parse(user.Id)
+                    });
+
+                if (!sponsorOrganisations.Content.SponsorOrganisations.Any(x => x.Id == ctx.SponsorOrganisation.Id))
+                {
+                    return RedirectToAction(nameof(MyOrganisationUsersAddUserRole), new { rtsId, userId = user.Id });
+                }
+
+                TempData[TempDataKeys.ShowNotificationBanner] = true;
+                return View(model);
+            }
+
+            return RedirectToAction(nameof(MyOrganisationUsersInvalidUser), new { rtsId });
         }
 
-        return RedirectToAction(nameof(MyOrganisationUsersInvalidUser), new { rtsId });
+        return RedirectToAction(nameof(MyOrganisationInvalidSponsorOrganisation),
+            new { rtsId });
     }
 
     [HttpGet]
@@ -587,14 +643,11 @@ public class MyOrganisationsController(
     }
 
     [HttpGet]
-    public async Task<IActionResult> MyOrganisationUsersAddUserRole(string rtsId, string userId, string? role, bool nextPage = false)
+    public async Task<IActionResult> MyOrganisationUsersAddUserRole(string rtsId, string userId, string? role,
+        bool nextPage = false)
     {
-        var ctxResult = await TryGetSponsorOrgContext(rtsId);
-        if (ctxResult.HasResult)
-        {
-            return ctxResult.Result!;
-        }
-        var ctx = ctxResult.Context!;
+        var (ctx, user, early) = await TryGetCtxAndActiveUser(rtsId, userId);
+        if (early is not null) return early;
 
         var model = new SponsorMyOrganisationUsersViewModel
         {
@@ -617,32 +670,25 @@ public class MyOrganisationsController(
             TempData[TempDataKeys.ShowNotificationBanner] = true;
         }
 
-        if (nextPage)
+        if (!nextPage) return View(model);
+
+        // Role selected - continue (redirect to next step or whatever your flow is)
+        if (string.Equals(role, Roles.Sponsor, StringComparison.CurrentCultureIgnoreCase))
         {
-            // Role selected - continue (redirect to next step or whatever your flow is)
-            if (string.Equals(role, Roles.Sponsor, StringComparison.CurrentCultureIgnoreCase))
-            {
-                return RedirectToAction(nameof(MyOrganisationUsersAddUserPermission), new { rtsId, userId, role });
-            }
-
-            bool canAuthorise = true;
-
-            return RedirectToAction(nameof(MyOrganisationUsersCheckAndConfirm), new { rtsId, userId, role, canAuthorise });
+            return RedirectToAction(nameof(MyOrganisationUsersAddUserPermission), new { rtsId, userId, role });
         }
 
-        return View(model);
+        const bool canAuthorise = true;
+        return RedirectToAction(nameof(MyOrganisationUsersCheckAndConfirm),
+            new { rtsId, userId, role, canAuthorise });
     }
 
     [HttpGet]
-    public async Task<IActionResult> MyOrganisationUsersAddUserPermission(string rtsId, string userId, string? role, bool canAuthorise, bool nextPage = false)
+    public async Task<IActionResult> MyOrganisationUsersAddUserPermission(string rtsId, string userId, string? role,
+        bool canAuthorise, bool nextPage = false)
     {
-        var ctxResult = await TryGetSponsorOrgContext(rtsId);
-        if (ctxResult.HasResult)
-        {
-            return ctxResult.Result!;
-        }
-
-        var ctx = ctxResult.Context!;
+        var (ctx, user, early) = await TryGetCtxAndActiveUser(rtsId, userId);
+        if (early is not null) return early;
 
         var model = new SponsorMyOrganisationUsersViewModel
         {
@@ -653,27 +699,18 @@ public class MyOrganisationsController(
             CanAuthorise = canAuthorise
         };
 
-        if (nextPage)
-        {
-            // Role selected - continue (redirect to next step or whatever your flow is)
-            return RedirectToAction(nameof(MyOrganisationUsersCheckAndConfirm), new { rtsId, userId, role, canAuthorise });
-        }
+        if (!nextPage) return View(model);
 
-        return View(model);
+        return RedirectToAction(nameof(MyOrganisationUsersCheckAndConfirm),
+            new { rtsId, userId, role, canAuthorise });
     }
 
     [HttpGet]
-    public async Task<IActionResult> MyOrganisationUsersCheckAndConfirm(string rtsId, string userId, string? role, bool canAuthorise)
+    public async Task<IActionResult> MyOrganisationUsersCheckAndConfirm(string rtsId, string userId, string? role,
+        bool canAuthorise)
     {
-        var ctxResult = await TryGetSponsorOrgContext(rtsId);
-        if (ctxResult.HasResult)
-        {
-            return ctxResult.Result!;
-        }
-
-        var ctx = ctxResult.Context!;
-
-        var user = await userService.GetUser(userId, null);
+        var (ctx, user, early) = await TryGetCtxAndActiveUser(rtsId, userId);
+        if (early is not null) return early;
 
         var model = new SponsorMyOrganisationUsersViewModel
         {
@@ -682,24 +719,18 @@ public class MyOrganisationsController(
             UserId = userId,
             Role = role,
             CanAuthorise = canAuthorise,
-            Email = user?.Content?.User.Email ?? string.Empty
+            Email = user.Email ?? string.Empty
         };
 
         return View(model);
     }
 
     [HttpGet]
-    public async Task<IActionResult> MyOrganisationUsersConfirmAddUser(string rtsId, string userId, string? role, bool canAuthorise)
+    public async Task<IActionResult> MyOrganisationUsersConfirmAddUser(string rtsId, string userId, string? role,
+        bool canAuthorise)
     {
-        var ctxResult = await TryGetSponsorOrgContext(rtsId);
-        if (ctxResult.HasResult)
-        {
-            return ctxResult.Result!;
-        }
-
-        var ctx = ctxResult.Context!;
-        var userResponse = await userService.GetUser(userId, null);
-        var user = userResponse.Content.User;
+        var (ctx, user, early) = await TryGetCtxAndActiveUser(rtsId, userId);
+        if (early is not null) return early;
 
         var dto = new SponsorOrganisationUserDto
         {
@@ -719,21 +750,8 @@ public class MyOrganisationsController(
         }
 
         // Update roles
-        var roleToAdd = role.Equals(
-            Roles.OrganisationAdministrator,
-            StringComparison.OrdinalIgnoreCase)
-            ? Roles.OrganisationAdministrator
-            : Roles.Sponsor;
-
-        var roleToRemove = roleToAdd == Roles.OrganisationAdministrator
-            ? Roles.Sponsor
-            : Roles.OrganisationAdministrator;
-
-        var userRolesUpdateResponse = await userService.UpdateRoles(user.Email, roleToRemove, roleToAdd);
-        if (!userRolesUpdateResponse.IsSuccessStatusCode)
-        {
-            return this.ServiceError(userRolesUpdateResponse);
-        }
+        var (roleToRemove, roleToAdd) = MapSponsorRoles(role);
+        await userService.UpdateRoles(user.Email, roleToRemove, roleToAdd);
 
         TempData[TempDataKeys.ShowNotificationBanner] = true;
         TempData[TempDataKeys.SponsorOrganisationUserType] = "add";
@@ -762,7 +780,8 @@ public class MyOrganisationsController(
         }
 
         // find user in sponsor organisation
-        var organisationUserResponse = await sponsorOrganisationService.GetUserInSponsorOrganisation(rtsId, Guid.Parse(userId));
+        var organisationUserResponse =
+            await sponsorOrganisationService.GetUserInSponsorOrganisation(rtsId, Guid.Parse(userId));
 
         if (!organisationUserResponse.IsSuccessStatusCode || organisationUserResponse.Content == null)
         {
@@ -798,6 +817,8 @@ public class MyOrganisationsController(
             IsLoggedInUserAdmin = ctx.UserIsAdmin
         };
 
+        if (TempData["AuthorizerValidationError"] is string key) ModelState.AddModelError("IsAuthoriser", key);
+
         var viewName = editMode ?
             "MyOrganisationEditUser" :
             nameof(MyOrganisationViewUser);
@@ -825,6 +846,19 @@ public class MyOrganisationsController(
             return Forbid();
         }
 
+        // RSP-6809 requires Error message when both are true: Role = Organisation Administrator &&
+        // Authorizer = No
+        if (model.Role == Roles.OrganisationAdministrator && model.IsAuthoriser != "Yes")
+        {
+            TempData["AuthorizerValidationError"] =
+                "Select 'Yes' for the Authoriser if the user has the Organisation Administrator role.";
+            return RedirectToAction(nameof(MyOrganisationViewUser),
+                new { userId = model.UserId, rtsId = model.RtsId, editMode = true });
+        }
+
+        // RSP-6809 requires strict binding Authorizer = Yes if user is Organisation Administrator
+        if (model.Role == Roles.OrganisationAdministrator) model.IsAuthoriser = "Yes";
+
         var updateModel = new SponsorOrganisationUserDto
         {
             RtsId = model.RtsId!,
@@ -842,16 +876,7 @@ public class MyOrganisationsController(
         }
 
         // Update roles
-        var roleToAdd = model.Role.Equals(
-            Roles.OrganisationAdministrator,
-            StringComparison.OrdinalIgnoreCase)
-            ? Roles.OrganisationAdministrator
-            : Roles.Sponsor;
-
-        var roleToRemove = roleToAdd == Roles.OrganisationAdministrator
-            ? Roles.Sponsor
-            : Roles.OrganisationAdministrator;
-
+        var (roleToRemove, roleToAdd) = MapSponsorRoles(model.Role);
         var userRolesUpdateResponse = await userService.UpdateRoles(model.Email, roleToRemove, roleToAdd);
         if (!userRolesUpdateResponse.IsSuccessStatusCode)
         {
@@ -892,7 +917,8 @@ public class MyOrganisationsController(
         await sponsorOrganisationService.DisableUserInSponsorOrganisation(RtsId, Id);
 
         // Check if user is in any other active sponsor organisations
-        await SponsorOrganisationUsersHelper.HandleDisableOrganisationUserRole(sponsorOrganisationService, Id, userService);
+        await SponsorOrganisationUsersHelper.HandleDisableOrganisationUserRole(sponsorOrganisationService, Id,
+            userService);
 
         TempData[TempDataKeys.ShowNotificationBanner] = true;
         TempData[TempDataKeys.SponsorOrganisationUserType] = "disable";
@@ -934,6 +960,30 @@ public class MyOrganisationsController(
         TempData[TempDataKeys.ShowNotificationBanner] = true;
         TempData[TempDataKeys.SponsorOrganisationUserType] = "enable";
         return RedirectToAction("MyOrganisationViewUser", new { userId = Id, rtsId = RtsId });
+    }
+
+    /// <summary>
+    /// Displays a single sponsor organisation
+    /// </summary>
+    [HttpGet]
+    [Route("/sponsorworkspace/myorganisationinvalidsponsororganisation",
+        Name = "sws:myorganisationinvalidsponsororganisation")]
+    public async Task<IActionResult> MyOrganisationInvalidSponsorOrganisation(string rtsId)
+    {
+        var ctxResult = await TryGetSponsorOrgContext(rtsId);
+        if (ctxResult.HasResult)
+        {
+            return ctxResult.Result!;
+        }
+
+        var ctx = ctxResult.Context!;
+
+        var sponsorMyOrganisationUsersViewModel = new SponsorMyOrganisationUsersViewModel()
+        {
+            RtsId = ctx.RtsId
+        };
+
+        return View(sponsorMyOrganisationUsersViewModel);
     }
 
     [NonAction]
@@ -1002,6 +1052,53 @@ public class MyOrganisationsController(
         return new SponsorOrgContextResult(ctx, null);
     }
 
+    [NonAction]
+    private async Task<(SponsorOrgContext Ctx, dynamic User, IActionResult? EarlyResult)> TryGetCtxAndActiveUser(
+        string rtsId,
+        string userId)
+    {
+        var ctxResult = await TryGetSponsorOrgContext(rtsId);
+        if (ctxResult.HasResult)
+        {
+            return (default!, default!, ctxResult.Result);
+        }
+
+        var ctx = ctxResult.Context!;
+
+        if (!ctx.SponsorOrganisation.IsActive)
+        {
+            return (default!, default!, RedirectToAction(nameof(MyOrganisationInvalidSponsorOrganisation), new { rtsId }));
+        }
+
+        var userResponse = await userService.GetUser(userId, null);
+        if (!userResponse.IsSuccessStatusCode || userResponse.Content?.User is null)
+        {
+            return (default!, default!, this.ServiceError(userResponse));
+        }
+
+        if (!string.Equals(userResponse.Content.User.Status, "active", StringComparison.OrdinalIgnoreCase))
+        {
+            return (default!, default!, RedirectSystemDisabledUser(rtsId));
+        }
+
+        // returning as dynamic to avoid guessing your concrete User DTO type here
+        return (ctx, userResponse.Content.User, null);
+    }
+
+    [NonAction]
+    private static (string? RoleToRemove, string RoleToAdd) MapSponsorRoles(string? selectedRole)
+    {
+        var roleToAdd = string.Equals(selectedRole, Roles.OrganisationAdministrator, StringComparison.OrdinalIgnoreCase)
+            ? Roles.OrganisationAdministrator
+            : Roles.Sponsor;
+
+        var roleToRemove = roleToAdd == Roles.OrganisationAdministrator
+            ? Roles.Sponsor
+            : Roles.OrganisationAdministrator;
+
+        return (roleToRemove, roleToAdd);
+    }
+
     private sealed record SponsorOrgContext(
         string RtsId,
         OrganisationDto RtsOrganisation,
@@ -1013,5 +1110,12 @@ public class MyOrganisationsController(
         IActionResult? Result)
     {
         public bool HasResult => Result is not null;
+    }
+
+    private IActionResult RedirectSystemDisabledUser(string rtsId)
+    {
+        TempData[TempDataKeys.ValidationSummaryError] =
+            "You cannot add a system-disabled user to a sponsor organisation.";
+        return RedirectToAction(nameof(MyOrganisationUsers), new { rtsId });
     }
 }

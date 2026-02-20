@@ -29,6 +29,8 @@
     var addNewLink = pageContent.GetValueOrDefault("SponsorOrganisations.ViewUsers.AddNewLink", null);
     var searchTitle = pageContent.GetValueOrDefault("SponsorOrganisations.ViewUsers.SearchTitle", null);
     var searchHint = pageContent.GetValueOrDefault("SponsorOrganisations.ViewUsers.SearchHint", null);
+
+    var isSponsorEnabled = Model.SponsorOrganisation.IsActive;
 }
 
 @* @section is added for the back button, so that we can render something below the back button
@@ -44,14 +46,6 @@
     })
 }
 
-@functions {
-
-    private bool HasFilterErrors()
-    {
-        return ViewData.ModelState.Values.Any(v => v.Errors.Count > 0);
-    }
-
-}
 
 @if (TempData[TempDataKeys.ShowNotificationBanner] is not null)
 {
@@ -65,25 +59,29 @@
 
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
+        
             <partial name="_NotificationBanner"
                      model="@(new NotificationBannerModel
                             {
                                 Title = "Success",
                                 Heading = notificationBanner
-                            })" />
+                            })"/>
         </div>
     </div>
 }
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
+        <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
         <h1 class="govuk-heading-l">@Html.Raw(headline?.Value) @Model.SponsorOrganisation.SponsorOrganisationName</h1>
         <p class="govuk-body">@Html.Raw(body?.Value)</p>
     </div>
-
-    <div class="govuk-grid-column-one-third">
-        <a class="govuk-link govuk-body float-right" asp-route="soc:viewadduser" asp-all-route-data="@(new Dictionary<string, string> { { "rtsId", Model.SponsorOrganisation.RtsId } })">@Html.Raw(addNewLink?.Value)</a>
-    </div>
+	@if (isSponsorEnabled)
+    {
+        <div class="govuk-grid-column-one-third">
+            <a class="govuk-link govuk-body float-right" asp-route="soc:viewadduser" asp-all-route-data="@(new Dictionary<string, string> { { "rtsId", Model.SponsorOrganisation.RtsId } })">@Html.Raw(addNewLink?.Value)</a>
+        </div>
+    }
 </div>
 
 <div class="govuk-grid-row">
@@ -164,7 +162,7 @@
                                 sponsorOrgUser.SponsorRole.Replace("_", " ").ToLower() : "";
                             var authoriserText = sponsorOrgUser.IsAuthoriser ? "Yes" : "No";
                             var statusClass = sponsorOrgUser.IsActive ? "govuk-tag--green" : "govuk-tag--red";
-                            var statusText = sponsorOrgUser.IsActive ? "Active" : "Disabled";
+                            var statusText = sponsorOrgUser.IsActive ? "Active" : "Inactive";
 
                             <tr class="govuk-table__row">
                                 <td class="govuk-table__cell">@user.GivenName @user.FamilyName</td>

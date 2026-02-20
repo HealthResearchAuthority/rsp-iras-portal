@@ -7,6 +7,149 @@
     "UX.MyResearchPage": true, // Show projects added to new service
     "UX.SponsorManagementWorkspace": true, // Show Sponsor Management area in the sponsor workspace
     "WebApp.UseFrontDoor": false, // If enbaled, will use the configured AllowedHosts for front door.
-    "Modifications.RevisionAndAuthorisation": true // If this flag is enabled, allows revision request or revise and authorise modifications
+    "Modifications.RevisionAndAuthorisation": {
+      "EnabledFor": [
+        {
+          "Name": "Microsoft.Targeting",
+          "Parameters": {
+            "Audience": {
+              "Users": [],
+              "Groups": [],
+              "DefaultRolloutPercentage": 100,
+              "Exclusion": {
+                "Users": [],
+                "Groups": []
+              }
+            }
+          }
+        }
+      ]
+    }, // If this flag is enabled, allows revision request or revise and authorise modifications
+    "Modifications.ParticipatingOrganisations": {
+      "EnabledFor": [
+        {
+          "Name": "Microsoft.Targeting",
+          "Parameters": {
+            "Audience": {
+              "Users": [],
+              "Groups": [],
+              "DefaultRolloutPercentage": 100,
+              "Exclusion": {
+                "Users": [],
+                "Groups": []
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Modifications.DownloadPack": {
+      "EnabledFor": [
+        {
+          "Name": "Microsoft.Targeting",
+          "Parameters": {
+            "Audience": {
+              "Users": [],
+              "Groups": [],
+              "DefaultRolloutPercentage": 100,
+              "Exclusion": {
+                "Users": [],
+                "Groups": []
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Modifications.SupersedingDocuments": {
+      "EnabledFor": [
+        {
+          "Name": "Microsoft.Targeting",
+          "Parameters": {
+            "Audience": {
+              "Users": [],
+              "Groups": [],
+              "DefaultRolloutPercentage": 100,
+              "Exclusion": {
+                "Users": [],
+                "Groups": []
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Modifications.Withdraw": {
+      "EnabledFor": [
+        {
+          "Name": "Microsoft.Targeting",
+          "Parameters": {
+            "Audience": {
+              "Users": [],
+              "Groups": [],
+              "DefaultRolloutPercentage": 100,
+              "Exclusion": {
+                "Users": [],
+                "Groups": []
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Modifications.RequestForInformation": {
+      "EnabledFor": [
+        {
+          "Name": "Microsoft.Targeting",
+          "Parameters": {
+            "Audience": {
+              "Users": [],
+              "Groups": [],
+              "DefaultRolloutPercentage": 0,
+              "Exclusion": {
+                "Users": [],
+                "Groups": []
+              }
+            }
+          }
+        }
+      ]
+    },
+    "ProjectOverview.BackButton": {
+      "EnabledFor": [
+        {
+          "Name": "Microsoft.Targeting",
+          "Parameters": {
+            "Audience": {
+              "Users": [],
+              "Groups": [],
+              "DefaultRolloutPercentage": 100,
+              "Exclusion": {
+                "Users": [],
+                "Groups": []
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Modifications.NotAuthorisedReason": {
+      "EnabledFor": [
+        {
+          "Name": "Microsoft.Targeting",
+          "Parameters": {
+            "Audience": {
+              "Users": [],
+              "Groups": [],
+              "DefaultRolloutPercentage": 100,
+              "Exclusion": {
+                "Users": [],
+                "Groups": []
+              }
+            }
+          }
+        }
+      ]
+    }
   }
 }

@@ -3,10 +3,12 @@
 @using Microsoft.AspNetCore.Http.Extensions
 @using Microsoft.AspNetCore.Mvc.ModelBinding
 @using Rsp.Gds.Component.Models
+@using Rsp.Portal.Web.Helpers
 @using Rsp.Portal.Application.Constants
 @using Rsp.Portal.Application.DTOs.Responses
 @using Rsp.Portal.Application.DTOs.Responses.CmsContent
 @using Rsp.Portal.Web.Extensions
+@using Rsp.Portal.Web.Models
 @model ApprovalsSearchViewModel
 @inject IHttpContextAccessor httpContextAccessor
 
@@ -543,7 +545,7 @@ else if (showNoResultsMessage)
                                     <td class="govuk-table__cell">@modification.ModificationType</td>
 										<td class="govuk-table__cell">@modification.ChiefInvestigatorFirstName @modification.ChiefInvestigatorLastName</td>
                                     <td class="govuk-table__cell">@modification.LeadNation</td>
-										<td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">@modification.Status</strong></td>
+										<td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">@ModificationStatusHelper.ToUiStatus(modification.Status)</strong></td>
                                 </tr>
                             }
                         }

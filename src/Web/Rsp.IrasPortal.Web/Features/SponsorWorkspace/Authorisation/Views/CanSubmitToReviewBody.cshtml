@@ -1,0 +1,47 @@
+﻿@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Domain.AccessControl
+@model Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models.AuthoriseModificationsOutcomeViewModel
+@{
+    ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
+    var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId);
+
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData != null
+        ? pageContentData
+        : new Dictionary<string, MixedContentPageItem?>();
+
+    var warningMessageTitle = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.CanSubmitToReviewBodyTitle", null);
+    var warningMessageBody = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.CanSubmitToReviewBodyContent", null);
+}
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l"> @Html.Raw(warningMessageTitle?.Value)</h1>
+        <dl class="govuk-summary-list">
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">IRAS ID</dt>
+                <dd class="govuk-summary-list__value">@Model.IrasId</dd>
+            </div>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Short project title</dt>
+                <dd class="govuk-summary-list__value">@Model.ShortTitle</dd>
+            </div>
+        </dl>
+        <p class="govuk-body">
+            @Html.Raw(warningMessageBody?.Value)
+        </p>
+
+        <form asp-route="sws:modifications" method="get">
+            <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
+            <input type="hidden" name="RtsId" value="@Model.RtsId" />
+
+            <partial name="_SubmitButton"
+                     model="@("sws:modifications", "Return to authorisations", new Dictionary<string, string>
+             {
+                 ["SponsorOrganisationUserId"] = Model.SponsorOrganisationUserId.ToString(),
+                 ["RtsId"] = Model.RtsId,
+
+             })" />
+        </form>
+    </div>
+</div>

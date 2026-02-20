@@ -37,7 +37,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
         };
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>()))
+            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>()))
             .ReturnsAsync(response);
 
         Mocker.GetMock<IRespondentService>()
@@ -68,7 +68,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
 
         // Verify
         Mocker.GetMock<IProjectModificationsService>()
-            .Verify(s => s.UpdateModificationStatus(projectRecordId, projectModificationId, ModificationStatus.WithSponsor), Times.Once);
+            .Verify(s => s.UpdateModificationStatus(projectRecordId, projectModificationId, ModificationStatus.WithSponsor, null, null), Times.Once);
     }
 
     [Theory, AutoData]
@@ -89,7 +89,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
         };
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>()))
+            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>()))
             .ReturnsAsync(response);
 
         Mocker.GetMock<IRespondentService>()
@@ -323,24 +323,6 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
         redirect.RouteName.ShouldBe("pmc:DocumentsScanInProgress");
-    }
-
-    [Fact]
-    public async Task SendModificationToSponsor_Validation_Return_Failure()
-    {
-        // Arrange
-        var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
-        {
-            [TempDataKeys.ProjectModification.CanModificationSendToSponsor] = false,
-        };
-        Sut.TempData = tempData;
-
-        // Act
-        var result = await Sut.SendModificationToSponsor("PR01", Guid.NewGuid());
-
-        // Assert
-        var actionResult = Assert.IsType<RedirectToActionResult>(result);
-        actionResult.ActionName.ShouldBe("ModificationSendToSponsor");
     }
 
     [Fact]

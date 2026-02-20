@@ -1,10 +1,12 @@
 ﻿﻿@using System.Text.RegularExpressions
 @using Microsoft.AspNetCore.Http.Extensions
 @using Microsoft.FeatureManagement
+@using Rsp.Portal.Web.Helpers
 @using Rsp.Portal.Application.Constants
 @using Rsp.Portal.Application.DTOs.Responses.CmsContent
 @using Rsp.Portal.Application.Extensions
 @using Rsp.Portal.Domain.AccessControl
+@using Rsp.Portal.Web.Models
 @model ModificationsTasklistViewModel
 @inject IFeatureManager featureManager
 
@@ -435,7 +437,7 @@ else
 																	? "Unassigned"
 																	: modification.Modification.ReviewerName)
 								</td>
-								<td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">@modification.Modification.Status</strong></td>
+								<td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">@ModificationStatusHelper.ToUiStatus(modification.Modification.Status)</strong></td>
 							</tr>
 							}
 					</tbody>

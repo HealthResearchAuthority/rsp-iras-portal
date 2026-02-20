@@ -20,6 +20,9 @@
     var notAuthorisedHeader = pageContent.GetValueOrDefault("SponsorWorkspace.Confirmation.NotAuthorisedHeader", null);
     var notAuthorisedMessage = pageContent.GetValueOrDefault("SponsorWorkspace.Confirmation.NotAuthorisedMessage", null);
 
+    var revisionRequestHeader = pageContent.GetValueOrDefault("SponsorWorkspace.Confirmation.RevisionRequestHeader", null);
+    var revisionRequestMessage = pageContent.GetValueOrDefault("SponsorWorkspace.Confirmation.RevisionRequestMessage", null);
+
     switch (Model.Outcome)
     {
         case "Authorised":
@@ -45,6 +48,13 @@
 
             break;
         }
+
+        case "RequestRevisions":
+            {
+                heading = revisionRequestHeader?.Value;
+                messageText = revisionRequestMessage?.Value;
+                break;
+            }
 
         case "NotAuthorised":
         default:
@@ -73,11 +83,13 @@
 
         <form asp-route="sws:modifications" method="get">
             <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
+            <input type="hidden" name="RtsId" value="@Model.RtsId" />
 
             <partial name="_SubmitButton"
                      model="@("sws:modifications", "Return to authorisations", new Dictionary<string, string>
                      {
-                         ["SponsorOrganisationUserId"] = Model.SponsorOrganisationUserId.ToString()
+                         ["SponsorOrganisationUserId"] = Model.SponsorOrganisationUserId.ToString(),
+                         ["RtsId"] = Model.RtsId
                      })" />
         </form>
     </div>

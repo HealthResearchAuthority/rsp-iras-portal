@@ -1,8 +1,11 @@
 ﻿@using Rsp.Gds.Component.Models
+@using Rsp.Portal.Web.Helpers
 @using Rsp.Portal.Application.Constants
 @using Microsoft.AspNetCore.Http.Extensions
 @using System.Collections
 @using Rsp.Portal.Domain.AccessControl
+@using Rsp.Portal.Web.Models
+@using System.Text.Json
 @model PostApprovalViewModel
 @inject IHttpContextAccessor httpContextAccessor
 
@@ -24,14 +27,28 @@
     var backRoute = Context.Request.Query["backRoute"].ToString();
     // get projectRecordId from query string
     var projectRecordId = Context.Request.Query["projectRecordId"].ToString();
+
+    var tdBackRouteValues = TempData.Peek(TempDataKeys.ProjectOverviewReferrer.BackRouteValues);
+
+    var backRouteValues = JsonSerializer.Deserialize<Dictionary<string, string>>
+        (tdBackRouteValues != null ? tdBackRouteValues.ToString()! : "{}") ?? new Dictionary<string, string>();
 }
 
-@section Breadcrumb {
-    @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
-    {
-        ("My research", Url.RouteUrl("app:welcome")),
-        (projectTitle, Url.RouteUrl("pov:projectdetails", new Dictionary<string, string> { { "projectRecordId", Model.ProjectOverviewModel?.ProjectRecordId! } }))
-    })
+@if (routeName is null || routeName.ToLower() == "app:welcome")
+{
+    @section Breadcrumb {
+        @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+        {
+            ("My research", Url.RouteUrl("app:welcome")),
+            (projectTitle, Url.RouteUrl("pov:projectdetails", new Dictionary<string, string> { { "projectRecordId", Model.ProjectOverviewModel?.ProjectRecordId! } }))
+        })
+    }
+}
+else
+{
+    @section BackNavigation {
+        <partial name="_BackNavigation" model="@(routeName, "Back", backRouteValues)" />
+    }
 }
 
 @if (TempData[TempDataKeys.ShowNotificationBanner] is not null)
@@ -314,9 +331,7 @@ else
                         <tbody class="govuk-table__body govuk-body-s">
                             @{
                                 foreach (var modification in Model.Modifications)
-                                {
-                                    //string projectRecordId, string irasId, string shortTitle, Guid projectModificationId
-
+                                {                                    
                                     var modificationParams = new Dictionary<string, string> {
                                         { "projectRecordId", Model.ProjectOverviewModel.ProjectRecordId },
                                         { "irasId", Model.ProjectOverviewModel.IrasId?.ToString()  },
@@ -330,7 +345,7 @@ else
                                     {
                                         modificationReviewRoute = "pmc:reviewallchanges";
                                     }
-                                    if (modification.Status is ModificationStatus.InDraft)
+                                    if (modification.Status is ModificationStatus.InDraft or ModificationStatus.RequestRevisions)
                                     {
                                         modification.SentToRegulatorDate = null;
                                         modification.SentToSponsorDate = null;
@@ -345,9 +360,9 @@ else
                                         <td class="govuk-table__cell">@modification.ReviewType</td>
                                         <td class="govuk-table__cell">@modification.Category</td>
                                         @{
-                                            <td class="govuk-table__cell">@modification.SentToRegulatorDate?.ToString("dd MMM yyyy")</td>
+                                            <td class="govuk-table__cell">@modification.SentToRegulatorDate?.ToString("dd MMM yyyy")</td>                                            
                                         }
-                                        <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">@modification.Status</strong></td>
+                                        <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">@ModificationStatusHelper.ToUiStatus(modification.Status)</strong></td>
                                     </tr>
                                 }
                             }

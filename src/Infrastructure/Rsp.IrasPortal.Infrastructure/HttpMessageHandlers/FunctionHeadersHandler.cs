@@ -3,6 +3,7 @@ using Azure.Core;
 using Azure.Identity;
 using Microsoft.Net.Http.Headers;
 using Rsp.Portal.Application.Configuration;
+using Rsp.Portal.Application.Constants;
 
 namespace Rsp.Portal.Infrastructure.HttpMessageHandlers;
 

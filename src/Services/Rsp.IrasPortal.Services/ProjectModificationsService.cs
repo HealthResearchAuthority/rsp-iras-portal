@@ -10,9 +10,9 @@ using Rsp.Portal.Services.Extensions;
 namespace Rsp.Portal.Services;
 
 /// <summary>
-/// Service implementation for managing project modifications.
-/// Handles retrieval and creation of project modifications and their changes
-/// by delegating to the IProjectModificationsServiceClient and mapping responses.
+/// Service implementation for managing project modifications. Handles retrieval and creation of
+/// project modifications and their changes by delegating to the IProjectModificationsServiceClient
+/// and mapping responses.
 /// </summary>
 public class ProjectModificationsService
 (
@@ -41,14 +41,14 @@ public class ProjectModificationsService
         return apiResponse.ToServiceResponse();
     }
 
-    /// <summary>
-    /// Gets all modifications with filtering, sorting and pagination
-    /// <param name="searchQuery">Object containing filtering criteria for modifications.</param>
-    /// <param name="pageNumber">The number of the page to retrieve (used for pagination - 1-based).</param>
-    /// <param name="pageSize">The number of items per page (used for pagination).</param>
-    /// <param name="sortField">The field name by which the results should be sorted.</param>
-    /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
-    /// <returns>Returns a paginated list of modifications matching the search criteria.</returns>
+    /// <summary> Gets all modifications with filtering, sorting and pagination <param
+    /// name="searchQuery">Object containing filtering criteria for modifications.</param> <param
+    /// name="pageNumber">The number of the page to retrieve (used for pagination -
+    /// 1-based).</param> <param name="pageSize">The number of items per page (used for
+    /// pagination).</param> <param name="sortField">The field name by which the results should be
+    /// sorted.</param> <param name="sortDirection">The direction of sorting: "asc" for ascending or
+    /// "desc" for descending.</param> <returns>Returns a paginated list of modifications matching
+    /// the search criteria.</returns>
     public async Task<ServiceResponse<GetModificationsResponse>> GetModifications
     (
         ModificationSearchRequest searchQuery,
@@ -78,12 +78,16 @@ public class ProjectModificationsService
     /// <summary>
     /// Gets modifications for specific ProjectRecordId with filtering, sorting and pagination
     /// </summary>
-    /// <param name="projectRecordId">The unique identifier of the project record for which modifications are requested.</param>
+    /// <param name="projectRecordId">
+    /// The unique identifier of the project record for which modifications are requested.
+    /// </param>
     /// <param name="searchQuery">Object containing filtering criteria for modifications.</param>
     /// <param name="pageNumber">The number of the page to retrieve (used for pagination - 1-based).</param>
     /// <param name="pageSize">The number of items per page (used for pagination).</param>
     /// <param name="sortField">The field name by which the results should be sorted.</param>
-    /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
+    /// <param name="sortDirection">
+    /// The direction of sorting: "asc" for ascending or "desc" for descending.
+    /// </param>
     /// <returns>Returns a paginated list of modifications related to the specified project record.</returns>
     public async Task<ServiceResponse<GetModificationsResponse>> GetModificationsForProject
     (
@@ -114,12 +118,16 @@ public class ProjectModificationsService
     /// <summary>
     /// Gets modifications for specific sponsorOrganisationUserId with filtering, sorting and pagination
     /// </summary>
-    /// <param name="sponsorOrganisationUserId">The unique identifier of the sponsor organisation user for which modifications are requested.</param>
+    /// <param name="sponsorOrganisationUserId">
+    /// The unique identifier of the sponsor organisation user for which modifications are requested.
+    /// </param>
     /// <param name="searchQuery">Object containing filtering criteria for modifications.</param>
     /// <param name="pageNumber">The number of the page to retrieve (used for pagination - 1-based).</param>
     /// <param name="pageSize">The number of items per page (used for pagination).</param>
     /// <param name="sortField">The field name by which the results should be sorted.</param>
-    /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
+    /// <param name="sortDirection">
+    /// The direction of sorting: "asc" for ascending or "desc" for descending.
+    /// </param>
     public async Task<ServiceResponse<GetModificationsResponse>> GetModificationsBySponsorOrganisationUserId
     (
        Guid sponsorOrganisationUserId,
@@ -127,10 +135,11 @@ public class ProjectModificationsService
        int pageNumber = 1,
        int pageSize = 20,
        string sortField = nameof(ModificationsDto.SentToSponsorDate),
-       string sortDirection = SortDirections.Descending
+       string sortDirection = SortDirections.Descending,
+       string rtsId = ""
     )
     {
-        var apiResponse = await projectModificationsServiceClient.GetModificationsBySponsorOrganisationUserId(sponsorOrganisationUserId, searchQuery, pageNumber, pageSize, sortField, sortDirection);
+        var apiResponse = await projectModificationsServiceClient.GetModificationsBySponsorOrganisationUserId(sponsorOrganisationUserId, searchQuery, pageNumber, pageSize, sortField, sortDirection, rtsId);
 
         return apiResponse.ToServiceResponse();
     }
@@ -138,7 +147,9 @@ public class ProjectModificationsService
     /// <summary>
     /// Creates a new project modification.
     /// </summary>
-    /// <param name="projectModificationRequest">The request object containing details for the new modification.</param>
+    /// <param name="projectModificationRequest">
+    /// The request object containing details for the new modification.
+    /// </param>
     /// <returns>An asynchronous operation that returns the newly created project modification.</returns>
     public async Task<ServiceResponse<ProjectModificationResponse>> CreateModification(ProjectModificationRequest projectModificationRequest)
     {
@@ -149,10 +160,13 @@ public class ProjectModificationsService
     /// <summary>
     /// Creates a new change for an existing project modification.
     /// </summary>
-    /// <param name="projectModificationChangeRequest">The request object containing details for the modification change.</param>
+    /// <param name="projectModificationChangeRequest">
+    /// The request object containing details for the modification change.
+    /// </param>
     /// <returns>
-    /// An asynchronous operation that returns a <see cref="ServiceResponse{ProjectModificationChangeResponse}"/>
-    /// containing the result of the modification change creation.
+    /// An asynchronous operation that returns a <see
+    /// cref="ServiceResponse{ProjectModificationChangeResponse}"/> containing the result of the
+    /// modification change creation.
     /// </returns>
     public async Task<ServiceResponse<ProjectModificationChangeResponse>> CreateModificationChange(ProjectModificationChangeRequest projectModificationChangeRequest)
     {
@@ -164,12 +178,13 @@ public class ProjectModificationsService
     /// Creates one or more project modification documents based on the provided request data.
     /// </summary>
     /// <param name="projectModificationDocumentRequest">
-    /// A list of <see cref="ProjectModificationDocumentRequest"/> objects containing the details of each document to be created,
-    /// such as file metadata, modification change identifiers, and document type associations.
+    /// A list of <see cref="ProjectModificationDocumentRequest"/> objects containing the details of
+    /// each document to be created, such as file metadata, modification change identifiers, and
+    /// document type associations.
     /// </param>
     /// <returns>
-    /// A <see cref="Task"/> representing the asynchronous operation,
-    /// containing a <see cref="ServiceResponse"/> indicating success or failure of the creation process.
+    /// A <see cref="Task"/> representing the asynchronous operation, containing a <see
+    /// cref="ServiceResponse"/> indicating success or failure of the creation process.
     /// </returns>
     public async Task<ServiceResponse> CreateDocumentModification(List<ProjectModificationDocumentRequest> projectModificationDocumentRequest)
     {
@@ -187,12 +202,16 @@ public class ProjectModificationsService
     /// <summary>
     /// Gets modifications for specific ProjectRecordId with filtering, sorting and pagination
     /// </summary>
-    /// <param name="projectRecordId">The unique identifier of the project record for which modifications are requested.</param>
+    /// <param name="projectRecordId">
+    /// The unique identifier of the project record for which modifications are requested.
+    /// </param>
     /// <param name="searchQuery">Object containing filtering criteria for modifications.</param>
     /// <param name="pageNumber">The number of the page to retrieve (used for pagination - 1-based).</param>
     /// <param name="pageSize">The number of items per page (used for pagination).</param>
     /// <param name="sortField">The field name by which the results should be sorted.</param>
-    /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
+    /// <param name="sortDirection">
+    /// The direction of sorting: "asc" for ascending or "desc" for descending.
+    /// </param>
     /// <returns>Returns a paginated list of modifications related to the specified project record.</returns>
     public async Task<ServiceResponse<ProjectOverviewDocumentResponse>> GetDocumentsForProjectOverview(string projectRecordId, ProjectOverviewDocumentSearchRequest searchQuery, int pageNumber = 1, int pageSize = 20, string sortField = "DocumentType", string sortDirection = "desc")
     {
@@ -218,7 +237,9 @@ public class ProjectModificationsService
     /// <summary>
     /// Removes a change from an existing project modification by its unique identifier.
     /// </summary>
-    /// <param name="modificationChangeId">The unique identifier of the project modification change to remove.</param>
+    /// <param name="modificationChangeId">
+    /// The unique identifier of the project modification change to remove.
+    /// </param>
     /// <returns>
     /// A task representing the asynchronous operation, containing a <see cref="ServiceResponse"/>
     /// that reflects the success or failure of the deletion operation.
@@ -234,16 +255,17 @@ public class ProjectModificationsService
     /// <summary>
     /// Updates the status of an existing project modification by its unique identifier.
     /// </summary>
-    /// <param name="projectRecordId">The unique identifier of the project record to which the modification belongs.</param>
+    /// <param name="projectRecordId">
+    /// The unique identifier of the project record to which the modification belongs.
+    /// </param>
     /// <param name="modificationId">The unique identifier of the project modification to update.</param>
     /// <returns>
     /// A task representing the asynchronous operation, containing a <see cref="ServiceResponse"/>
     /// that reflects the success or failure of the update operation.
     /// </returns>
-    public async Task<ServiceResponse> UpdateModificationStatus(string projectRecordId, Guid modificationId, string status)
+    public async Task<ServiceResponse> UpdateModificationStatus(string projectRecordId, Guid modificationId, string status, string? revisionDescription = null, string? reasonNotApproved = null)
     {
-        // Invoke microservice client to delete the modification change.
-        var apiResponse = await projectModificationsServiceClient.UpdateModificationStatus(projectRecordId, modificationId, status);
+        var apiResponse = await projectModificationsServiceClient.UpdateModificationStatus(projectRecordId, modificationId, status, revisionDescription, reasonNotApproved);
 
         return apiResponse.ToServiceResponse();
     }
@@ -252,12 +274,13 @@ public class ProjectModificationsService
     /// Deletes one or more project modification documents based on the provided request data.
     /// </summary>
     /// <param name="projectModificationDocumentRequest">
-    /// A list of <see cref="ProjectModificationDocumentRequest"/> objects containing the details of each document to be created,
-    /// such as file metadata, modification change identifiers, and document type associations.
+    /// A list of <see cref="ProjectModificationDocumentRequest"/> objects containing the details of
+    /// each document to be created, such as file metadata, modification change identifiers, and
+    /// document type associations.
     /// </param>
     /// <returns>
-    /// A <see cref="Task"/> representing the asynchronous operation,
-    /// containing a <see cref="ServiceResponse"/> indicating success or failure of the creation process.
+    /// A <see cref="Task"/> representing the asynchronous operation, containing a <see
+    /// cref="ServiceResponse"/> indicating success or failure of the creation process.
     /// </returns>
     public async Task<ServiceResponse> DeleteDocumentModification(List<ProjectModificationDocumentRequest> projectModificationDocumentRequest)
     {
@@ -331,12 +354,16 @@ public class ProjectModificationsService
     /// <summary>
     /// Gets modifications for specific ProjectRecordId with filtering, sorting and pagination
     /// </summary>
-    /// <param name="modificationId">The unique identifier of the project record for which modifications are requested.</param>
+    /// <param name="modificationId">
+    /// The unique identifier of the project record for which modifications are requested.
+    /// </param>
     /// <param name="searchQuery">Object containing filtering criteria for modifications.</param>
     /// <param name="pageNumber">The number of the page to retrieve (used for pagination - 1-based).</param>
     /// <param name="pageSize">The number of items per page (used for pagination).</param>
     /// <param name="sortField">The field name by which the results should be sorted.</param>
-    /// <param name="sortDirection">The direction of sorting: "asc" for ascending or "desc" for descending.</param>
+    /// <param name="sortDirection">
+    /// The direction of sorting: "asc" for ascending or "desc" for descending.
+    /// </param>
     /// <returns>Returns a paginated list of modifications related to the specified project record.</returns>
     public async Task<ServiceResponse<ProjectOverviewDocumentResponse>> GetDocumentsForModification(Guid modificationId, ProjectOverviewDocumentSearchRequest searchQuery, int pageNumber = 1, int pageSize = 20, string sortField = "DocumentType", string sortDirection = "desc")
     {
@@ -348,7 +375,9 @@ public class ProjectModificationsService
     /// <summary>
     /// Updates an existing project modification change.
     /// </summary>
-    /// <param name="modificationId">The request object containing the updated details for the modification change.</param>
+    /// <param name="modificationId">
+    /// The request object containing the updated details for the modification change.
+    /// </param>
     public async Task<ServiceResponse> CheckDocumentAccess(Guid modificationId)
     {
         var apiResponse = await projectModificationsServiceClient.CheckDocumentAccess(modificationId);

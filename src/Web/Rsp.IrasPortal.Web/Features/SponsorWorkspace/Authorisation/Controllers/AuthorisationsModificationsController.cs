@@ -3,6 +3,8 @@ using FluentValidation;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement;
+using Microsoft.FeatureManagement.Mvc;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
@@ -32,28 +34,42 @@ public class AuthorisationsModificationsController
     ISponsorOrganisationService sponsorOrganisationService,
     ICmsQuestionsetService cmsQuestionsetService,
     ISponsorUserAuthorisationService sponsorUserAuthorisationService,
-    IValidator<AuthorisationsModificationsSearchModel> searchValidator
+    IValidator<AuthorisationsModificationsSearchModel> searchValidator,
+    IValidator<AuthoriseModificationsOutcomeViewModel> outcomeValidator,
+    IFeatureManager featureManager,
+    IRtsService rtsService
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, null!)
 {
     private const string DocumentDetailsSection = "pdm-document-metadata";
     private const string SponsorDetailsSectionId = "pm-sponsor-reference";
     private readonly IRespondentService _respondentService = respondentService;
 
-    [Authorize(Policy = Permissions.Sponsor.ProjectClosures_Search)]
+    [Authorize(Policy = Permissions.Sponsor.Modifications_Search)]
     [HttpGet]
     public async Task<IActionResult> Modifications
     (
         Guid sponsorOrganisationUserId,
+        string rtsId,
         int pageNumber = 1,
         int pageSize = 20,
         string sortField = nameof(ModificationsModel.SentToSponsorDate),
         string sortDirection = SortDirections.Descending
     )
     {
-        var auth = await sponsorUserAuthorisationService.AuthoriseAsync(this, sponsorOrganisationUserId, User);
+        var auth = await sponsorUserAuthorisationService.AuthoriseWithOrganisationContextAsync(
+            this, sponsorOrganisationUserId, User, rtsId);
+
         if (!auth.IsAuthorised) return auth.FailureResult!;
 
-        var model = new AuthorisationsModificationsViewModel();
+        var model = new AuthorisationsModificationsViewModel()
+        {
+            SponsorOrgansationCount = auth.SponsorOrganisationCount,
+            SponsorOrganisationName = auth.SponsorOrganisationName,
+            SponsorOrganisationUserId = sponsorOrganisationUserId,
+            RtsId = rtsId
+        };
+
+
 
         // getting search query
         var json = HttpContext.Session.GetString(SessionKeys.SponsorAuthorisationsModificationsSearch);
@@ -70,7 +86,7 @@ public class AuthorisationsModificationsController
         // getting modifications by sponsor organisation name
         var projectModificationsServiceResponse =
             await projectModificationsService.GetModificationsBySponsorOrganisationUserId(sponsorOrganisationUserId,
-                searchQuery, pageNumber, pageSize, sortField, sortDirection);
+                searchQuery, pageNumber, pageSize, sortField, sortDirection, rtsId);
 
         model.Modifications = projectModificationsServiceResponse?.Content?.Modifications?
             .Select(dto => new ModificationsModel
@@ -99,11 +115,13 @@ public class AuthorisationsModificationsController
             FormName = "authorisations-selection",
             AdditionalParameters = new Dictionary<string, string>
             {
-                { "SponsorOrganisationUserId", sponsorOrganisationUserId.ToString() }
+                { "SponsorOrganisationUserId", sponsorOrganisationUserId.ToString() },
+                { "RtsId", rtsId }
             }
         };
 
         model.SponsorOrganisationUserId = sponsorOrganisationUserId;
+        model.RtsId = rtsId;
 
         return View(model);
     }
@@ -123,13 +141,24 @@ public class AuthorisationsModificationsController
             }
 
             TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
-            return RedirectToAction(nameof(Modifications),
-                new { sponsorOrganisationUserId = model.SponsorOrganisationUserId });
+            return RedirectToAction(
+                nameof(Modifications),
+                new
+                {
+                    sponsorOrganisationUserId = model.SponsorOrganisationUserId,
+                    rtsId = model.RtsId
+                });
         }
 
         HttpContext.Session.SetString(SessionKeys.SponsorAuthorisationsModificationsSearch, JsonSerializer.Serialize(model.Search));
-        return RedirectToAction(nameof(Modifications),
-            new { sponsorOrganisationUserId = model.SponsorOrganisationUserId });
+
+        return RedirectToAction(
+            nameof(Modifications),
+            new
+            {
+                sponsorOrganisationUserId = model.SponsorOrganisationUserId,
+                rtsId = model.RtsId
+            });
     }
 
     // 1) Shared builder used by both GET and POST
@@ -140,8 +169,9 @@ public class AuthorisationsModificationsController
         string shortTitle,
         string projectRecordId,
         Guid sponsorOrganisationUserId,
+        string rtsId,
         Guid? modificationChangeId = null,
-        int pageNumber = 1,
+    int pageNumber = 1,
         int pageSize = 20,
         string sortField = nameof(ProjectOverviewDocumentDto.DocumentType),
         string sortDirection = SortDirections.Ascending
@@ -215,6 +245,7 @@ public class AuthorisationsModificationsController
         authoriseOutcomeViewModel.IrasId = irasId;
         authoriseOutcomeViewModel.ShortTitle = shortTitle;
         authoriseOutcomeViewModel.ProjectRecordId = projectRecordId;
+        authoriseOutcomeViewModel.RtsId = rtsId;
 
         return authoriseOutcomeViewModel;
     }
@@ -223,11 +254,11 @@ public class AuthorisationsModificationsController
     [Authorize(Policy = Permissions.Sponsor.Modifications_Review)]
     [HttpGet]
     public async Task<IActionResult> CheckAndAuthorise(string projectRecordId, string irasId, string shortTitle,
-        Guid projectModificationId, Guid sponsorOrganisationUserId)
+        Guid projectModificationId, Guid sponsorOrganisationUserId, string rtsId)
     {
         var response =
             await BuildCheckAndAuthorisePageAsync(projectModificationId, irasId, shortTitle, projectRecordId,
-                sponsorOrganisationUserId);
+                sponsorOrganisationUserId, rtsId);
 
         var sponsorOrganisationUser =
             await sponsorOrganisationService.GetSponsorOrganisationUser(sponsorOrganisationUserId);
@@ -238,6 +269,18 @@ public class AuthorisationsModificationsController
         }
 
         TempData[TempDataKeys.IsAuthoriser] = sponsorOrganisationUser.Content!.IsAuthoriser;
+
+        if (await featureManager.IsEnabledAsync(FeatureFlags.RevisionAndAuthorisation))
+        {
+            var reviewResponse = await projectModificationsService.GetModificationReviewResponses(projectRecordId, projectModificationId);
+
+            if (!reviewResponse.IsSuccessStatusCode)
+            {
+                return this.ServiceError(reviewResponse);
+            }
+
+            ViewBag.RevisionSent = !string.IsNullOrWhiteSpace(reviewResponse.Content!.RevisionDescription);
+        }
 
         return View(response);
     }
@@ -253,7 +296,8 @@ public class AuthorisationsModificationsController
             model.IrasId,
             model.ShortTitle,
             model.ProjectRecordId,
-            model.SponsorOrganisationUserId
+            model.SponsorOrganisationUserId,
+            model.RtsId
         );
 
         if (!ModelState.IsValid)
@@ -266,6 +310,18 @@ public class AuthorisationsModificationsController
             }
 
             TempData[TempDataKeys.IsAuthoriser] = sponsorOrganisationUser.Content!.IsAuthoriser;
+
+            if (await featureManager.IsEnabledAsync(FeatureFlags.RevisionAndAuthorisation))
+            {
+                var reviewResponse = await projectModificationsService.GetModificationReviewResponses(model.ProjectRecordId, model.ProjectModificationId);
+
+                if (!reviewResponse.IsSuccessStatusCode)
+                {
+                    return this.ServiceError(reviewResponse);
+                }
+
+                ViewBag.RevisionSent = !string.IsNullOrWhiteSpace(reviewResponse.Content!.RevisionDescription);
+            }
 
             // Preserve the posted Outcome so the radios keep the selection
             if (hydrated is not null)
@@ -284,7 +340,13 @@ public class AuthorisationsModificationsController
                 var reviewType = string.IsNullOrWhiteSpace(model.ReviewType)
                     ? "No review required"
                     : model.ReviewType;
-
+                //call modification service and check if any modificatios are in reviewbody status
+                var modificationsResponse = await projectModificationsService.GetModificationsForProject(model.ProjectRecordId, new ModificationSearchRequest());
+                if (modificationsResponse.Content?.Modifications?
+                        .Any(m => m.Status == ModificationStatus.WithReviewBody) == true)
+                {
+                    return RedirectToAction(nameof(CanSubmitToReviewBody), model);
+                }
                 switch (reviewType)
                 {
                     case "Review required":
@@ -308,16 +370,123 @@ public class AuthorisationsModificationsController
 
                 break;
 
-            default:
-                await projectModificationsService.UpdateModificationStatus
-                (
-                    model.ProjectRecordId,
-                    Guid.Parse(model.ModificationId),
-                    ModificationStatus.NotAuthorised
-                );
+            case "RequestRevisions":
+                return RedirectToAction(nameof(RequestRevisions), model);
+
+            case "NotAuthorised":
+                if (await featureManager.IsEnabledAsync(FeatureFlags.NotAuthorisedReason))
+                {
+                    return RedirectToAction(nameof(ModificationNotAuthorised), model);
+                }
+                else
+                {
+                    await projectModificationsService.UpdateModificationStatus
+                  (
+                      model.ProjectRecordId,
+                      Guid.Parse(model.ModificationId),
+                      ModificationStatus.NotAuthorised,
+                      model.RevisionDescription,
+                      model.ReasonNotApproved
+                  );
+                }
 
                 break;
         }
+
+        return RedirectToAction(nameof(Confirmation), model);
+    }
+
+    /// <summary>
+    /// Warning message controller
+    /// </summary>
+    /// <returns></returns>
+    [Authorize(Policy = Permissions.Sponsor.Modifications_Review)]
+    [HttpGet]
+    public IActionResult CanSubmitToReviewBody(AuthoriseModificationsOutcomeViewModel model)
+    {
+        return View("CanSubmitToReviewBody", model);
+    }
+
+    [Authorize(Policy = Permissions.Sponsor.Modifications_Authorise)]
+    [FeatureGate(FeatureFlags.RevisionAndAuthorisation)]
+    [HttpGet]
+    public async Task<IActionResult> RequestRevisions(AuthoriseModificationsOutcomeViewModel model)
+    {
+        var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId);
+
+        if (!sponsorOrganisationUser.IsSuccessStatusCode)
+        {
+            return this.ServiceError(sponsorOrganisationUser);
+        }
+
+        var reviewResponse = await projectModificationsService.GetModificationReviewResponses(model.ProjectRecordId, model.ProjectModificationId);
+
+        if (!reviewResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(reviewResponse);
+        }
+
+        var revisionDescription = reviewResponse.Content!.RevisionDescription;
+
+        if (sponsorOrganisationUser.Content!.IsAuthoriser && string.IsNullOrWhiteSpace(revisionDescription))
+        {
+            return View(model);
+        }
+        else
+        {
+            return Forbid();
+        }
+    }
+
+    [Authorize(Policy = Permissions.Sponsor.Modifications_Authorise)]
+    [FeatureGate(FeatureFlags.RevisionAndAuthorisation)]
+    [HttpPost]
+    [CmsContentAction(nameof(RequestRevisions))]
+    public async Task<IActionResult> SendRequestRevisions(AuthoriseModificationsOutcomeViewModel model)
+    {
+        var context = new ValidationContext<AuthoriseModificationsOutcomeViewModel>(model);
+        var validationResult = await outcomeValidator.ValidateAsync(context);
+
+        foreach (var error in validationResult.Errors)
+        {
+            ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+        }
+
+        if (!ModelState.IsValid)
+        {
+            var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId);
+
+            if (!sponsorOrganisationUser.IsSuccessStatusCode)
+            {
+                return this.ServiceError(sponsorOrganisationUser);
+            }
+
+            var reviewResponse = await projectModificationsService.GetModificationReviewResponses(model.ProjectRecordId, model.ProjectModificationId);
+
+            if (!reviewResponse.IsSuccessStatusCode)
+            {
+                return this.ServiceError(reviewResponse);
+            }
+
+            var revisionDescription = reviewResponse.Content!.RevisionDescription;
+
+            if (sponsorOrganisationUser.Content!.IsAuthoriser && string.IsNullOrWhiteSpace(revisionDescription))
+            {
+                return View(nameof(RequestRevisions), model);
+            }
+            else
+            {
+                return Forbid();
+            }
+        }
+
+        await projectModificationsService.UpdateModificationStatus
+                (
+                    model.ProjectRecordId,
+                    Guid.Parse(model.ModificationId),
+                    ModificationStatus.RequestRevisions,
+                    model.RevisionDescription
+                );
 
         return RedirectToAction(nameof(Confirmation), model);
     }
@@ -338,13 +507,99 @@ public class AuthorisationsModificationsController
         string shortTitle,
         Guid projectModificationId,
         Guid sponsorOrganisationUserId,
-        Guid modificationChangeId
+        Guid modificationChangeId,
+        string rtsId
+
     )
     {
         var response =
             await BuildCheckAndAuthorisePageAsync(projectModificationId, irasId, shortTitle, projectRecordId,
-                sponsorOrganisationUserId, modificationChangeId);
+                sponsorOrganisationUserId, rtsId, modificationChangeId);
 
         return View(response);
+    }
+
+    [Authorize(Policy = Permissions.Sponsor.Modifications_Authorise)]
+    [FeatureGate(FeatureFlags.NotAuthorisedReason)]
+    [HttpGet]
+    public async Task<IActionResult> ModificationNotAuthorised(AuthoriseModificationsOutcomeViewModel model)
+    {
+        return await ValidateRequest(model);
+    }
+
+    [Authorize(Policy = Permissions.Sponsor.Modifications_Authorise)]
+    [FeatureGate(FeatureFlags.NotAuthorisedReason)]
+    [CmsContentAction(nameof(ModificationNotAuthorised))]
+    [HttpPost]
+    public async Task<IActionResult> SaveModificationReasonNotApproved(AuthoriseModificationsOutcomeViewModel model)
+    {
+        var context = new ValidationContext<AuthoriseModificationsOutcomeViewModel>(model);
+        var validationResult = await outcomeValidator.ValidateAsync(context);
+
+        foreach (var error in validationResult.Errors)
+        {
+            ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return await ValidateRequest(model);
+        }
+
+        await projectModificationsService.UpdateModificationStatus
+               (
+                   model.ProjectRecordId,
+                   Guid.Parse(model.ModificationId),
+                   ModificationStatus.NotAuthorised,
+                   model.RevisionDescription,
+                   model.ReasonNotApproved
+               );
+        return RedirectToAction(nameof(ConfirmationModificationNotAuthorised), model);
+    }
+
+    /// <summary>
+    /// Confirmation view for modification not authorised
+    /// </summary>
+    /// <returns></returns>
+    [Authorize(Policy = Permissions.Sponsor.Modifications_Authorise)]
+    [FeatureGate(FeatureFlags.NotAuthorisedReason)]
+    [CmsContentAction(nameof(ConfirmationModificationNotAuthorised))]
+    [HttpGet]
+    public IActionResult ConfirmationModificationNotAuthorised(AuthoriseModificationsOutcomeViewModel model)
+    {
+        return View("ConfirmModificationNotAuthorised", model);
+    }
+
+    /// <summary>
+    /// Validate browser back request
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    private async Task<IActionResult> ValidateRequest(AuthoriseModificationsOutcomeViewModel model)
+    {
+        var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId);
+
+        if (!sponsorOrganisationUser.IsSuccessStatusCode)
+        {
+            return this.ServiceError(sponsorOrganisationUser);
+        }
+
+        var response = await projectModificationsService.GetModificationReviewResponses(model.ProjectRecordId, model.ProjectModificationId);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return this.ServiceError(response);
+        }
+
+        var reasonNotApproved = response.Content!.ReasonNotApproved;
+
+        if (sponsorOrganisationUser.Content!.IsAuthoriser && string.IsNullOrWhiteSpace(reasonNotApproved))
+        {
+            return View("ModificationNotAuthorised", model);
+        }
+        else
+        {
+            return Forbid();
+        }
     }
 }

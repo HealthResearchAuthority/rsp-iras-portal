@@ -7,6 +7,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.FeatureManagement;
+using Rsp.IrasPortal.Application.FeatureFilters;
+using Rsp.Logging.ActionFilters;
+using Rsp.Logging.Extensions;
+using Rsp.Logging.Interceptors;
+using Rsp.Logging.Middlewares.CorrelationId;
+using Rsp.Logging.Middlewares.RequestTracing;
 using Rsp.Portal.Application.Configuration;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.Middleware;
@@ -21,11 +27,6 @@ using Rsp.Portal.Web;
 using Rsp.Portal.Web.ActionFilters;
 using Rsp.Portal.Web.Attributes;
 using Rsp.Portal.Web.Mapping;
-using Rsp.Logging.ActionFilters;
-using Rsp.Logging.Extensions;
-using Rsp.Logging.Interceptors;
-using Rsp.Logging.Middlewares.CorrelationId;
-using Rsp.Logging.Middlewares.RequestTracing;
 using Rsp.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -60,7 +61,12 @@ builder.WebHost.ConfigureKestrel(options =>
 });
 
 // this will use the FeatureManagement section
-services.AddFeatureManagement();
+services
+    .AddFeatureManagement()
+    // using the built-in Microsoft.Targeting filter which allows targeting rules based on user and/or groups
+    // UserTargetingContext is a custom implementation of ITargetingContextAccessor to provide the user context for targeting rules,
+    // which is required by Microsoft.Targeting filter
+    .WithTargeting<UserTargetingContext>();
 
 if (!builder.Environment.IsDevelopment())
 {

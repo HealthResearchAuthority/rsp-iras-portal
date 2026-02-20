@@ -54,7 +54,7 @@ public class ValidateAsyncTests : TestServiceBase<ApprovalsSearchModelValidator>
         var result = await Sut.TestValidateAsync(model);
 
         result.ShouldHaveValidationErrorFor(x => x.ToDate)
-            .WithErrorMessage("The date you’ve selected is before the search above");
+            .WithErrorMessage("'Search from' date must be the same as or before 'Search to' date");
     }
 
     [Fact]

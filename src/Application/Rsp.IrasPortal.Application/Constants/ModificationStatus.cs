@@ -10,10 +10,14 @@ public struct ModificationStatus
     public const string Approved = "Approved";
     public const string NotApproved = "Not approved";
     public const string NotAuthorised = "Not authorised";
+    public const string RequestForInformation = "Request for further information";
 
     // BACKSTAGE VALUES
     public const string Received = "Received";
+
     public const string ReviewInProgress = "Review in progress";
+    public const string RequestRevisions = "Request revisions";
+    public const string ReviseAndAuthorise = "Revise and authorise";
 
     public static readonly List<string> Types = [
         InDraft,
@@ -23,4 +27,11 @@ public struct ModificationStatus
         NotApproved,
         NotAuthorised
     ];
+
+    public static readonly List<string> InTransactionStatus = [
+        InDraft,
+        WithSponsor,
+        RequestRevisions,
+        ReviseAndAuthorise
+   ];
 }

@@ -12,9 +12,9 @@ public class AuthorisationsModificationsSearchModelValidator : AbstractValidator
         .Must(term => string.IsNullOrEmpty(term) || term.Length >= 2)
             .WithMessage("Modification ID must be at least 2 characters")
         .Must(term => string.IsNullOrEmpty(term) || term.Length <= 8)
-            .WithMessage("Modification ID must be no more than 8 characters")
+            .WithMessage("Modification ID must be 8 characters or less")
         .Matches(@"^[0-9/]+$")
                 .When(x => !string.IsNullOrEmpty(x.SearchTerm))
-                .WithMessage("Modification ID must only contain numbers and '/'");
+                .WithMessage("Modification ID must only include numbers and a slash, like 123456/1");
     }
 }

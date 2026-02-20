@@ -17,7 +17,7 @@ public class UpdateModificationStatus : TestServiceBase<ProjectModificationsServ
 
         Mocker
             .GetMock<IProjectModificationsServiceClient>()
-            .Setup(c => c.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>()))
+            .Setup(c => c.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>()))
             .ReturnsAsync(apiResponse);
 
         // Act

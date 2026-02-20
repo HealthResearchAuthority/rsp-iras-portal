@@ -1,8 +1,15 @@
-﻿using System.Text.Json;
+﻿using System.Reflection;
+using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.Identity;
+using Rsp.Portal.Services.Extensions;
 using Rsp.Portal.Web.Controllers;
 using Rsp.Portal.Web.Models;
 
@@ -10,36 +17,28 @@ namespace Rsp.Portal.UnitTests.Web.Controllers.SponsorOrganisationsControllerTes
 
 public class AddUserRoleTests : TestServiceBase<SponsorOrganisationsController>
 {
-    private readonly DefaultHttpContext _http;
-
-    public AddUserRoleTests()
-    {
-        _http = new DefaultHttpContext { Session = new InMemorySession() };
-        Sut.ControllerContext = new ControllerContext { HttpContext = _http };
-        Sut.TempData = new TempDataDictionary(
-            _http,
-            Mocker.GetMock<ITempDataProvider>().Object);
-    }
-
     [Theory, AutoData]
-    public void AddUserRole_ShouldReturnView_WithMappedModel_WhenNoStoredModelExists(string rtsId, Guid userId)
+    public async Task AddUserRole_ShouldReturnView_WithMappedModel_WhenNoStoredModelExists(Guid userId, SponsorOrganisationAddUserModel model)
     {
-        var result = Sut.AddUserRole(rtsId, userId);
+        // Arrange
+        SetupTempData(model);
+
+        var result = await Sut.AddUserRole(model.RtsId, userId);
 
         var viewResult = result.ShouldBeOfType<ViewResult>();
         viewResult.Model.ShouldBeOfType<SponsorOrganisationAddUserModel>()
-            .RtsId.ShouldBe(rtsId);
+            .RtsId.ShouldBe(model.RtsId);
     }
 
     [Theory, AutoData]
-    public void SaveUserRole_ShouldReturnModelStateError_WhenStoredModelIsNull(SponsorOrganisationAddUserModel model)
+    public async Task SaveUserRole_ShouldReturnModelStateError_WhenStoredModelIsNull(SponsorOrganisationAddUserModel model)
     {
         // Arrange
         SetupTempData(model);
         Sut.TempData.Remove(TempDataKeys.SponsorOrganisationUser);
 
         // Act
-        var result = Sut.SaveUserRole(model);
+        var result = await Sut.SaveUserRole(model);
 
         // Assert
         result.ShouldBeOfType<RedirectToActionResult>();
@@ -48,7 +47,7 @@ public class AddUserRoleTests : TestServiceBase<SponsorOrganisationsController>
     }
 
     [Theory, AutoData]
-    public void SaveUserRole_ShouldReturnModelStateError_WhenRoleIsNull(SponsorOrganisationAddUserModel model)
+    public async Task SaveUserRole_ShouldReturnModelStateError_WhenRoleIsNull(SponsorOrganisationAddUserModel model)
     {
         // Arrange
         model.SponsorRole = null;
@@ -56,7 +55,7 @@ public class AddUserRoleTests : TestServiceBase<SponsorOrganisationsController>
         SetupTempData(model);
 
         // Act
-        var result = Sut.SaveUserRole(model);
+        var result = await Sut.SaveUserRole(model);
 
         // Assert
         result.ShouldBeOfType<ViewResult>();
@@ -65,7 +64,7 @@ public class AddUserRoleTests : TestServiceBase<SponsorOrganisationsController>
     }
 
     [Theory, AutoData]
-    public void SaveUserRole_ShouldRedirectToFinalPage_WhenRoleIsOrgAdmin(SponsorOrganisationAddUserModel model)
+    public async Task SaveUserRole_ShouldRedirectToFinalPage_WhenRoleIsOrgAdmin(SponsorOrganisationAddUserModel model)
     {
         // Arrange
         model.SponsorRole = Roles.OrganisationAdministrator;
@@ -73,7 +72,7 @@ public class AddUserRoleTests : TestServiceBase<SponsorOrganisationsController>
         SetupTempData(model);
 
         // Act
-        var result = Sut.SaveUserRole(model);
+        var result = await Sut.SaveUserRole(model);
 
         // Assert
         var viewResult = result.ShouldBeOfType<RedirectToActionResult>();
@@ -82,7 +81,7 @@ public class AddUserRoleTests : TestServiceBase<SponsorOrganisationsController>
     }
 
     [Theory, AutoData]
-    public void SaveUserRole_ShouldRedirectToAuthoriserPage_WhenRoleIsSponsor(SponsorOrganisationAddUserModel model)
+    public async Task SaveUserRole_ShouldRedirectToAuthoriserPage_WhenRoleIsSponsor(SponsorOrganisationAddUserModel model)
     {
         // Arrange
         model.SponsorRole = Roles.Sponsor;
@@ -90,7 +89,7 @@ public class AddUserRoleTests : TestServiceBase<SponsorOrganisationsController>
         SetupTempData(model);
 
         // Act
-        var result = Sut.SaveUserRole(model);
+        var result = await Sut.SaveUserRole(model);
 
         // Assert
         var viewResult = result.ShouldBeOfType<RedirectToActionResult>();
@@ -98,8 +97,127 @@ public class AddUserRoleTests : TestServiceBase<SponsorOrganisationsController>
         viewResult.ActionName.ShouldBe("AddUserPermission");
     }
 
-    private void SetupTempData(SponsorOrganisationAddUserModel model)
+    [Theory, AutoData]
+    public async Task SaveUserPermission_ShouldRedirectToUsersPage_WhenUserInactive(SponsorOrganisationAddUserModel model)
     {
+        SetupTempData(model, false);
+
+        var result = await Sut.SaveUserRole(model);
+
+        var viewResult = result.ShouldBeOfType<RedirectToActionResult>();
+        viewResult.ActionName.ShouldBe("ViewSponsorOrganisationUsers");
+    }
+
+    private void SetupTempData(SponsorOrganisationAddUserModel model, bool userActive = true)
+    {
+        // Arrange
+        const string rtsId = "87765";
+        const string orgName = "Acme Research Ltd";
+        const string country = "England";
+
+        model.RtsId = rtsId;
+
+        var userGuid = Guid.NewGuid();
+        var userId = userGuid.ToString();
+
+        var sponsorResponse = new ServiceResponse<AllSponsorOrganisationsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new AllSponsorOrganisationsResponse
+            {
+                SponsorOrganisations = new List<SponsorOrganisationDto>
+                {
+                    new()
+                    {
+                        IsActive = true,
+                        CreatedDate = new DateTime(2024, 5, 1)
+                    }
+                }
+            }
+        };
+
+        var organisationResponse = new ServiceResponse<OrganisationDto>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new OrganisationDto { Id = rtsId, Name = orgName, CountryName = country }
+        };
+
+        Mocker.GetMock<ISponsorOrganisationService>()
+            .Setup(s => s.GetSponsorOrganisationByRtsId(rtsId))
+            .ReturnsAsync(sponsorResponse);
+
+        Mocker.GetMock<IRtsService>()
+            .Setup(s => s.GetOrganisation(rtsId))
+            .ReturnsAsync(organisationResponse);
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(x => x.SearchUsers(
+                It.IsAny<string>(),
+                It.IsAny<IEnumerable<string>?>(), // searchQuery you pass in the Act
+                It.Is<int>(pn => pn == 1),
+                It.Is<int>(ps => ps == 20)))
+            .ReturnsAsync(new ServiceResponse<UsersResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new UsersResponse
+                {
+                    TotalCount = 1,
+                    Users = new List<User>
+                    {
+                        new(
+                            Guid.NewGuid().ToString(),
+                            "azure-ad-12345",
+                            "Mr",
+                            "Test",
+                            "Test",
+                            "test.test@example.com",
+                            "Software Developer",
+                            orgName, // IMPORTANT: match org if your action filters by org
+                            "+44 7700 900123",
+                            "United Kingdom",
+                            "Active",
+                            DateTime.UtcNow,
+                            DateTime.UtcNow.AddDays(-2),
+                            DateTime.UtcNow)
+                    }
+                }
+            });
+
+        var user = new User(
+            Guid.NewGuid().ToString(),
+            "azure-ad-12345",
+            "Mr",
+            "Test",
+            "Test",
+            "test.test@example.com",
+            "Software Developer",
+            orgName, // IMPORTANT: match org if your action filters by org
+            "+44 7700 900123",
+            "United Kingdom",
+            "Active",
+            DateTime.UtcNow,
+            DateTime.UtcNow.AddDays(-2),
+            DateTime.UtcNow);
+
+        var userResponse = new UserResponse
+        {
+            Roles = ["admin", "reviewer"],
+            User = user with { Status = userActive ? IrasUserStatus.Active : IrasUserStatus.Disabled }
+        };
+
+        var apiResponse = new ApiResponse<UserResponse>
+        (
+            new HttpResponseMessage(HttpStatusCode.OK),
+            userResponse,
+            new RefitSettings()
+        );
+
+        var serviceResponse = apiResponse.ToServiceResponse();
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(x => x.GetUser(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(serviceResponse);
+
         var ctx = new DefaultHttpContext();
         Sut.ControllerContext = new() { HttpContext = ctx };
         Sut.TempData = new TempDataDictionary(ctx, Mock.Of<ITempDataProvider>())

@@ -39,6 +39,7 @@
 	var tableId = "myOrganisationUsersTable";
 
 	var isAdmin = Model.IsCurrentUserAdmin;
+    var isSponsorEnabled = Model.SponsorOrganisation.IsActive;
 }
 
 @functions {
@@ -73,12 +74,13 @@
 }
 
 <div class="govuk-grid-row">
-	<div class="govuk-grid-column-two-thirds">
-		<div class="govuk-caption-l">
-			@Html.Raw(headline?.Value)
-		</div>
-		<h1 class="govuk-heading-l">@Model.Name</h1>
-	</div>
+    <div class="govuk-grid-column-two-thirds">
+		<partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
+        <div class="govuk-caption-l">
+            @Html.Raw(headline?.Value)
+        </div>
+        <h1 class="govuk-heading-l">@Model.Name</h1>
+    </div>
 </div>
 
 
@@ -87,7 +89,7 @@
 
 <br />
 
-@if (isAdmin)
+@if (isAdmin && isSponsorEnabled)
 {
 	<div class="govuk-grid-row">
 		<div class="govuk-grid-column-two-thirds">
@@ -190,7 +192,7 @@
 										@{
 											var sponsorOrganisationUserDto = Model.SponsorOrganisation.Users.FirstOrDefault(x => x.UserId == Guid.Parse(user.Id));
 											var statusClass = sponsorOrganisationUserDto.IsActive ? "govuk-tag--green" : "govuk-tag--red";
-											var statusText = sponsorOrganisationUserDto.IsActive ? "Active" : "Disabled";
+											var statusText = sponsorOrganisationUserDto.IsActive ? "Active" : "Inactive";
 										}
 
 										<strong class="govuk-tag @statusClass">@statusText</strong>

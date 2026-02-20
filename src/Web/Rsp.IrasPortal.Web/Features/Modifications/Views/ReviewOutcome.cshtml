@@ -70,15 +70,23 @@
                         <div class="govuk-radios__item">
                             <input class="govuk-radios__input" id="approved" type="radio" value="@ModificationStatus.Approved" asp-for="ReviewOutcome">
                             <label class="govuk-label govuk-radios__label" for="approved">
-                                Approved
+                                @ModificationStatus.Approved
                             </label>
                         </div>
                         <div class="govuk-radios__item">
                             <input class="govuk-radios__input" id="notApproved" type="radio" value="@ModificationStatus.NotApproved" asp-for="ReviewOutcome">
                             <label class="govuk-label govuk-radios__label" for="notApproved">
-                                Not approved
+                                @ModificationStatus.NotApproved
                             </label>
                         </div>
+                        <feature name="@FeatureFlags.RequestForInformation">
+                            <div class="govuk-radios__item">
+                                <input class="govuk-radios__input" id="rfi" type="radio" value="@ModificationStatus.RequestForInformation" asp-for="ReviewOutcome">
+                                <label class="govuk-label govuk-radios__label" for="rfi">
+                                    @ModificationStatus.RequestForInformation
+                                </label>
+                            </div>
+                        </feature>
                     </div>
                 </fieldset>
             </div>

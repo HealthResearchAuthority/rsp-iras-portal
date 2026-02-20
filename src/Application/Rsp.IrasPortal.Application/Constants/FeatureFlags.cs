@@ -28,4 +28,25 @@ public static class FeatureFlags
 
     // Allows revision request or revise and authorise modifications
     public const string RevisionAndAuthorisation = "Modifications.RevisionAndAuthorisation";
+
+    // Allows adding / removing participating organisations via modification journey
+    public const string ParticipatingOrganisations = "Modifications.ParticipatingOrganisations";
+
+    // Allows downloading modification pack in modification journey
+    public const string DownloadPack = "Modifications.DownloadPack";
+
+    // Allows documents to be superseded in modification journey
+    public const string SupersedingDocuments = "Modifications.SupersedingDocuments";
+
+    // Allows withdrawing modification
+    public const string WithdrawModification = "Modifications.Withdraw";
+
+    // Allows requesting for information in modification journey
+    public const string RequestForInformation = "Modifications.RequestForInformation";
+
+    // Show back button in project overview page
+    public const string BackButton = "ProjectOverview.BackButton";
+
+    //All to enter reason for not authorising the modification
+    public const string NotAuthorisedReason = "Modifications.NotAuthorisedReason";
 }

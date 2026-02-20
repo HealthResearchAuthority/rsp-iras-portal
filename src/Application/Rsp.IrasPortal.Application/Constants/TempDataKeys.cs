@@ -26,6 +26,7 @@ public struct TempDataKeys
         public const string OverallRanking = "td:modification_overall_ranking";
         public const string ProjectModificationsDetails = "td:project_modifications_details";
         public const string ProjectModificationStatus = "td:project_modification_status";
+        public const string ReasonNotApproved = "td:reason_not_approved";
         public const string CanModificationSendToSponsor = "td:can_modification_send_to_sponsor";
         public const string CanCreateNewModification = "td:can_create_new_modifications";
     }
@@ -37,6 +38,12 @@ public struct TempDataKeys
         public const string ChangeRemoved = "td:modification_change_removed";
         public const string ChangeName = "td:modification_change_name";
         public const string RankingOfChange = "td:modification_ranking_of_change";
+    }
+
+    public struct ProjectOverviewReferrer
+    {
+        public const string Referrer = "td:project_overview_referrer";
+        public const string BackRouteValues = "td:project_overview_referrer_back_route_values";
     }
 
     public const string ProjectRecordId = "td:project_record_id";
@@ -78,4 +85,5 @@ public struct TempDataKeys
     public const string PreAuthProjectClosureModel = "td:pre_auth_project_closure_model";
     public const string SponsorOrganisationUser = "td:sponsor_organisation_user";
     public const string IsAuthoriser = "td:is_authoriser";
+    public const string ValidationSummaryError = "td:validation_summary_error";
 }
