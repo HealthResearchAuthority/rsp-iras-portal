@@ -139,7 +139,7 @@ public static class Permissions
         public const string ModificationsHistory_BackStage_Read = "myresearch.modificationshistory_backstage.read";
 
         /// <summary>
-        /// allows approving modifications
+        /// allows withdrawing modifications
         /// </summary>
         public const string Modifications_Withdraw = "myresearch.modifications.withdraw";
     }

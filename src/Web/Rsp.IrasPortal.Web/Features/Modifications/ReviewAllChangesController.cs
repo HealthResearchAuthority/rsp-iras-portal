@@ -4,6 +4,7 @@ using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement.Mvc;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
@@ -464,6 +465,7 @@ public class ReviewAllChangesController
     }
 
     [Authorize(Policy = Permissions.MyResearch.Modifications_Withdraw)]
+    [FeatureGate(FeatureFlags.WithdrawModification)]
     [HttpGet]
     public IActionResult WithdrawModification()
     {
@@ -478,6 +480,7 @@ public class ReviewAllChangesController
     }
 
     [Authorize(Policy = Permissions.MyResearch.Modifications_Withdraw)]
+    [FeatureGate(FeatureFlags.WithdrawModification)]
     [HttpPost]
     public async Task<IActionResult> ConfirmWithdrawModification(string projectRecordId, Guid projectModificationId)
     {
