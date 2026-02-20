@@ -39,7 +39,7 @@ public static class ServicesConfiguration
         // add message handlers
         services.AddTransient<AuthHeadersHandler>();
         services.AddTransient<CmsPreviewHeadersHandler>();
-        services.AddTransient<FunctionKeyHeadersHandler>();
+        services.AddTransient<FunctionHeadersHandler>();
 
         services.AddMemoryCache();
 
