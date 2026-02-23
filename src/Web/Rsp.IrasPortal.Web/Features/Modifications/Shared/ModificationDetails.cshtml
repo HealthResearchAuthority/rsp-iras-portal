@@ -11,11 +11,11 @@
 
 @{
 
-	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
+    ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 
     var isAuthoriser = TempData[TempDataKeys.IsAuthoriser] as bool? ?? false;
     var isRevisionBySponsor = false;
-   
+
     <authorized permission="@Permissions.Sponsor.Modifications_Authorise"
                 status-for="Status"
                 status-is="@ModificationStatus.ReviseAndAuthorise">
@@ -23,7 +23,15 @@
             isRevisionBySponsor = isAuthoriser;
             ViewBag.Title = "Revise and authorise";
             ViewBag.IsRevisionBySponsor = true;
-        }         
+        }
+    </authorized>
+    <authorized permission="@Permissions.MyResearch.Modifications_Read"
+                status-for="Status"
+                status-is="@ModificationStatus.RequestRevisions">
+        @{
+            ViewBag.Title = "Make revisions";
+            ViewBag.IsRevisionBySponsor = false;
+        }
     </authorized>
 }
 
@@ -83,6 +91,11 @@
             <h1 class="govuk-heading-l">Revise and authorise</h1>
             <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
         }
+        else if (Model.Status == ModificationStatus.RequestRevisions)
+        {
+            <h1 class="govuk-heading-l">Make revisions</h1>
+            <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
+        }
         else
         {
             <h1 class="govuk-heading-l">Modification details</h1>
@@ -136,7 +149,7 @@
         }
 
         <div class="save-buttons">
-            @if ((Model.Status is ModificationStatus.InDraft || isRevisionBySponsor) && Model.ModificationChanges.Count < 10)
+            @if ((Model.Status is ModificationStatus.InDraft || isRevisionBySponsor || Model.Status is ModificationStatus.RequestRevisions) && Model.ModificationChanges.Count < 10)
             {
                 <a asp-route="pmc:areaofchange" asp-route-projectModificationId="@Model.ModificationId" class="govuk-button govuk-button--secondary">
                     Add another change to this modification
@@ -199,7 +212,8 @@
     }
 
     <a status-for="Status"
-       status-is="@ModificationStatus.InDraft"
+       status-in="@(new []{ ModificationStatus.InDraft
+                          })"
        asp-route-projectRecordId="@Model.ProjectRecordId"
        asp-route-irasId="@(Model.ModificationIdentifier?.Split('/')[0])"
        asp-route-shortTitle="@Model.ShortTitle"
@@ -211,8 +225,8 @@
 </authorized>
 
 <authorized permission="@Permissions.Sponsor.Modifications_Authorise"
-                status-for="Status"
-                status-is="@ModificationStatus.ReviseAndAuthorise">
+            status-for="Status"
+            status-is="@ModificationStatus.ReviseAndAuthorise">
     @if (isAuthoriser && Model.ModificationChanges.Any())
     {
         <hr aria-hidden="true" class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
@@ -246,7 +260,7 @@
             <div class="govuk-grid-column-two-thirds">
                 <h1 class="govuk-heading-m">
                     @Html.Raw(headline?.Value)
-                </h1>                
+                </h1>
             </div>
         </div>
 
@@ -277,29 +291,37 @@
                              aria-hidden="true"
                              class="govuk-hint govuk-character-count__message">
                         </div>
-                    </div>   
+                    </div>
 
-                    <input type="hidden" name="ProjectRecordId" value="@Model.ProjectRecordId" />                    
+                    <input type="hidden" name="ProjectRecordId" value="@Model.ProjectRecordId" />
                     <input type="hidden" name="ModificationId" value="@Model.ModificationId" />
-                    <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" /> 
+                    <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
                     <input type="hidden" name="ShortTitle" value="@Model.ShortTitle" />
-                    <input type="hidden" name="IrasId" value="@Model.IrasId" />   
+                    <input type="hidden" name="IrasId" value="@Model.IrasId" />
                     <input type="hidden" name="RtsId" value="@Model.RtsId" />
-                    
+
                     <div class="save-buttons">
                         <button type="submit" class="govuk-button" data-module="govuk-button">
                             Authorise
-                        </button>                    
-                    
+                        </button>
+
                         <button type="submit"
                                 name="isSaveForLater"
                                 value="true"
                                 class="govuk-button govuk-button--secondary">
                             Save for later
                         </button>
-                     </div>
+                    </div>
                 </div>
             </div>
         </form>
-    }       
+    }
 </authorized>
+
+<feature name="@FeatureFlags.RequestRevisions">
+    <authorized role-in="@(new []{Roles.Applicant, Roles.Sponsor})"
+                status-for="@Model.Status"
+                status-is="@ModificationStatus.RequestRevisions">
+        <partial name="MakeRevision" model="Model" view-data="ViewData" />
+    </authorized>
+</feature>
