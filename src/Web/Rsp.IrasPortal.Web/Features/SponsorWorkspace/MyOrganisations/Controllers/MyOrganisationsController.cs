@@ -810,7 +810,7 @@ public class MyOrganisationsController(
             Telephone = userDetails.Telephone,
             Title = userDetails.Title,
             IsAuthoriser = orgUser.IsAuthoriser ? "Yes" : "No",
-            Status = orgUser.IsActive ? "Active" : "Disabled",
+            Status = orgUser.IsActive ? "Active" : "Inactive",
             Role = orgUser.SponsorRole,
             RtsId = rtsId,
             SponsorOrganisationName = ctx.RtsOrganisation.Name,

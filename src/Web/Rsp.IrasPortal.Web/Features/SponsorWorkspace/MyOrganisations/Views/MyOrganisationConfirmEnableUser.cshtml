@@ -2,15 +2,15 @@
 @model UserViewModel;
 
 @{
-    ViewBag.Title = "Confirm to enable user - Manage Organisations - Sponsor workspace";
+	ViewBag.Title = "Confirm to activate user - Manage Organisations - Sponsor workspace";
 }
 
 <a asp-route="sws:MyOrganisationViewUser" asp-all-route-data="@(new Dictionary<string, string> { { "rtsId", ViewBag.RtsId }, { "userId", Model.Id! } })" class="govuk-back-link">Back</a>
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-        <h2 class="govuk-heading-l">Confirm that you want to enable @Model.GivenName @Model.FamilyName</h2>
-		<p class="govuk-body">You are about to enable the user to work under this sponsor organisation.</p>
+		<h2 class="govuk-heading-l">Confirm that you want to activate @Model.GivenName @Model.FamilyName</h2>
+		<p class="govuk-body">You are about to activate the user to work under this sponsor organisation.</p>
         <form method="post">
             <input hidden name="Id" value="@(Model.Id ?? string.Empty)" />
             <input hidden name="Email" asp-for="Email" value="@(Model.Email ?? string.Empty)" />
