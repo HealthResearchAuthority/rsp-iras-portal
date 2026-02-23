@@ -76,4 +76,9 @@ public class BaseProjectModificationViewModel
     /// Gets or sets rtsId - for authorising sponsor making changes to modification during Revise and authorise
     /// </summary>
     public string? RtsId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the responnse from the applicant for the revision request
+    /// </summary>
+    public string? ApplicantRevisionResponse { get; set; }
 }
