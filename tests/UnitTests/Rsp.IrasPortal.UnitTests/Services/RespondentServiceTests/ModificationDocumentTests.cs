@@ -99,4 +99,29 @@ public class ModificationDocumentTests : TestServiceBase<RespondentService>
         respondentServiceClient.Verify(c => c.GetModificationDocumentAnswers(documentId), Times.Once);
         result.Content.ShouldBe(apiResponseContent);
     }
+
+    [Theory, AutoData]
+    public async Task GetModificationDocumentsByType_DelegatesToClient_AndReturnsMappedResult
+    (
+        string projectRecordId,
+        string documentTypeId,
+        IEnumerable<ProjectModificationDocumentRequest> apiResponseContent
+    )
+    {
+        // Arrange
+        var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK);
+        var apiResponse = new ApiResponse<IEnumerable<ProjectModificationDocumentRequest>>(httpResponseMessage, apiResponseContent, new(), null);
+
+        var respondentServiceClient = Mocker.GetMock<IRespondentServiceClient>();
+        respondentServiceClient
+            .Setup(c => c.GetModificationDocumentsByType(projectRecordId, documentTypeId))
+            .ReturnsAsync(apiResponse);
+
+        // Act
+        var result = await Sut.GetModificationDocumentsByType(projectRecordId, documentTypeId);
+
+        // Assert
+        respondentServiceClient.Verify(c => c.GetModificationDocumentsByType(projectRecordId, documentTypeId), Times.Once);
+        result.Content.ShouldBe(apiResponseContent);
+    }
 }

@@ -78,6 +78,9 @@
 			<input type="hidden" name="Documents[@i].FileName" value="@Model.Documents[i].FileName" />
 			<input type="hidden" name="Documents[@i].FileSize" value="@Model.Documents[i].FileSize" />
             <input type="hidden" name="Documents[@i].DocumentStoragePath" value="@Model.Documents[i].DocumentStoragePath" />
+            <input type="hidden" name="Documents[@i].ReplacesDocumentId" value="@Model.Documents[i].ReplacesDocumentId" />
+            <input type="hidden" name="Documents[@i].ReplacedByDocumentId" value="@Model.Documents[i].ReplacedByDocumentId" />
+            <input type="hidden" name="Documents[@i].LinkedDocumentId" value="@Model.Documents[i].LinkedDocumentId" />
 		}
 
 		<button type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button">

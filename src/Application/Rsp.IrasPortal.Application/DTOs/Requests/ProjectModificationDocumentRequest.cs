@@ -53,6 +53,27 @@ public class ProjectModificationDocumentRequest
     public DateTime CreatedDate { get; set; } = DateTime.Now;
 
     /// <summary>
+    /// The current document replaces the document identified by this Id.
+    /// </summary>
+    public Guid? ReplacesDocumentId { get; set; }
+
+    /// <summary>
+    /// The current document is replaced by the document identified by this Id
+    /// </summary>
+    public Guid? ReplacedByDocumentId { get; set; }
+
+    /// <summary>
+    /// This field will indicate whether the document is CLEAN or TRACKED
+    /// </summary>
+    public string? DocumentType { get; set; }
+
+    /// <summary>
+    /// For a CLEAN document: reference to the corresponding TRACKED version (if it exists).
+    /// For a TRACKED document: reference to the corresponding CLEAN version(if it exists).
+    /// </summary>
+    public Guid? LinkedDocumentId { get; set; }
+
+    /// <summary>
     /// Gets the display size in KB, MB or GB, rounded to 2 decimal places.
     /// Returns "-" if size is null or zero.
     /// </summary>

@@ -218,7 +218,7 @@ public class ModificationsController
     /// Returns the specific changes related to a selected Area of Change.
     /// Pulls data from session cache for performance.
     /// </summary>
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Create)]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Create)]
     [HttpGet]
     public IActionResult GetSpecificChangesByAreaId(string areaOfChangeId)
     {
@@ -358,7 +358,7 @@ public class ModificationsController
             return this.ServiceError(new ServiceResponse
             {
                 StatusCode = HttpStatusCode.BadRequest,
-                Error = $"Error retrieving the modification for project record: {projectRecordId} modificationId: {projectModificationId.ToString()}",
+                Error = $"Error retrieving the modification for project record: {projectRecordId} modificationId: {projectModificationId}",
             });
         }
 

@@ -64,4 +64,19 @@ public struct QuestionIds
     /// The question ID for the selected document type.
     /// </summary>
     public const string DocumentName = "IQA0623";
+
+    /// <summary>
+    /// The question ID for the previous version of document.
+    /// </summary>
+    public const string PreviousVersionOfDocument = "IQA0603";
+
+    /// <summary>
+    /// The option ID for the previous version of document - Yes.
+    /// </summary>
+    public const string PreviousVersionOfDocumentYesOption = "OPT0004";
+
+    /// <summary>
+    /// The option ID for the previous version of document - No.
+    /// </summary>
+    public const string PreviousVersionOfDocumentNoOption = "OPT0005";
 }

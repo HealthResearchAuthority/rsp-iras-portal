@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Rsp.IrasPortal.Web.Attributes;
 using Rsp.Portal.Application.Constants;
+using Microsoft.FeatureManagement;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
@@ -22,8 +23,9 @@ public class SponsorReferenceController
     IProjectModificationsService projectModificationsService,
     IRespondentService respondentService,
     ICmsQuestionsetService cmsQuestionsetService,
-    IValidator<QuestionnaireViewModel> validator
-) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator)
+    IValidator<QuestionnaireViewModel> validator,
+    IFeatureManager featureManager
+) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator, featureManager)
 {
     private readonly IRespondentService _respondentService = respondentService;
     private const string PostApprovalRoute = "pov:postapproval";

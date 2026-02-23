@@ -217,7 +217,8 @@ public static class RoleStatusPermissions
                     DocumentStatus.Approved,
                     DocumentStatus.NotAuthorised,
                     DocumentStatus.NotApproved,
-                    DocumentStatus.Withdrawn
+                    DocumentStatus.Withdrawn,
+                    DocumentStatus.Superseded
                 }
             },
             {
@@ -229,7 +230,8 @@ public static class RoleStatusPermissions
                     DocumentStatus.Approved,
                     DocumentStatus.NotAuthorised,
                     DocumentStatus.NotApproved,
-                    DocumentStatus.Withdrawn
+                    DocumentStatus.Withdrawn,
+                    DocumentStatus.Superseded
                 }
             },
             {
@@ -241,7 +243,8 @@ public static class RoleStatusPermissions
                     DocumentStatus.Approved,
                     DocumentStatus.NotAuthorised,
                     DocumentStatus.NotApproved,
-                    DocumentStatus.Withdrawn
+                    DocumentStatus.Withdrawn,
+                    DocumentStatus.Superseded
                 }
             },
             {
@@ -252,7 +255,8 @@ public static class RoleStatusPermissions
                     DocumentStatus.NotApproved,
                     DocumentStatus.ReviewInProgress,
                     DocumentStatus.Received,
-                    DocumentStatus.Withdrawn
+                    DocumentStatus.Withdrawn,
+                    DocumentStatus.Superseded
                 }
             },
             {
@@ -263,7 +267,8 @@ public static class RoleStatusPermissions
                     DocumentStatus.NotApproved,
                     DocumentStatus.ReviewInProgress,
                     DocumentStatus.Received,
-                    DocumentStatus.Withdrawn
+                    DocumentStatus.Withdrawn,
+                    DocumentStatus.Superseded
                 }
             },
             {
@@ -274,7 +279,8 @@ public static class RoleStatusPermissions
                     DocumentStatus.NotApproved,
                     DocumentStatus.ReviewInProgress,
                     DocumentStatus.Received,
-                    DocumentStatus.Withdrawn
+                    DocumentStatus.Withdrawn,
+                    DocumentStatus.Superseded
                 }
             }
         };

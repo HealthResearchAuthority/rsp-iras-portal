@@ -65,6 +65,7 @@
                                 @foreach (var modification in Model.ProjectOverviewDocumentViewModel?.Documents ?? Enumerable.Empty<ProjectOverviewDocumentDto>())
                                 {
                                     var isFailed = string.Equals(modification.Status, DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase);
+                                    var isTracked = string.Equals(modification.SupersedeDocumentType, SupersedeDocumentsType.Tracked.ToString(), StringComparison.OrdinalIgnoreCase);
 
                                     <tr class="govuk-table__row">
                                         <td class="govuk-table__cell">
@@ -128,7 +129,7 @@
                                         @if (Model.Status is ModificationStatus.InDraft)
                                         {
                                             <td class="govuk-table__cell">
-                                                @if (!isFailed)
+                                                @if (!isFailed && !isTracked)
                                                 {
                                                     <a asp-route="pmc:continuetodetails"
                                                        asp-route-documentId="@modification.Id"

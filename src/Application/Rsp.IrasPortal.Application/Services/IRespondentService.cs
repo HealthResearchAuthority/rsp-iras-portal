@@ -1,6 +1,6 @@
-﻿using Rsp.Portal.Application.DTOs.Requests;
+﻿using Rsp.Logging.Interceptors;
+using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.Responses;
-using Rsp.Logging.Interceptors;
 
 namespace Rsp.Portal.Application.Services;
 
@@ -120,4 +120,6 @@ public interface IRespondentService : IInterceptable
     /// <param name="request">The request containing all answers for the project modification document.</param>
     /// <returns>A service response indicating the result of the save operation.</returns>
     Task<ServiceResponse> SaveModificationDocuments(List<ProjectModificationDocumentRequest> request);
+
+    Task<ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>> GetModificationDocumentsByType(string projectRecordId, string? documentTypeId);
 }

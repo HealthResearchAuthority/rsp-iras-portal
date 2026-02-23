@@ -124,4 +124,7 @@ public interface IRespondentServiceClient
 
     [Post("/respondent/modificationdocumentanswer")]
     public Task<IApiResponse> SaveModificationDocumentAnswer(List<ProjectModificationDocumentAnswerDto> projectModificationDocumentRequest);
+
+    [Get("/respondent/modificationdocumentbytype/{projectRecordId}")]
+    public Task<ApiResponse<IEnumerable<ProjectModificationDocumentRequest>>> GetModificationDocumentsByType(string projectRecordId, [Query] string? documentTypeId = null);
 }

@@ -1,4 +1,6 @@
-﻿namespace Rsp.Portal.Web.Models;
+﻿using Rsp.Gds.Component.Models;
+
+namespace Rsp.Portal.Web.Models;
 
 /// <summary>
 /// ViewModel for capturing details of a document being added during a modification process.
@@ -69,6 +71,58 @@ public class ModificationAddDocumentDetailsViewModel : QuestionnaireViewModel
     /// Gets or sets if the scan is successful or not.
     /// </summary>
     public bool? IsMalwareScanSuccessful { get; set; }
+
+    /// <summary>
+    /// The current document replaces the document identified by this Id.
+    /// </summary>
+    public string? MetaDataDocumentTypeId { get; set; }
+
+    /// <summary>
+    /// The current document replaces the document identified by this Id.
+    /// </summary>
+    public Guid? ReplacesDocumentId { get; set; }
+
+    /// <summary>
+    /// Name of the file to replace.
+    /// </summary>
+    public string DocumentToReplaceFileName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Path to where the document is stored (e.g., in blob storage or file system).
+    /// </summary>
+    public string? DocumentToReplaceStoragePath { get; set; }
+
+    /// <summary>
+    /// The current document is replaced by the document identified by this Id
+    /// </summary>
+    public Guid? ReplacedByDocumentId { get; set; }
+
+    /// <summary>
+    /// This field will indicate whether the document is CLEAN or TRACKED
+    /// </summary>
+    public string? DocumentType { get; set; }
+
+    /// <summary>
+    /// For a CLEAN document: reference to the corresponding TRACKED version (if it exists).
+    /// For a TRACKED document: reference to the corresponding CLEAN version(if it exists).
+    /// </summary>
+    public Guid? LinkedDocumentId { get; set; }
+
+    /// <summary>
+    /// Name of the file to replace.
+    /// </summary>
+    public string LinkedDocumentFileName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Path to where the document is stored (e.g., in blob storage or file system).
+    /// </summary>
+    public string? LinkedDocumentStoragePath { get; set; }
+
+    public List<GdsOption> DocumentToReplaceList { get; set; } = [];
+
+    public IFormFile File { get; set; }
+
+    public bool ShowSupersedeDocumentSection { get; set; }
 
     /// <summary>
     /// Gets the display size in KB, MB or GB, rounded to 2 decimal places.

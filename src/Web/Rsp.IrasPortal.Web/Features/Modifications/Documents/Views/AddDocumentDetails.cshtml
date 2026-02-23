@@ -130,7 +130,10 @@
 				<input type="hidden" asp-for="@Model.FileSize" />
 				<input type="hidden" asp-for="@Model.DocumentStoragePath" />
 				<input type="hidden" asp-for="@Model.ReviewAnswers" />
-				<input type="hidden" asp-for="@Model.ProjectRecordId" />
+                <input type="hidden" asp-for="@Model.ProjectRecordId" />
+                <input type="hidden" asp-for="@Model.DocumentType" />
+                <input type="hidden" asp-for="@Model.LinkedDocumentId" />
+                <input type="hidden" asp-for="@Model.ReplacesDocumentId" />
 
 				@foreach (var question in Model.Questions)
 				{

@@ -178,4 +178,11 @@ public class RespondentService(IRespondentServiceClient respondentServiceClient)
 
         return apiResponse.ToServiceResponse();
     }
+
+    public async Task<ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>> GetModificationDocumentsByType(string projectRecordId, string? documentTypeId)
+    {
+        var apiResponse = await respondentServiceClient.GetModificationDocumentsByType(projectRecordId, documentTypeId);
+
+        return apiResponse.ToServiceResponse();
+    }
 }
