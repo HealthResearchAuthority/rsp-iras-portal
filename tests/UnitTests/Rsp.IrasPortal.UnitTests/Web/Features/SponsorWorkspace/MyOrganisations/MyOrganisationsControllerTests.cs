@@ -3272,7 +3272,7 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
                     Id = Guid.NewGuid(),
                     UserId = Guid.NewGuid(),
                     Email = email,
-                    IsActive = false // disabled membership -> forbidden
+                    IsActive = false // ianctive membership -> forbidden
                 }
             }
         };
