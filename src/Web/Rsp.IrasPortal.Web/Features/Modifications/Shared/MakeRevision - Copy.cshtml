@@ -1,0 +1,125 @@
+﻿@using System.Globalization
+@using System.Text.Json
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Microsoft.FeatureManagement
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent;
+@using Rsp.Portal.Domain.AccessControl
+@using Rsp.Portal.Web.Features.Modifications.Models
+@using Rsp.Portal.Web.Models
+@model ModificationDetailsViewModel
+
+@{
+
+    ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
+
+    //string heading = Model.Status switch
+    //{
+    //    ModificationStatus.ReviseAndAuthorise => "Revise and authorise",
+    //    ModificationStatus.RequestRevisions => "Make revisions",
+    //    _ => string.Empty
+    //};
+
+    var linkBackToReferrer = TempData[TempDataKeys.ProjectModification.LinkBackToReferrer];
+    var urlReferrer = TempData[TempDataKeys.ProjectModification.UrlReferrer];
+    var modificationParams = new Dictionary<string, string>
+{
+        { "projectRecordId", Model.ProjectRecordId },
+        { "irasId", Model.IrasId  },
+        { "shortTitle", Model.ShortTitle ?? string.Empty },
+        { "projectModificationId", Model.ModificationId?? string.Empty},
+        { "sponsorOrganisationUserId", Model.SponsorOrganisationUserId?? string.Empty},
+        { "rtsId", Model.RtsId?? string.Empty},
+    };
+}
+@section BackNavigation {
+
+    @{
+        if (linkBackToReferrer is true && urlReferrer is not null)
+        {
+            ViewData[ViewDataKeys.UrlReferrer] = urlReferrer;
+            <partial name="_BackNavigation" model="@("", "Back", new Dictionary<string, string>())" />
+        }
+    }
+}
+@{
+    // display the notification banner if change is removed
+    var changeRemoved = TempData[TempDataKeys.ProjectModificationChange.ChangeRemoved];
+    var changeName = TempData[TempDataKeys.ProjectModificationChange.ChangeName];
+
+    if (changeRemoved is true)
+    {
+        <partial name="_NotificationBanner"
+                 model="@(new NotificationBannerModel
+                        {
+                            Title = "Success",
+                            Heading = $"{changeName} has been removed"
+                        })" />
+
+    }
+
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData != null ?
+        pageContentData :
+        new Dictionary<string, MixedContentPageItem?>();
+
+    var maxChangesWarning = pageContent.GetValueOrDefault("ModificationDetails.MaxChangesWarning", null);
+    var headline = pageContent.GetValueOrDefault("ModificationDetails.RevisionDescriptionHeadline", null);
+    var description = pageContent.GetValueOrDefault("ModificationDetails.RevisionDescriptionBody", null);
+}
+<partial name="_ReviewModification" model="Model" />
+@*<div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+            <h2 class="govuk-heading-m">Changes</h2>
+            <partial name="ModificationChanges" model="Model" view-data="ViewData" />
+
+            <partial name="SupportingDocuments" model="Model" view-data="ViewData" />
+
+            <partial name="SponsorDetails" model="Model" view-data="ViewData" />
+        </div>
+    </div>*@
+<authorized role-in="@(new []{Roles.Applicant, Roles.Sponsor})">
+    @if (Model.Status is ModificationStatus.RequestRevisions or ModificationStatus.ReviseAndAuthorise)
+    {
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <form method="post">
+                    <div class="save-buttons">
+                        @{
+                            <input type="hidden" name="projectRecordId" value="@Model.ProjectRecordId" />
+                            @if (Model.Status is ModificationStatus.RequestRevisions)
+                            {
+                                <partial name="_SubmitButton" model="@("pmc:sendmodificationtosponsor", "Send modification to sponsor", new Dictionary<string, string>()
+                                   {
+                                       ["projectModificationId"] = Model.ModificationId!,
+                                       ["projectRecordId"] = Model.ProjectRecordId
+                                   })" />
+                            }
+                            @if (Model.Status is ModificationStatus.ReviseAndAuthorise)
+                            {
+                                <a asp-route="sws:authoriserevision" asp-all-route-data="modificationParams" class="govuk-button">
+                                    Authorise
+                                </a>
+                            }
+                            ViewBag.Style = "govuk-button govuk-button--secondary";
+
+                            <partial name="_SubmitButton" model="@("pmc:saveforlater", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId, ["routeName"] = "pov:postapproval" })" />
+                        }
+                    </div>
+                </form>
+
+                <a status-for="Status"
+                   status-in="@(new []{ ModificationStatus.ReviseAndAuthorise,
+                                        ModificationStatus.RequestRevisions })"
+                   asp-route-projectRecordId="@Model.ProjectRecordId"
+                   asp-route-irasId="@(Model.ModificationIdentifier?.Split('/')[0])"
+                   asp-route-shortTitle="@Model.ShortTitle"
+                   asp-route-projectModificationId="@Model.ModificationId"
+                   asp-route="pmc:deletemodification"
+                   class="govuk-link">
+                    Delete modification
+                </a>
+            </div>
+        </div>
+    }
+</authorized>

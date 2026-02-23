@@ -60,7 +60,7 @@
             @if (showBackStageUserLinks)
             {
                 <a asp-route="pmc:reviewallchanges"
-                    asp-route-projectRecordId="@modificationBaseModel.ProjectRecordId"
+                   asp-route-projectRecordId="@modificationBaseModel.ProjectRecordId"
                    asp-route-irasId="@modificationBaseModel.IrasId"
                    asp-route-projectModificationId="@modificationBaseModel.ModificationId"
                    asp-route-shortTitle="@modificationBaseModel.ShortTitle"
@@ -108,7 +108,16 @@
             </dd>
         </div>
     </authorized>
-
+    <feature name="@FeatureFlags.RequestRevisions">
+        <authorized role-in="@(new []{Roles.Applicant, Roles.Sponsor})"
+                    status-for="@modificationBaseModel.Status"
+                    status-is="@ModificationStatus.RequestRevisions">
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Date sponsor submitted</dt>
+                <dd class="govuk-summary-list__value">@modificationBaseModel.DateCreated</dd>
+            </div>
+        </authorized>
+    </feature>
     @if (ViewData[ViewDataKeys.ShowModificationStatus] is true)
     {
         <div class="govuk-summary-list__row">
