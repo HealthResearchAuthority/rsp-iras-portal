@@ -204,6 +204,26 @@
                                 Save and continue to review
                             </a>
 
+                        <a asp-route="pmc:saveforlater" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-routeName="pov:postapproval" class="govuk-button govuk-button--secondary">
+                            Save for later
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <a status-for="Status"
+       status-in="@(new []{ ModificationStatus.InDraft
+                          })"
+       asp-route-projectRecordId="@Model.ProjectRecordId"
+       asp-route-irasId="@(Model.ModificationIdentifier?.Split('/')[0])"
+       asp-route-shortTitle="@Model.ShortTitle"
+       asp-route-projectModificationId="@Model.ModificationId"
+       asp-route="pmc:deletemodification"
+       class="govuk-link">
+        Delete modification
+    </a>
                             <a asp-route="pmc:saveforlater" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-routeName="pov:postapproval" class="govuk-button govuk-button--secondary">
                                 Save for later
                             </a>
@@ -228,6 +248,8 @@
 </authorized>
 
 <authorized permission="@Permissions.Sponsor.Modifications_Authorise"
+            status-for="Status"
+            status-is="@ModificationStatus.ReviseAndAuthorise">
             status -for="Status"
             status -is="@ModificationStatus.ReviseAndAuthorise">
     @if (isAuthoriser && Model.ModificationChanges.Any())

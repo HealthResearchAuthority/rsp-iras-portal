@@ -25,33 +25,33 @@
 }
 
 <form method="post">
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-two-thirds">
-            @Html.Raw(description?.Value)
-            <div class="govuk-form-group govuk-character-count"
-                 data-module="govuk-character-count"
-                 data-maxlength="500"
-                 error-class-for="ApplicantRevisionResponse">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                @Html.Raw(description?.Value)
+                <div class="govuk-form-group govuk-character-count"
+                     data-module="govuk-character-count"
+                     data-maxlength="500"
+                     error-class-for="ApplicantRevisionResponse">
 
-                @Html.ValidationMessageFor(model => model.ApplicantRevisionResponse, "", new { @class = "govuk-error-message" })
-                <textarea asp-for="ApplicantRevisionResponse"
-                          name="ApplicantRevisionResponse"
-                          class="govuk-textarea govuk-js-character-count"
-                          rows="5"
-                          aria-describedby="with-hint-info with-hint-hint">
+                    @Html.ValidationMessageFor(model => model.ApplicantRevisionResponse, "", new { @class = "govuk-error-message" })
+                    <textarea asp-for="ApplicantRevisionResponse"
+                              name="ApplicantRevisionResponse"
+                              class="govuk-textarea govuk-js-character-count"
+                              rows="5"
+                              aria-describedby="with-hint-info with-hint-hint">
                             </textarea>
-                <noscript>
-                    <div id="ApplicantRevisionResponse-info"
-                         class="govuk-hint govuk-character-count__message">
-                        <p class='govuk-hint'>You can enter up to 500 characters</p>
-                    </div>
-                </noscript>
+                    <noscript>
+                        <div id="ApplicantRevisionResponse-info"
+                             class="govuk-hint govuk-character-count__message">
+                            <p class='govuk-hint'>You can enter up to 500 characters</p>
+                        </div>
+                    </noscript>
 
-                <div id="ApplicantRevisionResponse-info"
-                     aria-hidden="true"
-                     class="govuk-hint govuk-character-count__message">
+                    <div id="ApplicantRevisionResponse-info"
+                         aria-hidden="true"
+                         class="govuk-hint govuk-character-count__message">
+                    </div>
                 </div>
-            </div>
         </div>
     </div>
     <div class="govuk-grid-row">
@@ -60,11 +60,11 @@
                 <div class="save-buttons">
                     @{
                         <input type="hidden" name="projectRecordId" value="@Model.ProjectRecordId" />
-                        <input type="hidden" name="ModificationId" value="@Model.ModificationId" />
-                        <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
-                        <input type="hidden" name="ShortTitle" value="@Model.ShortTitle" />
-                        <input type="hidden" name="IrasId" value="@Model.IrasId" />
-                        <input type="hidden" name="RtsId" value="@Model.RtsId" />
+                <input type="hidden" name="ModificationId" value="@Model.ModificationId" />
+                <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
+                <input type="hidden" name="ShortTitle" value="@Model.ShortTitle" />
+                <input type="hidden" name="IrasId" value="@Model.IrasId" />
+                <input type="hidden" name="RtsId" value="@Model.RtsId" />
                         @if (Model.NoChangesToSubmit)
                         {
                             <a asp-route="pmc:nochangestosubmit" asp-route-projectRecordId="@Model.ProjectRecordId" class="govuk-button">
@@ -89,16 +89,17 @@
 
                         <partial name="_SubmitButton" model="@("pmc:saveforlater", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId, ["routeName"] = "pov:postapproval" })" />
                     }
-                </div>
-            </form>
-            <a asp-route="pmc:deletemodification"
-               asp-route-projectRecordId="@Model.ProjectRecordId"
-               asp-route-irasId="@(Model.ModificationIdentifier?.Split('/')[0])"
-               asp-route-shortTitle="@Model.ShortTitle"
-               asp-route-projectModificationId="@Model.ModificationId"
-               class="govuk-link">
-                Delete modification
-            </a>
         </div>
-    </div>
-</form>
+            </form>
+                <a asp-route="pmc:deletemodification"
+                   asp-route-projectRecordId="@Model.ProjectRecordId"
+                   asp-route-irasId="@(Model.ModificationIdentifier?.Split('/')[0])"
+                   asp-route-shortTitle="@Model.ShortTitle"
+                   asp-route-projectModificationId="@Model.ModificationId"
+                   class="govuk-link">
+                    Delete modification
+                </a>
+            </div>
+        </div>
+    </form>
+}

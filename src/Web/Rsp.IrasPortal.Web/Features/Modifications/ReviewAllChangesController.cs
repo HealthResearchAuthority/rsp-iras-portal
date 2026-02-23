@@ -460,6 +460,14 @@ public class ReviewAllChangesController : ModificationsControllerBase
         //    return View("SponsorReference", viewModel);
         //}
 
+        var viewModel = await this.BuildSponsorQuestionnaireViewModel(Guid.Parse(model.ModificationId), model.ProjectRecordId, CategoryId);
+        //var isValid = await this.ValidateQuestionnaire(validator, viewModel, true);
+
+        //if (!isValid)
+        //{
+        //    return View("SponsorReference", viewModel);
+        //}
+
         // PASS ALL CHECKS → CONTINUE WORKFLOW
         return await HandleModificationStatusUpdate(
             projectRecordId,
