@@ -1,4 +1,5 @@
-﻿using Rsp.Portal.Application.DTOs;
+﻿using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.CmsQuestionset;
 using Rsp.Portal.Application.DTOs.CmsQuestionset.Modifications;
 using Rsp.Portal.Application.DTOs.Requests;
@@ -95,6 +96,14 @@ public class CmsQuestionsetService(ICmsQuestionSetServiceClient client) : ICmsQu
     public async Task<ServiceResponse<RankingOfChangeResponse>> GetModificationRanking(RankingOfChangeRequest request)
     {
         var responce = await client.GetModificationRanking(request);
+
+        // convert to service response
+        return responce.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse<List<string>>> GetRelatedQuestions(RelatedQuestionsRequest request)
+    {
+        var responce = await client.GetRelatedQuestions(request);
 
         // convert to service response
         return responce.ToServiceResponse();
