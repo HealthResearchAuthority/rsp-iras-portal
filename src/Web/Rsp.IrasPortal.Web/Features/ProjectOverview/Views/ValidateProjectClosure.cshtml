@@ -1,20 +1,39 @@
 ﻿@using Rsp.Portal.Application.Constants
 @using Rsp.Portal.Application.DTOs.Responses.CmsContent
 @model ProjectClosuresModel
+@inject IHttpContextAccessor httpContextAccessor
 @{
-	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
-
+    ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null
         ? pageContentData
         : new Dictionary<string, MixedContentPageItem?>();
 
+    var status = Context.Request.Query["status"].ToString();
+    var projectRecordId = Context.Request.Query["id"].ToString();
+
+    var warningMessageTitle = pageContent.GetValueOrDefault("Application.CloseProject.WarningTitle", null);
     var warningMessage = pageContent.GetValueOrDefault("Application.CloseProject.WarningMessage", null);
+    var pendingClosureTitle = pageContent.GetValueOrDefault("Application.ValidateProjectClosure.PendingClosureTitle", null);
+    var pendingClosureBody = pageContent.GetValueOrDefault("Application.ValidateProjectClosure.PendingClosureBody", null);
+    var closedStatusTitle = pageContent.GetValueOrDefault("Application.ValidateProjectClosure.ClosedStatusTitle", null);
+    var closedStatusBody = pageContent.GetValueOrDefault("Application.ValidateProjectClosure.ClosedStatusBody", null);
 }
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-        <h1 class="govuk-heading-l">You can't close this project</h1>
+
+        @switch (status)
+        {
+            case ProjectRecordStatus.PendingClosure:
+                <h1 class="govuk-heading-l">@Html.Raw(pendingClosureTitle?.Value)</h1>
+                break;
+
+            case ProjectRecordStatus.Closed:
+                <h1 class="govuk-heading-l">@Html.Raw(closedStatusTitle?.Value)</h1>
+                break;
+        }
+        <h1 class="govuk-heading-l">@Html.Raw(warningMessageTitle?.Value)</h1>
         <dl class="govuk-summary-list">
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key">IRAS ID</dt>
@@ -26,11 +45,22 @@
             </div>
         </dl>
         <p class="govuk-body">
+            @switch (status)
+            {
+
+                case ProjectRecordStatus.PendingClosure:
+                    @Html.Raw(pendingClosureBody?.Value)
+                    break;
+
+                case ProjectRecordStatus.Closed:
+                    @Html.Raw(closedStatusBody?.Value)
+                    break;
+            }
             @Html.Raw(warningMessage?.Value)
         </p>
 
         <div class="save-buttons">
-            <a class="govuk-button" asp-route="pov:postapproval" asp-route-projectRecordId="@Model.ProjectRecordId">
+            <a class="govuk-button" asp-route="pov:postapproval" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-backRoute="validateprojectclosure">
                 Return to project overview
             </a>
         </div>
