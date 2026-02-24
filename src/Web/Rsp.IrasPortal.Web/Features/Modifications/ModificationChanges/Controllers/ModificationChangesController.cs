@@ -114,7 +114,7 @@ public class ModificationChangesController
                 );
             }
 
-            if (selectedAnswerIds.Any())
+            if (selectedAnswerIds.Count != 0 && question != null)
             {
                 var relatedQuestionsRequest = new RelatedQuestionsRequest
                 {
@@ -128,14 +128,14 @@ public class ModificationChangesController
                 var request = new ProjectModificationChangeAnswersRequest
                 {
                     ProjectModificationChangeId = projectModificationChangeId == default ? Guid.Empty : projectModificationChangeId!,
-                    ProjectRecordId = projectRecordId,
+                    ProjectRecordId = projectRecordId!,
                     UserId = (HttpContext.Items[ContextItemKeys.UserId] as string)!
                 };
 
-                if (relatedQuestions?.Content?.Any() == true)
+                if (relatedQuestions?.Content?.Count != 0)
                 {
                     foreach (var answer in respondentServiceResponse.Content
-                                 .Where(a => relatedQuestions?.Content.Contains(a.QuestionId) == true))
+                                 .Where(a => relatedQuestions?.Content?.Contains(a.QuestionId) == true))
                     {
                         answer.AnswerText = null;
                         answer.SelectedOption = null;

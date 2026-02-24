@@ -337,7 +337,7 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
             {
                 StatusCode = HttpStatusCode.OK,
                 Content = BuildQuestionSet("SEC1", "CAT1", "PlannedEndDate",
-                    new QuestionModel { Id = "QCMS1", QuestionId = "Q1", AnswerDataType = "Text", QuestionFormat = "text", CategoryId = "CAT1", Sequence = 1, SectionSequence = 1 })
+                    new QuestionModel { Id = "QCMS1", UseAnswerForNextSection = true, QuestionId = "Q1", AnswerDataType = "Text", QuestionFormat = "text", CategoryId = "CAT1", Sequence = 1, SectionSequence = 1 })
             });
 
         _validator
@@ -348,10 +348,47 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
             .Setup(s => s.SaveModificationChangeAnswers(It.IsAny<ProjectModificationChangeAnswersRequest>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
+        Mocker
+            .GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationChangeAnswers(It.IsAny<Guid>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new List<RespondentAnswerDto>
+                {
+                    new RespondentAnswerDto
+                    {
+                        QuestionId = "Q1",
+                        AnswerText = "Some answer",
+                        CategoryId = "CAT1",
+                        SectionId = "SEC1"
+                    }
+                }
+            });
+
+        Mocker
+            .GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetRelatedQuestions(It.IsAny<RelatedQuestionsRequest>()))
+            .ReturnsAsync(new ServiceResponse<List<string>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new List<string> { "Q1" }
+            });
+
         var model = new QuestionnaireViewModel
         {
             CurrentStage = "SEC1",
-            Questions = [new QuestionViewModel { Index = 0, QuestionId = "Q1", AnswerText = "Some" }]
+            Questions = [new QuestionViewModel
+            {
+                Index = 0,
+                QuestionId = "Q1",
+                AnswerText = "Some",
+                Answers =
+                [
+                    new AnswerViewModel { AnswerId = "option1", AnswerText = "Option 1", IsSelected = true },
+                    new AnswerViewModel { AnswerId = "option2", AnswerText = "Option 1", IsSelected = true },
+                ]
+            }]
         };
 
         // Act
