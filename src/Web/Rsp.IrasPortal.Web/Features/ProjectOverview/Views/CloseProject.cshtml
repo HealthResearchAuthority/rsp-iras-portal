@@ -6,7 +6,7 @@
 @inject IHttpContextAccessor httpContextAccessor
 
 @{
-	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
+    ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
     // Title used in the validation error summary
     var errorSummaryTitle = "There is a problem";
 
@@ -25,7 +25,7 @@
 
 }
 @section BackNavigation {
-    <partial name="_BackNavigation" model="@("pov:postapproval", "Back", new Dictionary<string, string> { { "projectRecordId", Model.ProjectRecordId }, { "backRoute", "projectClosure" } })" />
+    <partial name="_BackNavigation" model="@("pov:postapproval", "Back", new Dictionary<string, string> { { "projectRecordId", Model.ProjectRecordId }})" />
 }
 
 <div class="govuk-width-container">
@@ -95,7 +95,12 @@
         <div class="govuk-grid-row" permission="@Permissions.MyResearch.ProjectRecord_Close">
             <div class="govuk-grid-column-two-thirds">
                 <div class="save-buttons">
-                    <button class="govuk-button" data-module="govuk-button" type="submit" asp-route="app:confirmprojectclosure">Send to sponsor</button>
+                    <button class="govuk-button" data-module="govuk-button" type="submit"
+                            asp-route="app:confirmprojectclosure"
+                            asp-route-projectRecordId="@Model.ProjectRecordId"
+                            asp-route-backRoute="validateprojectclosure">
+                        Send to sponsor
+                    </button>
                 </div>
             </div>
         </div>

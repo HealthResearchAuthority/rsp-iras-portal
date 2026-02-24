@@ -8,6 +8,7 @@ using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.FeatureManagement;
 using Rsp.IrasPortal.Application.FeatureFilters;
+using Rsp.IrasPortal.Web.Attributes;
 using Rsp.Logging.ActionFilters;
 using Rsp.Logging.Extensions;
 using Rsp.Logging.Interceptors;
@@ -180,7 +181,7 @@ services
     .UseJwtValidation();
 
 services.AddValidatorsFromAssemblyContaining<IWebApp>();
-
+services.AddScoped<ProjectClosureActionFilter>();
 var config = TypeAdapterConfig.GlobalSettings;
 
 // register the mapping configuration
