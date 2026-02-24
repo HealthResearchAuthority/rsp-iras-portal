@@ -110,11 +110,13 @@ public class ProjectClosureTests : TestServiceBase<ApplicationController>
         Assert.Equal("Test Project", model.ShortProjectTitle);
     }
 
-    [Fact]
-    public async Task ConfirmProjectClosure_WhenValidationFails_RedirectsToCloseProject_AndSetsTempData()
+    [Theory]
+    [AutoData]
+    public async Task ConfirmProjectClosure_WhenValidationFails_RedirectsToCloseProject_AndSetsTempData(ProjectClosuresResponse closuresResponse, IrasApplicationResponse irasApplicationResponse)
     {
         // Arrange
         var model = ValidModel();
+        SetUpMock(closuresResponse, irasApplicationResponse);
         var plannedEndDate = new DateTime(2025, 02, 28);
 
         var validationResult = new ValidationResult(new[]
@@ -137,11 +139,21 @@ public class ProjectClosureTests : TestServiceBase<ApplicationController>
         _applicationsService.Verify(s => s.UpdateProjectRecordStatus(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
     }
 
-    [Fact]
-    public async Task ConfirmProjectClosure_WhenCreateClosureFails_ReturnsServiceError()
+    [Theory]
+    [AutoData]
+    public async Task ConfirmProjectClosure_WhenCreateClosureFails_ReturnsServiceError(ProjectClosuresResponse closuresResponse, IrasApplicationResponse irasApplicationResponse)
     {
         // Arrange
         SetupValidatorResult(new ValidationResult());
+        SetUpMock(closuresResponse, irasApplicationResponse);
+        Mocker
+          .GetMock<IProjectModificationsService>()
+          .Setup(s => s.GetModificationsForProject(It.IsAny<string>(), It.IsAny<ModificationSearchRequest>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
+          .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+          {
+              StatusCode = HttpStatusCode.OK,
+              Content = new() { TotalCount = 1, Modifications = [new ModificationsDto { Id = Guid.NewGuid().ToString(), ModificationId = "MOD1", ModificationType = "Type", ReviewType = "Review", Category = "A", Status = ModificationStatus.InDraft }] }
+          });
         var model = ValidModel();
         var plannedEndDate = new DateTime(2025, 02, 28);
 
@@ -167,7 +179,15 @@ public class ProjectClosureTests : TestServiceBase<ApplicationController>
         SetupValidatorResult(new ValidationResult());
         var model = ValidModel();
         var plannedEndDate = new DateTime(2025, 02, 28);
-
+        SetUpMock(closuresResponse, irasApplicationResponse);
+        Mocker
+          .GetMock<IProjectModificationsService>()
+          .Setup(s => s.GetModificationsForProject(It.IsAny<string>(), It.IsAny<ModificationSearchRequest>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
+          .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+          {
+              StatusCode = HttpStatusCode.OK,
+              Content = new() { TotalCount = 1, Modifications = [new ModificationsDto { Id = Guid.NewGuid().ToString(), ModificationId = "MOD1", ModificationType = "Type", ReviewType = "Review", Category = "A", Status = ModificationStatus.InDraft }] }
+          });
         Mocker.GetMock<IProjectClosuresService>()
              .Setup(s => s.CreateProjectClosure(It.IsAny<ProjectClosureRequest>()))
              .ReturnsAsync(new ServiceResponse<ProjectClosuresResponse>
@@ -205,7 +225,7 @@ public class ProjectClosureTests : TestServiceBase<ApplicationController>
         SetupValidatorResult(new ValidationResult());
         var model = ValidModel();
         var plannedEndDate = new DateTime(2025, 02, 28);
-
+        SetUpMock(closuresResponse, irasApplicationResponse);
         Mocker.GetMock<IProjectClosuresService>()
             .Setup(s => s.CreateProjectClosure(It.IsAny<ProjectClosureRequest>()))
             .ReturnsAsync(new ServiceResponse<ProjectClosuresResponse>
@@ -245,7 +265,15 @@ public class ProjectClosureTests : TestServiceBase<ApplicationController>
         SetupValidatorResult(new ValidationResult());
         var model = ValidModel();
         var plannedEndDate = new DateTime(2025, 02, 28);
-
+        SetUpMock(closuresResponse, irasApplicationResponse);
+        Mocker
+          .GetMock<IProjectModificationsService>()
+          .Setup(s => s.GetModificationsForProject(It.IsAny<string>(), It.IsAny<ModificationSearchRequest>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
+          .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+          {
+              StatusCode = HttpStatusCode.OK,
+              Content = new() { TotalCount = 1, Modifications = [new ModificationsDto { Id = Guid.NewGuid().ToString(), ModificationId = "MOD1", ModificationType = "Type", ReviewType = "Review", Category = "A", Status = ModificationStatus.InDraft }] }
+          });
         Mocker.GetMock<IProjectClosuresService>()
             .Setup(s => s.CreateProjectClosure(It.IsAny<ProjectClosureRequest>()))
             .ReturnsAsync(new ServiceResponse<ProjectClosuresResponse>
@@ -295,12 +323,13 @@ public class ProjectClosureTests : TestServiceBase<ApplicationController>
         ActualClosureDateYear = "2026"
     };
 
-    [Fact]
-    public void ProjectClosure_Returns_ViewResult_With_Expected_ViewPath()
+    [Theory]
+    [AutoData]
+    public void ProjectClosure_Returns_ViewResult_With_Expected_ViewPath(ProjectClosuresResponse closuresResponse, IrasApplicationResponse irasApplicationResponse)
     {
         // Arrange
         SetupValidatorResult(new ValidationResult());
-
+        SetUpMock(closuresResponse, irasApplicationResponse);
         // Act
         var result = Sut.ProjectClosure();
 
@@ -323,7 +352,7 @@ public class ProjectClosureTests : TestServiceBase<ApplicationController>
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         Assert.Equal("/Features/ProjectOverview/Views/ValidateProjectClosure.cshtml", viewResult.ViewName);
-        Assert.Null(viewResult.Model);
+        Assert.NotNull(viewResult.Model);
     }
 
     [Fact]
@@ -396,14 +425,30 @@ public class ProjectClosureTests : TestServiceBase<ApplicationController>
         var plannedEndDate = new DateTime(2025, 02, 28);
         SetupValidatorResult(new ValidationResult());
         var model = ValidModel();
+        SetUpMock(projectClosuresResponse, irasApplicationResponse);
+        // Act
+        var result = await Sut.ConfirmProjectClosure(model, plannedEndDate);
 
+        // Assert
+        // In the test controller we returned Ok() to indicate "continued".
+
+        // Assert
+        var actionResult = Assert.IsType<RedirectToActionResult>(result);
+        actionResult.ActionName.ShouldBe("ProjectClosure");
+
+        Mocker.GetMock<IProjectClosuresService>().Verify(s => s.CreateProjectClosure(It.IsAny<ProjectClosureRequest>()), Times.Once);
+        Mocker.GetMock<IApplicationsService>().Verify(s => s.UpdateProjectRecordStatus(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+    }
+
+    private void SetUpMock(ProjectClosuresResponse projectClosuresResponse, IrasApplicationResponse irasApplicationResponse)
+    {
         Mocker.GetMock<IProjectClosuresService>()
-            .Setup(s => s.CreateProjectClosure(It.IsAny<ProjectClosureRequest>()))
-            .ReturnsAsync(new ServiceResponse<ProjectClosuresResponse>
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = projectClosuresResponse
-            });
+                    .Setup(s => s.CreateProjectClosure(It.IsAny<ProjectClosureRequest>()))
+                    .ReturnsAsync(new ServiceResponse<ProjectClosuresResponse>
+                    {
+                        StatusCode = HttpStatusCode.OK,
+                        Content = projectClosuresResponse
+                    });
 
         // Get project record
         Mocker.GetMock<IApplicationsService>()
@@ -429,17 +474,5 @@ public class ProjectClosureTests : TestServiceBase<ApplicationController>
             [TempDataKeys.IsSendToSponsor] = false
         };
         Sut.TempData = tempData;
-        // Act
-        var result = await Sut.ConfirmProjectClosure(model, plannedEndDate);
-
-        // Assert
-        // In the test controller we returned Ok() to indicate "continued".
-
-        // Assert
-        var actionResult = Assert.IsType<RedirectToActionResult>(result);
-        actionResult.ActionName.ShouldBe("ProjectClosure");
-
-        Mocker.GetMock<IProjectClosuresService>().Verify(s => s.CreateProjectClosure(It.IsAny<ProjectClosureRequest>()), Times.Once);
-        Mocker.GetMock<IApplicationsService>().Verify(s => s.UpdateProjectRecordStatus(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
     }
 }
