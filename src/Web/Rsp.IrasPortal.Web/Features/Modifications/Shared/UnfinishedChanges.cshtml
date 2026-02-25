@@ -24,6 +24,8 @@
 
     var title = pageContent.GetValueOrDefault("Modifications.UnfinishedChanges.Title", null);
     var body = pageContent.GetValueOrDefault("Modifications.UnfinishedChanges.Body", null);
+
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 }
 
 @*@section BackNavigation {
