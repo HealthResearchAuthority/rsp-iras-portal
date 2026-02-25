@@ -1,11 +1,8 @@
 ﻿@using Rsp.Portal.Application.Constants
 
 @{
-    var isAdmin =
-        User.IsInRole(Roles.SystemAdministrator)
-        || User.IsInRole(Roles.OrganisationAdministrator);
-
         var active = ViewBag.Active as string;
+	    var role = ViewBag.Role as string;
     }
 
 
@@ -40,7 +37,7 @@
 						</a>
 					</li>
 
-					@if (isAdmin)
+					@if (role == Roles.OrganisationAdministrator || User.IsInRole(Roles.SystemAdministrator))
 					{
 						<li class="govuk-service-navigation__item small-margin @(active == MyOrganisationProfileOverview.Audit ? "govuk-service-navigation__item--active" : "")">
 							<a class="govuk-service-navigation__link"

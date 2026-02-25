@@ -595,8 +595,11 @@ public class SponsorOrganisationsController(
         }
 
         // Update roles
-        var (roleToRemove, roleToAdd) = SponsorOrganisationUsersHelper.MapSponsorRoles(model.SponsorOrganisationUser.SponsorRole);
-        var userRolesUpdateResponse = await userService.UpdateRoles(model.SponsorOrganisationUser.Email!, roleToRemove, roleToAdd);
+        var roleToAdd = string.Equals(model.SponsorOrganisationUser.SponsorRole, Roles.OrganisationAdministrator, StringComparison.OrdinalIgnoreCase)
+            ? Roles.OrganisationAdministrator
+            : Roles.Sponsor;
+
+        var userRolesUpdateResponse = await userService.UpdateRoles(model.SponsorOrganisationUser.Email!, null, roleToAdd);
         if (!userRolesUpdateResponse.IsSuccessStatusCode)
         {
             return this.ServiceError(userRolesUpdateResponse);
