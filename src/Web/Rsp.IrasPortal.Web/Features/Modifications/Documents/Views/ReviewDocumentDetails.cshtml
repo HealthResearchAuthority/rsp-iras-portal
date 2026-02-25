@@ -142,9 +142,8 @@
                             </div>
                         }
                     </dl>
-                    @if (docu.ShowSupersedeDocumentSection)
+                    @if (await featureManager.IsEnabledAsync(FeatureFlags.SupersedingDocuments))
                     {
-
                         var key = $"Questions[{index}].DocumentInService";
                         var isDocumentInServiceInvalid = ViewData.ModelState.ContainsKey(key)
                         && ViewData.ModelState[key].Errors.Count > 0;
