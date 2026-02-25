@@ -778,8 +778,6 @@ public class MyOrganisationsController(
         }
 
         var ctx = ctxResult.Context!;
-        ViewBag.Role = ctx.SponsorOrganisation.Users?
-            .FirstOrDefault(x => x.UserId == Guid.Parse(User.FindFirst(CustomClaimTypes.UserId)?.Value)).SponsorRole;
         // user is accessing edit screen but is not system admin or organisation admin for this
         // organisation forbid access
         if (editMode && !ctx.UserIsAdmin)
@@ -988,9 +986,6 @@ public class MyOrganisationsController(
         }
 
         var ctx = ctxResult.Context!;
-        ViewBag.Role = ctx.SponsorOrganisation.Users?
-            .FirstOrDefault(x => x.UserId == Guid.Parse(User.FindFirst(CustomClaimTypes.UserId)?.Value)).SponsorRole;
-
         var sponsorMyOrganisationUsersViewModel = new SponsorMyOrganisationUsersViewModel()
         {
             RtsId = ctx.RtsId
@@ -1063,8 +1058,13 @@ public class MyOrganisationsController(
 
         var ctx = new SponsorOrgContext(rtsId, rtsResponse.Content, sponsorOrganisationDto, isAdmin);
 
-        ViewBag.Role = ctx.SponsorOrganisation.Users?
-            .FirstOrDefault(x => x.UserId == Guid.Parse(User.FindFirst(CustomClaimTypes.UserId)?.Value)).SponsorRole;
+        var userIdClaim = User.FindFirst(CustomClaimTypes.UserId)?.Value;
+
+        ViewBag.Role = Guid.TryParse(userIdClaim, out var userId)
+            ? ctx.SponsorOrganisation?.Users?
+                .FirstOrDefault(x => x.UserId == userId)?
+                .SponsorRole
+            : null;
 
         return new SponsorOrgContextResult(ctx, null);
     }
