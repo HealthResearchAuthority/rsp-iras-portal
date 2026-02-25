@@ -502,7 +502,7 @@ public class ProjectOverviewController
         HttpContext.Session.SetString(SessionKeys.PostApprovalsSearch, JsonSerializer.Serialize(model.Search));
 
         // Call PostApproval with matching parameter set
-        return RedirectToRoute("pov:postapproval", new { projectRecordId });
+        return RedirectToRoute("pov:postapproval", new { projectRecordId, backRoute = "filter" });
     }
 
     [Authorize(Policy = Permissions.MyResearch.Modifications_Search)]
@@ -511,7 +511,7 @@ public class ProjectOverviewController
     {
         var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId);
         HttpContext.Session.Remove(SessionKeys.PostApprovalsSearch);
-        return RedirectToRoute("pov:postapproval", new { projectRecordId });
+        return RedirectToRoute("pov:postapproval", new { projectRecordId, backRoute = "filter" });
     }
 
     [Authorize(Policy = Permissions.MyResearch.Modifications_Search)]
@@ -566,7 +566,7 @@ public class ProjectOverviewController
 
         var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId);
 
-        return RedirectToRoute("pov:postapproval", new { projectRecordId });
+        return RedirectToRoute("pov:postapproval", new { projectRecordId, backRoute = "filter" });
     }
 
     private void UpdateModificationRelatedTempData()
