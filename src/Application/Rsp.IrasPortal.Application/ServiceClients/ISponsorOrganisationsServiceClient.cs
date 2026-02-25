@@ -91,6 +91,6 @@ public interface ISponsorOrganisationsServiceClient
     /// <summary>
     /// Gets sponsor organisation user by sponsor organisation user Id
     /// </summary>
-    [Get("/sponsororganisations/user/{sponsorOrgUserId}")]
-    public Task<IApiResponse<SponsorOrganisationUserDto>> GetSponsorOrganisationUser(Guid sponsorOrgUserId);
+    [Get("/sponsororganisations/user/{sponsorOrgUserId}/{rtsId}")]
+    public Task<IApiResponse<SponsorOrganisationUserDto>> GetSponsorOrganisationUser(Guid sponsorOrgUserId, string rtsId);
 }

@@ -333,7 +333,7 @@ public class AuthorisationsProjectClosuresControllerTests
 
         var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
         sponsorOrganisationService
-            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -380,7 +380,7 @@ public class AuthorisationsProjectClosuresControllerTests
 
         var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
         sponsorOrganisationService
-            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>()
                 .WithError("Service fail")
                 .WithStatus(HttpStatusCode.InternalServerError));
@@ -444,7 +444,7 @@ public class AuthorisationsProjectClosuresControllerTests
         var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
 
         sponsorOrganisationService
-            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -471,7 +471,7 @@ public class AuthorisationsProjectClosuresControllerTests
         hydrated.ShortProjectTitle.ShouldBe(shortTitleAnswer);
 
         sponsorOrganisationService.Verify(
-                s => s.GetSponsorOrganisationUser(posted.SponsorOrganisationUserId),
+                s => s.GetSponsorOrganisationUser(posted.SponsorOrganisationUserId,posted.RtsId),
                 Times.Once
             );
 
@@ -510,7 +510,7 @@ public class AuthorisationsProjectClosuresControllerTests
         var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
 
         sponsorOrganisationService
-            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>()
             {
                 StatusCode = HttpStatusCode.InternalServerError,
@@ -524,7 +524,7 @@ public class AuthorisationsProjectClosuresControllerTests
         serviceError.StatusCode.ShouldBe((int)HttpStatusCode.InternalServerError);
 
         sponsorOrganisationService.Verify(
-            s => s.GetSponsorOrganisationUser(posted.SponsorOrganisationUserId),
+            s => s.GetSponsorOrganisationUser(posted.SponsorOrganisationUserId,posted.RtsId),
             Times.Once
         );
     }

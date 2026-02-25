@@ -45,7 +45,7 @@ public class SponsorWorkspaceController(
 
         ViewBag.SponsorOrganisationUserId = activeSponsorOrganisations
             .SelectMany(o => o.Users ?? Enumerable.Empty<SponsorOrganisationUserDto>())
-            .FirstOrDefault(u => u.UserId == gid)?.Id ?? Guid.Empty;
+            .FirstOrDefault(u => u.UserId == gid)?.UserId ?? Guid.Empty;
 
         // SINGLE VIEW
         return View();

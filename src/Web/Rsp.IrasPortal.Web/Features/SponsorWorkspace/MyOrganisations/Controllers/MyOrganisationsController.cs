@@ -807,7 +807,7 @@ public class MyOrganisationsController(
         var model = new SponsorMyOrganisationUserViewModel
         {
             UserId = userId,
-            SponsorOrganisationUserId = orgUser.Id.ToString(),
+            SponsorOrganisationUserId = orgUser.UserId.ToString(),
             GivenName = userDetails.GivenName,
             FamilyName = userDetails.FamilyName,
             Email = userDetails.Email,

@@ -273,7 +273,7 @@ public class ModificationAuthoriseFilterTests
 
         // --- MOCK: sponsorOrganisationUser.IsAuthoriser = true ---
         _orgService.Setup(o =>
-                o.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+                o.GetSponsorOrganisationUser(It.IsAny<Guid>(),It.IsAny<string>()))
             .ReturnsAsync(
                 new ServiceResponse<SponsorOrganisationUserDto>()
                     .WithContent(new SponsorOrganisationUserDto

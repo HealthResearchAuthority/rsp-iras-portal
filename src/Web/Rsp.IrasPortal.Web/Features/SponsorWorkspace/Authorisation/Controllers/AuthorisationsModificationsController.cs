@@ -63,7 +63,7 @@ public class AuthorisationsModificationsController
         }
 
         var sponsorOrganisationUser =
-            await sponsorOrganisationService.GetSponsorOrganisationUser(sponsorOrganisationUserId);
+            await sponsorOrganisationService.GetSponsorOrganisationUser(sponsorOrganisationUserId,rtsId);
 
         if (!sponsorOrganisationUser.IsSuccessStatusCode)
         {
@@ -278,7 +278,7 @@ public class AuthorisationsModificationsController
         }
 
         var sponsorOrganisationUser =
-            await sponsorOrganisationService.GetSponsorOrganisationUser(sponsorOrganisationUserId);
+            await sponsorOrganisationService.GetSponsorOrganisationUser(sponsorOrganisationUserId, rtsId);
 
         if (!sponsorOrganisationUser.IsSuccessStatusCode)
         {
@@ -319,7 +319,7 @@ public class AuthorisationsModificationsController
 
         if (!ModelState.IsValid)
         {
-            var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId);
+            var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId, model.RtsId);
 
             if (!sponsorOrganisationUser.IsSuccessStatusCode)
             {
@@ -454,7 +454,7 @@ public class AuthorisationsModificationsController
         }
 
         var sponsorOrganisationUser =
-            await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId);
+            await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId, model.RtsId);
 
         if (!sponsorOrganisationUser.IsSuccessStatusCode)
         {
@@ -496,7 +496,7 @@ public class AuthorisationsModificationsController
 
         if (!ModelState.IsValid)
         {
-            var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId);
+            var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId, model.RtsId);
 
             if (!sponsorOrganisationUser.IsSuccessStatusCode)
             {
@@ -711,7 +711,7 @@ public class AuthorisationsModificationsController
     /// <returns></returns>
     private async Task<IActionResult> ValidateRequest(AuthoriseModificationsOutcomeViewModel model)
     {
-        var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId);
+        var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId, model.RtsId);
 
         if (!sponsorOrganisationUser.IsSuccessStatusCode)
         {
