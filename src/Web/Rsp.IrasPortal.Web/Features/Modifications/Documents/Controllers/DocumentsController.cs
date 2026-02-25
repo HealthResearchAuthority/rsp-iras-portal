@@ -255,6 +255,7 @@ public class DocumentsController
     [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Review)]
     [HttpGet]
     public async Task<IActionResult> ReviewDocumentDetails()
+
     {
         // Retrieve all uploaded documents along with their saved responses.
         var viewModels = await GetAllDocumentsWithResponses();
@@ -277,13 +278,14 @@ public class DocumentsController
     {
         // Fetch all documents along with their existing responses.
         var allDocumentDetails = await GetAllDocumentsWithResponses();
+        var supersedeEnabled = await featureManager.IsEnabledAsync(FeatureFlags.SupersedingDocuments);
 
         bool hasFailures = false;
         for (int docIndex = 0; docIndex < allDocumentDetails.Count; docIndex++)
         {
             ModificationAddDocumentDetailsViewModel? documentDetail = allDocumentDetails[docIndex];
             var isValid = await this.ValidateQuestionnaire(validator, documentDetail, true);
-            if (documentDetail.ShowSupersedeDocumentSection)
+            if (supersedeEnabled)
             {
                 if (documentDetail.ReplacesDocumentId is null
                     || string.IsNullOrEmpty(documentDetail.DocumentType)
@@ -302,7 +304,7 @@ public class DocumentsController
                             $"Questions[{docIndex}].CleanOrTracked",
                             "Enter clean or tracked");
                     }
-                    if (string.IsNullOrEmpty(documentDetail.LinkedDocumentFileName))
+                    if (!string.IsNullOrEmpty(documentDetail.DocumentType) && string.IsNullOrEmpty(documentDetail.LinkedDocumentFileName))
                     {
                         ModelState.AddModelError(
                             $"Questions[{docIndex}].LinkedDocumentFileName",

@@ -5,8 +5,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
+using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Web.Attributes;
 using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
@@ -51,8 +53,7 @@ public class ModificationChangesController
             return this.ServiceError(questionsSetServiceResponse);
         }
 
-        // get the questionnaire from the session
-        // and deserialize it
+        // get the questionnaire from the session and deserialize it
         var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(questionsSetServiceResponse.Content!);
 
         // update the model with the answeres
@@ -87,6 +88,69 @@ public class ModificationChangesController
 
             model.ReviewAnswers = false;
             return View("Questionnaire", model);
+        }
+
+        // get the responent answers for the category
+        var respondentServiceResponse = await respondentService
+            .GetModificationChangeAnswers(projectModificationChangeId, projectRecordId!);
+
+        if (respondentServiceResponse?.Content != null &&
+            respondentServiceResponse.Content.Any())
+        {
+            var selectedAnswerIds = new List<string>();
+
+            // Single select
+            if (!string.IsNullOrWhiteSpace(question?.SelectedOption))
+            {
+                selectedAnswerIds.Add(question.SelectedOption);
+            }
+            // Multi select (when SelectedOption is null)
+            else if (question?.Answers?.Any(a => a.IsSelected) == true)
+            {
+                selectedAnswerIds.AddRange(
+                    question.Answers
+                        .Where(a => a.IsSelected && !string.IsNullOrWhiteSpace(a.AnswerId))
+                        .Select(a => a.AnswerId)
+                );
+            }
+
+            if (selectedAnswerIds.Count != 0 && question != null)
+            {
+                var relatedQuestionsRequest = new RelatedQuestionsRequest
+                {
+                    QuestionId = question.QuestionId,
+                    AnswerIds = selectedAnswerIds
+                };
+                var relatedQuestions = await _cmsQuestionsetService
+                .GetRelatedQuestions(relatedQuestionsRequest);
+
+                // Build the request to save modification answers
+                var request = new ProjectModificationChangeAnswersRequest
+                {
+                    ProjectModificationChangeId = projectModificationChangeId == default ? Guid.Empty : projectModificationChangeId!,
+                    ProjectRecordId = projectRecordId!,
+                    UserId = (HttpContext.Items[ContextItemKeys.UserId] as string)!
+                };
+
+                if (relatedQuestions?.Content?.Count != 0)
+                {
+                    foreach (var answer in respondentServiceResponse.Content
+                                 .Where(a => relatedQuestions?.Content?.Contains(a.QuestionId) == true))
+                    {
+                        answer.AnswerText = null;
+                        answer.SelectedOption = null;
+                        answer.Answers = []; // clear multi-select answers as well
+
+                        request.ModificationChangeAnswers.Add(answer);
+                    }
+                }
+
+                // Save the modification answers using the respondent service
+                if (request.ModificationChangeAnswers.Any())
+                {
+                    var saveModificationAnswersResponse = await respondentService.SaveModificationChangeAnswers(request);
+                }
+            }
         }
 
         // ------------------Save Modification Answers-------------------------

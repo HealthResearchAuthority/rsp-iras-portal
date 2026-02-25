@@ -1,4 +1,5 @@
 ﻿using Refit;
+using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.CmsQuestionset;
 using Rsp.Portal.Application.DTOs.CmsQuestionset.Modifications;
@@ -41,4 +42,7 @@ public interface ICmsQuestionSetServiceClient
 
     [Get("/modificationsranking/getmodificationranking")]
     public Task<ApiResponse<RankingOfChangeResponse>> GetModificationRanking([Query] RankingOfChangeRequest rankingOfChangeRequest);
+
+    [Get("/questionHierarchy/relatedQuestions")]
+    public Task<ApiResponse<List<string>>> GetRelatedQuestions(RelatedQuestionsRequest request);
 }
