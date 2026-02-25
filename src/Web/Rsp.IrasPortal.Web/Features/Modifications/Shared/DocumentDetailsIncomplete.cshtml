@@ -22,6 +22,8 @@
 
     var title = pageContent.GetValueOrDefault("Modifications.DocumentDetailsIncomplete.Title", null);
     var body = pageContent.GetValueOrDefault("Modifications.DocumentDetailsIncomplete.Body", null);
+
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 }
 
 <div class="govuk-grid-row">
