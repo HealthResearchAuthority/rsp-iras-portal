@@ -285,7 +285,7 @@ public class DocumentsController
         {
             ModificationAddDocumentDetailsViewModel? documentDetail = allDocumentDetails[docIndex];
             var isValid = await this.ValidateQuestionnaire(validator, documentDetail, true);
-            if (supersedeEnabled)
+            if (supersedeEnabled && documentDetail.ShowSupersedeDocumentSection)
             {
                 if (documentDetail.ReplacesDocumentId is null
                     || string.IsNullOrEmpty(documentDetail.DocumentType)
