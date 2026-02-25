@@ -895,7 +895,7 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
     }
 
     [Fact]
-    public async Task MyOrganisationAuditTrail_ShouldReturnView_WhenContextPasses()
+    public async Task MyOrganisationAuditTrail_ShouldReturnForbid_WhenNoRoleAssigneds()
     {
         var rtsId = "87765";
         SetUser(Guid.NewGuid(), DefaultEmail);
@@ -917,11 +917,7 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
 
         var result = await Sut.MyOrganisationAuditTrail(rtsId);
 
-        var view = result.ShouldBeOfType<ViewResult>();
-        var model = view.Model.ShouldBeOfType<SponsorMyOrganisationAuditViewModel>();
-
-        model.RtsId.ShouldBe(rtsId);
-        model.Name.ShouldBe("Audit Org");
+        result.ShouldBeOfType<ForbidResult>();
     }
 
     [Fact]
