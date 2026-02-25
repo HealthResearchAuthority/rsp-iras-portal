@@ -5,8 +5,8 @@ using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.FeatureManagement.Mvc;
 using Microsoft.FeatureManagement;
+using Microsoft.FeatureManagement.Mvc;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
@@ -25,25 +25,20 @@ namespace Rsp.Portal.Web.Features.Modifications;
 
 [Authorize(Policy = Workspaces.MyResearch)]
 [Route("/modifications/[action]", Name = "pmc:[action]")]
-public class ReviewAllChangesController : ModificationsControllerBase
+public class ReviewAllChangesController
+(
+    IProjectModificationsService projectModificationsService,
+    ICmsQuestionsetService cmsQuestionsetService,
+    IRespondentService respondentService,
+    IValidator<QuestionnaireViewModel> validator,
+    IFeatureManager featureManager,
+    IViewHelper viewHelper
+) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator, featureManager)
 {
-    private readonly IRespondentService _respondentService;
-
-    public ReviewAllChangesController(
-        IProjectModificationsService projectModificationsService,
-        ICmsQuestionsetService cmsQuestionsetService,
-        IRespondentService respondentService,
-        IValidator<QuestionnaireViewModel> validator,
-        IValidator<ModificationDetailsViewModel> modificationValidator)
-        : base(respondentService, projectModificationsService, cmsQuestionsetService, validator)
-    {
-        _respondentService = respondentService;
-        SetModificationValidator(modificationValidator);
-    }
-
     private const string DocumentDetailsSection = "pdm-document-metadata";
     private const string SponsorDetailsSectionId = "pm-sponsor-reference";
     private const string CategoryId = "Sponsor reference";
+    private readonly IRespondentService _respondentService = respondentService;
 
     private readonly ServiceResponse _reviewOutcomeNotFoundError = new()
     {
@@ -445,110 +440,17 @@ public class ReviewAllChangesController : ModificationsControllerBase
         }
 
         var viewModel = await this.BuildSponsorQuestionnaireViewModel(projectModificationId, projectRecordId, CategoryId);
-        //var isValid = await this.ValidateQuestionnaire(validator, viewModel, true);
+        var isValid = await this.ValidateQuestionnaire(validator, viewModel, true);
 
-        //if (!isValid)
-        //{
-        //    return View("SponsorReference", viewModel);
-        //}
+        if (!isValid)
+        {
+            return View("SponsorReference", viewModel);
+        }
 
         // PASS ALL CHECKS → CONTINUE WORKFLOW
         return await HandleModificationStatusUpdate(
             projectRecordId,
             projectModificationId,
-            ModificationStatus.WithSponsor,
-            onSuccess: () => View("ModificationSentToSponsor"));
-    }
-
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Review)]
-    [FeatureGate(FeatureFlags.RequestRevisions)]
-    [HttpPost]
-    public async Task<IActionResult> SendRevisionResponseToSponsor(ModificationDetailsViewModel model, bool isSaveForLater)
-    {
-        bool skipValidation = isSaveForLater && string.IsNullOrWhiteSpace(model.RevisionDescription);
-        if (!skipValidation)
-        {
-            var context = new ValidationContext<ModificationDetailsViewModel>(model);
-            var validationResult = await ModificationValidator.ValidateAsync(context);
-            if (!validationResult.IsValid)
-            {
-                foreach (var error in validationResult.Errors)
-                {
-                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
-                }
-
-                TempData.Remove(TempDataKeys.ModelState);
-                TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
-
-                return RedirectToRoute("pmc:ModificationDetails", new
-                {
-                    projectRecordId = model.ProjectRecordId,
-                    irasId = model.IrasId,
-                    shortTitle = model.ShortTitle,
-                    projectModificationId = Guid.Parse(model.ModificationId),
-                    sponsorOrganisationUserId = model.SponsorOrganisationUserId,
-                    rtsId = model.RtsId
-                });
-            }
-        }
-
-        if (isSaveForLater)
-        {
-            await projectModificationsService.UpdateModificationStatus
-                (
-                    model.ProjectRecordId,
-                    Guid.Parse(model.ModificationId),
-                    ModificationStatus.RequestRevisions,
-                    model.RevisionDescription
-                );
-            return RedirectToAction(nameof(Modifications), new { sponsorOrganisationUserId = model.SponsorOrganisationUserId, rtsId = model.RtsId });
-        }
-        // Fetch all modification documents (up to 200)
-        var searchQuery = new ProjectOverviewDocumentSearchRequest();
-        searchQuery.AllowedStatuses = User.GetAllowedStatuses(StatusEntitiy.Document);
-        var modificationDocumentsResponseResult = await projectModificationsService.GetDocumentsForModification(
-            Guid.Parse(model.ModificationId),
-            searchQuery, 1, 300,
-            nameof(ProjectOverviewDocumentDto.DocumentType),
-            SortDirections.Ascending);
-
-        var documents = modificationDocumentsResponseResult?.Content?.Documents ?? [];
-
-        // CHECK FOR INCOMPLETE DOCUMENT DETAILS
-        if (documents.Any())
-        {
-            var documentChangeRequest = BuildDocumentRequest();
-            var documentStatuses = await GetDocumentCompletionStatuses(documentChangeRequest);
-
-            bool hasIncompleteDocuments = documentStatuses
-                .Any(d => d.Status.Equals(DocumentDetailStatus.Incomplete.ToString(), StringComparison.OrdinalIgnoreCase));
-
-            if (hasIncompleteDocuments)
-            {
-                return RedirectToRoute("pmc:DocumentDetailsIncomplete");
-            }
-        }
-
-        // CHECK MALWARE SCAN STATUS
-        bool allMalwareScansCompleted = documents.All(d => d.IsMalwareScanSuccessful == true);
-
-        if (!allMalwareScansCompleted)
-        {
-            return RedirectToRoute("pmc:DocumentsScanInProgress");
-        }
-
-        var viewModel = await this.BuildSponsorQuestionnaireViewModel(Guid.Parse(model.ModificationId), model.ProjectRecordId, CategoryId);
-        //var isValid = await this.ValidateQuestionnaire(validator, viewModel, true);
-
-        //if (!isValid)
-        //{
-        //    return View("SponsorReference", viewModel);
-        //}
-
-        // PASS ALL CHECKS → CONTINUE WORKFLOW
-        return await HandleModificationStatusUpdate(
-            model.ProjectRecordId,
-            Guid.Parse(model.ModificationId),
             ModificationStatus.WithSponsor,
             onSuccess: () => View("ModificationSentToSponsor"));
     }
