@@ -553,7 +553,12 @@ public class MyOrganisationsController(
             Pagination = paginationModel
         };
 
-        return View(model);
+        if (ViewBag.Role == Roles.OrganisationAdministrator || User.IsInRole(Roles.SystemAdministrator))
+        {
+            return View(model);
+        }
+
+        return Forbid();
     }
 
     [HttpGet]
@@ -750,8 +755,10 @@ public class MyOrganisationsController(
         }
 
         // Update roles
-        var (roleToRemove, roleToAdd) = MapSponsorRoles(role);
-        await userService.UpdateRoles(user.Email, roleToRemove, roleToAdd);
+        var roleToAdd = string.Equals(role, Roles.OrganisationAdministrator, StringComparison.OrdinalIgnoreCase)
+            ? Roles.OrganisationAdministrator
+            : Roles.Sponsor;
+        await userService.UpdateRoles(user.Email, null, roleToAdd);
 
         TempData[TempDataKeys.ShowNotificationBanner] = true;
         TempData[TempDataKeys.SponsorOrganisationUserType] = "add";
@@ -771,7 +778,8 @@ public class MyOrganisationsController(
         }
 
         var ctx = ctxResult.Context!;
-
+        ViewBag.Role = ctx.SponsorOrganisation.Users?
+            .FirstOrDefault(x => x.UserId == Guid.Parse(User.FindFirst(CustomClaimTypes.UserId)?.Value)).SponsorRole;
         // user is accessing edit screen but is not system admin or organisation admin for this
         // organisation forbid access
         if (editMode && !ctx.UserIsAdmin)
@@ -876,8 +884,11 @@ public class MyOrganisationsController(
         }
 
         // Update roles
-        var (roleToRemove, roleToAdd) = MapSponsorRoles(model.Role);
-        var userRolesUpdateResponse = await userService.UpdateRoles(model.Email, roleToRemove, roleToAdd);
+        var roleToAdd = string.Equals(model.Role, Roles.OrganisationAdministrator, StringComparison.OrdinalIgnoreCase)
+            ? Roles.OrganisationAdministrator
+            : Roles.Sponsor;
+
+        var userRolesUpdateResponse = await userService.UpdateRoles(model.Email, null, roleToAdd);
         if (!userRolesUpdateResponse.IsSuccessStatusCode)
         {
             return this.ServiceError(userRolesUpdateResponse);
@@ -977,6 +988,8 @@ public class MyOrganisationsController(
         }
 
         var ctx = ctxResult.Context!;
+        ViewBag.Role = ctx.SponsorOrganisation.Users?
+            .FirstOrDefault(x => x.UserId == Guid.Parse(User.FindFirst(CustomClaimTypes.UserId)?.Value)).SponsorRole;
 
         var sponsorMyOrganisationUsersViewModel = new SponsorMyOrganisationUsersViewModel()
         {
@@ -1049,6 +1062,10 @@ public class MyOrganisationsController(
         }
 
         var ctx = new SponsorOrgContext(rtsId, rtsResponse.Content, sponsorOrganisationDto, isAdmin);
+
+        ViewBag.Role = ctx.SponsorOrganisation.Users?
+            .FirstOrDefault(x => x.UserId == Guid.Parse(User.FindFirst(CustomClaimTypes.UserId)?.Value)).SponsorRole;
+
         return new SponsorOrgContextResult(ctx, null);
     }
 
@@ -1083,20 +1100,6 @@ public class MyOrganisationsController(
 
         // returning as dynamic to avoid guessing your concrete User DTO type here
         return (ctx, userResponse.Content.User, null);
-    }
-
-    [NonAction]
-    private static (string? RoleToRemove, string RoleToAdd) MapSponsorRoles(string? selectedRole)
-    {
-        var roleToAdd = string.Equals(selectedRole, Roles.OrganisationAdministrator, StringComparison.OrdinalIgnoreCase)
-            ? Roles.OrganisationAdministrator
-            : Roles.Sponsor;
-
-        var roleToRemove = roleToAdd == Roles.OrganisationAdministrator
-            ? Roles.Sponsor
-            : Roles.OrganisationAdministrator;
-
-        return (roleToRemove, roleToAdd);
     }
 
     private sealed record SponsorOrgContext(

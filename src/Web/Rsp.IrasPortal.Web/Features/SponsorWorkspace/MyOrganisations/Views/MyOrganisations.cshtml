@@ -30,7 +30,7 @@
 	var searchTitle = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisations.SearchTitle", null);
 	var searchHint = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisations.SearchHint", null);
 
-	var userIsAdmin = User.IsInRole(Roles.SystemAdministrator) || User.IsInRole(Roles.OrganisationAdministrator);
+	var userIsSystemAdmin = User.IsInRole(Roles.SystemAdministrator);
 }
 
 <div class="govuk-grid-row">
@@ -89,12 +89,15 @@
 					<tbody class="govuk-table__body">
 						@foreach (var sponsorOrganisation in Model.MyOrganisations)
 						{
+                            var user = sponsorOrganisation.Users
+							.FirstOrDefault(x => x.UserId == Guid.Parse(User.FindFirst(CustomClaimTypes.UserId)?.Value));
+
 							<tr class="govuk-table__row">
 								<td class="govuk-table__cell">@sponsorOrganisation.SponsorOrganisationName</td>
 								<td class="govuk-table__cell">@string.Join(", ", sponsorOrganisation.Countries)</td>
 								<td class="govuk-table__cell">
 									@{
-										var buttonText = userIsAdmin ? "Manage" : "View";
+										var buttonText = userIsSystemAdmin || user.SponsorRole == Roles.OrganisationAdministrator  ? "Manage" : "View";
 									}
 									<a class="govuk-link" asp-route="sws:myorganisationprofile" asp-route-rtsId="@sponsorOrganisation.RtsId">@buttonText</a>
 								</td>
