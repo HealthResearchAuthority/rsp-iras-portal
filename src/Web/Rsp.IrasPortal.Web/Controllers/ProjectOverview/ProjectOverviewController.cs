@@ -3,8 +3,8 @@ using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.FeatureManagement;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.FeatureManagement;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
@@ -196,6 +196,11 @@ public class ProjectOverviewController
     /// <returns></returns>
     private async Task GetProjectClosureDetails(string projectRecordId, PostApprovalViewModel model)
     {
+        //Using below tempdata to restrict project closure if applicant trying to submit project closure using browser back button
+        if (model.ProjectOverviewModel?.Status == ProjectRecordStatus.Active)
+        {
+            TempData[TempDataKeys.IsSendToSponsor] = false;
+        }
         var projectClosureResponse = await projectClosuresService.GetProjectClosuresByProjectRecordId(projectRecordId);
         if (projectClosureResponse?.Content != null)
         {
@@ -497,7 +502,7 @@ public class ProjectOverviewController
         HttpContext.Session.SetString(SessionKeys.PostApprovalsSearch, JsonSerializer.Serialize(model.Search));
 
         // Call PostApproval with matching parameter set
-        return RedirectToRoute("pov:postapproval", new { projectRecordId });
+        return RedirectToRoute("pov:postapproval", new { projectRecordId, backRoute = "filter" });
     }
 
     [Authorize(Policy = Permissions.MyResearch.Modifications_Search)]
@@ -506,7 +511,7 @@ public class ProjectOverviewController
     {
         var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId);
         HttpContext.Session.Remove(SessionKeys.PostApprovalsSearch);
-        return RedirectToRoute("pov:postapproval", new { projectRecordId });
+        return RedirectToRoute("pov:postapproval", new { projectRecordId, backRoute = "filter" });
     }
 
     [Authorize(Policy = Permissions.MyResearch.Modifications_Search)]
@@ -561,7 +566,7 @@ public class ProjectOverviewController
 
         var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId);
 
-        return RedirectToRoute("pov:postapproval", new { projectRecordId });
+        return RedirectToRoute("pov:postapproval", new { projectRecordId, backRoute = "filter" });
     }
 
     private void UpdateModificationRelatedTempData()

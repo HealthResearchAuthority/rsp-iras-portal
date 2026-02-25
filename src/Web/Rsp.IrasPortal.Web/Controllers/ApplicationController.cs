@@ -3,6 +3,7 @@ using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Rsp.IrasPortal.Web.Attributes;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.Filters;
@@ -297,9 +298,17 @@ public class ApplicationController
     }
 
     [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Close)]
+    [ServiceFilter(typeof(ProjectClosureActionFilter))]
     [HttpPost]
     public async Task<IActionResult> ConfirmProjectClosure(ProjectClosuresModel model, DateTime plannedProjectEndDate, string separator = "/")
     {
+        //Validate broswer back functionality
+        (bool isValidRequest, IActionResult? value) = await ValidateBackAction(model);
+        if (!isValidRequest)
+        {
+            return value!;
+        }
+
         var validationResult = await closureValidator.ValidateAsync(model);
 
         if (!validationResult.IsValid)
@@ -360,10 +369,33 @@ public class ApplicationController
         {
             return this.ServiceError(updateApplicationResponse);
         }
-
+        //Using below tempdata to restrict project closure if applicant trying to submit project closure using browser back button
+        TempData[TempDataKeys.IsSendToSponsor] = true;
         TempData[TempDataKeys.ShowCloseProjectBanner] = true;
 
         return RedirectToAction(nameof(ProjectClosure));
+    }
+
+    private async Task<(bool validateInput, IActionResult? value)> ValidateBackAction(ProjectClosuresModel model)
+    {
+        if (TempData[TempDataKeys.IsSendToSponsor] is true)
+        {
+            var modificationsResponse = await projectModificationsService.GetModificationsForProject(model.ProjectRecordId, new ModificationSearchRequest());
+            var isInTransactionState = modificationsResponse.Content?.Modifications?.Any(m =>
+                m.Status is ModificationStatus.InDraft
+                    or ModificationStatus.WithSponsor
+                    or ModificationStatus.WithReviewBody) == true;
+            if (isInTransactionState)
+            {
+                return (false, value: RedirectToAction(nameof(ValidateProjectClosure), model));
+            }
+            else
+            {
+                return (false, value: Forbid());
+            }
+        }
+
+        return (true, value: null);
     }
 
     /// <summary>
@@ -420,5 +452,16 @@ public class ApplicationController
     public IActionResult ProjectClosure()
     {
         return View("/Features/ProjectOverview/Views/ConfirmProjectClosure.cshtml");
+    }
+
+    /// <summary>
+    /// Project Closure
+    /// </summary>
+    /// <returns></returns>
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Close)]
+    [HttpGet]
+    public IActionResult ValidateProjectClosure(ProjectClosuresModel model)
+    {
+        return View("/Features/ProjectOverview/Views/ValidateProjectClosure.cshtml", model);
     }
 }

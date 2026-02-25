@@ -34,7 +34,7 @@
         (tdBackRouteValues != null ? tdBackRouteValues.ToString()! : "{}") ?? new Dictionary<string, string>();
 }
 
-@if (routeName is null || routeName.ToLower() == "app:welcome")
+@if (routeName is null || routeName.ToLower() == "app:welcome" || routeName.ToLower() == "filter")
 {
     @section Breadcrumb {
         @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
@@ -89,7 +89,7 @@ else
         </label>
     </div>
 </div>
-@if ((Model.Modifications == null || !Model.Modifications.Any()) && !string.IsNullOrEmpty(backRoute))
+@if ((Model.Modifications == null || !Model.Modifications.Any()) && routeName?.ToLower() == "app:welcome")
 {
     <br />
     <label class="govuk-label">
@@ -331,7 +331,7 @@ else
                         <tbody class="govuk-table__body govuk-body-s">
                             @{
                                 foreach (var modification in Model.Modifications)
-                                {                                    
+                                {
                                     var modificationParams = new Dictionary<string, string> {
                                         { "projectRecordId", Model.ProjectOverviewModel.ProjectRecordId },
                                         { "irasId", Model.ProjectOverviewModel.IrasId?.ToString()  },
@@ -360,9 +360,10 @@ else
                                         <td class="govuk-table__cell">@modification.ReviewType</td>
                                         <td class="govuk-table__cell">@modification.Category</td>
                                         @{
-                                            <td class="govuk-table__cell">@modification.SentToRegulatorDate?.ToString("dd MMM yyyy")</td>                                            
+                                            <td class="govuk-table__cell">@modification.SentToRegulatorDate?.ToString("dd MMM yyyy")</td>
+
                                         }
-                                        
+
                                         @{
                                             var tagClass = modification.Status switch
                                             {
@@ -387,7 +388,7 @@ else
         </div>
     }
 }
-@if ((Model.Modifications.Count() == 0 && string.IsNullOrEmpty(backRoute)) &&
+@if ((Model.Modifications.Count() == 0 && routeName?.ToLower() == "filter") &&
 (Model.Search.Filters.Count >= 0 || string.IsNullOrEmpty(Model.Search?.ModificationId) || !string.IsNullOrEmpty(Model.Search?.ModificationId)))
 {
     <div class="govuk-grid-row">
