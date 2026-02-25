@@ -231,6 +231,14 @@ namespace Rsp.Portal.UnitTests.Web.Controllers.SponsorOrganisationsControllerTes
                     Email = "test@example.com",
                     SponsorRole = Roles.Sponsor,
                     IsAuthoriser = false
+                },
+                User = new Portal.Web.Areas.Admin.Models.UserViewModel
+                {
+                    GivenName = "Given Name"
+                },
+                SponsorOrganisation = new SponsorOrganisationModel
+                {
+                    SponsorOrganisationName = "Sponsor organisation"
                 }
             };
 

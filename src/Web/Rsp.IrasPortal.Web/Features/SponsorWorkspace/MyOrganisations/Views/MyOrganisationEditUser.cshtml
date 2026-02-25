@@ -141,6 +141,14 @@
 			<input asp-for="RtsId" hidden value="@Model.RtsId" />
 			<input asp-for="UserId" hidden value="@Model.UserId" />
 			<input asp-for="Email" hidden value="@Model.Email" />
+			<input asp-for="FamilyName" hidden value="@Model.FamilyName" />
+			<input asp-for="GivenName" hidden value="@Model.GivenName" />
+			<input asp-for="Organisation" hidden value="@Model.Organisation" />
+			<input asp-for="Status" hidden value="@Model.Status" />
+			<input asp-for="JobTitle" hidden value="@Model.JobTitle" />
+			<input asp-for="Telephone" hidden value="@Model.Telephone" />
+			<input asp-for="Title" hidden value="@Model.Title" />
+
 
 
 			<div class="govuk-form-group">
@@ -174,23 +182,16 @@
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const roleAdmin = document.getElementById("role");
-        const roleSponsor = document.getElementById("role-2");
-        const authoriserYes = document.getElementById("authoriser");
+	$(document).ready(function () {
+		$('input[name="Role"]').on('change', function () {
+		
+			var selectedValue = $(this).val();
 
-        function updateAuthoriserState() {
-            if (roleAdmin.checked) {
-                // Force YES radio
-                authoriserYes.checked = true;
-            }
-        }
-
-        roleAdmin.addEventListener("change", updateAuthoriserState);
-        roleSponsor.addEventListener("change", updateAuthoriserState);
-
-        // Run once on load
-        updateAuthoriserState();
-    });
+			if (selectedValue == "@Roles.OrganisationAdministrator"){
+				$('input[name="IsAuthoriser"][value="Yes"]')
+				.prop('checked', true);
+			}
+		});		
+	});
 </script>
 

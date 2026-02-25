@@ -2746,16 +2746,10 @@ public class MyOrganisationsControllerTests : TestServiceBase<MyOrganisationsCon
         var result = await Sut.MyOrganisationEditUser(userModel);
 
         // Assert
-        var view = result.ShouldBeOfType<RedirectToActionResult>();
-        view.ActionName.ShouldBe("MyOrganisationViewUser");
-        view.RouteValues.ShouldNotBeNull();
-        view.RouteValues.Keys.ShouldContain("rtsId");
-        view.RouteValues.Keys.ShouldContain("userId");
-
-        Sut.TempData.ContainsKey("AuthorizerValidationError").ShouldBeTrue();
-        Sut.TempData["AuthorizerValidationError"].ShouldBe(
-            "Select 'Yes' for the Authoriser if the user has the Organisation Administrator role."
-        );
+        var view = result.ShouldBeOfType<ViewResult>();
+        view.ViewName.ShouldBe("MyOrganisationEditUser");
+        view.Model.ShouldBeOfType<SponsorMyOrganisationUserViewModel>();
+        Sut.ModelState.IsValid.ShouldBeFalse();
     }
 
     [AutoData]

@@ -856,10 +856,11 @@ public class MyOrganisationsController(
         // Authorizer = No
         if (model.Role == Roles.OrganisationAdministrator && model.IsAuthoriser != "Yes")
         {
-            TempData["AuthorizerValidationError"] =
-                "Select 'Yes' for the Authoriser if the user has the Organisation Administrator role.";
-            return RedirectToAction(nameof(MyOrganisationViewUser),
-                new { userId = model.UserId, rtsId = model.RtsId, editMode = true });
+            var errorKey = "Select 'Yes' for the Authoriser if the user has the Organisation Administrator role.";
+
+            ModelState.AddModelError("IsAuthoriser", errorKey);
+
+            return View("MyOrganisationEditUser", model);
         }
 
         // RSP-6809 requires strict binding Authorizer = Yes if user is Organisation Administrator

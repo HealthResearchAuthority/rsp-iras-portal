@@ -141,6 +141,14 @@
             <input asp-for="SponsorOrganisationUser.RtsId" hidden value="@Model.SponsorOrganisationUser.RtsId" />
             <input asp-for="SponsorOrganisationUser.UserId" hidden value="@Model.SponsorOrganisationUser.UserId" />
             <input asp-for="SponsorOrganisationUser.Email" hidden value="@Model.SponsorOrganisationUser.Email" />
+			<input asp-for="User.GivenName" hidden value="@Model.User.GivenName." />
+			<input asp-for="User.FamilyName" hidden value="@Model.User.FamilyName" />
+			<input asp-for="User.Country" hidden value="@Model.User.Country" />
+			<input asp-for="User.Organisation" hidden value="@Model.User.Organisation" />
+			<input asp-for="User.Title" hidden value="@Model.User.Title" />
+			<input asp-for="User.Email" hidden value="@Model.User.Email" />
+			<input asp-for="User.Telephone" hidden value="@Model.User.Telephone" />
+
 
             <div class="govuk-form-group">
                 <fieldset class="govuk-fieldset">
@@ -171,22 +179,17 @@
 
     </form>
 </div>
+
 <script>
-    $(document).ready(function () {
-        const roleAdmin = $("#role");
-        const roleSponsor = $("#role-2");
-        const authoriserYes = $("#authoriser");
+	$(document).ready(function () {
+		$('input[name="SponsorOrganisationUser.SponsorRole"]').on('change', function () {
 
-        function updateAuthoriserState() {
-            if (roleAdmin.is(":checked")) {
-                authoriserYes.prop("checked", true);
-            }
-        }
+			var selectedValue = $(this).val();
 
-        roleAdmin.on("change", updateAuthoriserState);
-        roleSponsor.on("change", updateAuthoriserState);
-
-        // Run once on load
-        updateAuthoriserState();
-    });
+			if (selectedValue == "@Roles.OrganisationAdministrator"){
+				$('input[name="SponsorOrganisationUser.IsAuthoriser"][value="true"]')
+				.prop('checked', true);
+			}
+		});
+	});
 </script>

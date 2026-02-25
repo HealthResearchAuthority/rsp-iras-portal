@@ -556,17 +556,12 @@ public class SponsorOrganisationsController(
     [Route("/sponsororganisations/edituser/submit", Name = "soc:submiteditsponsororganisationuser")]
     public async Task<IActionResult> SubmitEditSponsorOrganisationUser(SponsorOrganisationUserModel model)
     {
-        var builtModel = await BuildSponsorOrganisationUserModel(model.SponsorOrganisationUser.RtsId, model.SponsorOrganisationUser.UserId);
-
         // RSP-6809 requires Error message when both are true: Role = Organisation Administrator &&
         // Authorizer = No
 
         var validationResult = await sponsorUserValidator.ValidateAsync(model);
         if (!validationResult.IsValid)
         {
-            model.User = builtModel.User;
-            model.SponsorOrganisation = builtModel.SponsorOrganisation;
-
             foreach (var error in validationResult.Errors)
             {
                 ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
