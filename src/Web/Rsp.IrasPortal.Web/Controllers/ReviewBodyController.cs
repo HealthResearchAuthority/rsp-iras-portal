@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.Filters;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
 using Rsp.Portal.Web.Areas.Admin.Models;
@@ -112,6 +113,7 @@ public class ReviewBodyController(
     [Route("/reviewbody/applyfilters", Name = "rbc:applyfilters")]
     [HttpPost]
     [HttpGet]
+    [CmsContentAction(nameof(ViewReviewBodies))]
     public async Task<IActionResult> ApplyFilters(
         ReviewBodySearchViewModel model,
         string? sortField = nameof(UserViewModel.GivenName),
