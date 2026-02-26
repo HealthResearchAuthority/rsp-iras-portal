@@ -14,7 +14,6 @@ using Rsp.Portal.Domain.Identity;
 using Rsp.Portal.Web.Areas.Admin.Models;
 using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models;
-using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Services;
 using Rsp.Portal.Web.Helpers;
 using Rsp.Portal.Web.Models;
 
@@ -61,7 +60,7 @@ public class AuthorisationsProjectClosuresController
             SponsorOrganisationUserId = sponsorOrganisationUserId,
             RtsId = rtsId
         };
-        
+
         // getting search query
         var json = HttpContext.Session.GetString(SessionKeys.SponsorAuthorisationsProjectClosuresSearch);
         if (!string.IsNullOrEmpty(json))
@@ -95,7 +94,7 @@ public class AuthorisationsProjectClosuresController
                 ShortProjectTitle = dto.ShortProjectTitle,
                 Status = dto.Status,
                 IrasId = dto.IrasId,
-                UserId = dto.UserId,
+                UserId = dto.CreatedBy,
                 DateActioned = dto.DateActioned,
                 ClosureDate = dto.ClosureDate,
                 SentToSponsorDate = dto.SentToSponsorDate

@@ -66,7 +66,7 @@ public class AuthorisationsProjectClosuresControllerTests
             .ReturnsAsync(Authorised(_sponsorOrganisationUserId));
 
         // arrange at least 1 matching user id.
-        closuresResponse.ProjectClosures.First().UserId = users[0].Id;
+        closuresResponse.ProjectClosures.First().CreatedBy = users[0].Id;
 
         var serviceResponse = new ServiceResponse<ProjectClosuresSearchResponse>
         {
@@ -137,7 +137,6 @@ public class AuthorisationsProjectClosuresControllerTests
                     CountryName = "England"
                 }
             });
-
 
         var authResult = SponsorUserAuthorisationResult
             .Ok(_sponsorOrganisationUserId)
@@ -471,7 +470,7 @@ public class AuthorisationsProjectClosuresControllerTests
         hydrated.ShortProjectTitle.ShouldBe(shortTitleAnswer);
 
         sponsorOrganisationService.Verify(
-                s => s.GetSponsorOrganisationUser(posted.SponsorOrganisationUserId,posted.RtsId),
+                s => s.GetSponsorOrganisationUser(posted.SponsorOrganisationUserId, posted.RtsId),
                 Times.Once
             );
 
@@ -524,7 +523,7 @@ public class AuthorisationsProjectClosuresControllerTests
         serviceError.StatusCode.ShouldBe((int)HttpStatusCode.InternalServerError);
 
         sponsorOrganisationService.Verify(
-            s => s.GetSponsorOrganisationUser(posted.SponsorOrganisationUserId,posted.RtsId),
+            s => s.GetSponsorOrganisationUser(posted.SponsorOrganisationUserId, posted.RtsId),
             Times.Once
         );
     }
@@ -808,9 +807,9 @@ public class AuthorisationsProjectClosuresControllerTests
 
         // Force exactly 3 closures and wire up UserIds to the users we return
         var closuresList = closuresResponse.ProjectClosures.Take(3).ToList();
-        closuresList[0].UserId = usersFixed[0].Id;
-        closuresList[1].UserId = usersFixed[1].Id;
-        closuresList[2].UserId = usersFixed[2].Id;
+        closuresList[0].CreatedBy = usersFixed[0].Id!;
+        closuresList[1].CreatedBy = usersFixed[1].Id!;
+        closuresList[2].CreatedBy = usersFixed[2].Id!;
 
         // Make sure the response uses the list we're manipulating
         closuresResponse.ProjectClosures = closuresList;
@@ -956,7 +955,6 @@ public class AuthorisationsProjectClosuresControllerTests
                 It.IsAny<ClaimsPrincipal>(),
                 "123"))
             .ReturnsAsync(authResult);
-
 
         // Act: pageNumber=0, sortField=UserEmail
         var result = await Sut.ProjectClosures(
