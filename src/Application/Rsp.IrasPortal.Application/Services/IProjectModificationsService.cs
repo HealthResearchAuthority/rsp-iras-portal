@@ -337,6 +337,8 @@ public interface IProjectModificationsService : IInterceptable
     /// </returns>
     Task<ServiceResponse> DeleteDocumentAnswersModification(List<ProjectModificationDocumentRequest> projectModificationDocumentRequest);
 
+    //Task<ApiResponse<ProjectDocumentsAuditTrailResponse>> GetProjectDocumentsAuditTrail(Guid projectRecordId);
+
     /// <summary>
     /// Duplicates a project modification.
     /// </summary>

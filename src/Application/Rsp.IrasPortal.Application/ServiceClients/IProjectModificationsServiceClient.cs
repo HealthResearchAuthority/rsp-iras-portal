@@ -1,4 +1,5 @@
 ﻿using Refit;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
@@ -336,6 +337,14 @@ public interface IProjectModificationsServiceClient
     /// </returns>
     [Post("/projectmodifications/deletedocumentanswers")]
     public Task<IApiResponse> DeleteDocumentAnswers(List<ProjectModificationDocumentRequest> projectModificationChangeRequest);
+
+    /// <summary>
+    /// Gets the audit trail for a specific project documents.
+    /// </summary>
+    /// <param name="projectRecordId">The unique identifier of the project</param>
+    /// <returns>A list of modification audit trail records and total record count</returns>
+    [Get("/documents/projectdocumentsaudittrail")]
+    public Task<ApiResponse<ProjectDocumentsAuditTrailResponse>> GetProjectDocumentsAuditTrail(Guid projectRecordId);
 
     /// <summary>
     /// Creates a new project modification.
